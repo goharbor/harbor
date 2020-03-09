@@ -10,3 +10,4 @@ RUN chmod u+x /harbor/harbor_core
 WORKDIR /harbor/
 USER harbor
 ENTRYPOINT ["/harbor/harbor_core"]
+COPY make/photon/prepare/versions /harbor/

@@ -31,7 +31,6 @@ sudo ./tests/testprepare.sh
 cd tests && sudo ./ldapprepare.sh && cd ..
 env
 docker images
-sudo sed -i "s/__reg_version__/${REG_VERSION}-dev/g" ./make/docker-compose.test.yml
 sudo sed -i 's/__version__/dev/g' ./make/docker-compose.test.yml
 cat ./make/docker-compose.test.yml
 sudo mkdir -p ./make/common/config/registry/ && sudo mv ./tests/reg_config.yml ./make/common/config/registry/config.yml

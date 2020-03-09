@@ -11,22 +11,16 @@ docker_compose_yml_path = '/compose_location/docker-compose.yml'
 def prepare_docker_compose(configs, with_clair, with_trivy, with_notary, with_chartmuseum):
     versions = parse_versions()
     VERSION_TAG = versions.get('VERSION_TAG') or 'dev'
-    REGISTRY_VERSION = versions.get('REGISTRY_VERSION') or 'v2.7.1-patch-2819-2553'
-    NOTARY_VERSION = versions.get('NOTARY_VERSION') or 'v0.6.1'
-    CLAIR_VERSION = versions.get('CLAIR_VERSION') or 'v2.0.9'
-    CLAIR_ADAPTER_VERSION = versions.get('CLAIR_ADAPTER_VERSION') or 'v1.0.0'
-    TRIVY_ADAPTER_VERSION = versions.get('TRIVY_ADAPTER_VERSION') or 'v0.2.3'
-    CHARTMUSEUM_VERSION = versions.get('CHARTMUSEUM_VERSION') or 'v0.9.0'
 
     rendering_variables = {
         'version': VERSION_TAG,
-        'reg_version': "{}-{}".format(REGISTRY_VERSION, VERSION_TAG),
+        'reg_version': VERSION_TAG,
         'redis_version': VERSION_TAG,
-        'notary_version': '{}-{}'.format(NOTARY_VERSION, VERSION_TAG),
-        'clair_version': '{}-{}'.format(CLAIR_VERSION, VERSION_TAG),
-        'clair_adapter_version': '{}-{}'.format(CLAIR_ADAPTER_VERSION, VERSION_TAG),
-        'trivy_adapter_version': '{}-{}'.format(TRIVY_ADAPTER_VERSION, VERSION_TAG),
-        'chartmuseum_version': '{}-{}'.format(CHARTMUSEUM_VERSION, VERSION_TAG),
+        'notary_version': VERSION_TAG,
+        'clair_version': VERSION_TAG,
+        'clair_adapter_version': VERSION_TAG,
+        'trivy_adapter_version': VERSION_TAG,
+        'chartmuseum_version': VERSION_TAG,
         'data_volume': configs['data_volume'],
         'log_location': configs['log_location'],
         'protocol': configs['protocol'],
