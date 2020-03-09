@@ -20,11 +20,11 @@ describe('InterceptHttpService', () => {
   });
   const mockHandle = {
     handle: (request) => {
-      if (request.headers.has('X-Xsrftoken')) {
+      if (request.headers.has('X-Harbor-CSRF-Token')) {
         return of(new HttpResponse({status: 200}));
       } else {
         return throwError(new HttpResponse( {
-        status: 422
+        status: 403
         }));
       }
     }
@@ -48,8 +48,8 @@ describe('InterceptHttpService', () => {
     (service: InterceptHttpService) => {
       mockCookieService.set("fdsa|ds");
       service.intercept(mockRequest, mockHandle).subscribe(res => {
-        if (res.status === 422) {
-          expect(btoa(mockRequest.headers.get("X-Xsrftoken"))).toEqual(cookie.split("|")[0]);
+        if (res.status === 403) {
+          expect(mockRequest.headers.get("X-Harbor-CSRF-Token")).toEqual(cookie);
         } else {
           expect(res.status).toEqual(200);
         }

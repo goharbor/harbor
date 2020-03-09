@@ -6,7 +6,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateLoader, MissingTranslationHandler } from '@ngx-translate/core';
 import { CookieService, CookieModule } from 'ngx-cookie';
 import { MarkdownModule } from 'ngx-markdown';
-import { HttpXsrfTokenExtractorToBeUsed } from '../../services/http-xsrf-token-extractor.service';
 import { IServiceConfig, SERVICE_CONFIG } from "../../entities/service.config";
 import { TranslateHttpLoader } from "@ngx-translate/http-loader";
 import { MyMissingTranslationHandler } from "../../i18n/missing-trans.handler";
@@ -34,8 +33,8 @@ export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig
         CommonModule,
         HttpClientModule,
         HttpClientXsrfModule.withOptions({
-            cookieName: '_xsrf',
-            headerName: 'X-Xsrftoken'
+            cookieName: '__csrf',
+            headerName: 'X-Harbor-CSRF-Token'
         }),
         FormsModule,
         ReactiveFormsModule,
@@ -68,6 +67,6 @@ export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig
     ],
     providers: [
         CookieService,
-        { provide: HttpXsrfTokenExtractor, useClass: HttpXsrfTokenExtractorToBeUsed }]
+    ]
 })
 export class SharedModule { }

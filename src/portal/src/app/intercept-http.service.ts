@@ -14,10 +14,10 @@ export class InterceptHttpService implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<any> {
 
     return next.handle(request).pipe(catchError(error => {
-      if (error.status === 422) {
-        let Xsrftoken = this.cookie.get("_xsrf") ? atob(this.cookie.get("_xsrf").split("|")[0]) : null;
-        if (Xsrftoken && !request.headers.has('X-Xsrftoken')) {
-          request = request.clone({ headers: request.headers.set('X-Xsrftoken', Xsrftoken) });
+      if (error.status === 403) {
+        let Xsrftoken = this.cookie.get("__csrf");
+        if (Xsrftoken && !request.headers.has('X-Harbor-CSRF-Token')) {
+          request = request.clone({ headers: request.headers.set('X-Harbor-CSRF-Token', Xsrftoken) });
           return next.handle(request);
         }
       }

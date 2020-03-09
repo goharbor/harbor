@@ -40,13 +40,15 @@ export class DevCenterComponent implements AfterViewInit, OnInit {
   }
 
   ngAfterViewInit() {
-    const csrfCookie = this.cookieService.get('_xsrf');
+
+    const _this = this;
     const interceptor = {
       requestInterceptor: {
-        apply: function (requestObj) {
+        apply: (requestObj) => {
+          const csrfCookie = this.cookieService.get('__csrf');
           const headers = requestObj.headers || {};
           if (csrfCookie) {
-            headers["X-Xsrftoken"] = atob(csrfCookie.split("|")[0]);
+            headers["X-Harbor-CSRF-Token"] = csrfCookie;
           }
           return requestObj;
         }
@@ -70,12 +72,11 @@ export class DevCenterComponent implements AfterViewInit, OnInit {
           requestInterceptor: interceptor.requestInterceptor,
           authorizations: {
             csrf: function () {
-              this.headers['X-Xsrftoken'] = csrfCookie;
+              this.headers['X-Harbor-CSRF-Token'] = _this.cookieService.get('__csrf');
               return true;
             }
           }
         });
       });
   }
-
 }
