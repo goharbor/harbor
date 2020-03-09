@@ -184,3 +184,24 @@ CREATE TABLE audit_log
  username       varchar(255) NOT NULL,
  op_time        timestamp default CURRENT_TIMESTAMP
 );
+
+/*migrate access log to audit log*/
+/*TODO drop table access_log?*/
+DO $$
+DECLARE
+    access RECORD;
+BEGIN
+    FOR access IN SELECT * FROM access_log
+    LOOP
+      /*insert project create and delete*/
+      IF (access.operation = 'create' AND access.repo_tag = 'N/A') OR (access.operation = 'delete' AND access.repo_tag = 'N/A') THEN
+          INSERT INTO audit_log (project_id, operation, resource_type, resource, username, op_time) VALUES (access.project_id, access.operation, 'project', access.repo_name, access.username, access.op_time);
+      ELSIF access.operation = 'delete' AND access.repo_tag != 'N/A' THEN
+          INSERT INTO audit_log (project_id, operation, resource_type, resource, username, op_time) VALUES (access.project_id, 'delete', 'artifact', CONCAT(access.repo_name,':',access.repo_tag), access.username, access.op_time);
+      ELSIF access.operation = 'push' THEN
+          INSERT INTO audit_log (project_id, operation, resource_type, resource, username, op_time) VALUES (access.project_id, 'create', 'artifact', CONCAT(access.repo_name,':',access.repo_tag), access.username, access.op_time);
+      ELSIF access.operation = 'pull' THEN
+          INSERT INTO audit_log (project_id, operation, resource_type, resource, username, op_time) VALUES (access.project_id, 'pull', 'artifact', CONCAT(access.repo_name,':',access.repo_tag), access.username, access.op_time);
+      END IF;
+    END LOOP;
+END $$;

@@ -29,8 +29,6 @@ const (
 	DigestSubexp = "digest"
 	// ArtifactInfoKey the context key for artifact info
 	ArtifactInfoKey = contextKey("artifactInfo")
-	// ScannerPullCtxKey the context key for robot account to bypass the pull policy check.
-	ScannerPullCtxKey = contextKey("ScannerPullCheck")
 )
 
 var (
@@ -84,17 +82,6 @@ func EnsureArtifactDigest(ctx context.Context) error {
 	}
 	info.Digest = af.Digest
 	return nil
-}
-
-// NewScannerPullContext returns context with policy check info
-func NewScannerPullContext(ctx context.Context, scannerPull bool) context.Context {
-	return context.WithValue(ctx, ScannerPullCtxKey, scannerPull)
-}
-
-// ScannerPullFromContext returns whether to bypass policy check
-func ScannerPullFromContext(ctx context.Context) (bool, bool) {
-	info, ok := ctx.Value(ScannerPullCtxKey).(bool)
-	return info, ok
 }
 
 // CopyResp ...

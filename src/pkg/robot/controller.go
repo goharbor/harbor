@@ -86,10 +86,14 @@ func (d *DefaultAPIController) CreateRobotAccount(robotReq *model.RobotCreate) (
 		ProjectID: robotReq.ProjectID,
 		Access:    robotReq.Access,
 		StandardClaims: jwt.StandardClaims{
-			IssuedAt:  time.Now().UTC().Unix(),
-			ExpiresAt: robotReq.ExpiresAt,
-			Issuer:    opt.Issuer,
+			IssuedAt: time.Now().UTC().Unix(),
+			Issuer:   opt.Issuer,
 		},
+	}
+	// "-1" means the robot account is a permanent account, no expiration time set.
+	// 	The ExpiresAt claim is optional, so if it's not set, it will still be considered a valid claim
+	if robot.ExpiresAt != -1 {
+		rClaims.ExpiresAt = robotReq.ExpiresAt
 	}
 	tk, err := token.New(opt, rClaims)
 	if err != nil {

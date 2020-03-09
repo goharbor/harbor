@@ -29,6 +29,7 @@ import (
 var (
 	codeMap = map[string]int{
 		ierror.BadRequestCode:                  http.StatusBadRequest,
+		ierror.DIGESTINVALID:                   http.StatusBadRequest,
 		ierror.UnAuthorizedCode:                http.StatusUnauthorized,
 		ierror.ForbiddenCode:                   http.StatusForbidden,
 		ierror.DENIED:                          http.StatusForbidden,

@@ -79,7 +79,7 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	robot2 := &model.RobotCreate{
 		Name:        "robot2",
 		Description: "TestCreateRobotAccount",
-		ExpiresAt:   expiresAt,
+		ExpiresAt:   -1,
 		ProjectID:   int64(1),
 		Access:      policies,
 	}

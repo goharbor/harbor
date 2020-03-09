@@ -23,7 +23,8 @@ import (
 	"path/filepath"
 )
 
-type contextKeyInput struct{}
+// ContextKeyInput ...
+type ContextKeyInput struct{}
 
 // NewRoute creates a new route
 func NewRoute() *Route {
@@ -83,7 +84,7 @@ func (r *Route) Handler(handler http.Handler) {
 	middlewares = append(middlewares, r.middlewares...)
 	filterFunc := beego.FilterFunc(func(ctx *beegocontext.Context) {
 		ctx.Request = ctx.Request.WithContext(
-			context.WithValue(ctx.Request.Context(), contextKeyInput{}, ctx.Input))
+			context.WithValue(ctx.Request.Context(), ContextKeyInput{}, ctx.Input))
 		// TODO remove the WithMiddlewares?
 		middleware.WithMiddlewares(handler, middlewares...).
 			ServeHTTP(ctx.ResponseWriter, ctx.Request)
@@ -123,7 +124,7 @@ func Param(ctx context.Context, key string) string {
 	if ctx == nil {
 		return ""
 	}
-	input, ok := ctx.Value(contextKeyInput{}).(*beegocontext.BeegoInput)
+	input, ok := ctx.Value(ContextKeyInput{}).(*beegocontext.BeegoInput)
 	if !ok {
 		return ""
 	}
