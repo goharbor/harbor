@@ -65,26 +65,26 @@ func (r *Repository) FromJSON(jsonData string) error {
 // Candidate for retention processor to match
 type Candidate struct {
 	// Namespace(project) ID
-	NamespaceID int64
+	NamespaceID int64 `json:"namespace_id"`
 	// Namespace
-	Namespace string
+	Namespace string `json:"namespace"`
 	// Repository name
-	Repository string
+	Repository string `json:"repository"`
 	// Kind of the candidate
 	// "image" or "chart"
-	Kind string
+	Kind string `json:"kind"`
 	// Tags attached with the candidate
-	Tags []string
+	Tags []string `json:"tags"`
 	// Digest
-	Digest string
+	Digest string `json:"digest"`
 	// Pushed time in seconds
-	PushedTime int64
+	PushedTime int64 `json:"pushed_time_second"`
 	// Pulled time in seconds
-	PulledTime int64
+	PulledTime int64 `json:"pulled_time_second"`
 	// Created time in seconds
-	CreationTime int64
+	CreationTime int64 `json:"create_time_second"`
 	// Labels attached with the candidate
-	Labels []string
+	Labels []string `json:"labels"`
 }
 
 // Hash code based on the candidate info for differentiation
