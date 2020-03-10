@@ -18,11 +18,11 @@ import (
 	"fmt"
 	beegoorm "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/internal/orm"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"time"
 
+	"github.com/goharbor/harbor/src/internal/selector/selectors/index"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/artifactselector/selectors/index"
 
 	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
@@ -87,7 +87,7 @@ func NewLauncher(projectMgr project.Manager, repositoryMgr repository.Manager,
 
 type jobData struct {
 	TaskID     int64
-	Repository artifactselector.Repository
+	Repository selector.Repository
 	JobName    string
 	JobParams  map[string]interface{}
 }
@@ -114,9 +114,9 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 	if scope == nil {
 		return 0, launcherError(fmt.Errorf("the scope of policy is nil"))
 	}
-	repositoryRules := make(map[artifactselector.Repository]*lwp.Metadata, 0)
+	repositoryRules := make(map[selector.Repository]*lwp.Metadata, 0)
 	level := scope.Level
-	var allProjects []*artifactselector.Candidate
+	var allProjects []*selector.Candidate
 	var err error
 	if level == "system" {
 		// get projects
@@ -147,12 +147,12 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 				}
 			}
 		case "project":
-			projectCandidates = append(projectCandidates, &artifactselector.Candidate{
+			projectCandidates = append(projectCandidates, &selector.Candidate{
 				NamespaceID: scope.Reference,
 			})
 		}
 
-		var repositoryCandidates []*artifactselector.Candidate
+		var repositoryCandidates []*selector.Candidate
 		// get repositories of projects
 		for _, projectCandidate := range projectCandidates {
 			repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, projectCandidate.NamespaceID, l.chartServerEnabled)
@@ -177,7 +177,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 		}
 
 		for _, repositoryCandidate := range repositoryCandidates {
-			reposit := artifactselector.Repository{
+			reposit := selector.Repository{
 				NamespaceID: repositoryCandidate.NamespaceID,
 				Namespace:   repositoryCandidate.Namespace,
 				Name:        repositoryCandidate.Repository,
@@ -218,7 +218,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 	return int64(len(jobDatas)), nil
 }
 
-func createJobs(repositoryRules map[artifactselector.Repository]*lwp.Metadata, isDryRun bool) ([]*jobData, error) {
+func createJobs(repositoryRules map[selector.Repository]*lwp.Metadata, isDryRun bool) ([]*jobData, error) {
 	jobDatas := []*jobData{}
 	for repository, policy := range repositoryRules {
 		jobData := &jobData{
@@ -324,14 +324,14 @@ func launcherError(err error) error {
 	return errors.Wrap(err, "launcher")
 }
 
-func getProjects(projectMgr project.Manager) ([]*artifactselector.Candidate, error) {
+func getProjects(projectMgr project.Manager) ([]*selector.Candidate, error) {
 	projects, err := projectMgr.List()
 	if err != nil {
 		return nil, err
 	}
-	var candidates []*artifactselector.Candidate
+	var candidates []*selector.Candidate
 	for _, pro := range projects {
-		candidates = append(candidates, &artifactselector.Candidate{
+		candidates = append(candidates, &selector.Candidate{
 			NamespaceID: pro.ProjectID,
 			Namespace:   pro.Name,
 		})
@@ -340,8 +340,8 @@ func getProjects(projectMgr project.Manager) ([]*artifactselector.Candidate, err
 }
 
 func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manager,
-	projectID int64, chartServerEnabled bool) ([]*artifactselector.Candidate, error) {
-	var candidates []*artifactselector.Candidate
+	projectID int64, chartServerEnabled bool) ([]*selector.Candidate, error) {
+	var candidates []*selector.Candidate
 	/*
 		pro, err := projectMgr.Get(projectID)
 		if err != nil {
@@ -360,7 +360,7 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 	}
 	for _, r := range imageRepositories {
 		namespace, repo := utils.ParseRepository(r.Name)
-		candidates = append(candidates, &artifactselector.Candidate{
+		candidates = append(candidates, &selector.Candidate{
 			NamespaceID: projectID,
 			Namespace:   namespace,
 			Repository:  repo,

@@ -2,7 +2,7 @@ package lastx
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"testing"
 	"time"
 
@@ -38,7 +38,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 
 func (e *EvaluatorTestSuite) TestProcess() {
 	now := time.Now().UTC()
-	data := []*artifactselector.Candidate{
+	data := []*selector.Candidate{
 		{PushedTime: now.Add(time.Duration(1*-24) * time.Hour).Unix()},
 		{PushedTime: now.Add(time.Duration(2*-24) * time.Hour).Unix()},
 		{PushedTime: now.Add(time.Duration(3*-24) * time.Hour).Unix()},

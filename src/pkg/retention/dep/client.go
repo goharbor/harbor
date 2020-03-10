@@ -17,7 +17,7 @@ package dep
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"net/http"
 	"time"
 
@@ -39,7 +39,7 @@ type Client interface {
 	//  Returns:
 	//    []*art.Candidate : candidates returned
 	//    error            : common error if any errors occurred
-	GetCandidates(repo *artifactselector.Repository) ([]*artifactselector.Candidate, error)
+	GetCandidates(repo *selector.Repository) ([]*selector.Candidate, error)
 
 	// Delete the given repository
 	//
@@ -48,7 +48,7 @@ type Client interface {
 	//
 	//  Returns:
 	//    error            : common error if any errors occurred
-	DeleteRepository(repo *artifactselector.Repository) error
+	DeleteRepository(repo *selector.Repository) error
 
 	// Delete the specified candidate
 	//
@@ -57,7 +57,7 @@ type Client interface {
 	//
 	//  Returns:
 	//    error : common error if any errors occurred
-	Delete(candidate *artifactselector.Candidate) error
+	Delete(candidate *selector.Candidate) error
 }
 
 // NewClient new a basic client
@@ -89,13 +89,13 @@ type basicClient struct {
 }
 
 // GetCandidates gets the tag candidates under the repository
-func (bc *basicClient) GetCandidates(repository *artifactselector.Repository) ([]*artifactselector.Candidate, error) {
+func (bc *basicClient) GetCandidates(repository *selector.Repository) ([]*selector.Candidate, error) {
 	if repository == nil {
 		return nil, errors.New("repository is nil")
 	}
-	candidates := make([]*artifactselector.Candidate, 0)
+	candidates := make([]*selector.Candidate, 0)
 	switch repository.Kind {
-	case artifactselector.Image:
+	case selector.Image:
 		artifacts, err := bc.coreClient.ListAllArtifacts(repository.Namespace, repository.Name)
 		if err != nil {
 			return nil, err
@@ -120,8 +120,8 @@ func (bc *basicClient) GetCandidates(repository *artifactselector.Repository) ([
 					lastPushedTime = t.PushTime
 				}
 			}
-			candidate := &artifactselector.Candidate{
-				Kind:         artifactselector.Image,
+			candidate := &selector.Candidate{
+				Kind:         selector.Image,
 				NamespaceID:  repository.NamespaceID,
 				Namespace:    repository.Namespace,
 				Repository:   repository.Name,
@@ -165,12 +165,12 @@ func (bc *basicClient) GetCandidates(repository *artifactselector.Repository) ([
 }
 
 // DeleteRepository deletes the specified repository
-func (bc *basicClient) DeleteRepository(repo *artifactselector.Repository) error {
+func (bc *basicClient) DeleteRepository(repo *selector.Repository) error {
 	if repo == nil {
 		return errors.New("repository is nil")
 	}
 	switch repo.Kind {
-	case artifactselector.Image:
+	case selector.Image:
 		return bc.coreClient.DeleteArtifactRepository(repo.Namespace, repo.Name)
 	/*
 		case art.Chart:
@@ -182,12 +182,12 @@ func (bc *basicClient) DeleteRepository(repo *artifactselector.Repository) error
 }
 
 // Deletes the specified candidate
-func (bc *basicClient) Delete(candidate *artifactselector.Candidate) error {
+func (bc *basicClient) Delete(candidate *selector.Candidate) error {
 	if candidate == nil {
 		return errors.New("candidate is nil")
 	}
 	switch candidate.Kind {
-	case artifactselector.Image:
+	case selector.Image:
 		return bc.coreClient.DeleteArtifact(candidate.Namespace, candidate.Repository, candidate.Digest)
 	/*
 		case art.Chart:

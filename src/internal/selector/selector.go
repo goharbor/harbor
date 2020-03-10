@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package artifactselector
+package selector
 
 // Selector is used to filter the inputting list
 type Selector interface {
@@ -26,5 +26,5 @@ type Selector interface {
 	Select(artifacts []*Candidate) ([]*Candidate, error)
 }
 
-// SelectorFactory is factory method to return a selector implementation
-type SelectorFactory func(decoration string, pattern string) Selector
+// Factory is factory method to return a selector implementation
+type Factory func(decoration string, pattern string) Selector

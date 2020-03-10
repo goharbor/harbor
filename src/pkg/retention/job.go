@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"strings"
 	"time"
 
@@ -117,18 +117,18 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	return saveRetainNum(ctx, results, allCandidates, isDryRun)
 }
 
-func saveRetainNum(ctx job.Context, results []*artifactselector.Result, allCandidates []*artifactselector.Candidate, isDryRun bool) error {
-	var realDelete []*artifactselector.Result
+func saveRetainNum(ctx job.Context, results []*selector.Result, allCandidates []*selector.Candidate, isDryRun bool) error {
+	var realDelete []*selector.Result
 	for _, r := range results {
 		if r.Error == nil {
 			realDelete = append(realDelete, r)
 		}
 	}
 	retainObj := struct {
-		Total    int                        `json:"total"`
-		Retained int                        `json:"retained"`
-		DryRun   bool                       `json:"dry_run"`
-		Deleted  []*artifactselector.Result `json:"deleted"`
+		Total    int                `json:"total"`
+		Retained int                `json:"retained"`
+		DryRun   bool               `json:"dry_run"`
+		Deleted  []*selector.Result `json:"deleted"`
 	}{
 		Total:    len(allCandidates),
 		Retained: len(allCandidates) - len(realDelete),
@@ -143,7 +143,7 @@ func saveRetainNum(ctx job.Context, results []*artifactselector.Result, allCandi
 	return nil
 }
 
-func logResults(logger logger.Interface, all []*artifactselector.Candidate, results []*artifactselector.Result) {
+func logResults(logger logger.Interface, all []*selector.Candidate, results []*selector.Result) {
 	hash := make(map[string]error, len(results))
 	for _, r := range results {
 		if r.Target != nil {
@@ -151,10 +151,10 @@ func logResults(logger logger.Interface, all []*artifactselector.Candidate, resu
 		}
 	}
 
-	op := func(c *artifactselector.Candidate) string {
+	op := func(c *selector.Candidate) string {
 		if e, exists := hash[c.Hash()]; exists {
 			if e != nil {
-				if _, ok := e.(*artifactselector.ImmutableError); ok {
+				if _, ok := e.(*selector.ImmutableError); ok {
 					return actionMarkImmutable
 				}
 				return actionMarkError
@@ -202,7 +202,7 @@ func logResults(logger logger.Interface, all []*artifactselector.Candidate, resu
 	}
 }
 
-func arn(art *artifactselector.Candidate) string {
+func arn(art *selector.Candidate) string {
 	return fmt.Sprintf("%s/%s:%s", art.Namespace, art.Repository, art.Digest)
 }
 
@@ -245,7 +245,7 @@ func getParamDryRun(params job.Parameters) (bool, error) {
 	return dryRun, nil
 }
 
-func getParamRepo(params job.Parameters) (*artifactselector.Repository, error) {
+func getParamRepo(params job.Parameters) (*selector.Repository, error) {
 	v, ok := params[ParamRepo]
 	if !ok {
 		return nil, errors.Errorf("missing parameter: %s", ParamRepo)
@@ -256,7 +256,7 @@ func getParamRepo(params job.Parameters) (*artifactselector.Repository, error) {
 		return nil, errors.Errorf("invalid parameter: %s", ParamRepo)
 	}
 
-	repo := &artifactselector.Repository{}
+	repo := &selector.Repository{}
 	if err := repo.FromJSON(repoJSON); err != nil {
 		return nil, errors.Wrap(err, "parse repository from JSON")
 	}

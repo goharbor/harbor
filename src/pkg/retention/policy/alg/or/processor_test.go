@@ -17,12 +17,12 @@ package or
 import (
 	"errors"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/artifactselector/selectors/doublestar"
-	"github.com/goharbor/harbor/src/pkg/artifactselector/selectors/label"
+	"github.com/goharbor/harbor/src/internal/selector/selectors/doublestar"
+	"github.com/goharbor/harbor/src/internal/selector/selectors/label"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
@@ -39,7 +39,7 @@ import (
 type ProcessorTestSuite struct {
 	suite.Suite
 
-	all []*artifactselector.Candidate
+	all []*selector.Candidate
 
 	oldClient dep.Client
 }
@@ -52,7 +52,7 @@ func TestProcessor(t *testing.T) {
 // SetupSuite ...
 func (suite *ProcessorTestSuite) SetupSuite() {
 	dao.PrepareTestForPostgresSQL()
-	suite.all = []*artifactselector.Candidate{
+	suite.all = []*selector.Candidate{
 		{
 			Namespace:  "library",
 			Repository: "harbor",
@@ -92,7 +92,7 @@ func (suite *ProcessorTestSuite) TestProcess() {
 	lastxParams[lastx.ParameterX] = 10
 	params = append(params, &alg.Parameter{
 		Evaluator: lastx.New(lastxParams),
-		Selectors: []artifactselector.Selector{
+		Selectors: []selector.Selector{
 			doublestar.New(doublestar.Matches, "*dev*"),
 			label.New(label.With, "L1,L2"),
 		},
@@ -103,7 +103,7 @@ func (suite *ProcessorTestSuite) TestProcess() {
 	latestKParams[latestps.ParameterK] = 10
 	params = append(params, &alg.Parameter{
 		Evaluator: latestps.New(latestKParams),
-		Selectors: []artifactselector.Selector{
+		Selectors: []selector.Selector{
 			label.New(label.With, "L3"),
 		},
 		Performer: perf,
@@ -133,7 +133,7 @@ func (suite *ProcessorTestSuite) TestProcess2() {
 	alwaysParams := make(map[string]rule.Parameter)
 	params = append(params, &alg.Parameter{
 		Evaluator: always.New(alwaysParams),
-		Selectors: []artifactselector.Selector{
+		Selectors: []selector.Selector{
 			doublestar.New(doublestar.Matches, "latest"),
 			label.New(label.With, ""),
 		},
@@ -165,16 +165,16 @@ func (suite *ProcessorTestSuite) TestProcess2() {
 type fakeRetentionClient struct{}
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *artifactselector.Repository) ([]*artifactselector.Candidate, error) {
+func (frc *fakeRetentionClient) GetCandidates(repo *selector.Repository) ([]*selector.Candidate, error) {
 	return nil, errors.New("not implemented")
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *artifactselector.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *selector.Candidate) error {
 	return nil
 }
 
 // DeleteRepository ...
-func (frc *fakeRetentionClient) DeleteRepository(repo *artifactselector.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *selector.Repository) error {
 	panic("implement me")
 }

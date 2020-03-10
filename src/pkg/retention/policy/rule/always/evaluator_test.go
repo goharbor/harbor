@@ -15,7 +15,7 @@
 package always
 
 import (
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -36,7 +36,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 
 func (e *EvaluatorTestSuite) TestProcess() {
 	sut := New(rule.Parameters{})
-	input := []*artifactselector.Candidate{{PushedTime: 0}, {PushedTime: 1}, {PushedTime: 2}, {PushedTime: 3}}
+	input := []*selector.Candidate{{PushedTime: 0}, {PushedTime: 1}, {PushedTime: 2}, {PushedTime: 3}}
 
 	result, err := sut.Process(input)
 

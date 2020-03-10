@@ -16,7 +16,7 @@ package action
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	"testing"
 	"time"
@@ -34,7 +34,7 @@ type TestPerformerSuite struct {
 	suite.Suite
 
 	oldClient dep.Client
-	all       []*artifactselector.Candidate
+	all       []*selector.Candidate
 }
 
 // TestPerformer is the entry of the TestPerformerSuite
@@ -44,7 +44,7 @@ func TestPerformer(t *testing.T) {
 
 // SetupSuite ...
 func (suite *TestPerformerSuite) SetupSuite() {
-	suite.all = []*artifactselector.Candidate{
+	suite.all = []*selector.Candidate{
 		{
 			Namespace:  "library",
 			Repository: "harbor",
@@ -81,7 +81,7 @@ func (suite *TestPerformerSuite) TestPerform() {
 		all: suite.all,
 	}
 
-	candidates := []*artifactselector.Candidate{
+	candidates := []*selector.Candidate{
 		{
 			Namespace:  "library",
 			Repository: "harbor",
@@ -103,7 +103,7 @@ func (suite *TestPerformerSuite) TestPerform() {
 
 // TestPerform tests Perform action
 func (suite *TestPerformerSuite) TestPerformImmutable() {
-	all := []*artifactselector.Candidate{
+	all := []*selector.Candidate{
 		{
 			NamespaceID: 1,
 			Namespace:   "library",
@@ -177,7 +177,7 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 		assert.NoError(suite.T(), immutabletag.ImmuCtr.DeleteImmutableRule(imid))
 	}()
 
-	candidates := []*artifactselector.Candidate{
+	candidates := []*selector.Candidate{
 		{
 			NamespaceID: 1,
 			Namespace:   "library",
@@ -200,7 +200,7 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 			require.Equal(suite.T(), "dev", r.Target.Tags[0])
 		} else if r.Target.Digest == "d2" {
 			require.Error(suite.T(), r.Error)
-			require.IsType(suite.T(), (*artifactselector.ImmutableError)(nil), r.Error)
+			require.IsType(suite.T(), (*selector.ImmutableError)(nil), r.Error)
 		} else {
 			require.Fail(suite.T(), "should not delete "+r.Target.Hash())
 		}
@@ -213,16 +213,16 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 type fakeRetentionClient struct{}
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *artifactselector.Repository) ([]*artifactselector.Candidate, error) {
+func (frc *fakeRetentionClient) GetCandidates(repo *selector.Repository) ([]*selector.Candidate, error) {
 	return nil, errors.New("not implemented")
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *artifactselector.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *selector.Candidate) error {
 	return nil
 }
 
 // DeleteRepository ...
-func (frc *fakeRetentionClient) DeleteRepository(repo *artifactselector.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *selector.Repository) error {
 	panic("implement me")
 }

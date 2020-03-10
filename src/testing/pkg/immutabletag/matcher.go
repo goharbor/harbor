@@ -1,7 +1,7 @@
 package immutabletag
 
 import (
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -11,7 +11,7 @@ type FakeMatcher struct {
 }
 
 // Match ...
-func (f *FakeMatcher) Match(pid int64, c artifactselector.Candidate) (bool, error) {
+func (f *FakeMatcher) Match(pid int64, c selector.Candidate) (bool, error) {
 	args := f.Called()
 	return args.Bool(0), args.Error(1)
 }

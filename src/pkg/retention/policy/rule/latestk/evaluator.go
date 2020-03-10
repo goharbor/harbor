@@ -16,7 +16,7 @@ package latestk
 
 import (
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"sort"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -40,7 +40,7 @@ type evaluator struct {
 }
 
 // Process the candidates based on the rule definition
-func (e *evaluator) Process(artifacts []*artifactselector.Candidate) ([]*artifactselector.Candidate, error) {
+func (e *evaluator) Process(artifacts []*selector.Candidate) ([]*selector.Candidate, error) {
 	// Sort artifacts by their "active time"
 	//
 	// Active time is defined as the selection of c.PulledTime or c.PushedTime,
@@ -81,7 +81,7 @@ func New(params rule.Parameters) rule.Evaluator {
 	}
 }
 
-func activeTime(c *artifactselector.Candidate) int64 {
+func activeTime(c *selector.Candidate) int64 {
 	if c.PulledTime > c.PushedTime {
 		return c.PulledTime
 	}

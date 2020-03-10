@@ -16,7 +16,7 @@ package doublestar
 
 import (
 	"github.com/bmatcuk/doublestar"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	iselector "github.com/goharbor/harbor/src/internal/selector"
 )
 
 const (
@@ -46,7 +46,7 @@ type selector struct {
 }
 
 // Select candidates by regular expressions
-func (s *selector) Select(artifacts []*artifactselector.Candidate) (selected []*artifactselector.Candidate, err error) {
+func (s *selector) Select(artifacts []*iselector.Candidate) (selected []*iselector.Candidate, err error) {
 	value := ""
 	excludes := false
 
@@ -96,7 +96,7 @@ func (s *selector) Select(artifacts []*artifactselector.Candidate) (selected []*
 	return selected, nil
 }
 
-func (s *selector) tagSelectMatch(artifact *artifactselector.Candidate) (selected bool, err error) {
+func (s *selector) tagSelectMatch(artifact *iselector.Candidate) (selected bool, err error) {
 	for _, t := range artifact.Tags {
 		matched, err := match(s.pattern, t)
 		if err != nil {
@@ -109,7 +109,7 @@ func (s *selector) tagSelectMatch(artifact *artifactselector.Candidate) (selecte
 	return false, nil
 }
 
-func (s *selector) tagSelectExclude(artifact *artifactselector.Candidate) (selected bool, err error) {
+func (s *selector) tagSelectExclude(artifact *iselector.Candidate) (selected bool, err error) {
 	for _, t := range artifact.Tags {
 		matched, err := match(s.pattern, t)
 		if err != nil {
@@ -123,7 +123,7 @@ func (s *selector) tagSelectExclude(artifact *artifactselector.Candidate) (selec
 }
 
 // New is factory method for doublestar selector
-func New(decoration string, pattern string) artifactselector.Selector {
+func New(decoration string, pattern string) iselector.Selector {
 	return &selector{
 		decoration: decoration,
 		pattern:    pattern,

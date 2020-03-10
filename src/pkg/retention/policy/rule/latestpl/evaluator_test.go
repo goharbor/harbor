@@ -17,7 +17,7 @@ package latestpl
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"math/rand"
 	"testing"
 
@@ -52,7 +52,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 }
 
 func (e *EvaluatorTestSuite) TestProcess() {
-	data := []*artifactselector.Candidate{{PulledTime: 0}, {PulledTime: 1}, {PulledTime: 2}, {PulledTime: 3}, {PulledTime: 4}}
+	data := []*selector.Candidate{{PulledTime: 0}, {PulledTime: 1}, {PulledTime: 2}, {PulledTime: 3}, {PulledTime: 4}}
 	rand.Shuffle(len(data), func(i, j int) {
 		data[i], data[j] = data[j], data[i]
 	})

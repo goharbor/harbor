@@ -16,7 +16,7 @@ package latestk
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -29,11 +29,11 @@ import (
 type EvaluatorTestSuite struct {
 	suite.Suite
 
-	artifacts []*artifactselector.Candidate
+	artifacts []*selector.Candidate
 }
 
 func (e *EvaluatorTestSuite) SetupSuite() {
-	e.artifacts = []*artifactselector.Candidate{
+	e.artifacts = []*selector.Candidate{
 		{PulledTime: 1, PushedTime: 2},
 		{PulledTime: 3, PushedTime: 4},
 		{PulledTime: 6, PushedTime: 5},

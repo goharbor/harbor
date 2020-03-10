@@ -15,10 +15,10 @@
 package index
 
 import (
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"sync"
 
-	"github.com/goharbor/harbor/src/pkg/artifactselector/selectors/doublestar"
+	"github.com/goharbor/harbor/src/internal/selector/selectors/doublestar"
 	"github.com/pkg/errors"
 )
 
@@ -49,11 +49,11 @@ type IndexedMeta struct {
 // indexedItem defined item kept in the index
 type indexedItem struct {
 	Meta    *IndexedMeta
-	Factory artifactselector.SelectorFactory
+	Factory selector.Factory
 }
 
 // Register the selector with the corresponding selector kind and decoration
-func Register(kind string, decorations []string, factory artifactselector.SelectorFactory) {
+func Register(kind string, decorations []string, factory selector.Factory) {
 	if len(kind) == 0 || factory == nil {
 		// do nothing
 		return
@@ -69,7 +69,7 @@ func Register(kind string, decorations []string, factory artifactselector.Select
 }
 
 // Get selector with the provided kind and decoration
-func Get(kind, decoration, pattern string) (artifactselector.Selector, error) {
+func Get(kind, decoration, pattern string) (selector.Selector, error) {
 	if len(kind) == 0 || len(decoration) == 0 {
 		return nil, errors.New("empty selector kind or decoration")
 	}

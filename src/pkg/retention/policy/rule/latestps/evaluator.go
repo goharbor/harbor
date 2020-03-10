@@ -17,7 +17,7 @@ package latestps
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"math"
 	"sort"
 
@@ -42,7 +42,7 @@ type evaluator struct {
 }
 
 // Process the candidates based on the rule definition
-func (e *evaluator) Process(artifacts []*artifactselector.Candidate) ([]*artifactselector.Candidate, error) {
+func (e *evaluator) Process(artifacts []*selector.Candidate) ([]*selector.Candidate, error) {
 	// The updated proposal does not guarantee the order artifacts are provided, so we have to sort them first
 	sort.Slice(artifacts, func(i, j int) bool {
 		return artifacts[i].PushedTime > artifacts[j].PushedTime

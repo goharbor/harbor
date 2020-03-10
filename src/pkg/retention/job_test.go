@@ -17,13 +17,13 @@ package retention
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/internal/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/pkg/artifactselector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
@@ -60,10 +60,10 @@ func (suite *JobTestSuite) TearDownSuite() {
 func (suite *JobTestSuite) TestRunSuccess() {
 	params := make(job.Parameters)
 	params[ParamDryRun] = false
-	repository := &artifactselector.Repository{
+	repository := &selector.Repository{
 		Namespace: "library",
 		Name:      "harbor",
-		Kind:      artifactselector.Image,
+		Kind:      selector.Image,
 	}
 	repoJSON, err := repository.ToJSON()
 	require.Nil(suite.T(), err)
@@ -112,8 +112,8 @@ func (suite *JobTestSuite) TestRunSuccess() {
 type fakeRetentionClient struct{}
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *artifactselector.Repository) ([]*artifactselector.Candidate, error) {
-	return []*artifactselector.Candidate{
+func (frc *fakeRetentionClient) GetCandidates(repo *selector.Repository) ([]*selector.Candidate, error) {
+	return []*selector.Candidate{
 		{
 			Namespace:    "library",
 			Repository:   "harbor",
@@ -140,12 +140,12 @@ func (frc *fakeRetentionClient) GetCandidates(repo *artifactselector.Repository)
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *artifactselector.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *selector.Candidate) error {
 	return nil
 }
 
 // SubmitTask ...
-func (frc *fakeRetentionClient) DeleteRepository(repo *artifactselector.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *selector.Repository) error {
 	return nil
 }
 

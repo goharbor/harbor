@@ -16,7 +16,7 @@ package lastx
 
 import (
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -40,7 +40,7 @@ type evaluator struct {
 }
 
 // Process the candidates based on the rule definition
-func (e *evaluator) Process(artifacts []*artifactselector.Candidate) (retain []*artifactselector.Candidate, err error) {
+func (e *evaluator) Process(artifacts []*selector.Candidate) (retain []*selector.Candidate, err error) {
 	cutoff := time.Now().Add(time.Duration(e.x*-24) * time.Hour)
 	for _, a := range artifacts {
 		if time.Unix(a.PushedTime, 0).UTC().After(cutoff) {

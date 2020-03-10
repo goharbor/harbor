@@ -15,7 +15,7 @@
 package index
 
 import (
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"testing"
 	"time"
 
@@ -29,7 +29,7 @@ import (
 type IndexTestSuite struct {
 	suite.Suite
 
-	candidates []*artifactselector.Candidate
+	candidates []*selector.Candidate
 }
 
 // TestIndexEntry is entry of IndexTestSuite
@@ -41,7 +41,7 @@ func TestIndexEntry(t *testing.T) {
 func (suite *IndexTestSuite) SetupSuite() {
 	Register("fakeAction", newFakePerformer)
 
-	suite.candidates = []*artifactselector.Candidate{{
+	suite.candidates = []*selector.Candidate{{
 		Namespace:  "library",
 		Repository: "harbor",
 		Kind:       "image",
@@ -77,9 +77,9 @@ type fakePerformer struct {
 }
 
 // Perform the artifacts
-func (p *fakePerformer) Perform(candidates []*artifactselector.Candidate) (results []*artifactselector.Result, err error) {
+func (p *fakePerformer) Perform(candidates []*selector.Candidate) (results []*selector.Result, err error) {
 	for _, c := range candidates {
-		results = append(results, &artifactselector.Result{
+		results = append(results, &selector.Result{
 			Target: c,
 		})
 	}
