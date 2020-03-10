@@ -370,7 +370,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
     fixture.detectChanges();
     await fixture.whenStable();
     filtereName = 'sha256:3e33e3e3';
-    comp.doSearchArtifactNames('sha256:3e33e3e3');
+    comp.doSearchArtifactByFilter('sha256:3e33e3e3');
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();

@@ -42,7 +42,7 @@ export const mutipleFilter = [
       ]
     },
     {
-      filterBy: 'label.id',
+      filterBy: 'labels',
       filterByShowText: 'Label',
       listItem: []
     },
