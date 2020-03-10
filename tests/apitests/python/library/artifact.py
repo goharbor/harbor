@@ -10,6 +10,8 @@ class Artifact(base.Base):
         params = {}
         if "with_signature" in kwargs:
             params["with_signature"] = kwargs["with_signature"]
+        if "with_scan_overview" in kwargs:
+            params["with_scan_overview"] = kwargs["with_scan_overview"]
         return client.get_artifact_with_http_info(project_name, repo_name, reference, **params )
 
     def add_label_to_reference(self, project_name, repo_name, reference, label_id, **kwargs):
@@ -30,4 +32,10 @@ class Artifact(base.Base):
 
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(201, status_code)
+        return data
+
+    def scan_image(self, project_name, repo_name, reference, expect_status_code = 202, **kwargs):
+        client = self._get_client(**kwargs)
+        data, status_code, _ = client.scan_artifact_with_http_info(project_name, repo_name, reference)
+        base._assert_status_code(expect_status_code, status_code)
         return data
