@@ -123,6 +123,11 @@ func ConflictError(err error) *Error {
 	return New(err).WithCode(ConflictCode).WithMessage("resource conflict")
 }
 
+// DeniedError is error for the case of denied
+func DeniedError(err error) *Error {
+	return New(err).WithCode(DENIED).WithMessage("denied")
+}
+
 // UnauthorizedError is error for the case of unauthorized accessing
 func UnauthorizedError(err error) *Error {
 	return New(err).WithCode(UnAuthorizedCode).WithMessage("unauthorized")

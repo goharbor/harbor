@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -22,10 +23,12 @@ import (
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/label"
-	"github.com/goharbor/harbor/src/core/middlewares"
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/orm"
+	"github.com/goharbor/harbor/src/server/middleware/quota"
 )
 
 const (
@@ -602,7 +605,10 @@ func initializeChartController() (*chartserver.Controller, error) {
 		return nil, errors.New("Endpoint URL of chart storage server is malformed")
 	}
 
-	controller, err := chartserver.NewController(url, middlewares.New(middlewares.ChartMiddlewares).Create())
+	chartVersionURL := fmt.Sprintf(`^/api/%s/chartrepo/(?P<namespace>[^?#]+)/charts/(?P<name>[^?#]+)/(?P<version>[^?#]+)/?$`, api.APIVersion)
+	skipper := middleware.NegativeSkipper(middleware.MethodAndPathSkipper(http.MethodDelete, regexp.MustCompile(chartVersionURL)))
+
+	controller, err := chartserver.NewController(url, orm.Middleware(), quota.UploadChartVersionMiddleware(), quota.RefreshForProjectMiddleware(skipper))
 	if err != nil {
 		return nil, errors.New("Failed to initialize chart API controller")
 	}

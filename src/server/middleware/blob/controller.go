@@ -15,11 +15,13 @@
 package blob
 
 import (
+	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/blob"
 	"github.com/goharbor/harbor/src/api/project"
 )
 
 var (
-	blobController    = blob.Ctl
-	projectController = project.Ctl
+	artifactController = artifact.Ctl
+	blobController     = blob.Ctl
+	projectController  = project.Ctl
 )

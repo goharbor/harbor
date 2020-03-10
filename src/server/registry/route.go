@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/blob"
 	"github.com/goharbor/harbor/src/server/middleware/contenttrust"
 	"github.com/goharbor/harbor/src/server/middleware/immutable"
+	"github.com/goharbor/harbor/src/server/middleware/quota"
 	"github.com/goharbor/harbor/src/server/middleware/v2auth"
 	"github.com/goharbor/harbor/src/server/middleware/vulnerable"
 	"github.com/goharbor/harbor/src/server/router"
@@ -56,17 +57,20 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodDelete).
 		Path("/*/manifests/:reference").
+		Middleware(quota.RefreshForProjectMiddleware()).
 		HandlerFunc(deleteManifest)
 	root.NewRoute().
 		Method(http.MethodPut).
 		Path("/*/manifests/:reference").
 		Middleware(immutable.Middleware()).
+		Middleware(quota.PutManifestMiddleware()).
 		Middleware(blob.PutManifestMiddleware()).
 		HandlerFunc(putManifest)
 	// initiate blob upload
 	root.NewRoute().
 		Method(http.MethodPost).
 		Path("/*/blobs/uploads").
+		Middleware(quota.PostInitiateBlobUploadMiddleware()).
 		Middleware(blob.PostInitiateBlobUploadMiddleware()).
 		Handler(proxy)
 	// blob upload
@@ -78,6 +82,7 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodPut).
 		Path("/*/blobs/uploads/:session_id").
+		Middleware(quota.PutBlobUploadMiddleware()).
 		Middleware(blob.PutBlobUploadMiddleware()).
 		Handler(proxy)
 	// others

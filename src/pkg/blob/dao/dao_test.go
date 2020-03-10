@@ -18,7 +18,6 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/blob/models"
-	"github.com/goharbor/harbor/src/pkg/q"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
 )
@@ -155,15 +154,19 @@ func (suite *DaoTestSuite) TestListBlobs() {
 	digest2 := suite.DigestString()
 	suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest2})
 
-	blobs, err := suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"digest": digest1}))
+	blobs, err := suite.dao.ListBlobs(ctx, models.ListParams{BlobDigests: []string{digest1}})
 	if suite.Nil(err) {
 		suite.Len(blobs, 1)
 	}
 
-	blobs, err = suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"digest": &q.OrList{Values: []interface{}{digest1, digest2}}}))
+	blobs, err = suite.dao.ListBlobs(ctx, models.ListParams{BlobDigests: []string{digest1, digest2}})
 	if suite.Nil(err) {
 		suite.Len(blobs, 2)
 	}
+}
+
+func (suite *DaoTestSuite) TestListBlobsAssociatedWithArtifact() {
+
 }
 
 func (suite *DaoTestSuite) TestFindBlobsShouldUnassociatedWithProject() {
@@ -193,11 +196,7 @@ func (suite *DaoTestSuite) TestFindBlobsShouldUnassociatedWithProject() {
 			}
 		}
 
-		ol := &q.OrList{}
-		for _, blobDigest := range blobDigests {
-			ol.Values = append(ol.Values, blobDigest)
-		}
-		blobs, err := suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"digest": ol}))
+		blobs, err := suite.dao.ListBlobs(ctx, models.ListParams{BlobDigests: blobDigests})
 		suite.Nil(err)
 		suite.Len(blobs, 5)
 

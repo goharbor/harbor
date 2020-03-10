@@ -15,6 +15,7 @@
 package blob
 
 import (
+	"context"
 	"testing"
 
 	htesting "github.com/goharbor/harbor/src/testing"
@@ -30,18 +31,22 @@ func (suite *ManagerTestSuite) SetupSuite() {
 	suite.Suite.ClearTables = []string{"artifact_blob", "project_blob", "blob"}
 }
 
-func (suite *ManagerTestSuite) TestAssociateWithArtifact() {
-	ctx := suite.Context()
+func (suite *ManagerTestSuite) isAssociatedWithArtifact(ctx context.Context, blobDigest, artifactDigest string) (bool, error) {
+	blobs, err := Mgr.List(ctx, ListParams{BlobDigests: []string{blobDigest}, ArtifactDigest: artifactDigest})
+	if err != nil {
+		return false, err
+	}
 
-	artifactDigest := suite.DigestString()
-	blobDigest := suite.DigestString()
+	return len(blobs) > 0, nil
+}
 
-	_, err := Mgr.AssociateWithArtifact(ctx, blobDigest, artifactDigest)
-	suite.Nil(err)
+func (suite *ManagerTestSuite) isAssociatedWithProject(ctx context.Context, blobDigest string, projectID int64) (bool, error) {
+	blobs, err := Mgr.List(ctx, ListParams{BlobDigests: []string{blobDigest}, ProjectID: projectID})
+	if err != nil {
+		return false, err
+	}
 
-	associated, err := Mgr.IsAssociatedWithArtifact(ctx, blobDigest, artifactDigest)
-	suite.Nil(err)
-	suite.True(associated)
+	return len(blobs) > 0, nil
 }
 
 func (suite *ManagerTestSuite) TestAssociateWithProject() {
@@ -57,7 +62,7 @@ func (suite *ManagerTestSuite) TestAssociateWithProject() {
 	_, err = Mgr.AssociateWithProject(ctx, blobID, projectID)
 	suite.Nil(err)
 
-	associated, err := Mgr.IsAssociatedWithProject(ctx, digest, projectID)
+	associated, err := suite.isAssociatedWithProject(ctx, digest, projectID)
 	suite.Nil(err)
 	suite.True(associated)
 }
@@ -70,10 +75,13 @@ func (suite *ManagerTestSuite) TestCleanupAssociationsForArtifact() {
 	blob2Digest := suite.DigestString()
 
 	for _, digest := range []string{blob1Digest, blob2Digest} {
-		_, err := Mgr.AssociateWithArtifact(ctx, digest, artifactDigest)
+		_, err := Mgr.Create(ctx, digest, "media type", 100)
 		suite.Nil(err)
 
-		associated, err := Mgr.IsAssociatedWithArtifact(ctx, digest, artifactDigest)
+		_, err = Mgr.AssociateWithArtifact(ctx, digest, artifactDigest)
+		suite.Nil(err)
+
+		associated, err := suite.isAssociatedWithArtifact(ctx, digest, artifactDigest)
 		suite.Nil(err)
 		suite.True(associated)
 	}
@@ -81,7 +89,7 @@ func (suite *ManagerTestSuite) TestCleanupAssociationsForArtifact() {
 	suite.Nil(Mgr.CleanupAssociationsForArtifact(ctx, artifactDigest))
 
 	for _, digest := range []string{blob1Digest, blob2Digest} {
-		associated, err := Mgr.IsAssociatedWithArtifact(ctx, digest, artifactDigest)
+		associated, err := suite.isAssociatedWithArtifact(ctx, digest, artifactDigest)
 		suite.Nil(err)
 		suite.False(associated)
 	}
@@ -129,7 +137,7 @@ func (suite *ManagerTestSuite) TestCleanupAssociationsForProject() {
 		{
 			suite.Nil(Mgr.CleanupAssociationsForProject(ctx, projectID, blobs))
 			for _, digest := range blobDigests {
-				associated, err := Mgr.IsAssociatedWithProject(ctx, digest, projectID)
+				associated, err := suite.isAssociatedWithProject(ctx, digest, projectID)
 				suite.Nil(err)
 				suite.True(associated)
 			}
@@ -140,13 +148,13 @@ func (suite *ManagerTestSuite) TestCleanupAssociationsForProject() {
 		{
 			suite.Nil(Mgr.CleanupAssociationsForProject(ctx, projectID, blobs))
 			for _, digest := range []string{digest1, digest2, digest3} {
-				associated, err := Mgr.IsAssociatedWithProject(ctx, digest, projectID)
+				associated, err := suite.isAssociatedWithProject(ctx, digest, projectID)
 				suite.Nil(err)
 				suite.True(associated)
 			}
 
 			for _, digest := range []string{digest4, digest5} {
-				associated, err := Mgr.IsAssociatedWithProject(ctx, digest, projectID)
+				associated, err := suite.isAssociatedWithProject(ctx, digest, projectID)
 				suite.Nil(err)
 				suite.False(associated)
 			}

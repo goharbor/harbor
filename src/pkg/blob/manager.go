@@ -17,10 +17,8 @@ package blob
 import (
 	"context"
 
-	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/blob/dao"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
-	"github.com/goharbor/harbor/src/pkg/q"
 )
 
 // Blob alias `models.Blob` to make it natural to use the Manager
@@ -42,6 +40,9 @@ type Manager interface {
 	// AssociateWithProject associate blob with project
 	AssociateWithProject(ctx context.Context, blobID, projectID int64) (int64, error)
 
+	// CalculateTotalSizeByProject returns total blob size by project, skip foreign blobs when `excludeForeignLayer` is true
+	CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeignLayer bool) (int64, error)
+
 	// Create create blob
 	Create(ctx context.Context, digest string, contentType string, size int64) (int64, error)
 
@@ -59,12 +60,6 @@ type Manager interface {
 
 	// List returns blobs by params
 	List(ctx context.Context, params ListParams) ([]*Blob, error)
-
-	// IsAssociatedWithArtifact returns true when blob associated with artifact
-	IsAssociatedWithArtifact(ctx context.Context, blobDigest, artifactDigest string) (bool, error)
-
-	// IsAssociatedWithProject returns true when blob associated with project
-	IsAssociatedWithProject(ctx context.Context, digest string, projectID int64) (bool, error)
 }
 
 type manager struct {
@@ -77,6 +72,10 @@ func (m *manager) AssociateWithArtifact(ctx context.Context, blobDigest, artifac
 
 func (m *manager) AssociateWithProject(ctx context.Context, blobID, projectID int64) (int64, error) {
 	return m.dao.CreateProjectBlob(ctx, projectID, blobID)
+}
+
+func (m *manager) CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeignLayer bool) (int64, error) {
+	return m.dao.SumBlobsSizeByProject(ctx, projectID, excludeForeignLayer)
 }
 
 func (m *manager) Create(ctx context.Context, digest string, contentType string, size int64) (int64, error) {
@@ -114,49 +113,7 @@ func (m *manager) Update(ctx context.Context, blob *Blob) error {
 }
 
 func (m *manager) List(ctx context.Context, params ListParams) ([]*Blob, error) {
-	kw := q.KeyWords{}
-
-	if params.ArtifactDigest != "" {
-		blobDigests, err := m.dao.GetAssociatedBlobDigestsForArtifact(ctx, params.ArtifactDigest)
-		if err != nil {
-			return nil, err
-		}
-
-		params.BlobDigests = append(params.BlobDigests, blobDigests...)
-	}
-
-	if len(params.BlobDigests) > 0 {
-		ol := &q.OrList{}
-		for _, blobDigest := range params.BlobDigests {
-			ol.Values = append(ol.Values, blobDigest)
-		}
-		kw["digest"] = ol
-	}
-
-	blobs, err := m.dao.ListBlobs(ctx, q.New(kw))
-	if err != nil {
-		return nil, err
-	}
-
-	var results []*Blob
-	for _, blob := range blobs {
-		results = append(results, blob)
-	}
-
-	return results, nil
-}
-
-func (m *manager) IsAssociatedWithArtifact(ctx context.Context, blobDigest, artifactDigest string) (bool, error) {
-	md, err := m.dao.GetArtifactAndBlob(ctx, artifactDigest, blobDigest)
-	if err != nil && !ierror.IsNotFoundErr(err) {
-		return false, err
-	}
-
-	return md != nil, nil
-}
-
-func (m *manager) IsAssociatedWithProject(ctx context.Context, digest string, projectID int64) (bool, error) {
-	return m.dao.ExistProjectBlob(ctx, projectID, digest)
+	return m.dao.ListBlobs(ctx, params)
 }
 
 // NewManager returns blob manager

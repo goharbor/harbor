@@ -16,11 +16,11 @@ package orm
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/dao"
 	"reflect"
 	"strings"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
 )
 
@@ -40,7 +40,8 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignored
 	// list the supported columns first to avoid the panic
 	cols := listQueriableCols(model, ignoredCols...)
 	for k, v := range query.Keywords {
-		if _, exist := cols[k]; !exist {
+		col := strings.SplitN(k, orm.ExprSep, 2)[0]
+		if _, exist := cols[col]; !exist {
 			continue
 		}
 

@@ -15,6 +15,10 @@
 package api
 
 //go:generate mockery -case snake -dir ../../api/artifact -name Controller -output ./artifact -outpkg artifact
+//go:generate mockery -case snake -dir ../../api/blob -name Controller -output ./blob -outpkg blob
+//go:generate mockery -case snake -dir ../../api/chartmuseum -name Controller -output ./chartmuseum -outpkg chartmuseum
+//go:generate mockery -case snake -dir ../../api/project -name Controller -output ./project -outpkg project
+//go:generate mockery -case snake -dir ../../api/quota -name Controller -output ./quota -outpkg quota
 //go:generate mockery -case snake -dir ../../api/scan -name Controller -output ./scan -outpkg scan
 //go:generate mockery -case snake -dir ../../api/scan -name Checker -output ./scan -outpkg scan
 //go:generate mockery -case snake -dir ../../api/scanner -name Controller -output ./scanner -outpkg scanner

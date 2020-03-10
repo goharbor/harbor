@@ -48,6 +48,7 @@ var (
 type Suite struct {
 	suite.Suite
 	ClearTables []string
+	ClearSQLs   []string
 }
 
 // SetupSuite ...
@@ -60,6 +61,10 @@ func (suite *Suite) SetupSuite() {
 
 // TearDownSuite ...
 func (suite *Suite) TearDownSuite() {
+	for _, sql := range suite.ClearSQLs {
+		suite.ExecSQL(sql)
+	}
+
 	for _, table := range suite.ClearTables {
 		dao.ClearTable(table)
 	}

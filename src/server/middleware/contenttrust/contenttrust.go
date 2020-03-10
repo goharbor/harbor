@@ -1,6 +1,9 @@
 package contenttrust
 
 import (
+	"net/http"
+	"net/http/httptest"
+
 	"github.com/goharbor/harbor/src/api/project"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
@@ -8,8 +11,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/signature"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
-	"net/http"
-	"net/http/httptest"
 )
 
 // NotaryEndpoint ...

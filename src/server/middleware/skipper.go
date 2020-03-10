@@ -37,3 +37,10 @@ func MethodAndPathSkipper(method string, re *regexp.Regexp) func(r *http.Request
 		return false
 	}
 }
+
+// NegativeSkipper returns skipper which is negative of the input skipper
+func NegativeSkipper(skipper Skipper) func(*http.Request) bool {
+	return func(r *http.Request) bool {
+		return !skipper(r)
+	}
+}

@@ -20,7 +20,6 @@ import (
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
-	"github.com/justinas/alice"
 )
 
 const (
@@ -48,7 +47,7 @@ type ProxyEngine struct {
 }
 
 // NewProxyEngine is constructor of NewProxyEngine
-func NewProxyEngine(target *url.URL, cred *Credential, chains ...*alice.Chain) *ProxyEngine {
+func NewProxyEngine(target *url.URL, cred *Credential, middlewares ...func(http.Handler) http.Handler) *ProxyEngine {
 	var engine http.Handler
 
 	engine = &httputil.ReverseProxy{
@@ -59,9 +58,11 @@ func NewProxyEngine(target *url.URL, cred *Credential, chains ...*alice.Chain) *
 		ModifyResponse: modifyResponse,
 	}
 
-	if len(chains) > 0 {
+	if len(middlewares) > 0 {
 		hlog.Info("New chart server traffic proxy with middlewares")
-		engine = chains[0].Then(engine)
+		for i := len(middlewares) - 1; i >= 0; i-- {
+			engine = middlewares[i](engine)
+		}
 	}
 
 	return &ProxyEngine{

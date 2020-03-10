@@ -59,6 +59,27 @@ func (_m *Manager) AssociateWithProject(ctx context.Context, blobID int64, proje
 	return r0, r1
 }
 
+// CalculateTotalSizeByProject provides a mock function with given fields: ctx, projectID, excludeForeignLayer
+func (_m *Manager) CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeignLayer bool) (int64, error) {
+	ret := _m.Called(ctx, projectID, excludeForeignLayer)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, int64, bool) int64); ok {
+		r0 = rf(ctx, projectID, excludeForeignLayer)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int64, bool) error); ok {
+		r1 = rf(ctx, projectID, excludeForeignLayer)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CleanupAssociationsForArtifact provides a mock function with given fields: ctx, artifactDigest
 func (_m *Manager) CleanupAssociationsForArtifact(ctx context.Context, artifactDigest string) error {
 	ret := _m.Called(ctx, artifactDigest)
@@ -124,48 +145,6 @@ func (_m *Manager) Get(ctx context.Context, digest string) (*models.Blob, error)
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = rf(ctx, digest)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// IsAssociatedWithArtifact provides a mock function with given fields: ctx, blobDigest, artifactDigest
-func (_m *Manager) IsAssociatedWithArtifact(ctx context.Context, blobDigest string, artifactDigest string) (bool, error) {
-	ret := _m.Called(ctx, blobDigest, artifactDigest)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) bool); ok {
-		r0 = rf(ctx, blobDigest, artifactDigest)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = rf(ctx, blobDigest, artifactDigest)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// IsAssociatedWithProject provides a mock function with given fields: ctx, digest, projectID
-func (_m *Manager) IsAssociatedWithProject(ctx context.Context, digest string, projectID int64) (bool, error) {
-	ret := _m.Called(ctx, digest, projectID)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(context.Context, string, int64) bool); ok {
-		r0 = rf(ctx, digest, projectID)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, int64) error); ok {
-		r1 = rf(ctx, digest, projectID)
 	} else {
 		r1 = ret.Error(1)
 	}

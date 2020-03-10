@@ -61,6 +61,9 @@ var (
 var (
 	// ErrBreak error to break walk
 	ErrBreak = errors.New("break")
+
+	// ErrSkip error to skip walk the children of the artifact
+	ErrSkip = errors.New("skip")
 )
 
 // Controller defines the operations related with artifacts and tags
@@ -341,6 +344,15 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 		return err
 	}
 
+	// delete the artifact itself
+	if err = c.artMgr.Delete(ctx, art.ID); err != nil {
+		// the child artifact doesn't exist, skip
+		if !isRoot && ierror.IsErr(err, ierror.NotFoundCode) {
+			return nil
+		}
+		return err
+	}
+
 	blobs, err := c.blobMgr.List(ctx, blob.ListParams{ArtifactDigest: art.Digest})
 	if err != nil {
 		return err
@@ -348,15 +360,6 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 
 	// clean associations between blob and project when the blob is not needed by project
 	if err := c.blobMgr.CleanupAssociationsForProject(ctx, art.ProjectID, blobs); err != nil {
-		return err
-	}
-
-	// delete the artifact itself
-	if err = c.artMgr.Delete(ctx, art.ID); err != nil {
-		// the child artifact doesn't exist, skip
-		if !isRoot && ierror.IsErr(err, ierror.NotFoundCode) {
-			return nil
-		}
 		return err
 	}
 
@@ -490,14 +493,20 @@ func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Arti
 	queue := list.New()
 	queue.PushBack(root)
 
+	walked := map[string]bool{}
+
 	for queue.Len() > 0 {
 		elem := queue.Front()
 		queue.Remove(elem)
 
 		artifact := elem.Value.(*Artifact)
+		walked[artifact.Digest] = true
+
 		if err := walkFn(artifact); err != nil {
 			if err == ErrBreak {
 				return nil
+			} else if err == ErrSkip {
+				continue
 			}
 
 			return err
@@ -509,13 +518,16 @@ func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Arti
 				ids = append(ids, ref.ChildID)
 			}
 
-			artifacts, err := c.List(ctx, q.New(q.KeyWords{"id__in": ids}), option)
+			// HACK: base=* in KeyWords to filter all artifacts
+			children, err := c.List(ctx, q.New(q.KeyWords{"id__in": ids, "base": "*"}), option)
 			if err != nil {
 				return err
 			}
 
-			for _, artifact := range artifacts {
-				queue.PushBack(artifact)
+			for _, child := range children {
+				if !walked[child.Digest] {
+					queue.PushBack(child)
+				}
 			}
 		}
 	}

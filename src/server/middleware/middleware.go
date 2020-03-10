@@ -26,13 +26,21 @@ import (
 // the requirement
 type Middleware func(http.Handler) http.Handler
 
+// Chain make middlewares together
+func Chain(middlewares ...Middleware) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		for i := len(middlewares) - 1; i >= 0; i-- {
+			h = middlewares[i](h)
+		}
+
+		return h
+	}
+}
+
 // WithMiddlewares apply the middlewares to the handler.
 // The middlewares are executed in the order that they are applied
 func WithMiddlewares(handler http.Handler, middlewares ...Middleware) http.Handler {
-	for i := len(middlewares) - 1; i >= 0; i-- {
-		handler = middlewares[i](handler)
-	}
-	return handler
+	return Chain(middlewares...)(handler)
 }
 
 // New make a middleware from fn which type is func(w http.ResponseWriter, r *http.Request, next http.Handler)

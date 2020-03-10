@@ -17,8 +17,10 @@ package dao
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/q"
@@ -48,10 +50,13 @@ type DAO interface {
 	UpdateBlob(ctx context.Context, blob *models.Blob) error
 
 	// ListBlobs list blobs by query
-	ListBlobs(ctx context.Context, query *q.Query) ([]*models.Blob, error)
+	ListBlobs(ctx context.Context, params models.ListParams) ([]*models.Blob, error)
 
 	// FindBlobsShouldUnassociatedWithProject filter the blobs which should not be associated with the project
 	FindBlobsShouldUnassociatedWithProject(ctx context.Context, projectID int64, blobs []*models.Blob) ([]*models.Blob, error)
+
+	// SumBlobsSizeByProject returns sum size of blobs by project, skip foreign blobs when `excludeForeignLayer` is true
+	SumBlobsSizeByProject(ctx context.Context, projectID int64, excludeForeignLayer bool) (int64, error)
 
 	// CreateProjectBlob create ProjectBlob and ignore conflict on project id and blob id
 	CreateProjectBlob(ctx context.Context, projectID, blobID int64) (int64, error)
@@ -167,10 +172,32 @@ func (d *dao) UpdateBlob(ctx context.Context, blob *models.Blob) error {
 	return err
 }
 
-func (d *dao) ListBlobs(ctx context.Context, query *q.Query) ([]*models.Blob, error) {
-	qs, err := orm.QuerySetter(ctx, &models.Blob{}, query)
+func (d *dao) ListBlobs(ctx context.Context, params models.ListParams) ([]*models.Blob, error) {
+	qs, err := orm.QuerySetter(ctx, &models.Blob{}, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(params.BlobDigests) > 0 {
+		qs = qs.Filter("digest__in", params.BlobDigests)
+	}
+
+	if params.ArtifactDigest != "" {
+		params.ArtifactDigests = append(params.ArtifactDigests, params.ArtifactDigest)
+	}
+
+	if len(params.ArtifactDigests) > 0 {
+		var p []string
+		for _, digest := range params.ArtifactDigests {
+			p = append(p, `'`+orm.Escape(digest)+`'`)
+		}
+		sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", strings.Join(p, ","))
+		qs = qs.FilterRaw("digest", sql)
+	}
+
+	if params.ProjectID != 0 {
+		sql := fmt.Sprintf("IN (SELECT blob_id FROM project_blob WHERE project_id = %d)", params.ProjectID)
+		qs = qs.FilterRaw("id", sql)
 	}
 
 	blobs := []*models.Blob{}
@@ -215,6 +242,31 @@ func (d *dao) FindBlobsShouldUnassociatedWithProject(ctx context.Context, projec
 	}
 
 	return results, nil
+}
+
+func (d *dao) SumBlobsSizeByProject(ctx context.Context, projectID int64, excludeForeignLayer bool) (int64, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	params := []interface{}{projectID}
+	sql := `SELECT SUM(size) FROM blob JOIN project_blob ON blob.id = project_blob.blob_id AND project_id = ?`
+	if excludeForeignLayer {
+		foreignLayerTypes := []interface{}{
+			schema2.MediaTypeForeignLayer,
+		}
+
+		sql = fmt.Sprintf(`%s AND content_type NOT IN (%s)`, sql, orm.ParamPlaceholderForIn(len(foreignLayerTypes)))
+		params = append(params, foreignLayerTypes...)
+	}
+
+	var totalSize int64
+	if err := o.Raw(sql, params...).QueryRow(&totalSize); err != nil {
+		return 0, err
+	}
+
+	return totalSize, nil
 }
 
 func (d *dao) CreateProjectBlob(ctx context.Context, projectID, blobID int64) (int64, error) {
