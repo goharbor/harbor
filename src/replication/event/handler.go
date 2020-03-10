@@ -57,8 +57,8 @@ func (h *handler) Handle(event *Event) error {
 	var policies []*model.Policy
 	var err error
 	switch event.Type {
-	case EventTypeImagePush, EventTypeChartUpload,
-		EventTypeImageDelete, EventTypeChartDelete:
+	case EventTypeArtifactPush, EventTypeChartUpload,
+		EventTypeArtifactDelete, EventTypeChartDelete:
 		policies, err = h.getRelatedPolicies(event.Resource)
 	default:
 		return fmt.Errorf("unsupported event type %s", event.Type)

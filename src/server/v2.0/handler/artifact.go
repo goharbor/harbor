@@ -17,6 +17,8 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/event"
+	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"net/http"
 	"strings"
 	"time"
@@ -238,6 +240,14 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 	if _, err = a.tagCtl.Create(ctx, tag); err != nil {
 		return a.SendError(ctx, err)
 	}
+
+	// fire event
+	evt.BuildAndPublish(&event.CreateTagEventMetadata{
+		Ctx:              ctx,
+		Tag:              tag.Name,
+		AttachedArtifact: &art.Artifact,
+	})
+
 	// TODO as we provide no API for get the single tag, ignore setting the location header here
 	return operation.NewCreateTagCreated()
 }
@@ -269,6 +279,14 @@ func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagP
 	if err = a.tagCtl.Delete(ctx, id); err != nil {
 		return a.SendError(ctx, err)
 	}
+
+	// fire event
+	evt.BuildAndPublish(&event.DeleteTagEventMetadata{
+		Ctx:              ctx,
+		Tag:              params.TagName,
+		AttachedArtifact: &artifact.Artifact,
+	})
+
 	return operation.NewDeleteTagOK()
 }
 

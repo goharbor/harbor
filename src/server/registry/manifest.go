@@ -16,10 +16,12 @@ package registry
 
 import (
 	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/api/repository"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/internal"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/router"
 	"github.com/opencontainers/go-digest"
@@ -43,9 +45,23 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 		req.URL.Path = strings.TrimSuffix(req.URL.Path, reference) + artifact.Digest
 		req.URL.RawPath = req.URL.EscapedPath()
 	}
-	proxy.ServeHTTP(w, req)
 
-	// TODO fire event(only for GET method), add access log in the event handler
+	recorder := internal.NewResponseRecorder(w)
+	proxy.ServeHTTP(recorder, req)
+	// fire event
+	if recorder.Success() {
+		// TODO don't fire event for the pulling from replication
+		e := &event.PullArtifactEventMetadata{
+			Ctx:      req.Context(),
+			Artifact: &artifact.Artifact,
+		}
+		// TODO provide a util function to determine whether the reference is tag or not
+		// the reference is tag
+		if _, err = digest.Parse(reference); err != nil {
+			e.Tag = reference
+		}
+		evt.BuildAndPublish(e)
+	}
 }
 
 // just delete the artifact from database
@@ -74,8 +90,6 @@ func deleteManifest(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)
-
-	// TODO fire event, add access log in the event handler
 }
 
 func putManifest(w http.ResponseWriter, req *http.Request) {
@@ -121,6 +135,4 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	if _, err := buffer.Flush(); err != nil {
 		log.Errorf("failed to flush: %v", err)
 	}
-
-	// TODO fire event, add access log in the event handler
 }

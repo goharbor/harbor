@@ -16,13 +16,7 @@ package api
 
 import (
 	"fmt"
-	"net/http"
-	"regexp"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
-
+	"github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
@@ -33,9 +27,15 @@ import (
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
+	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync"
 )
 
 type deletableResp struct {
@@ -211,19 +211,11 @@ func (p *ProjectAPI) Post() {
 		}
 	}
 
-	go func() {
-		if err = dao.AddAccessLog(
-			models.AccessLog{
-				Username:  p.SecurityCtx.GetUsername(),
-				ProjectID: projectID,
-				RepoName:  pro.Name + "/",
-				RepoTag:   "N/A",
-				Operation: "create",
-				OpTime:    time.Now(),
-			}); err != nil {
-			log.Errorf("failed to add access log: %v", err)
-		}
-	}()
+	// fire event
+	evt.BuildAndPublish(&event.CreateProjectEventMetadata{
+		Project:  pro.Name,
+		Operator: owner,
+	})
 
 	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
 }
@@ -301,18 +293,11 @@ func (p *ProjectAPI) Delete() {
 		return
 	}
 
-	go func() {
-		if err := dao.AddAccessLog(models.AccessLog{
-			Username:  p.SecurityCtx.GetUsername(),
-			ProjectID: p.project.ProjectID,
-			RepoName:  p.project.Name + "/",
-			RepoTag:   "N/A",
-			Operation: "delete",
-			OpTime:    time.Now(),
-		}); err != nil {
-			log.Errorf("failed to add access log: %v", err)
-		}
-	}()
+	// fire event
+	evt.BuildAndPublish(&event.DeleteProjectEventMetadata{
+		Project:  p.project.Name,
+		Operator: p.SecurityCtx.GetUsername(),
+	})
 }
 
 // Deletable ...

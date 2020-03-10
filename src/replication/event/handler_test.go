@@ -253,7 +253,7 @@ func TestHandle(t *testing.T) {
 				Vtags: []string{},
 			},
 		},
-		Type: EventTypeImagePush,
+		Type: EventTypeArtifactPush,
 	})
 	require.NotNil(t, err)
 
@@ -285,7 +285,7 @@ func TestHandle(t *testing.T) {
 				},
 			},
 		},
-		Type: EventTypeImagePush,
+		Type: EventTypeArtifactPush,
 	})
 	require.Nil(t, err)
 
@@ -303,7 +303,7 @@ func TestHandle(t *testing.T) {
 				},
 			},
 		},
-		Type: EventTypeImageDelete,
+		Type: EventTypeArtifactDelete,
 	})
 	require.Nil(t, err)
 }

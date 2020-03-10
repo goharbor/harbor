@@ -39,26 +39,6 @@ func (e *Event) WithTopicEvent(topicEvent TopicEvent) *Event {
 	return e
 }
 
-// Build an event by metadata
-func (e *Event) Build(metadata ...Metadata) error {
-	for _, md := range metadata {
-		if err := md.Resolve(e); err != nil {
-			log.Debugf("failed to resolve event metadata: %v", md)
-			return errors.Wrap(err, "failed to resolve event metadata")
-		}
-	}
-	return nil
-}
-
-// Publish an event
-func (e *Event) Publish() error {
-	if err := notifier.Publish(e.Topic, e.Data); err != nil {
-		log.Debugf("failed to publish topic %s with event: %v", e.Topic, e.Data)
-		return errors.Wrap(err, "failed to publish event")
-	}
-	return nil
-}
-
 // Metadata is the event raw data to be processed
 type Metadata interface {
 	Resolve(event *Event) error
@@ -321,4 +301,41 @@ func (h *HookMetaData) Resolve(evt *Event) error {
 	evt.Topic = h.Target.Type
 	evt.Data = data
 	return nil
+}
+
+// Build an event by metadata
+func (e *Event) Build(metadata ...Metadata) error {
+	for _, md := range metadata {
+		if err := md.Resolve(e); err != nil {
+			log.Debugf("failed to resolve event metadata: %v", md)
+			return errors.Wrap(err, "failed to resolve event metadata")
+		}
+	}
+	return nil
+}
+
+// Publish an event
+func (e *Event) Publish() error {
+	if err := notifier.Publish(e.Topic, e.Data); err != nil {
+		log.Debugf("failed to publish topic %s with event: %v", e.Topic, e.Data)
+		return errors.Wrap(err, "failed to publish event")
+	}
+	return nil
+}
+
+// BuildAndPublish builds the event according to the metadata and publish the event
+// The process is done in a separated goroutine
+func BuildAndPublish(metadata ...Metadata) {
+	go func() {
+		event := &Event{}
+		if err := event.Build(metadata...); err != nil {
+			log.Errorf("failed to build the event from metadata: %v", err)
+			return
+		}
+		if err := event.Publish(); err != nil {
+			log.Errorf("failed to publish the event %s: %v", event.Topic, err)
+			return
+		}
+		log.Debugf("event %s published", event.Topic)
+	}()
 }
