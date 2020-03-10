@@ -680,6 +680,9 @@ paths:
       operationId: ListInstances
       parameters:
         - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
       responses:
         '200':
           description: Success
@@ -817,6 +820,9 @@ paths:
       operationId: ListPreheatHistories
       parameters:
         - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
       responses:
         '200':
           description: Success
