@@ -29,9 +29,10 @@ Test Case - Add Replication Rule
     Harbor API Test  ./tests/apitests/python/test_add_replication_rule.py
 Test Case - Edit Project Creation
     Harbor API Test  ./tests/apitests/python/test_edit_project_creation.py
-# TODO uncomment this after image scan work with basic auth - #10277
-#Test Case - Scan Image
-#    Harbor API Test  ./tests/apitests/python/test_scan_image.py
+Test Case - Scan Image
+    Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
+Test Case - Scan All Images
+    Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py
 Test Case - Manage Project Member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
 Test Case - Project Level Policy Content Trust
@@ -41,9 +42,6 @@ Test Case - Project Level Policy Content Trust
 # User View Logs still in failure state - danfeng@3/11 2020.
 # Test Case - User View Logs
 #    Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
-# TODO uncomment this after making scan all work with OCI registry
-# Test Case - Scan All Images
-#     Harbor API Test  ./tests/apitests/python/test_scan_all_images.py
 Test Case - List Helm Charts
     Harbor API Test  ./tests/apitests/python/test_list_helm_charts.py
 Test Case - Assign Sys Admin
