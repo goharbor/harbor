@@ -58,7 +58,7 @@ This section describes how users with the developer, master, and project adminis
 
 - [Introduction](working-with-projects/_index.md)
 - [Create Projects](working-with-projects/create-projects/_index.md)
-    - [Assign Users to a Project](working-with-projects/add-users.md)
+    - [Assign Users to a Project](working-with-projects/create-projects/add-users.md)
 - [Project Configuration](working-with-projects/project-configuration/_index.md)
     - [Access and Search Project Logs](working-with-projects/access-project-logs.md)
     - [Create Robot Accounts](working-with-projects/create-robot-accounts.md)
