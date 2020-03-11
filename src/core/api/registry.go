@@ -223,6 +223,7 @@ func (t *RegistryAPI) Post() {
 		return
 	}
 
+	r.Status = model.Healthy
 	id, err := t.manager.Add(r)
 	if err != nil {
 		log.Errorf("Add registry '%s' error: %v", r.URL, err)
@@ -309,6 +310,7 @@ func (t *RegistryAPI) Put() {
 		return
 	}
 
+	r.Status = model.Healthy
 	if err := t.manager.Update(r); err != nil {
 		log.Errorf("Update registry %d error: %v", id, err)
 		t.SendInternalServerError(err)
