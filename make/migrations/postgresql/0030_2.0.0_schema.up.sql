@@ -208,3 +208,9 @@ BEGIN
       END IF;
     END LOOP;
 END $$;
+
+/*remove the constraint for project_id in table 'notification_policy'*/
+ALTER TABLE notification_policy DROP CONSTRAINT unique_project_id;
+
+/*add the unique constraint for name in table 'notification_policy'*/
+ALTER TABLE notification_policy ADD UNIQUE (name);
