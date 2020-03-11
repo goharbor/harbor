@@ -28,13 +28,13 @@ import {
 } from "../../shared/shared.const";
 
 import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
-import { ConfirmationAcknowledgement } from "../../shared/confirmation-dialog/confirmation-state-message";
 import { ConfirmationDialogComponent } from "../../shared/confirmation-dialog/confirmation-dialog.component";
+import { clone } from "../../../lib/utils/utils";
+import { forkJoin, Observable } from "rxjs";
 
 @Component({
   templateUrl: './webhook.component.html',
-  styleUrls: ['./webhook.component.scss'],
-  // changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./webhook.component.scss']
 })
 export class WebhookComponent implements OnInit {
   @ViewChild(AddWebhookComponent, { static: false } )
@@ -43,16 +43,16 @@ export class WebhookComponent implements OnInit {
   addWebhookFormComponent: AddWebhookFormComponent;
   @ViewChild("confirmationDialogComponent", { static: false })
   confirmationDialogComponent: ConfirmationDialogComponent;
-  webhook: Webhook;
-  endpoint: string = '';
   lastTriggers: LastTrigger[] = [];
   lastTriggerCount: number = 0;
-  isEnabled: boolean;
-  loading: boolean = false;
-  showCreate: boolean = false;
-  loadingWebhook: boolean = true;
   projectId: number;
   projectName: string;
+  selectedRow: Webhook[] = [];
+  webhookList: Webhook[] = [];
+  metadata: any;
+  loadingMetadata: boolean = false;
+  loadingWebhookList: boolean = false;
+  loadingTriggers: boolean = false;
   constructor(
     private route: ActivatedRoute,
     private translate: TranslateService,
@@ -66,19 +66,34 @@ export class WebhookComponent implements OnInit {
       let project = <Project>(resolverData["projectResolver"]);
       this.projectName = project.name;
     }
-    this.getData(this.projectId);
+    this.getData();
   }
 
-  getData(projectId: number) {
-    this.getLastTriggers(projectId);
-    this.getWebhook(projectId);
+  getData() {
+    this.getMetadata();
+    this.getLastTriggers();
+    this.getWebhooks();
+    this.selectedRow = [];
+  }
+  getMetadata() {
+    this.loadingMetadata = true;
+    this.webhookService.getWebhookMetadata(this.projectId)
+      .pipe(finalize(() => (this.loadingMetadata = false)))
+      .subscribe(
+        response => {
+          this.metadata = response;
+        },
+        error => {
+          this.messageHandlerService.handleError(error);
+        }
+      );
   }
 
-  getLastTriggers(projectId: number) {
-    this.loading = true;
+  getLastTriggers() {
+    this.loadingTriggers = true;
     this.webhookService
-      .listLastTrigger(projectId)
-      .pipe(finalize(() => (this.loading = false)))
+      .listLastTrigger(this.projectId)
+      .pipe(finalize(() => (this.loadingTriggers = false)))
       .subscribe(
         response => {
           this.lastTriggers = response;
@@ -90,20 +105,14 @@ export class WebhookComponent implements OnInit {
       );
   }
 
-  getWebhook(projectId: number) {
+  getWebhooks() {
+    this.loadingWebhookList = true;
     this.webhookService
-      .listWebhook(projectId)
-      .pipe(finalize(() => (this.loadingWebhook = false)))
+      .listWebhook(this.projectId)
+      .pipe(finalize(() => (this.loadingWebhookList = false)))
       .subscribe(
         response => {
-          if (response.length) {
-            this.webhook = response[0];
-            this.endpoint = this.webhook.targets[0].address;
-            this.isEnabled = this.webhook.enabled;
-            this.showCreate = false;
-          } else {
-            this.showCreate = true;
-          }
+          this.webhookList = response;
         },
         error => {
           this.messageHandlerService.handleError(error);
@@ -111,46 +120,103 @@ export class WebhookComponent implements OnInit {
       );
   }
 
-  switchWebhookStatus(enabled = false) {
+  switchWebhookStatus() {
     let content = '';
     this.translate.get(
-      enabled
+      !this.selectedRow[0].enabled
         ? 'WEBHOOK.ENABLED_WEBHOOK_SUMMARY'
         : 'WEBHOOK.DISABLED_WEBHOOK_SUMMARY'
-    ).subscribe((res) => content = res + this.projectName);
-    let message = new ConfirmationMessage(
-      enabled ? 'WEBHOOK.ENABLED_WEBHOOK_TITLE' : 'WEBHOOK.DISABLED_WEBHOOK_TITLE',
-      content,
-      '',
-      {},
-      ConfirmationTargets.WEBHOOK,
-      enabled ? ConfirmationButtons.ENABLE_CANCEL : ConfirmationButtons.DISABLE_CANCEL
-    );
-    this.confirmationDialogComponent.open(message);
+    , {name: this.selectedRow[0].name}).subscribe((res) => {
+      content = res;
+      let message = new ConfirmationMessage(
+        !this.selectedRow[0].enabled ? 'WEBHOOK.ENABLED_WEBHOOK_TITLE' : 'WEBHOOK.DISABLED_WEBHOOK_TITLE',
+        content,
+        '',
+        {},
+        ConfirmationTargets.WEBHOOK,
+        !this.selectedRow[0].enabled ? ConfirmationButtons.ENABLE_CANCEL : ConfirmationButtons.DISABLE_CANCEL
+      );
+      this.confirmationDialogComponent.open(message);
+    });
   }
 
-  confirmSwitch(message: ConfirmationAcknowledgement) {
+  confirmSwitch(message) {
     if (message &&
       message.source === ConfirmationTargets.WEBHOOK &&
       message.state === ConfirmationState.CONFIRMED) {
-      this.webhookService
-        .editWebhook(this.projectId, this.webhook.id, Object.assign({}, this.webhook, { enabled: !this.isEnabled }))
-        .subscribe(
+      if (JSON.stringify(message.data) === '{}') {
+        this.webhookService
+          .editWebhook(this.projectId, this.selectedRow[0].id,
+            Object.assign({}, this.selectedRow[0], { enabled: !this.selectedRow[0].enabled }))
+          .subscribe(
+            response => {
+              this.getData();
+            },
+            error => {
+              this.messageHandlerService.handleError(error);
+            }
+          );
+      } else {
+        const observableLists: Observable<any>[] = [];
+        message.data.forEach(item => {
+          observableLists.push(this.webhookService.deleteWebhook(this.projectId, item.id));
+        });
+        forkJoin(...observableLists).subscribe(
           response => {
-            this.getData(this.projectId);
+            this.getData();
           },
           error => {
             this.messageHandlerService.handleError(error);
           }
         );
+      }
     }
   }
 
-  editWebhook(isModify: boolean): void {
-    this.getData(this.projectId);
+  editWebhook() {
+    if (this.metadata) {
+      this.addWebhookComponent.isOpen = true;
+      this.addWebhookComponent.isEdit = true;
+      this.addWebhookComponent.addWebhookFormComponent.isModify = true;
+      this.addWebhookComponent.addWebhookFormComponent.webhook = clone(this.selectedRow[0]);
+      this.addWebhookComponent.addWebhookFormComponent.webhook.event_types = clone(this.selectedRow[0].event_types);
+    }
   }
 
   openAddWebhookModal(): void {
     this.addWebhookComponent.openAddWebhookModal();
+  }
+  newWebhook() {
+    if (this.metadata) {
+      this.addWebhookComponent.isOpen = true;
+      this.addWebhookComponent.isEdit = false;
+      this.addWebhookComponent.addWebhookFormComponent.isModify = false;
+      this.addWebhookComponent.addWebhookFormComponent.currentForm.reset({notifyType: this.metadata.notify_type[0]});
+      this.addWebhookComponent.addWebhookFormComponent.webhook = new Webhook();
+      this.addWebhookComponent.addWebhookFormComponent.webhook.event_types = clone(this.metadata.event_type);
+    }
+  }
+  success() {
+   this.getData();
+  }
+
+  deleteWebhook() {
+    const names: string[] = [];
+    this.selectedRow.forEach(item => {
+      names.push(item.name);
+    });
+    let content = '';
+    this.translate.get(
+         'WEBHOOK.DELETE_WEBHOOK_SUMMARY'
+      , {names:  names.join(',')}).subscribe((res) => content = res);
+    const msg: ConfirmationMessage = new ConfirmationMessage(
+      "SCANNER.CONFIRM_DELETION",
+      content,
+      names.join(','),
+      this.selectedRow,
+      ConfirmationTargets.WEBHOOK,
+      ConfirmationButtons.DELETE_CANCEL
+    );
+    this.confirmationDialogComponent.open(msg);
   }
 }
