@@ -57,6 +57,7 @@ func TestGetFactory(t *testing.T) {
 
 func TestListRegisteredAdapterTypes(t *testing.T) {
 	registry = map[model.RegistryType]Factory{}
+	registryKeys = []string{}
 	// not register, got nothing
 	types := ListRegisteredAdapterTypes()
 	assert.Equal(t, 0, len(types))
@@ -67,4 +68,18 @@ func TestListRegisteredAdapterTypes(t *testing.T) {
 	types = ListRegisteredAdapterTypes()
 	require.Equal(t, 1, len(types))
 	assert.Equal(t, model.RegistryType("harbor"), types[0])
+}
+
+func TestListRegisteredAdapterTypesOrder(t *testing.T) {
+	registry = map[model.RegistryType]Factory{}
+	registryKeys = []string{}
+	require.Nil(t, RegisterFactory("a", new(fakedFactory)))
+	require.Nil(t, RegisterFactory("c", new(fakedFactory)))
+	require.Nil(t, RegisterFactory("b", new(fakedFactory)))
+
+	types := ListRegisteredAdapterTypes()
+	require.Equal(t, 3, len(types))
+	require.Equal(t, model.RegistryType("a"), types[0])
+	require.Equal(t, model.RegistryType("b"), types[1])
+	require.Equal(t, model.RegistryType("c"), types[2])
 }

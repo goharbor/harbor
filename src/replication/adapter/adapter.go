@@ -113,7 +113,7 @@ func HasFactory(t model.RegistryType) bool {
 // ListRegisteredAdapterTypes lists the registered Adapter type
 func ListRegisteredAdapterTypes() []model.RegistryType {
 	types := []model.RegistryType{}
-	for t := range registryKeys {
+	for _, t := range registryKeys {
 		types = append(types, model.RegistryType(t))
 	}
 	return types
