@@ -10,7 +10,9 @@ import (
 	"net/http"
 	"path/filepath"
 	"regexp"
+	"strings"
 
+	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -163,6 +165,43 @@ func getAdapterInfo() *model.AdapterPattern {
 	return info
 }
 
+func (a *adapter) listNamespaces(c *cr.Client) (namespaces []string, err error) {
+	// list namespaces
+	var nsReq = cr.CreateGetNamespaceListRequest()
+	var nsResp = cr.CreateGetNamespaceListResponse()
+	nsReq.SetDomain(a.domain)
+	nsResp, err = c.GetNamespaceList(nsReq)
+	if err != nil {
+		return
+	}
+	var resp = &aliACRNamespaceResp{}
+	err = json.Unmarshal(nsResp.GetHttpContentBytes(), resp)
+	if err != nil {
+		return
+	}
+	for _, ns := range resp.Data.Namespaces {
+		namespaces = append(namespaces, ns.Namespace)
+	}
+
+	log.Debugf("FetchImages.listNamespaces: %#v\n", namespaces)
+
+	return
+}
+
+func (a *adapter) listCandidateNamespaces(c *cr.Client, namespacePattern string) (namespaces []string, err error) {
+	if len(namespacePattern) > 0 {
+		if nms, ok := util.IsSpecificPathComponent(namespacePattern); ok {
+			namespaces = append(namespaces, nms...)
+		}
+		if len(namespaces) > 0 {
+			log.Debugf("parsed the namespaces %v from pattern %s", namespaces, namespacePattern)
+			return namespaces, nil
+		}
+	}
+
+	return a.listNamespaces(c)
+}
+
 // FetchImages AliACR not support /v2/_catalog of Registry, we'll list all resources via Aliyun's API
 func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resource, err error) {
 	log.Debugf("FetchImages.filters: %#v\n", filters)
@@ -184,20 +223,39 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 			tagsPattern = filter.Value.(string)
 		}
 	}
+	var namespacePattern = strings.Split(repoPattern, "/")[0]
+
+	log.Debugf("\nrepoPattern=%s tagsPattern=%s\n\n", repoPattern, tagsPattern)
+
+	// get namespaces
+	var namespaces []string
+	namespaces, err = a.listCandidateNamespaces(client, namespacePattern)
+	if err != nil {
+		return
+	}
+	log.Debugf("got namespaces: %v \n", namespaces)
 
 	// list repos
 	var repositories []aliRepo
-	for {
-		var repoListResp *aliRepoResp
-		repoListResp, err = a.listRepo(a.region, client)
+	for _, namespace := range namespaces {
+		var repos []aliRepo
+		repos, err = a.listReposByNamespace(a.region, namespace, client)
 		if err != nil {
 			return
 		}
-		if repoPattern != "" {
-			for _, repo := range repoListResp.Data.Repos {
+
+		log.Debugf("\nnamespace: %s \t repositories: %#v\n\n", namespace, repos)
+
+		if _, ok := util.IsSpecificPathComponent(namespacePattern); ok {
+			log.Debugf("specific namespace: %s", repoPattern)
+			repositories = append(repositories, repos...)
+		} else {
+			for _, repo := range repos {
 
 				var ok bool
-				ok, err = util.Match(repoPattern, filepath.Join(repo.RepoNamespace, repo.RepoName))
+				var repoName = filepath.Join(repo.RepoNamespace, repo.RepoName)
+				ok, err = util.Match(repoPattern, repoName)
+				log.Debugf("\n Repository: %s\t repoPattern: %s\t Match: %v\n", repoName, repoPattern, ok)
 				if err != nil {
 					return
 				}
@@ -205,12 +263,6 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 					repositories = append(repositories, repo)
 				}
 			}
-		} else {
-			repositories = append(repositories, repoListResp.Data.Repos...)
-		}
-
-		if repoListResp.Data.Total-(repoListResp.Data.Page*repoListResp.Data.PageSize) <= 0 {
-			break
 		}
 	}
 	log.Debugf("FetchImages.repositories: %#v\n", repositories)
@@ -276,17 +328,30 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 	return
 }
 
-func (a *adapter) listRepo(region string, c *cr.Client) (resp *aliRepoResp, err error) {
-	var reposReq = cr.CreateGetRepoListRequest()
-	var reposResp = cr.CreateGetRepoListResponse()
+func (a *adapter) listReposByNamespace(region string, namespace string, c *cr.Client) (repos []aliRepo, err error) {
+	var reposReq = cr.CreateGetRepoListByNamespaceRequest()
+	var reposResp = cr.CreateGetRepoListByNamespaceResponse()
 	reposReq.SetDomain(a.domain)
-	reposResp, err = c.GetRepoList(reposReq)
-	if err != nil {
-		return
-	}
-	resp = &aliRepoResp{}
-	json.Unmarshal(reposResp.GetHttpContentBytes(), resp)
+	reposReq.RepoNamespace = namespace
+	var page = 1
+	for {
+		reposReq.Page = requests.NewInteger(page)
+		reposResp, err = c.GetRepoListByNamespace(reposReq)
+		if err != nil {
+			return
+		}
+		var resp = &aliReposResp{}
+		err = json.Unmarshal(reposResp.GetHttpContentBytes(), resp)
+		if err != nil {
+			return
+		}
+		repos = append(repos, resp.Data.Repos...)
 
+		if resp.Data.Total-(resp.Data.Page*resp.Data.PageSize) <= 0 {
+			break
+		}
+		page++
+	}
 	return
 }
 
@@ -297,8 +362,9 @@ func (a *adapter) getTags(repo aliRepo, c *cr.Client) (tags []string, err error)
 	tagsReq.SetDomain(a.domain)
 	tagsReq.RepoNamespace = repo.RepoNamespace
 	tagsReq.RepoName = repo.RepoName
+	var page = 1
 	for {
-		fmt.Printf("[GetRepoTags.req] %#v\n", tagsReq)
+		tagsReq.Page = requests.NewInteger(page)
 		tagsResp, err = c.GetRepoTags(tagsReq)
 		if err != nil {
 			return
@@ -313,6 +379,7 @@ func (a *adapter) getTags(repo aliRepo, c *cr.Client) (tags []string, err error)
 		if resp.Data.Total-(resp.Data.Page*resp.Data.PageSize) <= 0 {
 			break
 		}
+		page++
 	}
 
 	return
