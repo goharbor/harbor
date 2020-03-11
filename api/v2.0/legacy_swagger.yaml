@@ -5699,8 +5699,10 @@ definitions:
       schedule:
         $ref: '#/definitions/AdminJobScheduleObj'
       parameters:
-        type: string
+        type: object
         description: The parameters of admin job
+        additionalProperties:
+          type: boolean
   AdminJobScheduleObj:
     type: object
     properties:
