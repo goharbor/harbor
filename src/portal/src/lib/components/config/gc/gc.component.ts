@@ -13,7 +13,7 @@ import { GcRepoService } from "./gc.service";
 import {
   SCHEDULE_TYPE_NONE,
   ONE_MINITUE,
-  THREE_SECONDS
+  THREE_SECONDS, GCSchedule
 } from "./gc.const";
 import { ErrorHandler } from "../../../utils/error-handler";
 import { CronScheduleComponent } from "../../cron-schedule/cron-schedule.component";
@@ -26,7 +26,7 @@ import { finalize } from "rxjs/operators";
 })
 export class GcComponent implements OnInit {
   jobs: Array<GcJobViewModel> = [];
-  schedule: any;
+  schedule: GCSchedule = {};
   originCron: OriginCron;
   disableGC: boolean = false;
   getText = 'CONFIG.GC';
@@ -34,6 +34,7 @@ export class GcComponent implements OnInit {
   @Output() loadingGcStatus = new EventEmitter<boolean>();
   @ViewChild(CronScheduleComponent, {static: false})
   CronScheduleComponent: CronScheduleComponent;
+  shouldDeleteUntagged: boolean;
   constructor(
     private gcRepoService: GcRepoService,
     private gcViewModelFactory: GcViewModelFactory,
@@ -61,7 +62,7 @@ export class GcComponent implements OnInit {
     });
   }
 
-  public initSchedule(schedule: any) {
+  public initSchedule(schedule: GCSchedule) {
     if (schedule && schedule.schedule !== null) {
       this.schedule = schedule;
       this.originCron = this.schedule.schedule;
@@ -70,6 +71,11 @@ export class GcComponent implements OnInit {
         type: SCHEDULE_TYPE_NONE,
         cron: ''
       };
+    }
+    if (schedule && schedule.job_parameters) {
+      this.shouldDeleteUntagged = JSON.parse(schedule.job_parameters).delete_untagged;
+    } else {
+      this.shouldDeleteUntagged = false;
     }
   }
 
@@ -85,7 +91,7 @@ export class GcComponent implements OnInit {
       this.enableGc();
     }, ONE_MINITUE);
 
-    this.gcRepoService.manualGc().subscribe(
+    this.gcRepoService.manualGc(this.shouldDeleteUntagged).subscribe(
       response => {
         this.translate.get("GC.MSG_SUCCESS").subscribe((res: string) => {
           this.errorHandler.info(res);
@@ -108,13 +114,16 @@ export class GcComponent implements OnInit {
         cron: cron
       }
     };
+    if (!cron) {
+      this.shouldDeleteUntagged = false;
+    }
     this.getJobs();
   }
 
   scheduleGc(cron: string) {
     let schedule = this.schedule;
     if (schedule && schedule.schedule && schedule.schedule.type !== SCHEDULE_TYPE_NONE) {
-      this.gcRepoService.putScheduleGc(this.CronScheduleComponent.scheduleType, cron).subscribe(
+      this.gcRepoService.putScheduleGc(this.shouldDeleteUntagged, this.CronScheduleComponent.scheduleType, cron).subscribe(
         response => {
           this.translate
             .get("GC.MSG_SCHEDULE_RESET")
@@ -129,7 +138,7 @@ export class GcComponent implements OnInit {
         }
       );
     } else {
-      this.gcRepoService.postScheduleGc(this.CronScheduleComponent.scheduleType, cron).subscribe(
+      this.gcRepoService.postScheduleGc(this.shouldDeleteUntagged, this.CronScheduleComponent.scheduleType, cron).subscribe(
         response => {
           this.translate.get("GC.MSG_SCHEDULE_SET").subscribe((res) => {
             this.errorHandler.info(res);

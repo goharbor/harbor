@@ -1155,7 +1155,9 @@
         "LATEST_JOBS": "Son {{param}} İşler",
         "MSG_SUCCESS": "Çöp Toplama Başarılı",
         "MSG_SCHEDULE_SET": "Çöp Toplama programı belirlendi",
-        "MSG_SCHEDULE_RESET": "Çöp Toplama programı sıfırlandı"
+        "MSG_SCHEDULE_RESET": "Çöp Toplama programı sıfırlandı",
+        "PARAMETERS": "Parameters",
+        "DELETE_UNTAGGED": "Delete Untagged Artifacts"
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",

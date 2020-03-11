@@ -1151,7 +1151,9 @@
         "LOG_DETAIL": "Detalhes de Log",
         "MSG_SUCCESS": "Garbage Collection efetuado com sucesso",
         "MSG_SCHEDULE_SET": "Agendamento de Garbage Collection efetuado",
-        "MSG_SCHEDULE_RESET": "Agendamento de Garbage Collection foi redefinido"
+        "MSG_SCHEDULE_RESET": "Agendamento de Garbage Collection foi redefinido",
+        "PARAMETERS": "Parameters",
+        "DELETE_UNTAGGED": "Delete Untagged Artifacts"
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",
