@@ -31,6 +31,8 @@ type ProjectBlob = models.ProjectBlob
 
 // ListParams list params
 type ListParams struct {
-	ArtifactDigest string   // list blobs which associated with the artifact
-	BlobDigests    []string // list blobs which digest in the digests
+	ArtifactDigest  string   // list blobs which associated with the artifact
+	ArtifactDigests []string // list blobs which associated with these artifacts
+	BlobDigests     []string // list blobs which digest in the digests
+	ProjectID       int64    // list blobs which associated with the project
 }

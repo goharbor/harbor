@@ -15,3 +15,5 @@
 package pkg
 
 //go:generate mockery -case snake -dir ../../pkg/blob -name Manager -output ./blob -outpkg blob
+//go:generate mockery -case snake -dir ../../pkg/quota -name Manager -output ./quota -outpkg quota
+//go:generate mockery -case snake -dir ../../pkg/quota/driver -name Driver -output ./quota/driver -outpkg driver

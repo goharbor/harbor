@@ -29,6 +29,8 @@ var (
 
 // Controller defines the operations related with blobs
 type Controller interface {
+	// Get get the project by project id
+	Get(ctx context.Context, projectID int64) (*models.Project, error)
 	// GetByName get the project by project name
 	GetByName(ctx context.Context, projectName string) (*models.Project, error)
 }
@@ -42,6 +44,18 @@ func NewController() Controller {
 
 type controller struct {
 	projectMgr project.Manager
+}
+
+func (c *controller) Get(ctx context.Context, projectID int64) (*models.Project, error) {
+	p, err := c.projectMgr.Get(projectID)
+	if err != nil {
+		return nil, err
+	}
+	if p == nil {
+		return nil, ierror.NotFoundError(nil).WithMessage("project %d not found", projectID)
+	}
+
+	return p, nil
 }
 
 func (c *controller) GetByName(ctx context.Context, projectName string) (*models.Project, error) {

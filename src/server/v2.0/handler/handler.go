@@ -19,7 +19,10 @@ import (
 	"net/http"
 
 	serror "github.com/goharbor/harbor/src/server/error"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/blob"
 	"github.com/goharbor/harbor/src/server/middleware/path"
+	"github.com/goharbor/harbor/src/server/middleware/quota"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 )
 
@@ -33,6 +36,10 @@ func New() http.Handler {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	api.RegisterMiddleware("CopyArtifact", middleware.Chain(quota.CopyArtifactMiddleware(), blob.CopyArtifactMiddleware()))
+	api.RegisterMiddleware("DeleteArtifact", quota.RefreshForProjectMiddleware())
+	api.RegisterMiddleware("DeleteRepository", quota.RefreshForProjectMiddleware())
 
 	api.ServeError = serveError
 

@@ -20,6 +20,7 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/garyburd/redigo/redis"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	util "github.com/goharbor/harbor/src/common/utils/redis"
 	ierror "github.com/goharbor/harbor/src/internal/error"
@@ -43,6 +44,9 @@ type Controller interface {
 	// AssociateWithProjectByDigest associate blob with project by blob digest
 	AssociateWithProjectByDigest(ctx context.Context, blobDigest string, projectID int64) error
 
+	// CalculateTotalSizeByProject returns the sum of the blob size for the project
+	CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeign bool) (int64, error)
+
 	// Ensure create blob when it not exist.
 	Ensure(ctx context.Context, digest string, contentType string, size int64) (int64, error)
 
@@ -51,10 +55,16 @@ type Controller interface {
 	// and also check the blob associated with the project when `IsAssociatedWithProject` option provied.
 	Exist(ctx context.Context, digest string, options ...Option) (bool, error)
 
+	// FindMissingAssociationsForProjectByArtifact returns blobs which are associated with artifact but not associated with project
+	FindMissingAssociationsForProject(ctx context.Context, projectID int64, blobs []*blob.Blob) ([]*blob.Blob, error)
+
 	// Get get the blob by digest,
 	// it check the blob associated with the artifact when `IsAssociatedWithArtifact` option provided,
 	// and also check the blob associated with the project when `IsAssociatedWithProject` option provied.
 	Get(ctx context.Context, digest string, options ...Option) (*blob.Blob, error)
+
+	// List list blobs
+	List(ctx context.Context, params blob.ListParams) ([]*blob.Blob, error)
 
 	// Sync create blobs from `References` when they are not exist
 	// and update the blob content type when they are exist,
@@ -81,7 +91,7 @@ type controller struct {
 }
 
 func (c *controller) AssociateWithArtifact(ctx context.Context, blobDigests []string, artifactDigest string) error {
-	exist, err := c.blobMgr.IsAssociatedWithArtifact(ctx, artifactDigest, artifactDigest)
+	exist, err := c.Exist(ctx, artifactDigest, IsAssociatedWithArtifact(artifactDigest))
 	if err != nil {
 		return err
 	}
@@ -91,16 +101,14 @@ func (c *controller) AssociateWithArtifact(ctx context.Context, blobDigests []st
 		return nil
 	}
 
-	for _, blobDigest := range blobDigests {
+	for _, blobDigest := range append(blobDigests, artifactDigest) {
 		_, err := c.blobMgr.AssociateWithArtifact(ctx, blobDigest, artifactDigest)
 		if err != nil {
 			return err
 		}
 	}
 
-	// process manifest as blob
-	_, err = c.blobMgr.AssociateWithArtifact(ctx, artifactDigest, artifactDigest)
-	return err
+	return nil
 }
 
 func (c *controller) AssociateWithProjectByID(ctx context.Context, blobID int64, projectID int64) error {
@@ -118,44 +126,8 @@ func (c *controller) AssociateWithProjectByDigest(ctx context.Context, blobDiges
 	return err
 }
 
-func (c *controller) Get(ctx context.Context, digest string, options ...Option) (*blob.Blob, error) {
-	if digest == "" {
-		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).WithMessage("require Digest")
-	}
-
-	blob, err := c.blobMgr.Get(ctx, digest)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := &Options{}
-	for _, f := range options {
-		f(opts)
-	}
-
-	if opts.ProjectID != 0 {
-		exist, err := c.blobMgr.IsAssociatedWithProject(ctx, digest, opts.ProjectID)
-		if err != nil {
-			return nil, err
-		}
-
-		if !exist {
-			return nil, ierror.NotFoundError(nil).WithMessage("blob %s is not associated with the project %d", digest, opts.ProjectID)
-		}
-	}
-
-	if opts.ArtifactDigest != "" {
-		exist, err := c.blobMgr.IsAssociatedWithArtifact(ctx, digest, opts.ArtifactDigest)
-		if err != nil {
-			return nil, err
-		}
-
-		if !exist {
-			return nil, ierror.NotFoundError(nil).WithMessage("blob %s is not associated with the artifact %s", digest, opts.ArtifactDigest)
-		}
-	}
-
-	return blob, nil
+func (c *controller) CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeign bool) (int64, error) {
+	return c.blobMgr.CalculateTotalSizeByProject(ctx, projectID, excludeForeign)
 }
 
 func (c *controller) Ensure(ctx context.Context, digest string, contentType string, size int64) (blobID int64, err error) {
@@ -186,6 +158,69 @@ func (c *controller) Exist(ctx context.Context, digest string, options ...Option
 	}
 
 	return true, nil
+}
+
+func (c *controller) FindMissingAssociationsForProject(ctx context.Context, projectID int64, blobs []*blob.Blob) ([]*blob.Blob, error) {
+	if len(blobs) == 0 {
+		return nil, nil
+	}
+
+	var digests []string
+	for _, blob := range blobs {
+		digests = append(digests, blob.Digest)
+	}
+
+	associatedBlobs, err := c.blobMgr.List(ctx, blob.ListParams{BlobDigests: digests, ProjectID: projectID})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(associatedBlobs) == 0 {
+		return blobs, nil
+	} else if len(associatedBlobs) == len(blobs) {
+		return nil, nil
+	}
+
+	associated := make(map[int64]bool, len(associatedBlobs))
+	for _, blob := range associatedBlobs {
+		associated[blob.ID] = true
+	}
+
+	var results []*models.Blob
+	for _, blob := range blobs {
+		if !associated[blob.ID] {
+			results = append(results, blob)
+		}
+	}
+
+	return results, nil
+}
+
+func (c *controller) Get(ctx context.Context, digest string, options ...Option) (*blob.Blob, error) {
+	if digest == "" {
+		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).WithMessage("require digest")
+	}
+
+	opts := newOptions(options...)
+
+	params := blob.ListParams{
+		ArtifactDigest: opts.ArtifactDigest,
+		BlobDigests:    []string{digest},
+		ProjectID:      opts.ProjectID,
+	}
+
+	blobs, err := c.blobMgr.List(ctx, params)
+	if err != nil {
+		return nil, err
+	} else if len(blobs) == 0 {
+		return nil, ierror.NotFoundError(nil).WithMessage("blob %s not found", digest)
+	}
+
+	return blobs[0], nil
+}
+
+func (c *controller) List(ctx context.Context, params blob.ListParams) ([]*blob.Blob, error) {
+	return c.blobMgr.List(ctx, params)
 }
 
 func (c *controller) Sync(ctx context.Context, references []distribution.Descriptor) error {

@@ -516,8 +516,8 @@ func (c *controllerTestSuite) TestRemoveFrom() {
 
 func (c *controllerTestSuite) TestWalk() {
 	c.artMgr.On("List").Return([]*artifact.Artifact{
-		{ManifestMediaType: v1.MediaTypeImageManifest},
-		{ManifestMediaType: v1.MediaTypeImageManifest},
+		{Digest: "d1", ManifestMediaType: v1.MediaTypeImageManifest},
+		{Digest: "d2", ManifestMediaType: v1.MediaTypeImageManifest},
 	}, nil)
 
 	{

@@ -36,3 +36,11 @@ func IsAssociatedWithProject(projectID int64) Option {
 		opts.ProjectID = projectID
 	}
 }
+
+func newOptions(options ...Option) *Options {
+	opts := &Options{}
+	for _, f := range options {
+		f(opts)
+	}
+	return opts
+}

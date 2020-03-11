@@ -2,28 +2,27 @@ package immutable
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/core/middlewares/util"
-	internal_orm "github.com/goharbor/harbor/src/internal/orm"
-	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/opencontainers/go-digest"
-	"time"
-
 	"fmt"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/pkg/immutabletag"
-	immu_model "github.com/goharbor/harbor/src/pkg/immutabletag/model"
-	"github.com/goharbor/harbor/src/pkg/tag"
-	tag_model "github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
+
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	internal_orm "github.com/goharbor/harbor/src/internal/orm"
+	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/immutabletag"
+	immu_model "github.com/goharbor/harbor/src/pkg/immutabletag/model"
+	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/pkg/tag"
+	tag_model "github.com/goharbor/harbor/src/pkg/tag/model/tag"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/opencontainers/go-digest"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type HandlerSuite struct {
@@ -55,7 +54,7 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 	*req = *(req.WithContext(internal_orm.NewContext(context.TODO(), dao.GetOrmer())))
 	*req = *(req.WithContext(context.WithValue(req.Context(), middleware.ArtifactInfoKey, afInfo)))
 	h := Middleware()(n)
-	h.ServeHTTP(util.NewCustomResponseWriter(rr), req)
+	h.ServeHTTP(rr, req)
 
 	return rr.Code
 }

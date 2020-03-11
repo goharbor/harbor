@@ -22,6 +22,7 @@ import (
 	"net"
 	"net/url"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -278,4 +279,15 @@ func ParseJSONInt(value interface{}) (int, bool) {
 	default:
 		return 0, false
 	}
+}
+
+// FindNamedMatches returns named matches of the regexp groups
+func FindNamedMatches(regex *regexp.Regexp, str string) map[string]string {
+	match := regex.FindStringSubmatch(str)
+
+	results := map[string]string{}
+	for i, name := range match {
+		results[regex.SubexpNames()[i]] = name
+	}
+	return results
 }

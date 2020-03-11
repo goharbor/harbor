@@ -19,6 +19,8 @@ import (
 	"regexp"
 
 	"github.com/docker/distribution"
+	"github.com/opencontainers/go-digest"
+
 	// docker schema1 manifest
 	_ "github.com/docker/distribution/manifest/schema1"
 	// docker schema2 manifest
@@ -64,7 +66,7 @@ var (
 
 // ParseName returns name value from distribution API URL path
 func ParseName(path string) string {
-	m := findNamedMatches(extractNameRegexp, path)
+	m := utils.FindNamedMatches(extractNameRegexp, path)
 	if len(m) > 0 {
 		return m["name"]
 	}
@@ -80,7 +82,7 @@ func ParseProjectName(path string) string {
 
 // ParseSessionID returns session id value from distribution API URL path
 func ParseSessionID(path string) string {
-	m := findNamedMatches(extractSessionIDRegexp, path)
+	m := utils.FindNamedMatches(extractSessionIDRegexp, path)
 	if len(m) > 0 {
 		return m["session_id"]
 	}
@@ -88,12 +90,22 @@ func ParseSessionID(path string) string {
 	return ""
 }
 
-func findNamedMatches(regex *regexp.Regexp, str string) map[string]string {
-	match := regex.FindStringSubmatch(str)
-
-	results := map[string]string{}
-	for i, name := range match {
-		results[regex.SubexpNames()[i]] = name
+// ParseRef parse "repository:tag" or "repository@digest" into repository and reference parts
+func ParseRef(s string) (string, string, error) {
+	matches := ref.ReferenceRegexp.FindStringSubmatch(s)
+	if matches == nil {
+		return "", "", fmt.Errorf("invalid input: %s", s)
 	}
-	return results
+
+	repository := matches[1]
+	reference := matches[2]
+	if matches[3] != "" {
+		_, err := digest.Parse(matches[3])
+		if err != nil {
+			return "", "", fmt.Errorf("invalid input: %s", s)
+		}
+		reference = matches[3]
+	}
+
+	return repository, reference, nil
 }

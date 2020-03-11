@@ -15,17 +15,27 @@
 package blob
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
+	"github.com/docker/distribution/manifest/schema2"
+	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	htesting "github.com/goharbor/harbor/src/testing"
+	"github.com/goharbor/harbor/src/testing/mock"
+	blobtesting "github.com/goharbor/harbor/src/testing/pkg/blob"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 )
 
 type ControllerTestSuite struct {
 	htesting.Suite
+}
+
+func (suite *ControllerTestSuite) SetupSuite() {
+	suite.Suite.SetupSuite()
+	suite.Suite.ClearTables = []string{"blob", "artifact_blob", "project_blob"}
 }
 
 func (suite *ControllerTestSuite) prepareBlob() string {
@@ -73,6 +83,29 @@ func (suite *ControllerTestSuite) TestAttachToProjectByDigest() {
 	})
 }
 
+func (suite *ControllerTestSuite) TestCalculateTotalSizeByProject() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		ctx := suite.Context()
+
+		id1, _ := Ctl.Ensure(ctx, suite.DigestString(), schema2.MediaTypeForeignLayer, 100)
+		Ctl.AssociateWithProjectByID(ctx, id1, projectID)
+		id2, _ := Ctl.Ensure(ctx, suite.DigestString(), schema2.MediaTypeLayer, 100)
+		Ctl.AssociateWithProjectByID(ctx, id2, projectID)
+
+		{
+			size, err := Ctl.CalculateTotalSizeByProject(ctx, projectID, true)
+			suite.Nil(err)
+			suite.Equal(int64(100), size)
+		}
+
+		{
+			size, err := Ctl.CalculateTotalSizeByProject(ctx, projectID, false)
+			suite.Nil(err)
+			suite.Equal(int64(200), size)
+		}
+	})
+}
+
 func (suite *ControllerTestSuite) TestEnsure() {
 	ctx := suite.Context()
 
@@ -95,6 +128,45 @@ func (suite *ControllerTestSuite) TestExist() {
 	exist, err := Ctl.Exist(ctx, suite.DigestString())
 	suite.Nil(err)
 	suite.False(exist)
+}
+
+func (suite *ControllerTestSuite) TestFindMissingAssociationsForProjectByArtifact() {
+	blobMgr := &blobtesting.Manager{}
+
+	ctl := &controller{blobMgr: blobMgr}
+
+	ctx := context.TODO()
+	projectID := int64(1)
+
+	{
+		blobs, err := ctl.FindMissingAssociationsForProject(ctx, projectID, nil)
+		suite.Nil(err)
+		suite.Len(blobs, 0)
+	}
+
+	blobs := []*blob.Blob{{ID: 1}, {ID: 2}, {ID: 3}}
+
+	{
+		mock.OnAnything(blobMgr, "List").Return(nil, nil).Once()
+		missing, err := ctl.FindMissingAssociationsForProject(ctx, projectID, blobs)
+		suite.Nil(err)
+		suite.Len(missing, len(blobs))
+	}
+
+	{
+		mock.OnAnything(blobMgr, "List").Return(blobs, nil).Once()
+		missing, err := ctl.FindMissingAssociationsForProject(ctx, projectID, blobs)
+		suite.Nil(err)
+		suite.Len(missing, 0)
+	}
+
+	{
+		associated := []*blob.Blob{{ID: 1}}
+		mock.OnAnything(blobMgr, "List").Return(associated, nil).Once()
+		missing, err := ctl.FindMissingAssociationsForProject(ctx, projectID, blobs)
+		suite.Nil(err)
+		suite.Len(missing, len(blobs)-len(associated))
+	}
 }
 
 func (suite *ControllerTestSuite) TestGet() {
