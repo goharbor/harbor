@@ -18,7 +18,7 @@ type RESTDriver struct {
 // NewRESTDriver - Create RESTDriver
 func NewRESTDriver(configRESTURL string, modifiers ...modifier.Modifier) *RESTDriver {
 	if commonhttp.InternalTLSEnabled() {
-		tr := commonhttp.GetHTTPTransport(commonhttp.InternalTransport)
+		tr := commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
 		return &RESTDriver{configRESTURL: configRESTURL, client: commonhttp.NewClient(&http.Client{Transport: tr}, modifiers...)}
 
 	}

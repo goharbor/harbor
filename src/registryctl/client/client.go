@@ -58,7 +58,7 @@ func NewClient(baseURL string, cfg *Config) Client {
 	if cfg != nil {
 		authorizer := auth.NewSecretAuthorizer(cfg.Secret)
 		client.client = common_http.NewClient(&http.Client{
-			Transport: common_http.GetHTTPTransport(common_http.InternalTransport),
+			Transport: common_http.GetHTTPTransport(common_http.SecureTransport),
 		}, authorizer)
 	}
 	return client

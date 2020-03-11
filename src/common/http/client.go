@@ -16,16 +16,16 @@ package http
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"github.com/goharbor/harbor/src/common/http/modifier"
-	"github.com/goharbor/harbor/src/internal"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
+
+	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/internal"
 )
 
 const (
@@ -33,8 +33,7 @@ const (
 	DefaultTransport = iota
 	// InsecureTransport used to get the insecure http Transport
 	InsecureTransport
-	// InternalTransport used to get the internal secure http Transport
-	InternalTransport
+
 	// SecureTransport used to get the external secure http Transport
 	SecureTransport
 )
@@ -42,26 +41,22 @@ const (
 var (
 	secureHTTPTransport   *http.Transport
 	insecureHTTPTransport *http.Transport
-	internalTransport     *http.Transport
 )
 
 func init() {
 
-	secureHTTPTransport = &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
-		},
-	}
+	secureHTTPTransport = http.DefaultTransport.(*http.Transport).Clone()
 
-	insecureHTTPTransport = &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
-	}
+	insecureHTTPTransport = http.DefaultTransport.(*http.Transport).Clone()
+	insecureHTTPTransport.TLSClientConfig.InsecureSkipVerify = true
 
-	initInternalTransport()
+	if InternalTLSEnabled() {
+		tlsConfig, err := GetInternalTLSConfig()
+		if err != nil {
+			panic(err)
+		}
+		secureHTTPTransport.TLSClientConfig = tlsConfig
+	}
 }
 
 // Client is a util for common HTTP operations, such Get, Head, Post, Put and Delete.
@@ -71,24 +66,6 @@ type Client struct {
 	client    *http.Client
 }
 
-func initInternalTransport() {
-	if InternalTLSEnabled() {
-		tlsConfig, err := GetInternalTLSConfig()
-		if err != nil {
-			panic(err)
-		}
-		internalTransport = &http.Transport{
-			TLSClientConfig: tlsConfig,
-		}
-	} else {
-		internalTransport = &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		}
-	}
-}
-
 // GetHTTPTransport returns HttpTransport based on insecure configuration
 func GetHTTPTransport(clientType uint) *http.Transport {
 	switch clientType {
@@ -96,8 +73,6 @@ func GetHTTPTransport(clientType uint) *http.Transport {
 		return secureHTTPTransport.Clone()
 	case InsecureTransport:
 		return insecureHTTPTransport.Clone()
-	case InternalTransport:
-		return internalTransport.Clone()
 	default:
 		// default Transport is secure one
 		return secureHTTPTransport.Clone()

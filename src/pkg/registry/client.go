@@ -113,7 +113,7 @@ func NewClient(url, username, password string, insecure bool) Client {
 		transportType = commonhttp.SecureTransport
 	}
 	if _, ok := localRegistryURL[strings.TrimRight(url, "/")]; ok {
-		transportType = commonhttp.InternalTransport
+		transportType = commonhttp.SecureTransport
 	}
 
 	return &client{
@@ -134,7 +134,7 @@ func NewClientWithAuthorizer(url string, authorizer internal.Authorizer, insecur
 		transportType = commonhttp.SecureTransport
 	}
 	if _, ok := localRegistryURL[strings.TrimRight(url, "/")]; ok {
-		transportType = commonhttp.InternalTransport
+		transportType = commonhttp.SecureTransport
 	}
 	return &client{
 		url:        url,

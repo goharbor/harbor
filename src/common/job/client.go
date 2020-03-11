@@ -63,7 +63,7 @@ func Init() {
 func NewDefaultClient(endpoint, secret string) *DefaultClient {
 	var c *commonhttp.Client
 	httpCli := &http.Client{
-		Transport: commonhttp.GetHTTPTransport(commonhttp.InternalTransport),
+		Transport: commonhttp.GetHTTPTransport(commonhttp.SecureTransport),
 	}
 	if len(secret) > 0 {
 		c = commonhttp.NewClient(httpCli, auth.NewSecretAuthorizer(secret))
@@ -81,7 +81,7 @@ func NewDefaultClient(endpoint, secret string) *DefaultClient {
 func NewReplicationClient(endpoint, secret string) *DefaultClient {
 	var tr *http.Transport
 	if endpoint == config.InternalCoreURL() {
-		tr = commonhttp.GetHTTPTransport(commonhttp.InternalTransport)
+		tr = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
 	} else {
 		tr = commonhttp.GetHTTPTransport(commonhttp.DefaultTransport)
 	}

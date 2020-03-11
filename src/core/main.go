@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -27,6 +26,7 @@ import (
 	_ "github.com/astaxie/beego/session/redis"
 	_ "github.com/goharbor/harbor/src/api/event/handler"
 	"github.com/goharbor/harbor/src/common/dao"
+	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -162,15 +162,14 @@ func main() {
 
 	server.RegisterRoutes()
 
-	iTLSEnabled := os.Getenv("INTERNAL_TLS_ENABLED")
-	if strings.ToLower(iTLSEnabled) == "true" {
+	if common_http.InternalTLSEnabled() {
 		log.Info("internal TLS enabled, Init TLS ...")
 		iTLSKeyPath := os.Getenv("INTERNAL_TLS_KEY_PATH")
 		iTLSCertPath := os.Getenv("INTERNAL_TLS_CERT_PATH")
-		iTrustCA := os.Getenv("INTERNAL_TLS_TRUST_CA_PATH")
 
-		log.Infof("load client key: %s client cert: %s client TrustCA %s", iTLSKeyPath, iTLSCertPath, iTrustCA)
+		log.Infof("load client key: %s client cert: %s", iTLSKeyPath, iTLSCertPath)
 		// uncomment following if harbor2 is ready
+		// iTrustCA := os.Getenv("INTERNAL_TLS_TRUST_CA_PATH")
 		// beego.BConfig.Listen.EnableMutualHTTPS = true
 		// beego.BConfig.Listen.TrustCaFile = iTrustCA
 		beego.BConfig.Listen.EnableHTTPS = true

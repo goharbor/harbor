@@ -60,7 +60,7 @@ func (s *Scheduler) Run(ctx job.Context, params job.Parameters) error {
 	policyID := (int64)(params["policy_id"].(float64))
 	cred := auth.NewSecretAuthorizer(os.Getenv("JOBSERVICE_SECRET"))
 	client := common_http.NewClient(&http.Client{
-		Transport: common_http.GetHTTPTransport(common_http.InternalTransport),
+		Transport: common_http.GetHTTPTransport(common_http.SecureTransport),
 	}, cred)
 	if err := client.Post(url, struct {
 		PolicyID int64 `json:"policy_id"`

@@ -34,7 +34,7 @@ func newProxy() http.Handler {
 	}
 	proxy := httputil.NewSingleHostReverseProxy(url)
 	if commonhttp.InternalTLSEnabled() {
-		proxy.Transport = commonhttp.GetHTTPTransport(commonhttp.InternalTransport)
+		proxy.Transport = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
 	}
 
 	proxy.Director = basicAuthDirector(proxy.Director)

@@ -31,7 +31,7 @@ type ChartClient struct {
 // NewChartClient is constructor of ChartClient
 // credential can be nil
 func NewChartClient(credential *Credential) *ChartClient { // Create http client with customized timeouts
-	tr := commonhttp.GetHTTPTransport(commonhttp.InternalTransport)
+	tr := commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
 	tr.MaxIdleConns = maxIdleConnections
 	tr.IdleConnTimeout = idleConnectionTimeout
 	client := &http.Client{

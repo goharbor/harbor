@@ -72,7 +72,7 @@ type adapter struct {
 func newAdapter(registry *model.Registry) (*adapter, error) {
 	var transport *http.Transport
 	if registry.URL == config.GetCoreURL() {
-		transport = common_http.GetHTTPTransport(common_http.InternalTransport)
+		transport = common_http.GetHTTPTransport(common_http.SecureTransport)
 	} else {
 		transport = util.GetHTTPTransport(registry.Insecure)
 	}
