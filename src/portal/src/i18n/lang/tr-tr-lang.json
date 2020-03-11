@@ -349,7 +349,11 @@
         "DELETION_TITLE": "Robot hesaplarının kaldırılmasını onaylayın",
         "DELETION_SUMMARY": "Robot hesaplarını silmek istiyor musunuz {{param}}?",
         "PULL_IS_MUST": "Çekme izni varsayılan olarak kontrol edilir ve değiştirilemez.",
-        "EXPORT_TO_FILE": "dosyayı dışarı aktar"
+        "EXPORT_TO_FILE": "dosyayı dışarı aktar",
+        "EXPIRES_AT": "Expires At",
+        "EXPIRATION_TOOLTIP": "If not set, the expiration time of system configuration will be used",
+        "INVALID_VALUE": "The value of the expiration time is invalid",
+        "NEVER_EXPIRED": "Never Expired"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "DÜZENLE",
