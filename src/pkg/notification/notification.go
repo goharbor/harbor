@@ -45,7 +45,7 @@ func Init() {
 		model.EventTypeScanningCompleted, model.EventTypeScanningFailed, model.EventTypeProjectQuota,
 	)
 
-	initSupportedNotifyType(model.NotifyTypeHTTP)
+	initSupportedNotifyType(model.NotifyTypeHTTP, model.NotifyTypeSlack)
 
 	log.Info("notification initialization completed")
 }
