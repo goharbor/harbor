@@ -159,6 +159,7 @@ describe('WebhookComponent', () => {
     it('should disable webhook', async () => {
         await fixture.whenStable();
         component.selectedRow[0] = component.webhookList[0];
+        component.webhookList[0].enabled = true;
         component.switchWebhookStatus();
         fixture.detectChanges();
         await fixture.whenStable();
