@@ -33,6 +33,9 @@ func init() {
 	if err := trans.RegisterFactory(model.ResourceTypeImage, factory); err != nil {
 		log.Errorf("failed to register transfer factory: %v", err)
 	}
+	if err := trans.RegisterFactory(model.ResourceTypeArtifact, factory); err != nil {
+		log.Errorf("failed to register transfer factory: %v", err)
+	}
 }
 
 type repository struct {

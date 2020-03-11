@@ -19,6 +19,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/event"
+	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"strings"
 	"time"
 
@@ -139,6 +141,15 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, tags
 			return false, 0, err
 		}
 	}
+	// fire event
+	e := &event.PushArtifactEventMetadata{
+		Ctx:      ctx,
+		Artifact: artifact,
+	}
+	if len(tags) > 0 {
+		e.Tag = tags[0]
+	}
+	evt.BuildAndPublish(e)
 	return created, artifact.ID, nil
 }
 
@@ -363,7 +374,18 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 		return err
 	}
 
-	// TODO fire delete artifact event
+	// only fire event for the root parent artifact
+	if isRoot {
+		var tags []string
+		for _, tag := range art.Tags {
+			tags = append(tags, tag.Name)
+		}
+		evt.BuildAndPublish(&event.DeleteArtifactEventMetadata{
+			Ctx:      ctx,
+			Artifact: &art.Artifact,
+			Tags:     tags,
+		})
+	}
 
 	return nil
 }
@@ -428,7 +450,6 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 	if err != nil {
 		return 0, err
 	}
-	// TODO fire event
 	return id, nil
 }
 

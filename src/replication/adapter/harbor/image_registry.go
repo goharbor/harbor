@@ -62,7 +62,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 				}
 
 				rawResources[index] = &model.Resource{
-					Type:     model.ResourceTypeImage,
+					Type:     model.ResourceTypeArtifact,
 					Registry: a.registry,
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{
