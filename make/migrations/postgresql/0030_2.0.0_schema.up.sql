@@ -105,7 +105,10 @@ CREATE TABLE artifact_reference
   id          SERIAL PRIMARY KEY NOT NULL,
   parent_id   int NOT NULL,
   child_id    int NOT NULL,
+  child_digest varchar(255) NOT NULL ,
   platform    varchar(255),
+  urls        varchar(1024),
+  annotations jsonb,
   FOREIGN KEY (parent_id) REFERENCES artifact(id),
   FOREIGN KEY (child_id) REFERENCES artifact(id),
   CONSTRAINT  unique_reference UNIQUE (parent_id, child_id)

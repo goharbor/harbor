@@ -63,8 +63,11 @@ func (i *indexResolver) ResolveMetadata(ctx context.Context, manifest []byte, ar
 			return err
 		}
 		art.References = append(art.References, &artifact.Reference{
-			ChildID:  ar.ID,
-			Platform: mani.Platform,
+			ChildID:     ar.ID,
+			ChildDigest: digest,
+			Platform:    mani.Platform,
+			URLs:        mani.URLs,
+			Annotations: mani.Annotations,
 		})
 	}
 	return nil

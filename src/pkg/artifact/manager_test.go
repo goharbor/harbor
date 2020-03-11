@@ -122,9 +122,6 @@ func (m *managerTestSuite) TestAssemble() {
 			ChildID:  3,
 		},
 	}, nil)
-	m.dao.On("Get").Return(&dao.Artifact{
-		Digest: "digest",
-	}, nil)
 	artifact, err := m.mgr.assemble(nil, art)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
@@ -244,15 +241,10 @@ func (m *managerTestSuite) TestListReferences() {
 			ChildID:  2,
 		},
 	}, nil)
-	m.dao.On("Get").Return(&dao.Artifact{
-		ID:     1,
-		Digest: "digest",
-	}, nil)
 	references, err := m.mgr.ListReferences(nil, nil)
 	m.Require().Nil(err)
 	m.Require().Len(references, 1)
 	m.Equal(int64(1), references[0].ID)
-	m.Equal("digest", references[0].ChildDigest)
 }
 
 func (m *managerTestSuite) TestDeleteReference() {
