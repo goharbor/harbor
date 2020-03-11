@@ -23,7 +23,7 @@ TEMP=$(mktemp -d ${TMPDIR-/tmp}/clair-adapter.XXXXXX)
 git clone https://github.com/goharbor/harbor-scanner-clair.git $TEMP
 cd $TEMP; git checkout $VERSION; cd -
 
-echo "Building Clair adapter binary based on golang:1.13.4..."
+echo "Building Clair adapter binary based on golang:1.13.8..."
 cp Dockerfile.binary $TEMP
 docker build -f $TEMP/Dockerfile.binary -t clair-adapter-golang $TEMP
 

@@ -44,13 +44,13 @@ version				 | set harbor version
 ### Build and run harbor from source code
 
 ```sh
-make install GOBUILDIMAGE=golang:1.13.4 COMPILETAG=compile_golangimage NOTARYFLAG=true
+make install GOBUILDIMAGE=golang:1.13.8 COMPILETAG=compile_golangimage NOTARYFLAG=true
 ```
 
 ### Package offline installer
 
 ```sh
-make package_offline GOBUILDIMAGE=golang:1.13.4 COMPILETAG=compile_golangimage NOTARYFLAG=true
+make package_offline GOBUILDIMAGE=golang:1.13.8 COMPILETAG=compile_golangimage NOTARYFLAG=true
 ```
 
 ### Start harbor with notary
