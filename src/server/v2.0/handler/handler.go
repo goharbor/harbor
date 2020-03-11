@@ -15,10 +15,12 @@
 package handler
 
 import (
-	serror "github.com/goharbor/harbor/src/server/error"
-	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	"log"
 	"net/http"
+
+	serror "github.com/goharbor/harbor/src/server/error"
+	"github.com/goharbor/harbor/src/server/middleware/path"
+	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 )
 
 // New returns http handler for API V2.0
@@ -34,7 +36,9 @@ func New() http.Handler {
 
 	api.ServeError = serveError
 
-	return h
+	// HACK: Use path.EscapeMiddleware to escape same patterns of the URL before the swagger handler
+	// eg /api/v2.0/projects/library/repositories/hello/world/artifacts to /api/v2.0/projects/library/repositories/hello%2Fworld/artifacts
+	return path.EscapeMiddleware()(h)
 }
 
 // Before executing operation handler, go-swagger will bind a parameters object to a request and validate the request,

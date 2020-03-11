@@ -60,6 +60,14 @@ type artifactAPI struct {
 	tagCtl  tag.Controller
 }
 
+func (a *artifactAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+	if err := unescapePathParams(params, "RepositoryName"); err != nil {
+		a.SendError(ctx, err)
+	}
+
+	return nil
+}
+
 func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListArtifactsParams) middleware.Responder {
 	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceArtifact); err != nil {
 		return a.SendError(ctx, err)

@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/project"
@@ -42,6 +43,14 @@ type repositoryAPI struct {
 	proCtl  project.Controller
 	repoCtl repository.Controller
 	artCtl  artifact.Controller
+}
+
+func (r *repositoryAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+	if err := unescapePathParams(params, "RepositoryName"); err != nil {
+		r.SendError(ctx, err)
+	}
+
+	return nil
 }
 
 func (r *repositoryAPI) ListRepositories(ctx context.Context, params operation.ListRepositoriesParams) middleware.Responder {
