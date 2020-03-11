@@ -44,7 +44,7 @@ var (
 	Cli = func() Client {
 		url, _ := config.RegistryURL()
 		username, password := config.RegistryCredential()
-		return NewClient(url, username, password, true)
+		return NewClient(url, username, password, false)
 	}()
 
 	accepts = []string{
@@ -53,13 +53,6 @@ var (
 		v1.MediaTypeImageManifest,
 		schema2.MediaTypeManifest,
 		schema1.MediaTypeSignedManifest,
-	}
-
-	localRegistryURL = map[string]bool{
-		"http://registry:5000":  true,
-		"https://registry:5443": true,
-		"http://core:8080":      true,
-		"https://core:10443":    true,
 	}
 )
 
@@ -112,9 +105,6 @@ func NewClient(url, username, password string, insecure bool) Client {
 	} else {
 		transportType = commonhttp.SecureTransport
 	}
-	if _, ok := localRegistryURL[strings.TrimRight(url, "/")]; ok {
-		transportType = commonhttp.SecureTransport
-	}
 
 	return &client{
 		url:        url,
@@ -133,9 +123,7 @@ func NewClientWithAuthorizer(url string, authorizer internal.Authorizer, insecur
 	} else {
 		transportType = commonhttp.SecureTransport
 	}
-	if _, ok := localRegistryURL[strings.TrimRight(url, "/")]; ok {
-		transportType = commonhttp.SecureTransport
-	}
+
 	return &client{
 		url:        url,
 		authorizer: authorizer,

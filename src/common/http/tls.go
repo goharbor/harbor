@@ -74,9 +74,6 @@ func GetInternalCertPair() (tls.Certificate, error) {
 
 // GetInternalTLSConfig return a tls.Config for internal https communicate
 func GetInternalTLSConfig() (*tls.Config, error) {
-	// generate ca pool
-	caCertPool := GetInternalCA(nil)
-
 	// genrate key pair
 	cert, err := GetInternalCertPair()
 	if err != nil {
@@ -84,7 +81,6 @@ func GetInternalTLSConfig() (*tls.Config, error) {
 	}
 
 	return &tls.Config{
-		RootCAs:      caCertPool,
 		Certificates: []tls.Certificate{cert},
 	}, nil
 }

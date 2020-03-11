@@ -89,7 +89,7 @@ services:
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /etc/harbor/ssl/harbor_internal_ca.crt
+        target: /harbor_cust_cert/harbor_internal_ca.crt
       - type: bind
         source: {{internal_tls.registryctl_crt_path}}
         target: /etc/harbor/ssl/registryctl.crt
@@ -121,17 +121,6 @@ services:
       - SETUID
     volumes:
       - {{data_volume}}/database:/var/lib/postgresql/data:z
-{%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /etc/harbor/ssl/harbor_internal_ca.crt
-      - type: bind
-        source: {{internal_tls.harbor_db_crt_path}}
-        target: /etc/harbor/ssl/harbor_db.crt
-      - type: bind
-        source: {{internal_tls.harbor_db_key_path}}
-        target: /etc/harbor/ssl/harbor_db.key
-{% endif %}
     networks:
       harbor:
   {% if with_notary %}
@@ -187,7 +176,7 @@ services:
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /etc/harbor/ssl/harbor_internal_ca.crt
+        target: /harbor_cust_cert/harbor_internal_ca.crt 
       - type: bind
         source: {{internal_tls.core_crt_path}}
         target: /etc/harbor/ssl/core.crt
@@ -267,7 +256,7 @@ services:
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /etc/harbor/ssl/harbor_internal_ca.crt
+        target: /harbor_cust_cert/harbor_internal_ca.crt
       - type: bind
         source: {{internal_tls.job_service_crt_path}}
         target: /etc/harbor/ssl/job_service.crt
