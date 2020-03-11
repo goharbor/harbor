@@ -16,7 +16,7 @@ package migration
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/api/artifact/abstractor"
+	art "github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/project"
@@ -25,7 +25,7 @@ import (
 )
 
 func upgradeData(ctx context.Context) error {
-	abstractor := abstractor.NewAbstractor()
+	abstractor := art.NewAbstractor()
 	pros, err := project.Mgr.List()
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func upgradeData(ctx context.Context) error {
 	return setDataVersion(ctx, 30)
 }
 
-func abstract(ctx context.Context, abstractor abstractor.Abstractor, art *artifact.Artifact) error {
+func abstract(ctx context.Context, abstractor art.Abstractor, art *artifact.Artifact) error {
 	// abstract the children
 	for _, reference := range art.References {
 		child, err := artifact.Mgr.Get(ctx, reference.ChildID)

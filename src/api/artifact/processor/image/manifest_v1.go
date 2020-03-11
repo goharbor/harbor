@@ -18,32 +18,27 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/docker/distribution/manifest/schema1"
-	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
-	"github.com/goharbor/harbor/src/api/artifact/descriptor"
+	"github.com/goharbor/harbor/src/api/artifact/processor"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
 
 func init() {
-	rslver := &manifestV1Resolver{}
-	if err := resolver.Register(rslver, schema1.MediaTypeSignedManifest); err != nil {
-		log.Errorf("failed to register resolver for media type %s: %v", schema1.MediaTypeSignedManifest, err)
-		return
-	}
-	if err := descriptor.Register(rslver, schema1.MediaTypeSignedManifest); err != nil {
-		log.Errorf("failed to register descriptor for media type %s: %v", schema1.MediaTypeSignedManifest, err)
+	pc := &manifestV1Processor{}
+	if err := processor.Register(pc, schema1.MediaTypeSignedManifest); err != nil {
+		log.Errorf("failed to register processor for media type %s: %v", schema1.MediaTypeSignedManifest, err)
 		return
 	}
 }
 
-// manifestV1Resolver resolve artifact with docker v1 manifest
-type manifestV1Resolver struct {
+// manifestV1Processor processes image with docker v1 manifest
+type manifestV1Processor struct {
 }
 
-func (m *manifestV1Resolver) ResolveMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
+func (m *manifestV1Processor) AbstractMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
 	mani := &schema1.Manifest{}
-	if err := json.Unmarshal([]byte(manifest), mani); err != nil {
+	if err := json.Unmarshal(manifest, mani); err != nil {
 		return err
 	}
 	if artifact.ExtraAttrs == nil {
@@ -53,15 +48,15 @@ func (m *manifestV1Resolver) ResolveMetadata(ctx context.Context, manifest []byt
 	return nil
 }
 
-func (m *manifestV1Resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*resolver.Addition, error) {
+func (m *manifestV1Processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*processor.Addition, error) {
 	return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
 		WithMessage("addition %s isn't supported for %s(manifest version 1)", addition, ArtifactTypeImage)
 }
 
-func (m *manifestV1Resolver) GetArtifactType() string {
+func (m *manifestV1Processor) GetArtifactType() string {
 	return ArtifactTypeImage
 }
 
-func (m *manifestV1Resolver) ListAdditionTypes() []string {
+func (m *manifestV1Processor) ListAdditionTypes() []string {
 	return nil
 }

@@ -17,9 +17,9 @@ package chart
 import (
 	"context"
 	"encoding/json"
-	"github.com/goharbor/harbor/src/api/artifact/abstractor/blob"
-	resolv "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
-	"github.com/goharbor/harbor/src/api/artifact/descriptor"
+	ps "github.com/goharbor/harbor/src/api/artifact/processor"
+	"github.com/goharbor/harbor/src/api/artifact/processor/base"
+	"github.com/goharbor/harbor/src/api/artifact/processor/blob"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -34,61 +34,36 @@ const (
 	AdditionTypeValues       = "VALUES.YAML"
 	AdditionTypeReadme       = "README.MD"
 	AdditionTypeDependencies = "DEPENDENCIES"
+
 	// TODO import it from helm chart repository
 	mediaType = "application/vnd.cncf.helm.config.v1+json"
 )
 
 func init() {
-	resolver := &resolver{
+	pc := &processor{
 		blobFetcher:   blob.Fcher,
 		chartOperator: chart.Optr,
 	}
-	if err := resolv.Register(resolver, mediaType); err != nil {
-		log.Errorf("failed to register resolver for media type %s: %v", mediaType, err)
-		return
-	}
-	if err := descriptor.Register(resolver, mediaType); err != nil {
-		log.Errorf("failed to register descriptor for media type %s: %v", mediaType, err)
+	pc.ManifestProcessor = base.NewManifestProcessor()
+	if err := ps.Register(pc, mediaType); err != nil {
+		log.Errorf("failed to register processor for media type %s: %v", mediaType, err)
 		return
 	}
 }
 
-type resolver struct {
+type processor struct {
+	*base.ManifestProcessor
 	blobFetcher   blob.Fetcher
 	chartOperator chart.Operator
 }
 
-func (r *resolver) ResolveMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
-	m := &v1.Manifest{}
-	if err := json.Unmarshal(manifest, m); err != nil {
-		return err
-	}
-	digest := m.Config.Digest.String()
-	layer, err := r.blobFetcher.FetchLayer(artifact.RepositoryName, digest)
-	if err != nil {
-		return err
-	}
-	metadata := map[string]interface{}{}
-	if err := json.Unmarshal(layer, &metadata); err != nil {
-		return err
-	}
-	if artifact.ExtraAttrs == nil {
-		artifact.ExtraAttrs = map[string]interface{}{}
-	}
-	for k, v := range metadata {
-		artifact.ExtraAttrs[k] = v
-	}
-
-	return nil
-}
-
-func (r *resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*resolv.Addition, error) {
+func (p *processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*ps.Addition, error) {
 	if addition != AdditionTypeValues && addition != AdditionTypeReadme && addition != AdditionTypeDependencies {
 		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
 			WithMessage("addition %s isn't supported for %s", addition, ArtifactTypeChart)
 	}
 
-	_, content, err := r.blobFetcher.FetchManifest(artifact.RepositoryName, artifact.Digest)
+	_, content, err := p.blobFetcher.FetchManifest(artifact.RepositoryName, artifact.Digest)
 	if err != nil {
 		return nil, err
 	}
@@ -101,11 +76,11 @@ func (r *resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artif
 		// chart do have two layers, one is config, we should resolve the other one.
 		layerDgst := layer.Digest.String()
 		if layerDgst != manifest.Config.Digest.String() {
-			content, err = r.blobFetcher.FetchLayer(artifact.RepositoryName, layerDgst)
+			content, err = p.blobFetcher.FetchLayer(artifact.RepositoryName, layerDgst)
 			if err != nil {
 				return nil, err
 			}
-			chartDetails, err := r.chartOperator.GetDetails(content)
+			chartDetails, err := p.chartOperator.GetDetails(content)
 			if err != nil {
 				return nil, err
 			}
@@ -128,7 +103,7 @@ func (r *resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artif
 				additionContentType = "application/json; charset=utf-8"
 			}
 
-			return &resolv.Addition{
+			return &ps.Addition{
 				Content:     additionContent,
 				ContentType: additionContentType,
 			}, nil
@@ -137,10 +112,10 @@ func (r *resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artif
 	return nil, nil
 }
 
-func (r *resolver) GetArtifactType() string {
+func (p *processor) GetArtifactType() string {
 	return ArtifactTypeChart
 }
 
-func (r *resolver) ListAdditionTypes() []string {
+func (p *processor) ListAdditionTypes() []string {
 	return []string{AdditionTypeValues, AdditionTypeReadme, AdditionTypeDependencies}
 }

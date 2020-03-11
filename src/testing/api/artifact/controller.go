@@ -9,9 +9,9 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
-	q "github.com/goharbor/harbor/src/pkg/q"
+	processor "github.com/goharbor/harbor/src/api/artifact/processor"
 
-	resolver "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
+	q "github.com/goharbor/harbor/src/pkg/q"
 
 	time "time"
 )
@@ -150,15 +150,15 @@ func (_m *Controller) Get(ctx context.Context, id int64, option *artifact.Option
 }
 
 // GetAddition provides a mock function with given fields: ctx, artifactID, additionType
-func (_m *Controller) GetAddition(ctx context.Context, artifactID int64, additionType string) (*resolver.Addition, error) {
+func (_m *Controller) GetAddition(ctx context.Context, artifactID int64, additionType string) (*processor.Addition, error) {
 	ret := _m.Called(ctx, artifactID, additionType)
 
-	var r0 *resolver.Addition
-	if rf, ok := ret.Get(0).(func(context.Context, int64, string) *resolver.Addition); ok {
+	var r0 *processor.Addition
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string) *processor.Addition); ok {
 		r0 = rf(ctx, artifactID, additionType)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*resolver.Addition)
+			r0 = ret.Get(0).(*processor.Addition)
 		}
 	}
 

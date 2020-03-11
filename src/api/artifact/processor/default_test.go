@@ -12,39 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package descriptor
+package processor
 
 import (
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
-type descriptorTestSuite struct {
+type defaultProcessorTestSuite struct {
 	suite.Suite
 }
 
-func (d *descriptorTestSuite) TestParseArtifactType() {
+func (d *defaultProcessorTestSuite) TestGetArtifactType() {
 	mediaType := ""
-	typee := parseArtifactType(mediaType)
+	processor := &defaultProcessor{mediaType: mediaType}
+	typee := processor.GetArtifactType()
 	d.Equal(ArtifactTypeUnknown, typee)
 
 	mediaType = "unknown"
-	typee = parseArtifactType(mediaType)
+	processor = &defaultProcessor{mediaType: mediaType}
+	typee = processor.GetArtifactType()
 	d.Equal(ArtifactTypeUnknown, typee)
 
 	mediaType = "application/vnd.oci.image.config.v1+json"
-	typee = parseArtifactType(mediaType)
+	processor = &defaultProcessor{mediaType: mediaType}
+	typee = processor.GetArtifactType()
 	d.Equal("IMAGE", typee)
 
 	mediaType = "application/vnd.cncf.helm.chart.config.v1+json"
-	typee = parseArtifactType(mediaType)
+	processor = &defaultProcessor{mediaType: mediaType}
+	typee = processor.GetArtifactType()
 	d.Equal("HELM.CHART", typee)
 
 	mediaType = "application/vnd.sylabs.sif.config.v1+json"
-	typee = parseArtifactType(mediaType)
+	processor = &defaultProcessor{mediaType: mediaType}
+	typee = processor.GetArtifactType()
 	d.Equal("SIF", typee)
 }
 
-func TestDescriptorTestSuite(t *testing.T) {
-	suite.Run(t, &descriptorTestSuite{})
+func TestDefaultProcessorTestSuite(t *testing.T) {
+	suite.Run(t, &defaultProcessorTestSuite{})
 }

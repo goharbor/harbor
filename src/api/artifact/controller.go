@@ -19,14 +19,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/artifact/processor"
 	"github.com/goharbor/harbor/src/api/event"
-	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
-	"strings"
-	"time"
-
-	"github.com/goharbor/harbor/src/api/artifact/abstractor"
-	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
-	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/api/tag"
 	"github.com/goharbor/harbor/src/internal"
 	"github.com/goharbor/harbor/src/internal/orm"
@@ -36,16 +30,19 @@ import (
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/pkg/label"
+	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	"github.com/opencontainers/go-digest"
+	"strings"
+	"time"
 
 	// registry image resolvers
-	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
+	_ "github.com/goharbor/harbor/src/api/artifact/processor/image"
 	// register chart resolver
-	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/chart"
+	_ "github.com/goharbor/harbor/src/api/artifact/processor/chart"
 	// register CNAB resolver
-	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/cnab"
+	_ "github.com/goharbor/harbor/src/api/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -94,7 +91,7 @@ type Controller interface {
 	// GetAddition returns the addition of the artifact.
 	// The addition is different according to the artifact type:
 	// build history for image; values.yaml, readme and dependencies for chart, etc
-	GetAddition(ctx context.Context, artifactID int64, additionType string) (addition *resolver.Addition, err error)
+	GetAddition(ctx context.Context, artifactID int64, additionType string) (addition *processor.Addition, err error)
 	// AddLabel to the specified artifact
 	AddLabel(ctx context.Context, artifactID int64, labelID int64) (err error)
 	// RemoveLabel from the specified artifact
@@ -113,9 +110,9 @@ func NewController() Controller {
 		blobMgr:      blob.Mgr,
 		sigMgr:       signature.GetManager(),
 		labelMgr:     label.Mgr,
-		abstractor:   abstractor.NewAbstractor(),
 		immutableMtr: rule.NewRuleMatcher(),
 		regCli:       registry.Cli,
+		abstractor:   NewAbstractor(),
 	}
 }
 
@@ -129,9 +126,9 @@ type controller struct {
 	blobMgr      blob.Manager
 	sigMgr       signature.Manager
 	labelMgr     label.Manager
-	abstractor   abstractor.Abstractor
 	immutableMtr match.ImmutableTagMatcher
 	regCli       registry.Client
+	abstractor   Abstractor
 }
 
 func (c *controller) Ensure(ctx context.Context, repository, digest string, tags ...string) (bool, int64, error) {
@@ -187,7 +184,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 	}
 
 	// populate the artifact type
-	artifact.Type = descriptor.GetArtifactType(artifact.MediaType)
+	artifact.Type = processor.Get(artifact.MediaType).GetArtifactType()
 
 	// create it
 	// use orm.WithTransaction here to avoid the issue:
@@ -473,12 +470,12 @@ func (c *controller) UpdatePullTime(ctx context.Context, artifactID int64, tagID
 	return c.tagCtl.Update(ctx, tag, "PullTime")
 }
 
-func (c *controller) GetAddition(ctx context.Context, artifactID int64, addition string) (*resolver.Addition, error) {
+func (c *controller) GetAddition(ctx context.Context, artifactID int64, addition string) (*processor.Addition, error) {
 	artifact, err := c.artMgr.Get(ctx, artifactID)
 	if err != nil {
 		return nil, err
 	}
-	return c.abstractor.AbstractAddition(ctx, artifact, addition)
+	return processor.Get(artifact.MediaType).AbstractAddition(ctx, artifact, addition)
 }
 
 func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int64) error {
@@ -578,7 +575,7 @@ func (c *controller) populateLabels(ctx context.Context, art *Artifact) {
 }
 
 func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifact) {
-	types := descriptor.ListAdditionTypes(artifact.MediaType)
+	types := processor.Get(artifact.MediaType).ListAdditionTypes()
 	if len(types) > 0 {
 		version := internal.GetAPIVersion(ctx)
 		for _, t := range types {
