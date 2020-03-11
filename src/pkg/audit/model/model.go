@@ -12,7 +12,7 @@ func init() {
 // AuditLog ...
 type AuditLog struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
-	ProjectID    int       `orm:"column(project_id)" json:"project_id"`
+	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
 	Operation    string    `orm:"column(operation)" json:"operation"`
 	ResourceType string    `orm:"column(resource_type)"  json:"resource_type"`
 	Resource     string    `orm:"column(resource)" json:"resource"`

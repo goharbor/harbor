@@ -6,7 +6,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	notificationModel "github.com/goharbor/harbor/src/pkg/notification/model"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -48,11 +47,11 @@ func (f *fakedPolicyMgr) GetRelatedPolices(id int64, eventType string) ([]*model
 		{
 			ID: 1,
 			EventTypes: []string{
-				notificationModel.EventTypeUploadChart,
-				notificationModel.EventTypeDownloadChart,
-				notificationModel.EventTypeDeleteChart,
-				notificationModel.EventTypeScanningCompleted,
-				notificationModel.EventTypeScanningFailed,
+				model.EventTypeUploadChart,
+				model.EventTypeDownloadChart,
+				model.EventTypeDeleteChart,
+				model.EventTypeScanningCompleted,
+				model.EventTypeScanningFailed,
 			},
 			Targets: []models.EventTarget{
 				{
