@@ -17,7 +17,6 @@ package q
 import (
 	"fmt"
 	ierror "github.com/goharbor/harbor/src/internal/error"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -39,15 +38,6 @@ func Build(q string, pageNumber, pageSize int64) (*Query, error) {
 	if len(q) == 0 {
 		return query, nil
 	}
-	// unescape the query string
-	// when the query string is returned in the link header, they are all escaped
-	qs, err := url.QueryUnescape(q)
-	if err != nil {
-		return nil, ierror.New(err).
-			WithCode(ierror.BadRequestCode).
-			WithMessage("invalid query string: %s", q)
-	}
-	q = qs
 	params := strings.Split(q, ",")
 	for _, param := range params {
 		strs := strings.SplitN(param, "=", 2)
