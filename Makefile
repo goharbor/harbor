@@ -444,11 +444,11 @@ misspell:
 
 golint:
 	@echo checking golint...
-	@go list ./... | grep -v -E 'vendor|test' | xargs -L1 fgt golint
+	@go list ./... | grep -v -E 'vendor|test' | xargs fgt golint
 
 govet:
 	@echo checking govet...
-	@go list ./... | grep -v -E 'vendor|test' | xargs -L1 go vet
+	@cd src;go list ./... | grep -v -E 'vendor|test' | xargs go vet
 
 pushimage:
 	@echo "pushing harbor images ..."
