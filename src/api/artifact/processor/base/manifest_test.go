@@ -12,17 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package image
+package base
 
 import (
-	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/testing/api/artifact/abstractor/blob"
+	"github.com/goharbor/harbor/src/testing/api/artifact/processor/blob"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
-var (
+const (
 	manifest = `{
    "schemaVersion": 2,
    "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
@@ -118,54 +117,38 @@ var (
 }`
 )
 
-type manifestV2ResolverTestSuite struct {
+type manifestTestSuite struct {
 	suite.Suite
-	resolver    *manifestV2Resolver
+	processor   *ManifestProcessor
 	blobFetcher *blob.FakeFetcher
 }
 
-func (m *manifestV2ResolverTestSuite) SetupTest() {
+func (m *manifestTestSuite) SetupTest() {
 	m.blobFetcher = &blob.FakeFetcher{}
-	m.resolver = &manifestV2Resolver{
-		blobFetcher: m.blobFetcher,
+	m.processor = &ManifestProcessor{
+		BlobFetcher: m.blobFetcher,
 	}
-
 }
 
-func (m *manifestV2ResolverTestSuite) TestResolveMetadata() {
-	artifact := &artifact.Artifact{}
+func (m *manifestTestSuite) TestAbstractMetadata() {
+	// abstract all properties
+	art := &artifact.Artifact{}
 	m.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
-	err := m.resolver.ResolveMetadata(nil, []byte(manifest), artifact)
-	m.Require().Nil(err)
-	m.blobFetcher.AssertExpectations(m.T())
-	m.Assert().Equal("amd64", artifact.ExtraAttrs["architecture"].(string))
-	m.Assert().Equal("linux", artifact.ExtraAttrs["os"].(string))
-}
+	m.processor.AbstractMetadata(nil, []byte(manifest), art)
+	m.Len(art.ExtraAttrs, 9)
 
-func (m *manifestV2ResolverTestSuite) TestResolveAddition() {
-	// unknown addition
-	_, err := m.resolver.ResolveAddition(nil, nil, "unknown_addition")
-	m.True(ierror.IsErr(err, ierror.BadRequestCode))
+	// reset the mock
+	m.SetupTest()
 
-	// build history
-	artifact := &artifact.Artifact{}
-	m.blobFetcher.On("FetchManifest").Return("", []byte(manifest), nil)
+	// abstract the specified properties
+	m.processor.properties = []string{"os"}
+	art = &artifact.Artifact{}
 	m.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
-	addition, err := m.resolver.ResolveAddition(nil, artifact, AdditionTypeBuildHistory)
-	m.Require().Nil(err)
-	m.Equal("application/json; charset=utf-8", addition.ContentType)
-	m.Equal(`[{"created":"2019-01-01T01:29:27.416803627Z","created_by":"/bin/sh -c #(nop) COPY file:f77490f70ce51da25bd21bfc30cb5e1a24b2b65eb37d4af0c327ddc24f0986a6 in / "},{"created":"2019-01-01T01:29:27.650294696Z","created_by":"/bin/sh -c #(nop)  CMD [\"/hello\"]","empty_layer":true}]`, string(addition.Content))
+	m.processor.AbstractMetadata(nil, []byte(manifest), art)
+	m.Require().Len(art.ExtraAttrs, 1)
+	m.Equal("linux", art.ExtraAttrs["os"])
 }
 
-func (m *manifestV2ResolverTestSuite) TestGetArtifactType() {
-	m.Assert().Equal(ArtifactTypeImage, m.resolver.GetArtifactType())
-}
-
-func (m *manifestV2ResolverTestSuite) TestListAdditionTypes() {
-	additions := m.resolver.ListAdditionTypes()
-	m.EqualValues([]string{AdditionTypeBuildHistory}, additions)
-}
-
-func TestManifestV2ResolverTestSuite(t *testing.T) {
-	suite.Run(t, &manifestV2ResolverTestSuite{})
+func TestManifestSuite(t *testing.T) {
+	suite.Run(t, &manifestTestSuite{})
 }

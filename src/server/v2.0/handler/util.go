@@ -22,7 +22,7 @@ import (
 	"reflect"
 
 	"github.com/goharbor/harbor/src/api/artifact"
-	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
+	"github.com/goharbor/harbor/src/api/artifact/processor"
 	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
@@ -37,7 +37,7 @@ func boolValue(v *bool) bool {
 	return false
 }
 
-func resolveVulnerabilitiesAddition(ctx context.Context, artifact *artifact.Artifact) (*resolver.Addition, error) {
+func resolveVulnerabilitiesAddition(ctx context.Context, artifact *artifact.Artifact) (*processor.Addition, error) {
 	art := &v1.Artifact{
 		NamespaceID: artifact.ProjectID,
 		Repository:  artifact.RepositoryName,
@@ -67,7 +67,7 @@ func resolveVulnerabilitiesAddition(ctx context.Context, artifact *artifact.Arti
 
 	content, _ := json.Marshal(vulnerabilities)
 
-	return &resolver.Addition{
+	return &processor.Addition{
 		Content:     content,
 		ContentType: "application/json",
 	}, nil

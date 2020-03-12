@@ -18,9 +18,9 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/goharbor/harbor/src/api/artifact/abstractor/blob"
-	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
-	"github.com/goharbor/harbor/src/api/artifact/descriptor"
+	"github.com/goharbor/harbor/src/api/artifact/processor"
+	"github.com/goharbor/harbor/src/api/artifact/processor/base"
+	"github.com/goharbor/harbor/src/api/artifact/processor/blob"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -35,53 +35,27 @@ const (
 )
 
 func init() {
-	rslver := &manifestV2Resolver{
+	pc := &manifestV2Processor{
 		blobFetcher: blob.Fcher,
 	}
+	pc.ManifestProcessor = base.NewManifestProcessor("created", "author", "architecture", "os")
 	mediaTypes := []string{
 		v1.MediaTypeImageConfig,
 		schema2.MediaTypeImageConfig,
 	}
-	if err := resolver.Register(rslver, mediaTypes...); err != nil {
-		log.Errorf("failed to register resolver for media type %v: %v", mediaTypes, err)
-		return
-	}
-	if err := descriptor.Register(rslver, mediaTypes...); err != nil {
-		log.Errorf("failed to register descriptor for media type %v: %v", mediaTypes, err)
+	if err := processor.Register(pc, mediaTypes...); err != nil {
+		log.Errorf("failed to register processor for media type %v: %v", mediaTypes, err)
 		return
 	}
 }
 
-// manifestV2Resolver resolve artifact with OCI manifest and docker v2 manifest
-type manifestV2Resolver struct {
+// manifestV2Processor processes image with OCI manifest and docker v2 manifest
+type manifestV2Processor struct {
+	*base.ManifestProcessor
 	blobFetcher blob.Fetcher
 }
 
-func (m *manifestV2Resolver) ResolveMetadata(ctx context.Context, content []byte, artifact *artifact.Artifact) error {
-	manifest := &v1.Manifest{}
-	if err := json.Unmarshal(content, manifest); err != nil {
-		return err
-	}
-	digest := manifest.Config.Digest.String()
-	layer, err := m.blobFetcher.FetchLayer(artifact.RepositoryName, digest)
-	if err != nil {
-		return err
-	}
-	image := &v1.Image{}
-	if err := json.Unmarshal(layer, image); err != nil {
-		return err
-	}
-	if artifact.ExtraAttrs == nil {
-		artifact.ExtraAttrs = map[string]interface{}{}
-	}
-	artifact.ExtraAttrs["created"] = image.Created
-	artifact.ExtraAttrs["author"] = image.Author
-	artifact.ExtraAttrs["architecture"] = image.Architecture
-	artifact.ExtraAttrs["os"] = image.OS
-	return nil
-}
-
-func (m *manifestV2Resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*resolver.Addition, error) {
+func (m *manifestV2Processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*processor.Addition, error) {
 	if addition != AdditionTypeBuildHistory {
 		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
 			WithMessage("addition %s isn't supported for %s(manifest version 2)", addition, ArtifactTypeImage)
@@ -106,16 +80,16 @@ func (m *manifestV2Resolver) ResolveAddition(ctx context.Context, artifact *arti
 	if err != nil {
 		return nil, err
 	}
-	return &resolver.Addition{
+	return &processor.Addition{
 		Content:     content,
 		ContentType: "application/json; charset=utf-8",
 	}, nil
 }
 
-func (m *manifestV2Resolver) GetArtifactType() string {
+func (m *manifestV2Processor) GetArtifactType() string {
 	return ArtifactTypeImage
 }
 
-func (m *manifestV2Resolver) ListAdditionTypes() []string {
+func (m *manifestV2Processor) ListAdditionTypes() []string {
 	return []string{AdditionTypeBuildHistory}
 }
