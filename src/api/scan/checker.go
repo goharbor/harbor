@@ -19,7 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/scanner"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	models "github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 )
 
 // Checker checker which can check that the artifact is scannable
@@ -31,24 +31,28 @@ type Checker interface {
 // NewChecker returns checker
 func NewChecker() Checker {
 	return &checker{
-		artifactCtl:      artifact.Ctl,
-		scannerCtl:       scanner.DefaultController,
-		scannerMetadatas: map[int64]*v1.ScannerAdapterMetadata{},
+		artifactCtl:   artifact.Ctl,
+		scannerCtl:    scanner.DefaultController,
+		registrations: map[int64]*models.Registration{},
 	}
 }
 
 type checker struct {
-	artifactCtl      artifact.Controller
-	scannerCtl       scanner.Controller
-	scannerMetadatas map[int64]*v1.ScannerAdapterMetadata
+	artifactCtl   artifact.Controller
+	scannerCtl    scanner.Controller
+	registrations map[int64]*models.Registration
 }
 
 func (c *checker) IsScannable(ctx context.Context, art *artifact.Artifact) (bool, error) {
+	// There are two scenarios when artifact is scannable:
+	// 1. The scanner has capability for the artifact directly, eg the artifact is docker image.
+	// 2. The artifact is image index and the scanner has capability for any artifact which is referenced by the artifact.
+
 	projectID := art.ProjectID
 
-	metadata, ok := c.scannerMetadatas[projectID]
+	r, ok := c.registrations[projectID]
 	if !ok {
-		registration, err := c.scannerCtl.GetRegistrationByProject(projectID, scanner.WithPing(false))
+		registration, err := c.scannerCtl.GetRegistrationByProject(projectID)
 		if err != nil {
 			return false, err
 		}
@@ -57,20 +61,15 @@ func (c *checker) IsScannable(ctx context.Context, art *artifact.Artifact) (bool
 			return false, nil
 		}
 
-		md, err := c.scannerCtl.Ping(registration)
-		if err != nil {
-			return false, err
-		}
-
-		metadata = md
-		c.scannerMetadatas[projectID] = md
+		r = registration
+		c.registrations[projectID] = registration
 	}
 
 	var scannable bool
 
 	walkFn := func(a *artifact.Artifact) error {
-		scannable = metadata.HasCapability(a.ManifestMediaType)
-		if scannable {
+		if HasCapability(r, a) {
+			scannable = true
 			return artifact.ErrBreak
 		}
 
@@ -82,4 +81,14 @@ func (c *checker) IsScannable(ctx context.Context, art *artifact.Artifact) (bool
 	}
 
 	return scannable, nil
+}
+
+// HasCapability returns true when scanner has capability for the artifact
+// See https://github.com/goharbor/pluggable-scanner-spec/issues/2 to get more info
+func HasCapability(r *models.Registration, a *artifact.Artifact) bool {
+	if a.Type == "CHART" || a.Type == "UNKNOWN" {
+		return false
+	}
+
+	return r.HasCapability(a.ManifestMediaType)
 }

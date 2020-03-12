@@ -10,6 +10,7 @@ schemes:
 basePath: /api/v2.0
 produces:
   - application/json
+  - text/plain
 consumes:
   - application/json
 securityDefinitions:
@@ -333,7 +334,7 @@ paths:
       summary: Scan the artifact
       description: Scan the specified artifact
       tags:
-        - artifact
+        - scan
       operationId: scanArtifact
       parameters:
         - $ref: '#/parameters/requestId'
@@ -343,6 +344,38 @@ paths:
       responses:
         '202':
           $ref: '#/responses/202'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
+    get:
+      summary: Get the log of the scan report
+      description: Get the log of the scan report
+      tags:
+        - scan
+      operationId: getReportLog
+      produces:
+        - text/plain
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: report_id
+          type: string
+          in: path
+          required: true
+          description: The report id to get the log
+      responses:
+        '200':
+          description: Successfully get scan log file
+          schema:
+            type: string
         '401':
           $ref: '#/responses/401'
         '403':
@@ -989,6 +1022,10 @@ definitions:
         format: date-time
         description: 'The end time of the scan process that generating report'
         example: '2006-01-02T15:04:05'
+      complete_percent:
+        type: integer
+        description: 'The complete percent of the scanning which value is between 0 and 100'
+        example: 100
   VulnerabilitySummary:
     type: object
     description: |

@@ -34,7 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -176,30 +175,6 @@ func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArt
 	}
 	location := strings.TrimSuffix(params.HTTPRequest.URL.Path, "/") + "/" + ref
 	return operation.NewCopyArtifactCreated().WithLocation(location)
-}
-
-func (a *artifactAPI) ScanArtifact(ctx context.Context, params operation.ScanArtifactParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceScan); err != nil {
-		return a.SendError(ctx, err)
-	}
-
-	repository := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
-	artifact, err := a.artCtl.GetByReference(ctx, repository, params.Reference, nil)
-	if err != nil {
-		return a.SendError(ctx, err)
-	}
-
-	art := &v1.Artifact{
-		NamespaceID: artifact.ProjectID,
-		Repository:  repository,
-		Digest:      artifact.Digest,
-		MimeType:    artifact.ManifestMediaType,
-	}
-	if err := a.scanCtl.Scan(art); err != nil {
-		return a.SendError(ctx, err)
-	}
-
-	return operation.NewScanArtifactAccepted()
 }
 
 // parse "repository:tag" or "repository@digest" into repository and reference parts

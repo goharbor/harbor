@@ -1,23 +1,37 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package notification
 
 import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/scan/all"
-
+	"github.com/goharbor/harbor/src/api/artifact"
 	sc "github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
-	"github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	"github.com/stretchr/testify/mock"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
+	scantesting "github.com/goharbor/harbor/src/testing/api/scan"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -26,10 +40,11 @@ import (
 type ScanImagePreprocessHandlerSuite struct {
 	suite.Suite
 
-	om  policy.Manager
-	pid int64
-	evt *model.ScanImageEvent
-	c   sc.Controller
+	om          policy.Manager
+	pid         int64
+	evt         *model.ScanImageEvent
+	c           sc.Controller
+	artifactCtl artifact.Controller
 }
 
 // TestScanImagePreprocessHandler is the entry point of ScanImagePreprocessHandlerSuite.
@@ -65,14 +80,28 @@ func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
 	}
 
 	suite.c = sc.DefaultController
-	mc := &MockScanAPIController{}
+	mc := &scantesting.Controller{}
 
 	var options []report.Option
 	s := make(map[string]interface{})
 	mc.On("GetSummary", a, []string{v1.MimeTypeNativeReport}, options).Return(s, nil)
-	mc.On("GetReport", a, []string{v1.MimeTypeNativeReport}).Return(reports, nil)
+	mock.OnAnything(mc, "GetSummary").Return(s, nil)
+	mock.OnAnything(mc, "GetReport").Return(reports, nil)
 
 	sc.DefaultController = mc
+
+	suite.artifactCtl = artifact.Ctl
+
+	artifactCtl := &artifacttesting.Controller{}
+
+	art := &artifact.Artifact{}
+	art.ProjectID = a.NamespaceID
+	art.RepositoryName = a.Repository
+	art.Digest = a.Digest
+
+	mock.OnAnything(artifactCtl, "GetByReference").Return(art, nil)
+
+	artifact.Ctl = artifactCtl
 
 	suite.om = notification.PolicyMgr
 	mp := &fakedPolicyMgr{}
@@ -88,6 +117,7 @@ func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
 func (suite *ScanImagePreprocessHandlerSuite) TearDownSuite() {
 	notification.PolicyMgr = suite.om
 	sc.DefaultController = suite.c
+	artifact.Ctl = suite.artifactCtl
 }
 
 // TestHandle ...
@@ -99,73 +129,6 @@ func (suite *ScanImagePreprocessHandlerSuite) TestHandle() {
 }
 
 // Mock things
-
-// MockScanAPIController ...
-type MockScanAPIController struct {
-	mock.Mock
-}
-
-// Scan ...
-func (msc *MockScanAPIController) Scan(artifact *v1.Artifact, option ...sc.Option) error {
-	args := msc.Called(artifact)
-
-	return args.Error(0)
-}
-
-func (msc *MockScanAPIController) GetReport(artifact *v1.Artifact, mimeTypes []string) ([]*scan.Report, error) {
-	args := msc.Called(artifact, mimeTypes)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).([]*scan.Report), args.Error(1)
-}
-
-func (msc *MockScanAPIController) GetSummary(artifact *v1.Artifact, mimeTypes []string, options ...report.Option) (map[string]interface{}, error) {
-	args := msc.Called(artifact, mimeTypes, options)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(map[string]interface{}), args.Error(1)
-}
-
-func (msc *MockScanAPIController) GetScanLog(uuid string) ([]byte, error) {
-	args := msc.Called(uuid)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).([]byte), args.Error(1)
-}
-
-func (msc *MockScanAPIController) HandleJobHooks(trackID string, change *job.StatusChange) error {
-	args := msc.Called(trackID, change)
-
-	return args.Error(0)
-}
-
-func (msc *MockScanAPIController) DeleteReports(digests ...string) error {
-	pl := make([]interface{}, 0)
-	for _, d := range digests {
-		pl = append(pl, d)
-	}
-	args := msc.Called(pl...)
-
-	return args.Error(0)
-}
-
-func (msc *MockScanAPIController) GetStats(requester string) (*all.Stats, error) {
-	args := msc.Called(requester)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*all.Stats), args.Error(1)
-}
 
 // MockHTTPHandler ...
 type MockHTTPHandler struct{}

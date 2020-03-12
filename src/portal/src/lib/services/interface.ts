@@ -305,6 +305,7 @@ export interface VulnerabilitySummary {
     start_time?: Date;
     end_time?: Date;
     scanner?: ScannerVo;
+    complete_percent?: number;
 }
 export interface ScannerVo {
     name?: string;

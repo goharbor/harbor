@@ -986,6 +986,7 @@
         },
         "CHART": {
             "SCANNING_TIME": "扫描完成时间:",
+            "SCANNING_PERCENT": "扫描完成度:",
             "TOOLTIPS_TITLE": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
             "TOOLTIPS_TITLE_ZERO": "没有发现可识别的漏洞"

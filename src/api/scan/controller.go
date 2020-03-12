@@ -15,11 +15,13 @@
 package scan
 
 import (
+	"context"
+
+	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
 // Controller provides the related operations for triggering scan.
@@ -29,12 +31,12 @@ type Controller interface {
 	// Scan the given artifact
 	//
 	//   Arguments:
-	//     artifact *v1.Artifact : artifact to be scanned
+	//     artifact *artifact.Artifact : artifact to be scanned
 	//     options ...Option     : options for triggering a scan
 	//
 	//   Returns:
 	//     error  : non nil error if any errors occurred
-	Scan(artifact *v1.Artifact, options ...Option) error
+	Scan(ctx context.Context, artifact *artifact.Artifact, options ...Option) error
 
 	// GetReport gets the reports for the given artifact identified by the digest
 	//
@@ -45,19 +47,19 @@ type Controller interface {
 	//   Returns:
 	//     []*scan.Report : scan results by different scanner vendors
 	//     error          : non nil error if any errors occurred
-	GetReport(artifact *v1.Artifact, mimeTypes []string) ([]*scan.Report, error)
+	GetReport(ctx context.Context, artifact *artifact.Artifact, mimeTypes []string) ([]*scan.Report, error)
 
 	// GetSummary gets the summaries of the reports with given types.
 	//
 	//   Arguments:
-	//     artifact *v1.Artifact    : the scanned artifact
+	//     artifact *artifact.Artifact    : the scanned artifact
 	//     mimeTypes []string       : the mime types of the reports
 	//     options ...report.Option : optional report options, specify if needed
 	//
 	//   Returns:
 	//     map[string]interface{} : report summaries indexed by mime types
 	//     error                  : non nil error if any errors occurred
-	GetSummary(artifact *v1.Artifact, mimeTypes []string, options ...report.Option) (map[string]interface{}, error)
+	GetSummary(ctx context.Context, artifact *artifact.Artifact, mimeTypes []string, options ...report.Option) (map[string]interface{}, error)
 
 	// Get the scan log for the specified artifact with the given digest
 	//

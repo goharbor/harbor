@@ -126,17 +126,14 @@ func UpdateReportStatus(trackID string, status string, statusCode int, statusRev
 
 	// qt generates sql statements:
 	// UPDATE "scan_report" SET "end_time" = $1, "status" = $2, "status_code" = $3, "status_rev" = $4
-	// WHERE "id" IN ( SELECT T0."id" FROM "scan_report" T0 WHERE ( T0."status_rev" = $5 AND T0."status_code" < $6 )
-	// OR ( T0."status_rev" < $7 ) AND T0."track_id" = $8  )
-	cond := orm.NewCondition()
-	c1 := cond.And("status_rev", statusRev).And("status_code__lt", statusCode)
-	c2 := cond.And("status_rev__lt", statusRev)
-	c := cond.AndCond(c1).OrCond(c2)
+	// WHERE "id" IN ( SELECT T0."id" FROM "scan_report" T0 WHERE ( T0."status_rev" = $5 AND T0."status_code" < $6
+	// OR ( T0."status_rev" < $7 ) ) AND ( T0."track_id" = $8  )
+	c1 := orm.NewCondition().And("status_rev", statusRev).And("status_code__lt", statusCode)
+	c2 := orm.NewCondition().And("status_rev__lt", statusRev)
+	c3 := orm.NewCondition().And("track_id", trackID)
+	c := orm.NewCondition().AndCond(c1.OrCond(c2)).AndCond(c3)
 
-	count, err := qt.SetCond(c).
-		Filter("track_id", trackID).
-		Update(data)
-
+	count, err := qt.SetCond(c).Update(data)
 	if err != nil {
 		return err
 	}
