@@ -350,7 +350,11 @@
         "DELETION_TITLE": "Confirm removal of robot accounts",
         "DELETION_SUMMARY": "Do you want to delete robot accounts {{param}}?",
         "PULL_IS_MUST": "Pull permission is checked by default and can not be modified.",
-        "EXPORT_TO_FILE": "export to file"
+        "EXPORT_TO_FILE": "export to file",
+        "EXPIRES_AT": "Expires At",
+        "EXPIRATION_TOOLTIP": "If not set, the expiration time of system configuration will be used",
+        "INVALID_VALUE": "The value of the expiration time is invalid",
+        "NEVER_EXPIRED": "Never Expired"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "EDIT",

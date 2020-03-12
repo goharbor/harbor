@@ -348,7 +348,11 @@
         "DELETION_TITLE": "删除账户确认",
         "DELETION_SUMMARY": "你确认删除机器人账户 {{param}}?",
         "PULL_IS_MUST": "拉取权限默认选中且不可修改。",
-        "EXPORT_TO_FILE": "导出到文件中"
+        "EXPORT_TO_FILE": "导出到文件中",
+        "EXPIRES_AT": "到期日",
+        "EXPIRATION_TOOLTIP": "如不设置，将会使用系统设置中的过期时间。",
+        "INVALID_VALUE": "无效的过期日期",
+        "NEVER_EXPIRED": "永不过期"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "编辑",
