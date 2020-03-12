@@ -1,12 +1,16 @@
 package notification
 
 import (
+	"context"
 	"time"
 
+	o "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -101,12 +105,24 @@ func constructScanImagePayload(event *model.ScanImageEvent, project *models.Proj
 		return nil, errors.Wrap(err, "construct scan payload")
 	}
 
+	ctx := orm.NewContext(context.TODO(), o.NewOrm())
+
+	reference := event.Artifact.Digest
+	if reference == "" {
+		reference = event.Artifact.Tag
+	}
+
+	art, err := artifact.Ctl.GetByReference(ctx, event.Artifact.Repository, event.Artifact.Digest, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	// Wait for reasonable time to make sure the report is ready
 	// Interval=500ms and total time = 5s
 	// If the report is still not ready in the total time, then failed at then
 	for i := 0; i < 10; i++ {
 		// First check in case it is ready
-		if re, err := scan.DefaultController.GetReport(event.Artifact, []string{v1.MimeTypeNativeReport}); err == nil {
+		if re, err := scan.DefaultController.GetReport(ctx, art, []string{v1.MimeTypeNativeReport}); err == nil {
 			if len(re) > 0 && len(re[0].Report) > 0 {
 				break
 			}
@@ -118,7 +134,7 @@ func constructScanImagePayload(event *model.ScanImageEvent, project *models.Proj
 	}
 
 	// Add scan overview
-	summaries, err := scan.DefaultController.GetSummary(event.Artifact, []string{v1.MimeTypeNativeReport})
+	summaries, err := scan.DefaultController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport})
 	if err != nil {
 		return nil, errors.Wrap(err, "construct scan payload")
 	}

@@ -50,6 +50,39 @@ func WithCVEWhitelist(set *CVESet) Option {
 	}
 }
 
+// SummaryMerger is a helper function to merge summary together
+type SummaryMerger func(s1, s2 interface{}) (interface{}, error)
+
+// SupportedMergers declares mappings between mime type and summary merger func.
+var SupportedMergers = map[string]SummaryMerger{
+	v1.MimeTypeNativeReport: MergeNativeSummary,
+}
+
+// MergeSummary merge summary s1 and s2
+func MergeSummary(mimeType string, s1, s2 interface{}) (interface{}, error) {
+	m, ok := SupportedMergers[mimeType]
+	if !ok {
+		return nil, errors.Errorf("no mreger bound with mime type %s", mimeType)
+	}
+
+	return m(s1, s2)
+}
+
+// MergeNativeSummary merge vuln.NativeReportSummary together
+func MergeNativeSummary(s1, s2 interface{}) (interface{}, error) {
+	nrs1, ok := s1.(*vuln.NativeReportSummary)
+	if !ok {
+		return nil, errors.New("native report summary required")
+	}
+
+	nrs2, ok := s2.(*vuln.NativeReportSummary)
+	if !ok {
+		return nil, errors.New("native report summary required")
+	}
+
+	return nrs1.Merge(nrs2), nil
+}
+
 // SupportedGenerators declares mappings between mime type and summary generator func.
 var SupportedGenerators = map[string]SummaryGenerator{
 	v1.MimeTypeNativeReport: GenerateNativeSummary,
@@ -94,6 +127,8 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 		sum.ScanStatus = r.Status
 	}
 
+	sum.TotalCount = 1
+
 	// If the status is not success/stopped, there will not be any report.
 	if r.Status != job.SuccessStatus.String() &&
 		r.Status != job.StoppedStatus.String() {
@@ -114,6 +149,9 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 	if !ok {
 		return nil, errors.Errorf("type mismatch: expect *vuln.Report but got %s", reflect.TypeOf(raw).String())
 	}
+
+	sum.CompleteCount = 1
+	sum.CompletePercent = 100
 
 	sum.Severity = rp.Severity
 	vsum := &vuln.VulnerabilitySummary{

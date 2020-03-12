@@ -15,12 +15,14 @@
 package scan
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common"
 	cj "github.com/goharbor/harbor/src/common/job"
 	cjm "github.com/goharbor/harbor/src/common/job/models"
@@ -30,12 +32,14 @@ import (
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
+	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
 	scannertesting "github.com/goharbor/harbor/src/testing/api/scanner"
+	mocktesting "github.com/goharbor/harbor/src/testing/mock"
+	reporttesting "github.com/goharbor/harbor/src/testing/pkg/scan/report"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -47,9 +51,11 @@ type ControllerTestSuite struct {
 	suite.Suite
 
 	registration *scanner.Registration
-	artifact     *v1.Artifact
+	artifact     *artifact.Artifact
 	rawReport    string
-	c            Controller
+
+	ar artifact.Controller
+	c  Controller
 }
 
 // TestController is the entry point of ControllerTestSuite.
@@ -59,21 +65,11 @@ func TestController(t *testing.T) {
 
 // SetupSuite ...
 func (suite *ControllerTestSuite) SetupSuite() {
-	suite.registration = &scanner.Registration{
-		ID:        1,
-		UUID:      "uuid001",
-		Name:      "Test-scan-controller",
-		URL:       "http://testing.com:3128",
-		IsDefault: true,
-	}
-
-	suite.artifact = &v1.Artifact{
-		NamespaceID: 1,
-		Repository:  "scan",
-		Tag:         "golang",
-		Digest:      "digest-code",
-		MimeType:    v1.MimeTypeDockerArtifact,
-	}
+	suite.artifact = &artifact.Artifact{}
+	suite.artifact.ProjectID = 1
+	suite.artifact.RepositoryName = "library/photon"
+	suite.artifact.Digest = "digest-code"
+	suite.artifact.ManifestMediaType = v1.MimeTypeDockerArtifact
 
 	m := &v1.ScannerAdapterMetadata{
 		Scanner: &v1.Scanner{
@@ -95,11 +91,20 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		},
 	}
 
+	suite.registration = &scanner.Registration{
+		ID:        1,
+		UUID:      "uuid001",
+		Name:      "Test-scan-controller",
+		URL:       "http://testing.com:3128",
+		IsDefault: true,
+		Metadata:  m,
+	}
+
 	sc := &scannertesting.Controller{}
-	sc.On("GetRegistrationByProject", suite.artifact.NamespaceID).Return(suite.registration, nil)
+	sc.On("GetRegistrationByProject", suite.artifact.ProjectID).Return(suite.registration, nil)
 	sc.On("Ping", suite.registration).Return(m, nil)
 
-	mgr := &MockReportManager{}
+	mgr := &reporttesting.Manager{}
 	mgr.On("Create", &scan.Report{
 		Digest:           "digest-code",
 		RegistrationUUID: "uuid001",
@@ -161,7 +166,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 	rc := &MockRobotController{}
 
-	resource := fmt.Sprintf("/project/%d/repository", suite.artifact.NamespaceID)
+	resource := fmt.Sprintf("/project/%d/repository", suite.artifact.ProjectID)
 	access := []*rbac.Policy{{
 		Resource: rbac.Resource(resource),
 		Action:   rbac.ActionScannerPull,
@@ -171,7 +176,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	account := &model.RobotCreate{
 		Name:        rname,
 		Description: "for scan",
-		ProjectID:   suite.artifact.NamespaceID,
+		ProjectID:   suite.artifact.ProjectID,
 		Access:      access,
 	}
 	rc.On("CreateRobotAccount", account).Return(&model.Robot{
@@ -179,7 +184,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		Name:        common.RobotPrefix + rname,
 		Token:       "robot-account",
 		Description: "for scan",
-		ProjectID:   suite.artifact.NamespaceID,
+		ProjectID:   suite.artifact.ProjectID,
 	}, nil)
 
 	// Set job parameters
@@ -188,7 +193,12 @@ func (suite *ControllerTestSuite) SetupSuite() {
 			URL:           "https://core.com",
 			Authorization: "Basic " + base64.StdEncoding.EncodeToString([]byte(common.RobotPrefix+"the-uuid-123:robot-account")),
 		},
-		Artifact: suite.artifact,
+		Artifact: &v1.Artifact{
+			NamespaceID: suite.artifact.ProjectID,
+			Digest:      suite.artifact.Digest,
+			Repository:  suite.artifact.RepositoryName,
+			MimeType:    suite.artifact.ManifestMediaType,
+		},
 	}
 
 	rJSON, err := req.ToJSON()
@@ -215,8 +225,15 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	jc.On("SubmitJob", j).Return("the-job-id", nil)
 	jc.On("GetJobLog", "the-job-id").Return([]byte("job log"), nil)
 
+	suite.ar = &artifacttesting.Controller{}
+	mocktesting.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
+		walkFn := args.Get(2).(func(*artifact.Artifact) error)
+		walkFn(suite.artifact)
+	})
+
 	suite.c = &basicController{
 		manager: mgr,
+		ar:      suite.ar,
 		sc:      sc,
 		jc: func() cj.Client {
 			return jc
@@ -243,20 +260,20 @@ func (suite *ControllerTestSuite) TearDownSuite() {}
 
 // TestScanControllerScan ...
 func (suite *ControllerTestSuite) TestScanControllerScan() {
-	err := suite.c.Scan(suite.artifact)
+	err := suite.c.Scan(context.TODO(), suite.artifact)
 	require.NoError(suite.T(), err)
 }
 
 // TestScanControllerGetReport ...
 func (suite *ControllerTestSuite) TestScanControllerGetReport() {
-	rep, err := suite.c.GetReport(suite.artifact, []string{v1.MimeTypeNativeReport})
+	rep, err := suite.c.GetReport(context.TODO(), suite.artifact, []string{v1.MimeTypeNativeReport})
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(rep))
 }
 
 // TestScanControllerGetSummary ...
 func (suite *ControllerTestSuite) TestScanControllerGetSummary() {
-	sum, err := suite.c.GetSummary(suite.artifact, []string{v1.MimeTypeNativeReport})
+	sum, err := suite.c.GetSummary(context.TODO(), suite.artifact, []string{v1.MimeTypeNativeReport})
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(sum))
 }
@@ -297,73 +314,6 @@ func (suite *ControllerTestSuite) TestScanControllerHandleJobHooks() {
 }
 
 // Mock things
-
-// MockReportManager ...
-type MockReportManager struct {
-	mock.Mock
-}
-
-// Create ...
-func (mrm *MockReportManager) Create(r *scan.Report) (string, error) {
-	args := mrm.Called(r)
-
-	return args.String(0), args.Error(1)
-}
-
-// UpdateScanJobID ...
-func (mrm *MockReportManager) UpdateScanJobID(trackID string, jobID string) error {
-	args := mrm.Called(trackID, jobID)
-
-	return args.Error(0)
-}
-
-func (mrm *MockReportManager) UpdateStatus(trackID string, status string, rev int64) error {
-	args := mrm.Called(trackID, status, rev)
-
-	return args.Error(0)
-}
-
-func (mrm *MockReportManager) UpdateReportData(uuid string, report string, rev int64) error {
-	args := mrm.Called(uuid, report, rev)
-
-	return args.Error(0)
-}
-
-func (mrm *MockReportManager) GetBy(digest string, registrationUUID string, mimeTypes []string) ([]*scan.Report, error) {
-	args := mrm.Called(digest, registrationUUID, mimeTypes)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).([]*scan.Report), args.Error(1)
-}
-
-func (mrm *MockReportManager) Get(uuid string) (*scan.Report, error) {
-	args := mrm.Called(uuid)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*scan.Report), args.Error(1)
-}
-
-func (mrm *MockReportManager) DeleteByDigests(digests ...string) error {
-	args := mrm.Called(digests)
-
-	return args.Error(0)
-}
-
-func (mrm *MockReportManager) GetStats(requester string) (*all.Stats, error) {
-	args := mrm.Called(requester)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*all.Stats), args.Error(1)
-}
 
 // MockJobServiceClient ...
 type MockJobServiceClient struct {

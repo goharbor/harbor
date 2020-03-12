@@ -72,16 +72,9 @@ func (assembler *VulAssembler) Assemble(ctx context.Context) error {
 		artifact.SetAdditionLink(vulnerabilitiesAddition, version)
 
 		if assembler.withScanOverview {
-			art := &v1.Artifact{
-				NamespaceID: artifact.ProjectID,
-				Repository:  artifact.RepositoryName,
-				Digest:      artifact.Digest,
-				MimeType:    artifact.ManifestMediaType,
-			}
-
-			overview, err := assembler.scanCtl.GetSummary(art, []string{v1.MimeTypeNativeReport})
+			overview, err := assembler.scanCtl.GetSummary(ctx, &artifact.Artifact, []string{v1.MimeTypeNativeReport})
 			if err != nil {
-				log.Warningf("get scan summary of artifact %s failed, error:%v", artifact.Digest, err)
+				log.Warningf("get scan summary of artifact %s@%s failed, error:%v", artifact.RepositoryName, artifact.Digest, err)
 			} else if len(overview) > 0 {
 				artifact.ScanOverview = overview
 			}

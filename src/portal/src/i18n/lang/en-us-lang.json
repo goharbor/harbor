@@ -987,6 +987,7 @@
         },
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",
+            "SCANNING_PERCENT": "Scan completed percent:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}.",
             "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
@@ -1028,7 +1029,7 @@
         "UNTAGGED": "Untagged",
         "ALL": "All",
         "PLACEHOLDER": "We couldn't find any artifactds!",
-        "SCAN_UNSUPPORTED": "Scan Unsupported"
+        "SCAN_UNSUPPORTED": "Unsupported"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Create on",

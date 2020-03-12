@@ -36,9 +36,9 @@ func (suite *CheckerTestSuite) new() *checker {
 	scannerCtl := &scannertesting.Controller{}
 
 	return &checker{
-		artifactCtl:      artifactCtl,
-		scannerCtl:       scannerCtl,
-		scannerMetadatas: map[int64]*v1.ScannerAdapterMetadata{},
+		artifactCtl:   artifactCtl,
+		scannerCtl:    scannerCtl,
+		registrations: map[int64]*scanner.Registration{},
 	}
 }
 
@@ -59,10 +59,11 @@ func (suite *CheckerTestSuite) TestIsScannable() {
 
 	supportMimeType := "support mime type"
 
-	mock.OnAnything(c.scannerCtl, "GetRegistrationByProject").Return(&scanner.Registration{}, nil)
-	mock.OnAnything(c.scannerCtl, "Ping").Return(&v1.ScannerAdapterMetadata{
-		Capabilities: []*v1.ScannerCapability{
-			{ConsumesMimeTypes: []string{supportMimeType}},
+	mock.OnAnything(c.scannerCtl, "GetRegistrationByProject").Return(&scanner.Registration{
+		Metadata: &v1.ScannerAdapterMetadata{
+			Capabilities: []*v1.ScannerCapability{
+				{ConsumesMimeTypes: []string{supportMimeType}},
+			},
 		},
 	}, nil)
 

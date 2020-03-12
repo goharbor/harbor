@@ -38,14 +38,7 @@ func boolValue(v *bool) bool {
 }
 
 func resolveVulnerabilitiesAddition(ctx context.Context, artifact *artifact.Artifact) (*processor.Addition, error) {
-	art := &v1.Artifact{
-		NamespaceID: artifact.ProjectID,
-		Repository:  artifact.RepositoryName,
-		Digest:      artifact.Digest,
-		MimeType:    artifact.ManifestMediaType,
-	}
-
-	reports, err := scan.DefaultController.GetReport(art, []string{v1.MimeTypeNativeReport})
+	reports, err := scan.DefaultController.GetReport(ctx, artifact, []string{v1.MimeTypeNativeReport})
 	if err != nil {
 		return nil, err
 	}

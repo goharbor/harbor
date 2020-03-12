@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/pkg/scan/rest/auth"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/pkg/errors"
 )
 
@@ -56,6 +57,8 @@ type Registration struct {
 	Adapter string `orm:"-" json:"adapter,omitempty"`
 	Vendor  string `orm:"-" json:"vendor,omitempty"`
 	Version string `orm:"-" json:"version,omitempty"`
+
+	Metadata *v1.ScannerAdapterMetadata `orm:"-" json:"-"`
 
 	// Timestamps
 	CreateTime time.Time `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
@@ -110,6 +113,66 @@ func (r *Registration) Validate(checkUUID bool) error {
 
 	if len(r.Auth) > 0 && len(r.AccessCredential) == 0 {
 		return errors.Errorf("access_credential is required for auth type %s", r.Auth)
+	}
+
+	return nil
+}
+
+// Client returns client of registration
+func (r *Registration) Client(pool v1.ClientPool) (v1.Client, error) {
+	if err := r.Validate(false); err != nil {
+		return nil, err
+	}
+
+	return pool.Get(r.URL, r.Auth, r.AccessCredential, r.SkipCertVerify)
+}
+
+// HasCapability returns true when mime type of the artifact support by the scanner
+func (r *Registration) HasCapability(manifestMimeType string) bool {
+	if r.Metadata == nil {
+		return false
+	}
+
+	for _, capability := range r.Metadata.Capabilities {
+		for _, mt := range capability.ConsumesMimeTypes {
+			if mt == manifestMimeType {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// GetProducesMimeTypes returns produces mime types for the artifact
+func (r *Registration) GetProducesMimeTypes(mimeType string) []string {
+	if r.Metadata == nil {
+		return nil
+	}
+
+	for _, capability := range r.Metadata.Capabilities {
+		for _, mt := range capability.ConsumesMimeTypes {
+			if mt == mimeType {
+				return capability.ProducesMimeTypes
+			}
+		}
+	}
+
+	return nil
+}
+
+// GetCapability returns capability for the mime type
+func (r *Registration) GetCapability(mimeType string) *v1.ScannerCapability {
+	if r.Metadata == nil {
+		return nil
+	}
+
+	for _, capability := range r.Metadata.Capabilities {
+		for _, mt := range capability.ConsumesMimeTypes {
+			if mt == mimeType {
+				return capability
+			}
+		}
 	}
 
 	return nil

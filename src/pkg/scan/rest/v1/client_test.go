@@ -22,7 +22,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -44,15 +43,8 @@ func TestClient(t *testing.T) {
 // SetupSuite prepares the test suite env
 func (suite *ClientTestSuite) SetupSuite() {
 	suite.testServer = httptest.NewServer(&mockHandler{})
-	r := &scanner.Registration{
-		ID:             1000,
-		UUID:           "uuid",
-		Name:           "TestClient",
-		URL:            suite.testServer.URL,
-		SkipCertVerify: true,
-	}
 
-	c, err := NewClient(r)
+	c, err := NewClient(suite.testServer.URL, "", "", true)
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), c)
 

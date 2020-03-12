@@ -237,6 +237,8 @@ func (bc *basicController) GetRegistrationByProject(projectID int64, options ...
 			registration.Adapter = meta.Scanner.Name
 			registration.Vendor = meta.Scanner.Vendor
 			registration.Version = meta.Scanner.Version
+
+			registration.Metadata = meta
 		}
 	}
 
@@ -249,7 +251,7 @@ func (bc *basicController) Ping(registration *scanner.Registration) (*v1.Scanner
 		return nil, errors.New("nil registration to ping")
 	}
 
-	client, err := bc.clientPool.Get(registration)
+	client, err := registration.Client(bc.clientPool)
 	if err != nil {
 		return nil, errors.Wrap(err, "scanner controller: ping")
 	}

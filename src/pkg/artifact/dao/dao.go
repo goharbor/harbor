@@ -56,7 +56,7 @@ const (
 	// both tagged and untagged artifacts
 	both = `IN (
 		SELECT DISTINCT art.id FROM artifact art
-		LEFT JOIN tag ON art.id=tag.artifact_id 
+		LEFT JOIN tag ON art.id=tag.artifact_id
 		LEFT JOIN artifact_reference ref ON art.id=ref.child_id
 		WHERE tag.id IS NOT NULL OR ref.id IS NULL)`
 	// only untagged artifacts

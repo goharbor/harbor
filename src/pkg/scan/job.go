@@ -126,7 +126,7 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	myLogger.Infof("Report mime types: %v\n", mimes)
 
 	// Submit scan request to the scanner adapter
-	client, err := v1.DefaultClientPool.Get(r)
+	client, err := r.Client(v1.DefaultClientPool)
 	if err != nil {
 		return logAndWrapError(myLogger, err, "scan job: get client")
 	}
