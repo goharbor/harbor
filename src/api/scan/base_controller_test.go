@@ -29,6 +29,7 @@ import (
 	jm "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
@@ -167,8 +168,8 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	rc := &MockRobotController{}
 
 	resource := fmt.Sprintf("/project/%d/repository", suite.artifact.ProjectID)
-	access := []*rbac.Policy{{
-		Resource: rbac.Resource(resource),
+	access := []*types.Policy{{
+		Resource: types.Resource(resource),
 		Action:   rbac.ActionScannerPull,
 	}}
 

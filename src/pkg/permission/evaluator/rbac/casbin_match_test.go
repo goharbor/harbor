@@ -16,6 +16,8 @@ package rbac
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_keyMatch2(t *testing.T) {
@@ -56,4 +58,27 @@ func Test_keyMatch2(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRegexpStore(t *testing.T) {
+	assert := assert.New(t)
+
+	s := &regexpStore{}
+
+	sLen := func() int {
+		var l int
+		s.entries.Range(func(key, value interface{}) bool {
+			l++
+
+			return true
+		})
+		return l
+	}
+
+	r1 := s.Get("key1", keyMatch2Build)
+	r2 := s.Get("key1", keyMatch2Build)
+
+	assert.Equal(r1, r2)
+	s.Purge()
+	assert.Equal(0, sLen())
 }

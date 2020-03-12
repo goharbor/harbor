@@ -12,28 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbac
+package types
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/suite"
-)
-
-type ProjectParserTestSuite struct {
-	suite.Suite
+// RBACRole the interface of rbac role
+type RBACRole interface {
+	// GetRoleName returns the role identity, if empty string role's policies will be ignore
+	GetRoleName() string
+	// GetPolicies returns the policies of the role
+	GetPolicies() []*Policy
 }
 
-func (suite *ProjectParserTestSuite) TestParse() {
-	namespace, err := projectNamespaceParser(Resource("/project/1/image"))
-	suite.Equal(namespace, &projectNamespace{projectID: 1})
-	suite.Nil(err)
-
-	namespace, err = projectNamespaceParser(Resource("/fake/1/image"))
-	suite.Nil(namespace)
-	suite.Error(err)
-}
-
-func TestProjectParserTestSuite(t *testing.T) {
-	suite.Run(t, new(ProjectParserTestSuite))
+// RBACUser the interface of rbac user
+type RBACUser interface {
+	// GetUserName returns the user identity, if empty string user's all policies will be ignore
+	GetUserName() string
+	// GetPolicies returns special policies of the user
+	GetPolicies() []*Policy
+	// GetRoles returns roles the user owned
+	GetRoles() []RBACRole
 }

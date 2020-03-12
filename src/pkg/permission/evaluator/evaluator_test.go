@@ -12,31 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbac
+package evaluator
 
 import (
 	"testing"
 
-	"github.com/stretchr/testify/suite"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
+	"github.com/stretchr/testify/assert"
 )
 
-type ProjectNamespaceTestSuite struct {
-	suite.Suite
+type mockEvaluator struct {
+	name string
 }
 
-func (suite *ProjectNamespaceTestSuite) TestResource() {
-	var namespace Namespace
-
-	namespace = &projectNamespace{projectID: int64(1)}
-
-	suite.Equal(namespace.Resource(Resource("image")), Resource("/project/1/image"))
+func (e *mockEvaluator) HasPermission(resource types.Resource, action types.Action) bool {
+	return true
 }
 
-func (suite *ProjectNamespaceTestSuite) TestIdentity() {
-	namespace, _ := Resource("/project/1/image").GetNamespace()
-	suite.Equal(namespace.Identity(), int64(1))
-}
+func TestEvaluatorsAdd(t *testing.T) {
+	eva1 := &mockEvaluator{name: "eva1"}
+	eva2 := &mockEvaluator{name: "eva2"}
+	eva3 := Evaluators{eva1, eva2}
 
-func TestProjectNamespaceTestSuite(t *testing.T) {
-	suite.Run(t, new(ProjectNamespaceTestSuite))
+	var es1 Evaluators
+	assert.Len(t, es1.Add(eva3), 2)
+	assert.Len(t, es1.Add(eva1, eva2, eva3), 2)
 }
