@@ -30,12 +30,6 @@ paths:
         - $ref: '#/parameters/query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        # TODO remove it
-        - name: name
-          in: query
-          description: Query the repositories by name
-          type: string
-          required: false
       responses:
         '200':
           description: Success
@@ -141,7 +135,7 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts:
     get:
       summary: List artifacts
-      description: List artifacts under the specific project and repository.
+      description: List artifacts under the specific project and repository. Except the basic properties, the other supported queries in "q" includes "tags=*" to list only tagged artifacts, "tags=nil" to list only untagged artifacts, "tags=~v" to list artifacts whose tag fuzzy matches "v", "labels=(id1, id2)" to list artifacts that both labels with id1 and id2 are added to
       tags:
         - artifact
       operationId: listArtifacts
@@ -152,17 +146,6 @@ paths:
         - $ref: '#/parameters/query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        # TODO remove the query strings included in "query"
-        - name: type
-          in: query
-          description: Query the artifacts by type. Valid values can be "IMAGE", "CHART", etc.
-          type: string
-          required: false
-        - name: tags
-          in: query
-          description: Without the "tags" query string, both tagged and untagged artifacts will be returned. Specify it as "*" to return only tagged artifacts; specify it as "nil" to return only untagged artifacts.
-          type: string
-          required: false
         - name: with_tag
           in: query
           description: Specify whether the tags are included inside the returning artifacts
@@ -569,6 +552,7 @@ paths:
           $ref: '#/responses/401'
         '500':
           $ref: '#/responses/500'
+  # TODO replace project_id with project_name
   /projects/{project_id}/webhook/events:
     get:
       summary: Get supported event types and notify types.
