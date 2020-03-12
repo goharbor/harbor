@@ -3,14 +3,15 @@ package immutable
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/tag"
 	common_util "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/internal"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
 	serror "github.com/goharbor/harbor/src/server/error"
-	"github.com/goharbor/harbor/src/server/middleware"
-	"net/http"
 )
 
 // Middleware ...
@@ -37,8 +38,9 @@ func Middleware() func(http.Handler) http.Handler {
 // If the pushing image matched by any of immutable rule, will have to whether it is the first time to push it,
 // as the immutable rule only impacts the existing tag.
 func handlePush(req *http.Request) error {
-	art, ok := middleware.ArtifactInfoFromContext(req.Context())
-	if !ok {
+	none := internal.ArtifactInfo{}
+	art := internal.GetArtifactInfo(req.Context())
+	if art == none {
 		return errors.New("cannot get the manifest information from request context")
 	}
 

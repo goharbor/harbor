@@ -136,7 +136,7 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 		},
 	}
 	c.tagCtl.On("List").Return([]*tag.Tag{tg}, nil)
-	ctx := internal.SetAPIVersion(nil, "2.0")
+	ctx := internal.WithAPIVersion(nil, "2.0")
 	lb := &models.Label{
 		ID:   1,
 		Name: "label",

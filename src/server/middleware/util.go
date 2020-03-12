@@ -3,22 +3,22 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"regexp"
+
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/internal"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
 	"github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
-	"net/http"
-	"net/http/httptest"
-	"regexp"
 )
-
-type contextKey string
 
 const (
 	// RepositorySubexp is the name for sub regex that maps to repository name in the url
@@ -27,8 +27,6 @@ const (
 	ReferenceSubexp = "reference"
 	// DigestSubexp is the name for sub regex that maps to digest in the url
 	DigestSubexp = "digest"
-	// ArtifactInfoKey the context key for artifact info
-	ArtifactInfoKey = contextKey("artifactInfo")
 )
 
 var (
@@ -44,33 +42,12 @@ var (
 	V2CatalogURLRe = regexp.MustCompile(`^/v2/_catalog$`)
 )
 
-// ArtifactInfo ...
-type ArtifactInfo struct {
-	Repository           string
-	Reference            string
-	ProjectName          string
-	Digest               string
-	Tag                  string
-	BlobMountRepository  string
-	BlobMountProjectName string
-	BlobMountDigest      string
-}
-
-// ArtifactInfoFromContext returns the artifact info from context, the returned value is a copied value, so updating
-// the attributes of returned artifactInfo will not update the one in context.
-func ArtifactInfoFromContext(ctx context.Context) (ArtifactInfo, bool) {
-	info, ok := ctx.Value(ArtifactInfoKey).(*ArtifactInfo)
-	var res ArtifactInfo
-	if ok {
-		res = *info
-	}
-	return res, ok
-}
-
 // EnsureArtifactDigest get artifactInfo from context and set the digest for artifact that has project name repository and reference
 func EnsureArtifactDigest(ctx context.Context) error {
-	info, ok := ctx.Value(ArtifactInfoKey).(*ArtifactInfo)
-	if !ok {
+	info := internal.GetArtifactInfo(ctx)
+	none := internal.ArtifactInfo{}
+
+	if info == none {
 		return fmt.Errorf("no artifact info in context")
 	}
 	if len(info.Digest) > 0 {

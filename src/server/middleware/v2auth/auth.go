@@ -17,7 +17,6 @@ package v2auth
 import (
 	"errors"
 	"fmt"
-	serror "github.com/goharbor/harbor/src/server/error"
 	"net/http"
 	"sync"
 
@@ -26,7 +25,9 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/internal"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
@@ -43,7 +44,8 @@ func (rc *reqChecker) check(req *http.Request) error {
 	if !ok {
 		return fmt.Errorf("the security context got from request is nil")
 	}
-	if a, ok := middleware.ArtifactInfoFromContext(req.Context()); ok {
+	none := internal.ArtifactInfo{}
+	if a := internal.GetArtifactInfo(req.Context()); a != none {
 		action := getAction(req)
 		if action == "" {
 			return nil

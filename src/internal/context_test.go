@@ -21,7 +21,7 @@ import (
 )
 
 func TestSetAPIVersion(t *testing.T) {
-	ctx := SetAPIVersion(context.Background(), "1.0")
+	ctx := WithAPIVersion(context.Background(), "1.0")
 	assert.NotNil(t, ctx)
 }
 
@@ -35,7 +35,7 @@ func TestGetAPIVersion(t *testing.T) {
 	assert.Empty(t, version)
 
 	// version set in context
-	ctx := SetAPIVersion(context.Background(), "1.0")
+	ctx := WithAPIVersion(context.Background(), "1.0")
 	version = GetAPIVersion(ctx)
 	assert.Equal(t, "1.0", version)
 }

@@ -15,17 +15,18 @@
 package artifactinfo
 
 import (
-	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	serror "github.com/goharbor/harbor/src/server/error"
-	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/opencontainers/go-digest"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
+
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/internal"
+	ierror "github.com/goharbor/harbor/src/internal/error"
+	serror "github.com/goharbor/harbor/src/server/error"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/opencontainers/go-digest"
 )
 
 const (
@@ -61,7 +62,7 @@ func Middleware() func(http.Handler) http.Handler {
 				serror.SendError(rw, ierror.BadRequestError(err))
 				return
 			}
-			art := &middleware.ArtifactInfo{
+			art := internal.ArtifactInfo{
 				Repository:  repo,
 				ProjectName: pn,
 			}
@@ -86,7 +87,7 @@ func Middleware() func(http.Handler) http.Handler {
 				art.BlobMountProjectName = bmp
 				art.BlobMountRepository = bmr
 			}
-			ctx := context.WithValue(req.Context(), middleware.ArtifactInfoKey, art)
+			ctx := internal.WithArtifactInfo(req.Context(), art)
 			next.ServeHTTP(rw, req.WithContext(ctx))
 		})
 	}
