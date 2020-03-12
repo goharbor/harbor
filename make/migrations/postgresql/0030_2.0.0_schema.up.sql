@@ -98,6 +98,14 @@ FROM (
 ) AS s
 WHERE artifact.digest=s.digest;
 
+/*repair the count usage as we calculate the count quota against artifact rather than tag*/
+/*count=count-(tag count-artifact count)*/
+UPDATE quota_usage SET used=jsonb_set(used, '{count}', ((used->>'count')::int - (SELECT (
+	SELECT COUNT (*) FROM tag
+		JOIN artifact ON tag.artifact_id=artifact.id
+		WHERE artifact.project_id=quota_usage.reference_id::int)-(
+	SELECT COUNT (*) FROM artifact
+		WHERE project_id=quota_usage.reference_id::int)))::text::jsonb);
 
 /* artifact_reference records the child artifact referenced by parent artifact */
 CREATE TABLE artifact_reference
