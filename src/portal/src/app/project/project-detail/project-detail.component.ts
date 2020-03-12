@@ -87,7 +87,7 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
     {
       linkName: "tag-strategy",
       tabLinkInOverflow: false,
-      showTabName: "PROJECT_DETAIL.TAG_STRATEGY",
+      showTabName: "PROJECT_DETAIL.POLICY",
       permissions: () => this.hasTagRetentionPermission
     },
     {

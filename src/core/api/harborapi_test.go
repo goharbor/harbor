@@ -211,11 +211,6 @@ func init() {
 	beego.Router("/api/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
 	beego.Router("/api/projects/:pid([0-9]+)/scanner/candidates", proScannerAPI, "get:GetProScannerCandidates")
 
-	// Add routes for scan
-	scanAPI := &ScanAPI{}
-	beego.Router("/api/repositories/*/tags/:tag/scan", scanAPI, "post:Scan;get:Report")
-	beego.Router("/api/repositories/*/tags/:tag/scan/:uuid/log", scanAPI, "get:Log")
-
 	if err := quota.Sync(config.GlobalProjectMgr, false); err != nil {
 		log.Fatalf("failed to sync quota from backend: %v", err)
 	}

@@ -15,19 +15,25 @@
 package local
 
 import (
+	"sync"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
+	"github.com/goharbor/harbor/src/pkg/permission/evaluator/admin"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
-	user *models.User
-	pm   promgr.ProjectManager
+	user      *models.User
+	pm        promgr.ProjectManager
+	evaluator evaluator.Evaluator
+	once      sync.Once
 }
 
 // NewSecurityContext ...
@@ -77,20 +83,18 @@ func (s *SecurityContext) IsSolutionUser() bool {
 }
 
 // Can returns whether the user can do action on resource
-func (s *SecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
-	ns, err := resource.GetNamespace()
-	if err == nil {
-		switch ns.Kind() {
-		case "project":
-			projectID := ns.Identity().(int64)
-			isPublicProject, _ := s.pm.IsPublic(projectID)
-			projectNamespace := rbac.NewProjectNamespace(projectID, isPublicProject)
-			user := project.NewUser(s, projectNamespace, s.GetProjectRoles(projectID)...)
-			return rbac.HasPermission(user, resource, action)
+func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool {
+	s.once.Do(func() {
+		var evaluators evaluator.Evaluators
+		if s.IsSysAdmin() {
+			evaluators = evaluators.Add(admin.New(s.GetUsername()))
 		}
-	}
+		evaluators = evaluators.Add(rbac.NewProjectRBACEvaluator(s, s.pm))
 
-	return false
+		s.evaluator = evaluators
+	})
+
+	return s.evaluator != nil && s.evaluator.HasPermission(resource, action)
 }
 
 // GetProjectRoles ...

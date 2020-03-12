@@ -22,7 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/q"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/pkg/errors"
 )
 
@@ -36,18 +35,9 @@ func HandleCheckIn(ctx context.Context, checkIn string) {
 	batchSize := 50
 	for repo := range fetchRepositories(ctx, batchSize) {
 		for artifact := range fetchArtifacts(ctx, repo.RepositoryID, batchSize) {
-			for _, tag := range artifact.Tags {
-				art := &v1.Artifact{
-					NamespaceID: artifact.ProjectID,
-					Repository:  repo.Name,
-					Tag:         tag.Name,
-					Digest:      artifact.Digest,
-					MimeType:    artifact.ManifestMediaType,
-				}
-				if err := DefaultController.Scan(art, WithRequester(checkIn)); err != nil {
-					// Just logged
-					log.Error(errors.Wrap(err, "handle check in"))
-				}
+			if err := DefaultController.Scan(ctx, artifact, WithRequester(checkIn)); err != nil {
+				// Just logged
+				log.Error(errors.Wrap(err, "handle check in"))
 			}
 		}
 	}
@@ -67,7 +57,7 @@ func fetchArtifacts(ctx context.Context, repositoryID int64, chunkSize int) <-ch
 		}
 
 		for {
-			artifacts, err := artifact.Ctl.List(ctx, query, &artifact.Option{WithTag: true})
+			artifacts, err := artifact.Ctl.List(ctx, query, nil)
 			if err != nil {
 				log.Errorf("[scan all]: list artifacts failed, error: %v", err)
 				return

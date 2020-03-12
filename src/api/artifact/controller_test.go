@@ -19,8 +19,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
-	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/api/tag"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/internal"
@@ -52,26 +50,6 @@ type fakeAbstractor struct {
 func (f *fakeAbstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact) error {
 	args := f.Called()
 	return args.Error(0)
-}
-func (f *fakeAbstractor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, additionType string) (*resolver.Addition, error) {
-	args := f.Called()
-	var addition *resolver.Addition
-	if args.Get(0) != nil {
-		addition = args.Get(0).(*resolver.Addition)
-	}
-	return addition, args.Error(1)
-}
-
-type fakeDescriptor struct {
-	mock.Mock
-}
-
-func (f *fakeDescriptor) GetArtifactType() string {
-	return "IMAGE"
-}
-
-func (f *fakeDescriptor) ListAdditionTypes() []string {
-	return []string{"BUILD_HISTORY"}
 }
 
 type controllerTestSuite struct {
@@ -109,7 +87,6 @@ func (c *controllerTestSuite) SetupTest() {
 		immutableMtr: c.immutableMtr,
 		regCli:       c.regCli,
 	}
-	descriptor.Register(&fakeDescriptor{}, "")
 }
 
 func (c *controllerTestSuite) TestAssembleArtifact() {
@@ -148,11 +125,6 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 	c.Require().NotNil(artifact)
 	c.Equal(art.ID, artifact.ID)
 	c.Contains(artifact.Tags, tg)
-	c.Require().NotNil(artifact.AdditionLinks)
-	c.Require().NotNil(artifact.AdditionLinks["build_history"])
-	c.False(artifact.AdditionLinks["build_history"].Absolute)
-	c.Equal("/api/2.0/projects/library/repositories/hello-world/artifacts/sha256:123/additions/build_history",
-		artifact.AdditionLinks["build_history"].HREF)
 	c.Contains(artifact.Labels, lb)
 	// TODO check other fields of option
 }
@@ -496,10 +468,9 @@ func (c *controllerTestSuite) TestUpdatePullTime() {
 }
 
 func (c *controllerTestSuite) TestGetAddition() {
-	c.artMgr.On("Get").Return(nil, nil)
-	c.abstractor.On("AbstractAddition").Return(nil, nil)
+	c.artMgr.On("Get").Return(&artifact.Artifact{}, nil)
 	_, err := c.ctl.GetAddition(nil, 1, "addition")
-	c.Require().Nil(err)
+	c.Require().NotNil(err)
 }
 
 func (c *controllerTestSuite) TestAddTo() {

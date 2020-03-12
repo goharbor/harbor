@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/project"
 	sc "github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/models"
@@ -41,21 +42,15 @@ func Middleware() func(http.Handler) http.Handler {
 					return
 				}
 
-				// Get the vulnerability summary
-				artifact := &v1.Artifact{
-					NamespaceID: wl.ProjectID,
-					Repository:  img.Repository,
-					Tag:         img.Tag,
-					Digest:      img.Digest,
-					MimeType:    v1.MimeTypeDockerArtifact,
+				ctx := req.Context()
+				art, err := artifact.Ctl.GetByReference(ctx, img.Repository, img.Digest, nil)
+				if err != nil {
+					// TODO: error handle
+					return
 				}
 
 				cve := report.CVESet(wl.CVESet())
-				summaries, err := sc.DefaultController.GetSummary(
-					artifact,
-					[]string{v1.MimeTypeNativeReport},
-					report.WithCVEWhitelist(&cve),
-				)
+				summaries, err := sc.DefaultController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport}, report.WithCVEWhitelist(&cve))
 
 				if err != nil {
 					err = errors.Wrap(err, "middleware: vulnerable handler")

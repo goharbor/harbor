@@ -15,8 +15,11 @@
 package model
 
 import (
+	"encoding/json"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
 
@@ -56,6 +59,23 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 	}
 	for _, label := range a.Labels {
 		art.Labels = append(art.Labels, label.ToSwagger())
+	}
+	if len(a.ScanOverview) > 0 {
+		art.ScanOverview = models.ScanOverview{}
+		for key, value := range a.ScanOverview {
+			js, err := json.Marshal(value)
+			if err != nil {
+				log.Warningf("convert summary of %s failed, error: %v", key, err)
+				continue
+			}
+			var summary models.NativeReportSummary
+			if err := summary.UnmarshalBinary(js); err != nil {
+				log.Warningf("convert summary of %s failed, error: %v", key, err)
+				continue
+			}
+
+			art.ScanOverview[key] = summary
+		}
 	}
 	return art
 }

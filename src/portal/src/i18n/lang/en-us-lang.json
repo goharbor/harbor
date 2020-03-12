@@ -251,7 +251,7 @@
         "ROBOT_ACCOUNTS": "Robot Accounts",
         "WEBHOOKS": "Webhooks",
         "IMMUTABLE_TAG": "Tag Immutability",
-        "TAG_STRATEGY": "Tag Strategy"
+        "POLICY": "Policy"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Project registry",
@@ -987,6 +987,7 @@
         },
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",
+            "SCANNING_PERCENT": "Scan completed percent:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}.",
             "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
@@ -1028,7 +1029,7 @@
         "UNTAGGED": "Untagged",
         "ALL": "All",
         "PLACEHOLDER": "We couldn't find any artifactds!",
-        "SCAN_UNSUPPORTED": "Scan Unsupported"
+        "SCAN_UNSUPPORTED": "Unsupported"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Create on",
@@ -1249,9 +1250,11 @@
         "IN_REPOSITORIES": "For the repositories",
         "REP_SEPARATOR": "Enter multiple comma separated repos,repo*,or **",
         "TAGS": "Tags",
+        "UNTAGGED": " untagged",
+        "INCLUDE_UNTAGGED": " untagged artifacts",
         "MATCHES_TAGS": "Matches tags",
         "MATCHES_EXCEPT_TAGS": "Matches except tags",
-        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags, tag*, or **. Optionally include all untagged artifacts when applying the ‘including’ or ‘excluding’ selector by checking the box above.",
         "LABELS": "Labels",
         "MATCHES_LABELS": "Matches Labels",
         "MATCHES_EXCEPT_LABELS": "Matches except Labels",
@@ -1308,7 +1311,7 @@
         "IN_REPOSITORIES": "For the repositories",
         "REP_SEPARATOR": "Enter multiple comma separated repos,repo*,or **",
         "TAGS": "Tags",
-        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **.",
         "EDIT_TITLE": "Edit Tag Immutability Rule",
         "EXC": " excluding ",
         "MAT": " matching ",

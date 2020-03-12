@@ -18,7 +18,7 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 // Context abstracts the operations related with authN and authZ
@@ -38,7 +38,7 @@ type Context interface {
 	// Get user's role in provided project
 	GetProjectRoles(projectIDOrName interface{}) []int
 	// Can returns whether the user can do action on resource
-	Can(action rbac.Action, resource rbac.Resource) bool
+	Can(action types.Action, resource types.Resource) bool
 }
 
 type securityKey struct{}

@@ -55,9 +55,9 @@
                             <div *ngFor="let filter of mutipleFilter" >
                                 <ul class="list-unstyled" *ngIf="filterByType ===filter.filterBy">
                                     <li class="cursor-pointer" (click)="selectFilter(item.showItem, item.filterText)" *ngFor="let item of filter.listItem">{{item.showItem | translate}}</li>
-                                </ul>   
+                                </ul>
                             </div>
-                            
+
                         </div>
                         <div class="label-filter-panel" *ngIf="!withAdmiral" [hidden]="!(openLabelFilterPanel&&filterByType==='label.id')">
                             <a class="filterClose" (click)="closeFilter()">&times;</a>

@@ -17,12 +17,11 @@ package report
 import (
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/scan/all"
-
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/errs"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
@@ -81,7 +80,7 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 		// Status conflict
 		if theCopy.StartTime.Add(reportTimeout).After(time.Now()) {
 			if theStatus.Compare(job.RunningStatus) <= 0 {
-				return "", errs.WithCode(errs.Conflict, errs.Errorf("a previous scan process is %s", theCopy.Status))
+				return "", ierror.ConflictError(nil).WithMessage("a previous scan process is %s", theCopy.Status)
 			}
 		}
 
@@ -92,17 +91,14 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 		}
 	}
 
-	// Assign uuid
-	UUID, err := uuid.NewUUID()
-	if err != nil {
-		return "", errors.Wrap(err, "create report: new UUID")
-	}
-	r.UUID = UUID.String()
+	r.UUID = uuid.New().String()
 
 	// Fill in / override the related properties
 	r.StartTime = time.Now().UTC()
-	r.Status = job.PendingStatus.String()
-	r.StatusCode = job.PendingStatus.Code()
+	if r.Status == "" {
+		r.Status = job.PendingStatus.String()
+		r.StatusCode = job.PendingStatus.Code()
+	}
 
 	// Insert
 	if _, err = scan.CreateReport(r); err != nil {

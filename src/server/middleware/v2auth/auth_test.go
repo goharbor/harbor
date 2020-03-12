@@ -28,6 +28,9 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
+	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -77,56 +80,6 @@ func (mockPM) GetMetadataManager() metamgr.ProjectMetadataManager {
 	panic("implement me")
 }
 
-type mockSC struct{}
-
-func (mockSC) Name() string {
-	return "mock"
-}
-
-func (mockSC) IsAuthenticated() bool {
-	return true
-}
-
-func (mockSC) GetUsername() string {
-	return "mock"
-}
-
-func (mockSC) IsSysAdmin() bool {
-	return false
-}
-
-func (mockSC) IsSolutionUser() bool {
-	return false
-}
-
-func (mockSC) GetMyProjects() ([]*models.Project, error) {
-	panic("implement me")
-}
-
-func (mockSC) GetProjectRoles(projectIDOrName interface{}) []int {
-	panic("implement me")
-}
-
-func (mockSC) Can(action rbac.Action, resource rbac.Resource) bool {
-	ns, _ := resource.GetNamespace()
-	perms := map[int64]map[rbac.Action]struct{}{
-		1: {
-			rbac.ActionPull: {},
-			rbac.ActionPush: {},
-		},
-		2: {
-			rbac.ActionPull: {},
-		},
-	}
-	pid := ns.Identity().(int64)
-	m, ok := perms[pid]
-	if !ok {
-		return false
-	}
-	_, ok = m[action]
-	return ok
-}
-
 func TestMain(m *testing.M) {
 	checker = reqChecker{
 		pm: mockPM{},
@@ -141,7 +94,28 @@ func TestMiddleware(t *testing.T) {
 		w.WriteHeader(200)
 	})
 
-	baseCtx := security.NewContext(context.Background(), mockSC{})
+	sc := &securitytesting.Context{}
+	sc.On("IsAuthenticated").Return(true)
+	sc.On("IsSysAdmin").Return(false)
+	mock.OnAnything(sc, "Can").Return(func(action types.Action, resource types.Resource) bool {
+		perms := map[string]map[rbac.Action]struct{}{
+			"/project/1/repository": {
+				rbac.ActionPull: {},
+				rbac.ActionPush: {},
+			},
+			"/project/2/repository": {
+				rbac.ActionPull: {},
+			},
+		}
+		m, ok := perms[resource.String()]
+		if !ok {
+			return false
+		}
+		_, ok = m[action]
+		return ok
+	})
+
+	baseCtx := security.NewContext(context.Background(), sc)
 	ar1 := internal.ArtifactInfo{
 		Repository:  "project_1/hello-world",
 		Reference:   "v1",

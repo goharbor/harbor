@@ -37,6 +37,10 @@ const SCHEDULE_TYPE = {
     HOURLY: "Hourly",
     CUSTOM: "Custom"
 };
+const DECORATION = {
+    MATCHES: "matches",
+    EXCLUDES: "excludes",
+};
 const RUNNING: string = "Running";
 const PENDING: string = "pending";
 const TIMEOUT: number = 5000;
@@ -176,6 +180,8 @@ export class TagRetentionComponent implements OnInit {
                             if (!item.params) {
                                 item.params = {};
                             }
+                            this.setRuleUntagged(item);
+
                         });
                     }
                     this.retention = response;
@@ -225,7 +231,28 @@ export class TagRetentionComponent implements OnInit {
                 this.errorHandler.error(error);
             });
     }
+    setRuleUntagged(rule) {
+        if (!rule.tag_selectors[0].extras) {
+            if (rule.tag_selectors[0].decoration === DECORATION.MATCHES) {
+                rule.tag_selectors[0].extras = JSON.stringify({untagged: true});
+            }
+            if (rule.tag_selectors[0].decoration === DECORATION.EXCLUDES) {
+                rule.tag_selectors[0].extras = JSON.stringify({untagged: false});
 
+            }
+        } else {
+            let extras = JSON.parse(rule.tag_selectors[0].extras);
+            if (extras.untagged === undefined) {
+                if (rule.tag_selectors[0].decoration === DECORATION.MATCHES) {
+                    extras.untagged = true;
+                }
+                if (rule.tag_selectors[0].decoration === DECORATION.EXCLUDES) {
+                    extras.untagged = false;
+                }
+                rule.tag_selectors[0].extras = JSON.stringify(extras);
+            }
+        }
+    }
     openAddRule() {
         this.addRuleComponent.open();
         this.addRuleComponent.isAdd = true;
@@ -449,5 +476,12 @@ export class TagRetentionComponent implements OnInit {
     clrLoad() {
 
         this.refreshList();
+    }
+    /**
+     *
+     * @param extras Json string
+     */
+    showUntagged(extras) {
+        return JSON.parse(extras).untagged;
     }
 }

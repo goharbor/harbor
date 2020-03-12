@@ -25,7 +25,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/artifact"
-	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
+	"github.com/goharbor/harbor/src/api/artifact/processor"
 	"github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/api/repository"
 	"github.com/goharbor/harbor/src/api/scan"
@@ -34,7 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -178,30 +177,6 @@ func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArt
 	return operation.NewCopyArtifactCreated().WithLocation(location)
 }
 
-func (a *artifactAPI) ScanArtifact(ctx context.Context, params operation.ScanArtifactParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceScan); err != nil {
-		return a.SendError(ctx, err)
-	}
-
-	repository := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
-	artifact, err := a.artCtl.GetByReference(ctx, repository, params.Reference, nil)
-	if err != nil {
-		return a.SendError(ctx, err)
-	}
-
-	art := &v1.Artifact{
-		NamespaceID: artifact.ProjectID,
-		Repository:  repository,
-		Digest:      artifact.Digest,
-		MimeType:    artifact.ManifestMediaType,
-	}
-	if err := a.scanCtl.Scan(art); err != nil {
-		return a.SendError(ctx, err)
-	}
-
-	return operation.NewScanArtifactAccepted()
-}
-
 // parse "repository:tag" or "repository@digest" into repository and reference parts
 func parse(s string) (string, string, error) {
 	matches := reference.ReferenceRegexp.FindStringSubmatch(s)
@@ -301,7 +276,7 @@ func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAddit
 		return a.SendError(ctx, err)
 	}
 
-	var addition *resolver.Addition
+	var addition *processor.Addition
 
 	if params.Addition == vulnerabilitiesAddition {
 		addition, err = resolveVulnerabilitiesAddition(ctx, artifact)

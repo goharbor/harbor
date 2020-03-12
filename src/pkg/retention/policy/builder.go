@@ -78,7 +78,7 @@ func (bb *basicBuilder) Build(policy *lwp.Metadata, isDryRun bool) (alg.Processo
 
 		sl := make([]selector.Selector, 0)
 		for _, s := range r.TagSelectors {
-			sel, err := index2.Get(s.Kind, s.Decoration, s.Pattern)
+			sel, err := index2.Get(s.Kind, s.Decoration, s.Pattern, s.Extras)
 			if err != nil {
 				return nil, errors.Wrap(err, "get selector by metadata")
 			}
