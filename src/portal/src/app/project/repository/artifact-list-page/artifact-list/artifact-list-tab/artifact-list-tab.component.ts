@@ -61,7 +61,7 @@ import {
 } from "../../../../../../lib/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../../lib/components/operation/operate";
 import { errorHandler } from "../../../../../../lib/utils/shared/shared.utils";
-import { ArtifactFront as Artifact, mutipleFilter } from "../../../artifact/artifact";
+import { ArtifactFront as Artifact, mutipleFilter, artifactImages, ArtifactFront } from "../../../artifact/artifact";
 import { Project } from "../../../../project";
 import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 import { ADDITIONS } from "../../../artifact/artifact-additions/models";
@@ -385,6 +385,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             })).subscribe(artifacts => {
               this.artifactList = artifacts;
               this.getArtifactAnnotationsArray(this.artifactList);
+              this.getArtifactIcon(this.artifactList);
             }, error => {
               this.errorHandlerService.error(error);
             });
@@ -414,6 +415,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             }
             this.artifactList = res.body;
             this.getArtifactAnnotationsArray(this.artifactList);
+            this.getArtifactIcon(this.artifactList);
           }, error => {
             // error
             this.errorHandlerService.error(error);
@@ -951,5 +953,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
   get isFilterReadonly() {
     return this.filterByType === 'label.id' ? 'readonly' : null;
+  }
+  getArtifactIcon(artifacts: ArtifactFront[]) {
+    for (const artifact of artifacts) {
+      if (artifactImages.some(image => image === artifact.type)) {
+        artifact.showImage = 'images/artifact-' + artifact.type.toLowerCase() + '.svg';
+      } else {
+        artifact.showImage = 'images/artifact-default.svg';
+      }
+    }
   }
 }

@@ -2,6 +2,7 @@ import { Artifact } from "../../../../../ng-swagger-gen/models/artifact";
 
 export interface ArtifactFront extends Artifact {
     annotationsArray?: string[];
+    showImage?: string;
 }
 
 export const mutipleFilter = [
@@ -46,4 +47,7 @@ export const mutipleFilter = [
       filterByShowText: 'Label',
       listItem: []
     },
+  ];
+  export const artifactImages = [
+      'IMAGE', 'CHART', 'CNAB', 'OPENPOLICYAGENT'
   ];

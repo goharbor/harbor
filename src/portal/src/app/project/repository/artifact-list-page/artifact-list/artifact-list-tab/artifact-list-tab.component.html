@@ -161,7 +161,7 @@
                 <clr-dg-cell class="truncated flex-max-width">
                     <div class="cell white-normal">
                         <img class="artifact-icon" [title]="artifact.type"
-                            [src]="artifact.type==='IMAGE'||artifact.type==='CHART'||artifact.type ==='CNAB'?'images/artifact-'+artifact.type.toLowerCase()+'.svg':'images/artifact-default.svg'" />
+                            [src]="artifact.showImage" />
                         &nbsp; &nbsp;
                         <a href="javascript:void(0)" class="max-width-100" (click)="goIntoArtifactSummaryPage(artifact)"
                             title="{{artifact.digest}}">
@@ -178,9 +178,6 @@
                                 {{'REPOSITORY.ARTIFACT_TOOTIP' | translate}}
                             </clr-tooltip-content>
                         </clr-tooltip>
-                        <span href="javascript:void(0)" *ngIf="!artifact.references">
-                            <clr-icon class="icon-folder" shape="file"></clr-icon>
-                        </span>
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="depth">
