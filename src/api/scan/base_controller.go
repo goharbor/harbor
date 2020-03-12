@@ -30,6 +30,7 @@ import (
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
@@ -522,7 +523,7 @@ func (bc *basicController) makeRobotAccount(projectID int64, repository string) 
 		Name:        UUID,
 		Description: "for scan",
 		ProjectID:   projectID,
-		Access:      []*rbac.Policy{{Resource: resource, Action: rbac.ActionScannerPull}},
+		Access:      []*types.Policy{{Resource: resource, Action: rbac.ActionScannerPull}},
 	}
 
 	rb, err := bc.rc.CreateRobotAccount(robotReq)

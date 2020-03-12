@@ -22,7 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
@@ -220,8 +219,7 @@ func validateRobotReq(p *models.Project, robotReq *model.RobotCreate) error {
 		return errors.New("access required")
 	}
 
-	namespace, _ := rbac.Resource(fmt.Sprintf("/project/%d", p.ProjectID)).GetNamespace()
-	policies := project.GetAllPolicies(namespace)
+	policies := rbac.GetPoliciesOfProject(p.ProjectID)
 
 	mp := map[string]bool{}
 	for _, policy := range policies {

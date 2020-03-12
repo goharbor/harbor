@@ -12,14 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbac
+package common
 
-import (
-	"github.com/goharbor/harbor/src/pkg/permission/types"
-)
-
-// Resource alias type for types.Resource
-type Resource = types.Resource
-
-// Action alias type for types.Action
-type Action = types.Action
+//go:generate mockery -case snake -dir ../../common/security -name Context -output ./security -outpkg security

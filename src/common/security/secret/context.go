@@ -19,9 +19,9 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 // SecurityContext implements security.Context interface based on secret store
@@ -79,7 +79,7 @@ func (s *SecurityContext) IsSolutionUser() bool {
 // Can returns whether the user can do action on resource
 // returns true if the corresponding user of the secret
 // is jobservice or core service, otherwise returns false
-func (s *SecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
+func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool {
 	if s.store == nil {
 		return false
 	}

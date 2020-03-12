@@ -1,17 +1,19 @@
 package robot
 
 import (
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	core_cfg "github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type ControllerTestSuite struct {
@@ -41,11 +43,11 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 
 	res := rbac.Resource("/project/1")
 
-	rbacPolicy := &rbac.Policy{
+	rbacPolicy := &types.Policy{
 		Resource: res.Subresource(rbac.ResourceRepository),
 		Action:   "pull",
 	}
-	policies := []*rbac.Policy{}
+	policies := []*types.Policy{}
 	policies = append(policies, rbacPolicy)
 
 	tokenDuration := time.Duration(30) * time.Minute
