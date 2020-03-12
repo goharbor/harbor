@@ -118,11 +118,11 @@ func BenchmarkGetRegion(b *testing.B) {
 	}
 }
 
-func Test_adapter_FetchImages(t *testing.T) {
+func Test_adapter_FetchArtifacts(t *testing.T) {
 	a, s := getMockAdapter(t, true, true)
 	defer s.Close()
 	var filters = []*model.Filter{}
-	var resources, err = a.FetchImages(filters)
+	var resources, err = a.FetchArtifacts(filters)
 	assert.NotNil(t, err)
 	assert.Nil(t, resources)
 }

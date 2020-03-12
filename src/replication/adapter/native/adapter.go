@@ -15,6 +15,7 @@
 package native
 
 import (
+	"errors"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -48,6 +49,11 @@ func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
 func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return nil
 }
+
+var (
+	_ adp.Adapter          = (*Adapter)(nil)
+	_ adp.ArtifactRegistry = (*Adapter)(nil)
+)
 
 // Adapter implements an adapter for Docker registry. It can be used to all registries
 // that implement the registry V2 API
@@ -123,8 +129,8 @@ func (a *Adapter) HealthCheck() (model.HealthStatus, error) {
 	return model.Healthy, nil
 }
 
-// FetchImages ...
-func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+// FetchArtifacts ...
+func (a *Adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
 	repositories, err := a.listRepositories(filters)
 	if err != nil {
 		return nil, err
@@ -165,7 +171,7 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	runner.Wait()
 
 	if runner.IsCancelled() {
-		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+		return nil, fmt.Errorf("FetchArtifacts error when collect tags for repos")
 	}
 
 	var resources []*model.Resource
@@ -234,4 +240,9 @@ func (a *Adapter) PingSimple() error {
 		return nil
 	}
 	return err
+}
+
+// DeleteTag isn't supported for docker registry
+func (a *Adapter) DeleteTag(repository, tag string) error {
+	return errors.New("the tag deletion isn't supported")
 }

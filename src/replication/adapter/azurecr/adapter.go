@@ -38,8 +38,10 @@ type adapter struct {
 	*native.Adapter
 }
 
-// Ensure '*adapter' implements interface 'Adapter'.
-var _ adp.Adapter = (*adapter)(nil)
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
 
 // Info returns information of the registry
 func (a *adapter) Info() (*model.RegistryInfo, error) {

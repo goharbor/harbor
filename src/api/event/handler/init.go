@@ -29,6 +29,7 @@ func init() {
 	notifier.Subscribe(event.TopicPushArtifact, &replication.Handler{})
 	notifier.Subscribe(event.TopicDeleteArtifact, &replication.Handler{})
 	notifier.Subscribe(event.TopicCreateTag, &replication.Handler{})
+	notifier.Subscribe(event.TopicDeleteTag, &replication.Handler{})
 
 	// audit logs
 	notifier.Subscribe(event.TopicPushArtifact, &auditlog.Handler{})

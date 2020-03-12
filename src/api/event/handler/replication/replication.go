@@ -42,6 +42,10 @@ func (r *Handler) Handle(value interface{}) error {
 	if ok {
 		return r.handleCreateTag(createTagEvent)
 	}
+	deleteTagEvent, ok := value.(*event.DeleteTagEvent)
+	if ok {
+		return r.handleDeleteTag(deleteTagEvent)
+	}
 	return nil
 }
 
@@ -49,8 +53,6 @@ func (r *Handler) Handle(value interface{}) error {
 func (r *Handler) IsStateful() bool {
 	return false
 }
-
-// TODO handle create tag
 
 func (r *Handler) handlePushArtifact(event *event.PushArtifactEvent) error {
 	art := event.Artifact
@@ -136,6 +138,30 @@ func (r *Handler) handleCreateTag(event *event.CreateTagEvent) error {
 						Tags:   []string{event.Tag},
 					}},
 			},
+		},
+	}
+	return replication.EventHandler.Handle(e)
+}
+
+func (r *Handler) handleDeleteTag(event *event.DeleteTagEvent) error {
+	art := event.AttachedArtifact
+	e := &repevent.Event{
+		Type: repevent.EventTypeTagDelete,
+		Resource: &model.Resource{
+			Type: model.ResourceTypeArtifact,
+			Metadata: &model.ResourceMetadata{
+				Repository: &model.Repository{
+					Name: event.Repository,
+				},
+				Artifacts: []*model.Artifact{
+					{
+						Type:   art.Type,
+						Digest: art.Digest,
+						Tags:   []string{event.Tag},
+					}},
+			},
+			Deleted:     true,
+			IsDeleteTag: true,
 		},
 	}
 	return replication.EventHandler.Handle(e)

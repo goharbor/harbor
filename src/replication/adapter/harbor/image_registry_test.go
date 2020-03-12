@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFetchImages(t *testing.T) {
+func TestFetchArtifacts(t *testing.T) {
 	server := test.NewServer([]*test.RequestHandlerMapping{
 		{
 			Method:  http.MethodGet,
@@ -80,7 +80,7 @@ func TestFetchImages(t *testing.T) {
 	adapter, err := newAdapter(registry)
 	require.Nil(t, err)
 	// nil filter
-	resources, err := adapter.FetchImages(nil)
+	resources, err := adapter.FetchArtifacts(nil)
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(resources))
 	assert.Equal(t, model.ResourceTypeArtifact, resources[0].Type)
@@ -99,7 +99,7 @@ func TestFetchImages(t *testing.T) {
 			Value: "1.0",
 		},
 	}
-	resources, err = adapter.FetchImages(filters)
+	resources, err = adapter.FetchArtifacts(filters)
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(resources))
 	assert.Equal(t, model.ResourceTypeArtifact, resources[0].Type)

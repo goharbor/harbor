@@ -20,6 +20,7 @@ import "github.com/goharbor/harbor/src/replication/model"
 const (
 	EventTypeArtifactPush   = "artifact_push"
 	EventTypeArtifactDelete = "artifact_delete"
+	EventTypeTagDelete      = "tag_delete"
 	EventTypeChartUpload    = "chart_upload"
 	EventTypeChartDelete    = "chart_delete"
 )

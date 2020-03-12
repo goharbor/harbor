@@ -52,6 +52,7 @@ func DoFilterResources(resources []*model.Resource, filters []*model.Filter) ([]
 			Registry:     resource.Registry,
 			ExtendedInfo: resource.ExtendedInfo,
 			Deleted:      resource.Deleted,
+			IsDeleteTag:  resource.IsDeleteTag,
 			Override:     resource.Override,
 		})
 	}

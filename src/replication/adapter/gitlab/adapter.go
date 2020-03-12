@@ -30,6 +30,11 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return nil
 }
 
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
+
 type adapter struct {
 	*native.Adapter
 	registry        *model.Registry
@@ -71,8 +76,8 @@ func (a *adapter) Info() (info *model.RegistryInfo, err error) {
 	}, nil
 }
 
-// FetchImages fetches images
-func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+// FetchArtifacts fetches images
+func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
 	var resources []*model.Resource
 	var projects []*Project
 	var err error

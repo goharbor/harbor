@@ -28,7 +28,7 @@ import (
 	"strings"
 )
 
-func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
 	projects, err := a.listProjects(filters)
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		runner.Wait()
 
 		if runner.IsCancelled() {
-			return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+			return nil, fmt.Errorf("FetchArtifacts error when collect tags for repos")
 		}
 
 		for _, r := range rawResources {
@@ -167,4 +167,11 @@ func (a *adapter) listArtifacts(repository string, filters []*model.Filter) ([]*
 		arts = append(arts, art)
 	}
 	return filter.DoFilterArtifacts(arts, filters)
+}
+
+func (a *adapter) DeleteTag(repository, tag string) error {
+	project, repository := utils.ParseRepository(repository)
+	url := fmt.Sprintf("%s/api/%s/projects/%s/repositories/%s/artifacts/%s/tags/%s",
+		a.getURL(), api.APIVersion, project, repository, tag, tag)
+	return a.client.Delete(url)
 }

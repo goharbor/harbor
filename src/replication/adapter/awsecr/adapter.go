@@ -81,6 +81,11 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return getAdapterInfo()
 }
 
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
+
 type adapter struct {
 	*native.Adapter
 	registry      *model.Registry
