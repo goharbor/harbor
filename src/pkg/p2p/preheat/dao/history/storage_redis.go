@@ -115,7 +115,7 @@ func validHistoryRecord(record *models.HistoryRecord) error {
 		return errors.New("nil history record")
 	}
 
-	errs := []string{}
+	var errs []string
 	val := reflect.ValueOf(record).Elem()
 	for i := 0; i < val.NumField(); i++ {
 		v := val.Field(i)
