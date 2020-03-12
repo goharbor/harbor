@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 
 	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -30,6 +31,7 @@ const (
 )
 
 var registry = map[model.RegistryType]Factory{}
+var registryKeys = []string{}
 var adapterInfoMap = map[model.RegistryType]*model.AdapterPattern{}
 
 // Factory creates a specific Adapter according to the params
@@ -84,6 +86,8 @@ func RegisterFactory(t model.RegistryType, factory Factory) error {
 		return fmt.Errorf("adapter factory for %s already exists", t)
 	}
 	registry[t] = factory
+	registryKeys = append(registryKeys, string(t))
+	sort.Strings(registryKeys)
 	adapterInfo := factory.AdapterPattern()
 	if adapterInfo != nil {
 		adapterInfoMap[t] = adapterInfo
@@ -109,8 +113,8 @@ func HasFactory(t model.RegistryType) bool {
 // ListRegisteredAdapterTypes lists the registered Adapter type
 func ListRegisteredAdapterTypes() []model.RegistryType {
 	types := []model.RegistryType{}
-	for t := range registry {
-		types = append(types, t)
+	for _, t := range registryKeys {
+		types = append(types, model.RegistryType(t))
 	}
 	return types
 }
