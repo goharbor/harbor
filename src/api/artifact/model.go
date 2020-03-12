@@ -16,6 +16,7 @@ package artifact
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/server/v2.0/models"
 
 	"github.com/goharbor/harbor/src/api/tag"
 	cmodels "github.com/goharbor/harbor/src/common/models"
@@ -47,6 +48,14 @@ func (artifact *Artifact) SetAdditionLink(addition, version string) {
 type AdditionLink struct {
 	HREF     string `json:"href"`
 	Absolute bool   `json:"absolute"` // specify the href is an absolute URL or not
+}
+
+// ToSwagger converts the addition link to the swagger model
+func (a *AdditionLink) ToSwagger() models.AdditionLink {
+	return models.AdditionLink{
+		Absolute: a.Absolute,
+		Href:     a.HREF,
+	}
 }
 
 // Option is used to specify the properties returned when listing/getting artifacts

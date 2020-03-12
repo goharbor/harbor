@@ -118,8 +118,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
           "scope": "g",
           "project_id": 0,
           "creation_time": "2020-01-13T05:44:00.580198Z",
-          "update_time": "2020-01-13T05:44:00.580198Z",
-          "deleted": false
+          "update_time": "2020-01-13T05:44:00.580198Z"
         },
         {
           "id": 6,
@@ -129,8 +128,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
           "scope": "g",
           "project_id": 0,
           "creation_time": "2020-01-13T08:27:19.279123Z",
-          "update_time": "2020-01-13T08:27:19.279123Z",
-          "deleted": false
+          "update_time": "2020-01-13T08:27:19.279123Z"
         }
       ],
       "push_time": "2020-01-07T03:33:41.162319Z",
@@ -176,8 +174,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
           "scope": "g",
           "project_id": 0,
           "creation_time": "2020-01-13T05:44:00.580198Z",
-          "update_time": "2020-01-13T05:44:00.580198Z",
-          "deleted": false
+          "update_time": "2020-01-13T05:44:00.580198Z"
         },
         {
           "id": 6,
@@ -187,8 +184,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
           "scope": "g",
           "project_id": 0,
           "creation_time": "2020-01-13T08:27:19.279123Z",
-          "update_time": "2020-01-13T08:27:19.279123Z",
-          "deleted": false
+          "update_time": "2020-01-13T08:27:19.279123Z"
         }
       ],
       "push_time": "2020-01-07T03:33:41.162319Z",
