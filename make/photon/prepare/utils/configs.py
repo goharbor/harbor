@@ -239,6 +239,11 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
     updaters_interval = clair_configs.get("updaters_interval", None)
     config_dict['clair_updaters_interval'] = 12 if updaters_interval is None else updaters_interval
 
+    # Trivy configs, optional
+    trivy_configs = configs.get("trivy") or {}
+    trivy_github_token = trivy_configs.get("github_token") or ''
+    config_dict['trivy_github_token'] = trivy_github_token
+
     # Chart configs
     chart_configs = configs.get("chart") or {}
     config_dict['chart_absolute_url'] = chart_configs.get('absolute_url') or ''
@@ -363,7 +368,7 @@ def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
     'redis://redis:6379/2'
     >>> get_redis_configs()['redis_url_clair']
     'redis://redis:6379/4'
-    >>> get_redis_configs()['redis_url_trivy']
+    >>> get_redis_configs()['trivy_redis_url']
     'redis://redis:6379/5'
 
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['external_redis']
@@ -374,12 +379,12 @@ def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
     'redis://anonymous:pass@localhost:6379/2'
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_clair']
     'redis://anonymous:pass@localhost:6379/4'
-    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_trivy']
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['trivy_redis_url']
     'redis://anonymous:pass@localhost:6379/5'
 
     >>> 'redis_url_clair' not in get_redis_configs(with_clair=False)
     True
-    >>> 'redis_url_trivy' not in get_redis_configs(with_trivy=False)
+    >>> 'trivy_redis_url' not in get_redis_configs(with_trivy=False)
     True
     """
 
@@ -418,6 +423,6 @@ def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
 
     if with_trivy:
         configs['redis_db_index_trivy'] = redis['trivy_db_index']
-        configs['redis_url_trivy'] = get_redis_url(configs['redis_db_index_trivy'], redis)
+        configs['trivy_redis_url'] = get_redis_url(configs['redis_db_index_trivy'], redis)
 
     return configs
