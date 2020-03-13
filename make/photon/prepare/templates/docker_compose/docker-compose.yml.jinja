@@ -14,8 +14,12 @@ services:
       - SETUID
     volumes:
       - {{log_location}}/:/var/log/docker/:z
-      - ./common/config/log/logrotate.conf:/etc/logrotate.d/logrotate.conf:z
-      - ./common/config/log/rsyslog_docker.conf:/etc/rsyslog.d/rsyslog_docker.conf:z
+      - type: bind
+        source: ./common/config/log/logrotate.conf
+        target: /etc/logrotate.d/logrotate.conf
+      - type: bind
+        source: ./common/config/log/rsyslog_docker.conf
+        target: /etc/rsyslog.d/rsyslog_docker.conf
     ports:
       - 127.0.0.1:1514:10514
     networks:
