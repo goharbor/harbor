@@ -455,7 +455,10 @@
         "ITEMS": "adet",
         "FILTER_PLACEHOLDER": "Günlükleri Filtrele",
         "INVALID_DATE": "Geçersiz tarih.",
-        "OF": "of"
+        "OF": "of",
+        "NOT_FOUND": "We couldn't find any logs!",
+        "RESOURCE": "Resource",
+        "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
         "YES": "Evet",

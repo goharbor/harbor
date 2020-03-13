@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin, of, throwError as observableThrowError } from "rxjs";
-import { map, tap, publishReplay, refCount } from "rxjs/operators";
+import { Observable, forkJoin} from "rxjs";
+import { map, share } from "rxjs/operators";
 import { HttpClient } from '@angular/common/http';
 import { CacheObservable } from "../utils/cache-util";
 import { CURRENT_BASE_HREF } from "../utils/utils";
@@ -46,6 +46,8 @@ export abstract class UserPermissionService {
 // @dynamic
 @Injectable()
 export class UserPermissionDefaultService extends UserPermissionService {
+    // to prevent duplicate permissions HTTP requests
+    private _sharedPermissionObservableMap: {[key: string]: Observable<Array<Permission>>} = {};
     constructor(
         private http: HttpClient,
     ) {
@@ -55,7 +57,12 @@ export class UserPermissionDefaultService extends UserPermissionService {
     @CacheObservable({ maxAge: 1000 * 60 })
     private getPermissions(scope: string, relative?: boolean): Observable<Array<Permission>> {
         const url = `${ CURRENT_BASE_HREF }/users/current/permissions?scope=${scope}&relative=${relative ? 'true' : 'false'}`;
-        return this.http.get<Array<Permission>>(url);
+        if (this._sharedPermissionObservableMap[url]) {
+            return this._sharedPermissionObservableMap[url];
+        } else {
+            this._sharedPermissionObservableMap[url] = this.http.get<Array<Permission>>(url).pipe(share());
+            return this._sharedPermissionObservableMap[url];
+        }
     }
 
     private hasPermission(permission: Permission, scope: string, relative?: boolean): Observable<boolean> {

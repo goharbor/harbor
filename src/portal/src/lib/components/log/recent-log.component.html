@@ -6,8 +6,8 @@
             <div class="select filter-tag clr-select-wrapper" [hidden]="!isOpenFilterTag">
                 <select id="selectKey" (change)="selectFilterKey($event)">
                     <option value="username">{{"AUDIT_LOG.USERNAME" | translate | lowercase}}</option>
-                    <option value="repository">{{"CONFIG.REPOSITORY" | translate | lowercase}}</option>
-                    <option value="tag">{{"REPOSITORY.TAG" | translate | lowercase}}</option>
+                    <option value="resource">{{"AUDIT_LOG.RESOURCE" | translate | lowercase}}</option>
+                    <option value="resourceType">{{"AUDIT_LOG.RESOURCE_TYPE" | translate | lowercase}}</option>
                     <option value="operation">{{"AUDIT_LOG.OPERATION" | translate | lowercase}}</option>
                 </select>
             </div>
@@ -20,17 +20,17 @@
         </div>
     </div>
     <div>
-        <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="loading">
+        <clr-datagrid (clrDgRefresh)="load()" [clrDgLoading]="loading">
             <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.RESOURCE' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.RESOURCE_TYPE' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
             <clr-dg-placeholder>{{ 'AUDIT_LOG.NOT_FOUND' | translate }}</clr-dg-placeholder>
             <clr-dg-row *ngFor="let l of recentLogs">
                 <clr-dg-cell>{{l.username}}</clr-dg-cell>
-                <clr-dg-cell>{{l.repo_name}}</clr-dg-cell>
-                <clr-dg-cell>{{l.repo_tag}}</clr-dg-cell>
+                <clr-dg-cell>{{l.resource}}</clr-dg-cell>
+                <clr-dg-cell>{{l.resource_type}}</clr-dg-cell>
                 <clr-dg-cell>{{l.operation}}</clr-dg-cell>
                 <clr-dg-cell>{{l.op_time | date: 'short'}}</clr-dg-cell>
             </clr-dg-row>

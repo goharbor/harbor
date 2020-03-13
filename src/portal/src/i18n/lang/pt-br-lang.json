@@ -454,7 +454,9 @@
         "FILTER_PLACEHOLDER": "Filtrar Logs",
         "INVALID_DATE": "Data inválida.",
         "OF": "de",
-        "NOT_FOUND": "Nós não encontramos nenhum registro!"
+        "NOT_FOUND": "Nós não encontramos nenhum registro!",
+        "RESOURCE": "Resource",
+        "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
         "YES": "Yes",
