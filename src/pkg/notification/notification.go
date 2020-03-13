@@ -1,12 +1,15 @@
 package notification
 
 import (
+	"container/list"
+	"context"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/notification/hook"
 	"github.com/goharbor/harbor/src/pkg/notification/job"
 	jobMgr "github.com/goharbor/harbor/src/pkg/notification/job/manager"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	"github.com/goharbor/harbor/src/pkg/notification/policy/manager"
+	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 )
 
@@ -60,4 +63,34 @@ func initSupportedNotifyType(notifyTypes ...string) {
 	for _, notifyType := range notifyTypes {
 		SupportedNotifyTypes[notifyType] = struct{}{}
 	}
+}
+
+type eventKey struct{}
+
+// EventCtx ...
+type EventCtx struct {
+	Events     *list.List
+	MustNotify bool
+}
+
+// NewContext returns new context with event
+func NewContext(ctx context.Context, ec *EventCtx) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return context.WithValue(ctx, eventKey{}, ec)
+}
+
+// AddEvent add events into request context, the event will be sent by the notification middleware eventually.
+func AddEvent(ctx context.Context, m n_event.Metadata, notify ...bool) {
+	e, ok := ctx.Value(eventKey{}).(*EventCtx)
+	if !ok {
+		log.Debug("request has not event list, cannot add event into context")
+		return
+	}
+	if len(notify) != 0 {
+		e.MustNotify = notify[0]
+	}
+	e.Events.PushBack(m)
+	return
 }
