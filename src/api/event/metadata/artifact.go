@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event
+package metadata
 
 import (
 	"context"
+	event2 "github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
@@ -31,17 +32,20 @@ type PushArtifactEventMetadata struct {
 
 // Resolve to the event from the metadata
 func (p *PushArtifactEventMetadata) Resolve(event *event.Event) error {
-	data := &PushArtifactEvent{
-		Repository: p.Artifact.RepositoryName,
-		Artifact:   p.Artifact,
-		Tag:        p.Tag,
-		OccurAt:    time.Now(),
+	data := &event2.PushArtifactEvent{
+		ArtifactEvent: &event2.ArtifactEvent{
+			EventType:  event2.TopicPushArtifact,
+			Repository: p.Artifact.RepositoryName,
+			Artifact:   p.Artifact,
+			Tags:       []string{p.Tag},
+			OccurAt:    time.Now(),
+		},
 	}
 	ctx, exist := security.FromContext(p.Ctx)
 	if exist {
 		data.Operator = ctx.GetUsername()
 	}
-	event.Topic = TopicPushArtifact
+	event.Topic = event2.TopicPushArtifact
 	event.Data = data
 	return nil
 }
@@ -55,17 +59,20 @@ type PullArtifactEventMetadata struct {
 
 // Resolve to the event from the metadata
 func (p *PullArtifactEventMetadata) Resolve(event *event.Event) error {
-	data := &PullArtifactEvent{
-		Repository: p.Artifact.RepositoryName,
-		Artifact:   p.Artifact,
-		Tag:        p.Tag,
-		OccurAt:    time.Now(),
+	data := &event2.PullArtifactEvent{
+		ArtifactEvent: &event2.ArtifactEvent{
+			EventType:  event2.TopicPullArtifact,
+			Repository: p.Artifact.RepositoryName,
+			Artifact:   p.Artifact,
+			Tags:       []string{p.Tag},
+			OccurAt:    time.Now(),
+		},
 	}
 	ctx, exist := security.FromContext(p.Ctx)
 	if exist {
 		data.Operator = ctx.GetUsername()
 	}
-	event.Topic = TopicPullArtifact
+	event.Topic = event2.TopicPullArtifact
 	event.Data = data
 	return nil
 }
@@ -79,17 +86,20 @@ type DeleteArtifactEventMetadata struct {
 
 // Resolve to the event from the metadata
 func (d *DeleteArtifactEventMetadata) Resolve(event *event.Event) error {
-	data := &DeleteArtifactEvent{
-		Repository: d.Artifact.RepositoryName,
-		Artifact:   d.Artifact,
-		Tags:       d.Tags,
-		OccurAt:    time.Now(),
+	data := &event2.DeleteArtifactEvent{
+		ArtifactEvent: &event2.ArtifactEvent{
+			EventType:  event2.TopicDeleteArtifact,
+			Repository: d.Artifact.RepositoryName,
+			Artifact:   d.Artifact,
+			Tags:       d.Tags,
+			OccurAt:    time.Now(),
+		},
 	}
 	ctx, exist := security.FromContext(d.Ctx)
 	if exist {
 		data.Operator = ctx.GetUsername()
 	}
-	event.Topic = TopicDeleteArtifact
+	event.Topic = event2.TopicDeleteArtifact
 	event.Data = data
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/event/metadata"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -123,8 +124,8 @@ func modifyResponse(res *http.Response) error {
 			if e != nil && e.Resource != nil && e.Resource.Metadata != nil && len(e.Resource.Metadata.Vtags) > 0 &&
 				len(e.Resource.ExtendedInfo) > 0 {
 				event := &n_event.Event{}
-				metaData := &n_event.ChartUploadMetaData{
-					ChartMetaData: n_event.ChartMetaData{
+				metaData := &metadata.ChartUploadMetaData{
+					ChartMetaData: metadata.ChartMetaData{
 						ProjectName: e.Resource.ExtendedInfo["projectName"].(string),
 						ChartName:   e.Resource.ExtendedInfo["chartName"].(string),
 						Versions:    e.Resource.Metadata.Vtags,
@@ -146,7 +147,7 @@ func modifyResponse(res *http.Response) error {
 	// Process downloading chart success webhook event
 	if res.StatusCode == http.StatusOK {
 		chartDownloadEvent := res.Request.Context().Value(common.ChartDownloadCtxKey)
-		eventMetaData, ok := chartDownloadEvent.(*n_event.ChartDownloadMetaData)
+		eventMetaData, ok := chartDownloadEvent.(*metadata.ChartDownloadMetaData)
 		if ok && eventMetaData != nil {
 			// Trigger harbor webhook
 			event := &n_event.Event{}

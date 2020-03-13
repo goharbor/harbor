@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package notification
+package scan
 
 import (
+	"github.com/goharbor/harbor/src/api/event"
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"testing"
 	"time"
 
@@ -32,6 +34,7 @@ import (
 	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
 	scantesting "github.com/goharbor/harbor/src/testing/api/scan"
 	"github.com/goharbor/harbor/src/testing/mock"
+	notificationtesting "github.com/goharbor/harbor/src/testing/pkg/notification"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -42,7 +45,7 @@ type ScanImagePreprocessHandlerSuite struct {
 
 	om          policy.Manager
 	pid         int64
-	evt         *model.ScanImageEvent
+	evt         *event.ScanImageEvent
 	c           sc.Controller
 	artifactCtl artifact.Controller
 }
@@ -54,6 +57,7 @@ func TestScanImagePreprocessHandler(t *testing.T) {
 
 // SetupSuite prepares env for test suite.
 func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
+	common_dao.PrepareTestForPostgresSQL()
 	cfg := map[string]interface{}{
 		common.NotificationEnable: true,
 	}
@@ -66,8 +70,8 @@ func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
 		Digest:      "digest-code",
 		MimeType:    v1.MimeTypeDockerArtifact,
 	}
-	suite.evt = &model.ScanImageEvent{
-		EventType: model.EventTypeScanningCompleted,
+	suite.evt = &event.ScanImageEvent{
+		EventType: event.TopicScanningCompleted,
 		OccurAt:   time.Now().UTC(),
 		Operator:  "admin",
 		Artifact:  a,
@@ -104,7 +108,7 @@ func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
 	artifact.Ctl = artifactCtl
 
 	suite.om = notification.PolicyMgr
-	mp := &fakedPolicyMgr{}
+	mp := &notificationtesting.FakedPolicyMgr{}
 	notification.PolicyMgr = mp
 
 	h := &MockHTTPHandler{}
@@ -122,7 +126,7 @@ func (suite *ScanImagePreprocessHandlerSuite) TearDownSuite() {
 
 // TestHandle ...
 func (suite *ScanImagePreprocessHandlerSuite) TestHandle() {
-	handler := &ScanImagePreprocessHandler{}
+	handler := &Handler{}
 
 	err := handler.Handle(suite.evt)
 	suite.NoError(err)

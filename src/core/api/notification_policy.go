@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/event"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,7 +19,8 @@ import (
 // NotificationPolicyAPI ...
 type NotificationPolicyAPI struct {
 	BaseController
-	project *models.Project
+	project         *models.Project
+	supportedEvents map[string]struct{}
 }
 
 // notificationPolicyForUI defines the structure of notification policy info display in UI
@@ -63,6 +65,7 @@ func (w *NotificationPolicyAPI) Prepare() {
 		return
 	}
 	w.project = project
+	w.supportedEvents = initSupportedEvents()
 }
 
 // Get ...
@@ -274,7 +277,7 @@ func (w *NotificationPolicyAPI) GetSupportedEventTypes() {
 		notificationTypes.NotifyType = append(notificationTypes.NotifyType, key)
 	}
 
-	for key := range notification.SupportedEventTypes {
+	for key := range w.supportedEvents {
 		notificationTypes.EventType = append(notificationTypes.EventType, key)
 	}
 	w.WriteJSONData(notificationTypes)
@@ -345,7 +348,7 @@ func (w *NotificationPolicyAPI) validateEventTypes(policy *models.NotificationPo
 	}
 
 	for _, eventType := range policy.EventTypes {
-		_, ok := notification.SupportedEventTypes[eventType]
+		_, ok := w.supportedEvents[eventType]
 		if !ok {
 			w.SendBadRequestError(fmt.Errorf("unsupport event type %s", eventType))
 			return false
@@ -367,6 +370,19 @@ func getLastTriggerTimeGroupByEventType(eventType string, policyID int64) (time.
 		}
 	}
 	return time.Time{}, nil
+}
+
+func initSupportedEvents() map[string]struct{} {
+	var supportedEventTypes = make(map[string]struct{})
+	eventTypes := []string{event.TopicPushArtifact, event.TopicPullArtifact,
+		event.TopicDeleteArtifact, event.TopicUploadChart, event.TopicDeleteChart,
+		event.TopicDownloadChart, event.TopicQuotaExceed, event.TopicScanningFailed,
+		event.TopicScanningCompleted}
+
+	for _, eventType := range eventTypes {
+		supportedEventTypes[eventType] = struct{}{}
+	}
+	return supportedEventTypes
 }
 
 // constructPolicyWithTriggerTime construct notification policy information displayed in UI

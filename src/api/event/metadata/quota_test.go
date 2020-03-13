@@ -12,34 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event
+package metadata
 
 import (
-	"context"
+	event2 "github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
-type repositoryEventTestSuite struct {
+type quotaEventTestSuite struct {
 	suite.Suite
 }
 
-func (r *repositoryEventTestSuite) TestResolveOfDeleteRepositoryEventMetadata() {
+func (r *quotaEventTestSuite) TestResolveOfDeleteRepositoryEventMetadata() {
 	e := &event.Event{}
-	metadata := &DeleteRepositoryEventMetadata{
-		Ctx:        context.Background(),
-		Repository: "library/hello-world",
+	metadata := &QuotaMetaData{
+		RepoName: "library/hello-world",
+		Tag:      "latest",
+		Digest:   "sha256:123absd",
+		Level:    1,
+		Msg:      "quota exceed",
 	}
 	err := metadata.Resolve(e)
 	r.Require().Nil(err)
-	r.Equal(TopicDeleteRepository, e.Topic)
+	r.Equal(event2.TopicQuotaExceed, e.Topic)
 	r.Require().NotNil(e.Data)
-	data, ok := e.Data.(*DeleteRepositoryEvent)
+	data, ok := e.Data.(*event2.QuotaEvent)
 	r.Require().True(ok)
-	r.Equal("library/hello-world", data.Repository)
+	r.Equal("library/hello-world", data.Resource)
 }
 
-func TestRepositoryEventTestSuite(t *testing.T) {
+func TestQuotaEventTestSuite(t *testing.T) {
 	suite.Run(t, &repositoryEventTestSuite{})
 }

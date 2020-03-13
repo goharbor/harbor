@@ -3,7 +3,6 @@ package topic
 import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/notifier"
-	"github.com/goharbor/harbor/src/pkg/notifier/handler/auditlog"
 	"github.com/goharbor/harbor/src/pkg/notifier/handler/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 )
@@ -11,27 +10,8 @@ import (
 // Subscribe topics
 func init() {
 	handlersMap := map[string][]notifier.NotificationHandler{
-		model.PushTagTopic:   {&auditlog.AuditHandler},
-		model.PullTagTopic:   {&auditlog.AuditHandler},
-		model.DeleteTagTopic: {&auditlog.AuditHandler},
-
-		model.CreateProjectTopic: {&auditlog.AuditHandler},
-		model.DeleteProjectTopic: {&auditlog.AuditHandler},
-
-		model.CreateRepositoryTopic: {&auditlog.AuditHandler},
-		model.DeleteRepositoryTopic: {&auditlog.AuditHandler},
-
-		model.CreateArtifactTopic: {&auditlog.AuditHandler},
-		model.DeleteArtifactTopic: {&auditlog.AuditHandler},
-
-		model.WebhookTopic:           {&notification.HTTPHandler{}},
-		model.UploadChartTopic:       {&notification.ChartPreprocessHandler{}},
-		model.DownloadChartTopic:     {&notification.ChartPreprocessHandler{}},
-		model.DeleteChartTopic:       {&notification.ChartPreprocessHandler{}},
-		model.ScanningCompletedTopic: {&notification.ScanImagePreprocessHandler{}},
-		model.ScanningFailedTopic:    {&notification.ScanImagePreprocessHandler{}},
-		model.QuotaExceedTopic:       {&notification.QuotaPreprocessHandler{}},
-		model.SlackTopic:             {&notification.SlackHandler{}},
+		model.WebhookTopic: {&notification.HTTPHandler{}},
+		model.SlackTopic:   {&notification.SlackHandler{}},
 	}
 
 	for t, handlers := range handlersMap {

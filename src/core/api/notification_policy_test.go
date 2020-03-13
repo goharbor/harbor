@@ -1,12 +1,11 @@
 package api
 
 import (
+	"github.com/goharbor/harbor/src/api/event"
 	"net/http"
 	"testing"
 
 	"github.com/pkg/errors"
-
-	"github.com/goharbor/harbor/src/pkg/notifier/model"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/notification"
@@ -24,8 +23,8 @@ func (f *fakedNotificationPlyMgr) List(id int64) ([]*models.NotificationPolicy, 
 		{
 			ID: 1,
 			EventTypes: []string{
-				model.EventTypePullImage,
-				model.EventTypePushImage,
+				event.TopicPullArtifact,
+				event.TopicPushArtifact,
 			},
 		},
 	}, nil
@@ -168,7 +167,7 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []string{"PULL_ARTIFACT", "PUSH_ARTIFACT", "DELETE_ARTIFACT"},
 					Targets: []models.EventTarget{
 						{
 							Address: "tcp://127.0.0.1:8080",
@@ -184,7 +183,7 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []string{"PULL_ARTIFACT", "PUSH_ARTIFACT", "DELETE_ARTIFACT"},
 					Targets: []models.EventTarget{
 						{
 							Type:    "smn",
@@ -218,7 +217,7 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
 					ID:         111,
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []string{"PULL_ARTIFACT", "PUSH_ARTIFACT", "DELETE_ARTIFACT"},
 					Targets: []models.EventTarget{
 						{
 							Type:           "http",
@@ -238,7 +237,7 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []string{"PULL_ARTIFACT", "PUSH_ARTIFACT", "DELETE_ARTIFACT"},
 					Targets: []models.EventTarget{
 						{
 							Type:           "http",
@@ -373,7 +372,7 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []string{"PULL_ARTIFACT", "PUSH_ARTIFACT", "DELETE_ARTIFACT"},
 					Targets:    []models.EventTarget{},
 				}},
 			code: http.StatusBadRequest,
@@ -385,7 +384,7 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []string{"PULL_ARTIFACT", "PUSH_ARTIFACT", "DELETE_ARTIFACT"},
 					Targets: []models.EventTarget{
 						{
 							Address: "tcp://127.0.0.1:8080",
@@ -401,7 +400,7 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []string{"PULL_ARTIFACT", "PUSH_ARTIFACT", "DELETE_ARTIFACT"},
 					Targets: []models.EventTarget{
 						{
 							Type:    "smn",
@@ -435,7 +434,7 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
 					Name:       "imagePolicyTest",
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []string{"PULL_ARTIFACT", "PUSH_ARTIFACT", "DELETE_ARTIFACT"},
 					Targets: []models.EventTarget{
 						{
 							Type:           "http",

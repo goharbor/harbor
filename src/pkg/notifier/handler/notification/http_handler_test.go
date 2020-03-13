@@ -53,7 +53,7 @@ func TestHTTPHandler_Handle(t *testing.T) {
 			args: args{
 				event: &event.Event{
 					Topic: "http",
-					Data:  &model.ImageEvent{},
+					Data:  &model.EventData{},
 				},
 			},
 			wantErr: true,

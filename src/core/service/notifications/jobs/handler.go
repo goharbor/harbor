@@ -20,6 +20,7 @@ import (
 
 	"github.com/goharbor/harbor/src/core/service/notifications"
 
+	"github.com/goharbor/harbor/src/api/event/metadata"
 	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
@@ -116,7 +117,7 @@ func (h *Handler) HandleScan() {
 			log.Debugf("Scan %s for artifact: %#v", h.status, req.Artifact)
 
 			e := &event.Event{}
-			metaData := &event.ScanImageMetaData{
+			metaData := &metadata.ScanImageMetaData{
 				Artifact: req.Artifact,
 				Status:   h.status,
 			}

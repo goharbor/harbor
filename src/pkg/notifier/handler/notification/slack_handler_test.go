@@ -45,7 +45,7 @@ func TestSlackHandler_Handle(t *testing.T) {
 			args: args{
 				event: &event.Event{
 					Topic: "slack",
-					Data:  &model.ImageEvent{},
+					Data:  &model.EventData{},
 				},
 			},
 			wantErr: true,

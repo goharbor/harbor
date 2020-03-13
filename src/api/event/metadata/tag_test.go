@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event
+package metadata
 
 import (
 	"context"
+	event2 "github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/stretchr/testify/suite"
@@ -35,9 +36,9 @@ func (t *tagEventTestSuite) TestResolveOfCreateTagEventMetadata() {
 	}
 	err := metadata.Resolve(e)
 	t.Require().Nil(err)
-	t.Equal(TopicCreateTag, e.Topic)
+	t.Equal(event2.TopicCreateTag, e.Topic)
 	t.Require().NotNil(e.Data)
-	data, ok := e.Data.(*CreateTagEvent)
+	data, ok := e.Data.(*event2.CreateTagEvent)
 	t.Require().True(ok)
 	t.Equal(int64(1), data.AttachedArtifact.ID)
 	t.Equal("latest", data.Tag)
@@ -52,9 +53,9 @@ func (t *tagEventTestSuite) TestResolveOfDeleteTagEventMetadata() {
 	}
 	err := metadata.Resolve(e)
 	t.Require().Nil(err)
-	t.Equal(TopicDeleteTag, e.Topic)
+	t.Equal(event2.TopicDeleteTag, e.Topic)
 	t.Require().NotNil(e.Data)
-	data, ok := e.Data.(*DeleteTagEvent)
+	data, ok := e.Data.(*event2.DeleteTagEvent)
 	t.Require().True(ok)
 	t.Equal(int64(1), data.AttachedArtifact.ID)
 	t.Equal("latest", data.Tag)

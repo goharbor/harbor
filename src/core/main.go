@@ -45,7 +45,6 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
-	"github.com/goharbor/harbor/src/pkg/scan/event"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
@@ -155,8 +154,6 @@ func main() {
 
 	log.Info("initializing notification...")
 	notification.Init()
-	// Initialize the event handlers for handling artifact cascade deletion
-	event.Init()
 
 	filter.Init()
 	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)

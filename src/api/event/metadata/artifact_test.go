@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event
+package metadata
 
 import (
 	"context"
+	event2 "github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/stretchr/testify/suite"
@@ -35,12 +36,12 @@ func (a *artifactEventTestSuite) TestResolveOfPushArtifactEventMetadata() {
 	}
 	err := metadata.Resolve(e)
 	a.Require().Nil(err)
-	a.Equal(TopicPushArtifact, e.Topic)
+	a.Equal(event2.TopicPushArtifact, e.Topic)
 	a.Require().NotNil(e.Data)
-	data, ok := e.Data.(*PushArtifactEvent)
+	data, ok := e.Data.(*event2.PushArtifactEvent)
 	a.Require().True(ok)
 	a.Equal(int64(1), data.Artifact.ID)
-	a.Equal("latest", data.Tag)
+	a.Equal("latest", data.Tags[0])
 }
 
 func (a *artifactEventTestSuite) TestResolveOfPullArtifactEventMetadata() {
@@ -52,12 +53,12 @@ func (a *artifactEventTestSuite) TestResolveOfPullArtifactEventMetadata() {
 	}
 	err := metadata.Resolve(e)
 	a.Require().Nil(err)
-	a.Equal(TopicPullArtifact, e.Topic)
+	a.Equal(event2.TopicPullArtifact, e.Topic)
 	a.Require().NotNil(e.Data)
-	data, ok := e.Data.(*PullArtifactEvent)
+	data, ok := e.Data.(*event2.PullArtifactEvent)
 	a.Require().True(ok)
 	a.Equal(int64(1), data.Artifact.ID)
-	a.Equal("latest", data.Tag)
+	a.Equal("latest", data.Tags[0])
 }
 
 func (a *artifactEventTestSuite) TestResolveOfDeleteArtifactEventMetadata() {
@@ -69,9 +70,9 @@ func (a *artifactEventTestSuite) TestResolveOfDeleteArtifactEventMetadata() {
 	}
 	err := metadata.Resolve(e)
 	a.Require().Nil(err)
-	a.Equal(TopicDeleteArtifact, e.Topic)
+	a.Equal(event2.TopicDeleteArtifact, e.Topic)
 	a.Require().NotNil(e.Data)
-	data, ok := e.Data.(*DeleteArtifactEvent)
+	data, ok := e.Data.(*event2.DeleteArtifactEvent)
 	a.Require().True(ok)
 	a.Equal(int64(1), data.Artifact.ID)
 	a.Require().Len(data.Tags, 1)

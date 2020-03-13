@@ -12,21 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event
-
-import (
-	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/notifier"
-	"github.com/goharbor/harbor/src/pkg/notifier/model"
-	"github.com/pkg/errors"
-)
-
-// Init the events for scan
-func Init() {
-	log.Debugf("Subscribe topic %s for cascade deletion of scan reports", model.DeleteImageTopic)
-
-	err := notifier.Subscribe(model.DeleteImageTopic, NewOnDelImageHandler())
-	if err != nil {
-		log.Error(errors.Wrap(err, "register on delete image handler: init: scan"))
-	}
-}
+package artifact
