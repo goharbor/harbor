@@ -23,7 +23,7 @@
       </ul>
     </div>
   </div>
-  <div *ngIf="showQuotaInfo" class="summary-right pt-1">
+  <div *ngIf="showQuotaInfo && summaryInformation?.quota" class="summary-right pt-1">
     <div class="display-flex  project-detail">
       <h5 class="mt-0">{{'SUMMARY.PROJECT_QUOTAS' | translate}}</h5>
       <div class="ml-1">

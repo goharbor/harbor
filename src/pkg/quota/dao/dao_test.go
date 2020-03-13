@@ -15,8 +15,11 @@
 package dao
 
 import (
+	"context"
+	"sync"
 	"testing"
 
+	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/types"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
@@ -73,11 +76,75 @@ func (suite *DaoTestSuite) TestDelete() {
 	}
 }
 
+func (suite *DaoTestSuite) TestGetByRef() {
+	hardLimits := types.ResourceList{types.ResourceCount: 1}
+	usage := types.ResourceList{types.ResourceCount: 0}
+
+	reference, referenceID := "project", "4"
+	id, err := suite.dao.Create(suite.Context(), reference, referenceID, hardLimits, usage)
+	suite.Nil(err)
+
+	{
+		q, err := suite.dao.GetByRef(suite.Context(), reference, referenceID)
+		suite.Nil(err)
+		suite.NotNil(q)
+	}
+
+	suite.Nil(suite.dao.Delete(suite.Context(), id))
+
+	{
+		_, err := suite.dao.GetByRef(suite.Context(), reference, referenceID)
+		suite.Error(err)
+	}
+}
+
+func (suite *DaoTestSuite) TestGetByRefForUpdate() {
+	hardLimits := types.ResourceList{types.ResourceCount: 1}
+	usage := types.ResourceList{types.ResourceCount: 0}
+
+	reference, referenceID := "project", "5"
+	id, err := suite.dao.Create(suite.Context(), reference, referenceID, hardLimits, usage)
+	suite.Nil(err)
+
+	var wg sync.WaitGroup
+
+	count := int64(10)
+
+	for i := int64(0); i < count; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			f := func(ctx context.Context) error {
+				q, err := suite.dao.GetByRefForUpdate(ctx, reference, referenceID)
+				suite.Nil(err)
+
+				used, _ := q.GetUsed()
+				used[types.ResourceCount]++
+				q.SetUsed(used)
+
+				suite.dao.Update(ctx, q)
+
+				return nil
+			}
+
+			orm.WithTransaction(f)(suite.Context())
+		}()
+	}
+	wg.Wait()
+
+	{
+		q, err := suite.dao.Get(suite.Context(), id)
+		suite.Nil(err)
+		used, _ := q.GetUsed()
+		suite.Equal(count, used[types.ResourceCount])
+	}
+}
+
 func (suite *DaoTestSuite) TestUpdate() {
 	hardLimits := types.ResourceList{types.ResourceCount: 1}
 	usage := types.ResourceList{types.ResourceCount: 0}
 
-	id, err := suite.dao.Create(suite.Context(), "project", "3", hardLimits, usage)
+	id, err := suite.dao.Create(suite.Context(), "project", "6", hardLimits, usage)
 	suite.Nil(err)
 
 	newHardLimits := types.ResourceList{types.ResourceCount: 2}

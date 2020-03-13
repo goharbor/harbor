@@ -22,7 +22,7 @@ import (
 )
 
 // IsSafe check new used is safe under the hard limits
-func IsSafe(hardLimits types.ResourceList, currentUsed types.ResourceList, newUsed types.ResourceList) error {
+func IsSafe(hardLimits types.ResourceList, currentUsed types.ResourceList, newUsed types.ResourceList, ignoreLimitation bool) error {
 	var errs Errors
 
 	for resource, value := range newUsed {
@@ -36,7 +36,7 @@ func IsSafe(hardLimits types.ResourceList, currentUsed types.ResourceList, newUs
 			continue
 		}
 
-		if value > hardLimit {
+		if value > hardLimit && !ignoreLimitation {
 			errs = errs.Add(NewResourceOverflowError(resource, hardLimit, currentUsed[resource], value))
 		}
 	}

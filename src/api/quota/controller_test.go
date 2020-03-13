@@ -70,7 +70,7 @@ func (suite *ControllerTestSuite) TestReserveResources() {
 
 	hardLimits := types.ResourceList{types.ResourceCount: 1}
 
-	mock.OnAnything(quotaMgr, "GetForUpdate").Return(&quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}, nil)
+	mock.OnAnything(quotaMgr, "GetByRefForUpdate").Return(&quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}, nil)
 
 	ctl := &controller{quotaMgr: quotaMgr, reservedExpiration: defaultReservedExpiration}
 
@@ -88,7 +88,7 @@ func (suite *ControllerTestSuite) TestUnreserveResources() {
 
 	hardLimits := types.ResourceList{types.ResourceCount: 1}
 
-	mock.OnAnything(quotaMgr, "GetForUpdate").Return(&quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}, nil)
+	mock.OnAnything(quotaMgr, "GetByRefForUpdate").Return(&quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}, nil)
 
 	ctl := &controller{quotaMgr: quotaMgr, reservedExpiration: defaultReservedExpiration}
 
@@ -113,7 +113,7 @@ func (suite *ControllerTestSuite) TestRequest() {
 	q := &quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}
 	used := types.ResourceList{types.ResourceCount: 0}
 
-	mock.OnAnything(quotaMgr, "GetForUpdate").Return(q, nil)
+	mock.OnAnything(quotaMgr, "GetByRefForUpdate").Return(q, nil)
 
 	mock.OnAnything(quotaMgr, "Update").Return(nil).Run(func(mock.Arguments) {
 		q.SetUsed(used)

@@ -34,8 +34,11 @@ type DAO interface {
 	// Get returns quota by id
 	Get(ctx context.Context, id int64) (*models.Quota, error)
 
-	// GetForUpdate get quota by reference object and lock it for update
-	GetForUpdate(ctx context.Context, reference, referenceID string) (*models.Quota, error)
+	// GetByRef returns quota by reference object
+	GetByRef(ctx context.Context, reference, referenceID string) (*models.Quota, error)
+
+	// GetByRefForUpdate get quota by reference object and lock it for update
+	GetByRefForUpdate(ctx context.Context, reference, referenceID string) (*models.Quota, error)
 
 	// Update update quota
 	Update(ctx context.Context, quota *models.Quota) error
@@ -124,7 +127,26 @@ func (d *dao) Get(ctx context.Context, id int64) (*models.Quota, error) {
 	return toQuota(quota, usage), nil
 }
 
-func (d *dao) GetForUpdate(ctx context.Context, reference, referenceID string) (*models.Quota, error) {
+func (d *dao) GetByRef(ctx context.Context, reference, referenceID string) (*models.Quota, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	quota := &Quota{Reference: reference, ReferenceID: referenceID}
+	if err := o.Read(quota, "reference", "reference_id"); err != nil {
+		return nil, orm.WrapNotFoundError(err, "quota not found for (%s, %s)", reference, referenceID)
+	}
+
+	usage := &QuotaUsage{Reference: reference, ReferenceID: referenceID}
+	if err := o.Read(usage, "reference", "reference_id"); err != nil {
+		return nil, orm.WrapNotFoundError(err, "quota usage not found for (%s, %s)", reference, referenceID)
+	}
+
+	return toQuota(quota, usage), nil
+}
+
+func (d *dao) GetByRefForUpdate(ctx context.Context, reference, referenceID string) (*models.Quota, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err

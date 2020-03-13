@@ -25,6 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/q"
 	dr "github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/types"
@@ -45,10 +46,19 @@ type driver struct {
 }
 
 func (d *driver) Enabled(ctx context.Context, key string) (bool, error) {
+	// NOTE: every time load the new configurations from the db to get the latest configurations may have performance problem.
+	if err := d.cfg.Load(); err != nil {
+		return false, err
+	}
 	return d.cfg.Get(common.QuotaPerProjectEnable).GetBool(), nil
 }
 
 func (d *driver) HardLimits(ctx context.Context) types.ResourceList {
+	// NOTE: every time load the new configurations from the db to get the latest configurations may have performance problem.
+	if err := d.cfg.Load(); err != nil {
+		log.Warningf("load configurations failed, error: %v", err)
+	}
+
 	return types.ResourceList{
 		types.ResourceCount:   d.cfg.Get(common.CountPerProject).GetInt64(),
 		types.ResourceStorage: d.cfg.Get(common.StoragePerProject).GetInt64(),
