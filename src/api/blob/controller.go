@@ -181,14 +181,14 @@ func (c *controller) FindMissingAssociationsForProject(ctx context.Context, proj
 		return nil, nil
 	}
 
-	associated := make(map[int64]bool, len(associatedBlobs))
+	associated := make(map[string]bool, len(associatedBlobs))
 	for _, blob := range associatedBlobs {
-		associated[blob.ID] = true
+		associated[blob.Digest] = true
 	}
 
 	var results []*models.Blob
 	for _, blob := range blobs {
-		if !associated[blob.ID] {
+		if !associated[blob.Digest] {
 			results = append(results, blob)
 		}
 	}

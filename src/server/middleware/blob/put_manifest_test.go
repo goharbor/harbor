@@ -96,12 +96,6 @@ func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 	suite.WithProject(func(projectID int64, projectName string) {
 		name := fmt.Sprintf("%s/redis", projectName)
 
-		for _, reference := range manifest.References() {
-			if !isForeign(&reference) {
-				suite.pushBlob(name, reference.Digest.String(), reference.Size)
-			}
-		}
-
 		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/manifests/%s", name, descriptor.Digest.String()), strings.NewReader(body))
 		req.Header.Set("Content-Type", "application/vnd.docker.distribution.manifest.v2+json")
 		res := httptest.NewRecorder()
