@@ -17,6 +17,7 @@ package error
 import (
 	"errors"
 	openapi "github.com/go-openapi/errors"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -54,6 +55,15 @@ func TestAPIError(t *testing.T) {
 	statusCode, payload := apiError(err)
 	assert.Equal(t, http.StatusBadRequest, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"BAD_REQUEST","message":"bad request"}]}`, payload)
+
+	// legacy error
+	err = &commonhttp.Error{
+		Code:    http.StatusNotFound,
+		Message: "not found",
+	}
+	statusCode, payload = apiError(err)
+	assert.Equal(t, http.StatusNotFound, statusCode)
+	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"not found"}]}`, payload)
 
 	// ierror.Error
 	err = &ierror.Error{
