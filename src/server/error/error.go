@@ -20,6 +20,7 @@ import (
 	openapi "github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"net/http"
@@ -41,8 +42,6 @@ var (
 		ierror.GeneralCode:                     http.StatusInternalServerError,
 	}
 )
-
-// TODO use "SendError" instead in the v1 APIs?
 
 // SendError tries to parse the HTTP status code from the specified error, envelops it into
 // an error array as the error payload and returns the code and payload to the response.
@@ -76,6 +75,11 @@ func apiError(err error) (statusCode int, errPayload string) {
 		code = int(openAPIErr.Code())
 		errCode := strings.Replace(strings.ToUpper(http.StatusText(code)), " ", "_", -1)
 		err = ierror.New(nil).WithCode(errCode).WithMessage(openAPIErr.Error())
+	} else if legacyErr, ok := err.(*commonhttp.Error); ok {
+		// make sure the legacy error format is align with the new one
+		code = legacyErr.Code
+		errCode := strings.Replace(strings.ToUpper(http.StatusText(code)), " ", "_", -1)
+		err = ierror.New(nil).WithCode(errCode).WithMessage(legacyErr.Message)
 	} else {
 		code = codeMap[ierror.ErrCode(err)]
 	}
