@@ -4362,9 +4362,9 @@ definitions:
       pull_count:
         type: integer
         description: The count how many times the repository is pulled
-      tags_count:
+      artifact_count:
         type: integer
-        description: The count of tags in the repository
+        description: The count of artifacts in the repository
   ProjectReq:
     type: object
     properties:
