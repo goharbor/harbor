@@ -853,7 +853,7 @@ parameters:
     in: path
     description: Instance ID
     required: true
-    type: string
+    type: integer
 responses:
   '200':
     description: Success
@@ -1277,7 +1277,7 @@ definitions:
     type: object
     properties:
       id:
-        type: string
+        type: integer
         description: Unique ID
       name:
         type: string
@@ -1317,19 +1317,19 @@ definitions:
     type: object
     properties:
       updated:
-        type: string
+        type: integer
         description: ID of instance updated
   InstanceDeletedResp:
     type: object
     properties:
       removed:
-        type: string
+        type: integer
         description: ID of instance removed
   InstanceCreatedResp:
     type: object
     properties:
       id:
-        type: string
+        type: integer
         description: ID of instance created
   PreheatHistory:
     type: object
@@ -1353,7 +1353,7 @@ definitions:
         type: string
         description: provider
       instance:
-        type: string
+        type: integer
         description: instance
   PreheatingStatus:
     type: object

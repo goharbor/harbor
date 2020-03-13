@@ -1,9 +1,9 @@
 package dao
 
 import (
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/history"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/instance"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/history"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -12,16 +12,16 @@ type FakeInstanceStore struct {
 	mock.Mock
 }
 
-var _ instance.Storage = (*FakeInstanceStore)(nil)
+var _ instance.Manager = (*FakeInstanceStore)(nil)
 
 // Save ...
-func (i *FakeInstanceStore) Save(inst *models.Metadata) (string, error) {
+func (i *FakeInstanceStore) Save(inst *models.Metadata) (int64, error) {
 	args := i.Called(inst)
-	return args.String(0), args.Error(1)
+	return 0, args.Error(1)
 }
 
 // Delete ...
-func (i *FakeInstanceStore) Delete(id string) error {
+func (i *FakeInstanceStore) Delete(id int64) error {
 	args := i.Called(id)
 	return args.Error(0)
 }
@@ -33,7 +33,7 @@ func (i *FakeInstanceStore) Update(inst *models.Metadata) error {
 }
 
 // Get ...
-func (i *FakeInstanceStore) Get(id string) (*models.Metadata, error) {
+func (i *FakeInstanceStore) Get(id int64) (*models.Metadata, error) {
 	args := i.Called(id)
 	var metadata *models.Metadata
 	if args.Get(0) != nil {
@@ -58,7 +58,7 @@ type FakeHistoryStore struct {
 	mock.Mock
 }
 
-var _ history.Storage = (*FakeHistoryStore)(nil)
+var _ history.Manager = (*FakeHistoryStore)(nil)
 
 // AppendHistory ...
 func (h *FakeHistoryStore) AppendHistory(record *models.HistoryRecord) error {

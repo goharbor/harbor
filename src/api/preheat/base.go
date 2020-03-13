@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/history"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/instance"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/history"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
 )
 
@@ -20,7 +20,7 @@ const (
 )
 
 type progressItem struct {
-	instanceID string
+	instanceID int64
 	taskID     string
 }
 
@@ -31,22 +31,22 @@ type Monitor struct {
 	context context.Context
 
 	// For history
-	hStore history.Storage
+	hManager history.Manager
 
 	// For instance
-	iStore instance.Storage
+	iManager instance.Manager
 
 	// Queue for history updating
 	q chan *progressItem
 }
 
 // NewMonitor is constructor of Monitor
-func NewMonitor(ctx context.Context, iStorage instance.Storage, hStorage history.Storage) *Monitor {
+func NewMonitor(ctx context.Context, iManager instance.Manager, hManager history.Manager) *Monitor {
 	return &Monitor{
-		context: ctx,
-		hStore:  hStorage,
-		iStore:  iStorage,
-		q:       make(chan *progressItem, qSize),
+		context:  ctx,
+		hManager: hManager,
+		iManager: iManager,
+		q:        make(chan *progressItem, qSize),
 	}
 }
 
@@ -86,7 +86,7 @@ func (m *Monitor) Start() {
 					if done, err := m.checkTaskProgress(item.instanceID, item.taskID); err != nil {
 						log.Errorf("Update progress error: %s", err)
 					} else {
-						log.Debugf("Check preheating progress of task %s to instance %s: done=%v", item.instanceID, item.taskID, done)
+						log.Debugf("Check preheating progress of task %s to instance %d: done=%v", item.taskID, item.instanceID, done)
 						if !done {
 							// Keep on checking
 							// put back
@@ -109,7 +109,7 @@ func (m *Monitor) Start() {
 
 // WatchProgress watches the preheating task progress
 // non blocking
-func (m *Monitor) WatchProgress(instanceID, taskID string) {
+func (m *Monitor) WatchProgress(instanceID int64, taskID string) {
 	go func() {
 		m.q <- &progressItem{
 			instanceID: instanceID,
@@ -119,7 +119,7 @@ func (m *Monitor) WatchProgress(instanceID, taskID string) {
 }
 
 func (m *Monitor) healthLoop() {
-	all, err := m.iStore.List(nil)
+	all, err := m.iManager.List(nil)
 	if err != nil {
 		log.Errorf("health loop error: %s", err)
 		return
@@ -136,8 +136,8 @@ func (m *Monitor) healthLoop() {
 	}
 }
 
-func (m *Monitor) checkTaskProgress(instID string, taskID string) (bool, error) {
-	meta, err := m.iStore.Get(instID)
+func (m *Monitor) checkTaskProgress(instID int64, taskID string) (bool, error) {
+	meta, err := m.iManager.Get(instID)
 	if err != nil {
 		return false, err
 	}
@@ -154,7 +154,7 @@ func (m *Monitor) checkTaskProgress(instID string, taskID string) (bool, error) 
 
 	trackStatus := models.TrackStatus(pStatus.Status)
 	// Update history record
-	if err := m.hStore.UpdateStatus(taskID, trackStatus, pStatus.StartTime, pStatus.FinishTime); err != nil {
+	if err := m.hManager.UpdateStatus(taskID, trackStatus, pStatus.StartTime, pStatus.FinishTime); err != nil {
 		return false, err
 	}
 
@@ -170,7 +170,7 @@ func (m *Monitor) checkInstanceHealth(inst *models.Metadata) error {
 	}
 
 	// Retrieve the checking instance
-	meta, err := m.iStore.Get(inst.ID)
+	meta, err := m.iManager.Get(inst.ID)
 	if err != nil {
 		return err
 	}
@@ -183,9 +183,9 @@ func (m *Monitor) checkInstanceHealth(inst *models.Metadata) error {
 		meta.Status = status.Status
 	}
 
-	log.Debugf("Check health of instance %s: %s", inst.ID, meta.Status)
+	log.Debugf("Check health of instance %d: %s", inst.ID, meta.Status)
 
-	return m.iStore.Update(meta)
+	return m.iManager.Update(meta)
 }
 
 func getProvider(inst *models.Metadata) (provider.Driver, error) {
