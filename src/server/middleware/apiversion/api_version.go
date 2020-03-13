@@ -24,7 +24,7 @@ import (
 func Middleware(version string) middleware.Middleware {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			ctx := internal.SetAPIVersion(req.Context(), version)
+			ctx := internal.WithAPIVersion(req.Context(), version)
 			handler.ServeHTTP(w, req.WithContext(ctx))
 		})
 	}

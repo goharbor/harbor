@@ -1,16 +1,17 @@
 package vulnerable
 
 import (
-	"github.com/goharbor/harbor/src/api/project"
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/security"
 	"net/http"
 	"net/http/httptest"
 
 	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/api/project"
 	sc "github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/internal"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -90,16 +91,16 @@ func Middleware() func(http.Handler) http.Handler {
 	}
 }
 
-func validate(req *http.Request) (bool, middleware.ArtifactInfo, vuln.Severity, models.CVEWhitelist) {
+func validate(req *http.Request) (bool, internal.ArtifactInfo, vuln.Severity, models.CVEWhitelist) {
 	var vs vuln.Severity
 	var wl models.CVEWhitelist
-	var af middleware.ArtifactInfo
+	var none internal.ArtifactInfo
 	err := middleware.EnsureArtifactDigest(req.Context())
 	if err != nil {
-		return false, af, vs, wl
+		return false, none, vs, wl
 	}
-	af, ok := middleware.ArtifactInfoFromContext(req.Context())
-	if !ok {
+	af := internal.GetArtifactInfo(req.Context())
+	if af == none {
 		return false, af, vs, wl
 	}
 

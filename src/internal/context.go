@@ -20,8 +20,21 @@ type contextKey string
 
 // define all context key here to avoid conflict
 const (
-	contextKeyAPIVersion contextKey = "apiVersion"
+	contextKeyAPIVersion   contextKey = "apiVersion"
+	contextKeyArtifactInfo contextKey = "artifactInfo"
 )
+
+// ArtifactInfo wraps the artifact info extracted from the request to "/v2/"
+type ArtifactInfo struct {
+	Repository           string
+	Reference            string
+	ProjectName          string
+	Digest               string
+	Tag                  string
+	BlobMountRepository  string
+	BlobMountProjectName string
+	BlobMountDigest      string
+}
 
 func setToContext(ctx context.Context, key contextKey, value interface{}) context.Context {
 	if ctx == nil {
@@ -37,8 +50,8 @@ func getFromContext(ctx context.Context, key contextKey) interface{} {
 	return ctx.Value(key)
 }
 
-// SetAPIVersion sets the API version into the context
-func SetAPIVersion(ctx context.Context, version string) context.Context {
+// WithAPIVersion returns a context with APIVersion set
+func WithAPIVersion(ctx context.Context, version string) context.Context {
 	return setToContext(ctx, contextKeyAPIVersion, version)
 }
 
@@ -50,4 +63,18 @@ func GetAPIVersion(ctx context.Context) string {
 		version = value.(string)
 	}
 	return version
+}
+
+// WithArtifactInfo returns a context with ArtifactInfo set
+func WithArtifactInfo(ctx context.Context, art ArtifactInfo) context.Context {
+	return setToContext(ctx, contextKeyArtifactInfo, art)
+}
+
+// GetArtifactInfo gets the ArtifactInfo from the context
+func GetArtifactInfo(ctx context.Context) (art ArtifactInfo) {
+	value := getFromContext(ctx, contextKeyArtifactInfo)
+	if value != nil {
+		art = value.(ArtifactInfo)
+	}
+	return
 }

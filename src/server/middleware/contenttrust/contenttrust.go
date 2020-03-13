@@ -7,6 +7,7 @@ import (
 	"github.com/goharbor/harbor/src/api/project"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/internal"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	serror "github.com/goharbor/harbor/src/server/error"
@@ -44,13 +45,13 @@ func Middleware() func(http.Handler) http.Handler {
 	}
 }
 
-func validate(req *http.Request) (bool, middleware.ArtifactInfo) {
-	none := middleware.ArtifactInfo{}
+func validate(req *http.Request) (bool, internal.ArtifactInfo) {
+	none := internal.ArtifactInfo{}
 	if err := middleware.EnsureArtifactDigest(req.Context()); err != nil {
 		return false, none
 	}
-	af, ok := middleware.ArtifactInfoFromContext(req.Context())
-	if !ok {
+	af := internal.GetArtifactInfo(req.Context())
+	if af == none {
 		return false, none
 	}
 	pro, err := project.Ctl.GetByName(req.Context(), af.ProjectName)
@@ -73,7 +74,7 @@ func validate(req *http.Request) (bool, middleware.ArtifactInfo) {
 
 // isArtifactSigned use the sign manager to check the signature, it could handle pull by tag or digtest
 // if pull by digest, any tag of the artifact is signed, will return true.
-func isArtifactSigned(req *http.Request, art middleware.ArtifactInfo) (bool, error) {
+func isArtifactSigned(req *http.Request, art internal.ArtifactInfo) (bool, error) {
 	checker, err := signature.GetManager().GetCheckerByRepo(req.Context(), art.Repository)
 	if err != nil {
 		return false, err

@@ -16,12 +16,14 @@ package artifactinfo
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseURL(t *testing.T) {
@@ -121,20 +123,21 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 func TestPopulateArtifactInfo(t *testing.T) {
 
+	none := internal.ArtifactInfo{}
 	cases := []struct {
 		req *http.Request
 		sc  int
-		art *middleware.ArtifactInfo
+		art internal.ArtifactInfo
 	}{
 		{
 			req: httptest.NewRequest(http.MethodDelete, "/v2/hello-world/manifests/latest", nil),
 			sc:  http.StatusBadRequest,
-			art: nil,
+			art: none,
 		},
 		{
 			req: httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/latest", nil),
 			sc:  http.StatusOK,
-			art: &middleware.ArtifactInfo{
+			art: internal.ArtifactInfo{
 				Repository:  "library/hello-world",
 				Reference:   "latest",
 				ProjectName: "library",
@@ -144,12 +147,12 @@ func TestPopulateArtifactInfo(t *testing.T) {
 		{
 			req: httptest.NewRequest(http.MethodPost, "/v2/library/ubuntu/blobs/uploads/?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=no-project", nil),
 			sc:  http.StatusBadRequest,
-			art: nil,
+			art: none,
 		},
 		{
 			req: httptest.NewRequest(http.MethodPost, "/v2/library/ubuntu/blobs/uploads/?from=old/ubuntu&mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f", nil),
 			sc:  http.StatusOK,
-			art: &middleware.ArtifactInfo{
+			art: internal.ArtifactInfo{
 				Repository:           "library/ubuntu",
 				ProjectName:          "library",
 				BlobMountRepository:  "old/ubuntu",
@@ -160,7 +163,7 @@ func TestPopulateArtifactInfo(t *testing.T) {
 		{
 			req: httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f", nil),
 			sc:  http.StatusOK,
-			art: &middleware.ArtifactInfo{
+			art: internal.ArtifactInfo{
 				Repository:  "library/hello-world",
 				Reference:   "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
 				Digest:      "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
@@ -175,10 +178,10 @@ func TestPopulateArtifactInfo(t *testing.T) {
 
 		Middleware()(next).ServeHTTP(rec, tt.req)
 		assert.Equal(t, tt.sc, rec.Code)
-		if tt.art != nil {
-			a, ok := middleware.ArtifactInfoFromContext(next.ctx)
-			assert.True(t, ok)
-			assert.Equal(t, *tt.art, a)
+		if tt.art != none {
+			a := internal.GetArtifactInfo(next.ctx)
+			assert.NotEqual(t, none, a)
+			assert.Equal(t, tt.art, a)
 		}
 	}
 }
