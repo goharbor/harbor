@@ -66,9 +66,6 @@ func Migrate(database *models.Database) error {
 		return err
 	}
 
-	// update quota
-	// TODO
-
 	return nil
 }
 
