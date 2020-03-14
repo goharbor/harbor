@@ -44,21 +44,27 @@ func DeleteInstance(id int64) error {
 	return err
 }
 
-// ListInstances lists instances by query parmas.
-func ListInstances(query *ListInstanceQuery) ([]*models.Instance, error) {
+// ListInstances lists instances by query params.
+func ListInstances(query *ListInstanceQuery) (int64, []*models.Instance, error) {
 	o := dao.GetOrmer()
 	qs := o.QueryTable(&models.Instance{})
+
+	if query != nil && len(query.Keyword) > 0 {
+		qs = qs.Filter("name__contains", query.Keyword)
+	}
+
+	total, err := qs.Count()
+	if err != nil {
+		return 0, nil, err
+	}
 
 	if query != nil {
 		offset := (query.Page - 1) * query.PageSize
 		qs = qs.Offset(offset).Limit(query.PageSize)
-		// keyword match
-		if len(query.Keyword) > 0 {
-			qs = qs.Filter("name__contains", query.Keyword)
-		}
 	}
 
 	var ins []*models.Instance
-	_, err := qs.All(&ins)
-	return ins, err
+	_, err = qs.All(&ins)
+
+	return total, ins, err
 }

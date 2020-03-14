@@ -43,7 +43,7 @@ type Controller interface {
 	// If succeed, an provider instance list will be returned.
 	// Otherwise, a non nil error will be returned
 	//
-	ListInstances(params *models.QueryParam) ([]*models.Metadata, error)
+	ListInstances(params *models.QueryParam) (int64, []*models.Metadata, error)
 
 	// Get the metadata of the specified instance
 	//
@@ -92,7 +92,7 @@ type Controller interface {
 	//
 	// params *models.QueryParam : parameters for querying
 	//
-	LoadHistoryRecords(params *models.QueryParam) ([]*models.HistoryRecord, error)
+	LoadHistoryRecords(params *models.QueryParam) (int64, []*models.HistoryRecord, error)
 }
 
 // CoreController is the default implementation of Controller interface.
@@ -132,7 +132,7 @@ func (cc *CoreController) GetAvailableProviders() ([]*provider.Metadata, error) 
 }
 
 // ListInstances implements @Controller.ListInstances
-func (cc *CoreController) ListInstances(params *models.QueryParam) ([]*models.Metadata, error) {
+func (cc *CoreController) ListInstances(params *models.QueryParam) (int64, []*models.Metadata, error) {
 	return cc.iManager.List(params)
 }
 
@@ -143,7 +143,7 @@ func (cc *CoreController) CreateInstance(instance *models.Metadata) (int64, erro
 	}
 
 	// Avoid duplicated endpoint
-	allOnes, err := cc.iManager.List(nil)
+	_, allOnes, err := cc.iManager.List(nil)
 	if err != nil {
 		return 0, err
 	}
@@ -213,7 +213,7 @@ func (cc *CoreController) PreheatImages(images ...models.ImageRepository) (Compo
 
 	// Directly dispatch to all the instances
 	// TODO: Use async way in future
-	instances, err := cc.iManager.List(nil)
+	_, instances, err := cc.iManager.List(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +230,7 @@ func (cc *CoreController) PreheatImages(images ...models.ImageRepository) (Compo
 		// Instance must be enabled and healthy
 		if inst.Enabled && inst.Status != provider.DriverStatusUnHealthy {
 			validCount++
-			allStatus := []*provider.PreheatingStatus{}
+			var allStatus []*provider.PreheatingStatus
 			results[inst.ID] = &allStatus
 
 			factory, ok := provider.GetProvider(inst.Provider)
@@ -301,7 +301,7 @@ func (cc *CoreController) PreheatImages(images ...models.ImageRepository) (Compo
 }
 
 // LoadHistoryRecords implements @Controller.LoadHistoryRecords
-func (cc *CoreController) LoadHistoryRecords(params *models.QueryParam) ([]*models.HistoryRecord, error) {
+func (cc *CoreController) LoadHistoryRecords(params *models.QueryParam) (int64, []*models.HistoryRecord, error) {
 	return cc.hManager.LoadHistories(params)
 }
 
@@ -337,7 +337,7 @@ func Init(ctx context.Context) {
 func syncTaskStatus() ([]*models.HistoryRecord, error) {
 	// Load all the tasks from storage
 	// TODO: there should be a better sync way
-	all, err := DefaultController.LoadHistoryRecords(nil)
+	_, all, err := DefaultController.LoadHistoryRecords(nil)
 	if err != nil {
 		return nil, fmt.Errorf("sync status of preheating tasks error: %s", err)
 	}
