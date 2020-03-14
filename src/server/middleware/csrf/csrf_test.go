@@ -1,11 +1,23 @@
 package csrf
 
 import (
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
+
+func TestMain(m *testing.M) {
+	conf := map[string]interface{}{}
+	config.InitWithSettings(conf)
+	result := m.Run()
+	if result != 0 {
+		os.Exit(result)
+	}
+}
 
 type handler struct {
 }
@@ -57,4 +69,16 @@ func hasCookie(resp *http.Response, name string) bool {
 		}
 	}
 	return false
+}
+
+func TestSecureCookie(t *testing.T) {
+	assert.True(t, secureCookie())
+	conf := map[string]interface{}{
+		common.ExtEndpoint: "http://harbor.test",
+	}
+	config.InitWithSettings(conf)
+
+	assert.False(t, secureCookie())
+	conf = map[string]interface{}{}
+	config.InitWithSettings(conf)
 }
