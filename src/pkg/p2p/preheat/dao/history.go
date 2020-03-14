@@ -56,20 +56,22 @@ func DeleteHistoryRecord(id int64) error {
 }
 
 // ListHistoryRecords lists history records by query parmas.
-func ListHistoryRecords(query *ListHistoryQuery) ([]*models.HistoryRecord, error) {
+func ListHistoryRecords(query *ListHistoryQuery) (int64, []*models.HistoryRecord, error) {
 	o := dao.GetOrmer()
 	qs := o.QueryTable(&models.HistoryRecord{})
+
+	if query != nil && len(query.Keyword) > 0 {
+		qs = qs.Filter("image__contains", query.Keyword)
+	}
+	total, err := qs.Count()
 
 	if query != nil {
 		offset := (query.Page - 1) * query.PageSize
 		qs = qs.Offset(offset).Limit(query.PageSize)
-		// keyword match
-		if len(query.Keyword) > 0 {
-			qs = qs.Filter("image__contains", query.Keyword)
-		}
 	}
 
 	var hrs []*models.HistoryRecord
-	_, err := qs.All(&hrs)
-	return hrs, err
+	_, err = qs.All(&hrs)
+
+	return total, hrs, err
 }

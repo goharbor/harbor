@@ -36,9 +36,10 @@ func (hm *historyManagerSuite) TestLoadHistories() {
 		{TaskID: "6c1074e7-d9f7-4e9f-99f7-4bcb38db7374", Image: "library/go"},
 		{TaskID: "9a57e251-ee1f-431e-b365-16b738e76ad2", Image: "library/java"},
 	}
-	hm.manager.On("LoadHistories", mock.Anything).Return(histories, nil)
-	hs, err := hm.manager.LoadHistories(nil)
+	hm.manager.On("LoadHistories", mock.Anything).Return(2, histories, nil)
+	total, hs, err := hm.manager.LoadHistories(nil)
 	assert.Nil(hm.T(), err)
+	assert.Equal(hm.T(), 2, int(total))
 	assert.Len(hm.T(), hs, 2)
 	assert.Equal(hm.T(), histories, hs)
 }

@@ -21,7 +21,7 @@ type Manager interface {
 	// Load history records on top of the query parameters
 	// If succeed, a record list will be returned.
 	// Otherwise, a non nil error will be set.
-	LoadHistories(params *models.QueryParam) ([]*models.HistoryRecord, error)
+	LoadHistories(params *models.QueryParam) (int64, []*models.HistoryRecord, error)
 }
 
 // DefaultManager implement the Manager interface
@@ -129,10 +129,10 @@ func (dm *DefaultManager) UpdateStatus(taskID string, status models.TrackStatus,
 }
 
 // LoadHistories implements @Manager.LoadHistories
-func (dm *DefaultManager) LoadHistories(params *models.QueryParam) ([]*models.HistoryRecord, error) {
-	hrs, err := dao.ListHistoryRecords(convertQueryParams(params))
+func (dm *DefaultManager) LoadHistories(params *models.QueryParam) (int64, []*models.HistoryRecord, error) {
+	total, hrs, err := dao.ListHistoryRecords(convertQueryParams(params))
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	var results []*models.HistoryRecord
@@ -142,5 +142,5 @@ func (dm *DefaultManager) LoadHistories(params *models.QueryParam) ([]*models.Hi
 		}
 	}
 
-	return results, nil
+	return total, results, nil
 }
