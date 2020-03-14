@@ -53,5 +53,6 @@ INTERNAL_NO_PROXY_DN = {
     'chartmuseum',
     'notary-server',
     'notary-signer',
-    'clair-adapter'
+    'clair-adapter',
+    'trivy-adapter',
     }
