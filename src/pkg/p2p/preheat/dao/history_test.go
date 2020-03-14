@@ -88,19 +88,22 @@ func (hs *historySuite) TestListHistories() {
 	assert.Nil(t, err)
 
 	// without queryLimit should return all histories
-	histories, err := ListHistoryRecords(nil)
+	total, histories, err := ListHistoryRecords(nil)
 	assert.Nil(t, err)
+	assert.Equal(t, 2, int(total))
 	assert.Equal(t, 2, len(histories))
 
 	// limit 1
-	histories, err = ListHistoryRecords(&ListHistoryQuery{Page: 1, PageSize: 1})
+	total, histories, err = ListHistoryRecords(&ListHistoryQuery{Page: 1, PageSize: 1})
 	assert.Nil(t, err)
+	assert.Equal(t, 2, int(total))
 	assert.Equal(t, 1, len(histories))
 	assert.Equal(t, defaultHistory.ID, histories[0].ID)
 
 	// keyword search
-	histories, err = ListHistoryRecords(&ListHistoryQuery{Keyword: "java"})
+	total, histories, err = ListHistoryRecords(&ListHistoryQuery{Keyword: "java"})
 	assert.Nil(t, err)
+	assert.Equal(t, 1, int(total))
 	assert.Equal(t, 1, len(histories))
 	assert.Equal(t, testHistory1.Image, histories[0].Image)
 	// clean data

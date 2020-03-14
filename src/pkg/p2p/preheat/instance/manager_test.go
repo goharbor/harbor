@@ -52,9 +52,10 @@ func (im *instanceManagerSuite) TestList() {
 		{Name: "abc"},
 		{Name: "def"},
 	}
-	im.manager.On("List", mock.Anything).Return(lists, nil)
-	res, err := im.manager.List(nil)
+	im.manager.On("List", mock.Anything).Return(2, lists, nil)
+	total, res, err := im.manager.List(nil)
 	assert.Nil(im.T(), err)
+	assert.Equal(im.T(), 2, int(total))
 	assert.Len(im.T(), res, 2)
 	assert.Equal(im.T(), lists, res)
 }

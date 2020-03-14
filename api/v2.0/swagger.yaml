@@ -604,6 +604,13 @@ paths:
       responses:
         '200':
           description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of instances
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
@@ -744,6 +751,13 @@ paths:
       responses:
         '200':
           description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of preheat histories
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:

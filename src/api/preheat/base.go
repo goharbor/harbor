@@ -119,7 +119,7 @@ func (m *Monitor) WatchProgress(instanceID int64, taskID string) {
 }
 
 func (m *Monitor) healthLoop() {
-	all, err := m.iManager.List(nil)
+	_, all, err := m.iManager.List(nil)
 	if err != nil {
 		log.Errorf("health loop error: %s", err)
 		return

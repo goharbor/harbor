@@ -87,19 +87,22 @@ func (is *instanceSuite) TestListInstances() {
 	assert.Nil(t, err)
 
 	// without limit should return all instances
-	instances, err := ListInstances(nil)
+	total, instances, err := ListInstances(nil)
 	assert.Nil(t, err)
+	assert.Equal(t, 2, int(total))
 	assert.Len(t, instances, 2)
 
 	// limit 1
-	instances, err = ListInstances(&ListInstanceQuery{PageSize: 1, Page: 1})
+	total, instances, err = ListInstances(&ListInstanceQuery{PageSize: 1, Page: 1})
 	assert.Nil(t, err)
+	assert.Equal(t, 2, int(total))
 	assert.Len(t, instances, 1)
 	assert.Equal(t, defaultInstance.ID, instances[0].ID)
 
 	// keyword search
-	instances, err = ListInstances(&ListInstanceQuery{Keyword: "kraken"})
+	total, instances, err = ListInstances(&ListInstanceQuery{Keyword: "kraken"})
 	assert.Nil(t, err)
+	assert.Equal(t, 1, int(total))
 	assert.Len(t, instances, 1)
 	assert.Equal(t, testInstance1.Name, instances[0].Name)
 
