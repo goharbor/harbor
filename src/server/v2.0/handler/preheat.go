@@ -110,7 +110,7 @@ func (p *preheatAPI) ListInstances(ctx context.Context, params preheat.ListInsta
 		queryParams.Keyword = *params.Q
 	}
 
-	data, err := api_preheat.DefaultController.ListInstances(queryParams)
+	total, data, err := api_preheat.DefaultController.ListInstances(queryParams)
 	if err != nil {
 		return p.SendError(ctx, err)
 	}
@@ -132,7 +132,10 @@ func (p *preheatAPI) ListInstances(ctx context.Context, params preheat.ListInsta
 		})
 	}
 
-	return preheat.NewListInstancesOK().WithPayload(instances)
+	return preheat.NewListInstancesOK().
+		WithXTotalCount(total).
+		WithLink(p.Links(ctx, params.HTTPRequest.URL, total, int64(queryParams.Page), int64(queryParams.PageSize)).String()).
+		WithPayload(instances)
 }
 
 // ListPreheatHistories is List preheats history
@@ -152,7 +155,7 @@ func (p *preheatAPI) ListPreheatHistories(ctx context.Context, params preheat.Li
 		queryParams.Keyword = *params.Q
 	}
 
-	data, err := api_preheat.DefaultController.LoadHistoryRecords(queryParams)
+	total, data, err := api_preheat.DefaultController.LoadHistoryRecords(queryParams)
 	if err != nil {
 		return p.SendError(ctx, err)
 	}
@@ -170,7 +173,10 @@ func (p *preheatAPI) ListPreheatHistories(ctx context.Context, params preheat.Li
 		})
 	}
 
-	return preheat.NewListPreheatHistoriesOK().WithPayload(histories)
+	return preheat.NewListPreheatHistoriesOK().
+		WithXTotalCount(total).
+		WithLink(p.Links(ctx, params.HTTPRequest.URL, total, int64(queryParams.Page), int64(queryParams.PageSize)).String()).
+		WithPayload(histories)
 }
 
 // ListProviders is List available p2p providers.

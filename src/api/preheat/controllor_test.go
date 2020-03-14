@@ -49,7 +49,7 @@ func TestNewCoreController(t *testing.T) {
 func (s *preheatSuite) SetupSuite() {
 	config.Init()
 
-	s.instanceStore.On("List", mock.Anything).Return([]*models.Metadata{
+	s.instanceStore.On("List", mock.Anything).Return(1, []*models.Metadata{
 		{
 			ID:       1,
 			Provider: "dragonfly",
@@ -68,7 +68,7 @@ func (s *preheatSuite) SetupSuite() {
 	s.instanceStore.On("Get", int64(0)).Return(nil, errors.New("not found"))
 	s.instanceStore.On("Update", mock.Anything).Return(nil)
 
-	s.historyStore.On("LoadHistories", mock.Anything).Return([]*models.HistoryRecord{
+	s.historyStore.On("LoadHistories", mock.Anything).Return(1, []*models.HistoryRecord{
 		{
 			TaskID: "t1",
 		},
@@ -84,8 +84,9 @@ func (s *preheatSuite) TestGetAvailableProviders() {
 }
 
 func (s *preheatSuite) TestListInstances() {
-	instances, err := s.controller.ListInstances(nil)
+	total, instances, err := s.controller.ListInstances(nil)
 	s.NoError(err)
+	s.Equal(1, int(total))
 	s.Equal(1, len(instances))
 	s.Equal(int64(1), instances[0].ID)
 }
@@ -176,8 +177,9 @@ func (s *preheatSuite) TestPreheatImages() {
 }
 
 func (s *preheatSuite) TestLoadHistoryRecords() {
-	records, err := s.controller.LoadHistoryRecords(nil)
+	total, records, err := s.controller.LoadHistoryRecords(nil)
 	s.NoError(err)
+	s.Equal(1, int(total))
 	s.Equal(1, len(records))
 }
 

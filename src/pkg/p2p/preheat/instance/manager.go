@@ -47,14 +47,14 @@ type Manager interface {
 	//
 	Get(id int64) (*models.Metadata, error)
 
-	// Query the instacnes by the param
+	// Query the instances by the param
 	//
 	// param *models.QueryParam : the query params
 	//
 	// If succeed, an instance metadata list is returned;
 	// otherwise, a non nil error is returned
 	//
-	List(param *models.QueryParam) ([]*models.Metadata, error)
+	List(param *models.QueryParam) (int64, []*models.Metadata, error)
 }
 
 // DefaultManager implement the Manager interface
@@ -182,20 +182,20 @@ func (dm *DefaultManager) Get(id int64) (*models.Metadata, error) {
 }
 
 // List implements @Manager.List
-func (dm *DefaultManager) List(param *models.QueryParam) ([]*models.Metadata, error) {
-	insts, err := dao.ListInstances(convertQueryParams(param))
+func (dm *DefaultManager) List(param *models.QueryParam) (int64, []*models.Metadata, error) {
+	total, instances, err := dao.ListInstances(convertQueryParams(param))
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	var results []*models.Metadata
-	for _, inst := range insts {
+	for _, inst := range instances {
 		if ins, err := convertFromDaoModel(inst); err == nil {
 			results = append(results, ins)
 		}
 	}
 
-	return results, nil
+	return total, results, nil
 }
 
 func mapToString(m map[string]string) string {
