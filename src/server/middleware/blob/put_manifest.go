@@ -19,7 +19,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -67,23 +66,22 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 			return err
 		}
 
-		for _, digest := range findForeignBlobDigests(manifest) {
-			if err := blobController.AssociateWithProjectByDigest(ctx, digest, p.ProjectID); err != nil {
+		// NOTE: associate all blobs with project because the already exist associations may cleanup by others
+		for _, reference := range manifest.References() {
+			if err := blobController.AssociateWithProjectByDigest(ctx, reference.Digest.String(), p.ProjectID); err != nil {
 				return err
 			}
 		}
 
-		artifactDigest := descriptor.Digest.String()
-
 		// ensure Blob for the manifest
-		blobID, err := blobController.Ensure(ctx, artifactDigest, contentType, descriptor.Size)
+		blobID, err := blobController.Ensure(ctx, descriptor.Digest.String(), contentType, descriptor.Size)
 		if err != nil {
-			log.Errorf("%s: ensure blob %s failed, error: %v", logPrefix, descriptor.Digest, err)
+			log.Errorf("%s: ensure blob %s failed, error: %v", logPrefix, descriptor.Digest.String(), err)
 			return err
 		}
 
 		if err := blobController.AssociateWithProjectByID(ctx, blobID, p.ProjectID); err != nil {
-			log.Errorf("%s: associate manifest with artifact %s failed, error: %v", logPrefix, descriptor.Digest, err)
+			log.Errorf("%s: associate manifest with artifact %s failed, error: %v", logPrefix, descriptor.Digest.String(), err)
 			return err
 		}
 
@@ -93,8 +91,8 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		}
 
 		// associate blobs of the manifest with artifact
-		if err := blobController.AssociateWithArtifact(ctx, blobDigests, artifactDigest); err != nil {
-			log.Errorf("%s: associate blobs with artifact %s failed, error: %v", logPrefix, descriptor.Digest, err)
+		if err := blobController.AssociateWithArtifact(ctx, blobDigests, descriptor.Digest.String()); err != nil {
+			log.Errorf("%s: associate blobs with artifact %s failed, error: %v", logPrefix, descriptor.Digest.String(), err)
 			return err
 		}
 
@@ -104,18 +102,4 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return alice.New(before, after).Then(next)
 	}
-}
-
-func isForeign(d *distribution.Descriptor) bool {
-	return d.MediaType == schema2.MediaTypeForeignLayer
-}
-
-func findForeignBlobDigests(manifest distribution.Manifest) []string {
-	var digests []string
-	for _, reference := range manifest.References() {
-		if isForeign(&reference) {
-			digests = append(digests, reference.Digest.String())
-		}
-	}
-	return digests
 }

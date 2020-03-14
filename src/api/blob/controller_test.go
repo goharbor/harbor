@@ -144,7 +144,7 @@ func (suite *ControllerTestSuite) TestFindMissingAssociationsForProjectByArtifac
 		suite.Len(blobs, 0)
 	}
 
-	blobs := []*blob.Blob{{ID: 1}, {ID: 2}, {ID: 3}}
+	blobs := []*blob.Blob{{Digest: "1"}, {Digest: "2"}, {Digest: "3"}}
 
 	{
 		mock.OnAnything(blobMgr, "List").Return(nil, nil).Once()
@@ -161,7 +161,7 @@ func (suite *ControllerTestSuite) TestFindMissingAssociationsForProjectByArtifac
 	}
 
 	{
-		associated := []*blob.Blob{{ID: 1}}
+		associated := []*blob.Blob{{Digest: "1"}}
 		mock.OnAnything(blobMgr, "List").Return(associated, nil).Once()
 		missing, err := ctl.FindMissingAssociationsForProject(ctx, projectID, blobs)
 		suite.Nil(err)
