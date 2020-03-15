@@ -42,7 +42,7 @@ class TestProjects(unittest.TestCase):
             3. Push a new image(IA) in project(PA) by admin;
             4. Delete repository(RA) by user(UA);
             5. Get repository by user(UA), it should get nothing;
-            6. Tigger garbage collection operation;
+            6. Trigger garbage collection operation;
             7. Check garbage collection job was finished;
             8. Get garbage collection log, check there is number of files was deleted.
         Tear down:
