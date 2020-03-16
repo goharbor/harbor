@@ -10,12 +10,13 @@ import {
   ConfirmationMessage
 } from "../../../../../lib/components/confirmation-dialog";
 import { OperationService } from "../../../../../lib/components/operation/operation.service";
-import { Tag, TagService } from "../../../../../lib/services";
 import { ErrorHandler } from "../../../../../lib/utils/error-handler";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../../lib/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../lib/components/operation/operate";
 import { errorHandler } from "../../../../../lib/utils/shared/shared.utils";
 import { ArtifactFront as Artifact } from "../artifact";
+import { ArtifactService } from '../../../../../../ng-swagger-gen/services/artifact.service';
+import { Tag } from '../../../../../../ng-swagger-gen/models/tag';
 
 class InitTag {
   name = "";
@@ -44,7 +45,7 @@ export class ArtifactTagComponent implements OnInit {
   confirmationDialog: ConfirmationDialogComponent;
   constructor(
     private operationService: OperationService,
-    private tagService: TagService,
+    private artifactService: ArtifactService,
     private translateService: TranslateService,
     private errorHandlerService: ErrorHandler
 
@@ -62,7 +63,14 @@ export class ArtifactTagComponent implements OnInit {
     this.newTagName = new InitTag();
   }
   saveAddTag() {
-    this.tagService.newTag(this.projectName, this.repositoryName, this.artifactDetails.digest, this.newTagName).subscribe(res => {
+    // const tag: NewTag = {name: this.newTagName};
+    const createTagParams: ArtifactService.CreateTagParams = {
+      projectName: this.projectName,
+      repositoryName: this.repositoryName,
+      reference: this.artifactDetails.digest,
+      tag:  this.newTagName
+    };
+    this.artifactService.createTag(createTagParams).subscribe(res => {
       this.newTagformShow = false;
       this.newTagName = new InitTag();
       this.refreshArtifact.emit();
@@ -121,8 +129,13 @@ export class ArtifactTagComponent implements OnInit {
     operMessage.state = OperationState.progressing;
     operMessage.data.name = tag.name;
     this.operationService.publishInfo(operMessage);
-    return this.tagService
-      .deleteTag(this.projectName, this.repositoryName, this.artifactDetails.digest, tag.name)
+     const deleteTagParams: ArtifactService.DeleteTagParams = {
+      projectName: this.projectName,
+      repositoryName: this.repositoryName,
+      reference: this.artifactDetails.digest,
+      tagName: tag.name
+    };
+    return this.artifactService.deleteTag(deleteTagParams)
       .pipe(map(
         response => {
           this.translateService.get("BATCH.DELETED_SUCCESS")

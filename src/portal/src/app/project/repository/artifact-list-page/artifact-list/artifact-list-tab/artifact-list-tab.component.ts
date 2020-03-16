@@ -30,10 +30,8 @@ import { ClrLoadingState, ClrDatagridStateInterface, ClrDatagridComparatorInterf
 import { HttpParams } from "@angular/common/http";
 import { ActivatedRoute, Router } from "@angular/router";
 import {
-  ArtifactClickEvent,
-  Comparator, Label, LabelService, ProjectService,
-  RetagService, ScanningResultService,
-  State, Tag,
+  Comparator, Label, LabelService, ScanningResultService,
+  State,
   UserPermissionService, USERSTATICPERMISSION, VulnerabilitySummary
 } from "../../../../../../lib/services";
 import {
@@ -89,7 +87,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   @Input() registryUrl: string;
   @Input() withNotary: boolean;
   @Input() withAdmiral: boolean;
-  tags: Tag[];
   artifactList: Artifact[] = [];
   availableTime = AVAILABLE_TIME;
   showTagManifestOpened: boolean;

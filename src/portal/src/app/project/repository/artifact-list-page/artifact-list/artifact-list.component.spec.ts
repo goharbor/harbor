@@ -1,24 +1,19 @@
 import { ComponentFixture, TestBed, async, } from '@angular/core/testing';
-import { DebugElement, NO_ERRORS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ArtifactListComponent } from './artifact-list.component';
 import { of } from "rxjs";
 import { delay } from 'rxjs/operators';
 import { ClarityModule } from '@clr/angular';
 import { ActivatedRoute } from '@angular/router';
-import { RepositoryDefaultService, RepositoryService } from "../../repository.service";
 import {
-  Repository,
-  RepositoryItem,
   SystemInfo, SystemInfoDefaultService,
   SystemInfoService,
 } from "../../../../../lib/services";
 import { ArtifactDefaultService, ArtifactService } from "../../artifact/artifact.service";
 import { ChannelService } from "../../../../../lib/services/channel.service";
-import { FormsModule } from "@angular/forms";
-import { MarkdownModule } from "ngx-markdown";
+
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from "@ngx-translate/core";
 import { ErrorHandler } from "../../../../../lib/utils/error-handler";
-import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../../lib/entities/service.config";
 import { SharedModule } from "../../../../../lib/utils/shared/shared.module";
 import {
@@ -29,7 +24,6 @@ describe('ArtifactListComponent (inline template)', () => {
 
   let compRepo: ArtifactListComponent;
   let fixture: ComponentFixture<ArtifactListComponent>;
-  let repositoryService: RepositoryService;
   let systemInfoService: SystemInfoService;
   let artifactService: ArtifactService;
   let spyRepos: jasmine.Spy;
@@ -64,34 +58,11 @@ describe('ArtifactListComponent (inline template)', () => {
     'harbor_version': 'v1.1.1-rc1-160-g565110d'
   };
 
-  let mockRepoData: RepositoryItem[] = [
-    {
-      'id': 1,
-      'name': 'library/busybox',
-      'project_id': 1,
-      'description': 'asdfsadf',
-      'pull_count': 0,
-      'star_count': 0,
-      'tags_count': 1
-    },
-    {
-      'id': 2,
-      'name': 'library/nginx',
-      'project_id': 1,
-      'description': 'asdf',
-      'pull_count': 0,
-      'star_count': 0,
-      'tags_count': 1
-    }
-  ];
   let newRepositoryService = {
     updateRepository: () => of(null),
     getRepository: () => of({description: ''})
   };
-  let mockRepo: Repository = {
-    metadata: { xTotalCount: 2 },
-    data: mockRepoData
-  };
+
   const fakedErrorHandler = {
     error: () => {}
   };
@@ -119,7 +90,6 @@ describe('ArtifactListComponent (inline template)', () => {
       providers: [
         TranslateService,
         { provide: ErrorHandler, useValue: fakedErrorHandler },
-        { provide: RepositoryService, useClass: RepositoryDefaultService },
         { provide: ChannelService, useValue: mockChannelService },
         { provide: SystemInfoService, useClass: SystemInfoDefaultService },
         { provide: ArtifactService, useClass: ArtifactDefaultService },
@@ -136,10 +106,8 @@ describe('ArtifactListComponent (inline template)', () => {
     compRepo.projectId = 1;
     compRepo.hasProjectAdminRole = true;
     compRepo.repoName = 'library/nginx';
-    repositoryService = fixture.debugElement.injector.get(RepositoryService);
     systemInfoService = fixture.debugElement.injector.get(SystemInfoService);
     artifactService = fixture.debugElement.injector.get(ArtifactService);
-    spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(of(mockRepo).pipe(delay(0)));
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(of(mockSystemInfo).pipe(delay(0)));
     fixture.detectChanges();
   });

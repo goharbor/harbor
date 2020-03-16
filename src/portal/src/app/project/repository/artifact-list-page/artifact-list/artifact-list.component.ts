@@ -13,14 +13,13 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { ArtifactClickEvent, RepositoryItem, State, SystemInfo, SystemInfoService } from "../../../../../lib/services";
+import { ArtifactClickEvent, State, SystemInfo, SystemInfoService } from "../../../../../lib/services";
 import {
   ConfirmationAcknowledgement,
   ConfirmationDialogComponent,
   ConfirmationMessage
 } from "../../../../../lib/components/confirmation-dialog";
 import { ErrorHandler } from "../../../../../lib/utils/error-handler";
-import { RepositoryService } from "../../repository.service";
 import { ArtifactService } from "../../artifact/artifact.service";
 import { ConfirmationState, ConfirmationTargets } from "../../../../../lib/entities/shared.const";
 import { ActivatedRoute } from "@angular/router";
@@ -54,7 +53,6 @@ export class ArtifactListComponent implements OnInit {
   editing = false;
   inProgress = true;
   currentTabID = 'repo-image';
-  changedRepositories: RepositoryItem[];
   systemInfo: SystemInfo;
 
   imageInfo: string;
@@ -68,7 +66,6 @@ export class ArtifactListComponent implements OnInit {
   artifactDigest: string;
   constructor(
     private errorHandler: ErrorHandler,
-    private repositoryService: RepositoryService,
     private systemInfoService: SystemInfoService,
     private artifactService: ArtifactService,
     private newRepositoryService: NewRepositoryService,

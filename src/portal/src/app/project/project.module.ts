@@ -60,7 +60,6 @@ import { ValuesComponent } from "./repository/artifact/artifact-additions/values
 import {
   ArtifactVulnerabilitiesComponent
 } from "./repository/artifact/artifact-additions/artifact-vulnerabilities/artifact-vulnerabilities.component";
-import { RepositoryDefaultService, RepositoryService } from "./repository/repository.service";
 import { ArtifactDefaultService, ArtifactService } from "./repository/artifact/artifact.service";
 import { GridViewComponent } from "./repository/gridview/grid-view.component";
 import { LastTriggerComponent } from "./webhook/last-trigger/last-trigger.component";
@@ -120,9 +119,7 @@ import { LastTriggerComponent } from "./webhook/last-trigger/last-trigger.compon
     RobotService,
     WebhookService,
     ConfigScannerService,
-    RepositoryDefaultService,
     ArtifactDefaultService,
-    { provide: RepositoryService, useClass: RepositoryDefaultService },
     { provide: ArtifactService, useClass: ArtifactDefaultService },
   ]
 })

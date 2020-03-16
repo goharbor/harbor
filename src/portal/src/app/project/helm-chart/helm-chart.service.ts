@@ -14,7 +14,7 @@ import { HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../../lib/utils/utils";
  *
  **
  * @abstract
- * class RepositoryService
+ * class HelmChartService
  */
 export abstract class HelmChartService {
   /**
