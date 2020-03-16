@@ -22,9 +22,9 @@ A replication endpoint must exist before you create a replication rule. To creat
    * **Tag**: Replicate resources with a given tag by entering a tag name or fragment.
    * **Label**: Replicate resources with a given label by using the drop-down menu to select from the available labels.
    * **Resource**: Replicate images, charts, or both.
-   
+
    The name filter and tag filters support the following patterns:
-   
+
    * **\***: Matches any sequence of non-separator characters `/`.
    * **\*\***: Matches any sequence of characters, including path separators `/`.
    * **?**: Matches any single non-separator character `/`.
@@ -33,9 +33,9 @@ A replication endpoint must exist before you create a replication rule. To creat
    * **\*\***: Matches any sequence of characters, including path separators `/`.
    * **?**: Matches any single non-separator character `/`.
    * **{alt1,...}**: Matches a sequence of characters if one of the comma-separated alternatives matches.
-   
+
    **NOTE:** You must add `library` if you want to replicate the official images of Docker Hub. For example, `library/hello-world` matches the official hello-world images.  
-   
+
    Pattern | String(Match or not)
    ---------- | -------
    `library/*`      | `library/hello-world`(Y)<br> `library/my/hello-world`(N)
@@ -53,9 +53,9 @@ A replication endpoint must exist before you create a replication rule. To creat
    * **Scheduled**: Replicate the resources periodically by defining a cron job. **Note**: Deletion operations are not replicated. 
    * **Event Based**: When a new resource is pushed to the project, or an image is retagged, it is replicated to the remote registry immediately. If you select the **Delete remote resources when locally deleted**, if you delete an image, it is automatically deleted from the replication target.
 
-    {{< note >}}
-    You can filter images for replication based on the labels that are applied to the images. However, changing a label on an image does not trigger replication. Event-based replication is limited to pushing, retagging, and deleting images.
-    {{< /note >}}
+   {{< note >}}
+   You can filter images for replication based on the labels that are applied to the images. However, changing a label on an image does not trigger replication. Event-based replication is limited to pushing, retagging, and deleting images.
+   {{< /note >}}
 
    ![Trigger mode](../../../img/replication-rule5.png)
       
