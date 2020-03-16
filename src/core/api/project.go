@@ -16,6 +16,12 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync"
+
 	"github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -31,11 +37,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
-	"net/http"
-	"regexp"
-	"strconv"
-	"strings"
-	"sync"
 )
 
 type deletableResp struct {
@@ -657,6 +658,7 @@ func getProjectQuotaSummary(projectID int64, summary *models.ProjectSummary) {
 
 	quota := quotas[0]
 
+	summary.Quota = &models.QuotaSummary{}
 	summary.Quota.Hard, _ = types.NewResourceList(quota.Hard)
 	summary.Quota.Used, _ = types.NewResourceList(quota.Used)
 }

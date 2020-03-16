@@ -22,9 +22,10 @@ import (
 
 func TestIsSafe(t *testing.T) {
 	type args struct {
-		hardLimits  types.ResourceList
-		currentUsed types.ResourceList
-		newUsed     types.ResourceList
+		hardLimits       types.ResourceList
+		currentUsed      types.ResourceList
+		newUsed          types.ResourceList
+		ignoreLimitation bool
 	}
 	tests := []struct {
 		name    string
@@ -37,6 +38,7 @@ func TestIsSafe(t *testing.T) {
 				types.ResourceList{types.ResourceStorage: types.UNLIMITED},
 				types.ResourceList{types.ResourceStorage: 1000},
 				types.ResourceList{types.ResourceStorage: 1000},
+				false,
 			},
 			false,
 		},
@@ -46,6 +48,7 @@ func TestIsSafe(t *testing.T) {
 				types.ResourceList{types.ResourceStorage: 100},
 				types.ResourceList{types.ResourceStorage: 10},
 				types.ResourceList{types.ResourceStorage: 1},
+				false,
 			},
 			false,
 		},
@@ -55,8 +58,19 @@ func TestIsSafe(t *testing.T) {
 				types.ResourceList{types.ResourceStorage: 100},
 				types.ResourceList{types.ResourceStorage: 0},
 				types.ResourceList{types.ResourceStorage: 200},
+				false,
 			},
 			true,
+		},
+		{
+			"ignore limitation",
+			args{
+				types.ResourceList{types.ResourceStorage: 100},
+				types.ResourceList{types.ResourceStorage: 0},
+				types.ResourceList{types.ResourceStorage: 200},
+				true,
+			},
+			false,
 		},
 		{
 			"hard limit not found",
@@ -64,13 +78,14 @@ func TestIsSafe(t *testing.T) {
 				types.ResourceList{types.ResourceStorage: 100},
 				types.ResourceList{types.ResourceCount: 0},
 				types.ResourceList{types.ResourceCount: 1},
+				false,
 			},
 			true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := IsSafe(tt.args.hardLimits, tt.args.currentUsed, tt.args.newUsed); (err != nil) != tt.wantErr {
+			if err := IsSafe(tt.args.hardLimits, tt.args.currentUsed, tt.args.newUsed, tt.args.ignoreLimitation); (err != nil) != tt.wantErr {
 				t.Errorf("IsSafe() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

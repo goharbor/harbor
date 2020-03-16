@@ -17,10 +17,8 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/goharbor/harbor/src/migration"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -30,13 +28,9 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
-	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
-	quota "github.com/goharbor/harbor/src/core/api/quota"
-	_ "github.com/goharbor/harbor/src/core/api/quota/chart"
-	_ "github.com/goharbor/harbor/src/core/api/quota/registry"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
@@ -46,13 +40,13 @@ import (
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/migration"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/event"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
-	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/server"
@@ -84,69 +78,6 @@ func updateInitPassword(userID int, password string) error {
 		log.Infof("User id: %d updated its encrypted password successfully.", userID)
 	} else {
 		log.Infof("User id: %d already has its encrypted password.", userID)
-	}
-	return nil
-}
-
-// Quota migration
-func quotaSync() error {
-	projects, err := dao.GetProjects(nil)
-	if err != nil {
-		log.Errorf("list project error, %v", err)
-		return err
-	}
-
-	var pids []string
-	for _, project := range projects {
-		pids = append(pids, strconv.FormatInt(project.ProjectID, 10))
-	}
-	usages, err := dao.ListQuotaUsages(&models.QuotaUsageQuery{Reference: "project", ReferenceIDs: pids})
-	if err != nil {
-		log.Errorf("list quota usage error, %v", err)
-		return err
-	}
-
-	// The condition handles these two cases:
-	// 1, len(project) > 1 && len(usages) == 1. existing projects without usage, as we do always has 'library' usage in DB.
-	// 2, migration fails at the phase of inserting usage into DB, and parts of them are inserted successfully.
-	if len(projects) != len(usages) {
-		log.Info("Start to sync quota data .....")
-		if err := quota.Sync(config.GlobalProjectMgr, true); err != nil {
-			log.Errorf("Fail to sync quota data, %v", err)
-			return err
-		}
-		log.Info("Success to sync quota data .....")
-		return nil
-	}
-
-	// Only has one project without usage
-	zero := common_quota.ResourceList{
-		common_quota.ResourceCount:   0,
-		common_quota.ResourceStorage: 0,
-	}
-	if len(projects) == 1 && len(usages) == 1 {
-		totalRepo, err := dao.GetTotalOfRepositories()
-		if totalRepo == 0 {
-			return nil
-		}
-		refID, err := strconv.ParseInt(usages[0].ReferenceID, 10, 64)
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-		usedRes, err := types.NewResourceList(usages[0].Used)
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-		if types.Equals(usedRes, zero) && refID == projects[0].ProjectID {
-			log.Info("Start to sync quota data .....")
-			if err := quota.Sync(config.GlobalProjectMgr, true); err != nil {
-				log.Errorf("Fail to sync quota data, %v", err)
-				return err
-			}
-			log.Info("Success to sync quota data .....")
-		}
 	}
 	return nil
 }

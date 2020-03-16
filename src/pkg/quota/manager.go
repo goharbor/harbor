@@ -37,8 +37,11 @@ type Manager interface {
 	// Get returns quota by id
 	Get(ctx context.Context, id int64) (*Quota, error)
 
-	// GetForUpdate returns quota by reference and reference id for update
-	GetForUpdate(ctx context.Context, reference, referenceID string) (*Quota, error)
+	// GetByRef returns quota by reference object
+	GetByRef(ctx context.Context, reference, referenceID string) (*Quota, error)
+
+	// GetByRefForUpdate returns quota by reference and reference id for update
+	GetByRefForUpdate(ctx context.Context, reference, referenceID string) (*Quota, error)
 
 	// Update update quota
 	Update(ctx context.Context, quota *Quota) error
@@ -80,8 +83,12 @@ func (m *manager) Get(ctx context.Context, id int64) (*Quota, error) {
 	return m.dao.Get(ctx, id)
 }
 
-func (m *manager) GetForUpdate(ctx context.Context, reference, referenceID string) (*Quota, error) {
-	return m.dao.GetForUpdate(ctx, reference, referenceID)
+func (m *manager) GetByRef(ctx context.Context, reference, referenceID string) (*Quota, error) {
+	return m.dao.GetByRef(ctx, reference, referenceID)
+}
+
+func (m *manager) GetByRefForUpdate(ctx context.Context, reference, referenceID string) (*Quota, error) {
+	return m.dao.GetByRefForUpdate(ctx, reference, referenceID)
 }
 
 func (m *manager) Update(ctx context.Context, q *Quota) error {

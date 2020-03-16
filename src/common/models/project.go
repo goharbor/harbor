@@ -192,6 +192,12 @@ func (p *Project) TableName() string {
 	return ProjectTable
 }
 
+// QuotaSummary ...
+type QuotaSummary struct {
+	Hard types.ResourceList `json:"hard"`
+	Used types.ResourceList `json:"used"`
+}
+
 // ProjectSummary ...
 type ProjectSummary struct {
 	RepoCount  int64  `json:"repo_count"`
@@ -203,8 +209,5 @@ type ProjectSummary struct {
 	GuestCount        int64 `json:"guest_count"`
 	LimitedGuestCount int64 `json:"limited_guest_count"`
 
-	Quota struct {
-		Hard types.ResourceList `json:"hard"`
-		Used types.ResourceList `json:"used"`
-	} `json:"quota"`
+	Quota *QuotaSummary `json:"quota,omitempty"`
 }
