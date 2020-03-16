@@ -44,6 +44,7 @@ const (
 	TopicUploadChart   = "UPLOAD_CHART"
 	TopicDownloadChart = "DOWNLOAD_CHART"
 	TopicDeleteChart   = "DELETE_CHART"
+	TopicReplication   = "REPLICATION"
 )
 
 // CreateProjectEvent is the creating project event
@@ -263,4 +264,12 @@ type QuotaEvent struct {
 type ImgResource struct {
 	Digest string
 	Tag    string
+}
+
+// ReplicationEvent is replication related event data to publish
+type ReplicationEvent struct {
+	EventType         string
+	ReplicationTaskID int64
+	OccurAt           time.Time
+	Status            string
 }

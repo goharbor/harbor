@@ -383,6 +383,7 @@ func initSupportedEvents() map[string]struct{} {
 		event.TopicQuotaWarning,
 		event.TopicScanningFailed,
 		event.TopicScanningCompleted,
+		event.TopicReplication,
 	}
 
 	var supportedEventTypes = make(map[string]struct{})
