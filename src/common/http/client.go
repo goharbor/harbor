@@ -79,12 +79,12 @@ type Client struct {
 func GetHTTPTransport(clientType uint) *http.Transport {
 	switch clientType {
 	case SecureTransport:
-		return secureHTTPTransport.Clone()
+		return secureHTTPTransport
 	case InsecureTransport:
-		return insecureHTTPTransport.Clone()
+		return insecureHTTPTransport
 	default:
 		// default Transport is secure one
-		return secureHTTPTransport.Clone()
+		return secureHTTPTransport
 	}
 }
 

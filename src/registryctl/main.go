@@ -19,6 +19,7 @@ import (
 	"flag"
 	"net/http"
 
+	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/registryctl/config"
 	"github.com/goharbor/harbor/src/registryctl/handlers"
@@ -37,14 +38,13 @@ func (s *RegistryCtl) Start() {
 		Handler: s.Handler,
 	}
 
-	if s.ServerConf.Protocol == "https" {
-		regCtl.TLSConfig = &tls.Config{
-			ClientAuth: tls.RequireAndVerifyClientCert,
-		}
-	}
-
 	var err error
 	if s.ServerConf.Protocol == "https" {
+		if common_http.InternalEnableVerifyClientCert() {
+			regCtl.TLSConfig = &tls.Config{
+				ClientAuth: tls.RequireAndVerifyClientCert,
+			}
+		}
 		err = regCtl.ListenAndServeTLS(s.ServerConf.HTTPSConfig.Cert, s.ServerConf.HTTPSConfig.Key)
 	} else {
 		err = regCtl.ListenAndServe()

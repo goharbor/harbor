@@ -73,11 +73,10 @@ func NewServer(ctx context.Context, router Router, cfg ServerConfig) *Server {
 	}
 
 	// Initialize TLS/SSL config if protocol is https
-	if cfg.Protocol == config.JobServiceProtocolHTTPS {
-		logger.Infof("https enabled, load trustCAs")
+	if cfg.Protocol == config.JobServiceProtocolHTTPS && commonhttp.InternalEnableVerifyClientCert() {
+		logger.Infof("mTLS enabled ...")
 		srv.TLSConfig = &tls.Config{
 			ClientAuth: tls.RequireAndVerifyClientCert,
-			ClientCAs:  commonhttp.GetInternalCA(nil),
 		}
 	}
 

@@ -27,16 +27,26 @@ import (
 
 const (
 	// Internal TLS ENV
-	internalTLSEnable   = "INTERNAL_TLS_ENABLED"
-	internalTLSKeyPath  = "INTERNAL_TLS_KEY_PATH"
-	internalTLSCertPath = "INTERNAL_TLS_CERT_PATH"
-	internalTrustCAPath = "INTERNAL_TLS_TRUST_CA_PATH"
+	internalTLSEnable        = "INTERNAL_TLS_ENABLED"
+	internalVerifyClientCert = "INTERNAL_VERIFY_CLIENT_CERT"
+	internalTLSKeyPath       = "INTERNAL_TLS_KEY_PATH"
+	internalTLSCertPath      = "INTERNAL_TLS_CERT_PATH"
+	internalTrustCAPath      = "INTERNAL_TLS_TRUST_CA_PATH"
 )
 
 // InternalTLSEnabled returns if internal TLS enabled
 func InternalTLSEnabled() bool {
 	iTLSEnabled := os.Getenv(internalTLSEnable)
 	if strings.ToLower(iTLSEnabled) == "true" {
+		return true
+	}
+	return false
+}
+
+// InternalEnableVerifyClientCert returns if mTLS enabled
+func InternalEnableVerifyClientCert() bool {
+	enabled := os.Getenv(internalVerifyClientCert)
+	if strings.ToLower(enabled) == "true" {
 		return true
 	}
 	return false
