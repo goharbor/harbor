@@ -10,7 +10,7 @@ from library.system import System
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(cls):
-        cls.repo = Repository(api_type='repository')
+        cls.repo = Repository()
         cls.system = System()
 
     @classmethod

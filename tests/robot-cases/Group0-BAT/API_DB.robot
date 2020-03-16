@@ -17,6 +17,10 @@ ${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
 &{SERVER_CONFIG}  endpoint=${SERVER_API_ENDPOINT}  verify_ssl=False
 
 *** Test Cases ***
+Test Case - Scan Image
+    Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
+Test Case - Scan All Images
+    Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py
 Test Case - Garbage Collection
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 Test Case - Add Private Project Member and Check User Can See It
@@ -29,10 +33,6 @@ Test Case - Add Replication Rule
     Harbor API Test  ./tests/apitests/python/test_add_replication_rule.py
 Test Case - Edit Project Creation
     Harbor API Test  ./tests/apitests/python/test_edit_project_creation.py
-Test Case - Scan Image
-    Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
-Test Case - Scan All Images
-    Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py
 Test Case - Manage Project Member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
 Test Case - Project Level Policy Content Trust
@@ -64,7 +64,7 @@ Test Case - Health Check
     Harbor API Test  ./tests/apitests/python/test_health_check.py
 Test Case - Push Index By Docker Manifest
     Harbor API Test  ./tests/apitests/python/test_push_index_by_docker_manifest.py
-Test Case - Push Index By Docker Manifest
+Test Case - Push Chart By Helm3 Chart CLI
     Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm3_chart_cli.py
 Test Case - Push Cnab Bundle
     Harbor API Test  ./tests/apitests/python/test_push_cnab_bundle.py
