@@ -75,6 +75,7 @@ class TestProjects(unittest.TestCase):
 
         #5. TO_DO: Verify this chart artifact information, like digest;
         self.assertEqual(artifact[0].type, 'CHART')
+        self.assertEqual(artifact[0].tags[0].name, self.verion)
 
 
 if __name__ == '__main__':
