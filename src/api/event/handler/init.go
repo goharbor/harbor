@@ -24,6 +24,7 @@ func init() {
 	notifier.Subscribe(event.TopicScanningFailed, &scan.Handler{})
 	notifier.Subscribe(event.TopicScanningCompleted, &scan.Handler{})
 	notifier.Subscribe(event.TopicDeleteArtifact, &scan.DelArtHandler{})
+	notifier.Subscribe(event.TopicReplication, &artifact.ReplicationHandler{})
 
 	// replication
 	notifier.Subscribe(event.TopicPushArtifact, &replication.Handler{})

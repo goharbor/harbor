@@ -16,11 +16,12 @@ package event
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	"time"
 )
 
 // the event consumers can refer to this file to find all topics and the corresponding event structures
@@ -43,6 +44,7 @@ const (
 	TopicUploadChart   = "UPLOAD_CHART"
 	TopicDownloadChart = "DOWNLOAD_CHART"
 	TopicDeleteChart   = "DELETE_CHART"
+	TopicReplication   = "REPLICATION"
 )
 
 // CreateProjectEvent is the creating project event
@@ -262,4 +264,12 @@ type QuotaEvent struct {
 type ImgResource struct {
 	Digest string
 	Tag    string
+}
+
+// ReplicationEvent is replication related event data to publish
+type ReplicationEvent struct {
+	EventType         string
+	ReplicationTaskID int64
+	OccurAt           time.Time
+	Status            string
 }

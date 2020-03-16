@@ -3,10 +3,11 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/api/event"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/goharbor/harbor/src/api/event"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 
@@ -377,7 +378,7 @@ func initSupportedEvents() map[string]struct{} {
 	eventTypes := []string{event.TopicPushArtifact, event.TopicPullArtifact,
 		event.TopicDeleteArtifact, event.TopicUploadChart, event.TopicDeleteChart,
 		event.TopicDownloadChart, event.TopicQuotaExceed, event.TopicScanningFailed,
-		event.TopicScanningCompleted}
+		event.TopicScanningCompleted, event.TopicReplication}
 
 	for _, eventType := range eventTypes {
 		supportedEventTypes[eventType] = struct{}{}
