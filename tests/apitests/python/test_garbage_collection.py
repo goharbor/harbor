@@ -69,7 +69,7 @@ class TestProjects(unittest.TestCase):
         self.repo.delete_repoitory(TestProjects.project_gc_name, repo_name.split('/')[1], **TestProjects.USER_GC_CLIENT)
 
         #5. Get repository by user(UA), it should get nothing;
-        repo_data = self.repo.get_repository(TestProjects.project_gc_name, **TestProjects.USER_GC_CLIENT)
+        repo_data = self.repo.list_repositories(TestProjects.project_gc_name, **TestProjects.USER_GC_CLIENT)
         _assert_status_code(len(repo_data), 0)
 
         #6. Tigger garbage collection operation;

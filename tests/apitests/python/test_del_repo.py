@@ -62,14 +62,14 @@ class TestProjects(unittest.TestCase):
         repo_name, _ = push_image_to_project(TestProjects.project_del_repo_name, harbor_server, 'admin', 'Harbor12345', "hello-world", "latest")
 
         #4. Get repository in project(PA), there should be one repository which was created by user(UA);
-        repo_data = self.repo.get_repository(TestProjects.project_del_repo_name, **TestProjects.USER_del_repo_CLIENT)
+        repo_data = self.repo.list_repositories(TestProjects.project_del_repo_name, **TestProjects.USER_del_repo_CLIENT)
         _assert_status_code(repo_name, repo_data[0].name)
 
         #5. Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(TestProjects.project_del_repo_name, repo_name.split('/')[1], **TestProjects.USER_del_repo_CLIENT)
 
         #6. Get repository by user(UA), it should get nothing;
-        repo_data = self.repo.get_repository(TestProjects.project_del_repo_name, **TestProjects.USER_del_repo_CLIENT)
+        repo_data = self.repo.list_repositories(TestProjects.project_del_repo_name, **TestProjects.USER_del_repo_CLIENT)
         _assert_status_code(len(repo_data), 0)
 
 if __name__ == '__main__':

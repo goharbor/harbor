@@ -10,14 +10,15 @@ except ImportError:
     pip.main(['install', 'docker'])
     import docker
 
-def docker_login(harbor_host, user, password):
+def docker_login(harbor_host, user, password, enable_manifest = True):
     command = ["sudo", "docker", "login", harbor_host, "-u", user, "-p", password]
     print "Docker Login Command: ", command
     base.run_command(command)
-    try:
-        ret = subprocess.check_output(["./tests/apitests/python/update_docker_cfg.sh"], shell=False)
-    except subprocess.CalledProcessError, exc:
-        raise Exception("Failed to update docker config, error is {} {}.".format(exc.returncode, exc.output))
+    if enable_manifest == True:
+        try:
+            subprocess.check_output(["./tests/apitests/python/update_docker_cfg.sh"], shell=False)
+        except subprocess.CalledProcessError, exc:
+            raise Exception("Failed to update docker config, error is {} {}.".format(exc.returncode, exc.output))
 
 def docker_manifest_create(index, manifests):
     command = ["sudo", "docker","manifest","create",index]
@@ -149,6 +150,9 @@ class DockerAPI(object):
                 print("build image %s with size %d" % (repo, size))
                 self.DCLIENT.remove_image(repo)
             self.DCLIENT.remove_container(c)
+            self.DCLIENT.pull(repo)
+            image = self.DCLIENT2.images.get(repo)
+            return repo, image.id
         except Exception, err:
             caught_err = True
             if expected_error_message is not None:
@@ -165,5 +169,3 @@ class DockerAPI(object):
             else:
                 if str(ret).lower().find("errorDetail".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".format (harbor_registry, ret))
-
-
