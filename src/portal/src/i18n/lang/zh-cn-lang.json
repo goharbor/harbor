@@ -64,7 +64,7 @@
         "TIME_OUT": "网关超时"
     },
     "TOOLTIP": {
-        "NAME_FILTER": "过滤资源的名字。不填或者“”匹配所有资源；“library/”只匹配“library”下的资源。更多的匹配模式请参考用户手册。",
+        "NAME_FILTER": "过滤资源的名字。不填或者填写“**”匹配所有资源；“library/**”只匹配“library”下的资源。更多的匹配模式请参考用户手册。",
         "TAG_FILTER": "过滤资源的tag/version。不填或者“”匹配所有；“1.0*”只匹配以“1.0”开头的tag/version。",
         "LABEL_FILTER": "根据标签筛选资源。",
         "RESOURCE_FILTER": "过滤资源的类型。",
