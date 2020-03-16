@@ -69,7 +69,7 @@
 
             <clr-dg-footer>
                 <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'VULNERABILITY.GRID.FOOT_OF' | translate}}</span> {{pagination.totalItems}} {{'VULNERABILITY.GRID.FOOT_ITEMS' | translate}}
-                <clr-dg-pagination #pagination [clrDgPageSize]="25" [clrDgTotalItems]="scanningResults.length"></clr-dg-pagination>
+                <clr-dg-pagination #pagination [clrDgPageSize]="25" [clrDgTotalItems]="scanningResults?.length"></clr-dg-pagination>
             </clr-dg-footer>
         </clr-datagrid>
     </div>

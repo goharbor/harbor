@@ -685,7 +685,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
 
   retag() {
-    if (this.selectedRow && this.selectedRow.length) {
+    if (this.selectedRow && this.selectedRow.length && !this.depth) {
       this.retagDialogOpened = true;
       this.retagSrcImage = this.repoName + ":" + this.selectedRow[0].digest;
     }
@@ -712,7 +712,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
 
   deleteArtifact() {
-    if (this.selectedRow && this.selectedRow.length) {
+    if (this.selectedRow && this.selectedRow.length && !this.depth) {
       let artifactNames: string[] = [];
       this.selectedRow.forEach(artifact => {
         artifactNames.push(artifact.digest.slice(0, 15));
@@ -744,9 +744,30 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           this.deleteArtifactobservableLists.push(this.delOperate(artifact));
         });
         this.loading = true;
-        forkJoin(...this.deleteArtifactobservableLists).subscribe((items) => {
-          // if delete one success  refresh list
-          if (items.some(item => !item)) {
+        forkJoin(...this.deleteArtifactobservableLists).subscribe((deleteResult) => {
+          let deleteSuccessList = [];
+          let deleteErrorList = [];
+          deleteResult.forEach(result => {
+            if (!result) {
+              // delete success
+              deleteSuccessList.push(result);
+            } else {
+              deleteErrorList.push(result);
+            }
+          });
+          if (deleteSuccessList.length === deleteResult.length) {
+            // all is success
+            this.selectedRow = [];
+            let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
+            this.clrLoad(st);
+          } else if (deleteErrorList.length === deleteResult.length) {
+            // all is error
+            this.loading = false;
+            this.errorHandlerService.error(deleteResult[deleteResult.length - 1].error);
+          } else {
+            // some artifact delete success but it has error delete things
+            this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1].error);
+            // if delete one success  refresh list
             this.selectedRow = [];
             let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
             this.clrLoad(st);
@@ -799,7 +820,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
 
   showDigestId() {
-    if (this.selectedRow && (this.selectedRow.length === 1)) {
+    if (this.selectedRow && (this.selectedRow.length === 1) && !this.depth) {
       this.manifestInfoTitle = "REPOSITORY.COPY_DIGEST_ID";
       this.digestId = this.selectedRow[0].digest;
       this.showTagManifestOpened = true;
