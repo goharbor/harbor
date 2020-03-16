@@ -9,9 +9,11 @@ schemes:
   - https
 basePath: /api
 produces:
+  - application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0
   - application/json
   - text/plain
 consumes:
+  - application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0
   - application/json
 securityDefinitions:
   basicAuth:
@@ -46,11 +48,9 @@ paths:
         - Products
       responses:
         '200':
-          description: An array of search results
+          description: Search result
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Search'
+            $ref: '#/definitions/Search'
         '500':
           description: Unexpected internal errors.
   /projects:
@@ -1010,7 +1010,7 @@ paths:
         - name: project_id
           in: query
           type: integer
-          format: int32
+          format: int64
           required: true
           description: Relevant project ID.
         - name: q
@@ -4657,13 +4657,13 @@ paths:
         - name: Accept
           in: header
           type: string
-          description: |
-            Mimetype in header. e.g: "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"
+          default: 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'
+          description: Mimetype in header
       responses:
         200:
           description: The report details of the specified artifact identified by the repo_name and tag.
           schema:
-            $ref: '#/definitions/Report'
+            $ref: '#/definitions/ReportOverview'
         '401':
           description: Unauthorized request
         '403':
@@ -4845,7 +4845,7 @@ definitions:
     properties:
       project_id:
         type: integer
-        format: int32
+        format: int64
         description: Project ID
       owner_id:
         type: integer
@@ -5472,6 +5472,7 @@ definitions:
         description: The name of the tag.
       size:
         type: integer
+        format: int64
         description: The size of the image.
       architecture:
         type: string
@@ -5499,6 +5500,12 @@ definitions:
         description: The label list.
         items:
           $ref: '#/definitions/Label'
+      push_time:
+        type: string
+        description: The push time of repository.
+      pull_time:
+        type: string
+        description: The pull time of repository.
   ComponentOverviewEntry:
     type: object
     properties:
@@ -6061,9 +6068,24 @@ definitions:
             description: The urls of the chart entry
             items:
               type: string
+          maintainers:
+            type: array
+            description: The maintainers of the chart entry
+            items:
+              $ref: '#/definitions/HelmChartMaintainer'
     properties:
       labels:
         $ref: '#/definitions/Labels'
+  HelmChartMaintainer:
+    type: object
+    description: The maintainer of the chart entry
+    properties:
+      name:
+        type: string
+        description: The name of the maintainer
+      email:
+        type: string
+        description: The email of the maintainer
   ChartVersions:
     type: array
     description: A list of chart entry
@@ -6992,6 +7014,13 @@ definitions:
         items:
           type: string
           example: 'https://security-tracker.debian.org/tracker/CVE-2017-8283'
+
+  ReportOverview:
+    type: object
+    description: 'The scan report overview of tag'
+    additionalProperties:
+      $ref: '#/definitions/Report'
+
   Report:
     type: object
     description: 'The harbor native report format'
