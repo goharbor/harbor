@@ -16,10 +16,7 @@ ${SERVER_URL}  https://${SERVER}
 ${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
 &{SERVER_CONFIG}  endpoint=${SERVER_API_ENDPOINT}  verify_ssl=False
 
-# TODO the cases commented by "###" can be uncommented after implementing the repository python library based on new API
-
 *** Test Cases ***
-# TODO uncomment this after re-implement the case
 Test Case - Garbage Collection
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 Test Case - Add Private Project Member and Check User Can See It
@@ -73,4 +70,6 @@ Test Case - Push Index By Docker Manifest
     Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm3_chart_cli.py
 Test Case - Push Cnab Bundle
     Harbor API Test  ./tests/apitests/python/test_push_cnab_bundle.py
+Test Case - Create/Delete tag
+    Harbor API Test  ./tests/apitests/python/test_create_delete_tag.py
 

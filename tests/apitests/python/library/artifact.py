@@ -10,6 +10,8 @@ class Artifact(base.Base):
         params = {}
         if "with_signature" in kwargs:
             params["with_signature"] = kwargs["with_signature"]
+        if "with_tag" in kwargs:
+            params["with_tag"] = kwargs["with_tag"]
         return client.get_artifact_with_http_info(project_name, repo_name, reference, **params )
 
     def add_label_to_reference(self, project_name, repo_name, reference, label_id, **kwargs):
@@ -31,3 +33,14 @@ class Artifact(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(201, status_code)
         return data
+
+    def create_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 201, **kwargs):
+        client = self._get_client(**kwargs)
+        tag = v2_swagger_client.Tag(name = tag_name)
+        _, status_code, _ = client.create_tag_with_http_info(project_name, repo_name, reference, tag)
+        base._assert_status_code(expect_status_code, status_code)
+
+    def delete_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
+        _, status_code, _ = client.delete_tag_with_http_info(project_name, repo_name, reference, tag_name)
+        base._assert_status_code(expect_status_code, status_code)
