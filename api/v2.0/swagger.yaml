@@ -615,6 +615,39 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+  /projects/{project_name}/logs:
+    get:
+      summary: Get recent logs of the projects
+      description: Get recent logs of the projects
+      tags:
+        - project
+      operationId: getLogs
+      parameters:
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of auditlogs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AuditLog'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   query:
     name: q
