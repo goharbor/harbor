@@ -335,14 +335,20 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
     config_dict['registry_username'] = REGISTRY_USER_NAME
     config_dict['registry_password'] = generate_random_string(32)
 
+    internal_tls_config = configs['internal_tls']
     # TLS related configs
-    config_dict['internal_tls'] = InternalTLS(
-        configs.get('internal_tls') or '',
-        configs['data_volume'],
-        with_notary=with_notary,
-        with_clair=with_clair,
-        with_chartmuseum=with_chartmuseum,
-        external_database=config_dict['external_database'])
+    if internal_tls_config.get('enabled'):
+        config_dict['internal_tls'] = InternalTLS(
+            internal_tls_config['enabled'],
+            internal_tls_config['verify_client_cert'],
+            internal_tls_config['dir'],
+            configs['data_volume'],
+            with_notary=with_notary,
+            with_clair=with_clair,
+            with_chartmuseum=with_chartmuseum,
+            external_database=config_dict['external_database'])
+    else:
+        config_dict['internal_tls'] = InternalTLS()
 
     if config_dict['internal_tls'].enabled:
         config_dict['registry_url'] = 'https://registry:5443'
@@ -352,6 +358,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
         config_dict['token_service_url'] = 'https://core:8443/service/token'
         config_dict['jobservice_url'] = 'https://jobservice:8443'
         config_dict['clair_adapter_url'] = 'https://clair-adapter:8443'
+        # config_dict['trivy_adapter_url'] = 'http://trivy-adapter:8443'
         # config_dict['notary_url'] = 'http://notary-server:4443'
         config_dict['chart_repository_url'] = 'https://chartmuseum:9443'
 

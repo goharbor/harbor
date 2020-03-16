@@ -23,6 +23,11 @@ class InternalTLS:
         'clair.crt', 'clair.key'
     }
 
+    trivy_certs_filename = {
+        'trivy_adapter.crt', 'trivy_adapter.key',
+        'trivy.crt', 'trivy.key'
+    }
+
     notary_certs_filename = {
         'notary_signer.crt', 'notary_signer.key',
         'notary_server.crt', 'notary_server.key'
@@ -37,13 +42,12 @@ class InternalTLS:
         'harbor_db.crt', 'harbor_db.key'
     }
 
-    def __init__(self, tls_dir: str, data_volume:str, **kwargs):
+    def __init__(self, tls_enabled=False, verify_client_cert=False, tls_dir='', data_volume='', **kwargs):
         self.data_volume = data_volume
-        if not tls_dir:
-            self.enabled = False
-        else:
-            self.enabled = True
-            self.tls_dir = tls_dir
+        self.verify_client_cert = verify_client_cert
+        self.enabled = tls_enabled
+        self.tls_dir = tls_dir
+        if self.enabled:
             self.required_filenames = self.harbor_certs_filename
             if kwargs.get('with_clair'):
                 self.required_filenames.update(self.clair_certs_filename)
