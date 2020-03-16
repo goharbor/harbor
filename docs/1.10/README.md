@@ -85,5 +85,6 @@ This section describes how developers can build from Harbor source code, customi
 - [Using Make](build-customize-contribute/use-make.md)
 - [View and test Harbor REST API via Swagger](build-customize-contribute/configure-swagger.md)
 - [Registry Landscape](build-customize-contribute/registry-landscape.md)
+- [E2E Test Scripting Guide](build-customize-contribute/e2e_api_python_based_scripting_guide.md)
 
 See also the list of [Articles from the Harbor Community](https://github.com/goharbor/harbor/blob/master/docs/README.md#articles-from-the-community).
