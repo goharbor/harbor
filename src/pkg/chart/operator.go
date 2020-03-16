@@ -64,11 +64,11 @@ func (cho *operator) GetDetails(content []byte) (*VersionDetails, error) {
 	for _, v := range chartData.Raw {
 		if strings.ToUpper(v.Name) == readmeFileName {
 			files[readmeFileName] = string(v.Data)
-			break
+			continue
 		}
 		if strings.ToUpper(v.Name) == valuesFileName {
 			files[valuesFileName] = string(v.Data)
-			break
+			continue
 		}
 	}
 
