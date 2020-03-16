@@ -64,14 +64,30 @@ func (c *cacheTestSuite) TestKey() {
 }
 
 func (c *cacheTestSuite) TestGet() {
-	token := &token{
-		Token: "token",
+	// expired token
+	tk := &token{
+		Token:       "token",
+		AccessToken: "",
+		ExpiresIn:   10,
+		IssuedAt:    "2006-01-02T15:04:05+07:00",
 	}
-	c.cache.set(nil, token)
+	c.cache.set(nil, tk)
 
-	tk := c.cache.get(nil)
-	c.Require().NotNil(tk)
-	c.Equal(token.Token, tk.Token)
+	t := c.cache.get(nil)
+	c.Require().Nil(t)
+
+	// valid token
+	tk = &token{
+		Token:       "token",
+		AccessToken: "",
+		ExpiresIn:   60,
+		IssuedAt:    time.Now().Format(time.RFC3339),
+	}
+	c.cache.set(nil, tk)
+
+	t = c.cache.get(nil)
+	c.Require().NotNil(t)
+	c.Equal("token", t.Token)
 }
 
 func (c *cacheTestSuite) TestSet() {
@@ -146,6 +162,38 @@ func (c *cacheTestSuite) TestSet() {
 	c.cache.set(scope4, token4)
 	c.Require().Len(c.cache.cache, 1)
 	c.Require().NotNil(c.cache.get(scope4))
+}
+
+func (c *cacheTestSuite) TestExpired() {
+	// invalid time format
+	tk := &token{
+		Token:       "token",
+		AccessToken: "",
+		ExpiresIn:   10,
+		IssuedAt:    "invalid_time_format",
+	}
+	expired, _ := c.cache.expired(tk)
+	c.Assert().True(expired)
+
+	// expired token
+	tk = &token{
+		Token:       "token",
+		AccessToken: "",
+		ExpiresIn:   30,
+		IssuedAt:    time.Now().Add(-1 * time.Minute).Format(time.RFC3339),
+	}
+	expired, _ = c.cache.expired(tk)
+	c.Assert().True(expired)
+
+	// valid token
+	tk = &token{
+		Token:       "token",
+		AccessToken: "",
+		ExpiresIn:   30,
+		IssuedAt:    time.Now().Format(time.RFC3339),
+	}
+	expired, _ = c.cache.expired(tk)
+	c.Assert().False(expired)
 }
 
 func TestCacheTestSuite(t *testing.T) {

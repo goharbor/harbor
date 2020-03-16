@@ -39,7 +39,15 @@ type cache struct {
 func (c *cache) get(scopes []*scope) *token {
 	c.RLock()
 	defer c.RUnlock()
-	return c.cache[c.key(scopes)]
+	token := c.cache[c.key(scopes)]
+	if token == nil {
+		return nil
+	}
+	expired, _ := c.expired(token)
+	if expired {
+		token = nil
+	}
+	return token
 }
 
 func (c *cache) set(scopes []*scope, token *token) {
@@ -48,22 +56,13 @@ func (c *cache) set(scopes []*scope, token *token) {
 	// exceed the capacity, empty some elements: all expired token will be removed,
 	// if no expired token, move the earliest one
 	if len(c.cache) >= c.capacity {
-		now := time.Now().UTC()
 		var candidates []string
 		var earliestKey string
 		var earliestExpireTime time.Time
 		for key, value := range c.cache {
-			// parse error
-			issueAt, err := time.Parse(time.RFC3339, value.IssuedAt)
-			if err != nil {
-				log.Errorf("failed to parse the issued at time of token %s: %v", token.IssuedAt, err)
-				candidates = append(candidates, key)
-				continue
-			}
-
-			expireAt := issueAt.Add(time.Duration(value.ExpiresIn-c.latency) * time.Second)
+			expired, expireAt := c.expired(value)
 			// expired
-			if expireAt.Before(now) {
+			if expired {
 				candidates = append(candidates, key)
 				continue
 			}
@@ -90,4 +89,15 @@ func (c *cache) key(scopes []*scope) string {
 		strs = append(strs, scope.String())
 	}
 	return strings.Join(strs, "#")
+}
+
+// return whether the token is expired or not and the expired time
+func (c *cache) expired(token *token) (bool, time.Time) {
+	issueAt, err := time.Parse(time.RFC3339, token.IssuedAt)
+	if err != nil {
+		log.Errorf("failed to parse the issued at time of token %s: %v", token.IssuedAt, err)
+		return true, time.Time{}
+	}
+	expireAt := issueAt.Add(time.Duration(token.ExpiresIn-c.latency) * time.Second)
+	return expireAt.Before(time.Now()), expireAt
 }
