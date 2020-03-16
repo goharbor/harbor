@@ -39,24 +39,10 @@ func Init() {
 	// init notification job manager
 	JobMgr = jobMgr.NewDefaultManager()
 
-	SupportedEventTypes = make(map[string]struct{})
 	SupportedNotifyTypes = make(map[string]struct{})
-
-	initSupportedEventType(
-		model.EventTypePushImage, model.EventTypePullImage, model.EventTypeDeleteImage,
-		model.EventTypeUploadChart, model.EventTypeDeleteChart, model.EventTypeDownloadChart,
-		model.EventTypeScanningCompleted, model.EventTypeScanningFailed, model.EventTypeProjectQuota,
-	)
-
 	initSupportedNotifyType(model.NotifyTypeHTTP, model.NotifyTypeSlack)
 
 	log.Info("notification initialization completed")
-}
-
-func initSupportedEventType(eventTypes ...string) {
-	for _, eventType := range eventTypes {
-		SupportedEventTypes[eventType] = struct{}{}
-	}
 }
 
 func initSupportedNotifyType(notifyTypes ...string) {

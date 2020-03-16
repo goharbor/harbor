@@ -1,76 +1,41 @@
-package notification
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package chart
 
 import (
+	"github.com/goharbor/harbor/src/api/event"
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/notifier/model"
+	testingnotification "github.com/goharbor/harbor/src/testing/pkg/notification"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-type fakedPolicyMgr struct {
-}
-
-func (f *fakedPolicyMgr) Create(*models.NotificationPolicy) (int64, error) {
-	return 0, nil
-}
-
-func (f *fakedPolicyMgr) List(id int64) ([]*models.NotificationPolicy, error) {
-	return nil, nil
-}
-
-func (f *fakedPolicyMgr) Get(id int64) (*models.NotificationPolicy, error) {
-	return nil, nil
-}
-
-func (f *fakedPolicyMgr) GetByNameAndProjectID(string, int64) (*models.NotificationPolicy, error) {
-	return nil, nil
-}
-
-func (f *fakedPolicyMgr) Update(*models.NotificationPolicy) error {
-	return nil
-}
-
-func (f *fakedPolicyMgr) Delete(int64) error {
-	return nil
-}
-
-func (f *fakedPolicyMgr) Test(*models.NotificationPolicy) error {
-	return nil
-}
-
-func (f *fakedPolicyMgr) GetRelatedPolices(id int64, eventType string) ([]*models.NotificationPolicy, error) {
-	return []*models.NotificationPolicy{
-		{
-			ID: 1,
-			EventTypes: []string{
-				model.EventTypeUploadChart,
-				model.EventTypeDownloadChart,
-				model.EventTypeDeleteChart,
-				model.EventTypeScanningCompleted,
-				model.EventTypeScanningFailed,
-			},
-			Targets: []models.EventTarget{
-				{
-					Type:    "http",
-					Address: "http://127.0.0.1:8080",
-				},
-			},
-		},
-	}, nil
-}
-
 func TestChartPreprocessHandler_Handle(t *testing.T) {
+	common_dao.PrepareTestForPostgresSQL()
 	PolicyMgr := notification.PolicyMgr
 	defer func() {
 		notification.PolicyMgr = PolicyMgr
 	}()
-	notification.PolicyMgr = &fakedPolicyMgr{}
+	notification.PolicyMgr = &testingnotification.FakedPolicyMgr{}
 
-	handler := &ChartPreprocessHandler{}
+	handler := &Handler{}
 	config.Init()
 
 	name := "project_for_test_chart_event_preprocess"
@@ -99,23 +64,23 @@ func TestChartPreprocessHandler_Handle(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "ChartPreprocessHandler Want Error 1",
+			name: "Handler Want Error 1",
 			args: args{
 				data: nil,
 			},
 			wantErr: true,
 		},
 		{
-			name: "ChartPreprocessHandler Want Error 2",
+			name: "Handler Want Error 2",
 			args: args{
-				data: &model.ChartEvent{},
+				data: &event.ChartEvent{},
 			},
 			wantErr: true,
 		},
 		{
-			name: "ChartPreprocessHandler Want Error 3",
+			name: "Handler Want Error 3",
 			args: args{
-				data: &model.ChartEvent{
+				data: &event.ChartEvent{
 					Versions: []string{
 						"v1.2.1",
 					},
@@ -125,9 +90,9 @@ func TestChartPreprocessHandler_Handle(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "ChartPreprocessHandler Want Error 4",
+			name: "Handler Want Error 4",
 			args: args{
-				data: &model.ChartEvent{
+				data: &event.ChartEvent{
 					Versions: []string{
 						"v1.2.1",
 					},
@@ -138,9 +103,9 @@ func TestChartPreprocessHandler_Handle(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "ChartPreprocessHandler Want Error 5",
+			name: "Handler Want Error 5",
 			args: args{
-				data: &model.ChartEvent{
+				data: &event.ChartEvent{
 					Versions: []string{
 						"v1.2.1",
 					},
@@ -166,6 +131,6 @@ func TestChartPreprocessHandler_Handle(t *testing.T) {
 }
 
 func TestChartPreprocessHandler_IsStateful(t *testing.T) {
-	handler := &ChartPreprocessHandler{}
+	handler := &Handler{}
 	assert.False(t, handler.IsStateful())
 }

@@ -1,20 +1,33 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package auditlog
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/api/event/metadata"
 
+	"github.com/goharbor/harbor/src/api/event"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
 	"github.com/goharbor/harbor/src/pkg/notifier"
-	"github.com/goharbor/harbor/src/pkg/notifier/event"
-	nm "github.com/goharbor/harbor/src/pkg/notifier/model"
+	ne "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"testing"
-	"time"
 )
 
 type MockAuditLogManager struct {
@@ -55,7 +68,7 @@ type AuditLogHandlerTestSuite struct {
 func (suite *AuditLogHandlerTestSuite) SetupSuite() {
 	common_dao.PrepareTestForPostgresSQL()
 	suite.logMgr = &MockAuditLogManager{}
-	suite.auditLogHandler = &Handler{AuditLogMgr: suite.logMgr}
+	suite.auditLogHandler = &Handler{}
 	log.SetLevel(log.DebugLevel)
 }
 
@@ -66,26 +79,13 @@ func (suite *AuditLogHandlerTestSuite) TestSubscribeTagEvent() {
 
 	// sample code to use the event framework.
 
-	notifier.Subscribe(nm.PushTagTopic, suite.auditLogHandler)
+	notifier.Subscribe(event.TopicCreateProject, suite.auditLogHandler)
 	// event data should implement the interface TopicEvent
-	data := &nm.TagEvent{
-		TargetTopic: nm.PushTagTopic, // Topic is a attribute of event
-		Project: &models.Project{
-			ProjectID: 1,
-			Name:      "library",
-		},
-		RepoName:  "busybox",
-		Digest:    "abcdef",
-		TagName:   "dev",
-		OccurAt:   time.Now(),
+	ne.BuildAndPublish(&metadata.CreateProjectEventMetadata{
+		ProjectID: 1,
+		Project:   "test",
 		Operator:  "admin",
-		Operation: "push", // Use Operation instead of event type.
-	}
-	// No EventMetadata anymore and there is no need to call resolve
-	// The handler receives the TagEvent
-	// The handler should use switch type interface to get TagEvent
-	event.New().WithTopicEvent(data).Publish()
-
+	})
 	cnt, err := suite.logMgr.Count(nil, nil)
 
 	suite.Nil(err)

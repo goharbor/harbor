@@ -22,7 +22,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/goharbor/harbor/src/api/event"
+	"github.com/goharbor/harbor/src/api/event/metadata"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
@@ -213,9 +213,10 @@ func (p *ProjectAPI) Post() {
 	}
 
 	// fire event
-	evt.BuildAndPublish(&event.CreateProjectEventMetadata{
-		Project:  pro.Name,
-		Operator: owner,
+	evt.BuildAndPublish(&metadata.CreateProjectEventMetadata{
+		ProjectID: projectID,
+		Project:   pro.Name,
+		Operator:  owner,
 	})
 
 	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
@@ -295,9 +296,10 @@ func (p *ProjectAPI) Delete() {
 	}
 
 	// fire event
-	evt.BuildAndPublish(&event.DeleteProjectEventMetadata{
-		Project:  p.project.Name,
-		Operator: p.SecurityCtx.GetUsername(),
+	evt.BuildAndPublish(&metadata.DeleteProjectEventMetadata{
+		ProjectID: p.project.ProjectID,
+		Project:   p.project.Name,
+		Operator:  p.SecurityCtx.GetUsername(),
 	})
 }
 

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/event/metadata"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -287,8 +288,8 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 	}
 
 	event := &n_event.Event{}
-	metaData := &n_event.ChartDeleteMetaData{
-		ChartMetaData: n_event.ChartMetaData{
+	metaData := &metadata.ChartDeleteMetaData{
+		ChartMetaData: metadata.ChartMetaData{
 			ProjectName: cra.namespace,
 			ChartName:   chartName,
 			Versions:    []string{version},
@@ -395,8 +396,8 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 	}
 
 	event := &n_event.Event{}
-	metaData := &n_event.ChartDeleteMetaData{
-		ChartMetaData: n_event.ChartMetaData{
+	metaData := &metadata.ChartDeleteMetaData{
+		ChartMetaData: metadata.ChartMetaData{
 			ProjectName: cra.namespace,
 			ChartName:   chartName,
 			Versions:    versions,
@@ -527,8 +528,8 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 
 func (cra *ChartRepositoryAPI) addDownloadChartEventContext(fileName, namespace string, request *http.Request) {
 	chartName, version := parseChartVersionFromFilename(fileName)
-	event := &n_event.ChartDownloadMetaData{
-		ChartMetaData: n_event.ChartMetaData{
+	event := &metadata.ChartDownloadMetaData{
+		ChartMetaData: metadata.ChartMetaData{
 			ProjectName: namespace,
 			ChartName:   chartName,
 			Versions:    []string{version},

@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event
+package metadata
 
 import (
 	"context"
+	event2 "github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
@@ -31,7 +32,8 @@ type CreateTagEventMetadata struct {
 
 // Resolve to the event from the metadata
 func (c *CreateTagEventMetadata) Resolve(event *event.Event) error {
-	data := &CreateTagEvent{
+	data := &event2.CreateTagEvent{
+		EventType:        event2.TopicCreateTag,
 		Repository:       c.AttachedArtifact.RepositoryName,
 		Tag:              c.Tag,
 		AttachedArtifact: c.AttachedArtifact,
@@ -41,7 +43,7 @@ func (c *CreateTagEventMetadata) Resolve(event *event.Event) error {
 	if exist {
 		data.Operator = cx.GetUsername()
 	}
-	event.Topic = TopicCreateTag
+	event.Topic = event2.TopicCreateTag
 	event.Data = data
 	return nil
 }
@@ -55,7 +57,8 @@ type DeleteTagEventMetadata struct {
 
 // Resolve to the event from the metadata
 func (d *DeleteTagEventMetadata) Resolve(event *event.Event) error {
-	data := &DeleteTagEvent{
+	data := &event2.DeleteTagEvent{
+		EventType:        event2.TopicDeleteTag,
 		Repository:       d.AttachedArtifact.RepositoryName,
 		Tag:              d.Tag,
 		AttachedArtifact: d.AttachedArtifact,
@@ -65,7 +68,7 @@ func (d *DeleteTagEventMetadata) Resolve(event *event.Event) error {
 	if exist {
 		data.Operator = ctx.GetUsername()
 	}
-	event.Topic = TopicDeleteTag
+	event.Topic = event2.TopicDeleteTag
 	event.Data = data
 	return nil
 }

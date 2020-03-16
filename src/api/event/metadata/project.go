@@ -12,43 +12,50 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event
+package metadata
 
 import (
+	event2 "github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"time"
 )
 
 // CreateProjectEventMetadata is the metadata from which the create project event can be resolved
 type CreateProjectEventMetadata struct {
-	Project  string
-	Operator string
+	ProjectID int64
+	Project   string
+	Operator  string
 }
 
 // Resolve to the event from the metadata
 func (c *CreateProjectEventMetadata) Resolve(event *event.Event) error {
-	event.Topic = TopicCreateProject
-	event.Data = &CreateProjectEvent{
-		Project:  c.Project,
-		Operator: c.Operator,
-		OccurAt:  time.Now(),
+	event.Topic = event2.TopicCreateProject
+	event.Data = &event2.CreateProjectEvent{
+		EventType: event2.TopicCreateProject,
+		ProjectID: c.ProjectID,
+		Project:   c.Project,
+		Operator:  c.Operator,
+		OccurAt:   time.Now(),
 	}
 	return nil
 }
 
 // DeleteProjectEventMetadata is the metadata from which the delete project event can be resolved
 type DeleteProjectEventMetadata struct {
-	Project  string
-	Operator string
+	ProjectID int64
+	Project   string
+	Operator  string
 }
 
 // Resolve to the event from the metadata
 func (d *DeleteProjectEventMetadata) Resolve(event *event.Event) error {
-	event.Topic = TopicDeleteProject
-	event.Data = &DeleteProjectEvent{
-		Project:  d.Project,
-		Operator: d.Operator,
-		OccurAt:  time.Now(),
+	event.Topic = event2.TopicDeleteProject
+	event.Data = &event2.DeleteProjectEvent{
+		EventType: event2.TopicDeleteProject,
+		ProjectID: d.ProjectID,
+		Project:   d.Project,
+		Operator:  d.Operator,
+		OccurAt:   time.Now(),
 	}
 	return nil
 }

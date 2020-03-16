@@ -1,28 +1,39 @@
-package notification
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package quota
 
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/event"
+	"github.com/goharbor/harbor/src/api/event/handler/util"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
+	"github.com/goharbor/harbor/src/pkg/project"
 )
 
-// QuotaPreprocessHandler preprocess image event data
-type QuotaPreprocessHandler struct {
+// Handler preprocess image event data
+type Handler struct {
 }
 
 // Handle ...
-func (qp *QuotaPreprocessHandler) Handle(value interface{}) error {
-	if !config.NotificationEnable() {
-		log.Debug("notification feature is not enabled")
-		return nil
-	}
-
-	quotaEvent, ok := value.(*model.QuotaEvent)
+func (qp *Handler) Handle(value interface{}) error {
+	quotaEvent, ok := value.(*event.QuotaEvent)
 	if !ok {
 		return errors.New("invalid quota event type")
 	}
@@ -30,13 +41,10 @@ func (qp *QuotaPreprocessHandler) Handle(value interface{}) error {
 		return fmt.Errorf("nil quota event")
 	}
 
-	project, err := config.GlobalProjectMgr.Get(quotaEvent.Project.Name)
+	project, err := project.Mgr.Get(quotaEvent.Project.Name)
 	if err != nil {
 		log.Errorf("failed to get project:%s, error: %v", quotaEvent.Project.Name, err)
 		return err
-	}
-	if project == nil {
-		return fmt.Errorf("project not found of quota event: %s", quotaEvent.Project.Name)
 	}
 	policies, err := notification.PolicyMgr.GetRelatedPolices(project.ProjectID, quotaEvent.EventType)
 	if err != nil {
@@ -53,7 +61,7 @@ func (qp *QuotaPreprocessHandler) Handle(value interface{}) error {
 		return err
 	}
 
-	err = sendHookWithPolicies(policies, payload, quotaEvent.EventType)
+	err = util.SendHookWithPolicies(policies, payload, quotaEvent.EventType)
 	if err != nil {
 		return err
 	}
@@ -61,11 +69,11 @@ func (qp *QuotaPreprocessHandler) Handle(value interface{}) error {
 }
 
 // IsStateful ...
-func (qp *QuotaPreprocessHandler) IsStateful() bool {
+func (qp *Handler) IsStateful() bool {
 	return false
 }
 
-func constructQuotaPayload(event *model.QuotaEvent) (*model.Payload, error) {
+func constructQuotaPayload(event *event.QuotaEvent) (*model.Payload, error) {
 	repoName := event.RepoName
 	if repoName == "" {
 		return nil, fmt.Errorf("invalid %s event with empty repo name", event.EventType)
@@ -76,7 +84,7 @@ func constructQuotaPayload(event *model.QuotaEvent) (*model.Payload, error) {
 		repoType = models.ProjectPublic
 	}
 
-	imageName := getNameFromImgRepoFullName(repoName)
+	imageName := util.GetNameFromImgRepoFullName(repoName)
 	quotaCustom := make(map[string]string)
 	quotaCustom["Details"] = event.Msg
 

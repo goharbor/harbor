@@ -17,6 +17,8 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/event/metadata"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"net/http"
 	"strings"
 	"time"
@@ -26,14 +28,12 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/artifact/processor"
-	"github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/api/repository"
 	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/api/tag"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
-	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -218,7 +218,7 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 	}
 
 	// fire event
-	evt.BuildAndPublish(&event.CreateTagEventMetadata{
+	notification.AddEvent(ctx, &metadata.CreateTagEventMetadata{
 		Ctx:              ctx,
 		Tag:              tag.Name,
 		AttachedArtifact: &art.Artifact,
@@ -257,7 +257,7 @@ func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagP
 	}
 
 	// fire event
-	evt.BuildAndPublish(&event.DeleteTagEventMetadata{
+	notification.AddEvent(ctx, &metadata.DeleteTagEventMetadata{
 		Ctx:              ctx,
 		Tag:              params.TagName,
 		AttachedArtifact: &artifact.Artifact,

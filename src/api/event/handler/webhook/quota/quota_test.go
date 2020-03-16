@@ -1,6 +1,22 @@
-package notification
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package quota
 
 import (
+	"github.com/goharbor/harbor/src/api/event"
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"testing"
 	"time"
 
@@ -11,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
+	testing_notification "github.com/goharbor/harbor/src/testing/pkg/notification"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -19,7 +36,7 @@ import (
 type QuotaPreprocessHandlerSuite struct {
 	suite.Suite
 	om  policy.Manager
-	evt *model.QuotaEvent
+	evt *event.QuotaEvent
 }
 
 // TestQuotaPreprocessHandler ...
@@ -29,17 +46,18 @@ func TestQuotaPreprocessHandler(t *testing.T) {
 
 // SetupSuite prepares env for test suite.
 func (suite *QuotaPreprocessHandlerSuite) SetupSuite() {
+	common_dao.PrepareTestForPostgresSQL()
 	cfg := map[string]interface{}{
 		common.NotificationEnable: true,
 	}
 	config.InitWithSettings(cfg)
 
-	res := &model.ImgResource{
+	res := &event.ImgResource{
 		Digest: "sha256:abcd",
 		Tag:    "latest",
 	}
-	suite.evt = &model.QuotaEvent{
-		EventType: model.EventTypeProjectQuota,
+	suite.evt = &event.QuotaEvent{
+		EventType: event.TopicQuotaExceed,
 		OccurAt:   time.Now().UTC(),
 		RepoName:  "hello-world",
 		Resource:  res,
@@ -51,7 +69,7 @@ func (suite *QuotaPreprocessHandlerSuite) SetupSuite() {
 	}
 
 	suite.om = notification.PolicyMgr
-	mp := &fakedPolicyMgr{}
+	mp := &testing_notification.FakedPolicyMgr{}
 	notification.PolicyMgr = mp
 
 	h := &MockHandler{}
@@ -67,7 +85,7 @@ func (suite *QuotaPreprocessHandlerSuite) TearDownSuite() {
 
 // TestHandle ...
 func (suite *QuotaPreprocessHandlerSuite) TestHandle() {
-	handler := &QuotaPreprocessHandler{}
+	handler := &Handler{}
 	err := handler.Handle(suite.evt)
 	suite.NoError(err)
 }

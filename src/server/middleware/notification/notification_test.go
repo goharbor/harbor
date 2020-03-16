@@ -3,7 +3,7 @@ package notification
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/api/event"
+	"github.com/goharbor/harbor/src/api/event/metadata"
 	pkg_art "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/stretchr/testify/suite"
@@ -20,7 +20,7 @@ func (suite *NotificatoinMiddlewareTestSuite) TestMiddleware() {
 	next := func() http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusAccepted)
-			notification.AddEvent(r.Context(), &event.DeleteArtifactEventMetadata{
+			notification.AddEvent(r.Context(), &metadata.DeleteArtifactEventMetadata{
 				Ctx: context.Background(),
 				Artifact: &pkg_art.Artifact{
 					ProjectID:      1,
@@ -42,7 +42,7 @@ func (suite *NotificatoinMiddlewareTestSuite) TestMiddlewareMustNotify() {
 	next := func() http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
-			notification.AddEvent(r.Context(), &event.DeleteArtifactEventMetadata{
+			notification.AddEvent(r.Context(), &metadata.DeleteArtifactEventMetadata{
 				Ctx: context.Background(),
 				Artifact: &pkg_art.Artifact{
 					ProjectID:      1,

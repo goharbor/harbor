@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event
+package metadata
 
 import (
+	event2 "github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -32,9 +33,9 @@ func (p *projectEventTestSuite) TestResolveOfCreateProjectEventMetadata() {
 	}
 	err := metadata.Resolve(e)
 	p.Require().Nil(err)
-	p.Equal(TopicCreateProject, e.Topic)
+	p.Equal(event2.TopicCreateProject, e.Topic)
 	p.Require().NotNil(e.Data)
-	data, ok := e.Data.(*CreateProjectEvent)
+	data, ok := e.Data.(*event2.CreateProjectEvent)
 	p.Require().True(ok)
 	p.Equal("library", data.Project)
 	p.Equal("admin", data.Operator)
@@ -48,9 +49,9 @@ func (p *projectEventTestSuite) TestResolveOfDeleteProjectEventMetadata() {
 	}
 	err := metadata.Resolve(e)
 	p.Require().Nil(err)
-	p.Equal(TopicDeleteProject, e.Topic)
+	p.Equal(event2.TopicDeleteProject, e.Topic)
 	p.Require().NotNil(e.Data)
-	data, ok := e.Data.(*DeleteProjectEvent)
+	data, ok := e.Data.(*event2.DeleteProjectEvent)
 	p.Require().True(ok)
 	p.Equal("library", data.Project)
 	p.Equal("admin", data.Operator)

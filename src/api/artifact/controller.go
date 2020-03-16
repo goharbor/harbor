@@ -20,7 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/goharbor/harbor/src/api/artifact/processor"
-	"github.com/goharbor/harbor/src/api/event"
+	"github.com/goharbor/harbor/src/api/event/metadata"
 	"github.com/goharbor/harbor/src/api/tag"
 	"github.com/goharbor/harbor/src/internal"
 	"github.com/goharbor/harbor/src/internal/orm"
@@ -30,7 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/pkg/label"
-	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	"github.com/opencontainers/go-digest"
@@ -142,14 +142,14 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, tags
 		}
 	}
 	// fire event
-	e := &event.PushArtifactEventMetadata{
+	e := &metadata.PushArtifactEventMetadata{
 		Ctx:      ctx,
 		Artifact: artifact,
 	}
 	if len(tags) > 0 {
 		e.Tag = tags[0]
 	}
-	evt.BuildAndPublish(e)
+	notification.AddEvent(ctx, e)
 	return created, artifact.ID, nil
 }
 
@@ -380,7 +380,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 		for _, tag := range art.Tags {
 			tags = append(tags, tag.Name)
 		}
-		evt.BuildAndPublish(&event.DeleteArtifactEventMetadata{
+		notification.AddEvent(ctx, &metadata.DeleteArtifactEventMetadata{
 			Ctx:      ctx,
 			Artifact: &art.Artifact,
 			Tags:     tags,
