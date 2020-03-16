@@ -1,6 +1,11 @@
 package csrf
 
 import (
+	"net/http"
+	"os"
+	"strings"
+	"sync"
+
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
@@ -8,10 +13,6 @@ import (
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/gorilla/csrf"
-	"net/http"
-	"os"
-	"strings"
-	"sync"
 )
 
 const (
@@ -21,8 +22,9 @@ const (
 )
 
 var (
-	once    sync.Once
-	protect func(handler http.Handler) http.Handler
+	once       sync.Once
+	secureFlag = true
+	protect    func(handler http.Handler) http.Handler
 )
 
 // attachToken makes sure if csrf generate a new token it will be included in the response header
@@ -30,7 +32,7 @@ func attachToken(w http.ResponseWriter, r *http.Request) {
 	if t := csrf.Token(r); len(t) > 0 {
 		http.SetCookie(w, &http.Cookie{
 			Name:     tokenCookie,
-			Secure:   true,
+			Secure:   secureFlag,
 			Value:    t,
 			Path:     "/",
 			SameSite: http.SameSiteStrictMode,
@@ -60,9 +62,10 @@ func Middleware() func(handler http.Handler) http.Handler {
 		if len(key) != 32 {
 			log.Warningf("Invalid CSRF key from environment: %s, generating random key...", key)
 			key = utils.GenerateRandomString()
-
 		}
+		secureFlag = secureCookie()
 		protect = csrf.Protect([]byte(key), csrf.RequestHeader(tokenHeader),
+			csrf.Secure(secureFlag),
 			csrf.ErrorHandler(http.HandlerFunc(handleError)),
 			csrf.SameSite(csrf.SameSiteStrictMode),
 			csrf.Path("/"))
@@ -86,4 +89,13 @@ func csrfSkipper(req *http.Request) bool {
 		return true
 	}
 	return false
+}
+
+func secureCookie() bool {
+	ep, err := config.ExtEndpoint()
+	if err != nil {
+		log.Warningf("Failed to get external endpoint: %v, set cookie secure flag to true", err)
+		return true
+	}
+	return !strings.HasPrefix(strings.ToLower(ep), "http://")
 }
