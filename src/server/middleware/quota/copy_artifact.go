@@ -29,7 +29,6 @@
 package quota
 
 import (
-	"fmt"
 	"net/http"
 	"path"
 	"strconv"
@@ -62,20 +61,19 @@ func parseRepositoryName(p string) string {
 }
 
 func copyArtifactResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
-	logPrefix := fmt.Sprintf("[middleware][%s][quota]", r.URL.Path)
-
 	query := r.URL.Query()
-
 	from := query.Get("from")
 	if from == "" {
 		// miss the from parameter, skip to request the resources
 		return nil, nil
 	}
 
+	logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
+
 	repository, reference, err := distribution.ParseRef(from)
 	if err != nil {
 		// bad from parameter, skip to request the resources
-		log.Errorf("%s: parse from parameter failed, error: %v", logPrefix, err)
+		logger.Errorf("parse from parameter failed, error: %v", err)
 		return nil, nil
 	}
 
@@ -86,7 +84,7 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 		// artifact not found, discontinue the API request
 		return nil, ierror.BadRequestError(nil).WithMessage("artifact %s not found", from)
 	} else if err != nil {
-		log.Errorf("%s: get artifact %s failed, error: %v", logPrefix, from, err)
+		logger.Errorf("get artifact %s failed, error: %v", from, err)
 		return nil, err
 	}
 
@@ -103,7 +101,7 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 		return nil
 	}, nil)
 	if err != nil {
-		log.Errorf("%s: walk the artifact %s failed, error: %v", logPrefix, art.Digest, err)
+		logger.Errorf("walk the artifact %s failed, error: %v", art.Digest, err)
 		return nil, err
 	}
 
@@ -123,13 +121,13 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 
 	allBlobs, err := blobController.List(ctx, blob.ListParams{ArtifactDigests: artifactDigests})
 	if err != nil {
-		log.Errorf("%s: get blobs for artifacts %s failed, error: %v", logPrefix, strings.Join(artifactDigests, ", "), err)
+		logger.Errorf("get blobs for artifacts %s failed, error: %v", strings.Join(artifactDigests, ", "), err)
 		return nil, err
 	}
 
 	blobs, err := blobController.FindMissingAssociationsForProject(ctx, projectID, allBlobs)
 	if err != nil {
-		log.Errorf("%s: find missing blobs for project %d failed, error: %v", logPrefix, projectID, err)
+		logger.Errorf("find missing blobs for project %d failed, error: %v", projectID, err)
 		return nil, err
 	}
 

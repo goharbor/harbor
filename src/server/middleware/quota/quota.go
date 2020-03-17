@@ -42,7 +42,7 @@ type RequestConfig struct {
 // RequestMiddleware middleware which request resources
 func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
-		logPrefix := fmt.Sprintf("[middleware][%s][quota]", r.URL.Path)
+		logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
 
 		if config.ReferenceObject == nil || config.Resources == nil {
 			serror.SendError(w, fmt.Errorf("invald config the for middleware"))
@@ -51,7 +51,7 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 
 		reference, referenceID, err := config.ReferenceObject(r)
 		if err != nil {
-			log.Errorf("%s: get reference object failed, error: %v", logPrefix, err)
+			logger.Errorf("get reference object failed, error: %v", err)
 
 			serror.SendError(w, err)
 			return
@@ -59,21 +59,21 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 
 		enabled, err := quotaController.IsEnabled(r.Context(), reference, referenceID)
 		if err != nil {
-			log.Errorf("%s: check whether quota enabled for %s %s failed, error: %v", logPrefix, reference, referenceID, err)
+			logger.Errorf("check whether quota enabled for %s %s failed, error: %v", reference, referenceID, err)
 			serror.SendError(w, err)
 			return
 		}
 
 		if !enabled {
 			// quota is disabled for the reference object, so direct to next handler
-			log.Infof("%s: quota is disabled for %s %s, so direct to next handler", logPrefix, reference, referenceID)
+			logger.Infof("quota is disabled for %s %s, so direct to next handler", reference, referenceID)
 			next.ServeHTTP(w, r)
 			return
 		}
 
 		resources, err := config.Resources(r, reference, referenceID)
 		if err != nil {
-			log.Errorf("%s: get resources failed, error: %v", logPrefix, err)
+			logger.Errorf("get resources failed, error: %v", err)
 
 			serror.SendError(w, err)
 			return
@@ -81,7 +81,7 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 
 		if len(resources) == 0 {
 			// no resources request for this http request, so direct to next handler
-			log.Infof("%s: no resources request for this http request, so direct to next handler", logPrefix)
+			logger.Info("no resources request for this http request, so direct to next handler")
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -127,27 +127,27 @@ func RefreshMiddleware(config RefreshConfig, skipers ...middleware.Skipper) func
 			return fmt.Errorf("invald config the for middleware")
 		}
 
-		logPrefix := fmt.Sprintf("[middleware][%s][quota]", r.URL.Path)
+		logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "refresh", "url": r.URL.Path})
 
 		reference, referenceID, err := config.ReferenceObject(r)
 		if err != nil {
-			log.Errorf("%s: get reference object to refresh quota usage failed, error: %v", logPrefix, err)
+			logger.Errorf("get reference object to refresh quota usage failed, error: %v", err)
 			return err
 		}
 
 		enabled, err := quotaController.IsEnabled(r.Context(), reference, referenceID)
 		if err != nil {
-			log.Errorf("%s: check whether quota enabled for %s %s failed, error: %v", logPrefix, reference, referenceID, err)
+			logger.Errorf("check whether quota enabled for %s %s failed, error: %v", reference, referenceID, err)
 			return err
 		}
 
 		if !enabled {
-			log.Infof("%s: quota is disabled for %s %s, so return directly", logPrefix, reference, referenceID)
+			logger.Infof("quota is disabled for %s %s, so return directly", reference, referenceID)
 			return nil
 		}
 
 		if err = quotaController.Refresh(r.Context(), reference, referenceID); err != nil {
-			log.Errorf("%s: refresh quota for %s %s failed, error: %v", logPrefix, reference, referenceID, err)
+			logger.Errorf("refresh quota for %s %s failed, error: %v", reference, referenceID, err)
 			return err
 		}
 
