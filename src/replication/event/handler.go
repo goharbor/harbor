@@ -57,7 +57,7 @@ func (h *handler) Handle(event *Event) error {
 	var policies []*model.Policy
 	var err error
 	switch event.Type {
-	case EventTypeArtifactPush, EventTypeChartUpload,
+	case EventTypeArtifactPush, EventTypeChartUpload, EventTypeTagDelete,
 		EventTypeArtifactDelete, EventTypeChartDelete:
 		policies, err = h.getRelatedPolicies(event.Resource)
 	default:

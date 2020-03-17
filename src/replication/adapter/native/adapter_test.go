@@ -82,7 +82,7 @@ func mockNativeRegistry() (mock *httptest.Server) {
 		},
 	)
 }
-func Test_native_FetchImages(t *testing.T) {
+func Test_native_FetchArtifacts(t *testing.T) {
 	var mock = mockNativeRegistry()
 	defer mock.Close()
 	fmt.Println("mockNativeRegistry URL: ", mock.URL)
@@ -343,7 +343,7 @@ func Test_native_FetchImages(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var resources, err = adapter.FetchImages(tt.filters)
+			var resources, err = adapter.FetchArtifacts(tt.filters)
 			if tt.wantErr {
 				require.Len(t, resources, 0)
 				require.NotNil(t, err)

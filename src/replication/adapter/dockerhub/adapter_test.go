@@ -66,10 +66,10 @@ func TestListNamespaces(t *testing.T) {
 	}
 }
 
-func TestFetchImages(t *testing.T) {
+func TestFetchArtifacts(t *testing.T) {
 	ad := getAdapter(t)
 	adapter := ad.(*adapter)
-	_, err := adapter.FetchImages([]*model.Filter{
+	_, err := adapter.FetchArtifacts([]*model.Filter{
 		{
 			Type:  model.FilterTypeName,
 			Value: "goharbor/harbor-core",

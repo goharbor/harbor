@@ -31,7 +31,7 @@ import (
 
 type fakeRegistry struct{}
 
-func (f *fakeRegistry) FetchImages([]*model.Filter) ([]*model.Resource, error) {
+func (f *fakeRegistry) FetchArtifacts([]*model.Filter) ([]*model.Resource, error) {
 	return nil, nil
 }
 
@@ -90,6 +90,9 @@ func (f *fakeRegistry) PullBlob(repository, digest string) (size int64, blob io.
 	return 1, r, nil
 }
 func (f *fakeRegistry) PushBlob(repository, digest string, size int64, blob io.Reader) error {
+	return nil
+}
+func (f *fakeRegistry) DeleteTag(repository, tag string) error {
 	return nil
 }
 

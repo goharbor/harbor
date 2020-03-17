@@ -37,6 +37,8 @@ type Resource struct {
 	ExtendedInfo map[string]interface{} `json:"extended_info"`
 	// Indicate if the resource is a deleted resource
 	Deleted bool `json:"deleted"`
+	// indicate the resource is a tag deletion
+	IsDeleteTag bool `json:"is_delete_tag"`
 	// indicate whether the resource can be overridden
 	Override bool `json:"override"`
 }

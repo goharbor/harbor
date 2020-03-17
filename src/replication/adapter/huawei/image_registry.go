@@ -10,8 +10,8 @@ import (
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
-// FetchImages gets resources from Huawei SWR
-func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+// FetchArtifacts gets resources from Huawei SWR
+func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
 
 	resources := []*model.Resource{}
 

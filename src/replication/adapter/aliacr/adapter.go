@@ -99,6 +99,11 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return getAdapterInfo()
 }
 
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
+
 // adapter for to aliyun docker registry
 type adapter struct {
 	*native.Adapter
@@ -183,7 +188,7 @@ func (a *adapter) listNamespaces(c *cr.Client) (namespaces []string, err error) 
 		namespaces = append(namespaces, ns.Namespace)
 	}
 
-	log.Debugf("FetchImages.listNamespaces: %#v\n", namespaces)
+	log.Debugf("FetchArtifacts.listNamespaces: %#v\n", namespaces)
 
 	return
 }
@@ -202,9 +207,9 @@ func (a *adapter) listCandidateNamespaces(c *cr.Client, namespacePattern string)
 	return a.listNamespaces(c)
 }
 
-// FetchImages AliACR not support /v2/_catalog of Registry, we'll list all resources via Aliyun's API
-func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resource, err error) {
-	log.Debugf("FetchImages.filters: %#v\n", filters)
+// FetchArtifacts AliACR not support /v2/_catalog of Registry, we'll list all resources via Aliyun's API
+func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Resource, err error) {
+	log.Debugf("FetchArtifacts.filters: %#v\n", filters)
 
 	var client *cr.Client
 	client, err = cr.NewClientWithAccessKey(a.region, a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)
@@ -265,7 +270,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 			}
 		}
 	}
-	log.Debugf("FetchImages.repositories: %#v\n", repositories)
+	log.Debugf("FetchArtifacts.repositories: %#v\n", repositories)
 
 	var rawResources = make([]*model.Resource, len(repositories))
 	runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
@@ -316,7 +321,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 	runner.Wait()
 
 	if runner.IsCancelled() {
-		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+		return nil, fmt.Errorf("FetchArtifacts error when collect tags for repos")
 	}
 
 	for _, r := range rawResources {
