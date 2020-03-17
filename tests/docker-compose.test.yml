@@ -21,7 +21,7 @@ services:
     ports:
       - 5432:5432
   redis:
-    image: goharbor/redis-photon:4.0
+    image: goharbor/redis-photon:__version__
     restart: always
     volumes:
       - /data/redis:/var/lib/redis
