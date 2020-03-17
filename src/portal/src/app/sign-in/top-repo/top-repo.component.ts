@@ -14,7 +14,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { TopRepoService } from './top-repository.service';
-import { Repository } from "../../../lib/services";
+import { Repository } from "../../../../ng-swagger-gen/models/repository";
 import { ListMode } from "../../../lib/entities/shared.const";
 
 

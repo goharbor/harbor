@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Project } from "../../project/project";
 import { HelmChartSearchResultItem } from "../../project/helm-chart/helm-chart.interface.service";
-import { Repository } from "../../../lib/services";
+import { Repository } from "../../../../ng-swagger-gen/models/repository";
 
 export class SearchResults {
   constructor() {

@@ -1,14 +1,10 @@
 import { TestBed, inject } from '@angular/core/testing';
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../lib/entities/service.config";
 import { SharedModule } from "../../../../lib/utils/shared/shared.module";
-import { TagDefaultService, TagService } from "../../../../lib/services";
+import { ArtifactDefaultService, ArtifactService } from "../artifact/artifact.service";
 import { CURRENT_BASE_HREF } from "../../../../lib/utils/utils";
 
-describe('TagService', () => {
-
-  const mockConfig: IServiceConfig = {
-    repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories/testing"
-  };
+describe('ArtifactService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -16,18 +12,15 @@ describe('TagService', () => {
         SharedModule
       ],
       providers: [
-        TagDefaultService,
+        ArtifactDefaultService,
         {
-          provide: TagService,
-          useClass: TagDefaultService
-        }, {
-          provide: SERVICE_CONFIG,
-          useValue: mockConfig
+          provide: ArtifactService,
+          useClass: ArtifactDefaultService
         }]
     });
   });
 
-  it('should be initialized', inject([TagDefaultService], (service: TagService) => {
+  it('should be initialized', inject([ArtifactDefaultService], (service: ArtifactService) => {
     expect(service).toBeTruthy();
   }));
 

@@ -19,11 +19,9 @@ import {
   RepositoryService as NewRepositoryService
 } from "../../../../ng-swagger-gen/services/repository.service";
 import {
-  Repository,
-  RepositoryItem, RequestQueryParams,
   SystemInfo,
   SystemInfoService,
-  TagService, UserPermissionService, USERSTATICPERMISSION
+  UserPermissionService, USERSTATICPERMISSION
 } from "../../../lib/services";
 import { FilterComponent } from "../../../lib/components/filter/filter.component";
 import { calculatePage, clone, DEFAULT_PAGE_SIZE } from "../../../lib/utils/utils";
@@ -41,7 +39,6 @@ import { errorHandler } from "../../../lib/utils/shared/shared.utils";
 import { Project } from "../project";
 import { ActivatedRoute, Router } from "@angular/router";
 import { SessionService } from "../../shared/session.service";
-import { RepositoryDefaultService } from "./repository.service";
 import { GridViewComponent } from "./gridview/grid-view.component";
 import { Repository as NewRepository } from "../../../../ng-swagger-gen/models/repository";
 import { StrictHttpResponse as __StrictHttpResponse } from '../../../../ng-swagger-gen/strict-http-response';
@@ -93,10 +90,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
   constructor(@Inject(SERVICE_CONFIG) private configInfo: IServiceConfig,
               private errorHandlerService: ErrorHandler,
               private translateService: TranslateService,
-              private repositoryService: RepositoryDefaultService,
               private newRepoService: NewRepositoryService,
               private systemInfoService: SystemInfoService,
-              private tagService: TagService,
               private operationService: OperationService,
               private userPermissionService: UserPermissionService,
               private route: ActivatedRoute,
