@@ -3,6 +3,7 @@ package provider
 // knownDrivers is static driver Factory registry
 var knownDrivers = map[string]Factory{
 	"dragonfly": DragonflyFactory,
+	"kraken":    KrakenFactory,
 }
 
 // ListProviders returns all the registered drivers.
