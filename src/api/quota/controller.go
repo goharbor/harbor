@@ -72,14 +72,12 @@ type Controller interface {
 // NewController creates an instance of the default quota controller
 func NewController() Controller {
 	return &controller{
-		logPrefix:          "[controller][quota]",
 		reservedExpiration: defaultReservedExpiration,
 		quotaMgr:           quota.Mgr,
 	}
 }
 
 type controller struct {
-	logPrefix          string
 	reservedExpiration time.Duration
 
 	quotaMgr quota.Manager
@@ -163,7 +161,7 @@ func (c *controller) reserveResources(ctx context.Context, reference, referenceI
 
 		reserved, err := c.getReservedResources(ctx, reference, referenceID)
 		if err != nil {
-			log.Errorf("failed to get reserved resources for %s %s, error: %v", reference, referenceID, err)
+			log.G(ctx).Errorf("failed to get reserved resources for %s %s, error: %v", reference, referenceID, err)
 			return err
 		}
 
@@ -175,7 +173,7 @@ func (c *controller) reserveResources(ctx context.Context, reference, referenceI
 		}
 
 		if err := c.setReservedResources(ctx, reference, referenceID, newReserved); err != nil {
-			log.Errorf("failed to set reserved resources for %s %s, error: %v", reference, referenceID, err)
+			log.G(ctx).Errorf("failed to set reserved resources for %s %s, error: %v", reference, referenceID, err)
 			return err
 		}
 
@@ -193,7 +191,7 @@ func (c *controller) unreserveResources(ctx context.Context, reference, referenc
 
 		reserved, err := c.getReservedResources(ctx, reference, referenceID)
 		if err != nil {
-			log.Errorf("failed to get reserved resources for %s %s, error: %v", reference, referenceID, err)
+			log.G(ctx).Errorf("failed to get reserved resources for %s %s, error: %v", reference, referenceID, err)
 			return err
 		}
 
@@ -204,7 +202,7 @@ func (c *controller) unreserveResources(ctx context.Context, reference, referenc
 		}
 
 		if err := c.setReservedResources(ctx, reference, referenceID, newReserved); err != nil {
-			log.Errorf("failed to set reserved resources for %s %s, error: %v", reference, referenceID, err)
+			log.G(ctx).Errorf("failed to set reserved resources for %s %s, error: %v", reference, referenceID, err)
 			return err
 		}
 
@@ -240,7 +238,7 @@ func (c *controller) Refresh(ctx context.Context, reference, referenceID string,
 
 		newUsed, err := driver.CalculateUsage(ctx, referenceID)
 		if err != nil {
-			log.Errorf("failed to calculate quota usage for %s %s, error: %v", reference, referenceID, err)
+			log.G(ctx).Errorf("failed to calculate quota usage for %s %s, error: %v", reference, referenceID, err)
 			return err
 		}
 
@@ -275,7 +273,7 @@ func (c *controller) Request(ctx context.Context, reference, referenceID string,
 		if err := c.unreserveResources(ctx, reference, referenceID, resources); err != nil {
 			// ignore this error because reserved resources will be expired
 			// when no actions on the key of the reserved resources in redis during sometimes
-			log.Warningf("unreserve resources %s for %s %s failed, error: %v", resources.String(), reference, referenceID, err)
+			log.G(ctx).Warningf("unreserve resources %s for %s %s failed, error: %v", resources.String(), reference, referenceID, err)
 		}
 	}()
 

@@ -29,7 +29,6 @@
 package blob
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -53,28 +52,27 @@ func CopyArtifactMiddleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		logPrefix := fmt.Sprintf("[middleware][%s][blob]", r.URL.Path)
+		ctx := r.Context()
+
+		logger := log.G(ctx).WithFields(log.Fields{"middleware": "blob"})
 
 		query := r.URL.Query()
-
 		from := query.Get("from")
 		repository, reference, _ := distribution.ParseRef(from)
-
-		ctx := r.Context()
 
 		art, err := artifactController.GetByReference(ctx, repository, reference, nil)
 		if ierror.IsNotFoundErr(err) {
 			// artifact not found, discontinue the API request
 			return ierror.BadRequestError(nil).WithMessage("artifact %s not found", from)
 		} else if err != nil {
-			log.Errorf("%s: get artifact %s failed, error: %v", logPrefix, from, err)
+			logger.Errorf("get artifact %s failed, error: %v", from, err)
 			return err
 		}
 
 		projectName := util.ParseProjectName(r)
 		project, err := projectController.GetByName(ctx, projectName)
 		if err != nil {
-			log.Errorf("%s: get project %s failed, error: %v", logPrefix, projectName, err)
+			logger.Errorf("get project %s failed, error: %v", projectName, err)
 			return err
 		}
 
@@ -89,25 +87,25 @@ func CopyArtifactMiddleware() func(http.Handler) http.Handler {
 			return nil
 		}, nil)
 		if err != nil {
-			log.Errorf("%s: walk the artifact %s failed, error: %v", logPrefix, art.Digest, err)
+			logger.Errorf("walk the artifact %s failed, error: %v", art.Digest, err)
 			return err
 		}
 
 		allBlobs, err := blobController.List(ctx, blob.ListParams{ArtifactDigests: artifactDigests})
 		if err != nil {
-			log.Errorf("%s: get blobs for artifacts %s failed, error: %v", logPrefix, strings.Join(artifactDigests, ", "), err)
+			logger.Errorf("get blobs for artifacts %s failed, error: %v", strings.Join(artifactDigests, ", "), err)
 			return err
 		}
 
 		blobs, err := blobController.FindMissingAssociationsForProject(ctx, project.ProjectID, allBlobs)
 		if err != nil {
-			log.Errorf("%s: find missing blobs for project %d failed, error: %v", logPrefix, project.ProjectID, err)
+			logger.Errorf("find missing blobs for project %d failed, error: %v", project.ProjectID, err)
 			return err
 		}
 
 		for _, blob := range blobs {
 			if err := blobController.AssociateWithProjectByID(ctx, blob.ID, project.ProjectID); err != nil {
-				log.Errorf("%s: associate blob %s with project %d failed, error: %v", logPrefix, blob.Digest, project.ProjectID, err)
+				logger.Errorf("associate blob %s with project %d failed, error: %v", blob.Digest, project.ProjectID, err)
 				return err
 			}
 		}

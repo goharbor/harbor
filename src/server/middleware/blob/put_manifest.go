@@ -15,7 +15,6 @@
 package blob
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -39,12 +38,13 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		logPrefix := fmt.Sprintf("[middleware][%s][blob]", r.URL.Path)
-
 		ctx := r.Context()
+
+		logger := log.G(ctx).WithFields(log.Fields{"middleware": "blob"})
+
 		p, err := projectController.GetByName(ctx, distribution.ParseProjectName(r.URL.Path))
 		if err != nil {
-			log.Errorf("%s: get project failed, error: %v", logPrefix, err)
+			logger.Errorf("get project failed, error: %v", err)
 			return err
 		}
 
@@ -56,13 +56,13 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		contentType := r.Header.Get("Content-Type")
 		manifest, descriptor, err := distribution.UnmarshalManifest(contentType, body)
 		if err != nil {
-			log.Errorf("%s: unmarshal manifest failed, error: %v", logPrefix, err)
+			logger.Errorf("unmarshal manifest failed, error: %v", err)
 			return err
 		}
 
 		// sync blobs
 		if err := blobController.Sync(ctx, manifest.References()); err != nil {
-			log.Errorf("%s: sync missing blobs from manifest %s failed, error: %c", logPrefix, descriptor.Digest.String(), err)
+			logger.Errorf("sync missing blobs from manifest %s failed, error: %c", descriptor.Digest.String(), err)
 			return err
 		}
 
@@ -76,12 +76,12 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		// ensure Blob for the manifest
 		blobID, err := blobController.Ensure(ctx, descriptor.Digest.String(), contentType, descriptor.Size)
 		if err != nil {
-			log.Errorf("%s: ensure blob %s failed, error: %v", logPrefix, descriptor.Digest.String(), err)
+			logger.Errorf("ensure blob %s failed, error: %v", descriptor.Digest.String(), err)
 			return err
 		}
 
 		if err := blobController.AssociateWithProjectByID(ctx, blobID, p.ProjectID); err != nil {
-			log.Errorf("%s: associate manifest with artifact %s failed, error: %v", logPrefix, descriptor.Digest.String(), err)
+			logger.Errorf("associate manifest with artifact %s failed, error: %v", descriptor.Digest.String(), err)
 			return err
 		}
 
@@ -92,7 +92,7 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 
 		// associate blobs of the manifest with artifact
 		if err := blobController.AssociateWithArtifact(ctx, blobDigests, descriptor.Digest.String()); err != nil {
-			log.Errorf("%s: associate blobs with artifact %s failed, error: %v", logPrefix, descriptor.Digest.String(), err)
+			logger.Errorf("associate blobs with artifact %s failed, error: %v", descriptor.Digest.String(), err)
 			return err
 		}
 

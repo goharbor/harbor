@@ -15,7 +15,6 @@
 package quota
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -51,19 +50,19 @@ var (
 )
 
 func putManifestResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
-	logPrefix := fmt.Sprintf("[middleware][%s][quota]", r.URL.Path)
+	logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
 
 	projectID, _ := strconv.ParseInt(referenceID, 10, 64)
 
 	manifest, descriptor, err := unmarshalManifest(r)
 	if err != nil {
-		log.Errorf("%s: unmarshal manifest failed, error: %v", logPrefix, err)
+		logger.Errorf("unmarshal manifest failed, error: %v", err)
 		return nil, err
 	}
 
 	exist, err := blobController.Exist(r.Context(), descriptor.Digest.String(), blob.IsAssociatedWithProject(projectID))
 	if err != nil {
-		log.Errorf("%s: check manifest %s is associated with project failed, error: %v", logPrefix, descriptor.Digest.String(), err)
+		logger.Errorf("check manifest %s is associated with project failed, error: %v", descriptor.Digest.String(), err)
 		return nil, err
 	}
 

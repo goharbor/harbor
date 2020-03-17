@@ -15,7 +15,6 @@
 package quota
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -34,14 +33,14 @@ func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 }
 
 func putBlobUploadResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
-	logPrefix := fmt.Sprintf("[middleware][%s][quota]", r.URL.Path)
+	logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
 
 	size, err := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
 	if err != nil || size == 0 {
 		size, err = blobController.GetAcceptedBlobSize(distribution.ParseSessionID(r.URL.Path))
 	}
 	if err != nil {
-		log.Errorf("%s: get blob size failed, error: %v", logPrefix, err)
+		logger.Errorf("get blob size failed, error: %v", err)
 		return nil, err
 	}
 
@@ -50,7 +49,7 @@ func putBlobUploadResources(r *http.Request, reference, referenceID string) (typ
 	digest := r.URL.Query().Get("digest")
 	exist, err := blobController.Exist(r.Context(), digest, blob.IsAssociatedWithProject(projectID))
 	if err != nil {
-		log.Errorf("%s: checking blob %s is associated with project %d failed, error: %v", logPrefix, digest, projectID, err)
+		logger.Errorf("checking blob %s is associated with project %d failed, error: %v", digest, projectID, err)
 		return nil, err
 	}
 
