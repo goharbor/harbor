@@ -49,6 +49,8 @@ type Controller interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Update the repository. Specify the properties or all properties will be updated
 	Update(ctx context.Context, repository *models.RepoRecord, properties ...string) (err error)
+	// AddPullCount increase one pull count for the specified repository
+	AddPullCount(ctx context.Context, id int64) error
 }
 
 // NewController creates an instance of the default repository controller
@@ -153,4 +155,8 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 
 func (c *controller) Update(ctx context.Context, repository *models.RepoRecord, properties ...string) error {
 	return c.repoMgr.Update(ctx, repository, properties...)
+}
+
+func (c *controller) AddPullCount(ctx context.Context, id int64) error {
+	return c.repoMgr.AddPullCount(ctx, id)
 }

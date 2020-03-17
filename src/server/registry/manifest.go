@@ -34,7 +34,7 @@ import (
 func getManifest(w http.ResponseWriter, req *http.Request) {
 	repository := router.Param(req.Context(), ":splat")
 	reference := router.Param(req.Context(), ":reference")
-	artifact, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
+	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
 		serror.SendError(w, err)
 		return
@@ -43,7 +43,7 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	// the reference is tag, replace it with digest
 	if _, err = digest.Parse(reference); err != nil {
 		req = req.Clone(req.Context())
-		req.URL.Path = strings.TrimSuffix(req.URL.Path, reference) + artifact.Digest
+		req.URL.Path = strings.TrimSuffix(req.URL.Path, reference) + art.Digest
 		req.URL.RawPath = req.URL.EscapedPath()
 	}
 
@@ -56,7 +56,7 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	}
 	e := &metadata.PullArtifactEventMetadata{
 		Ctx:      req.Context(),
-		Artifact: &artifact.Artifact,
+		Artifact: &art.Artifact,
 	}
 	// the reference is tag
 	if _, err = digest.Parse(reference); err != nil {

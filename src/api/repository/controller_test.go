@@ -135,6 +135,12 @@ func (c *controllerTestSuite) TestUpdate() {
 	c.Require().Nil(err)
 }
 
+func (c *controllerTestSuite) TestAddPullCount() {
+	c.repoMgr.On("AddPullCount").Return(nil)
+	err := c.ctl.AddPullCount(nil, 1)
+	c.Require().Nil(err)
+}
+
 func TestControllerTestSuite(t *testing.T) {
 	suite.Run(t, &controllerTestSuite{})
 }
