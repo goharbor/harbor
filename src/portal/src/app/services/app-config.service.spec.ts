@@ -3,8 +3,7 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { CookieService } from 'ngx-cookie';
 import { AppConfigService } from './app-config.service';
 import { AppConfig } from './app-config';
-import { Component } from '@angular/core';
-import { CURRENT_BASE_HREF } from "../lib/utils/utils";
+import { CURRENT_BASE_HREF } from "../../lib/utils/utils";
 
 describe('AppConfigService', () => {
   let injector: TestBed;

@@ -5,7 +5,7 @@ import { MessageHandlerService } from '../shared/message-handler/message-handler
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ClarityModule } from "@clr/angular";
-import { AppConfigService } from '../app-config.service';
+import { AppConfigService } from '../services/app-config.service';
 import { ConfigurationService } from './config.service';
 import { ConfigurationComponent } from './config.component';
 import { of } from 'rxjs';

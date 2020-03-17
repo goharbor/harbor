@@ -14,7 +14,7 @@
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from "rxjs";
-import { AppConfigService } from '../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
 
 import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';

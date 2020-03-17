@@ -15,7 +15,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ArtifactListComponent } from "./artifact-list/artifact-list.component";
 import { ArtifactDefaultService } from "../artifact/artifact.service";
-import { AppConfigService } from "../../../app-config.service";
+import { AppConfigService } from "../../../services/app-config.service";
 import { SessionService } from "../../../shared/session.service";
 import { ArtifactClickEvent } from "../../../../lib/services";
 import { Project } from "../../project";

@@ -29,7 +29,6 @@ import { SignInComponent } from './sign-in/sign-in.component';
 import { ResetPasswordComponent } from './account/password-setting/reset-password/reset-password.component';
 import { GroupComponent } from './group/group.component';
 import { TotalReplicationPageComponent } from './replication/total-replication/total-replication-page.component';
-import { ReplicationTasksPageComponent } from './replication/replication-tasks-page/replication-tasks-page.component';
 import { DestinationPageComponent } from './replication/destination/destination-page.component';
 import { AuditLogComponent } from './log/audit-log.component';
 import { LogPageComponent } from './log/log-page.component';
@@ -40,7 +39,7 @@ import { RobotAccountComponent } from './project/robot-account/robot-account.com
 import { WebhookComponent } from './project/webhook/webhook.component';
 import { ProjectLabelComponent } from './project/project-label/project-label.component';
 import { ProjectConfigComponent } from './project/project-config/project-config.component';
-import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
+import { ProjectRoutingResolver } from './services/routing-resolvers/project-routing-resolver.service';
 import { ListChartsComponent } from './project/helm-chart/list-charts.component';
 import { ListChartVersionsComponent } from './project/helm-chart/list-chart-versions/list-chart-versions.component';
 import { HelmChartDetailComponent } from './project/helm-chart/helm-chart-detail/chart-detail.component';
@@ -60,6 +59,9 @@ import { USERSTATICPERMISSION } from "../lib/services";
 import { RepositoryGridviewComponent } from "./project/repository/repository-gridview.component";
 import { ArtifactListPageComponent } from "./project/repository/artifact-list-page/artifact-list-page.component";
 import { ArtifactSummaryComponent } from "./project/repository/artifact/artifact-summary.component";
+import { ReplicationTasksComponent } from "../lib/components/replication/replication-tasks/replication-tasks.component";
+import { ReplicationTasksRoutingResolverService } from "./services/routing-resolvers/replication-tasks-routing-resolver.service";
+import { ArtifactDetailRoutingResolverService } from "./services/routing-resolvers/artifact-detail-routing-resolver.service";
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -149,8 +151,11 @@ const harborRoutes: Routes = [
         canActivate: [SystemAdminGuard],
       },
       {
-        path: 'replications/:id/:tasks',
-        component: ReplicationTasksPageComponent,
+        path: 'replications/:id/tasks',
+        component: ReplicationTasksComponent,
+        resolve: {
+          replicationTasksRoutingResolver: ReplicationTasksRoutingResolverService
+        },
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard]
       },
@@ -334,7 +339,7 @@ const harborRoutes: Routes = [
         component: ArtifactSummaryComponent,
         canActivate: [MemberGuard],
         resolve: {
-          projectResolver: ProjectRoutingResolver
+          artifactResolver: ArtifactDetailRoutingResolverService
         }
       },
       {
@@ -342,7 +347,7 @@ const harborRoutes: Routes = [
         component: ArtifactSummaryComponent,
         canActivate: [MemberGuard],
         resolve: {
-          projectResolver: ProjectRoutingResolver
+          artifactResolver: ArtifactDetailRoutingResolverService
         }
       },
       {

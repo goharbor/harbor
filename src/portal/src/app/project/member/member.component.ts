@@ -28,7 +28,7 @@ import { AddGroupComponent } from './add-group/add-group.component';
 import { AddHttpAuthGroupComponent } from './add-http-auth-group/add-http-auth-group.component';
 import { MemberService } from "./member.service";
 import { AddMemberComponent } from "./add-member/add-member.component";
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { map, catchError } from "rxjs/operators";
 import { throwError as observableThrowError } from "rxjs";
 import { OperationService } from "../../../lib/components/operation/operation.service";
