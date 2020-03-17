@@ -19,11 +19,20 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact/processor"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/registry"
 )
+
+// NewIndexProcessor creates a new base index processor.
+func NewIndexProcessor() *IndexProcessor {
+	return &IndexProcessor{
+		RegCli: registry.Cli,
+	}
+}
 
 // IndexProcessor is a base processor to process artifact enveloped by OCI index or docker manifest list
 // Currently, it is just a null implementation
 type IndexProcessor struct {
+	RegCli registry.Client
 }
 
 // AbstractMetadata abstracts metadata of artifact

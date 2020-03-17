@@ -15,31 +15,35 @@
 package chart
 
 import (
+	"github.com/docker/distribution"
+	"github.com/goharbor/harbor/src/api/artifact/processor/base"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	chartserver "github.com/goharbor/harbor/src/pkg/chart"
-	"github.com/goharbor/harbor/src/testing/api/artifact/processor/blob"
 	"github.com/goharbor/harbor/src/testing/pkg/chart"
+	"github.com/goharbor/harbor/src/testing/pkg/registry"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 	helm_chart "helm.sh/helm/v3/pkg/chart"
+	"io/ioutil"
+	"strings"
 	"testing"
 )
 
 type processorTestSuite struct {
 	suite.Suite
-	processor   *processor
-	blobFetcher *blob.FakeFetcher
-	chartOptr   *chart.FakeOpertaor
+	processor *processor
+	regCli    *registry.FakeClient
+	chartOptr *chart.FakeOpertaor
 }
 
 func (p *processorTestSuite) SetupTest() {
-	p.blobFetcher = &blob.FakeFetcher{}
+	p.regCli = &registry.FakeClient{}
 	p.chartOptr = &chart.FakeOpertaor{}
 	p.processor = &processor{
-		blobFetcher:   p.blobFetcher,
 		chartOperator: p.chartOptr,
 	}
-
+	p.processor.ManifestProcessor = &base.ManifestProcessor{RegCli: p.regCli}
 }
 
 func (p *processorTestSuite) TestAbstractAddition() {
@@ -98,8 +102,10 @@ func (p *processorTestSuite) TestAbstractAddition() {
 	}
 
 	artifact := &artifact.Artifact{}
-	p.blobFetcher.On("FetchManifest").Return("", []byte(chartManifest), nil)
-	p.blobFetcher.On("FetchLayer").Return([]byte(chartYaml), nil)
+	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(chartManifest))
+	p.Require().Nil(err)
+	p.regCli.On("PullManifest").Return(manifest, "", nil)
+	p.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(chartYaml)), nil)
 	p.chartOptr.On("GetDetails").Return(chartDetails, nil)
 
 	// values.yaml

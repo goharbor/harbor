@@ -18,14 +18,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/manifestlist"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/manifestlist"
 	// register oci manifest unmarshal function
 	_ "github.com/docker/distribution/manifest/ocischema"
 	"github.com/docker/distribution/manifest/schema1"
@@ -87,7 +88,7 @@ type Client interface {
 	Copy(srcRepository, srcReference, dstRepository, dstReference string, override bool) (err error)
 }
 
-// TODO TODO support HTTPS
+// TODO support HTTPS
 
 // NewClient creates a registry client with the default authorizer which determines the auth scheme
 // of the registry automatically and calls the corresponding underlying authorizers(basic/bearer) to

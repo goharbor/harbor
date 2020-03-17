@@ -15,10 +15,15 @@
 package image
 
 import (
+	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/schema2"
+	"github.com/goharbor/harbor/src/api/artifact/processor/base"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/testing/api/artifact/processor/blob"
+	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	"github.com/stretchr/testify/suite"
+	"io/ioutil"
+	"strings"
 	"testing"
 )
 
@@ -120,15 +125,14 @@ var (
 
 type manifestV2ProcessorTestSuite struct {
 	suite.Suite
-	processor   *manifestV2Processor
-	blobFetcher *blob.FakeFetcher
+	processor *manifestV2Processor
+	regCli    *registry.FakeClient
 }
 
 func (m *manifestV2ProcessorTestSuite) SetupTest() {
-	m.blobFetcher = &blob.FakeFetcher{}
-	m.processor = &manifestV2Processor{
-		blobFetcher: m.blobFetcher,
-	}
+	m.regCli = &registry.FakeClient{}
+	m.processor = &manifestV2Processor{}
+	m.processor.ManifestProcessor = &base.ManifestProcessor{RegCli: m.regCli}
 }
 
 func (m *manifestV2ProcessorTestSuite) TestAbstractAddition() {
@@ -138,8 +142,10 @@ func (m *manifestV2ProcessorTestSuite) TestAbstractAddition() {
 
 	// build history
 	artifact := &artifact.Artifact{}
-	m.blobFetcher.On("FetchManifest").Return("", []byte(manifest), nil)
-	m.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
+	manifest, _, err := distribution.UnmarshalManifest(schema2.MediaTypeManifest, []byte(manifest))
+	m.Require().Nil(err)
+	m.regCli.On("PullManifest").Return(manifest, "", nil)
+	m.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
 	addition, err := m.processor.AbstractAddition(nil, artifact, AdditionTypeBuildHistory)
 	m.Require().Nil(err)
 	m.Equal("application/json; charset=utf-8", addition.ContentType)

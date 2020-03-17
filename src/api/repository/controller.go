@@ -135,8 +135,6 @@ func (c *controller) GetByName(ctx context.Context, name string) (*models.RepoRe
 }
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
-	// TODO how to make sure the logic included by middlewares(immutable, readonly, quota, etc)
-	// TODO is covered when deleting the artifacts of the repository
 	artifacts, err := c.artCtl.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"RepositoryID": id,
@@ -151,8 +149,6 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 		}
 	}
 	return c.repoMgr.Delete(ctx, id)
-
-	// TODO fire event
 }
 
 func (c *controller) Update(ctx context.Context, repository *models.RepoRecord, properties ...string) error {

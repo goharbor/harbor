@@ -89,8 +89,8 @@ func (f *FakeClient) BlobExist(repository, digest string) (bool, error) {
 func (f *FakeClient) PullBlob(repository, digest string) (int64, io.ReadCloser, error) {
 	args := f.Called()
 	var blob io.ReadCloser
-	if args[0] != nil {
-		blob = args[0].(io.ReadCloser)
+	if args[1] != nil {
+		blob = args[1].(io.ReadCloser)
 	}
 	return int64(args.Int(0)), blob, args.Error(2)
 }
