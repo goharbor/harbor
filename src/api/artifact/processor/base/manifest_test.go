@@ -15,10 +15,13 @@
 package base
 
 import (
-	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/testing/api/artifact/processor/blob"
-	"github.com/stretchr/testify/suite"
+	"io/ioutil"
+	"strings"
 	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/testing/pkg/registry"
+	"github.com/stretchr/testify/suite"
 )
 
 const (
@@ -119,21 +122,22 @@ const (
 
 type manifestTestSuite struct {
 	suite.Suite
-	processor   *ManifestProcessor
-	blobFetcher *blob.FakeFetcher
+	processor *ManifestProcessor
+	regCli    *registry.FakeClient
 }
 
 func (m *manifestTestSuite) SetupTest() {
-	m.blobFetcher = &blob.FakeFetcher{}
+	m.regCli = &registry.FakeClient{}
 	m.processor = &ManifestProcessor{
-		BlobFetcher: m.blobFetcher,
+		RegCli: m.regCli,
 	}
 }
 
 func (m *manifestTestSuite) TestAbstractMetadata() {
 	// abstract all properties
 	art := &artifact.Artifact{}
-	m.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
+
+	m.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
 	m.processor.AbstractMetadata(nil, []byte(manifest), art)
 	m.Len(art.ExtraAttrs, 9)
 
@@ -143,7 +147,7 @@ func (m *manifestTestSuite) TestAbstractMetadata() {
 	// abstract the specified properties
 	m.processor.properties = []string{"os"}
 	art = &artifact.Artifact{}
-	m.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
+	m.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
 	m.processor.AbstractMetadata(nil, []byte(manifest), art)
 	m.Require().Len(art.ExtraAttrs, 1)
 	m.Equal("linux", art.ExtraAttrs["os"])

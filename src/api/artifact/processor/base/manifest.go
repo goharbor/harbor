@@ -18,9 +18,9 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/goharbor/harbor/src/api/artifact/processor"
-	"github.com/goharbor/harbor/src/api/artifact/processor/blob"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -28,15 +28,15 @@ import (
 // All metadata read from config layer will be populated if specifying no "properties"
 func NewManifestProcessor(properties ...string) *ManifestProcessor {
 	return &ManifestProcessor{
-		properties:  properties,
-		BlobFetcher: blob.Fcher,
+		properties: properties,
+		RegCli:     registry.Cli,
 	}
 }
 
 // ManifestProcessor is a base processor to process artifact enveloped by OCI manifest or docker v2 manifest
 type ManifestProcessor struct {
-	properties  []string
-	BlobFetcher blob.Fetcher
+	properties []string
+	RegCli     registry.Client
 }
 
 // AbstractMetadata abstracts metadata of artifact
@@ -47,13 +47,14 @@ func (m *ManifestProcessor) AbstractMetadata(ctx context.Context, content []byte
 		return err
 	}
 	// get config layer
-	layer, err := m.BlobFetcher.FetchLayer(artifact.RepositoryName, manifest.Config.Digest.String())
+	_, blob, err := m.RegCli.PullBlob(artifact.RepositoryName, manifest.Config.Digest.String())
 	if err != nil {
 		return err
 	}
+	defer blob.Close()
 	// parse metadata from config layer
 	metadata := map[string]interface{}{}
-	if err := json.Unmarshal(layer, &metadata); err != nil {
+	if err := json.NewDecoder(blob).Decode(&metadata); err != nil {
 		return err
 	}
 	// if no properties specified, populate all metadata into the ExtraAttrs

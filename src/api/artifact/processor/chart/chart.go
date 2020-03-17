@@ -17,9 +17,10 @@ package chart
 import (
 	"context"
 	"encoding/json"
+	"io/ioutil"
+
 	ps "github.com/goharbor/harbor/src/api/artifact/processor"
 	"github.com/goharbor/harbor/src/api/artifact/processor/base"
-	"github.com/goharbor/harbor/src/api/artifact/processor/blob"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -35,13 +36,13 @@ const (
 	AdditionTypeReadme       = "README.MD"
 	AdditionTypeDependencies = "DEPENDENCIES"
 
-	// TODO import it from helm chart repository
+	// as helm put the media type definition under "internal" package, we cannot
+	// import it, defines it by ourselves
 	mediaType = "application/vnd.cncf.helm.config.v1+json"
 )
 
 func init() {
 	pc := &processor{
-		blobFetcher:   blob.Fcher,
 		chartOperator: chart.Optr,
 	}
 	pc.ManifestProcessor = base.NewManifestProcessor()
@@ -53,7 +54,6 @@ func init() {
 
 type processor struct {
 	*base.ManifestProcessor
-	blobFetcher   blob.Fetcher
 	chartOperator chart.Operator
 }
 
@@ -63,12 +63,16 @@ func (p *processor) AbstractAddition(ctx context.Context, artifact *artifact.Art
 			WithMessage("addition %s isn't supported for %s", addition, ArtifactTypeChart)
 	}
 
-	_, content, err := p.blobFetcher.FetchManifest(artifact.RepositoryName, artifact.Digest)
+	m, _, err := p.RegCli.PullManifest(artifact.RepositoryName, artifact.Digest)
+	if err != nil {
+		return nil, err
+	}
+	_, payload, err := m.Payload()
 	if err != nil {
 		return nil, err
 	}
 	manifest := &v1.Manifest{}
-	if err := json.Unmarshal(content, manifest); err != nil {
+	if err := json.Unmarshal(payload, manifest); err != nil {
 		return nil, err
 	}
 
@@ -76,10 +80,15 @@ func (p *processor) AbstractAddition(ctx context.Context, artifact *artifact.Art
 		// chart do have two layers, one is config, we should resolve the other one.
 		layerDgst := layer.Digest.String()
 		if layerDgst != manifest.Config.Digest.String() {
-			content, err = p.blobFetcher.FetchLayer(artifact.RepositoryName, layerDgst)
+			_, blob, err := p.RegCli.PullBlob(artifact.RepositoryName, layerDgst)
 			if err != nil {
 				return nil, err
 			}
+			content, err := ioutil.ReadAll(blob)
+			if err != nil {
+				return nil, err
+			}
+			blob.Close()
 			chartDetails, err := p.chartOperator.GetDetails(content)
 			if err != nil {
 				return nil, err
