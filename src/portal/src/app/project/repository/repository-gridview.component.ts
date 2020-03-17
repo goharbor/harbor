@@ -156,8 +156,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
             projectName: this.projectName,
             page: this.currentPage,
             pageSize: this.pageSize,
-            name: this.lastFilteredRepoName
         };
+        if (this.lastFilteredRepoName) {
+          params.q = encodeURIComponent(`name=~${this.lastFilteredRepoName}`);
+        }
           this.loading = true;
           return this.newRepoService.listRepositoriesResponse(params);
         })
