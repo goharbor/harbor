@@ -456,7 +456,9 @@
         "FILTER_PLACEHOLDER": "Filter Logs",
         "INVALID_DATE": "Invalid date.",
         "OF": "of",
-        "NOT_FOUND": "We couldn't find any logs!"
+        "NOT_FOUND": "We couldn't find any logs!",
+        "RESOURCE": "Resource",
+        "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
         "YES": "Yes",

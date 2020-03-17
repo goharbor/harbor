@@ -455,7 +455,9 @@
         "FILTER_PLACEHOLDER": "过滤日志",
         "INVALID_DATE": "无效日期。",
         "OF": "共计",
-        "NOT_FOUND": "未发现任何日志!"
+        "NOT_FOUND": "未发现任何日志!",
+        "RESOURCE": "资源",
+        "RESOURCE_TYPE": "资源类型"
     },
     "REPLICATION": {
         "YES": "是",

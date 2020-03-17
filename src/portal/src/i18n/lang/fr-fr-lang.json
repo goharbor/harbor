@@ -448,7 +448,9 @@
         "FILTER_PLACEHOLDER": "Filtrer les Logs",
         "INVALID_DATE": "Date invalide.",
         "OF": "de",
-        "NOT_FOUND": "Nous n'avons trouvé aucun journal!"
+        "NOT_FOUND": "Nous n'avons trouvé aucun journal!",
+        "RESOURCE": "Resource",
+        "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
         "YES": "Yes",

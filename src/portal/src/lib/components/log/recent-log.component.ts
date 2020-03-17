@@ -12,20 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, Input } from '@angular/core';
-import { Comparator, State } from '../../services/interface';
-
-import {
-    AccessLogService,
-    AccessLog,
-    AccessLogItem,
-    RequestQueryParams
-} from '../../services';
 import { ErrorHandler } from '../../utils/error-handler';
-import { CustomComparator } from '../../utils/utils';
-import {
-    DEFAULT_PAGE_SIZE,
-} from '../../utils/utils';
 import { finalize } from "rxjs/operators";
+import { AuditlogService } from "../../../../ng-swagger-gen/services/auditlog.service";
+import { AuditLog } from "../../../../ng-swagger-gen/models/audit-log";
+import ListAuditLogsParams = AuditlogService.ListAuditLogsParams;
 
 @Component({
     selector: 'hbr-log',
@@ -34,8 +25,7 @@ import { finalize } from "rxjs/operators";
 })
 
 export class RecentLogComponent implements OnInit {
-    recentLogs: AccessLogItem[] = [];
-    logsCache: AccessLog;
+    recentLogs: AuditLog[] = [];
     loading: boolean = true;
     currentTerm: string;
     defaultFilter = "username";
@@ -43,17 +33,13 @@ export class RecentLogComponent implements OnInit {
     @Input() withTitle: boolean = false;
     pageSize: number = 15;
     currentPage: number = 1; // Double bound to pagination component
+    totalCount: number = 0;
     constructor(
-        private logService: AccessLogService,
+        private logService: AuditlogService,
         private errorHandler: ErrorHandler) { }
 
     ngOnInit(): void {
     }
-
-    public get totalCount(): number {
-        return this.logsCache && this.logsCache.metadata ? this.logsCache.metadata.xTotalCount : 0;
-    }
-
     public get inProgress(): boolean {
         return this.loading;
     }
@@ -66,7 +52,8 @@ export class RecentLogComponent implements OnInit {
         this.currentTerm = terms.trim();
         this.loading = true;
         this.currentPage = 1;
-        this.load({page: {}});
+        this.totalCount = 0;
+        this.load();
     }
 
     public refresh(): void {
@@ -74,11 +61,7 @@ export class RecentLogComponent implements OnInit {
     }
 
     openFilter(isOpen: boolean): void {
-        if (isOpen) {
-            this.isOpenFilterTag = true;
-        } else {
-            this.isOpenFilterTag = false;
-        }
+        this.isOpenFilterTag = isOpen;
     }
 
     selectFilterKey($event: any): void {
@@ -86,21 +69,27 @@ export class RecentLogComponent implements OnInit {
         this.doFilter(this.currentTerm);
     }
 
-    load(state) {
-        if (!state || !state.page) {
-            return;
-        }
+    load() {
         // Keep it for future filter
         // this.currentState = state;
-        let params: RequestQueryParams = new RequestQueryParams().set("page", '' + this.currentPage).set("page_size", '' + this.pageSize);
+        const params: ListAuditLogsParams = {
+            page: this.currentPage,
+            pageSize: this.pageSize
+        };
         if (this.currentTerm && this.currentTerm !== "") {
-            params = params.set(this.defaultFilter, this.currentTerm);
+            params[this.defaultFilter] = this.currentTerm;
         }
         this.loading = true;
-        this.logService.getRecentLogs(params).pipe(finalize(() => (this.loading = false)))
+        this.logService.listAuditLogsResponse(params).pipe(finalize(() => (this.loading = false)))
           .subscribe(response => {
-              this.logsCache = response; // Keep the data
-              this.recentLogs = response.data;
+              // Get total count
+              if (response.headers) {
+                  let xHeader: string = response.headers.get("x-total-count");
+                  if (xHeader) {
+                      this.totalCount = parseInt(xHeader, 0);
+                  }
+              }
+              this.recentLogs = response.body as AuditLog[];
                 }, error => {
                     this.errorHandler.error(error);
                 });
