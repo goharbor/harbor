@@ -25,7 +25,6 @@ class InternalTLS:
 
     trivy_certs_filename = {
         'trivy_adapter.crt', 'trivy_adapter.key',
-        'trivy.crt', 'trivy.key'
     }
 
     notary_certs_filename = {
@@ -55,6 +54,8 @@ class InternalTLS:
                 self.required_filenames.update(self.notary_certs_filename)
             if kwargs.get('with_chartmuseum'):
                 self.required_filenames.update(self.chart_museum_filename)
+            if kwargs.get('with_trivy'):
+                self.required_filenames.update(self.trivy_certs_filename)
             if not kwargs.get('external_database'):
                 self.required_filenames.update(self.db_certs_filename)
 

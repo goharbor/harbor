@@ -1,7 +1,16 @@
 #! /bin/bash
+set -e
+
+if [ -z "$1" ]; then
+    echo "No argument supplied set days to 365"
+    DAYS=365
+else
+    echo "No argument supplied set days to $1"
+    DAYS=$1
+fi
 
 # CA key and certificate
-openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
+openssl req -x509 -nodes -days $DAYS -newkey rsa:4096 \
         -keyout "harbor_internal_ca.key" \
         -out "harbor_internal_ca.crt" \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware"
@@ -14,7 +23,7 @@ openssl req -new -newkey rsa:4096 -nodes -sha256 \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=proxy"
 
 # Sign proxy
-openssl x509 -req -days 365 -sha256 -in proxy.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out proxy.crt
+openssl x509 -req -days $DAYS -sha256 -in proxy.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out proxy.crt
 
 
 # generate core key and csr
@@ -24,7 +33,7 @@ openssl req -new \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=core"
 
 # Sign core csr with CA certificate and key
-openssl x509 -req -days 365 -sha256 -in core.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out core.crt
+openssl x509 -req -days $DAYS -sha256 -in core.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out core.crt
 
 
 # job_service key
@@ -34,7 +43,7 @@ openssl req -new \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=jobservice"
 
 # sign job_service csr with CA certificate and key
-openssl x509 -req -days 365 -sha256 -in job_service.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out job_service.crt
+openssl x509 -req -days $DAYS -sha256 -in job_service.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out job_service.crt
 
 # generate registry key
 openssl req -new \
@@ -43,7 +52,7 @@ openssl req -new \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=registry"
 
 # sign registry csr with CA certificate and key
-openssl x509 -req -days 365 -sha256 -in registry.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out registry.crt
+openssl x509 -req -days $DAYS -sha256 -in registry.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out registry.crt
 
 # generate registryctl key
 openssl req -new \
@@ -52,7 +61,7 @@ openssl req -new \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=registryctl"
 
 # sign registryctl csr with CA certificate and key
-openssl x509 -req -days 365 -sha256 -in registryctl.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out registryctl.crt
+openssl x509 -req -days $DAYS -sha256 -in registryctl.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out registryctl.crt
 
 
 
@@ -63,7 +72,7 @@ openssl req -new \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=clair_adapter"
 
 # sign clair_adapter csr with CA certificate and key
-openssl x509 -req -days 365 -sha256 -in clair_adapter.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out clair_adapter.crt
+openssl x509 -req -days $DAYS -sha256 -in clair_adapter.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out clair_adapter.crt
 
 
 # generate clair key
@@ -73,7 +82,17 @@ openssl req -new \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=clair"
 
 # sign clair csr with CA certificate and key
-openssl x509 -req -days 365 -sha256 -in clair.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out clair.crt
+openssl x509 -req -days $DAYS -sha256 -in clair.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out clair.crt
+
+
+# generate trivy_adapter key
+openssl req -new \
+        -newkey rsa:4096 -nodes -sha256 -keyout trivy_adapter.key \
+        -out trivy_adapter.csr \
+        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=trivy_adapter"
+
+# sign trivy_adapter csr with CA certificate and key
+openssl x509 -req -days $DAYS -sha256 -in trivy_adapter.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out trivy_adapter.crt
 
 
 # generate notary_signer key
@@ -83,9 +102,7 @@ openssl req -new \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=notary_signer"
 
 # sign notary_signer csr with CA certificate and key
-openssl x509 -req -days 365 -sha256 -in notary_signer.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out notary_signer.crt
-
-
+openssl x509 -req -days $DAYS -sha256 -in notary_signer.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out notary_signer.crt
 
 # generate notary_server key
 openssl req -new \
@@ -94,7 +111,7 @@ openssl req -new \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=notary_server"
 
 # sign notary_server csr with CA certificate and key
-openssl x509 -req -days 365 -sha256 -in notary_server.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out notary_server.crt
+openssl x509 -req -days $DAYS -sha256 -in notary_server.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out notary_server.crt
 
 
 # generate chartmuseum key
@@ -104,8 +121,7 @@ openssl req -new \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=chartmuseum"
 
 # sign chartmuseum csr with CA certificate and key
-openssl x509 -req -days 365 -sha256 -in chartmuseum.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out chartmuseum.crt
-
+openssl x509 -req -days $DAYS -sha256 -in chartmuseum.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out chartmuseum.crt
 
 
 # generate harbor_db key
@@ -115,4 +131,4 @@ openssl req -new \
         -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=harbor_db"
 
 # sign harbor_db csr with CA certificate and key
-openssl x509 -req -days 365 -sha256 -in harbor_db.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out harbor_db.crt
+openssl x509 -req -days $DAYS -sha256 -in harbor_db.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out harbor_db.crt

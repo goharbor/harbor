@@ -36,8 +36,7 @@ const (
 
 // InternalTLSEnabled returns if internal TLS enabled
 func InternalTLSEnabled() bool {
-	iTLSEnabled := os.Getenv(internalTLSEnable)
-	if strings.ToLower(iTLSEnabled) == "true" {
+	if strings.ToLower(os.Getenv(internalTLSEnable)) == "true" {
 		return true
 	}
 	return false
@@ -45,8 +44,7 @@ func InternalTLSEnabled() bool {
 
 // InternalEnableVerifyClientCert returns if mTLS enabled
 func InternalEnableVerifyClientCert() bool {
-	enabled := os.Getenv(internalVerifyClientCert)
-	if strings.ToLower(enabled) == "true" {
+	if strings.ToLower(os.Getenv(internalVerifyClientCert)) == "true" {
 		return true
 	}
 	return false

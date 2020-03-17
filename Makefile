@@ -353,12 +353,12 @@ update_prepare_version:
 	@$(SEDCMDI) -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) prepare /' $(MAKEPATH)/prepare ;
 
 gen_tls:
-	@$(DOCKERCMD) run --rm -v /:/hostfs:z goharbor/prepare:$(VERSIONTAG) gencert /etc/harbor/tls/internal
+	@$(DOCKERCMD) run --rm -v /:/hostfs:z goharbor/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal
 
 prepare: update_prepare_version
 	@echo "preparing..."
 	@if [ -n "$(GEN_TLS)" ] ; then \
-		$(DOCKERCMD) run --rm -v /:/hostfs:z goharbor/prepare:$(VERSIONTAG) gencert /etc/harbor/tls/internal; \
+		$(DOCKERCMD) run --rm -v /:/hostfs:z goharbor/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal; \
 	fi
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
