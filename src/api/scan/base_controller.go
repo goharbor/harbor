@@ -523,7 +523,10 @@ func (bc *basicController) makeRobotAccount(projectID int64, repository string) 
 		Name:        UUID,
 		Description: "for scan",
 		ProjectID:   projectID,
-		Access:      []*types.Policy{{Resource: resource, Action: rbac.ActionScannerPull}},
+		Access: []*types.Policy{
+			{Resource: resource, Action: rbac.ActionPull},
+			{Resource: resource, Action: rbac.ActionScannerPull},
+		},
 	}
 
 	rb, err := bc.rc.CreateRobotAccount(robotReq)
