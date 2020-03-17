@@ -148,6 +148,7 @@ func (r *repositoryAPI) DeleteRepository(ctx context.Context, params operation.D
 	notification.AddEvent(ctx, &metadata.DeleteRepositoryEventMetadata{
 		Ctx:        ctx,
 		Repository: repository.Name,
+		ProjectID:  repository.ProjectID,
 	})
 
 	return operation.NewDeleteRepositoryOK()
