@@ -36,7 +36,7 @@ func (o *DelArtHandler) Handle(value interface{}) error {
 		return errors.New("delete image event handler: nil value ")
 	}
 
-	evt, ok := value.(*event.ArtifactEvent)
+	evt, ok := value.(*event.DeleteArtifactEvent)
 	if !ok {
 		return errors.New("delete image event handler: malformed image event model")
 	}
