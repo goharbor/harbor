@@ -82,7 +82,7 @@
               <div class="select resource-box clr-select-wrapper" *ngIf="supportedFilters[i]?.style==='radio' && supportedFilters[i]?.values.length > 1">
                 <select class="clr-select width-100" formControlName="value" #selectedValue id="{{'select_'+ supportedFilters[i]?.type}}"
                   name="{{supportedFilters[i]?.type}}">
-                  <option value="">{{'REPLICATION.BOTH' | translate}}</option>
+                  <option value="">{{'REPLICATION.ALL' | translate}}</option>
                   <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}</option>
                 </select>
               </div>

@@ -85,7 +85,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
   };
   const fakedRepositoryService = {
     listRepositoriesResponse(params: NewRepositoryService.ListRepositoriesParams) {
-      if (params.name === 'nginx') {
+      if (params.q === encodeURIComponent(`name=~nginx`)) {
         return of({headers: new Map(), body: mockNginxRepo});
         }
       return of({headers: new Map(), body: mockRepo}).pipe(delay(0));

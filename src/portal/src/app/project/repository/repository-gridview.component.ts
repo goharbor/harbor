@@ -72,7 +72,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
   cardHover = false;
   listHover = false;
 
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  // pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = 3;
   currentPage = 1;
   totalCount = 0;
   currentState: ClrDatagridStateInterface;
@@ -312,9 +313,11 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     let params: NewRepositoryService.ListRepositoriesParams = {
       projectName: this.projectName,
       page: this.currentPage,
-      pageSize: this.pageSize,
-      name: this.lastFilteredRepoName
+      pageSize: this.pageSize
     };
+    if (this.lastFilteredRepoName) {
+      params.q = encodeURIComponent(`name=~${this.lastFilteredRepoName}`);
+    }
 
     this.loading = true;
     this.newRepoService.listRepositoriesResponse(
@@ -348,9 +351,11 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     let params: NewRepositoryService.ListRepositoriesParams = {
       projectName: this.projectName,
       page: pageNumber,
-      pageSize: this.pageSize,
-      name: this.lastFilteredRepoName
+      pageSize: this.pageSize
     };
+    if (this.lastFilteredRepoName) {
+      params.q = encodeURIComponent(`name=~${this.lastFilteredRepoName}`);
+    }
     if (state.filters && state.filters.length) {
       state.filters.forEach(item => {
         params[item.property] = item.value;
