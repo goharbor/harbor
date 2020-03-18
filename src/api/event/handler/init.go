@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/api/event/handler/auditlog"
+	"github.com/goharbor/harbor/src/api/event/handler/internal"
 	"github.com/goharbor/harbor/src/api/event/handler/replication"
 	"github.com/goharbor/harbor/src/api/event/handler/webhook/artifact"
 	"github.com/goharbor/harbor/src/api/event/handler/webhook/chart"
@@ -40,4 +41,7 @@ func init() {
 	notifier.Subscribe(event.TopicDeleteRepository, &auditlog.Handler{})
 	notifier.Subscribe(event.TopicCreateTag, &auditlog.Handler{})
 	notifier.Subscribe(event.TopicDeleteTag, &auditlog.Handler{})
+
+	// internal
+	notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{})
 }

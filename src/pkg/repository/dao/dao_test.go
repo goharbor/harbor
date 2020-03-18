@@ -162,6 +162,27 @@ func (d *daoTestSuite) TestUpdate() {
 	d.Equal(ierror.NotFoundCode, e.Code)
 }
 
+func (d *daoTestSuite) TestAddPullCount() {
+	repository := &models.RepoRecord{
+		Name:        "test/pullcount",
+		ProjectID:   10,
+		Description: "test pull count",
+		PullCount:   1,
+	}
+	id, err := d.dao.Create(d.ctx, repository)
+	d.Require().Nil(err)
+
+	err = d.dao.AddPullCount(d.ctx, id)
+	d.Require().Nil(err)
+
+	repository, err = d.dao.Get(d.ctx, id)
+	d.Require().Nil(err)
+	d.Require().NotNil(repository)
+	d.Equal(int64(2), repository.PullCount)
+
+	d.dao.Delete(d.ctx, id)
+}
+
 func TestDaoTestSuite(t *testing.T) {
 	suite.Run(t, &daoTestSuite{})
 }

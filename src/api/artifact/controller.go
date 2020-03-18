@@ -33,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/signature"
+	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"github.com/opencontainers/go-digest"
 	"strings"
 	"time"
@@ -454,20 +455,25 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 }
 
 func (c *controller) UpdatePullTime(ctx context.Context, artifactID int64, tagID int64, time time.Time) error {
-	tag, err := c.tagCtl.Get(ctx, tagID, nil)
-	if err != nil {
-		return err
-	}
-	if tag.ArtifactID != artifactID {
-		return fmt.Errorf("tag %d isn't attached to artifact %d", tagID, artifactID)
-	}
 	if err := c.artMgr.Update(ctx, &artifact.Artifact{
 		ID:       artifactID,
 		PullTime: time,
 	}, "PullTime"); err != nil {
 		return err
 	}
-	return c.tagCtl.Update(ctx, tag, "PullTime")
+	tg, err := c.tagCtl.Get(ctx, tagID, nil)
+	if err != nil {
+		return err
+	}
+	if tg.ArtifactID != artifactID {
+		return fmt.Errorf("tag %d isn't attached to artifact %d", tagID, artifactID)
+	}
+	return c.tagCtl.Update(ctx, &tag.Tag{
+		Tag: model_tag.Tag{
+			ID:       tg.ID,
+			PullTime: time,
+		},
+	}, "PullTime")
 }
 
 func (c *controller) GetAddition(ctx context.Context, artifactID int64, addition string) (*processor.Addition, error) {
