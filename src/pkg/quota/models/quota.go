@@ -16,6 +16,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
@@ -85,4 +86,40 @@ func (q *Quota) SetUsed(used types.ResourceList) *Quota {
 	q.Used = used.String()
 
 	return q
+}
+
+// GetWarningResources returns resource names which exceeded the warning percent
+func (q *Quota) GetWarningResources(warningPercent int) ([]types.ResourceName, error) {
+	if warningPercent < 0 || warningPercent > 100 {
+		return nil, fmt.Errorf("bad warningPercent")
+	}
+
+	hardLimits, err := q.GetHard()
+	if err != nil {
+		return nil, err
+	}
+
+	usage, err := q.GetUsed()
+	if err != nil {
+		return nil, err
+	}
+
+	var resources []types.ResourceName
+	for resource, used := range usage {
+		limited, ok := hardLimits[resource]
+		if !ok {
+			return nil, fmt.Errorf("resource %s not found in hard limits", resource)
+		}
+
+		if limited == types.UNLIMITED {
+			continue
+		}
+
+		// used / limited >= warningPercent / 100
+		if used*100 >= limited*int64(warningPercent) {
+			resources = append(resources, resource)
+		}
+	}
+
+	return resources, nil
 }

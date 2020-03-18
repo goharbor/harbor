@@ -46,7 +46,7 @@ var (
 
 var (
 	name      = fmt.Sprintf("(?P<name>%s)", ref.NameRegexp)
-	reference = fmt.Sprintf("(?P<reference>(%s|%s))", ref.TagRegexp, ref.DigestRegexp)
+	reference = fmt.Sprintf("(?P<reference>((%s)|(%s)))", ref.DigestRegexp, ref.TagRegexp)
 	sessionID = "(?P<session_id>[a-zA-Z0-9-_.=]+)"
 
 	// BlobUploadURLRegexp regexp which match blob upload url
@@ -69,6 +69,16 @@ func ParseName(path string) string {
 	m := utils.FindNamedMatches(extractNameRegexp, path)
 	if len(m) > 0 {
 		return m["name"]
+	}
+
+	return ""
+}
+
+// ParseReference returns digest or tag from distribution API URL path
+func ParseReference(path string) string {
+	m := utils.FindNamedMatches(ManifestURLRegexp, path)
+	if len(m) > 0 {
+		return m["reference"]
 	}
 
 	return ""
@@ -108,4 +118,9 @@ func ParseRef(s string) (string, string, error) {
 	}
 
 	return repository, reference, nil
+}
+
+// IsDigest returns true when reference is digest
+func IsDigest(reference string) bool {
+	return ref.DigestRegexp.MatchString(reference)
 }

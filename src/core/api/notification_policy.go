@@ -3,16 +3,15 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/api/event"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
-
+	"github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
 )
 
@@ -373,15 +372,24 @@ func getLastTriggerTimeGroupByEventType(eventType string, policyID int64) (time.
 }
 
 func initSupportedEvents() map[string]struct{} {
-	var supportedEventTypes = make(map[string]struct{})
-	eventTypes := []string{event.TopicPushArtifact, event.TopicPullArtifact,
-		event.TopicDeleteArtifact, event.TopicUploadChart, event.TopicDeleteChart,
-		event.TopicDownloadChart, event.TopicQuotaExceed, event.TopicScanningFailed,
-		event.TopicScanningCompleted}
+	eventTypes := []string{
+		event.TopicPushArtifact,
+		event.TopicPullArtifact,
+		event.TopicDeleteArtifact,
+		event.TopicUploadChart,
+		event.TopicDeleteChart,
+		event.TopicDownloadChart,
+		event.TopicQuotaExceed,
+		event.TopicQuotaWarning,
+		event.TopicScanningFailed,
+		event.TopicScanningCompleted,
+	}
 
+	var supportedEventTypes = make(map[string]struct{})
 	for _, eventType := range eventTypes {
 		supportedEventTypes[eventType] = struct{}{}
 	}
+
 	return supportedEventTypes
 }
 

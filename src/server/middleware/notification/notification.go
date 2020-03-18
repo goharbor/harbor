@@ -15,38 +15,24 @@
 package notification
 
 import (
-	"container/list"
-	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/server/middleware"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/internal"
-	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/server/middleware"
 )
-
-// publishEvent publishes the events in the context, it ensures publish happens after transaction success.
-func publishEvent(es *list.List) {
-	if es == nil {
-		return
-	}
-	for e := es.Front(); e != nil; e = e.Next() {
-		evt.BuildAndPublish(e.Value.(evt.Metadata))
-	}
-	return
-}
 
 // Middleware sends the notification after transaction success
 func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		res := internal.NewResponseRecorder(w)
-		eveCtx := &notification.EventCtx{
-			Events:     list.New(),
-			MustNotify: false,
-		}
-		ctx := notification.NewContext(r.Context(), eveCtx)
-		next.ServeHTTP(res, r.WithContext(ctx))
-		if res.Success() || eveCtx.MustNotify {
-			publishEvent(eveCtx.Events)
+		evc := notification.NewEventCtx()
+		next.ServeHTTP(res, r.WithContext(notification.NewContext(r.Context(), evc)))
+		if res.Success() || evc.MustNotify {
+			for e := evc.Events.Front(); e != nil; e = e.Next() {
+				event.BuildAndPublish(e.Value.(event.Metadata))
+			}
 		}
 	}, skippers...)
 }

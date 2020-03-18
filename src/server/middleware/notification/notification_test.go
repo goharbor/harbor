@@ -1,28 +1,43 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package notification
 
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/api/event/metadata"
-	pkg_art "github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/goharbor/harbor/src/api/event/metadata"
+	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/stretchr/testify/suite"
 )
 
-type NotificatoinMiddlewareTestSuite struct {
+type NotificationMiddlewareTestSuite struct {
 	suite.Suite
 }
 
-func (suite *NotificatoinMiddlewareTestSuite) TestMiddleware() {
+func (suite *NotificationMiddlewareTestSuite) TestMiddleware() {
 	next := func() http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusAccepted)
 			notification.AddEvent(r.Context(), &metadata.DeleteArtifactEventMetadata{
 				Ctx: context.Background(),
-				Artifact: &pkg_art.Artifact{
+				Artifact: &artifact.Artifact{
 					ProjectID:      1,
 					RepositoryID:   2,
 					RepositoryName: "library/hello-world",
@@ -38,13 +53,13 @@ func (suite *NotificatoinMiddlewareTestSuite) TestMiddleware() {
 	suite.Equal(http.StatusAccepted, res.Code)
 }
 
-func (suite *NotificatoinMiddlewareTestSuite) TestMiddlewareMustNotify() {
+func (suite *NotificationMiddlewareTestSuite) TestMiddlewareMustNotify() {
 	next := func() http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			notification.AddEvent(r.Context(), &metadata.DeleteArtifactEventMetadata{
 				Ctx: context.Background(),
-				Artifact: &pkg_art.Artifact{
+				Artifact: &artifact.Artifact{
 					ProjectID:      1,
 					RepositoryID:   2,
 					RepositoryName: "library/hello-world",
@@ -60,6 +75,6 @@ func (suite *NotificatoinMiddlewareTestSuite) TestMiddlewareMustNotify() {
 	suite.Equal(http.StatusInternalServerError, res.Code)
 }
 
-func TestNotificatoinMiddlewareTestSuite(t *testing.T) {
-	suite.Run(t, &NotificatoinMiddlewareTestSuite{})
+func TestNotificationMiddlewareTestSuite(t *testing.T) {
+	suite.Run(t, &NotificationMiddlewareTestSuite{})
 }
