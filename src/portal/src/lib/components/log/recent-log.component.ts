@@ -77,7 +77,7 @@ export class RecentLogComponent implements OnInit {
             pageSize: this.pageSize
         };
         if (this.currentTerm && this.currentTerm !== "") {
-            params[this.defaultFilter] = this.currentTerm;
+            params.q = encodeURIComponent(`${this.defaultFilter}=~${this.currentTerm}`);
         }
         this.loading = true;
         this.logService.listAuditLogsResponse(params).pipe(finalize(() => (this.loading = false)))
