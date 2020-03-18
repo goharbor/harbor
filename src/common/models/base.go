@@ -38,7 +38,6 @@ func init() {
 		new(NotificationJob),
 		new(Blob),
 		new(ProjectBlob),
-		new(Artifact),
 		new(ArtifactAndBlob),
 		new(CVEWhitelist),
 		new(Quota),
