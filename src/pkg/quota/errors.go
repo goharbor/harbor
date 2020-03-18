@@ -63,6 +63,22 @@ func (errs Errors) Error() string {
 	return strings.Join(errors, "; ")
 }
 
+// Exceeded returns exceeded errors from errs
+func (errs Errors) Exceeded() error {
+	var exceeded Errors
+	for _, err := range errs.GetErrors() {
+		if _, ok := err.(*ResourceOverflow); ok {
+			exceeded = exceeded.Add(err)
+		}
+	}
+
+	if len(exceeded) == 0 {
+		return nil
+	}
+
+	return exceeded
+}
+
 // ResourceOverflow ...
 type ResourceOverflow struct {
 	Resource    types.ResourceName

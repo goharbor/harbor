@@ -167,9 +167,8 @@ func (c *controller) reserveResources(ctx context.Context, reference, referenceI
 
 		newReserved := types.Add(reserved, resources)
 
-		newUsed := types.Add(used, newReserved)
-		if err := quota.IsSafe(hardLimits, used, newUsed, false); err != nil {
-			return ierror.DeniedError(nil).WithMessage("Quota exceeded when processing the request of %v", err)
+		if err := quota.IsSafe(hardLimits, types.Add(used, reserved), types.Add(used, newReserved), false); err != nil {
+			return ierror.DeniedError(err).WithMessage("Quota exceeded when processing the request of %v", err)
 		}
 
 		if err := c.setReservedResources(ctx, reference, referenceID, newReserved); err != nil {

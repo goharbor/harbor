@@ -3,6 +3,7 @@ package notification
 import (
 	"container/list"
 	"context"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/notification/hook"
 	"github.com/goharbor/harbor/src/pkg/notification/job"
@@ -59,6 +60,14 @@ type EventCtx struct {
 	MustNotify bool
 }
 
+// NewEventCtx returns instance of EventCtx
+func NewEventCtx() *EventCtx {
+	return &EventCtx{
+		Events:     list.New(),
+		MustNotify: false,
+	}
+}
+
 // NewContext returns new context with event
 func NewContext(ctx context.Context, ec *EventCtx) context.Context {
 	if ctx == nil {
@@ -69,6 +78,10 @@ func NewContext(ctx context.Context, ec *EventCtx) context.Context {
 
 // AddEvent add events into request context, the event will be sent by the notification middleware eventually.
 func AddEvent(ctx context.Context, m n_event.Metadata, notify ...bool) {
+	if m == nil {
+		return
+	}
+
 	e, ok := ctx.Value(eventKey{}).(*EventCtx)
 	if !ok {
 		log.Debug("request has not event list, cannot add event into context")

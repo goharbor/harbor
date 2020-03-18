@@ -21,6 +21,9 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/types"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -37,6 +40,9 @@ type RequestConfig struct {
 
 	// Resources returns request resources for the reference object
 	Resources func(r *http.Request, reference, referenceID string) (types.ResourceList, error)
+
+	// ResourcesExceeded returns event which will be notified when resources exceeded the limitation
+	ResourcesExceeded func(r *http.Request, reference, referenceID string, err error) event.Metadata
 }
 
 // RequestMiddleware middleware which request resources
@@ -102,6 +108,16 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 		})
 
 		if err != nil && err != errNonSuccess {
+			if config.ResourcesExceeded != nil {
+				var errs quota.Errors // NOTE: quota.Errors is slice, so we need var here not pointer
+				if errors.As(err, &errs) {
+					if exceeded := errs.Exceeded(); exceeded != nil {
+						md := config.ResourcesExceeded(r, reference, referenceID, exceeded)
+						notification.AddEvent(r.Context(), md, true)
+					}
+				}
+			}
+
 			res.Reset()
 			serror.SendError(res, err)
 		}
