@@ -9,12 +9,17 @@ else
     DAYS=$1
 fi
 
-# CA key and certificate
-openssl req -x509 -nodes -days $DAYS -newkey rsa:4096 \
-        -keyout "harbor_internal_ca.key" \
-        -out "harbor_internal_ca.crt" \
-        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware"
+CA_KEY="harbor_internal_ca.key"
+CA_CRT="harbor_internal_ca.crt"
 
+# CA key and certificate
+if [[ ! -f $CA_KEY && ! -f $CA_CRT ]]; then
+openssl req -x509 -nodes -days $DAYS -newkey rsa:4096 \
+        -keyout $CA_KEY -out $CA_CRT \
+        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware"
+else
+    echo "$CA_KEY and $CA_CRT exist, use them to generate certs"
+fi
 
 # generate proxy key and csr
 openssl req -new -newkey rsa:4096 -nodes -sha256 \
@@ -69,7 +74,7 @@ openssl x509 -req -days $DAYS -sha256 -in registryctl.csr -CA harbor_internal_ca
 openssl req -new \
         -newkey rsa:4096 -nodes -sha256 -keyout clair_adapter.key \
         -out clair_adapter.csr \
-        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=clair_adapter"
+        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=clair-adapter"
 
 # sign clair_adapter csr with CA certificate and key
 openssl x509 -req -days $DAYS -sha256 -in clair_adapter.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out clair_adapter.crt
@@ -89,7 +94,7 @@ openssl x509 -req -days $DAYS -sha256 -in clair.csr -CA harbor_internal_ca.crt -
 openssl req -new \
         -newkey rsa:4096 -nodes -sha256 -keyout trivy_adapter.key \
         -out trivy_adapter.csr \
-        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=trivy_adapter"
+        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=trivy-adapter"
 
 # sign trivy_adapter csr with CA certificate and key
 openssl x509 -req -days $DAYS -sha256 -in trivy_adapter.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out trivy_adapter.crt
