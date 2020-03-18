@@ -38,21 +38,21 @@ func (suite *ControllerTestSuite) TestGetByName() {
 	c := controller{projectMgr: mgr}
 
 	{
-		p, err := c.GetByName(context.TODO(), "library")
+		p, err := c.GetByName(context.TODO(), "library", Metadata(false))
 		suite.Nil(err)
 		suite.Equal("library", p.Name)
 		suite.Equal(int64(1), p.ProjectID)
 	}
 
 	{
-		p, err := c.GetByName(context.TODO(), "test")
+		p, err := c.GetByName(context.TODO(), "test", Metadata(false))
 		suite.Error(err)
 		suite.True(ierror.IsNotFoundErr(err))
 		suite.Nil(p)
 	}
 
 	{
-		p, err := c.GetByName(context.TODO(), "oops")
+		p, err := c.GetByName(context.TODO(), "oops", Metadata(false))
 		suite.Error(err)
 		suite.False(ierror.IsNotFoundErr(err))
 		suite.Nil(p)

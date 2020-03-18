@@ -16,12 +16,12 @@ package artifact
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"time"
 
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
+	"github.com/goharbor/harbor/src/server/v2.0/models"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -45,8 +45,8 @@ type Artifact struct {
 	References        []*Reference           `json:"references"` // child artifacts referenced by the parent artifact if the artifact is an index
 }
 
-// HasChildren returns true when artifact has children artifacts, most times that means the artifact is Image Index.
-func (a *Artifact) HasChildren() bool {
+// IsImageIndex returns true when artifact is image index
+func (a *Artifact) IsImageIndex() bool {
 	return a.ManifestMediaType == v1.MediaTypeImageIndex ||
 		a.ManifestMediaType == manifestlist.MediaTypeManifestList
 }

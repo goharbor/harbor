@@ -82,6 +82,7 @@ func (suite *CheckerTestSuite) TestIsScannable() {
 
 	{
 		art := &artifact.Artifact{}
+		art.Type = "IMAGE"
 		art.ManifestMediaType = supportMimeType
 
 		mock.OnAnything(c.artifactCtl, "Walk").Return(nil).Once().Run(func(args mock.Arguments) {

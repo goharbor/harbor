@@ -66,6 +66,7 @@ func TestController(t *testing.T) {
 // SetupSuite ...
 func (suite *ControllerTestSuite) SetupSuite() {
 	suite.artifact = &artifact.Artifact{}
+	suite.artifact.Type = "IMAGE"
 	suite.artifact.ProjectID = 1
 	suite.artifact.RepositoryName = "library/photon"
 	suite.artifact.Digest = "digest-code"

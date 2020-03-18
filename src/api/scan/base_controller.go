@@ -131,16 +131,16 @@ func (bc *basicController) collectScanningArtifacts(ctx context.Context, r *scan
 	)
 
 	walkFn := func(a *ar.Artifact) error {
-		hasCapability := HasCapability(r, a)
+		supported := hasCapability(r, a)
 
-		if !hasCapability && a.HasChildren() {
+		if !supported && a.IsImageIndex() {
 			// image index not supported by the scanner, so continue to walk its children
 			return nil
 		}
 
 		artifacts = append(artifacts, a)
 
-		if hasCapability {
+		if supported {
 			scannable = true
 			return ar.ErrSkip // this artifact supported by the scanner, skip to walk its children
 		}
@@ -263,7 +263,7 @@ func (bc *basicController) makeReportPlaceholder(ctx context.Context, r *scanner
 		return e
 	}
 
-	if HasCapability(r, art) {
+	if hasCapability(r, art) {
 		var producesMimes []string
 
 		for _, pm := range r.GetProducesMimeTypes(art.ManifestMediaType) {

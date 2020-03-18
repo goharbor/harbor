@@ -151,7 +151,7 @@ func (m *manager) assemble(ctx context.Context, art *dao.Artifact) (*Artifact, e
 	artifact.From(art)
 
 	// populate the references
-	if artifact.HasChildren() {
+	if artifact.IsImageIndex() {
 		references, err := m.ListReferences(ctx, q.New(q.KeyWords{"ParentID": artifact.ID}))
 		if err != nil {
 			return nil, err
