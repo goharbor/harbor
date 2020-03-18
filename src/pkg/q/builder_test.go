@@ -262,12 +262,4 @@ func TestBuild(t *testing.T) {
 	assert.Equal(t, int64(1), query.PageNumber)
 	assert.Equal(t, int64(10), query.PageSize)
 	assert.Equal(t, "v", query.Keywords["k"].(string))
-
-	// contains escaped characters
-	q = `k%3Dv`
-	query, err = Build(q, 1, 10)
-	require.Nil(t, err)
-	assert.Equal(t, int64(1), query.PageNumber)
-	assert.Equal(t, int64(10), query.PageSize)
-	assert.Equal(t, "v", query.Keywords["k"].(string))
 }
