@@ -3,7 +3,7 @@ import secrets
 from pathlib import Path
 from functools import wraps
 
-from g import DEFAULT_UID, DEFAULT_GID
+from g import DEFAULT_UID, DEFAULT_GID, host_root_dir
 
 # To meet security requirement
 # By default it will change file mode to 0600, and make the owner of the file to 10000:10000
@@ -168,3 +168,12 @@ def stat_decorator(func):
     return check_wrapper
 
 
+def get_realpath(path: str) -> Path:
+    """
+    Return the real path in your host if you mounted your host's filesystem to /hostfs,
+    or return the original path
+    """
+
+    if os.path.isdir(host_root_dir):
+        return os.path.join(host_root_dir, path.lstrip('/'))
+    return Path(path)

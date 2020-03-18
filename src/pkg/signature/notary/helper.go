@@ -17,17 +17,17 @@ package notary
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/goharbor/harbor/src/internal"
-	model2 "github.com/goharbor/harbor/src/pkg/signature/notary/model"
 	"net/http"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/docker/distribution/registry/auth/token"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	tokenutil "github.com/goharbor/harbor/src/core/service/token"
+	model2 "github.com/goharbor/harbor/src/pkg/signature/notary/model"
 	"github.com/theupdateframework/notary"
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/trustpinning"
@@ -82,7 +82,7 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]model2
 	authorizer := &notaryAuthorizer{
 		token: t.Token,
 	}
-	tr := NewTransport(internal.GetHTTPTransport(), authorizer)
+	tr := NewTransport(commonhttp.GetHTTPTransport(commonhttp.SecureTransport), authorizer)
 	gun := data.GUN(fqRepo)
 	notaryRepo, err := client.NewFileCachedRepository(notaryCachePath, gun, notaryEndpoint, tr, mockRetriever, trustPin)
 	if err != nil {

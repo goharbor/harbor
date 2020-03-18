@@ -1,6 +1,8 @@
 import os
 import yaml
 import logging
+
+from models import InternalTLS
 from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
 from utils.misc import generate_random_string, owner_can_read, other_can_read
 
@@ -104,12 +106,11 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
         configs = yaml.load(f)
 
     config_dict = {
-        'adminserver_url': "http://adminserver:8080",
-        'registry_url': "http://registry:5000",
-        'registry_controller_url': "http://registryctl:8080",
-        'core_url': "http://core:8080",
-        'core_local_url': "http://127.0.0.1:8080",
-        'token_service_url': "http://core:8080/service/token",
+        'registry_url': 'http://registry:5000',
+        'registry_controller_url': 'http://registryctl:8080',
+        'core_url': 'http://core:8080',
+        'core_local_url': 'http://127.0.0.1:8080',
+        'token_service_url': 'http://core:8080/service/token',
         'jobservice_url': 'http://jobservice:8080',
         'clair_url': 'http://clair:6060',
         'clair_adapter_url': 'http://clair-adapter:8080',
@@ -333,6 +334,35 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
 
     config_dict['registry_username'] = REGISTRY_USER_NAME
     config_dict['registry_password'] = generate_random_string(32)
+
+    internal_tls_config = configs['internal_tls']
+    # TLS related configs
+    if internal_tls_config.get('enabled'):
+        config_dict['internal_tls'] = InternalTLS(
+            internal_tls_config['enabled'],
+            internal_tls_config['verify_client_cert'],
+            internal_tls_config['dir'],
+            configs['data_volume'],
+            with_notary=with_notary,
+            with_clair=with_clair,
+            with_trivy=with_trivy,
+            with_chartmuseum=with_chartmuseum,
+            external_database=config_dict['external_database'])
+    else:
+        config_dict['internal_tls'] = InternalTLS()
+
+    if config_dict['internal_tls'].enabled:
+        config_dict['registry_url'] = 'https://registry:5443'
+        config_dict['registry_controller_url'] = 'https://registryctl:8443'
+        config_dict['core_url'] = 'https://core:8443'
+        config_dict['core_local_url'] = 'https://core:8443'
+        config_dict['token_service_url'] = 'https://core:8443/service/token'
+        config_dict['jobservice_url'] = 'https://jobservice:8443'
+        config_dict['clair_adapter_url'] = 'https://clair-adapter:8443'
+        config_dict['trivy_adapter_url'] = 'https://trivy-adapter:8443'
+        # config_dict['notary_url'] = 'http://notary-server:4443'
+        config_dict['chart_repository_url'] = 'https://chartmuseum:9443'
+
     return config_dict
 
 

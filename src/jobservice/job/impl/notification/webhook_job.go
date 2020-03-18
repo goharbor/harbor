@@ -60,13 +60,17 @@ func (wj *WebhookJob) init(ctx job.Context, params map[string]interface{}) error
 	wj.logger = ctx.GetLogger()
 	wj.ctx = ctx
 
-	// default insecureSkipVerify is false
-	insecureSkipVerify := false
+	// default use insecure transport
+	tr := commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
 	if v, ok := params["skip_cert_verify"]; ok {
-		insecureSkipVerify = v.(bool)
+		if insecure, ok := v.(bool); ok {
+			if insecure {
+				tr = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
+			}
+		}
 	}
 	wj.client = &http.Client{
-		Transport: commonhttp.GetHTTPTransport(insecureSkipVerify),
+		Transport: tr,
 	}
 
 	return nil

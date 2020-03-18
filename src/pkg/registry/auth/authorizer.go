@@ -16,25 +16,27 @@ package auth
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
+	"sync"
+
 	"github.com/docker/distribution/registry/client/auth/challenge"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/internal"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/null"
-	"net/http"
-	"net/url"
-	"strings"
-	"sync"
 )
 
 // NewAuthorizer creates an authorizer that can handle different auth schemes
-func NewAuthorizer(username, password string, insecure bool) internal.Authorizer {
+func NewAuthorizer(username, password string, trType uint) internal.Authorizer {
 	return &authorizer{
 		username: username,
 		password: password,
 		client: &http.Client{
-			Transport: internal.GetHTTPTransport(insecure),
+			Transport: commonhttp.GetHTTPTransport(trType),
 		},
 	}
 }

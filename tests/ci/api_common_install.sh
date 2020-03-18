@@ -30,5 +30,5 @@ if [ $GITHUB_TOKEN ];
 then
     sed "s/# github_token: xxx/github_token: $GITHUB_TOKEN/" -i make/harbor.yml
 fi
-sudo make install GOBUILDIMAGE=golang:1.13.4 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true CLAIRFLAG=true TRIVYFLAG=true CHARTFLAG=true
+sudo make install GOBUILDIMAGE=golang:1.13.4 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true CLAIRFLAG=true TRIVYFLAG=true CHARTFLAG=true GEN_TLS=true
 sleep 10
