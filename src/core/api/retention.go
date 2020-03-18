@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/core/config"
 	"net/http"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -28,13 +28,7 @@ func (r *RetentionAPI) Prepare() {
 		r.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
-	pm, e := filter.GetProjectManager(r.Ctx.Request)
-	if e != nil {
-		r.SendInternalServerError(e)
-		return
-	}
-	r.pm = pm
-
+	r.pm = config.GlobalProjectMgr
 }
 
 // GetMetadatas Get Metadatas

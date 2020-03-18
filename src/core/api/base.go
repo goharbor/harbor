@@ -28,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/project"
@@ -75,14 +74,7 @@ func (b *BaseController) Prepare() {
 		return
 	}
 	b.SecurityCtx = ctx
-
-	pm, err := filter.GetProjectManager(b.Ctx.Request)
-	if err != nil {
-		log.Errorf("failed to get project manager: %v", err)
-		b.SendInternalServerError(errors.New(""))
-		return
-	}
-	b.ProjectMgr = pm
+	b.ProjectMgr = config.GlobalProjectMgr
 }
 
 // RequireAuthenticated returns true when the request is authenticated
