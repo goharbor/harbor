@@ -233,82 +233,6 @@ paths:
           description: 'Project contains policies, can not be deleted.'
         '500':
           description: Internal errors.
-  '/projects/{project_id}/logs':
-    get:
-      summary: Get access logs accompany with a relevant project.
-      description: |
-        This endpoint let user search access logs filtered by operations and date time ranges.
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Relevant project ID
-        - name: username
-          in: query
-          type: string
-          required: false
-          description: Username of the operator.
-        - name: repository
-          in: query
-          type: string
-          required: false
-          description: The name of repository
-        - name: tag
-          in: query
-          type: string
-          required: false
-          description: The name of tag
-        - name: operation
-          in: query
-          type: string
-          required: false
-          description: The operation
-        - name: begin_timestamp
-          in: query
-          type: string
-          required: false
-          description: The begin timestamp
-        - name: end_timestamp
-          in: query
-          type: string
-          required: false
-          description: The end timestamp
-        - name: page
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: 'The page number, default is 1.'
-        - name: page_size
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: 'The size of per page, default is 10, maximum is 100.'
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get access log successfully.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/AccessLog'
-          headers:
-            X-Total-Count:
-              description: The total count of access logs
-              type: integer
-            Link:
-              description: Link refers to the previous page and next page
-              type: string
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '500':
-          description: Unexpected internal errors.
   '/projects/{project_id}/summary':
     get:
       summary: Get summary of the project.
@@ -998,162 +922,6 @@ paths:
           description: User ID does not exist.
         '412':
           description: The auth mode of the system is not "oidc_auth", or the user is not onboarded via OIDC AuthN.
-        '500':
-          description: Unexpected internal errors.
-
-  /repositories:
-    get:
-      summary: Get repositories accompany with relevant project and repo name.
-      description: |
-        This endpoint lets user search repositories accompanying with relevant project ID and repo name. Repositories can be sorted by repo name, creation_time, update_time, pull_count in either ascending or descending order.
-      parameters:
-        - name: project_id
-          in: query
-          type: integer
-          format: int32
-          required: true
-          description: Relevant project ID.
-        - name: q
-          in: query
-          type: string
-          required: false
-          description: Repo name for filtering results.
-        - name: sort
-          in: query
-          type: string
-          required: false
-          description: |
-            Sort method, valid values include: 'name', '-name', 'creation_time', '-creation_time', 'update_time', '-update_time'. Here '-' stands for descending order.
-        - name: label_id
-          in: query
-          type: integer
-          required: false
-          description: The ID of label used to filter the result.
-        - name: page
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: 'The page number, default is 1.'
-        - name: page_size
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: 'The size of per page, default is 10, maximum is 100.'
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get repositories successfully.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Repository'
-          headers:
-            X-Total-Count:
-              description: The total count of repositories
-              type: integer
-            Link:
-              description: Link refers to the previous page and next page
-              type: string
-        '400':
-          description: Invalid project ID.
-        '403':
-          description: Project is not public or current user is irrelevant to the repository.
-        '404':
-          description: Project ID does not exist.
-        '500':
-          description: Unexpected internal errors.
-  '/repositories/{repo_name}':
-    put:
-      summary: Update description of the repository.
-      description: |
-        This endpoint is used to update description of the repository.
-      parameters:
-        - name: repo_name
-          in: path
-          type: string
-          required: true
-          description: The name of repository which will be deleted.
-        - name: description
-          in: body
-          description: The description of the repository.
-          required: true
-          schema:
-            $ref: '#/definitions/RepositoryDescription'
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Update successfully.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '404':
-          description: Repository not found.
-  /logs:
-    get:
-      summary: Get recent logs of the projects which the user is a member of
-      description: |
-        This endpoint let user see the recent operation logs of the projects which he is member of
-      parameters:
-        - name: username
-          in: query
-          type: string
-          required: false
-          description: Username of the operator.
-        - name: repository
-          in: query
-          type: string
-          required: false
-          description: The name of repository
-        - name: tag
-          in: query
-          type: string
-          required: false
-          description: The name of tag
-        - name: operation
-          in: query
-          type: string
-          required: false
-          description: The operation
-        - name: begin_timestamp
-          in: query
-          type: string
-          required: false
-          description: The begin timestamp
-        - name: end_timestamp
-          in: query
-          type: string
-          required: false
-          description: The end timestamp
-        - name: page
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: 'The page number, default is 1.'
-        - name: page_size
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: 'The size of per page, default is 10, maximum is 100.'
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get the required logs successfully.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/AccessLog'
-        '400':
-          description: Bad request because of invalid parameters.
-        '401':
-          description: User need to login first.
         '500':
           description: Unexpected internal errors.
   /replication/executions:
@@ -4125,110 +3893,6 @@ paths:
           description: Request is not allowed
         '500':
           description: Internal server error happened
-  '/repositories/{repo_name}/tags/{tag}/scan':
-    post:
-      summary: Scan the image.
-      description: |
-        Trigger a scan targeting the artifact identified by the repo_name and tag.
-      tags:
-        - Products
-        - Scan
-      parameters:
-        - name: repo_name
-          in: path
-          type: string
-          required: true
-          description: Repository name
-        - name: tag
-          in: path
-          type: string
-          required: true
-          description: Tag name
-      responses:
-        '202':
-          description: Scan request is successfully accepted
-        '401':
-          description: Unauthorized request
-        '403':
-          description: Request is not allowed
-        '404':
-          description: The target artifact is not found
-        '500':
-          description: Internal server error happened
-    get:
-      summary: Get the scan report
-      description: |
-        Retrieve the scan report for the artifact identified by the repo_name and tag.
-      tags:
-        - Scan
-      parameters:
-        - name: repo_name
-          in: path
-          type: string
-          required: true
-          description: Repository name
-        - name: tag
-          in: path
-          type: string
-          required: true
-          description: Tag name
-        - name: Accept
-          in: header
-          type: string
-          description: |
-            Mimetype in header. e.g: "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"
-      responses:
-        200:
-          description: The report details of the specified artifact identified by the repo_name and tag.
-          schema:
-            $ref: '#/definitions/Report'
-        '401':
-          description: Unauthorized request
-        '403':
-          description: Request is not allowed
-        '404':
-          description: The target artifact is not found
-        '500':
-          description: Internal server error happened
-  '/repositories/{repo_name}/tags/{tag}/scan/{uuid}/log':
-    get:
-      summary: Get scan log
-      description: Get the log text stream for the given artifact and scan action.
-      tags:
-        - Products
-        - Scan
-      parameters:
-        - name: repo_name
-          in: path
-          type: string
-          required: true
-          description: Repository name
-        - name: tag
-          in: path
-          type: string
-          required: true
-          description: Tag name
-        - name: uuid
-          in: path
-          type: string
-          required: true
-          description: the scan unique identifier
-      produces:
-        - text/plain
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: string
-            example: "The scan log text"
-        '401':
-          description: Unauthorized request
-        '403':
-          description: Request is not allowed
-        '404':
-          description: The target artifact is not found
-        '500':
-          description: Internal server error happened
   '/scans/all/metrics':
     get:
       summary: Get the metrics of the latest scan all process
@@ -4305,18 +3969,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/SearchResult'
-  RetagReq:
-    type: object
-    properties:
-      tag:
-        description: new tag to be created
-        type: string
-      src_image:
-        description: Source image to be retagged, e.g. 'stage/app:v1.0'
-        type: string
-      override:
-        description: If target tag already exists, whether to override it
-        type: boolean
   SearchRepository:
     type: object
     properties:
@@ -4460,15 +4112,6 @@ definitions:
           used:
             $ref: "#/definitions/ResourceList"
             description: The used status of the quota
-  Manifest:
-    type: object
-    properties:
-      manifest:
-        type: object
-        description: The detail of manifest.
-      config:
-        type: string
-        description: The config of the repository.
   User:
     type: object
     properties:
@@ -4524,27 +4167,6 @@ definitions:
       new_password:
         type: string
         description: New password for marking as to be updated.
-  AccessLog:
-    type: object
-    properties:
-      log_id:
-        type: integer
-        description: The ID of the log entry.
-      username:
-        type: string
-        description: Username of the user in this log entry.
-      repo_name:
-        type: string
-        description: Name of the repository in this log entry.
-      repo_tag:
-        type: string
-        description: Tag of the repository in this log entry.
-      operation:
-        type: string
-        description: The operation against the repository in this log entry.
-      op_time:
-        type: string
-        description: The time when this operation is triggered.
   Role:
     type: object
     properties:
@@ -4599,43 +4221,6 @@ definitions:
         type: integer
         format: int32
         description: 'The count of the total repositories, only be seen when the user is admin.'
-  JobStatus:
-    type: object
-    properties:
-      id:
-        type: integer
-        format: int64
-        description: The job ID.
-      status:
-        type: string
-        description: The status of the job.
-      repository:
-        type: string
-        description: The repository handled by the job.
-      policy_id:
-        type: integer
-        format: int64
-        description: The ID of the policy that triggered this job.
-      operation:
-        type: string
-        description: The operation of the job.
-      tags:
-        type: array
-        description: The repository's used tag list.
-        items:
-          $ref: '#/definitions/Tags'
-      creation_time:
-        type: string
-        description: The creation time of the job.
-      update_time:
-        type: string
-        description: The update time of the job.
-  Tags:
-    type: object
-    properties:
-      tag:
-        type: string
-        description: The repository's used tag.
   ReplicationPolicy:
     type: object
     properties:
@@ -4966,53 +4551,6 @@ definitions:
       email_identity:
         type: string
         description: The dentity of email server.
-  RepoSignature:
-    type: object
-    properties:
-      tag:
-        type: string
-        description: The tag of image.
-      hashes:
-        type: object
-        description: The JSON object of the hash of the image.
-  DetailedTag:
-    type: object
-    properties:
-      digest:
-        type: string
-        description: The digest of the tag.
-      name:
-        type: string
-        description: The name of the tag.
-      size:
-        type: integer
-        description: The size of the image.
-      architecture:
-        type: string
-        description: The architecture of the image.
-      os:
-        type: string
-        description: The os of the image.
-      docker_version:
-        type: string
-        description: The version of docker which builds the image.
-      author:
-        type: string
-        description: The author of the image.
-      created:
-        type: string
-        description: The build time of the image.
-      signature:
-        type: object
-        description: 'The signature of image, defined by RepoSignature. If it is null, the image is unsigned.'
-      scan_overview:
-        $ref: '#/definitions/ScanOverview'
-        description: The overview of the scan result.
-      labels:
-        type: array
-        description: The label list.
-        items:
-          $ref: '#/definitions/Label'
   ComponentOverviewEntry:
     type: object
     properties:
@@ -5022,41 +4560,6 @@ definitions:
       count:
         type: integer
         description: number of the components with certain severity.
-  Repository:
-    type: object
-    properties:
-      id:
-        type: integer
-        description: The ID of repository.
-      name:
-        type: string
-        description: The name of repository.
-      project_id:
-        type: integer
-        description: The project ID of repository.
-      description:
-        type: string
-        description: The description of repository.
-      pull_count:
-        type: integer
-        description: The pull count of repository.
-      star_count:
-        type: integer
-        description: The star count of repository.
-      tags_count:
-        type: integer
-        description: The tags count of repository.
-      labels:
-        type: array
-        description: The label list.
-        items:
-          $ref: '#/definitions/Label'
-      creation_time:
-        type: string
-        description: The creation time of repository.
-      update_time:
-        type: string
-        description: The update time of repository.
   Configurations:
     type: object
     properties:
@@ -5290,12 +4793,6 @@ definitions:
                 type: integer
                 description: 'The offset in seconds of UTC 0 o''clock, only valid when the policy type is "daily"'
             description: 'The parameters of the policy, the values are dependant on the type of the policy.'
-  RepositoryDescription:
-    type: object
-    properties:
-      description:
-        type: string
-        description: The description of the repository.
   Label:
     type: object
     properties:
