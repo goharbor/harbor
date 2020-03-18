@@ -43,8 +43,6 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr"
-	driver_local "github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common"
@@ -85,7 +83,6 @@ func TestSecurityFilter(t *testing.T) {
 	}
 	SecurityFilter(ctx)
 	assert.Nil(t, securityContext(ctx))
-	assert.Nil(t, projectManager(ctx))
 
 	// the pattern of request needs security check
 	req, err := http.NewRequest(http.MethodGet,
@@ -100,7 +97,6 @@ func TestSecurityFilter(t *testing.T) {
 	}
 	SecurityFilter(ctx)
 	assert.NotNil(t, securityContext(ctx))
-	assert.NotNil(t, projectManager(ctx))
 }
 
 func TestConfigCtxModifier(t *testing.T) {
@@ -143,7 +139,6 @@ func TestSecretReqCtxModifier(t *testing.T) {
 	assert.True(t, modified)
 	assert.IsType(t, &secret.SecurityContext{},
 		securityContext(ctx))
-	assert.NotNil(t, projectManager(ctx))
 }
 
 func TestOIDCCliReqCtxModifier(t *testing.T) {
@@ -301,7 +296,6 @@ func TestBasicAuthReqCtxModifier(t *testing.T) {
 	assert.IsType(t, &local.SecurityContext{}, sc)
 	s := sc.(security.Context)
 	assert.Equal(t, "admin", s.GetUsername())
-	assert.NotNil(t, projectManager(ctx))
 }
 
 func TestSessionReqCtxModifier(t *testing.T) {
@@ -340,8 +334,6 @@ func TestSessionReqCtxModifier(t *testing.T) {
 	s := sc.(security.Context)
 	assert.Equal(t, "admin", s.GetUsername())
 	assert.True(t, s.IsSysAdmin())
-	assert.NotNil(t, projectManager(ctx))
-
 }
 
 func TestSessionReqCtxModifierFailed(t *testing.T) {
@@ -402,7 +394,6 @@ func TestUnauthorizedReqCtxModifier(t *testing.T) {
 	assert.NotNil(t, sc)
 	s := sc.(security.Context)
 	assert.False(t, s.IsAuthenticated())
-	assert.NotNil(t, projectManager(ctx))
 }
 
 func newContext(req *http.Request) (*beegoctx.Context, error) {
@@ -442,41 +433,4 @@ func securityContext(ctx *beegoctx.Context) interface{} {
 		return nil
 	}
 	return c
-}
-
-func projectManager(ctx *beegoctx.Context) interface{} {
-	if ctx.Request == nil {
-		return nil
-	}
-	return ctx.Request.Context().Value(PmKey)
-}
-
-func TestGetProjectManager(t *testing.T) {
-	// nil request
-	pm, err := GetProjectManager(nil)
-	assert.NotNil(t, err)
-
-	// the request contains no project manager
-	req, err := http.NewRequest("", "", nil)
-	assert.Nil(t, err)
-	pm, err = GetProjectManager(req)
-	assert.NotNil(t, err)
-
-	// the request contains a variable which is not the correct type
-	req, err = http.NewRequest("", "", nil)
-	assert.Nil(t, err)
-	req = req.WithContext(context.WithValue(req.Context(),
-		PmKey, "test"))
-	pm, err = GetProjectManager(req)
-	assert.NotNil(t, err)
-
-	// the request contains a correct variable
-	req, err = http.NewRequest("", "", nil)
-	assert.Nil(t, err)
-	req = req.WithContext(context.WithValue(req.Context(),
-		PmKey, promgr.NewDefaultProjectManager(driver_local.NewDriver(), true)))
-	pm, err = GetProjectManager(req)
-	assert.Nil(t, err)
-	_, ok := pm.(promgr.ProjectManager)
-	assert.True(t, ok)
 }

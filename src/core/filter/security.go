@@ -35,7 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/authproxy"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	pkg_token "github.com/goharbor/harbor/src/pkg/token"
@@ -51,8 +50,6 @@ type pathMethod struct {
 }
 
 const (
-	// PmKey is context value key for the project manager
-	PmKey ContextValueKey = "harbor_project_manager"
 	// AuthModeKey is context key for auth mode
 	AuthModeKey ContextValueKey = "harbor_auth_mode"
 )
@@ -125,13 +122,10 @@ func (s *secretReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 	log.Debug("got secret from request")
 
-	log.Debug("using global project manager")
-	pm := config.GlobalProjectMgr
-
 	log.Debug("creating a secret security context...")
 	securCtx := secret.NewSecurityContext(scrt, s.store)
 
-	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+	setSecurCtx(ctx.Request, securCtx)
 
 	return true
 }
@@ -175,7 +169,7 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	log.Debug("creating robot account security context...")
 	pm := config.GlobalProjectMgr
 	securCtx := robotCtx.NewSecurityContext(robot, pm, rtk.Claims.(*robot_claim.Claim).Access)
-	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+	setSecurCtx(ctx.Request, securCtx)
 	return true
 }
 
@@ -204,7 +198,7 @@ func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 	pm := config.GlobalProjectMgr
 	sc := local.NewSecurityContext(user, pm)
-	setSecurCtxAndPM(ctx.Request, sc, pm)
+	setSecurCtx(ctx.Request, sc)
 	return true
 }
 
@@ -251,7 +245,7 @@ func (it *idTokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 	pm := config.GlobalProjectMgr
 	sc := local.NewSecurityContext(u, pm)
-	setSecurCtxAndPM(ctx.Request, sc, pm)
+	setSecurCtx(ctx.Request, sc)
 	return true
 }
 
@@ -322,7 +316,7 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context for auth proxy...")
 	securCtx := local.NewSecurityContext(user, pm)
-	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+	setSecurCtx(ctx.Request, securCtx)
 	return true
 }
 
@@ -354,11 +348,10 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Debug("basic auth user is nil")
 		return false
 	}
-	log.Debug("using local database project manager")
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")
 	securCtx := local.NewSecurityContext(user, pm)
-	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+	setSecurCtx(ctx.Request, securCtx)
 	return true
 }
 
@@ -376,12 +369,11 @@ func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Info("can not get user information from session")
 		return false
 	}
-	log.Debug("using local database project manager")
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")
 	securityCtx := local.NewSecurityContext(&user, pm)
 
-	setSecurCtxAndPM(ctx.Request, securityCtx, pm)
+	setSecurCtx(ctx.Request, securityCtx)
 
 	return true
 }
@@ -391,38 +383,17 @@ type unauthorizedReqCtxModifier struct{}
 
 func (u *unauthorizedReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	log.Debug("user information is nil")
-	log.Debug("using local database project manager")
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")
 	securCtx := local.NewSecurityContext(nil, pm)
-	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+	setSecurCtx(ctx.Request, securCtx)
 	return true
 }
 
-func setSecurCtxAndPM(req *http.Request, ctx security.Context, pm promgr.ProjectManager) {
+func setSecurCtx(req *http.Request, ctx security.Context) {
 	*req = *(req.WithContext(security.NewContext(req.Context(), ctx)))
-	addToReqContext(req, PmKey, pm)
 }
 
 func addToReqContext(req *http.Request, key, value interface{}) {
 	*req = *(req.WithContext(context.WithValue(req.Context(), key, value)))
-}
-
-// GetProjectManager tries to get project manager from request and returns it
-func GetProjectManager(req *http.Request) (promgr.ProjectManager, error) {
-	if req == nil {
-		return nil, fmt.Errorf("request is nil")
-	}
-
-	pm := req.Context().Value(PmKey)
-	if pm == nil {
-		return nil, fmt.Errorf("the project manager got from request is nil")
-	}
-
-	p, ok := pm.(promgr.ProjectManager)
-	if !ok {
-		return nil, fmt.Errorf("the variable got from request is not project manager type")
-	}
-
-	return p, nil
 }
