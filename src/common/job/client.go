@@ -79,22 +79,16 @@ func NewDefaultClient(endpoint, secret string) *DefaultClient {
 
 // NewReplicationClient used to create a client for replication
 func NewReplicationClient(endpoint, secret string) *DefaultClient {
-	var tr *http.Transport
-	if endpoint == config.InternalCoreURL() {
-		tr = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
-	} else {
-		tr = commonhttp.GetHTTPTransport(commonhttp.DefaultTransport)
-	}
-
 	var c *commonhttp.Client
+
 	if len(secret) > 0 {
 		c = commonhttp.NewClient(&http.Client{
-			Transport: tr,
+			Transport: commonhttp.GetHTTPTransport(commonhttp.SecureTransport),
 		},
 			auth.NewSecretAuthorizer(secret))
 	} else {
 		c = commonhttp.NewClient(&http.Client{
-			Transport: tr,
+			Transport: commonhttp.GetHTTPTransport(commonhttp.SecureTransport),
 		})
 	}
 

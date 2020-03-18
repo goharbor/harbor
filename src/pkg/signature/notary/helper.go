@@ -82,7 +82,7 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]model2
 	authorizer := &notaryAuthorizer{
 		token: t.Token,
 	}
-	tr := NewTransport(commonhttp.GetHTTPTransport(commonhttp.DefaultTransport), authorizer)
+	tr := NewTransport(commonhttp.GetHTTPTransport(commonhttp.SecureTransport), authorizer)
 	gun := data.GUN(fqRepo)
 	notaryRepo, err := client.NewFileCachedRepository(notaryCachePath, gun, notaryEndpoint, tr, mockRetriever, trustPin)
 	if err != nil {

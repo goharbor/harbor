@@ -110,14 +110,8 @@ func (m *DefaultManager) policyHTTPTest(address string, skipCertVerify bool) err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	var tp *http.Transport
-	if skipCertVerify {
-		tp = commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
-	} else {
-		tp = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
-	}
 	client := http.Client{
-		Transport: tp,
+		Transport: commonhttp.GetHTTPTransportByInsecure(skipCertVerify),
 	}
 
 	resp, err := client.Do(req)

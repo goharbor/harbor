@@ -16,13 +16,9 @@ package http
 
 import (
 	"crypto/tls"
-	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
-
-	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 const (
@@ -36,40 +32,12 @@ const (
 
 // InternalTLSEnabled returns if internal TLS enabled
 func InternalTLSEnabled() bool {
-	if strings.ToLower(os.Getenv(internalTLSEnable)) == "true" {
-		return true
-	}
-	return false
+	return strings.ToLower(os.Getenv(internalTLSEnable)) == "true"
 }
 
 // InternalEnableVerifyClientCert returns if mTLS enabled
 func InternalEnableVerifyClientCert() bool {
-	if strings.ToLower(os.Getenv(internalVerifyClientCert)) == "true" {
-		return true
-	}
-	return false
-}
-
-// GetInternalCA used to get internal cert file from Env
-func GetInternalCA(caPool *x509.CertPool) *x509.CertPool {
-	if caPool == nil {
-		caPool = x509.NewCertPool()
-	}
-
-	caPath := os.Getenv(internalTrustCAPath)
-	if caPath != "" {
-		caCert, err := ioutil.ReadFile(caPath)
-		if err != nil {
-			log.Errorf("read ca file %s failure %w", caPath, err)
-		}
-		if ok := caPool.AppendCertsFromPEM(caCert); !ok {
-			log.Errorf("append ca to ca pool fail")
-		} else {
-			log.Infof("append trustCA %s success", caPath)
-		}
-	}
-
-	return caPool
+	return strings.ToLower(os.Getenv(internalVerifyClientCert)) == "true"
 }
 
 // GetInternalCertPair used to get internal cert and key pair from environment

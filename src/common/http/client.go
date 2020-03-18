@@ -16,7 +16,6 @@ package http
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"io"
@@ -30,11 +29,8 @@ import (
 )
 
 const (
-	// DefaultTransport used to get the default http Transport
-	DefaultTransport = iota
 	// InsecureTransport used to get the insecure http Transport
-	InsecureTransport
-
+	InsecureTransport = iota
 	// SecureTransport used to get the external secure http Transport
 	SecureTransport
 )
@@ -45,19 +41,9 @@ var (
 )
 
 func init() {
-	secureHTTPTransport = &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
-		},
-	}
-
-	insecureHTTPTransport = &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
-	}
+	secureHTTPTransport = http.DefaultTransport.(*http.Transport).Clone()
+	insecureHTTPTransport = http.DefaultTransport.(*http.Transport).Clone()
+	insecureHTTPTransport.TLSClientConfig.InsecureSkipVerify = true
 
 	if InternalTLSEnabled() {
 		tlsConfig, err := GetInternalTLSConfig()
@@ -88,6 +74,14 @@ func GetHTTPTransport(clientType uint) *http.Transport {
 	}
 }
 
+// GetHTTPTransportByInsecure returns a insecure HttpTransport if insecure is true or it returns secure one
+func GetHTTPTransportByInsecure(insecure bool) *http.Transport {
+	if insecure {
+		return insecureHTTPTransport
+	}
+	return secureHTTPTransport
+}
+
 // NewClient creates an instance of Client.
 // Use net/http.Client as the default value if c is nil.
 // Modifiers modify the request before sending it.
@@ -97,7 +91,7 @@ func NewClient(c *http.Client, modifiers ...modifier.Modifier) *Client {
 	}
 	if client.client == nil {
 		client.client = &http.Client{
-			Transport: GetHTTPTransport(DefaultTransport),
+			Transport: GetHTTPTransport(SecureTransport),
 		}
 	}
 	if len(modifiers) > 0 {

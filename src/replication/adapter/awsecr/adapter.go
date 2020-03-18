@@ -245,18 +245,12 @@ func (a *adapter) createRepository(repository string) error {
 	if a.region == "" {
 		return errors.New("no region parsed")
 	}
-	var tr *http.Transport
-	if a.registry.Insecure {
-		tr = commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
-	} else {
-		tr = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
-	}
 
 	config := &aws.Config{
 		Credentials: cred,
 		Region:      &a.region,
 		HTTPClient: &http.Client{
-			Transport: tr,
+			Transport: commonhttp.GetHTTPTransportByInsecure(a.registry.Insecure),
 		},
 	}
 	if a.forceEndpoint != nil {
