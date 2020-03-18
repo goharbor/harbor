@@ -56,6 +56,11 @@ var (
 	}
 )
 
+// const definition
+const (
+	UserAgent = "harbor-registry-client"
+)
+
 // Client defines the methods that a registry client should implements
 type Client interface {
 	// Ping the base API endpoint "/v2/"
@@ -504,6 +509,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 			return nil, err
 		}
 	}
+	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), UserAgent)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
