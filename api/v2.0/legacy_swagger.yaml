@@ -1666,33 +1666,6 @@ paths:
           description: The resource does not exist.
         '500':
           description: Unexpected internal errors.
-  '/labels/{id}/resources':
-    get:
-      summary: Get the resources that the label is referenced by.
-      description: |
-        This endpoint let user get the resources that the label is referenced by. Only the replication policies are returned for now.
-      parameters:
-        - name: id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Label ID
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get successfully.
-          schema:
-            $ref: '#/definitions/Resource'
-        '401':
-          description: User need to log in first.
-        '403':
-          description: Forbidden.
-        '404':
-          description: The resource does not exist.
-        '500':
-          description: Unexpected internal errors.
   /replication/adapters:
     get:
       summary: List supported adapters.
@@ -5417,14 +5390,6 @@ definitions:
       ldap_group_dn:
         type: string
         description: The DN of the LDAP group if group type is 1 (LDAP group).
-  Resource:
-    type: object
-    properties:
-      replication_policies:
-        type: array
-        description: The replication policy list.
-        items:
-          $ref: '#/definitions/ReplicationPolicy'
   StringConfigItem:
     type: object
     properties:
