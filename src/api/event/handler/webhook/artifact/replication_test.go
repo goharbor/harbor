@@ -218,6 +218,8 @@ func (f *fakedProjectMgr) GetMetadataManager() metamgr.ProjectMetadataManager {
 }
 
 func TestReplicationHandler_Handle(t *testing.T) {
+	config.Init()
+
 	PolicyMgr := notification.PolicyMgr
 	execution := replication.OperationCtl
 	rpPolicy := replication.PolicyCtl
@@ -238,7 +240,6 @@ func TestReplicationHandler_Handle(t *testing.T) {
 	config.GlobalProjectMgr = &fakedProjectMgr{}
 
 	handler := &ReplicationHandler{}
-	config.Init()
 
 	type args struct {
 		data interface{}
