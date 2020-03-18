@@ -16,11 +16,14 @@ package repository
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/internal/orm"
+	art "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/repository"
@@ -56,6 +59,7 @@ func NewController() Controller {
 	return &controller{
 		proMgr:  project.Mgr,
 		repoMgr: repository.Mgr,
+		artMgr:  art.Mgr,
 		artCtl:  artifact.Ctl,
 	}
 }
@@ -63,6 +67,7 @@ func NewController() Controller {
 type controller struct {
 	proMgr  project.Manager
 	repoMgr repository.Manager
+	artMgr  art.Manager
 	artCtl  artifact.Controller
 }
 
@@ -135,7 +140,7 @@ func (c *controller) GetByName(ctx context.Context, name string) (*models.RepoRe
 }
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
-	artifacts, err := c.artCtl.List(ctx, &q.Query{
+	candidates, err := c.artCtl.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"RepositoryID": id,
 		},
@@ -143,9 +148,30 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	for _, artifact := range artifacts {
-		if err = c.artCtl.Delete(ctx, artifact.ID); err != nil {
-			return err
+	for len(candidates) > 0 {
+		artifacts := candidates
+		candidates = nil
+		for _, artifact := range artifacts {
+			parents, err := c.artMgr.ListReferences(ctx, &q.Query{
+				Keywords: map[string]interface{}{
+					"ChildID": artifact.ID,
+				},
+			})
+			if err != nil {
+				return err
+			}
+			if len(parents) > 0 {
+				// if the artifact is referenced by others, put it into the artifacts
+				// list again, and try to delete it in the next loop
+				log.Debugf("the artifact %d is referenced by others, put it into the backlog and try to delete it in the next loop",
+					artifact.ID)
+				candidates = append(candidates, artifact)
+				continue
+			}
+			if err = c.artCtl.Delete(ctx, artifact.ID); err != nil {
+				return err
+			}
+			log.Debugf("the artifact %d is deleted", artifact.ID)
 		}
 	}
 	return c.repoMgr.Delete(ctx, id)
