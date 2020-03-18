@@ -444,7 +444,13 @@ paths:
           required: true
       responses:
         '200':
-          $ref: '#/responses/200'
+          description: Success
+          headers:
+            Content-Type:
+              description: The content type of the addition
+              type: string
+          schema:
+            type: string
         '400':
           $ref: '#/responses/400'
         '401':

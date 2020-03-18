@@ -5,7 +5,14 @@ import base
 import v2_swagger_client
 from v2_swagger_client.rest import ApiException
 
-class Artifact(base.Base):
+class Artifact(base.Base, object):
+    def __init__(self):
+        super(Artifact,self).__init__(api_type = "artifact")
+
+    def list_artifacts(self, project_name, repo_name, **kwargs):
+        client = self._get_client(**kwargs)
+        return client.list_artifacts(project_name, repo_name)
+
     def get_reference_info(self, project_name, repo_name, reference, **kwargs):
         client = self._get_client(**kwargs)
         params = {}
@@ -15,7 +22,25 @@ class Artifact(base.Base):
             params["with_tag"] = kwargs["with_tag"]
         if "with_scan_overview" in kwargs:
             params["with_scan_overview"] = kwargs["with_scan_overview"]
-        return client.get_artifact_with_http_info(project_name, repo_name, reference, **params )
+        return client.get_artifact_with_http_info(project_name, repo_name, reference, **params)
+
+    def delete_artifact(self, project_name, repo_name, reference, expect_status_code = 200, expect_response_body = None, **kwargs):
+        client = self._get_client(**kwargs)
+
+        try:
+             _, status_code, _ = client.delete_artifact_with_http_info(project_name, repo_name, reference)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+            return
+
+        base._assert_status_code(expect_status_code, status_code)
+        base._assert_status_code(200, status_code)
+
+    def get_addition(self, project_name, repo_name, reference, addition, **kwargs):
+        client = self._get_client(**kwargs)
+        return client.get_addition_with_http_info(project_name, repo_name, reference, addition)
 
     def add_label_to_reference(self, project_name, repo_name, reference, label_id, **kwargs):
         client = self._get_client(**kwargs)

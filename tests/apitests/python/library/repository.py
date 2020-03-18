@@ -46,7 +46,9 @@ def is_repo_exist_in_project(repositories, repo_name):
             return True
     return result
 
-class Repository(base.Base):
+class Repository(base.Base, object):
+    def __init__(self):
+        super(Repository,self).__init__(api_type = "repository")
 
     def list_tags(self, repository, **kwargs):
         client = self._get_client(**kwargs)

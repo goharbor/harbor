@@ -20,8 +20,8 @@ class TestProjects(unittest.TestCase):
     def setUpClass(self):
         self.project= Project()
         self.user= User()
-        self.artifact = Artifact(api_type='artifact')
-        self.repo= Repository(api_type='repository')
+        self.artifact = Artifact()
+        self.repo= Repository()
         self.url = ADMIN_CLIENT["endpoint"]
         self.user_push_chart_password = "Aa123456"
         self.cnab_repo_name = "test_cnab"

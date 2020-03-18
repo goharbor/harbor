@@ -10,20 +10,22 @@ from library.repository import Repository
 from library.repository import push_image_to_project
 from library.artifact import Artifact
 from library.scan import Scan
+from library.scanner import Scanner
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
         self.project= Project()
         self.user= User()
-        self.artifact = Artifact(api_type='artifact')
-        self.repo = Repository(api_type='repository')
-        self.scan = Scan(api_type='scan')
+        self.artifact = Artifact()
+        self.repo = Repository()
+        self.scan = Scan()
+        self.scanner = Scanner()
 
     @classmethod
     def tearDown(self):
         print "Case completed"
 
-    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
+    @unittest.skipIf(TEARDOWN == True, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(TestProjects.project_scan_image_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_SCAN_IMAGE_CLIENT)
@@ -45,6 +47,8 @@ class TestProjects(unittest.TestCase):
             4. Get private project of user(UA), user(UA) can see only one private project which is project(PA);
             5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
             6. Send scan image command and get tag(TA) information to check scan result, it should be finished;
+            7. Swith Scanner;
+            8. Send scan another image command and get tag(TA) information to check scan result, it should be finished.
         Tear down:
             1. Delete repository(RA) by user(UA);
             2. Delete project(PA);
@@ -69,8 +73,7 @@ class TestProjects(unittest.TestCase):
             expected_project_id = TestProjects.project_scan_image_id, **TestProjects.USER_SCAN_IMAGE_CLIENT)
 
         #Note: Please make sure that this Image has never been pulled before by any other cases,
-        #          so it is a not-scanned image right after repository creation.
-        #image = "tomcat"
+        #      so it is a not-scanned image right after repository creation.
         image = "docker"
         src_tag = "1.13"
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
@@ -78,8 +81,17 @@ class TestProjects(unittest.TestCase):
 
         #6. Send scan image command and get tag(TA) information to check scan result, it should be finished;
         self.scan.scan_artifact(TestProjects.project_scan_image_name, TestProjects.repo_name.split('/')[1], tag, **TestProjects.USER_SCAN_IMAGE_CLIENT)
+        self.artifact.check_image_scan_result(TestProjects.project_scan_image_name, image, tag, **TestProjects.USER_SCAN_IMAGE_CLIENT)
 
-        #6. Send scan image command and get tag(TA) information to check scan result, it should be finished;
+        #7. Swith Scanner;
+        uuid = self.scanner.scanners_get_uuid(**ADMIN_CLIENT)
+        self.scanner.scanners_registration_id_patch(uuid, **ADMIN_CLIENT)
+
+        image = "tomcat"
+        src_tag = "latest"
+        TestProjects.repo_name, tag = push_image_to_project(TestProjects.project_scan_image_name, harbor_server, user_scan_image_name, user_001_password, image, src_tag)
+        #8. Send scan another image command and get tag(TA) information to check scan result, it should be finished.
+        self.scan.scan_artifact(TestProjects.project_scan_image_name, TestProjects.repo_name.split('/')[1], tag, **TestProjects.USER_SCAN_IMAGE_CLIENT)
         self.artifact.check_image_scan_result(TestProjects.project_scan_image_name, image, tag, **TestProjects.USER_SCAN_IMAGE_CLIENT)
 
 if __name__ == '__main__':

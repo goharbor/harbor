@@ -22,8 +22,8 @@ class TestProjects(unittest.TestCase):
     def setUpClass(self):
         self.project= Project()
         self.user= User()
-        self.artifact = Artifact(api_type='artifact')
-        self.repo= Repository(api_type='repository')
+        self.artifact = Artifact()
+        self.repo= Repository()
         self.url = ADMIN_CLIENT["endpoint"]
         self.user_push_index_password = "Aa123456"
         self.index_name = "ci_test_index"
@@ -57,9 +57,13 @@ class TestProjects(unittest.TestCase):
             2. Create a new project(PA) by user(UA);
             3. Create 2 new repositorys(RA,RB) in project(PA) by user(UA);
             4. Push an index(IA) to Harbor by docker manifest CLI successfully;
-            5. Get index(IA) from Harbor successfully;
-            6. Verify harbor index is index(IA) pushed by docker manifest CLI;
-            7. Verify harbor index(IA) can be pulled by docker CLI successfully.
+            5. Get Artifacts successfully;
+            6. Get index(IA) by reference successfully;
+            7. Verify harbor index is index(IA) pushed by docker manifest CLI;
+            8. Verify harbor index(IA) can be pulled by docker CLI successfully;
+            9. Get addition successfully;
+            10. Unable to Delete artifact in manifest list;
+            11. Delete index successfully.
         Tear down:
             1. Delete repository(RA,RB,IA) by user(UA);
             2. Delete project(PA);
@@ -82,17 +86,46 @@ class TestProjects(unittest.TestCase):
         index = harbor_server+"/"+TestProjects.project_push_index_name+"/"+self.index_name+":"+self.index_tag
         index_sha256_cli_ret, manifests_sha256_cli_ret = library.docker_api.docker_manifest_push_to_harbor(index, manifests, harbor_server, user_name, self.user_push_index_password)
 
-        #5. Get index(IA) from Harbor successfully;
+        #5. Get Artifacts successfully;
+        artifacts = self.artifact.list_artifacts(TestProjects.project_push_index_name, self.index_name, **TestProjects.USER_CLIENT)
+        artifacts_ref_child_list = [artifacts[0].references[1].child_digest, artifacts[0].references[0].child_digest]
+        self.assertEqual(artifacts_ref_child_list.count(manifests_sha256_cli_ret[0]), 1)
+        self.assertEqual(artifacts_ref_child_list.count(manifests_sha256_cli_ret[1]), 1)
+
+        #6. Get index(IA) by reference successfully;
         index_data = self.artifact.get_reference_info(TestProjects.project_push_index_name, self.index_name, self.index_tag, **TestProjects.USER_CLIENT)
         manifests_sha256_harbor_ret = [index_data[0].references[1].child_digest, index_data[0].references[0].child_digest]
 
-        #6. Verify harbor index is index(IA) pushed by docker manifest CLI;
+        #7. Verify harbor index is index(IA) pushed by docker manifest CLI;
         self.assertEqual(index_data[0].digest, index_sha256_cli_ret)
         self.assertEqual(manifests_sha256_harbor_ret.count(manifests_sha256_cli_ret[0]), 1)
         self.assertEqual(manifests_sha256_harbor_ret.count(manifests_sha256_cli_ret[1]), 1)
 
-        #7. Verify harbor index(IA) can be pulled by docker CLI successfully;
+        #8. Verify harbor index(IA) can be pulled by docker CLI successfully;
         pull_harbor_image(harbor_server, user_name, self.user_push_index_password, TestProjects.project_push_index_name+"/"+self.index_name, self.index_tag)
+
+        #9. Get addition successfully;
+        addition_v = self.artifact.get_addition(TestProjects.project_push_index_name, self.index_name, self.index_tag, "vulnerabilities", **TestProjects.USER_CLIENT)
+        self.assertEqual(addition_v[0], '{}')
+        #This artifact has no build history
+
+        addition_v = self.artifact.get_addition(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[0], "vulnerabilities", **TestProjects.USER_CLIENT)
+        self.assertEqual(addition_v[0], '{}')
+        addition_b = self.artifact.get_addition(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[0], "build_history", **TestProjects.USER_CLIENT)
+        self.assertIn("ADD file:e69d441d729412d24675dcd33e04580885df99981cec43de8c9b24015313ff8e", addition_b[0])
+        image_data = self.artifact.get_reference_info(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[0], **TestProjects.USER_CLIENT)
+
+        addition_v = self.artifact.get_addition(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[1], "vulnerabilities", **TestProjects.USER_CLIENT)
+        self.assertEqual(addition_v[0], '{}')
+        addition_b = self.artifact.get_addition(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[1], "build_history", **TestProjects.USER_CLIENT)
+        self.assertIn("ADD file:450bea8cddb743ed282cb1ade3d1614033172b93ef531c69a4e49fda3016cef0", addition_b[0])
+        image_data = self.artifact.get_reference_info(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[0], **TestProjects.USER_CLIENT)
+
+        #10. Unable to Delete artifact in manifest list;
+        self.artifact.delete_artifact(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[0], expect_status_code = 412, **TestProjects.USER_CLIENT)
+
+        #11. Delete index successfully.
+        self.artifact.delete_artifact(TestProjects.project_push_index_name, self.index_name, self.index_tag, **TestProjects.USER_CLIENT)
 
 if __name__ == '__main__':
     unittest.main()

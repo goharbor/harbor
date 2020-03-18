@@ -18,7 +18,7 @@ class TestProjects(unittest.TestCase):
         self.system = System()
         self.project = Project()
         self.user = User()
-        self.repo = Repository(api_type='repository')
+        self.repo = Repository()
 
     @classmethod
     def tearDown(self):
