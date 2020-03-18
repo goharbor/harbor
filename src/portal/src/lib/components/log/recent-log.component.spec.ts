@@ -10,7 +10,6 @@ import { of } from 'rxjs';
 import { AuditLog } from "../../../../ng-swagger-gen/models/audit-log";
 import { AuditlogService } from "../../../../ng-swagger-gen/services/auditlog.service";
 import { HttpHeaders, HttpResponse } from "@angular/common/http";
-import ListAuditLogsParams = AuditlogService.ListAuditLogsParams;
 import { delay } from "rxjs/operators";
 
 describe('RecentLogComponent (inline template)', () => {
@@ -39,9 +38,9 @@ describe('RecentLogComponent (inline template)', () => {
     mockedAuditLogs.push(item);
   }
   const fakedAuditlogService = {
-    listAuditLogsResponse(params: ListAuditLogsParams) {
-      if (params && params.username) {
-        if (params.username === 'demo0') {
+    listAuditLogsResponse(params: AuditlogService.ListAuditLogsParams) {
+      if (params && params.q) {
+        if (params.q.indexOf('demo0') !== -1) {
           return of(new HttpResponse({
             body: mockedAuditLogs.slice(0, 1),
             headers:  new HttpHeaders({
