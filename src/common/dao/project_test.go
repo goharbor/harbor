@@ -61,14 +61,7 @@ func TestDeleteProject(t *testing.T) {
 }
 
 func delProjPermanent(id int64) error {
-	_, err := GetOrmer().QueryTable("access_log").
-		Filter("ProjectID", id).
-		Delete()
-	if err != nil {
-		return err
-	}
-
-	_, err = GetOrmer().Raw(`delete from project_member 
+	_, err := GetOrmer().Raw(`delete from project_member 
 		where project_id = ?`, id).Exec()
 	if err != nil {
 		return err

@@ -23,7 +23,6 @@ func init() {
 		new(User),
 		new(Project),
 		new(Role),
-		new(AccessLog),
 		new(RepoRecord),
 		new(ClairVulnTimestamp),
 		new(ProjectMetadata),
