@@ -61,6 +61,14 @@ clair:
 
 # Trivy configuration
 trivy:
+  # ignoreUnfixed The flag to display only fixed vulnerabilities
+  ignore_unfixed: false
+  # skipUpdate The flag to enable or disable Trivy DB downloads from GitHub
+  #
+  # You might want to enable this flag in test or CI/CD environments to avoid GitHub rate limiting issues.
+  # If the flag is enabled you have to manually download the `trivy.db` file and mount it in the
+  # /home/scanner/.cache/trivy/db/trivy.db path.
+  skip_update: false
   # github_token The GitHub access token to download Trivy DB
   #
   # Trivy DB contains vulnerability information from NVD, Red Hat, and many other upstream vulnerability databases.
