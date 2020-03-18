@@ -84,7 +84,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/statistics", &api.StatisticAPI{})
 	beego.Router("/api/"+version+"/labels", &api.LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/"+version+"/labels/:id([0-9]+)", &api.LabelAPI{}, "get:Get;put:Put;delete:Delete")
-	beego.Router("/api/"+version+"/labels/:id([0-9]+)/resources", &api.LabelAPI{}, "get:ListResources")
 
 	beego.Router("/api/"+version+"/systeminfo", &api.SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/"+version+"/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")
