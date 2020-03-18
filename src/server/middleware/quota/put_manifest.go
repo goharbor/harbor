@@ -18,20 +18,25 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/goharbor/harbor/src/api/blob"
+	"github.com/goharbor/harbor/src/api/event/metadata"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/internal"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/distribution"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/types"
 )
 
 // PutManifestMiddleware middleware to request count and storage resources for the project
 func PutManifestMiddleware() func(http.Handler) http.Handler {
 	return RequestMiddleware(RequestConfig{
-		ReferenceObject: projectReferenceObject,
-		Resources:       putManifestResources,
+		ReferenceObject:   projectReferenceObject,
+		Resources:         putManifestResources,
+		ResourcesExceeded: putManifestResourcesEvent(1),
+		ResourcesWarning:  putManifestResourcesEvent(2),
 	})
 }
 
@@ -93,4 +98,43 @@ func putManifestResources(r *http.Request, reference, referenceID string) (types
 	}
 
 	return types.ResourceList{types.ResourceCount: 1, types.ResourceStorage: size}, nil
+}
+
+func putManifestResourcesEvent(level int) func(*http.Request, string, string, string) event.Metadata {
+	return func(r *http.Request, reference, referenceID string, message string) event.Metadata {
+		ctx := r.Context()
+
+		logger := log.G(ctx).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
+
+		_, descriptor, err := unmarshalManifest(r)
+		if err != nil {
+			logger.Errorf("unmarshal manifest failed, error: %v", err)
+			return nil
+		}
+
+		projectID, _ := strconv.ParseInt(referenceID, 10, 64)
+		project, err := projectController.Get(ctx, projectID)
+		if err != nil {
+			logger.Errorf("get project %d failed, error: %v", projectID, err)
+
+			return nil
+		}
+
+		path := r.URL.EscapedPath()
+
+		var tag string
+		if ref := distribution.ParseReference(path); !distribution.IsDigest(ref) {
+			tag = ref
+		}
+
+		return &metadata.QuotaMetaData{
+			Project:  project,
+			Tag:      tag,
+			Digest:   descriptor.Digest.String(),
+			RepoName: distribution.ParseName(path),
+			Level:    level,
+			Msg:      message,
+			OccurAt:  time.Now(),
+		}
+	}
 }

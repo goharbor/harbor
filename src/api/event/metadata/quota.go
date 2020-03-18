@@ -1,11 +1,12 @@
 package metadata
 
 import (
+	"time"
+
 	event2 "github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/pkg/errors"
-	"time"
 )
 
 // QuotaMetaData defines quota related event data
@@ -24,18 +25,6 @@ type QuotaMetaData struct {
 // Resolve quota exceed into common image event
 func (q *QuotaMetaData) Resolve(evt *event.Event) error {
 	var topic string
-	data := &event2.QuotaEvent{
-		EventType: event2.TopicQuotaExceed,
-		Project:   q.Project,
-		Resource: &event2.ImgResource{
-			Tag:    q.Tag,
-			Digest: q.Digest,
-		},
-		OccurAt:  q.OccurAt,
-		RepoName: q.RepoName,
-		Msg:      q.Msg,
-	}
-
 	switch q.Level {
 	case 1:
 		topic = event2.TopicQuotaExceed
@@ -46,6 +35,16 @@ func (q *QuotaMetaData) Resolve(evt *event.Event) error {
 	}
 
 	evt.Topic = topic
-	evt.Data = data
+	evt.Data = &event2.QuotaEvent{
+		EventType: topic,
+		Project:   q.Project,
+		Resource: &event2.ImgResource{
+			Tag:    q.Tag,
+			Digest: q.Digest,
+		},
+		OccurAt:  q.OccurAt,
+		RepoName: q.RepoName,
+		Msg:      q.Msg,
+	}
 	return nil
 }

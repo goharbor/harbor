@@ -21,8 +21,12 @@ import (
 	"testing"
 
 	"github.com/docker/distribution/manifest/schema2"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/distribution"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/testing/mock"
 	distributiontesting "github.com/goharbor/harbor/src/testing/pkg/distribution"
@@ -90,6 +94,7 @@ func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 			f := args.Get(4).(func() error)
 			f()
 		})
+		mock.OnAnything(suite.quotaController, "GetByRef").Return(&quota.Quota{}, nil).Once()
 
 		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)
 		rr := httptest.NewRecorder()
@@ -116,6 +121,7 @@ func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 			f := args.Get(4).(func() error)
 			f()
 		})
+		mock.OnAnything(suite.quotaController, "GetByRef").Return(&quota.Quota{}, nil).Once()
 
 		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)
 		rr := httptest.NewRecorder()
@@ -142,6 +148,7 @@ func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 			f := args.Get(4).(func() error)
 			f()
 		})
+		mock.OnAnything(suite.quotaController, "GetByRef").Return(&quota.Quota{}, nil).Once()
 
 		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)
 		rr := httptest.NewRecorder()
@@ -168,12 +175,106 @@ func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 			f := args.Get(4).(func() error)
 			f()
 		})
+		mock.OnAnything(suite.quotaController, "GetByRef").Return(&quota.Quota{}, nil).Once()
 
 		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)
 		rr := httptest.NewRecorder()
 
 		PutManifestMiddleware()(next).ServeHTTP(rr, req)
 		suite.Equal(http.StatusOK, rr.Code)
+	}
+}
+
+func (suite *PutManifestMiddlewareTestSuite) TestResourcesExceeded() {
+	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
+	mock.OnAnything(suite.blobController, "Exist").Return(false, nil)
+	mock.OnAnything(suite.blobController, "FindMissingAssociationsForProject").Return(nil, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(&commonmodels.Project{}, nil)
+
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	{
+		var errs quota.Errors
+		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceCount, 10, 10, 11))
+		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceStorage, 100, 100, 110))
+		mock.OnAnything(suite.quotaController, "Request").Return(errs).Once()
+
+		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)
+		eveCtx := notification.NewEventCtx()
+		req = req.WithContext(notification.NewContext(req.Context(), eveCtx))
+		rr := httptest.NewRecorder()
+
+		PutManifestMiddleware()(next).ServeHTTP(rr, req)
+		suite.NotEqual(http.StatusOK, rr.Code)
+		suite.Equal(1, eveCtx.Events.Len())
+	}
+
+	{
+		var errs quota.Errors
+		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceCount, 10, 10, 11))
+		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceStorage, 100, 100, 110))
+
+		err := ierror.DeniedError(errs).WithMessage("Quota exceeded when processing the request of %v", errs)
+		mock.OnAnything(suite.quotaController, "Request").Return(err).Once()
+
+		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)
+		eveCtx := notification.NewEventCtx()
+		req = req.WithContext(notification.NewContext(req.Context(), eveCtx))
+		rr := httptest.NewRecorder()
+
+		PutManifestMiddleware()(next).ServeHTTP(rr, req)
+		suite.NotEqual(http.StatusOK, rr.Code)
+		suite.Equal(1, eveCtx.Events.Len())
+	}
+}
+
+func (suite *PutManifestMiddlewareTestSuite) TestResourcesWarning() {
+	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
+	mock.OnAnything(suite.blobController, "Exist").Return(false, nil)
+	mock.OnAnything(suite.blobController, "FindMissingAssociationsForProject").Return(nil, nil)
+
+	mock.OnAnything(suite.quotaController, "Request").Return(nil).Run(func(args mock.Arguments) {
+		f := args.Get(4).(func() error)
+		f()
+	})
+	mock.OnAnything(suite.projectController, "Get").Return(&commonmodels.Project{}, nil)
+
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	{
+		q := &quota.Quota{}
+		q.SetHard(types.ResourceList{types.ResourceCount: 100})
+		q.SetUsed(types.ResourceList{types.ResourceCount: 50})
+		mock.OnAnything(suite.quotaController, "GetByRef").Return(q, nil).Once()
+
+		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)
+		eveCtx := notification.NewEventCtx()
+		req = req.WithContext(notification.NewContext(req.Context(), eveCtx))
+		rr := httptest.NewRecorder()
+
+		PutManifestMiddleware()(next).ServeHTTP(rr, req)
+		suite.Equal(http.StatusOK, rr.Code)
+		suite.Equal(0, eveCtx.Events.Len())
+	}
+
+	{
+		q := &quota.Quota{}
+		q.SetHard(types.ResourceList{types.ResourceCount: 100})
+		q.SetUsed(types.ResourceList{types.ResourceCount: 85})
+		mock.OnAnything(suite.quotaController, "GetByRef").Return(q, nil).Once()
+
+		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)
+		eveCtx := notification.NewEventCtx()
+		req = req.WithContext(notification.NewContext(req.Context(), eveCtx))
+		rr := httptest.NewRecorder()
+
+		PutManifestMiddleware()(next).ServeHTTP(rr, req)
+		suite.Equal(http.StatusOK, rr.Code)
+		suite.Equal(1, eveCtx.Events.Len())
 	}
 }
 

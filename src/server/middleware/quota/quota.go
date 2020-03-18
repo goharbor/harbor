@@ -18,9 +18,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/types"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -37,10 +41,23 @@ type RequestConfig struct {
 
 	// Resources returns request resources for the reference object
 	Resources func(r *http.Request, reference, referenceID string) (types.ResourceList, error)
+
+	// ResourcesWarningPercent value from 0 to 100
+	ResourcesWarningPercent int
+
+	// ResourcesWarning returns event which will be notified when resources usage exceeded the wanring percent
+	ResourcesWarning func(r *http.Request, reference, referenceID string, message string) event.Metadata
+
+	// ResourcesExceeded returns event which will be notified when resources exceeded the limitation
+	ResourcesExceeded func(r *http.Request, reference, referenceID string, message string) event.Metadata
 }
 
 // RequestMiddleware middleware which request resources
 func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) func(http.Handler) http.Handler {
+	if config.ResourcesWarningPercent == 0 {
+		config.ResourcesWarningPercent = 85 // default 85%
+	}
+
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
 
@@ -101,7 +118,54 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 			return nil
 		})
 
+		if err == nil && config.ResourcesWarning != nil {
+			tryWarningNotification := func() {
+				q, err := quotaController.GetByRef(r.Context(), reference, referenceID)
+				if err != nil {
+					logger.Warningf("get quota of %s %s failed, error: %v", reference, referenceID, err)
+					return
+				}
+
+				resources, err := q.GetWarningResources(config.ResourcesWarningPercent)
+				if err != nil {
+					logger.Warningf("get warning resources failed, error: %v", err)
+					return
+				}
+
+				if len(resources) == 0 {
+					logger.Warningf("not warning resources found")
+					return
+				}
+
+				hardLimits, _ := q.GetHard()
+				used, _ := q.GetUsed()
+
+				var parts []string
+				for _, resource := range resources {
+					s := fmt.Sprintf("resource %s used %s of %s",
+						resource, resource.FormatValue(used[resource]), resource.FormatValue(hardLimits[resource]))
+					parts = append(parts, s)
+				}
+
+				message := fmt.Sprintf("quota usage reach %d%%: %s", config.ResourcesWarningPercent, strings.Join(parts, "; "))
+				evt := config.ResourcesWarning(r, reference, referenceID, message)
+				notification.AddEvent(r.Context(), evt, true)
+			}
+
+			tryWarningNotification()
+		}
+
 		if err != nil && err != errNonSuccess {
+			if config.ResourcesExceeded != nil {
+				var errs quota.Errors // NOTE: quota.Errors is slice, so we need var here not pointer
+				if errors.As(err, &errs) {
+					if exceeded := errs.Exceeded(); exceeded != nil {
+						evt := config.ResourcesExceeded(r, reference, referenceID, exceeded.Error())
+						notification.AddEvent(r.Context(), evt, true)
+					}
+				}
+			}
+
 			res.Reset()
 			serror.SendError(res, err)
 		}

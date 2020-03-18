@@ -20,11 +20,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/blob"
 	"github.com/goharbor/harbor/src/api/project"
 	"github.com/goharbor/harbor/src/api/quota"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/types"
+	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
 	blobtesting "github.com/goharbor/harbor/src/testing/api/blob"
 	projecttesting "github.com/goharbor/harbor/src/testing/api/project"
 	quotatesting "github.com/goharbor/harbor/src/testing/api/quota"
@@ -35,8 +37,11 @@ import (
 type RequestMiddlewareTestSuite struct {
 	suite.Suite
 
-	originallBlobController blob.Controller
-	blobController          *blobtesting.Controller
+	originalArtifactController artifact.Controller
+	artifactController         *artifacttesting.Controller
+
+	originalBlobController blob.Controller
+	blobController         *blobtesting.Controller
 
 	originalProjectController project.Controller
 	projectController         *projecttesting.Controller
@@ -46,7 +51,11 @@ type RequestMiddlewareTestSuite struct {
 }
 
 func (suite *RequestMiddlewareTestSuite) SetupTest() {
-	suite.originallBlobController = blobController
+	suite.originalArtifactController = artifactController
+	suite.artifactController = &artifacttesting.Controller{}
+	artifactController = suite.artifactController
+
+	suite.originalBlobController = blobController
 	suite.blobController = &blobtesting.Controller{}
 	blobController = suite.blobController
 
@@ -62,7 +71,8 @@ func (suite *RequestMiddlewareTestSuite) SetupTest() {
 }
 
 func (suite *RequestMiddlewareTestSuite) TearDownTest() {
-	blobController = suite.originallBlobController
+	artifactController = suite.originalArtifactController
+	blobController = suite.originalBlobController
 	projectController = suite.originalProjectController
 	quotaController = suite.originallQuotaController
 }
