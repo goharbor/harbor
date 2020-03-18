@@ -200,3 +200,6 @@ ALTER TABLE notification_policy DROP CONSTRAINT unique_project_id;
 
 /*add the unique constraint for name in table 'notification_policy'*/
 ALTER TABLE notification_policy ADD UNIQUE (name);
+
+ALTER TABLE replication_task ALTER COLUMN src_resource TYPE varchar(512);
+ALTER TABLE replication_task ALTER COLUMN dst_resource TYPE varchar(512);
