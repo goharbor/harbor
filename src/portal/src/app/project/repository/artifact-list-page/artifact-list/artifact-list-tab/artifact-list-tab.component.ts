@@ -381,10 +381,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         let listArtifactParams: NewArtifactService.ListArtifactsParams = {
           projectName: this.projectName,
           repositoryName: this.repoName,
-          withImmutableStatus: true,
           withLabel: true,
           withScanOverview: true,
-          withSignature: true,
           withTag: true
         };
         Object.assign(listArtifactParams, params);
