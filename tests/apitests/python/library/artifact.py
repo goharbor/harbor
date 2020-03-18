@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import time
 import base
 import v2_swagger_client
 from v2_swagger_client.rest import ApiException
@@ -12,6 +13,8 @@ class Artifact(base.Base):
             params["with_signature"] = kwargs["with_signature"]
         if "with_tag" in kwargs:
             params["with_tag"] = kwargs["with_tag"]
+        if "with_scan_overview" in kwargs:
+            params["with_scan_overview"] = kwargs["with_scan_overview"]
         return client.get_artifact_with_http_info(project_name, repo_name, reference, **params )
 
     def add_label_to_reference(self, project_name, repo_name, reference, label_id, **kwargs):
@@ -44,3 +47,17 @@ class Artifact(base.Base):
         client = self._get_client(**kwargs)
         _, status_code, _ = client.delete_tag_with_http_info(project_name, repo_name, reference, tag_name)
         base._assert_status_code(expect_status_code, status_code)
+
+    def check_image_scan_result(self, project_name, repo_name, reference, expected_scan_status = "Success", **kwargs):
+        timeout_count = 30
+        scan_status=""
+        while True:
+            time.sleep(5)
+            timeout_count = timeout_count - 1
+            if (timeout_count == 0):
+                break
+            artifact = self.get_reference_info(project_name, repo_name, reference, **kwargs)
+            scan_status = artifact[0].scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0']["scan_status"]
+            if scan_status == expected_scan_status:
+                return
+        raise Exception("Scan image result is {}, not as expected {}.".format(scan_status, expected_scan_status))

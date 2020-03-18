@@ -38,6 +38,7 @@ def _create_client(server, credential, debug, api_type="products"):
         "products":   swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
         "artifact":   v2_swagger_client.ArtifactApi(v2_swagger_client.ApiClient(cfg)),
         "repository": v2_swagger_client.RepositoryApi(v2_swagger_client.ApiClient(cfg)),
+        "scan": v2_swagger_client.ScanApi(v2_swagger_client.ApiClient(cfg)),
     }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code):
