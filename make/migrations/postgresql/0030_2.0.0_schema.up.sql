@@ -175,7 +175,6 @@ CREATE TABLE audit_log
 );
 
 /*migrate access log to audit log*/
-/*TODO drop table access_log?*/
 DO $$
 DECLARE
     access RECORD;
@@ -194,6 +193,9 @@ BEGIN
       END IF;
     END LOOP;
 END $$;
+
+/*drop access table after migrate to audit log*/
+DROP TABLE IF EXISTS access_log;
 
 /*remove the constraint for project_id in table 'notification_policy'*/
 ALTER TABLE notification_policy DROP CONSTRAINT unique_project_id;

@@ -496,68 +496,6 @@ func (p *ProjectAPI) Put() {
 	}
 }
 
-// Logs ...
-func (p *ProjectAPI) Logs() {
-	if !p.requireAccess(rbac.ActionList, rbac.ResourceLog) {
-		return
-	}
-
-	page, size, err := p.GetPaginationParams()
-	if err != nil {
-		p.SendBadRequestError(err)
-		return
-	}
-	query := &models.LogQueryParam{
-		ProjectIDs: []int64{p.project.ProjectID},
-		Username:   p.GetString("username"),
-		Repository: p.GetString("repository"),
-		Tag:        p.GetString("tag"),
-		Operations: p.GetStrings("operation"),
-		Pagination: &models.Pagination{
-			Page: page,
-			Size: size,
-		},
-	}
-
-	timestamp := p.GetString("begin_timestamp")
-	if len(timestamp) > 0 {
-		t, err := utils.ParseTimeStamp(timestamp)
-		if err != nil {
-			p.SendBadRequestError(fmt.Errorf("invalid begin_timestamp: %s", timestamp))
-			return
-		}
-		query.BeginTime = t
-	}
-
-	timestamp = p.GetString("end_timestamp")
-	if len(timestamp) > 0 {
-		t, err := utils.ParseTimeStamp(timestamp)
-		if err != nil {
-			p.SendBadRequestError(fmt.Errorf("invalid end_timestamp: %s", timestamp))
-			return
-		}
-		query.EndTime = t
-	}
-
-	total, err := dao.GetTotalOfAccessLogs(query)
-	if err != nil {
-		p.SendInternalServerError(fmt.Errorf(
-			"failed to get total of access log: %v", err))
-		return
-	}
-
-	logs, err := dao.GetAccessLogs(query)
-	if err != nil {
-		p.SendInternalServerError(fmt.Errorf(
-			"failed to get access log: %v", err))
-		return
-	}
-
-	p.SetPaginationHeader(total, page, size)
-	p.Data["json"] = logs
-	p.ServeJSON()
-}
-
 // Summary returns the summary of the project
 func (p *ProjectAPI) Summary() {
 	if !p.requireAccess(rbac.ActionRead) {

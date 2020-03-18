@@ -106,7 +106,6 @@ func init() {
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/users/:id/permissions", &UserAPI{}, "get:ListUserPermissions")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
-	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/summary", &ProjectAPI{}, "get:Summary")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &MetadataAPI{}, "get:Get")
@@ -116,7 +115,6 @@ func init() {
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/usergroups/?:ugid([0-9]+)", &UserGroupAPI{})
-	beego.Router("/api/logs", &LogAPI{})
 	beego.Router("/api/registries", &RegistryAPI{}, "get:List;post:Post")
 	beego.Router("/api/registries/ping", &RegistryAPI{}, "post:Ping")
 	beego.Router("/api/registries/:id([0-9]+)", &RegistryAPI{}, "get:Get;put:Put;delete:Delete")
@@ -316,22 +314,6 @@ func (a testapi) StatisticGet(user usrInfo) (int, apilib.StatisticMap, error) {
 	return httpStatusCode, successPayload, err
 }
 
-func (a testapi) LogGet(user usrInfo) (int, []apilib.AccessLog, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	// create path and map variables
-	path := "/api/logs/"
-	fmt.Printf("logs path: %s\n", path)
-	_sling = _sling.Path(path)
-
-	var successPayload []apilib.AccessLog
-	code, body, err := request(_sling, jsonAcceptHeader, user)
-	if 200 == code && nil == err {
-		err = json.Unmarshal(body, &successPayload)
-	}
-	return code, successPayload, err
-}
-
 // Delete project by projectID
 func (a testapi) ProjectsDelete(prjUsr usrInfo, projectID string) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
@@ -411,15 +393,6 @@ func (a testapi) ProjectsPut(prjUsr usrInfo, projectID string,
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
 	return httpStatusCode, err
 
-}
-
-// Get access logs accompany with a relevant project.
-func (a testapi) ProjectLogs(prjUsr usrInfo, projectID string, query *apilib.LogQuery) (int, []byte, error) {
-	_sling := sling.New().Get(a.basePath).
-		Path("/api/projects/" + projectID + "/logs").
-		QueryStruct(query)
-
-	return request(_sling, jsonAcceptHeader, prjUsr)
 }
 
 // ProjectDeletable check whether a project can be deleted
