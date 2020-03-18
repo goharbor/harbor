@@ -546,38 +546,9 @@ paths:
       operationId: listAuditLogs
       parameters:
         - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        - name: username
-          in: query
-          type: string
-          required: false
-          description: Username of the operator.
-        - name: resource
-          in: query
-          type: string
-          required: false
-          description: The identity of resource
-        - name: resource_type
-          in: query
-          type: string
-          required: false
-          description: The type of resource, artifact/tag/repository
-        - name: operation
-          in: query
-          type: string
-          required: false
-          description: The operation, create/delete
-        - name: begin_timestamp
-          in: query
-          type: string
-          required: false
-          description: The begin timestamp
-        - name: end_timestamp
-          in: query
-          type: string
-          required: false
-          description: The end timestamp
       responses:
         '200':
           description: Success

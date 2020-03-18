@@ -32,14 +32,17 @@ type PushArtifactEventMetadata struct {
 
 // Resolve to the event from the metadata
 func (p *PushArtifactEventMetadata) Resolve(event *event.Event) error {
+	ae := &event2.ArtifactEvent{
+		EventType:  event2.TopicPushArtifact,
+		Repository: p.Artifact.RepositoryName,
+		Artifact:   p.Artifact,
+		OccurAt:    time.Now(),
+	}
+	if p.Tag != "" {
+		ae.Tags = []string{p.Tag}
+	}
 	data := &event2.PushArtifactEvent{
-		ArtifactEvent: &event2.ArtifactEvent{
-			EventType:  event2.TopicPushArtifact,
-			Repository: p.Artifact.RepositoryName,
-			Artifact:   p.Artifact,
-			Tags:       []string{p.Tag},
-			OccurAt:    time.Now(),
-		},
+		ArtifactEvent: ae,
 	}
 	ctx, exist := security.FromContext(p.Ctx)
 	if exist {
@@ -59,14 +62,17 @@ type PullArtifactEventMetadata struct {
 
 // Resolve to the event from the metadata
 func (p *PullArtifactEventMetadata) Resolve(event *event.Event) error {
+	ae := &event2.ArtifactEvent{
+		EventType:  event2.TopicPullArtifact,
+		Repository: p.Artifact.RepositoryName,
+		Artifact:   p.Artifact,
+		OccurAt:    time.Now(),
+	}
+	if p.Tag != "" {
+		ae.Tags = []string{p.Tag}
+	}
 	data := &event2.PullArtifactEvent{
-		ArtifactEvent: &event2.ArtifactEvent{
-			EventType:  event2.TopicPullArtifact,
-			Repository: p.Artifact.RepositoryName,
-			Artifact:   p.Artifact,
-			Tags:       []string{p.Tag},
-			OccurAt:    time.Now(),
-		},
+		ArtifactEvent: ae,
 	}
 	ctx, exist := security.FromContext(p.Ctx)
 	if exist {
