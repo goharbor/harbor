@@ -26,11 +26,11 @@ import (
 	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/goharbor/harbor/src/api/project"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/project"
 	errs "github.com/goharbor/harbor/src/server/error"
 )
 
@@ -66,8 +66,7 @@ func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName inte
 	}
 
 	if projectName != "" {
-		// TODO: use the project controller to replace the project manager
-		p, err := project.Mgr.Get(projectName)
+		p, err := project.Ctl.GetByName(ctx, projectName)
 		if err != nil {
 			log.Errorf("failed to get project %s: %v", projectName, err)
 			return false

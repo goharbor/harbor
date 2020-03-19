@@ -37,11 +37,8 @@ Test Case - Manage Project Member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
 Test Case - Project Level Policy Content Trust
     Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
-# TODO uncomment this after we move the accesslog away from registry notificaiton
-# TODO potentially #10602 may also fix this.
-# User View Logs still in failure state - danfeng@3/11 2020.
-# Test Case - User View Logs
-#    Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
+Test Case - User View Logs
+    Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
 Test Case - List Helm Charts
     Harbor API Test  ./tests/apitests/python/test_list_helm_charts.py
 Test Case - Assign Sys Admin

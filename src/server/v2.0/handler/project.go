@@ -24,7 +24,7 @@ type projectAPI struct {
 }
 
 func (a *projectAPI) GetLogs(ctx context.Context, params operation.GetLogsParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourceLog); err != nil {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceLog); err != nil {
 		return a.SendError(ctx, err)
 	}
 	pro, err := a.proCtl.GetByName(ctx, params.ProjectName)
