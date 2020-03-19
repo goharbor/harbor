@@ -30,9 +30,7 @@ func registerRoutes() {
 	// Controller API:
 	beego.Router("/c/login", &controllers.CommonController{}, "post:Login")
 	beego.Router("/c/log_out", &controllers.CommonController{}, "get:LogOut")
-	beego.Router("/c/reset", &controllers.CommonController{}, "post:ResetPassword")
 	beego.Router("/c/userExists", &controllers.CommonController{}, "post:UserExists")
-	beego.Router("/c/sendEmail", &controllers.CommonController{}, "get:SendResetEmail")
 	beego.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
 	beego.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
 	beego.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
