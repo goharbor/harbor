@@ -335,9 +335,9 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
     config_dict['registry_username'] = REGISTRY_USER_NAME
     config_dict['registry_password'] = generate_random_string(32)
 
-    internal_tls_config = configs['internal_tls']
+    internal_tls_config = configs.get('internal_tls')
     # TLS related configs
-    if internal_tls_config.get('enabled'):
+    if internal_tls_config and internal_tls_config.get('enabled'):
         config_dict['internal_tls'] = InternalTLS(
             internal_tls_config['enabled'],
             internal_tls_config['verify_client_cert'],
