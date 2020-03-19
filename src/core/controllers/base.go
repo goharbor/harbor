@@ -17,7 +17,6 @@ package controllers
 import (
 	"bytes"
 	"context"
-	"github.com/goharbor/harbor/src/core/api"
 	"html/template"
 	"net"
 	"net/http"
@@ -34,9 +33,10 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	email_util "github.com/goharbor/harbor/src/common/utils/email"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
+	"github.com/goharbor/harbor/src/internal"
 )
 
 // CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
@@ -60,8 +60,7 @@ type messageDetail struct {
 }
 
 func redirectForOIDC(ctx context.Context, username string) bool {
-	am, _ := ctx.Value(filter.AuthModeKey).(string)
-	if am != common.OIDCAuth {
+	if internal.GetAuthMode(ctx) != common.OIDCAuth {
 		return false
 	}
 	u, err := dao.GetUser(models.User{Username: username})
