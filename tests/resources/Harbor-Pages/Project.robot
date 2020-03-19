@@ -205,8 +205,8 @@ Go Into Repo
     \    Capture Page Screenshot  gointo_${repoName}.png
     \    Sleep  2
     Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}  Retry Wait Until Page Not Contains Element  ${repo_name_element}
-    Retry Wait Element  ${tag_table_column_pull_command}
-    Retry Wait Element  ${tag_images_btn}
+    Retry Wait Element  ${tag_table_column_vulnerabilities}
+    Retry Wait Element  ${tag_table_column_size}
     Capture Page Screenshot  gointo_${repoName}.png
 
 Switch To CardView
