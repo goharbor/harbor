@@ -3212,6 +3212,30 @@ paths:
           description: User have no permission to list webhook jobs of the project.
         '500':
           description: Unexpected internal errors.
+  '/projects/{project_id}/webhook/events':
+    get:
+      summary: Get supported event types and notify types.
+      description: Get supportted event types and notify types.
+      tags:
+        - Products
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/SupportedWebhookEventTypes'
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to list webhook jobs of the project.
+        '500':
+          description: Unexpected internal errors.
   '/projects/{project_id}/immutabletagrules':
     get:
       summary: List all immutable tag rules of current project
@@ -6120,3 +6144,23 @@ definitions:
           'Success': 5
           'Error': 2,
           'Running': 3
+  SupportedWebhookEventTypes:
+    type: object
+    description: Supportted webhook event types and notify types.
+    properties:
+      event_type:
+        type: array
+        items:
+          $ref: '#/definitions/EventType'
+      notify_type:
+        type: array
+        items:
+          $ref: '#/definitions/NotifyType'
+  EventType:
+    type: string
+    description: Webhook supportted event type.
+    example: 'pullImage'
+  NotifyType:
+    type: string
+    description: Webhook supportted notify type.
+    example: 'http'
