@@ -50,16 +50,18 @@ import { SummaryComponent } from './project/summary/summary.component';
 import { TagFeatureIntegrationComponent } from './project/tag-feature-integration/tag-feature-integration.component';
 import { TagRetentionComponent } from './project/tag-feature-integration/tag-retention/tag-retention.component';
 import { ImmutableTagComponent } from './project/tag-feature-integration/immutable-tag/immutable-tag.component';
-import { ScannerComponent } from "./project/scanner/scanner.component";
-import { InterrogationServicesComponent } from "./interrogation-services/interrogation-services.component";
-import { ConfigurationScannerComponent } from "./config/scanner/config-scanner.component";
-import { LabelsComponent } from "./labels/labels.component";
-import { ProjectQuotasComponent } from "./project-quotas/project-quotas.component";
-import { VulnerabilityConfigComponent } from "../lib/components/config/vulnerability/vulnerability-config.component";
-import { USERSTATICPERMISSION } from "../lib/services";
-import { RepositoryGridviewComponent } from "./project/repository/repository-gridview.component";
-import { ArtifactListPageComponent } from "./project/repository/artifact-list-page/artifact-list-page.component";
-import { ArtifactSummaryComponent } from "./project/repository/artifact/artifact-summary.component";
+import { ScannerComponent } from './project/scanner/scanner.component';
+import { InterrogationServicesComponent } from './interrogation-services/interrogation-services.component';
+import { ConfigurationScannerComponent } from './config/scanner/config-scanner.component';
+import { LabelsComponent } from './labels/labels.component';
+import { ProjectQuotasComponent } from './project-quotas/project-quotas.component';
+import { VulnerabilityConfigComponent } from '../lib/components/config/vulnerability/vulnerability-config.component';
+import { USERSTATICPERMISSION } from '../lib/services';
+import { RepositoryGridviewComponent } from './project/repository/repository-gridview.component';
+import { ArtifactListPageComponent } from './project/repository/artifact-list-page/artifact-list-page.component';
+import { ArtifactSummaryComponent } from './project/repository/artifact/artifact-summary.component';
+import { DistributionHistoryComponent } from './distribution/distribution-history/distribution-history.component';
+import { DistributionInstancesComponent } from './distribution/distribution-instances/distribution-instances.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -135,18 +137,18 @@ const harborRoutes: Routes = [
             path: '',
             redirectTo: 'scanners',
             pathMatch: 'full'
-          },
+          }
         ]
       },
       {
         path: 'labels',
         component: LabelsComponent,
-        canActivate: [SystemAdminGuard],
+        canActivate: [SystemAdminGuard]
       },
       {
         path: 'project-quotas',
         component: ProjectQuotasComponent,
-        canActivate: [SystemAdminGuard],
+        canActivate: [SystemAdminGuard]
       },
       {
         path: 'replications/:id/:tasks',
@@ -285,8 +287,7 @@ const harborRoutes: Routes = [
                 path: 'immutable-tag',
                 component: ImmutableTagComponent
               },
-              { path: '', redirectTo: 'tag-retention', pathMatch: 'full' },
-
+              { path: '', redirectTo: 'tag-retention', pathMatch: 'full' }
             ]
           },
           {
@@ -327,7 +328,7 @@ const harborRoutes: Routes = [
         canActivate: [MemberGuard],
         resolve: {
           projectResolver: ProjectRoutingResolver
-        },
+        }
       },
       {
         path: 'projects/:id/repositories/:repo/artifacts/:digest',
@@ -360,6 +361,16 @@ const harborRoutes: Routes = [
         component: DestinationPageComponent,
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard]
+      },
+      {
+        path: 'distribution/instances',
+        component: DistributionInstancesComponent,
+        canActivate: [SystemAdminGuard]
+      },
+      {
+        path: 'distribution/histories',
+        component: DistributionHistoryComponent,
+        canActivate: [SystemAdminGuard]
       }
     ]
   },
