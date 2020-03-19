@@ -9,15 +9,11 @@ import (
 
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/api/artifact"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/internal"
-	"github.com/goharbor/harbor/src/pkg/scan/vuln"
-	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
 	"github.com/opencontainers/go-digest"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -74,8 +70,6 @@ func CopyResp(rec *httptest.ResponseRecorder, rw http.ResponseWriter) {
 type PolicyChecker interface {
 	// contentTrustEnabled returns whether a project has enabled content trust.
 	ContentTrustEnabled(name string) bool
-	// vulnerablePolicy  returns whether a project has enabled vulnerable, and the project's severity.
-	VulnerablePolicy(name string) (bool, vuln.Severity, models.CVEWhitelist)
 }
 
 // PmsPolicyChecker ...
@@ -95,38 +89,6 @@ func (pc PmsPolicyChecker) ContentTrustEnabled(name string) bool {
 		return false
 	}
 	return project.ContentTrustEnabled()
-}
-
-// VulnerablePolicy ...
-func (pc PmsPolicyChecker) VulnerablePolicy(name string) (bool, vuln.Severity, models.CVEWhitelist) {
-	project, err := pc.pm.Get(name)
-	wl := models.CVEWhitelist{}
-	if err != nil {
-		log.Errorf("Unexpected error when getting the project, error: %v", err)
-		return true, vuln.Unknown, wl
-	}
-
-	mgr := whitelist.NewDefaultManager()
-	if project.ReuseSysCVEWhitelist() {
-		w, err := mgr.GetSys()
-		if err != nil {
-			log.Error(errors.Wrap(err, "policy checker: vulnerable policy"))
-		} else {
-			wl = *w
-
-			// Use the real project ID
-			wl.ProjectID = project.ProjectID
-		}
-	} else {
-		w, err := mgr.Get(project.ProjectID)
-		if err != nil {
-			log.Error(errors.Wrap(err, "policy checker: vulnerable policy"))
-		} else {
-			wl = *w
-		}
-	}
-
-	return project.VulPrevented(), vuln.ParseSeverityVersion3(project.Severity()), wl
 }
 
 // NewPMSPolicyChecker returns an instance of an pmsPolicyChecker

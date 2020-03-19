@@ -96,15 +96,15 @@ func (m *modelTestSuite) TestArtifactTo() {
 	assert.Equal(t, `{"anno1":"value1"}`, dbArt.Annotations)
 }
 
-func (m *modelTestSuite) TestHasChildren() {
+func (m *modelTestSuite) TestIsImageIndex() {
 	art1 := Artifact{ManifestMediaType: v1.MediaTypeImageIndex}
-	m.True(art1.HasChildren())
+	m.True(art1.IsImageIndex())
 
 	art2 := Artifact{ManifestMediaType: manifestlist.MediaTypeManifestList}
-	m.True(art2.HasChildren())
+	m.True(art2.IsImageIndex())
 
 	art3 := Artifact{ManifestMediaType: v1.MediaTypeImageManifest}
-	m.False(art3.HasChildren())
+	m.False(art3.IsImageIndex())
 }
 
 func TestModel(t *testing.T) {

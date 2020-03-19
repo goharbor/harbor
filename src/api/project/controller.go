@@ -18,8 +18,11 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
 )
 
 var (
@@ -30,23 +33,27 @@ var (
 // Controller defines the operations related with blobs
 type Controller interface {
 	// Get get the project by project id
-	Get(ctx context.Context, projectID int64) (*models.Project, error)
+	Get(ctx context.Context, projectID int64, options ...Option) (*models.Project, error)
 	// GetByName get the project by project name
-	GetByName(ctx context.Context, projectName string) (*models.Project, error)
+	GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error)
 }
 
 // NewController creates an instance of the default project controller
 func NewController() Controller {
 	return &controller{
-		projectMgr: project.Mgr,
+		projectMgr:   project.Mgr,
+		metaMgr:      metamgr.NewDefaultProjectMetadataManager(),
+		whitelistMgr: whitelist.NewDefaultManager(),
 	}
 }
 
 type controller struct {
-	projectMgr project.Manager
+	projectMgr   project.Manager
+	metaMgr      metamgr.ProjectMetadataManager
+	whitelistMgr whitelist.Manager
 }
 
-func (c *controller) Get(ctx context.Context, projectID int64) (*models.Project, error) {
+func (c *controller) Get(ctx context.Context, projectID int64, options ...Option) (*models.Project, error) {
 	p, err := c.projectMgr.Get(projectID)
 	if err != nil {
 		return nil, err
@@ -55,10 +62,10 @@ func (c *controller) Get(ctx context.Context, projectID int64) (*models.Project,
 		return nil, ierror.NotFoundError(nil).WithMessage("project %d not found", projectID)
 	}
 
-	return p, nil
+	return c.assembleProject(ctx, p, options...)
 }
 
-func (c *controller) GetByName(ctx context.Context, projectName string) (*models.Project, error) {
+func (c *controller) GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error) {
 	if projectName == "" {
 		return nil, ierror.BadRequestError(nil).WithMessage("project name required")
 	}
@@ -69,6 +76,47 @@ func (c *controller) GetByName(ctx context.Context, projectName string) (*models
 	}
 	if p == nil {
 		return nil, ierror.NotFoundError(nil).WithMessage("project %s not found", projectName)
+	}
+
+	return c.assembleProject(ctx, p, options...)
+}
+
+func (c *controller) assembleProject(ctx context.Context, p *models.Project, options ...Option) (*models.Project, error) {
+	opts := newOptions(options...)
+
+	if opts.Metadata {
+		meta, err := c.metaMgr.Get(p.ProjectID)
+		if err != nil {
+			return nil, err
+		}
+		if len(p.Metadata) == 0 {
+			p.Metadata = make(map[string]string)
+		}
+
+		for k, v := range meta {
+			p.Metadata[k] = v
+		}
+	}
+
+	if opts.CVEWhitelist {
+		if p.ReuseSysCVEWhitelist() {
+			wl, err := c.whitelistMgr.GetSys()
+			if err != nil {
+				log.Errorf("get system CVE whitelist failed, error: %v", err)
+				return nil, err
+			}
+
+			wl.ProjectID = p.ProjectID
+			p.CVEWhitelist = *wl
+		} else {
+			wl, err := c.whitelistMgr.Get(p.ProjectID)
+			if err != nil {
+				return nil, err
+			}
+
+			p.CVEWhitelist = *wl
+		}
+
 	}
 
 	return p, nil
