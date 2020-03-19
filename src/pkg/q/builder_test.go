@@ -262,4 +262,11 @@ func TestBuild(t *testing.T) {
 	assert.Equal(t, int64(1), query.PageNumber)
 	assert.Equal(t, int64(10), query.PageSize)
 	assert.Equal(t, "v", query.Keywords["k"].(string))
+
+	q = `q=tags%3Dnil`
+	query, err = Build(q, 1, 10)
+	require.Nil(t, err)
+	assert.Equal(t, int64(1), query.PageNumber)
+	assert.Equal(t, int64(10), query.PageSize)
+	assert.Equal(t, "tags=nil", query.Keywords["q"].(string))
 }
