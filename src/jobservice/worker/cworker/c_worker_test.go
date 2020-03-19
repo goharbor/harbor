@@ -188,26 +188,24 @@ func (suite *CWorkerTestSuite) TestStopJob() {
 
 	genericJob, err := suite.cWorker.Enqueue("fake_long_run_job", params, false, "")
 	require.NoError(suite.T(), err, "enqueue job: nil error expected but got %s", err)
-	t, err := suite.lcmCtl.New(genericJob)
+	_, err = suite.lcmCtl.New(genericJob)
 	require.NoError(suite.T(), err, "new job stats: nil error expected but got %s", err)
 
-	tk := time.NewTicker(417 * time.Millisecond)
-	defer tk.Stop()
+	/*
+		// Check if the job is running
+		times := 20
+		sleep := 500 * time.Millisecond
 
-LOOP:
-	for {
-		select {
-		case <-tk.C:
-			latest, err := t.Status()
-			require.NoError(suite.T(), err, "get latest status: nil error expected but got %s", err)
-			if latest.Compare(job.RunningStatus) >= 0 {
-				break LOOP
+		for times > 0 {
+			st, err := t.Status()
+			require.NoError(suite.T(), err, "retrieve enqueued job status")
+			if st.Compare(job.RunningStatus) >= 0 {
+				break
 			}
-		case <-time.After(29 * time.Second):
-			require.NoError(suite.T(), errors.New("check running status time out"))
-			return
-		}
-	}
+
+			times--
+			time.Sleep(sleep)
+		}*/
 
 	err = suite.cWorker.StopJob(genericJob.Info.JobID)
 	require.NoError(suite.T(), err, "stop job: nil error expected but got %s", err)
@@ -215,7 +213,7 @@ LOOP:
 	// Stop scheduled job
 	scheduledJob, err := suite.cWorker.Schedule("fake_long_run_job", params, 120, false, "")
 	require.NoError(suite.T(), err, "schedule job: nil error expected but got %s", err)
-	t, err = suite.lcmCtl.New(scheduledJob)
+	_, err = suite.lcmCtl.New(scheduledJob)
 	require.NoError(suite.T(), err, "new job stats: nil error expected but got %s", err)
 
 	err = suite.cWorker.StopJob(scheduledJob.Info.JobID)
