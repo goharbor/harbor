@@ -55,9 +55,9 @@ func Test_escape(t *testing.T) {
 			"/api/v2.0/projects/library/repositories",
 		},
 		{
-			"/api/v2.0/projects/library/repositories/hello/mariadb",
-			args{regexp.MustCompile(`^/api/v2.0/projects/.*/repositories/(.*)`), "/api/v2.0/projects/library/repositories/hello/mariadb"},
-			"/api/v2.0/projects/library/repositories/hello%2Fmariadb",
+			"/api/v2.0/projects/library/repositories/hello/mariadb/_self",
+			args{regexp.MustCompile(`^/api/v2.0/projects/.*/repositories/(.*)/_self`), "/api/v2.0/projects/library/repositories/hello/mariadb/_self"},
+			"/api/v2.0/projects/library/repositories/hello%2Fmariadb/_self",
 		},
 	}
 	for _, tt := range tests {
@@ -70,11 +70,11 @@ func Test_escape(t *testing.T) {
 }
 
 func TestEscapeMiddleware(t *testing.T) {
-	r := httptest.NewRequest(http.MethodGet, "/api/v2.0/projects/library/repositories/hello/mariadb", nil)
+	r := httptest.NewRequest(http.MethodGet, "/api/v2.0/projects/library/repositories/hello/mariadb/_self", nil)
 	w := httptest.NewRecorder()
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/api/v2.0/projects/library/repositories/hello%2Fmariadb" {
+		if r.URL.Path != "/api/v2.0/projects/library/repositories/hello%2Fmariadb/_self" {
 			t.Errorf("escape middleware failed")
 		}
 		w.WriteHeader(http.StatusOK)
