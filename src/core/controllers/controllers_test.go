@@ -45,9 +45,7 @@ func init() {
 
 	beego.Router("/c/login", &CommonController{}, "post:Login")
 	beego.Router("/c/log_out", &CommonController{}, "get:LogOut")
-	beego.Router("/c/reset", &CommonController{}, "post:ResetPassword")
 	beego.Router("/c/userExists", &CommonController{}, "post:UserExists")
-	beego.Router("/c/sendEmail", &CommonController{}, "get:SendResetEmail")
 }
 
 func TestMain(m *testing.M) {
@@ -120,18 +118,9 @@ func TestAll(t *testing.T) {
 	assert.Equal(int(200), w.Code, "'/c/log_out' httpStatusCode should be 200")
 	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), ""), "http respond should be empty")
 
-	r, _ = http.NewRequest("POST", "/c/reset", nil)
-	w = httptest.NewRecorder()
-	handler.ServeHTTP(w, r)
-	assert.Equal(http.StatusForbidden, w.Code, "'/c/reset' httpStatusCode should be 403")
-
 	r, _ = http.NewRequest("POST", "/c/userExists", nil)
 	w = httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
 	assert.Equal(http.StatusForbidden, w.Code, "'/c/userExists' httpStatusCode should be 403")
 
-	r, _ = http.NewRequest("GET", "/c/sendEmail", nil)
-	w = httptest.NewRecorder()
-	handler.ServeHTTP(w, r)
-	assert.Equal(int(400), w.Code, "'/c/sendEmail' httpStatusCode should be 400")
 }
