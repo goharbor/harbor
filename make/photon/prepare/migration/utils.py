@@ -19,12 +19,15 @@ def read_conf(path):
 def to_module_path(ver):
     return "migration.versions.{}".format(ver.replace(".","_"))
 
-def search(input_ver: str, target_ver: str):
+def search(input_ver: str, target_ver: str) -> list:
+    """
+    Search accept a input version and the target version.
+    Returns the module of migrations in the upgrade path
+    """
     def helper():
         nonlocal basedir
         nonlocal cur_target
         while True:
-            print(input_ver, cur_target)
             module_path = to_module_path(cur_target)
             if os.path.isdir(os.path.join(basedir, 'versions', cur_target.replace(".","_"))):
                 module = importlib.import_module(module_path)
@@ -36,7 +39,7 @@ def search(input_ver: str, target_ver: str):
                 else:
                     return
             else:
-                print(os.path.join(basedir, 'versions', cur_target.replace(".","_")), 'not dir')
+                click.echo('{} not dir'.format(os.path.join(basedir, 'versions', cur_target.replace(".","_"))))
                 return
     basedir = os.path.dirname(__file__)
     cur_target = target_ver
