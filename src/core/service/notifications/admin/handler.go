@@ -19,12 +19,14 @@ import (
 	"encoding/json"
 
 	o "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/api/quota"
 	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
 	job_model "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/service/notifications"
 	"github.com/goharbor/harbor/src/internal/orm"
 	j "github.com/goharbor/harbor/src/jobservice/job"
@@ -109,5 +111,11 @@ func (h *Handler) HandleAdminJob() {
 	// For scan all job
 	if h.jobName == job.ImageScanAllJob && h.checkIn != "" {
 		go scan.HandleCheckIn(orm.NewContext(context.TODO(), o.NewOrm()), h.checkIn)
+	} else if h.jobName == job.ImageGC && h.status == models.JobFinished {
+		go func() {
+			if config.QuotaPerProjectEnable() {
+				quota.RefreshForProjects(orm.NewContext(context.TODO(), o.NewOrm()))
+			}
+		}()
 	}
 }

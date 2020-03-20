@@ -88,7 +88,7 @@ func (ia *InternalAPI) SwitchQuota() {
 		}
 
 		ctx := orm.NewContext(ia.Ctx.Request.Context(), o.NewOrm())
-		if err := ia.refreshQuotas(ctx); err != nil {
+		if err := quota.RefreshForProjects(ctx); err != nil {
 			ia.SendInternalServerError(err)
 			return
 		}
@@ -99,38 +99,6 @@ func (ia *InternalAPI) SwitchQuota() {
 		config.GetCfgManager().Save()
 	}()
 	return
-}
-
-func (ia *InternalAPI) refreshQuotas(ctx context.Context) error {
-	driver, err := quota.Driver(ctx, quota.ProjectReference)
-	if err != nil {
-		return err
-	}
-
-	projects, err := dao.GetProjects(nil)
-	if err != nil {
-		return err
-	}
-
-	for _, project := range projects {
-		referenceID := quota.ReferenceID(project.ProjectID)
-
-		_, err := quota.Ctl.GetByRef(ctx, quota.ProjectReference, referenceID)
-		if ierror.IsNotFoundErr(err) {
-			if _, err := quota.Ctl.Create(ctx, quota.ProjectReference, referenceID, driver.HardLimits(ctx)); err != nil {
-				log.Warningf("initialize quota for project %s failed, error: %v", project.Name, err)
-				continue
-			}
-		} else if err != nil {
-			log.Warningf("get quota of the project %s failed, error: %v", project.Name, err)
-			continue
-		}
-
-		if err := quota.Ctl.Refresh(ctx, quota.ProjectReference, referenceID, quota.IgnoreLimitation(true)); err != nil {
-			log.Warningf("refresh quota usage for project %s failed, error: %v", project.Name, err)
-		}
-	}
-	return nil
 }
 
 // SyncQuota ...
@@ -154,7 +122,7 @@ func (ia *InternalAPI) SyncQuota() {
 		}()
 		log.Info("start to sync quota(API), the system will be set to ReadOnly and back it normal once it done.")
 		ctx := orm.NewContext(context.TODO(), o.NewOrm())
-		err := ia.refreshQuotas(ctx)
+		err := quota.RefreshForProjects(ctx)
 		if err != nil {
 			log.Errorf("fail to sync quota(API), but with error: %v, please try to do it again.", err)
 			return
