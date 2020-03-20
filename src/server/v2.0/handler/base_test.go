@@ -53,6 +53,18 @@ func (b *baseHandlerTestSuite) TestBuildQuery() {
 	b.Equal(int64(1), q.PageNumber)
 	b.Equal(int64(10), q.PageSize)
 	b.NotNil(q.Keywords)
+
+	var (
+		qs1       = "q=a%3Db"
+		pn1 int64 = 1
+		ps1 int64 = 10
+	)
+	q, err = b.base.BuildQuery(nil, &qs1, &pn1, &ps1)
+	b.Require().Nil(err)
+	b.Require().NotNil(q)
+	b.Equal(int64(1), q.PageNumber)
+	b.Equal(int64(10), q.PageSize)
+	b.Equal(q.Keywords["q"], "a=b")
 }
 
 func (b *baseHandlerTestSuite) TestLinks() {

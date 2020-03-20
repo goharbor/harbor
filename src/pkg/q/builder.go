@@ -16,7 +16,9 @@ package q
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -37,6 +39,12 @@ func Build(q string, pageNumber, pageSize int64) (*Query, error) {
 	}
 	if len(q) == 0 {
 		return query, nil
+	}
+	// try to escaped the 'q=tags%3Dnil' when to filter tags.
+	if unescapedQuery, err := url.QueryUnescape(q); err == nil {
+		q = unescapedQuery
+	} else {
+		log.Errorf("failed to unescape the query %s: %v", q, err)
 	}
 	params := strings.Split(q, ",")
 	for _, param := range params {
