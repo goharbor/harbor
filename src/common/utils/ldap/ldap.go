@@ -218,6 +218,15 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 					log.Debugf("Found memberof %v", dnItem)
 				}
 			}
+			if strings.Contains(session.ldapGroupConfig.LdapGroupFilter, "posixGroup") {
+				posixGroupList, err := session.searchPosixGroups(session.ldapGroupConfig.LdapGroupBaseDN, session.ldapGroupConfig.LdapGroupFilter, session.ldapGroupConfig.LdapGroupNameAttribute, session.ldapGroupConfig.LdapGroupMembershipAttribute, u.Username)
+				if err != nil {
+					return nil, err
+				}
+				for _, posixGroup := range posixGroupList {
+					groupDNList = append(groupDNList, strings.TrimSpace(posixGroup.GroupDN))
+				}
+			}
 			u.GroupDNList = groupDNList
 		}
 
@@ -388,6 +397,34 @@ func (session *Session) searchGroup(baseDN, filter, groupName, groupNameAttribut
 		var group models.LdapGroup
 		group.GroupDN = ldapEntry.DN
 		for _, attr := range ldapEntry.Attributes {
+			// OpenLdap sometimes contain leading space in useranme
+			val := strings.TrimSpace(attr.Values[0])
+			log.Debugf("Current ldap entry attr name: %s\n", attr.Name)
+			switch strings.ToLower(attr.Name) {
+			case strings.ToLower(groupNameAttribute):
+				group.GroupName = val
+			}
+		}
+		ldapGroups = append(ldapGroups, group)
+	}
+	return ldapGroups, nil
+}
+
+func (session *Session) searchPosixGroups(baseDN, filter, groupNameAttribute, groupMembershipAttribute, uid string) ([]models.LdapGroup, error) {
+	ldapGroups := make([]models.LdapGroup, 0)
+	log.Debugf("All posixgroups under basedn: %v", baseDN)
+	filter = fmt.Sprintf("(&(%s)(%s=%s))", filter, groupMembershipAttribute, uid)
+	attributes := []string{groupNameAttribute}
+	result, err := session.SearchLdapAttribute(baseDN, filter, attributes)
+	if err != nil {
+		return nil, err
+	}
+	for _, ldapEntry := range result.Entries {
+		var group models.LdapGroup
+		group.GroupDN = ldapEntry.DN
+		log.Debugf("Current ldap group %s attr length: %d\n", ldapEntry.DN, len(ldapEntry.Attributes))
+		for _, attr := range ldapEntry.Attributes {
+			log.Debugf("Current ldap group %s attr: %s\n", ldapEntry.DN, strings.Join(attr.Values, ","))
 			// OpenLdap sometimes contain leading space in useranme
 			val := strings.TrimSpace(attr.Values[0])
 			log.Debugf("Current ldap entry attr name: %s\n", attr.Name)

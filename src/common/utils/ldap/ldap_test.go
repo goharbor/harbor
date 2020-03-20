@@ -304,6 +304,59 @@ func TestSession_SearchGroup(t *testing.T) {
 	}
 }
 
+func TestSession_SearchPosixGroups(t *testing.T) {
+	type fields struct {
+		ldapConfig models.LdapConf
+		ldapConn   *goldap.Conn
+	}
+	type args struct {
+		baseDN                   string
+		filter                   string
+		groupNameAttribute       string
+		groupMembershipAttribute string
+		uid                      string
+	}
+
+	ldapConfig := models.LdapConf{
+		LdapURL:            ldapTestConfig[common.LDAPURL].(string) + ":389",
+		LdapSearchDn:       ldapTestConfig[common.LDAPSearchDN].(string),
+		LdapScope:          2,
+		LdapSearchPassword: ldapTestConfig[common.LDAPSearchPwd].(string),
+		LdapBaseDn:         ldapTestConfig[common.LDAPBaseDN].(string),
+	}
+
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []models.LdapGroup
+		wantErr bool
+	}{
+		{"normal search",
+			fields{ldapConfig: ldapConfig},
+			args{baseDN: "dc=example,dc=com", filter: "objectClass=posixGroup", groupNameAttribute: "memberUid", groupMembershipAttribute: "memberUid", uid: "brian"},
+			[]models.LdapGroup{{GroupName: "harbor_users_posix", GroupDN: "cn=harbor_users_posix,ou=groups,dc=example,dc=com"}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			session := &Session{
+				ldapConfig: tt.fields.ldapConfig,
+				ldapConn:   tt.fields.ldapConn,
+			}
+			session.Open()
+			defer session.Close()
+			got, err := session.searchPosixGroups(tt.args.baseDN, tt.args.filter, tt.args.groupNameAttribute, tt.args.groupMembershipAttribute, tt.args.uid)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Session.SearchGroup() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Session.SearchGroup() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestSession_SearchGroupByDN(t *testing.T) {
 	ldapConfig := models.LdapConf{
 		LdapURL:            ldapTestConfig[common.LDAPURL].(string) + ":389",

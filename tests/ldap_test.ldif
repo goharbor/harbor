@@ -773,5 +773,28 @@ uidnumber: 6003
 userpassword: {MD5}wb68DeX0CyENafzUADNn9A==
 memberof: cn=harbor_admin,ou=groups,dc=example,dc=com
 
+dn: cn=brian,ou=people,dc=example,dc=com
+cn: brian
+gidnumber: 10000
+givenname: brian
+homedirectory: /home/brian
+loginshell: /bin/bash
+mail: brian@example.com
+objectclass: top
+objectclass: posixAccount
+objectclass: shadowAccount
+objectclass: inetOrgPerson
+objectclass: organizationalPerson
+objectclass: person
+sn: brian
+uid: brian
+uidnumber: 6004
+userpassword: {MD5}wb68DeX0CyENafzUADNn9A==
 
-
+# Group Entry harbor_users_posix
+dn: cn=harbor_users_posix,ou=groups,dc=example,dc=com
+cn: harbor_users_posix
+description: harbor users posix
+memberUid: brian
+objectClass: top
+objectClass: posixGroup
