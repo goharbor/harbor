@@ -15,8 +15,14 @@
 package quota
 
 import (
+	"context"
 	"fmt"
 	"strconv"
+
+	"github.com/goharbor/harbor/src/api/project"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 )
 
 const (
@@ -38,4 +44,68 @@ func ReferenceID(i interface{}) string {
 	default:
 		return fmt.Sprintf("%v", i)
 	}
+}
+
+// RefreshForProjects refresh quotas of all projects
+func RefreshForProjects(ctx context.Context) error {
+	log := log.G(ctx)
+
+	driver, err := Driver(ctx, ProjectReference)
+	if err != nil {
+		return err
+	}
+
+	projects := func(chunkSize int) <-chan *models.Project {
+		ch := make(chan *models.Project, chunkSize)
+
+		go func() {
+			defer close(ch)
+
+			params := &models.ProjectQueryParam{
+				Pagination: &models.Pagination{Page: 1, Size: int64(chunkSize)},
+			}
+
+			for {
+				results, err := project.Ctl.List(ctx, params, project.Metadata(false))
+				if err != nil {
+					log.Errorf("list projects failed, error: %v", err)
+					return
+				}
+
+				for _, p := range results {
+					ch <- p
+				}
+
+				if len(results) < chunkSize {
+					break
+				}
+
+				params.Pagination.Page++
+			}
+
+		}()
+
+		return ch
+	}(50) // default chunk size is 50
+
+	for p := range projects {
+		referenceID := ReferenceID(p.ProjectID)
+
+		_, err := Ctl.GetByRef(ctx, ProjectReference, referenceID)
+		if ierror.IsNotFoundErr(err) {
+			if _, err := Ctl.Create(ctx, ProjectReference, referenceID, driver.HardLimits(ctx)); err != nil {
+				log.Warningf("initialize quota for project %s failed, error: %v", p.Name, err)
+				continue
+			}
+		} else if err != nil {
+			log.Warningf("get quota of the project %s failed, error: %v", p.Name, err)
+			continue
+		}
+
+		if err := Ctl.Refresh(ctx, ProjectReference, referenceID, IgnoreLimitation(true)); err != nil {
+			log.Warningf("refresh quota usage for project %s failed, error: %v", p.Name, err)
+		}
+	}
+
+	return nil
 }

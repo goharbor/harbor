@@ -36,6 +36,8 @@ type Controller interface {
 	Get(ctx context.Context, projectID int64, options ...Option) (*models.Project, error)
 	// GetByName get the project by project name
 	GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error)
+	// List list projects
+	List(ctx context.Context, query *models.ProjectQueryParam, options ...Option) ([]*models.Project, error)
 }
 
 // NewController creates an instance of the default project controller
@@ -62,7 +64,7 @@ func (c *controller) Get(ctx context.Context, projectID int64, options ...Option
 		return nil, ierror.NotFoundError(nil).WithMessage("project %d not found", projectID)
 	}
 
-	return c.assembleProject(ctx, p, options...)
+	return c.assembleProject(ctx, p, newOptions(options...))
 }
 
 func (c *controller) GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error) {
@@ -78,12 +80,26 @@ func (c *controller) GetByName(ctx context.Context, projectName string, options 
 		return nil, ierror.NotFoundError(nil).WithMessage("project %s not found", projectName)
 	}
 
-	return c.assembleProject(ctx, p, options...)
+	return c.assembleProject(ctx, p, newOptions(options...))
 }
 
-func (c *controller) assembleProject(ctx context.Context, p *models.Project, options ...Option) (*models.Project, error) {
-	opts := newOptions(options...)
+func (c *controller) List(ctx context.Context, query *models.ProjectQueryParam, options ...Option) ([]*models.Project, error) {
+	projects, err := c.projectMgr.List(query)
+	if err != nil {
+		return nil, err
+	}
 
+	opts := newOptions(options...)
+	for _, p := range projects {
+		if _, err := c.assembleProject(ctx, p, opts); err != nil {
+			return nil, err
+		}
+	}
+
+	return projects, nil
+}
+
+func (c *controller) assembleProject(ctx context.Context, p *models.Project, opts *Options) (*models.Project, error) {
 	if opts.Metadata {
 		meta, err := c.metaMgr.Get(p.ProjectID)
 		if err != nil {
