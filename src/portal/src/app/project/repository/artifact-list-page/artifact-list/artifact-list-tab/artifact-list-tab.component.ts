@@ -703,8 +703,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       });
 
       let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
-      titleKey = "REPOSITORY.DELETION_TITLE_TAG";
-      summaryKey = "REPOSITORY.DELETION_SUMMARY_TAG";
+      titleKey = "REPOSITORY.DELETION_TITLE_ARTIFACT";
+      summaryKey = "REPOSITORY.DELETION_SUMMARY_ARTIFACT";
       buttons = ConfirmationButtons.DELETE_CANCEL;
       content = artifactNames.join(" , ");
       let message = new ConfirmationMessage(
