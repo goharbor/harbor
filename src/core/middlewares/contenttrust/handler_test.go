@@ -25,7 +25,7 @@ import (
 	"testing"
 )
 
-var endpoint = "10.117.4.142"
+var endpoint = "jt-dev.local.goharbor.io"
 var notaryServer *httptest.Server
 
 var admiralEndpoint = "http://127.0.0.1:8282"
@@ -50,8 +50,8 @@ func TestMain(m *testing.M) {
 func TestMatchNotaryDigest(t *testing.T) {
 	assert := assert.New(t)
 	// The data from common/utils/notary/helper_test.go
-	img1 := util.ImageInfo{Repository: "notary-demo/busybox", Reference: "1.0", ProjectName: "notary-demo", Digest: "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"}
-	img2 := util.ImageInfo{Repository: "notary-demo/busybox", Reference: "2.0", ProjectName: "notary-demo", Digest: "sha256:12345678"}
+	img1 := util.ImageInfo{Repository: "library/busybox", Reference: "latest-signed", ProjectName: "library", Digest: "sha256:dd97a3fe6d721c5cf03abac0f50e2848dc583f7c4e41bf39102ceb42edfd1808"}
+	img2 := util.ImageInfo{Repository: "library/busybox", Reference: "2.0", ProjectName: "notary-demo", Digest: "sha256:12345678"}
 
 	res1, err := matchNotaryDigest(img1)
 	assert.Nil(err, "Unexpected error: %v, image: %#v", err, img1)

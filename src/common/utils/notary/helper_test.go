@@ -33,7 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
-var endpoint = "10.117.4.142"
+var endpoint = "jt-dev.local.goharbor.io"
 var notaryServer *httptest.Server
 
 func TestMain(m *testing.M) {
@@ -58,19 +58,19 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetInternalTargets(t *testing.T) {
-	targets, err := GetInternalTargets(notaryServer.URL, "admin", "notary-demo/busybox")
+	targets, err := GetInternalTargets(notaryServer.URL, "admin", "library/busybox")
 	assert.Nil(t, err, fmt.Sprintf("Unexpected error: %v", err))
 	assert.Equal(t, 1, len(targets), "")
-	assert.Equal(t, "1.0", targets[0].Tag, "")
+	assert.Equal(t, "latest-signed", targets[0].Tag, "")
 }
 
 func TestGetTargets(t *testing.T) {
-	targets, err := GetTargets(notaryServer.URL, "admin", path.Join(endpoint, "notary-demo/busybox"))
+	targets, err := GetTargets(notaryServer.URL, "admin", path.Join(endpoint, "library/busybox"))
 	assert.Nil(t, err, fmt.Sprintf("Unexpected error: %v", err))
 	assert.Equal(t, 1, len(targets), "")
-	assert.Equal(t, "1.0", targets[0].Tag, "")
+	assert.Equal(t, "latest-signed", targets[0].Tag, "")
 
-	targets, err = GetTargets(notaryServer.URL, "admin", path.Join(endpoint, "notary-demo/notexist"))
+	targets, err = GetTargets(notaryServer.URL, "admin", path.Join(endpoint, "library/notexist"))
 	assert.Nil(t, err, fmt.Sprintf("Unexpected error: %v", err))
 	assert.Equal(t, 0, len(targets), "Targets list should be empty for non exist repo.")
 }
