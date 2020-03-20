@@ -99,6 +99,21 @@ func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName inte
 	return ierror.ForbiddenError(nil)
 }
 
+// RequireSysAdmin checks the system admin permission according to the security context
+func (b *BaseAPI) RequireSysAdmin(ctx context.Context) error {
+	secCtx, ok := security.FromContext(ctx)
+	if !ok {
+		return ierror.UnauthorizedError(errors.New("security context not found"))
+	}
+	if !secCtx.IsAuthenticated() {
+		return ierror.UnauthorizedError(nil)
+	}
+	if !secCtx.IsSysAdmin() {
+		return ierror.ForbiddenError(nil).WithMessage(secCtx.GetUsername())
+	}
+	return nil
+}
+
 // BuildQuery builds the query model according to the query string
 func (b *BaseAPI) BuildQuery(ctx context.Context, query *string, pageNumber, pageSize *int64) (*q.Query, error) {
 	var (
