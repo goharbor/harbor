@@ -33,8 +33,8 @@ func currPath() string {
 // NewNotaryServer creates a notary server for testing.
 func NewNotaryServer(endpoint string) *httptest.Server {
 	mux := http.NewServeMux()
-	validRoot := fmt.Sprintf("/v2/%s/notary-demo/busybox/_trust/tuf/", endpoint)
-	invalidRoot := fmt.Sprintf("/v2/%s/notary-demo/fail/_trust/tuf/", endpoint)
+	validRoot := fmt.Sprintf("/v2/%s/library/busybox/_trust/tuf/", endpoint)
+	invalidRoot := fmt.Sprintf("/v2/%s/library/busybox/fail/_trust/tuf/", endpoint)
 	p := currPath()
 	mux.Handle(validRoot, http.StripPrefix(validRoot, http.FileServer(http.Dir(path.Join(p, "valid")))))
 	mux.Handle(invalidRoot, http.StripPrefix(invalidRoot, http.FileServer(http.Dir(path.Join(p, "invalid")))))
