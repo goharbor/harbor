@@ -72,8 +72,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
   cardHover = false;
   listHover = false;
 
-  // pageSize: number = DEFAULT_PAGE_SIZE;
-  pageSize: number = 3;
+  pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;
   totalCount = 0;
   currentState: ClrDatagridStateInterface;
