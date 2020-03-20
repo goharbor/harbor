@@ -35,11 +35,10 @@ Test Case - Garbage Collection
     Go Into Project  project${d}
     Delete Repo  project${d}
     GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -i --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/system/gc/1/log"
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -i --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/system/gc/1/log"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  3 blobs and 0 manifests eligible for deletion
-    #Should Contain  ${output}  Deleting blob:
+    Should Contain  ${output}  3 blobs marked, 0 blobs and 0 manifests eligible for deletion
     Should Contain  ${output}  success to run gc in job.
 
     Close Browser

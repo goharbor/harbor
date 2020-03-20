@@ -656,6 +656,8 @@
         "DELETION_TITLE_REPO_SIGNED": "仓库不能被删除",
         "DELETION_SUMMARY_REPO_SIGNED": "镜像仓库 '{{repoName}}' 不能被删除，因为存在以下签名镜像.\n{{signedImages}} \n在删除镜像仓库前需先删除所有的签名镜像",
         "DELETION_SUMMARY_REPO": "确认删除镜像仓库 {{repoName}}?",
+        "DELETION_TITLE_ARTIFACT": "删除镜像 Artifact 确认",
+        "DELETION_SUMMARY_ARTIFACT": "确认删除镜像 Artifact {{param}}? 如果您删除此 Artifact，则这个 digest 的所有 Tag 也将被删除。",
         "DELETION_TITLE_TAG": "删除镜像 Tag 确认",
         "DELETION_SUMMARY_TAG": "确认删除镜像 Tag {{param}}? 如果您删除此 Tag，则这个 Tag 引用的同一个 digest 的所有其他 Tag 也将被删除。",
         "DELETION_TITLE_TAG_DENIED": "已签名的镜像不能被删除",
