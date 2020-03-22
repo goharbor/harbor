@@ -312,7 +312,7 @@ Test Case - Delete Multi Repo
     Delete Success  hello-world  busybox
     Close Browser
 
-Test Case - Delete Multi Tag
+Test Case - Delete Multi Artifacts
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user014  Test1@34
@@ -324,7 +324,7 @@ Test Case - Delete Multi Tag
     @{tag_list}  Create List  3.2.10-alpine  4.0.7-alpine
     Multi-delete object  ${tag_delete_btn}  @{tag_list}
     # Verify
-    Delete Success  3.2.10-alpine  4.0.7-alpine
+    Delete Success  sha256:dd179737  sha256:28a85227
     Close Browser
 
 Test Case - Delete Repo on CardView
@@ -408,7 +408,7 @@ Test Case - Developer Operate Labels
     Retry Wait Until Page Not Contains Element  xpath=//a[contains(.,'Labels')]
     Close Browser
 
-Test Case - Retag A Image Tag
+Test Case - Copy A Image
     Init Chrome Driver
     ${random_num1}=   Get Current Date    result_format=%m%s
     ${random_num2}=   Evaluate  str(random.randint(1000,9999))  modules=random
@@ -422,7 +422,7 @@ Test Case - Retag A Image Tag
     Push Image With Tag  ${ip}  user028  Test1@34  project${random_num1}  redis  ${image_tag}
     Sleep  1
     Go Into Repo  project${random_num1}/redis
-    Retag Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}  ${target_tag_value}
+    Copy Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}
     Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Navigate To Projects
     Go Into Project  project${random_num1}${random_num2}
@@ -481,6 +481,26 @@ Test Case - Project Image And Chart Artifact Count Quotas Dispaly And Control
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox
     Close Browser
 
+# Make sure image logstash was pushed to harbor for the 1st time, so GC will delete it.
+Test Case - Project Quotas Control Under GC
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${storage_quota}=  Set Variable  200
+    ${storage_quota_unit}=  Set Variable  MB
+    ${image_a}=  Set Variable  logstash
+    ${image_a_size}=    Set Variable    321.03MB
+    ${image_a_ver}=  Set Variable  6.8.3
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Capture Page Screenshot
+    Create An New Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
+    Capture Page Screenshot
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=will exceed the configured upper limit of 200.0 MiB
+    Capture Page Screenshot
+    GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    @{param}  Create List  project${d}
+    Retry Keyword When Return Value Mismatch  Get Project Storage Quota Text From Project Quotas List  0Byte of ${storage_quota}${storage_quota_unit}  60  @{param}
+    Close Browser
+
 Test Case - Project Storage Quotas Dispaly And Control
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
@@ -510,7 +530,7 @@ Test Case - Project Storage Quotas Dispaly And Control
     Should Be Equal As Strings  ${storage_quota_ret}  ${image_a_size} of ${storage_quota}${storage_quota_unit}
     Close Browser
 
-Test Case - Project Quotas Control Under Retag
+Test Case - Project Quotas Control Under Copy
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${count_quota}=  Set Variable  1
@@ -525,11 +545,11 @@ Test Case - Project Quotas Control Under Retag
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project_a_${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
     Go Into Project  project_a_${d}
     Go Into Repo  project_a_${d}/${image_a}
-    Retag Image  ${image_a_ver}  project_b_${d}  ${image_a}  ${image_a_ver}
+    Copy Image  ${image_a_ver}  project_b_${d}  ${image_a}
     Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Go Into Project  project_a_${d}
     Go Into Repo  project_a_${d}/${image_b}
-    Retag Image  ${image_b_ver}  project_b_${d}  ${image_b}  ${image_b_ver}
+    Copy Image  ${image_b_ver}  project_b_${d}  ${image_b}
     Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Sleep  2
     Go Into Project  project_b_${d}
@@ -538,25 +558,6 @@ Test Case - Project Quotas Control Under Retag
     Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(.,'${image_a}')]/a
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-cell[contains(.,'${image_b}')]/a
     Capture Page Screenshot
-    Close Browser
-
-Test Case - Project Quotas Control Under GC
-    Init Chrome Driver
-    ${d}=  Get Current Date  result_format=%m%s
-    ${storage_quota}=  Set Variable  200
-    ${storage_quota_unit}=  Set Variable  MB
-    ${image_a}=  Set Variable  logstash
-    ${image_a_size}=    Set Variable    321.03MB
-    ${image_a_ver}=  Set Variable  6.8.3
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Capture Page Screenshot
-    Create An New Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
-    Capture Page Screenshot
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=will exceed the configured upper limit of 200.0 MiB
-    Capture Page Screenshot
-    GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    @{param}  Create List  project${d}
-    Retry Keyword When Return Value Mismatch  Get Project Storage Quota Text From Project Quotas List  0Byte of ${storage_quota}${storage_quota_unit}  60  @{param}
     Close Browser
 
 Test Case - Create New Webhook
@@ -658,7 +659,7 @@ Test Case - Read Only Mode
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
     Close Browser
 
-Test Case - Can Not Retag Image In ReadOnly Mode
+Test Case - Can Not Copy Image In ReadOnly Mode
     Init Chrome Driver
     ${random_num1}=   Get Current Date    result_format=%m%s
     ${random_num2}=   Evaluate  str(random.randint(1000,9999))  modules=random
@@ -673,7 +674,7 @@ Test Case - Can Not Retag Image In ReadOnly Mode
     Sleep  1
     Enable Read Only
     Go Into Repo  project${random_num1}/redis
-    Retag Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}  ${target_tag_value}
+    Copy Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}
     Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Navigate To Projects
     Go Into Project  project${random_num1}${random_num2}  has_image=${false}

@@ -39,12 +39,14 @@ Resource  Harbor-Pages/Project-Webhooks.robot
 Resource  Harbor-Pages/Project-Webhooks_Elements.robot
 Resource  Harbor-Pages/Project-Repository.robot
 Resource  Harbor-Pages/Project-Repository_Elements.robot
+Resource  Harbor-Pages/Project-Artifact.robot
+Resource  Harbor-Pages/Project-Artifact-Elements.robot
 Resource  Harbor-Pages/Project-Config.robot
 Resource  Harbor-Pages/Project-Config-Elements.robot
 Resource  Harbor-Pages/Project-Helmcharts.robot
 Resource  Harbor-Pages/Project-Helmcharts_Elements.robot
-Resource  Harbor-Pages/Project-Retag.robot
-Resource  Harbor-Pages/Project-Retag_Elements.robot
+Resource  Harbor-Pages/Project-Copy.robot
+Resource  Harbor-Pages/Project-Copy-Elements.robot
 Resource  Harbor-Pages/Project-Tag-Retention.robot
 Resource  Harbor-Pages/Project-Tag-Retention_Elements.robot
 Resource  Harbor-Pages/Project_Robot_Account.robot

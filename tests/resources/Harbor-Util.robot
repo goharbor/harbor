@@ -93,7 +93,7 @@ Switch To LDAP
 Enable Notary Client
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
     Log  ${rc}
-    ${rc}  ${output}=  Run And Return Rc and Output  curl -o /notary_ca.crt -s -k -X GET --header 'Accept: application/json' -u 'admin:Harbor12345' 'https://${ip}/api/systeminfo/getcert'
+    ${rc}  ${output}=  Run And Return Rc and Output  curl -o /notary_ca.crt -s -k -X GET --header 'Accept: application/json' -u 'admin:Harbor12345' 'https://${ip}/api/v2.0/systeminfo/getcert'
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 

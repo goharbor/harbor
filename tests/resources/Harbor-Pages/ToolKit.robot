@@ -63,7 +63,9 @@ Multi-delete Object
     \    Retry Element Click  ${element}
     Sleep  1
     Capture Page Screenshot
-    Retry Element Click  ${delete_btn}
+    Retry Element Click  ${artifact_action_xpath}
+    Sleep  1
+    Retry Element Click  ${artifact_action_delete_xpath}
     Sleep  1
     Capture Page Screenshot
     Retry Element Click  ${repo_delete_on_card_view_btn}
