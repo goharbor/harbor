@@ -1,0 +1,13 @@
+name: Build and Deploy to Netlify
+on:
+  push:
+    paths:
+    - 'docs/**'
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Deploy new-site to Netlify
+        run: curl -X POST -d {} ${{ secrets.NETLIFY_BUILD_HOOK }}
