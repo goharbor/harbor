@@ -9,9 +9,6 @@ Library  Process
 Default Tags  API
 
 *** Test Cases ***
-
-# TODO the cases commented by "###" can be uncommented after implementing the repository python library based on new API
-
 Test Case - LDAP Group Admin Role
     Harbor API Test  ./tests/apitests/python/test_ldap_admin_role.py
 

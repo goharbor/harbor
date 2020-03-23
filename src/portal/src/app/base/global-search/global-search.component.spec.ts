@@ -3,8 +3,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GlobalSearchComponent } from './global-search.component';
 import { SearchTriggerService } from './search-trigger.service';
 import { FormsModule } from '@angular/forms';
-import { AppConfigService } from '../../app-config.service';
-import { SkinableConfig } from "../../skinable-config.service";
+import { AppConfigService } from '../../services/app-config.service';
+import { SkinableConfig } from "../../services/skinable-config.service";
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 

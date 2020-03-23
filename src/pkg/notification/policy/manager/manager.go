@@ -110,9 +110,8 @@ func (m *DefaultManager) policyHTTPTest(address string, skipCertVerify bool) err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-
 	client := http.Client{
-		Transport: commonhttp.GetHTTPTransport(skipCertVerify),
+		Transport: commonhttp.GetHTTPTransportByInsecure(skipCertVerify),
 	}
 
 	resp, err := client.Do(req)

@@ -25,7 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common"
 	cj "github.com/goharbor/harbor/src/common/job"
-	cjm "github.com/goharbor/harbor/src/common/job/models"
 	jm "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -67,6 +66,7 @@ func TestController(t *testing.T) {
 // SetupSuite ...
 func (suite *ControllerTestSuite) SetupSuite() {
 	suite.artifact = &artifact.Artifact{}
+	suite.artifact.Type = "IMAGE"
 	suite.artifact.ProjectID = 1
 	suite.artifact.RepositoryName = "library/photon"
 	suite.artifact.Digest = "digest-code"
@@ -168,10 +168,10 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	rc := &MockRobotController{}
 
 	resource := fmt.Sprintf("/project/%d/repository", suite.artifact.ProjectID)
-	access := []*types.Policy{{
-		Resource: types.Resource(resource),
-		Action:   rbac.ActionScannerPull,
-	}}
+	access := []*types.Policy{
+		{Resource: types.Resource(resource), Action: rbac.ActionPull},
+		{Resource: types.Resource(resource), Action: rbac.ActionScannerPull},
+	}
 
 	rname := "the-uuid-123"
 	account := &model.RobotCreate{
@@ -322,7 +322,7 @@ type MockJobServiceClient struct {
 }
 
 // SubmitJob ...
-func (mjc *MockJobServiceClient) SubmitJob(jData *cjm.JobData) (string, error) {
+func (mjc *MockJobServiceClient) SubmitJob(jData *jm.JobData) (string, error) {
 	args := mjc.Called(jData)
 
 	return args.String(0), args.Error(1)

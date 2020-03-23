@@ -41,6 +41,8 @@ type Manager interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Update updates the repository. Only the properties specified by "props" will be updated if it is set
 	Update(ctx context.Context, repository *models.RepoRecord, props ...string) (err error)
+	// AddPullCount increase one pull count for the specified repository
+	AddPullCount(ctx context.Context, id int64) error
 }
 
 // New returns a default implementation of Manager
@@ -95,4 +97,8 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 }
 func (m *manager) Update(ctx context.Context, repository *models.RepoRecord, props ...string) error {
 	return m.dao.Update(ctx, repository, props...)
+}
+
+func (m *manager) AddPullCount(ctx context.Context, id int64) error {
+	return m.dao.AddPullCount(ctx, id)
 }

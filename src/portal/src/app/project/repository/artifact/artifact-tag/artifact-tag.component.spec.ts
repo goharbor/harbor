@@ -7,7 +7,7 @@ import { of } from 'rxjs';
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../../lib/entities/service.config";
 import { SharedModule } from "../../../../../lib/utils/shared/shared.module";
 import { ErrorHandler } from "../../../../../lib/utils/error-handler";
-import { TagService } from "../../../../../lib/services";
+import { ArtifactService } from '../../../../../../ng-swagger-gen/services/artifact.service';
 import { OperationService } from "../../../../../lib/components/operation/operation.service";
 import { CURRENT_BASE_HREF } from "../../../../../lib/utils/utils";
 
@@ -18,8 +18,8 @@ describe('ArtifactTagComponent', () => {
   const mockErrorHandler = {
     error: () => {}
   };
-  const mockTagService = {
-    newTag: () => of([]),
+  const mockArtifactService = {
+    createTag: () => of([]),
     deleteTag: () => of(null),
   };
   const config: IServiceConfig = {
@@ -40,7 +40,7 @@ describe('ArtifactTagComponent', () => {
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: mockErrorHandler, useValue: ErrorHandler },
-        { provide: TagService, useValue: mockTagService },
+        { provide: ArtifactService, useValue: mockArtifactService },
         { provide: OperationService },
       ]
     })

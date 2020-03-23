@@ -17,12 +17,11 @@ import { ListProjectComponent } from './list-project/list-project.component';
 import { ProjectTypes } from '../shared/shared.const';
 import { ConfigurationService } from '../config/config.service';
 import { SessionService } from "../shared/session.service";
-import { ProjectService, QuotaHardInterface, Repository, RequestQueryParams } from "../../lib/services";
+import { ProjectService, QuotaHardInterface } from "../../lib/services";
 import { Configuration } from "../../lib/components/config/config";
 import { FilterComponent } from '../../lib/components/filter/filter.component';
 import { Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
-import { calculatePage, doFiltering, doSorting } from '../../lib/utils/utils';
 import { Project } from './project';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 

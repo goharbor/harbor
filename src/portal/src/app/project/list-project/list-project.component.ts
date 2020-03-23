@@ -27,7 +27,7 @@ import { ConfirmationDialogService } from "../../shared/confirmation-dialog/conf
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
 import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { Project } from "../project";
 import { map, catchError, finalize } from "rxjs/operators";
 import { throwError as observableThrowError } from "rxjs";

@@ -17,53 +17,6 @@ export interface Base {
 }
 
 /**
- * Interface for Repository Info
- *
- **
- * interface Repository
- * extends {Base}
- */
-export interface RepositoryItem extends Base {
-  [key: string]: any | any[];
-  name: string;
-  tags_count: number;
-  owner_id?: number;
-  project_id?: number;
-  description?: string;
-  star_count?: number;
-  pull_count?: number;
-}
-
-/**
- * Interface for repository
- *
- **
- * interface Repository
- */
-export interface Repository {
-  metadata?: Metadata;
-  data: RepositoryItem[];
-}
-
-/**
- * Interface for the tag of repository
- *
- **
- * interface Tag
- * extends {Base}
- */
-
-export interface Tag extends Base {
-  artifact_id: number;
-  name: string;
-  push_time?: string;
-  pull_time?: string;
-  immutable?: boolean;
-  repository_id?: number;
-  upload_time?: string;
-}
-
-/**
  * Interface for registry endpoints.
  *
  **

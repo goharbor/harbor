@@ -9,6 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/internal"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -78,14 +79,10 @@ func Middleware() func(handler http.Handler) http.Handler {
 // csrfSkipper makes sure only some of the uris accessed by non-UI client can skip the csrf check
 func csrfSkipper(req *http.Request) bool {
 	path := req.URL.Path
-	// We can check the cookie directly b/c the filter and controllerRegistry is executed after middleware, so no session
-	// cookie is added by beego.
-	_, err := req.Cookie(config.SessionCookieName)
-	hasSession := err == nil
 	if (strings.HasPrefix(path, "/v2/") ||
 		strings.HasPrefix(path, "/api/") ||
 		strings.HasPrefix(path, "/chartrepo/") ||
-		strings.HasPrefix(path, "/service/")) && !hasSession {
+		strings.HasPrefix(path, "/service/")) && !internal.GetCarrySession(req.Context()) {
 		return true
 	}
 	return false

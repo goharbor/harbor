@@ -44,7 +44,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/search", &api.SearchAPI{})
 	beego.Router("/api/"+version+"/projects/", &api.ProjectAPI{}, "get:List;post:Post")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/summary", &api.ProjectAPI{}, "get:Summary")
-	beego.Router("/api/"+version+"/projects/:id([0-9]+)/logs", &api.ProjectAPI{}, "get:Logs")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/_deletable", &api.ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
@@ -61,8 +60,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/system/scanAll/schedule", &api.ScanAllAPI{}, "get:Get;put:Put;post:Post")
 	beego.Router("/api/"+version+"/system/CVEWhitelist", &api.SysCVEWhitelistAPI{}, "get:Get;put:Put")
 	beego.Router("/api/"+version+"/system/oidc/ping", &api.OIDCAPI{}, "post:Ping")
-
-	beego.Router("/api/"+version+"/logs", &api.LogAPI{})
 
 	beego.Router("/api/"+version+"/replication/adapters", &api.ReplicationAdapterAPI{}, "get:List")
 	beego.Router("/api/"+version+"/replication/adapterinfos", &api.ReplicationAdapterAPI{}, "get:ListAdapterInfos")
@@ -87,7 +84,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/statistics", &api.StatisticAPI{})
 	beego.Router("/api/"+version+"/labels", &api.LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/"+version+"/labels/:id([0-9]+)", &api.LabelAPI{}, "get:Get;put:Put;delete:Delete")
-	beego.Router("/api/"+version+"/labels/:id([0-9]+)/resources", &api.LabelAPI{}, "get:ListResources")
 
 	beego.Router("/api/"+version+"/systeminfo", &api.SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/"+version+"/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")

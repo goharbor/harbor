@@ -19,8 +19,8 @@ class TestProjects(unittest.TestCase):
     def setUpClass(self):
         self.project= Project()
         self.user= User()
-        self.artifact = Artifact(api_type='artifact')
-        self.repo= Repository(api_type='repository')
+        self.artifact = Artifact()
+        self.repo= Repository()
         self.url = ADMIN_CLIENT["endpoint"]
         self.user_push_chart_password = "Aa123456"
         self.chart_file = "https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz"
@@ -51,8 +51,10 @@ class TestProjects(unittest.TestCase):
             1. Create a new user(UA);
             2. Create a new project(PA) by user(UA);
             3. Push an chart(CA) to Harbor by helm3 registry/chart CLI successfully;
-            4. Get chart(CA) from Harbor successfully;
-            5. TO_DO: Verify this chart artifact information, like digest.
+            4. List artifacts successfully;
+            5. Get chart(CA) by reference successfully;
+            6. Get addtion successfully;
+            7. Delete chart by reference successfully.
         Tear down:
             1. Delete repository chart(CA) by user(UA);
             2. Delete project(PA);
@@ -69,13 +71,26 @@ class TestProjects(unittest.TestCase):
         chart_cli_ret = library.helm.helm_chart_push_to_harbor(self.chart_file, self.archive,  harbor_server, TestProjects.project_push_chart_name, self.repo_name, self.verion, user_name, self.user_push_chart_password)
         print "chart_cli_ret:", chart_cli_ret
 
-        #4. Get chart(CA) from Harbor successfully;
-        artifact = self.artifact.get_reference_info(TestProjects.project_push_chart_name, self.repo_name, self.verion, **TestProjects.USER_CLIENT)
-        print "artifact:", artifact
+        #4. List artifacts successfully;
+        artifacts = self.artifact.list_artifacts(TestProjects.project_push_chart_name, self.repo_name, **TestProjects.USER_CLIENT)
+        self.assertEqual(artifacts[0].type, 'CHART')
+        self.assertEqual(artifacts[0].tags[0].name, self.verion)
 
-        #5. TO_DO: Verify this chart artifact information, like digest;
+        #5. Get chart(CA) by reference successfully;
+        artifact = self.artifact.get_reference_info(TestProjects.project_push_chart_name, self.repo_name, self.verion, **TestProjects.USER_CLIENT)
         self.assertEqual(artifact[0].type, 'CHART')
         self.assertEqual(artifact[0].tags[0].name, self.verion)
+
+        #6. Get addtion successfully;
+        addition_r = self.artifact.get_addition(TestProjects.project_push_chart_name, self.repo_name, self.verion, "readme.md", **TestProjects.USER_CLIENT)
+        self.assertIn("Helm Chart for Harbor", addition_r[0])
+        addition_d = self.artifact.get_addition(TestProjects.project_push_chart_name, self.repo_name, self.verion, "dependencies", **TestProjects.USER_CLIENT)
+        self.assertIn("https://kubernetes-charts.storage.googleapis.com", addition_d[0])
+        addition_v = self.artifact.get_addition(TestProjects.project_push_chart_name, self.repo_name, self.verion, "values.yaml", **TestProjects.USER_CLIENT)
+        self.assertIn("adminserver", addition_v[0])
+
+        #7. Delete chart by reference successfully.
+        self.artifact.delete_artifact(TestProjects.project_push_chart_name, self.repo_name, self.verion, **TestProjects.USER_CLIENT)
 
 
 if __name__ == '__main__':

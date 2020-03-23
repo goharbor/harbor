@@ -22,6 +22,8 @@ type contextKey string
 const (
 	contextKeyAPIVersion   contextKey = "apiVersion"
 	contextKeyArtifactInfo contextKey = "artifactInfo"
+	contextKeyAuthMode     contextKey = "authMode"
+	contextKeyCarrySession contextKey = "carrySession"
 )
 
 // ArtifactInfo wraps the artifact info extracted from the request to "/v2/"
@@ -60,7 +62,7 @@ func GetAPIVersion(ctx context.Context) string {
 	version := ""
 	value := getFromContext(ctx, contextKeyAPIVersion)
 	if value != nil {
-		version = value.(string)
+		version, _ = value.(string)
 	}
 	return version
 }
@@ -74,7 +76,37 @@ func WithArtifactInfo(ctx context.Context, art ArtifactInfo) context.Context {
 func GetArtifactInfo(ctx context.Context) (art ArtifactInfo) {
 	value := getFromContext(ctx, contextKeyArtifactInfo)
 	if value != nil {
-		art = value.(ArtifactInfo)
+		art, _ = value.(ArtifactInfo)
 	}
 	return
+}
+
+// WithAuthMode returns a context with auth mode set
+func WithAuthMode(ctx context.Context, mode string) context.Context {
+	return setToContext(ctx, contextKeyAuthMode, mode)
+}
+
+// GetAuthMode gets the auth mode from the context
+func GetAuthMode(ctx context.Context) string {
+	mode := ""
+	value := getFromContext(ctx, contextKeyAuthMode)
+	if value != nil {
+		mode, _ = value.(string)
+	}
+	return mode
+}
+
+// WithCarrySession returns a context with "carry session" set that indicates whether the request carries session or not
+func WithCarrySession(ctx context.Context, carrySession bool) context.Context {
+	return setToContext(ctx, contextKeyCarrySession, carrySession)
+}
+
+// GetCarrySession gets the "carry session" from the context indicates whether the request carries session or not
+func GetCarrySession(ctx context.Context) bool {
+	carrySession := false
+	value := getFromContext(ctx, contextKeyCarrySession)
+	if value != nil {
+		carrySession, _ = value.(bool)
+	}
+	return carrySession
 }

@@ -15,7 +15,6 @@
 package quota
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -34,10 +33,7 @@ func PostInitiateBlobUploadMiddleware() func(http.Handler) http.Handler {
 }
 
 func postInitiateBlobUploadResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
-	logPrefix := fmt.Sprintf("[middleware][%s][quota]", r.URL.Path)
-
 	query := r.URL.Query()
-
 	mount := query.Get("mount")
 	if mount == "" {
 		// it is not mount blob http request, skip to request the resources
@@ -45,6 +41,8 @@ func postInitiateBlobUploadResources(r *http.Request, reference, referenceID str
 	}
 
 	ctx := r.Context()
+
+	logger := log.G(ctx).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
 
 	blb, err := blobController.Get(ctx, mount)
 	if ierror.IsNotFoundErr(err) {
@@ -58,7 +56,7 @@ func postInitiateBlobUploadResources(r *http.Request, reference, referenceID str
 
 	exist, err := blobController.Exist(ctx, blb.Digest, blob.IsAssociatedWithProject(projectID))
 	if err != nil {
-		log.Errorf("%s: checking blob %s is associated with project %d failed, error: %v", logPrefix, blb.Digest, projectID, err)
+		logger.Errorf("checking blob %s is associated with project %d failed, error: %v", blb.Digest, projectID, err)
 		return nil, err
 	}
 

@@ -456,7 +456,9 @@
         "FILTER_PLACEHOLDER": "Filter Logs",
         "INVALID_DATE": "Invalid date.",
         "OF": "of",
-        "NOT_FOUND": "We couldn't find any logs!"
+        "NOT_FOUND": "We couldn't find any logs!",
+        "RESOURCE": "Resource",
+        "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
         "YES": "Yes",
@@ -653,8 +655,10 @@
         "DELETION_TITLE_REPO_SIGNED": "Repository cannot be deleted",
         "DELETION_SUMMARY_REPO_SIGNED": "Repository '{{repoName}}' cannot be deleted because the following signed images existing.\n{{signedImages}} \nYou should unsign all the signed images before deleting the repository!",
         "DELETION_SUMMARY_REPO": "Do you want to delete repository {{repoName}}?",
+        "DELETION_TITLE_ARTIFACT": "Confirm Artifact Deletion",
+        "DELETION_SUMMARY_ARTIFACT": "Do you want to delete artifact {{param}}? If you delete this artifact, all tags referenced by the digest will also be deleted.",
         "DELETION_TITLE_TAG": "Confirm Tag Deletion",
-        "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}? If you delete this tag, all other tags referenced by the same digest will also be deleted.",
+        "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}? ",
         "DELETION_TITLE_TAG_DENIED": "Signed tag cannot be deleted",
         "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted.\nDelete from Notary via this command:\n",
         "TAGS_NO_DELETE": "Delete is prohibited in read only mode.",

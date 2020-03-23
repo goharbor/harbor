@@ -35,7 +35,7 @@ class TestProjects(unittest.TestCase):
     def setUpClass(self):
         self.user = User()
         self.system = System()
-        self.repo = Repository(api_type='repository')
+        self.repo = Repository()
         self.project = Project()
         self.retention = Retention()
 

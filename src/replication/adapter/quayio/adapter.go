@@ -18,6 +18,11 @@ import (
 	"github.com/goharbor/harbor/src/replication/util"
 )
 
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
+
 type adapter struct {
 	*native.Adapter
 	registry *model.Registry

@@ -8,18 +8,13 @@ import { RepositoryGridviewComponent } from "./repository-gridview.component";
 import {
   ProjectDefaultService,
   ProjectService,
-  Repository,
-  RepositoryItem,
-  RequestQueryParams, RetagDefaultService, RetagService,
   SystemInfo, SystemInfoService,
-  TagDefaultService,
-  TagService, UserPermissionService
+  UserPermissionService
 } from "../../../lib/services";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../lib/entities/service.config";
 import { delay } from 'rxjs/operators';
 import { SharedModule } from "../../../lib/utils/shared/shared.module";
 import { ErrorHandler } from "../../../lib/utils/error-handler";
-import { RepositoryService } from "./repository.service";
 import { OperationService } from "../../../lib/components/operation/operation.service";
 import { ProjectModule } from "../project.module";
 import { ActivatedRoute } from "@angular/router";
@@ -90,7 +85,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
   };
   const fakedRepositoryService = {
     listRepositoriesResponse(params: NewRepositoryService.ListRepositoriesParams) {
-      if (params.name === 'nginx') {
+      if (params.q === encodeURIComponent(`name=~nginx`)) {
         return of({headers: new Map(), body: mockNginxRepo});
         }
       return of({headers: new Map(), body: mockRepo}).pipe(delay(0));
@@ -121,11 +116,8 @@ describe('RepositoryComponentGridview (inline template)', () => {
         { provide: ActivatedRoute, useValue: fakedActivatedRoute },
         { provide: ErrorHandler, useValue: fakedErrorHandler },
         { provide: SERVICE_CONFIG, useValue: config },
-        { provide: RepositoryService, useValue: fakedRepositoryService },
         { provide: NewRepositoryService, useValue: fakedRepositoryService },
-        { provide: TagService, useClass: TagDefaultService },
         { provide: ProjectService, useClass: ProjectDefaultService },
-        { provide: RetagService, useClass: RetagDefaultService },
         { provide: SystemInfoService, useValue: fakedSystemInfoService },
         { provide: UserPermissionService, useValue: fakedUserPermissionService },
         { provide: OperationService },

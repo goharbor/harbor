@@ -20,8 +20,8 @@ class TestProjects(unittest.TestCase):
     def setUpClass(self):
         self.project = Project()
         self.user = User()
-        self.artifact = Artifact(api_type='artifact')
-        self.repo = Repository(api_type='repository')
+        self.artifact = Artifact()
+        self.repo = Repository()
 
     @classmethod
     def tearDownClass(self):

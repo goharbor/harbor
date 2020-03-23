@@ -12,27 +12,33 @@ REDIS_UID = 999
 REDIS_GID = 999
 
 ## Global variable
-host_root_dir = '/hostfs'
+templates_dir = "/usr/src/app/templates"
+
+host_root_dir = Path('/hostfs')
 
 base_dir = '/harbor_make'
-templates_dir = "/usr/src/app/templates"
-config_dir = '/config'
-data_dir = '/data'
-secret_dir = '/secret'
-secret_key_dir = '/secret/keys'
+config_dir = Path('/config')
+data_dir = Path('/data')
+
+secret_dir = data_dir.joinpath('secret')
+secret_key_dir = secret_dir.joinpath('keys')
+trust_ca_dir = secret_dir.joinpath('keys', 'trust_ca')
+internal_tls_dir = secret_dir.joinpath('tls')
+
+storage_ca_bundle_filename = 'storage_ca_bundle.crt'
 
 old_private_key_pem_path = Path('/config/core/private_key.pem')
 old_crt_path = Path('/config/registry/root.crt')
 
-private_key_pem_path = Path('/secret/core/private_key.pem')
-root_crt_path = Path('/secret/registry/root.crt')
+private_key_pem_path = secret_dir.joinpath('core', 'private_key.pem')
+root_crt_path = secret_dir.joinpath('registry', 'root.crt')
 
 config_file_path = '/compose_location/harbor.yml'
 input_config_path = '/input/harbor.yml'
 versions_file_path = Path('/usr/src/app/versions')
 
-cert_dir = os.path.join(config_dir, "nginx", "cert")
-core_cert_dir = os.path.join(config_dir, "core", "certificates")
+cert_dir = config_dir.joinpath("nginx", "cert")
+core_cert_dir = config_dir.joinpath("core", "certificates")
 
 INTERNAL_NO_PROXY_DN = {
     '127.0.0.1',
@@ -53,5 +59,6 @@ INTERNAL_NO_PROXY_DN = {
     'chartmuseum',
     'notary-server',
     'notary-signer',
-    'clair-adapter'
+    'clair-adapter',
+    'trivy-adapter',
     }

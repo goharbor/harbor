@@ -32,6 +32,12 @@ func (e *Error) WithCode(code string) *Error {
 	return e
 }
 
+// WithCause ...
+func (e *Error) WithCause(err error) *Error {
+	e.Cause = err
+	return e
+}
+
 // Unwrap ...
 func (e *Error) Unwrap() error { return e.Cause }
 
@@ -101,16 +107,50 @@ const (
 )
 
 // New ...
-func New(err error) *Error {
-	e := &Error{}
-	if err != nil {
-		e.Cause = err
-		e.Message = err.Error()
-		if ee, ok := err.(*Error); ok {
-			e.Cause = ee
-		}
+func New(in interface{}) *Error {
+	var err error
+	switch in := in.(type) {
+	case error:
+		err = in
+	case *Error:
+		err = in.Cause
+	default:
+		err = fmt.Errorf("%v", in)
+	}
+	return &Error{
+		Cause:   err,
+		Message: err.Error(),
+	}
+}
+
+// Wrap ...
+func Wrap(err error, message string) *Error {
+	if err == nil {
+		return nil
+	}
+	e := &Error{
+		Cause:   err,
+		Message: message,
 	}
 	return e
+}
+
+// Wrapf ...
+func Wrapf(err error, format string, args ...interface{}) *Error {
+	if err == nil {
+		return nil
+	}
+	e := &Error{
+		Cause: err,
+	}
+	return e.WithMessage(format, args...)
+}
+
+// Errorf ...
+func Errorf(format string, args ...interface{}) *Error {
+	return &Error{
+		Message: fmt.Sprintf(format, args...),
+	}
 }
 
 // NotFoundError is error for the case of object not found
@@ -151,6 +191,18 @@ func PreconditionFailedError(err error) *Error {
 // UnknownError ...
 func UnknownError(err error) *Error {
 	return New(err).WithCode(GeneralCode).WithMessage("unknown")
+}
+
+// Cause gets the root error
+func Cause(err error) error {
+	for err != nil {
+		cause, ok := err.(*Error)
+		if !ok {
+			break
+		}
+		err = cause.Cause
+	}
+	return err
 }
 
 // IsErr checks whether the err chain contains error matches the code

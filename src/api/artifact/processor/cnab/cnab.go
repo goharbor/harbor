@@ -16,9 +16,9 @@ package cnab
 
 import (
 	"context"
+
 	ps "github.com/goharbor/harbor/src/api/artifact/processor"
 	"github.com/goharbor/harbor/src/api/artifact/processor/base"
-	"github.com/goharbor/harbor/src/api/artifact/processor/blob"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
@@ -31,10 +31,9 @@ const (
 
 func init() {
 	pc := &processor{
-		blobFetcher:       blob.Fcher,
 		manifestProcessor: base.NewManifestProcessor(),
 	}
-	pc.IndexProcessor = &base.IndexProcessor{}
+	pc.IndexProcessor = base.NewIndexProcessor()
 	if err := ps.Register(pc, mediaType); err != nil {
 		log.Errorf("failed to register processor for media type %s: %v", mediaType, err)
 		return
@@ -44,7 +43,6 @@ func init() {
 type processor struct {
 	*base.IndexProcessor
 	manifestProcessor *base.ManifestProcessor
-	blobFetcher       blob.Fetcher
 }
 
 func (p *processor) AbstractMetadata(ctx context.Context, manifest []byte, art *artifact.Artifact) error {
@@ -61,13 +59,17 @@ func (p *processor) AbstractMetadata(ctx context.Context, manifest []byte, art *
 	}
 
 	// get the manifest that the config layer is referenced by
-	_, cfgMani, err := p.blobFetcher.FetchManifest(art.RepositoryName, cfgManiDgt)
+	mani, _, err := p.RegCli.PullManifest(art.RepositoryName, cfgManiDgt)
+	if err != nil {
+		return err
+	}
+	_, payload, err := mani.Payload()
 	if err != nil {
 		return err
 	}
 
 	// abstract the metadata from config layer
-	return p.manifestProcessor.AbstractMetadata(ctx, cfgMani, art)
+	return p.manifestProcessor.AbstractMetadata(ctx, payload, art)
 }
 
 func (p *processor) GetArtifactType() string {

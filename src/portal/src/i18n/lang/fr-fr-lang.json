@@ -448,7 +448,9 @@
         "FILTER_PLACEHOLDER": "Filtrer les Logs",
         "INVALID_DATE": "Date invalide.",
         "OF": "de",
-        "NOT_FOUND": "Nous n'avons trouvé aucun journal!"
+        "NOT_FOUND": "Nous n'avons trouvé aucun journal!",
+        "RESOURCE": "Resource",
+        "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
         "YES": "Yes",
@@ -642,8 +644,10 @@
         "DELETION_TITLE_REPO_SIGNED": "Le Dépôt ne peut être supprimé",
         "DELETION_SUMMARY_REPO_SIGNED": "Le Dépôt '{{repoName}}' ne peut pas être supprimé parce que les images suivantes signées existent. \n{{signedImages}} \nVous devez retirer la signature de toutes les images signées avant de supprimer le dépôt !",
         "DELETION_SUMMARY_REPO": "Voulez-vous supprimer le dépôt {{repoName}} ?",
+        "DELETION_TITLE_ARTIFACT": "Confirm Artifact Deletion",
+        "DELETION_SUMMARY_ARTIFACT": "Do you want to delete artifact {{param}}? If you delete this artifact, all tags referenced by the digest will also be deleted.",
         "DELETION_TITLE_TAG": "Confirmer la suppression du Tag",
-        "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}? If you delete this tag, all other tags referenced by the same digest will also be deleted.",
+        "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}? ",
         "DELETION_TITLE_TAG_DENIED": "Un tag signé ne peut être supprimé",
         "DELETION_SUMMARY_TAG_DENIED": "La balise doit être supprimée du Résumé avant qu'elle ne puisse être supprimée. \nSupprimer du Résumé via cette commande: \n",
         "TAGS_NO_DELETE": "Upload/Delete is prohibited in read only mode.",

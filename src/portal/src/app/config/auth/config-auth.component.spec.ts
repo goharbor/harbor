@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ConfirmMessageHandler } from '../config.msg.utils';
-import { AppConfigService } from '../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { ConfigurationService } from '../config.service';
 import { ConfigurationAuthComponent } from './config-auth.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';

@@ -26,6 +26,7 @@ import (
 	_ "github.com/astaxie/beego/session/redis"
 	_ "github.com/goharbor/harbor/src/api/event/handler"
 	"github.com/goharbor/harbor/src/common/dao"
+	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -37,7 +38,6 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/oidc"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/migration"
@@ -155,14 +155,21 @@ func main() {
 	log.Info("initializing notification...")
 	notification.Init()
 
-	filter.Init()
-	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
-	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
-
 	server.RegisterRoutes()
 
-	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
+	if common_http.InternalTLSEnabled() {
+		log.Info("internal TLS enabled, Init TLS ...")
+		iTLSKeyPath := os.Getenv("INTERNAL_TLS_KEY_PATH")
+		iTLSCertPath := os.Getenv("INTERNAL_TLS_CERT_PATH")
 
+		log.Infof("load client key: %s client cert: %s", iTLSKeyPath, iTLSCertPath)
+		beego.BConfig.Listen.EnableHTTPS = true
+		beego.BConfig.Listen.HTTPSPort = 8443
+		beego.BConfig.Listen.HTTPSKeyFile = iTLSKeyPath
+		beego.BConfig.Listen.HTTPSCertFile = iTLSCertPath
+	}
+
+	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
 	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }
 

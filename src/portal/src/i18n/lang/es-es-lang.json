@@ -456,7 +456,9 @@
         "FILTER_PLACEHOLDER": "Filtrar logs",
         "INVALID_DATE": "Fecha invalida.",
         "OF": "of",
-        "NOT_FOUND": "No pudimos encontrar ningún registro!"
+        "NOT_FOUND": "No pudimos encontrar ningún registro!",
+        "RESOURCE": "Resource",
+        "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
         "YES": "Yes",
@@ -654,8 +656,10 @@
         "DELETION_TITLE_REPO_SIGNED": "Repository cannot be deleted",
         "DELETION_SUMMARY_REPO_SIGNED": "Repository '{{repoName}}' cannot be deleted because the following signed images existing.\n{{signedImages}} \nYou should unsign all the signed images before deleting the repository!",
         "DELETION_SUMMARY_REPO": "¿Quiere eliminar el repositorio {{repoName}}?",
+        "DELETION_TITLE_ARTIFACT": "Confirm Artifact Deletion",
+        "DELETION_SUMMARY_ARTIFACT": "Do you want to delete artifact {{param}}? If you delete this artifact, all tags referenced by the digest will also be deleted.",
         "DELETION_TITLE_TAG": "Confirmación de Eliminación de Etiqueta",
-        "DELETION_SUMMARY_TAG": "¿Quiere eliminar la etiqueta {{param}}? If you delete this tag, all other tags referenced by the same digest will also be deleted.",
+        "DELETION_SUMMARY_TAG": "¿Quiere eliminar la etiqueta {{param}}? ",
         "DELETION_TITLE_TAG_DENIED": "La etiqueta firmada no puede ser eliminada",
         "DELETION_SUMMARY_TAG_DENIED": "La etiqueta debe ser eliminada de la Notaría antes de eliminarla.\nEliminarla de la Notaría con este comando:\n",
         "TAGS_NO_DELETE": "Delete is prohibited in read only mode.",

@@ -86,11 +86,11 @@ func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resourc
 	var resources []*model.Resource
 	// artifacts
 	if fetchArtifact {
-		reg, ok := adapter.(adp.ImageRegistry)
+		reg, ok := adapter.(adp.ArtifactRegistry)
 		if !ok {
-			return nil, fmt.Errorf("the adapter doesn't implement the ImageRegistry interface")
+			return nil, fmt.Errorf("the adapter doesn't implement the ArtifactRegistry interface")
 		}
-		res, err := reg.FetchImages(policy.Filters)
+		res, err := reg.FetchArtifacts(policy.Filters)
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch artifacts: %v", err)
 		}
@@ -145,6 +145,7 @@ func assembleDestinationResources(resources []*model.Resource,
 			Registry:     policy.DestRegistry,
 			ExtendedInfo: resource.ExtendedInfo,
 			Deleted:      resource.Deleted,
+			IsDeleteTag:  resource.IsDeleteTag,
 			Override:     policy.Override,
 		}
 		res.Metadata = &model.ResourceMetadata{
@@ -186,6 +187,9 @@ func createTasks(mgr execution.Manager, executionID int64, items []*scheduler.Sc
 		operation := "copy"
 		if item.DstResource.Deleted {
 			operation = "deletion"
+			if item.DstResource.IsDeleteTag {
+				operation = "tag deletion"
+			}
 		}
 
 		task := &models.Task{
@@ -296,7 +300,7 @@ func getResourceName(res *model.Resource) string {
 		n = len(meta.Vtags)
 	}
 
-	return fmt.Sprintf("%s [%d artifact(s) in total]", meta.Repository.Name, n)
+	return fmt.Sprintf("%s [%d item(s) in total]", meta.Repository.Name, n)
 }
 
 // repository:c namespace:n -> n/c

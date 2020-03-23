@@ -16,17 +16,43 @@ package http
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"github.com/goharbor/harbor/src/common/http/modifier"
-	"github.com/goharbor/harbor/src/internal"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
+
+	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/internal"
 )
+
+const (
+	// InsecureTransport used to get the insecure http Transport
+	InsecureTransport = iota
+	// SecureTransport used to get the external secure http Transport
+	SecureTransport
+)
+
+var (
+	secureHTTPTransport   *http.Transport
+	insecureHTTPTransport *http.Transport
+)
+
+func init() {
+	secureHTTPTransport = http.DefaultTransport.(*http.Transport).Clone()
+	insecureHTTPTransport = http.DefaultTransport.(*http.Transport).Clone()
+	insecureHTTPTransport.TLSClientConfig.InsecureSkipVerify = true
+
+	if InternalTLSEnabled() {
+		tlsConfig, err := GetInternalTLSConfig()
+		if err != nil {
+			panic(err)
+		}
+		secureHTTPTransport.TLSClientConfig = tlsConfig
+	}
+}
 
 // Client is a util for common HTTP operations, such Get, Head, Post, Put and Delete.
 // Use Do instead if  those methods can not meet your requirement
@@ -35,31 +61,22 @@ type Client struct {
 	client    *http.Client
 }
 
-var defaultHTTPTransport, secureHTTPTransport, insecureHTTPTransport *http.Transport
-
-func init() {
-	defaultHTTPTransport = &http.Transport{}
-
-	secureHTTPTransport = &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
-		},
-	}
-	insecureHTTPTransport = &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
+// GetHTTPTransport returns HttpTransport based on insecure configuration
+func GetHTTPTransport(clientType uint) *http.Transport {
+	switch clientType {
+	case SecureTransport:
+		return secureHTTPTransport
+	case InsecureTransport:
+		return insecureHTTPTransport
+	default:
+		// default Transport is secure one
+		return secureHTTPTransport
 	}
 }
 
-// GetHTTPTransport returns HttpTransport based on insecure configuration
-func GetHTTPTransport(insecure ...bool) *http.Transport {
-	if len(insecure) == 0 {
-		return defaultHTTPTransport
-	}
-	if insecure[0] {
+// GetHTTPTransportByInsecure returns a insecure HttpTransport if insecure is true or it returns secure one
+func GetHTTPTransportByInsecure(insecure bool) *http.Transport {
+	if insecure {
 		return insecureHTTPTransport
 	}
 	return secureHTTPTransport
@@ -74,9 +91,7 @@ func NewClient(c *http.Client, modifiers ...modifier.Modifier) *Client {
 	}
 	if client.client == nil {
 		client.client = &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-			},
+			Transport: GetHTTPTransport(SecureTransport),
 		}
 	}
 	if len(modifiers) > 0 {

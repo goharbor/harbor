@@ -15,7 +15,6 @@
 package blob
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -37,17 +36,18 @@ func PostInitiateBlobUploadMiddleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		logPrefix := fmt.Sprintf("[middleware][%s][blob]", r.URL.Path)
-
 		ctx := r.Context()
+
+		logger := log.G(ctx).WithFields(log.Fields{"middleware": "blob"})
+
 		project, err := projectController.GetByName(ctx, distribution.ParseProjectName(r.URL.Path))
 		if err != nil {
-			log.Errorf("%s: get project failed, error: %v", logPrefix, err)
+			logger.Errorf("get project failed, error: %v", err)
 			return err
 		}
 
 		if err := blobController.AssociateWithProjectByDigest(ctx, mount, project.ProjectID); err != nil {
-			log.Errorf("%s: mount blob %s to project %s failed, error: %v", logPrefix, mount, project.Name, err)
+			logger.Errorf("mount blob %s to project %s failed, error: %v", mount, project.Name, err)
 			return err
 		}
 

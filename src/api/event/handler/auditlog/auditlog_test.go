@@ -16,18 +16,17 @@ package auditlog
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/api/event/metadata"
+	"testing"
 
 	"github.com/goharbor/harbor/src/api/event"
+	"github.com/goharbor/harbor/src/api/event/metadata"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	ne "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type MockAuditLogManager struct {
@@ -69,7 +68,6 @@ func (suite *AuditLogHandlerTestSuite) SetupSuite() {
 	common_dao.PrepareTestForPostgresSQL()
 	suite.logMgr = &MockAuditLogManager{}
 	suite.auditLogHandler = &Handler{}
-	log.SetLevel(log.DebugLevel)
 }
 
 func (suite *AuditLogHandlerTestSuite) TestSubscribeTagEvent() {

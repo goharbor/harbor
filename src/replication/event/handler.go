@@ -18,14 +18,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/replication/util"
-
+	commonthttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/operation"
 	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/registry"
+	"github.com/goharbor/harbor/src/replication/util"
 )
 
 // Handler is the handler to handle event
@@ -57,7 +57,7 @@ func (h *handler) Handle(event *Event) error {
 	var policies []*model.Policy
 	var err error
 	switch event.Type {
-	case EventTypeArtifactPush, EventTypeChartUpload,
+	case EventTypeArtifactPush, EventTypeChartUpload, EventTypeTagDelete,
 		EventTypeArtifactDelete, EventTypeChartDelete:
 		policies, err = h.getRelatedPolicies(event.Resource)
 	default:
@@ -191,6 +191,6 @@ func GetLocalRegistry() *model.Registry {
 			// use secret to do the auth for the local Harbor
 			AccessSecret: config.Config.JobserviceSecret,
 		},
-		Insecure: true,
+		Insecure: !commonthttp.InternalTLSEnabled(),
 	}
 }

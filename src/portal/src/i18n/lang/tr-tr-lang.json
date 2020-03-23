@@ -455,7 +455,10 @@
         "ITEMS": "adet",
         "FILTER_PLACEHOLDER": "Günlükleri Filtrele",
         "INVALID_DATE": "Geçersiz tarih.",
-        "OF": "of"
+        "OF": "of",
+        "NOT_FOUND": "We couldn't find any logs!",
+        "RESOURCE": "Resource",
+        "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
         "YES": "Evet",
@@ -652,8 +655,10 @@
         "DELETION_TITLE_REPO_SIGNED": "Depo silinemez",
         "DELETION_SUMMARY_REPO_SIGNED": "Depo '{{repoName}}' aşağıdaki imzalanmış görüntüler mevcut olduğu için silinemez. \n {{signedImages}} \nBir depoyu silmeden önce imzalı tüm imajları imzalamanız gerekir!",
         "DELETION_SUMMARY_REPO": "Depoyu silmek istiyor musunuz?{{repoName}}?",
+        "DELETION_TITLE_ARTIFACT": "Confirm Artifact Deletion",
+        "DELETION_SUMMARY_ARTIFACT": "Do you want to delete artifact {{param}}? If you delete this artifact, all tags referenced by the digest will also be deleted.",
         "DELETION_TITLE_TAG": "Etiket Silme İşlemini Onayla",
-        "DELETION_SUMMARY_TAG": "Etiketi silmek ister misiniz {{param}}? If you delete this tag, all other tags referenced by the same digest will also be deleted.",
+        "DELETION_SUMMARY_TAG": "Etiketi silmek ister misiniz {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "İmzalı etiket silinemez",
         "DELETION_SUMMARY_TAG_DENIED": "Etiket silinmeden önce Harbordan kaldırılmalıdır. \nBu komutla Harbor'den silin: \n",
         "TAGS_NO_DELETE": "Salt okunur modda silmek yasaktır.",

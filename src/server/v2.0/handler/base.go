@@ -26,11 +26,11 @@ import (
 	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/goharbor/harbor/src/api/project"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/project"
 	errs "github.com/goharbor/harbor/src/server/error"
 )
 
@@ -66,8 +66,7 @@ func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName inte
 	}
 
 	if projectName != "" {
-		// TODO: use the project controller to replace the project manager
-		p, err := project.Mgr.Get(projectName)
+		p, err := project.Ctl.GetByName(ctx, projectName)
 		if err != nil {
 			log.Errorf("failed to get project %s: %v", projectName, err)
 			return false
@@ -121,26 +120,44 @@ func (b *BaseAPI) BuildQuery(ctx context.Context, query *string, pageNumber, pag
 
 // Links return Links based on the provided pagination information
 func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, pageSize int64) internal.Links {
-	url := *u
+	ul := *u
+	// try to unescape the repository name which contains escaped slashes
+	if escapedPath, err := url.PathUnescape(ul.Path); err == nil {
+		ul.Path = escapedPath
+	} else {
+		log.Errorf("failed to unescape the path %s: %v", ul.Path, err)
+	}
 	var links internal.Links
 	// prev
 	if pageNumber > 1 && (pageNumber-1)*pageSize < total {
-		q := url.Query()
+		q := ul.Query()
 		q.Set("page", strconv.FormatInt(pageNumber-1, 10))
-		url.RawQuery = q.Encode()
+		ul.RawQuery = q.Encode()
+		// try to unescape the query
+		if escapedQuery, err := url.QueryUnescape(ul.RawQuery); err == nil {
+			ul.RawQuery = escapedQuery
+		} else {
+			log.Errorf("failed to unescape the query %s: %v", ul.RawQuery, err)
+		}
 		link := &internal.Link{
-			URL: url.String(),
+			URL: ul.String(),
 			Rel: "prev",
 		}
 		links = append(links, link)
 	}
 	// next
 	if pageSize*pageNumber < total {
-		q := url.Query()
+		q := ul.Query()
 		q.Set("page", strconv.FormatInt(pageNumber+1, 10))
-		url.RawQuery = q.Encode()
+		ul.RawQuery = q.Encode()
+		// try to unescape the query
+		if escapedQuery, err := url.QueryUnescape(ul.RawQuery); err == nil {
+			ul.RawQuery = escapedQuery
+		} else {
+			log.Errorf("failed to unescape the query %s: %v", ul.RawQuery, err)
+		}
 		link := &internal.Link{
-			URL: url.String(),
+			URL: ul.String(),
 			Rel: "next",
 		}
 		links = append(links, link)

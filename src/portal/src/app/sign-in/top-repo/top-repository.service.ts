@@ -15,7 +15,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-import { Repository } from "../../../lib/services";
+import { Repository } from "../../../../ng-swagger-gen/models/repository";
 import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from "../../../lib/utils/utils";
 
 export const topRepoEndpoint = CURRENT_BASE_HREF + "/repositories/top";

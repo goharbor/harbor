@@ -16,10 +16,11 @@ ${SERVER_URL}  https://${SERVER}
 ${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
 &{SERVER_CONFIG}  endpoint=${SERVER_API_ENDPOINT}  verify_ssl=False
 
-# TODO the cases commented by "###" can be uncommented after implementing the repository python library based on new API
-
 *** Test Cases ***
-# TODO uncomment this after re-implement the case
+Test Case - Scan Image
+    Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
+Test Case - Scan All Images
+    Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py
 Test Case - Garbage Collection
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 Test Case - Add Private Project Member and Check User Can See It
@@ -32,21 +33,12 @@ Test Case - Add Replication Rule
     Harbor API Test  ./tests/apitests/python/test_add_replication_rule.py
 Test Case - Edit Project Creation
     Harbor API Test  ./tests/apitests/python/test_edit_project_creation.py
-# TODO uncomment this after image scan work with basic auth - #10277
-#Test Case - Scan Image
-#    Harbor API Test  ./tests/apitests/python/test_scan_image.py
 Test Case - Manage Project Member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
 Test Case - Project Level Policy Content Trust
     Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
-# TODO uncomment this after we move the accesslog away from registry notificaiton
-# TODO potentially #10602 may also fix this.
-# User View Logs still in failure state - danfeng@3/11 2020.
-# Test Case - User View Logs
-#    Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
-# TODO uncomment this after making scan all work with OCI registry
-# Test Case - Scan All Images
-#     Harbor API Test  ./tests/apitests/python/test_scan_all_images.py
+Test Case - User View Logs
+    Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
 Test Case - List Helm Charts
     Harbor API Test  ./tests/apitests/python/test_list_helm_charts.py
 Test Case - Assign Sys Admin
@@ -69,8 +61,10 @@ Test Case - Health Check
     Harbor API Test  ./tests/apitests/python/test_health_check.py
 Test Case - Push Index By Docker Manifest
     Harbor API Test  ./tests/apitests/python/test_push_index_by_docker_manifest.py
-Test Case - Push Index By Docker Manifest
+Test Case - Push Chart By Helm3 Chart CLI
     Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm3_chart_cli.py
 Test Case - Push Cnab Bundle
     Harbor API Test  ./tests/apitests/python/test_push_cnab_bundle.py
+Test Case - Create/Delete tag
+    Harbor API Test  ./tests/apitests/python/test_create_delete_tag.py
 

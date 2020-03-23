@@ -20,7 +20,6 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/api/artifact/processor"
 	"github.com/goharbor/harbor/src/api/artifact/processor/base"
-	"github.com/goharbor/harbor/src/api/artifact/processor/blob"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -35,9 +34,7 @@ const (
 )
 
 func init() {
-	pc := &manifestV2Processor{
-		blobFetcher: blob.Fcher,
-	}
+	pc := &manifestV2Processor{}
 	pc.ManifestProcessor = base.NewManifestProcessor("created", "author", "architecture", "os")
 	mediaTypes := []string{
 		v1.MediaTypeImageConfig,
@@ -52,7 +49,6 @@ func init() {
 // manifestV2Processor processes image with OCI manifest and docker v2 manifest
 type manifestV2Processor struct {
 	*base.ManifestProcessor
-	blobFetcher blob.Fetcher
 }
 
 func (m *manifestV2Processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*processor.Addition, error) {
@@ -60,7 +56,11 @@ func (m *manifestV2Processor) AbstractAddition(ctx context.Context, artifact *ar
 		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
 			WithMessage("addition %s isn't supported for %s(manifest version 2)", addition, ArtifactTypeImage)
 	}
-	_, content, err := m.blobFetcher.FetchManifest(artifact.RepositoryName, artifact.Digest)
+	mani, _, err := m.RegCli.PullManifest(artifact.RepositoryName, artifact.Digest)
+	if err != nil {
+		return nil, err
+	}
+	_, content, err := mani.Payload()
 	if err != nil {
 		return nil, err
 	}
@@ -68,12 +68,12 @@ func (m *manifestV2Processor) AbstractAddition(ctx context.Context, artifact *ar
 	if err := json.Unmarshal(content, manifest); err != nil {
 		return nil, err
 	}
-	content, err = m.blobFetcher.FetchLayer(artifact.RepositoryName, manifest.Config.Digest.String())
+	_, blob, err := m.RegCli.PullBlob(artifact.RepositoryName, manifest.Config.Digest.String())
 	if err != nil {
 		return nil, err
 	}
 	image := &v1.Image{}
-	if err := json.Unmarshal(content, image); err != nil {
+	if err := json.NewDecoder(blob).Decode(image); err != nil {
 		return nil, err
 	}
 	content, err = json.Marshal(image.History)

@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	_ "github.com/docker/distribution/manifest/manifestlist"
+	_ "github.com/docker/distribution/manifest/ocischema"
 	_ "github.com/docker/distribution/manifest/schema1"
 	_ "github.com/docker/distribution/manifest/schema2"
 )
@@ -92,6 +93,27 @@ func TestParseProjectName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := ParseProjectName(tt.args.path); got != tt.want {
 				t.Errorf("ParseProjectName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParseReference(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"tag", args{"/v2/library/photon/manifests/2.0"}, "2.0"},
+		{"digest", args{"/v2/library/photon/manifests/sha256:c52fca2e807cb7807cfd831d6df45a332d5826a97f886f7da0e9c61842f9ce1e"}, "sha256:c52fca2e807cb7807cfd831d6df45a332d5826a97f886f7da0e9c61842f9ce1e"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ParseReference(tt.args.path); got != tt.want {
+				t.Errorf("ParseReference() = %v, want %v", got, tt.want)
 			}
 		})
 	}

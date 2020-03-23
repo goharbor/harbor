@@ -12,8 +12,6 @@ import {
   ReplicationDefaultService,
   QuotaService,
   QuotaDefaultService,
-  TagService,
-  TagDefaultService,
   ScanningResultService,
   ScanningResultDefaultService,
   ConfigurationService,
@@ -24,8 +22,6 @@ import {
   ProjectDefaultService,
   LabelService,
   LabelDefaultService,
-  RetagService,
-  RetagDefaultService,
   UserPermissionService,
   UserPermissionDefaultService,
 } from './services';
@@ -155,12 +151,6 @@ export interface HarborModuleConfig {
   // Service implementation for repository
   repositoryService?: Provider;
 
-  // Service implementation for tag
-  tagService?: Provider;
-
-  // Service implementation for retag
-  retagService?: Provider;
-
   // Service implementation for vulnerability scanning
   scanningService?: Provider;
 
@@ -279,8 +269,6 @@ export class HarborLibraryModule {
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.QuotaService || { provide: QuotaService, useClass: QuotaDefaultService },
-        config.tagService || { provide: TagService, useClass: TagDefaultService },
-        config.retagService || { provide: RetagService, useClass: RetagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
@@ -317,8 +305,6 @@ export class HarborLibraryModule {
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.QuotaService || { provide: QuotaService, useClass: QuotaDefaultService },
-        config.tagService || { provide: TagService, useClass: TagDefaultService },
-        config.retagService || { provide: RetagService, useClass: RetagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },

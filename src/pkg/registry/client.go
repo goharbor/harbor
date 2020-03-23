@@ -18,18 +18,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/manifestlist"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-	// register oci manifest unmarshal function
-	_ "github.com/docker/distribution/manifest/ocischema"
+
+	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/manifestlist"
+	_ "github.com/docker/distribution/manifest/ocischema" // register oci manifest unmarshal function
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/internal"
 	ierror "github.com/goharbor/harbor/src/internal/error"
@@ -43,7 +44,7 @@ var (
 	Cli = func() Client {
 		url, _ := config.RegistryURL()
 		username, password := config.RegistryCredential()
-		return NewClient(url, username, password, true)
+		return NewClient(url, username, password, false)
 	}()
 
 	accepts = []string{
@@ -53,6 +54,11 @@ var (
 		schema2.MediaTypeManifest,
 		schema1.MediaTypeSignedManifest,
 	}
+)
+
+// const definition
+const (
+	UserAgent = "harbor-registry-client"
 )
 
 // Client defines the methods that a registry client should implements
@@ -87,28 +93,42 @@ type Client interface {
 	Copy(srcRepository, srcReference, dstRepository, dstReference string, override bool) (err error)
 }
 
-// TODO TODO support HTTPS
+// TODO support HTTPS
 
 // NewClient creates a registry client with the default authorizer which determines the auth scheme
 // of the registry automatically and calls the corresponding underlying authorizers(basic/bearer) to
 // do the auth work. If a customized authorizer is needed, use "NewClientWithAuthorizer" instead
 func NewClient(url, username, password string, insecure bool) Client {
+	var transportType uint
+	if insecure {
+		transportType = commonhttp.InsecureTransport
+	} else {
+		transportType = commonhttp.SecureTransport
+	}
+
 	return &client{
 		url:        url,
-		authorizer: auth.NewAuthorizer(username, password, insecure),
+		authorizer: auth.NewAuthorizer(username, password, transportType),
 		client: &http.Client{
-			Transport: internal.GetHTTPTransport(insecure),
+			Transport: commonhttp.GetHTTPTransport(transportType),
 		},
 	}
 }
 
 // NewClientWithAuthorizer creates a registry client with the provided authorizer
 func NewClientWithAuthorizer(url string, authorizer internal.Authorizer, insecure bool) Client {
+	var transportType uint
+	if insecure {
+		transportType = commonhttp.InsecureTransport
+	} else {
+		transportType = commonhttp.SecureTransport
+	}
+
 	return &client{
 		url:        url,
 		authorizer: authorizer,
 		client: &http.Client{
-			Transport: internal.GetHTTPTransport(insecure),
+			Transport: commonhttp.GetHTTPTransport(transportType),
 		},
 	}
 }
@@ -503,6 +523,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 			return nil, err
 		}
 	}
+	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), UserAgent)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err

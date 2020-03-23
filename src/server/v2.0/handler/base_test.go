@@ -53,6 +53,18 @@ func (b *baseHandlerTestSuite) TestBuildQuery() {
 	b.Equal(int64(1), q.PageNumber)
 	b.Equal(int64(10), q.PageSize)
 	b.NotNil(q.Keywords)
+
+	var (
+		qs1       = "q=a%3Db"
+		pn1 int64 = 1
+		ps1 int64 = 10
+	)
+	q, err = b.base.BuildQuery(nil, &qs1, &pn1, &ps1)
+	b.Require().Nil(err)
+	b.Require().NotNil(q)
+	b.Equal(int64(1), q.PageNumber)
+	b.Equal(int64(10), q.PageSize)
+	b.Equal(q.Keywords["q"], "a=b")
 }
 
 func (b *baseHandlerTestSuite) TestLinks() {
@@ -81,6 +93,16 @@ func (b *baseHandlerTestSuite) TestLinks() {
 	b.Equal("http://localhost/api/artifacts?page=1&page_size=1", links[0].URL)
 	b.Equal("next", links[1].Rel)
 	b.Equal("http://localhost/api/artifacts?page=3&page_size=1", links[1].URL)
+
+	// path and query contain escaped characters
+	url, err = url.Parse("http://localhost/api/library%252Fhello-world/artifacts?page=2&page_size=1&q=a%3D~b")
+	b.Require().Nil(err)
+	links = b.base.Links(nil, url, 3, 2, 1)
+	b.Require().Len(links, 2)
+	b.Equal("prev", links[0].Rel)
+	b.Equal("http://localhost/api/library/hello-world/artifacts?page=1&page_size=1&q=a=~b", links[0].URL)
+	b.Equal("next", links[1].Rel)
+	b.Equal("http://localhost/api/library/hello-world/artifacts?page=3&page_size=1&q=a=~b", links[1].URL)
 }
 
 func TestBaseHandler(t *testing.T) {

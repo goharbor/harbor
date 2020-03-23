@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/internal"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/registry"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/router"
 	"github.com/opencontainers/go-digest"
@@ -33,7 +34,7 @@ import (
 func getManifest(w http.ResponseWriter, req *http.Request) {
 	repository := router.Param(req.Context(), ":splat")
 	reference := router.Param(req.Context(), ":reference")
-	artifact, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
+	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
 		serror.SendError(w, err)
 		return
@@ -42,26 +43,26 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	// the reference is tag, replace it with digest
 	if _, err = digest.Parse(reference); err != nil {
 		req = req.Clone(req.Context())
-		req.URL.Path = strings.TrimSuffix(req.URL.Path, reference) + artifact.Digest
+		req.URL.Path = strings.TrimSuffix(req.URL.Path, reference) + art.Digest
 		req.URL.RawPath = req.URL.EscapedPath()
 	}
 
 	recorder := internal.NewResponseRecorder(w)
 	proxy.ServeHTTP(recorder, req)
-	// fire event
-	if recorder.Success() {
-		// TODO don't fire event for the pulling from replication
-		e := &metadata.PullArtifactEventMetadata{
-			Ctx:      req.Context(),
-			Artifact: &artifact.Artifact,
-		}
-		// TODO provide a util function to determine whether the reference is tag or not
-		// the reference is tag
-		if _, err = digest.Parse(reference); err != nil {
-			e.Tag = reference
-		}
-		notification.AddEvent(req.Context(), e)
+	// fire event, ignore the HEAD request and pulling request from replication service
+	if !recorder.Success() || req.Method == http.MethodHead ||
+		req.UserAgent() == registry.UserAgent {
+		return
 	}
+	e := &metadata.PullArtifactEventMetadata{
+		Ctx:      req.Context(),
+		Artifact: &art.Artifact,
+	}
+	// the reference is tag
+	if _, err = digest.Parse(reference); err != nil {
+		e.Tag = reference
+	}
+	notification.AddEvent(req.Context(), e)
 }
 
 // just delete the artifact from database

@@ -62,10 +62,13 @@ func Init() {
 // NewDefaultClient creates a default client based on endpoint and secret.
 func NewDefaultClient(endpoint, secret string) *DefaultClient {
 	var c *commonhttp.Client
+	httpCli := &http.Client{
+		Transport: commonhttp.GetHTTPTransport(commonhttp.SecureTransport),
+	}
 	if len(secret) > 0 {
-		c = commonhttp.NewClient(nil, auth.NewSecretAuthorizer(secret))
+		c = commonhttp.NewClient(httpCli, auth.NewSecretAuthorizer(secret))
 	} else {
-		c = commonhttp.NewClient(nil)
+		c = commonhttp.NewClient(httpCli)
 	}
 	e := strings.TrimRight(endpoint, "/")
 	return &DefaultClient{
@@ -74,7 +77,29 @@ func NewDefaultClient(endpoint, secret string) *DefaultClient {
 	}
 }
 
-// SubmitJob call jobserivce API to submit a job and returns the job's UUID.
+// NewReplicationClient used to create a client for replication
+func NewReplicationClient(endpoint, secret string) *DefaultClient {
+	var c *commonhttp.Client
+
+	if len(secret) > 0 {
+		c = commonhttp.NewClient(&http.Client{
+			Transport: commonhttp.GetHTTPTransport(commonhttp.SecureTransport),
+		},
+			auth.NewSecretAuthorizer(secret))
+	} else {
+		c = commonhttp.NewClient(&http.Client{
+			Transport: commonhttp.GetHTTPTransport(commonhttp.SecureTransport),
+		})
+	}
+
+	e := strings.TrimRight(endpoint, "/")
+	return &DefaultClient{
+		endpoint: e,
+		client:   c,
+	}
+}
+
+// SubmitJob call jobservice API to submit a job and returns the job's UUID.
 func (d *DefaultClient) SubmitJob(jd *models.JobData) (string, error) {
 	url := d.endpoint + "/api/v1/jobs"
 	jq := models.JobRequest{

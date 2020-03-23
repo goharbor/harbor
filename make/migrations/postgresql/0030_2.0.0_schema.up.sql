@@ -13,7 +13,7 @@ table artifact:
   pull_time     timestamp,
   extra_attrs   text,
   annotations   jsonb,
-  CONSTRAINT unique_artifact_2 UNIQUE (repository_id, digest)
+  CONSTRAINT unique_artifact UNIQUE (repository_id, digest)
 */
 
 ALTER TABLE admin_job ADD COLUMN job_parameters varchar(255) Default '';
@@ -163,28 +163,6 @@ SELECT label.label_id, repo_tag.artifact_id, label.creation_time, label.update_t
 /*remove the records for images in table 'harbor_resource_label'*/
 DELETE FROM harbor_resource_label WHERE resource_type = 'i';
 
-
-/* TODO remove this table after clean up code that related with the old artifact model */
-CREATE TABLE artifact_2
-(
-  id            SERIAL PRIMARY KEY NOT NULL,
-  project_id    int                NOT NULL,
-  repo          varchar(255)       NOT NULL,
-  tag           varchar(255)       NOT NULL,
-  /*
-     digest of manifest
-  */
-  digest        varchar(255)       NOT NULL,
-  /*
-     kind of artifact, image, chart, etc..
-  */
-  kind          varchar(255)       NOT NULL,
-  creation_time timestamp default CURRENT_TIMESTAMP,
-  pull_time     timestamp,
-  push_time     timestamp,
-  CONSTRAINT unique_artifact_2 UNIQUE (project_id, repo, tag)
-);
-
 CREATE TABLE audit_log
 (
  id             SERIAL PRIMARY KEY NOT NULL,
@@ -197,7 +175,6 @@ CREATE TABLE audit_log
 );
 
 /*migrate access log to audit log*/
-/*TODO drop table access_log?*/
 DO $$
 DECLARE
     access RECORD;
@@ -217,8 +194,14 @@ BEGIN
     END LOOP;
 END $$;
 
+/*drop access table after migrate to audit log*/
+DROP TABLE IF EXISTS access_log;
+
 /*remove the constraint for project_id in table 'notification_policy'*/
 ALTER TABLE notification_policy DROP CONSTRAINT unique_project_id;
 
 /*add the unique constraint for name in table 'notification_policy'*/
 ALTER TABLE notification_policy ADD UNIQUE (name);
+
+ALTER TABLE replication_task ALTER COLUMN src_resource TYPE varchar(512);
+ALTER TABLE replication_task ALTER COLUMN dst_resource TYPE varchar(512);

@@ -30,12 +30,6 @@ paths:
         - $ref: '#/parameters/query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        # TODO remove it
-        - name: name
-          in: query
-          description: Query the repositories by name
-          type: string
-          required: false
       responses:
         '200':
           description: Success
@@ -60,7 +54,11 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}:
+  # the _self suffix here is used to avoid the conflict of repository name and URL path
+  # e.g. the repository name can be "library/artifacts", we cannot distinguish the URL
+  # "GET /projects/{project_name}/repositories/library/artifacts" is getting repository
+  # or listing artifacts
+  /projects/{project_name}/repositories/{repository_name}/_self:
     get:
       summary: Get repository
       description: Get the repository specified by name
@@ -141,7 +139,7 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts:
     get:
       summary: List artifacts
-      description: List artifacts under the specific project and repository.
+      description: List artifacts under the specific project and repository. Except the basic properties, the other supported queries in "q" includes "tags=*" to list only tagged artifacts, "tags=nil" to list only untagged artifacts, "tags=~v" to list artifacts whose tag fuzzy matches "v", "labels=(id1, id2)" to list artifacts that both labels with id1 and id2 are added to
       tags:
         - artifact
       operationId: listArtifacts
@@ -152,17 +150,6 @@ paths:
         - $ref: '#/parameters/query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        # TODO remove the query strings included in "query"
-        - name: type
-          in: query
-          description: Query the artifacts by type. Valid values can be "IMAGE", "CHART", etc.
-          type: string
-          required: false
-        - name: tags
-          in: query
-          description: Without the "tags" query string, both tagged and untagged artifacts will be returned. Specify it as "*" to return only tagged artifacts; specify it as "nil" to return only untagged artifacts.
-          type: string
-          required: false
         - name: with_tag
           in: query
           description: Specify whether the tags are included inside the returning artifacts
@@ -461,7 +448,13 @@ paths:
           required: true
       responses:
         '200':
-          $ref: '#/responses/200'
+          description: Success
+          headers:
+            Content-Type:
+              description: The content type of the addition
+              type: string
+          schema:
+            type: string
         '400':
           $ref: '#/responses/400'
         '401':
@@ -546,38 +539,9 @@ paths:
       operationId: listAuditLogs
       parameters:
         - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        - name: username
-          in: query
-          type: string
-          required: false
-          description: Username of the operator.
-        - name: resource
-          in: query
-          type: string
-          required: false
-          description: The identity of resource
-        - name: resource_type
-          in: query
-          type: string
-          required: false
-          description: The type of resource, artifact/tag/repository
-        - name: operation
-          in: query
-          type: string
-          required: false
-          description: The operation, create/delete
-        - name: begin_timestamp
-          in: query
-          type: string
-          required: false
-          description: The begin timestamp
-        - name: end_timestamp
-          in: query
-          type: string
-          required: false
-          description: The end timestamp
       responses:
         '200':
           description: Success
@@ -598,23 +562,39 @@ paths:
           $ref: '#/responses/401'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_id}/webhook/events:
+  /projects/{project_name}/logs:
     get:
-      summary: Get supported event types and notify types.
-      description: Get supportted event types and notify types.
+      summary: Get recent logs of the projects
+      description: Get recent logs of the projects
       tags:
-        - notification
+        - project
+      operationId: getLogs
       parameters:
-        - $ref: '#/parameters/projectId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
       responses:
         '200':
           description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of auditlogs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
-            $ref: '#/definitions/SupportedWebhookEventTypes'
+            type: array
+            items:
+              $ref: '#/definitions/AuditLog'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   query:
     name: q
@@ -1072,23 +1052,3 @@ definitions:
       op_time:
         type: string
         description: The time when this operation is triggered.
-  SupportedWebhookEventTypes:
-    type: object
-    description: Supportted webhook event types and notify types.
-    properties:
-      event_type:
-        type: array
-        items:
-          $ref: '#/definitions/EventType'
-      notify_type:
-        type: array
-        items:
-          $ref: '#/definitions/NotifyType'
-  EventType:
-    type: string
-    description: Webhook supportted event type.
-    example: 'pullImage'
-  NotifyType:
-    type: string
-    description: Webhook supportted notify type.
-    example: 'http'

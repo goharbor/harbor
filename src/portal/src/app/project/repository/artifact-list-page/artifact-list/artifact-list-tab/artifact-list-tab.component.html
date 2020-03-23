@@ -31,7 +31,7 @@
     <div>
         <div class="row flex-items-xs-right rightPos">
             <div id="filterArea" *ngIf="!depth">
-                <div class='filterLabelPiece' *ngIf="(openLabelFilterPiece &&filterByType ==='label.id')"
+                <div class='filterLabelPiece' *ngIf="(openLabelFilterPiece &&filterByType ==='labels')"
                     [style.left.px]='96'>
                     <hbr-label-piece *ngIf="showlabel" [hidden]='!filterOneLabel' [label]="filterOneLabel"
                         [labelWidth]="130"></hbr-label-piece>
@@ -59,7 +59,7 @@
                             </div>
 
                         </div>
-                        <div class="label-filter-panel" *ngIf="!withAdmiral" [hidden]="!(openLabelFilterPanel&&filterByType==='label.id')">
+                        <div class="label-filter-panel" *ngIf="!withAdmiral" [hidden]="!(openLabelFilterPanel&&filterByType==='labels')">
                             <a class="filterClose" (click)="closeFilter()">&times;</a>
                             <label
                                 class="filterLabelHeader filter-dark">{{'REPOSITORY.FILTER_ARTIFACT_BY_LABEL' | translate}}</label>
@@ -146,7 +146,7 @@
 
             </clr-dg-action-bar>
 
-            <clr-dg-column class="flex-max-width" [clrDgField]="'q'">{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}
+            <clr-dg-column class="flex-max-width">{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}
             </clr-dg-column>
             <clr-dg-column *ngIf="depth">{{'REPOSITORY.PLATFORM' | translate}}</clr-dg-column>
             <clr-dg-column class="w-rem-4">{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>

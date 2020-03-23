@@ -17,7 +17,6 @@ package chartmuseum
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -25,8 +24,9 @@ import (
 
 	"github.com/goharbor/harbor/src/api/project"
 	"github.com/goharbor/harbor/src/chartserver"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/core/config"
 )
 
 var (
@@ -51,46 +51,54 @@ func NewController() Controller {
 }
 
 type controller struct {
-	projectCtl project.Controller
-	cc         *chartserver.Controller
-	ccError    error
-	ccOnce     sync.Once
+	projectCtl      project.Controller
+	cc              *chartserver.Controller
+	withChartMuseum bool
+
+	initializeError error
+	initializeOnce  sync.Once
 }
 
-func (c *controller) initialize() (*chartserver.Controller, error) {
-	c.ccOnce.Do(func() {
-		addr, err := config.GetChartMuseumEndpoint()
-		if err != nil {
-			c.ccError = fmt.Errorf("failed to get the endpoint URL of chart storage server: %s", err.Error())
+func (c *controller) initialize() error {
+	c.initializeOnce.Do(func() {
+		cfg := config.NewDBCfgManager()
+
+		c.withChartMuseum = cfg.Get(common.WithChartMuseum).GetBool()
+		if !c.withChartMuseum {
 			return
 		}
 
-		addr = strings.TrimSuffix(addr, "/")
-		url, err := url.Parse(addr)
+		chartEndpoint := strings.TrimSpace(cfg.Get(common.ChartRepoURL).GetString())
+		if len(chartEndpoint) == 0 {
+			c.initializeError = errors.New("empty chartmuseum endpoint")
+			return
+		}
+
+		url, err := url.Parse(strings.TrimSuffix(chartEndpoint, "/"))
 		if err != nil {
-			c.ccError = errors.New("endpoint URL of chart storage server is malformed")
+			c.initializeError = errors.New("endpoint URL of chart storage server is malformed")
 			return
 		}
 
 		ctr, err := chartserver.NewController(url)
 		if err != nil {
-			c.ccError = errors.New("failed to initialize chart API controller")
+			c.initializeError = errors.New("failed to initialize chart API controller")
+			return
 		}
 
 		c.cc = ctr
 	})
 
-	return c.cc, c.ccError
+	return c.initializeError
 }
 
 func (c *controller) Count(ctx context.Context, projectID int64) (int64, error) {
-	if !config.WithChartMuseum() {
-		return 0, nil
+	if err := c.initialize(); err != nil {
+		return 0, err
 	}
 
-	cc, err := c.initialize()
-	if err != nil {
-		return 0, err
+	if !c.withChartMuseum {
+		return 0, nil
 	}
 
 	proj, err := c.projectCtl.Get(ctx, projectID)
@@ -98,7 +106,7 @@ func (c *controller) Count(ctx context.Context, projectID int64) (int64, error) 
 		return 0, err
 	}
 
-	count, err := cc.GetCountOfCharts([]string{proj.Name})
+	count, err := c.cc.GetCountOfCharts([]string{proj.Name})
 	if err != nil {
 		return 0, err
 	}
@@ -107,13 +115,12 @@ func (c *controller) Count(ctx context.Context, projectID int64) (int64, error) 
 }
 
 func (c *controller) Exist(ctx context.Context, projectID int64, chartName, version string) (bool, error) {
-	if !config.WithChartMuseum() {
-		return false, nil
+	if err := c.initialize(); err != nil {
+		return false, err
 	}
 
-	cc, err := c.initialize()
-	if err != nil {
-		return false, err
+	if !c.withChartMuseum {
+		return false, nil
 	}
 
 	proj, err := c.projectCtl.Get(ctx, projectID)
@@ -121,7 +128,7 @@ func (c *controller) Exist(ctx context.Context, projectID int64, chartName, vers
 		return false, err
 	}
 
-	chartVersion, err := cc.GetChartVersion(proj.Name, chartName, version)
+	chartVersion, err := c.cc.GetChartVersion(proj.Name, chartName, version)
 	if err != nil {
 		var httpErr *commonhttp.Error
 		if errors.As(err, &httpErr) {

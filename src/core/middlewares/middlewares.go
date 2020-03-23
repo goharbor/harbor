@@ -16,8 +16,8 @@ package middlewares
 
 import (
 	"github.com/goharbor/harbor/src/server/middleware/csrf"
-	"github.com/goharbor/harbor/src/server/middleware/notification"
-	"github.com/goharbor/harbor/src/server/middleware/readonly"
+	"github.com/goharbor/harbor/src/server/middleware/log"
+	"github.com/goharbor/harbor/src/server/middleware/requestid"
 	"net/http"
 	"path"
 	"regexp"
@@ -26,8 +26,11 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/notification"
 	"github.com/goharbor/harbor/src/server/middleware/orm"
-	"github.com/goharbor/harbor/src/server/middleware/requestid"
+	"github.com/goharbor/harbor/src/server/middleware/readonly"
+	"github.com/goharbor/harbor/src/server/middleware/security"
+	"github.com/goharbor/harbor/src/server/middleware/session"
 	"github.com/goharbor/harbor/src/server/middleware/transaction"
 )
 
@@ -73,8 +76,11 @@ func legacyAPISkipper(r *http.Request) bool {
 // MiddleWares returns global middlewares
 func MiddleWares() []beego.MiddleWare {
 	return []beego.MiddleWare{
-		csrf.Middleware(),
 		requestid.Middleware(),
+		log.Middleware(),
+		session.Middleware(),
+		csrf.Middleware(),
+		security.Middleware(),
 		readonly.Middleware(readonlySkippers...),
 		orm.Middleware(legacyAPISkipper),
 		// notification must ahead of transaction ensure the DB transaction execution complete

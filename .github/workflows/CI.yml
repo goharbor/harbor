@@ -5,7 +5,6 @@ env:
    POSTGRESQL_USR: postgres
    POSTGRESQL_PWD: root123
    POSTGRESQL_DATABASE: registry
-   ADMINSERVER_URL: http://127.0.0.1:8888
    DOCKER_COMPOSE_VERSION: 1.23.0
    HARBOR_ADMIN: admin
    HARBOR_ADMIN_PASSWD: Harbor12345
@@ -18,6 +17,8 @@ env:
 on:
   pull_request:
   push:
+    paths-ignore:
+    - 'docs/**'
 
 jobs:
   UTTEST:
@@ -110,6 +111,7 @@ jobs:
           pwd
           go env
           echo "::set-env name=CNAB_PATH::$(go env GOPATH)/src/github.com/docker"
+          echo "::set-env name=GITHUB_TOKEN::${{ secrets.GITHUB_TOKEN }}"
           echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
           echo "::add-path::$(go env GOPATH)/bin"
           echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem"

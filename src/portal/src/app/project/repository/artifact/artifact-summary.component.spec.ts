@@ -9,7 +9,8 @@ import { ArtifactService } from "../../../../../ng-swagger-gen/services/artifact
 import { ErrorHandler } from "../../../../lib/utils/error-handler";
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from "@ngx-translate/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { AppConfigService } from "../../../app-config.service";
+import { AppConfigService } from "../../../services/app-config.service";
+import { Project } from "../../project";
 
 describe('ArtifactSummaryComponent', () => {
 
@@ -43,11 +44,7 @@ describe('ArtifactSummaryComponent', () => {
         }
       },
       data: {
-        projectResolver: {
-          has_project_admin_role: true,
-          current_user_role_id: 3,
-          name: "demo"
-        }
+        artifactResolver: [mockedArtifact, new Project()]
       }
     },
     data: of({

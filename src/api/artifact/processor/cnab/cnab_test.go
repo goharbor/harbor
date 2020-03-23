@@ -15,28 +15,31 @@
 package cnab
 
 import (
+	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/api/artifact/processor/base"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/testing/api/artifact/processor/blob"
+	"github.com/goharbor/harbor/src/testing/pkg/registry"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
+	"io/ioutil"
+	"strings"
 	"testing"
 )
 
 type processorTestSuite struct {
 	suite.Suite
-	processor   *processor
-	blobFetcher *blob.FakeFetcher
+	processor *processor
+	regCli    *registry.FakeClient
 }
 
 func (p *processorTestSuite) SetupTest() {
-	p.blobFetcher = &blob.FakeFetcher{}
+	p.regCli = &registry.FakeClient{}
 	p.processor = &processor{
-		blobFetcher: p.blobFetcher,
 		manifestProcessor: &base.ManifestProcessor{
-			BlobFetcher: p.blobFetcher,
+			RegCli: p.regCli,
 		},
 	}
-
+	p.processor.IndexProcessor = &base.IndexProcessor{RegCli: p.regCli}
 }
 
 func (p *processorTestSuite) TestAbstractMetadata() {
@@ -86,9 +89,11 @@ func (p *processorTestSuite) TestAbstractMetadata() {
 			},
 		},
 	}
-	p.blobFetcher.On("FetchManifest").Return("", []byte(manifest), nil)
-	p.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
-	err := p.processor.AbstractMetadata(nil, nil, art)
+	mani, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(manifest))
+	p.Require().Nil(err)
+	p.regCli.On("PullManifest").Return(mani, "", nil)
+	p.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
+	err = p.processor.AbstractMetadata(nil, nil, art)
 	p.Require().Nil(err)
 	p.Len(art.ExtraAttrs, 7)
 	p.Equal("0.1.1", art.ExtraAttrs["version"].(string))

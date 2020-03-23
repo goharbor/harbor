@@ -229,6 +229,11 @@ func InternalJobServiceURL() string {
 	return strings.TrimSuffix(cfgMgr.Get(common.JobServiceURL).GetString(), "/")
 }
 
+// GetCoreURL returns the url of core from env
+func GetCoreURL() string {
+	return os.Getenv("CORE_URL")
+}
+
 // InternalCoreURL returns the local harbor core url
 func InternalCoreURL() string {
 	return strings.TrimSuffix(cfgMgr.Get(common.CoreURL).GetString(), "/")
@@ -409,7 +414,7 @@ func GetPortalURL() string {
 
 // GetRegistryCtlURL returns the URL of registryctl
 func GetRegistryCtlURL() string {
-	url := os.Getenv("REGISTRYCTL_URL")
+	url := os.Getenv("REGISTRY_CONTROLLER_URL")
 	if len(url) == 0 {
 		return common.DefaultRegistryCtlURL
 	}

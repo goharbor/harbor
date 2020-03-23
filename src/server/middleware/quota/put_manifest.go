@@ -15,24 +15,28 @@
 package quota
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/goharbor/harbor/src/api/blob"
+	"github.com/goharbor/harbor/src/api/event/metadata"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/internal"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/distribution"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/types"
 )
 
 // PutManifestMiddleware middleware to request count and storage resources for the project
 func PutManifestMiddleware() func(http.Handler) http.Handler {
 	return RequestMiddleware(RequestConfig{
-		ReferenceObject: projectReferenceObject,
-		Resources:       putManifestResources,
+		ReferenceObject:   projectReferenceObject,
+		Resources:         putManifestResources,
+		ResourcesExceeded: putManifestResourcesEvent(1),
+		ResourcesWarning:  putManifestResourcesEvent(2),
 	})
 }
 
@@ -51,19 +55,19 @@ var (
 )
 
 func putManifestResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
-	logPrefix := fmt.Sprintf("[middleware][%s][quota]", r.URL.Path)
+	logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
 
 	projectID, _ := strconv.ParseInt(referenceID, 10, 64)
 
 	manifest, descriptor, err := unmarshalManifest(r)
 	if err != nil {
-		log.Errorf("%s: unmarshal manifest failed, error: %v", logPrefix, err)
+		logger.Errorf("unmarshal manifest failed, error: %v", err)
 		return nil, err
 	}
 
 	exist, err := blobController.Exist(r.Context(), descriptor.Digest.String(), blob.IsAssociatedWithProject(projectID))
 	if err != nil {
-		log.Errorf("%s: check manifest %s is associated with project failed, error: %v", logPrefix, descriptor.Digest.String(), err)
+		logger.Errorf("check manifest %s is associated with project failed, error: %v", descriptor.Digest.String(), err)
 		return nil, err
 	}
 
@@ -94,4 +98,43 @@ func putManifestResources(r *http.Request, reference, referenceID string) (types
 	}
 
 	return types.ResourceList{types.ResourceCount: 1, types.ResourceStorage: size}, nil
+}
+
+func putManifestResourcesEvent(level int) func(*http.Request, string, string, string) event.Metadata {
+	return func(r *http.Request, reference, referenceID string, message string) event.Metadata {
+		ctx := r.Context()
+
+		logger := log.G(ctx).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
+
+		_, descriptor, err := unmarshalManifest(r)
+		if err != nil {
+			logger.Errorf("unmarshal manifest failed, error: %v", err)
+			return nil
+		}
+
+		projectID, _ := strconv.ParseInt(referenceID, 10, 64)
+		project, err := projectController.Get(ctx, projectID)
+		if err != nil {
+			logger.Errorf("get project %d failed, error: %v", projectID, err)
+
+			return nil
+		}
+
+		path := r.URL.EscapedPath()
+
+		var tag string
+		if ref := distribution.ParseReference(path); !distribution.IsDigest(ref) {
+			tag = ref
+		}
+
+		return &metadata.QuotaMetaData{
+			Project:  project,
+			Tag:      tag,
+			Digest:   descriptor.Digest.String(),
+			RepoName: distribution.ParseName(path),
+			Level:    level,
+			Msg:      message,
+			OccurAt:  time.Now(),
+		}
+	}
 }

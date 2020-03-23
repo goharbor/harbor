@@ -30,10 +30,8 @@ import { ClrLoadingState, ClrDatagridStateInterface, ClrDatagridComparatorInterf
 import { HttpParams } from "@angular/common/http";
 import { ActivatedRoute, Router } from "@angular/router";
 import {
-  ArtifactClickEvent,
-  Comparator, Label, LabelService, ProjectService,
-  RetagService, ScanningResultService,
-  State, Tag,
+  Comparator, Label, LabelService, ScanningResultService,
+  State,
   UserPermissionService, USERSTATICPERMISSION, VulnerabilitySummary
 } from "../../../../../../lib/services";
 import {
@@ -89,7 +87,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   @Input() registryUrl: string;
   @Input() withNotary: boolean;
   @Input() withAdmiral: boolean;
-  tags: Tag[];
   artifactList: Artifact[] = [];
   availableTime = AVAILABLE_TIME;
   showTagManifestOpened: boolean;
@@ -144,7 +141,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;
   totalCount = 0;
-  currentState: State;
+  currentState: ClrDatagridStateInterface;
 
   hasAddLabelImagePermission: boolean;
   hasRetagImagePermission: boolean;
@@ -163,7 +160,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   mutipleFilter = clone(mutipleFilter);
   filterByType: string = this.mutipleFilter[0].filterBy;
   openSelectFilterPiece = false;
-
+  // could Pagination filter
+  filters: string[];
   constructor(
     private errorHandlerService: ErrorHandler,
     private userPermissionService: UserPermissionService,
@@ -282,32 +280,16 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     this.lastFilteredTagName = filterWords;
     this.currentPage = 1;
 
-    let st: State = this.currentState;
+    let st: ClrDatagridStateInterface = this.currentState;
     if (!st) {
       st = { page: {} };
     }
     st.page.size = this.pageSize;
     st.page.from = 0;
     st.page.to = this.pageSize - 1;
-
-    st.filters = [{ property: this.filterByType, value: this.lastFilteredTagName }];
-    this.clrLoad(st);
-  }
-  doSearchArtifactNames(artifactName: string) {
-    this.lastFilteredTagName = artifactName;
-    this.currentPage = 1;
-
-    let st: State = this.currentState;
-    if (!st) {
-      st = { page: {} };
-    }
-    st.page.size = this.pageSize;
-    st.page.from = 0;
-    st.page.to = this.pageSize - 1;
-    st.filters = [{ property: this.filterByType, value: this.lastFilteredTagName }];
-    let selectedLab = this.imageFilterLabels.find(label => label.iconsShow === true);
-    if (selectedLab) {
-      st.filters.push({ property: this.filterByType, value: selectedLab.label.id });
+    this.filters = [];
+    if (this.lastFilteredTagName) {
+      this.filters.push(`${this.filterByType}=~${this.lastFilteredTagName}`);
     }
     this.clrLoad(st);
   }
@@ -345,10 +327,12 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       if (sortBy) {
         params.sort = sortBy;
       }
-      if (state.filters && state.filters.length) {
-        state.filters.forEach(item => {
-          params[item.property] = item.value;
+      if (this.filters && this.filters.length) {
+        let q = "";
+        this.filters.forEach(item => {
+          q += item;
         });
+        params.q = encodeURIComponent(q);
       }
       if (this.artifactDigest) {
         const artifactParam: NewArtifactService.GetArtifactParams = {
@@ -397,10 +381,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         let listArtifactParams: NewArtifactService.ListArtifactsParams = {
           projectName: this.projectName,
           repositoryName: this.repoName,
-          withImmutableStatus: true,
           withLabel: true,
           withScanOverview: true,
-          withSignature: true,
           withTag: true
         };
         Object.assign(listArtifactParams, params);
@@ -424,7 +406,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
 
   refresh() {
-    this.doSearchArtifactNames(this.lastFilteredTagName);
+    this.currentPage = 1;
+    let st: ClrDatagridStateInterface = this.currentState;
+    if (!st) {
+      st = { page: {} };
+      st.page.size = this.pageSize;
+      st.page.from = 0;
+      st.page.to = this.pageSize - 1;
+    }
+    this.clrLoad(st);
   }
   getArtifactAnnotationsArray(artifactList: Artifact[]) {
     artifactList.forEach(artifact => {
@@ -581,18 +571,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
     // reload data
     this.currentPage = 1;
-    let st: State = this.currentState;
+    let st: ClrDatagridStateInterface = this.currentState;
     if (!st) {
       st = { page: {} };
     }
     st.page.size = this.pageSize;
     st.page.from = 0;
     st.page.to = this.pageSize - 1;
-    if (this.lastFilteredTagName) {
-      st.filters = [{ property: 'name', value: this.lastFilteredTagName }, { property: 'labels.id', value: labelId }];
-    } else {
-      st.filters = [{ property: 'labels.id', value: labelId }];
-    }
+
+    this.filters = [`${this.filterByType}=(${labelId})`];
 
     this.clrLoad(st);
   }
@@ -606,18 +593,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
     // reload data
     this.currentPage = 1;
-    let st: State = this.currentState;
+    let st: ClrDatagridStateInterface = this.currentState;
     if (!st) {
       st = { page: {} };
     }
     st.page.size = this.pageSize;
     st.page.from = 0;
     st.page.to = this.pageSize - 1;
-    if (this.lastFilteredTagName) {
-      st.filters = [{ property: 'name', value: this.lastFilteredTagName }];
-    } else {
-      st.filters = [];
-    }
+
+    this.filters = [];
     this.clrLoad(st);
   }
 
@@ -685,7 +669,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
 
   retag() {
-    if (this.selectedRow && this.selectedRow.length) {
+    if (this.selectedRow && this.selectedRow.length && !this.depth) {
       this.retagDialogOpened = true;
       this.retagSrcImage = this.repoName + ":" + this.selectedRow[0].digest;
     }
@@ -712,15 +696,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
 
   deleteArtifact() {
-    if (this.selectedRow && this.selectedRow.length) {
+    if (this.selectedRow && this.selectedRow.length && !this.depth) {
       let artifactNames: string[] = [];
       this.selectedRow.forEach(artifact => {
         artifactNames.push(artifact.digest.slice(0, 15));
       });
 
       let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
-      titleKey = "REPOSITORY.DELETION_TITLE_TAG";
-      summaryKey = "REPOSITORY.DELETION_SUMMARY_TAG";
+      titleKey = "REPOSITORY.DELETION_TITLE_ARTIFACT";
+      summaryKey = "REPOSITORY.DELETION_SUMMARY_ARTIFACT";
       buttons = ConfirmationButtons.DELETE_CANCEL;
       content = artifactNames.join(" , ");
       let message = new ConfirmationMessage(
@@ -744,9 +728,30 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           this.deleteArtifactobservableLists.push(this.delOperate(artifact));
         });
         this.loading = true;
-        forkJoin(...this.deleteArtifactobservableLists).subscribe((items) => {
-          // if delete one success  refresh list
-          if (items.some(item => !item)) {
+        forkJoin(...this.deleteArtifactobservableLists).subscribe((deleteResult) => {
+          let deleteSuccessList = [];
+          let deleteErrorList = [];
+          deleteResult.forEach(result => {
+            if (!result) {
+              // delete success
+              deleteSuccessList.push(result);
+            } else {
+              deleteErrorList.push(result);
+            }
+          });
+          if (deleteSuccessList.length === deleteResult.length) {
+            // all is success
+            this.selectedRow = [];
+            let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
+            this.clrLoad(st);
+          } else if (deleteErrorList.length === deleteResult.length) {
+            // all is error
+            this.loading = false;
+            this.errorHandlerService.error(deleteResult[deleteResult.length - 1].error);
+          } else {
+            // some artifact delete success but it has error delete things
+            this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1].error);
+            // if delete one success  refresh list
             this.selectedRow = [];
             let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
             this.clrLoad(st);
@@ -799,7 +804,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
 
   showDigestId() {
-    if (this.selectedRow && (this.selectedRow.length === 1)) {
+    if (this.selectedRow && (this.selectedRow.length === 1) && !this.depth) {
       this.manifestInfoTitle = "REPOSITORY.COPY_DIGEST_ID";
       this.digestId = this.selectedRow[0].digest;
       this.showTagManifestOpened = true;
@@ -922,7 +927,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
   selectFilterType() {
     this.lastFilteredTagName = '';
-    if (this.filterByType === 'label.id') {
+    if (this.filterByType === 'labels') {
       this.openLabelFilterPanel = true;
       this.openLabelFilterPiece = true;
     } else {
@@ -933,26 +938,38 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           data.iconsShow = false;
       });
     }
-    this.doSearchArtifactNames("");
-  }
-
-  selectFilter(showItem: string, filterItem: string) {
-    this.lastFilteredTagName = filterItem;
     this.currentPage = 1;
-
-    let st: State = this.currentState;
+    let st: ClrDatagridStateInterface = this.currentState;
     if (!st) {
       st = { page: {} };
     }
     st.page.size = this.pageSize;
     st.page.from = 0;
     st.page.to = this.pageSize - 1;
-    st.filters = [{ property: this.filterByType, value: filterItem }];
+    this.filters = [];
+    this.clrLoad(st);
+  }
+
+  selectFilter(showItem: string, filterItem: string) {
+    this.lastFilteredTagName = filterItem;
+    this.currentPage = 1;
+
+    let st: ClrDatagridStateInterface = this.currentState;
+    if (!st) {
+      st = { page: {} };
+    }
+    st.page.size = this.pageSize;
+    st.page.from = 0;
+    st.page.to = this.pageSize - 1;
+    this.filters = [];
+    if (filterItem) {
+      this.filters.push(`${this.filterByType}=${filterItem}`);
+    }
 
     this.clrLoad(st);
   }
   get isFilterReadonly() {
-    return this.filterByType === 'label.id' ? 'readonly' : null;
+    return this.filterByType === 'labels' ? 'readonly' : null;
   }
   getArtifactIcon(artifacts: ArtifactFront[]) {
     for (const artifact of artifacts) {

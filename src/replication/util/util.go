@@ -15,14 +15,18 @@
 package util
 
 import (
-	"github.com/goharbor/harbor/src/internal"
 	"net/http"
 	"strings"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 )
 
 // GetHTTPTransport can be used to share the common HTTP transport
 func GetHTTPTransport(insecure bool) *http.Transport {
-	return internal.GetHTTPTransport(insecure)
+	if insecure {
+		return commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
+	}
+	return commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
 }
 
 // ParseRepository parses the "repository" provided into two parts: namespace and the rest

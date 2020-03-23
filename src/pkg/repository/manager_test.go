@@ -51,6 +51,10 @@ func (f *fakeDao) Update(ctx context.Context, repository *models.RepoRecord, pro
 	args := f.Called()
 	return args.Error(0)
 }
+func (f *fakeDao) AddPullCount(ctx context.Context, id int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
 
 type managerTestSuite struct {
 	suite.Suite
@@ -136,6 +140,13 @@ func (m *managerTestSuite) TestUpdate() {
 	err := m.mgr.Update(nil, &models.RepoRecord{
 		RepositoryID: 1,
 	})
+	m.Require().Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestAddPullCount() {
+	m.dao.On("AddPullCount", mock.Anything).Return(nil)
+	err := m.mgr.AddPullCount(nil, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }

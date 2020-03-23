@@ -29,17 +29,19 @@
 package quota
 
 import (
-	"fmt"
 	"net/http"
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/api/event/metadata"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/distribution"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/types"
 )
@@ -47,8 +49,10 @@ import (
 // CopyArtifactMiddleware middleware to request count and storage resources for copy artifact API
 func CopyArtifactMiddleware() func(http.Handler) http.Handler {
 	return RequestMiddleware(RequestConfig{
-		ReferenceObject: projectReferenceObject,
-		Resources:       copyArtifactResources,
+		ReferenceObject:   projectReferenceObject,
+		Resources:         copyArtifactResources,
+		ResourcesExceeded: copyArtifactResourcesEvent(1),
+		ResourcesWarning:  copyArtifactResourcesEvent(2),
 	})
 }
 
@@ -62,20 +66,19 @@ func parseRepositoryName(p string) string {
 }
 
 func copyArtifactResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
-	logPrefix := fmt.Sprintf("[middleware][%s][quota]", r.URL.Path)
-
 	query := r.URL.Query()
-
 	from := query.Get("from")
 	if from == "" {
 		// miss the from parameter, skip to request the resources
 		return nil, nil
 	}
 
+	logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
+
 	repository, reference, err := distribution.ParseRef(from)
 	if err != nil {
 		// bad from parameter, skip to request the resources
-		log.Errorf("%s: parse from parameter failed, error: %v", logPrefix, err)
+		logger.Errorf("parse from parameter failed, error: %v", err)
 		return nil, nil
 	}
 
@@ -86,7 +89,7 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 		// artifact not found, discontinue the API request
 		return nil, ierror.BadRequestError(nil).WithMessage("artifact %s not found", from)
 	} else if err != nil {
-		log.Errorf("%s: get artifact %s failed, error: %v", logPrefix, from, err)
+		logger.Errorf("get artifact %s failed, error: %v", from, err)
 		return nil, err
 	}
 
@@ -103,7 +106,7 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 		return nil
 	}, nil)
 	if err != nil {
-		log.Errorf("%s: walk the artifact %s failed, error: %v", logPrefix, art.Digest, err)
+		logger.Errorf("walk the artifact %s failed, error: %v", art.Digest, err)
 		return nil, err
 	}
 
@@ -123,13 +126,13 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 
 	allBlobs, err := blobController.List(ctx, blob.ListParams{ArtifactDigests: artifactDigests})
 	if err != nil {
-		log.Errorf("%s: get blobs for artifacts %s failed, error: %v", logPrefix, strings.Join(artifactDigests, ", "), err)
+		logger.Errorf("get blobs for artifacts %s failed, error: %v", strings.Join(artifactDigests, ", "), err)
 		return nil, err
 	}
 
 	blobs, err := blobController.FindMissingAssociationsForProject(ctx, projectID, allBlobs)
 	if err != nil {
-		log.Errorf("%s: find missing blobs for project %d failed, error: %v", logPrefix, projectID, err)
+		logger.Errorf("find missing blobs for project %d failed, error: %v", projectID, err)
 		return nil, err
 	}
 
@@ -141,4 +144,52 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 	}
 
 	return types.ResourceList{types.ResourceCount: copyCount, types.ResourceStorage: size}, nil
+}
+
+func copyArtifactResourcesEvent(level int) func(*http.Request, string, string, string) event.Metadata {
+	return func(r *http.Request, reference, referenceID string, message string) event.Metadata {
+		ctx := r.Context()
+
+		logger := log.G(ctx).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
+
+		query := r.URL.Query()
+		from := query.Get("from")
+		if from == "" {
+			// this will never be happened
+			return nil
+		}
+
+		repository, reference, err := distribution.ParseRef(from)
+		if err != nil {
+			// this will never be happened
+			return nil
+		}
+
+		art, err := artifactController.GetByReference(ctx, repository, reference, nil)
+		if err != nil {
+			logger.Errorf("get artifact %s failed, error: %v", from, err)
+		}
+
+		projectID, _ := strconv.ParseInt(referenceID, 10, 64)
+		project, err := projectController.Get(ctx, projectID)
+		if err != nil {
+			logger.Errorf("get artifact %s failed, error: %v", from, err)
+			return nil
+		}
+
+		var tag string
+		if distribution.IsDigest(reference) {
+			tag = reference
+		}
+
+		return &metadata.QuotaMetaData{
+			Project:  project,
+			Tag:      tag,
+			Digest:   art.Digest,
+			RepoName: parseRepositoryName(r.URL.EscapedPath()),
+			Level:    level,
+			Msg:      message,
+			OccurAt:  time.Now(),
+		}
+	}
 }

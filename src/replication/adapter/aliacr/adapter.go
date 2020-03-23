@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/docker/distribution/registry/client/auth/challenge"
-	"github.com/goharbor/harbor/src/internal"
-	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
+
 	"net/http"
 	"path/filepath"
 	"regexp"
@@ -14,8 +12,11 @@ import (
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
+	"github.com/docker/distribution/registry/client/auth/challenge"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -69,9 +70,13 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 }
 
 func ping(registry *model.Registry) (string, string, error) {
-	client := &http.Client{
-		Transport: internal.GetHTTPTransport(registry.Insecure),
+	client := &http.Client{}
+	if registry.Insecure {
+		client.Transport = commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
+	} else {
+		client.Transport = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
 	}
+
 	resp, err := client.Get(registry.URL + "/v2/")
 	if err != nil {
 		return "", "", err
@@ -98,6 +103,11 @@ func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
 func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return getAdapterInfo()
 }
+
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
 
 // adapter for to aliyun docker registry
 type adapter struct {
@@ -183,7 +193,7 @@ func (a *adapter) listNamespaces(c *cr.Client) (namespaces []string, err error) 
 		namespaces = append(namespaces, ns.Namespace)
 	}
 
-	log.Debugf("FetchImages.listNamespaces: %#v\n", namespaces)
+	log.Debugf("FetchArtifacts.listNamespaces: %#v\n", namespaces)
 
 	return
 }
@@ -202,9 +212,9 @@ func (a *adapter) listCandidateNamespaces(c *cr.Client, namespacePattern string)
 	return a.listNamespaces(c)
 }
 
-// FetchImages AliACR not support /v2/_catalog of Registry, we'll list all resources via Aliyun's API
-func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resource, err error) {
-	log.Debugf("FetchImages.filters: %#v\n", filters)
+// FetchArtifacts AliACR not support /v2/_catalog of Registry, we'll list all resources via Aliyun's API
+func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Resource, err error) {
+	log.Debugf("FetchArtifacts.filters: %#v\n", filters)
 
 	var client *cr.Client
 	client, err = cr.NewClientWithAccessKey(a.region, a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)
@@ -265,7 +275,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 			}
 		}
 	}
-	log.Debugf("FetchImages.repositories: %#v\n", repositories)
+	log.Debugf("FetchArtifacts.repositories: %#v\n", repositories)
 
 	var rawResources = make([]*model.Resource, len(repositories))
 	runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
@@ -316,7 +326,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 	runner.Wait()
 
 	if runner.IsCancelled() {
-		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+		return nil, fmt.Errorf("FetchArtifacts error when collect tags for repos")
 	}
 
 	for _, r := range rawResources {

@@ -10,13 +10,13 @@ except ImportError:
     pip.main(['install', 'docker'])
     import docker
 
-def docker_login(harbor_host, user, password, enable_manifest = True):
+def docker_login_cmd(harbor_host, user, password, enable_manifest = True):
     command = ["sudo", "docker", "login", harbor_host, "-u", user, "-p", password]
     print "Docker Login Command: ", command
     base.run_command(command)
     if enable_manifest == True:
         try:
-            subprocess.check_output(["./tests/apitests/python/update_docker_cfg.sh"], shell=False)
+            ret = subprocess.check_output(["./tests/apitests/python/update_docker_cfg.sh"], shell=False)
         except subprocess.CalledProcessError, exc:
             raise Exception("Failed to update docker config, error is {} {}.".format(exc.returncode, exc.output))
 
@@ -40,7 +40,7 @@ def docker_manifest_push(index):
     return index_sha256, manifest_list
 
 def docker_manifest_push_to_harbor(index, manifests, harbor_server, user, password):
-    docker_login(harbor_server, user, password)
+    docker_login_cmd(harbor_server, user, password)
     docker_manifest_create(index, manifests)
     return docker_manifest_push(index)
 

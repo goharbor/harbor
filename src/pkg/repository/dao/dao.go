@@ -16,10 +16,12 @@ package dao
 
 import (
 	"context"
+	o "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/q"
+	"time"
 )
 
 // DAO is the data access object interface for repository
@@ -36,6 +38,8 @@ type DAO interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Update updates the repository. Only the properties specified by "props" will be updated if it is set
 	Update(ctx context.Context, repository *models.RepoRecord, props ...string) (err error)
+	// AddPullCount increase one pull count for the specified repository
+	AddPullCount(ctx context.Context, id int64) error
 }
 
 // New returns an instance of the default DAO
@@ -127,6 +131,26 @@ func (d *dao) Update(ctx context.Context, repository *models.RepoRecord, props .
 	}
 	if n == 0 {
 		return ierror.NotFoundError(nil).WithMessage("repository %d not found", repository.RepositoryID)
+	}
+	return nil
+}
+
+func (d *dao) AddPullCount(ctx context.Context, id int64) error {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	num, err := ormer.QueryTable(new(models.RepoRecord)).Filter("RepositoryID", id).Update(
+		o.Params{
+			"pull_count":  o.ColValue(o.ColAdd, 1),
+			"update_time": time.Now(),
+		})
+	if err != nil {
+		return err
+	}
+	if num == 0 {
+		return ierror.New(nil).WithMessage("failed to increase repository pull count: %d", id)
+
 	}
 	return nil
 }

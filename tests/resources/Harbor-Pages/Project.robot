@@ -205,8 +205,8 @@ Go Into Repo
     \    Capture Page Screenshot  gointo_${repoName}.png
     \    Sleep  2
     Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}  Retry Wait Until Page Not Contains Element  ${repo_name_element}
-    Retry Wait Element  ${tag_table_column_pull_command}
-    Retry Wait Element  ${tag_images_btn}
+    Retry Wait Element  ${tag_table_column_vulnerabilities}
+    Retry Wait Element  ${tag_table_column_size}
     Capture Page Screenshot  gointo_${repoName}.png
 
 Switch To CardView
@@ -246,7 +246,8 @@ Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label
     Capture Page Screenshot  add_${labelName}.png
-    Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//button
+    Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span
+    Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'labels')]
     Retry Element Click  xpath=//clr-dropdown//div//label[contains(.,'${labelName}')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row//label[contains(.,'${labelName}')]
 

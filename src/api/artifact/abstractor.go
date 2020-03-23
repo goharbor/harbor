@@ -22,8 +22,8 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/api/artifact/processor"
-	"github.com/goharbor/harbor/src/api/artifact/processor/blob"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/registry"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -36,19 +36,23 @@ type Abstractor interface {
 // NewAbstractor creates a new abstractor
 func NewAbstractor() Abstractor {
 	return &abstractor{
-		artMgr:      artifact.Mgr,
-		blobFetcher: blob.Fcher,
+		artMgr: artifact.Mgr,
+		regCli: registry.Cli,
 	}
 }
 
 type abstractor struct {
-	artMgr      artifact.Manager
-	blobFetcher blob.Fetcher
+	artMgr artifact.Manager
+	regCli registry.Client
 }
 
 func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact) error {
 	// read manifest content
-	manifestMediaType, content, err := a.blobFetcher.FetchManifest(artifact.RepositoryName, artifact.Digest)
+	manifest, _, err := a.regCli.PullManifest(artifact.RepositoryName, artifact.Digest)
+	if err != nil {
+		return err
+	}
+	manifestMediaType, content, err := manifest.Payload()
 	if err != nil {
 		return err
 	}

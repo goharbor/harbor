@@ -19,6 +19,7 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -31,18 +32,21 @@ const srcSeparator = "harbor" + string(os.PathSeparator) + "src"
 func init() {
 	lvl := os.Getenv("LOG_LEVEL")
 	if len(lvl) == 0 {
-		logger.SetLevel(InfoLevel)
+		logger.setLevel(InfoLevel)
 		return
 	}
 
 	level, err := parseLevel(lvl)
 	if err != nil {
-		logger.SetLevel(InfoLevel)
+		logger.setLevel(InfoLevel)
 		return
 	}
 
-	logger.SetLevel(level)
+	logger.setLevel(level)
 }
+
+// Fields type alias to map[string]interface{}
+type Fields = map[string]interface{}
 
 // Logger provides a struct with fields that describe the details of logger.
 type Logger struct {
@@ -51,7 +55,9 @@ type Logger struct {
 	lvl       Level
 	callDepth int
 	skipLine  bool
-	mu        sync.Mutex
+	fields    map[string]interface{}
+	fieldsStr string
+	mu        *sync.Mutex // ptr here to share one sync.Mutex for clone method
 }
 
 // New returns a customized Logger
@@ -66,11 +72,14 @@ func New(out io.Writer, fmtter Formatter, lvl Level, options ...interface{}) *Lo
 			depth = d
 		}
 	}
+
 	return &Logger{
 		out:       out,
 		fmtter:    fmtter,
 		lvl:       lvl,
 		callDepth: depth,
+		fields:    map[string]interface{}{},
+		mu:        &sync.Mutex{},
 	}
 }
 
@@ -79,43 +88,80 @@ func DefaultLogger() *Logger {
 	return logger
 }
 
-// SetOutput sets the output of Logger l
-func (l *Logger) SetOutput(out io.Writer) {
+func (l *Logger) clone() *Logger {
+	return &Logger{
+		out:       l.out,
+		fmtter:    l.fmtter,
+		lvl:       l.lvl,
+		callDepth: l.callDepth,
+		skipLine:  l.skipLine,
+		fields:    l.fields,
+		fieldsStr: l.fieldsStr,
+		mu:        l.mu,
+	}
+}
+
+// WithDepth returns cloned logger with new depth
+func (l *Logger) WithDepth(depth int) *Logger {
+	r := l.clone()
+	r.callDepth = depth
+
+	return r
+}
+
+// WithFields returns cloned logger which fields merged with the new fields
+func (l *Logger) WithFields(fields Fields) *Logger {
+	r := l.clone()
+
+	if len(fields) > 0 {
+		copyFields := make(map[string]interface{}, len(l.fields)+len(fields))
+		for key, value := range l.fields {
+			copyFields[key] = value
+		}
+		for key, value := range fields {
+			copyFields[key] = value
+		}
+
+		sortedKeys := make([]string, 0, len(copyFields))
+		for key := range copyFields {
+			sortedKeys = append(sortedKeys, key)
+		}
+		sort.Strings(sortedKeys)
+
+		parts := make([]string, 0, len(copyFields))
+		for _, key := range sortedKeys {
+			parts = append(parts, fmt.Sprintf(`%v="%v"`, key, copyFields[key]))
+		}
+
+		r.fields = copyFields
+		r.fieldsStr = "[" + strings.Join(parts, " ") + "]"
+	}
+
+	return r
+}
+
+// setOutput sets the output of Logger l
+func (l *Logger) setOutput(out io.Writer) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	l.out = out
 }
 
-// SetFormatter sets the formatter of Logger l
-func (l *Logger) SetFormatter(fmtter Formatter) {
+// setFormatter sets the formatter of Logger l
+func (l *Logger) setFormatter(fmtter Formatter) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	l.fmtter = fmtter
 }
 
-// SetLevel sets the level of Logger l
-func (l *Logger) SetLevel(lvl Level) {
+// setLevel sets the level of Logger l
+func (l *Logger) setLevel(lvl Level) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	l.lvl = lvl
-}
-
-// SetOutput sets the output of default Logger
-func SetOutput(out io.Writer) {
-	logger.SetOutput(out)
-}
-
-// SetFormatter sets the formatter of default Logger
-func SetFormatter(fmtter Formatter) {
-	logger.SetFormatter(fmtter)
-}
-
-// SetLevel sets the level of default Logger
-func SetLevel(lvl Level) {
-	logger.SetLevel(lvl)
 }
 
 func (l *Logger) output(record *Record) (err error) {
@@ -215,10 +261,18 @@ func (l *Logger) Fatalf(format string, v ...interface{}) {
 }
 
 func (l *Logger) getLine() string {
-	if l.skipLine {
-		return ""
+	var str string
+	if !l.skipLine {
+		str = line(l.callDepth)
 	}
-	return line(l.callDepth)
+
+	str = str + l.fieldsStr
+
+	if str != "" {
+		str = str + ":"
+	}
+
+	return str
 }
 
 // Debug ...
@@ -281,5 +335,5 @@ func line(callDepth int) string {
 	if len(l) > 1 {
 		file = l[1]
 	}
-	return fmt.Sprintf("[%s:%d]:", file, line)
+	return fmt.Sprintf("[%s:%d]", file, line)
 }

@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/server/middleware/security"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -40,7 +41,6 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
@@ -54,6 +54,7 @@ const (
 )
 
 var admin, unknownUsr, testUser *usrInfo
+var handler http.Handler
 
 type testapi struct {
 	basePath string
@@ -92,10 +93,6 @@ func init() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 
-	filter.Init()
-	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
-	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
-
 	beego.Router("/api/health", &HealthAPI{}, "get:CheckHealth")
 	beego.Router("/api/search/", &SearchAPI{})
 	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post;head:Head")
@@ -106,7 +103,6 @@ func init() {
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/users/:id/permissions", &UserAPI{}, "get:ListUserPermissions")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
-	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/summary", &ProjectAPI{}, "get:Summary")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &MetadataAPI{}, "get:Get")
@@ -116,7 +112,6 @@ func init() {
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/usergroups/?:ugid([0-9]+)", &UserGroupAPI{})
-	beego.Router("/api/logs", &LogAPI{})
 	beego.Router("/api/registries", &RegistryAPI{}, "get:List;post:Post")
 	beego.Router("/api/registries/ping", &RegistryAPI{}, "post:Ping")
 	beego.Router("/api/registries/:id([0-9]+)", &RegistryAPI{}, "get:Get;put:Put;delete:Delete")
@@ -132,7 +127,6 @@ func init() {
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
 	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
-	beego.Router("/api/labels/:id([0-9]+)/resources", &LabelAPI{}, "get:ListResources")
 	beego.Router("/api/ping", &SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/system/gc/:id", &GCAPI{}, "get:GetGC")
 	beego.Router("/api/system/gc/:id([0-9]+)/log", &GCAPI{}, "get:GetLog")
@@ -221,6 +215,8 @@ func init() {
 	// Init mock jobservice
 	mockServer := test.NewJobServiceServer()
 	defer mockServer.Close()
+
+	handler = security.Middleware()(beego.BeeApp.Handlers)
 }
 
 func request0(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, http.Header, []byte, error) {
@@ -233,7 +229,7 @@ func request0(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (in
 		req.SetBasicAuth(authInfo[0].Name, authInfo[0].Passwd)
 	}
 	w := httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, req)
+	handler.ServeHTTP(w, req)
 
 	body, err := ioutil.ReadAll(w.Body)
 	return w.Code, w.Header(), body, err
@@ -316,22 +312,6 @@ func (a testapi) StatisticGet(user usrInfo) (int, apilib.StatisticMap, error) {
 	return httpStatusCode, successPayload, err
 }
 
-func (a testapi) LogGet(user usrInfo) (int, []apilib.AccessLog, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	// create path and map variables
-	path := "/api/logs/"
-	fmt.Printf("logs path: %s\n", path)
-	_sling = _sling.Path(path)
-
-	var successPayload []apilib.AccessLog
-	code, body, err := request(_sling, jsonAcceptHeader, user)
-	if 200 == code && nil == err {
-		err = json.Unmarshal(body, &successPayload)
-	}
-	return code, successPayload, err
-}
-
 // Delete project by projectID
 func (a testapi) ProjectsDelete(prjUsr usrInfo, projectID string) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
@@ -411,15 +391,6 @@ func (a testapi) ProjectsPut(prjUsr usrInfo, projectID string,
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
 	return httpStatusCode, err
 
-}
-
-// Get access logs accompany with a relevant project.
-func (a testapi) ProjectLogs(prjUsr usrInfo, projectID string, query *apilib.LogQuery) (int, []byte, error) {
-	_sling := sling.New().Get(a.basePath).
-		Path("/api/projects/" + projectID + "/logs").
-		QueryStruct(query)
-
-	return request(_sling, jsonAcceptHeader, prjUsr)
 }
 
 // ProjectDeletable check whether a project can be deleted

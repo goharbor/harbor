@@ -39,7 +39,7 @@ const (
 	TopicScanningFailed    = "SCANNING_FAILED"
 	TopicScanningCompleted = "SCANNING_COMPLETED"
 	// QuotaExceedTopic is topic for quota warning event, the usage reaches the warning bar of limitation, like 85%
-	TopicQuotaWarning  = "QUOTA_WARNNING"
+	TopicQuotaWarning  = "QUOTA_WARNING"
 	TopicQuotaExceed   = "QUOTA_EXCEED"
 	TopicUploadChart   = "UPLOAD_CHART"
 	TopicDownloadChart = "DOWNLOAD_CHART"

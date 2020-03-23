@@ -43,6 +43,11 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return nil
 }
 
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
+
 // Adapter is for images replications between harbor and jfrog artifactory image repository
 type adapter struct {
 	*native.Adapter

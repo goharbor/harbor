@@ -15,7 +15,6 @@
 package blob
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -31,34 +30,34 @@ func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		logPrefix := fmt.Sprintf("[middleware][%s][blob]", r.URL.Path)
+		ctx := r.Context()
+
+		logger := log.G(ctx).WithFields(log.Fields{"middleware": "blob"})
 
 		size, err := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
 		if err != nil || size == 0 {
 			size, err = blobController.GetAcceptedBlobSize(distribution.ParseSessionID(r.URL.Path))
 		}
 		if err != nil {
-			log.Errorf("%s: get blob size failed, error: %v", logPrefix, err)
+			logger.Errorf("get blob size failed, error: %v", err)
 			return err
 		}
 
-		ctx := r.Context()
-
 		p, err := projectController.GetByName(ctx, distribution.ParseProjectName(r.URL.Path))
 		if err != nil {
-			log.Errorf("%s: get project failed, error: %v", logPrefix, err)
+			logger.Errorf("get project failed, error: %v", err)
 			return err
 		}
 
 		digest := w.Header().Get("Docker-Content-Digest")
 		blobID, err := blobController.Ensure(ctx, digest, "application/octet-stream", size)
 		if err != nil {
-			log.Errorf("%s: ensure blob %s failed, error: %v", logPrefix, digest, err)
+			logger.Errorf("ensure blob %s failed, error: %v", digest, err)
 			return err
 		}
 
 		if err := blobController.AssociateWithProjectByID(ctx, blobID, p.ProjectID); err != nil {
-			log.Errorf("%s: associate blob %s with project %s failed, error: %v", logPrefix, digest, p.Name, err)
+			logger.Errorf("associate blob %s with project %s failed, error: %v", digest, p.Name, err)
 			return err
 		}
 

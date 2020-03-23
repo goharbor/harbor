@@ -1,5 +1,5 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ReplicationService } from "../../../services/replication.service";
 import { TranslateService } from '@ngx-translate/core';
 import { finalize } from "rxjs/operators";
@@ -9,6 +9,7 @@ import { ReplicationJob, ReplicationTasks, Comparator, ReplicationJobItem, State
 import { CustomComparator, DEFAULT_PAGE_SIZE } from "../../../utils/utils";
 import { RequestQueryParams } from "../../../services/RequestQueryParams";
 import { REFRESH_TIME_DIFFERENCE } from '../../../entities/shared.const';
+
 const executionStatus = 'InProgress';
 @Component({
   selector: 'replication-tasks',
@@ -30,7 +31,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   stopOnGoing: boolean;
   executions: ReplicationJobItem[];
   timerDelay: Subscription;
-  @Input() executionId: string;
+  executionId: string;
   startTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
   ReplicationJob
   >("start_time", "date");
@@ -43,13 +44,19 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     private router: Router,
     private replicationService: ReplicationService,
     private errorHandler: ErrorHandler,
+    private route: ActivatedRoute,
   ) { }
 
   ngOnInit(): void {
     this.searchTask = '';
-    this.getExecutionDetail();
+    this.executionId = this.route.snapshot.params['id'];
+    const resolverData = this.route.snapshot.data;
+    if (resolverData) {
+      const replicationJob = <ReplicationJob>(resolverData["replicationTasksRoutingResolver"]);
+      this.executions = replicationJob.data;
+      this.clrLoadPage();
+    }
   }
-
   getExecutionDetail(): void {
     this.inProgress = true;
     if (this.executionId) {

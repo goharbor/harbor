@@ -26,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
 )
 
@@ -208,10 +207,7 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 		return nil, fmt.Errorf("failed to  get security context from request")
 	}
 
-	pm, err := filter.GetProjectManager(r)
-	if err != nil {
-		return nil, fmt.Errorf("failed to  get project manager from request")
-	}
+	pm := config.GlobalProjectMgr
 
 	// for docker login
 	if !ctx.IsAuthenticated() {

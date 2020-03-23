@@ -59,7 +59,7 @@ func (f *fakedAdapter) PrepareForPush([]*model.Resource) error {
 func (f *fakedAdapter) HealthCheck() (model.HealthStatus, error) {
 	return model.Healthy, nil
 }
-func (f *fakedAdapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+func (f *fakedAdapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
 	return []*model.Resource{
 		{
 			Type: model.ResourceTypeImage,
@@ -93,6 +93,9 @@ func (f *fakedAdapter) PullBlob(repository, digest string) (size int64, blob io.
 	return 0, nil, nil
 }
 func (f *fakedAdapter) PushBlob(repository, digest string, size int64, blob io.Reader) error {
+	return nil
+}
+func (f *fakedAdapter) DeleteTag(repository, tag string) error {
 	return nil
 }
 func (f *fakedAdapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {

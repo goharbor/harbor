@@ -15,6 +15,7 @@
 package hook
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,7 +25,8 @@ import (
 	"strings"
 	"time"
 
-	"context"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // Client for handling the hook events
@@ -53,6 +55,13 @@ func NewClient(ctx context.Context) Client {
 		ResponseHeaderTimeout: 10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
 		Proxy:                 http.ProxyFromEnvironment,
+	}
+	if commonhttp.InternalEnableVerifyClientCert() {
+		tlsConfig, err := commonhttp.GetInternalTLSConfig()
+		if err != nil {
+			log.Errorf("client load cert file with err: %w", err)
+		}
+		transport.TLSClientConfig = tlsConfig
 	}
 
 	client := &http.Client{

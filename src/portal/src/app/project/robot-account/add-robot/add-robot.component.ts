@@ -17,7 +17,7 @@ import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { AppConfigService } from "../../../app-config.service";
+import { AppConfigService } from "../../../services/app-config.service";
 import { ErrorHandler } from "../../../../lib/utils/error-handler";
 const ONE_THOUSAND: number = 1000;
 const NEVER_EXPIRED: number = -1;

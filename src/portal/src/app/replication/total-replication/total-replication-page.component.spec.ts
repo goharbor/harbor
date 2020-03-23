@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import {SessionService} from "../../shared/session.service";
-import {AppConfigService} from "../../app-config.service";
+import {AppConfigService} from "../../services/app-config.service";
 
 describe('TotalReplicationPageComponent', () => {
     let component: TotalReplicationPageComponent;

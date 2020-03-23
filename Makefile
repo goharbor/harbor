@@ -85,6 +85,7 @@ NPM_REGISTRY=https://registry.npmjs.org
 # enable/disable chart repo supporting
 CHARTFLAG=false
 BUILDTARGET=build
+GEN_TLS=
 
 # version prepare
 # for docker image tag
@@ -103,7 +104,7 @@ CLAIRVERSION=v2.1.1
 NOTARYMIGRATEVERSION=v3.5.4
 CLAIRADAPTERVERSION=v1.0.1
 TRIVYVERSION=v0.5.2
-TRIVYADAPTERVERSION=v0.4.0
+TRIVYADAPTERVERSION=v0.5.0
 
 # version of chartmuseum
 CHARTMUSEUMVERSION=v0.9.0
@@ -349,10 +350,16 @@ compile: check_environment versions_prepare compile_core compile_jobservice comp
 
 update_prepare_version:
 	@echo "substitute the prepare version tag in prepare file..."
-	@$(SEDCMDI) -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) /' $(MAKEPATH)/prepare ;
+	@$(SEDCMDI) -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) prepare /' $(MAKEPATH)/prepare ;
+
+gen_tls:
+	@$(DOCKERCMD) run --rm -v /:/hostfs:z goharbor/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal
 
 prepare: update_prepare_version
 	@echo "preparing..."
+	@if [ -n "$(GEN_TLS)" ] ; then \
+		$(DOCKERCMD) run --rm -v /:/hostfs:z goharbor/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal; \
+	fi
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
 build:

@@ -81,3 +81,9 @@ func (f *FakeController) Update(ctx context.Context, repository *models.RepoReco
 	args := f.Called()
 	return args.Error(0)
 }
+
+// AddPullCount ...
+func (f *FakeController) AddPullCount(ctx context.Context, id int64) error {
+	args := f.Called()
+	return args.Error(0)
+}

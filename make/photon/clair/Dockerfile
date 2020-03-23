@@ -10,10 +10,10 @@ VOLUME /config
 
 EXPOSE 6060 6061
 
-RUN chown -R clair:clair /etc/pki/tls/certs \
-    && chown -R clair:clair /home/clair \
+RUN chown -R clair:clair /etc/pki/tls/certs && chown -R clair:clair /home/clair \
     && chmod u+x /home/clair/clair \
     && chmod u+x /home/clair/docker-entrypoint.sh \
+    && chmod u+x /home/clair/install_cert.sh \
     && chmod +x /home/clair/dumb-init
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1:6061/health || exit 1
