@@ -33,7 +33,7 @@ clr-vertical-nav {
         }
     }
     .vertical-nav-footer {
-        margin: 15px 20px;
+        margin: 5px 23px;
         a {
             display: inline-block;
             line-height: 0;
@@ -48,6 +48,9 @@ clr-vertical-nav {
             }
         }
 	}
+}
+.font-size-13 {
+    font-size: 13px;
 }
 
 .scanner-info {

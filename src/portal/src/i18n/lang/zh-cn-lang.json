@@ -172,7 +172,9 @@
         },
         "LOGS": "日志",
         "TASKS": "任务",
-        "API_EXPLORER": "API控制中心"
+        "API_EXPLORER": "API控制中心",
+        "HARBOR_API_MANAGEMENT": "Harbor Api V2.0",
+        "HELM_API_MANAGEMENT": "Harbor Api"
     },
     "USER": {
         "ADD_ACTION": "创建用户",

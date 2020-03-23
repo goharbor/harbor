@@ -23,6 +23,7 @@ import { PageNotFoundComponent } from './shared/not-found/not-found.component';
 import { HarborShellComponent } from './base/harbor-shell/harbor-shell.component';
 import { ConfigurationComponent } from './config/config.component';
 import { DevCenterComponent } from './dev-center/dev-center.component';
+import { DevCenterOtherComponent } from './dev-center/dev-center-other.component';
 import { GcPageComponent } from './gc-page/gc-page.component';
 import { UserComponent } from './user/user.component';
 import { SignInComponent } from './sign-in/sign-in.component';
@@ -67,8 +68,12 @@ const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
   { path: 'reset_password', component: ResetPasswordComponent },
   {
-    path: 'devcenter',
+    path: 'devcenter-api-2.0',
     component: DevCenterComponent
+  },
+  {
+    path: 'devcenter-api',
+    component: DevCenterOtherComponent
   },
   {
     path: 'oidc-onboard',
