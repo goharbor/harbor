@@ -33,15 +33,6 @@ https:
 #   private_key: /your/private/key/path
 {% endif %}
 
-{% if internal_tls is defined %}
-internal_tls:
-  # set enabled to true means internal tls is enabled
-  enabled: {{ internal_tls.enabled }}
-  # verify_client_cert used to decide whether verify client certificate
-  verify_client_cert: {{ internal_tls.verify_client_cert }}
-  # put your cert and key files on dir
-  dir: {{ internal_tls.dir }}
-{% else %}
 # # Uncomment following will enable tls communication between all harbor components
 # internal_tls:
 #   # set enabled to true means internal tls is enabled
@@ -50,7 +41,6 @@ internal_tls:
 #   verify_client_cert: false
 #   # put your cert and key files on dir
 #   dir: /etc/harbor/tls/internal
-{% endif %}
 
 # Uncomment external_url if you want to enable external proxy
 # And when it enabled the hostname will no longer used
@@ -206,7 +196,7 @@ log:
     rotate_size: {{ log.local.rotate_size }}
     # The directory on your host that store log
     location: {{ log.local.location }}
-  {% if log.external_endpoint is defined%}
+  {% if log.external_endpoint is defined %}
   external_endpoint:
     # protocol used to transmit log to external endpoint, options is tcp or udp
     protocol: {{ log.external_endpoint.protocol }}

@@ -1,8 +1,5 @@
 import os
-
-import yaml
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
-
 from migration import utils
 
 revision = '1.10.0'

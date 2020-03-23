@@ -3,7 +3,7 @@ import os, sys, importlib, shutil, glob
 import click
 
 from utils.misc import get_realpath
-from migration.utils import read_conf, to_module_path, search
+from migration.utils import read_conf, search
 
 
 @click.command()
