@@ -6,7 +6,7 @@ import { UserService } from './user.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-import { AppConfigService } from '../app-config.service';
+import { AppConfigService } from '../services/app-config.service';
 import { SessionService } from '../shared/session.service';
 import { UserComponent } from './user.component';
 import { OperationService } from "../../lib/components/operation/operation.service";

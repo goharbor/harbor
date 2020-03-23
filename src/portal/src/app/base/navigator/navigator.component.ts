@@ -21,14 +21,14 @@ import { modalEvents } from '../modal-events.const';
 import { SessionService } from '../../shared/session.service';
 import { CookieService, CookieOptions } from 'ngx-cookie';
 import { supportedLangs, enLang, languageNames } from '../../shared/shared.const';
-import { AppConfigService } from '../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { SkinableConfig } from "../../skinable-config.service";
+import { SkinableConfig } from "../../services/skinable-config.service";
 import { CommonRoutes } from "../../../lib/entities/shared.const";
-import { ThemeInterface, themeArray } from '../../theme';
+import { ThemeInterface, themeArray } from '../../services/theme';
 import { clone } from '../../../lib/utils/utils';
-import { ThemeService } from '../../theme.service';
+import { ThemeService } from '../../services/theme.service';
 const HAS_STYLE_MODE: string = 'styleModeLocal';
 
 @Component({

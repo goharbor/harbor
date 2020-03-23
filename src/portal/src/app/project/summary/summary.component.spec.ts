@@ -4,7 +4,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { SummaryComponent } from './summary.component';
 import { ProjectService, UserPermissionService } from "../../../lib/services";
 import { ErrorHandler } from "../../../lib/utils/error-handler";

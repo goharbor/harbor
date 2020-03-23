@@ -7,7 +7,7 @@ import { GroupService } from "../group.service";
 import { MessageHandlerService } from "./../../shared/message-handler/message-handler.service";
 import { SessionService } from "./../../shared/session.service";
 import { UserGroup } from "./../group";
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { GroupType } from "../../../lib/entities/shared.const";
 
 @Component({

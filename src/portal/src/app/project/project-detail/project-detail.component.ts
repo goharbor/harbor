@@ -15,7 +15,7 @@ import { Component, OnInit, HostListener, AfterViewInit, OnDestroy, ChangeDetect
 import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from '../project';
 import { SessionService } from '../../shared/session.service';
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { forkJoin, Subject, Subscription } from "rxjs";
 import { UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
 import { ErrorHandler } from "../../../lib/utils/error-handler";

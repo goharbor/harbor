@@ -9,7 +9,7 @@ import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from "../../../shared/session.service";
-import { AppConfigService } from "../../../app-config.service";
+import { AppConfigService } from "../../../services/app-config.service";
 import { ArtifactService } from "../../../../../ng-swagger-gen/services/artifact.service";
 import { ArtifactDefaultService } from "../artifact/artifact.service";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../lib/entities/service.config";

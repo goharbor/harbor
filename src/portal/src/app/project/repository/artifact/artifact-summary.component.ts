@@ -5,7 +5,7 @@ import { ErrorHandler } from "../../../../lib/utils/error-handler";
 import { Label } from "../../../../../ng-swagger-gen/models/label";
 import { ProjectService } from "../../../../lib/services";
 import { ActivatedRoute, Router } from "@angular/router";
-import { AppConfigService } from "../../../app-config.service";
+import { AppConfigService } from "../../../services/app-config.service";
 import { Project } from "../../project";
 import { finalize } from "rxjs/operators";
 
@@ -77,11 +77,9 @@ export class ArtifactSummaryComponent implements OnInit {
     if (this.repositoryName && this.artifactDigest) {
       const resolverData = this.route.snapshot.data;
       if (resolverData) {
-        const pro: Project = <Project>resolverData['projectResolver'];
+        const pro: Project = <Project>(resolverData['artifactResolver'][1]);
         this.projectName = pro.name;
-        if (this.projectName) {
-          this.getArtifactDetails();
-        }
+        this.artifact = <Artifact>(resolverData['artifactResolver'][0]);
       }
     }
   }

@@ -12,7 +12,7 @@ import { MessageHandlerService } from "../../shared/message-handler/message-hand
 import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
 import { SessionService } from "../../shared/session.service";
 import { MemberService } from "./member.service";
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { of } from 'rxjs';
 import { OperationService } from "../../../lib/components/operation/operation.service";
 import { UserPermissionService } from "../../../lib/services";

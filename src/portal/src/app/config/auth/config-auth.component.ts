@@ -16,7 +16,7 @@ import { NgForm } from '@angular/forms';
 import { Subscription } from "rxjs";
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ConfirmMessageHandler } from '../config.msg.utils';
-import { AppConfigService } from '../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { ConfigurationService } from '../config.service';
 import { Configuration } from "../../../lib/components/config/config";
 import { ErrorHandler } from "../../../lib/utils/error-handler";
