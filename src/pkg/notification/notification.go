@@ -41,6 +41,7 @@ func Init() {
 	JobMgr = jobMgr.NewDefaultManager()
 
 	SupportedNotifyTypes = make(map[string]struct{})
+
 	initSupportedNotifyType(model.NotifyTypeHTTP, model.NotifyTypeSlack)
 
 	log.Info("notification initialization completed")
