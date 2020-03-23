@@ -95,7 +95,7 @@ export NPM_REGISTRY=$NPM_REGISTRY
 
 # release branch must have their own base image with branch name, master and others will use the dev as base.
 if [[ $DRONE_BRANCH == "release-"* ]]; then
-  Harbor_Build_Base_Tag=$DRONE_BRANCH
+  Harbor_Build_Base_Tag=$target_release_version
 else
   Harbor_Build_Base_Tag=dev
 fi
@@ -104,6 +104,7 @@ export Harbor_Build_Base_Tag=$Harbor_Build_Base_Tag
 echo "--------------------------------------------------"
 echo "Harbor Package version: $Harbor_Package_Version"
 echo "Harbor Assets version: $Harbor_Assets_Version"
+echo "Harbor Build Base tag: $Harbor_Build_Base_Tag"
 echo "--------------------------------------------------"
 
 # GS util
