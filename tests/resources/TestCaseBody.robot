@@ -106,10 +106,11 @@ Body Of Admin Push Signed Image
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/${image}/signatures"
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/library/repositories/${image}/artifacts/latest?with_signature=true"
+
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  sha256
+    Should Contain  ${output}  "signed":true
 
     Run Keyword If  ${with_remove} == ${true}  Remove Notary Signature  ${ip}  ${image}
 
