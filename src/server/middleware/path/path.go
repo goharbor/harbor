@@ -25,9 +25,9 @@ import (
 
 var (
 	defaultRegexps = []*regexp.Regexp{
+		regexp.MustCompile(`^/api/` + api.APIVersion + `/projects/.*/repositories/(.*)/_self/?$`),
 		regexp.MustCompile(`^/api/` + api.APIVersion + `/projects/.*/repositories/(.*)/artifacts/?$`),
 		regexp.MustCompile(`^/api/` + api.APIVersion + `/projects/.*/repositories/(.*)/artifacts/.*$`),
-		regexp.MustCompile(`^/api/` + api.APIVersion + `/projects/.*/repositories/(.*)/?$`),
 	}
 )
 
