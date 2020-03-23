@@ -72,7 +72,7 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignored
 		}
 
 		// and list
-		_, ok = v.(*q.OrList)
+		_, ok = v.(*q.AndList)
 		if ok {
 			// do nothing as and list needs to be handled by the logic of DAO
 			continue
