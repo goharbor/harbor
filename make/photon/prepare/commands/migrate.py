@@ -3,8 +3,7 @@ import os, sys, importlib, shutil, glob
 import click
 
 from utils.misc import get_realpath
-from migration.utils import read_conf, search
-
+from utils.migration import read_conf, search
 
 @click.command()
 @click.option('-i', '--input', 'input_', default='', help="The path of original config file")

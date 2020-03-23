@@ -1,12 +1,12 @@
 import os
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
-from migration import utils
+from utils.migration import read_conf
 
 revision = '1.9.0'
 down_revision = None
 
 def migrate(input_cfg, output_cfg):
-    config_dict = utils.read_conf(input_cfg)
+    config_dict = read_conf(input_cfg)
 
     this_dir = os.path.dirname(__file__)
     tpl = Environment(

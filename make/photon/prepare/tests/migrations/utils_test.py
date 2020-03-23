@@ -1,7 +1,7 @@
 import pytest
 import importlib
 
-from migration.utils import search
+from utils.migration import search
 
 class mockModule:
     def __init__(self, revision, down_revision):

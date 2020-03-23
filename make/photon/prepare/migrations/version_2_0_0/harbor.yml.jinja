@@ -65,10 +65,10 @@ database:
   # The password for the root user of Harbor DB. Change this before any production use.
   password: {{ database.password}}
   # The maximum number of connections in the idle connection pool. If it <=0, no idle connections are retained.
-  max_idle_conns: {{ database.max_idle_conns or 50}}
+  max_idle_conns: {{ database.max_idle_conns }}
   # The maximum number of open connections to the database. If it <= 0, then there is no limit on the number of open connections.
   # Note: the default number of connections is 100 for postgres.
-  max_open_conns: {{ database.max_open_conns or 100}}
+  max_open_conns: {{ database.max_open_conns }}
 {% else %}
   # The password for the root user of Harbor DB. Change this before any production use.
   password: root123
@@ -250,8 +250,8 @@ external_database:
     username: {{ external_database.harbor.username }}
     password: {{ external_database.harbor.password }}
     ssl_mode: {{ external_database.harbor.ssl_mode }}
-    max_idle_conns: {{ external_database.harbor.max_idle_conns }}
-    max_open_conns: {{ external_database.harbor.max_open_conns }}
+    max_idle_conns: {{ external_database.harbor.max_idle_conns}}
+    max_open_conns: {{ external_database.harbor.max_open_conns}}
   clair:
     host: {{ external_database.clair.host }}
     port: {{ external_database.clair.port }}
@@ -316,8 +316,8 @@ external_redis:
   jobservice_db_index: {{ external_redis.jobservice_db_index }}
   chartmuseum_db_index: {{ external_redis.chartmuseum_db_index }}
   clair_db_index: {{ external_redis.clair_db_index }}
-  trivy_db_index: {{ external_redis.trivy_db_index }}
-  idle_timeout_seconds: {{ external_redis.idle_timeout_seconds }}
+  trivy_db_index: 5
+  idle_timeout_seconds: 30
 {% else %}
 # Umcomments external_redis if using external Redis server
 # external_redis:

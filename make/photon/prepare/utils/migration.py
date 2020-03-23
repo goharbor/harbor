@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import os
 import yaml
 import click
 import importlib
+import os
 
 from collections import deque
 
-BASE_DIR = os.path.dirname(__file__)
+from migrations import MIGRATION_BASE_DIR
 
 def read_conf(path):
     with open(path) as f:
@@ -19,7 +17,7 @@ def read_conf(path):
     return d
 
 def _to_module_path(ver):
-    return "migration.versions.{}".format(ver.replace(".","_"))
+    return "migrations.version_{}".format(ver.replace(".","_"))
 
 def search(input_ver: str, target_ver: str) -> deque :
     """
@@ -30,7 +28,7 @@ def search(input_ver: str, target_ver: str) -> deque :
     while True:
         module_path = _to_module_path(target_ver)
         visited.add(target_ver)  # mark current version for loop finding
-        if os.path.isdir(os.path.join(BASE_DIR, 'versions', target_ver.replace(".","_"))):
+        if os.path.isdir(os.path.join(MIGRATION_BASE_DIR, 'version_{}'.format(target_ver.replace(".","_")))):
             module = importlib.import_module(module_path)
             if module.revision == input_ver:    # migration path found
                 break
@@ -42,5 +40,5 @@ def search(input_ver: str, target_ver: str) -> deque :
                 if target_ver in visited: # version visited before, loop found
                     raise Exception('find a loop caused by {} on migration path'.format(target_ver))
         else:
-            raise Exception('{} not dir'.format(os.path.join(BASE_DIR, 'versions', target_ver.replace(".","_"))))
+            raise Exception('{} not dir'.format(os.path.join(MIGRATION_BASE_DIR, 'versions', target_ver.replace(".","_"))))
     return upgrade_path
