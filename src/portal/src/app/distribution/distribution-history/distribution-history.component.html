@@ -3,12 +3,23 @@
     <h2 class="custom-h2">{{ 'DISTRIBUTION.HISTORIES' | translate }}</h2>
 
     <div class="flex-items-xs-right option-right display-f">
+      <div class="select filter-tag clr-select-wrapper" [hidden]="!isOpenFilterTag">
+        <select id="selectKey" (change)="selectFilterKey($event)">
+          <option value="image">{{"DISTRIBUTION.IMAGE" | translate | lowercase}}</option>
+          <option value="status">{{"DISTRIBUTION.STATUS" | translate | lowercase}}</option>
+          <option value="provider">{{"DISTRIBUTION.PROVIDER" | translate | lowercase}}</option>
+          <option value="instance">{{"DISTRIBUTION.INSTANCE" | translate | lowercase}}</option>
+        </select>
+      </div>
+
+
       <hbr-filter
         [withDivider]="true"
         filterPlaceholder="{{
           'DISTRIBUTION.FILTER_HISTORIES_PLACEHOLDER' | translate
         }}"
         (filterEvt)="doFilter($event)"
+        (openFlag)="openFilter($event)"
       ></hbr-filter>
       <span class="refresh-btn" (click)="refresh()">
         <clr-icon shape="refresh"></clr-icon>

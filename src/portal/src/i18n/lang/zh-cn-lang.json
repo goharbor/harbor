@@ -2009,27 +2009,23 @@
     "DISABLE_ACTION": "禁用",
     "DELETE_ACTION": "删除",
     "NOT_FOUND": "未发现任何记录",
-   "NAME": "名称",
+    "NAME": "名称",
     "ENDPOINT": "端点",
     "STATUS": "状态",
     "ENABLED": "启用",
     "SETUP_TIMESTAMP": "设置时间",
     "PROVIDER": "供应商",
-
     "DELETION_TITLE": "删除实例",
     "DELETION_SUMMARY": "你确认删除实例 {{param}}?",
     "ENABLE_TITLE": "启用实例",
     "ENABLE_SUMMARY": "你确认启用实例 {{param}}?",
     "DISABLE_TITLE": "禁用实例",
     "DISABLE_SUMMARY": "你确认禁用实例 {{param}}?",
-
     "IMAGE": "镜像",
     "START_TIME": "开始时间",
     "FINISH_TIME": "完成时间",
     "INSTANCE": "实例",
-
     "HISTORIES": "历史记录",
-
     "CREATE_SUCCESS": "添加实例成功",
     "CREATE_FAILED": "添加实例失败",
     "DELETED_SUCCESS": "删除实例成功",
@@ -2042,7 +2038,6 @@
     "UPDATE_FAILED": "更新实例失败",
     "REQUEST_PREHEAT_SUCCESS": "请求预热成功",
     "REQUEST_PREHEAT_FAILED": "请求预热失败",
-
     "DESCRIPTION": "描述",
     "AUTH_MODE": "认证模式",
     "USERNAME": "用户名",
