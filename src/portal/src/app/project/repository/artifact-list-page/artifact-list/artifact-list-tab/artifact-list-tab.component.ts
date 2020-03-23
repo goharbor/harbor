@@ -91,9 +91,9 @@ import {
 import { Project } from '../../../../project';
 import { ArtifactService as NewArtifactService } from '../../../../../../../ng-swagger-gen/services/artifact.service';
 import { ADDITIONS } from '../../../artifact/artifact-additions/models';
-import { DistributionService } from '../../../../../distribution/distribution.service';
 
 import { MessageHandlerService } from '../../../../../shared/message-handler/message-handler.service';
+import { PreheatService } from "../../../../../../../ng-swagger-gen/services/preheat.service";
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
@@ -210,7 +210,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private scanningService: ScanningResultService,
     private router: Router,
-    private distributionService: DistributionService,
+    private distributionService: PreheatService,
     private msgHandler: MessageHandlerService
   ) {}
   ngOnInit() {
@@ -1121,7 +1121,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     artifacts.map(artifact => {
       artifact.tags.map(tag => {
         // only preheat docker image
-        if (artifact.type == 'IMAGE' && artifact['repository_name']) {
+        if (artifact.type === 'IMAGE' && artifact['repository_name']) {
           images.push(`${artifact['repository_name']}:${tag.name}`);
         }
       });
@@ -1137,7 +1137,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     operMessage.state = OperationState.progressing;
     this.operationService.publishInfo(operMessage);
 
-    this.distributionService.preheatImages(images).subscribe(
+    this.distributionService.PreheatImages({preheatReq: {images}}).subscribe(
       response => {
         this.translateService
           .get('DISTRIBUTION.REQUEST_PREHEAT_SUCCESS')

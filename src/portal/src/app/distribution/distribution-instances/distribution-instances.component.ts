@@ -1,6 +1,5 @@
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
-import { DistributionService } from '../distribution.service';
 import {
   Subscription,
   Observable,
@@ -9,7 +8,6 @@ import {
 } from 'rxjs';
 import { MsgChannelService } from '../msg-channel.service';
 import { DistributionSetupModalComponent } from '../distribution-setup-modal/distribution-setup-modal.component';
-import { DistributionInstance, QueryParam } from '../distribution-interface';
 import { OperationService } from '../../../lib/components/operation/operation.service';
 import {
   ConfirmationState,
@@ -24,13 +22,15 @@ import {
   OperationState
 } from '../../../lib/components/operation/operate';
 import { TranslateService } from '@ngx-translate/core';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, finalize } from 'rxjs/operators';
 import { errorHandler } from '../../../lib/utils/shared/shared.utils';
 import { DEFAULT_PAGE_SIZE } from '../../../lib/utils/utils';
+import { Instance } from "../../../../ng-swagger-gen/models/instance";
+import { PreheatService } from "../../../../ng-swagger-gen/services/preheat.service";
 
 interface MultiOperateData {
   operation: string;
-  instances: DistributionInstance[];
+  instances: Instance[];
 }
 
 @Component({
@@ -39,13 +39,13 @@ interface MultiOperateData {
   styleUrls: ['./distribution-instances.component.scss']
 })
 export class DistributionInstancesComponent implements OnInit, OnDestroy {
-  instances: DistributionInstance[] = [];
-  selectedRow: DistributionInstance[] = [];
+  instances: Instance[] = [];
+  selectedRow: Instance[] = [];
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage: number = 1;
   totalCount: number = 0;
-  queryParam: QueryParam = new QueryParam();
+  queryString: string;
 
   chanSub: Subscription;
 
@@ -56,7 +56,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
   setupModal: DistributionSetupModalComponent;
 
   constructor(
-    private disService: DistributionService,
+    private disService: PreheatService,
     private msgHandler: MessageHandlerService,
     private chanService: MsgChannelService,
 
@@ -83,7 +83,6 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.queryParam.pageSize = this.pageSize;
     this.loadData();
     this.chanSub = this.chanService.subscribe((msg: string) => {
       if (msg === 'created' || msg === 'updated' || 'delete') {
@@ -106,18 +105,25 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
 
   loadData() {
     this.selectedRow = [];
+    const queryParam: PreheatService.ListInstancesParams = {
+      page: this.currentPage,
+      pageSize: this.pageSize
+    };
+    if (this.queryString) {
+      queryParam.q = encodeURIComponent(`name=~${this.queryString}`);
+    }
     this.loading = true;
-    this.queryParam.page = this.currentPage;
-    this.disService.getInstances(this.queryParam).subscribe(
+    this.disService.ListInstancesResponse(queryParam)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe(
       response => {
         this.totalCount = Number.parseInt(
           response.headers.get('x-total-count')
         );
-        this.instances = response.body as DistributionInstance[];
+        this.instances = response.body as Instance[];
       },
       err => this.msgHandler.error(err)
     );
-    this.loading = false;
   }
 
   refresh() {
@@ -127,7 +133,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
 
   doFilter($evt: any) {
     this.currentPage = 1;
-    this.queryParam.query = $evt;
+    this.queryString = $evt;
     this.loadData();
   }
 
@@ -135,12 +141,12 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
     this.setupModal.openSetupModal(false);
   }
 
-  editInstance(instance: DistributionInstance) {
+  editInstance(instance: Instance) {
     this.setupModal.openSetupModal(true, instance);
   }
 
   // Operate the specified Instance
-  operateInstances(operation: string, instances: DistributionInstance[]): void {
+  operateInstances(operation: string, instances: Instance[]): void {
     let arr: string[] = [];
     let title: string;
     let summary: string;
@@ -213,7 +219,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
       });
     }
   }
-  deleteInstance(instance: DistributionInstance): Observable<any> {
+  deleteInstance(instance: Instance): Observable<any> {
     let operMessage = new OperateInfo();
     operMessage.name = 'OPERATION.DELETE_INSTANCE';
     operMessage.data.id = instance.id;
@@ -221,7 +227,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
     operMessage.data.name = instance.name;
     this.operationService.publishInfo(operMessage);
 
-    return this.disService.deleteInstance(instance).pipe(
+    return this.disService.DeleteInstance({instanceId: instance.id}).pipe(
       map(() => {
         this.translate.get('DISTRIBUTION.DELETED_SUCCESS').subscribe(msg => {
           operateChanges(operMessage, OperationState.success);
@@ -241,7 +247,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
     );
   }
 
-  enableInstance(instance: DistributionInstance) {
+  enableInstance(instance: Instance) {
     let operMessage = new OperateInfo();
     operMessage.name = 'OPERATION.ENABLE_INSTANCE';
     operMessage.data.id = instance.id;
@@ -251,7 +257,10 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
 
     instance.enabled = true;
     return this.disService
-      .updateInstance({ id: instance.id, enabled: true })
+      .UpdateInstance({
+        propertySet: {enabled: true},
+        instanceId: instance.id
+      })
       .pipe(
         map(() => {
           this.translate.get('DISTRIBUTION.ENABLE_SUCCESS').subscribe(msg => {
@@ -272,7 +281,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
       );
   }
 
-  disableInstance(instance: DistributionInstance) {
+  disableInstance(instance: Instance) {
     let operMessage = new OperateInfo();
     operMessage.name = 'OPERATION.DISABLE_INSTANCE';
     operMessage.data.id = instance.id;
@@ -282,7 +291,10 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
 
     instance.enabled = false;
     return this.disService
-      .updateInstance({ id: instance.id, enabled: false })
+      .UpdateInstance({
+        propertySet: {enabled: false},
+        instanceId: instance.id
+      })
       .pipe(
         map(() => {
           this.translate.get('DISTRIBUTION.DISABLE_SUCCESS').subscribe(msg => {

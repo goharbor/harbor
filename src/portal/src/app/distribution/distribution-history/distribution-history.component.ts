@@ -1,7 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { DistributionHistory, QueryParam } from '../distribution-interface';
-import { DistributionService } from '../distribution.service';
 import { DEFAULT_PAGE_SIZE } from '../../../lib/utils/utils';
+import { finalize } from "rxjs/operators";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { PreheatService } from "../../../../ng-swagger-gen/services/preheat.service";
+import { PreheatHistory } from "../../../../ng-swagger-gen/models/preheat-history";
 
 @Component({
   selector: 'app-distribution-history',
@@ -10,34 +12,45 @@ import { DEFAULT_PAGE_SIZE } from '../../../lib/utils/utils';
 })
 export class DistributionHistoryComponent implements OnInit, OnDestroy {
   loading: boolean = false;
-  records: DistributionHistory[] = [];
+  records: PreheatHistory[] = [];
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage: number = 1;
   totalCount: number = 0;
-  queryParam: QueryParam = new QueryParam();
+  queryString: string;
+  isOpenFilterTag: boolean = false;
+  defaultFilter: string = "image";
 
-  constructor(private disService: DistributionService) {}
+  constructor(private disService: PreheatService,
+              private errorHandler: ErrorHandler) {}
 
   ngOnInit() {
-    this.queryParam.pageSize = this.pageSize;
     this.loadData();
   }
 
   ngOnDestroy(): void {}
 
   loadData() {
+    const queryParam: PreheatService.ListPreheatHistoriesParams = {
+      page: this.currentPage,
+      pageSize: this.pageSize
+    };
+    if (this.queryString) {
+      queryParam.q = encodeURIComponent(`${this.defaultFilter}=~${this.queryString}`);
+    }
     this.loading = true;
-    this.queryParam.page = this.currentPage;
-    this.disService.getDistributionHistories(this.queryParam).subscribe(
+    this.disService.ListPreheatHistoriesResponse(queryParam)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe(
       response => {
         this.totalCount = Number.parseInt(
           response.headers.get('x-total-count')
         );
         this.records = response.body;
       },
-      err => console.error(err)
+      err => {
+        this.errorHandler.error(err);
+      }
     );
-    this.loading = false;
   }
 
   refresh() {
@@ -47,7 +60,16 @@ export class DistributionHistoryComponent implements OnInit, OnDestroy {
 
   doFilter($evt: any) {
     this.currentPage = 1;
-    this.queryParam.query = $evt;
+    this.queryString = $evt;
+    this.loadData();
+  }
+
+  openFilter(isOpen: boolean): void {
+    this.isOpenFilterTag = isOpen;
+  }
+
+  selectFilterKey($event: any): void {
+    this.defaultFilter = $event['target'].value;
     this.loadData();
   }
 }

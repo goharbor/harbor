@@ -40,10 +40,10 @@ import { ChannelService } from '../../../../../../lib/services/channel.service';
 import { OperationService } from '../../../../../../lib/components/operation/operation.service';
 import { By } from '@angular/platform-browser';
 import { ArtifactService as NewArtifactService } from '../../../../../../../ng-swagger-gen/services/artifact.service';
-import { DistributionService } from '../../../../..//distribution/distribution.service';
 import { MessageHandlerService } from '../../../../../shared/message-handler/message-handler.service';
 import { MessageService } from '../../../../../global-message/message.service';
 import { SessionService } from '../../../../../shared/session.service';
+import { PreheatService } from "../../../../../../../ng-swagger-gen/services/preheat.service";
 
 describe('ArtifactListTabComponent (inline template)', () => {
   let comp: ArtifactListTabComponent;
@@ -321,7 +321,7 @@ describe('ArtifactListTabComponent (inline template)', () => {
         ErrorHandler,
         ChannelService,
         ArtifactDefaultService,
-        DistributionService,
+        PreheatService,
         MessageService,
         SessionService,
         MessageHandlerService,

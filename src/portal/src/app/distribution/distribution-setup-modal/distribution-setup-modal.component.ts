@@ -1,17 +1,14 @@
-import { MessageHandlerService } from './../../shared/message-handler/message-handler.service';
-import { DistributionService } from './../distribution.service';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { Component, OnInit, ViewChild } from '@angular/core';
-import {
-  DistributionInstance,
-  DistributionProvider,
-  AuthMode,
-  AuthModeBasic,
-  AuthModeOAuth
-} from '../distribution-interface';
 import { NgForm } from '@angular/forms';
 import { MsgChannelService } from '../msg-channel.service';
 import { TranslateService } from '@ngx-translate/core';
 import { errorHandler } from '../../../lib/utils/shared/shared.utils';
+import { PreheatService } from "../../../../ng-swagger-gen/services/preheat.service";
+import { Instance } from "../../../../ng-swagger-gen/models/instance";
+import { Provider } from "../../../../ng-swagger-gen/models/provider";
+import { AuthMode } from "../distribution-interface";
+import { clone } from "../../../lib/utils/utils";
 
 @Component({
   selector: 'dist-setup-modal',
@@ -19,25 +16,25 @@ import { errorHandler } from '../../../lib/utils/shared/shared.utils';
   styleUrls: ['./distribution-setup-modal.component.scss']
 })
 export class DistributionSetupModalComponent implements OnInit {
-  providers: DistributionProvider[];
-  model: DistributionInstance;
+  providers: Provider[];
+  model: Instance;
   opened: boolean = false;
   editingMode: boolean = false;
   basicUsername: string;
   basicPassword: string;
   authToken: string;
-  authData: AuthModeBasic | AuthModeOAuth;
+  authData: {[key: string]: any};
   @ViewChild('instanceForm', { static: true }) instanceForm: NgForm;
 
   constructor(
-    private distributionService: DistributionService,
+    private distributionService: PreheatService,
     private msgHandler: MessageHandlerService,
     private chanService: MsgChannelService,
     private translate: TranslateService
   ) {}
 
   ngOnInit() {
-    this.distributionService.getProviderDrivers().subscribe(
+    this.distributionService.ListProviders().subscribe(
       providers => (this.providers = providers),
       err => console.error(err)
     );
@@ -88,7 +85,6 @@ export class DistributionSetupModalComponent implements OnInit {
       name: '',
       endpoint: '',
       enabled: true,
-      setup_timestamp: 0,
       provider: '',
       auth_mode: AuthMode.NONE,
       auth_data: this.authData
@@ -96,7 +92,7 @@ export class DistributionSetupModalComponent implements OnInit {
     this.instanceForm.reset();
   }
 
-  _isInstance(obj: any): obj is DistributionInstance {
+  _isInstance(obj: any): obj is Instance {
     return obj.endpoint !== undefined;
   }
 
@@ -105,9 +101,16 @@ export class DistributionSetupModalComponent implements OnInit {
   }
 
   submit() {
-    this.model.setup_timestamp = Math.round(new Date().getTime() / 1000);
     if (this.editingMode) {
-      this.distributionService.updateInstance(this.model).subscribe(
+      const data: Instance = {
+        endpoint: this.model.endpoint,
+        enabled: this.model.enabled,
+        description: this.model.description,
+        auth_mode: this.model.auth_mode,
+        auth_data: this.model.auth_data
+      };
+      this.distributionService.UpdateInstance({instanceId: this.model.id, propertySet: data
+        }).subscribe(
         response => {
           this.translate.get('DISTRIBUTION.UPDATE_SUCCESS').subscribe(msg => {
             this.msgHandler.info(msg);
@@ -124,7 +127,7 @@ export class DistributionSetupModalComponent implements OnInit {
         }
       );
     } else {
-      this.distributionService.createInstance(this.model).subscribe(
+      this.distributionService.CreateInstance({instance: this.model}).subscribe(
         response => {
           this.translate.get('DISTRIBUTION.CREATE_SUCCESS').subscribe(msg => {
             this.msgHandler.info(msg);
@@ -141,17 +144,14 @@ export class DistributionSetupModalComponent implements OnInit {
         }
       );
     }
-
     this._close();
   }
 
-  openSetupModal(editingMode: boolean, data?: DistributionInstance): void {
+  openSetupModal(editingMode: boolean, data?: Instance): void {
     this.editingMode = editingMode;
     this._open();
-
     if (editingMode) {
-      this.model = data;
-      return;
+      this.model = clone(data);
     }
   }
 }
