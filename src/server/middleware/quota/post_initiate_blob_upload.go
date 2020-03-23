@@ -18,9 +18,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/api/blob"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/controller/blob"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	"github.com/goharbor/harbor/src/pkg/types"
 )
 

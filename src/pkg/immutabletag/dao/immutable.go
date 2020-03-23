@@ -6,7 +6,7 @@ import (
 	"errors"
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
-	internal_errors "github.com/goharbor/harbor/src/internal/error"
+	internal_errors "github.com/goharbor/harbor/src/lib/error"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/dao/model"
 )
 

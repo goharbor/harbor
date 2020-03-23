@@ -22,9 +22,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/api/artifact"
-	"github.com/goharbor/harbor/src/api/repository"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/repository"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	arttesting "github.com/goharbor/harbor/src/testing/api/artifact"
 	repotesting "github.com/goharbor/harbor/src/testing/api/repository"
 	"github.com/goharbor/harbor/src/testing/mock"

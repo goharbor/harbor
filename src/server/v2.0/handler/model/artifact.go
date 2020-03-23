@@ -18,8 +18,8 @@ import (
 	"encoding/json"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
 

@@ -32,9 +32,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/controller/artifact"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"

@@ -15,9 +15,9 @@
 package vulnerable
 
 import (
-	"github.com/goharbor/harbor/src/api/artifact"
-	"github.com/goharbor/harbor/src/api/project"
-	"github.com/goharbor/harbor/src/api/scan"
+	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/scan"
 )
 
 var (

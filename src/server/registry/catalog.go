@@ -17,8 +17,8 @@ package registry
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/api/repository"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/controller/repository"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/registry/util"
 	"net/http"

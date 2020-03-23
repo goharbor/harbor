@@ -15,7 +15,7 @@
 package rule
 
 import (
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 )
 
 // Evaluator defines method of executing rule

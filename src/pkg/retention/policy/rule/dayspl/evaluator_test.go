@@ -17,7 +17,7 @@ package dayspl
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"

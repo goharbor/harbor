@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"strings"
 	"time"
 

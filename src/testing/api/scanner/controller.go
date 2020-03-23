@@ -3,10 +3,10 @@
 package scanner
 
 import (
-	apiscanner "github.com/goharbor/harbor/src/api/scanner"
+	apiscanner "github.com/goharbor/harbor/src/controller/scanner"
 	mock "github.com/stretchr/testify/mock"
 
-	q "github.com/goharbor/harbor/src/pkg/q"
+	q "github.com/goharbor/harbor/src/lib/q"
 
 	scanner "github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 

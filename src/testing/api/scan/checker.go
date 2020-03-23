@@ -5,7 +5,7 @@ package scan
 import (
 	context "context"
 
-	artifact "github.com/goharbor/harbor/src/api/artifact"
+	artifact "github.com/goharbor/harbor/src/controller/artifact"
 
 	mock "github.com/stretchr/testify/mock"
 )

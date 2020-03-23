@@ -16,7 +16,7 @@ package security
 
 import (
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -35,14 +35,14 @@ func TestIDToken(t *testing.T) {
 	// not the candidate request
 	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/chartrepo/", nil)
 	require.Nil(t, err)
-	req = req.WithContext(internal.WithAuthMode(req.Context(), common.DBAuth))
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.DBAuth))
 	ctx = idToken.Generate(req)
 	assert.Nil(t, ctx)
 
 	// contains no authorization header
 	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
 	require.Nil(t, err)
-	req = req.WithContext(internal.WithAuthMode(req.Context(), common.OIDCAuth))
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
 	ctx = idToken.Generate(req)
 	assert.Nil(t, ctx)
 }

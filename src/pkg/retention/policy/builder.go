@@ -16,13 +16,13 @@ package policy
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 
 	index4 "github.com/goharbor/harbor/src/pkg/retention/policy/action/index"
 
 	index3 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
 
-	index2 "github.com/goharbor/harbor/src/internal/selector/selectors/index"
+	index2 "github.com/goharbor/harbor/src/lib/selector/selectors/index"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 

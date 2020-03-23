@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	o "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/internal/orm"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/stretchr/testify/assert"
 )

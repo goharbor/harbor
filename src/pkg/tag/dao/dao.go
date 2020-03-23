@@ -17,9 +17,9 @@ package dao
 import (
 	"context"
 	beego_orm "github.com/astaxie/beego/orm"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/internal/orm"
-	"github.com/goharbor/harbor/src/pkg/q"
+	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 

@@ -16,8 +16,8 @@ package registry
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/api/repository"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/controller/repository"
 	repotesting "github.com/goharbor/harbor/src/testing/api/repository"
 	"github.com/stretchr/testify/suite"
 	"net/http"

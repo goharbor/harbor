@@ -18,7 +18,7 @@ import (
 	"errors"
 	openapi "github.com/go-openapi/errors"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

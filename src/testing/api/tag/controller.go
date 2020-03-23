@@ -2,8 +2,8 @@ package tag
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/api/tag"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/controller/tag"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/stretchr/testify/mock"
 )
 

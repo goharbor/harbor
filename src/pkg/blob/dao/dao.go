@@ -21,9 +21,9 @@ import (
 	"time"
 
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/goharbor/harbor/src/internal/orm"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
-	"github.com/goharbor/harbor/src/pkg/q"
 )
 
 // DAO the dao for Blob, ArtifactAndBlob and ProjectBlob

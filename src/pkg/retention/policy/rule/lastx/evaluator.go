@@ -16,7 +16,7 @@ package lastx
 
 import (
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"

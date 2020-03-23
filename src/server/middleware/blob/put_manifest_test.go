@@ -21,7 +21,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goharbor/harbor/src/api/blob"
+	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/google/uuid"

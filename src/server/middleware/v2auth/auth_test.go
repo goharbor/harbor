@@ -27,7 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -116,17 +116,17 @@ func TestMiddleware(t *testing.T) {
 	})
 
 	baseCtx := security.NewContext(context.Background(), sc)
-	ar1 := internal.ArtifactInfo{
+	ar1 := lib.ArtifactInfo{
 		Repository:  "project_1/hello-world",
 		Reference:   "v1",
 		ProjectName: "project_1",
 	}
-	ar2 := internal.ArtifactInfo{
+	ar2 := lib.ArtifactInfo{
 		Repository:  "library/ubuntu",
 		Reference:   "14.04",
 		ProjectName: "library",
 	}
-	ar3 := internal.ArtifactInfo{
+	ar3 := lib.ArtifactInfo{
 		Repository:           "project_1/ubuntu",
 		Reference:            "14.04",
 		ProjectName:          "project_1",
@@ -134,7 +134,7 @@ func TestMiddleware(t *testing.T) {
 		BlobMountProjectName: "project_2",
 		BlobMountDigest:      "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
 	}
-	ar4 := internal.ArtifactInfo{
+	ar4 := lib.ArtifactInfo{
 		Repository:           "project_1/ubuntu",
 		Reference:            "14.04",
 		ProjectName:          "project_1",
@@ -142,7 +142,7 @@ func TestMiddleware(t *testing.T) {
 		BlobMountProjectName: "project_3",
 		BlobMountDigest:      "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
 	}
-	ar5 := internal.ArtifactInfo{
+	ar5 := lib.ArtifactInfo{
 		Repository:           "project_1/ubuntu",
 		Reference:            "14.04",
 		ProjectName:          "project_1",
@@ -151,12 +151,12 @@ func TestMiddleware(t *testing.T) {
 		BlobMountDigest:      "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
 	}
 
-	ctx1 := internal.WithArtifactInfo(baseCtx, ar1)
-	ctx2 := internal.WithArtifactInfo(baseCtx, ar2)
-	ctx2x := internal.WithArtifactInfo(context.Background(), ar2) // no securityCtx
-	ctx3 := internal.WithArtifactInfo(baseCtx, ar3)
-	ctx4 := internal.WithArtifactInfo(baseCtx, ar4)
-	ctx5 := internal.WithArtifactInfo(baseCtx, ar5)
+	ctx1 := lib.WithArtifactInfo(baseCtx, ar1)
+	ctx2 := lib.WithArtifactInfo(baseCtx, ar2)
+	ctx2x := lib.WithArtifactInfo(context.Background(), ar2) // no securityCtx
+	ctx3 := lib.WithArtifactInfo(baseCtx, ar3)
+	ctx4 := lib.WithArtifactInfo(baseCtx, ar4)
+	ctx5 := lib.WithArtifactInfo(baseCtx, ar5)
 	req1a, _ := http.NewRequest(http.MethodGet, "/v2/project_1/hello-world/manifest/v1", nil)
 	req1b, _ := http.NewRequest(http.MethodDelete, "/v2/project_1/hello-world/manifest/v1", nil)
 	req2, _ := http.NewRequest(http.MethodGet, "/v2/library/ubuntu/manifest/14.04", nil)

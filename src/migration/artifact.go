@@ -16,11 +16,11 @@ package migration
 
 import (
 	"context"
-	art "github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	art "github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/project"
-	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/repository"
 )
 

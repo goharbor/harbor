@@ -20,7 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 var (
@@ -48,7 +48,7 @@ func Middleware() func(http.Handler) http.Handler {
 			log := log.G(r.Context())
 			mode, err := config.AuthMode()
 			if err == nil {
-				r = r.WithContext(internal.WithAuthMode(r.Context(), mode))
+				r = r.WithContext(lib.WithAuthMode(r.Context(), mode))
 			} else {
 				log.Warningf("failed to get auth mode: %v", err)
 			}

@@ -15,12 +15,12 @@
 package basic
 
 import (
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"net/http"
 )
 
 // NewAuthorizer return a basic authorizer
-func NewAuthorizer(username, password string) internal.Authorizer {
+func NewAuthorizer(username, password string) lib.Authorizer {
 	return &authorizer{
 		username: username,
 		password: password,

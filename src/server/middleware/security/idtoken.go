@@ -27,14 +27,14 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 type idToken struct{}
 
 func (i *idToken) Generate(req *http.Request) security.Context {
 	log := log.G(req.Context())
-	if internal.GetAuthMode(req.Context()) != common.OIDCAuth {
+	if lib.GetAuthMode(req.Context()) != common.OIDCAuth {
 		return nil
 	}
 	if !strings.HasPrefix(req.URL.Path, "/api") {

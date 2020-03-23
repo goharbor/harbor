@@ -15,7 +15,7 @@
 package scan
 
 import (
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/scanner/mocks"
 	"github.com/pkg/errors"

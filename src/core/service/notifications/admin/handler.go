@@ -19,17 +19,17 @@ import (
 	"encoding/json"
 
 	o "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/api/quota"
-	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
 	job_model "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/controller/quota"
+	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/service/notifications"
-	"github.com/goharbor/harbor/src/internal/orm"
 	j "github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 var statusMap = map[string]string{

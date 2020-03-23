@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/goharbor/harbor/src/api/event"
+	"github.com/goharbor/harbor/src/controller/event"
 	"net/http"
 	"testing"
 

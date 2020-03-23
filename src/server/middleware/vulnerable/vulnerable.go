@@ -18,14 +18,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/goharbor/harbor/src/api/artifact"
-	"github.com/goharbor/harbor/src/api/project"
-	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/internal"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/scan"
+	"github.com/goharbor/harbor/src/lib"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -45,8 +45,8 @@ func Middleware() func(http.Handler) http.Handler {
 
 		logger := log.G(ctx).WithFields(log.Fields{"middleware": "vulnerable"})
 
-		none := internal.ArtifactInfo{}
-		info := internal.GetArtifactInfo(ctx)
+		none := lib.ArtifactInfo{}
+		info := lib.GetArtifactInfo(ctx)
 		if info == none {
 			return fmt.Errorf("artifactinfo middleware required before this middleware")
 		}

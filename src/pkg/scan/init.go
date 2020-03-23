@@ -16,7 +16,7 @@ package scan
 
 import (
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	sc "github.com/goharbor/harbor/src/pkg/scan/scanner"
 	"github.com/goharbor/harbor/src/pkg/types"

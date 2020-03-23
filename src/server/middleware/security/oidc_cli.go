@@ -26,7 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 type oidcCli struct{}
@@ -41,7 +41,7 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 		!strings.HasPrefix(path, fmt.Sprintf("/api/%s/chartrepo/", api.APIVersion)) {
 		return nil
 	}
-	if internal.GetAuthMode(req.Context()) != common.OIDCAuth {
+	if lib.GetAuthMode(req.Context()) != common.OIDCAuth {
 		return nil
 	}
 	username, secret, ok := req.BasicAuth()

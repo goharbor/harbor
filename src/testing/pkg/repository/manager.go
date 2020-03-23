@@ -17,7 +17,7 @@ package repository
 import (
 	"context"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/stretchr/testify/mock"
 )
 

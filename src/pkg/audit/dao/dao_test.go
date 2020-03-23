@@ -19,10 +19,10 @@ import (
 	"errors"
 	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/internal/orm"
+	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
-	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )

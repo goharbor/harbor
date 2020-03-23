@@ -17,9 +17,9 @@ package assembler
 import (
 	"context"
 
-	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/controller/scan"
+	"github.com/goharbor/harbor/src/lib"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 )
@@ -56,7 +56,7 @@ func (assembler *VulAssembler) WithArtifacts(artifacts ...*model.Artifact) *VulA
 
 // Assemble assemble vul for the artifacts
 func (assembler *VulAssembler) Assemble(ctx context.Context) error {
-	version := internal.GetAPIVersion(ctx)
+	version := lib.GetAPIVersion(ctx)
 
 	for _, artifact := range assembler.artifacts {
 		isScannable, err := assembler.scanChecker.IsScannable(ctx, &artifact.Artifact)

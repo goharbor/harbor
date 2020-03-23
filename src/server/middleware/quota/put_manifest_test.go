@@ -22,7 +22,7 @@ import (
 
 	"github.com/docker/distribution/manifest/schema2"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/notification"

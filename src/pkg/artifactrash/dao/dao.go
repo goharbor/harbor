@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/internal/orm"
+	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 )
 

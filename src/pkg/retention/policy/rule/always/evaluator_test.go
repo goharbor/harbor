@@ -15,7 +15,7 @@
 package always
 
 import (
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"

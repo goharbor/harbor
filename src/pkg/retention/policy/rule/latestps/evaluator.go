@@ -17,7 +17,7 @@ package latestps
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"math"
 	"sort"
 

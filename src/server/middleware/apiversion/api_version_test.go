@@ -15,7 +15,7 @@
 package apiversion
 
 import (
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -27,7 +27,7 @@ func TestMiddleware(t *testing.T) {
 	middleware := Middleware("1.0")
 	req := httptest.NewRequest("GET", "http://localhost", nil)
 	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		version = internal.GetAPIVersion(req.Context())
+		version = lib.GetAPIVersion(req.Context())
 	})
 	middleware(handler).ServeHTTP(nil, req)
 	assert.Equal(t, "1.0", version)

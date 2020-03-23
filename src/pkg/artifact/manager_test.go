@@ -19,8 +19,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
-	"github.com/goharbor/harbor/src/pkg/q"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

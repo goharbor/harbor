@@ -19,18 +19,18 @@ package handler
 import (
 	"context"
 	"errors"
-	"github.com/goharbor/harbor/src/internal"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib"
+	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/q"
 	"net/url"
 	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/goharbor/harbor/src/api/project"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/controller/project"
 	errs "github.com/goharbor/harbor/src/server/error"
 )
 
@@ -134,7 +134,7 @@ func (b *BaseAPI) BuildQuery(ctx context.Context, query *string, pageNumber, pag
 }
 
 // Links return Links based on the provided pagination information
-func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, pageSize int64) internal.Links {
+func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, pageSize int64) lib.Links {
 	ul := *u
 	// try to unescape the repository name which contains escaped slashes
 	if escapedPath, err := url.PathUnescape(ul.Path); err == nil {
@@ -142,7 +142,7 @@ func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, page
 	} else {
 		log.Errorf("failed to unescape the path %s: %v", ul.Path, err)
 	}
-	var links internal.Links
+	var links lib.Links
 	// prev
 	if pageNumber > 1 && (pageNumber-1)*pageSize < total {
 		q := ul.Query()
@@ -154,7 +154,7 @@ func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, page
 		} else {
 			log.Errorf("failed to unescape the query %s: %v", ul.RawQuery, err)
 		}
-		link := &internal.Link{
+		link := &lib.Link{
 			URL: ul.String(),
 			Rel: "prev",
 		}
@@ -171,7 +171,7 @@ func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, page
 		} else {
 			log.Errorf("failed to unescape the query %s: %v", ul.RawQuery, err)
 		}
-		link := &internal.Link{
+		link := &lib.Link{
 			URL: ul.String(),
 			Rel: "next",
 		}

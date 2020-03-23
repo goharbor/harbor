@@ -17,7 +17,7 @@ package latestpl
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"math/rand"
 	"testing"
 

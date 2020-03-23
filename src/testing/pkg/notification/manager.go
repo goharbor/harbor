@@ -1,8 +1,8 @@
 package notification
 
 import (
-	"github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/controller/event"
 )
 
 type FakedPolicyMgr struct {

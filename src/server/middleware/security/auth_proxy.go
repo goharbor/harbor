@@ -26,7 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/authproxy"
 )
 
@@ -34,7 +34,7 @@ type authProxy struct{}
 
 func (a *authProxy) Generate(req *http.Request) security.Context {
 	log := log.G(req.Context())
-	if internal.GetAuthMode(req.Context()) != common.HTTPAuth {
+	if lib.GetAuthMode(req.Context()) != common.HTTPAuth {
 		return nil
 	}
 	// only support docker login

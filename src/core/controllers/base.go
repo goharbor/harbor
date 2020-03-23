@@ -36,7 +36,7 @@ import (
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 // CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
@@ -60,7 +60,7 @@ type messageDetail struct {
 }
 
 func redirectForOIDC(ctx context.Context, username string) bool {
-	if internal.GetAuthMode(ctx) != common.OIDCAuth {
+	if lib.GetAuthMode(ctx) != common.OIDCAuth {
 		return false
 	}
 	u, err := dao.GetUser(models.User{Username: username})

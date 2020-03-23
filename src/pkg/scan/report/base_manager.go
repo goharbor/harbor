@@ -17,9 +17,9 @@ package report
 import (
 	"time"
 
-	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/q"
+	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/google/uuid"

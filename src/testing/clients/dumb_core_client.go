@@ -15,8 +15,8 @@
 package clients
 
 import (
-	modelsv2 "github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/chartserver"
+	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
 )
 
 // DumbCoreClient provides an empty implement for pkg/clients/core.Client

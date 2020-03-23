@@ -20,7 +20,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/api/blob"
+	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 )

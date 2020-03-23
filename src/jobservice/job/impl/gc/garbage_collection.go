@@ -16,9 +16,9 @@ package gc
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
-	"github.com/goharbor/harbor/src/pkg/q"
 	"os"
 	"time"
 
