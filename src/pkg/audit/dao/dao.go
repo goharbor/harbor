@@ -62,10 +62,10 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 func (d *dao) List(ctx context.Context, query *q.Query) ([]*model.AuditLog, error) {
 	audit := []*model.AuditLog{}
 	qs, err := orm.QuerySetter(ctx, &model.AuditLog{}, query)
-	qs = qs.OrderBy("-op_time")
 	if err != nil {
 		return nil, err
 	}
+	qs = qs.OrderBy("-op_time")
 	if _, err = qs.All(&audit); err != nil {
 		return nil, err
 	}
