@@ -322,7 +322,7 @@ Test Case - Delete Multi Artifacts
     Go Into Project  project${d}
     Go Into Repo  redis
     @{tag_list}  Create List  3.2.10-alpine  4.0.7-alpine
-    Multi-delete object  ${tag_delete_btn}  @{tag_list}
+    Multi-delete Artifact  ${tag_delete_btn}  @{tag_list}
     # Verify
     Delete Success  sha256:dd179737  sha256:28a85227
     Close Browser
