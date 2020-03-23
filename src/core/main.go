@@ -38,7 +38,6 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/oidc"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/migration"
@@ -155,10 +154,6 @@ func main() {
 
 	log.Info("initializing notification...")
 	notification.Init()
-
-	filter.Init()
-	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
-	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 
 	server.RegisterRoutes()
 
