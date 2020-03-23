@@ -1096,7 +1096,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     artifacts.map(artifact => {
       artifact.tags.map(tag => {
         // only preheat docker image
-        if (artifact.type == 'IMAGE' && artifact['repository_name']) {
+        if (artifact.type === 'IMAGE' && artifact['repository_name']) {
           images.push(`${artifact['repository_name']}:${tag.name}`);
         }
       });

@@ -1428,26 +1428,22 @@
         "DISABLE_ACTION": "Disable",
         "DELETE_ACTION": "Delete",
         "NOT_FOUND": "Not found",
-
         "NAME": "Name",
         "ENDPOINT": "Endpoint",
         "STATUS": "Status",
         "ENABLED": "Enable",
         "SETUP_TIMESTAMP": "Setup Timestamp",
         "PROVIDER": "Provider",
-
         "DELETION_TITLE": "Confirm instance deletion",
         "DELETION_SUMMARY": "Do you want to delete instance(s) {{param}}?",
         "ENABLE_TITLE": "Enable instance(s)",
         "ENABLE_SUMMARY": "Do you want to enable instance(s) {{param}}?",
         "DISABLE_TITLE": "Disable instance(s)",
         "DISABLE_SUMMARY": "Do you want to disable instance(s) {{param}}?",
-
         "IMAGE": "Image",
         "START_TIME": "Start time",
         "FINISH_TIME": "Finish Time",
         "INSTANCE": "Instance",
-
         "HISTORIES": "Histories",
         "CREATE_SUCCESS": "Instance created successfully",
         "CREATE_FAILED": "Create instance failed",
@@ -1461,7 +1457,6 @@
         "UPDATE_FAILED": "Update instance failed",
         "REQUEST_PREHEAT_SUCCESS": "Preheat request successfully",
         "REQUEST_PREHEAT_FAILED": "Preheat request failed",
-
         "DESCRIPTION": "description",
         "AUTH_MODE": "Auth Mode",
         "USERNAME": "Username",
@@ -1475,8 +1470,7 @@
         "ENDPOINT_PLACEHOLDER": "Input instance's endpoint ",
         "USERNAME_PLACEHOLDER": "Input username",
         "PASSWORD_PLACEHOLDER": "Input password",
-        "TOKEN_PLACEHOLDER": "Input token",
-        "": ""
+        "TOKEN_PLACEHOLDER": "Input token"
         }
     }
 }

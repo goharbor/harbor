@@ -4,9 +4,9 @@ import { ClarityModule } from '@clr/angular';
 import { SharedModule } from '../../shared/shared.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-
 import { DistributionHistoryComponent } from './distribution-history.component';
-import { DistributionService } from '../distribution.service';
+import { PreheatService } from "../../../../ng-swagger-gen/services/preheat.service";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
 
 describe('DistributionHistoryComponent', () => {
   let component: DistributionHistoryComponent;
@@ -21,7 +21,7 @@ describe('DistributionHistoryComponent', () => {
         HttpClientTestingModule
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      providers: [DistributionService],
+      providers: [PreheatService, ErrorHandler],
       declarations: [DistributionHistoryComponent]
     }).compileComponents();
   }));

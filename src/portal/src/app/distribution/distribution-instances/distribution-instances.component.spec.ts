@@ -5,8 +5,8 @@ import { SharedModule } from '../../shared/shared.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DistributionInstancesComponent } from './distribution-instances.component';
-import { DistributionService } from '../distribution.service';
 import { MsgChannelService } from '../msg-channel.service';
+import { PreheatService } from "../../../../ng-swagger-gen/services/preheat.service";
 
 describe('DistributionInstanceComponent', () => {
   let component: DistributionInstancesComponent;
@@ -21,7 +21,7 @@ describe('DistributionInstanceComponent', () => {
         HttpClientTestingModule
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      providers: [DistributionService, MsgChannelService],
+      providers: [PreheatService, MsgChannelService],
       declarations: [DistributionInstancesComponent]
     }).compileComponents();
   }));
