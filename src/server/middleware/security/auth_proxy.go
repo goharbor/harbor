@@ -38,7 +38,7 @@ func (a *authProxy) Generate(req *http.Request) security.Context {
 		return nil
 	}
 	// only support docker login
-	if req.URL.Path != "/service/token" {
+	if !strings.HasPrefix(req.URL.Path, "/v2") {
 		return nil
 	}
 	proxyUserName, proxyPwd, ok := req.BasicAuth()

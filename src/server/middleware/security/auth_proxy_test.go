@@ -60,7 +60,7 @@ func TestAuthProxy(t *testing.T) {
 	})
 
 	// No onboard
-	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token", nil)
+	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/v2", nil)
 	require.Nil(t, err)
 	req = req.WithContext(lib.WithAuthMode(req.Context(), common.HTTPAuth))
 	req.SetBasicAuth("tokenreview$administrator@vsphere.local", "reviEwt0k3n")
