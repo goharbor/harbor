@@ -21,7 +21,7 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/api"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"k8s.io/helm/pkg/chartutil"
@@ -60,7 +60,7 @@ var (
 )
 
 func uploadChartVersionResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
-	internal.NopCloseRequest(r)
+	lib.NopCloseRequest(r)
 
 	ct, err := parseChart(r)
 	if err != nil {

@@ -16,9 +16,9 @@ package audit
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit/dao"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
-	"github.com/goharbor/harbor/src/pkg/q"
 )
 
 // Mgr is the global audit log manager instance

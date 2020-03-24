@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"net/http"
@@ -58,7 +58,7 @@ func (c *clientTestSuite) TestCatalog() {
 			repos := &repositories{
 				Repositories: []string{"library/alpine"},
 			}
-			link := internal.Link{
+			link := lib.Link{
 				URL: `/v2/_catalog?last=library/alpine`,
 				Rel: "next",
 			}
@@ -109,7 +109,7 @@ func (c *clientTestSuite) TestListTags() {
 			tgs := &tags{
 				Tags: []string{"1.0"},
 			}
-			link := internal.Link{
+			link := lib.Link{
 				URL: `/v2/library/hello-world/tags/list?last=1.0`,
 				Rel: "next",
 			}

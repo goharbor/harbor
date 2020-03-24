@@ -16,7 +16,7 @@ package bearer
 
 import (
 	"fmt"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -17,7 +17,7 @@ package notification
 import (
 	"net/http"
 
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -26,7 +26,7 @@ import (
 // Middleware sends the notification after transaction success
 func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
-		res := internal.NewResponseRecorder(w)
+		res := lib.NewResponseRecorder(w)
 		evc := notification.NewEventCtx()
 		next.ServeHTTP(res, r.WithContext(notification.NewContext(r.Context(), evc)))
 		if res.Success() || evc.MustNotify {

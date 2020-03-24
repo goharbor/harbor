@@ -18,7 +18,7 @@ import (
 	"github.com/astaxie/beego"
 	beegosession "github.com/astaxie/beego/session"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -30,7 +30,7 @@ import (
 func TestSession(t *testing.T) {
 	carrySession := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		carrySession = internal.GetCarrySession(r.Context())
+		carrySession = lib.GetCarrySession(r.Context())
 	})
 	// no session
 	req, err := http.NewRequest("POST", "http://127.0.0.1:8080/api/users", nil)

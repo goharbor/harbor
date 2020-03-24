@@ -17,8 +17,8 @@ package bearer
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/internal"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/lib"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -30,7 +30,7 @@ const (
 
 // NewAuthorizer return a bearer token authorizer
 // The parameter "a" is an authorizer used to fetch the token
-func NewAuthorizer(realm, service string, a internal.Authorizer, transport ...*http.Transport) internal.Authorizer {
+func NewAuthorizer(realm, service string, a lib.Authorizer, transport ...*http.Transport) lib.Authorizer {
 	authorizer := &authorizer{
 		realm:      realm,
 		service:    service,
@@ -48,7 +48,7 @@ func NewAuthorizer(realm, service string, a internal.Authorizer, transport ...*h
 type authorizer struct {
 	realm      string
 	service    string
-	authorizer internal.Authorizer
+	authorizer lib.Authorizer
 	cache      *cache
 	client     *http.Client
 }

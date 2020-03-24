@@ -15,7 +15,7 @@
 package apiversion
 
 import (
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"net/http"
 )
@@ -24,7 +24,7 @@ import (
 func Middleware(version string) middleware.Middleware {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			ctx := internal.WithAPIVersion(req.Context(), version)
+			ctx := lib.WithAPIVersion(req.Context(), version)
 			handler.ServeHTTP(w, req.WithContext(ctx))
 		})
 	}

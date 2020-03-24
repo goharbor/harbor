@@ -8,11 +8,11 @@ import (
 	"regexp"
 
 	"github.com/docker/distribution/reference"
-	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/opencontainers/go-digest"
 )
 
@@ -40,8 +40,8 @@ var (
 
 // EnsureArtifactDigest get artifactInfo from context and set the digest for artifact that has project name repository and reference
 func EnsureArtifactDigest(ctx context.Context) error {
-	info := internal.GetArtifactInfo(ctx)
-	none := internal.ArtifactInfo{}
+	info := lib.GetArtifactInfo(ctx)
+	none := lib.ArtifactInfo{}
 
 	if info == none {
 		return fmt.Errorf("no artifact info in context")

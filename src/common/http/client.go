@@ -25,7 +25,7 @@ import (
 	"reflect"
 
 	"github.com/goharbor/harbor/src/common/http/modifier"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 const (
@@ -264,7 +264,7 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 		resources = reflect.AppendSlice(resources, reflect.Indirect(res))
 
 		endpoint = ""
-		links := internal.ParseLinks(resp.Header.Get("Link"))
+		links := lib.ParseLinks(resp.Header.Get("Link"))
 		for _, link := range links {
 			if link.Rel == "next" {
 				endpoint = url.Scheme + "://" + url.Host + link.URL

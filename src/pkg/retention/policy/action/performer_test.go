@@ -16,7 +16,7 @@ package action
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	"testing"
 	"time"

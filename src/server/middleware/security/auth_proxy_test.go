@@ -22,7 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/test"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -62,7 +62,7 @@ func TestAuthProxy(t *testing.T) {
 	// No onboard
 	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token", nil)
 	require.Nil(t, err)
-	req = req.WithContext(internal.WithAuthMode(req.Context(), common.HTTPAuth))
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.HTTPAuth))
 	req.SetBasicAuth("tokenreview$administrator@vsphere.local", "reviEwt0k3n")
 	ctx := authProxy.Generate(req)
 	assert.NotNil(t, ctx)

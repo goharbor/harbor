@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/goharbor/harbor/src/api/quota"
+	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/server/middleware/util"
 )
 

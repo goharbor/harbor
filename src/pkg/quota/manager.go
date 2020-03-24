@@ -17,7 +17,7 @@ package quota
 import (
 	"context"
 
-	"github.com/goharbor/harbor/src/internal/orm"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/quota/dao"
 	"github.com/goharbor/harbor/src/pkg/quota/models"
 	"github.com/goharbor/harbor/src/pkg/types"

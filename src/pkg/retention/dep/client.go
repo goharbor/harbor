@@ -17,7 +17,7 @@ package dep
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"net/http"
 	"time"
 

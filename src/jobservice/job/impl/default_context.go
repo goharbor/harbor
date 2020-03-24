@@ -18,9 +18,9 @@ import (
 	"context"
 	"errors"
 	o "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 // DefaultContext provides a basic job context

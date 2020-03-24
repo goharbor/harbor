@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/api/event/metadata"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"io/ioutil"
 	"log"
 	"net/http"

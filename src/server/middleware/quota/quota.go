@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/quota"
@@ -103,9 +103,9 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 			return
 		}
 
-		res, ok := w.(*internal.ResponseBuffer)
+		res, ok := w.(*lib.ResponseBuffer)
 		if !ok {
-			res = internal.NewResponseBuffer(w)
+			res = lib.NewResponseBuffer(w)
 			defer res.Flush()
 		}
 

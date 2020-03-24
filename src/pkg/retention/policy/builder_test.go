@@ -16,7 +16,7 @@ package policy
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
 
@@ -24,7 +24,7 @@ import (
 
 	index2 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
 
-	"github.com/goharbor/harbor/src/internal/selector/selectors/index"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 
@@ -32,9 +32,9 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
 
-	"github.com/goharbor/harbor/src/internal/selector/selectors/label"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/label"
 
-	"github.com/goharbor/harbor/src/internal/selector/selectors/doublestar"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
 

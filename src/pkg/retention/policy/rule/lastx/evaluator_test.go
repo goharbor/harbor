@@ -2,7 +2,7 @@ package lastx
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
 

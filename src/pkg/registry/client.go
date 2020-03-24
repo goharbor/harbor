@@ -32,8 +32,8 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/internal"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/lib"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	"github.com/goharbor/harbor/src/pkg/registry/auth"
 	"github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -116,7 +116,7 @@ func NewClient(url, username, password string, insecure bool) Client {
 }
 
 // NewClientWithAuthorizer creates a registry client with the provided authorizer
-func NewClientWithAuthorizer(url string, authorizer internal.Authorizer, insecure bool) Client {
+func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool) Client {
 	var transportType uint
 	if insecure {
 		transportType = commonhttp.InsecureTransport
@@ -135,7 +135,7 @@ func NewClientWithAuthorizer(url string, authorizer internal.Authorizer, insecur
 
 type client struct {
 	url        string
-	authorizer internal.Authorizer
+	authorizer lib.Authorizer
 	client     *http.Client
 }
 
@@ -552,7 +552,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 
 // parse the next page link from the link header
 func next(link string) string {
-	links := internal.ParseLinks(link)
+	links := lib.ParseLinks(link)
 	for _, lk := range links {
 		if lk.Rel == "next" {
 			return lk.URL

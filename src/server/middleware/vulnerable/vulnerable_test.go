@@ -21,12 +21,12 @@ import (
 	"testing"
 
 	"github.com/docker/distribution/manifest/manifestlist"
-	"github.com/goharbor/harbor/src/api/artifact"
-	"github.com/goharbor/harbor/src/api/project"
-	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/scan"
+	"github.com/goharbor/harbor/src/lib"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
@@ -109,14 +109,14 @@ func (suite *MiddlewareTestSuite) TearDownTest() {
 func (suite *MiddlewareTestSuite) makeRequest() *http.Request {
 	req := httptest.NewRequest("GET", "/v1/library/photon/manifests/2.0", nil)
 
-	info := internal.ArtifactInfo{
+	info := lib.ArtifactInfo{
 		Repository: "library/photon",
 		Reference:  "2.0",
 		Tag:        "2.0",
 		Digest:     "",
 	}
 
-	return req.WithContext(internal.WithArtifactInfo(req.Context(), info))
+	return req.WithContext(lib.WithArtifactInfo(req.Context(), info))
 }
 
 func (suite *MiddlewareTestSuite) TestGetArtifactFailed() {

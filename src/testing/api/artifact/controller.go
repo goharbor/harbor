@@ -5,13 +5,13 @@ package artifact
 import (
 	context "context"
 
-	artifact "github.com/goharbor/harbor/src/api/artifact"
+	artifact "github.com/goharbor/harbor/src/controller/artifact"
 
 	mock "github.com/stretchr/testify/mock"
 
-	processor "github.com/goharbor/harbor/src/api/artifact/processor"
+	processor "github.com/goharbor/harbor/src/controller/artifact/processor"
 
-	q "github.com/goharbor/harbor/src/pkg/q"
+	q "github.com/goharbor/harbor/src/lib/q"
 
 	time "time"
 )

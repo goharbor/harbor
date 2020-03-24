@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/rbac"
-	internal_errors "github.com/goharbor/harbor/src/internal/error"
+	internal_errors "github.com/goharbor/harbor/src/lib/error"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
 )

@@ -16,7 +16,7 @@ package core
 
 import (
 	"fmt"
-	modelsv2 "github.com/goharbor/harbor/src/api/artifact"
+	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/chartserver"

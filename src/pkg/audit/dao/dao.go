@@ -16,10 +16,10 @@ package dao
 
 import (
 	"context"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/internal/orm"
+	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
-	"github.com/goharbor/harbor/src/pkg/q"
 )
 
 // DAO is the data access object for audit log

@@ -19,10 +19,10 @@ import (
 	"fmt"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/goharbor/harbor/src/api/artifact"
-	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/rbac"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/scan"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/scan"
 )
 

@@ -17,7 +17,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	serror "github.com/goharbor/harbor/src/server/error"
 )
 
@@ -62,7 +62,7 @@ func New(fn func(http.ResponseWriter, *http.Request, http.Handler), skippers ...
 // BeforeRequest make a middleware which will call hook before the next handler
 func BeforeRequest(hook func(*http.Request) error, skippers ...Skipper) func(http.Handler) http.Handler {
 	return New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
-		if err := hook(internal.NopCloseRequest(r)); err != nil {
+		if err := hook(lib.NopCloseRequest(r)); err != nil {
 			serror.SendError(w, err)
 			return
 		}
@@ -75,9 +75,9 @@ func BeforeRequest(hook func(*http.Request) error, skippers ...Skipper) func(htt
 // AfterResponse make a middleware which will call hook after the next handler
 func AfterResponse(hook func(http.ResponseWriter, *http.Request, int) error, skippers ...Skipper) func(http.Handler) http.Handler {
 	return New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
-		res, ok := w.(*internal.ResponseBuffer)
+		res, ok := w.(*lib.ResponseBuffer)
 		if !ok {
-			res = internal.NewResponseBuffer(w)
+			res = lib.NewResponseBuffer(w)
 			defer res.Flush()
 		}
 

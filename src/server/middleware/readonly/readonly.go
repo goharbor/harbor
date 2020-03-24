@@ -19,7 +19,7 @@ import (
 	"net/http"
 
 	"github.com/goharbor/harbor/src/core/config"
-	internal_errors "github.com/goharbor/harbor/src/internal/error"
+	internal_errors "github.com/goharbor/harbor/src/lib/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 

@@ -15,9 +15,9 @@
 package dep
 
 import (
-	modelsv2 "github.com/goharbor/harbor/src/api/artifact"
-	"github.com/goharbor/harbor/src/api/tag"
-	"github.com/goharbor/harbor/src/internal/selector"
+	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/tag"
+	"github.com/goharbor/harbor/src/lib/selector"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"testing"
 

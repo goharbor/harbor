@@ -15,12 +15,12 @@
 package null
 
 import (
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"net/http"
 )
 
 // NewAuthorizer returns a null authorizer
-func NewAuthorizer() internal.Authorizer {
+func NewAuthorizer() lib.Authorizer {
 	return &authorizer{}
 
 }

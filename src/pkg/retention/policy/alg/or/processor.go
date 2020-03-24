@@ -15,7 +15,7 @@
 package or
 
 import (
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/utils/log"

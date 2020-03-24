@@ -16,7 +16,7 @@ package latestk
 
 import (
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/internal/selector"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"sort"
 
 	"github.com/goharbor/harbor/src/common/utils/log"

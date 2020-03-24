@@ -17,7 +17,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/core/middlewares"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -86,9 +86,9 @@ func TestUserResettable(t *testing.T) {
 }
 
 func TestRedirectForOIDC(t *testing.T) {
-	ctx := internal.WithAuthMode(context.Background(), common.DBAuth)
+	ctx := lib.WithAuthMode(context.Background(), common.DBAuth)
 	assert.False(t, redirectForOIDC(ctx, "nonexist"))
-	ctx = internal.WithAuthMode(context.Background(), common.OIDCAuth)
+	ctx = lib.WithAuthMode(context.Background(), common.OIDCAuth)
 	assert.True(t, redirectForOIDC(ctx, "nonexist"))
 	assert.False(t, redirectForOIDC(ctx, "admin"))
 

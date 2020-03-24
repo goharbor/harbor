@@ -12,8 +12,8 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/internal"
-	internal_orm "github.com/goharbor/harbor/src/internal/orm"
+	"github.com/goharbor/harbor/src/lib"
+	internal_orm "github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	immu_model "github.com/goharbor/harbor/src/pkg/immutabletag/model"
@@ -35,7 +35,7 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 	url := fmt.Sprintf("/v2/%s/manifests/%s", repository, tag)
 	req, _ := http.NewRequest("PUT", url, nil)
 
-	afInfo := internal.ArtifactInfo{
+	afInfo := lib.ArtifactInfo{
 		ProjectName: projectName,
 		Repository:  repository,
 		Tag:         tag,
@@ -52,7 +52,7 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 		}
 	}
 	*req = *(req.WithContext(internal_orm.NewContext(context.TODO(), dao.GetOrmer())))
-	*req = *(req.WithContext(internal.WithArtifactInfo(req.Context(), afInfo)))
+	*req = *(req.WithContext(lib.WithArtifactInfo(req.Context(), afInfo)))
 	h := Middleware()(n)
 	h.ServeHTTP(rr, req)
 

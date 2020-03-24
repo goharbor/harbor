@@ -17,7 +17,7 @@ package security
 import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils/oidc"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -42,7 +42,7 @@ func TestOIDCCli(t *testing.T) {
 	username := "oidcModiferTester"
 	password := "oidcSecret"
 	oidc.SetHardcodeVerifierForTest(password)
-	req = req.WithContext(internal.WithAuthMode(req.Context(), common.OIDCAuth))
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
 	req.SetBasicAuth(username, password)
 	ctx = oidcCli.Generate(req)
 	assert.NotNil(t, ctx)

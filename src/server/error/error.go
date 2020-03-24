@@ -22,7 +22,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	"net/http"
 	"strings"
 )

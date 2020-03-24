@@ -18,7 +18,7 @@ import (
 	"context"
 	"fmt"
 	o "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/internal/orm"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"math"
 	"sync"
 	"time"

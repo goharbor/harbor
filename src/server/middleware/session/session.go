@@ -16,7 +16,7 @@ package session
 
 import (
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"net/http"
 )
 
@@ -29,7 +29,7 @@ func Middleware() func(http.Handler) http.Handler {
 			// cookie is added by beego.
 			_, err := r.Cookie(config.SessionCookieName)
 			if err == nil {
-				r = r.WithContext(internal.WithCarrySession(r.Context(), true))
+				r = r.WithContext(lib.WithCarrySession(r.Context(), true))
 			}
 			handler.ServeHTTP(w, r)
 		})

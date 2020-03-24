@@ -20,10 +20,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/goharbor/harbor/src/api/blob"
-	"github.com/goharbor/harbor/src/api/event/metadata"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/controller/blob"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
@@ -42,7 +42,7 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 
 var (
 	unmarshalManifest = func(r *http.Request) (distribution.Manifest, distribution.Descriptor, error) {
-		internal.NopCloseRequest(r)
+		lib.NopCloseRequest(r)
 
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {

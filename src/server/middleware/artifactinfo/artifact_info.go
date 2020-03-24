@@ -22,8 +22,8 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/internal"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/lib"
+	ierror "github.com/goharbor/harbor/src/lib/error"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/opencontainers/go-digest"
@@ -62,7 +62,7 @@ func Middleware() func(http.Handler) http.Handler {
 				serror.SendError(rw, ierror.BadRequestError(err))
 				return
 			}
-			art := internal.ArtifactInfo{
+			art := lib.ArtifactInfo{
 				Repository:  repo,
 				ProjectName: pn,
 			}
@@ -87,7 +87,7 @@ func Middleware() func(http.Handler) http.Handler {
 				art.BlobMountProjectName = bmp
 				art.BlobMountRepository = bmr
 			}
-			ctx := internal.WithArtifactInfo(req.Context(), art)
+			ctx := lib.WithArtifactInfo(req.Context(), art)
 			next.ServeHTTP(rw, req.WithContext(ctx))
 		})
 	}

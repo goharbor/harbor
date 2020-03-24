@@ -3,7 +3,7 @@
 package blob
 
 import (
-	blob "github.com/goharbor/harbor/src/api/blob"
+	blob "github.com/goharbor/harbor/src/controller/blob"
 	blobmodels "github.com/goharbor/harbor/src/pkg/blob/models"
 
 	context "context"

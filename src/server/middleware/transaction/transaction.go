@@ -21,8 +21,8 @@ import (
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/internal"
-	"github.com/goharbor/harbor/src/internal/orm"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/orm"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
@@ -49,9 +49,9 @@ func MustCommit(r *http.Request) error {
 // Middleware middleware which add transaction for the http request with default config
 func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
-		res, ok := w.(*internal.ResponseBuffer)
+		res, ok := w.(*lib.ResponseBuffer)
 		if !ok {
-			res = internal.NewResponseBuffer(w)
+			res = lib.NewResponseBuffer(w)
 			defer res.Flush()
 		}
 

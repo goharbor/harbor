@@ -1,8 +1,8 @@
 package rule
 
 import (
-	iselector "github.com/goharbor/harbor/src/internal/selector"
-	"github.com/goharbor/harbor/src/internal/selector/selectors/index"
+	iselector "github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"

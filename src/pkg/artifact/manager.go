@@ -16,8 +16,8 @@ package artifact
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
-	"github.com/goharbor/harbor/src/pkg/q"
 )
 
 var (

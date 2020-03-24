@@ -21,7 +21,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/stretchr/testify/assert"
 )
@@ -123,11 +123,11 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 func TestPopulateArtifactInfo(t *testing.T) {
 
-	none := internal.ArtifactInfo{}
+	none := lib.ArtifactInfo{}
 	cases := []struct {
 		req *http.Request
 		sc  int
-		art internal.ArtifactInfo
+		art lib.ArtifactInfo
 	}{
 		{
 			req: httptest.NewRequest(http.MethodDelete, "/v2/hello-world/manifests/latest", nil),
@@ -137,7 +137,7 @@ func TestPopulateArtifactInfo(t *testing.T) {
 		{
 			req: httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/latest", nil),
 			sc:  http.StatusOK,
-			art: internal.ArtifactInfo{
+			art: lib.ArtifactInfo{
 				Repository:  "library/hello-world",
 				Reference:   "latest",
 				ProjectName: "library",
@@ -152,7 +152,7 @@ func TestPopulateArtifactInfo(t *testing.T) {
 		{
 			req: httptest.NewRequest(http.MethodPost, "/v2/library/ubuntu/blobs/uploads/?from=old/ubuntu&mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f", nil),
 			sc:  http.StatusOK,
-			art: internal.ArtifactInfo{
+			art: lib.ArtifactInfo{
 				Repository:           "library/ubuntu",
 				ProjectName:          "library",
 				BlobMountRepository:  "old/ubuntu",
@@ -163,7 +163,7 @@ func TestPopulateArtifactInfo(t *testing.T) {
 		{
 			req: httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f", nil),
 			sc:  http.StatusOK,
-			art: internal.ArtifactInfo{
+			art: lib.ArtifactInfo{
 				Repository:  "library/hello-world",
 				Reference:   "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
 				Digest:      "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
@@ -179,7 +179,7 @@ func TestPopulateArtifactInfo(t *testing.T) {
 		Middleware()(next).ServeHTTP(rec, tt.req)
 		assert.Equal(t, tt.sc, rec.Code)
 		if tt.art != none {
-			a := internal.GetArtifactInfo(next.ctx)
+			a := lib.GetArtifactInfo(next.ctx)
 			assert.NotEqual(t, none, a)
 			assert.Equal(t, tt.art, a)
 		}

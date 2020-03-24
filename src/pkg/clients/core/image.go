@@ -16,7 +16,7 @@ package core
 
 import (
 	"fmt"
-	modelsv2 "github.com/goharbor/harbor/src/api/artifact"
+	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
 )
 
 func (c *client) ListAllArtifacts(project, repository string) ([]*modelsv2.Artifact, error) {
