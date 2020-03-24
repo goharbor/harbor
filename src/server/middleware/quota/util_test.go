@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/testing/api/project"
+	"github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/stretchr/testify/mock"
 )
 

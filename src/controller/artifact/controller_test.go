@@ -27,7 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	tagtesting "github.com/goharbor/harbor/src/testing/api/tag"
+	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	artrashtesting "github.com/goharbor/harbor/src/testing/pkg/artifactrash"
