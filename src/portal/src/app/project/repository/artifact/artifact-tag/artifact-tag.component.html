@@ -4,7 +4,7 @@
         <button type="button" class="btn btn-secondary" (click)="addTag()">
             <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'TAG.ADD_TAG' | translate}}
         </button>
-        <button type="button" class="btn btn-secondary" [disabled]="!(selectedRow.length>=1)" (click)="removeTag()">
+        <button type="button" class="btn btn-secondary" [disabled]="!(selectedRow.length>=1&& !hasImmutableOnTag() && hasDeleteTagPermission)" (click)="removeTag()">
             <clr-icon shape="trash" size="16"></clr-icon>&nbsp;{{'TAG.REMOVE_TAG' | translate}}
         </button>
         <form #tagForm="ngForm" [hidden]="!newTagformShow" class="label-form stack-block-label">
@@ -46,7 +46,7 @@
                 <span *ngIf="tag.immutable" class="label label-info ml-8">{{'REPOSITORY.IMMUTABLE' | translate}}</span>
             </div>
         </clr-dg-cell>
-        <clr-dg-cell [ngSwitch]="tag.signature != null">
+        <clr-dg-cell [ngSwitch]="tag.signed">
             <div class="cell">
                 <clr-icon shape="check-circle" *ngSwitchCase="true" size="20" class="color-green"></clr-icon>
                 <clr-icon shape="times-circle" *ngSwitchCase="false" size="16" class="color-red"></clr-icon>

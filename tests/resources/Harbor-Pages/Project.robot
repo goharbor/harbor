@@ -248,7 +248,7 @@ Add Labels To Tag
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label
     Capture Page Screenshot  add_${labelName}.png
     Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span
-    Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'Add labels')]
+    Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'Add Labels')]
     Retry Element Click  xpath=//clr-dropdown//div//label[contains(.,'${labelName}')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row//label[contains(.,'${labelName}')]
 

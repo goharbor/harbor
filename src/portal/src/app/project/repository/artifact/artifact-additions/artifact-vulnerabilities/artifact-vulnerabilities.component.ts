@@ -91,7 +91,10 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
         this.hasShowLoading = true;
       }
       this.additionsService.getDetailByLink(this.vulnerabilitiesLink.href)
-        .pipe(finalize(() => this.loading = false))
+        .pipe(finalize(() => {
+          this.loading = false;
+          this.hasShowLoading = false;
+        }))
         .subscribe(
           res  => {
             this.scan_overview = res;

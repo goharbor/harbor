@@ -91,7 +91,7 @@
             [(clrDgSelected)]="selectedRow">
             <clr-dg-action-bar>
                 <button [clrLoading]="scanBtnState" type="button" class="btn  btn-secondary scan-btn"
-                    [disabled]="!(canScanNow() && selectedRowHasVul() && selectedRow.length==1 && hasEnabledScanner && hasScanImagePermission )" (click)="scanNow()">
+                    [disabled]="!(canScanNow() && selectedRowHasVul() && hasEnabledScanner && hasScanImagePermission )" (click)="scanNow()">
                     <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}
                 </button>
 
@@ -110,7 +110,7 @@
                                 (click)="addLabels()">
                                 {{'REPOSITORY.ADD_LABELS' | translate}}
                             </button>
-                            <clr-dropdown-menu>
+                            <clr-dropdown-menu [hidden]="!selectedRow.length">
                                 <div class="filter-grid">
                                     <label
                                         class="dropdown-header">{{'REPOSITORY.ADD_LABEL_TO_IMAGE' | translate}}</label>
@@ -209,16 +209,16 @@
                                             <th class="left tag-header-color">
                                                 {{'REPOSITORY.TAGS_COUNT' | translate | uppercase}}</th>
                                             <th class="left tag-header-color">
-                                                {{'REPOSITORY.PUSH_TIME' | translate | uppercase}}</th>
-                                            <th class="left tag-header-color">
                                                 {{'REPOSITORY.PULL_TIME' | translate | uppercase}}</th>
+                                            <th class="left tag-header-color">
+                                                {{'REPOSITORY.PUSH_TIME' | translate | uppercase}}</th>
                                         </tr>
                                     </thead>
                                     <tbody class="tag-tbody">
                                         <tr class="tag-tr" *ngFor="let tag of artifact.tags">
                                             <td class="left tag-body-color">{{tag.name}}</td>
+                                            <td class="left tag-body-color">{{tag.pull_time === availableTime ? '':(tag.pull_time | date: 'short')}}</td>
                                             <td class="left tag-body-color">{{tag.push_time | date: 'short'}}</td>
-                                            <td class="left tag-body-color">{{tag.pull_time | date: 'short'}}</td>
                                         </tr>
                                     </tbody>
                                 </table>
