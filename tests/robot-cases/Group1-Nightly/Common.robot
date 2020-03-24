@@ -560,39 +560,19 @@ Test Case - Project Quotas Control Under Copy
     Capture Page Screenshot
     Close Browser
 
-Test Case - Create New Webhook
+Test Case - Webhook CRUD
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}
     Go Into Project  project${d}  has_image=${false}
     Switch To Project Webhooks
-    Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d}
-    Close Browser
-
-Test Case - Update Webhook
-   Init Chrome Driver
-   ${d}=    Get Current Date    result_format=%m%s
-   Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-   Create An New Project  project${d}
-   Go Into Project  project${d}  has_image=${false}
-   Switch To Project Webhooks
-   Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d}
-   Sleep  3
-   ${d1}=    Get Current Date
-   Update A Webhook  101.17.109.20  auth_header=auth_header${d1}
-   Close Browser
-
-Test Case - Toggle Enable/Disable State of Webhook
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
-    Switch To Project Webhooks
-    Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d}
-    Sleep  3
-    Toggle Enable/Disable State of Same Webhook
+    # create more than one webhooks
+    Create A New Webhook   webhook${d}   https://test.com
+    Create A New Webhook   webhook2${d}   https://test2.com
+    Update A Webhook    webhook${d}  newWebhook${d}   https://new-test.com
+    Enable/Disable State of Same Webhook   newWebhook${d}
+    Delete A Webhook  newWebhook${d}
     Close Browser
 
 Test Case - Tag Retention

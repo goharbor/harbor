@@ -4,34 +4,36 @@
         <clr-dg-action-bar>
             <div class="clr-row">
                 <div class="clr-col-7">
-                    <button type="button" class="btn  btn-secondary" (click)="newWebhook()">
+                    <button id="new-webhook" type="button" class="btn  btn-secondary" (click)="newWebhook()">
                         <clr-icon shape="plus" size="16"></clr-icon>
                         {{'WEBHOOK.NEW_WEBHOOK' | translate}}
                     </button>
                     <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn  btn-link" clrDropdownTrigger>
-                        <span id="action-scanner">{{'MEMBER.ACTION' | translate}}
+                        <span id="action-webhook">{{'MEMBER.ACTION' | translate}}
                             <clr-icon class="clr-icon" shape="caret down"></clr-icon></span>
                         <clr-dropdown-menu *clrIfOpen>
                             <button clrDropdownItem (click)="switchWebhookStatus()"
                                     [disabled]="!(selectedRow && selectedRow.length === 1)">
-                                    <span *ngIf="selectedRow[0] && !selectedRow[0].enabled">
-                                        <clr-icon class="margin-top-2" size="16" shape="success-standard"></clr-icon>
-                                        <span class="margin-left-10">{{'WEBHOOK.ENABLE' | translate}}</span>
-                                    </span>
-                                <span *ngIf="!(selectedRow[0] && !selectedRow[0].enabled)">
-                                        <clr-icon class="margin-top-2" size="16" shape="ban"></clr-icon>
-                                        <span class="margin-left-10">{{'WEBHOOK.DISABLE' | translate}}</span>
-                                    </span>
+                                  <span id="toggle-webhook">
+                                       <span *ngIf="selectedRow[0] && !selectedRow[0].enabled">
+                                           <clr-icon class="margin-top-2" size="16" shape="success-standard"></clr-icon>
+                                           <span class="margin-left-10">{{'WEBHOOK.ENABLE' | translate}}</span>
+                                       </span>
+                                       <span *ngIf="!(selectedRow[0] && !selectedRow[0].enabled)">
+                                           <clr-icon class="margin-top-2" size="16" shape="ban"></clr-icon>
+                                          <span class="margin-left-10">{{'WEBHOOK.DISABLE' | translate}}</span>
+                                       </span>
+                                  </span>
                             </button>
                             <button clrDropdownItem (click)="editWebhook()"
                                     class="btn  btn-secondary" [disabled]="!(selectedRow && selectedRow.length === 1)">
                                 <clr-icon class="margin-top-0" size="16" shape="pencil"></clr-icon>
-                                <span class="margin-left-10">{{'BUTTON.EDIT' | translate}}</span>
+                                <span id="edit-webhook" class="margin-left-10">{{'BUTTON.EDIT' | translate}}</span>
                             </button>
                             <button clrDropdownItem (click)="deleteWebhook()"
                                     class="btn  btn-secondary" [disabled]="!(selectedRow && selectedRow.length >= 1)">
                                 <clr-icon class="margin-top-0" size="16" shape="times"></clr-icon>
-                                <span id="delete-scanner-action"
+                                <span id="delete-webhook"
                                       class="margin-left-10">{{'BUTTON.DELETE' | translate}}</span>
                             </button>
                         </clr-dropdown-menu>
