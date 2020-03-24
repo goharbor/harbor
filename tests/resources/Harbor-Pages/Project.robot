@@ -160,10 +160,11 @@ Advanced Search Should Display
 # it's not a common keywords, only used into log case.
 Do Log Advanced Search
     Capture Page Screenshot  LogAdvancedSearch.png
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'pull')]
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'push')]
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'create')]
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'delete')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'pull')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'create')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'delete')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'project') and contains(.,'create')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'repository') and contains(.,'delete')]
     Retry Element Click  xpath=//audit-log//div[@class='flex-xs-middle']/button
     Retry Element Click  xpath=//project-detail//audit-log//clr-dropdown/button
     #pull log
@@ -247,13 +248,15 @@ Add Labels To Tag
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label
     Capture Page Screenshot  add_${labelName}.png
     Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span
-    Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'labels')]
+    Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'Add labels')]
     Retry Element Click  xpath=//clr-dropdown//div//label[contains(.,'${labelName}')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row//label[contains(.,'${labelName}')]
 
 Filter Labels In Tags
     [Arguments]  ${labelName1}  ${labelName2}
     Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
+    Retry Element Click  xpath=//clr-main-container//artifact-list-tab//clr-select-container//select
+    Retry Element Click  xpath=//clr-main-container//artifact-list-tab//clr-select-container//select/option[@value='labels']
     Retry Wait Until Page Contains Element  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName1}')]
     Retry Element Click  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName1}')]
     Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon

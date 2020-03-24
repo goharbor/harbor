@@ -40,7 +40,7 @@ ${repo_retag_confirm_dlg}  css=${modal-dialog}
 ${repo_delete_on_card_view_btn}  //clr-modal//button[contains(.,'DELETE')]
 ${delete_btn}  //button[contains(.,'Delete')]
 ${repo_delete_btn}  xpath=//hbr-repository-gridview//button[contains(.,'Delete')]
-${project_delete_btn}  xpath=//list-project//clr-datagrid//button[contains(.,'Delete')]
+${project_delete_btn}  xpath=//button[@id='delete-project']
 ${tag_delete_btn}  xpath=//tag-repository//clr-datagrid//button[contains(.,'Delete')]
 ${user_delete_btn}  xpath=/clr-dropdown-menu//button[contains(.,'Delete')]
 ${repo_search_icon}  xpath=//hbr-filter//clr-icon
