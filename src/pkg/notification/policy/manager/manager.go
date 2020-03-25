@@ -9,6 +9,7 @@ import (
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/notifier/model"
 )
 
 // DefaultManager ...
@@ -94,7 +95,7 @@ func (m *DefaultManager) Delete(policyID int64) error {
 func (m *DefaultManager) Test(policy *models.NotificationPolicy) error {
 	for _, target := range policy.Targets {
 		switch target.Type {
-		case "http":
+		case model.NotifyTypeHTTP, model.NotifyTypeSlack:
 			return m.policyHTTPTest(target.Address, target.SkipCertVerify)
 		default:
 			return fmt.Errorf("invalid policy target type: %s", target.Type)
