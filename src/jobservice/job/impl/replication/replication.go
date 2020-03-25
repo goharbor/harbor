@@ -50,6 +50,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/helmhub"
 	// register the GitLab adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/gitlab"
+	// register the TencentCloud TCR adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/tencentcr"
 )
 
 // Replication implements the job interface
