@@ -54,6 +54,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/dtr"
 	// register the Artifact Hub adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/artifacthub"
+	// register the TencentCloud TCR adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/tencentcr"
 )
 
 // Replication implements the job interface

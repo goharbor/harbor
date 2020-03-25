@@ -477,6 +477,14 @@ github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 github.com/stretchr/testify/require
 github.com/stretchr/testify/suite
+# github.com/tencentcloud/tencentcloud-sdk-go v1.0.62
+## explicit
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/http
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/regions
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924
 # github.com/theupdateframework/notary v0.6.1
 ## explicit
 github.com/theupdateframework/notary
