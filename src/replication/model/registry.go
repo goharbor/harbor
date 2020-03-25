@@ -32,6 +32,7 @@ const (
 	RegistryTypeQuay             RegistryType = "quay"
 	RegistryTypeGitLab           RegistryType = "gitlab"
 	RegistryTypeDTR              RegistryType = "dtr"
+	RegistryTypeTencentTcr       RegistryType = "tencent-tcr"
 
 	RegistryTypeHelmHub     RegistryType = "helm-hub"
 	RegistryTypeArtifactHub RegistryType = "artifact-hub"
