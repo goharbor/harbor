@@ -162,6 +162,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   openSelectFilterPiece = false;
   // could Pagination filter
   filters: string[];
+
+  scanFiinishArtifactLength: number = 0;
+  onScanArtifactsLength: number = 0;
+
   constructor(
     private errorHandlerService: ErrorHandler,
     private userPermissionService: UserPermissionService,
@@ -731,6 +735,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         forkJoin(...this.deleteArtifactobservableLists).subscribe((deleteResult) => {
           let deleteSuccessList = [];
           let deleteErrorList = [];
+          this.deleteArtifactobservableLists = [];
           deleteResult.forEach(result => {
             if (!result) {
               // delete success
@@ -739,9 +744,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               deleteErrorList.push(result);
             }
           });
+          this.selectedRow = [];
           if (deleteSuccessList.length === deleteResult.length) {
             // all is success
-            this.selectedRow = [];
             let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
             this.clrLoad(st);
           } else if (deleteErrorList.length === deleteResult.length) {
@@ -752,7 +757,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             // some artifact delete success but it has error delete things
             this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1].error);
             // if delete one success  refresh list
-            this.selectedRow = [];
             let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
             this.clrLoad(st);
           }
@@ -871,10 +875,16 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
   // Trigger scan
   scanNow(): void {
-    if (this.selectedRow && this.selectedRow.length === 1) {
-      this.onSendingScanCommand = true;
-      this.channel.publishScanEvent(this.repoName + "/" + this.selectedRow[0].digest);
+    if (!this.selectedRow.length) {
+      return;
     }
+    this.scanFiinishArtifactLength = 0;
+    this.onScanArtifactsLength = this.selectedRow.length;
+    this.onSendingScanCommand = true;
+    this.selectedRow.forEach((data: any) => {
+      let digest = data.digest;
+      this.channel.publishScanEvent(this.repoName + "/" + digest);
+    });
   }
   selectedRowHasVul(): boolean {
     return !!(this.selectedRow
@@ -886,7 +896,11 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     return !!(artifact && artifact.addition_links && artifact.addition_links[ADDITIONS.VULNERABILITIES]);
   }
   submitFinish(e: boolean) {
-    this.onSendingScanCommand = e;
+    this.scanFiinishArtifactLength += 1;
+    // all selected scan action has start
+    if (this.scanFiinishArtifactLength === this.onScanArtifactsLength) {
+      this.onSendingScanCommand = e;
+    }
   }
   // pull command
   onCpError($event: any): void {

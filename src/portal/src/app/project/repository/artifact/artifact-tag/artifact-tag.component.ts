@@ -17,7 +17,10 @@ import { errorHandler } from "../../../../../lib/utils/shared/shared.utils";
 import { ArtifactFront as Artifact } from "../artifact";
 import { ArtifactService } from '../../../../../../ng-swagger-gen/services/artifact.service';
 import { Tag } from '../../../../../../ng-swagger-gen/models/tag';
+import {
 
+  UserPermissionService, USERSTATICPERMISSION
+} from "../../../../../lib/services";
 class InitTag {
   name = "";
 }
@@ -30,6 +33,7 @@ class InitTag {
 export class ArtifactTagComponent implements OnInit {
   @Input() artifactDetails: Artifact;
   @Input() projectName: string;
+  @Input() projectId: number;
   @Input() repositoryName: string;
   @Output() refreshArtifact = new EventEmitter();
   newTagName = new InitTag();
@@ -43,15 +47,25 @@ export class ArtifactTagComponent implements OnInit {
   availableTime = AVAILABLE_TIME;
   @ViewChild("confirmationDialog", { static: false })
   confirmationDialog: ConfirmationDialogComponent;
+  hasDeleteTagPermission: boolean;
   constructor(
     private operationService: OperationService,
     private artifactService: ArtifactService,
     private translateService: TranslateService,
+    private userPermissionService: UserPermissionService,
     private errorHandlerService: ErrorHandler
 
   ) { }
-
   ngOnInit() {
+    this.getImagePermissionRule(this.projectId);
+  }
+  getImagePermissionRule(projectId: number): void {
+    const permissions = [
+      { resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE }
+    ];
+    this.userPermissionService.hasProjectPermissions(this.projectId, permissions).subscribe((results: Array<boolean>) => {
+      this.hasDeleteTagPermission = results[0];
+    }, error => this.errorHandlerService.error(error));
   }
 
   addTag() {
@@ -166,4 +180,8 @@ export class ArtifactTagComponent implements OnInit {
     this.openTag = !this.openTag;
     this.newTagformShow = false;
   }
+  hasImmutableOnTag(): boolean {
+    return this.selectedRow.some((artifact) => artifact.immutable);
+  }
+
 }

@@ -680,7 +680,7 @@
         "ADD_LABEL_TO_IMAGE": "Add labels to this image",
         "FILTER_BY_LABEL": "Filter images by label",
         "FILTER_ARTIFACT_BY_LABEL": "Filter actifact by label",
-        "ADD_LABELS": "Add labels",
+        "ADD_LABELS": "Add Labels",
         "RETAG": "Copy",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
