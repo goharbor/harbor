@@ -8,10 +8,7 @@ import (
 	"regexp"
 
 	"github.com/docker/distribution/reference"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/artifact"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/opencontainers/go-digest"
 )
@@ -64,41 +61,4 @@ func CopyResp(rec *httptest.ResponseRecorder, rw http.ResponseWriter) {
 	}
 	rw.WriteHeader(rec.Result().StatusCode)
 	rw.Write(rec.Body.Bytes())
-}
-
-// PolicyChecker checks the policy of a project by project name, to determine if it's needed to check the image's status under this project.
-type PolicyChecker interface {
-	// contentTrustEnabled returns whether a project has enabled content trust.
-	ContentTrustEnabled(name string) bool
-}
-
-// PmsPolicyChecker ...
-type PmsPolicyChecker struct {
-	pm promgr.ProjectManager
-}
-
-// ContentTrustEnabled ...
-func (pc PmsPolicyChecker) ContentTrustEnabled(name string) bool {
-	project, err := pc.pm.Get(name)
-	if err != nil {
-		log.Errorf("Unexpected error when getting the project, error: %v", err)
-		return true
-	}
-	if project == nil {
-		log.Debugf("project %s not found", name)
-		return false
-	}
-	return project.ContentTrustEnabled()
-}
-
-// NewPMSPolicyChecker returns an instance of an pmsPolicyChecker
-func NewPMSPolicyChecker(pm promgr.ProjectManager) PolicyChecker {
-	return &PmsPolicyChecker{
-		pm: pm,
-	}
-}
-
-// GetPolicyChecker ...
-func GetPolicyChecker() PolicyChecker {
-	return NewPMSPolicyChecker(config.GlobalProjectMgr)
 }
