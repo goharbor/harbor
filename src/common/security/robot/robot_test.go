@@ -44,12 +44,12 @@ func TestGetPolicies(t *testing.T) {
 
 func TestNewRobot(t *testing.T) {
 	policies := []*types.Policy{
-		{Resource: "/project/1/repository", Action: "pull"},
+		{Resource: "/project/1/repository", Action: "push"},
 		{Resource: "/project/1/repository", Action: "scanner-pull"},
 		{Resource: "/project/library/repository", Action: "pull"},
 		{Resource: "/project/library/repository", Action: "push"},
 	}
 
 	robot := NewRobot("test", rbac.NewProjectNamespace(1), policies)
-	assert.Len(t, robot.GetPolicies(), 2)
+	assert.Len(t, robot.GetPolicies(), 3)
 }

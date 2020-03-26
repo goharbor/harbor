@@ -1,6 +1,7 @@
 package robot
 
 import (
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -40,8 +41,11 @@ func filterPolicies(namespace types.Namespace, policies []*types.Policy) []*type
 	for _, policy := range policies {
 		if types.ResourceAllowedInNamespace(policy.Resource, namespace) {
 			results = append(results, policy)
+			// give the PUSH action a pull access
+			if policy.Action == rbac.ActionPush {
+				results = append(results, &types.Policy{Resource: policy.Resource, Action: rbac.ActionPull})
+			}
 		}
 	}
-
 	return results
 }
