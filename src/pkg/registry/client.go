@@ -53,6 +53,7 @@ var (
 		v1.MediaTypeImageManifest,
 		schema2.MediaTypeManifest,
 		schema1.MediaTypeSignedManifest,
+		schema1.MediaTypeManifest,
 	}
 )
 
@@ -473,7 +474,7 @@ func (c *client) Copy(srcRepo, srcRef, dstRepo, dstRef string, override bool) er
 		// manifest or index
 		case v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList,
 			v1.MediaTypeImageManifest, schema2.MediaTypeManifest,
-			schema1.MediaTypeSignedManifest:
+			schema1.MediaTypeSignedManifest, schema1.MediaTypeManifest:
 			if err = c.Copy(srcRepo, digest, dstRepo, digest, false); err != nil {
 				return err
 			}
