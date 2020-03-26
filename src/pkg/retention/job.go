@@ -18,12 +18,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
@@ -114,22 +114,26 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	logResults(myLogger, allCandidates, results)
 
 	// Save retain and total num in DB
-	return saveRetainNum(ctx, results, allCandidates)
+	return saveRetainNum(ctx, results, allCandidates, isDryRun)
 }
 
-func saveRetainNum(ctx job.Context, results []*art.Result, allCandidates []*art.Candidate) error {
-	var delNum int
+func saveRetainNum(ctx job.Context, results []*selector.Result, allCandidates []*selector.Candidate, isDryRun bool) error {
+	var realDelete []*selector.Result
 	for _, r := range results {
 		if r.Error == nil {
-			delNum++
+			realDelete = append(realDelete, r)
 		}
 	}
 	retainObj := struct {
-		Total    int `json:"total"`
-		Retained int `json:"retained"`
+		Total    int                `json:"total"`
+		Retained int                `json:"retained"`
+		DryRun   bool               `json:"dry_run"`
+		Deleted  []*selector.Result `json:"deleted"`
 	}{
 		Total:    len(allCandidates),
-		Retained: len(allCandidates) - delNum,
+		Retained: len(allCandidates) - len(realDelete),
+		DryRun:   isDryRun,
+		Deleted:  realDelete,
 	}
 	c, err := json.Marshal(retainObj)
 	if err != nil {
@@ -139,7 +143,7 @@ func saveRetainNum(ctx job.Context, results []*art.Result, allCandidates []*art.
 	return nil
 }
 
-func logResults(logger logger.Interface, all []*art.Candidate, results []*art.Result) {
+func logResults(logger logger.Interface, all []*selector.Candidate, results []*selector.Result) {
 	hash := make(map[string]error, len(results))
 	for _, r := range results {
 		if r.Target != nil {
@@ -147,10 +151,10 @@ func logResults(logger logger.Interface, all []*art.Candidate, results []*art.Re
 		}
 	}
 
-	op := func(c *art.Candidate) string {
+	op := func(c *selector.Candidate) string {
 		if e, exists := hash[c.Hash()]; exists {
 			if e != nil {
-				if _, ok := e.(*art.ImmutableError); ok {
+				if _, ok := e.(*selector.ImmutableError); ok {
 					return actionMarkImmutable
 				}
 				return actionMarkError
@@ -169,7 +173,7 @@ func logResults(logger logger.Interface, all []*art.Candidate, results []*art.Re
 	for _, c := range all {
 		row := []string{
 			c.Digest,
-			c.Tag,
+			strings.Join(c.Tags, ","),
 			c.Kind,
 			strings.Join(c.Labels, ","),
 			t(c.PushedTime),
@@ -198,8 +202,8 @@ func logResults(logger logger.Interface, all []*art.Candidate, results []*art.Re
 	}
 }
 
-func arn(art *art.Candidate) string {
-	return fmt.Sprintf("%s/%s:%s", art.Namespace, art.Repository, art.Tag)
+func arn(art *selector.Candidate) string {
+	return fmt.Sprintf("%s/%s:%s", art.Namespace, art.Repository, art.Digest)
 }
 
 func t(tm int64) string {
@@ -241,7 +245,7 @@ func getParamDryRun(params job.Parameters) (bool, error) {
 	return dryRun, nil
 }
 
-func getParamRepo(params job.Parameters) (*art.Repository, error) {
+func getParamRepo(params job.Parameters) (*selector.Repository, error) {
 	v, ok := params[ParamRepo]
 	if !ok {
 		return nil, errors.Errorf("missing parameter: %s", ParamRepo)
@@ -252,7 +256,7 @@ func getParamRepo(params job.Parameters) (*art.Repository, error) {
 		return nil, errors.Errorf("invalid parameter: %s", ParamRepo)
 	}
 
-	repo := &art.Repository{}
+	repo := &selector.Repository{}
 	if err := repo.FromJSON(repoJSON); err != nil {
 		return nil, errors.Wrap(err, "parse repository from JSON")
 	}

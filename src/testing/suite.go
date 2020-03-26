@@ -15,15 +15,24 @@
 package testing
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"math/rand"
+	"net/http"
+	"net/http/httptest"
 	"strconv"
+	"sync"
 	"time"
 
+	o "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
+	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -31,15 +40,34 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+var (
+	once sync.Once
+)
+
 // Suite ...
 type Suite struct {
 	suite.Suite
+	ClearTables []string
+	ClearSQLs   []string
 }
 
 // SetupSuite ...
 func (suite *Suite) SetupSuite() {
-	config.Init()
-	dao.PrepareTestForPostgresSQL()
+	once.Do(func() {
+		config.Init()
+		dao.PrepareTestForPostgresSQL()
+	})
+}
+
+// TearDownSuite ...
+func (suite *Suite) TearDownSuite() {
+	for _, sql := range suite.ClearSQLs {
+		suite.ExecSQL(sql)
+	}
+
+	for _, table := range suite.ClearTables {
+		dao.ClearTable(table)
+	}
 }
 
 // RandString ...
@@ -55,6 +83,16 @@ func (suite *Suite) RandString(n int, letters ...string) string {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
 	return string(b)
+}
+
+// Digest ...
+func (suite *Suite) Digest() digest.Digest {
+	return digest.FromString(suite.RandString(128))
+}
+
+// DigestString ...
+func (suite *Suite) DigestString() string {
+	return suite.Digest().String()
 }
 
 // WithProject ...
@@ -79,6 +117,49 @@ func (suite *Suite) WithProject(f func(int64, string), projectNames ...string) {
 	}()
 
 	f(projectID, projectName)
+}
+
+// Context ...
+func (suite *Suite) Context() context.Context {
+	return orm.NewContext(context.TODO(), o.NewOrm())
+}
+
+// NewRequest ...
+func (suite *Suite) NewRequest(method, target string, body io.Reader, queries ...map[string]string) *http.Request {
+	req := httptest.NewRequest(method, target, body)
+
+	if len(queries) > 0 {
+		q := req.URL.Query()
+		for key, value := range queries[0] {
+			q.Add(key, value)
+		}
+		req.URL.RawQuery = q.Encode()
+	}
+
+	return req.WithContext(suite.Context())
+}
+
+// NextHandler ...
+func (suite *Suite) NextHandler(statusCode int, headers map[string]string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(statusCode)
+		for key, value := range headers {
+			w.Header().Set(key, value)
+		}
+	})
+}
+
+// ExecSQL ...
+func (suite *Suite) ExecSQL(query string, args ...interface{}) {
+	o := o.NewOrm()
+
+	_, err := o.Raw(query, args...).Exec()
+	suite.Nil(err)
+}
+
+// IsNotFoundErr ...
+func (suite *Suite) IsNotFoundErr(err error) bool {
+	return suite.True(ierror.IsNotFoundErr(err))
 }
 
 // AssertResourceUsage ...

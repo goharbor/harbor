@@ -1,9 +1,9 @@
 import { TestBed, inject } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MessageHandlerService } from './message-handler.service';
-import { UserPermissionService } from '@harbor/ui';
 import { MessageService } from '../../global-message/message.service';
 import { SessionService } from '../../shared/session.service';
+import { UserPermissionService } from "../../../lib/services";
 
 describe('MessageHandlerService', () => {
   beforeEach(() => {

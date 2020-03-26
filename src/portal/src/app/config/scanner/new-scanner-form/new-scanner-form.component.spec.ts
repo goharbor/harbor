@@ -26,7 +26,7 @@ describe('NewScannerFormComponent', () => {
       return of([mockScanner1]).pipe(delay(500));
     }
   };
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
@@ -41,9 +41,8 @@ describe('NewScannerFormComponent', () => {
           // open auto detect
         { provide: ComponentFixtureAutoDetect, useValue: true }
       ]
-    })
-    .compileComponents();
-  }));
+    });
+  });
   beforeEach(() => {
     fixture = TestBed.createComponent(NewScannerFormComponent);
     component = fixture.componentInstance;
@@ -67,12 +66,12 @@ describe('NewScannerFormComponent', () => {
     nameInput.dispatchEvent(new Event('input'));
     nameInput.blur();
     nameInput.dispatchEvent(new Event('blur'));
-    let el = null;
-    setTimeout(() => {
-      el = fixture.nativeElement.querySelector('#name-error');
-      expect(el).toBeTruthy();
-    }, 20000);
     tick(20000);
+    const el = fixture.nativeElement.querySelector('#name-error');
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+      expect(el).toBeTruthy();
+    });
   }));
   it('name should be valid', fakeAsync(() => {
     let nameInput = fixture.nativeElement.querySelector('#scanner-name');
@@ -80,12 +79,12 @@ describe('NewScannerFormComponent', () => {
     nameInput.dispatchEvent(new Event('input'));
     nameInput.blur();
     nameInput.dispatchEvent(new Event('blur'));
-    let el = null;
-    setTimeout(() => {
-      el = fixture.nativeElement.querySelector('#name-error');
-      expect(el).toBeFalsy();
-    }, 20000);
     tick(20000);
+    const el = fixture.nativeElement.querySelector('#name-error');
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+      expect(el).toBeFalsy();
+    });
   }));
 
   it('endpoint url should be valid', fakeAsync(() => {
@@ -96,12 +95,12 @@ describe('NewScannerFormComponent', () => {
     urlInput.dispatchEvent(new Event('input'));
     urlInput.blur();
     urlInput.dispatchEvent(new Event('blur'));
-    let el = null;
-    setTimeout(() => {
-       el = fixture.nativeElement.querySelector('#endpoint-error');
-    }, 20000);
     tick(20000);
-    expect(el).toBeFalsy();
+    const el = fixture.nativeElement.querySelector('#endpoint-error');
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+      expect(el).toBeFalsy();
+    });
   }));
 
   it('auth should be valid', () => {

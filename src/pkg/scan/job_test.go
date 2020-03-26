@@ -25,6 +25,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
+	mocktesting "github.com/goharbor/harbor/src/testing/mock"
+	v1testing "github.com/goharbor/harbor/src/testing/pkg/scan/rest/v1"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -35,7 +37,7 @@ type JobTestSuite struct {
 	suite.Suite
 
 	defaultClientPool v1.ClientPool
-	mcp               *MockClientPool
+	mcp               *v1testing.ClientPool
 }
 
 // TestJob is the entry of JobTestSuite.
@@ -45,7 +47,7 @@ func TestJob(t *testing.T) {
 
 // SetupSuite sets up test env for JobTestSuite.
 func (suite *JobTestSuite) SetupSuite() {
-	mcp := &MockClientPool{}
+	mcp := &v1testing.ClientPool{}
 	suite.defaultClientPool = v1.DefaultClientPool
 	v1.DefaultClientPool = mcp
 
@@ -96,7 +98,7 @@ func (suite *JobTestSuite) TestJob() {
 	jp[JobParameterRequest] = sData
 	jp[JobParameterMimes] = mimeTypes
 
-	mc := &MockClient{}
+	mc := &v1testing.Client{}
 	sre := &v1.ScanResponse{
 		ID: "scan_id",
 	}
@@ -127,7 +129,7 @@ func (suite *JobTestSuite) TestJob() {
 	require.NoError(suite.T(), err)
 
 	mc.On("GetScanReport", "scan_id", v1.MimeTypeNativeReport).Return(string(jRep), nil)
-	suite.mcp.On("Get", r).Return(mc, nil)
+	mocktesting.OnAnything(suite.mcp, "Get").Return(mc, nil)
 
 	crp := &CheckInReport{
 		Digest:           sr.Artifact.Digest,
@@ -254,53 +256,4 @@ func (mjl *MockJobLogger) Fatal(v ...interface{}) {
 // Fatalf ...
 func (mjl *MockJobLogger) Fatalf(format string, v ...interface{}) {
 	logger.Fatalf(format, v...)
-}
-
-// MockClientPool mocks the client pool
-type MockClientPool struct {
-	mock.Mock
-}
-
-// Get v1 client
-func (mcp *MockClientPool) Get(r *scanner.Registration) (v1.Client, error) {
-	args := mcp.Called(r)
-	c := args.Get(0)
-	if c != nil {
-		return c.(v1.Client), nil
-	}
-
-	return nil, args.Error(1)
-}
-
-// MockClient mocks the v1 client
-type MockClient struct {
-	mock.Mock
-}
-
-// GetMetadata ...
-func (mc *MockClient) GetMetadata() (*v1.ScannerAdapterMetadata, error) {
-	args := mc.Called()
-	s := args.Get(0)
-	if s != nil {
-		return s.(*v1.ScannerAdapterMetadata), nil
-	}
-
-	return nil, args.Error(1)
-}
-
-// SubmitScan ...
-func (mc *MockClient) SubmitScan(req *v1.ScanRequest) (*v1.ScanResponse, error) {
-	args := mc.Called(req)
-	sr := args.Get(0)
-	if sr != nil {
-		return sr.(*v1.ScanResponse), nil
-	}
-
-	return nil, args.Error(1)
-}
-
-// GetScanReport ...
-func (mc *MockClient) GetScanReport(scanRequestID, reportMIMEType string) (string, error) {
-	args := mc.Called(scanRequestID, reportMIMEType)
-	return args.String(0), args.Error(1)
 }

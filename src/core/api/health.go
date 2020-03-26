@@ -131,7 +131,8 @@ func HTTPStatusCodeHealthChecker(method string, url string, header http.Header,
 		}
 
 		client := httputil.NewClient(&http.Client{
-			Timeout: timeout,
+			Transport: httputil.GetHTTPTransport(httputil.SecureTransport),
+			Timeout:   timeout,
 		})
 		resp, err := client.Do(req)
 		if err != nil {

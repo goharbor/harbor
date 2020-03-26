@@ -1,6 +1,8 @@
 #!/bin/bash
+set -x
+set -e
 
-IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
+IP=$(hostname -I | awk '{print $1}')
 docker pull hello-world
 docker pull busybox
 docker login -u admin -p Harbor12345 $IP:5000  

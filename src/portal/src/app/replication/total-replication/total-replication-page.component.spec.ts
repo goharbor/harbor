@@ -2,7 +2,6 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TotalReplicationPageComponent } from './total-replication-page.component';
 import {Router, ActivatedRoute} from "@angular/router";
-import {ReplicationRule} from "@harbor/ui";
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from '@clr/angular';
@@ -10,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import {SessionService} from "../../shared/session.service";
-import {AppConfigService} from "../../app-config.service";
+import {AppConfigService} from "../../services/app-config.service";
 
 describe('TotalReplicationPageComponent', () => {
     let component: TotalReplicationPageComponent;

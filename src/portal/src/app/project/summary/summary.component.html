@@ -1,4 +1,4 @@
-<div class="summary display-flex" *ngIf="summaryInformation">
+<div class="summary summary-dark display-flex" *ngIf="summaryInformation">
   <div class="summary-left">
     <div class="display-flex project-detail pt-1">
       <h5 class="mt-0 width-7-5">{{'SUMMARY.PROJECT_REPOSITORY' | translate}}</h5>
@@ -23,7 +23,7 @@
       </ul>
     </div>
   </div>
-  <div *ngIf="showQuotaInfo" class="summary-right pt-1">
+  <div *ngIf="showQuotaInfo && summaryInformation?.quota" class="summary-right pt-1">
     <div class="display-flex  project-detail">
       <h5 class="mt-0">{{'SUMMARY.PROJECT_QUOTAS' | translate}}</h5>
       <div class="ml-1">

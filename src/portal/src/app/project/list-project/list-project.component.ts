@@ -1,5 +1,3 @@
-
-import {forkJoin as observableForkJoin,  Subscription, forkJoin } from "rxjs";
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,31 +11,30 @@ import {forkJoin as observableForkJoin,  Subscription, forkJoin } from "rxjs";
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import { Subscription, forkJoin } from "rxjs";
 import {
     Component,
     Output,
     OnDestroy, EventEmitter
 } from "@angular/core";
 import { Router } from "@angular/router";
-
-import { Comparator, State } from "../../../../lib/src/service/interface";
+import { Comparator, ProjectService, State } from "../../../lib/services";
 import {TranslateService} from "@ngx-translate/core";
 import { RoleInfo, ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
-
-import { errorHandler as errorHandFn, calculatePage , operateChanges, OperateInfo, OperationService
-    , OperationState, CustomComparator, doFiltering, doSorting, ProjectService } from "@harbor/ui";
-
 import { SessionService } from "../../shared/session.service";
 import { StatisticHandler } from "../../shared/statictics/statistic-handler.service";
 import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
 import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
-import { AppConfigService } from "../../app-config.service";
-
+import { AppConfigService } from "../../services/app-config.service";
 import { Project } from "../project";
 import { map, catchError, finalize } from "rxjs/operators";
 import { throwError as observableThrowError } from "rxjs";
+import { calculatePage, CustomComparator, doFiltering, doSorting } from "../../../lib/utils/utils";
+import { OperationService } from "../../../lib/components/operation/operation.service";
+import { operateChanges, OperateInfo, OperationState } from "../../../lib/components/operation/operate";
+import { errorHandler } from "../../../lib/utils/shared/shared.utils";
 
 @Component({
     selector: "list-project",
@@ -236,7 +233,7 @@ export class ListProjectComponent implements OnDestroy {
                     });
                 }), catchError(
                 error => {
-                    const message = errorHandFn(error);
+                    const message = errorHandler(error);
                     this.translateService.get(message).subscribe(res =>
                         operateChanges(operMessage, OperationState.failure, res)
                     );

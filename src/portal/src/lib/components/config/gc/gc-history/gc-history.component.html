@@ -1,0 +1,23 @@
+<h5 class="history-header" id="history-header">{{'GC.JOB_HISTORY' | translate}}</h5>
+<span class="refresh-btn" (click)="getJobs()">
+  <clr-icon shape="refresh"></clr-icon>
+</span>
+<clr-datagrid [clrDgLoading]="loading">
+  <clr-dg-column>{{'GC.JOB_ID' | translate}}</clr-dg-column>
+  <clr-dg-column>{{'GC.TRIGGER_TYPE' | translate}}</clr-dg-column>
+  <clr-dg-column>{{'STATUS' | translate}}</clr-dg-column>
+  <clr-dg-column>{{'START_TIME' | translate}}</clr-dg-column>
+  <clr-dg-column>{{'UPDATE_TIME' | translate}}</clr-dg-column>
+  <clr-dg-column>{{'LOGS' | translate}}</clr-dg-column>
+  <clr-dg-row *ngFor="let job of jobs" [clrDgItem]='job'>
+    <clr-dg-cell>{{job.id }}</clr-dg-cell>
+    <clr-dg-cell>{{(job.type ? 'SCHEDULE.'+ job.type.toUpperCase() : '') | translate }}</clr-dg-cell>
+    <clr-dg-cell>{{job.status.toUpperCase() | translate}}</clr-dg-cell>
+    <clr-dg-cell>{{job.createTime | date:'medium'}}</clr-dg-cell>
+    <clr-dg-cell>{{job.updateTime | date:'medium'}}</clr-dg-cell>
+    <clr-dg-cell>
+      <a *ngIf="job.status.toLowerCase() === 'finished' || job.status.toLowerCase() === 'error'" target="_blank" [href]="getLogLink(job.id)"><clr-icon shape="list"></clr-icon></a>
+    </clr-dg-cell>
+  </clr-dg-row>
+  <clr-dg-footer>{{'GC.LATEST_JOBS' | translate :{param: jobs.length} }}</clr-dg-footer>
+</clr-datagrid>

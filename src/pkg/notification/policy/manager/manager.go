@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,8 +9,6 @@ import (
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	notifierModel "github.com/goharbor/harbor/src/core/notifier/model"
-	"github.com/goharbor/harbor/src/pkg/notification/model"
 )
 
 // DefaultManager ...
@@ -95,17 +92,10 @@ func (m *DefaultManager) Delete(policyID int64) error {
 
 // Test the specified notification policy, just test for network connection without request body
 func (m *DefaultManager) Test(policy *models.NotificationPolicy) error {
-	p, err := json.Marshal(notifierModel.Payload{
-		Type: model.EventTypeTestEndpoint,
-	})
-	if err != nil {
-		return err
-	}
-
 	for _, target := range policy.Targets {
 		switch target.Type {
 		case "http":
-			return m.policyHTTPTest(target.Address, target.SkipCertVerify, p)
+			return m.policyHTTPTest(target.Address, target.SkipCertVerify)
 		default:
 			return fmt.Errorf("invalid policy target type: %s", target.Type)
 		}
@@ -113,16 +103,15 @@ func (m *DefaultManager) Test(policy *models.NotificationPolicy) error {
 	return nil
 }
 
-func (m *DefaultManager) policyHTTPTest(address string, skipCertVerify bool, p []byte) error {
+func (m *DefaultManager) policyHTTPTest(address string, skipCertVerify bool) error {
 	req, err := http.NewRequest(http.MethodPost, address, nil)
 	if err != nil {
 		return err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-
 	client := http.Client{
-		Transport: commonhttp.GetHTTPTransport(skipCertVerify),
+		Transport: commonhttp.GetHTTPTransportByInsecure(skipCertVerify),
 	}
 
 	resp, err := client.Do(req)

@@ -1,6 +1,4 @@
-import { Type } from '@angular/core';
-
-import { Label } from '@harbor/ui';
+import { Label } from "../../../lib/services";
 
 export interface HelmChartSearchResultItem {
     Name: string;

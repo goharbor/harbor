@@ -59,8 +59,10 @@ def render_nginx_template(config_dict):
             nginx_conf,
             uid=DEFAULT_UID,
             gid=DEFAULT_GID,
+            https_redirect='$host' + ('https_port' in config_dict and (":" + str(config_dict['https_port'])) or ""),
             ssl_cert=SSL_CERT_PATH,
-            ssl_cert_key=SSL_CERT_KEY_PATH)
+            ssl_cert_key=SSL_CERT_KEY_PATH,
+            internal_tls=config_dict['internal_tls'])
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS
 
     else:
@@ -68,7 +70,8 @@ def render_nginx_template(config_dict):
             nginx_http_conf_template,
             nginx_conf,
             uid=DEFAULT_UID,
-            gid=DEFAULT_GID)
+            gid=DEFAULT_GID,
+            internal_tls=config_dict['internal_tls'])
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTP
     copy_nginx_location_configs_if_exist(nginx_template_ext_dir, nginx_confd_dir, location_file_pattern)
 

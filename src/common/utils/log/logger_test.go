@@ -32,10 +32,10 @@ func contains(t *testing.T, str string, lvl string, line, msg string) bool {
 
 func TestSetx(t *testing.T) {
 	logger := New(nil, nil, WarningLevel)
-	logger.SetOutput(os.Stdout)
+	logger.setOutput(os.Stdout)
 	fmt := NewTextFormatter()
-	logger.SetFormatter(fmt)
-	logger.SetLevel(DebugLevel)
+	logger.setFormatter(fmt)
+	logger.setLevel(DebugLevel)
 
 	if logger.out != os.Stdout {
 		t.Errorf("unexpected outer: %v != %v", logger.out, os.Stdout)
@@ -47,6 +47,25 @@ func TestSetx(t *testing.T) {
 
 	if logger.lvl != DebugLevel {
 		t.Errorf("unexpected log level: %v != %v", logger.lvl, DebugLevel)
+	}
+}
+
+func TestWithFields(t *testing.T) {
+	buf := enter()
+	defer exit()
+
+	logger.WithFields(Fields{"action": "create"}).Info(message)
+
+	str := buf.String()
+
+	var (
+		expectedLevel = InfoLevel.string()
+		expectLine    = `[action="create"]`
+		expectMsg     = "message"
+	)
+
+	if !contains(t, str, expectedLevel, expectLine, expectMsg) {
+		t.Errorf("unexpected message: %s, expected level: %s, expected line: %s, expected message: %s", str, expectedLevel, expectLine, expectMsg)
 	}
 }
 
@@ -149,7 +168,7 @@ func TestWarningf(t *testing.T) {
 func TestError(t *testing.T) {
 	var (
 		expectedLevel = ErrorLevel.string()
-		expectLine    = "logger_test.go:159"
+		expectLine    = "logger_test.go:178"
 		expectMsg     = "message"
 	)
 
@@ -167,7 +186,7 @@ func TestError(t *testing.T) {
 func TestErrorf(t *testing.T) {
 	var (
 		expectedLevel = ErrorLevel.string()
-		expectLine    = "logger_test.go:177"
+		expectLine    = "logger_test.go:196"
 		expectMsg     = "message"
 	)
 
@@ -186,11 +205,11 @@ func enter() *bytes.Buffer {
 	b := make([]byte, 0, 32)
 	buf := bytes.NewBuffer(b)
 
-	logger.SetOutput(buf)
+	logger.setOutput(buf)
 
 	return buf
 }
 
 func exit() {
-	logger.SetOutput(os.Stdout)
+	logger.setOutput(os.Stdout)
 }

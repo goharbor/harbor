@@ -13,11 +13,12 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-
 import { SessionService } from "../shared/session.service";
 import { Project } from "../project/project";
-import { ReplicationComponent, UserPermissionService, USERSTATICPERMISSION, ErrorHandler, ProjectService } from "@harbor/ui";
 import { forkJoin } from 'rxjs';
+import { ReplicationComponent } from "../../lib/components/replication/replication.component";
+import { ProjectService, UserPermissionService, USERSTATICPERMISSION } from "../../lib/services";
+import { ErrorHandler } from "../../lib/utils/error-handler";
 
 @Component({
   selector: 'replication',

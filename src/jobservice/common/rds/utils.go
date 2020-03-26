@@ -2,10 +2,11 @@ package rds
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
-	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"github.com/pkg/errors"
 	"time"
+
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/gomodule/redigo/redis"
+	"github.com/pkg/errors"
 )
 
 // ErrNoElements is a pre defined error to describe the case that no elements got

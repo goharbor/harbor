@@ -28,20 +28,13 @@ import (
 
 func TestMain(m *testing.M) {
 	test.InitDatabaseFromEnv()
-	err := config.Init()
-	if err != nil {
-		panic(err)
-	}
+	config.Init()
 
-	err = dao.ClearTable("project_member")
+	err := dao.ClearTable("project_member")
 	if err != nil {
 		panic(err)
 	}
 	err = dao.ClearTable("project_metadata")
-	if err != nil {
-		panic(err)
-	}
-	err = dao.ClearTable("access_log")
 	if err != nil {
 		panic(err)
 	}

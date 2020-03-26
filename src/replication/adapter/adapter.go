@@ -18,9 +18,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 
 	"github.com/docker/distribution"
-	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
@@ -31,6 +31,7 @@ const (
 )
 
 var registry = map[model.RegistryType]Factory{}
+var registryKeys = []string{}
 var adapterInfoMap = map[model.RegistryType]*model.AdapterPattern{}
 
 // Factory creates a specific Adapter according to the params
@@ -50,17 +51,17 @@ type Adapter interface {
 	HealthCheck() (model.HealthStatus, error)
 }
 
-// ImageRegistry defines the capabilities that an image registry should have
-type ImageRegistry interface {
-	FetchImages(filters []*model.Filter) ([]*model.Resource, error)
+// ArtifactRegistry defines the capabilities that an artifact registry should have
+type ArtifactRegistry interface {
+	FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error)
 	ManifestExist(repository, reference string) (exist bool, digest string, err error)
-	PullManifest(repository, reference string, accepttedMediaTypes []string) (manifest distribution.Manifest, digest string, err error)
-	PushManifest(repository, reference, mediaType string, payload []byte) error
-	// the "reference" can be "tag" or "digest", the function needs to handle both
-	DeleteManifest(repository, reference string) error
+	PullManifest(repository, reference string, accepttedMediaTypes ...string) (manifest distribution.Manifest, digest string, err error)
+	PushManifest(repository, reference, mediaType string, payload []byte) (string, error)
+	DeleteManifest(repository, reference string) error // the "reference" can be "tag" or "digest", the function needs to handle both
 	BlobExist(repository, digest string) (exist bool, err error)
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
 	PushBlob(repository, digest string, size int64, blob io.Reader) error
+	DeleteTag(repository, tag string) error
 }
 
 // ChartRegistry defines the capabilities that a chart registry should have
@@ -70,59 +71,6 @@ type ChartRegistry interface {
 	DownloadChart(name, version string) (io.ReadCloser, error)
 	UploadChart(name, version string, chart io.Reader) error
 	DeleteChart(name, version string) error
-}
-
-// Repository defines an repository object, it can be image repository, chart repository and etc.
-type Repository struct {
-	ResourceType string `json:"resource_type"`
-	Name         string `json:"name"`
-}
-
-// GetName returns the name
-func (r *Repository) GetName() string {
-	return r.Name
-}
-
-// GetFilterableType returns the filterable type
-func (r *Repository) GetFilterableType() filter.FilterableType {
-	return filter.FilterableTypeRepository
-}
-
-// GetResourceType returns the resource type
-func (r *Repository) GetResourceType() string {
-	return r.ResourceType
-}
-
-// GetLabels returns the labels
-func (r *Repository) GetLabels() []string {
-	return nil
-}
-
-// VTag defines an vTag object, it can be image tag, chart version and etc.
-type VTag struct {
-	ResourceType string   `json:"resource_type"`
-	Name         string   `json:"name"`
-	Labels       []string `json:"labels"`
-}
-
-// GetFilterableType returns the filterable type
-func (v *VTag) GetFilterableType() filter.FilterableType {
-	return filter.FilterableTypeVTag
-}
-
-// GetResourceType returns the resource type
-func (v *VTag) GetResourceType() string {
-	return v.ResourceType
-}
-
-// GetName returns the name
-func (v *VTag) GetName() string {
-	return v.Name
-}
-
-// GetLabels returns the labels
-func (v *VTag) GetLabels() []string {
-	return v.Labels
 }
 
 // RegisterFactory registers one adapter factory to the registry
@@ -138,6 +86,8 @@ func RegisterFactory(t model.RegistryType, factory Factory) error {
 		return fmt.Errorf("adapter factory for %s already exists", t)
 	}
 	registry[t] = factory
+	registryKeys = append(registryKeys, string(t))
+	sort.Strings(registryKeys)
 	adapterInfo := factory.AdapterPattern()
 	if adapterInfo != nil {
 		adapterInfoMap[t] = adapterInfo
@@ -163,8 +113,8 @@ func HasFactory(t model.RegistryType) bool {
 // ListRegisteredAdapterTypes lists the registered Adapter type
 func ListRegisteredAdapterTypes() []model.RegistryType {
 	types := []model.RegistryType{}
-	for t := range registry {
-		types = append(types, t)
+	for _, t := range registryKeys {
+		types = append(types, model.RegistryType(t))
 	}
 	return types
 }

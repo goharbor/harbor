@@ -7,8 +7,9 @@ WORKDIR /usr/src/app
 
 RUN mkdir -p /harbor_make
 
-COPY make/photon/prepare /usr/src/app
+COPY make/photon/prepare/Pipfile.lock make/photon/prepare/Pipfile /usr/src/app/
 RUN set -ex && pipenv install --deploy --system
+COPY make/photon/prepare /usr/src/app
 
 ENTRYPOINT [ "python3", "main.py" ]
 

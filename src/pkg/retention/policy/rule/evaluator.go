@@ -14,7 +14,9 @@
 
 package rule
 
-import "github.com/goharbor/harbor/src/pkg/art"
+import (
+	"github.com/goharbor/harbor/src/lib/selector"
+)
 
 // Evaluator defines method of executing rule
 type Evaluator interface {
@@ -26,7 +28,7 @@ type Evaluator interface {
 	//  Returns:
 	//    []*art.Candidate : matched candidates for next stage
 	//    error            : common error object if any errors occurred
-	Process(artifacts []*art.Candidate) ([]*art.Candidate, error)
+	Process(artifacts []*selector.Candidate) ([]*selector.Candidate, error)
 
 	// Specify what action is performed to the candidates processed by this evaluator
 	Action() string

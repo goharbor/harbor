@@ -21,7 +21,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -32,7 +31,9 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/core/config"
+	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
@@ -50,7 +51,7 @@ type ProjectAPI struct {
 }
 
 const projectNameMaxLen int = 255
-const projectNameMinLen int = 2
+const projectNameMinLen int = 1
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
 
 // Prepare validates the URL and the user
@@ -98,17 +99,11 @@ func (p *ProjectAPI) Post() {
 		p.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
-	var onlyAdmin bool
-	var err error
-	if config.WithAdmiral() {
-		onlyAdmin = true
-	} else {
-		onlyAdmin, err = config.OnlyAdminCreateProject()
-		if err != nil {
-			log.Errorf("failed to determine whether only admin can create projects: %v", err)
-			p.SendInternalServerError(fmt.Errorf("failed to determine whether only admin can create projects: %v", err))
-			return
-		}
+	onlyAdmin, err := config.OnlyAdminCreateProject()
+	if err != nil {
+		log.Errorf("failed to determine whether only admin can create projects: %v", err)
+		p.SendInternalServerError(fmt.Errorf("failed to determine whether only admin can create projects: %v", err))
+		return
 	}
 
 	if onlyAdmin && !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
@@ -217,19 +212,12 @@ func (p *ProjectAPI) Post() {
 		}
 	}
 
-	go func() {
-		if err = dao.AddAccessLog(
-			models.AccessLog{
-				Username:  p.SecurityCtx.GetUsername(),
-				ProjectID: projectID,
-				RepoName:  pro.Name + "/",
-				RepoTag:   "N/A",
-				Operation: "create",
-				OpTime:    time.Now(),
-			}); err != nil {
-			log.Errorf("failed to add access log: %v", err)
-		}
-	}()
+	// fire event
+	evt.BuildAndPublish(&metadata.CreateProjectEventMetadata{
+		ProjectID: projectID,
+		Project:   pro.Name,
+		Operator:  owner,
+	})
 
 	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
 }
@@ -307,18 +295,12 @@ func (p *ProjectAPI) Delete() {
 		return
 	}
 
-	go func() {
-		if err := dao.AddAccessLog(models.AccessLog{
-			Username:  p.SecurityCtx.GetUsername(),
-			ProjectID: p.project.ProjectID,
-			RepoName:  p.project.Name + "/",
-			RepoTag:   "N/A",
-			Operation: "delete",
-			OpTime:    time.Now(),
-		}); err != nil {
-			log.Errorf("failed to add access log: %v", err)
-		}
-	}()
+	// fire event
+	evt.BuildAndPublish(&metadata.DeleteProjectEventMetadata{
+		ProjectID: p.project.ProjectID,
+		Project:   p.project.Name,
+		Operator:  p.SecurityCtx.GetUsername(),
+	})
 }
 
 // Deletable ...
@@ -400,46 +382,43 @@ func (p *ProjectAPI) List() {
 		query.Public = &pub
 	}
 
-	// standalone, filter projects according to the privilleges of the user first
-	if !config.WithAdmiral() {
-		var projects []*models.Project
-		if !p.SecurityCtx.IsAuthenticated() {
-			// not login, only get public projects
+	var projects []*models.Project
+	if !p.SecurityCtx.IsAuthenticated() {
+		// not login, only get public projects
+		pros, err := p.ProjectMgr.GetPublic()
+		if err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to get public projects: %v", err))
+			return
+		}
+		projects = []*models.Project{}
+		projects = append(projects, pros...)
+	} else {
+		if !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
+			projects = []*models.Project{}
+			// login, but not system admin or solution user, get public projects and
+			// projects that the user is member of
 			pros, err := p.ProjectMgr.GetPublic()
 			if err != nil {
 				p.SendInternalServerError(fmt.Errorf("failed to get public projects: %v", err))
 				return
 			}
-			projects = []*models.Project{}
 			projects = append(projects, pros...)
-		} else {
-			if !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
-				projects = []*models.Project{}
-				// login, but not system admin or solution user, get public projects and
-				// projects that the user is member of
-				pros, err := p.ProjectMgr.GetPublic()
-				if err != nil {
-					p.SendInternalServerError(fmt.Errorf("failed to get public projects: %v", err))
-					return
-				}
-				projects = append(projects, pros...)
-				mps, err := p.SecurityCtx.GetMyProjects()
-				if err != nil {
-					p.SendInternalServerError(fmt.Errorf("failed to list projects: %v", err))
-					return
-				}
-				projects = append(projects, mps...)
+			mps, err := p.SecurityCtx.GetMyProjects()
+			if err != nil {
+				p.SendInternalServerError(fmt.Errorf("failed to list projects: %v", err))
+				return
 			}
+			projects = append(projects, mps...)
 		}
-		// Query projects by user group
+	}
+	// Query projects by user group
 
-		if projects != nil {
-			projectIDs := []int64{}
-			for _, project := range projects {
-				projectIDs = append(projectIDs, project.ProjectID)
-			}
-			query.ProjectIDs = projectIDs
+	if projects != nil {
+		projectIDs := []int64{}
+		for _, project := range projects {
+			projectIDs = append(projectIDs, project.ProjectID)
 		}
+		query.ProjectIDs = projectIDs
 	}
 
 	result, err := p.ProjectMgr.List(query)
@@ -515,68 +494,6 @@ func (p *ProjectAPI) Put() {
 			p.project.ProjectID), err)
 		return
 	}
-}
-
-// Logs ...
-func (p *ProjectAPI) Logs() {
-	if !p.requireAccess(rbac.ActionList, rbac.ResourceLog) {
-		return
-	}
-
-	page, size, err := p.GetPaginationParams()
-	if err != nil {
-		p.SendBadRequestError(err)
-		return
-	}
-	query := &models.LogQueryParam{
-		ProjectIDs: []int64{p.project.ProjectID},
-		Username:   p.GetString("username"),
-		Repository: p.GetString("repository"),
-		Tag:        p.GetString("tag"),
-		Operations: p.GetStrings("operation"),
-		Pagination: &models.Pagination{
-			Page: page,
-			Size: size,
-		},
-	}
-
-	timestamp := p.GetString("begin_timestamp")
-	if len(timestamp) > 0 {
-		t, err := utils.ParseTimeStamp(timestamp)
-		if err != nil {
-			p.SendBadRequestError(fmt.Errorf("invalid begin_timestamp: %s", timestamp))
-			return
-		}
-		query.BeginTime = t
-	}
-
-	timestamp = p.GetString("end_timestamp")
-	if len(timestamp) > 0 {
-		t, err := utils.ParseTimeStamp(timestamp)
-		if err != nil {
-			p.SendBadRequestError(fmt.Errorf("invalid end_timestamp: %s", timestamp))
-			return
-		}
-		query.EndTime = t
-	}
-
-	total, err := dao.GetTotalOfAccessLogs(query)
-	if err != nil {
-		p.SendInternalServerError(fmt.Errorf(
-			"failed to get total of access log: %v", err))
-		return
-	}
-
-	logs, err := dao.GetAccessLogs(query)
-	if err != nil {
-		p.SendInternalServerError(fmt.Errorf(
-			"failed to get access log: %v", err))
-		return
-	}
-
-	p.SetPaginationHeader(total, page, size)
-	p.Data["json"] = logs
-	p.ServeJSON()
 }
 
 // Summary returns the summary of the project
@@ -681,6 +598,7 @@ func getProjectQuotaSummary(projectID int64, summary *models.ProjectSummary) {
 
 	quota := quotas[0]
 
+	summary.Quota = &models.QuotaSummary{}
 	summary.Quota.Hard, _ = types.NewResourceList(quota.Hard)
 	summary.Quota.Used, _ = types.NewResourceList(quota.Used)
 }

@@ -1,13 +1,13 @@
 package api
 
 import (
+	"github.com/goharbor/harbor/src/controller/event"
 	"net/http"
 	"testing"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/notification/model"
 )
 
 type fakedNotificationJobMgr struct {
@@ -28,11 +28,11 @@ func (f *fakedNotificationJobMgr) Update(job *models.NotificationJob, props ...s
 func (f *fakedNotificationJobMgr) ListJobsGroupByEventType(policyID int64) ([]*models.NotificationJob, error) {
 	return []*models.NotificationJob{
 		{
-			EventType:    model.EventTypePullImage,
+			EventType:    event.TopicPullArtifact,
 			CreationTime: time.Now(),
 		},
 		{
-			EventType:    model.EventTypeDeleteImage,
+			EventType:    event.TopicDeleteArtifact,
 			CreationTime: time.Now(),
 		},
 	}, nil

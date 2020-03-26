@@ -6,7 +6,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/token"
 	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
@@ -58,17 +58,19 @@ func (d *DefaultAPIController) GetRobotAccount(id int64) (*model.Robot, error) {
 func (d *DefaultAPIController) CreateRobotAccount(robotReq *model.RobotCreate) (*model.Robot, error) {
 
 	var deferDel error
-	// Token duration in minutes
-	tokenDuration := time.Duration(config.RobotTokenDuration()) * time.Minute
-	expiresAt := time.Now().UTC().Add(tokenDuration).Unix()
 	createdName := common.RobotPrefix + robotReq.Name
+
+	if robotReq.ExpiresAt == 0 {
+		tokenDuration := time.Duration(config.RobotTokenDuration()) * time.Minute
+		robotReq.ExpiresAt = time.Now().UTC().Add(tokenDuration).Unix()
+	}
 
 	// first to add a robot account, and get its id.
 	robot := &model.Robot{
 		Name:        createdName,
 		Description: robotReq.Description,
 		ProjectID:   robotReq.ProjectID,
-		ExpiresAt:   expiresAt,
+		ExpiresAt:   robotReq.ExpiresAt,
 		Visible:     robotReq.Visible,
 	}
 	id, err := d.manager.CreateRobotAccount(robot)
@@ -84,10 +86,14 @@ func (d *DefaultAPIController) CreateRobotAccount(robotReq *model.RobotCreate) (
 		ProjectID: robotReq.ProjectID,
 		Access:    robotReq.Access,
 		StandardClaims: jwt.StandardClaims{
-			IssuedAt:  time.Now().UTC().Unix(),
-			ExpiresAt: expiresAt,
-			Issuer:    opt.Issuer,
+			IssuedAt: time.Now().UTC().Unix(),
+			Issuer:   opt.Issuer,
 		},
+	}
+	// "-1" means the robot account is a permanent account, no expiration time set.
+	// 	The ExpiresAt claim is optional, so if it's not set, it will still be considered a valid claim
+	if robot.ExpiresAt != -1 {
+		rClaims.ExpiresAt = robotReq.ExpiresAt
 	}
 	tk, err := token.New(opt, rClaims)
 	if err != nil {

@@ -10,6 +10,7 @@ click = "*"
 
 [dev-packages]
 pylint = "*"
+pytest = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7.5"

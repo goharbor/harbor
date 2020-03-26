@@ -17,21 +17,76 @@ package vuln
 import (
 	"time"
 
+	"github.com/goharbor/harbor/src/jobservice/job"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
 // NativeReportSummary is the default supported scan report summary model.
 // Generated based on the report with v1.MimeTypeNativeReport mime type.
 type NativeReportSummary struct {
-	ReportID    string                `json:"report_id"`
-	ScanStatus  string                `json:"scan_status"`
-	Severity    Severity              `json:"severity"`
-	Duration    int64                 `json:"duration"`
-	Summary     *VulnerabilitySummary `json:"summary"`
-	CVEBypassed []string              `json:"-"`
-	StartTime   time.Time             `json:"start_time"`
-	EndTime     time.Time             `json:"end_time"`
-	Scanner     *v1.Scanner           `json:"scanner,omitempty"`
+	ReportID        string                `json:"report_id"`
+	ScanStatus      string                `json:"scan_status"`
+	Severity        Severity              `json:"severity"`
+	Duration        int64                 `json:"duration"`
+	Summary         *VulnerabilitySummary `json:"summary"`
+	CVEBypassed     []string              `json:"-"`
+	StartTime       time.Time             `json:"start_time"`
+	EndTime         time.Time             `json:"end_time"`
+	Scanner         *v1.Scanner           `json:"scanner,omitempty"`
+	CompletePercent int                   `json:"complete_percent"`
+
+	TotalCount    int `json:"-"`
+	CompleteCount int `json:"-"`
+}
+
+// Merge ...
+func (sum *NativeReportSummary) Merge(another *NativeReportSummary) *NativeReportSummary {
+	r := &NativeReportSummary{}
+
+	r.ReportID = sum.ReportID
+	r.StartTime = minTime(sum.StartTime, another.StartTime)
+	r.EndTime = maxTime(sum.EndTime, another.EndTime)
+	r.Duration = r.EndTime.Unix() - r.StartTime.Unix()
+	r.Scanner = sum.Scanner
+	r.TotalCount = sum.TotalCount + another.TotalCount
+	r.CompleteCount = sum.CompleteCount + another.CompleteCount
+	r.CompletePercent = r.CompleteCount * 100 / r.TotalCount
+
+	if sum.Severity.String() != "" && another.Severity.String() != "" {
+		if sum.Severity.Code() > another.Severity.Code() {
+			r.Severity = sum.Severity
+		} else {
+			r.Severity = another.Severity
+		}
+	} else if sum.Severity.String() != "" {
+		r.Severity = sum.Severity
+	} else {
+		r.Severity = another.Severity
+	}
+
+	if isRunningStatus(sum.ScanStatus) || isRunningStatus(another.ScanStatus) {
+		r.ScanStatus = job.RunningStatus.String()
+	} else {
+		diff := job.Status(sum.ScanStatus).Compare(job.Status(another.ScanStatus))
+		if diff < 0 {
+			r.ScanStatus = another.ScanStatus
+		} else if diff == 0 {
+			if job.Status(sum.ScanStatus) == job.SuccessStatus ||
+				job.Status(another.ScanStatus) == job.SuccessStatus {
+				r.ScanStatus = job.SuccessStatus.String()
+			}
+		}
+	}
+
+	if sum.Summary != nil && another.Summary != nil {
+		r.Summary = sum.Summary.Merge(another.Summary)
+	} else if sum.Summary != nil {
+		r.Summary = sum.Summary
+	} else {
+		r.Summary = another.Summary
+	}
+
+	return r
 }
 
 // VulnerabilitySummary contains the total number of the found vulnerabilities number
@@ -42,5 +97,48 @@ type VulnerabilitySummary struct {
 	Summary SeveritySummary `json:"summary"`
 }
 
+// Merge ...
+func (v *VulnerabilitySummary) Merge(a *VulnerabilitySummary) *VulnerabilitySummary {
+	r := &VulnerabilitySummary{
+		Total:   v.Total + a.Total,
+		Fixable: v.Fixable + a.Fixable,
+		Summary: SeveritySummary{},
+	}
+
+	for k, v := range v.Summary {
+		r.Summary[k] = v
+	}
+
+	for k, v := range a.Summary {
+		if _, ok := r.Summary[k]; ok {
+			r.Summary[k] += v
+		} else {
+			r.Summary[k] = v
+		}
+	}
+
+	return r
+}
+
 // SeveritySummary ...
 type SeveritySummary map[Severity]int
+
+func minTime(t1, t2 time.Time) time.Time {
+	if t1.Before(t2) {
+		return t1
+	}
+
+	return t2
+}
+
+func maxTime(t1, t2 time.Time) time.Time {
+	if t1.Before(t2) {
+		return t2
+	}
+
+	return t1
+}
+
+func isRunningStatus(status string) bool {
+	return job.Status(status) == job.RunningStatus
+}

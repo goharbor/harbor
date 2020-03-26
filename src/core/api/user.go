@@ -17,7 +17,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/core/filter"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -26,10 +25,12 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 // UserAPI handles request to /api/users/{}
@@ -151,7 +152,11 @@ func (ua *UserAPI) Get() {
 		}
 		u.Password = ""
 		if ua.userID == ua.currentUserID {
-			u.HasAdminRole = ua.SecurityCtx.IsSysAdmin()
+			sc := ua.SecurityCtx
+			switch lsc := sc.(type) {
+			case *local.SecurityContext:
+				u.AdminRoleInAuth = lsc.User().AdminRoleInAuth
+			}
 		}
 		if ua.AuthMode == common.OIDCAuth {
 			o, err := ua.getOIDCUserInfo()
@@ -319,7 +324,7 @@ func (ua *UserAPI) Post() {
 		return
 	}
 
-	if !ua.IsAdmin && !filter.ReqCarriesSession(ua.Ctx.Request) {
+	if !ua.IsAdmin && !lib.GetCarrySession(ua.Ctx.Request.Context()) {
 		ua.SendForbiddenError(errors.New("self-registration cannot be triggered via API"))
 		return
 	}
@@ -336,7 +341,7 @@ func (ua *UserAPI) Post() {
 		return
 	}
 
-	if !ua.IsAdmin && user.HasAdminRole {
+	if !ua.IsAdmin && user.SysAdminFlag {
 		msg := "Non-admin cannot create an admin user."
 		log.Errorf(msg)
 		ua.SendForbiddenError(errors.New(msg))
@@ -461,7 +466,7 @@ func (ua *UserAPI) ToggleUserAdminRole() {
 		ua.SendBadRequestError(err)
 		return
 	}
-	if err := dao.ToggleUserAdminRole(userQuery.UserID, userQuery.HasAdminRole); err != nil {
+	if err := dao.ToggleUserAdminRole(userQuery.UserID, userQuery.SysAdminFlag); err != nil {
 		log.Errorf("Error occurred in ToggleUserAdminRole: %v", err)
 		ua.SendInternalServerError(errors.New("internal error"))
 		return
@@ -479,16 +484,12 @@ func (ua *UserAPI) ListUserPermissions() {
 	relative := ua.Ctx.Input.Query("relative") == "true"
 
 	scope := rbac.Resource(ua.Ctx.Input.Query("scope"))
-	policies := []*rbac.Policy{}
+	policies := []*types.Policy{}
 
-	namespace, err := scope.GetNamespace()
-	if err == nil {
-		switch namespace.Kind() {
-		case "project":
-			for _, policy := range project.GetAllPolicies(namespace) {
-				if ua.SecurityCtx.Can(policy.Action, policy.Resource) {
-					policies = append(policies, policy)
-				}
+	if ns, ok := types.NamespaceFromResource(scope); ok {
+		for _, policy := range ns.GetPolicies() {
+			if ua.SecurityCtx.Can(policy.Action, policy.Resource) {
+				policies = append(policies, policy)
 			}
 		}
 	}

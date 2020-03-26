@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/goharbor/harbor/src/pkg/q"
-	s "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
+	s "github.com/goharbor/harbor/src/controller/scanner"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/pkg/errors"
 )

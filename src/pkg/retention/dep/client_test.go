@@ -15,13 +15,15 @@
 package dep
 
 import (
+	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/tag"
+	"github.com/goharbor/harbor/src/lib/selector"
+	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"testing"
 
 	"github.com/goharbor/harbor/src/chartserver"
 	jmodels "github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/testing/clients"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -34,10 +36,17 @@ type fakeCoreClient struct {
 	clients.DumbCoreClient
 }
 
-func (f *fakeCoreClient) ListAllImages(project, repository string) ([]*models.TagResp, error) {
-	image := &models.TagResp{}
-	image.Name = "latest"
-	return []*models.TagResp{image}, nil
+func (f *fakeCoreClient) ListAllArtifacts(project, repository string) ([]*modelsv2.Artifact, error) {
+	image := &modelsv2.Artifact{}
+	image.Digest = "sha256:123456"
+	image.Tags = []*tag.Tag{
+		{
+			Tag: model_tag.Tag{
+				Name: "latest",
+			},
+		},
+	}
+	return []*modelsv2.Artifact{image}, nil
 }
 
 func (f *fakeCoreClient) ListAllCharts(project, repository string) ([]*chartserver.ChartVersion, error) {
@@ -73,23 +82,23 @@ type clientTestSuite struct {
 func (c *clientTestSuite) TestGetCandidates() {
 	client := &basicClient{}
 	client.coreClient = &fakeCoreClient{}
-	var repository *art.Repository
+	var repository *selector.Repository
 	// nil repository
 	candidates, err := client.GetCandidates(repository)
 	require.NotNil(c.T(), err)
 
 	// image repository
-	repository = &art.Repository{}
-	repository.Kind = art.Image
+	repository = &selector.Repository{}
+	repository.Kind = selector.Image
 	repository.Namespace = "library"
 	repository.Name = "hello-world"
 	candidates, err = client.GetCandidates(repository)
 	require.Nil(c.T(), err)
 	assert.Equal(c.T(), 1, len(candidates))
-	assert.Equal(c.T(), art.Image, candidates[0].Kind)
+	assert.Equal(c.T(), selector.Image, candidates[0].Kind)
 	assert.Equal(c.T(), "library", candidates[0].Namespace)
 	assert.Equal(c.T(), "hello-world", candidates[0].Repository)
-	assert.Equal(c.T(), "latest", candidates[0].Tag)
+	assert.Equal(c.T(), "latest", candidates[0].Tags[0])
 
 	/*
 		// chart repository
@@ -109,14 +118,14 @@ func (c *clientTestSuite) TestDelete() {
 	client := &basicClient{}
 	client.coreClient = &fakeCoreClient{}
 
-	var candidate *art.Candidate
+	var candidate *selector.Candidate
 	// nil candidate
 	err := client.Delete(candidate)
 	require.NotNil(c.T(), err)
 
 	// image
-	candidate = &art.Candidate{}
-	candidate.Kind = art.Image
+	candidate = &selector.Candidate{}
+	candidate.Kind = selector.Image
 	err = client.Delete(candidate)
 	require.Nil(c.T(), err)
 

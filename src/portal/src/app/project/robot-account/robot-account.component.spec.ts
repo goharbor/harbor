@@ -8,16 +8,9 @@ import { RobotService } from "./robot-account.service";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
 import { RobotAccountComponent } from './robot-account.component';
-import {
-  operateChanges,
-  OperateInfo,
-  OperationService,
-  OperationState,
-  UserPermissionService,
-  USERSTATICPERMISSION,
-  ErrorHandler,
-  errorHandler as errorHandFn
-} from "@harbor/ui";
+import { UserPermissionService } from "../../../lib/services";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { OperationService } from "../../../lib/components/operation/operation.service";
 
 describe('RobotAccountComponent', () => {
   let component: RobotAccountComponent;

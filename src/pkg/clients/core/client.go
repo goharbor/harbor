@@ -16,9 +16,8 @@ package core
 
 import (
 	"fmt"
+	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
 	"net/http"
-
-	"github.com/goharbor/harbor/src/common/models"
 
 	"github.com/goharbor/harbor/src/chartserver"
 	chttp "github.com/goharbor/harbor/src/common/http"
@@ -29,15 +28,15 @@ import (
 // Currently, it contains only part of the whole method collection
 // and we should expand it when needed
 type Client interface {
-	ImageClient
+	ArtifactClient
 	ChartClient
 }
 
-// ImageClient defines the methods that an image client should implement
-type ImageClient interface {
-	ListAllImages(project, repository string) ([]*models.TagResp, error)
-	DeleteImage(project, repository, tag string) error
-	DeleteImageRepository(project, repository string) error
+// ArtifactClient defines the methods that an image client should implement
+type ArtifactClient interface {
+	ListAllArtifacts(project, repository string) ([]*modelsv2.Artifact, error)
+	DeleteArtifact(project, repository, digest string) error
+	DeleteArtifactRepository(project, repository string) error
 }
 
 // ChartClient defines the methods that a chart client should implement
@@ -61,5 +60,5 @@ type client struct {
 }
 
 func (c *client) buildURL(path string) string {
-	return fmt.Sprintf("%s/%s", c.url, path)
+	return fmt.Sprintf("%s%s", c.url, path)
 }

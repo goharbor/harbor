@@ -17,12 +17,11 @@ package runner
 import (
 	"fmt"
 	"runtime"
-	"time"
 
 	"github.com/gocraft/work"
 	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/period"
@@ -51,20 +50,7 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		runningJob  job.Interface
 		execContext job.Context
 		tracker     job.Tracker
-		markStopped = bp(false)
 	)
-
-	// Defer to log the exit result
-	defer func() {
-		if !*markStopped {
-			if err == nil {
-				logger.Infof("|^_^| Job '%s:%s' exit with success", j.Name, j.ID)
-			} else {
-				// log error
-				logger.Errorf("|@_@| Job '%s:%s' exit with error: %s", j.Name, j.ID, err)
-			}
-		}
-	}()
 
 	// Track the running job now
 	jID := j.ID
@@ -75,51 +61,21 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	}
 
 	if tracker, err = rj.ctl.Track(jID); err != nil {
+		// log error
+		logger.Errorf("Job '%s:%s' exit with error: failed to get job tracker: %s", j.Name, j.ID, err)
+
+		// Pay attentions here, if the job stats is lost (NOTFOUND error returned),
+		// directly return without retry again as we have no way to restore the stats again.
+		if errs.IsObjectNotFoundError(err) {
+			j.Fails = 10000000000 // never retry
+		}
+		// ELSE:
 		// As tracker creation failed, there is no way to mark the job status change.
 		// Also a non nil error return consumes a fail. If all retries are failed here,
 		// it will cause the job to be zombie one (pending forever).
-		// Here we will avoid the job to consume a fail and let it retry again and again.
-		// However, to avoid a forever retry, we will check the FailedAt timestamp.
-		now := time.Now().Unix()
-		if j.FailedAt == 0 || now-j.FailedAt < 2*24*3600 {
-			j.Fails--
-		}
+		// Those zombie ones will be reaped by the reaper later.
 
 		return
-	}
-
-	// Do operation based on the job status
-	jStatus := job.Status(tracker.Job().Info.Status)
-	switch jStatus {
-	case job.PendingStatus, job.ScheduledStatus:
-		// do nothing now
-		break
-	case job.StoppedStatus:
-		// Probably jobs has been stopped by directly mark status to stopped.
-		// Directly exit and no retry
-		markStopped = bp(true)
-		return nil
-	case job.ErrorStatus:
-		if j.FailedAt > 0 && j.Fails > 0 {
-			// Retry job
-			// Reset job info
-			if er := tracker.Reset(); er != nil {
-				// Log error and return the original error if existing
-				er = errors.Wrap(er, fmt.Sprintf("retrying job %s:%s failed", j.Name, j.ID))
-				logger.Error(er)
-
-				if len(j.LastErr) > 0 {
-					return errors.New(j.LastErr)
-				}
-
-				return err
-			}
-
-			logger.Infof("|*_*| Retrying job %s:%s, revision: %d", j.Name, j.ID, tracker.Job().Info.Revision)
-		}
-		break
-	default:
-		return errors.Errorf("mismatch status for running job: expected <%s <> got %s", job.RunningStatus.String(), jStatus.String())
 	}
 
 	// Defer to switch status
@@ -127,8 +83,11 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		// Switch job status based on the returned error.
 		// The err happened here should not override the job run error, just log it.
 		if err != nil {
+			// log error
+			logger.Errorf("Job '%s:%s' exit with error: %s", j.Name, j.ID, err)
+
 			if er := tracker.Fail(); er != nil {
-				logger.Errorf("Mark job status to failure error: %s", err)
+				logger.Errorf("Error occurred when marking the status of job %s:%s to failure: %s", j.Name, j.ID, er)
 			}
 
 			return
@@ -136,19 +95,20 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 
 		// Nil error might be returned by the stopped job. Check the latest status here.
 		// If refresh latest status failed, let the process to go on to void missing status updating.
-		if latest, er := tracker.Status(); er == nil {
+		if latest, er := tracker.Status(); er != nil {
+			logger.Errorf("Error occurred when getting the status of job %s:%s: %s", j.Name, j.ID, er)
+		} else {
 			if latest == job.StoppedStatus {
 				// Logged
-				logger.Infof("Job %s:%s is stopped", tracker.Job().Info.JobName, tracker.Job().Info.JobID)
-				// Stopped job, no exit message printing.
-				markStopped = bp(true)
+				logger.Infof("Job %s:%s is stopped", j.Name, j.ID)
 				return
 			}
 		}
 
 		// Mark job status to success.
+		logger.Infof("Job '%s:%s' exit with success", j.Name, j.ID)
 		if er := tracker.Succeed(); er != nil {
-			logger.Errorf("Mark job status to success error: %s", er)
+			logger.Errorf("Error occurred when marking the status of job %s:%s to success: %s", j.Name, j.ID, er)
 		}
 	}()
 
@@ -163,10 +123,41 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		}
 	}()
 
-	// Build job context
-	if rj.context.JobContext == nil {
-		rj.context.JobContext = impl.NewDefaultContext(rj.context.SystemContext)
+	// Do operation based on the job status
+	jStatus := job.Status(tracker.Job().Info.Status)
+	switch jStatus {
+	case job.PendingStatus, job.ScheduledStatus:
+		// do nothing now
+		break
+	case job.StoppedStatus:
+		// Probably jobs has been stopped by directly mark status to stopped.
+		// Directly exit and no retry
+		return nil
+	case job.RunningStatus, job.ErrorStatus:
+		// The failed jobs can be put into retry queue and the in progress jobs may be
+		// interrupted by a sudden service crash event, all those jobs can be rescheduled.
+		// Reset job info.
+		if err = tracker.Reset(); err != nil {
+			// Log error and return the original error if existing
+			err = errors.Wrap(err, fmt.Sprintf("retrying %s job %s:%s failed", jStatus.String(), j.Name, j.ID))
+
+			if len(j.LastErr) > 0 {
+				err = errors.Wrap(err, j.LastErr)
+			}
+
+			return
+		}
+
+		logger.Infof("Retrying job %s:%s, revision: %d", j.Name, j.ID, tracker.Job().Info.Revision)
+		break
+	case job.SuccessStatus:
+		// do nothing
+		return nil
+	default:
+		return errors.Errorf("mismatch status for running job: expected %s/%s but got %s", job.PendingStatus, job.ScheduledStatus, jStatus.String())
 	}
+
+	// Build job context
 	if execContext, err = rj.context.JobContext.Build(tracker); err != nil {
 		return
 	}
@@ -189,6 +180,11 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	}
 	// Run the job
 	err = runningJob.Run(execContext, j.Args)
+	// Add error context
+	if err != nil {
+		err = errors.Wrap(err, "run error")
+	}
+
 	// Handle retry
 	rj.retry(runningJob, j)
 	// Handle periodic job execution

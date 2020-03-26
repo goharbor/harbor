@@ -22,8 +22,10 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/core/config"
-	coreutils "github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"k8s.io/helm/cmd/helm/search"
 )
 
@@ -167,6 +169,7 @@ func filterRepositories(projects []*models.Project, keyword string) (
 		projectMap[project.Name] = project
 	}
 
+	ctx := orm.NewContext(nil, dao.GetOrmer())
 	for _, repository := range repositories {
 		projectName, _ := utils.ParseRepository(repository.Name)
 		project, exist := projectMap[projectName]
@@ -180,27 +183,19 @@ func filterRepositories(projects []*models.Project, keyword string) (
 		entry["project_public"] = project.IsPublic()
 		entry["pull_count"] = repository.PullCount
 
-		tags, err := getTags(repository.Name)
+		count, err := artifact.Ctl.Count(ctx, &q.Query{
+			Keywords: map[string]interface{}{
+				"RepositoryID": repository.RepositoryID,
+			},
+		})
 		if err != nil {
-			return nil, err
+			log.Errorf("failed to get the count of artifacts under the repository %s: %v",
+				repository.Name, err)
+		} else {
+			entry["artifact_count"] = count
 		}
-		entry["tags_count"] = len(tags)
 
 		result = append(result, entry)
 	}
 	return result, nil
-}
-
-func getTags(repository string) ([]string, error) {
-	client, err := coreutils.NewRepositoryClientForUI("harbor-core", repository)
-	if err != nil {
-		return nil, err
-	}
-
-	tags, err := client.ListTag()
-	if err != nil {
-		return nil, err
-	}
-
-	return tags, nil
 }

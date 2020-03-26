@@ -5,7 +5,9 @@
         "VIC": "vSphere Integrated Containers",
         "MGMT": "Management",
         "REG": "Registre",
-        "HARBOR_SWAGGER": "Harbor Swagger"
+        "HARBOR_SWAGGER": "Harbor Swagger",
+        "THEME_DARK_TEXT": "DARK",
+        "THEME_LIGHT_TEXT": "LIGHT"
     },
     "SIGN_IN": {
         "REMEMBER": "Se souvenir de moi",
@@ -208,9 +210,8 @@
         "PUBLIC_PROJECTS": "Projets Publics",
         "PROJECT": "Projet",
         "NEW_PROJECT": "Nouveau Projet",
-        "NAME_TOOLTIP": "Le nom du projet doit comporter au moins 2 caractères avec des minuscules, des chiffres et. _- et doit commencer par des caractères ou des chiffres.",
+        "NAME_TOOLTIP": "Le nom du projet doit comporter 1~255 caractères avec des minuscules, des chiffres et. _- et doit commencer par des caractères ou des chiffres.",
         "NAME_IS_REQUIRED": "Le nom du projet est obligatoire.",
-        "NAME_MINIMUM_LENGTH": "Le nom du projet est trop court, il doit être supérieur à 2 caractères.",
         "NAME_ALREADY_EXISTS": "Le nom du projet existe déjà.",
         "NAME_IS_ILLEGAL": "Le nom du projet est invalide.",
         "UNKNOWN_ERROR": "Une erreur inconnue s'est produite lors de la création du projet.",
@@ -243,7 +244,8 @@
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "Robot Accounts",
         "WEBHOOKS": "Webhooks",
-        "IMMUTABLE_TAG": "Tag Immutability"
+        "IMMUTABLE_TAG": "Tag Immutability",
+        "POLICY": "Policy"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Dépôt du Projet",
@@ -304,7 +306,7 @@
         "DELETED_SUCCESS": "Membre supprimé avec succès.",
         "SWITCHED_SUCCESS": "Rôle du membre changé avec succés.",
         "OF": "de",
-        "SET_ROLE": "SET ROLE",
+        "SET_ROLE": "Set Role",
         "REMOVE": "Remove"
     },
     "ROBOT_ACCOUNT": {
@@ -313,6 +315,7 @@
         "TOKEN": "gage ",
         "NEW_ROBOT_ACCOUNT": "nouveau robot compte ",
         "ENABLED_STATE": "état d 'activation",
+        "CREATETION": "Created time",
         "EXPIRATION": "Expiration",
         "NUMBER_REQUIRED": "Field is required and should be an integer other than 0.",
         "TOKEN_EXPIRATION": "Robot Token Expiration (Days)",
@@ -329,7 +332,6 @@
         "PERMISSIONS_HELMCHART": "Helm Chart",
         "PUSH": "Push",
         "PULL": "Pull",
-
         "FILTER_PLACEHOLDER": "Filter Robot Accounts",
         "ROBOT_NAME": "ne peut pas contenir de caractères spéciaux(~#$%) et la longueur maximale devrait être de 255 caractères.",
         "ACCOUNT_EXISTING": "le robot est existe déjà.",
@@ -339,7 +341,11 @@
         "DELETION_TITLE": "confirmer l'enlèvement des comptes du robot ",
         "DELETION_SUMMARY": "Voulez-vous supprimer la règle {{param}}?",
         "PULL_IS_MUST": "Pull permission is checked by default and can not be modified.",
-        "EXPORT_TO_FILE": "export to file"
+        "EXPORT_TO_FILE": "export to file",
+        "EXPIRES_AT": "Expires At",
+        "EXPIRATION_TOOLTIP": "If not set, the expiration time of system configuration will be used",
+        "INVALID_VALUE": "The value of the expiration time is invalid",
+        "NEVER_EXPIRED": "Never Expired"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "EDIT",
@@ -353,7 +359,8 @@
         "OF": "of",
         "ITEMS": "items",
         "LAST_TRIGGERED": "Last Triggered",
-        "EDIT_WEBHOOK": "Webhook Endpoint",
+        "EDIT_WEBHOOK": "Edit Webhook",
+        "ADD_WEBHOOK": "Add Webhook",
         "CREATE_WEBHOOK": "Getting started with webhooks",
         "EDIT_WEBHOOK_DESC": "Specify the endpoint for receiving webhook notifications",
         "CREATE_WEBHOOK_DESC": "To get started with webhooks, provide an endpoint and credentials to access the webhook server.",
@@ -367,10 +374,28 @@
         "SAVE_BUTTON": "SAVE",
         "TEST_ENDPOINT_SUCCESS": "Connection tested successfully.",
         "TEST_ENDPOINT_FAILURE": "Failed to ping endpoint.",
-        "ENABLED_WEBHOOK_TITLE": "Enable Project Webhooks",
-        "ENABLED_WEBHOOK_SUMMARY": "Do you want to enable webhooks for project ",
-        "DISABLED_WEBHOOK_TITLE": "Disable Project Webhooks",
-        "DISABLED_WEBHOOK_SUMMARY": "Do you want to disable webhooks for project "
+        "ENABLED_WEBHOOK_TITLE": "Enable  Webhook",
+        "ENABLED_WEBHOOK_SUMMARY": "Do you want to enable webhook {{name}}?",
+        "DISABLED_WEBHOOK_TITLE": "Disable Webhook",
+        "DISABLED_WEBHOOK_SUMMARY": "Do you want to disable webhook {{name}}?",
+        "DELETE_WEBHOOK_TITLE": "Delete Webhook(s)",
+        "DELETE_WEBHOOK_SUMMARY": "Do you want to delete webhook(s) {{names}}?",
+        "WEBHOOKS": "Webhooks",
+        "NEW_WEBHOOK": "New Webhook",
+        "ENABLE": "Enable",
+        "DISABLE": "Disable",
+        "NAME": "Name",
+        "TARGET": "Target",
+        "EVENT_TYPES": "Event types",
+        "DESCRIPTION": "Description",
+        "NO_WEBHOOK": "No Webhook",
+        "LAST_TRIGGER": "Last Trigger",
+        "WEBHOOK_NAME": "Webhook Name",
+        "NO_TRIGGER": "No Trigger",
+        "NAME_REQUIRED": "Name is required",
+        "NOTIFY_TYPE": "Notify Type",
+        "EVENT_TYPE": "Event Type",
+        "EVENT_TYPE_REQUIRED": "Require at least one event type"
     },
     "GROUP": {
         "Group": "Group",
@@ -423,7 +448,9 @@
         "FILTER_PLACEHOLDER": "Filtrer les Logs",
         "INVALID_DATE": "Date invalide.",
         "OF": "de",
-        "NOT_FOUND": "Nous n'avons trouvé aucun journal!"
+        "NOT_FOUND": "Nous n'avons trouvé aucun journal!",
+        "RESOURCE": "Resource",
+        "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
         "YES": "Yes",
@@ -490,7 +517,6 @@
         "REPLICATION_MODE": "Replication Mode",
         "SRC_REGISTRY": "Source registry",
         "DESTINATION_NAMESPACE": "Destination registry:Namespace",
-        "LAST_REPLICATION": "Last Replication",
         "DESTINATION_NAME_IS_REQUIRED": "Le nom du Point Final est obligatoire.",
         "NEW_DESTINATION": "Nouveau Point Final",
         "DESTINATION_URL": "URL du Point Final",
@@ -524,22 +550,16 @@
         "ITEMS": "items",
         "NO_LOGS": "Pas de log",
         "TOGGLE_ENABLE_TITLE": "Activer la Règle",
-        "CONFIRM_TOGGLE_ENABLE_POLICY": "Après avoir activé la règle de réplication, tous les dépôts du projet seront répliqués dans le registre de destination. Veuillez confirmer pour continuer.",
         "TOGGLE_DISABLE_TITLE": "Désactiver la Règle",
-        "CONFIRM_TOGGLE_DISABLE_POLICY": "Après avoir désactivé la règle, tous les travaux de réplication inachevés de cette règle seront arrêtés et annulés. Veuillez confirmer pour continuer.",
         "CREATED_SUCCESS": "Règle de réplication créée avec succès.",
         "UPDATED_SUCCESS": "Règle de réplication mise à jour avec succès.",
         "DELETED_SUCCESS": "Règle de réplication supprimée avec succès.",
         "DELETED_FAILED": "La suppression de la règle de réplication a échoué.",
         "TOGGLED_SUCCESS": "Modification du statut de la règle de réplication avec succés.",
         "CANNOT_EDIT": "La règle de réplication ne peut pas être modifiée lorsqu'elle est activée.",
-        "POLICY_ALREADY_EXISTS": "La règle de réplication existe déjà.",
-        "FAILED_TO_DELETE_POLICY_ENABLED": "Impossible de supprimer une règle : la règle a une (des) tâche(s) inachevé(s) ou la règle est activée.",
-        "FOUND_ERROR_IN_JOBS": "Erreurs trouvées dans les travaux de réplication, veuillez vérifier.",
         "INVALID_DATE": "Date non valide.",
         "PLACEHOLDER": "Nous n'avons trouvé aucune règle de réplication !",
         "JOB_PLACEHOLDER": "Nous n'avons trouvé aucun travail de réplication !",
-        "JOB_LOG_VIEWER": "Afficher les logs des travaux de réplication",
         "NO_ENDPOINT_INFO": "Please add an endpoint first",
         "NO_PROJECT_INFO": "This project is not exist",
         "SOURCE_RESOURCE_FILTER": "Source resource filter",
@@ -557,7 +577,6 @@
         "REPLICATE": "Replicate",
         "DELETE_REMOTE_IMAGES": "Delete remote resources when locally deleted",
         "DELETE_ENABLED": "Enabled this policy",
-        "REPLICATE_IMMEDIATE": "Replicate existing images immediately",
         "NEW": "New",
         "NAME_TOOLTIP": "replication rule name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "DESTINATION_NAME_TOOLTIP": "Destination name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
@@ -611,6 +630,9 @@
         "DELETE": "Supprimer",
         "NAME": "Nom",
         "TAGS_COUNT": "Tags",
+        "PLATFORM": "OS/ARCH",
+        "ARTIFACT_TOOTIP": "Click this icon to enter the Artifact list of refer",
+        "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Commande de Pull",
         "PULL_TIME": "Pull Time",
@@ -622,13 +644,17 @@
         "DELETION_TITLE_REPO_SIGNED": "Le Dépôt ne peut être supprimé",
         "DELETION_SUMMARY_REPO_SIGNED": "Le Dépôt '{{repoName}}' ne peut pas être supprimé parce que les images suivantes signées existent. \n{{signedImages}} \nVous devez retirer la signature de toutes les images signées avant de supprimer le dépôt !",
         "DELETION_SUMMARY_REPO": "Voulez-vous supprimer le dépôt {{repoName}} ?",
+        "DELETION_TITLE_ARTIFACT": "Confirm Artifact Deletion",
+        "DELETION_SUMMARY_ARTIFACT": "Do you want to delete artifact {{param}}? If you delete this artifact, all tags referenced by the digest will also be deleted.",
         "DELETION_TITLE_TAG": "Confirmer la suppression du Tag",
-        "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}?",
+        "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}? ",
         "DELETION_TITLE_TAG_DENIED": "Un tag signé ne peut être supprimé",
         "DELETION_SUMMARY_TAG_DENIED": "La balise doit être supprimée du Résumé avant qu'elle ne puisse être supprimée. \nSupprimer du Résumé via cette commande: \n",
         "TAGS_NO_DELETE": "Upload/Delete is prohibited in read only mode.",
         "FILTER_FOR_REPOSITORIES": "Filtrer les Dépôts",
         "TAG": "Tag",
+        "ARTIFACT": "Aarifact",
+        "ARTIFACTS": "Artifacts",
         "SIZE": "Taille",
         "VULNERABILITY": "Vulnérabilitée",
         "BUILD_HISTORY": "Construire l'histoire",
@@ -653,8 +679,9 @@
         "LABELS": "Labels",
         "ADD_LABEL_TO_IMAGE": "Add labels to this image",
         "FILTER_BY_LABEL": "Filter images by label",
+        "FILTER_ARTIFACT_BY_LABEL": "Filter actifact by label",
         "ADD_LABELS": "Add labels",
-        "RETAG": "Retag",
+        "RETAG": "Copy",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info",
@@ -720,10 +747,10 @@
     },
     "SUMMARY": {
         "QUOTAS": "quotas",
-        "PROJECT_REPOSITORY": "Project repositories",
-        "PROJECT_HELM_CHART": "Project Helm Chart",
-        "PROJECT_MEMBER": "Project members",
-        "PROJECT_QUOTAS": "Project quotas",
+        "PROJECT_REPOSITORY": "Repositories",
+        "PROJECT_HELM_CHART": "Helm Chart",
+        "PROJECT_MEMBER": "Members",
+        "PROJECT_QUOTAS": "Quotas",
         "ARTIFACT_COUNT": "Artifact count",
         "STORAGE_CONSUMPTION": "Storage consumption",
         "ADMIN": "Admin(s)",
@@ -800,7 +827,6 @@
             "PRO_CREATION_RESTRICTION": "L'indicateur pour définir quels utilisateurs ont le droit de créer des projets. Par défaut, tout le monde peut créer un projet. Définissez sur 'Administrateur Seulement' pour que seul un administrateur puisse créer un projet.",
             "ROOT_CERT_DOWNLOAD": "Téléchargez le certificat racine du dépôt.",
             "SCANNING_POLICY": "Définissez la politique d'analyse des images en fonction des différentes exigences. 'Aucune' : pas de politique active; 'Tousles jours à' : déclenchement du balayage à l'heure spécifiée tous les jours.",
-            "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
             "GC_POLICY": "",
             "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
             "HOURLY_CRON": "Run once an hour, beginning of hour. Équivalent à 0 0 * * * *.",
@@ -937,6 +963,7 @@
         },
         "CHART": {
             "SCANNING_TIME": "Temps d'analyse complète :",
+            "SCANNING_PERCENT": "Scan completed percent:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} de {{totalPackages}} {{package}} ont des {{vulnerability}} connues.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} de {{totalPackages}} {{package}} a des {{vulnerability}} connues.",
             "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
@@ -957,8 +984,7 @@
         "PLACEHOLDER": "Filtrer les Vulnérabilitiés",
         "PACKAGE": "paquet",
         "PACKAGES": "paquets",
-        "SCAN_NOW": "Analyser",
-        "JOB_LOG_VIEWER": "Voir le log des travaux d'analyse"
+        "SCAN_NOW": "Analyser"
     },
     "PUSH_IMAGE": {
         "TITLE": "Pousser l'Image",
@@ -966,6 +992,20 @@
         "TAG_COMMAND": "Tagger une image pour ce projet :",
         "PUSH_COMMAND": "Pousser une image dans ce projet :",
         "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence."
+    },
+    "ARTIFACT": {
+        "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
+        "ADDITIONS": "Additions",
+        "ANNOTATION": "Annotations",
+        "EXTRA_PROPERTIES": "Extra Attributes",
+        "IMAGE": "IMAGE",
+        "CHART": "CHART",
+        "CNAB": "CNAB",
+        "TAGGED": "Tagged",
+        "UNTAGGED": "Untagged",
+        "ALL": "All",
+        "PLACEHOLDER": "We couldn't find any artifacts!",
+        "SCAN_UNSUPPORTED": "Unsupported"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Créer le",
@@ -986,7 +1026,15 @@
         "AUTHOR": "Author",
         "LABELS": "Labels",
         "CREATION": "Créer sur",
-        "COMMAND": "Les commandes"
+        "COMMAND": "Les commandes",
+        "UPLOADTIME": "Upload Time",
+        "NAME": "Name",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
+        "OF": "of",
+        "ITEMS": "items",
+        "ADD_TAG": "ADD TAG",
+        "REMOVE_TAG": "REMOVE TAG"
     },
     "LABEL": {
         "LABEL": "Label",
@@ -1093,7 +1141,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "An error occurred in Get schedule"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Current Schedule",
@@ -1104,10 +1151,12 @@
         "LATEST_JOBS": "Latest {{param}} Jobs",
         "MSG_SUCCESS": "Garbage Collection Successful",
         "MSG_SCHEDULE_SET": "Garbage Collection schedule has been set",
-        "MSG_SCHEDULE_RESET": "Garbage Collection schedule has been reset"
+        "MSG_SCHEDULE_RESET": "Garbage Collection schedule has been reset",
+        "PARAMETERS": "Parameters",
+        "DELETE_UNTAGGED": "Delete Untagged Artifacts"
     },
     "RETAG": {
-        "MSG_SUCCESS": "Retag successfully",
+        "MSG_SUCCESS": "Copy artifact successfully",
         "TIP_REPO": "A repository name is broken up into path components. A component of a repository name must be at least one lowercase, alpha-numeric characters, optionally separated by periods, dashes or underscores. More strictly, it must match the regular expression [a-z0-9]+(?:[._-][a-z0-9]+)*.If a repository name has two or more path components, they must be separated by a forward slash ('/').The total length of a repository name, including slashes, must be less the 256 characters.",
         "TIP_TAG": "A tag is a label applied to a Docker image in a repository. Tags are how various images in a repository are distinguished from each other.It need to match Regex: (`[\\w][\\w.-]{0,127}`)"
     },
@@ -1172,9 +1221,11 @@
         "IN_REPOSITORIES": "For the repositories",
         "REP_SEPARATOR": "Enter multiple comma separated repos,repo*,or **",
         "TAGS": "Tags",
+        "INCLUDE_UNTAGGED": " untagged artifacts",
+        "UNTAGGED": " untagged",
         "MATCHES_TAGS": "Matches tags",
         "MATCHES_EXCEPT_TAGS": "Matches except tags",
-        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags, tag*, or **. Optionally include all untagged artifacts when applying the ‘including’ or ‘excluding’ selector by checking the box above.",
         "LABELS": "Labels",
         "MATCHES_LABELS": "Matches Labels",
         "MATCHES_EXCEPT_LABELS": "Matches except Labels",
@@ -1314,6 +1365,11 @@
         "CONFIRM_DELETION": "Confirm Scanner deletion",
         "NO_PROJECT_SCANNER": "No Scanner",
         "SET_UNHEALTHY_SCANNER": "Selected scanner:{{name}} is unhealthy",
-        "SCANNED_BY": "Scanned by:"
+        "SCANNED_BY": "Scanned by:",
+        "IMAGE_SCANNERS": "Image Scanners",
+        "VIEW_DOC": "view documentation",
+        "ALL_SCANNERS": "All scanners",
+        "HELP_INFO_1": "The default scanner has been installed. To install other scanners refer to the ",
+        "HELP_INFO_2": "documentation."
     }
 }

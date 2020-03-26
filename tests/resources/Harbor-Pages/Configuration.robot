@@ -140,10 +140,10 @@ Self Reg Should Be Enabled
     Checkbox Should Be Selected  xpath=${self_reg_xpath}
 
 Project Creation Should Display
-    Page Should Contain Element  xpath=${project_create_xpath}
+    Retry Wait Until Page Contains Element  xpath=${project_create_xpath}
 
 Project Creation Should Not Display
-    Page Should Not Contain Element  xpath=${project_create_xpath}
+    Retry Wait Until Page Not Contains Element  xpath=${project_create_xpath}
 
 ## System settings
 Switch To System Settings
@@ -153,6 +153,8 @@ Switch To System Settings
     Sleep  1
 
 Switch To Project Quotas
+    Sleep  1
+    Retry Element Click  xpath=${configuration_xpath}
     Sleep  1
     Retry Element Click  xpath=//clr-main-container//clr-vertical-nav//a[contains(.,'Project Quotas')]
     Sleep  1
@@ -229,12 +231,12 @@ Click Scan Now
 
 
 Enable Read Only
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X PUT -d '{"read_only":true}' "https://${ip}/api/configurations"
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X PUT -d '{"read_only":true}' "https://${ip}/api/v2.0/configurations"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
 
 Disable Read Only
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X PUT -d '{"read_only":false}' "https://${ip}/api/configurations"
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X PUT -d '{"read_only":false}' "https://${ip}/api/v2.0/configurations"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
 

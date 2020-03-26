@@ -1,19 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
-import {
-  ProjectService,
-  clone,
-  QuotaUnits,
-  getSuitableUnit,
-  ErrorHandler,
-  GetIntegerAndUnit,
-  UserPermissionService,
-  USERSTATICPERMISSION,
-  QUOTA_DANGER_COEFFICIENT,
-  QUOTA_WARNING_COEFFICIENT
-} from '@harbor/ui';
 import { ActivatedRoute } from '@angular/router';
-
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
+import { QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COEFFICIENT, QuotaUnits } from "../../../lib/entities/shared.const";
+import { ProjectService, UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { clone, GetIntegerAndUnit, getSuitableUnit as getSuitableUnitFn } from "../../../lib/utils/utils";
 
 @Component({
   selector: 'summary',
@@ -58,7 +49,7 @@ export class SummaryComponent implements OnInit {
 
   getSuitableUnit(value) {
     const QuotaUnitsCopy = clone(QuotaUnits);
-    return getSuitableUnit(value, QuotaUnitsCopy);
+    return getSuitableUnitFn(value, QuotaUnitsCopy);
   }
 
   getIntegerAndUnit(hardValue, usedValue) {

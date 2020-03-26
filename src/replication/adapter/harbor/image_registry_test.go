@@ -24,37 +24,50 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFetchImages(t *testing.T) {
+func TestFetchArtifacts(t *testing.T) {
 	server := test.NewServer([]*test.RequestHandlerMapping{
 		{
 			Method:  http.MethodGet,
-			Pattern: "/api/projects",
+			Pattern: "/api/v2.0/projects/library/repositories/hello-world/artifacts",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				data := `[
+  {
+    "digest": "digest1",
+    "tags": [
+      {
+        "name": "1.0"
+      }
+    ]
+  },
+  {
+    "digest": "digest2",
+    "tags": [
+      {
+        "name": "2.0"
+      }
+    ]
+  }
+]`
+				w.Write([]byte(data))
+			},
+		},
+		{
+			Method:  http.MethodGet,
+			Pattern: "/api/v2.0/projects/library/repositories",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				data := `[{
+					"name": "library/hello-world"
+				}]`
+				w.Write([]byte(data))
+			},
+		},
+		{
+			Method:  http.MethodGet,
+			Pattern: "/api/v2.0/projects",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
 					"name": "library",
 					"metadata": {"public":true}
-				}]`
-				w.Write([]byte(data))
-			},
-		},
-		{
-			Method:  http.MethodGet,
-			Pattern: "/api/repositories/library/hello-world/tags",
-			Handler: func(w http.ResponseWriter, r *http.Request) {
-				data := `[{
-					"name": "1.0"
-				},{
-					"name": "2.0"
-				}]`
-				w.Write([]byte(data))
-			},
-		},
-		{
-			Method:  http.MethodGet,
-			Pattern: "/api/repositories",
-			Handler: func(w http.ResponseWriter, r *http.Request) {
-				data := `[{
-					"name": "library/hello-world"
 				}]`
 				w.Write([]byte(data))
 			},
@@ -67,14 +80,14 @@ func TestFetchImages(t *testing.T) {
 	adapter, err := newAdapter(registry)
 	require.Nil(t, err)
 	// nil filter
-	resources, err := adapter.FetchImages(nil)
+	resources, err := adapter.FetchArtifacts(nil)
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(resources))
-	assert.Equal(t, model.ResourceTypeImage, resources[0].Type)
+	assert.Equal(t, model.ResourceTypeArtifact, resources[0].Type)
 	assert.Equal(t, "library/hello-world", resources[0].Metadata.Repository.Name)
-	assert.Equal(t, 2, len(resources[0].Metadata.Vtags))
-	assert.Equal(t, "1.0", resources[0].Metadata.Vtags[0])
-	assert.Equal(t, "2.0", resources[0].Metadata.Vtags[1])
+	assert.Equal(t, 2, len(resources[0].Metadata.Artifacts))
+	assert.Equal(t, "1.0", resources[0].Metadata.Artifacts[0].Tags[0])
+	assert.Equal(t, "2.0", resources[0].Metadata.Artifacts[1].Tags[0])
 	// not nil filter
 	filters := []*model.Filter{
 		{
@@ -86,28 +99,11 @@ func TestFetchImages(t *testing.T) {
 			Value: "1.0",
 		},
 	}
-	resources, err = adapter.FetchImages(filters)
+	resources, err = adapter.FetchArtifacts(filters)
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(resources))
-	assert.Equal(t, model.ResourceTypeImage, resources[0].Type)
+	assert.Equal(t, model.ResourceTypeArtifact, resources[0].Type)
 	assert.Equal(t, "library/hello-world", resources[0].Metadata.Repository.Name)
-	assert.Equal(t, 1, len(resources[0].Metadata.Vtags))
-	assert.Equal(t, "1.0", resources[0].Metadata.Vtags[0])
-}
-
-func TestDeleteManifest(t *testing.T) {
-	server := test.NewServer(&test.RequestHandlerMapping{
-		Method:  http.MethodDelete,
-		Pattern: "/api/repositories/library/hello-world/tags/1.0",
-		Handler: func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		}})
-	defer server.Close()
-	registry := &model.Registry{
-		URL: server.URL,
-	}
-	adapter, err := newAdapter(registry)
-	require.Nil(t, err)
-	err = adapter.DeleteManifest("library/hello-world", "1.0")
-	require.Nil(t, err)
+	assert.Equal(t, 1, len(resources[0].Metadata.Artifacts))
+	assert.Equal(t, "1.0", resources[0].Metadata.Artifacts[0].Tags[0])
 }

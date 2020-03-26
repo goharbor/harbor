@@ -12,29 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
-
 import { Subscription, Observable, forkJoin } from "rxjs";
-
 import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
-import {
-    operateChanges,
-    OperateInfo,
-    OperationService,
-    OperationState,
-    errorHandler as errorHandFn,
-} from '@harbor/ui';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 import { SessionService } from '../shared/session.service';
-import { AppConfigService } from '../app-config.service';
+import { AppConfigService } from '../services/app-config.service';
 import { NewUserModalComponent } from './new-user-modal.component';
 import { UserService } from './user.service';
 import { User } from './user';
 import { ChangePasswordComponent } from "./change-password/change-password.component";
 import { map, catchError } from 'rxjs/operators';
 import { throwError as observableThrowError } from "rxjs";
+import { OperationService } from "../../lib/components/operation/operation.service";
+import { operateChanges, OperateInfo, OperationState } from "../../lib/components/operation/operate";
+import { errorHandler } from "../../lib/utils/shared/shared.utils";
 
 /**
  * NOTES:
@@ -121,7 +115,7 @@ export class UserComponent implements OnInit, OnDestroy {
             if (user.user_id === 0 || this.isMySelf(user.user_id)) {
                 return false;
             }
-            if (user.has_admin_role) {
+            if (user.sysadmin_flag) {
                 usersRole.push(1);
             } else {
                 usersRole.push(0);
@@ -142,7 +136,7 @@ export class UserComponent implements OnInit, OnDestroy {
         if (!u) {
             return "{{MISS}}";
         }
-        let key: string = u.has_admin_role ? "USER.IS_ADMIN" : "USER.IS_NOT_ADMIN";
+        let key: string = u.sysadmin_flag ? "USER.IS_ADMIN" : "USER.IS_NOT_ADMIN";
         this.translate.get(key).subscribe((res: string) => this.adminColumn = res);
         return this.adminColumn;
     }
@@ -151,7 +145,7 @@ export class UserComponent implements OnInit, OnDestroy {
         if (!u) {
             return "{{MISS}}";
         }
-        let key: string = u.has_admin_role ? "USER.DISABLE_ADMIN_ACTION" : "USER.ENABLE_ADMIN_ACTION";
+        let key: string = u.sysadmin_flag ? "USER.DISABLE_ADMIN_ACTION" : "USER.ENABLE_ADMIN_ACTION";
         this.translate.get(key).subscribe((res: string) => this.adminMenuText = res);
         return this.adminMenuText;
     }
@@ -202,7 +196,7 @@ export class UserComponent implements OnInit, OnDestroy {
                     let updatedUser: User = new User();
                     updatedUser.user_id = this.selectedRow[i].user_id;
 
-                    updatedUser.has_admin_role = true; // Set as admin
+                    updatedUser.sysadmin_flag = true; // Set as admin
                     observableLists.push(this.userService.updateUserRole(updatedUser));
                 }
             }
@@ -215,7 +209,7 @@ export class UserComponent implements OnInit, OnDestroy {
                     let updatedUser: User = new User();
                     updatedUser.user_id = this.selectedRow[i].user_id;
 
-                    updatedUser.has_admin_role = false; // Set as none admin
+                    updatedUser.sysadmin_flag = false; // Set as none admin
                     observableLists.push(this.userService.updateUserRole(updatedUser));
                 }
             }
@@ -289,7 +283,7 @@ export class UserComponent implements OnInit, OnDestroy {
                 operateChanges(operMessage, OperationState.success);
             });
         }), catchError(error => {
-            const message = errorHandFn(error);
+            const message = errorHandler(error);
             this.translate.get(message).subscribe(res =>
                 operateChanges(operMessage, OperationState.failure, res)
             );

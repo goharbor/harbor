@@ -18,14 +18,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/replication/util"
-
+	commonthttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/operation"
 	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/registry"
+	"github.com/goharbor/harbor/src/replication/util"
 )
 
 // Handler is the handler to handle event
@@ -51,14 +51,14 @@ type handler struct {
 func (h *handler) Handle(event *Event) error {
 	if event == nil || event.Resource == nil ||
 		event.Resource.Metadata == nil ||
-		len(event.Resource.Metadata.Vtags) == 0 {
+		len(event.Resource.Metadata.Artifacts) == 0 {
 		return errors.New("invalid event")
 	}
 	var policies []*model.Policy
 	var err error
 	switch event.Type {
-	case EventTypeImagePush, EventTypeChartUpload,
-		EventTypeImageDelete, EventTypeChartDelete:
+	case EventTypeArtifactPush, EventTypeChartUpload, EventTypeTagDelete,
+		EventTypeArtifactDelete, EventTypeChartDelete:
 		policies, err = h.getRelatedPolicies(event.Resource)
 	default:
 		return fmt.Errorf("unsupported event type %s", event.Type)
@@ -191,6 +191,6 @@ func GetLocalRegistry() *model.Registry {
 			// use secret to do the auth for the local Harbor
 			AccessSecret: config.Config.JobserviceSecret,
 		},
-		Insecure: true,
+		Insecure: !commonthttp.InternalTLSEnabled(),
 	}
 }

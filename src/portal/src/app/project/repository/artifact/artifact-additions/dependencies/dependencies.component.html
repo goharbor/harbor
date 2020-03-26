@@ -1,0 +1,10 @@
+<clr-datagrid [clrDgLoading]="loading">
+    <clr-dg-column>{{'HELM_CHART.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'HELM_CHART.VERSION' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'HELM_CHART.REPO' | translate}}</clr-dg-column>
+    <clr-dg-row *clrDgItems="let dep of dependencyList" [clrDgItem]='dep' class="history-item">
+        <clr-dg-cell class="left">{{dep.name}}</clr-dg-cell>
+        <clr-dg-cell class="left">{{dep.version}}</clr-dg-cell>
+        <clr-dg-cell class="left"><a href="{{dep.repository}}">{{dep.repository}}</a></clr-dg-cell>
+    </clr-dg-row>
+</clr-datagrid>

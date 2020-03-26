@@ -31,19 +31,14 @@ func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 		return nil, err
 	}
 
-	dockerRegistryAdapter, err := native.NewAdapter(&model.Registry{
-		URL:        registryURL,
-		Credential: registry.Credential,
-		Insecure:   registry.Insecure,
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	return &adapter{
 		client:   client,
 		registry: registry,
-		Adapter:  dockerRegistryAdapter,
+		Adapter: native.NewAdapter(&model.Registry{
+			URL:        registryURL,
+			Credential: registry.Credential,
+			Insecure:   registry.Insecure,
+		}),
 	}, nil
 }
 
@@ -59,6 +54,11 @@ func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
 func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return getAdapterInfo()
 }
+
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
 
 type adapter struct {
 	*native.Adapter
@@ -237,8 +237,8 @@ func (a *adapter) getNamespace(namespace string) (*model.Namespace, error) {
 	}, nil
 }
 
-// FetchImages fetches images
-func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+// FetchArtifacts fetches images
+func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
 	var repos []Repo
 	nameFilter, err := a.getStringFilterValue(model.FilterTypeName, filters)
 	if err != nil {
@@ -344,7 +344,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	runner.Wait()
 
 	if runner.IsCancelled() {
-		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+		return nil, fmt.Errorf("FetchArtifacts error when collect tags for repos")
 	}
 
 	var resources []*model.Resource

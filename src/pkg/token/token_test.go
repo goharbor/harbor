@@ -5,17 +5,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
-	"github.com/goharbor/harbor/src/common/rbac"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
-	if err := config.Init(); err != nil {
-		panic(err)
-	}
+	config.Init()
 
 	result := m.Run()
 	if result != 0 {
@@ -24,11 +22,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestNew(t *testing.T) {
-	rbacPolicy := &rbac.Policy{
+	rbacPolicy := &types.Policy{
 		Resource: "/project/libray/repository",
 		Action:   "pull",
 	}
-	policies := []*rbac.Policy{}
+	policies := []*types.Policy{}
 	policies = append(policies, rbacPolicy)
 
 	tokenID := int64(123)
@@ -52,11 +50,11 @@ func TestNew(t *testing.T) {
 }
 
 func TestRaw(t *testing.T) {
-	rbacPolicy := &rbac.Policy{
+	rbacPolicy := &types.Policy{
 		Resource: "/project/library/repository",
 		Action:   "pull",
 	}
-	policies := []*rbac.Policy{}
+	policies := []*types.Policy{}
 	policies = append(policies, rbacPolicy)
 
 	tokenID := int64(123)

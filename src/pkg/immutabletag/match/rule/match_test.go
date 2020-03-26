@@ -2,7 +2,7 @@ package rule
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
 	"github.com/stretchr/testify/assert"
@@ -85,48 +85,48 @@ func (s *MatchTestSuite) TestImmuMatch() {
 	s.ruleID2 = id
 	s.require.Nil(err)
 
-	match := NewRuleMatcher(1)
+	match := NewRuleMatcher()
 
-	c1 := art.Candidate{
+	c1 := selector.Candidate{
 		NamespaceID: 1,
 		Namespace:   "library",
 		Repository:  "redis",
-		Tag:         "release-1.10",
+		Tags:        []string{"release-1.10"},
 	}
-	isMatch, err := match.Match(c1)
+	isMatch, err := match.Match(1, c1)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
-	c2 := art.Candidate{
+	c2 := selector.Candidate{
 		NamespaceID: 1,
 		Namespace:   "library",
 		Repository:  "redis",
-		Tag:         "1.10",
-		Kind:        art.Image,
+		Tags:        []string{"1.10"},
+		Kind:        selector.Image,
 	}
-	isMatch, err = match.Match(c2)
+	isMatch, err = match.Match(1, c2)
 	s.require.Equal(isMatch, false)
 	s.require.Nil(err)
 
-	c3 := art.Candidate{
+	c3 := selector.Candidate{
 		NamespaceID: 1,
 		Namespace:   "immutable",
 		Repository:  "mysql",
-		Tag:         "9.4.8",
-		Kind:        art.Image,
+		Tags:        []string{"9.4.8"},
+		Kind:        selector.Image,
 	}
-	isMatch, err = match.Match(c3)
+	isMatch, err = match.Match(1, c3)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
-	c4 := art.Candidate{
+	c4 := selector.Candidate{
 		NamespaceID: 1,
 		Namespace:   "immutable",
 		Repository:  "hello",
-		Tag:         "world",
-		Kind:        art.Image,
+		Tags:        []string{"world"},
+		Kind:        selector.Image,
 	}
-	isMatch, err = match.Match(c4)
+	isMatch, err = match.Match(1, c4)
 	s.require.Equal(isMatch, false)
 	s.require.Nil(err)
 }

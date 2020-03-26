@@ -16,12 +16,8 @@ func init() {
 }
 
 func newAdapter(registry *model.Registry) (adp.Adapter, error) {
-	dockerRegistryAdapter, err := native.NewAdapter(registry)
-	if err != nil {
-		return nil, err
-	}
 	return &adapter{
-		Adapter: dockerRegistryAdapter,
+		Adapter: native.NewAdapter(registry),
 	}, nil
 }
 
@@ -42,8 +38,10 @@ type adapter struct {
 	*native.Adapter
 }
 
-// Ensure '*adapter' implements interface 'Adapter'.
-var _ adp.Adapter = (*adapter)(nil)
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
 
 // Info returns information of the registry
 func (a *adapter) Info() (*model.RegistryInfo, error) {

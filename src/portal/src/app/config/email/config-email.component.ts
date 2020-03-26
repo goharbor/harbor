@@ -13,11 +13,12 @@
 // limitations under the License.
 import { Component, Input, ViewChild, SimpleChanges, OnChanges, Output, EventEmitter } from '@angular/core';
 import { NgForm } from '@angular/forms';
-
-import { Configuration, clone, isEmpty, getChanges, StringValueItem} from '@harbor/ui';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ConfirmMessageHandler } from '../config.msg.utils';
 import { ConfigurationService } from '../config.service';
+import { Configuration } from "../../../lib/components/config/config";
+import { isEmpty, getChanges as getChangesFunc, clone } from "../../../lib/utils/utils";
+import { errorHandler } from "../../../lib/utils/shared/shared.utils";
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 @Component({
     selector: 'config-email',
@@ -56,7 +57,7 @@ export class ConfigurationEmailComponent implements OnChanges {
     }
 
     public getChanges() {
-        let allChanges = getChanges(this.originalConfig, this.currentConfig);
+        let allChanges = getChangesFunc(this.originalConfig, this.currentConfig);
         let changes = {};
         for (let prop in allChanges) {
             if (prop.startsWith('email_')) {
@@ -106,7 +107,7 @@ export class ConfigurationEmailComponent implements OnChanges {
                 this.msgHandler.showSuccess('CONFIG.TEST_MAIL_SUCCESS');
             }, error => {
                 this.testingMailOnGoing = false;
-                let err = error.error;
+                let err =  errorHandler(error);
                 if (!err) {
                     err = 'UNKNOWN';
                 }

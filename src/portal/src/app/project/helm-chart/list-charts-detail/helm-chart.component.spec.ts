@@ -2,11 +2,13 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { HelmChartComponent } from './helm-chart.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ErrorHandler, SystemInfoService, UserPermissionService, OperationService } from '@harbor/ui';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { of } from 'rxjs';
 import { HelmChartService } from "../helm-chart.service";
+import { ErrorHandler } from "../../../../lib/utils/error-handler";
+import { SystemInfoService, UserPermissionService } from "../../../../lib/services";
+import { OperationService } from "../../../../lib/components/operation/operation.service";
 
 describe('HelmChartComponent', () => {
     let component: HelmChartComponent;

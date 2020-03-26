@@ -262,7 +262,7 @@ func OnBoardUser(u *models.User) error {
 			return err
 		}
 		u.Email = existing.Email
-		u.HasAdminRole = existing.HasAdminRole
+		u.SysAdminFlag = existing.SysAdminFlag
 		u.Realname = existing.Realname
 		u.UserID = existing.UserID
 	}

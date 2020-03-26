@@ -11,17 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { NgModel } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-
-import { AuditLog } from './audit-log';
 import { SessionUser } from '../shared/session-user';
-
-import { AuditLogService } from './audit-log.service';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-
-import { State } from '../../../lib/src/service/interface';
+import { ProjectService } from "../../../ng-swagger-gen/services/project.service";
+import { AuditLog } from "../../../ng-swagger-gen/models/audit-log";
+import { Project } from "../project/project";
+import { finalize } from "rxjs/operators";
 
 const optionalSearch: {} = { 0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE' };
 
@@ -55,8 +52,13 @@ export class AuditLogComponent implements OnInit {
   search: SearchOption = new SearchOption();
   currentUser: SessionUser;
   projectId: number;
-  queryParam: AuditLog = new AuditLog();
+  projectName: string;
+  queryUsername: string;
+  queryStartTime: string;
+  queryEndTime: string;
+  queryOperation: string[] = [];
   auditLogs: AuditLog[];
+  loading: boolean = true;
 
   toggleName = optionalSearch;
   currentOption: number = 0;
@@ -82,25 +84,60 @@ export class AuditLogComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private auditLogService: AuditLogService,
+    private auditLogService: ProjectService,
     private messageHandlerService: MessageHandlerService) {
     // Get current user from registered resolver.
     this.route.data.subscribe(data => this.currentUser = <SessionUser>data['auditLogResolver']);
   }
 
   ngOnInit(): void {
-    this.projectId = +this.route.snapshot.parent.params['id'];
-    this.queryParam.project_id = this.projectId;
-    this.queryParam.page_size = this.pageSize;
-
+    const resolverData = this.route.parent.snapshot.data;
+    if (resolverData) {
+      const pro: Project = <Project>resolverData['projectResolver'];
+      this.projectName = pro.name;
+    }
   }
 
-  private retrieve(): void {
+  retrieve() {
+    const arr: string[] = [];
+    if (this.queryUsername) {
+      arr.push(`username=~${this.queryUsername}`);
+    }
+    if (this.queryStartTime && this.queryEndTime) {
+      arr.push(`op_time=[${this.queryStartTime}~${this.queryEndTime}]`);
+    } else {
+      if (this.queryStartTime) {
+        arr.push(`op_time=[${this.queryStartTime}~]`);
+      }
+      if (this.queryEndTime) {
+        arr.push(`op_time=[~${this.queryEndTime}]`);
+      }
+    }
+    if (this.queryOperation && this.queryOperation.length > 0) {
+      arr.push(`operation={${this.queryOperation.join(' ')}}`);
+    }
+
+    const param: ProjectService.GetLogsParams = {
+      projectName: this.projectName,
+      pageSize: this.pageSize,
+      page: this.currentPage,
+    };
+    if (arr && arr.length > 0) {
+      param.q = encodeURIComponent(arr.join(','));
+    }
+    this.loading = true;
     this.auditLogService
-      .listAuditLogs(this.queryParam)
+      .getLogsResponse(param)
+      .pipe(finalize(() => this.loading = false))
       .subscribe(
         response => {
-          this.totalRecordCount = Number.parseInt(response.headers.get('x-total-count'));
+          // Get total count
+          if (response.headers) {
+            let xHeader: string = response.headers.get("x-total-count");
+            if (xHeader) {
+              this.totalRecordCount = Number.parseInt(xHeader);
+            }
+          }
           this.auditLogs = response.body;
         },
         error => {
@@ -108,24 +145,18 @@ export class AuditLogComponent implements OnInit {
         }
       );
   }
-
-  retrievePage() {
-    this.queryParam.page = this.currentPage;
-    this.retrieve();
-  }
-
   doSearchAuditLogs(searchUsername: string): void {
-    this.queryParam.username = searchUsername;
+    this.queryUsername = searchUsername;
     this.retrieve();
   }
 
   doSearchByStartTime(fromTimestamp: string): void {
-    this.queryParam.begin_timestamp = fromTimestamp;
+    this.queryStartTime = fromTimestamp;
     this.retrieve();
   }
 
   doSearchByEndTime(toTimestamp: string): void {
-    this.queryParam.end_timestamp = toTimestamp;
+    this.queryEndTime = toTimestamp;
     this.retrieve();
   }
 
@@ -134,7 +165,7 @@ export class AuditLogComponent implements OnInit {
     let operationFilter: string[] = [];
     for (let filterOption of this.filterOptions) {
       if (filterOption.checked) {
-        operationFilter.push('operation=' + filterOption.key);
+        operationFilter.push(filterOption.key);
       } else {
         selectAll = false;
       }
@@ -142,7 +173,7 @@ export class AuditLogComponent implements OnInit {
     if (selectAll) {
       operationFilter = [];
     }
-    this.queryParam.keywords = operationFilter.join('&');
+    this.queryOperation = operationFilter;
     this.retrieve();
   }
 

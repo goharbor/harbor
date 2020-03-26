@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors All rights reserved.
+Copyright The Helm Authors.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"k8s.io/helm/pkg/helm/environment"
 	"k8s.io/helm/pkg/plugin"
@@ -62,13 +63,15 @@ type pluginGetter struct {
 
 // Get runs downloader plugin command
 func (p *pluginGetter) Get(href string) (*bytes.Buffer, error) {
-	argv := []string{p.certFile, p.keyFile, p.cAFile, href}
-	prog := exec.Command(filepath.Join(p.base, p.command), argv...)
+	commands := strings.Split(p.command, " ")
+	argv := append(commands[1:], p.certFile, p.keyFile, p.cAFile, href)
+	prog := exec.Command(filepath.Join(p.base, commands[0]), argv...)
 	plugin.SetupPluginEnv(p.settings, p.name, p.base)
 	prog.Env = os.Environ()
 	buf := bytes.NewBuffer(nil)
 	prog.Stdout = buf
 	prog.Stderr = os.Stderr
+	prog.Stdin = os.Stdin
 	if err := prog.Run(); err != nil {
 		if eerr, ok := err.(*exec.ExitError); ok {
 			os.Stderr.Write(eerr.Stderr)

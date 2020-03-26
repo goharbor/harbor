@@ -163,7 +163,7 @@ func TestAuthenticateWithAdmin(t *testing.T) {
 	if user.Username != "mike" {
 		t.Errorf("unexpected ldap user authenticate fail: %s = %s", "user.Username", user.Username)
 	}
-	if !user.HasAdminRole {
+	if !user.AdminRoleInAuth {
 		t.Errorf("ldap user mike should have admin role!")
 	}
 }
@@ -179,7 +179,7 @@ func TestAuthenticateWithoutAdmin(t *testing.T) {
 	if user.Username != "user001" {
 		t.Errorf("unexpected ldap user authenticate fail: %s = %s", "user.Username", user.Username)
 	}
-	if user.HasAdminRole {
+	if user.AdminRoleInAuth {
 		t.Errorf("ldap user user001 should not have admin role!")
 	}
 }

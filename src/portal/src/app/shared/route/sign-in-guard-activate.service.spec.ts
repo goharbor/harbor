@@ -2,8 +2,8 @@ import { TestBed, async, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SignInGuard } from './sign-in-guard-activate.service';
 import { SessionService } from '../../shared/session.service';
-import { UserPermissionService } from '@harbor/ui';
 import { of } from 'rxjs';
+import { UserPermissionService } from "../../../lib/services";
 
 describe('SignInGuard', () => {
   const fakeUserPermissionService = {

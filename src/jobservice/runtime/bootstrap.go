@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/hook"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
@@ -86,6 +87,10 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 			return errors.Errorf("initialize job context error: %s", err)
 		}
 	}
+	// Make sure the job context is created
+	if rootContext.JobContext == nil {
+		rootContext.JobContext = impl.NewDefaultContext(ctx)
+	}
 
 	// Alliance to config
 	cfg := config.DefaultConfig
@@ -117,7 +122,12 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		hookCallback := func(URL string, change *job.StatusChange) error {
 			msg := fmt.Sprintf("status change: job=%s, status=%s", change.JobID, change.Status)
 			if !utils.IsEmptyStr(change.CheckIn) {
-				msg = fmt.Sprintf("%s, check_in=%s", msg, change.CheckIn)
+				// Ignore the real check in message to avoid too big message stream
+				cData := change.CheckIn
+				if len(cData) > 256 {
+					cData = fmt.Sprintf("<DATA BLOCK: %d bytes>", len(cData))
+				}
+				msg = fmt.Sprintf("%s, check_in=%s", msg, cData)
 			}
 
 			evt := &hook.Event{
@@ -153,7 +163,6 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 
 		// Start agent
 		// Non blocking call
-		hookAgent.Attach(lcmCtl)
 		if err = hookAgent.Serve(); err != nil {
 			return errors.Errorf("start hook agent error: %s", err)
 		}
@@ -186,6 +195,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 			terminated = true
 			return
 		case err = <-errChan:
+			logger.Errorf("Received error from error chan: %s", err)
 			return
 		}
 	}(rootContext.ErrorChan)
@@ -220,6 +230,7 @@ func (bs *Bootstrap) createAPIServer(ctx context.Context, cfg *config.Configurat
 		Port:     cfg.Port,
 	}
 	if cfg.HTTPSConfig != nil {
+		serverConfig.Protocol = config.JobServiceProtocolHTTPS
 		serverConfig.Cert = cfg.HTTPSConfig.Cert
 		serverConfig.Key = cfg.HTTPSConfig.Key
 	}

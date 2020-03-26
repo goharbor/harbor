@@ -1,13 +1,13 @@
 package retention
 
 import (
-	"strings"
-	"testing"
-
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
+	"strings"
+	"testing"
 )
 
 type ControllerTestSuite struct {
@@ -28,7 +28,7 @@ func TestController(t *testing.T) {
 
 func (s *ControllerTestSuite) TestPolicy() {
 	projectMgr := &fakeProjectManager{}
-	repositoryMgr := &fakeRepositoryManager{}
+	repositoryMgr := &repository.FakeManager{}
 	retentionScheduler := &fakeRetentionScheduler{}
 	retentionLauncher := &fakeLauncher{}
 	retentionMgr := NewManager()
@@ -126,7 +126,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 
 func (s *ControllerTestSuite) TestExecution() {
 	projectMgr := &fakeProjectManager{}
-	repositoryMgr := &fakeRepositoryManager{}
+	repositoryMgr := &repository.FakeManager{}
 	retentionScheduler := &fakeRetentionScheduler{}
 	retentionLauncher := &fakeLauncher{}
 	retentionMgr := NewManager()

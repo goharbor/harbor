@@ -18,8 +18,10 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/golang-migrate/migrate"
 	_ "github.com/golang-migrate/migrate/database/postgres" // import pgsql driver for migrator
 	_ "github.com/golang-migrate/migrate/source/file"       // import local file driver for migrator
@@ -92,21 +94,18 @@ func (p *pgsql) Register(alias ...string) error {
 
 // UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.
 func (p *pgsql) UpgradeSchema() error {
-	dbURL := url.URL{
-		Scheme:   "postgres",
-		User:     url.UserPassword(p.usr, p.pwd),
-		Host:     fmt.Sprintf("%s:%s", p.host, p.port),
-		Path:     p.database,
-		RawQuery: fmt.Sprintf("sslmode=%s", p.sslmode),
+	port, err := strconv.ParseInt(p.port, 10, 64)
+	if err != nil {
+		return err
 	}
-
-	// For UT
-	path := os.Getenv("POSTGRES_MIGRATION_SCRIPTS_PATH")
-	if len(path) == 0 {
-		path = defaultMigrationPath
-	}
-	srcURL := fmt.Sprintf("file://%s", path)
-	m, err := migrate.New(srcURL, dbURL.String())
+	m, err := NewMigrator(&models.PostGreSQL{
+		Host:     p.host,
+		Port:     int(port),
+		Username: p.usr,
+		Password: p.pwd,
+		Database: p.database,
+		SSLMode:  p.sslmode,
+	})
 	if err != nil {
 		return err
 	}
@@ -125,4 +124,23 @@ func (p *pgsql) UpgradeSchema() error {
 		return err
 	}
 	return nil
+}
+
+// NewMigrator creates a migrator base on the information
+func NewMigrator(database *models.PostGreSQL) (*migrate.Migrate, error) {
+	dbURL := url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(database.Username, database.Password),
+		Host:     fmt.Sprintf("%s:%d", database.Host, database.Port),
+		Path:     database.Database,
+		RawQuery: fmt.Sprintf("sslmode=%s", database.SSLMode),
+	}
+
+	// For UT
+	path := os.Getenv("POSTGRES_MIGRATION_SCRIPTS_PATH")
+	if len(path) == 0 {
+		path = defaultMigrationPath
+	}
+	srcURL := fmt.Sprintf("file://%s", path)
+	return migrate.New(srcURL, dbURL.String())
 }

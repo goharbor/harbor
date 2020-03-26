@@ -15,7 +15,6 @@
 package dao
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
@@ -120,66 +119,6 @@ func TestGetRepositories(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, 1, len(repositories))
 	assert.Equal(t, name, repositories[0].Name)
-}
-
-func TestGetTopRepos(t *testing.T) {
-	var err error
-	require := require.New(t)
-
-	require.NoError(GetOrmer().Begin())
-	defer func() {
-		require.NoError(GetOrmer().Rollback())
-	}()
-
-	projectIDs := []int64{}
-
-	project1 := models.Project{
-		OwnerID: 1,
-		Name:    "project1",
-	}
-	project1.ProjectID, err = AddProject(project1)
-	require.NoError(err)
-	projectIDs = append(projectIDs, project1.ProjectID)
-
-	project2 := models.Project{
-		OwnerID: 1,
-		Name:    "project2",
-	}
-	project2.ProjectID, err = AddProject(project2)
-	require.NoError(err)
-	projectIDs = append(projectIDs, project2.ProjectID)
-
-	repository1 := &models.RepoRecord{
-		Name:      fmt.Sprintf("%v/repository1", project1.Name),
-		ProjectID: project1.ProjectID,
-	}
-	err = AddRepository(*repository1)
-	require.NoError(err)
-	require.NoError(IncreasePullCount(repository1.Name))
-
-	repository2 := &models.RepoRecord{
-		Name:      fmt.Sprintf("%v/repository2", project1.Name),
-		ProjectID: project1.ProjectID,
-	}
-	err = AddRepository(*repository2)
-	require.NoError(err)
-	require.NoError(IncreasePullCount(repository2.Name))
-	require.NoError(IncreasePullCount(repository2.Name))
-
-	repository3 := &models.RepoRecord{
-		Name:      fmt.Sprintf("%v/repository3", project2.Name),
-		ProjectID: project2.ProjectID,
-	}
-	err = AddRepository(*repository3)
-	require.NoError(err)
-	require.NoError(IncreasePullCount(repository3.Name))
-	require.NoError(IncreasePullCount(repository3.Name))
-	require.NoError(IncreasePullCount(repository3.Name))
-
-	topRepos, err := GetTopRepos(projectIDs, 100)
-	require.NoError(err)
-	require.Len(topRepos, 3)
-	require.Equal(topRepos[0].Name, repository3.Name)
 }
 
 func addRepository(repository *models.RepoRecord) error {

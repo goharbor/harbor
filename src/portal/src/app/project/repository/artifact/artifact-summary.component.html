@@ -1,0 +1,39 @@
+<div class="arrow-block" *ngIf="!withAdmiral">
+    <a (click)="goBackPro()">{{'SIDE_NAV.PROJECTS'| translate}}</a>
+    <span class="back-icon"><</span>
+    <a (click)="goBackRep()">{{'REPOSITORY.REPOSITORIES'| translate}}</a>
+    <span class="back-icon"><</span>
+    <a (click)="goBack()">{{repositoryName}}</a>
+
+    <span *ngFor="let digest of referArtifactNameArray;let i = index">
+                    &lt;<a (click)="jumpDigest(i)" >{{digest | slice:0:15}}</a></span>
+</div>
+
+<div class="title-wrapper">
+    <div class="title-block arrow-block" *ngIf="withAdmiral">
+        <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
+    </div>
+    <div class="title-block">
+        <h2 class="custom-h2">{{artifact?.digest | slice:0:15}}</h2>
+    </div>
+</div>
+<ng-container *ngIf="!loading">
+    <!-- Extra Attributes -->
+    <artifact-common-properties [artifactDetails]="artifact"></artifact-common-properties>
+
+    <!-- tags -->
+    <artifact-tag [artifactDetails]="artifact" [projectName]="projectName" [repositoryName]="repositoryName"
+                  (refreshArtifact)="refreshArtifact()"></artifact-tag>
+
+    <!-- Additions -->
+    <artifact-additions
+            [projectName]="projectName"
+            [projectId]="projectId"
+            [repoName]="repositoryName"
+            [digest]="artifactDigest"
+                        [additionLinks]="artifact?.addition_links"></artifact-additions>
+</ng-container>
+<div *ngIf="loading" class="clr-row mt-3 center">
+    <span class="spinner spinner-md"></span>
+</div>
+

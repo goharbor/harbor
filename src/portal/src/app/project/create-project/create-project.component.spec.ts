@@ -5,8 +5,8 @@ import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.com
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
-import { ProjectService } from '@harbor/ui';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
+import { ProjectService } from "../../../lib/services";
 
 describe('CreateProjectComponent', () => {
     let component: CreateProjectComponent;

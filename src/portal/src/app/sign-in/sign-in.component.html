@@ -1,6 +1,6 @@
 <clr-main-container>
     <global-message [isAppLevel]="true"></global-message>
-    <navigator (showPwdChangeModal)="openModal($event)"></navigator>
+    <navigator (showDialogModalAction)="openModal($event)"></navigator>
     <search-result></search-result>
     <div class="login-wrapper" [ngStyle]="{'background-image': customLoginBgImg? 'url(/images/' + customLoginBgImg + ')': ''}">
         <form #signInForm="ngForm" class="login">
@@ -27,7 +27,6 @@
                         <input clrCheckbox type="checkbox" id="rememberme" #rememberMeBox (click)="clickRememberMe($event)" [checked]="rememberMe">
                         <label class="reset-label" for="rememberme">{{ 'SIGN_IN.REMEMBER' | translate }}</label>
                     </clr-checkbox-wrapper>
-                    <a *ngIf="showForgetPwd" href="javascript:void(0)" class="forgot-password-link" (click)="forgotPassword()">{{'SIGN_IN.FORGOT_PWD' | translate}}</a>
                 </div>
                 <div [class.visibility-hidden]="!isError" class="error active">
                     {{ 'SIGN_IN.INVALID_MSG' | translate }}

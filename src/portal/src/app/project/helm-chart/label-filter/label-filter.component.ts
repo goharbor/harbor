@@ -2,10 +2,10 @@ import { OnInit, Input, EventEmitter, Component, ViewChild, ElementRef, ChangeDe
 import {ClrDatagridFilterInterface} from "@clr/angular";
 import { fromEvent } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-
-import { Label, Tag } from '@harbor/ui';
 import { HelmChartVersion } from '../helm-chart.interface.service';
 import { ResourceType } from '../../../shared/shared.const';
+import { Label } from "../../../../lib/services";
+import { Artifact } from "../../../../../ng-swagger-gen/models/artifact";
 
 @Component({
     selector: "hbr-chart-version-label-filter",
@@ -47,7 +47,7 @@ export class LabelFilterComponent implements ClrDatagridFilterInterface<any>, On
         if (this.resourceType === ResourceType.CHART_VERSION) {
             return (cv as HelmChartVersion).labels.some(label => this.selectedLabels.get(label.id));
         } else if (this.resourceType === ResourceType.REPOSITORY_TAG) {
-            return (cv as Tag).labels.some(label => this.selectedLabels.get(label.id));
+            return (cv as Artifact).labels.some(label => this.selectedLabels.get(label.id));
         } else {
             return true;
         }

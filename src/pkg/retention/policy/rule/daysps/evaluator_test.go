@@ -17,10 +17,10 @@ package daysps
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -54,7 +54,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 
 func (e *EvaluatorTestSuite) TestProcess() {
 	now := time.Now().UTC()
-	data := []*art.Candidate{
+	data := []*selector.Candidate{
 		{PushedTime: daysAgo(now, 1, time.Hour)},
 		{PushedTime: daysAgo(now, 2, time.Hour)},
 		{PushedTime: daysAgo(now, 3, time.Hour)},

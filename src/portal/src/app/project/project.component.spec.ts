@@ -10,6 +10,10 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ConfigurationService } from '../config/config.service';
 import { SessionService } from "../shared/session.service";
 import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+import { ProjectService } from '../../lib/services';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
+import { FilterComponent } from '../../lib/components/filter/filter.component';
 describe('ProjectComponent', () => {
     let component: ProjectComponent;
     let fixture: ComponentFixture<ProjectComponent>;
@@ -210,6 +214,19 @@ describe('ProjectComponent', () => {
               });
         }
     };
+    const mockProjectService = {
+        listProjects() {
+            return of({
+                body: []
+            }).pipe(delay(0));
+        }
+    };
+    const mockMessageHandlerService = {
+        refresh() {
+        },
+        showSuccess() {
+        },
+    };
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             schemas: [
@@ -224,11 +241,16 @@ describe('ProjectComponent', () => {
                 NoopAnimationsModule,
                 HttpClientTestingModule
             ],
-            declarations: [ProjectComponent],
+            declarations: [
+                ProjectComponent,
+                FilterComponent
+            ],
             providers: [
                 TranslateService,
                 { provide: SessionService, useValue: mockSessionService },
                 { provide: ConfigurationService, useValue: mockConfigurationService },
+                { provide: ProjectService, useValue: mockProjectService },
+                { provide: MessageHandlerService, useValue: mockMessageHandlerService },
 
             ]
         })

@@ -57,18 +57,18 @@ func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
 	// delete the chart on destination registry
 	if dst.Deleted {
 		return t.delete(&chart{
-			name:    dst.Metadata.GetResourceName(),
-			version: dst.Metadata.Vtags[0],
+			name:    dst.Metadata.Repository.Name,
+			version: dst.Metadata.Artifacts[0].Tags[0],
 		})
 	}
 
 	srcChart := &chart{
-		name:    src.Metadata.GetResourceName(),
-		version: src.Metadata.Vtags[0],
+		name:    src.Metadata.Repository.Name,
+		version: src.Metadata.Artifacts[0].Tags[0],
 	}
 	dstChart := &chart{
-		name:    dst.Metadata.GetResourceName(),
-		version: dst.Metadata.Vtags[0],
+		name:    dst.Metadata.Repository.Name,
+		version: dst.Metadata.Artifacts[0].Tags[0],
 	}
 	// copy the chart from source registry to the destination
 	return t.copy(srcChart, dstChart, dst.Override)

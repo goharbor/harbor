@@ -21,36 +21,26 @@ redis:
   password: {{redis_password}}
   db: {{redis_db_index_reg}}
 http:
+{% if internal_tls.enabled %}
+  addr: :5443
+{% else %}
   addr: :5000
+{% endif %}
   secret: placeholder
   debug:
     addr: localhost:5001
+{% if internal_tls.enabled %}
+  tls:
+    certificate: /etc/harbor/tls/registry.crt
+    key: /etc/harbor/tls/registry.key
+{% endif %}
+
 auth:
-  token:
-    issuer: harbor-token-issuer
-    realm: {{public_url}}/service/token
-    rootcertbundle: /etc/registry/root.crt
-    service: harbor-registry
+  htpasswd:
+    realm: harbor-registry-basic-realm
+    path: /etc/registry/passwd
 validation:
   disabled: true
-notifications:
-  endpoints:
-  - name: harbor
-    disabled: false
-    url: {{core_url}}/service/notifications
-    timeout: 3000ms
-    threshold: 5
-    backoff: 1s
-    ignoredmediatypes:
-        - application/vnd.docker.image.rootfs.diff.tar.gzip
-        - application/vnd.docker.image.rootfs.foreign.diff.tar.gzip
-        - application/vnd.oci.image.layer.v1.tar
-        - application/vnd.oci.image.layer.v1.tar+gzip
-        - application/vnd.oci.image.layer.v1.tar+zstd
-        - application/vnd.oci.image.layer.nondistributable.v1.tar
-        - application/vnd.oci.image.layer.nondistributable.v1.tar+gzip
-        - application/vnd.oci.image.layer.nondistributable.v1.tar+zstd
-        - application/octet-stream
 compatibility:
   schema1:
     enabled: true

@@ -16,6 +16,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -24,12 +25,15 @@ import (
 	"github.com/astaxie/beego/validation"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/pkg/errors"
+	serror "github.com/goharbor/harbor/src/server/error"
 )
 
 const (
 	defaultPageSize int64 = 500
 	maxPageSize     int64 = 500
+
+	// APIVersion is the current core api version
+	APIVersion = "v2.0"
 )
 
 // BaseAPI wraps common methods for controllers to host API
@@ -60,18 +64,10 @@ func (b *BaseAPI) Render() error {
 
 // RenderError provides shortcut to render http error
 func (b *BaseAPI) RenderError(code int, text string) {
-	http.Error(b.Ctx.ResponseWriter, text, code)
-}
-
-// RenderFormattedError renders errors with well formatted style
-func (b *BaseAPI) RenderFormattedError(errorCode int, errorMsg string) {
-	error := commonhttp.Error{
-		Code:    errorCode,
-		Message: errorMsg,
-	}
-	formattedErrMsg := error.String()
-	log.Errorf("%s %s failed with error: %s", b.Ctx.Request.Method, b.Ctx.Request.URL.String(), formattedErrMsg)
-	b.RenderError(error.Code, formattedErrMsg)
+	serror.SendError(b.Ctx.ResponseWriter, &commonhttp.Error{
+		Code:    code,
+		Message: text,
+	})
 }
 
 // DecodeJSONReq decodes a json request
@@ -199,7 +195,7 @@ func (b *BaseAPI) ParseAndHandleError(text string, err error) {
 	}
 	log.Errorf("%s: %v", text, err)
 	if e, ok := err.(*commonhttp.Error); ok {
-		b.RenderFormattedError(e.Code, e.Message)
+		b.RenderError(e.Code, e.Message)
 		return
 	}
 	b.SendInternalServerError(errors.New(""))
@@ -207,22 +203,22 @@ func (b *BaseAPI) ParseAndHandleError(text string, err error) {
 
 // SendUnAuthorizedError sends unauthorized error to the client.
 func (b *BaseAPI) SendUnAuthorizedError(err error) {
-	b.RenderFormattedError(http.StatusUnauthorized, err.Error())
+	b.RenderError(http.StatusUnauthorized, err.Error())
 }
 
 // SendConflictError sends conflict error to the client.
 func (b *BaseAPI) SendConflictError(err error) {
-	b.RenderFormattedError(http.StatusConflict, err.Error())
+	b.RenderError(http.StatusConflict, err.Error())
 }
 
 // SendNotFoundError sends not found error to the client.
 func (b *BaseAPI) SendNotFoundError(err error) {
-	b.RenderFormattedError(http.StatusNotFound, err.Error())
+	b.RenderError(http.StatusNotFound, err.Error())
 }
 
 // SendBadRequestError sends bad request error to the client.
 func (b *BaseAPI) SendBadRequestError(err error) {
-	b.RenderFormattedError(http.StatusBadRequest, err.Error())
+	b.RenderError(http.StatusBadRequest, err.Error())
 }
 
 // SendInternalServerError sends internal server error to the client.
@@ -230,21 +226,35 @@ func (b *BaseAPI) SendBadRequestError(err error) {
 // When you send an internal server error  to the client, you expect user to check the log
 // to find out the root cause.
 func (b *BaseAPI) SendInternalServerError(err error) {
-	log.Error(err.Error())
-	b.RenderFormattedError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	b.RenderError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 }
 
 // SendForbiddenError sends forbidden error to the client.
 func (b *BaseAPI) SendForbiddenError(err error) {
-	b.RenderFormattedError(http.StatusForbidden, err.Error())
+	b.RenderError(http.StatusForbidden, err.Error())
 }
 
 // SendPreconditionFailedError sends conflict error to the client.
 func (b *BaseAPI) SendPreconditionFailedError(err error) {
-	b.RenderFormattedError(http.StatusPreconditionFailed, err.Error())
+	b.RenderError(http.StatusPreconditionFailed, err.Error())
 }
 
 // SendStatusServiceUnavailableError sends service unavailable error to the client.
 func (b *BaseAPI) SendStatusServiceUnavailableError(err error) {
-	b.RenderFormattedError(http.StatusServiceUnavailable, err.Error())
+	b.RenderError(http.StatusServiceUnavailable, err.Error())
+}
+
+// SendError return the error defined in OCI spec: https://github.com/opencontainers/distribution-spec/blob/master/spec.md#errors
+// {
+//	"errors:" [{
+//			"code": <error identifier>,
+//			"message": <message describing condition>,
+//			// optional
+//			"detail": <unstructured>
+//		},
+//		...
+//	]
+// }
+func (b *BaseAPI) SendError(err error) {
+	serror.SendError(b.Ctx.ResponseWriter, err)
 }

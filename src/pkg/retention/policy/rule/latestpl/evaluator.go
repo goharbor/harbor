@@ -17,11 +17,11 @@ package latestpl
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"math"
 	"sort"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
@@ -41,7 +41,7 @@ type evaluator struct {
 	n int
 }
 
-func (e *evaluator) Process(artifacts []*art.Candidate) ([]*art.Candidate, error) {
+func (e *evaluator) Process(artifacts []*selector.Candidate) ([]*selector.Candidate, error) {
 	sort.Slice(artifacts, func(i, j int) bool {
 		return artifacts[i].PulledTime > artifacts[j].PulledTime
 	})

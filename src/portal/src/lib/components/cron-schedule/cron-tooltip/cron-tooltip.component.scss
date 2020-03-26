@@ -1,0 +1,13 @@
+.table-style {
+    margin-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    color: #fff;
+    .table-title {
+        border-top-left-radius: 0.125rem;
+        border-top-right-radius: 0.125rem;
+        span {
+           font-size: 16px;
+        }
+    }
+}

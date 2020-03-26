@@ -12,7 +12,8 @@ def pull_harbor_image(registry, username, password, image, tag, expected_login_e
     if expected_login_error_message != None:
         return
     time.sleep(2)
-    _docker_api.docker_image_pull(r'{}/{}'.format(registry, image), tag = tag, expected_error_message = expected_error_message)
+    ret = _docker_api.docker_image_pull(r'{}/{}'.format(registry, image), tag = tag, expected_error_message = expected_error_message)
+    print ret
 
 def push_image_to_project(project_name, registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None):
     _docker_api = DockerAPI()
@@ -36,7 +37,7 @@ def push_special_image_to_project(project_name, registry, username, password, im
     time.sleep(2)
     if expected_login_error_message != None:
         return
-    _docker_api.docker_image_build(r'{}/{}/{}'.format(registry, project_name, image), tags = tags, size=size, expected_error_message=expected_error_message)
+    return _docker_api.docker_image_build(r'{}/{}/{}'.format(registry, project_name, image), tags = tags, size=size, expected_error_message=expected_error_message)
 
 def is_repo_exist_in_project(repositories, repo_name):
     result = False
@@ -45,7 +46,9 @@ def is_repo_exist_in_project(repositories, repo_name):
             return True
     return result
 
-class Repository(base.Base):
+class Repository(base.Base, object):
+    def __init__(self):
+        super(Repository,self).__init__(api_type = "repository")
 
     def list_tags(self, repository, **kwargs):
         client = self._get_client(**kwargs)
@@ -72,14 +75,20 @@ class Repository(base.Base):
         if self.image_exists(repository, tag, **kwargs):
             raise Exception("image %s:%s exists" % (repository, tag))
 
-    def delete_repoitory(self, repo_name, **kwargs):
+    def delete_repoitory(self, project_name, repo_name, **kwargs):
         client = self._get_client(**kwargs)
-        _, status_code, _ = client.repositories_repo_name_delete_with_http_info(repo_name)
+        _, status_code, _ = client.delete_repository_with_http_info(project_name, repo_name)
         base._assert_status_code(200, status_code)
 
-    def get_repository(self, project_id, **kwargs):
+    def list_repositories(self, project_name, **kwargs):
         client = self._get_client(**kwargs)
-        data, status_code, _ = client.repositories_get_with_http_info(project_id)
+        data, status_code, _ = client.list_repositories_with_http_info(project_name)
+        base._assert_status_code(200, status_code)
+        return data
+
+    def get_repository(self, project_name, repo_name, **kwargs):
+        client = self._get_client(**kwargs)
+        data, status_code, _ = client.get_repository_with_http_info(project_name, repo_name)
         base._assert_status_code(200, status_code)
         return data
 
@@ -100,28 +109,8 @@ class Repository(base.Base):
         if tag.scan_overview != None:
             raise Exception("Image should be <Not Scanned> state!")
 
-    def check_image_scan_result(self, repo_name, tag, expected_scan_status = "Success", **kwargs):
-        timeout_count = 30
-        while True:
-            time.sleep(5)
-            timeout_count = timeout_count - 1
-            if (timeout_count == 0):
-                break
-            _tag = self.get_tag(repo_name, tag, **kwargs)
-            if _tag.name == tag and _tag.scan_overview != None:
-                for report in _tag.scan_overview.values():
-                    if report.get('scan_status') == expected_scan_status:
-                        return
-        raise Exception("Scan image result is not as expected {}.".format(expected_scan_status))
-
-    def scan_image(self, repo_name, tag, expect_status_code = 202, **kwargs):
-        client = self._get_client(**kwargs)
-        data, status_code, _ = client.repositories_repo_name_tags_tag_scan_post_with_http_info(repo_name, tag)
-        base._assert_status_code(expect_status_code, status_code)
-        return data
-
     def repository_should_exist(self, project_id, repo_name, **kwargs):
-        repositories = self.get_repository(project_id, **kwargs)
+        repositories = self.list_repositories(project_id, **kwargs)
         if is_repo_exist_in_project(repositories, repo_name) == False:
             raise Exception("Repository {} is not exist.".format(repo_name))
 

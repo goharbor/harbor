@@ -14,13 +14,13 @@
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <clr-dg-action-bar>
-      <button class="btn btn-sm btn-secondary" [disabled]="!hasRobotCreatePermission" (click)="openAddRobotModal()">
+      <button class="btn  btn-secondary" [disabled]="!hasRobotCreatePermission" (click)="openAddRobotModal()">
         <span>
           <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'ROBOT_ACCOUNT.NEW_ROBOT_ACCOUNT'
           | translate }}
         </span>
       </button>
-      <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn btn-sm
+      <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn
         btn-link" clrDropdownTrigger>
         <span>{{'MEMBER.ACTION' | translate}}<clr-icon shape="caret
             down"></clr-icon></span>
@@ -43,16 +43,18 @@
     <clr-datagrid [(clrDgSelected)]="selectedRow" [clrDgLoading]="loading">
       <clr-dg-column>{{'ROBOT_ACCOUNT.NAME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'ROBOT_ACCOUNT.ENABLED_STATE' | translate}}</clr-dg-column>
-      <clr-dg-column>{{'ROBOT_ACCOUNT.EXPIRATION' | translate}}</clr-dg-column>
       <clr-dg-column>{{'ROBOT_ACCOUNT.DESCRIPTION' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'ROBOT_ACCOUNT.CREATETION' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'ROBOT_ACCOUNT.EXPIRATION' | translate}}</clr-dg-column>
       <clr-dg-row *clrDgItems="let r of robots" [clrDgItem]="r">
         <clr-dg-cell>{{r.name}}</clr-dg-cell>
         <clr-dg-cell [ngSwitch]="r.disabled">
           <clr-icon shape="check-circle" *ngSwitchCase="false" size="20" class="color-green"></clr-icon>
           <clr-icon shape="times-circle" *ngSwitchCase="true" size="16" class="color-red red-position"></clr-icon>
         </clr-dg-cell>
-        <clr-dg-cell>{{r.expires_at * 1000 | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>{{r.description}}</clr-dg-cell>
+        <clr-dg-cell>{{r.creation_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{r.expires_at === -1?("ROBOT_ACCOUNT.NEVER_EXPIRED" | translate):(r.expires_at * 1000 | date: 'short')}}</clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
         <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}}

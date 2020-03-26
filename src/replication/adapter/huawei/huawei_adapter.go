@@ -3,6 +3,7 @@ package huawei
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -11,7 +12,6 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -40,11 +40,20 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return nil
 }
 
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
+
 // Adapter is for images replications between harbor and Huawei image repository(SWR)
 type adapter struct {
 	*native.Adapter
 	registry *model.Registry
 	client   *common_http.Client
+	// original http client with no modifer,
+	// huawei's some api interface with basic authorization,
+	// some with bearer token authorization.
+	oriClient *http.Client
 }
 
 // Info gets info about Huawei SWR
@@ -116,7 +125,6 @@ func (a *adapter) ConvertResourceMetadata(resourceMetadata *model.ResourceMetada
 	metadata := &model.ResourceMetadata{
 		Repository: resourceMetadata.Repository,
 		Vtags:      resourceMetadata.Vtags,
-		Labels:     resourceMetadata.Labels,
 	}
 	return metadata, nil
 }
@@ -224,34 +232,30 @@ func (a *adapter) HealthCheck() (model.HealthStatus, error) {
 }
 
 func newAdapter(registry *model.Registry) (adp.Adapter, error) {
-	dockerRegistryAdapter, err := native.NewAdapter(registry)
-	if err != nil {
-		return nil, err
-	}
-
 	var (
-		modifiers = []modifier.Modifier{
-			&auth.UserAgentModifier{
-				UserAgent: adp.UserAgentReplication,
-			}}
+		modifiers  = []modifier.Modifier{}
 		authorizer modifier.Modifier
 	)
 	if registry.Credential != nil {
-		authorizer = auth.NewBasicAuthCredential(
+		authorizer = basic.NewAuthorizer(
 			registry.Credential.AccessKey,
 			registry.Credential.AccessSecret)
 		modifiers = append(modifiers, authorizer)
 	}
 
+	transport := util.GetHTTPTransport(registry.Insecure)
 	return &adapter{
-		Adapter:  dockerRegistryAdapter,
+		Adapter:  native.NewAdapter(registry),
 		registry: registry,
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: util.GetHTTPTransport(registry.Insecure),
+				Transport: transport,
 			},
 			modifiers...,
 		),
+		oriClient: &http.Client{
+			Transport: transport,
+		},
 	}, nil
 
 }

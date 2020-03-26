@@ -1,13 +1,17 @@
 import os
 import yaml
 import logging
-from g import versions_file_path, host_root_dir, DEFAULT_UID
+
+from models import InternalTLS
+from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
 from utils.misc import generate_random_string, owner_can_read, other_can_read
 
 default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
 default_db_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
 default_https_cert_path = '/your/certificate/path'
 default_https_key_path = '/your/certificate/path'
+
+REGISTRY_USER_NAME = 'harbor_registry_user'
 
 
 def validate(conf: dict, **kwargs):
@@ -53,7 +57,10 @@ def validate(conf: dict, **kwargs):
     # ca_bundle validate
     if conf.get('registry_custom_ca_bundle_path'):
         registry_custom_ca_bundle_path = conf.get('registry_custom_ca_bundle_path') or ''
-        ca_bundle_host_path = os.path.join(host_root_dir, registry_custom_ca_bundle_path)
+        if registry_custom_ca_bundle_path.startswith('/data/'):
+            ca_bundle_host_path = registry_custom_ca_bundle_path
+        else:
+            ca_bundle_host_path = os.path.join(host_root_dir, registry_custom_ca_bundle_path.lstrip('/'))
         try:
             uid = os.stat(ca_bundle_host_path).st_uid
             st_mode = os.stat(ca_bundle_host_path).st_mode
@@ -80,6 +87,7 @@ def validate(conf: dict, **kwargs):
     # TODO:
     # If user enable trust cert dir, need check if the files in this dir is readable.
 
+
 def parse_versions():
     if not versions_file_path.is_file():
         return {}
@@ -87,7 +95,8 @@ def parse_versions():
         versions = yaml.load(f)
     return versions
 
-def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseum):
+
+def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, with_chartmuseum):
     '''
     :param configs: config_parser object
     :returns: dict of configs
@@ -97,15 +106,15 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
         configs = yaml.load(f)
 
     config_dict = {
-        'adminserver_url': "http://adminserver:8080",
-        'registry_url': "http://registry:5000",
-        'registry_controller_url': "http://registryctl:8080",
-        'core_url': "http://core:8080",
-        'core_local_url': "http://127.0.0.1:8080",
-        'token_service_url': "http://core:8080/service/token",
+        'registry_url': 'http://registry:5000',
+        'registry_controller_url': 'http://registryctl:8080',
+        'core_url': 'http://core:8080',
+        'core_local_url': 'http://127.0.0.1:8080',
+        'token_service_url': 'http://core:8080/service/token',
         'jobservice_url': 'http://jobservice:8080',
         'clair_url': 'http://clair:6060',
         'clair_adapter_url': 'http://clair-adapter:8080',
+        'trivy_adapter_url': 'http://trivy-adapter:8080',
         'notary_url': 'http://notary-server:4443',
         'chart_repository_url': 'http://chartmuseum:9999'
     }
@@ -215,16 +224,27 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
     # Global proxy configs
     proxy_config = configs.get('proxy') or {}
     proxy_components = proxy_config.get('components') or []
+    no_proxy_config = proxy_config.get('no_proxy')
+    all_no_proxy = INTERNAL_NO_PROXY_DN
+    if no_proxy_config:
+        all_no_proxy |= set(no_proxy_config.split(','))
+
     for proxy_component in proxy_components:
       config_dict[proxy_component + '_http_proxy'] = proxy_config.get('http_proxy') or ''
       config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
-      config_dict[proxy_component + '_no_proxy'] = proxy_config.get('no_proxy') or '127.0.0.1,localhost,core,registry'
+      config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
 
     # Clair configs, optional
     clair_configs = configs.get("clair") or {}
     config_dict['clair_db'] = 'postgres'
     updaters_interval = clair_configs.get("updaters_interval", None)
     config_dict['clair_updaters_interval'] = 12 if updaters_interval is None else updaters_interval
+
+    # Trivy configs, optional
+    trivy_configs = configs.get("trivy") or {}
+    config_dict['trivy_github_token'] = trivy_configs.get("github_token") or ''
+    config_dict['trivy_skip_update'] = trivy_configs.get("skip_update") or False
+    config_dict['trivy_ignore_unfixed'] = trivy_configs.get("ignore_unfixed") or False
 
     # Chart configs
     chart_configs = configs.get("chart") or {}
@@ -305,16 +325,44 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
         config_dict['external_database'] = False
 
     # update redis configs
-    config_dict.update(get_redis_configs(configs.get("external_redis", None), with_clair))
+    config_dict.update(get_redis_configs(configs.get("external_redis", None), with_clair, with_trivy))
 
     # auto generated secret string for core
     config_dict['core_secret'] = generate_random_string(16)
 
-     # Admiral configs
-    config_dict['admiral_url'] = configs.get("admiral_url") or ""
-
     # UAA configs
     config_dict['uaa'] = configs.get('uaa') or {}
+
+    config_dict['registry_username'] = REGISTRY_USER_NAME
+    config_dict['registry_password'] = generate_random_string(32)
+
+    internal_tls_config = configs.get('internal_tls')
+    # TLS related configs
+    if internal_tls_config and internal_tls_config.get('enabled'):
+        config_dict['internal_tls'] = InternalTLS(
+            internal_tls_config['enabled'],
+            internal_tls_config['verify_client_cert'],
+            internal_tls_config['dir'],
+            configs['data_volume'],
+            with_notary=with_notary,
+            with_clair=with_clair,
+            with_trivy=with_trivy,
+            with_chartmuseum=with_chartmuseum,
+            external_database=config_dict['external_database'])
+    else:
+        config_dict['internal_tls'] = InternalTLS()
+
+    if config_dict['internal_tls'].enabled:
+        config_dict['registry_url'] = 'https://registry:5443'
+        config_dict['registry_controller_url'] = 'https://registryctl:8443'
+        config_dict['core_url'] = 'https://core:8443'
+        config_dict['core_local_url'] = 'https://core:8443'
+        config_dict['token_service_url'] = 'https://core:8443/service/token'
+        config_dict['jobservice_url'] = 'https://jobservice:8443'
+        config_dict['clair_adapter_url'] = 'https://clair-adapter:8443'
+        config_dict['trivy_adapter_url'] = 'https://trivy-adapter:8443'
+        # config_dict['notary_url'] = 'http://notary-server:4443'
+        config_dict['chart_repository_url'] = 'https://chartmuseum:9443'
 
     return config_dict
 
@@ -340,7 +388,7 @@ def get_redis_url(db, redis=None):
     return "redis://{host}:{port}/{db}".format(**kwargs)
 
 
-def get_redis_configs(external_redis=None, with_clair=True):
+def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
     """Returns configs for redis
 
     >>> get_redis_configs()['external_redis']
@@ -351,6 +399,8 @@ def get_redis_configs(external_redis=None, with_clair=True):
     'redis://redis:6379/2'
     >>> get_redis_configs()['redis_url_clair']
     'redis://redis:6379/4'
+    >>> get_redis_configs()['trivy_redis_url']
+    'redis://redis:6379/5'
 
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['external_redis']
     True
@@ -360,8 +410,12 @@ def get_redis_configs(external_redis=None, with_clair=True):
     'redis://anonymous:pass@localhost:6379/2'
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_clair']
     'redis://anonymous:pass@localhost:6379/4'
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['trivy_redis_url']
+    'redis://anonymous:pass@localhost:6379/5'
 
     >>> 'redis_url_clair' not in get_redis_configs(with_clair=False)
+    True
+    >>> 'trivy_redis_url' not in get_redis_configs(with_trivy=False)
     True
     """
 
@@ -376,6 +430,8 @@ def get_redis_configs(external_redis=None, with_clair=True):
         'jobservice_db_index': 2,
         'chartmuseum_db_index': 3,
         'clair_db_index': 4,
+        'trivy_db_index': 5,
+        'idle_timeout_seconds': 30,
     }
 
     # overwriting existing keys by external_redis
@@ -387,6 +443,7 @@ def get_redis_configs(external_redis=None, with_clair=True):
     configs['redis_db_index_reg'] = redis['registry_db_index']
     configs['redis_db_index_js'] = redis['jobservice_db_index']
     configs['redis_db_index_chart'] = redis['chartmuseum_db_index']
+    configs['redis_idle_timeout_seconds'] = redis['idle_timeout_seconds']
 
     configs['redis_url_js'] = get_redis_url(configs['redis_db_index_js'], redis)
     configs['redis_url_reg'] = get_redis_url(configs['redis_db_index_reg'], redis)
@@ -394,5 +451,9 @@ def get_redis_configs(external_redis=None, with_clair=True):
     if with_clair:
         configs['redis_db_index_clair'] = redis['clair_db_index']
         configs['redis_url_clair'] = get_redis_url(configs['redis_db_index_clair'], redis)
+
+    if with_trivy:
+        configs['redis_db_index_trivy'] = redis['trivy_db_index']
+        configs['trivy_redis_url'] = get_redis_url(configs['redis_db_index_trivy'], redis)
 
     return configs

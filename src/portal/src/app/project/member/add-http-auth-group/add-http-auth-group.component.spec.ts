@@ -1,12 +1,12 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { HarborLibraryModule } from "@harbor/ui";
 import { of } from "rxjs";
 import { MemberService } from '../member.service';
-import { AppConfigService } from "../../../app-config.service";
+import { AppConfigService } from "../../../services/app-config.service";
 import { ClarityModule } from '@clr/angular';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AddHttpAuthGroupComponent } from './add-http-auth-group.component';
+import { HarborLibraryModule } from "../../../../lib/harbor-library.module";
 
 describe('AddHttpAuthGroupComponent', () => {
   let component: AddHttpAuthGroupComponent;

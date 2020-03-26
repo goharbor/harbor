@@ -53,6 +53,11 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 	}
 }
 
+var (
+	_ adp.Adapter       = (*adapter)(nil)
+	_ adp.ChartRegistry = (*adapter)(nil)
+)
+
 type adapter struct {
 	registry *model.Registry
 	client   *Client

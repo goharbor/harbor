@@ -21,8 +21,8 @@ Resource  ../../resources/Util.robot
 *** Keywords ***
 
 Ldap User Should Not See Change Password
-    Click Element  //clr-header//clr-dropdown[2]//button
-    Sleep  1
+    Retry Element Click  //clr-header//clr-dropdown[2]//button
+    Sleep  2
     Page Should Not Contain  Password
 
 

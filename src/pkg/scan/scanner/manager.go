@@ -15,7 +15,7 @@
 package scanner
 
 import (
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"

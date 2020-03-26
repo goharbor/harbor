@@ -29,16 +29,11 @@ func init() {
 	log.Infof("the factory for adapter %s registered", model.RegistryTypeGoogleGcr)
 }
 
-func newAdapter(registry *model.Registry) (*adapter, error) {
-	dockerRegistryAdapter, err := native.NewAdapter(registry)
-	if err != nil {
-		return nil, err
-	}
-
+func newAdapter(registry *model.Registry) *adapter {
 	return &adapter{
 		registry: registry,
-		Adapter:  dockerRegistryAdapter,
-	}, nil
+		Adapter:  native.NewAdapter(registry),
+	}
 }
 
 type factory struct {
@@ -46,13 +41,18 @@ type factory struct {
 
 // Create ...
 func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
-	return newAdapter(r)
+	return newAdapter(r), nil
 }
 
 // AdapterPattern ...
 func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return getAdapterInfo()
 }
+
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
 
 type adapter struct {
 	*native.Adapter
@@ -125,7 +125,7 @@ func (a adapter) HealthCheck() (model.HealthStatus, error) {
 		log.Errorf("no credential to ping registry %s", a.registry.URL)
 		return model.Unhealthy, nil
 	}
-	if err = a.PingGet(); err != nil {
+	if err = a.Ping(); err != nil {
 		log.Errorf("failed to ping registry %s: %v", a.registry.URL, err)
 		return model.Unhealthy, nil
 	}

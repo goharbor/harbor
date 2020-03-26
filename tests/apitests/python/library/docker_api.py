@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import base
+import subprocess
 
 try:
     import docker
@@ -9,9 +10,43 @@ except ImportError:
     pip.main(['install', 'docker'])
     import docker
 
+def docker_login_cmd(harbor_host, user, password, enable_manifest = True):
+    command = ["sudo", "docker", "login", harbor_host, "-u", user, "-p", password]
+    print "Docker Login Command: ", command
+    base.run_command(command)
+    if enable_manifest == True:
+        try:
+            ret = subprocess.check_output(["./tests/apitests/python/update_docker_cfg.sh"], shell=False)
+        except subprocess.CalledProcessError, exc:
+            raise Exception("Failed to update docker config, error is {} {}.".format(exc.returncode, exc.output))
+
+def docker_manifest_create(index, manifests):
+    command = ["sudo", "docker","manifest","create",index]
+    command.extend(manifests)
+    print "Docker Manifest Command: ", command
+    base.run_command(command)
+
+def docker_manifest_push(index):
+    command = ["sudo", "docker","manifest","push",index]
+    print "Docker Manifest Command: ", command
+    ret = base.run_command(command)
+    index_sha256=""
+    manifest_list=[]
+    for line in ret.split("\n"):
+        if line[:7] == "sha256:":
+            index_sha256 = line
+        if line.find('Pushed ref') == 0:
+            manifest_list.append(line[-71:])
+    return index_sha256, manifest_list
+
+def docker_manifest_push_to_harbor(index, manifests, harbor_server, user, password):
+    docker_login_cmd(harbor_server, user, password)
+    docker_manifest_create(index, manifests)
+    return docker_manifest_push(index)
+
 class DockerAPI(object):
     def __init__(self):
-        self.DCLIENT = docker.APIClient(base_url='unix://var/run/docker.sock',version='auto',timeout=10)
+        self.DCLIENT = docker.APIClient(base_url='unix://var/run/docker.sock',version='auto',timeout=30)
         self.DCLIENT2 = docker.from_env()
 
     def docker_login(self, registry, username, password, expected_error_message = None):
@@ -38,6 +73,7 @@ class DockerAPI(object):
         ret = ""
         try:
             ret = base._get_string_from_unicode(self.DCLIENT.pull(r'{}:{}'.format(image, _tag)))
+            return ret
         except Exception, err:
             caught_err = True
             if expected_error_message is not None:
@@ -49,7 +85,7 @@ class DockerAPI(object):
         if caught_err == False:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
-                    raise Exception(r" Failed to catch error [{}] when pull image {}".format (expected_error_message, image))
+                    raise Exception(r" Failed to catch error [{}] when pull image {}, return message: {}".format (expected_error_message, image, str(ret)))
             else:
                 if str(ret).lower().find("error".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when pull image {}, return message is [{}]".format (image, ret))
@@ -71,6 +107,7 @@ class DockerAPI(object):
             expected_error_message = None
         try:
             ret = base._get_string_from_unicode(self.DCLIENT.push(harbor_registry, tag, stream=True))
+            return ret
         except Exception, err:
             caught_err = True
             if expected_error_message is not None:
@@ -82,10 +119,12 @@ class DockerAPI(object):
         if caught_err == False:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
-                    raise Exception(r" Failed to catch error [{}] when push image {}".format (expected_error_message, harbor_registry))
+                    raise Exception(r" Failed to catch error [{}] when push image {}, return message: {}".
+                                    format (expected_error_message, harbor_registry, str(ret)))
             else:
                 if str(ret).lower().find("errorDetail".lower()) >= 0:
-                    raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".format (harbor_registry, ret))
+                    raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".
+                                    format (harbor_registry, ret))
 
     def docker_image_build(self, harbor_registry, tags=None, size=1, expected_error_message = None):
         caught_err = False
@@ -111,6 +150,9 @@ class DockerAPI(object):
                 print("build image %s with size %d" % (repo, size))
                 self.DCLIENT.remove_image(repo)
             self.DCLIENT.remove_container(c)
+            self.DCLIENT.pull(repo)
+            image = self.DCLIENT2.images.get(repo)
+            return repo, image.id
         except Exception, err:
             caught_err = True
             if expected_error_message is not None:
@@ -122,7 +164,8 @@ class DockerAPI(object):
         if caught_err == False:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
-                    raise Exception(r" Failed to catch error [{}] when push image {}".format (expected_error_message, harbor_registry))
+                    raise Exception(r" Failed to catch error [{}] when build image {}, return message: {}".
+                                    format (expected_error_message, harbor_registry, str(ret)))
             else:
                 if str(ret).lower().find("errorDetail".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".format (harbor_registry, ret))

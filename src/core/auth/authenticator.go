@@ -212,17 +212,15 @@ func SearchGroup(groupKey string) (*models.UserGroup, error) {
 // SearchAndOnBoardUser ... Search user and OnBoard user, if user exist, return the ID of current user.
 func SearchAndOnBoardUser(username string) (int, error) {
 	user, err := SearchUser(username)
-	if user == nil {
-		return 0, ErrorUserNotExist
-	}
 	if err != nil {
 		return 0, err
 	}
-	if user != nil {
-		err = OnBoardUser(user)
-		if err != nil {
-			return 0, err
-		}
+	if user == nil {
+		return 0, ErrorUserNotExist
+	}
+	err = OnBoardUser(user)
+	if err != nil {
+		return 0, err
 	}
 	return user.UserID, nil
 }

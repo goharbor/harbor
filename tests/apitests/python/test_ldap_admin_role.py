@@ -20,9 +20,8 @@ sys.path.append(os.environ["SWAGGER_CLIENT_PATH"])
 import unittest
 import testutils
 import swagger_client
-from swagger_client.models.project_req import ProjectReq  
-from swagger_client.models.access_log import AccessLog  
-from swagger_client.models.configurations import Configurations 
+from swagger_client.models.project_req import ProjectReq
+from swagger_client.models.configurations import Configurations
 from swagger_client.rest import ApiException
 from swagger_client.models.configurations import Configurations 
 from pprint import pprint
@@ -56,6 +55,12 @@ class TestLdapAdminRole(unittest.TestCase):
         projects = self.mike_product_api.projects_get(name="test_private")
         self.assertTrue(projects.count>1)
         self.project_id = projects[0].project_id
+
+        # check the mike is not admin in Database
+        user_list = self.product_api.users_get(username="mike")
+        pprint(user_list[0])
+        self.assertFalse(user_list[0].sysadmin_flag)
+
         pass
 
 

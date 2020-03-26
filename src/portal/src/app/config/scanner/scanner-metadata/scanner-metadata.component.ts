@@ -4,10 +4,11 @@ import {
 } from "@angular/core";
 import { ConfigScannerService } from "../config-scanner.service";
 import { finalize } from "rxjs/operators";
-import { ErrorHandler, DATABASE_UPDATED_PROPERTY } from "@harbor/ui";
 import { ScannerMetadata } from "../scanner-metadata";
 import { DatePipe } from "@angular/common";
 import { TranslateService } from "@ngx-translate/core";
+import { ErrorHandler } from "../../../../lib/utils/error-handler";
+import { DATABASE_UPDATED_PROPERTY } from "../../../../lib/utils/utils";
 
 @Component({
     selector: 'scanner-metadata',

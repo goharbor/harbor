@@ -2,7 +2,13 @@
 IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
 
 #echo $IP
-sudo sed "s/reg.mydomain.com/$IP/" -i make/harbor.yml
+sudo sed "s/reg.mydomain.com/$IP/" make/harbor.yml.tmpl |sudo tee make/harbor.yml
+
+# enable internal tls
+echo "internal_tls:" >> make/harbor.yml
+echo "  enabled: true" >> make/harbor.yml
+echo "  verify_client_cert: true" >> make/harbor.yml
+echo "  dir: /etc/harbor/tls/internal" >> make/harbor.yml
 
 # TODO: remove it when scanner adapter support internal access of harbor
 echo "storage_service:" >> make/harbor.yml

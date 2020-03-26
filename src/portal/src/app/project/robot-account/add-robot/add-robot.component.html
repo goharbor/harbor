@@ -6,7 +6,7 @@
         <form #robotForm="ngForm">
             <section class="form-block">
                 <div class="clr-row">
-                    <div class="clr-col-3 permission">
+                    <div class="clr-col-4 permission permission-dark">
                         <label class="col-md-3 required">
                             {{'ROBOT_ACCOUNT.NAME' | translate}}
                         </label>
@@ -34,7 +34,27 @@
                     </div>
                 </div>
                 <div class="clr-row mt-1">
-                    <div class="clr-col-3 permission">
+                    <div class="clr-col-4 permission permission-dark">
+                        <label class="col-md-3">{{'ROBOT_ACCOUNT.EXPIRES_AT' | translate}}
+                            <clr-tooltip>
+                                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                    <span>{{'ROBOT_ACCOUNT.EXPIRATION_TOOLTIP' | translate}}</span>
+                                </clr-tooltip-content>
+                            </clr-tooltip>
+                        </label>
+                    </div>
+                    <div class="clr-col padding-left-0 date">
+                        <input class="input-width-date" type="date" readonly clrDate name="expiresAt"
+                               [(clrDate)]="expiresDate" placeholder="{{expiresDatePlaceholder}}">
+                        <clr-checkbox-wrapper>
+                            <input type="checkbox" clrCheckbox name="neverExpired" [(ngModel)]="isNeverExpired" (change)="switch()" />
+                            <label>{{"ROBOT_ACCOUNT.NEVER_EXPIRED" | translate}}</label>
+                        </clr-checkbox-wrapper>
+                    </div>
+                </div>
+                <div class="clr-row mt-1">
+                    <div class="clr-col-4 permission permission-dark">
                         <label class="col-md-3">{{'REPLICATION.DESCRIPTION' |translate}}</label>
                     </div>
                     <div class="clr-col padding-left-0">
@@ -48,7 +68,7 @@
                     </div>
                 </div>
                 <div class="clr-row mt-1">
-                    <div class="clr-col-3 permission">
+                    <div class="clr-col-4 permission permission-dark">
                         <label class="col-md-3">
                             {{'ROBOT_ACCOUNT.PERMISSIONS' | translate}}
                         </label>

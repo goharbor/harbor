@@ -23,11 +23,10 @@ import (
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/config/metadata"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/security/secret"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
 	corecfg "github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 )
 
 // ConfigAPI ...
@@ -47,7 +46,7 @@ func (c *ConfigAPI) Prepare() {
 
 	// Only internal container can access /api/internal/configurations
 	if strings.EqualFold(c.Ctx.Request.RequestURI, "/api/internal/configurations") {
-		if _, ok := c.Ctx.Request.Context().Value(filter.SecurCtxKey).(*secret.SecurityContext); !ok {
+		if s, ok := security.FromContext(c.Ctx.Request.Context()); !ok || s.Name() != "secret" {
 			c.SendUnAuthorizedError(errors.New("UnAuthorized"))
 			return
 		}
@@ -126,7 +125,7 @@ func (c *ConfigAPI) validateCfg(cfgs map[string]interface{}) (bool, error) {
 		return true, err
 	}
 	if !flag {
-		if failedKeys := checkUnmodifiable(c.cfgManager, cfgs, common.AUTHMode, common.HTTPAuthProxyCaseSensitive); len(failedKeys) > 0 {
+		if failedKeys := checkUnmodifiable(c.cfgManager, cfgs, common.AUTHMode); len(failedKeys) > 0 {
 			return false, fmt.Errorf("the keys %v can not be modified as new users have been inserted into database", failedKeys)
 		}
 	}

@@ -1,12 +1,18 @@
 import { AfterViewInit, Component, ElementRef, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { throwError as observableThrowError, Observable } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { throwError as observableThrowError, forkJoin } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from "ngx-cookie";
+import * as SwaggerUI from 'swagger-ui';
+import { mergeDeep } from "../../lib/utils/utils";
 
-const SwaggerUI = require('swagger-ui');
+enum SwaggerJsonUrls {
+  SWAGGER1 = '/swagger.json',
+  SWAGGER2 = '/swagger2.json'
+}
+
 @Component({
   selector: 'dev-center',
   templateUrl: 'dev-center.component.html',
@@ -15,8 +21,6 @@ const SwaggerUI = require('swagger-ui');
 })
 export class DevCenterComponent implements AfterViewInit, OnInit {
   private ui: any;
-  private host: any;
-  private json: any;
   constructor(
     private el: ElementRef,
     private http: HttpClient,
@@ -36,25 +40,29 @@ export class DevCenterComponent implements AfterViewInit, OnInit {
   }
 
   ngAfterViewInit() {
-    const csrfCookie = this.cookieService.get('_xsrf');
+
+    const _this = this;
     const interceptor = {
       requestInterceptor: {
-        apply: function (requestObj) {
+        apply: (requestObj) => {
+          const csrfCookie = this.cookieService.get('__csrf');
           const headers = requestObj.headers || {};
           if (csrfCookie) {
-            headers["X-Xsrftoken"] = atob(csrfCookie.split("|")[0]);
+            headers["X-Harbor-CSRF-Token"] = csrfCookie;
           }
           return requestObj;
         }
       }
     };
-    this.http.get("/swagger.json")
+    forkJoin([this.http.get(SwaggerJsonUrls.SWAGGER1), this.http.get(SwaggerJsonUrls.SWAGGER2)])
       .pipe(catchError(error => observableThrowError(error)))
-      .subscribe(json => {
+      .subscribe(jsonArr => {
+        const json: object = {};
+        mergeDeep(json, jsonArr[0], jsonArr[1]);
         json['host'] = window.location.host;
         const protocal = window.location.protocol;
         json['schemes'] = [protocal.replace(":", "")];
-        let ui = SwaggerUI({
+        this.ui = SwaggerUI({
           spec: json,
           domNode: this.el.nativeElement.querySelector('.swagger-container'),
           deepLinking: true,
@@ -64,12 +72,11 @@ export class DevCenterComponent implements AfterViewInit, OnInit {
           requestInterceptor: interceptor.requestInterceptor,
           authorizations: {
             csrf: function () {
-              this.headers['X-Xsrftoken'] = csrfCookie;
+              this.headers['X-Harbor-CSRF-Token'] = _this.cookieService.get('__csrf');
               return true;
             }
           }
         });
       });
   }
-
 }

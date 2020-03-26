@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, Output, ViewChild, EventEmitter } from '@angular/core';
-import { Modal } from '../../../../lib/src/service/interface';
+import { Modal } from '../../../lib/services/interface';
 
 import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
 import { User } from '../../user/user';

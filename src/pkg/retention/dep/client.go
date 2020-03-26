@@ -17,11 +17,12 @@ package dep
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"net/http"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/jobservice/config"
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/clients/core"
 )
 
@@ -38,7 +39,7 @@ type Client interface {
 	//  Returns:
 	//    []*art.Candidate : candidates returned
 	//    error            : common error if any errors occurred
-	GetCandidates(repo *art.Repository) ([]*art.Candidate, error)
+	GetCandidates(repo *selector.Repository) ([]*selector.Candidate, error)
 
 	// Delete the given repository
 	//
@@ -47,7 +48,7 @@ type Client interface {
 	//
 	//  Returns:
 	//    error            : common error if any errors occurred
-	DeleteRepository(repo *art.Repository) error
+	DeleteRepository(repo *selector.Repository) error
 
 	// Delete the specified candidate
 	//
@@ -56,7 +57,7 @@ type Client interface {
 	//
 	//  Returns:
 	//    error : common error if any errors occurred
-	Delete(candidate *art.Candidate) error
+	Delete(candidate *selector.Candidate) error
 }
 
 // NewClient new a basic client
@@ -88,33 +89,48 @@ type basicClient struct {
 }
 
 // GetCandidates gets the tag candidates under the repository
-func (bc *basicClient) GetCandidates(repository *art.Repository) ([]*art.Candidate, error) {
+func (bc *basicClient) GetCandidates(repository *selector.Repository) ([]*selector.Candidate, error) {
 	if repository == nil {
 		return nil, errors.New("repository is nil")
 	}
-	candidates := make([]*art.Candidate, 0)
+	candidates := make([]*selector.Candidate, 0)
 	switch repository.Kind {
-	case art.Image:
-		images, err := bc.coreClient.ListAllImages(repository.Namespace, repository.Name)
+	case selector.Image:
+		artifacts, err := bc.coreClient.ListAllArtifacts(repository.Namespace, repository.Name)
 		if err != nil {
 			return nil, err
 		}
-		for _, image := range images {
+		for _, art := range artifacts {
+			if art.Digest == "" {
+				return nil, fmt.Errorf("Lack Digest of Candidate for %s/%s", repository.Namespace, repository.Name)
+			}
 			labels := make([]string, 0)
-			for _, label := range image.Labels {
+			for _, label := range art.Labels {
 				labels = append(labels, label.Name)
 			}
-			candidate := &art.Candidate{
-				Kind:         art.Image,
+			tags := make([]string, 0)
+			var lastPulledTime time.Time
+			var lastPushedTime time.Time
+			for _, t := range art.Tags {
+				tags = append(tags, t.Name)
+				if t.PullTime.After(lastPulledTime) {
+					lastPulledTime = t.PullTime
+				}
+				if t.PushTime.After(lastPushedTime) {
+					lastPushedTime = t.PushTime
+				}
+			}
+			candidate := &selector.Candidate{
+				Kind:         selector.Image,
 				NamespaceID:  repository.NamespaceID,
 				Namespace:    repository.Namespace,
 				Repository:   repository.Name,
-				Tag:          image.Name,
-				Digest:       image.Digest,
+				Tags:         tags,
+				Digest:       art.Digest,
 				Labels:       labels,
-				CreationTime: image.Created.Unix(),
-				PulledTime:   image.PullTime.Unix(),
-				PushedTime:   image.PushTime.Unix(),
+				CreationTime: art.PushTime.Unix(),
+				PulledTime:   lastPulledTime.Unix(),
+				PushedTime:   lastPushedTime.Unix(),
 			}
 			candidates = append(candidates, candidate)
 		}
@@ -149,13 +165,13 @@ func (bc *basicClient) GetCandidates(repository *art.Repository) ([]*art.Candida
 }
 
 // DeleteRepository deletes the specified repository
-func (bc *basicClient) DeleteRepository(repo *art.Repository) error {
+func (bc *basicClient) DeleteRepository(repo *selector.Repository) error {
 	if repo == nil {
 		return errors.New("repository is nil")
 	}
 	switch repo.Kind {
-	case art.Image:
-		return bc.coreClient.DeleteImageRepository(repo.Namespace, repo.Name)
+	case selector.Image:
+		return bc.coreClient.DeleteArtifactRepository(repo.Namespace, repo.Name)
 	/*
 		case art.Chart:
 			return bc.coreClient.DeleteChartRepository(repo.Namespace, repo.Name)
@@ -166,13 +182,13 @@ func (bc *basicClient) DeleteRepository(repo *art.Repository) error {
 }
 
 // Deletes the specified candidate
-func (bc *basicClient) Delete(candidate *art.Candidate) error {
+func (bc *basicClient) Delete(candidate *selector.Candidate) error {
 	if candidate == nil {
 		return errors.New("candidate is nil")
 	}
 	switch candidate.Kind {
-	case art.Image:
-		return bc.coreClient.DeleteImage(candidate.Namespace, candidate.Repository, candidate.Tag)
+	case selector.Image:
+		return bc.coreClient.DeleteArtifact(candidate.Namespace, candidate.Repository, candidate.Digest)
 	/*
 		case art.Chart:
 			return bc.coreClient.DeleteChart(candidate.Namespace, candidate.Repository, candidate.Tag)

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
@@ -17,6 +18,11 @@ const (
 	clientTimeout         = 10 * time.Second
 	maxIdleConnections    = 10
 	idleConnectionTimeout = 30 * time.Second
+)
+
+var (
+	once           sync.Once
+	chartTransport *http.Transport
 )
 
 // ChartClient is a http client to get the content from the external http server
@@ -31,12 +37,15 @@ type ChartClient struct {
 // NewChartClient is constructor of ChartClient
 // credential can be nil
 func NewChartClient(credential *Credential) *ChartClient { // Create http client with customized timeouts
+	once.Do(func() {
+		chartTransport = commonhttp.GetHTTPTransport(commonhttp.SecureTransport).Clone()
+		chartTransport.MaxIdleConns = maxIdleConnections
+		chartTransport.IdleConnTimeout = idleConnectionTimeout
+	})
+
 	client := &http.Client{
-		Timeout: clientTimeout,
-		Transport: &http.Transport{
-			MaxIdleConns:    maxIdleConnections,
-			IdleConnTimeout: idleConnectionTimeout,
-		},
+		Timeout:   clientTimeout,
+		Transport: chartTransport,
 	}
 
 	return &ChartClient{

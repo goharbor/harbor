@@ -5,36 +5,37 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/rbac"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/label"
-	"github.com/goharbor/harbor/src/core/middlewares"
-	n_event "github.com/goharbor/harbor/src/core/notifier/event"
+	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/orm"
+	"github.com/goharbor/harbor/src/server/middleware/quota"
 )
 
 const (
-	namespaceParam          = ":repo"
-	nameParam               = ":name"
-	filenameParam           = ":filename"
-	defaultRepo             = "library"
-	rootUploadingEndpoint   = "/api/chartrepo/charts"
-	rootIndexEndpoint       = "/chartrepo/index.yaml"
-	chartRepoHealthEndpoint = "/api/chartrepo/health"
+	namespaceParam = ":repo"
+	nameParam      = ":name"
+	filenameParam  = ":filename"
 
 	accessLevelPublic = iota
 	accessLevelRead
@@ -48,6 +49,13 @@ const (
 	contentTypeMultipart  = "multipart/form-data"
 	// chartPackageFileExtension is the file extension used for chart packages
 	chartPackageFileExtension = "tgz"
+)
+
+var (
+	defaultRepo             = "library"
+	rootUploadingEndpoint   = fmt.Sprintf("/api/%s/chartrepo/charts", api.APIVersion)
+	chartRepoHealthEndpoint = fmt.Sprintf("/api/%s/chartrepo/health", api.APIVersion)
+	rootIndexEndpoint       = "/chartrepo/index.yaml"
 )
 
 // chartController is a singleton instance
@@ -108,7 +116,7 @@ func (cra *ChartRepositoryAPI) requireAccess(action rbac.Action, subresource ...
 	return cra.RequireProjectAccess(cra.namespace, action, subresource...)
 }
 
-// GetHealthStatus handles GET /api/chartrepo/health
+// GetHealthStatus handles GET /chartrepo/health
 func (cra *ChartRepositoryAPI) GetHealthStatus() {
 	// Check access
 	if !cra.SecurityCtx.IsAuthenticated() {
@@ -280,8 +288,8 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 	}
 
 	event := &n_event.Event{}
-	metaData := &n_event.ChartDeleteMetaData{
-		ChartMetaData: n_event.ChartMetaData{
+	metaData := &metadata.ChartDeleteMetaData{
+		ChartMetaData: metadata.ChartMetaData{
 			ProjectName: cra.namespace,
 			ChartName:   chartName,
 			Versions:    []string{version},
@@ -388,8 +396,8 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 	}
 
 	event := &n_event.Event{}
-	metaData := &n_event.ChartDeleteMetaData{
-		ChartMetaData: n_event.ChartMetaData{
+	metaData := &metadata.ChartDeleteMetaData{
+		ChartMetaData: metadata.ChartMetaData{
 			ProjectName: cra.namespace,
 			ChartName:   chartName,
 			Versions:    versions,
@@ -520,8 +528,8 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 
 func (cra *ChartRepositoryAPI) addDownloadChartEventContext(fileName, namespace string, request *http.Request) {
 	chartName, version := parseChartVersionFromFilename(fileName)
-	event := &n_event.ChartDownloadMetaData{
-		ChartMetaData: n_event.ChartMetaData{
+	event := &metadata.ChartDownloadMetaData{
+		ChartMetaData: metadata.ChartMetaData{
 			ProjectName: namespace,
 			ChartName:   chartName,
 			Versions:    []string{version},
@@ -598,7 +606,10 @@ func initializeChartController() (*chartserver.Controller, error) {
 		return nil, errors.New("Endpoint URL of chart storage server is malformed")
 	}
 
-	controller, err := chartserver.NewController(url, middlewares.New(middlewares.ChartMiddlewares).Create())
+	chartVersionURL := fmt.Sprintf(`^/api/%s/chartrepo/(?P<namespace>[^?#]+)/charts/(?P<name>[^?#]+)/(?P<version>[^?#]+)/?$`, api.APIVersion)
+	skipper := middleware.NegativeSkipper(middleware.MethodAndPathSkipper(http.MethodDelete, regexp.MustCompile(chartVersionURL)))
+
+	controller, err := chartserver.NewController(url, orm.Middleware(), quota.UploadChartVersionMiddleware(), quota.RefreshForProjectMiddleware(skipper))
 	if err != nil {
 		return nil, errors.New("Failed to initialize chart API controller")
 	}

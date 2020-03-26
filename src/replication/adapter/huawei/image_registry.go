@@ -10,8 +10,8 @@ import (
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
-// FetchImages gets resources from Huawei SWR
-func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+// FetchArtifacts gets resources from Huawei SWR
+func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
 
 	resources := []*model.Resource{}
 
@@ -70,7 +70,7 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, diges
 	r.Header.Add("content-type", "application/json; charset=utf-8")
 	r.Header.Add("Authorization", "Bearer "+token.Token)
 
-	resp, err := a.client.Do(r)
+	resp, err := a.oriClient.Do(r)
 	if err != nil {
 		return exist, digest, err
 	}
@@ -113,7 +113,7 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 	r.Header.Add("content-type", "application/json; charset=utf-8")
 	r.Header.Add("Authorization", "Bearer "+token.Token)
 
-	resp, err := a.client.Do(r)
+	resp, err := a.oriClient.Do(r)
 	if err != nil {
 		return err
 	}
@@ -151,7 +151,6 @@ func parseRepoQueryResultToResource(repo hwRepoQueryResult) *model.Resource {
 	resource.Metadata = &model.ResourceMetadata{
 		Repository: repository,
 		Vtags:      repo.Tags,
-		Labels:     []string{},
 	}
 	resource.Deleted = false
 	resource.Override = false

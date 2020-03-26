@@ -8,12 +8,12 @@ import (
 
 	common_job "github.com/goharbor/harbor/src/common/job"
 	cm "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/controller/scan"
+	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/all"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scanner"
 	"github.com/pkg/errors"
 )
 

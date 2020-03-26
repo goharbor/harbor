@@ -13,19 +13,17 @@
 // limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from "rxjs";
-import {
-    Configuration, StringValueItem, SystemSettingsComponent,
-    isEmpty, clone } from '@harbor/ui';
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { SessionService } from '../shared/session.service';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-
-import { AppConfigService } from '../app-config.service';
+import { AppConfigService } from '../services/app-config.service';
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
 import { ConfigurationService } from './config.service';
-
+import { Configuration, StringValueItem } from "../../lib/components/config/config";
+import { SystemSettingsComponent } from "../../lib/components/config/system/system-settings.component";
+import { clone, isEmpty } from "../../lib/utils/utils";
 
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 const TabLinkContentMap = {
@@ -72,13 +70,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return this.appConfigService.getConfig().with_admiral;
     }
 
-    isCurrentTabLink(tabId: string): boolean {
-        return this.currentTabId === tabId;
-    }
-
-    isCurrentTabContent(contentId: string): boolean {
-        return TabLinkContentMap[this.currentTabId] === contentId;
-    }
     refreshAllconfig() {
         this.retrieveConfig();
     }
@@ -124,10 +115,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         // Reload bootstrap option
         this.appConfigService.load().subscribe(() => {}
         , error => console.error('Failed to reload bootstrap option with error: ', error));
-    }
-
-    public tabLinkClick(tabLink: string) {
-        this.currentTabId = tabLink;
     }
 
     retrieveConfig(): void {

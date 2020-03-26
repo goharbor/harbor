@@ -21,11 +21,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/goharbor/harbor/src/common/api"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
+	"github.com/goharbor/harbor/src/jobservice/config"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
+
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -53,6 +56,12 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return nil
 }
 
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+	_ adp.ChartRegistry    = (*adapter)(nil)
+)
+
 type adapter struct {
 	*native.Adapter
 	registry *model.Registry
@@ -61,27 +70,31 @@ type adapter struct {
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
-	transport := util.GetHTTPTransport(registry.Insecure)
-	modifiers := []modifier.Modifier{
-		&auth.UserAgentModifier{
-			UserAgent: adp.UserAgentReplication,
-		},
+	var transport *http.Transport
+	if registry.URL == config.GetCoreURL() {
+		transport = common_http.GetHTTPTransport(common_http.SecureTransport)
+	} else {
+		transport = util.GetHTTPTransport(registry.Insecure)
 	}
-	if registry.Credential != nil {
-		var authorizer modifier.Modifier
-		if registry.Credential.Type == model.CredentialTypeSecret {
-			authorizer = common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)
-		} else {
-			authorizer = auth.NewBasicAuthCredential(
-				registry.Credential.AccessKey,
-				registry.Credential.AccessSecret)
-		}
-		modifiers = append(modifiers, authorizer)
+	// local Harbor instance
+	if registry.Credential != nil && registry.Credential.Type == model.CredentialTypeSecret {
+		authorizer := common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)
+		return &adapter{
+			registry: registry,
+			url:      registry.URL,
+			client: common_http.NewClient(
+				&http.Client{
+					Transport: transport,
+				}, authorizer),
+			Adapter: native.NewAdapterWithAuthorizer(registry, authorizer),
+		}, nil
 	}
 
-	dockerRegistryAdapter, err := native.NewAdapter(registry)
-	if err != nil {
-		return nil, err
+	var authorizers []modifier.Modifier
+	if registry.Credential != nil {
+		authorizers = append(authorizers, basic.NewAuthorizer(
+			registry.Credential.AccessKey,
+			registry.Credential.AccessSecret))
 	}
 	return &adapter{
 		registry: registry,
@@ -89,8 +102,8 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		client: common_http.NewClient(
 			&http.Client{
 				Transport: transport,
-			}, modifiers...),
-		Adapter: dockerRegistryAdapter,
+			}, authorizers...),
+		Adapter: native.NewAdapter(registry),
 	}, nil
 }
 
@@ -98,6 +111,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	info := &model.RegistryInfo{
 		Type: model.RegistryTypeHarbor,
 		SupportedResourceTypes: []model.ResourceType{
+			model.ResourceTypeArtifact,
 			model.ResourceTypeImage,
 		},
 		SupportedResourceFilters: []*model.FilterStyle{
@@ -119,7 +133,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	sys := &struct {
 		ChartRegistryEnabled bool `json:"with_chartmuseum"`
 	}{}
-	if err := a.client.Get(a.getURL()+"/api/systeminfo", sys); err != nil {
+	if err := a.client.Get(fmt.Sprintf("%s/api/%s/systeminfo", a.getURL(), api.APIVersion), sys); err != nil {
 		return nil, err
 	}
 	if sys.ChartRegistryEnabled {
@@ -129,7 +143,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 		Name string `json:"name"`
 	}{}
 	// label isn't supported in some previous version of Harbor
-	if err := a.client.Get(a.getURL()+"/api/labels?scope=g", &labels); err != nil {
+	if err := a.client.Get(fmt.Sprintf("%s/api/%s/labels?scope=g", a.getURL(), api.APIVersion), &labels); err != nil {
 		if e, ok := err.(*common_http.Error); !ok || e.Code != http.StatusNotFound {
 			return nil, err
 		}
@@ -185,7 +199,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 			Name:     project.Name,
 			Metadata: project.Metadata,
 		}
-		err := a.client.Post(a.getURL()+"/api/projects", pro)
+		err := a.client.Post(fmt.Sprintf("%s/api/%s/projects", a.getURL(), api.APIVersion), pro)
 		if err != nil {
 			if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
 				log.Debugf("got 409 when trying to create project %s", project.Name)
@@ -251,7 +265,7 @@ type project struct {
 
 func (a *adapter) getProjects(name string) ([]*project, error) {
 	projects := []*project{}
-	url := fmt.Sprintf("%s/api/projects?name=%s&page=1&page_size=500", a.getURL(), name)
+	url := fmt.Sprintf("%s/api/%s/projects?name=%s&page=1&page_size=500", a.getURL(), api.APIVersion, name)
 	if err := a.client.GetAndIteratePagination(url, &projects); err != nil {
 		return nil, err
 	}
@@ -284,23 +298,14 @@ func (a *adapter) getProject(name string) (*project, error) {
 	return nil, nil
 }
 
-func (a *adapter) getRepositories(projectID int64) ([]*adp.Repository, error) {
-	repositories := []*adp.Repository{}
-	url := fmt.Sprintf("%s/api/repositories?project_id=%d&page=1&page_size=500", a.getURL(), projectID)
-	if err := a.client.GetAndIteratePagination(url, &repositories); err != nil {
-		return nil, err
-	}
-	for _, repository := range repositories {
-		repository.ResourceType = string(model.ResourceTypeImage)
-	}
-	return repositories, nil
-}
-
 // when the adapter is created for local Harbor, returns the "http://127.0.0.1:8080"
 // as URL to avoid issue https://github.com/goharbor/harbor-helm/issues/222
 // when harbor is deployed on Kubernetes
 func (a *adapter) getURL() string {
 	if a.registry.Type == model.RegistryTypeHarbor && a.registry.Name == "Local" {
+		if common_http.InternalTLSEnabled() {
+			return "https://core:8443"
+		}
 		return "http://127.0.0.1:8080"
 	}
 	return a.url

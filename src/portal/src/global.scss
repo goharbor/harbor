@@ -1,3 +1,122 @@
+body {
+  overflow-y: hidden;
+}
+
+.app-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  width: 108px !important;
+  height: 108px !important;
+}
+
+/*Hack Clarity alert*/
+
+.alert-global {
+  font-size: 16px;
+  font-weight: 400;
+  font-family: Metropolis, "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  padding: 12px !important;
+  border: none !important;
+  margin-top: 0px !important;
+  max-height: 96px;
+}
+
+.alert-global-align {
+  -webkit-box-pack: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  align-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.tooltip-content {
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.alert.alert-warning {
+  padding: 10px 12px;
+}
+.alert-warning {
+  .alert-actions {
+    button {
+      margin: -2px 0 0px 0;
+    }
+  }
+}
+.modal-header {
+  padding: 0;
+}
+.rotate-90 {
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+}
+
+/* set overflow bar style */
+::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: #ccc;
+  -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
+}
+::-webkit-scrollbar-thumb:window-inactive {
+  background: rgba(255, 0, 0, 0.4);
+}
+.custom-h2 {
+  line-height: 24px;
+}
+
+.datagrid-header {
+  z-index: 0 !important;
+}
+
+.color-green {
+  color: #1d5100;
+}
+
+.color-red {
+  color: red;
+}
+
+.datagrid-table,
+.datagrid-header {
+  position: inherit !important;
+}
+
+.required:after {
+  content: "*";
+  font-size: 0.58479532rem;
+  line-height: 0.5rem;
+  color: #c92100;
+  margin-left: 0.25rem;
+}
+
+.flex-items-xs-right {
+  justify-content: flex-end;
+}
+
+.clr-vertical-nav .nav-link {
+  border-radius: 5px;
+}
+
+button:focus {
+  outline: none;
+}
+
 .w-100 {
   width: 100% !important;
 }
@@ -324,4 +443,13 @@ clr-datagrid {
       }
     }
   }
+}
+button:focus {
+  outline: none !important;
+}
+.cursor-pointer {
+  cursor: pointer
+}
+.text-align-r {
+  text-align: right !important;
 }

@@ -1,15 +1,14 @@
 package robot
 
 import (
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 // robot implement the rbac.User interface for project robot account
 type robot struct {
 	username  string
-	namespace rbac.Namespace
-	policies  []*rbac.Policy
+	namespace types.Namespace
+	policies  []*types.Policy
 }
 
 // GetUserName get the robot name.
@@ -18,22 +17,17 @@ func (r *robot) GetUserName() string {
 }
 
 // GetPolicies ...
-func (r *robot) GetPolicies() []*rbac.Policy {
-	policies := []*rbac.Policy{}
-	if r.namespace.IsPublic() {
-		policies = append(policies, project.PoliciesForPublicProject(r.namespace)...)
-	}
-	policies = append(policies, r.policies...)
-	return policies
+func (r *robot) GetPolicies() []*types.Policy {
+	return r.policies
 }
 
 // GetRoles robot has no definition of role, always return nil here.
-func (r *robot) GetRoles() []rbac.Role {
+func (r *robot) GetRoles() []types.RBACRole {
 	return nil
 }
 
 // NewRobot ...
-func NewRobot(username string, namespace rbac.Namespace, policies []*rbac.Policy) rbac.User {
+func NewRobot(username string, namespace types.Namespace, policies []*types.Policy) types.RBACUser {
 	return &robot{
 		username:  username,
 		namespace: namespace,
@@ -41,28 +35,13 @@ func NewRobot(username string, namespace rbac.Namespace, policies []*rbac.Policy
 	}
 }
 
-func filterPolicies(namespace rbac.Namespace, policies []*rbac.Policy) []*rbac.Policy {
-	var results []*rbac.Policy
-	if len(policies) == 0 {
-		return results
-	}
-
-	mp := getAllPolicies(namespace)
+func filterPolicies(namespace types.Namespace, policies []*types.Policy) []*types.Policy {
+	var results []*types.Policy
 	for _, policy := range policies {
-		if mp[policy.String()] {
+		if types.ResourceAllowedInNamespace(policy.Resource, namespace) {
 			results = append(results, policy)
 		}
 	}
-	return results
-}
 
-// getAllPolicies gets all of supported policies supported in project and external policies supported for robot account
-func getAllPolicies(namespace rbac.Namespace) map[string]bool {
-	mp := map[string]bool{}
-	for _, policy := range project.GetAllPolicies(namespace) {
-		mp[policy.String()] = true
-	}
-	scannerPull := &rbac.Policy{Resource: namespace.Resource(rbac.ResourceRepository), Action: rbac.ActionScannerPull}
-	mp[scannerPull.String()] = true
-	return mp
+	return results
 }

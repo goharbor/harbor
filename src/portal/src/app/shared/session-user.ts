@@ -12,16 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // Define the session user
-export class SessionUser {
+export class SessionUserBase {
     user_id: number;
     username: string;
     email: string;
     realname: string;
     role_name?: string;
     role_id?: number;
-    has_admin_role?: boolean;
     comment: string;
     oidc_user_meta?: OidcUserMeta;
+}
+export class SessionUser extends SessionUserBase {
+    has_admin_role?: boolean;
+}
+export class SessionUserBackend extends SessionUserBase {
+    admin_role_in_auth?: boolean;
+    sysadmin_flag?: boolean;
 }
 export class OidcUserMeta {
     id: number;

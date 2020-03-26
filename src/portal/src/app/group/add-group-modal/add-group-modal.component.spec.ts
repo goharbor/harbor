@@ -7,8 +7,9 @@ import { GroupService } from "../group.service";
 import { MessageHandlerService } from "./../../shared/message-handler/message-handler.service";
 import { SessionService } from "./../../shared/session.service";
 import { UserGroup } from "./../group";
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { AddGroupModalComponent } from './add-group-modal.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('AddGroupModalComponent', () => {
   let component: AddGroupModalComponent;
@@ -38,6 +39,7 @@ describe('AddGroupModalComponent', () => {
       imports: [
         ClarityModule,
         FormsModule,
+        BrowserAnimationsModule,
         TranslateModule.forRoot()
       ],
       schemas: [
@@ -57,7 +59,8 @@ describe('AddGroupModalComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AddGroupModalComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    component.open();
+    fixture.autoDetectChanges();
   });
 
   it('should create', () => {

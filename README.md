@@ -1,7 +1,7 @@
 # Harbor
 
-[![Build Status](https://travis-ci.org/goharbor/harbor.svg?branch=master)](https://travis-ci.org/goharbor/harbor)
-[![Coverage Status](https://coveralls.io/repos/github/goharbor/harbor/badge.svg?branch=master)](https://coveralls.io/github/goharbor/harbor?branch=master)
+![CI](https://github.com/goharbor/harbor/workflows/CI/badge.svg)
+[![Coverage Status](https://codecov.io/gh/goharbor/harbor/branch/master/graph/badge.svg)](https://codecov.io/gh/goharbor/harbor)
 [![Go Report Card](https://goreportcard.com/badge/github.com/goharbor/harbor)](https://goreportcard.com/report/github.com/goharbor/harbor)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2095/badge)](https://bestpractices.coreinfrastructure.org/projects/2095)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c8d726c9cfd047ffaf681449d673f246)](https://www.codacy.com/app/goharbor/harbor?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=goharbor/harbor&amp;utm_campaign=Badge_Grade)
@@ -12,10 +12,6 @@
 |![notification](docs/img/bell-outline-badged.svg)Community Meeting|
 |------------------|
 |The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
- 
-We welcome you to join the below Harbor community events and meet with project maintainers and users:
-
-**November 18-21, 2019**, [KubeCon US, San Diego](https://events19.linuxfoundation.org/events/kubecon-cloudnativecon-north-america-2019): Harbor Lunch & Learn led by Joe Beda, Intro and Deep-dive sessions.
 
 </br> </br>
 
@@ -46,8 +42,16 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 
 ## API
 
-* [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/API/harbor/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically. 
-* [Scanner Open API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/API/scanner/scanner-adapter-openapi-v1.0.yaml): This API must be implemented in order to register a new artifact scanner in Harbor registry. 
+* [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/v2.0/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically.
+  - Spec validation status: <img src="http://validator.swagger.io/validator?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/harbor/swagger.yaml">
+
+## Compatibility
+
+The [compatibility list](./docs/harbor_compatibility_list.md) document provides compatibility information for the Harbor components.
+
+- [Replication adapters](./docs/harbor_compatibility_list.md#Replication-Adapters)
+- [OIDC adapters](./docs/harbor_compatibility_list.md#OIDC-Adapters)
+- [Scanner adapters](./docs/harbor_compatibility_list.md#Scanner-Adapters)
 
 ## Install & Run
 
@@ -84,6 +88,21 @@ Tools layered on top of Harbor and contributed by community.
 ## Partners and Users
 
 For a list of users, please refer to [ADOPTERS.md](ADOPTERS.md).
+
+## Security
+
+### Security Audit
+
+A third party security audit was performed by Cure53 in October of 2019. You can see the full report [here](docs/security/Harbor_Security_Audit_Oct2019.pdf).
+
+### Reporting security vulnerabilities
+
+If you've found a security related issue, a vulnerability, or a potential vulnerability in Harbor please let the [Harbor Security Team](mailto:cncf-harbor-security@lists.cncf.io) know with the details of the vulnerability. We'll send a confirmation
+email to acknowledge your report, and we'll send an additional email when we've identified the issue
+positively or negatively.
+
+For further details please see our complete [security release process](SECURITY.md).
+
 
 ## License
 

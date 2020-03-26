@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/server/middleware/security"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -30,17 +31,16 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
+	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
 	api_models "github.com/goharbor/harbor/src/core/api/models"
 	apimodels "github.com/goharbor/harbor/src/core/api/models"
-	quota "github.com/goharbor/harbor/src/core/api/quota"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
@@ -54,6 +54,7 @@ const (
 )
 
 var admin, unknownUsr, testUser *usrInfo
+var handler http.Handler
 
 type testapi struct {
 	basePath string
@@ -92,10 +93,6 @@ func init() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 
-	filter.Init()
-	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
-	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
-
 	beego.Router("/api/health", &HealthAPI{}, "get:CheckHealth")
 	beego.Router("/api/search/", &SearchAPI{})
 	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post;head:Head")
@@ -106,28 +103,15 @@ func init() {
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/users/:id/permissions", &UserAPI{}, "get:ListUserPermissions")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
-	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/summary", &ProjectAPI{}, "get:Summary")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &MetadataAPI{}, "get:Get")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &MetadataAPI{}, "post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &MetadataAPI{}, "put:Put;delete:Delete")
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &ProjectMemberAPI{})
-	beego.Router("/api/repositories", &RepositoryAPI{})
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/usergroups/?:ugid([0-9]+)", &UserGroupAPI{})
-	beego.Router("/api/logs", &LogAPI{})
-	beego.Router("/api/repositories/*", &RepositoryAPI{}, "put:Put")
-	beego.Router("/api/repositories/*/labels", &RepositoryLabelAPI{}, "get:GetOfRepository;post:AddToRepository")
-	beego.Router("/api/repositories/*/labels/:id([0-9]+", &RepositoryLabelAPI{}, "delete:RemoveFromRepository")
-	beego.Router("/api/repositories/*/tags/:tag/labels", &RepositoryLabelAPI{}, "get:GetOfImage;post:AddToImage")
-	beego.Router("/api/repositories/*/tags/:tag/labels/:id([0-9]+", &RepositoryLabelAPI{}, "delete:RemoveFromImage")
-	beego.Router("/api/repositories/*/tags/:tag", &RepositoryAPI{}, "delete:Delete;get:GetTag")
-	beego.Router("/api/repositories/*/tags", &RepositoryAPI{}, "get:GetTags;post:Retag")
-	beego.Router("/api/repositories/*/tags/:tag/manifest", &RepositoryAPI{}, "get:GetManifests")
-	beego.Router("/api/repositories/*/signatures", &RepositoryAPI{}, "get:GetSignatures")
-	beego.Router("/api/repositories/top", &RepositoryAPI{}, "get:GetTopRepos")
 	beego.Router("/api/registries", &RegistryAPI{}, "get:List;post:Post")
 	beego.Router("/api/registries/ping", &RegistryAPI{}, "post:Ping")
 	beego.Router("/api/registries/:id([0-9]+)", &RegistryAPI{}, "get:Get;put:Put;delete:Delete")
@@ -143,7 +127,6 @@ func init() {
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
 	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
-	beego.Router("/api/labels/:id([0-9]+)/resources", &LabelAPI{}, "get:ListResources")
 	beego.Router("/api/ping", &SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/system/gc/:id", &GCAPI{}, "get:GetGC")
 	beego.Router("/api/system/gc/:id([0-9]+)/log", &GCAPI{}, "get:GetLog")
@@ -183,15 +166,15 @@ func init() {
 	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &ImmutableTagRuleAPI{})
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
-	beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
-	beego.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
-	beego.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
-	beego.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "delete:DeleteChart")
-	beego.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "get:GetChartVersion")
-	beego.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "delete:DeleteChartVersion")
-	beego.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
-	beego.Router("/api/chartrepo/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
-	beego.Router("/api/chartrepo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "delete:DeleteChart")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "get:GetChartVersion")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "delete:DeleteChartVersion")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
 
 	// Repository services
 	beego.Router("/chartrepo/:repo/index.yaml", chartRepositoryAPIType, "get:GetIndexByRepo")
@@ -199,8 +182,8 @@ func init() {
 	beego.Router("/chartrepo/:repo/charts/:filename", chartRepositoryAPIType, "get:DownloadChart")
 	// Labels for chart
 	chartLabelAPIType := &ChartLabelAPI{}
-	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
-	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 
 	quotaAPIType := &QuotaAPI{}
 	beego.Router("/api/quotas", quotaAPIType, "get:List")
@@ -221,20 +204,6 @@ func init() {
 	beego.Router("/api/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
 	beego.Router("/api/projects/:pid([0-9]+)/scanner/candidates", proScannerAPI, "get:GetProScannerCandidates")
 
-	// Add routes for scan
-	scanAPI := &ScanAPI{}
-	beego.Router("/api/repositories/*/tags/:tag/scan", scanAPI, "post:Scan;get:Report")
-	beego.Router("/api/repositories/*/tags/:tag/scan/:uuid/log", scanAPI, "get:Log")
-
-	// syncRegistry
-	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
-		log.Fatalf("failed to sync repositories from registry: %v", err)
-	}
-
-	if err := quota.Sync(config.GlobalProjectMgr, false); err != nil {
-		log.Fatalf("failed to sync quota from backend: %v", err)
-	}
-
 	// Init user Info
 	admin = &usrInfo{adminName, adminPwd}
 	unknownUsr = &usrInfo{"unknown", "unknown"}
@@ -246,6 +215,8 @@ func init() {
 	// Init mock jobservice
 	mockServer := test.NewJobServiceServer()
 	defer mockServer.Close()
+
+	handler = security.Middleware()(beego.BeeApp.Handlers)
 }
 
 func request0(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, http.Header, []byte, error) {
@@ -258,7 +229,7 @@ func request0(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (in
 		req.SetBasicAuth(authInfo[0].Name, authInfo[0].Passwd)
 	}
 	w := httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, req)
+	handler.ServeHTTP(w, req)
 
 	body, err := ioutil.ReadAll(w.Body)
 	return w.Code, w.Header(), body, err
@@ -341,64 +312,6 @@ func (a testapi) StatisticGet(user usrInfo) (int, apilib.StatisticMap, error) {
 	return httpStatusCode, successPayload, err
 }
 
-func (a testapi) LogGet(user usrInfo) (int, []apilib.AccessLog, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	// create path and map variables
-	path := "/api/logs/"
-	fmt.Printf("logs path: %s\n", path)
-	_sling = _sling.Path(path)
-
-	var successPayload []apilib.AccessLog
-	code, body, err := request(_sling, jsonAcceptHeader, user)
-	if 200 == code && nil == err {
-		err = json.Unmarshal(body, &successPayload)
-	}
-	return code, successPayload, err
-}
-
-// // Delete a repository or a tag in a repository.
-// // Delete a repository or a tag in a repository.
-// // This endpoint let user delete repositories and tags with repo name and tag.\n
-// // @param repoName The name of repository which will be deleted.
-// // @param tag Tag of a repository.
-// // @return void
-// // func (a testapi) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
-// func (a testapi) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
-//	_sling := sling.New().Delete(a.basePath)
-
-//	// create path and map variables
-//	path := "/api/repositories"
-
-//	_sling = _sling.Path(path)
-
-//	type QueryParams struct {
-//		RepoName string `url:"repo_name,omitempty"`
-//		Tag      string `url:"tag,omitempty"`
-//	}
-
-//	_sling = _sling.QueryStruct(&QueryParams{RepoName: repoName, Tag: tag})
-//	// accept header
-//	accepts := []string{"application/json", "text/plain"}
-//	for key := range accepts {
-//		_sling = _sling.Set("Accept", accepts[key])
-//		break // only use the first Accept
-//	}
-
-//	req, err := _sling.Request()
-//	req.SetBasicAuth(prjUsr.Name, prjUsr.Passwd)
-//	// fmt.Printf("request %+v", req)
-
-//	client := &http.Client{}
-//	httpResponse, err := client.Do(req)
-//	defer httpResponse.Body.Close()
-
-//	if err != nil {
-//		// handle error
-//	}
-//	return httpResponse.StatusCode, err
-// }
-
 // Delete project by projectID
 func (a testapi) ProjectsDelete(prjUsr usrInfo, projectID string) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
@@ -478,15 +391,6 @@ func (a testapi) ProjectsPut(prjUsr usrInfo, projectID string,
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
 	return httpStatusCode, err
 
-}
-
-// Get access logs accompany with a relevant project.
-func (a testapi) ProjectLogs(prjUsr usrInfo, projectID string, query *apilib.LogQuery) (int, []byte, error) {
-	_sling := sling.New().Get(a.basePath).
-		Path("/api/projects/" + projectID + "/logs").
-		QueryStruct(query)
-
-	return request(_sling, jsonAcceptHeader, prjUsr)
 }
 
 // ProjectDeletable check whether a project can be deleted
@@ -609,140 +513,6 @@ func (a testapi) PutProjectMember(authInfo usrInfo, projectID string, userID str
 	return httpStatusCode, err
 }
 
-// -------------------------Repositories Test---------------------------------------//
-// Return relevant repos of projectID
-func (a testapi) GetRepos(authInfo usrInfo, projectID, keyword string) (
-	int, interface{}, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	path := "/api/repositories/"
-
-	_sling = _sling.Path(path)
-
-	type QueryParams struct {
-		ProjectID string `url:"project_id"`
-		Keyword   string `url:"q"`
-	}
-
-	_sling = _sling.QueryStruct(&QueryParams{
-		ProjectID: projectID,
-		Keyword:   keyword,
-	})
-	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	if code == http.StatusOK {
-		repositories := []repoResp{}
-		if err = json.Unmarshal(body, &repositories); err != nil {
-			return 0, nil, err
-		}
-		return code, repositories, nil
-	}
-
-	return code, nil, nil
-}
-
-func (a testapi) GetTag(authInfo usrInfo, repository string, tag string) (int, *models.TagResp, error) {
-	_sling := sling.New().Get(a.basePath).Path(fmt.Sprintf("/api/repositories/%s/tags/%s", repository, tag))
-	code, data, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	if code != http.StatusOK {
-		log.Printf("failed to get tag of %s:%s: %d %s \n", repository, tag, code, string(data))
-		return code, nil, nil
-	}
-
-	result := models.TagResp{}
-	if err := json.Unmarshal(data, &result); err != nil {
-		return 0, nil, err
-	}
-	return http.StatusOK, &result, nil
-}
-
-// Get tags of a relevant repository
-func (a testapi) GetReposTags(authInfo usrInfo, repoName string) (int, interface{}, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	path := fmt.Sprintf("/api/repositories/%s/tags", repoName)
-
-	_sling = _sling.Path(path)
-
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	if httpStatusCode != http.StatusOK {
-		return httpStatusCode, body, nil
-	}
-
-	result := []models.TagResp{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return 0, nil, err
-	}
-	return http.StatusOK, result, nil
-}
-
-// RetagImage retag image to another tag
-func (a testapi) RetagImage(authInfo usrInfo, repoName string, retag *apilib.Retag) (int, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := fmt.Sprintf("/api/repositories/%s/tags", repoName)
-
-	_sling = _sling.Path(path)
-	_sling = _sling.BodyJSON(retag)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
-}
-
-// Get manifests of a relevant repository
-func (a testapi) GetReposManifests(authInfo usrInfo, repoName string, tag string) (int, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	path := fmt.Sprintf("/api/repositories/%s/tags/%s/manifest", repoName, tag)
-
-	_sling = _sling.Path(path)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
-}
-
-// Get public repositories which are accessed most
-func (a testapi) GetReposTop(authInfo usrInfo, count string) (int, interface{}, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	path := "/api/repositories/top"
-
-	_sling = _sling.Path(path)
-
-	type QueryParams struct {
-		Count string `url:"count"`
-	}
-
-	_sling = _sling.QueryStruct(&QueryParams{
-		Count: count,
-	})
-	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	if code != http.StatusOK {
-		return code, body, err
-	}
-
-	result := []*repoResp{}
-	if err = json.Unmarshal(body, &result); err != nil {
-		return 0, nil, err
-	}
-	return http.StatusOK, result, nil
-}
-
 // --------------------Replication_Policy Test--------------------------------//
 
 // Create a new replication policy
@@ -835,54 +605,6 @@ func (a testapi) DeletePolicyByID(authInfo usrInfo, policyID string) (int, error
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, err
 }
-
-// Return projects created by Harbor
-// func (a HarborApi) ProjectsGet (projectName string, isPublic int32) ([]Project, error) {
-//    }
-
-// Check if the project name user provided already exists.
-// func (a HarborApi) ProjectsHead (projectName string) (error) {
-// }
-
-// Get access logs accompany with a relevant project.
-// func (a HarborApi) ProjectsProjectIdLogsFilterPost (projectID int32, accessLog AccessLog) ([]AccessLog, error) {
-// }
-
-// Return a project&#39;s relevant role members.
-// func (a HarborApi) ProjectsProjectIdMembersGet (projectID int32) ([]Role, error) {
-// }
-
-// Add project role member accompany with relevant project and user.
-// func (a HarborApi) ProjectsProjectIdMembersPost (projectID int32, roles RoleParam) (error) {
-// }
-
-// Delete project role members accompany with relevant project and user.
-// func (a HarborApi) ProjectsProjectIdMembersUserIdDelete (projectID int32, userId int32) (error) {
-// }
-
-// Return role members accompany with relevant project and user.
-// func (a HarborApi) ProjectsProjectIdMembersUserIdGet (projectID int32, userId int32) ([]Role, error) {
-// }
-
-// Update project role members accompany with relevant project and user.
-// func (a HarborApi) ProjectsProjectIdMembersUserIdPut (projectID int32, userId int32, roles RoleParam) (error) {
-// }
-
-// Update properties for a selected project.
-// func (a HarborApi) ProjectsProjectIdPut (projectID int32, project Project) (error) {
-// }
-
-// Get repositories accompany with relevant project and repo name.
-// func (a HarborApi) RepositoriesGet (projectID int32, q string) ([]Repository, error) {
-// }
-
-// Get manifests of a relevant repository.
-// func (a HarborApi) RepositoriesManifestGet (repoName string, tag string) (error) {
-// }
-
-// Get tags of a relevant repository.
-// func (a HarborApi) RepositoriesTagsGet (repoName string) (error) {
-// }
 
 // Get registered users of Harbor.
 func (a testapi) UsersGet(userName string, authInfo usrInfo) (int, []apilib.User, error) {
@@ -978,7 +700,7 @@ func (a testapi) UsersToggleAdminRole(userID int, authInfo usrInfo, hasAdminRole
 	path := "/api/users/" + fmt.Sprintf("%d", userID) + "/sysadmin"
 	_sling = _sling.Path(path)
 	type QueryParams struct {
-		HasAdminRole bool `json:"has_admin_role,omitempty"`
+		HasAdminRole bool `json:"sysadmin_flag,omitempty"`
 	}
 
 	_sling = _sling.BodyJSON(&QueryParams{HasAdminRole: hasAdminRole})

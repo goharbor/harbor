@@ -9,11 +9,11 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-
 import { SessionService } from '../../shared/session.service';
+import { AppConfigService } from "../../services/app-config.service";
+import { ProjectService, UserPermissionService } from "../../../lib/services";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
 
-import { AppConfigService } from "../../app-config.service";
-import { UserPermissionService, USERSTATICPERMISSION, ErrorHandler, ProjectService } from "@harbor/ui";
 describe('ProjectDetailComponent', () => {
     let component: ProjectDetailComponent;
     let fixture: ComponentFixture<ProjectDetailComponent>;
@@ -35,18 +35,24 @@ describe('ProjectDetailComponent', () => {
     };
     const mockUserPermissionService = {
         getPermission() {
-          return of(true);
+            return of(true);
         }
-      };
+    };
     const mockProjectService = null;
     const mockErrorHandler = {
         error() { }
-      };
+    };
     const mockActivatedRoute = {
         RouterparamMap: of({ get: (key) => 'value' }),
         snapshot: {
-                params: { id: 1 },
-                data: 1
+            params: { id: 1 },
+            data: 1,
+            children: [
+                {
+                    routeConfig:
+                        { path: "" }
+                }
+            ]
         },
         data: of({
             projectResolver: {

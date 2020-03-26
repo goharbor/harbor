@@ -253,7 +253,7 @@ func TestHandle(t *testing.T) {
 				Vtags: []string{},
 			},
 		},
-		Type: EventTypeImagePush,
+		Type: EventTypeArtifactPush,
 	})
 	require.NotNil(t, err)
 
@@ -278,10 +278,14 @@ func TestHandle(t *testing.T) {
 				Repository: &model.Repository{
 					Name: "library/hello-world",
 				},
-				Vtags: []string{"latest"},
+				Artifacts: []*model.Artifact{
+					{
+						Tags: []string{"latest"},
+					},
+				},
 			},
 		},
-		Type: EventTypeImagePush,
+		Type: EventTypeArtifactPush,
 	})
 	require.Nil(t, err)
 
@@ -292,10 +296,14 @@ func TestHandle(t *testing.T) {
 				Repository: &model.Repository{
 					Name: "library/hello-world",
 				},
-				Vtags: []string{"latest"},
+				Artifacts: []*model.Artifact{
+					{
+						Tags: []string{"latest"},
+					},
+				},
 			},
 		},
-		Type: EventTypeImageDelete,
+		Type: EventTypeArtifactDelete,
 	})
 	require.Nil(t, err)
 }

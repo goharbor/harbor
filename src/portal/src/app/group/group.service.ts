@@ -1,14 +1,12 @@
-
 import {throwError as observableThrowError,  Observable} from "rxjs";
-
 import {catchError, map} from 'rxjs/operators';
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { UserGroup } from "./group";
-import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "@harbor/ui";
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../lib/utils/utils";
 
-const userGroupEndpoint = "/api/usergroups";
-const ldapGroupSearchEndpoint = "/api/ldap/groups/search?groupname=";
+const userGroupEndpoint = CURRENT_BASE_HREF + "/usergroups";
+const ldapGroupSearchEndpoint = CURRENT_BASE_HREF + "/ldap/groups/search?groupname=";
 
 @Injectable()
 export class GroupService {

@@ -99,15 +99,3 @@ export enum ResourceType {
   CHART_VERSION = 2,
   REPOSITORY_TAG = 3,
 }
-
-export enum WebhookEventTypes {
-  DOWNLOAD_CHART = "downloadChart",
-  DELETE_CHART = "deleteChart",
-  UPLOAD_CHART = "uploadChart",
-  DELETE_IMAGE = "deleteImage",
-  PULL_IMAGE = "pullImage",
-  PUSH_IMAGE = "pushImage",
-  SCANNING_FAILED = "scanningFailed",
-  SCANNING_COMPLETED = "scanningCompleted",
-  PROJECT_QUOTA = "projectQuota",
-}

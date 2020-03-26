@@ -1,19 +1,18 @@
 # Get or generate private key
-import os, sys, subprocess, shutil
+import os, subprocess, shutil
 from pathlib import Path
 from subprocess import DEVNULL
-from functools import wraps
 
-from g import DEFAULT_GID, DEFAULT_UID
+from g import DEFAULT_GID, DEFAULT_UID, trust_ca_dir, storage_ca_bundle_filename
 from .misc import (
     mark_file,
     generate_random_string,
-    check_permission)
+    check_permission,
+    stat_decorator,
+    get_realpath)
 
 SSL_CERT_PATH = os.path.join("/etc/cert", "server.crt")
 SSL_CERT_KEY_PATH = os.path.join("/etc/cert", "server.key")
-
-secret_keys_dir = '/secret/keys'
 
 def _get_secret(folder, filename, length=16):
     key_file = os.path.join(folder, filename)
@@ -44,19 +43,6 @@ def get_alias(path):
     alias = _get_secret(path, "defaultalias", length=8)
     return alias
 
-## decorator actions
-def stat_decorator(func):
-    @wraps(func)
-    def check_wrapper(*args, **kw):
-        stat = func(*args, **kw)
-        if stat == 0:
-            print("Generated certificate, key file: {key_path}, cert file: {cert_path}".format(**kw))
-        else:
-            print("Fail to generate key file: {key_path}, cert file: {cert_path}".format(**kw))
-            sys.exit(1)
-    return check_wrapper
-
-
 @stat_decorator
 def create_root_cert(subj, key_path="./k.key", cert_path="./cert.crt"):
    rc = subprocess.call(["/usr/bin/openssl", "genrsa", "-out", key_path, "4096"], stdout=DEVNULL, stderr=subprocess.STDOUT)
@@ -85,7 +71,7 @@ def openssl_installed():
     return True
 
 
-def prepare_ca(
+def prepare_registry_ca(
     private_key_pem_path: Path,
     root_crt_path: Path,
     old_private_key_pem_path: Path,
@@ -111,3 +97,35 @@ def prepare_ca(
 
     if not check_permission(private_key_pem_path, uid=DEFAULT_UID, gid=DEFAULT_GID):
         os.chown(private_key_pem_path, DEFAULT_UID, DEFAULT_GID)
+
+
+def prepare_trust_ca(**kwargs):
+    def f(path: str, file_name: str):
+
+        # check if source file valied
+        src_path = kwargs.get(path)
+        if not src_path:
+            return
+        real_path = get_realpath(src_path)
+        if not real_path.exists():
+            raise Exception('ca file {} is not exist'.format(real_path))
+        if not real_path.is_file():
+            raise Exception('{} is not file'.format(real_path))
+
+        dst_path = trust_ca_dir.joinpath(file_name)
+        # check destination dir exist
+        if not trust_ca_dir.exists():
+            trust_ca_dir.mkdir(parents=True)
+        else:
+            os.remove(dst_path)
+
+        # copy src to dst
+        shutil.copy(src_path, dst_path)
+
+        # change ownership and permission
+        mark_file(dst_path)
+
+    for p in (
+        ('internal_https_ca_path', 'harbor_internal_ca.crt'),
+        ('registry_custom_ca_bundle_path', storage_ca_bundle_filename)):
+        f(*p)

@@ -20,7 +20,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
 )
@@ -130,7 +130,7 @@ func ListRegistrations(query *q.Query) ([]*Registration, error) {
 
 // SetDefaultRegistration sets the specified registration as default one
 func SetDefaultRegistration(UUID string) error {
-	o := dao.GetOrmer()
+	o := orm.NewOrm()
 	err := o.Begin()
 	if err != nil {
 		return err

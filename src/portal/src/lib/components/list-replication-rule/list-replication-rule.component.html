@@ -1,0 +1,56 @@
+<div  class="list-rule">
+<clr-datagrid [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" (clrDgSingleSelectedChange)="selectRule($event)" [clrDgRowSelection]="true">
+    <clr-dg-action-bar>
+        <button type="button" id="new_replication_rule_id" class="btn  btn-secondary" *ngIf="hasCreateReplicationPermission" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
+        <button type="button" id="edit_replication_rule_id" class="btn  btn-secondary" *ngIf="hasUpdateReplicationPermission" [disabled]="!selectedRow" (click)="editRule(selectedRow)"><clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'REPLICATION.EDIT_POLICY' | translate}}</button>
+        <button type="button" id="delete_replication_rule_id" class="btn  btn-secondary" *ngIf="hasDeleteReplicationPermission" [disabled]="!selectedRow" (click)="deleteRule(selectedRow)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPLICATION.DELETE_POLICY' | translate}}</button>
+        <button type="button" id="replication_exe_id" class="btn  btn-secondary" *ngIf="hasExecuteReplicationPermission" [disabled]="!selectedRow" (click)="replicateRule(selectedRow)"><clr-icon shape="export" size="16"></clr-icon>&nbsp;{{'REPLICATION.REPLICATE' | translate}}</button>
+    </clr-dg-action-bar>
+    <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'status'" class="status-width">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
+    <clr-dg-column class="col-width">{{'REPLICATION.SRC_REGISTRY' | translate}}</clr-dg-column>
+    <clr-dg-column class="col-width">{{'REPLICATION.REPLICATION_MODE' | translate}}</clr-dg-column>
+    <clr-dg-column class="min-width">{{'REPLICATION.DESTINATION_NAMESPACE' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
+    <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
+    <clr-dg-row *clrDgItems="let p of changedRules; let i=index" [clrDgItem]="p" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
+        <clr-dg-cell>{{p.name}}</clr-dg-cell>
+        <clr-dg-cell class="status-width">
+            <div [ngSwitch]="p.enabled">
+                <clr-tooltip *ngSwitchCase="false" class="tooltip-lg">	
+                    <clr-icon clrTooltipTrigger shape="exclamation-triangle" class="is-warning text-alignment" size="22"></clr-icon>Disabled	
+                    <clr-tooltip-content clrPosition="top-right" clrSize="xs" *clrIfOpen>	
+                        <span>{{'REPLICATION.RULE_DISABLED' | translate}}</span>	
+                    </clr-tooltip-content>	
+                </clr-tooltip>	
+                <div *ngSwitchCase="true" ><clr-icon shape="success-standard" class="is-success text-alignment" size="18"></clr-icon> Enabled</div>	
+            </div>
+        </clr-dg-cell>
+        <clr-dg-cell class="col-width">
+            {{p.src_registry ? p.src_registry.name : ''}}
+        </clr-dg-cell>
+        <clr-dg-cell class="col-width">	
+            {{p.src_registry && p.src_registry.id > 0 ? 'pull-based' : 'push-based'}}	
+        </clr-dg-cell>
+        <clr-dg-cell class="min-width">
+            {{p.dest_registry ? p.dest_registry.name : ''}} : {{p.dest_namespace? p.dest_namespace: '-'}}
+        </clr-dg-cell>
+        <clr-dg-cell>{{p.trigger ? p.trigger.type : ''}}</clr-dg-cell>
+        <clr-dg-cell>
+            {{p.description ? trancatedDescription(p.description) : '-'}}
+            <clr-tooltip>
+                <clr-icon *ngIf="p.description && p.description.length > 35" clrTooltipTrigger shape="ellipsis-horizontal" size="18"></clr-icon>
+                <clr-tooltip-content clrPosition="bottom-right" clrSize="md" *clrIfOpen>
+                    <span>{{p.description}}</span>
+                </clr-tooltip-content>
+            </clr-tooltip>
+        </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+      <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} </span>{{pagination.totalItems }} {{'REPLICATION.ITEMS' | translate}}
+      <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>
+<confirmation-dialog #deletionConfirmDialog (confirmAction)="deletionConfirm($event)"></confirmation-dialog>
+</div>

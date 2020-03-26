@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -42,6 +42,11 @@ func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
 func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return nil
 }
+
+var (
+	_ adp.Adapter          = (*adapter)(nil)
+	_ adp.ArtifactRegistry = (*adapter)(nil)
+)
 
 // Adapter is for images replications between harbor and jfrog artifactory image repository
 type adapter struct {
@@ -78,25 +83,17 @@ func (a *adapter) Info() (info *model.RegistryInfo, err error) {
 }
 
 func newAdapter(registry *model.Registry) (adp.Adapter, error) {
-	dockerRegistryAdapter, err := native.NewAdapter(registry)
-	if err != nil {
-		return nil, err
-	}
-
 	var (
-		modifiers = []modifier.Modifier{
-			&auth.UserAgentModifier{
-				UserAgent: adp.UserAgentReplication,
-			}}
+		modifiers = []modifier.Modifier{}
 	)
 	if registry.Credential != nil {
-		modifiers = append(modifiers, auth.NewBasicAuthCredential(
+		modifiers = append(modifiers, basic.NewAuthorizer(
 			registry.Credential.AccessKey,
 			registry.Credential.AccessSecret))
 	}
 
 	return &adapter{
-		Adapter:  dockerRegistryAdapter,
+		Adapter:  native.NewAdapter(registry),
 		registry: registry,
 		client: common_http.NewClient(
 			&http.Client{

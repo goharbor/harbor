@@ -7,26 +7,33 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
-
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/pkg/notification"
 )
 
 // NotificationPolicyAPI ...
 type NotificationPolicyAPI struct {
 	BaseController
-	project *models.Project
+	project         *models.Project
+	supportedEvents map[string]struct{}
 }
 
 // notificationPolicyForUI defines the structure of notification policy info display in UI
 type notificationPolicyForUI struct {
+	PolicyName      string     `json:"policy_name"`
 	EventType       string     `json:"event_type"`
 	Enabled         bool       `json:"enabled"`
 	CreationTime    *time.Time `json:"creation_time"`
 	LastTriggerTime *time.Time `json:"last_trigger_time,omitempty"`
+}
+
+type notificationSupportedEventTypes struct {
+	EventType  []string `json:"event_type"`
+	NotifyType []string `json:"notify_type"`
 }
 
 // Prepare ...
@@ -57,6 +64,7 @@ func (w *NotificationPolicyAPI) Prepare() {
 		return
 	}
 	w.project = project
+	w.supportedEvents = initSupportedEvents()
 }
 
 // Get ...
@@ -256,6 +264,24 @@ func (w *NotificationPolicyAPI) Delete() {
 	}
 }
 
+// GetSupportedEventTypes get supported trigger event types and notify types in module notification
+func (w *NotificationPolicyAPI) GetSupportedEventTypes() {
+	projectID := w.project.ProjectID
+	if !w.validateRBAC(rbac.ActionList, projectID) {
+		return
+	}
+
+	var notificationTypes = notificationSupportedEventTypes{}
+	for key := range notification.SupportedNotifyTypes {
+		notificationTypes.NotifyType = append(notificationTypes.NotifyType, key)
+	}
+
+	for key := range w.supportedEvents {
+		notificationTypes.EventType = append(notificationTypes.EventType, key)
+	}
+	w.WriteJSONData(notificationTypes)
+}
+
 // Test ...
 func (w *NotificationPolicyAPI) Test() {
 	projectID := w.project.ProjectID
@@ -321,7 +347,7 @@ func (w *NotificationPolicyAPI) validateEventTypes(policy *models.NotificationPo
 	}
 
 	for _, eventType := range policy.EventTypes {
-		_, ok := notification.SupportedEventTypes[eventType]
+		_, ok := w.supportedEvents[eventType]
 		if !ok {
 			w.SendBadRequestError(fmt.Errorf("unsupport event type %s", eventType))
 			return false
@@ -345,6 +371,29 @@ func getLastTriggerTimeGroupByEventType(eventType string, policyID int64) (time.
 	return time.Time{}, nil
 }
 
+func initSupportedEvents() map[string]struct{} {
+	eventTypes := []string{
+		event.TopicPushArtifact,
+		event.TopicPullArtifact,
+		event.TopicDeleteArtifact,
+		event.TopicUploadChart,
+		event.TopicDeleteChart,
+		event.TopicDownloadChart,
+		event.TopicQuotaExceed,
+		event.TopicQuotaWarning,
+		event.TopicScanningFailed,
+		event.TopicScanningCompleted,
+		event.TopicReplication,
+	}
+
+	var supportedEventTypes = make(map[string]struct{})
+	for _, eventType := range eventTypes {
+		supportedEventTypes[eventType] = struct{}{}
+	}
+
+	return supportedEventTypes
+}
+
 // constructPolicyWithTriggerTime construct notification policy information displayed in UI
 // including event type, enabled, creation time, last trigger time
 func constructPolicyWithTriggerTime(policies []*models.NotificationPolicy) ([]*notificationPolicyForUI, error) {
@@ -353,6 +402,7 @@ func constructPolicyWithTriggerTime(policies []*models.NotificationPolicy) ([]*n
 		for _, policy := range policies {
 			for _, t := range policy.EventTypes {
 				ply := &notificationPolicyForUI{
+					PolicyName:   policy.Name,
 					EventType:    t,
 					Enabled:      policy.Enabled,
 					CreationTime: &policy.CreationTime,

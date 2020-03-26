@@ -1,5 +1,5 @@
 
-import {debounceTime} from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,12 +19,12 @@ import { Subject ,  Subscription } from "rxjs";
 
 import { SearchTriggerService } from './search-trigger.service';
 
-import { AppConfigService } from '../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
 
 
 
 import {TranslateService} from "@ngx-translate/core";
-import {SkinableConfig} from "../../skinable-config.service";
+import {SkinableConfig} from "../../services/skinable-config.service";
 
 const deBounceTime = 500; // ms
 
@@ -71,7 +71,8 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
         }
 
         this.searchSub = this.searchTerms.pipe(
-            debounceTime(deBounceTime))
+            debounceTime(deBounceTime),
+            distinctUntilChanged())
             .subscribe(term => {
                 this.searchTrigger.triggerSearch(term);
             });
