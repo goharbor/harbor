@@ -17,10 +17,6 @@ ${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
 &{SERVER_CONFIG}  endpoint=${SERVER_API_ENDPOINT}  verify_ssl=False
 
 *** Test Cases ***
-Test Case - Scan Image
-    Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
-Test Case - Scan All Images
-    Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py
 Test Case - Garbage Collection
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 Test Case - Add Private Project Member and Check User Can See It
@@ -67,4 +63,7 @@ Test Case - Push Cnab Bundle
     Harbor API Test  ./tests/apitests/python/test_push_cnab_bundle.py
 Test Case - Create/Delete tag
     Harbor API Test  ./tests/apitests/python/test_create_delete_tag.py
-
+Test Case - Scan Image
+    Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
+Test Case - Scan All Images
+    Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py

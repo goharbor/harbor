@@ -159,5 +159,5 @@ Wait for Harbor Ready
     Fail Harbor failed to come up properly!
 
 Get Harbor Version
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -k -X GET --header 'Accept: application/json' 'https://${ip}/api/systeminfo'|grep -i harbor_version
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -k -X GET --header 'Accept: application/json' 'https://${ip}/api/v2.0/systeminfo'|grep -i harbor_version
     Log To Console  ${output}
