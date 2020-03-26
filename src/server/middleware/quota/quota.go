@@ -83,7 +83,7 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 
 		if !enabled {
 			// quota is disabled for the reference object, so direct to next handler
-			logger.Infof("quota is disabled for %s %s, so direct to next handler", reference, referenceID)
+			logger.Debugf("quota is disabled for %s %s, so direct to next handler", reference, referenceID)
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -98,7 +98,7 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 
 		if len(resources) == 0 {
 			// no resources request for this http request, so direct to next handler
-			logger.Info("no resources request for this http request, so direct to next handler")
+			logger.Debug("no resources request for this http request, so direct to next handler")
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -206,7 +206,7 @@ func RefreshMiddleware(config RefreshConfig, skipers ...middleware.Skipper) func
 		}
 
 		if !enabled {
-			logger.Infof("quota is disabled for %s %s, so return directly", reference, referenceID)
+			logger.Debugf("quota is disabled for %s %s, so return directly", reference, referenceID)
 			return nil
 		}
 
