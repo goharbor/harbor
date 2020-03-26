@@ -112,13 +112,13 @@ class TestProjects(unittest.TestCase):
         addition_v = self.artifact.get_addition(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[0], "vulnerabilities", **TestProjects.USER_CLIENT)
         self.assertEqual(addition_v[0], '{}')
         addition_b = self.artifact.get_addition(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[0], "build_history", **TestProjects.USER_CLIENT)
-        self.assertIn("ADD file:e69d441d729412d24675dcd33e04580885df99981cec43de8c9b24015313ff8e", addition_b[0])
+        self.assertIn("ADD file:", addition_b[0])
         image_data = self.artifact.get_reference_info(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[0], **TestProjects.USER_CLIENT)
 
         addition_v = self.artifact.get_addition(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[1], "vulnerabilities", **TestProjects.USER_CLIENT)
         self.assertEqual(addition_v[0], '{}')
         addition_b = self.artifact.get_addition(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[1], "build_history", **TestProjects.USER_CLIENT)
-        self.assertIn("ADD file:450bea8cddb743ed282cb1ade3d1614033172b93ef531c69a4e49fda3016cef0", addition_b[0])
+        self.assertIn("ADD file:", addition_b[0])
         image_data = self.artifact.get_reference_info(TestProjects.project_push_index_name, self.index_name, manifests_sha256_cli_ret[0], **TestProjects.USER_CLIENT)
 
         #10. Unable to Delete artifact in manifest list;
