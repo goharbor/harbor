@@ -25,8 +25,8 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/repository"
 	ierror "github.com/goharbor/harbor/src/lib/error"
-	arttesting "github.com/goharbor/harbor/src/testing/api/artifact"
-	repotesting "github.com/goharbor/harbor/src/testing/api/repository"
+	arttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
+	repotesting "github.com/goharbor/harbor/src/testing/controller/repository"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
 )

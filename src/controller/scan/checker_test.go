@@ -21,8 +21,8 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
-	scannertesting "github.com/goharbor/harbor/src/testing/api/scanner"
+	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
+	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
 )

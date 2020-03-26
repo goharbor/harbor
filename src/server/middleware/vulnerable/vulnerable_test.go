@@ -29,10 +29,10 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
-	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
-	projecttesting "github.com/goharbor/harbor/src/testing/api/project"
-	scantesting "github.com/goharbor/harbor/src/testing/api/scan"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
+	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
+	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
+	scantesting "github.com/goharbor/harbor/src/testing/controller/scan"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
 )

@@ -19,7 +19,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	ierror "github.com/goharbor/harbor/src/lib/error"
 	"github.com/goharbor/harbor/src/lib/orm"
-	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
+	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
 	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"

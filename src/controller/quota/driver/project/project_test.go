@@ -19,9 +19,9 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/types"
-	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
-	blobtesting "github.com/goharbor/harbor/src/testing/api/blob"
-	charttesting "github.com/goharbor/harbor/src/testing/api/chartmuseum"
+	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
+	blobtesting "github.com/goharbor/harbor/src/testing/controller/blob"
+	charttesting "github.com/goharbor/harbor/src/testing/controller/chartmuseum"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
 )
