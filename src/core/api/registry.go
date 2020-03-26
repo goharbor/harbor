@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -208,10 +207,13 @@ func (t *RegistryAPI) Post() {
 		t.SendConflictError(fmt.Errorf("name '%s' is already used", r.Name))
 		return
 	}
-	i := strings.Index(r.URL, "://")
-	if i == -1 {
-		r.URL = fmt.Sprintf("http://%s", r.URL)
+	url, err := utils.ParseEndpoint(r.URL)
+	if err != nil {
+		t.SendBadRequestError(err)
+		return
 	}
+	// Prevent SSRF security issue #3755
+	r.URL = url.Scheme + "://" + url.Host + url.Path
 
 	status, err := registry.CheckHealthStatus(r)
 	if err != nil {
