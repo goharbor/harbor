@@ -168,6 +168,13 @@ func (p *PullArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 			p.Artifact.RepositoryName, p.Tags[0])
 	}
 
+	// for pull public resource
+	if p.Operator == "" {
+		auditLog.Username = "anonymous"
+	} else {
+		auditLog.Username = p.Operator
+	}
+
 	return auditLog, nil
 }
 
