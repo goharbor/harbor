@@ -135,6 +135,10 @@ func (b *BaseAPI) BuildQuery(ctx context.Context, query *string, pageNumber, pag
 
 // Links return Links based on the provided pagination information
 func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, pageSize int64) lib.Links {
+	var links lib.Links
+	if pageSize == 0 {
+		return links
+	}
 	ul := *u
 	// try to unescape the repository name which contains escaped slashes
 	if escapedPath, err := url.PathUnescape(ul.Path); err == nil {
@@ -142,11 +146,13 @@ func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, page
 	} else {
 		log.Errorf("failed to unescape the path %s: %v", ul.Path, err)
 	}
-	var links lib.Links
 	// prev
 	if pageNumber > 1 && (pageNumber-1)*pageSize < total {
 		q := ul.Query()
 		q.Set("page", strconv.FormatInt(pageNumber-1, 10))
+		// the URL may contain no "page_size", in this case the pageSize in the query is set by
+		// the go-swagger automatically
+		q.Set("page_size", strconv.FormatInt(pageSize, 10))
 		ul.RawQuery = q.Encode()
 		// try to unescape the query
 		if escapedQuery, err := url.QueryUnescape(ul.RawQuery); err == nil {
@@ -164,6 +170,7 @@ func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, page
 	if pageSize*pageNumber < total {
 		q := ul.Query()
 		q.Set("page", strconv.FormatInt(pageNumber+1, 10))
+		q.Set("page_size", strconv.FormatInt(pageSize, 10))
 		ul.RawQuery = q.Encode()
 		// try to unescape the query
 		if escapedQuery, err := url.QueryUnescape(ul.RawQuery); err == nil {
