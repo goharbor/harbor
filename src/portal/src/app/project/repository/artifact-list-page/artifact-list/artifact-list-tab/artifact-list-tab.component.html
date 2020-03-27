@@ -161,7 +161,7 @@
                 <clr-dg-cell class="truncated flex-max-width">
                     <div class="cell white-normal">
                         <img class="artifact-icon" [title]="artifact.type"
-                            [src]="artifact.showImage" />
+                            [src]="artifact.type | selectArtifactIcon" />
                         &nbsp; &nbsp;
                         <a href="javascript:void(0)" class="max-width-100" (click)="goIntoArtifactSummaryPage(artifact)"
                             title="{{artifact.digest}}">
@@ -202,12 +202,14 @@
                                     </div>
                                 </div>
                             </div>
-                            <clr-tooltip-content [clrPosition]="'top-right'" [clrSize]="'lg'" *clrIfOpen>
+                            <clr-tooltip-content [clrPosition]="'top-right'" class="lg" [clrSize]="'lg'" *clrIfOpen>
                                 <table class="table table-noborder mt-0 table-tag">
                                     <thead class="tag-thead">
                                         <tr>
                                             <th class="left tag-header-color">
                                                 {{'REPOSITORY.TAGS_COUNT' | translate | uppercase}}</th>
+                                            <th class="left tag-header-color">
+                                                    {{'REPOSITORY.SIGNED' | translate | uppercase}}</th>
                                             <th class="left tag-header-color">
                                                 {{'REPOSITORY.PULL_TIME' | translate | uppercase}}</th>
                                             <th class="left tag-header-color">
@@ -217,6 +219,16 @@
                                     <tbody class="tag-tbody">
                                         <tr class="tag-tr" *ngFor="let tag of artifact.tags">
                                             <td class="left tag-body-color">{{tag.name}}</td>
+                                            <td class="left tag-body-color" [ngSwitch]="tag.signed">
+                                                <div class="cell">
+                                                    <clr-icon shape="check-circle" *ngSwitchCase="true" size="20" class="color-green"></clr-icon>
+                                                    <clr-icon shape="times-circle" *ngSwitchCase="false" size="16" class="color-red"></clr-icon>
+                                                    <a href="javascript:void(0)" *ngSwitchDefault role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
+                                                        <clr-icon shape="help" class="color-gray" size="16"></clr-icon>
+                                                        <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
+                                                    </a>
+                                                </div>
+                                            </td>
                                             <td class="left tag-body-color">{{tag.pull_time === availableTime ? '':(tag.pull_time | date: 'short')}}</td>
                                             <td class="left tag-body-color">{{tag.push_time | date: 'short'}}</td>
                                         </tr>

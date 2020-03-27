@@ -11,6 +11,7 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from "@ngx-tran
 import { ActivatedRoute, Router } from "@angular/router";
 import { AppConfigService } from "../../../services/app-config.service";
 import { Project } from "../../project";
+import { AllPipesModule } from "../../../all-pipes/all-pipes.module";
 
 describe('ArtifactSummaryComponent', () => {
 
@@ -66,6 +67,7 @@ describe('ArtifactSummaryComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         ClarityModule,
+        AllPipesModule,
         TranslateModule.forRoot({
           loader: {
             provide: TranslateLoader,

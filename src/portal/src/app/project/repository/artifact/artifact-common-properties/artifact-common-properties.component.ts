@@ -36,7 +36,7 @@ export class ArtifactCommonPropertiesComponent implements OnInit, OnChanges {
         Object.assign(this.commonProperties, this.artifactDetails.extra_attrs);
         for (let name in this.commonProperties) {
           if (this.commonProperties.hasOwnProperty(name)) {
-            if (isObject(this.commonProperties[name])) {
+            if (typeof (this.commonProperties[name]) === 'object') {
               this.commonProperties[name] = JSON.stringify(this.commonProperties[name]);
             }
             if (name === Types.CREATED) {
