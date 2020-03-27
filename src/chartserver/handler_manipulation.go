@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
-	"github.com/goharbor/harbor/src/common/api"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication"
@@ -70,7 +69,7 @@ func (c *Controller) DeleteChartVersion(namespace, chartName, version string) er
 		return errors.New("invalid chart for deleting")
 	}
 
-	url := fmt.Sprintf("/api/%s/chartrepo/%s/charts/%s/%s", api.APIVersion, namespace, chartName, version)
+	url := fmt.Sprintf("/api/chartrepo/%s/charts/%s/%s", namespace, chartName, version)
 	req, _ := http.NewRequest(http.MethodDelete, url, nil)
 	w := httptest.NewRecorder()
 

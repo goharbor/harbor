@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/ghodss/yaml"
-	"github.com/goharbor/harbor/src/common/api"
 	htesting "github.com/goharbor/harbor/src/testing"
 	helm_repo "k8s.io/helm/pkg/repo"
 )
@@ -37,7 +36,7 @@ func TestStartMockServers(t *testing.T) {
 
 // Test /health
 func TestGetHealthOfBaseHandler(t *testing.T) {
-	content, err := httpClient.GetContent(fmt.Sprintf("%s/api/%s/chartrepo/health", frontServer.URL, api.APIVersion))
+	content, err := httpClient.GetContent(fmt.Sprintf("%s/api/chartrepo/health", frontServer.URL))
 	if err != nil {
 		t.Fatal(err)
 	}

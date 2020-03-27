@@ -42,7 +42,7 @@ func TestFetchCharts(t *testing.T) {
 		},
 		{
 			Method:  http.MethodGet,
-			Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor", api.APIVersion),
+			Pattern: "/api/chartrepo/library/charts/harbor",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
 				"name": "harbor",
@@ -56,7 +56,7 @@ func TestFetchCharts(t *testing.T) {
 		},
 		{
 			Method:  http.MethodGet,
-			Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts", api.APIVersion),
+			Pattern: "/api/chartrepo/library/charts",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
 				"name": "harbor"
@@ -102,7 +102,7 @@ func TestFetchCharts(t *testing.T) {
 func TestChartExist(t *testing.T) {
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodGet,
-		Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor/1.0", api.APIVersion),
+		Pattern: "/api/chartrepo/library/charts/harbor/1.0",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			data := `{
 				"metadata": {
@@ -127,7 +127,7 @@ func TestDownloadChart(t *testing.T) {
 	server := test.NewServer([]*test.RequestHandlerMapping{
 		{
 			Method:  http.MethodGet,
-			Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor/1.0", api.APIVersion),
+			Pattern: "/api/chartrepo/library/charts/harbor/1.0",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `{
 				"metadata": {
@@ -158,7 +158,7 @@ func TestDownloadChart(t *testing.T) {
 func TestUploadChart(t *testing.T) {
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodPost,
-		Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts", api.APIVersion),
+		Pattern: "/api/chartrepo/library/charts",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		},
@@ -176,7 +176,7 @@ func TestUploadChart(t *testing.T) {
 func TestDeleteChart(t *testing.T) {
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodDelete,
-		Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor/1.0", api.APIVersion),
+		Pattern: "/api/chartrepo/library/charts/harbor/1.0",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		},

@@ -58,6 +58,7 @@ func Test_projectReferenceObject(t *testing.T) {
 		{"/api/v2.0/projects/library/repositories", args{req("/api/v2.0/projects/library/repositories")}, "project", "1", false},
 		{"/api/v2.0/projects/demo", args{req("/api/v2.0/projects/demo")}, "", "", true},
 		{"/api/v2.0/library", args{req("/api/v2.0/library")}, "", "", true},
+		{"/api/chartrepo/library/charts", args{req("/api/chartrepo/library/charts")}, "project", "1", false},
 		{"/v2/library/photon/manifests/2.0", args{req("/v2/library/photon/manifests/2.0")}, "project", "1", false},
 		{"/v2", args{req("/v2")}, "", "", true},
 	}

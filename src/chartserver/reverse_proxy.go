@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,9 +15,9 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/api"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
@@ -27,15 +26,11 @@ import (
 const (
 	agentHarbor         = "HARBOR"
 	contentLengthHeader = "Content-Length"
-)
 
-var (
-	defaultRepo = "library"
-
-	chartRepoAPIPrefix      = fmt.Sprintf("/api/%s/chartrepo", api.APIVersion)
-	rootUploadingEndpoint   = fmt.Sprintf("/api/%s/chartrepo/charts", api.APIVersion)
-	chartRepoHealthEndpoint = fmt.Sprintf("/api/%s/chartrepo/health", api.APIVersion)
-	chartRepoPrefix         = "/chartrepo"
+	defaultRepo             = "library"
+	rootUploadingEndpoint   = "/api/chartrepo/charts"
+	rootIndexEndpoint       = "/chartrepo/index.yaml"
+	chartRepoHealthEndpoint = "/api/chartrepo/health"
 )
 
 // ProxyEngine is used to proxy the related traffics
@@ -229,19 +224,19 @@ func rewriteURLPath(req *http.Request) {
 
 	// Root uploading endpoint
 	if incomingURLPath == rootUploadingEndpoint {
-		req.URL.Path = strings.Replace(incomingURLPath, fmt.Sprintf("%s/chartrepo", api.APIVersion), defaultRepo, 1)
+		req.URL.Path = strings.Replace(incomingURLPath, "chartrepo", defaultRepo, 1)
 		return
 	}
 
 	// Repository endpoints
-	if strings.HasPrefix(incomingURLPath, chartRepoPrefix) {
+	if strings.HasPrefix(incomingURLPath, "/chartrepo") {
 		req.URL.Path = strings.TrimPrefix(incomingURLPath, "/chartrepo")
 		return
 	}
 
 	// API endpoints
-	if strings.HasPrefix(incomingURLPath, chartRepoAPIPrefix) {
-		req.URL.Path = strings.Replace(incomingURLPath, fmt.Sprintf("/%s/chartrepo", api.APIVersion), "", 1)
+	if strings.HasPrefix(incomingURLPath, "/api/chartrepo") {
+		req.URL.Path = strings.Replace(incomingURLPath, "/chartrepo", "", 1)
 		return
 	}
 }

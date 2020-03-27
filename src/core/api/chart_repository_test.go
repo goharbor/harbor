@@ -2,13 +2,11 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/goharbor/harbor/src/chartserver"
-	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 )
@@ -19,7 +17,7 @@ var (
 )
 
 func TestIsMultipartFormData(t *testing.T) {
-	req, err := createRequest(http.MethodPost, fmt.Sprintf("/api/%s/chartrepo/charts", api.APIVersion))
+	req, err := createRequest(http.MethodPost, "/api/chartrepo/charts")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +55,7 @@ func TestPrepareEnv(t *testing.T) {
 func TestGetHealthStatus(t *testing.T) {
 	status := make(map[string]interface{})
 	err := handleAndParse(&testingRequest{
-		url:        fmt.Sprintf("/api/%s/chartrepo/health", api.APIVersion),
+		url:        "/api/chartrepo/health",
 		method:     http.MethodGet,
 		credential: sysAdmin,
 	}, &status)
@@ -111,7 +109,7 @@ func TestDownloadChart(t *testing.T) {
 func TesListCharts(t *testing.T) {
 	charts := make([]*chartserver.ChartInfo, 0)
 	err := handleAndParse(&testingRequest{
-		url:        fmt.Sprintf("/api/%s/chartrepo/library/charts", api.APIVersion),
+		url:        "/api/chartrepo/library/charts",
 		method:     http.MethodGet,
 		credential: projAdmin,
 	}, &charts)
@@ -129,7 +127,7 @@ func TesListCharts(t *testing.T) {
 func TestListChartVersions(t *testing.T) {
 	chartVersions := make(chartserver.ChartVersions, 0)
 	err := handleAndParse(&testingRequest{
-		url:        fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor", api.APIVersion),
+		url:        "/api/chartrepo/library/charts/harbor",
 		method:     http.MethodGet,
 		credential: projAdmin,
 	}, &chartVersions)
@@ -147,7 +145,7 @@ func TestListChartVersions(t *testing.T) {
 func TestGetChartVersion(t *testing.T) {
 	chartV := &chartserver.ChartVersionDetails{}
 	err := handleAndParse(&testingRequest{
-		url:        fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor/0.2.0", api.APIVersion),
+		url:        "/api/chartrepo/library/charts/harbor/0.2.0",
 		method:     http.MethodGet,
 		credential: projAdmin,
 	}, chartV)
@@ -169,7 +167,7 @@ func TestGetChartVersion(t *testing.T) {
 func TestDeleteChartVersion(t *testing.T) {
 	runCodeCheckingCases(t, &codeCheckingCase{
 		request: &testingRequest{
-			url:        fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor/0.2.1", api.APIVersion),
+			url:        "/api/chartrepo/library/charts/harbor/0.2.1",
 			method:     http.MethodDelete,
 			credential: projAdmin,
 		},
@@ -181,7 +179,7 @@ func TestDeleteChartVersion(t *testing.T) {
 func TestDeleteChart(t *testing.T) {
 	runCodeCheckingCases(t, &codeCheckingCase{
 		request: &testingRequest{
-			url:        fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor", api.APIVersion),
+			url:        "/api/chartrepo/library/charts/harbor",
 			method:     http.MethodDelete,
 			credential: projAdmin,
 		},
