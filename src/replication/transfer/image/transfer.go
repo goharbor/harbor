@@ -230,7 +230,7 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 	// the contents it contains are a few manifests/indexes
 	case v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList,
 		v1.MediaTypeImageManifest, schema2.MediaTypeManifest,
-		schema1.MediaTypeSignedManifest:
+		schema1.MediaTypeSignedManifest, schema1.MediaTypeManifest:
 		// as using digest as the reference, so set the override to true directly
 		return t.copyArtifact(srcRepo, digest, dstRepo, digest, true)
 	// handle foreign layer
