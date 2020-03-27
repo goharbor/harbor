@@ -29,17 +29,6 @@ var (
 		{Resource: ResourceRepository, Action: ActionList},
 		{Resource: ResourceRepository, Action: ActionPull},
 
-		{Resource: ResourceRepositoryLabel, Action: ActionList},
-
-		{Resource: ResourceRepositoryTag, Action: ActionRead},
-		{Resource: ResourceRepositoryTag, Action: ActionList},
-
-		{Resource: ResourceRepositoryTagLabel, Action: ActionList},
-
-		{Resource: ResourceRepositoryTagVulnerability, Action: ActionList},
-
-		{Resource: ResourceRepositoryTagManifest, Action: ActionRead},
-
 		{Resource: ResourceHelmChart, Action: ActionRead},
 		{Resource: ResourceHelmChart, Action: ActionList},
 
@@ -48,6 +37,8 @@ var (
 
 		{Resource: ResourceScan, Action: ActionRead},
 		{Resource: ResourceScanner, Action: ActionRead},
+
+		{Resource: ResourceTag, Action: ActionList},
 
 		{Resource: ResourceArtifact, Action: ActionRead},
 		{Resource: ResourceArtifact, Action: ActionList},

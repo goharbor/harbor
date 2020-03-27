@@ -39,19 +39,11 @@ var (
 
 			{Resource: ResourceLog, Action: ActionList},
 
-			{Resource: ResourceReplication, Action: ActionRead},
-			{Resource: ResourceReplication, Action: ActionList},
-
-			{Resource: ResourceReplicationJob, Action: ActionRead},
-			{Resource: ResourceReplicationJob, Action: ActionList},
-
 			{Resource: ResourceLabel, Action: ActionCreate},
 			{Resource: ResourceLabel, Action: ActionRead},
 			{Resource: ResourceLabel, Action: ActionUpdate},
 			{Resource: ResourceLabel, Action: ActionDelete},
 			{Resource: ResourceLabel, Action: ActionList},
-
-			{Resource: ResourceLabelResource, Action: ActionList},
 
 			{Resource: ResourceQuota, Action: ActionRead},
 
@@ -74,25 +66,6 @@ var (
 			{Resource: ResourceImmutableTag, Action: ActionUpdate},
 			{Resource: ResourceImmutableTag, Action: ActionDelete},
 			{Resource: ResourceImmutableTag, Action: ActionList},
-
-			{Resource: ResourceRepositoryLabel, Action: ActionCreate},
-			{Resource: ResourceRepositoryLabel, Action: ActionDelete},
-			{Resource: ResourceRepositoryLabel, Action: ActionList},
-
-			{Resource: ResourceRepositoryTag, Action: ActionRead},
-			{Resource: ResourceRepositoryTag, Action: ActionDelete},
-			{Resource: ResourceRepositoryTag, Action: ActionList},
-
-			{Resource: ResourceRepositoryTagScanJob, Action: ActionCreate},
-			{Resource: ResourceRepositoryTagScanJob, Action: ActionRead},
-
-			{Resource: ResourceRepositoryTagVulnerability, Action: ActionList},
-
-			{Resource: ResourceRepositoryTagManifest, Action: ActionRead},
-
-			{Resource: ResourceRepositoryTagLabel, Action: ActionCreate},
-			{Resource: ResourceRepositoryTagLabel, Action: ActionDelete},
-			{Resource: ResourceRepositoryTagLabel, Action: ActionList},
 
 			{Resource: ResourceHelmChart, Action: ActionCreate}, // upload helm chart
 			{Resource: ResourceHelmChart, Action: ActionRead},   // download helm chart
@@ -134,6 +107,7 @@ var (
 			{Resource: ResourceArtifact, Action: ActionList},
 			{Resource: ResourceArtifactAddition, Action: ActionRead},
 
+			{Resource: ResourceTag, Action: ActionList},
 			{Resource: ResourceTag, Action: ActionCreate},
 			{Resource: ResourceTag, Action: ActionDelete},
 
@@ -155,9 +129,6 @@ var (
 			{Resource: ResourceLog, Action: ActionList},
 
 			{Resource: ResourceQuota, Action: ActionRead},
-
-			{Resource: ResourceReplication, Action: ActionRead},
-			{Resource: ResourceReplication, Action: ActionList},
 
 			{Resource: ResourceLabel, Action: ActionCreate},
 			{Resource: ResourceLabel, Action: ActionRead},
@@ -184,25 +155,6 @@ var (
 			{Resource: ResourceImmutableTag, Action: ActionUpdate},
 			{Resource: ResourceImmutableTag, Action: ActionDelete},
 			{Resource: ResourceImmutableTag, Action: ActionList},
-
-			{Resource: ResourceRepositoryLabel, Action: ActionCreate},
-			{Resource: ResourceRepositoryLabel, Action: ActionDelete},
-			{Resource: ResourceRepositoryLabel, Action: ActionList},
-
-			{Resource: ResourceRepositoryTag, Action: ActionRead},
-			{Resource: ResourceRepositoryTag, Action: ActionDelete},
-			{Resource: ResourceRepositoryTag, Action: ActionList},
-
-			{Resource: ResourceRepositoryTagScanJob, Action: ActionCreate},
-			{Resource: ResourceRepositoryTagScanJob, Action: ActionRead},
-
-			{Resource: ResourceRepositoryTagVulnerability, Action: ActionList},
-
-			{Resource: ResourceRepositoryTagManifest, Action: ActionRead},
-
-			{Resource: ResourceRepositoryTagLabel, Action: ActionCreate},
-			{Resource: ResourceRepositoryTagLabel, Action: ActionDelete},
-			{Resource: ResourceRepositoryTagLabel, Action: ActionList},
 
 			{Resource: ResourceHelmChart, Action: ActionCreate},
 			{Resource: ResourceHelmChart, Action: ActionRead},
@@ -235,6 +187,7 @@ var (
 			{Resource: ResourceArtifact, Action: ActionList},
 			{Resource: ResourceArtifactAddition, Action: ActionRead},
 
+			{Resource: ResourceTag, Action: ActionList},
 			{Resource: ResourceTag, Action: ActionCreate},
 			{Resource: ResourceTag, Action: ActionDelete},
 
@@ -262,21 +215,6 @@ var (
 			{Resource: ResourceRepository, Action: ActionPush},
 			{Resource: ResourceRepository, Action: ActionPull},
 
-			{Resource: ResourceRepositoryLabel, Action: ActionCreate},
-			{Resource: ResourceRepositoryLabel, Action: ActionDelete},
-			{Resource: ResourceRepositoryLabel, Action: ActionList},
-
-			{Resource: ResourceRepositoryTag, Action: ActionRead},
-			{Resource: ResourceRepositoryTag, Action: ActionList},
-
-			{Resource: ResourceRepositoryTagVulnerability, Action: ActionList},
-
-			{Resource: ResourceRepositoryTagManifest, Action: ActionRead},
-
-			{Resource: ResourceRepositoryTagLabel, Action: ActionCreate},
-			{Resource: ResourceRepositoryTagLabel, Action: ActionDelete},
-			{Resource: ResourceRepositoryTagLabel, Action: ActionList},
-
 			{Resource: ResourceHelmChart, Action: ActionCreate},
 			{Resource: ResourceHelmChart, Action: ActionRead},
 			{Resource: ResourceHelmChart, Action: ActionList},
@@ -302,6 +240,7 @@ var (
 			{Resource: ResourceArtifact, Action: ActionList},
 			{Resource: ResourceArtifactAddition, Action: ActionRead},
 
+			{Resource: ResourceTag, Action: ActionList},
 			{Resource: ResourceTag, Action: ActionCreate},
 
 			{Resource: ResourceArtifactLabel, Action: ActionCreate},
@@ -325,17 +264,6 @@ var (
 			{Resource: ResourceRepository, Action: ActionList},
 			{Resource: ResourceRepository, Action: ActionPull},
 
-			{Resource: ResourceRepositoryLabel, Action: ActionList},
-
-			{Resource: ResourceRepositoryTag, Action: ActionRead},
-			{Resource: ResourceRepositoryTag, Action: ActionList},
-
-			{Resource: ResourceRepositoryTagLabel, Action: ActionList},
-
-			{Resource: ResourceRepositoryTagVulnerability, Action: ActionList},
-
-			{Resource: ResourceRepositoryTagManifest, Action: ActionRead},
-
 			{Resource: ResourceHelmChart, Action: ActionRead},
 			{Resource: ResourceHelmChart, Action: ActionList},
 
@@ -351,6 +279,8 @@ var (
 
 			{Resource: ResourceScanner, Action: ActionRead},
 
+			{Resource: ResourceTag, Action: ActionList},
+
 			{Resource: ResourceArtifact, Action: ActionRead},
 			{Resource: ResourceArtifact, Action: ActionList},
 			{Resource: ResourceArtifactAddition, Action: ActionRead},
@@ -364,13 +294,6 @@ var (
 			{Resource: ResourceRepository, Action: ActionList},
 			{Resource: ResourceRepository, Action: ActionPull},
 
-			{Resource: ResourceRepositoryTag, Action: ActionRead},
-			{Resource: ResourceRepositoryTag, Action: ActionList},
-
-			{Resource: ResourceRepositoryTagVulnerability, Action: ActionList},
-
-			{Resource: ResourceRepositoryTagManifest, Action: ActionRead},
-
 			{Resource: ResourceHelmChart, Action: ActionRead},
 			{Resource: ResourceHelmChart, Action: ActionList},
 
@@ -382,6 +305,8 @@ var (
 			{Resource: ResourceScan, Action: ActionRead},
 
 			{Resource: ResourceScanner, Action: ActionRead},
+
+			{Resource: ResourceTag, Action: ActionList},
 
 			{Resource: ResourceArtifact, Action: ActionRead},
 			{Resource: ResourceArtifact, Action: ActionList},
