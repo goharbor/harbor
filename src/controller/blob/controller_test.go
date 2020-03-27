@@ -257,7 +257,8 @@ func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
 	sessionID := uuid.New().String()
 
 	size, err := Ctl.GetAcceptedBlobSize(sessionID)
-	suite.NotNil(err)
+	suite.Nil(err)
+	suite.Equal(int64(0), size)
 
 	suite.Nil(Ctl.SetAcceptedBlobSize(sessionID, 100))
 

@@ -15,8 +15,10 @@
 package quota
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/types"
@@ -26,46 +28,86 @@ import (
 
 type PutBlobUploadMiddlewareTestSuite struct {
 	RequestMiddlewareTestSuite
+
+	handler http.Handler
 }
 
-func (suite *PutBlobUploadMiddlewareTestSuite) TestMiddleware() {
-	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
+func (suite *PutBlobUploadMiddlewareTestSuite) SetupTest() {
+	suite.RequestMiddlewareTestSuite.SetupTest()
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	suite.handler = PutBlobUploadMiddleware()(next)
+
+	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
+}
+
+func (suite *PutBlobUploadMiddlewareTestSuite) makeRequest(contentLength int) *http.Request {
 	url := "/v2/library/photon/blobs/uploads/cbabe458-28a1-4e1b-ad15-0cb0229df4e8?digest=sha256:57c2ec3bf82f09c94be2e5c5beb124b86fcbb42e76fb82c99066c054422010e4"
+	req := httptest.NewRequest(http.MethodPut, url, nil)
+	req.Header.Set("Content-Length", strconv.Itoa(contentLength))
 
-	{
-		mock.OnAnything(suite.blobController, "Exist").Return(true, nil).Once()
+	return req
+}
 
-		req := httptest.NewRequest(http.MethodPut, url, nil)
-		req.Header.Set("Content-Length", "100")
-		rr := httptest.NewRecorder()
+func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobSizeIsZero() {
+	mock.OnAnything(suite.blobController, "GetAcceptedBlobSize").Return(int64(0), nil)
 
-		PutBlobUploadMiddleware()(next).ServeHTTP(rr, req)
-		suite.Equal(http.StatusOK, rr.Code)
-	}
+	req := suite.makeRequest(0)
+	rr := httptest.NewRecorder()
 
-	{
-		mock.OnAnything(suite.blobController, "Exist").Return(false, nil).Once()
-		mock.OnAnything(suite.quotaController, "Request").Return(nil).Once().Run(func(args mock.Arguments) {
-			resources := args.Get(3).(types.ResourceList)
-			suite.Len(resources, 1)
-			suite.Equal(resources[types.ResourceStorage], int64(100))
+	suite.handler.ServeHTTP(rr, req)
+	suite.Equal(http.StatusOK, rr.Code)
+}
 
-			f := args.Get(4).(func() error)
-			f()
-		})
+func (suite *PutBlobUploadMiddlewareTestSuite) TestGetAcceptedBlobSizeFailed() {
+	mock.OnAnything(suite.blobController, "GetAcceptedBlobSize").Return(int64(0), fmt.Errorf("error"))
 
-		req := httptest.NewRequest(http.MethodPut, url, nil)
-		req.Header.Set("Content-Length", "100")
-		rr := httptest.NewRecorder()
+	req := suite.makeRequest(0)
+	rr := httptest.NewRecorder()
 
-		PutBlobUploadMiddleware()(next).ServeHTTP(rr, req)
-		suite.Equal(http.StatusOK, rr.Code)
-	}
+	suite.handler.ServeHTTP(rr, req)
+	suite.Equal(http.StatusInternalServerError, rr.Code)
+}
+
+func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobExist() {
+	mock.OnAnything(suite.blobController, "Exist").Return(true, nil)
+
+	req := suite.makeRequest(100)
+	rr := httptest.NewRecorder()
+
+	suite.handler.ServeHTTP(rr, req)
+	suite.Equal(http.StatusOK, rr.Code)
+}
+
+func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobNotExist() {
+	mock.OnAnything(suite.blobController, "Exist").Return(false, nil).Once()
+	mock.OnAnything(suite.quotaController, "Request").Return(nil).Once().Run(func(args mock.Arguments) {
+		resources := args.Get(3).(types.ResourceList)
+		suite.Len(resources, 1)
+		suite.Equal(resources[types.ResourceStorage], int64(100))
+
+		f := args.Get(4).(func() error)
+		f()
+	})
+
+	req := suite.makeRequest(100)
+	rr := httptest.NewRecorder()
+
+	suite.handler.ServeHTTP(rr, req)
+	suite.Equal(http.StatusOK, rr.Code)
+}
+
+func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobExistFailed() {
+	mock.OnAnything(suite.blobController, "Exist").Return(false, fmt.Errorf("error"))
+
+	req := suite.makeRequest(100)
+	rr := httptest.NewRecorder()
+
+	suite.handler.ServeHTTP(rr, req)
+	suite.Equal(http.StatusInternalServerError, rr.Code)
 }
 
 func TestPutBlobUploadMiddlewareTestSuite(t *testing.T) {

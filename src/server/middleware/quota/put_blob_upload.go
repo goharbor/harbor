@@ -44,6 +44,11 @@ func putBlobUploadResources(r *http.Request, reference, referenceID string) (typ
 		return nil, err
 	}
 
+	if size == 0 {
+		logger.Debug("blob size is 0")
+		return nil, nil
+	}
+
 	projectID, _ := strconv.ParseInt(referenceID, 10, 64)
 
 	digest := r.URL.Query().Get("digest")

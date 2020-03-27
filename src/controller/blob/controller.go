@@ -305,6 +305,10 @@ func (c *controller) GetAcceptedBlobSize(sessionID string) (int64, error) {
 	key := fmt.Sprintf("upload:%s:size", sessionID)
 	size, err := redis.Int64(conn.Do("GET", key))
 	if err != nil {
+		if err == redis.ErrNil {
+			return 0, nil
+		}
+
 		return 0, err
 	}
 
