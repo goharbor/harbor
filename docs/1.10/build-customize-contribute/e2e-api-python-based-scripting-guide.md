@@ -1,5 +1,6 @@
 ---
 title: E2E (API) Python Based Test Scripting Guide
+draft: true
 ---
 
 **Preparation**
