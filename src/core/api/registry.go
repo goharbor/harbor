@@ -416,7 +416,7 @@ func (t *RegistryAPI) GetInfo() {
 	}
 	info, err := adp.Info()
 	if err != nil {
-		t.SendInternalServerError(fmt.Errorf("failed to get registry info %d: %v", id, err))
+		t.ParseAndHandleError(fmt.Sprintf("failed to get registry info %d", id), err)
 		return
 	}
 	// currently, only the local Harbor registry supports the event based trigger, append it here

@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/goharbor/harbor/src/common/api"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -56,7 +57,7 @@ func (s *Scheduler) Run(ctx job.Context, params job.Parameters) error {
 	logger := ctx.GetLogger()
 
 	url := params["url"].(string)
-	url = fmt.Sprintf("%s/api/replication/executions?trigger=%s", url, model.TriggerTypeScheduled)
+	url = fmt.Sprintf("%s/api/%s/replication/executions?trigger=%s", url, api.APIVersion, model.TriggerTypeScheduled)
 	policyID := (int64)(params["policy_id"].(float64))
 	cred := auth.NewSecretAuthorizer(os.Getenv("JOBSERVICE_SECRET"))
 	client := common_http.NewClient(&http.Client{
