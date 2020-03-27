@@ -47,9 +47,8 @@ You can add both library code and script code, since not all APIs have been enca
 
 
 **Execution Example**
-
+```
 root@harbor:/harbor/code/harbor# `python ./tests/apitests/python/test_add_sys_label_to_tag.py`
-
 
 2020-03-11 13:40:07,269 DEBUG Starting new HTTPS connection (1): 1.1.1.1:443
 send: 'POST /api/v2.0/users HTTP/1.1\r\nHost: 1.1.1.1\r\nAccept-Encoding: identity\r\nContent-Length: 156\r\nContent-Type: application/json\r\nAccept: application/json\r\nAuthorization: Basic YWRtaW46SGFyYm9yMTIzNDU=\r\nUser-Agent: Swagger-Codegen/1.0.0/python\r\n\r\n{"username": "user-1583934007059", "role_id": 0, "password": "xxxxxxxx", "email": "realname-1583934007059@vmware.com", "realname": "realname-1583934007059"}'
@@ -73,3 +72,4 @@ header: Content-Security-Policy: frame-ancestors 'none'
 
 ...
 
+```
