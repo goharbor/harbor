@@ -80,8 +80,8 @@ class TestProjects(unittest.TestCase):
         artifact = self.artifact.get_reference_info(TestProjects.project_name, self.repo_name, tag, **TestProjects.USER_CLIENT)
 
         #6. Verify the image(IA) contains tag named 1.0;
-        self.assertEqual(artifact[0].tags[0].name, tag)
-        self.assertEqual(artifact[0].tags[1].name, "1.0")
+        self.assertEqual(artifact[0].tags[0].name, "1.0")
+        self.assertEqual(artifact[0].tags[1].name, tag)
 
         #7. Delete the tag(1.0) from image(IA);
         self.artifact.delete_tag(TestProjects.project_name, self.repo_name, tag, "1.0",**TestProjects.USER_CLIENT)

@@ -97,6 +97,7 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*Artifact, error) {
 	if err != nil {
 		return nil, err
 	}
+	qs = qs.OrderBy("-PushTime", "ID")
 	if _, err = qs.All(&artifacts); err != nil {
 		return nil, err
 	}
