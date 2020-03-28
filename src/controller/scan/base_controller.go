@@ -37,7 +37,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
-	"github.com/goharbor/harbor/src/pkg/scan/errs"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/google/uuid"
@@ -167,12 +166,12 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 
 	// In case it does not exist
 	if r == nil {
-		return errs.WithCode(errs.PreconditionFailed, errs.Errorf("no available scanner for project: %d", artifact.ProjectID))
+		return errors.PreconditionFailedError(nil).WithMessage("no available scanner for project: %d", artifact.ProjectID)
 	}
 
 	// Check if it is disabled
 	if r.Disabled {
-		return errs.WithCode(errs.PreconditionFailed, errs.Errorf("scanner %s is disabled", r.Name))
+		return errors.PreconditionFailedError(nil).WithMessage("scanner %s is disabled", r.Name)
 	}
 
 	artifacts, scannable, err := bc.collectScanningArtifacts(ctx, r, artifact)
