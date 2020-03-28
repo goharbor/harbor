@@ -34,7 +34,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/artifact"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -61,9 +61,9 @@ func CopyArtifactMiddleware() func(http.Handler) http.Handler {
 		repository, reference, _ := distribution.ParseRef(from)
 
 		art, err := artifactController.GetByReference(ctx, repository, reference, nil)
-		if ierror.IsNotFoundErr(err) {
+		if errors.IsNotFoundErr(err) {
 			// artifact not found, discontinue the API request
-			return ierror.BadRequestError(nil).WithMessage("artifact %s not found", from)
+			return errors.BadRequestError(nil).WithMessage("artifact %s not found", from)
 		} else if err != nil {
 			logger.Errorf("get artifact %s failed, error: %v", from, err)
 			return err

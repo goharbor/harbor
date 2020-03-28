@@ -24,9 +24,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/core/config"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/pkg/errors"
 )
 
 // InternalAPI handles request of harbor admin...
@@ -104,7 +103,7 @@ func (ia *InternalAPI) SwitchQuota() {
 // SyncQuota ...
 func (ia *InternalAPI) SyncQuota() {
 	if !config.QuotaPerProjectEnable() {
-		ia.SendError(ierror.ForbiddenError(nil).WithMessage("quota per project is disabled"))
+		ia.SendError(errors.ForbiddenError(nil).WithMessage("quota per project is disabled"))
 		return
 	}
 

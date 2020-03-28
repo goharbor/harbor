@@ -10,7 +10,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/gorilla/csrf"
@@ -45,7 +45,7 @@ func attachToken(w http.ResponseWriter, r *http.Request) {
 
 func handleError(w http.ResponseWriter, r *http.Request) {
 	attachToken(w, r)
-	serror.SendError(w, ierror.New(csrf.FailureReason(r)).WithCode(ierror.ForbiddenCode))
+	serror.SendError(w, errors.New(csrf.FailureReason(r)).WithCode(errors.ForbiddenCode))
 	return
 }
 

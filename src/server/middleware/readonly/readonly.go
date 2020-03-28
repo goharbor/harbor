@@ -19,7 +19,7 @@ import (
 	"net/http"
 
 	"github.com/goharbor/harbor/src/core/config"
-	internal_errors "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
@@ -69,7 +69,7 @@ func MiddlewareWithConfig(config Config, skippers ...middleware.Skipper) func(ht
 
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		if config.ReadOnly(r) {
-			pkgE := internal_errors.New(nil).WithCode(internal_errors.DENIED).WithMessage("The system is in read only mode. Any modification is prohibited.")
+			pkgE := errors.New(nil).WithCode(errors.DENIED).WithMessage("The system is in read only mode. Any modification is prohibited.")
 			serror.SendError(w, pkgE)
 			return
 		}

@@ -20,7 +20,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/graph-gophers/dataloader"
 )
@@ -70,7 +70,7 @@ func getProjectsBatchFn(ctx context.Context, keys dataloader.Keys) []*dataloader
 	for _, projectID := range projectIDs {
 		project, ok := projectsMap[projectID]
 		if !ok {
-			err := ierror.NotFoundError(nil).WithMessage("project %d not found", projectID)
+			err := errors.NotFoundError(nil).WithMessage("project %d not found", projectID)
 			return handleError(err)
 		}
 

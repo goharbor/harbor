@@ -29,7 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/opencontainers/go-digest"
@@ -159,7 +159,7 @@ func (suite *Suite) ExecSQL(query string, args ...interface{}) {
 
 // IsNotFoundErr ...
 func (suite *Suite) IsNotFoundErr(err error) bool {
-	return suite.True(ierror.IsNotFoundErr(err))
+	return suite.True(errors.IsNotFoundErr(err))
 }
 
 // AssertResourceUsage ...

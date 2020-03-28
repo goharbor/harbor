@@ -21,7 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/artifact"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	art "github.com/goharbor/harbor/src/pkg/artifact"
@@ -81,7 +81,7 @@ func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, erro
 	}
 
 	// got other error when get the repository, return the error
-	if !ierror.IsErr(err, ierror.NotFoundCode) {
+	if !errors.IsErr(err, errors.NotFoundCode) {
 		return false, 0, err
 	}
 
@@ -105,7 +105,7 @@ func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, erro
 		})
 		if err != nil {
 			// if got conflict error, try to get again
-			if ierror.IsConflictErr(err) {
+			if errors.IsConflictErr(err) {
 				var e error
 				repository, e = c.repoMgr.GetByName(ctx, name)
 				if e != nil {
@@ -118,7 +118,7 @@ func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, erro
 		}
 		created = true
 		return nil
-	})(ctx); err != nil && !ierror.IsConflictErr(err) {
+	})(ctx); err != nil && !errors.IsConflictErr(err) {
 		return false, 0, err
 	}
 

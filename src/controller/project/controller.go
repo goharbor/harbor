@@ -20,7 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
 )
@@ -61,7 +61,7 @@ func (c *controller) Get(ctx context.Context, projectID int64, options ...Option
 		return nil, err
 	}
 	if p == nil {
-		return nil, ierror.NotFoundError(nil).WithMessage("project %d not found", projectID)
+		return nil, errors.NotFoundError(nil).WithMessage("project %d not found", projectID)
 	}
 
 	return c.assembleProject(ctx, p, newOptions(options...))
@@ -69,7 +69,7 @@ func (c *controller) Get(ctx context.Context, projectID int64, options ...Option
 
 func (c *controller) GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error) {
 	if projectName == "" {
-		return nil, ierror.BadRequestError(nil).WithMessage("project name required")
+		return nil, errors.BadRequestError(nil).WithMessage("project name required")
 	}
 
 	p, err := c.projectMgr.Get(projectName)
@@ -77,7 +77,7 @@ func (c *controller) GetByName(ctx context.Context, projectName string, options 
 		return nil, err
 	}
 	if p == nil {
-		return nil, ierror.NotFoundError(nil).WithMessage("project %s not found", projectName)
+		return nil, errors.NotFoundError(nil).WithMessage("project %s not found", projectName)
 	}
 
 	return c.assembleProject(ctx, p, newOptions(options...))

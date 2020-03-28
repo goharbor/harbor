@@ -23,7 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	util "github.com/goharbor/harbor/src/common/utils/redis"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/blob"
 )
@@ -134,7 +134,7 @@ func (c *controller) Ensure(ctx context.Context, digest string, contentType stri
 		return blob.ID, nil
 	}
 
-	if !ierror.IsNotFoundErr(err) {
+	if !errors.IsNotFoundErr(err) {
 		return 0, err
 	}
 
@@ -143,12 +143,12 @@ func (c *controller) Ensure(ctx context.Context, digest string, contentType stri
 
 func (c *controller) Exist(ctx context.Context, digest string, options ...Option) (bool, error) {
 	if digest == "" {
-		return false, ierror.BadRequestError(nil).WithMessage("exist blob require digest")
+		return false, errors.BadRequestError(nil).WithMessage("exist blob require digest")
 	}
 
 	_, err := c.Get(ctx, digest, options...)
 	if err != nil {
-		if ierror.IsNotFoundErr(err) {
+		if errors.IsNotFoundErr(err) {
 			return false, nil
 		}
 
@@ -196,7 +196,7 @@ func (c *controller) FindMissingAssociationsForProject(ctx context.Context, proj
 
 func (c *controller) Get(ctx context.Context, digest string, options ...Option) (*blob.Blob, error) {
 	if digest == "" {
-		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).WithMessage("require digest")
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("require digest")
 	}
 
 	opts := newOptions(options...)
@@ -211,7 +211,7 @@ func (c *controller) Get(ctx context.Context, digest string, options ...Option) 
 	if err != nil {
 		return nil, err
 	} else if len(blobs) == 0 {
-		return nil, ierror.NotFoundError(nil).WithMessage("blob %s not found", digest)
+		return nil, errors.NotFoundError(nil).WithMessage("blob %s not found", digest)
 	}
 
 	return blobs[0], nil

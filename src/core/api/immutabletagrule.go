@@ -1,3 +1,17 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package api
 
 import (
@@ -7,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/rbac"
-	internal_errors "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
 )
@@ -36,7 +50,7 @@ func (itr *ImmutableTagRuleAPI) Prepare() {
 		} else {
 			text += fmt.Sprintf("%d", pid)
 		}
-		itr.SendError(internal_errors.New(err).WithCode(internal_errors.BadRequestCode))
+		itr.SendError(errors.New(err).WithCode(errors.BadRequestCode))
 		return
 	}
 	itr.projectID = pid
@@ -51,7 +65,7 @@ func (itr *ImmutableTagRuleAPI) Prepare() {
 		}
 		if itRule.ProjectID != itr.projectID {
 			err := fmt.Errorf("immutable tag rule %v not found", itr.ID)
-			itr.SendError(internal_errors.New(err).WithCode(internal_errors.NotFoundCode))
+			itr.SendError(errors.New(err).WithCode(errors.NotFoundCode))
 			return
 		}
 	}
@@ -95,7 +109,7 @@ func (itr *ImmutableTagRuleAPI) Post() {
 	ir := &model.Metadata{}
 	isValid, err := itr.DecodeJSONReqAndValidate(ir)
 	if !isValid {
-		itr.SendError(internal_errors.New(err).WithCode(internal_errors.BadRequestCode))
+		itr.SendError(errors.New(err).WithCode(errors.BadRequestCode))
 		return
 	}
 	ir.ProjectID = itr.projectID
@@ -111,7 +125,7 @@ func (itr *ImmutableTagRuleAPI) Post() {
 func (itr *ImmutableTagRuleAPI) Delete() {
 	if itr.ID <= 0 {
 		err := fmt.Errorf("invalid immutable rule id %d", itr.ID)
-		itr.SendError(internal_errors.New(err).WithCode(internal_errors.BadRequestCode))
+		itr.SendError(errors.New(err).WithCode(errors.BadRequestCode))
 		return
 	}
 	err := itr.ctr.DeleteImmutableRule(itr.ID)
@@ -125,7 +139,7 @@ func (itr *ImmutableTagRuleAPI) Delete() {
 func (itr *ImmutableTagRuleAPI) Put() {
 	ir := &model.Metadata{}
 	if err := itr.DecodeJSONReq(ir); err != nil {
-		itr.SendError(internal_errors.New(err).WithCode(internal_errors.BadRequestCode))
+		itr.SendError(errors.New(err).WithCode(errors.BadRequestCode))
 		return
 	}
 	ir.ID = itr.ID
@@ -133,7 +147,7 @@ func (itr *ImmutableTagRuleAPI) Put() {
 
 	if itr.ID <= 0 {
 		err := fmt.Errorf("invalid immutable rule id %d", itr.ID)
-		itr.SendError(internal_errors.New(err).WithCode(internal_errors.BadRequestCode))
+		itr.SendError(errors.New(err).WithCode(errors.BadRequestCode))
 		return
 	}
 

@@ -18,7 +18,7 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	"github.com/stretchr/testify/suite"
@@ -97,7 +97,7 @@ var (
     "Entrypoint": null,
     "OnBuild": null,
     "Labels": {
-      
+
     }
   },
   "created": "2019-01-01T01:29:27.650294696Z",
@@ -138,7 +138,7 @@ func (m *manifestV2ProcessorTestSuite) SetupTest() {
 func (m *manifestV2ProcessorTestSuite) TestAbstractAddition() {
 	// unknown addition
 	_, err := m.processor.AbstractAddition(nil, nil, "unknown_addition")
-	m.True(ierror.IsErr(err, ierror.BadRequestCode))
+	m.True(errors.IsErr(err, errors.BadRequestCode))
 
 	// build history
 	artifact := &artifact.Artifact{}

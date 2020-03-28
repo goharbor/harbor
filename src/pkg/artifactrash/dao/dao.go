@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 )
@@ -58,7 +58,7 @@ func (d *dao) Delete(ctx context.Context, id int64) (err error) {
 		return err
 	}
 	if n == 0 {
-		return ierror.NotFoundError(nil).WithMessage("artifact trash %d not found", id)
+		return errors.NotFoundError(nil).WithMessage("artifact trash %d not found", id)
 	}
 	return nil
 }

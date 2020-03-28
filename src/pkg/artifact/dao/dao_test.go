@@ -18,7 +18,7 @@ import (
 	"context"
 	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	tagdao "github.com/goharbor/harbor/src/pkg/tag/dao"
@@ -177,7 +177,7 @@ func (d *daoTestSuite) TestCount() {
 		},
 	})
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.BadRequestCode))
+	d.True(errors.IsErr(err, errors.BadRequestCode))
 
 	// query by repository ID and digest
 	total, err := d.dao.Count(d.ctx, &q.Query{
@@ -316,7 +316,7 @@ func (d *daoTestSuite) TestGet() {
 	// get the non-exist artifact
 	_, err := d.dao.Get(d.ctx, 10000)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+	d.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// get the exist artifact
 	artifact, err := d.dao.Get(d.ctx, d.parentArtID)
@@ -329,7 +329,7 @@ func (d *daoTestSuite) TestGetByDigest() {
 	// get the non-exist artifact
 	_, err := d.dao.GetByDigest(d.ctx, "library/hello-world", "non_existing_digest")
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+	d.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// get the exist artifact
 	artifact, err := d.dao.GetByDigest(d.ctx, "library/hello-world", "child_digest_02")
@@ -357,7 +357,7 @@ func (d *daoTestSuite) TestCreate() {
 	}
 	_, err := d.dao.Create(d.ctx, artifact)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ConflictCode))
+	d.True(errors.IsErr(err, errors.ConflictCode))
 }
 
 func (d *daoTestSuite) TestDelete() {
@@ -366,12 +366,12 @@ func (d *daoTestSuite) TestDelete() {
 	// not exist
 	err := d.dao.Delete(d.ctx, 100021)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+	d.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// foreign key constraint
 	err = d.dao.Delete(d.ctx, d.childArt01ID)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ViolateForeignKeyConstraintCode))
+	d.True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
 }
 
 func (d *daoTestSuite) TestUpdate() {
@@ -393,7 +393,7 @@ func (d *daoTestSuite) TestUpdate() {
 		ID: 10000,
 	})
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+	d.True(errors.IsErr(err, errors.NotFoundCode))
 }
 
 func (d *daoTestSuite) TestCreateReference() {
@@ -405,7 +405,7 @@ func (d *daoTestSuite) TestCreateReference() {
 		ChildID:  d.childArt01ID,
 	})
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ConflictCode))
+	d.True(errors.IsErr(err, errors.ConflictCode))
 
 	// foreign key constraint
 	_, err = d.dao.CreateReference(d.ctx, &ArtifactReference{
@@ -413,7 +413,7 @@ func (d *daoTestSuite) TestCreateReference() {
 		ChildID:  1000,
 	})
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ViolateForeignKeyConstraintCode))
+	d.True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
 }
 
 func (d *daoTestSuite) TestListReferences() {
@@ -432,7 +432,7 @@ func (d *daoTestSuite) TestDeleteReference() {
 	// not exist
 	err := d.dao.DeleteReference(d.ctx, 10000)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+	d.True(errors.IsErr(err, errors.NotFoundCode))
 }
 
 func (d *daoTestSuite) TestDeleteReferences() {
@@ -441,7 +441,7 @@ func (d *daoTestSuite) TestDeleteReferences() {
 	// parent artifact not exist
 	err := d.dao.DeleteReferences(d.ctx, 10000)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+	d.True(errors.IsErr(err, errors.NotFoundCode))
 }
 
 func TestDaoTestSuite(t *testing.T) {

@@ -16,10 +16,9 @@ package dao
 
 import (
 	"context"
-	"errors"
 	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	errors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	artdao "github.com/goharbor/harbor/src/pkg/artifact/dao"
@@ -123,7 +122,7 @@ func (d *daoTestSuite) TestGet() {
 	// get the non-exist tag
 	_, err := d.dao.Get(d.ctx, 10000)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+	d.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// get the exist tag
 	tag, err := d.dao.Get(d.ctx, d.tagID)
@@ -145,7 +144,7 @@ func (d *daoTestSuite) TestCreate() {
 	}
 	_, err := d.dao.Create(d.ctx, tg)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ConflictCode))
+	d.True(errors.IsErr(err, errors.ConflictCode))
 
 	// violating foreign key constraint: the artifact that the tag tries to attach doesn't exist
 	tg = &tag.Tag{
@@ -157,7 +156,7 @@ func (d *daoTestSuite) TestCreate() {
 	}
 	_, err = d.dao.Create(d.ctx, tg)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ViolateForeignKeyConstraintCode))
+	d.True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
 }
 
 func (d *daoTestSuite) TestDelete() {
@@ -166,9 +165,9 @@ func (d *daoTestSuite) TestDelete() {
 	// not exist
 	err := d.dao.Delete(d.ctx, 10000)
 	d.Require().NotNil(err)
-	var e *ierror.Error
+	var e *errors.Error
 	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.Equal(errors.NotFoundCode, e.Code)
 }
 
 func (d *daoTestSuite) TestUpdate() {
@@ -210,16 +209,16 @@ func (d *daoTestSuite) TestUpdate() {
 		ArtifactID: 2,
 	}, "ArtifactID")
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ViolateForeignKeyConstraintCode))
+	d.True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
 
 	// not exist
 	err = d.dao.Update(d.ctx, &tag.Tag{
 		ID: 10000,
 	})
 	d.Require().NotNil(err)
-	var e *ierror.Error
+	var e *errors.Error
 	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.Equal(errors.NotFoundCode, e.Code)
 }
 
 func (d *daoTestSuite) TestDeleteOfArtifact() {

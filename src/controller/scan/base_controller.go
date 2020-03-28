@@ -29,7 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
@@ -41,7 +41,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 // DefaultController is a default singleton scan API controller.
@@ -197,7 +196,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 	for _, art := range artifacts {
 		trackID, producesMimes, err := bc.makeReportPlaceholder(ctx, r, art, options...)
 		if err != nil {
-			if ierror.IsConflictErr(err) {
+			if errors.IsConflictErr(err) {
 				errs = append(errs, err)
 			} else {
 				return err
@@ -324,7 +323,7 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 	}
 
 	if r == nil {
-		return nil, ierror.NotFoundError(nil).WithMessage("no scanner registration configured for project: %d", artifact.ProjectID)
+		return nil, errors.NotFoundError(nil).WithMessage("no scanner registration configured for project: %d", artifact.ProjectID)
 	}
 
 	artifacts, scannable, err := bc.collectScanningArtifacts(ctx, r, artifact)
@@ -333,7 +332,7 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 	}
 
 	if !scannable {
-		return nil, ierror.NotFoundError(nil).WithMessage("report not found for %s@%s", artifact.RepositoryName, artifact.Digest)
+		return nil, errors.NotFoundError(nil).WithMessage("report not found for %s@%s", artifact.RepositoryName, artifact.Digest)
 	}
 
 	groupReports := make([][]*scan.Report, len(artifacts))

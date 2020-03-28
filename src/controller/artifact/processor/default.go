@@ -16,7 +16,7 @@ package processor
 
 import (
 	"context"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"regexp"
 	"strings"
@@ -54,6 +54,6 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, manifest []byte
 }
 func (d *defaultProcessor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*Addition, error) {
 	// return error directly
-	return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
+	return nil, errors.New(nil).WithCode(errors.BadRequestCode).
 		WithMessage("the processor for artifact %s not found, cannot get the addition", artifact.Type)
 }

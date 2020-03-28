@@ -17,7 +17,7 @@ package q
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"net/url"
 	"strconv"
 	"strings"
@@ -50,14 +50,14 @@ func Build(q string, pageNumber, pageSize int64) (*Query, error) {
 	for _, param := range params {
 		strs := strings.SplitN(param, "=", 2)
 		if len(strs) != 2 || len(strs[0]) == 0 || len(strs[1]) == 0 {
-			return nil, ierror.New(nil).
-				WithCode(ierror.BadRequestCode).
+			return nil, errors.New(nil).
+				WithCode(errors.BadRequestCode).
 				WithMessage(`the query string must contain "=" and the key/value cannot be empty`)
 		}
 		value, err := parsePattern(strs[1])
 		if err != nil {
-			return nil, ierror.New(err).
-				WithCode(ierror.BadRequestCode).
+			return nil, errors.New(err).
+				WithCode(errors.BadRequestCode).
 				WithMessage("invalid query string value: %s", strs[1])
 		}
 		query.Keywords[strs[0]] = value

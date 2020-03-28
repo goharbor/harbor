@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/goharbor/harbor/src/lib"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -128,14 +128,14 @@ func (a *authorizer) fetchToken(scopes []*scope) (*token, error) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		message := fmt.Sprintf("http status code: %d, body: %s", resp.StatusCode, string(body))
-		code := ierror.GeneralCode
+		code := errors.GeneralCode
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
-			code = ierror.UnAuthorizedCode
+			code = errors.UnAuthorizedCode
 		case http.StatusForbidden:
-			code = ierror.ForbiddenCode
+			code = errors.ForbiddenCode
 		}
-		return nil, ierror.New(nil).WithCode(code).
+		return nil, errors.New(nil).WithCode(code).
 			WithMessage(message)
 	}
 	token := &token{}

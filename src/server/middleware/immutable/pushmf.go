@@ -1,7 +1,6 @@
 package immutable
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -10,7 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
-	internal_errors "github.com/goharbor/harbor/src/lib/error"
+	errors "github.com/goharbor/harbor/src/lib/errors"
 	serror "github.com/goharbor/harbor/src/server/error"
 )
 
@@ -21,11 +20,11 @@ func Middleware() func(http.Handler) http.Handler {
 			if err := handlePush(req); err != nil {
 				var e *ErrImmutable
 				if errors.As(err, &e) {
-					pkgE := internal_errors.New(e).WithCode(internal_errors.PreconditionCode)
+					pkgE := errors.New(e).WithCode(errors.PreconditionCode)
 					serror.SendError(rw, pkgE)
 					return
 				}
-				pkgE := internal_errors.New(fmt.Errorf("error occurred when to handle request in immutable handler: %v", err)).WithCode(internal_errors.GeneralCode)
+				pkgE := errors.New(fmt.Errorf("error occurred when to handle request in immutable handler: %v", err)).WithCode(errors.GeneralCode)
 				serror.SendError(rw, pkgE)
 				return
 			}

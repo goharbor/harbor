@@ -17,7 +17,7 @@ package repository
 import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
@@ -68,7 +68,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.SetupTest()
 
 	// doesn't exist
-	c.repoMgr.On("GetByName").Return(nil, ierror.NotFoundError(nil))
+	c.repoMgr.On("GetByName").Return(nil, errors.NotFoundError(nil))
 	c.proMgr.On("Get", "library").Return(&models.Project{
 		ProjectID: 1,
 	}, nil)

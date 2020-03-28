@@ -22,7 +22,7 @@ import (
 
 	"github.com/docker/distribution/manifest/schema2"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/notification"
@@ -216,7 +216,7 @@ func (suite *PutManifestMiddlewareTestSuite) TestResourcesExceeded() {
 		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceCount, 10, 10, 11))
 		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceStorage, 100, 100, 110))
 
-		err := ierror.DeniedError(errs).WithMessage("Quota exceeded when processing the request of %v", errs)
+		err := errors.DeniedError(errs).WithMessage("Quota exceeded when processing the request of %v", errs)
 		mock.OnAnything(suite.quotaController, "Request").Return(err).Once()
 
 		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)

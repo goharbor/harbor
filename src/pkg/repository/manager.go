@@ -17,7 +17,7 @@ package repository
 import (
 	"context"
 	"github.com/goharbor/harbor/src/common/models"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/repository/dao"
 )
@@ -82,7 +82,7 @@ func (m *manager) GetByName(ctx context.Context, name string) (repository *model
 		return nil, err
 	}
 	if len(repositories) == 0 {
-		return nil, ierror.New(nil).WithCode(ierror.NotFoundCode).
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
 			WithMessage("repository %s not found", name)
 	}
 	return repositories[0], nil

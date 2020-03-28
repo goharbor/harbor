@@ -2,12 +2,11 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -29,10 +28,10 @@ type auditlogAPI struct {
 func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAuditLogsParams) middleware.Responder {
 	secCtx, ok := security.FromContext(ctx)
 	if !ok {
-		return a.SendError(ctx, ierror.UnauthorizedError(errors.New("security context not found")))
+		return a.SendError(ctx, errors.UnauthorizedError(errors.New("security context not found")))
 	}
 	if !secCtx.IsAuthenticated() {
-		return a.SendError(ctx, ierror.UnauthorizedError(nil).WithMessage(secCtx.GetUsername()))
+		return a.SendError(ctx, errors.UnauthorizedError(nil).WithMessage(secCtx.GetUsername()))
 	}
 	query, err := a.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
 	if err != nil {

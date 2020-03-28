@@ -15,13 +15,12 @@
 package native
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/lib"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/filter"
@@ -237,7 +236,7 @@ func (a *Adapter) PingSimple() error {
 	if err == nil {
 		return nil
 	}
-	if ierror.IsErr(err, ierror.UnAuthorizedCode) || ierror.IsErr(err, ierror.ForbiddenCode) {
+	if errors.IsErr(err, errors.UnAuthorizedCode) || errors.IsErr(err, errors.ForbiddenCode) {
 		return nil
 	}
 	return err

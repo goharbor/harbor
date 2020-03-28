@@ -15,7 +15,7 @@
 package image
 
 import (
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -85,7 +85,7 @@ func (m *manifestV1ProcessorTestSuite) TestAbstractMetadata() {
 
 func (m *manifestV1ProcessorTestSuite) TestAbstractAddition() {
 	_, err := m.processor.AbstractAddition(nil, nil, AdditionTypeBuildHistory)
-	m.True(ierror.IsErr(err, ierror.BadRequestCode))
+	m.True(errors.IsErr(err, errors.BadRequestCode))
 }
 
 func (m *manifestV1ProcessorTestSuite) TestGetArtifactType() {

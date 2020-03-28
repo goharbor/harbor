@@ -38,7 +38,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/distribution"
@@ -85,9 +85,9 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 	ctx := r.Context()
 
 	art, err := artifactController.GetByReference(ctx, repository, reference, nil)
-	if ierror.IsNotFoundErr(err) {
+	if errors.IsNotFoundErr(err) {
 		// artifact not found, discontinue the API request
-		return nil, ierror.BadRequestError(nil).WithMessage("artifact %s not found", from)
+		return nil, errors.BadRequestError(nil).WithMessage("artifact %s not found", from)
 	} else if err != nil {
 		logger.Errorf("get artifact %s failed, error: %v", from, err)
 		return nil, err

@@ -20,7 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	serror "github.com/goharbor/harbor/src/server/error"
@@ -76,7 +76,7 @@ func deleteManifest(w http.ResponseWriter, req *http.Request) {
 	if _, err := digest.Parse(reference); err != nil {
 		switch err {
 		case digest.ErrDigestInvalidFormat:
-			serror.SendError(w, ierror.New(nil).WithCode(ierror.DIGESTINVALID).
+			serror.SendError(w, errors.New(nil).WithCode(errors.DIGESTINVALID).
 				WithMessage(digest.ErrDigestInvalidFormat.Error()))
 			return
 		}

@@ -3,10 +3,9 @@ package dao
 import (
 	"fmt"
 
-	"errors"
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
-	internal_errors "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/dao/model"
 )
 
@@ -35,7 +34,7 @@ func (i *immutableRuleDao) CreateImmutableRule(ir *model.ImmutableRule) (int64, 
 	id, err := o.Insert(ir)
 	if err != nil {
 		if dao.IsDupRecErr(err) {
-			return id, internal_errors.ConflictError(err)
+			return id, errors.ConflictError(err)
 		}
 		return id, err
 	}
@@ -49,7 +48,7 @@ func (i *immutableRuleDao) UpdateImmutableRule(projectID int64, ir *model.Immuta
 	id, err := o.Update(ir, "TagFilter")
 	if err != nil {
 		if errors.Is(err, orm.ErrNoRows) {
-			return id, internal_errors.NotFoundError(err)
+			return id, errors.NotFoundError(err)
 		}
 		return id, err
 	}
@@ -63,7 +62,7 @@ func (i *immutableRuleDao) ToggleImmutableRule(id int64, status bool) (int64, er
 	id, err := o.Update(ir, "Disabled")
 	if err != nil {
 		if errors.Is(err, orm.ErrNoRows) {
-			return id, internal_errors.NotFoundError(err)
+			return id, errors.NotFoundError(err)
 		}
 		return id, err
 	}
@@ -77,7 +76,7 @@ func (i *immutableRuleDao) GetImmutableRule(id int64) (*model.ImmutableRule, err
 	err := o.Read(ir)
 	if err != nil {
 		if errors.Is(err, orm.ErrNoRows) {
-			return nil, internal_errors.New(err).WithCode(internal_errors.NotFoundCode).
+			return nil, errors.New(err).WithCode(errors.NotFoundCode).
 				WithMessage(fmt.Sprintf("the immutable rule %d is not found.", id))
 		}
 		return nil, err

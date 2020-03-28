@@ -18,9 +18,8 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"github.com/goharbor/harbor/src/lib"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"net/url"
 	"strconv"
@@ -91,25 +90,25 @@ func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName inte
 	}
 	secCtx, ok := security.FromContext(ctx)
 	if !ok {
-		return ierror.UnauthorizedError(errors.New("security context not found"))
+		return errors.UnauthorizedError(errors.New("security context not found"))
 	}
 	if !secCtx.IsAuthenticated() {
-		return ierror.UnauthorizedError(nil)
+		return errors.UnauthorizedError(nil)
 	}
-	return ierror.ForbiddenError(nil)
+	return errors.ForbiddenError(nil)
 }
 
 // RequireSysAdmin checks the system admin permission according to the security context
 func (b *BaseAPI) RequireSysAdmin(ctx context.Context) error {
 	secCtx, ok := security.FromContext(ctx)
 	if !ok {
-		return ierror.UnauthorizedError(errors.New("security context not found"))
+		return errors.UnauthorizedError(errors.New("security context not found"))
 	}
 	if !secCtx.IsAuthenticated() {
-		return ierror.UnauthorizedError(nil)
+		return errors.UnauthorizedError(nil)
 	}
 	if !secCtx.IsSysAdmin() {
-		return ierror.ForbiddenError(nil).WithMessage(secCtx.GetUsername())
+		return errors.ForbiddenError(nil).WithMessage(secCtx.GetUsername())
 	}
 	return nil
 }

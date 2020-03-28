@@ -21,7 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/opencontainers/image-spec/specs-go/v1"
 )
@@ -53,7 +53,7 @@ type manifestV2Processor struct {
 
 func (m *manifestV2Processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*processor.Addition, error) {
 	if addition != AdditionTypeBuildHistory {
-		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessage("addition %s isn't supported for %s(manifest version 2)", addition, ArtifactTypeImage)
 	}
 	mani, _, err := m.RegCli.PullManifest(artifact.RepositoryName, artifact.Digest)

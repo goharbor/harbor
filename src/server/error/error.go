@@ -15,31 +15,30 @@
 package error
 
 import (
-	"errors"
 	"fmt"
 	openapi "github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"net/http"
 	"strings"
 )
 
 var (
 	codeMap = map[string]int{
-		ierror.BadRequestCode:                  http.StatusBadRequest,
-		ierror.DIGESTINVALID:                   http.StatusBadRequest,
-		ierror.UnAuthorizedCode:                http.StatusUnauthorized,
-		ierror.ForbiddenCode:                   http.StatusForbidden,
-		ierror.DENIED:                          http.StatusForbidden,
-		ierror.NotFoundCode:                    http.StatusNotFound,
-		ierror.ConflictCode:                    http.StatusConflict,
-		ierror.PreconditionCode:                http.StatusPreconditionFailed,
-		ierror.ViolateForeignKeyConstraintCode: http.StatusPreconditionFailed,
-		ierror.PROJECTPOLICYVIOLATION:          http.StatusPreconditionFailed,
-		ierror.GeneralCode:                     http.StatusInternalServerError,
+		errors.BadRequestCode:                  http.StatusBadRequest,
+		errors.DIGESTINVALID:                   http.StatusBadRequest,
+		errors.UnAuthorizedCode:                http.StatusUnauthorized,
+		errors.ForbiddenCode:                   http.StatusForbidden,
+		errors.DENIED:                          http.StatusForbidden,
+		errors.NotFoundCode:                    http.StatusNotFound,
+		errors.ConflictCode:                    http.StatusConflict,
+		errors.PreconditionCode:                http.StatusPreconditionFailed,
+		errors.ViolateForeignKeyConstraintCode: http.StatusPreconditionFailed,
+		errors.PROJECTPOLICYVIOLATION:          http.StatusPreconditionFailed,
+		errors.GeneralCode:                     http.StatusInternalServerError,
 	}
 )
 
@@ -52,8 +51,8 @@ func SendError(w http.ResponseWriter, err error) {
 	// the error detail is logged only, and will not be sent to the client to avoid leaking server information
 	if statusCode >= http.StatusInternalServerError {
 		log.Error(errPayload)
-		err = ierror.New(nil).WithCode(ierror.GeneralCode).WithMessage("internal server error")
-		errPayload = ierror.NewErrs(err).Error()
+		err = errors.New(nil).WithCode(errors.GeneralCode).WithMessage("internal server error")
+		errPayload = errors.NewErrs(err).Error()
 	} else {
 		// only log the error whose status code < 500 when debugging to avoid log flooding
 		log.Debug(errPayload)
@@ -74,19 +73,19 @@ func apiError(err error) (statusCode int, errPayload string) {
 		// So we needed to convert the format to the internal error response format.
 		code = int(openAPIErr.Code())
 		errCode := strings.Replace(strings.ToUpper(http.StatusText(code)), " ", "_", -1)
-		err = ierror.New(nil).WithCode(errCode).WithMessage(openAPIErr.Error())
+		err = errors.New(nil).WithCode(errCode).WithMessage(openAPIErr.Error())
 	} else if legacyErr, ok := err.(*commonhttp.Error); ok {
 		// make sure the legacy error format is align with the new one
 		code = legacyErr.Code
 		errCode := strings.Replace(strings.ToUpper(http.StatusText(code)), " ", "_", -1)
-		err = ierror.New(nil).WithCode(errCode).WithMessage(legacyErr.Message)
+		err = errors.New(nil).WithCode(errCode).WithMessage(legacyErr.Message)
 	} else {
-		code = codeMap[ierror.ErrCode(err)]
+		code = codeMap[errors.ErrCode(err)]
 	}
 	if code == 0 {
 		code = http.StatusInternalServerError
 	}
-	return code, ierror.NewErrs(err).Error()
+	return code, errors.NewErrs(err).Error()
 }
 
 var _ middleware.Responder = &ErrResponder{}

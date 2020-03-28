@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	beegoorm "github.com/astaxie/beego/orm"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 )
@@ -134,7 +134,7 @@ func (d *dao) GetByDigest(ctx context.Context, repository, digest string) (*Arti
 		return nil, err
 	}
 	if len(artifacts) == 0 {
-		return nil, ierror.New(nil).WithCode(ierror.NotFoundCode).
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
 			WithMessage("artifact %s@%s not found", repository, digest)
 	}
 	return artifacts[0], nil
@@ -170,7 +170,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return ierror.NotFoundError(nil).WithMessage("artifact %d not found", id)
+		return errors.NotFoundError(nil).WithMessage("artifact %d not found", id)
 	}
 
 	return nil
@@ -185,7 +185,7 @@ func (d *dao) Update(ctx context.Context, artifact *Artifact, props ...string) e
 		return err
 	}
 	if n == 0 {
-		return ierror.NotFoundError(nil).WithMessage("artifact %d not found", artifact.ID)
+		return errors.NotFoundError(nil).WithMessage("artifact %d not found", artifact.ID)
 	}
 	return nil
 }
@@ -228,7 +228,7 @@ func (d *dao) DeleteReference(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return ierror.NotFoundError(nil).WithMessage("artifact reference %d not found", id)
+		return errors.NotFoundError(nil).WithMessage("artifact reference %d not found", id)
 	}
 	return nil
 }
@@ -287,7 +287,7 @@ func setBaseQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, 
 	}
 	b, ok := base.(string)
 	if !ok || b != "*" {
-		return qs, ierror.New(nil).WithCode(ierror.BadRequestCode).
+		return qs, errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessage(`the value of "base" query can only be exact match value with "*"`)
 	}
 	// the base is specified as "*"
@@ -329,7 +329,7 @@ func setTagQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, e
 			return qs, nil
 		}
 	}
-	return qs, ierror.New(nil).WithCode(ierror.BadRequestCode).
+	return qs, errors.New(nil).WithCode(errors.BadRequestCode).
 		WithMessage(`the value of "tags" query can only be fuzzy match value or exact match value with "*" and "nil"`)
 }
 
@@ -347,14 +347,14 @@ func setLabelQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter,
 	}
 	al, ok := labels.(*q.AndList)
 	if !ok {
-		return qs, ierror.New(nil).WithCode(ierror.BadRequestCode).
+		return qs, errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessage(`the value of "labels" query can only be integer list with intersetion relationship`)
 	}
 	var collections []string
 	for _, value := range al.Values {
 		labelID, ok := value.(int64)
 		if !ok {
-			return qs, ierror.New(nil).WithCode(ierror.BadRequestCode).
+			return qs, errors.New(nil).WithCode(errors.BadRequestCode).
 				WithMessage(`the value of "labels" query can only be integer list with intersetion relationship`)
 		}
 		collections = append(collections, fmt.Sprintf(`SELECT artifact_id FROM label_reference WHERE label_id=%d`, labelID))

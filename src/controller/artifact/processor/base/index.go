@@ -17,7 +17,7 @@ package base
 import (
 	"context"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/registry"
 )
@@ -42,7 +42,7 @@ func (m *IndexProcessor) AbstractMetadata(ctx context.Context, content []byte, a
 
 // AbstractAddition abstracts the addition of artifact
 func (m *IndexProcessor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*processor.Addition, error) {
-	return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
+	return nil, errors.New(nil).WithCode(errors.BadRequestCode).
 		WithMessage("addition %s isn't supported", addition)
 }
 

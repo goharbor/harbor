@@ -1,9 +1,23 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package tag
 
 import (
 	"github.com/goharbor/harbor/src/common"
 	coreConfig "github.com/goharbor/harbor/src/core/config"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	pkg_artifact "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
@@ -157,7 +171,7 @@ func (c *controllerTestSuite) TestDeleteImmutable() {
 	c.tagMgr.On("Delete").Return(nil)
 	err := c.ctl.Delete(nil, 1)
 	c.Require().NotNil(err)
-	c.True(ierror.IsErr(err, ierror.PreconditionCode))
+	c.True(errors.IsErr(err, errors.PreconditionCode))
 }
 
 func (c *controllerTestSuite) TestUpdate() {

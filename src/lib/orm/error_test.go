@@ -15,9 +15,8 @@
 package orm
 
 import (
-	"errors"
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,7 +36,7 @@ func TestIsNotFoundError(t *testing.T) {
 	message := "message"
 	err = AsNotFoundError(orm.ErrNoRows, message)
 	require.NotNil(t, err)
-	assert.Equal(t, error.NotFoundCode, err.Code)
+	assert.Equal(t, errors.NotFoundCode, err.Code)
 	assert.Equal(t, message, err.Message)
 }
 
@@ -56,7 +55,7 @@ func TestIsConflictError(t *testing.T) {
 		Code: "23505",
 	}, message)
 	require.NotNil(t, err)
-	assert.Equal(t, error.ConflictCode, err.Code)
+	assert.Equal(t, errors.ConflictCode, err.Code)
 	assert.Equal(t, message, err.Message)
 }
 
@@ -75,6 +74,6 @@ func TestIsForeignKeyError(t *testing.T) {
 		Code: "23503",
 	}, message)
 	require.NotNil(t, err)
-	assert.Equal(t, error.ViolateForeignKeyConstraintCode, err.Code)
+	assert.Equal(t, errors.ViolateForeignKeyConstraintCode, err.Code)
 	assert.Equal(t, message, err.Message)
 }
