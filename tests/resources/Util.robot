@@ -230,8 +230,9 @@ Retry Keyword When Error
     :For  ${n}  IN RANGE  1  6
     \    Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
     \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
-    \    Log To Console  Return value is ${out[0]}
-    \    Exit For Loop If  '${out[0]}'=='PASS'
+    \    Log To Console  Return value is ${out} and ${out[0]}
+    \    Run Keyword If  '${keyword}'=='Make Swagger Client'  Exit For Loop If  '${out[0]}'=='PASS' and '${out[1]}'=='0'
+    \    ...  ELSE  Exit For Loop If  '${out[0]}'=='PASS'
     \    Sleep  2
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'

@@ -133,7 +133,7 @@ Docker Login Fail
     [Arguments]  ${ip}  ${user}  ${pwd}
     Log To Console  \nRunning docker login ${ip} ...
     ${output}=  Command Should be Failed  docker login -u ${user} -p ${pwd} ${ip}
-    Should Contain  ${output}  unauthorized: authentication required
+    Should Contain  ${output}  401 Unauthorized
     Should Not Contain  ${output}  500 Internal Server Error
 
 Docker Login
