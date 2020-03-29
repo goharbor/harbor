@@ -529,6 +529,56 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/tags:
+    get:
+      summary: List tags
+      description: List tags under the specific project and repository.
+      tags:
+        - tag
+      operationId: listTags
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: with_signature
+          in: query
+          description: Specify whether the signature is included inside the returning tags
+          type: boolean
+          required: false
+          default: false
+        - name: with_immutable_status
+          in: query
+          description: Specify whether the immutable status is included inside the returning tags
+          type: boolean
+          required: false
+          default: false
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of tags
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Tag'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /audit-logs:
     get:
       summary: Get recent logs of the projects which the user is a member of
