@@ -2,6 +2,7 @@
 
 import base
 import subprocess
+import json
 
 try:
     import docker
@@ -43,6 +44,30 @@ def docker_manifest_push_to_harbor(index, manifests, harbor_server, user, passwo
     docker_login_cmd(harbor_server, user, password)
     docker_manifest_create(index, manifests)
     return docker_manifest_push(index)
+
+def list_repositories(harbor_host, user, password, n = None, last = None):
+    if n is not None and last is not None:
+        command = ["curl", "-s", "-u", user+":"+password, "https://"+harbor_host+"/v2/_catalog"+"?n=%d"%n+"&last="+last, "--insecure"]
+    elif n is not None:
+            command = ["curl", "-s", "-u", user+":"+password, "https://"+harbor_host+"/v2/_catalog"+"?n=%d"%n, "--insecure"]
+    else:
+        command = ["curl", "-s", "-u", user+":"+password, "https://"+harbor_host+"/v2/_catalog", "--insecure"]
+    print "List Repositories Command: ", command
+    ret = base.run_command(command)
+    repos = json.loads(ret).get("repositories","")
+    return repos
+
+def list_image_tags(harbor_host, repository, user, password, n = None, last = None):
+    if n is not None and last is not None:
+        command = ["curl", "-s", "-u", user+":"+password, "https://"+harbor_host+"/v2/"+repository+"/tags/list"+"?n=%d"%n+"&last="+last, "--insecure"]
+    elif n is not None:
+        command = ["curl", "-s", "-u", user+":"+password, "https://"+harbor_host+"/v2/"+repository+"/tags/list"+"?n=%d"%n, "--insecure"]
+    else:
+        command = ["curl", "-s", "-u", user+":"+password, "https://"+harbor_host+"/v2/"+repository+"/tags/list", "--insecure"]
+    print "List Image Tags Command: ", command
+    ret = base.run_command(command)
+    tags = json.loads(ret).get("tags","")
+    return tags
 
 class DockerAPI(object):
     def __init__(self):
