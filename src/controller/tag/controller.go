@@ -1,10 +1,24 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package tag
 
 import (
 	"context"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
@@ -80,7 +94,7 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 		}
 		// existing tag must check the immutable status and signature
 		if tag.Immutable {
-			return ierror.New(nil).WithCode(ierror.PreconditionCode).
+			return errors.New(nil).WithCode(errors.PreconditionCode).
 				WithMessage("the tag %s configured as immutable, cannot be updated", tag.Name)
 		}
 		// the tag exists under the repository, but it is attached to other artifact
@@ -101,7 +115,7 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 		tag.PushTime = time.Now()
 		_, err = c.Create(ctx, tag)
 		return err
-	})(ctx); err != nil && !ierror.IsConflictErr(err) {
+	})(ctx); err != nil && !errors.IsConflictErr(err) {
 		return err
 	}
 
@@ -163,11 +177,11 @@ func (c *controller) Delete(ctx context.Context, id int64) (err error) {
 		return err
 	}
 	if tag.Immutable {
-		return ierror.New(nil).WithCode(ierror.PreconditionCode).
+		return errors.New(nil).WithCode(errors.PreconditionCode).
 			WithMessage("the tag %s configured as immutable, cannot be deleted", tag.Name)
 	}
 	if tag.Signed {
-		return ierror.New(nil).WithCode(ierror.PreconditionCode).
+		return errors.New(nil).WithCode(errors.PreconditionCode).
 			WithMessage("the tag %s with signature cannot be deleted", tag.Name)
 	}
 	return c.tagMgr.Delete(ctx, id)

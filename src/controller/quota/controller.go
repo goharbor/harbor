@@ -22,7 +22,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	util "github.com/goharbor/harbor/src/common/utils/redis"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
@@ -168,7 +168,7 @@ func (c *controller) reserveResources(ctx context.Context, reference, referenceI
 		newReserved := types.Add(reserved, resources)
 
 		if err := quota.IsSafe(hardLimits, types.Add(used, reserved), types.Add(used, newReserved), false); err != nil {
-			return ierror.DeniedError(err).WithMessage("Quota exceeded when processing the request of %v", err)
+			return errors.DeniedError(err).WithMessage("Quota exceeded when processing the request of %v", err)
 		}
 
 		if err := c.setReservedResources(ctx, reference, referenceID, newReserved); err != nil {

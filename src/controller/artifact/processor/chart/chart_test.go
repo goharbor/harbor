@@ -17,7 +17,7 @@ package chart
 import (
 	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	chartserver "github.com/goharbor/harbor/src/pkg/chart"
 	"github.com/goharbor/harbor/src/testing/pkg/chart"
@@ -49,16 +49,16 @@ func (p *processorTestSuite) SetupTest() {
 func (p *processorTestSuite) TestAbstractAddition() {
 	// unknown addition
 	_, err := p.processor.AbstractAddition(nil, nil, "unknown_addition")
-	p.True(ierror.IsErr(err, ierror.BadRequestCode))
+	p.True(errors.IsErr(err, errors.BadRequestCode))
 
 	chartManifest := `{"schemaVersion":2,"config":{"mediaType":"application/vnd.cncf.helm.config.v1+json","digest":"sha256:76a59ebef39013bf7b57e411629b569a5175590024f31eeaaa577a0f8da9e523","size":528},"layers":[{"mediaType":"application/tar+gzip","digest":"sha256:0bd64cfb958b68c71b46597e22185a41e784dc96e04090bc7d2a480b704c3b65","size":12607}]}`
 
-	chartYaml := `{  
+	chartYaml := `{
    “name”:“redis”,
    “home”:“http://redis.io/",
    “sources”:[
       “https://github.com/bitnami/bitnami-docker-redis"
-   
+
 ],
    “version”:“3.2.5",
    “description”:“Open source, advanced key-value store. It is often referred to as a data structure server since keys can contain strings, hashes, lists, sets and sorted sets.“,
@@ -66,15 +66,15 @@ func (p *processorTestSuite) TestAbstractAddition() {
       “redis”,
       “keyvalue”,
       “database”
-   
+
 ],
    “maintainers”:[
       {
          “name”:“bitnami-bot”,
          “email”:“containers@bitnami.com"
-      
+
 }
-   
+
 ],
    “icon”:“https://bitnami.com/assets/stacks/redis/img/redis-stack-220x234.png",
    “apiVersion”:“v1”,

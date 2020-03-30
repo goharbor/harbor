@@ -33,7 +33,7 @@ import (
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/registry/auth"
 	"github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -257,7 +257,7 @@ func (c *client) ManifestExist(repository, reference string) (bool, string, erro
 	}
 	resp, err := c.do(req)
 	if err != nil {
-		if ierror.IsErr(err, ierror.NotFoundCode) {
+		if errors.IsErr(err, errors.NotFoundCode) {
 			return false, "", nil
 		}
 		return false, "", err
@@ -320,7 +320,7 @@ func (c *client) DeleteManifest(repository, reference string) error {
 			return err
 		}
 		if !exist {
-			return ierror.New(nil).WithCode(ierror.NotFoundCode).
+			return errors.New(nil).WithCode(errors.NotFoundCode).
 				WithMessage("%s:%s not found", repository, reference)
 		}
 		reference = digest
@@ -344,7 +344,7 @@ func (c *client) BlobExist(repository, digest string) (bool, error) {
 	}
 	resp, err := c.do(req)
 	if err != nil {
-		if ierror.IsErr(err, ierror.NotFoundCode) {
+		if errors.IsErr(err, errors.NotFoundCode) {
 			return false, nil
 		}
 		return false, err
@@ -460,7 +460,7 @@ func (c *client) Copy(srcRepo, srcRef, dstRepo, dstRef string, override bool) er
 		}
 		// the same name artifact exists, but not allowed to override
 		if !override {
-			return ierror.New(nil).WithCode(ierror.PreconditionCode).
+			return errors.New(nil).WithCode(errors.PreconditionCode).
 				WithMessage("the same name but different digest artifact exists, but the override is set to false")
 		}
 	}
@@ -536,16 +536,16 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 			return nil, err
 		}
 		message := fmt.Sprintf("http status code: %d, body: %s", resp.StatusCode, string(body))
-		code := ierror.GeneralCode
+		code := errors.GeneralCode
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
-			code = ierror.UnAuthorizedCode
+			code = errors.UnAuthorizedCode
 		case http.StatusForbidden:
-			code = ierror.ForbiddenCode
+			code = errors.ForbiddenCode
 		case http.StatusNotFound:
-			code = ierror.NotFoundCode
+			code = errors.NotFoundCode
 		}
-		return nil, ierror.New(nil).WithCode(code).
+		return nil, errors.New(nil).WithCode(code).
 			WithMessage(message)
 	}
 	return resp, nil

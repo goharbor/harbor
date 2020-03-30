@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/stretchr/testify/suite"
 )
@@ -47,14 +47,14 @@ func (suite *ControllerTestSuite) TestGetByName() {
 	{
 		p, err := c.GetByName(context.TODO(), "test", Metadata(false))
 		suite.Error(err)
-		suite.True(ierror.IsNotFoundErr(err))
+		suite.True(errors.IsNotFoundErr(err))
 		suite.Nil(p)
 	}
 
 	{
 		p, err := c.GetByName(context.TODO(), "oops", Metadata(false))
 		suite.Error(err)
-		suite.False(ierror.IsNotFoundErr(err))
+		suite.False(errors.IsNotFoundErr(err))
 		suite.Nil(p)
 	}
 }

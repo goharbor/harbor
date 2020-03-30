@@ -15,10 +15,9 @@
 package error
 
 import (
-	"errors"
 	openapi "github.com/go-openapi/errors"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -28,21 +27,21 @@ import (
 func TestSendError(t *testing.T) {
 	// unauthorized error
 	rw := httptest.NewRecorder()
-	err := ierror.New(nil).WithCode(ierror.UnAuthorizedCode).WithMessage("unauthorized")
+	err := errors.New(nil).WithCode(errors.UnAuthorizedCode).WithMessage("unauthorized")
 	SendError(rw, err)
 	assert.Equal(t, http.StatusUnauthorized, rw.Code)
 	assert.Equal(t, `{"errors":[{"code":"UNAUTHORIZED","message":"unauthorized"}]}`+"\n", rw.Body.String())
 
 	// internal server error
 	rw = httptest.NewRecorder()
-	err = ierror.New(nil).WithCode(ierror.GeneralCode).WithMessage("unknown")
+	err = errors.New(nil).WithCode(errors.GeneralCode).WithMessage("unknown")
 	SendError(rw, err)
 	assert.Equal(t, http.StatusInternalServerError, rw.Code)
 	assert.Equal(t, `{"errors":[{"code":"UNKNOWN","message":"internal server error"}]}`+"\n", rw.Body.String())
 
 	// not internal server error
 	rw = httptest.NewRecorder()
-	err = ierror.New(nil).WithCode(ierror.NotFoundCode).WithMessage("object not found")
+	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("object not found")
 	SendError(rw, err)
 	assert.Equal(t, http.StatusNotFound, rw.Code)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"object not found"}]}`+"\n", rw.Body.String())
@@ -65,10 +64,10 @@ func TestAPIError(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"not found"}]}`, payload)
 
-	// ierror.Error
-	err = &ierror.Error{
+	// errors.Error
+	err = &errors.Error{
 		Cause:   nil,
-		Code:    ierror.NotFoundCode,
+		Code:    errors.NotFoundCode,
 		Message: "resource not found",
 	}
 	statusCode, payload = apiError(err)

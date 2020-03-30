@@ -22,7 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -148,7 +148,7 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
 		ProjectID: 1,
 	}, nil)
-	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
+	c.artMgr.On("GetByDigest").Return(nil, errors.NotFoundError(nil))
 	c.artMgr.On("Create").Return(1, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	created, art, err = c.ctl.ensureArtifact(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest)
@@ -164,7 +164,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
 		ProjectID: 1,
 	}, nil)
-	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
+	c.artMgr.On("GetByDigest").Return(nil, errors.NotFoundError(nil))
 	c.artMgr.On("Create").Return(1, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	c.tagCtl.On("Ensure").Return(nil)
@@ -236,11 +236,11 @@ func (c *controllerTestSuite) TestGetByDigest() {
 	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
 		RepositoryID: 1,
 	}, nil)
-	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
+	c.artMgr.On("GetByDigest").Return(nil, errors.NotFoundError(nil))
 	art, err := c.ctl.getByDigest(nil, "library/hello-world",
 		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	c.Require().NotNil(err)
-	c.True(ierror.IsErr(err, ierror.NotFoundCode))
+	c.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// reset the mock
 	c.SetupTest()
@@ -269,7 +269,7 @@ func (c *controllerTestSuite) TestGetByTag() {
 	c.tagCtl.On("List").Return(nil, nil)
 	art, err := c.ctl.getByTag(nil, "library/hello-world", "latest", nil)
 	c.Require().NotNil(err)
-	c.True(ierror.IsErr(err, ierror.NotFoundCode))
+	c.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// reset the mock
 	c.SetupTest()
@@ -343,16 +343,16 @@ func (c *controllerTestSuite) TestGetByReference() {
 
 func (c *controllerTestSuite) TestDeleteDeeply() {
 	// root artifact and doesn't exist
-	c.artMgr.On("Get").Return(nil, ierror.NotFoundError(nil))
+	c.artMgr.On("Get").Return(nil, errors.NotFoundError(nil))
 	err := c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, true)
 	c.Require().NotNil(err)
-	c.Assert().True(ierror.IsErr(err, ierror.NotFoundCode))
+	c.Assert().True(errors.IsErr(err, errors.NotFoundCode))
 
 	// reset the mock
 	c.SetupTest()
 
 	// child artifact and doesn't exist
-	c.artMgr.On("Get").Return(nil, ierror.NotFoundError(nil))
+	c.artMgr.On("Get").Return(nil, errors.NotFoundError(nil))
 	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, false)
 	c.Require().Nil(err)
 
@@ -414,7 +414,7 @@ func (c *controllerTestSuite) TestCopy() {
 		RepositoryID: 1,
 		Name:         "library/hello-world",
 	}, nil)
-	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
+	c.artMgr.On("GetByDigest").Return(nil, errors.NotFoundError(nil))
 	c.tagCtl.On("List").Return([]*tag.Tag{
 		{
 			Tag: model_tag.Tag{

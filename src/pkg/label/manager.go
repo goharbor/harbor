@@ -17,7 +17,7 @@ package label
 import (
 	"context"
 	"github.com/goharbor/harbor/src/common/models"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"time"
 )
@@ -79,7 +79,7 @@ func (m *manager) RemoveFrom(ctx context.Context, labelID int64, artifactID int6
 		return err
 	}
 	if n == 0 {
-		return ierror.NotFoundError(nil).WithMessage("reference with label %d and artifact %d not found", labelID, artifactID)
+		return errors.NotFoundError(nil).WithMessage("reference with label %d and artifact %d not found", labelID, artifactID)
 	}
 	return nil
 }

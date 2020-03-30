@@ -16,7 +16,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -29,7 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
-	internal_errors "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -48,10 +47,6 @@ var (
 	retentionMgr        retention.Manager
 	retentionLauncher   retention.Launcher
 	retentionController retention.APIController
-)
-
-var (
-	errNotFound = errors.New("not found")
 )
 
 // BaseController ...
@@ -81,7 +76,7 @@ func (b *BaseController) Prepare() {
 // otherwise send Unauthorized response and returns false
 func (b *BaseController) RequireAuthenticated() bool {
 	if !b.SecurityCtx.IsAuthenticated() {
-		b.SendError(internal_errors.UnauthorizedError(errors.New("Unauthorized")))
+		b.SendError(errors.UnauthorizedError(errors.New("Unauthorized")))
 		return false
 	}
 	return true
@@ -100,7 +95,7 @@ func (b *BaseController) HasProjectPermission(projectIDOrName interface{}, actio
 			return false, err
 		}
 		if project == nil {
-			return false, errNotFound
+			return false, errors.NotFoundError(nil).WithMessage("project %s not found", projectName)
 		}
 
 		projectID = project.ProjectID
@@ -119,20 +114,16 @@ func (b *BaseController) HasProjectPermission(projectIDOrName interface{}, actio
 func (b *BaseController) RequireProjectAccess(projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) bool {
 	hasPermission, err := b.HasProjectPermission(projectIDOrName, action, subresource...)
 	if err != nil {
-		if errors.Is(err, errNotFound) {
-			b.SendError(internal_errors.New(errors.New(b.SecurityCtx.GetUsername())).WithCode(internal_errors.NotFoundCode))
-		} else {
-			b.SendError(err)
-		}
+		b.SendError(err)
 
 		return false
 	}
 
 	if !hasPermission {
 		if !b.SecurityCtx.IsAuthenticated() {
-			b.SendError(internal_errors.UnauthorizedError(errors.New("Unauthorized")))
+			b.SendError(errors.UnauthorizedError(errors.New("Unauthorized")))
 		} else {
-			b.SendError(internal_errors.New(errors.New(b.SecurityCtx.GetUsername())).WithCode(internal_errors.ForbiddenCode))
+			b.SendError(errors.New(errors.New(b.SecurityCtx.GetUsername())).WithCode(errors.ForbiddenCode))
 		}
 
 		return false

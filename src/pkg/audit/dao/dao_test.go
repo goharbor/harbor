@@ -16,10 +16,9 @@ package dao
 
 import (
 	"context"
-	"errors"
 	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
@@ -86,7 +85,7 @@ func (d *daoTestSuite) TestGet() {
 	// get the non-exist tag
 	_, err := d.dao.Get(d.ctx, 10000)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+	d.True(errors.IsErr(err, errors.NotFoundCode))
 
 	audit, err := d.dao.Get(d.ctx, d.auditID)
 	d.Require().Nil(err)
@@ -153,9 +152,9 @@ func (d *daoTestSuite) TestCreate() {
 func (d *daoTestSuite) TestDelete() {
 	err := d.dao.Delete(d.ctx, 10000)
 	d.Require().NotNil(err)
-	var e *ierror.Error
+	var e *errors.Error
 	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.Equal(errors.NotFoundCode, e.Code)
 }
 
 func TestDaoTestSuite(t *testing.T) {

@@ -17,7 +17,7 @@ package artifact
 import (
 	"container/list"
 	"context"
-	"errors"
+	stderrors "errors"
 	"fmt"
 	"strings"
 	"time"
@@ -34,7 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -59,10 +59,10 @@ var (
 
 var (
 	// ErrBreak error to break walk
-	ErrBreak = errors.New("break")
+	ErrBreak = stderrors.New("break")
 
 	// ErrSkip error to skip walk the children of the artifact
-	ErrSkip = errors.New("skip")
+	ErrSkip = stderrors.New("skip")
 )
 
 // Controller defines the operations related with artifacts and tags
@@ -164,7 +164,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 	}
 
 	// got other error when get the artifact, return the error
-	if !ierror.IsErr(err, ierror.NotFoundCode) {
+	if !errors.IsErr(err, errors.NotFoundCode) {
 		return false, nil, err
 	}
 
@@ -196,7 +196,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 		id, err := c.artMgr.Create(ctx, artifact)
 		if err != nil {
 			// if got conflict error, try to get the artifact again
-			if ierror.IsConflictErr(err) {
+			if errors.IsConflictErr(err) {
 				var e error
 				artifact, e = c.artMgr.GetByDigest(ctx, repository, digest)
 				if e != nil {
@@ -208,7 +208,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 		created = true
 		artifact.ID = id
 		return nil
-	})(ctx); err != nil && !ierror.IsConflictErr(err) {
+	})(ctx); err != nil && !errors.IsConflictErr(err) {
 		return false, nil, err
 	}
 
@@ -272,7 +272,7 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 		return nil, err
 	}
 	if len(tags) == 0 {
-		return nil, ierror.New(nil).WithCode(ierror.NotFoundCode).
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
 			WithMessage("artifact %s:%s not found", repository, tag)
 	}
 	return c.Get(ctx, tags[0].ArtifactID, option)
@@ -288,7 +288,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 	art, err := c.Get(ctx, id, &Option{WithTag: true})
 	if err != nil {
 		// return nil if the nonexistent artifact isn't the root parent
-		if !isRoot && ierror.IsErr(err, ierror.NotFoundCode) {
+		if !isRoot && errors.IsErr(err, errors.NotFoundCode) {
 			return nil
 		}
 		return err
@@ -309,7 +309,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 	if len(parents) > 0 {
 		// the root artifact is referenced by other artifacts
 		if isRoot {
-			return ierror.New(nil).WithCode(ierror.ViolateForeignKeyConstraintCode).
+			return errors.New(nil).WithCode(errors.ViolateForeignKeyConstraintCode).
 				WithMessage("the deleting artifact is referenced by others")
 		}
 		// the child artifact is referenced by other artifacts, skip
@@ -319,7 +319,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 	for _, reference := range art.References {
 		// delete reference
 		if err = c.artMgr.DeleteReference(ctx, reference.ID); err != nil &&
-			!ierror.IsErr(err, ierror.NotFoundCode) {
+			!errors.IsErr(err, errors.NotFoundCode) {
 			return err
 		}
 		if err = c.deleteDeeply(ctx, reference.ChildID, false); err != nil {
@@ -346,7 +346,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 	// delete the artifact itself
 	if err = c.artMgr.Delete(ctx, art.ID); err != nil {
 		// the child artifact doesn't exist, skip
-		if !isRoot && ierror.IsErr(err, ierror.NotFoundCode) {
+		if !isRoot && errors.IsErr(err, errors.NotFoundCode) {
 			return nil
 		}
 		return err
@@ -372,7 +372,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 			Digest:            art.Digest,
 		})
 		return err
-	})(ctx); err != nil && !ierror.IsErr(err, ierror.ConflictCode) {
+	})(ctx); err != nil && !errors.IsErr(err, errors.ConflictCode) {
 		return err
 	}
 
@@ -419,13 +419,13 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 	if err == nil {
 		// return conflict error if the root parent artifact already exists under the destination repository
 		if isRoot {
-			return 0, ierror.New(nil).WithCode(ierror.ConflictCode).
+			return 0, errors.New(nil).WithCode(errors.ConflictCode).
 				WithMessage("the artifact %s@%s already exists", dstRepo, digest)
 		}
 		// the child artifact already under the destination repository, skip
 		return dstArt.ID, nil
 	}
-	if !ierror.IsErr(err, ierror.NotFoundCode) {
+	if !errors.IsErr(err, errors.NotFoundCode) {
 		return 0, err
 	}
 

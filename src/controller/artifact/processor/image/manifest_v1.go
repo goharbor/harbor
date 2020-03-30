@@ -20,7 +20,7 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
 
@@ -49,7 +49,7 @@ func (m *manifestV1Processor) AbstractMetadata(ctx context.Context, manifest []b
 }
 
 func (m *manifestV1Processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*processor.Addition, error) {
-	return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
+	return nil, errors.New(nil).WithCode(errors.BadRequestCode).
 		WithMessage("addition %s isn't supported for %s(manifest version 1)", addition, ArtifactTypeImage)
 }
 

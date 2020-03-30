@@ -19,7 +19,7 @@ import (
 	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	artdao "github.com/goharbor/harbor/src/pkg/artifact/dao"
@@ -87,7 +87,7 @@ func (l *labelDaoTestSuite) TestGet() {
 	// not found
 	_, err := l.dao.Get(l.ctx, 1000)
 	l.Require().NotNil(err)
-	l.True(ierror.IsErr(err, ierror.NotFoundCode))
+	l.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// success
 	label, err := l.dao.Get(l.ctx, l.id)
@@ -104,7 +104,7 @@ func (l *labelDaoTestSuite) TestCreate() {
 		Scope: "g",
 	})
 	l.Require().NotNil(err)
-	l.True(ierror.IsErr(err, ierror.ConflictCode))
+	l.True(errors.IsErr(err, errors.ConflictCode))
 }
 
 func (l *labelDaoTestSuite) TestDelete() {
@@ -113,7 +113,7 @@ func (l *labelDaoTestSuite) TestDelete() {
 	// not found
 	err := l.dao.Delete(l.ctx, 1000)
 	l.Require().NotNil(err)
-	l.True(ierror.IsErr(err, ierror.NotFoundCode))
+	l.True(errors.IsErr(err, errors.NotFoundCode))
 }
 
 func (l *labelDaoTestSuite) TestListByResource() {
@@ -132,7 +132,7 @@ func (l *labelDaoTestSuite) TestCreateReference() {
 		ArtifactID: l.artID,
 	})
 	l.Require().NotNil(err)
-	l.True(ierror.IsErr(err, ierror.ConflictCode))
+	l.True(errors.IsErr(err, errors.ConflictCode))
 
 	// violating foreign key constraint: the label that the ref tries to refer doesn't exist
 	_, err = l.dao.CreateReference(l.ctx, &Reference{
@@ -140,7 +140,7 @@ func (l *labelDaoTestSuite) TestCreateReference() {
 		ArtifactID: l.artID,
 	})
 	l.Require().NotNil(err)
-	l.True(ierror.IsErr(err, ierror.NotFoundCode))
+	l.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// violating foreign key constraint: the artifact that the ref tries to refer doesn't exist
 	_, err = l.dao.CreateReference(l.ctx, &Reference{
@@ -148,7 +148,7 @@ func (l *labelDaoTestSuite) TestCreateReference() {
 		ArtifactID: 1000,
 	})
 	l.Require().NotNil(err)
-	l.True(ierror.IsErr(err, ierror.NotFoundCode))
+	l.True(errors.IsErr(err, errors.NotFoundCode))
 }
 
 func (l *labelDaoTestSuite) DeleteReference() {
@@ -157,7 +157,7 @@ func (l *labelDaoTestSuite) DeleteReference() {
 	// not found
 	err := l.dao.DeleteReference(l.ctx, 1000)
 	l.Require().NotNil(err)
-	l.True(ierror.IsErr(err, ierror.NotFoundCode))
+	l.True(errors.IsErr(err, errors.NotFoundCode))
 }
 
 func (l *labelDaoTestSuite) DeleteReferences() {

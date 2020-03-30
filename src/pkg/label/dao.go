@@ -18,7 +18,7 @@ import (
 	"context"
 	beego_orm "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 )
@@ -95,7 +95,7 @@ func (d *defaultDAO) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return ierror.NotFoundError(nil).WithMessage("label %d not found", id)
+		return errors.NotFoundError(nil).WithMessage("label %d not found", id)
 	}
 	return nil
 }
@@ -126,7 +126,7 @@ func (d *defaultDAO) CreateReference(ctx context.Context, ref *Reference) (int64
 			err = e
 		} else if e := orm.AsForeignKeyError(err, "the reference tries to refer a non existing label %d or artifact %d",
 			ref.LabelID, ref.ArtifactID); e != nil {
-			err = ierror.New(e).WithCode(ierror.NotFoundCode).WithMessage(e.Message)
+			err = errors.New(e).WithCode(errors.NotFoundCode).WithMessage(e.Message)
 		}
 	}
 	return id, err
@@ -144,7 +144,7 @@ func (d *defaultDAO) DeleteReference(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return ierror.NotFoundError(nil).WithMessage("label reference %d not found", id)
+		return errors.NotFoundError(nil).WithMessage("label reference %d not found", id)
 	}
 	return nil
 }

@@ -25,7 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -53,7 +53,7 @@ func Middleware() func(http.Handler) http.Handler {
 
 		art, err := artifactController.GetByReference(ctx, info.Repository, info.Reference, nil)
 		if err != nil {
-			if !ierror.IsNotFoundErr(err) {
+			if !errors.IsNotFoundErr(err) {
 				logger.Errorf("get artifact failed, error %v", err)
 			}
 			return err
@@ -105,7 +105,7 @@ func Middleware() func(http.Handler) http.Handler {
 		if !ok {
 			// No report yet?
 			msg := "vulnerability prevention enabled, but no scan report existing for the artifact"
-			return ierror.New(nil).WithCode(ierror.PROJECTPOLICYVIOLATION).WithMessage(msg)
+			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
 		}
 
 		summary, ok := rawSummary.(*vuln.NativeReportSummary)
@@ -130,7 +130,7 @@ func Middleware() func(http.Handler) http.Handler {
 		if summary.Severity.Code() >= severity.Code() {
 			msg := fmt.Sprintf("current image with '%q vulnerable' cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of %q from running.' "+
 				"Please contact your project administrator for help'", summary.Severity, severity)
-			return ierror.New(nil).WithCode(ierror.PROJECTPOLICYVIOLATION).WithMessage(msg)
+			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
 		}
 
 		// Print scannerPull CVE list

@@ -16,7 +16,7 @@ package bearer
 
 import (
 	"fmt"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -43,7 +43,7 @@ func TestModify(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, server.URL, nil)
 	err := authorizer.Modify(req)
 	require.NotNil(t, err)
-	assert.True(t, ierror.IsErr(err, ierror.UnAuthorizedCode))
+	assert.True(t, errors.IsErr(err, errors.UnAuthorizedCode))
 
 	// valid credential
 	a = basic.NewAuthorizer("username", "password")

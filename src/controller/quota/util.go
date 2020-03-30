@@ -22,7 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/project"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 const (
@@ -92,7 +92,7 @@ func RefreshForProjects(ctx context.Context) error {
 		referenceID := ReferenceID(p.ProjectID)
 
 		_, err := Ctl.GetByRef(ctx, ProjectReference, referenceID)
-		if ierror.IsNotFoundErr(err) {
+		if errors.IsNotFoundErr(err) {
 			if _, err := Ctl.Create(ctx, ProjectReference, referenceID, driver.HardLimits(ctx)); err != nil {
 				log.Warningf("initialize quota for project %s failed, error: %v", p.Name, err)
 				continue

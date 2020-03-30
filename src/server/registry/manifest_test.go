@@ -24,7 +24,7 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/repository"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	arttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	repotesting "github.com/goharbor/harbor/src/testing/controller/repository"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -68,7 +68,7 @@ func (m *manifestTestSuite) TestGetManifest() {
 	req := httptest.NewRequest(http.MethodGet, "/v2/library/hello-world/manifests/latest", nil)
 	w := &httptest.ResponseRecorder{}
 
-	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, ierror.New(nil).WithCode(ierror.NotFoundCode))
+	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New(nil).WithCode(errors.NotFoundCode))
 	getManifest(w, req)
 	m.Equal(http.StatusNotFound, w.Code)
 
@@ -100,7 +100,7 @@ func (m *manifestTestSuite) TestDeleteManifest() {
 	req := httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/latest", nil)
 	w := &httptest.ResponseRecorder{}
 
-	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, ierror.New(nil).WithCode(ierror.NotFoundCode))
+	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New(nil).WithCode(errors.NotFoundCode))
 	deleteManifest(w, req)
 	m.Equal(http.StatusBadRequest, w.Code)
 

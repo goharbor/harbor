@@ -20,7 +20,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/blob"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/types"
 )
 
@@ -45,7 +45,7 @@ func postInitiateBlobUploadResources(r *http.Request, reference, referenceID str
 	logger := log.G(ctx).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
 
 	blb, err := blobController.Get(ctx, mount)
-	if ierror.IsNotFoundErr(err) {
+	if errors.IsNotFoundErr(err) {
 		// mount blob not found, skip to request the resources
 		return nil, nil
 	} else if err != nil {

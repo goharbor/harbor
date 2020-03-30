@@ -22,7 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ps "github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/chart"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -59,7 +59,7 @@ type processor struct {
 
 func (p *processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*ps.Addition, error) {
 	if addition != AdditionTypeValues && addition != AdditionTypeReadme && addition != AdditionTypeDependencies {
-		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessage("addition %s isn't supported for %s", addition, ArtifactTypeChart)
 	}
 

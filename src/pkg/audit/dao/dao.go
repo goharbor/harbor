@@ -16,7 +16,7 @@ package dao
 
 import (
 	"context"
-	ierror "github.com/goharbor/harbor/src/lib/error"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
@@ -121,7 +121,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return ierror.NotFoundError(nil).WithMessage("access %d not found", id)
+		return errors.NotFoundError(nil).WithMessage("access %d not found", id)
 	}
 	return nil
 }
