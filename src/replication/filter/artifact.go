@@ -155,6 +155,19 @@ func (a *artifactTagFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifa
 	}
 	var result []*model.Artifact
 	for _, artifact := range artifacts {
+		// untagged artifact
+		if len(artifact.Tags) == 0 {
+			match, err := util.Match(a.pattern, "")
+			if err != nil {
+				return nil, err
+			}
+			if match {
+				result = append(result, artifact)
+			}
+			continue
+		}
+
+		// tagged artifact
 		var tags []string
 		for _, tag := range artifact.Tags {
 			match, err := util.Match(a.pattern, tag)
