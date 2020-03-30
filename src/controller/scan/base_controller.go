@@ -509,7 +509,7 @@ func (bc *basicController) GetStats(requester string) (*all.Stats, error) {
 }
 
 // makeRobotAccount creates a robot account based on the arguments for scanning.
-func (bc *basicController) makeRobotAccount(projectID int64, repository string) (*model.Robot, error) {
+func (bc *basicController) makeRobotAccount(projectID int64, repository string, registration *scanner.Registration) (*model.Robot, error) {
 	// Use uuid as name to avoid duplicated entries.
 	UUID, err := bc.uuid()
 	if err != nil {
@@ -518,7 +518,7 @@ func (bc *basicController) makeRobotAccount(projectID int64, repository string) 
 
 	resource := rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceRepository)
 	robotReq := &model.RobotCreate{
-		Name:        UUID,
+		Name:        fmt.Sprintf("%s-%s", registration.Name, UUID),
 		Description: "for scan",
 		ProjectID:   projectID,
 		Access: []*types.Policy{
@@ -549,7 +549,7 @@ func (bc *basicController) launchScanJob(trackID string, artifact *ar.Artifact, 
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}
 
-	robot, err := bc.makeRobotAccount(artifact.ProjectID, artifact.RepositoryName)
+	robot, err := bc.makeRobotAccount(artifact.ProjectID, artifact.RepositoryName, registration)
 	if err != nil {
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}
