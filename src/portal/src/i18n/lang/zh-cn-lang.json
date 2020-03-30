@@ -991,6 +991,7 @@
         "CHART": {
             "SCANNING_TIME": "扫描完成时间:",
             "SCANNING_PERCENT": "扫描完成度:",
+            "SCANNING_PERCENT_EXPLAIN": "（扫描完成度是扫描成功的镜像数与总共需要扫描的镜像数的比值。总共需要的扫描的镜像不包含 Index 本身和不支持扫描的镜像。）",
             "TOOLTIPS_TITLE": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
             "TOOLTIPS_TITLE_ZERO": "没有发现可识别的漏洞"
