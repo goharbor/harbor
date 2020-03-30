@@ -82,6 +82,9 @@ export class WebhookComponent implements OnInit {
       .subscribe(
         response => {
           this.metadata = response;
+          if (this.metadata && this.metadata.event_type) {
+            this.metadata.event_type.sort();
+          }
         },
         error => {
           this.messageHandlerService.handleError(error);

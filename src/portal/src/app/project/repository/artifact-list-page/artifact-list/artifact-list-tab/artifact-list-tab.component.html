@@ -101,7 +101,7 @@
                         <clr-icon shape="caret down"></clr-icon>
                     </span>
                     <clr-dropdown-menu class="action-dropdown" clrPosition="bottom-left" *clrIfOpen>
-                        <div class="action-dropdown-item" aria-label="copy digest" clrDropdownItem
+                        <div class="action-dropdown-item no-border" aria-label="copy digest" clrDropdownItem
                             [clrDisabled]="!(selectedRow.length==1&& !depth)" (click)="showDigestId()">
                             {{'REPOSITORY.COPY_DIGEST_ID' | translate}}</div>
                         <clr-dropdown *ngIf="!withAdmiral">
