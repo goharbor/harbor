@@ -20,6 +20,7 @@ import (
 
 func Test_unescapePathParams(t *testing.T) {
 	type Params struct {
+		ProjectID      int64
 		ProjectName    string
 		RepositoryName string
 	}
@@ -38,6 +39,8 @@ func Test_unescapePathParams(t *testing.T) {
 		{"non ptr", args{str, []string{"RepositoryName"}}, true},
 		{"non struct", args{&str, []string{"RepositoryName"}}, true},
 		{"ptr of struct", args{&Params{}, []string{"RepositoryName"}}, false},
+		{"non string filed", args{&Params{}, []string{"ProjectID"}}, false},
+		{"filed not found", args{&Params{}, []string{"Name"}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

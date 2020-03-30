@@ -80,12 +80,12 @@ func unescapePathParams(params interface{}, fieldNames ...string) error {
 	for _, name := range fieldNames {
 		field := val.FieldByName(name)
 		if !field.IsValid() {
-			log.Warningf("field %s not found in params %v", name, params)
+			log.Debugf("field %s not found in %s", name, val.Type().Name())
 			continue
 		}
 
 		if !field.CanSet() {
-			log.Warningf("field %s can not be changed in params %v", name, params)
+			log.Debugf("field %s can not be changed in %s", name, val.Type().Name())
 			continue
 		}
 
@@ -97,7 +97,7 @@ func unescapePathParams(params interface{}, fieldNames ...string) error {
 			}
 			field.SetString(v)
 		default:
-			log.Warningf("field %s can not be unescaped in params %v", name, params)
+			log.Debugf("field %s can not be unescaped in %s", name, val.Type().Name())
 		}
 	}
 
