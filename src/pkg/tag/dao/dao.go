@@ -71,6 +71,7 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*tag.Tag, error) {
 	if err != nil {
 		return nil, err
 	}
+	qs = qs.OrderBy("-PushTime", "ID")
 	if _, err = qs.All(&tags); err != nil {
 		return nil, err
 	}

@@ -68,6 +68,7 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, e
 	if err != nil {
 		return nil, err
 	}
+	qs = qs.OrderBy("-CreationTime", "RepositoryID")
 	if _, err = qs.All(&repositories); err != nil {
 		return nil, err
 	}
