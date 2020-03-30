@@ -415,18 +415,33 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 	digest := srcArt.Digest
 
 	// check the existence of artifact in the destination repository
-	dstArt, err := c.GetByReference(ctx, dstRepo, digest, option)
-	if err == nil {
-		// return conflict error if the root parent artifact already exists under the destination repository
-		if isRoot {
+	if isRoot {
+		// for the root artifact, check the existence by calling "Count()"
+		// which finds the artifact based on all parent artifacts to avoid
+		// the issue: https://github.com/goharbor/harbor/issues/11222
+		n, err := c.artMgr.Count(ctx, &q.Query{
+			Keywords: map[string]interface{}{
+				"RepositoryName": dstRepo,
+				"Digest":         digest,
+			},
+		})
+		if err != nil {
+			return 0, err
+		}
+		if n > 0 {
 			return 0, errors.New(nil).WithCode(errors.ConflictCode).
 				WithMessage("the artifact %s@%s already exists", dstRepo, digest)
 		}
-		// the child artifact already under the destination repository, skip
-		return dstArt.ID, nil
-	}
-	if !errors.IsErr(err, errors.NotFoundCode) {
-		return 0, err
+	} else {
+		// for the child artifact, check the existence by calling "GetByReference" directly
+		dstArt, err := c.GetByReference(ctx, dstRepo, digest, option)
+		if err == nil {
+			// the child artifact already under the destination repository, skip
+			return dstArt.ID, nil
+		}
+		if !errors.IsErr(err, errors.NotFoundCode) {
+			return 0, err
+		}
 	}
 
 	// the artifact doesn't exist under the destination repository, continue to copy
