@@ -69,6 +69,7 @@ Resource  Harbor-Pages/OIDC_Auth.robot
 Resource  Harbor-Pages/OIDC_Auth_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
+Resource  CNAB_Util.robot
 Resource  Helm-Util.robot
 Resource  OVA-Util.robot
 Resource  Cert-Util.robot

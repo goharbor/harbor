@@ -107,6 +107,9 @@ Get Container IP
 # If you are running this keyword in a container, make sure it is run with --privileged turned on
 Start Docker Daemon Locally
     ${pid}=  Run  pidof dockerd
+    #${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/docker_config.sh
+    #Log  ${output}
+    #Should Be Equal As Integers  ${rc}  0
     Return From Keyword If  '${pid}' != '${EMPTY}'
     OperatingSystem.File Should Exist  /usr/local/bin/dockerd-entrypoint.sh
     ${handle}=  Start Process  /usr/local/bin/dockerd-entrypoint.sh dockerd>./daemon-local.log 2>&1  shell=True
@@ -122,6 +125,8 @@ Prepare Docker Cert
     [Arguments]  ${ip}
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
     Wait Unitl Command Success  cp harbor_ca.crt /etc/docker/certs.d/${ip}
+    Wait Unitl Command Success  cp harbor_ca.crt /usr/local/share/ca-certificates/
+    Wait Unitl Command Success  update-ca-certificates
 
 Kill Local Docker Daemon
     [Arguments]  ${handle}  ${dockerd-pid}
@@ -154,3 +159,9 @@ Docker Tag
 Docker Push
     [Arguments]  ${image}
     Wait Unitl Command Success  docker push ${image}
+
+Docker Push Index
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${index}  ${image1}  ${image2}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/docker_push_manifest_list.sh ${ip} ${user} ${pwd} ${index}  ${image1} ${image2}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0

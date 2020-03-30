@@ -20,12 +20,12 @@ Before scripting, please make sure swagger client has been made by "make swagger
 
 We use $HARBORCLIENT_PATH represent the path of "harborclient" you've made by "make swagger_client".
 
-Deploy Harbor instance for testing, and we will use $HARBOR_URL to represent the deployed Harbor in this document.
+Deploy Harbor instance for testing, and we will use $HARBOR_IP_ADDR to represent the deployed Harbor in this document.
 
 Harbor E2E API test scripts will import python library under archive "harborclient", please set OS environment variant for Harbor E2E API test scripts:
 
 
-1. `export HARBOR_HOST=$HARBOR_URL`
+1. `export HARBOR_HOST=$HARBOR_IP_ADDR`
 2. `export SWAGGER_CLIENT_PATH=$HARBORCLIENT_PATH`
 
 Until now, we have all preparation work done.
