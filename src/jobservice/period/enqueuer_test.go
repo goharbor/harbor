@@ -96,8 +96,11 @@ func (suite *EnqueuerTestSuite) TestEnqueuer() {
 		}
 	}()
 
-	tk := time.NewTicker(500 * time.Millisecond)
+	tk := time.NewTicker(497 * time.Millisecond)
 	defer tk.Stop()
+
+	tm := time.NewTimer(15 * time.Second)
+	defer tm.Stop()
 
 	for {
 		select {
@@ -109,7 +112,7 @@ func (suite *EnqueuerTestSuite) TestEnqueuer() {
 			}, "at least one job should be scheduled for the periodic job policy") {
 				return
 			}
-		case <-time.After(15 * time.Second):
+		case <-tm.C:
 			require.NoError(suite.T(), errors.New("timeout (15s): expect at 1 scheduled job but still get nothing"))
 			return
 		}
@@ -120,7 +123,7 @@ func (suite *EnqueuerTestSuite) prepare() {
 	now := time.Now()
 	minute := now.Minute()
 
-	coreSpec := fmt.Sprintf("0-59 %d * * * *", minute)
+	coreSpec := fmt.Sprintf("0-59 %d-%d * * * *", minute, minute+2)
 
 	// Prepare one
 	p := &Policy{
