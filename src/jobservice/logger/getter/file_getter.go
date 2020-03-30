@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
+	"strings"
 
 	"github.com/goharbor/harbor/src/jobservice/errs"
 
@@ -24,12 +25,8 @@ func NewFileGetter(baseDir string) *FileGetter {
 
 // Retrieve implements @Interface.Retrieve
 func (fg *FileGetter) Retrieve(logID string) ([]byte, error) {
-	if len(logID) != 24 {
-		return nil, errors.New("invalid length of log identify")
-	}
-
-	if _, err := hex.DecodeString(logID); err != nil {
-		return nil, errors.New("invalid log identify")
+	if err := isValidLogID(logID); err != nil {
+		return nil, err
 	}
 
 	fPath := path.Join(fg.baseDir, fmt.Sprintf("%s.log", logID))
@@ -39,4 +36,22 @@ func (fg *FileGetter) Retrieve(logID string) ([]byte, error) {
 	}
 
 	return ioutil.ReadFile(fPath)
+}
+
+func isValidLogID(id string) error {
+	lid := id
+	segment := strings.LastIndex(lid, "@")
+	if segment != -1 {
+		lid = lid[:segment]
+	}
+
+	if len(lid) != 24 {
+		return errors.New("invalid length of log identify")
+	}
+
+	if _, err := hex.DecodeString(lid); err != nil {
+		return errors.New("invalid log identify")
+	}
+
+	return nil
 }
