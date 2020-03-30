@@ -34,7 +34,7 @@ import {
   ErrorHandler,
   DefaultErrorHandler
 } from './utils/error-handler';
-import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG, CURRENT_BASE_HREF } from './utils/utils';
+import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG, CURRENT_BASE_HREF, V1_BASE_HREF } from './utils/utils';
 import { OperationService } from './components/operation/operation.service';
 import { GcHistoryComponent } from "./components/config/gc/gc-history/gc-history.component";
 import { GcComponent } from "./components/config/gc/gc.component";
@@ -97,7 +97,8 @@ export const DefaultServiceConfig: IServiceConfig = {
   configurationEndpoint: CURRENT_BASE_HREF + "/configurations",
   scanJobEndpoint: CURRENT_BASE_HREF + "/jobs/scan",
   labelEndpoint: CURRENT_BASE_HREF + "/labels",
-  helmChartEndpoint: CURRENT_BASE_HREF + "/chartrepo",
+  helmChartEndpoint: V1_BASE_HREF + "/chartrepo",
+  helmChartLabelEndpoint: CURRENT_BASE_HREF + "/chartrepo",
   downloadChartEndpoint: "/chartrepo",
   gcEndpoint: CURRENT_BASE_HREF + "/system/gc",
   ScanAllEndpoint: CURRENT_BASE_HREF + "/system/scanAll"

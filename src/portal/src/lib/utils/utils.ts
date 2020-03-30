@@ -13,6 +13,12 @@ enum APILevels {
     V1 = '',
     V2 = '/v2.0'
 }
+
+/**
+ * v1 base href
+ */
+export const V1_BASE_HREF = '/api' + APILevels.V1;
+
 /**
  * Current base href
  */
