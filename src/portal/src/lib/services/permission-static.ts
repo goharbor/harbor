@@ -13,6 +13,7 @@ export const USERSTATICPERMISSION = {
             "CREATE": "create",
             "UPDATE": "update",
             "DELETE": "delete",
+            "READ": "read",
             "LIST": "list"
         }
     },
@@ -22,6 +23,7 @@ export const USERSTATICPERMISSION = {
             "LIST": "list"
         }
     },
+    // to do remove
     "REPLICATION": {
         'KEY': 'replication',
         'VALUE': {
@@ -31,6 +33,7 @@ export const USERSTATICPERMISSION = {
             "LIST": "list",
         }
     },
+    // to do remove
     "REPLICATION_JOB": {
         'KEY': 'replication-job',
         'VALUE': {
@@ -43,6 +46,7 @@ export const USERSTATICPERMISSION = {
             "CREATE": "create",
             "UPDATE": "update",
             "DELETE": "delete",
+            "READ": "read",
             "LIST": "list",
         }
     },
@@ -67,41 +71,45 @@ export const USERSTATICPERMISSION = {
             "DELETE": "delete",
             "LIST": "list",
             "PUSH": "push",
+            "READ": "read",
             "PULL": "pull",
         }
     },
+    "ARTIFACT": {
+        'KEY': 'artifact',
+        'VALUE': {
+            "CREATE": "create",
+            "DELETE": "delete",
+            "LIST": "list",
+            "READ": "read",
+        }
+    },
+    "ARTIFACT_ADDITION": {
+        'KEY': 'artifact-addition',
+        'VALUE': {
+            "READ": "read",
+        }
+    },
     "REPOSITORY_TAG": {
-        'KEY': 'repository-tag',
+        'KEY': 'tag',
         'VALUE': {
             "DELETE": "delete",
             "LIST": "list",
+            "CREATE": "create"
         }
     },
     "REPOSITORY_TAG_SCAN_JOB": {
-        'KEY': 'repository-tag-scan-job',
+        'KEY': 'scan',
         'VALUE': {
             "CREATE": "create",
             "READ": "read",
-            "LIST": "list",
         }
     },
-    "REPOSITORY_TAG_VULNERABILITY": {
-        'KEY': 'repository-tag-vulnerability',
-        'VALUE': {
-            "LIST": "list",
-        }
-    },
-    "REPOSITORY_TAG_LABEL": {
-        'KEY': 'repository-tag-label',
+    "REPOSITORY_ARTIFACT_LABEL": {
+        'KEY': 'repository-artifact-label',
         'VALUE': {
             "CREATE": "create",
             "DELETE": "delete",
-        }
-    },
-    "REPOSITORY_TAG_MANIFEST": {
-        'KEY': 'repository-tag-manifest',
-        'VALUE': {
-            "READ": "read",
         }
     },
     "HELM_CHART": {
@@ -118,6 +126,7 @@ export const USERSTATICPERMISSION = {
         'VALUE': {
             "DELETE": "delete",
             "LIST": "list",
+            "CREATE": "create",
             "READ": "read",
         }
     },
@@ -146,8 +155,16 @@ export const USERSTATICPERMISSION = {
             "DELETE": "delete",
             "LIST": "list",
             "READ": "read",
-            "PULL": "pull",
-            "PUSH": "push"
+            "OPERATE": "operate"
+        }
+    },
+    "IMMUTABLE_TAG": {
+        'KEY': "immutable-tag",
+        'VALUE': {
+            "CREATE": "create",
+            "UPDATE": "update",
+            "DELETE": "delete",
+            "LIST": "list",
         }
     },
     "WEBHOOK": {
@@ -155,6 +172,8 @@ export const USERSTATICPERMISSION = {
         "VALUE": {
             "LIST": "list",
             "READ": "read",
+            "CREATE": "create",
+            "UPDATE": "update",
         }
     },
     "SCANNER": {
@@ -162,6 +181,15 @@ export const USERSTATICPERMISSION = {
         "VALUE": {
             "READ": "read",
             "CREATE": "create"
+        }
+    },
+    "METADATA": {
+        "KEY": "metadata",
+        "VALUE": {
+            "READ": "read",
+            "CREATE": "create",
+            "UPDATE": "update",
+            "DELETE": "delete",
         }
     }
 };
