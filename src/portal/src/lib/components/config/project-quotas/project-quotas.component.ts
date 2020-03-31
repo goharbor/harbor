@@ -58,6 +58,7 @@ export class ProjectQuotasComponent implements OnChanges {
   }
   countComparator: Comparator<Quota> = new CustomComparator<Quota>(quotaSort.count, quotaSort.sortType);
   storageComparator: Comparator<Quota> = new CustomComparator<Quota>(quotaSort.storage, quotaSort.sortType);
+  selectedRow: Quota[] = [];
 
   constructor(
     private configService: ConfigurationService,
@@ -66,21 +67,23 @@ export class ProjectQuotasComponent implements OnChanges {
     private router: Router,
     private errorHandler: ErrorHandler) { }
 
-  editQuota(quotaHardLimitValue: Quota) {
-    const defaultTexts = [this.translate.get('QUOTA.EDIT_PROJECT_QUOTAS')
-    , this.translate.get('QUOTA.SET_QUOTAS', { params: quotaHardLimitValue.ref.name })
-      , this.translate.get('QUOTA.COUNT_QUOTA'), this.translate.get('QUOTA.STORAGE_QUOTA')];
-    forkJoin(...defaultTexts).subscribe(res => {
-      const defaultTextsObj = {
-        editQuota: res[0],
-        setQuota: res[1],
-        countQuota: res[2],
-        storageQuota: res[3],
-        quotaHardLimitValue: quotaHardLimitValue,
-        isSystemDefaultQuota: false
-      };
-      this.editQuotaDialog.openEditQuotaModal(defaultTextsObj);
-    });
+  editQuota() {
+    if (this.selectedRow && this.selectedRow.length === 1) {
+      const defaultTexts = [this.translate.get('QUOTA.EDIT_PROJECT_QUOTAS')
+        , this.translate.get('QUOTA.SET_QUOTAS', { params: this.selectedRow[0].ref.name })
+        , this.translate.get('QUOTA.COUNT_QUOTA'), this.translate.get('QUOTA.STORAGE_QUOTA')];
+      forkJoin(...defaultTexts).subscribe(res => {
+        const defaultTextsObj = {
+          editQuota: res[0],
+          setQuota: res[1],
+          countQuota: res[2],
+          storageQuota: res[3],
+          quotaHardLimitValue: this.selectedRow[0],
+          isSystemDefaultQuota: false
+        };
+        this.editQuotaDialog.openEditQuotaModal(defaultTextsObj);
+      });
+    }
   }
 
   editDefaultQuota(quotaHardLimitValue: QuotaHardLimitInterface) {
@@ -237,5 +240,6 @@ export class ProjectQuotasComponent implements OnChanges {
       },
     };
     this.getQuotaList(state);
+    this.selectedRow = [];
   }
 }

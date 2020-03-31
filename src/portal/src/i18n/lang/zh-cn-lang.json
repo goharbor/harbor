@@ -1400,6 +1400,7 @@
         "VIEW_DOC": "查看文档",
         "ALL_SCANNERS": "全部扫描器",
         "HELP_INFO_1": "默认扫描器已安装。获取扫描器安装帮助，请查看",
-        "HELP_INFO_2": "文档。"
+        "HELP_INFO_2": "文档。",
+        "NO_DEFAULT_SCANNER": "未配置默认扫描器"
     }
 }

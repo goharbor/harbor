@@ -124,7 +124,8 @@ describe('ProjectQuotasComponent', () => {
     await timeout(10);
     fixture.detectChanges();
     await fixture.whenStable();
-    component.editQuota(component.quotaList[0]);
+    component.selectedRow = [component.quotaList[0]];
+    component.editQuota();
     fixture.detectChanges();
     await fixture.whenStable();
     const countInput: HTMLInputElement = fixture.nativeElement.querySelector('#count');

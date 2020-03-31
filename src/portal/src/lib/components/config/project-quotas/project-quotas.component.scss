@@ -51,11 +51,6 @@
   margin-bottom: .35rem;
 }
 
-.refresh-div {
-  margin-top: auto;
-  cursor: pointer;
-}
-
 ::ng-deep {
   .progress {
     &.warning>progress {
@@ -73,4 +68,12 @@
       height: 75%;
     }
   }
+}
+
+.action-head-pos {
+  padding-right: 18px;
+  height: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
