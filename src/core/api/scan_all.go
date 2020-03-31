@@ -127,7 +127,7 @@ func (sc *ScanAllAPI) getMetrics(kind string) {
 			return
 		}
 
-		setOngoing(sts, aj.Status)
+		setOngoing(sts, aj.Status, kind)
 	}
 
 	// Return empty
@@ -155,14 +155,18 @@ func isScanEnabled() (bool, error) {
 	return len(l) > 0, nil
 }
 
-func setOngoing(stats *all.Stats, st string) {
+func setOngoing(stats *all.Stats, jobStatus, jobKind string) {
 	status := job.PendingStatus
 
-	if st == cm.JobFinished {
+	if jobStatus == cm.JobFinished {
 		status = job.SuccessStatus
 	} else {
-		status = job.Status(strings.ToTitle(st))
+		status = job.Status(strings.Title(jobStatus))
 	}
 
-	stats.Ongoing = !status.Final() || stats.Total != stats.Completed
+	if jobKind == common_job.JobKindPeriodic {
+		stats.Ongoing = (status == job.RunningStatus) || stats.Total != stats.Completed
+	} else if jobKind == common_job.JobKindGeneric {
+		stats.Ongoing = !status.Final() || stats.Total != stats.Completed
+	}
 }
