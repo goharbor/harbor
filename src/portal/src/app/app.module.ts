@@ -94,7 +94,7 @@ export function getCurrentLanguage(translateService: TranslateService) {
         OidcOnboardModule,
         LicenseModule,
         HarborLibraryModule,
-        DistributionModule
+        DistributionModule,
         AllPipesModule
     ],
     exports: [
