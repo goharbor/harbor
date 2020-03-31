@@ -35,10 +35,6 @@ type reqChecker struct {
 }
 
 func (rc *reqChecker) check(req *http.Request) error {
-	if rc.hasRegistryCred(req) {
-		// TODO: May consider implement a local authorizer for registry, more details see #10602
-		return nil
-	}
 	securityCtx, ok := security.FromContext(req.Context())
 	if !ok {
 		return fmt.Errorf("the security context got from request is nil")
@@ -85,12 +81,6 @@ func (rc *reqChecker) projectID(name string) (int64, error) {
 		return 0, fmt.Errorf("project not found, name: %s", name)
 	}
 	return p.ProjectID, nil
-}
-
-func (rc *reqChecker) hasRegistryCred(req *http.Request) bool {
-	u, p, ok := req.BasicAuth()
-	regUser, regPass := config.RegistryCredential()
-	return ok && u == regUser && p == regPass
 }
 
 func getAction(req *http.Request) rbac.Action {
