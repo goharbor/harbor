@@ -30,7 +30,8 @@ var luaFuncStCodeText = `
 local stMap = { ['Pending'] = 0, ['Scheduled'] = 1, ['Running'] = 2, ['Success'] = 3, ['Stopped'] = 3, ['Error'] = 3 }
 
 local function stCode(status)
-  return stMap[status]
+  -- return 0 as default status
+  return stMap[status] or 0
 end
 `
 
@@ -39,8 +40,8 @@ var luaFuncCompareText = `
 local function compare(status, revision, checkInT)
   local sCode = stCode(status)
   local aCode = stCode(ARGV[1])
-  local aRev = tonumber(ARGV[2])
-  local aCheckInT = tonumber(ARGV[3])
+  local aRev = tonumber(ARGV[2]) or 0
+  local aCheckInT = tonumber(ARGV[3]) or 0
 
   if revision < aRev or 
     ( revision == aRev and sCode < aCode ) or
@@ -64,17 +65,18 @@ end
 var setStatusScriptText = fmt.Sprintf(`
 %s
 
-local res, st, rev, aCode, aRev
+local res, st, code, rev, aCode, aRev
 
 res = redis.call('hmget', KEYS[1], 'status', 'revision')
 if res then
   st = res[1]
+  code = stCode(st)
   aCode = stCode(ARGV[1])
-  rev = tonumber(res[2])
-  aRev = tonumber(ARGV[2])
+  rev = tonumber(res[2]) or 0
+  aRev = tonumber(ARGV[2]) or 0
 
   -- set same status repeatedly is allowed
-  if rev < aRev or ( rev == aRev and (stCode(st) < aCode or st == ARGV[1])) then
+  if rev < aRev or ( rev == aRev and (code < aCode or st == ARGV[1])) then
     redis.call('hmset', KEYS[1], 'status', ARGV[1], 'update_time', ARGV[3])
     -- update inprogress track if necessary
     if aCode == 3 then
@@ -117,8 +119,8 @@ local res, st, rev, checkInAt, ack
 res = redis.call('hmget', KEYS[1], 'status', 'revision', 'check_in_at', 'ack')
 if res then
   st = res[1]
-  rev = tonumber(res[2])
-  checkInAt = tonumber(res[3])
+  rev = tonumber(res[2]) or 0
+  checkInAt = tonumber(res[3]) or 0
   ack = res[4]
 
   local reply = compare(st, rev, checkInAt)
@@ -164,7 +166,7 @@ var hookAckScriptText = fmt.Sprintf(`
 local function canSetAck(jk, nrev)
   local res = redis.call('hmget', jk, 'revision', 'ack')
   if res then
-    local rev = tonumber(res[1])
+    local rev = tonumber(res[1]) or 0
     local ackv = res[2]
 
     if ackv then
@@ -220,7 +222,7 @@ var HookAckScript = redis.NewScript(2, hookAckScriptText)
 // ARGV[2]: start status
 // ARGV[3]: revision of job stats
 var statusResetScriptText = `
-local now = tonumber(ARGV[3])
+local now = tonumber(ARGV[3]) or 0
 
 -- reset status and revision
 redis.call('hmset', KEYS[1], 'status', ARGV[2], 'revision', now, 'update_time', now)
