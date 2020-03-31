@@ -940,7 +940,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           this.getAllLabels();
         }
       }
-    ];
+    });
     this.userPermissionService
       .hasProjectPermissions(this.projectId, permissions)
       .subscribe(
