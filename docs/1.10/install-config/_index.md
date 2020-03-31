@@ -7,9 +7,9 @@ This section describes how to perform a new installation of Harbor.
 
 If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see [Upgrading Harbor](../administration/upgrade/_index.md).
 
-Before you install Harbor, you can test the latest version of Harbor on a demo envrionment maintained by the Harbor teame. For information, see [Test Harbor with the Demo Server](demo-server.md).
+Before you install Harbor, you can test the latest version of Harbor on a demo environment maintained by the Harbor teame. For information, see [Test Harbor with the Demo Server](demo-server.md).
 
-Harbor supports integration with different 3rd party replication adapters for replicating data, OIDC adapters for authN/authZ, and scanner adapters for vulnerability scanning of bcontainer images. For information about the supported adapters, see the [Harbor Compatibility List](harbor-compatibility-list.md).
+Harbor supports integration with different 3rd party replication adapters for replicating data, OIDC adapters for authN/authZ, and scanner adapters for vulnerability scanning of container images. For information about the supported adapters, see the [Harbor Compatibility List](harbor-compatibility-list.md).
 
 ## Installation Process
 
@@ -33,7 +33,7 @@ You can also use Helm to install Harbor on a Kubernetes cluster, to make it high
 
 ## Post-Installation Configuration
 
-For information about how manage your deployed Harbor instance, see [Reconfigure Harbor and Manage the Harbor Lifecycle](reconfigure-manage-lifecycle.md). 
+For information about how to manage your deployed Harbor instance, see [Reconfigure Harbor and Manage the Harbor Lifecycle](reconfigure-manage-lifecycle.md). 
 
 By default, Harbor uses its own private key and certificate to authenticate with Docker. For information about how to optionally customize your configuration to use your own key and certificate, see [Customize the Harbor Token Service](customize-token-service.md).
 
