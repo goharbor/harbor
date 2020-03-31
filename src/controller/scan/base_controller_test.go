@@ -22,7 +22,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/common"
 	cj "github.com/goharbor/harbor/src/common/job"
 	jm "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -173,7 +172,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		{Resource: types.Resource(resource), Action: rbac.ActionScannerPull},
 	}
 
-	rname := "the-uuid-123"
+	rname := fmt.Sprintf("%s-%s", suite.registration.Name, "the-uuid-123")
 	account := &model.RobotCreate{
 		Name:        rname,
 		Description: "for scan",
@@ -182,7 +181,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	}
 	rc.On("CreateRobotAccount", account).Return(&model.Robot{
 		ID:          1,
-		Name:        common.RobotPrefix + rname,
+		Name:        rname,
 		Token:       "robot-account",
 		Description: "for scan",
 		ProjectID:   suite.artifact.ProjectID,
@@ -192,7 +191,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	req := &v1.ScanRequest{
 		Registry: &v1.Registry{
 			URL:           "https://core.com",
-			Authorization: "Basic " + base64.StdEncoding.EncodeToString([]byte(common.RobotPrefix+"the-uuid-123:robot-account")),
+			Authorization: "Basic " + base64.StdEncoding.EncodeToString([]byte(rname+":robot-account")),
 		},
 		Artifact: &v1.Artifact{
 			NamespaceID: suite.artifact.ProjectID,
