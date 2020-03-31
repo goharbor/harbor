@@ -1,12 +1,16 @@
 <h4>{{'REPOSITORY.TAGS_COUNT' | translate}}</h4>
-<clr-datagrid [clrDgLoading]="loading" [(clrDgSelected)]="selectedRow" [clrDgRowSelection]="true">
+
+<clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="getCurrentArtifactTags($event)"  [(clrDgSelected)]="selectedRow" [clrDgRowSelection]="true">
     <clr-dg-action-bar>
-        <button type="button" class="btn btn-secondary" (click)="addTag()">
+        <button type="button" [disabled]="!hasCreateTagPermission" class="btn btn-secondary" (click)="addTag()">
             <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'TAG.ADD_TAG' | translate}}
         </button>
         <button type="button" class="btn btn-secondary" [disabled]="!(selectedRow.length>=1&& !hasImmutableOnTag() && hasDeleteTagPermission)" (click)="removeTag()">
             <clr-icon shape="trash" size="16"></clr-icon>&nbsp;{{'TAG.REMOVE_TAG' | translate}}
         </button>
+        <span class="refresh-btn" (click)="refresh()">
+            <clr-icon shape="refresh"></clr-icon>
+        </span>
         <form #tagForm="ngForm" [hidden]="!newTagformShow" class="label-form stack-block-label">
             <section>
                 <label>
@@ -39,7 +43,7 @@
     <clr-dg-column>{{'TAG.PULL_TIME' | translate}}</clr-dg-column>
     <clr-dg-column>{{'TAG.PUSH_TIME' | translate}}</clr-dg-column>
 
-    <clr-dg-row *clrDgItems="let tag of artifactDetails?.tags" [clrDgItem]="tag">
+    <clr-dg-row *ngFor="let tag of currentTags" [clrDgItem]="tag">
         <clr-dg-cell>
             <div class="cell white-normal" [class.immutable]="tag.immutable">
                 <span href="javascript:void(0)" class="max-width-100" title="{{tag.name}}">{{tag.name}}</span>
@@ -61,9 +65,9 @@
     </clr-dg-row>
 
     <clr-dg-footer>
-        <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-        {{'TAG.OF' | translate}} {{pagination.totalItems}} {{'TAG.ITEMS' | translate}}</span>
-        <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>
+        <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+        {{'TAG.OF' | translate}} {{totalCount}} {{'TAG.ITEMS' | translate}}</span>
+        <clr-dg-pagination #pagination [clrDgTotalItems]="totalCount" [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize"></clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>
 

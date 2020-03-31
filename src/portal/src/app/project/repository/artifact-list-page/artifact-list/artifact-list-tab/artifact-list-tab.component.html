@@ -95,7 +95,7 @@
                     <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}
                 </button>
 
-                <clr-dropdown class="btn  btn-link">
+                <clr-dropdown class="btn  btn-link" *ngIf="!depth">
                     <span clrDropdownTrigger id="artifact-list-action" class="btn pl-0">
                         {{'BUTTON.ACTIONS' | translate}}
                         <clr-icon shape="caret down"></clr-icon>

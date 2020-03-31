@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, ViewChild, Output, EventEmitter } from '@angular/core';
 import { Observable, of, forkJoin } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, finalize } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { NgForm } from '@angular/forms';
 import { AVAILABLE_TIME } from "../../artifact-list-page/artifact-list/artifact-list-tab/artifact-list-tab.component";
@@ -16,11 +16,14 @@ import { operateChanges, OperateInfo, OperationState } from "../../../../../lib/
 import { errorHandler } from "../../../../../lib/utils/shared/shared.utils";
 import { ArtifactFront as Artifact } from "../artifact";
 import { ArtifactService } from '../../../../../../ng-swagger-gen/services/artifact.service';
+import { TagService } from '../../../../../../ng-swagger-gen/services/tag.service';
 import { Tag } from '../../../../../../ng-swagger-gen/models/tag';
 import {
-
   UserPermissionService, USERSTATICPERMISSION
 } from "../../../../../lib/services";
+import { ClrDatagridStateInterface } from '@clr/angular';
+import { DEFAULT_PAGE_SIZE, calculatePage } from '../../../../../lib/utils/utils';
+
 class InitTag {
   name = "";
 }
@@ -35,22 +38,29 @@ export class ArtifactTagComponent implements OnInit {
   @Input() projectName: string;
   @Input() projectId: number;
   @Input() repositoryName: string;
-  @Output() refreshArtifact = new EventEmitter();
   newTagName = new InitTag();
   newTagForm: NgForm;
   @ViewChild("newTagForm", { static: true }) currentForm: NgForm;
   selectedRow: Tag[] = [];
   isTagNameExist = false;
   newTagformShow = false;
-  loading = false;
+  loading = true;
   openTag = false;
   availableTime = AVAILABLE_TIME;
   @ViewChild("confirmationDialog", { static: false })
   confirmationDialog: ConfirmationDialogComponent;
   hasDeleteTagPermission: boolean;
+  hasCreateTagPermission: boolean;
+
+  totalCount: number = 0;
+  allTags: Tag[] = [];
+  currentTags: Tag[] = [];
+  pageSize: number = DEFAULT_PAGE_SIZE;
+  currentPage = 1;
   constructor(
     private operationService: OperationService,
     private artifactService: ArtifactService,
+    private tagService: TagService,
     private translateService: TranslateService,
     private userPermissionService: UserPermissionService,
     private errorHandlerService: ErrorHandler
@@ -58,13 +68,57 @@ export class ArtifactTagComponent implements OnInit {
   ) { }
   ngOnInit() {
     this.getImagePermissionRule(this.projectId);
+    this.getAllTags();
+  }
+  getCurrentArtifactTags(state: ClrDatagridStateInterface) {
+    if (!state || !state.page) {
+      return ;
+    }
+    let pageNumber: number = calculatePage(state);
+      if (pageNumber <= 0) { pageNumber = 1; }
+    let params: TagService.ListTagsParams = {
+      projectName: this.projectName,
+      repositoryName: this.repositoryName,
+      page: pageNumber,
+      withSignature: true,
+      withImmutableStatus: true,
+      pageSize: this.pageSize,
+      q: encodeURIComponent(`artifact_id=${this.artifactDetails.id}`)
+    };
+    this.tagService.listTagsResponse(params).pipe(finalize(() => {
+      this.loading = false;
+    })).subscribe(res => {
+      if (res.headers) {
+        let xHeader: string = res.headers.get("x-total-count");
+        if (xHeader) {
+          this.totalCount = Number.parseInt(xHeader);
+        }
+      }
+      this.currentTags = res.body;
+    }, error => {
+      this.errorHandlerService.error(error);
+    });
+  }
+  getAllTags() {
+    let params: TagService.ListTagsParams = {
+      projectName: this.projectName,
+      repositoryName: this.repositoryName
+    };
+    this.tagService.listTags(params).subscribe(res => {
+      this.allTags = res;
+    }, error => {
+      this.errorHandlerService.error(error);
+    });
   }
   getImagePermissionRule(projectId: number): void {
     const permissions = [
-      { resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE }
+      { resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE },
+    { resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.CREATE },
+
     ];
     this.userPermissionService.hasProjectPermissions(this.projectId, permissions).subscribe((results: Array<boolean>) => {
       this.hasDeleteTagPermission = results[0];
+      this.hasCreateTagPermission = results[1];
     }, error => this.errorHandlerService.error(error));
   }
 
@@ -84,11 +138,16 @@ export class ArtifactTagComponent implements OnInit {
       reference: this.artifactDetails.digest,
       tag:  this.newTagName
     };
+    this.loading = true;
     this.artifactService.createTag(createTagParams).subscribe(res => {
       this.newTagformShow = false;
       this.newTagName = new InitTag();
-      this.refreshArtifact.emit();
+      this.getAllTags();
+      this.currentPage = 1;
+      let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
+      this.getCurrentArtifactTags(st);
     }, error => {
+      this.loading = false;
       this.errorHandlerService.error(error);
     });
   }
@@ -124,12 +183,36 @@ export class ArtifactTagComponent implements OnInit {
         tagList.forEach(tag => {
           observableLists.push(this.delOperate(tag));
         });
-
-        forkJoin(...observableLists).subscribe((items) => {
+        this.loading = true;
+        forkJoin(...observableLists).subscribe((deleteResult) => {
           // if delete one success  refresh list
-          if (items.some(item => !item)) {
-            this.selectedRow = [];
-            this.refreshArtifact.emit();
+          let deleteSuccessList = [];
+          let deleteErrorList = [];
+          deleteResult.forEach(result => {
+            if (!result) {
+              // delete success
+              deleteSuccessList.push(result);
+            } else {
+              deleteErrorList.push(result);
+            }
+          });
+          this.selectedRow = [];
+          if (deleteSuccessList.length === deleteResult.length) {
+            // all is success
+            this.currentPage = 1;
+            let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
+            this.getCurrentArtifactTags(st);
+          } else if (deleteErrorList.length === deleteResult.length) {
+            // all is error
+            this.loading = false;
+            this.errorHandlerService.error(deleteResult[deleteResult.length - 1].error);
+          } else {
+            // some artifact delete success but it has error delete things
+            this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1].error);
+            // if delete one success  refresh list
+            this.currentPage = 1;
+            let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
+            this.getCurrentArtifactTags(st);
           }
         });
       }
@@ -167,8 +250,8 @@ export class ArtifactTagComponent implements OnInit {
 
   existValid(name) {
     this.isTagNameExist = false;
-    if (this.artifactDetails.tags) {
-      this.artifactDetails.tags.forEach(tag => {
+    if (this.allTags) {
+      this.allTags.forEach(tag => {
         if (tag.name === name) {
           this.isTagNameExist = true;
         }
@@ -183,5 +266,10 @@ export class ArtifactTagComponent implements OnInit {
   hasImmutableOnTag(): boolean {
     return this.selectedRow.some((artifact) => artifact.immutable);
   }
-
+  refresh() {
+    this.loading = true;
+    this.currentPage = 1;
+    let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
+    this.getCurrentArtifactTags(st);
+  }
 }

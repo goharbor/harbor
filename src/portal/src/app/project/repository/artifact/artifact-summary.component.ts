@@ -91,9 +91,7 @@ export class ArtifactSummaryComponent implements OnInit {
       reference: this.artifactDigest,
       projectName: this.projectName,
       withLabel: true,
-      withScanOverview: true,
-      withSignature: true,
-      withImmutableStatus: true
+      withScanOverview: true
     }).pipe(finalize(() => this.loading = false))
       .subscribe(response => {
       this.artifact = response;
@@ -104,9 +102,5 @@ export class ArtifactSummaryComponent implements OnInit {
 
   onBack(): void {
     this.backEvt.emit(this.repositoryName);
-  }
-
-  refreshArtifact() {
-    this.getArtifactDetails();
   }
 }
