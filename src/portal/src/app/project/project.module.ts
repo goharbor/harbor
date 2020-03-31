@@ -63,6 +63,7 @@ import {
 import { ArtifactDefaultService, ArtifactService } from "./repository/artifact/artifact.service";
 import { GridViewComponent } from "./repository/gridview/grid-view.component";
 import { LastTriggerComponent } from "./webhook/last-trigger/last-trigger.component";
+import { AllPipesModule } from '../all-pipes/all-pipes.module';
 
 @NgModule({
   imports: [
@@ -73,6 +74,7 @@ import { LastTriggerComponent } from "./webhook/last-trigger/last-trigger.compon
     HelmChartModule,
     SummaryModule,
     TagFeatureIntegrationModule,
+    AllPipesModule
   ],
   declarations: [
     ProjectComponent,

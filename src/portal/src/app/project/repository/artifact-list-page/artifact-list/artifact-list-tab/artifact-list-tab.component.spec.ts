@@ -32,6 +32,7 @@ import { ChannelService } from "../../../../../../lib/services/channel.service";
 import { OperationService } from "../../../../../../lib/components/operation/operation.service";
 import { By } from "@angular/platform-browser";
 import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
+import { AllPipesModule } from "../../../../../all-pipes/all-pipes.module";
 
 describe("ArtifactListTabComponent (inline template)", () => {
 
@@ -290,6 +291,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
         SharedModule,
         BrowserAnimationsModule,
         HttpClientTestingModule,
+        AllPipesModule
       ],
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA

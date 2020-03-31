@@ -331,9 +331,12 @@ clr-datagrid {
 }
 .width-p-100 {
   width: 100%;
+  .lg {
+    width: 450px;
+  }
 }
 .w-rem-4 {
-  width: 4rem !important;
+  min-width: 4rem !important;
 }
 .tag-header-color {
   color: #fff;

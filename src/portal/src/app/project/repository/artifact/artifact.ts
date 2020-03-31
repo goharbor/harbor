@@ -51,3 +51,4 @@ export const mutipleFilter = [
   export const artifactImages = [
       'IMAGE', 'CHART', 'CNAB', 'OPENPOLICYAGENT'
   ];
+  export const artifactDefault = "images/artifact-default.svg";
