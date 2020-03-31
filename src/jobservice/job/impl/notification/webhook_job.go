@@ -52,7 +52,12 @@ func (wj *WebhookJob) Run(ctx job.Context, params job.Parameters) error {
 		return err
 	}
 
-	return wj.execute(ctx, params)
+	// does not throw err in the notification job
+	if err := wj.execute(ctx, params); err != nil {
+		wj.logger.Error(err)
+	}
+
+	return nil
 }
 
 // init webhook job
