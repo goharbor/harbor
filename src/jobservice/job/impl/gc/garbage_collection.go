@@ -16,9 +16,12 @@ package gc
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
+	"github.com/goharbor/harbor/src/pkg/blob"
 	"os"
 	"time"
 
@@ -63,6 +66,8 @@ const (
 type GarbageCollector struct {
 	artCtl            artifact.Controller
 	artrashMgr        artifactrash.Manager
+	blobMgr           blob.Manager
+	projectCtl        project.Controller
 	registryCtlClient client.Client
 	logger            logger.Interface
 	cfgMgr            *config.CfgManager
@@ -126,6 +131,7 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 		gc.logger.Errorf("failed to get gc result: %v", err)
 		return err
 	}
+	gc.removeUntaggedBlobs(ctx)
 	if err := gc.cleanCache(); err != nil {
 		return err
 	}
@@ -136,11 +142,15 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 
 func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 	regCtlInit()
-	gc.registryCtlClient = registryctl.RegistryCtlClient
 	gc.logger = ctx.GetLogger()
-	gc.artCtl = artifact.Ctl
-	gc.artrashMgr = artifactrash.NewManager()
-
+	// UT will use the mock client, ctl and mgr
+	if os.Getenv("UTTEST") != "true" {
+		gc.registryCtlClient = registryctl.RegistryCtlClient
+		gc.artCtl = artifact.Ctl
+		gc.artrashMgr = artifactrash.NewManager()
+		gc.blobMgr = blob.NewManager()
+		gc.projectCtl = project.Ctl
+	}
 	if err := gc.registryCtlClient.Health(); err != nil {
 		gc.logger.Errorf("failed to start gc as registry controller is unreachable: %v", err)
 		return err
@@ -249,4 +259,55 @@ func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
 	}
 	flushTrash = true
 	return nil
+}
+
+// clean the untagged blobs in each project, these blobs are not referenced by any manifest and will be cleaned by GC
+func (gc *GarbageCollector) removeUntaggedBlobs(ctx job.Context) {
+	// get all projects
+	projects := func(chunkSize int) <-chan *models.Project {
+		ch := make(chan *models.Project, chunkSize)
+
+		go func() {
+			defer close(ch)
+
+			params := &models.ProjectQueryParam{
+				Pagination: &models.Pagination{Page: 1, Size: int64(chunkSize)},
+			}
+
+			for {
+				results, err := gc.projectCtl.List(ctx.SystemContext(), params, project.Metadata(false))
+				if err != nil {
+					gc.logger.Errorf("list projects failed, error: %v", err)
+					return
+				}
+
+				for _, p := range results {
+					ch <- p
+				}
+
+				if len(results) < chunkSize {
+					break
+				}
+
+				params.Pagination.Page++
+			}
+
+		}()
+
+		return ch
+	}(50)
+
+	for project := range projects {
+		all, err := gc.blobMgr.List(ctx.SystemContext(), blob.ListParams{
+			ProjectID: project.ProjectID,
+		})
+		if err != nil {
+			gc.logger.Errorf("failed to get blobs of project, %v", err)
+			continue
+		}
+		if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), project.ProjectID, all); err != nil {
+			gc.logger.Errorf("failed to clean untagged blobs of project, %v", err)
+			continue
+		}
+	}
 }
