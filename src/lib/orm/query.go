@@ -66,8 +66,10 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignored
 
 		// or list
 		ol, ok := v.(*q.OrList)
-		if ok && len(ol.Values) > 0 {
-			qs = qs.Filter(k+"__in", ol.Values...)
+		if ok {
+			if len(ol.Values) > 0 {
+				qs = qs.Filter(k+"__in", ol.Values...)
+			}
 			continue
 		}
 

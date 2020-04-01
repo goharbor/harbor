@@ -394,57 +394,6 @@ func TestGetTotalGroupProjects(t *testing.T) {
 		})
 	}
 }
-func TestGetRolesByLDAPGroup(t *testing.T) {
-
-	userGroupList, err := QueryUserGroup(models.UserGroup{LdapGroupDN: "cn=harbor_users,ou=sample,ou=vmware,dc=harbor,dc=com", GroupType: 1})
-	if err != nil || len(userGroupList) < 1 {
-		t.Errorf("failed to query user group, err %v", err)
-	}
-
-	userGroups := []models.UserGroup{
-		{GroupName: "test_http_group", GroupType: common.HTTPGroupType},
-		{GroupName: "test_myhttp_group", GroupType: common.HTTPGroupType},
-	}
-
-	gl2, err2 := PopulateGroup(userGroups)
-	if err2 != nil || len(gl2) != 2 {
-		t.Errorf("failed to query http user group, err %v", err)
-	}
-	project, err := dao.GetProjectByName("member_test_01")
-	if err != nil {
-		t.Errorf("Error occurred when Get project by name: %v", err)
-	}
-	privateProject, err := dao.GetProjectByName("group_project_private")
-	if err != nil {
-		t.Errorf("Error occurred when Get project by name: %v", err)
-	}
-
-	type args struct {
-		projectID int64
-		groupIDs  []int
-	}
-	tests := []struct {
-		name     string
-		args     args
-		wantSize int
-		wantErr  bool
-	}{
-		{"Check normal", args{projectID: project.ProjectID, groupIDs: []int{userGroupList[0].ID, gl2[0], gl2[1]}}, 2, false},
-		{"Check non exist", args{projectID: privateProject.ProjectID, groupIDs: []int{9999}}, 0, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := dao.GetRolesByGroupID(tt.args.projectID, tt.args.groupIDs)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TestGetRolesByLDAPGroup() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != tt.wantSize {
-				t.Errorf("TestGetRolesByLDAPGroup() = %v, want %v", len(got), tt.wantSize)
-			}
-		})
-	}
-}
 
 func TestSyncGroupByGroupKey(t *testing.T) {
 	type args []models.UserGroup

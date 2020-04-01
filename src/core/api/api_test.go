@@ -252,7 +252,7 @@ func prepare() error {
 
 	if projAdminPMID, err = project.AddProjectMember(models.Member{
 		ProjectID:  1,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 		EntityID:   int(projAdminID),
 		EntityType: common.UserMember,
 	}); err != nil {
@@ -271,7 +271,7 @@ func prepare() error {
 
 	if projAdminRobotPMID, err = project.AddProjectMember(models.Member{
 		ProjectID:  1,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 		EntityID:   int(projAdminRobotID),
 		EntityType: common.UserMember,
 	}); err != nil {
@@ -290,7 +290,7 @@ func prepare() error {
 
 	if projDeveloperPMID, err = project.AddProjectMember(models.Member{
 		ProjectID:  1,
-		Role:       models.DEVELOPER,
+		Role:       common.RoleDeveloper,
 		EntityID:   int(projDeveloperID),
 		EntityType: common.UserMember,
 	}); err != nil {
@@ -309,7 +309,7 @@ func prepare() error {
 
 	if projGuestPMID, err = project.AddProjectMember(models.Member{
 		ProjectID:  1,
-		Role:       models.GUEST,
+		Role:       common.RoleGuest,
 		EntityID:   int(projGuestID),
 		EntityType: common.UserMember,
 	}); err != nil {

@@ -120,6 +120,16 @@ func TestGetPublic(t *testing.T) {
 	assert.True(t, projects[0].IsPublic())
 }
 
+func TestGetAuthorized(t *testing.T) {
+	projects, err := proMgr.GetAuthorized(nil)
+	require.Nil(t, err)
+	assert.Len(t, projects, 0)
+
+	projects, err = proMgr.GetAuthorized(&models.User{UserID: 1})
+	require.Nil(t, err)
+	assert.Len(t, projects, 1)
+}
+
 func TestGetMetadataManager(t *testing.T) {
 	metaMgr := proMgr.GetMetadataManager()
 	assert.Nil(t, metaMgr)

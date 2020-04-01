@@ -63,7 +63,7 @@ func TestSearch(t *testing.T) {
 		ProjectID:  projectID1,
 		EntityID:   int(nonSysAdminID),
 		EntityType: common.UserMember,
-		Role:       models.GUEST,
+		Role:       common.RoleGuest,
 	})
 	require.Nil(t, err)
 	defer member.DeleteProjectMemberByID(memberID1)
@@ -81,7 +81,7 @@ func TestSearch(t *testing.T) {
 		ProjectID:  projectID2,
 		EntityID:   int(nonSysAdminID),
 		EntityType: common.UserMember,
-		Role:       models.GUEST,
+		Role:       common.RoleGuest,
 	})
 	require.Nil(t, err)
 	defer member.DeleteProjectMemberByID(memberID2)

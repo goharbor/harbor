@@ -258,6 +258,10 @@ func (mpm *mockProjectManager) GetPublic() ([]*models.Project, error) {
 	return nil, errors.New("Not implemented")
 }
 
+func (mpm *mockProjectManager) GetAuthorized(user *models.User) ([]*models.Project, error) {
+	return nil, nil
+}
+
 // if the project manager uses a metadata manager, return it, otherwise return nil
 func (mpm *mockProjectManager) GetMetadataManager() metamgr.ProjectMetadataManager {
 	return nil

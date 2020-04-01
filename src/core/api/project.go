@@ -24,10 +24,11 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/project"
+	pro "github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
@@ -402,12 +403,14 @@ func (p *ProjectAPI) List() {
 				return
 			}
 			projects = append(projects, pros...)
-			mps, err := p.SecurityCtx.GetMyProjects()
-			if err != nil {
-				p.SendInternalServerError(fmt.Errorf("failed to list projects: %v", err))
-				return
+			if sc, ok := p.SecurityCtx.(*local.SecurityContext); ok {
+				mps, err := p.ProjectMgr.GetAuthorized(sc.User())
+				if err != nil {
+					p.SendInternalServerError(fmt.Errorf("failed to list authorized projects: %v", err))
+					return
+				}
+				projects = append(projects, mps...)
 			}
-			projects = append(projects, mps...)
 		}
 	}
 	// Query projects by user group
@@ -443,8 +446,11 @@ func (p *ProjectAPI) populateProperties(project *models.Project) error {
 		project.SetMetadata(models.ProMetaSeverity, strings.ToLower(vuln.ParseSeverityVersion3(severity).String()))
 	}
 
-	if p.SecurityCtx.IsAuthenticated() {
-		roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
+	if sc, ok := p.SecurityCtx.(*local.SecurityContext); ok {
+		roles, err := pro.ListRoles(sc.User(), project.ProjectID)
+		if err != nil {
+			return err
+		}
 		project.RoleList = roles
 		project.Role = highestRole(roles)
 	}
@@ -614,7 +620,7 @@ func getProjectMemberSummary(projectID int64, summary *models.ProjectSummary) {
 		go func(role int, count *int64) {
 			defer wg.Done()
 
-			total, err := project.GetTotalOfProjectMembers(projectID, role)
+			total, err := pro.GetTotalOfProjectMembers(projectID, role)
 			if err != nil {
 				log.Debugf("failed to get total of project members of role %d", role)
 				return

@@ -6,6 +6,8 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/security/local"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit"
@@ -39,17 +41,22 @@ func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAud
 	}
 
 	if !secCtx.IsSysAdmin() {
-		// ToDo remove the dependency on GetMyProjects()
-		projects, err := secCtx.GetMyProjects()
-		if err != nil {
-			return a.SendError(ctx, fmt.Errorf(
-				"failed to get projects of user %s: %v", secCtx.GetUsername(), err))
-		}
 		ol := &q.OrList{}
-		for _, project := range projects {
-			if a.HasProjectPermission(ctx, project.ProjectID, rbac.ActionList, rbac.ResourceLog) {
-				ol.Values = append(ol.Values, project.ProjectID)
+		if sc, ok := secCtx.(*local.SecurityContext); ok {
+			projects, err := config.GlobalProjectMgr.GetAuthorized(sc.User())
+			if err != nil {
+				return a.SendError(ctx, fmt.Errorf(
+					"failed to get projects of user %s: %v", secCtx.GetUsername(), err))
 			}
+			for _, project := range projects {
+				if a.HasProjectPermission(ctx, project.ProjectID, rbac.ActionList, rbac.ResourceLog) {
+					ol.Values = append(ol.Values, project.ProjectID)
+				}
+			}
+		}
+		// make sure no project will be selected with the query
+		if len(ol.Values) == 0 {
+			ol.Values = append(ol.Values, -1)
 		}
 		query.Keywords["ProjectID"] = ol
 	}

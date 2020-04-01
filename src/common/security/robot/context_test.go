@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -151,17 +150,4 @@ func TestHasPushPullPerm(t *testing.T) {
 	ctx := NewSecurityContext(robot, pm, policies)
 	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource))
-}
-
-func TestGetMyProjects(t *testing.T) {
-	ctx := NewSecurityContext(nil, nil, nil)
-	projects, err := ctx.GetMyProjects()
-	require.Nil(t, err)
-	assert.Nil(t, projects)
-}
-
-func TestGetProjectRoles(t *testing.T) {
-	ctx := NewSecurityContext(nil, nil, nil)
-	roles := ctx.GetProjectRoles("test")
-	assert.Nil(t, roles)
 }

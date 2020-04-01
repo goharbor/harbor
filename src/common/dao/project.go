@@ -39,7 +39,7 @@ func AddProject(project models.Project) (int64, error) {
 	pmID, err := addProjectMember(models.Member{
 		ProjectID:  projectID,
 		EntityID:   project.OwnerID,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 		EntityType: common.UserMember,
 	})
 	if err != nil {
@@ -293,26 +293,4 @@ func DeleteProject(id int64) error {
 		where project_id = ?`
 	_, err = GetOrmer().Raw(sql, name, id).Exec()
 	return err
-}
-
-// GetRolesByGroupID - Get Project roles of the
-// specified group is a member of current project
-func GetRolesByGroupID(projectID int64, groupIDs []int) ([]int, error) {
-	var roles []int
-	if len(groupIDs) == 0 {
-		return roles, nil
-	}
-	groupIDCondition := JoinNumberConditions(groupIDs)
-	o := GetOrmer()
-	sql := fmt.Sprintf(
-		`select distinct pm.role from project_member pm
-		left join user_group ug on pm.entity_type = 'g' and pm.entity_id = ug.id
-		where ug.id in ( %s ) and pm.project_id = ?`,
-		groupIDCondition)
-	log.Debugf("sql for GetRolesByGroupID(project ID: %d, group ids: %v):%v", projectID, groupIDs, sql)
-	if _, err := o.Raw(sql, projectID).QueryRows(&roles); err != nil {
-		log.Warningf("Error in GetRolesByGroupID, error: %v", err)
-		return nil, err
-	}
-	return roles, nil
 }

@@ -93,6 +93,29 @@ func (_m *ProjectManager) Get(projectIDOrName interface{}) (*models.Project, err
 	return r0, r1
 }
 
+// GetAuthorized provides a mock function with given fields: user
+func (_m *ProjectManager) GetAuthorized(user *models.User) ([]*models.Project, error) {
+	ret := _m.Called(user)
+
+	var r0 []*models.Project
+	if rf, ok := ret.Get(0).(func(*models.User) []*models.Project); ok {
+		r0 = rf(user)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Project)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*models.User) error); ok {
+		r1 = rf(user)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetMetadataManager provides a mock function with given fields:
 func (_m *ProjectManager) GetMetadataManager() metamgr.ProjectMetadataManager {
 	ret := _m.Called()

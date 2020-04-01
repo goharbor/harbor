@@ -16,6 +16,9 @@ package project
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common/dao/group"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 
@@ -89,7 +92,7 @@ func TestDeleteProjectMemberByID(t *testing.T) {
 		ProjectID:  currentProject.ProjectID,
 		EntityID:   1,
 		EntityType: common.UserMember,
-		Role:       models.DEVELOPER,
+		Role:       common.RoleDeveloper,
 	}
 
 	pmid, err := AddProjectMember(addMember)
@@ -129,7 +132,7 @@ func TestAddProjectMember(t *testing.T) {
 		ProjectID:  currentProject.ProjectID,
 		EntityID:   1,
 		EntityType: common.UserMember,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 	}
 
 	log.Debugf("Current project id %v", currentProject.ProjectID)
@@ -159,7 +162,7 @@ func TestAddProjectMember(t *testing.T) {
 		ProjectID:  -1,
 		EntityID:   1,
 		EntityType: common.UserMember,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 	})
 	if err == nil {
 		t.Fatal("Should failed with negative projectID")
@@ -168,7 +171,7 @@ func TestAddProjectMember(t *testing.T) {
 		ProjectID:  1,
 		EntityID:   -1,
 		EntityType: common.UserMember,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 	})
 	if err == nil {
 		t.Fatal("Should failed with negative entityID")
@@ -191,7 +194,7 @@ func TestUpdateProjectMemberRole(t *testing.T) {
 		ProjectID:  currentProject.ProjectID,
 		EntityID:   int(userID),
 		EntityType: common.UserMember,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 	}
 
 	pmid, err := AddProjectMember(member)
@@ -199,7 +202,7 @@ func TestUpdateProjectMemberRole(t *testing.T) {
 		t.Errorf("Error occurred in UpdateProjectMember: %v", err)
 	}
 
-	UpdateProjectMemberRole(pmid, models.DEVELOPER)
+	UpdateProjectMemberRole(pmid, common.RoleDeveloper)
 
 	queryMember := models.Member{
 		ProjectID:  currentProject.ProjectID,
@@ -215,7 +218,7 @@ func TestUpdateProjectMemberRole(t *testing.T) {
 		t.Errorf("Error occurred in Failed,  size: %d, condition:%+v", len(memberList), queryMember)
 	}
 	memberItem := memberList[0]
-	if memberItem.Role != models.DEVELOPER || memberItem.Entityname != user.Username {
+	if memberItem.Role != common.RoleDeveloper || memberItem.Entityname != user.Username {
 		t.Errorf("member doesn't match!")
 	}
 
@@ -323,6 +326,55 @@ func TestGetTotalOfProjectMembers(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestListRoles(t *testing.T) {
+	// nil user
+	roles, err := ListRoles(nil, 1)
+	require.Nil(t, err)
+	assert.Len(t, roles, 0)
+
+	user, err := dao.GetUser(models.User{Username: "member_test_01"})
+	require.Nil(t, err)
+	project, err := dao.GetProjectByName("member_test_01")
+	require.Nil(t, err)
+
+	// user with empty groups
+	roles, err = ListRoles(user, project.ProjectID)
+	require.Nil(t, err)
+	assert.Len(t, roles, 1)
+
+	// user with a group whose ID doesn't exist
+	user.GroupIDs = []int{9999}
+	roles, err = ListRoles(user, project.ProjectID)
+	require.Nil(t, err)
+	require.Len(t, roles, 1)
+	assert.Equal(t, common.RoleProjectAdmin, roles[0])
+
+	// user with a valid group
+	groupID, err := group.AddUserGroup(models.UserGroup{
+		GroupName:   "group_for_list_role",
+		GroupType:   1,
+		LdapGroupDN: "CN=list_role_users,OU=sample,OU=vmware,DC=harbor,DC=com",
+	})
+	require.Nil(t, err)
+	defer group.DeleteUserGroup(groupID)
+
+	memberID, err := AddProjectMember(models.Member{
+		ProjectID:  project.ProjectID,
+		Role:       common.RoleDeveloper,
+		EntityID:   groupID,
+		EntityType: "g",
+	})
+	require.Nil(t, err)
+	defer DeleteProjectMemberByID(memberID)
+
+	user.GroupIDs = []int{groupID}
+	roles, err = ListRoles(user, project.ProjectID)
+	require.Nil(t, err)
+	require.Len(t, roles, 2)
+	assert.Equal(t, common.RoleProjectAdmin, roles[0])
+	assert.Equal(t, common.RoleDeveloper, roles[1])
 }
 
 func PrepareGroupTest() {
