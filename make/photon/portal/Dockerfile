@@ -1,4 +1,5 @@
 ARG harbor_base_image_version
+ARG harbor_base_namespace
 FROM node:10.15.0 as nodeportal
 
 WORKDIR /build_dir
@@ -24,7 +25,7 @@ ENV NPM_CONFIG_REGISTRY=${npm_registry}
 RUN npm install --unsafe-perm
 RUN node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --prod
 
-FROM goharbor/harbor-portal-base:${harbor_base_image_version}
+FROM ${harbor_base_namespace}/harbor-portal-base:${harbor_base_image_version}
 
 COPY --from=nodeportal /build_dir/dist /usr/share/nginx/html
 COPY --from=nodeportal /build_dir/swagger.yaml /usr/share/nginx/html
