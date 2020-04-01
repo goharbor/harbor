@@ -31,6 +31,25 @@ import (
 	"github.com/goharbor/harbor/src/registryctl/client"
 )
 
+var (
+	regCtlInit = registryctl.Init
+
+	getReadOnly = func(cfgMgr *config.CfgManager) (bool, error) {
+		if err := cfgMgr.Load(); err != nil {
+			return false, err
+		}
+		return cfgMgr.Get(common.ReadOnly).GetBool(), nil
+	}
+
+	setReadOnly = func(cfgMgr *config.CfgManager, switcher bool) error {
+		cfg := map[string]interface{}{
+			common.ReadOnly: switcher,
+		}
+		cfgMgr.UpdateConfig(cfg)
+		return cfgMgr.Save()
+	}
+)
+
 const (
 	dialConnectionTimeout = 30 * time.Second
 	dialReadTimeout       = time.Minute + 10*time.Second
@@ -88,15 +107,15 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 	if err := gc.init(ctx, params); err != nil {
 		return err
 	}
-	readOnlyCur, err := gc.getReadOnly()
+	readOnlyCur, err := getReadOnly(gc.cfgMgr)
 	if err != nil {
 		return err
 	}
 	if readOnlyCur != true {
-		if err := gc.setReadOnly(true); err != nil {
+		if err := setReadOnly(gc.cfgMgr, true); err != nil {
 			return err
 		}
-		defer gc.setReadOnly(readOnlyCur)
+		defer setReadOnly(gc.cfgMgr, readOnlyCur)
 	}
 	gc.logger.Infof("start to run gc in job.")
 	if err := gc.deleteCandidates(ctx); err != nil {
@@ -116,7 +135,7 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 }
 
 func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
-	registryctl.Init()
+	regCtlInit()
 	gc.registryCtlClient = registryctl.RegistryCtlClient
 	gc.logger = ctx.GetLogger()
 	gc.artCtl = artifact.Ctl
@@ -139,27 +158,14 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 	gc.redisURL = params["redis_url_reg"].(string)
 
 	// default is to delete the untagged artifact
-	if params["delete_untagged"] == "" {
-		gc.deleteUntagged = true
-	} else {
-		gc.deleteUntagged = params["delete_untagged"].(bool)
+	gc.deleteUntagged = true
+	deleteUntagged, exist := params["delete_untagged"]
+	if exist {
+		if untagged, ok := deleteUntagged.(bool); ok && !untagged {
+			gc.deleteUntagged = untagged
+		}
 	}
 	return nil
-}
-
-func (gc *GarbageCollector) getReadOnly() (bool, error) {
-	if err := gc.cfgMgr.Load(); err != nil {
-		return false, err
-	}
-	return gc.cfgMgr.Get(common.ReadOnly).GetBool(), nil
-}
-
-func (gc *GarbageCollector) setReadOnly(switcher bool) error {
-	cfg := map[string]interface{}{
-		common.ReadOnly: switcher,
-	}
-	gc.cfgMgr.UpdateConfig(cfg)
-	return gc.cfgMgr.Save()
 }
 
 // cleanCache is to clean the registry cache for GC.
@@ -220,6 +226,8 @@ func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
 			return err
 		}
 		for _, art := range untagged {
+			gc.logger.Infof("delete the untagged artifact: ProjectID:(%d)-RepositoryName(%s)-MediaType:(%s)-Digest:(%s)",
+				art.ProjectID, art.RepositoryName, art.ManifestMediaType, art.Digest)
 			if err := gc.artCtl.Delete(ctx.SystemContext(), art.ID); err != nil {
 				// the failure ones can be GCed by the next execution
 				gc.logger.Errorf("failed to delete untagged:%d artifact in DB, error, %v", art.ID, err)
@@ -233,6 +241,8 @@ func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
 		return err
 	}
 	for _, art := range required {
+		gc.logger.Infof("delete the manifest with registry v2 API: RepositoryName(%s)-MediaType:(%s)-Digest:(%s)",
+			art.RepositoryName, art.ManifestMediaType, art.Digest)
 		if err := deleteManifest(art.RepositoryName, art.Digest); err != nil {
 			return fmt.Errorf("failed to delete manifest, %s:%s with error: %v", art.RepositoryName, art.Digest, err)
 		}
