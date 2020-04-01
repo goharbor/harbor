@@ -129,18 +129,10 @@ func (bc *basicController) collectScanningArtifacts(ctx context.Context, r *scan
 	)
 
 	walkFn := func(a *ar.Artifact) error {
-		supported := hasCapability(r, a)
-
-		if !supported && a.IsImageIndex() {
-			// image index not supported by the scanner, so continue to walk its children
-			return nil
-		}
-
-		artifacts = append(artifacts, a)
-
-		if supported {
+		if hasCapability(r, a) {
 			scannable = true
-			return ar.ErrSkip // this artifact supported by the scanner, skip to walk its children
+			artifacts = append(artifacts, a)
+			return ar.ErrSkip // this artifact supported by the scanner, skip to walk its children when it is image index
 		}
 
 		return nil
@@ -334,36 +326,46 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 		return nil, errors.NotFoundError(nil).WithMessage("report not found for %s@%s", artifact.RepositoryName, artifact.Digest)
 	}
 
-	groupReports := make([][]*scan.Report, len(artifacts))
+	errMap := map[string]error{}
+	reportMap := make(map[string][]*scan.Report, len(artifacts))
 
 	var wg sync.WaitGroup
-	for i, a := range artifacts {
+	for _, a := range artifacts {
 		wg.Add(1)
 
-		go func(i int, a *ar.Artifact) {
+		go func(a *ar.Artifact) {
 			defer wg.Done()
 
+			// NOTE: The default report manager use `ListReports` method to get the reports,
+			// err will not be returned when no reports found,
+			// err returned that means there is a internal error occurs when query database.
 			reports, err := bc.manager.GetBy(a.Digest, r.UUID, mimes)
 			if err != nil {
-				log.Warningf("get reports of %s@%s failed, error: %v", a.RepositoryName, a.Digest, err)
-				return
-			}
+				log.Errorf("get reports of %s@%s failed, error: %v", a.RepositoryName, a.Digest, err)
 
-			groupReports[i] = reports
-		}(i, a)
+				errMap[a.Digest] = err
+			} else {
+				reportMap[a.Digest] = reports
+			}
+		}(a)
 	}
 	wg.Wait()
 
 	var reports []*scan.Report
-	for _, group := range groupReports {
-		if len(group) != 0 {
-			reports = append(reports, group...)
-		} else {
+	for _, a := range artifacts {
+		report, ok := reportMap[a.Digest]
+		if !ok {
+			return nil, errMap[a.Digest]
+		}
+
+		if len(report) == 0 {
 			// NOTE: If the artifact is OCI image, this happened when the artifact is not scanned.
-			// If the artifact is OCI image index, this happened when the artifact is not scanned,
-			// but its children artifacts may scanned so return empty report
+			// but its children artifacts may scanned so return empty report.
+			log.Debugf("report for %s@%s not found", a.RepositoryName, a.Digest)
 			return nil, nil
 		}
+
+		reports = append(reports, report...)
 	}
 
 	return reports, nil
