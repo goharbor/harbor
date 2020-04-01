@@ -9,7 +9,7 @@ If you are upgrading from a previous version of Harbor, you might need to update
 
 Before you install Harbor, you can test the latest version of Harbor on a demo environment maintained by the Harbor team. For information, see [Test Harbor with the Demo Server](demo-server.md).
 
-Harbor supports integration with different 3rd party replication adapters for replicating data, OIDC adapters for authN/authZ, and scanner adapters for vulnerability scanning of container images. For information about the supported adapters, see the [Harbor Compatibility List](harbor-compatibility-list.md).
+Harbor supports integration with different 3rd-party replication adapters for replicating data, OIDC adapters for authN/authZ, and scanner adapters for vulnerability scanning of container images. For information about the supported adapters, see the [Harbor Compatibility List](harbor-compatibility-list.md).
 
 ## Installation Process
 
@@ -29,7 +29,7 @@ You can run a script that deploys Harbor to Ubuntu 18.04 with a single command. 
 
 ## Deploy Harbor on Kubernetes
 
-You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see [Deploying Harbor with High Availability via Helm](harbor-ha-helm.md).
+You can also use Helm to install Harbor on a Kubernetes cluster, to make Harbor highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see [Deploying Harbor with High Availability via Helm](harbor-ha-helm.md).
 
 ## Post-Installation Configuration
 
@@ -41,7 +41,7 @@ After installation, log into your Harbor via the web console to configure the in
 
 ## Harbor Components
 
-The table below lists the components that are deployed when you deploy Harbor.
+The table below lists the some of the key components that are deployed when you deploy Harbor.
 
 |Component|Version|
 |---|---|
