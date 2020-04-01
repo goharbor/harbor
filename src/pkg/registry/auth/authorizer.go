@@ -31,12 +31,12 @@ import (
 )
 
 // NewAuthorizer creates an authorizer that can handle different auth schemes
-func NewAuthorizer(username, password string, trType uint) lib.Authorizer {
+func NewAuthorizer(username, password string, insecure bool) lib.Authorizer {
 	return &authorizer{
 		username: username,
 		password: password,
 		client: &http.Client{
-			Transport: commonhttp.GetHTTPTransport(trType),
+			Transport: commonhttp.GetHTTPTransportByInsecure(insecure),
 		},
 	}
 }

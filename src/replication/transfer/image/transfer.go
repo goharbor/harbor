@@ -165,6 +165,8 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 		}
 	}
 	if err != nil {
+		err = errors.New("got error during the whole transfer period, mark the job failure")
+		t.logger.Error(err)
 		return err
 	}
 

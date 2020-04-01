@@ -24,6 +24,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
@@ -94,24 +95,16 @@ type Client interface {
 	Copy(srcRepository, srcReference, dstRepository, dstReference string, override bool) (err error)
 }
 
-// TODO support HTTPS
-
 // NewClient creates a registry client with the default authorizer which determines the auth scheme
 // of the registry automatically and calls the corresponding underlying authorizers(basic/bearer) to
 // do the auth work. If a customized authorizer is needed, use "NewClientWithAuthorizer" instead
 func NewClient(url, username, password string, insecure bool) Client {
-	var transportType uint
-	if insecure {
-		transportType = commonhttp.InsecureTransport
-	} else {
-		transportType = commonhttp.SecureTransport
-	}
-
 	return &client{
 		url:        url,
-		authorizer: auth.NewAuthorizer(username, password, transportType),
+		authorizer: auth.NewAuthorizer(username, password, insecure),
 		client: &http.Client{
-			Transport: commonhttp.GetHTTPTransport(transportType),
+			Transport: commonhttp.GetHTTPTransportByInsecure(insecure),
+			Timeout:   30 * time.Minute,
 		},
 	}
 }
@@ -439,8 +432,6 @@ func (c *client) DeleteBlob(repository, digest string) error {
 	return nil
 }
 
-// TODO extend this method to support copy artifacts between different registries when merging codes
-// TODO this can be used in replication to replace the existing implementation
 func (c *client) Copy(srcRepo, srcRef, dstRepo, dstRef string, override bool) error {
 	// pull the manifest from the source repository
 	manifest, srcDgt, err := c.PullManifest(srcRepo, srcRef)
@@ -492,17 +483,6 @@ func (c *client) Copy(srcRepo, srcRef, dstRepo, dstRef string, override bool) er
 			if err = c.MountBlob(srcRepo, digest, dstRepo); err != nil {
 				return err
 			}
-			/*
-				// copy happens between different registries
-				size, data, err := src.PullBlob(digest)
-				if err != nil {
-					return err
-				}
-				defer data.Close()
-				if err = dst.PushBlob(digest, size, data); err != nil {
-					return err
-				}
-			*/
 		}
 	}
 
