@@ -683,4 +683,51 @@ Test Case - Can Not Copy Image In ReadOnly Mode
     Disable Read Only
     Close Browser
 
+Test Case - Push Docker Manifest Index and Display
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    ${image_a}=  Set Variable  hello-world
+    ${image_b}=  Set Variable  busybox
+    ${image_a_ver}=  Set Variable  latest
+    ${image_b_ver}=  Set Variable  latest
 
+    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
+    Create An New Project  test${d}
+
+    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  test${d}  ${image_a}:${image_a_ver}
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/${image_a}
+
+    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  test${d}  ${image_b}:${image_b_ver}
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/${image_b}
+
+    Docker Push Index  ${ip}  user010  Test1@34  ${ip}/test${d}/index${d}:index_tag${d}  ${ip}/test${d}/${image_a}:${image_a_ver}  ${ip}/test${d}/${image_b}:${image_b_ver}
+
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/index${d}
+
+    Go Into Repo  test${d}/index${d}
+    Wait Until Page Contains  index_tag${d}
+
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/index${d}
+    Go Into Repo  test${d}/index${d}
+    Go Into Index
+    Page Should Contain Element  ${artifact_rows}  limit=2
+
+Test Case - Push CNAB Bundle and Display
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+
+    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
+    Create An New Project  test${d}
+
+    ${target}=  Set Variable  ${ip}/test${d}/cnab${d}:cnab_tag${d}
+    CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json
+
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/cnab${d}
+
+    Go Into Repo  test${d}/cnab${d}
+    Wait Until Page Contains  cnab_tag${d}

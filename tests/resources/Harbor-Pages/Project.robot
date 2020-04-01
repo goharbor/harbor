@@ -210,6 +210,9 @@ Go Into Repo
     Retry Wait Element  ${tag_table_column_size}
     Capture Page Screenshot  gointo_${repoName}.png
 
+Go Into Index
+    Retry Wait Element  ${artifact_achieve_icon}
+
 Switch To CardView
     Retry Element Click  xpath=//hbr-repository-gridview//span[@class='card-btn']/clr-icon
     Sleep  5
