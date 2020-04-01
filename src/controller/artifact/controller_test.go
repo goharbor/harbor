@@ -414,6 +414,7 @@ func (c *controllerTestSuite) TestCopy() {
 		RepositoryID: 1,
 		Name:         "library/hello-world",
 	}, nil)
+	c.artMgr.On("Count").Return(0, nil)
 	c.artMgr.On("GetByDigest").Return(nil, errors.NotFoundError(nil))
 	c.tagCtl.On("List").Return([]*tag.Tag{
 		{
