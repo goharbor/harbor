@@ -1063,7 +1063,8 @@
         "PUSH_TIME": "Push Time",
         "OF": "of",
         "ADD_TAG": "ADD TAG",
-        "REMOVE_TAG": "REMOVE TAG"
+        "REMOVE_TAG": "REMOVE TAG",
+        "NAME_ALREADY_EXISTS": "Tag already exists under the repository"
 
     },
     "LABEL": {
