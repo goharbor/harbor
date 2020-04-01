@@ -10,9 +10,12 @@ from utils.misc import get_realpath
 gen_tls_script = pathlib.Path(__file__).parent.parent.joinpath('scripts/gencert.sh').absolute()
 
 @click.command()
-@click.option('-p', '--path', default='/etc/harbor/tls/internal')
-@click.option('-d', '--days', default='365')
+@click.option('-p', '--path', required=True, type=str,help='the path to store generated cert files')
+@click.option('-d', '--days', default='365', type=int, help='the expired time for cert')
 def gencert(path, days):
+    """
+    gencert command will generate cert files for internal TLS
+    """
     path = get_realpath(path)
     click.echo('Check openssl ...')
     if not openssl_installed():
