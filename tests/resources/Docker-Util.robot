@@ -162,6 +162,6 @@ Docker Push
 
 Docker Push Index
     [Arguments]  ${ip}  ${user}  ${pwd}  ${index}  ${image1}  ${image2}
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/docker_push_manifest_list.sh ${ip} ${user} ${pwd} ${index}  ${image1} ${image2}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/docker_push_manifest_list.sh ${ip} ${user} ${pwd} ${index} ${image1} ${image2}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0

@@ -211,7 +211,8 @@ Go Into Repo
     Capture Page Screenshot  gointo_${repoName}.png
 
 Go Into Index
-    Retry Wait Element  ${artifact_achieve_icon}
+    [Arguments]  ${index_name}=${null}
+    Retry Element Click  ${artifact_achieve_icon}
 
 Switch To CardView
     Retry Element Click  xpath=//hbr-repository-gridview//span[@class='card-btn']/clr-icon
