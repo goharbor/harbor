@@ -11,7 +11,7 @@ gen_tls_script = pathlib.Path(__file__).parent.parent.joinpath('scripts/gencert.
 
 @click.command()
 @click.option('-p', '--path', required=True, type=str,help='the path to store generated cert files')
-@click.option('-d', '--days', default='365', type=int, help='the expired time for cert')
+@click.option('-d', '--days', default='365', type=str, help='the expired time for cert')
 def gencert(path, days):
     """
     gencert command will generate cert files for internal TLS

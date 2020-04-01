@@ -5,8 +5,9 @@ name = "pypi"
 
 [packages]
 pyyaml = "==4.2b1"
-click = "*"
+click = ">=7.1.1"
 "jinja2" = ">=2.10.1"
+packaging = ">=20.3"
 
 [dev-packages]
 pylint = "*"
