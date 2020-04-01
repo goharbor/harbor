@@ -1,5 +1,6 @@
 ARG harbor_base_image_version
-FROM goharbor/harbor-jobservice-base:${harbor_base_image_version}
+ARG harbor_base_namespace
+FROM ${harbor_base_namespace}/harbor-jobservice-base:${harbor_base_image_version}
 
 COPY ./make/photon/common/install_cert.sh /harbor/
 COPY ./make/photon/jobservice/entrypoint.sh /harbor/

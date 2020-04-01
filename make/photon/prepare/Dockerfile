@@ -1,5 +1,6 @@
 ARG harbor_base_image_version
-FROM goharbor/harbor-prepare-base:${harbor_base_image_version}
+ARG harbor_base_namespace
+FROM ${harbor_base_namespace}/harbor-prepare-base:${harbor_base_image_version}
 
 ENV LANG en_US.UTF-8
 

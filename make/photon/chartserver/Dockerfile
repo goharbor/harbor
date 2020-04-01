@@ -1,5 +1,6 @@
 ARG harbor_base_image_version
-FROM goharbor/harbor-chartserver-base:$harbor_base_image_version
+ARG harbor_base_namespace
+FROM ${harbor_base_namespace}/harbor-chartserver-base:${harbor_base_image_version}
 
 COPY ./make/photon/chartserver/binary/chartm /home/chart/
 COPY ./make/photon/chartserver/docker-entrypoint.sh /home/chart/
