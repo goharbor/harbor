@@ -110,18 +110,6 @@ func registerLegacyRoutes() {
 
 	// APIs for chart repository
 	if config.WithChartMuseum() {
-		// Charts are controlled under projects
-		chartRepositoryAPIType := &api.ChartRepositoryAPI{}
-		beego.Router("/api/"+version+"/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
-		beego.Router("/api/"+version+"/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
-		beego.Router("/api/"+version+"/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
-		beego.Router("/api/"+version+"/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "delete:DeleteChart")
-		beego.Router("/api/"+version+"/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "get:GetChartVersion")
-		beego.Router("/api/"+version+"/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "delete:DeleteChartVersion")
-		beego.Router("/api/"+version+"/chartrepo/:repo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
-		beego.Router("/api/"+version+"/chartrepo/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
-		beego.Router("/api/"+version+"/chartrepo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
-
 		// Labels for chart
 		chartLabelAPIType := &api.ChartLabelAPI{}
 		beego.Router("/api/"+version+"/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")

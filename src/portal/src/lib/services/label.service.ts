@@ -6,7 +6,7 @@ import { RequestQueryParams } from "./RequestQueryParams";
 import { Label } from "./interface";
 
 import { IServiceConfig, SERVICE_CONFIG } from "../entities/service.config";
-import { buildHttpRequestOptions, CURRENT_BASE_HREF, HTTP_JSON_OPTIONS } from "../utils/utils";
+import { buildHttpRequestOptions, CURRENT_BASE_HREF, V1_BASE_HREF, HTTP_JSON_OPTIONS } from "../utils/utils";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
 export abstract class LabelService {
@@ -72,6 +72,7 @@ export abstract class LabelService {
 export class LabelDefaultService extends LabelService {
   labelUrl: string;
   chartUrl: string;
+  chartLabelUrl: string;
 
   constructor(
     @Inject(SERVICE_CONFIG) config: IServiceConfig,
@@ -79,7 +80,8 @@ export class LabelDefaultService extends LabelService {
   ) {
     super();
     this.labelUrl = config.labelEndpoint ? config.labelEndpoint : CURRENT_BASE_HREF + "/labels";
-    this.chartUrl =  config.helmChartEndpoint ? config.helmChartEndpoint : CURRENT_BASE_HREF + "/chartrepo";
+    this.chartUrl =  config.helmChartEndpoint ? config.helmChartEndpoint : V1_BASE_HREF + "/chartrepo";
+    this.chartLabelUrl = config.helmChartLabelEndpoint ? config.helmChartLabelEndpoint : CURRENT_BASE_HREF + "/chartrepo";
   }
 
 
@@ -208,7 +210,7 @@ export class LabelDefaultService extends LabelService {
     chartName: string,
     version: string
   ): Observable<Label[]> {
-    return this.http.get<Label[]>(`${this.chartUrl}/${projectName}/charts/${chartName}/${version}/labels`);
+    return this.http.get<Label[]>(`${this.chartLabelUrl}/${projectName}/charts/${chartName}/${version}/labels`);
   }
 
   markChartLabel(
@@ -217,7 +219,7 @@ export class LabelDefaultService extends LabelService {
     version: string,
     label: Label,
   ): Observable<any> {
-    return this.http.post(`${this.chartUrl}/${projectName}/charts/${chartName}/${version}/labels`,
+    return this.http.post(`${this.chartLabelUrl}/${projectName}/charts/${chartName}/${version}/labels`,
     JSON.stringify(label), HTTP_JSON_OPTIONS);
   }
 
@@ -227,7 +229,7 @@ export class LabelDefaultService extends LabelService {
     version: string,
     label: Label,
   ): Observable<any> {
-    return this.http.delete(`${this.chartUrl}/${projectName}/charts/${chartName}/${version}/labels/${label.id}`, HTTP_JSON_OPTIONS);
+    return this.http.delete(`${this.chartLabelUrl}/${projectName}/charts/${chartName}/${version}/labels/${label.id}`, HTTP_JSON_OPTIONS);
   }
 
 }

@@ -38,6 +38,7 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 	if path != "/service/token" &&
 		!strings.HasPrefix(path, "/v2") &&
 		!strings.HasPrefix(path, "/chartrepo/") &&
+		!strings.HasPrefix(path, "/api/chartrepo/") &&
 		!strings.HasPrefix(path, fmt.Sprintf("/api/%s/chartrepo/", api.APIVersion)) {
 		return nil
 	}

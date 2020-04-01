@@ -1,16 +1,13 @@
 package chartserver
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
-
-	"github.com/goharbor/harbor/src/common/api"
 )
 
 // Test the URL rewrite function
 func TestURLRewrite(t *testing.T) {
-	req, err := createRequest(http.MethodGet, fmt.Sprintf("/api/%s/chartrepo/health", api.APIVersion))
+	req, err := createRequest(http.MethodGet, "/api/chartrepo/health")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -19,7 +16,7 @@ func TestURLRewrite(t *testing.T) {
 		t.Fatalf("Expect url format %s but got %s", "/health", req.URL.Path)
 	}
 
-	req, err = createRequest(http.MethodGet, fmt.Sprintf("/api/%s/chartrepo/library/charts", api.APIVersion))
+	req, err = createRequest(http.MethodGet, "/api/chartrepo/library/charts")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,7 +25,7 @@ func TestURLRewrite(t *testing.T) {
 		t.Fatalf("Expect url format %s but got %s", "/api/library/charts", req.URL.Path)
 	}
 
-	req, err = createRequest(http.MethodPost, fmt.Sprintf("/api/%s/chartrepo/charts", api.APIVersion))
+	req, err = createRequest(http.MethodPost, "/api/chartrepo/charts")
 	if err != nil {
 		t.Fatal(err)
 	}

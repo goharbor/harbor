@@ -17,14 +17,14 @@ package harbor
 import (
 	"bytes"
 	"fmt"
-	"github.com/goharbor/harbor/src/replication/filter"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common/api"
+	"github.com/goharbor/harbor/src/replication/filter"
+
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -54,7 +54,7 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 
 	resources := []*model.Resource{}
 	for _, project := range projects {
-		url := fmt.Sprintf("%s/api/%s/chartrepo/%s/charts", a.getURL(), api.APIVersion, project.Name)
+		url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.getURL(), project.Name)
 		repositories := []*model.Repository{}
 		if err := a.client.Get(url, &repositories); err != nil {
 			return nil, err
@@ -72,7 +72,7 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 
 		for _, repository := range repositories {
 			name := strings.SplitN(repository.Name, "/", 2)[1]
-			url := fmt.Sprintf("%s/api/%s/chartrepo/%s/charts/%s", a.getURL(), api.APIVersion, project.Name, name)
+			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.getURL(), project.Name, name)
 			versions := []*chartVersion{}
 			if err := a.client.Get(url, &versions); err != nil {
 				return nil, err
@@ -133,7 +133,7 @@ func (a *adapter) getChartInfo(name, version string) (*chartVersionDetail, error
 	if err != nil {
 		return nil, err
 	}
-	url := fmt.Sprintf("%s/api/%s/chartrepo/%s/charts/%s/%s", a.url, api.APIVersion, project, name, version)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.url, project, name, version)
 	info := &chartVersionDetail{}
 	if err = a.client.Get(url, info); err != nil {
 		return nil, err
@@ -193,7 +193,7 @@ func (a *adapter) UploadChart(name, version string, chart io.Reader) error {
 	}
 	w.Close()
 
-	url := fmt.Sprintf("%s/api/%s/chartrepo/%s/charts", a.url, api.APIVersion, project)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.url, project)
 
 	req, err := http.NewRequest(http.MethodPost, url, buf)
 	if err != nil {
@@ -224,7 +224,7 @@ func (a *adapter) DeleteChart(name, version string) error {
 	if err != nil {
 		return err
 	}
-	url := fmt.Sprintf("%s/api/%s/chartrepo/%s/charts/%s/%s", a.url, api.APIVersion, project, name, version)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.url, project, name, version)
 	return a.client.Delete(url)
 }
 

@@ -229,6 +229,8 @@ export interface IServiceConfig {
      */
     downloadChartEndpoint?: string;
 
+    helmChartLabelEndpoint?: string;
+
     gcEndpoint?: string;
 
     ScanAllEndpoint?: string;

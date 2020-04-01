@@ -46,7 +46,7 @@ import { ListChartVersionRoComponent } from "./list-chart-version-ro/list-chart-
 import { IServiceConfig, SERVICE_CONFIG } from "../../lib/entities/service.config";
 import { ErrorHandler } from "../../lib/utils/error-handler";
 import { HarborLibraryModule } from "../../lib/harbor-library.module";
-import { CURRENT_BASE_HREF } from "../../lib/utils/utils";
+import { CURRENT_BASE_HREF, V1_BASE_HREF } from "../../lib/utils/utils";
 
 const uiLibConfig: IServiceConfig = {
   enablei18Support: true,
@@ -67,8 +67,9 @@ const uiLibConfig: IServiceConfig = {
   configurationEndpoint: CURRENT_BASE_HREF + "/configurations",
   scanJobEndpoint: CURRENT_BASE_HREF + "/jobs/scan",
   labelEndpoint: CURRENT_BASE_HREF + "/labels",
-  helmChartEndpoint: CURRENT_BASE_HREF + "/chartrepo",
+  helmChartEndpoint: V1_BASE_HREF + "/chartrepo",
   downloadChartEndpoint: "/chartrepo",
+  helmChartLabelEndpoint: CURRENT_BASE_HREF + "/chartrepo",
   gcEndpoint: CURRENT_BASE_HREF + "/system/gc",
   ScanAllEndpoint: CURRENT_BASE_HREF + "/system/scanAll",
   quotaUrl: CURRENT_BASE_HREF + "/quotas"
