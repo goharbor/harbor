@@ -106,7 +106,7 @@ export const USERSTATICPERMISSION = {
         }
     },
     "REPOSITORY_ARTIFACT_LABEL": {
-        'KEY': 'repository-artifact-label',
+        'KEY': 'artifact-label',
         'VALUE': {
             "CREATE": "create",
             "DELETE": "delete",

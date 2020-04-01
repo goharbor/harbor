@@ -59,18 +59,17 @@ Test Case - Scan As An Unprivileged User
     Select Object  latest
     Scan Is Disabled
     Close Browser
-# # chose a emptyVul repo
-# Test Case - Scan Image With Empty Vul
-#     Init Chrome Driver
-#     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  vmware/photon:1.0
-#     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-#     Go Into Project  library
-#     Go Into Repo  vmware/photon
-#     # Go Into Repo  busybox
-#     Scan Repo  1.0  Succeed
-#     Move To Summary Chart
-#     Wait Until Page Contains  No vulnerability
-#     Close Browser
+# chose a emptyVul repo
+Test Case - Scan Image With Empty Vul
+    Init Chrome Driver
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  photon:2.0_scan
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Go Into Repo  library/photon
+    Scan Repo  2.0  Succeed
+    Move To Summary Chart
+    Wait Until Page Contains  No vulnerability
+    Close Browser
 Test Case - Manual Scan All
     Init Chrome Driver
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
