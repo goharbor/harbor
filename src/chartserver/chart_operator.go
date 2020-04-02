@@ -12,7 +12,7 @@ import (
 	"github.com/Masterminds/semver"
 
 	"github.com/goharbor/harbor/src/common/models"
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	hlog "github.com/goharbor/harbor/src/lib/log"
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/proto/hapi/chart"
 	helm_repo "k8s.io/helm/pkg/repo"

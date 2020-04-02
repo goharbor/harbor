@@ -2,9 +2,9 @@ package backend
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/jobservice/logger/getter"
 	"github.com/goharbor/harbor/src/jobservice/logger/sweeper"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"

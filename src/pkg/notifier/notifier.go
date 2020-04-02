@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // HandlerIndexer is setup the relationship between the handler type and

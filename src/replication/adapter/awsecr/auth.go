@@ -30,7 +30,7 @@ import (
 	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // Credential ...

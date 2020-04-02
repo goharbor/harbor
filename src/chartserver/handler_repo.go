@@ -10,7 +10,7 @@ import (
 	"github.com/ghodss/yaml"
 	helm_repo "k8s.io/helm/pkg/repo"
 
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	hlog "github.com/goharbor/harbor/src/lib/log"
 )
 
 const (

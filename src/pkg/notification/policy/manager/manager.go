@@ -8,7 +8,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao/notification"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // DefaultManager ...

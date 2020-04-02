@@ -20,9 +20,9 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // ProjectManager is the project manager which abstracts the operations related

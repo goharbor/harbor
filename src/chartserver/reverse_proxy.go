@@ -16,8 +16,8 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
+	hlog "github.com/goharbor/harbor/src/lib/log"
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"

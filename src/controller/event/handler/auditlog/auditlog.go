@@ -17,8 +17,8 @@ package auditlog
 import (
 	"context"
 	beegorm "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	am "github.com/goharbor/harbor/src/pkg/audit/model"

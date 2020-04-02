@@ -18,7 +18,7 @@ import (
 	"context"
 	"errors"
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 type ormKey struct{}
