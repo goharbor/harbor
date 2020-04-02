@@ -15,9 +15,11 @@
 package scan
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strings"
 	"sync"
 
 	cj "github.com/goharbor/harbor/src/common/job"
@@ -39,6 +41,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/google/uuid"
 )
 
@@ -359,8 +362,7 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 		if len(group) != 0 {
 			reports = append(reports, group...)
 		} else {
-			// NOTE: If the artifact is OCI image, this happened when the artifact is not scanned.
-			// If the artifact is OCI image index, this happened when the artifact is not scanned,
+			// NOTE: If the artifact is OCI image, this happened when the artifact is not scanned,
 			// but its children artifacts may scanned so return empty report
 			return nil, nil
 		}
@@ -403,12 +405,7 @@ func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact
 	return summaries, nil
 }
 
-// GetScanLog ...
-func (bc *basicController) GetScanLog(uuid string) ([]byte, error) {
-	if len(uuid) == 0 {
-		return nil, errors.New("empty uuid to get scan log")
-	}
-
+func (bc *basicController) getScanLog(uuid string) ([]byte, error) {
 	// Get by uuid
 	sr, err := bc.manager.Get(uuid)
 	if err != nil {
@@ -430,6 +427,78 @@ func (bc *basicController) GetScanLog(uuid string) ([]byte, error) {
 
 	// Job log
 	return bc.jc().GetJobLog(sr.JobID)
+}
+
+// GetScanLog ...
+func (bc *basicController) GetScanLog(uuid string) ([]byte, error) {
+	if len(uuid) == 0 {
+		return nil, errors.New("empty uuid to get scan log")
+	}
+
+	data, err := base64.StdEncoding.DecodeString(uuid)
+	if err != nil {
+		data = []byte(uuid)
+	}
+
+	reportIDs := strings.Split(string(data), vuln.SummaryReportIDSeparator)
+
+	errs := map[string]error{}
+	logs := make(map[string][]byte, len(reportIDs))
+
+	var (
+		mu sync.Mutex
+		wg sync.WaitGroup
+	)
+	for _, reportID := range reportIDs {
+		wg.Add(1)
+
+		go func(reportID string) {
+			defer wg.Done()
+
+			log, err := bc.getScanLog(reportID)
+
+			mu.Lock()
+			defer mu.Unlock()
+
+			if err != nil {
+				errs[reportID] = err
+			} else {
+				logs[reportID] = log
+			}
+		}(reportID)
+	}
+	wg.Wait()
+
+	if len(reportIDs) == 1 {
+		return logs[reportIDs[0]], errs[reportIDs[0]]
+	}
+
+	if len(errs) == len(reportIDs) {
+		for _, err := range errs {
+			return nil, err
+		}
+	}
+
+	var b bytes.Buffer
+
+	multiLogs := len(logs) > 1
+	for _, reportID := range reportIDs {
+		log, ok := logs[reportID]
+		if !ok || len(log) == 0 {
+			continue
+		}
+
+		if multiLogs {
+			if b.Len() > 0 {
+				b.WriteString("\n\n\n\n")
+			}
+			b.WriteString(fmt.Sprintf("---------- Logs of report %s ----------\n", reportID))
+		}
+
+		b.Write(log)
+	}
+
+	return b.Bytes(), nil
 }
 
 // HandleJobHooks ...

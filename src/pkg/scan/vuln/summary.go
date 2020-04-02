@@ -15,10 +15,16 @@
 package vuln
 
 import (
+	"encoding/base64"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+)
+
+const (
+	// SummaryReportIDSeparator the separator of the ReportID in the summary when its merged by multi summaries
+	SummaryReportIDSeparator = "|"
 )
 
 // NativeReportSummary is the default supported scan report summary model.
@@ -43,7 +49,6 @@ type NativeReportSummary struct {
 func (sum *NativeReportSummary) Merge(another *NativeReportSummary) *NativeReportSummary {
 	r := &NativeReportSummary{}
 
-	r.ReportID = sum.ReportID
 	r.StartTime = minTime(sum.StartTime, another.StartTime)
 	r.EndTime = maxTime(sum.EndTime, another.EndTime)
 	r.Duration = r.EndTime.Unix() - r.StartTime.Unix()
@@ -51,32 +56,9 @@ func (sum *NativeReportSummary) Merge(another *NativeReportSummary) *NativeRepor
 	r.TotalCount = sum.TotalCount + another.TotalCount
 	r.CompleteCount = sum.CompleteCount + another.CompleteCount
 	r.CompletePercent = r.CompleteCount * 100 / r.TotalCount
-
-	if sum.Severity.String() != "" && another.Severity.String() != "" {
-		if sum.Severity.Code() > another.Severity.Code() {
-			r.Severity = sum.Severity
-		} else {
-			r.Severity = another.Severity
-		}
-	} else if sum.Severity.String() != "" {
-		r.Severity = sum.Severity
-	} else {
-		r.Severity = another.Severity
-	}
-
-	if isRunningStatus(sum.ScanStatus) || isRunningStatus(another.ScanStatus) {
-		r.ScanStatus = job.RunningStatus.String()
-	} else {
-		diff := job.Status(sum.ScanStatus).Compare(job.Status(another.ScanStatus))
-		if diff < 0 {
-			r.ScanStatus = another.ScanStatus
-		} else if diff == 0 {
-			if job.Status(sum.ScanStatus) == job.SuccessStatus ||
-				job.Status(another.ScanStatus) == job.SuccessStatus {
-				r.ScanStatus = job.SuccessStatus.String()
-			}
-		}
-	}
+	r.ReportID = mergeReportID(sum.ReportID, another.ReportID)
+	r.Severity = mergeSeverity(sum.Severity, another.Severity)
+	r.ScanStatus = mergeScanStatus(sum.ScanStatus, another.ScanStatus)
 
 	if sum.Summary != nil && another.Summary != nil {
 		r.Summary = sum.Summary.Merge(another.Summary)
@@ -139,6 +121,44 @@ func maxTime(t1, t2 time.Time) time.Time {
 	return t1
 }
 
-func isRunningStatus(status string) bool {
-	return job.Status(status) == job.RunningStatus
+func mergeReportID(r1, r2 string) string {
+	src, err := base64.StdEncoding.DecodeString(r1)
+	if err != nil {
+		src = []byte(r1)
+	}
+	src = append(src, []byte(SummaryReportIDSeparator+r2)...)
+
+	return base64.StdEncoding.EncodeToString(src)
+}
+
+func mergeSeverity(s1, s2 Severity) Severity {
+	severityValue := func(s Severity) int {
+		if s.String() == "" {
+			return -1
+		}
+
+		return s.Code()
+	}
+
+	if severityValue(s1) > severityValue(s2) {
+		return s1
+	}
+
+	return s2
+}
+
+func mergeScanStatus(s1, s2 string) string {
+	j1, j2 := job.Status(s1), job.Status(s2)
+
+	if j1 == job.RunningStatus || j2 == job.RunningStatus {
+		return job.RunningStatus.String()
+	} else if j1 == job.SuccessStatus || j2 == job.SuccessStatus {
+		return job.SuccessStatus.String()
+	}
+
+	if j1.Compare(j2) > 0 {
+		return s1
+	}
+
+	return s2
 }
