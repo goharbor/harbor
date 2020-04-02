@@ -123,3 +123,23 @@ Test Case - View Scan Results
     Summary Chart Should Display  latest
     View Repo Scan Details
     Close Browser 
+Test Case - Project Level Image Serverity Policy
+    [Tags]  run-once
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=  get current date  result_format=%m%s
+    #For docker-hub registry
+    #${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    #For internal CPE harbor registry
+    ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
+    ${image}=  Set Variable  redis
+    Create An New Project  project${d}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
+    Go Into Project  project${d}
+    Go Into Repo  ${image}
+    Scan Repo  ${sha256}  Succeed
+    Navigate To Projects
+    Go Into Project  project${d}
+    Set Vulnerabilty Serverity  3
+    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}
+    Close Browser

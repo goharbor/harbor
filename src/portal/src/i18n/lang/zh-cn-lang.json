@@ -1063,7 +1063,8 @@
         "OF": "共计",
         "ITEMS": "条记录",
         "ADD_TAG": "添加 TAG",
-        "REMOVE_TAG": "删除 TAG"
+        "REMOVE_TAG": "删除 TAG",
+        "NAME_ALREADY_EXISTS": "当前的镜像已经存在此名字的Tag"
     },
     "LABEL": {
         "LABEL": "标签",
