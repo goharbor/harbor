@@ -3,6 +3,7 @@
 import sys
 import time
 import subprocess
+import client
 import swagger_client
 import v2_swagger_client
 try:
@@ -35,6 +36,7 @@ def _create_client(server, credential, debug, api_type="products"):
     if proxy:
         cfg.proxy = proxy
     return {
+        "chart":   client.ChartRepositoryApi(client.ApiClient(cfg)),
         "products":   swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
         "projectv2":  v2_swagger_client.ProjectApi(v2_swagger_client.ApiClient(cfg)),
         "artifact":   v2_swagger_client.ArtifactApi(v2_swagger_client.ApiClient(cfg)),

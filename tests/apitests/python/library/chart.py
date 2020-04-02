@@ -1,6 +1,9 @@
 import base
 
-class Chart(base.Base):
+class Chart(base.Base, object):
+    def __init__(self):
+        super(Chart,self).__init__(api_type = "chart")
+
     def upload_chart(self, repository, chart, prov = None, expect_status_code = 201, **kwargs):
         client = self._get_client(**kwargs)
         _, status_code, _ = client.chartrepo_repo_charts_post_with_http_info(repository, chart)
