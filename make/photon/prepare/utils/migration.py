@@ -2,7 +2,6 @@ import yaml
 import click
 import importlib
 import os
-
 from collections import deque
 
 from migrations import MIGRATION_BASE_DIR
