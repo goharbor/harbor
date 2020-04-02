@@ -40,12 +40,7 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 	if !strings.HasPrefix(req.URL.Path, "/api") {
 		return nil
 	}
-	h := req.Header.Get("Authorization")
-	token := strings.Split(h, "Bearer")
-	if len(token) < 2 {
-		return nil
-	}
-	claims, err := oidc.VerifyToken(req.Context(), strings.TrimSpace(token[1]))
+	claims, err := oidc.VerifyToken(req.Context(), bearerToken(req))
 	if err != nil {
 		log.Warningf("failed to verify token: %v", err)
 		return nil

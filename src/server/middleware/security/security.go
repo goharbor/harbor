@@ -27,6 +27,7 @@ var (
 	generators = []generator{
 		&secret{},
 		&oidcCli{},
+		&v2Token{},
 		&idToken{},
 		&authProxy{},
 		&robot{},
