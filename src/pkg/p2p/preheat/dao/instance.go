@@ -3,6 +3,8 @@ package dao
 import (
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
+	liborm "github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
 )
 
@@ -45,12 +47,10 @@ func DeleteInstance(id int64) error {
 }
 
 // ListInstances lists instances by query params.
-func ListInstances(query *ListInstanceQuery) (int64, []*models.Instance, error) {
-	o := dao.GetOrmer()
-	qs := o.QueryTable(&models.Instance{})
-
-	if query != nil && len(query.Keyword) > 0 {
-		qs = qs.Filter("name__contains", query.Keyword)
+func ListInstances(query *q.Query) (int64, []*models.Instance, error) {
+	qs, err := liborm.WithFilters(liborm.NewContext(nil, dao.GetOrmer()), &models.Instance{}, query)
+	if err != nil {
+		return 0, nil, err
 	}
 
 	total, err := qs.Count()
@@ -59,7 +59,7 @@ func ListInstances(query *ListInstanceQuery) (int64, []*models.Instance, error) 
 	}
 
 	if query != nil {
-		offset := (query.Page - 1) * query.PageSize
+		offset := (query.PageNumber - 1) * query.PageSize
 		qs = qs.Offset(offset).Limit(query.PageSize)
 	}
 

@@ -3,6 +3,7 @@
 package mocks
 
 import (
+	"github.com/goharbor/harbor/src/lib/q"
 	models "github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -49,13 +50,13 @@ func (_m *Manager) Get(id int64) (*models.Metadata, error) {
 	return r0, r1
 }
 
-// List provides a mock function with given fields: param
-func (_m *Manager) List(param *models.QueryParam) (int64, []*models.Metadata, error) {
-	ret := _m.Called(param)
+// List provides a mock function with given fields: query
+func (_m *Manager) List(query *q.Query) (int64, []*models.Metadata, error) {
+	ret := _m.Called(query)
 
 	var r0 []*models.Metadata
-	if rf, ok := ret.Get(1).(func(*models.QueryParam) []*models.Metadata); ok {
-		r0 = rf(param)
+	if rf, ok := ret.Get(1).(func(*q.Query) []*models.Metadata); ok {
+		r0 = rf(query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(1).([]*models.Metadata)
@@ -63,8 +64,8 @@ func (_m *Manager) List(param *models.QueryParam) (int64, []*models.Metadata, er
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(2).(func(*models.QueryParam) error); ok {
-		r1 = rf(param)
+	if rf, ok := ret.Get(2).(func(*q.Query) error); ok {
+		r1 = rf(query)
 	} else {
 		r1 = ret.Error(2)
 	}

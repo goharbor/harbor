@@ -24,9 +24,9 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 )
 
-// QuerySetter generates the query setter according to the query. "ignoredCols" is used to set the
-// columns that will not be queried
-func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignoredCols ...string) (orm.QuerySeter, error) {
+// WithFilters generates the query setter according to the query. "ignoredCols" is used to set the
+// columns that will not be queried. Here pagination is not applied.
+func WithFilters(ctx context.Context, model interface{}, query *q.Query, ignoredCols ...string) (orm.QuerySeter, error) {
 	ormer, err := FromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -83,12 +83,25 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignored
 		// exact match
 		qs = qs.Filter(k, v)
 	}
-	if query.PageSize > 0 {
+
+	return qs, nil
+}
+
+// QuerySetter generates the query setter according to the query. "ignoredCols" is used to set the
+// columns that will not be queried
+func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignoredCols ...string) (orm.QuerySeter, error) {
+	qs, err := WithFilters(ctx, model, query, ignoredCols...)
+	if err != nil {
+		return nil, err
+	}
+
+	if query != nil && query.PageSize > 0 {
 		qs = qs.Limit(query.PageSize)
 		if query.PageNumber > 0 {
 			qs = qs.Offset(query.PageSize * (query.PageNumber - 1))
 		}
 	}
+
 	return qs, nil
 }
 

@@ -3,6 +3,7 @@
 package mocks
 
 import (
+	"github.com/goharbor/harbor/src/lib/q"
 	models "github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -26,13 +27,13 @@ func (_m *Manager) AppendHistory(record *models.HistoryRecord) error {
 	return r0
 }
 
-// LoadHistories provides a mock function with given fields: params
-func (_m *Manager) LoadHistories(params *models.QueryParam) (int64, []*models.HistoryRecord, error) {
-	ret := _m.Called(params)
+// LoadHistories provides a mock function with given fields: query
+func (_m *Manager) LoadHistories(query *q.Query) (int64, []*models.HistoryRecord, error) {
+	ret := _m.Called(query)
 
 	var r0 []*models.HistoryRecord
-	if rf, ok := ret.Get(1).(func(*models.QueryParam) []*models.HistoryRecord); ok {
-		r0 = rf(params)
+	if rf, ok := ret.Get(1).(func(*q.Query) []*models.HistoryRecord); ok {
+		r0 = rf(query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(1).([]*models.HistoryRecord)
@@ -40,8 +41,8 @@ func (_m *Manager) LoadHistories(params *models.QueryParam) (int64, []*models.Hi
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(2).(func(*models.QueryParam) error); ok {
-		r1 = rf(params)
+	if rf, ok := ret.Get(2).(func(*q.Query) error); ok {
+		r1 = rf(query)
 	} else {
 		r1 = ret.Error(2)
 	}

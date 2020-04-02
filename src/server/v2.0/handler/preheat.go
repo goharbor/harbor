@@ -95,22 +95,12 @@ func (p *preheatAPI) GetInstance(ctx context.Context, params preheat.GetInstance
 
 // ListInstances is List p2p instances
 func (p *preheatAPI) ListInstances(ctx context.Context, params preheat.ListInstancesParams) middleware.Responder {
-	queryParams := &preheat_models.QueryParam{}
-	if params.PageSize != nil {
-		queryParams.PageSize = uint(*params.PageSize)
-	} else {
-		queryParams.PageSize = 10
-	}
-	if params.Page != nil {
-		queryParams.Page = uint(*params.Page)
-	} else {
-		queryParams.Page = 1
-	}
-	if params.Q != nil {
-		queryParams.Keyword = *params.Q
+	query, err := p.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	if err != nil {
+		return p.SendError(ctx, err)
 	}
 
-	total, data, err := api_preheat.DefaultController.ListInstances(queryParams)
+	total, data, err := api_preheat.DefaultController.ListInstances(query)
 	if err != nil {
 		return p.SendError(ctx, err)
 	}
@@ -134,28 +124,18 @@ func (p *preheatAPI) ListInstances(ctx context.Context, params preheat.ListInsta
 
 	return preheat.NewListInstancesOK().
 		WithXTotalCount(total).
-		WithLink(p.Links(ctx, params.HTTPRequest.URL, total, int64(queryParams.Page), int64(queryParams.PageSize)).String()).
+		WithLink(p.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(instances)
 }
 
 // ListPreheatHistories is List preheats history
 func (p *preheatAPI) ListPreheatHistories(ctx context.Context, params preheat.ListPreheatHistoriesParams) middleware.Responder {
-	queryParams := &preheat_models.QueryParam{}
-	if params.PageSize != nil {
-		queryParams.PageSize = uint(*params.PageSize)
-	} else {
-		queryParams.PageSize = 10
-	}
-	if params.Page != nil {
-		queryParams.Page = uint(*params.Page)
-	} else {
-		queryParams.Page = 1
-	}
-	if params.Q != nil {
-		queryParams.Keyword = *params.Q
+	query, err := p.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	if err != nil {
+		return p.SendError(ctx, err)
 	}
 
-	total, data, err := api_preheat.DefaultController.LoadHistoryRecords(queryParams)
+	total, data, err := api_preheat.DefaultController.LoadHistoryRecords(query)
 	if err != nil {
 		return p.SendError(ctx, err)
 	}
@@ -175,7 +155,7 @@ func (p *preheatAPI) ListPreheatHistories(ctx context.Context, params preheat.Li
 
 	return preheat.NewListPreheatHistoriesOK().
 		WithXTotalCount(total).
-		WithLink(p.Links(ctx, params.HTTPRequest.URL, total, int64(queryParams.Page), int64(queryParams.PageSize)).String()).
+		WithLink(p.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(histories)
 }
 

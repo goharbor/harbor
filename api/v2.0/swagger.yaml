@@ -859,6 +859,8 @@ paths:
       description: Start to preheat images
       tags:
         - preheat
+      produces:
+        - application/json
       operationId: PreheatImages
       parameters:
         - $ref: '#/parameters/requestId'
