@@ -43,7 +43,7 @@ You have a machine or VM that is running Ubuntu 18.04. The script does not work 
     ```
    
     - User name: `admin`
-    - Password: `VMware12345`
+    - Password: `Harbor12345`
 
 1. Enter the Harbor address in a browser to log in to the Harbor interface.
 
