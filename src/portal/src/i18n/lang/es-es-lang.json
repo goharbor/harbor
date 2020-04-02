@@ -991,7 +991,7 @@
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",
             "SCANNING_PERCENT": "Scan completed percent:",
-            "SCANNING_PERCENT_EXPLAIN": "(Scan completed percentage is calculated as # of successfully scanned images / total number of images referenced within the image index not including the index file itself and the images that do not support being scanned.)",
+            "SCANNING_PERCENT_EXPLAIN": "Scan completed percentage is calculated as # of successfully scanned images / total number of images referenced within the image index.",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}.",
             "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
