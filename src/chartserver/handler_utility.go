@@ -9,8 +9,8 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/helm/cmd/helm/search"
 
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	hlog "github.com/goharbor/harbor/src/lib/log"
 )
 
 const (

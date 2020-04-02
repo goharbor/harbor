@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"os"
 
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	hlog "github.com/goharbor/harbor/src/lib/log"
 )
 
 const (

@@ -16,9 +16,9 @@ package image
 
 import (
 	"github.com/docker/distribution/manifest/manifestlist"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
+	"github.com/goharbor/harbor/src/lib/log"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 

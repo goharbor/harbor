@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // PassportsPool holds a given number of passports, they can be applied or be revoked. PassportsPool

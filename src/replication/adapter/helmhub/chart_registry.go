@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/pkg/errors"
 )

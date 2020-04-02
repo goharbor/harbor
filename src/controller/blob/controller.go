@@ -21,9 +21,9 @@ import (
 	"github.com/docker/distribution"
 	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	util "github.com/goharbor/harbor/src/common/utils/redis"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/blob"
 )

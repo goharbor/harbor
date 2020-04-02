@@ -24,9 +24,9 @@ import (
 
 	"github.com/docker/distribution/registry/auth/token"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	tokenutil "github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/lib/log"
 	model2 "github.com/goharbor/harbor/src/pkg/signature/notary/model"
 	"github.com/theupdateframework/notary"
 	"github.com/theupdateframework/notary/client"

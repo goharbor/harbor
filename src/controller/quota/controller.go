@@ -20,9 +20,9 @@ import (
 	"time"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	util "github.com/goharbor/harbor/src/common/utils/redis"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"

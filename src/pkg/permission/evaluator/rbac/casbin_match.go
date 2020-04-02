@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 type regexpStore struct {

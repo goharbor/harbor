@@ -16,8 +16,8 @@ package migration
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	art "github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/project"

@@ -20,8 +20,8 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/utils/email"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (

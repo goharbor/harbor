@@ -17,8 +17,8 @@ package api
 import (
 	"errors"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/oidc"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // OIDCAPI handles the requests to /api/system/oidc/xxx

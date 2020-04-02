@@ -27,7 +27,7 @@ import (
 	_ "github.com/golang-migrate/migrate/source/file"       // import local file driver for migrator
 
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	_ "github.com/lib/pq" // register pgsql driver
 )
 

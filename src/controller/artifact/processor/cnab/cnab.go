@@ -17,9 +17,9 @@ package cnab
 import (
 	"context"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
 	ps "github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
 

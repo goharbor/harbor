@@ -16,8 +16,8 @@ package signature
 
 import (
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/signature/notary"
 	"github.com/goharbor/harbor/src/pkg/signature/notary/model"
 	"golang.org/x/net/context"

@@ -15,7 +15,7 @@
 package bearer
 
 import (
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"strings"
 	"sync"
 	"time"
