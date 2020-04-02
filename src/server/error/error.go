@@ -47,10 +47,11 @@ var (
 // And the error is logged as well
 func SendError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	statusCode, errPayload := apiError(err)
+	statusCode, errPayload, stackTrace := apiError(err)
 	// the error detail is logged only, and will not be sent to the client to avoid leaking server information
 	if statusCode >= http.StatusInternalServerError {
 		log.Error(errPayload)
+		log.Debug(stackTrace)
 		err = errors.New(nil).WithCode(errors.GeneralCode).WithMessage("internal server error")
 		errPayload = errors.NewErrs(err).Error()
 	} else {
@@ -63,7 +64,7 @@ func SendError(w http.ResponseWriter, err error) {
 
 // generates the HTTP status code based on the specified error,
 // envelops the error into an error array as the payload and return them
-func apiError(err error) (statusCode int, errPayload string) {
+func apiError(err error) (statusCode int, errPayload, stackTrace string) {
 	code := 0
 	var openAPIErr openapi.Error
 	if errors.As(err, &openAPIErr) {
@@ -85,7 +86,11 @@ func apiError(err error) (statusCode int, errPayload string) {
 	if code == 0 {
 		code = http.StatusInternalServerError
 	}
-	return code, errors.NewErrs(err).Error()
+	fullStack := ""
+	if _, ok := err.(*errors.Error); ok {
+		fullStack = err.(*errors.Error).StackTrace()
+	}
+	return code, errors.NewErrs(err).Error(), fullStack
 }
 
 var _ middleware.Responder = &ErrResponder{}

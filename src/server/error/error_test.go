@@ -18,6 +18,7 @@ import (
 	openapi "github.com/go-openapi/errors"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/errors"
+	pkg_errors "github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -51,32 +52,33 @@ func TestAPIError(t *testing.T) {
 	var err error
 	// open API error: github.com/go-openapi/errors.Error
 	err = openapi.New(400, "bad request")
-	statusCode, payload := apiError(err)
+	statusCode, payload, stacktrace := apiError(err)
 	assert.Equal(t, http.StatusBadRequest, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"BAD_REQUEST","message":"bad request"}]}`, payload)
+	assert.Contains(t, stacktrace, `error.apiError`)
 
 	// legacy error
 	err = &commonhttp.Error{
 		Code:    http.StatusNotFound,
 		Message: "not found",
 	}
-	statusCode, payload = apiError(err)
+	statusCode, payload, stacktrace = apiError(err)
 	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"not found"}]}`, payload)
+	assert.Contains(t, stacktrace, `error.apiError`)
 
 	// errors.Error
-	err = &errors.Error{
-		Cause:   nil,
-		Code:    errors.NotFoundCode,
-		Message: "resource not found",
-	}
-	statusCode, payload = apiError(err)
+	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("resource not found")
+	statusCode, payload, stacktrace = apiError(err)
 	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"resource not found"}]}`, payload)
+	assert.Contains(t, stacktrace, `error.TestAPIError`)
 
-	// common error
-	e := errors.New("customized error")
-	statusCode, payload = apiError(e)
+	// common error, common error has no stacktrace
+	e := pkg_errors.New("customized error")
+	statusCode, payload, stacktrace = apiError(e)
 	assert.Equal(t, http.StatusInternalServerError, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"UNKNOWN","message":"customized error"}]}`, payload)
+	assert.Contains(t, stacktrace, ``)
+
 }

@@ -44,6 +44,31 @@ func TestErrCode(t *testing.T) {
 	}
 }
 
+const (
+	caller1Stack = "errors.caller1"
+	caller2Stack = "errors.caller2"
+	caller3Stack = "errors.caller3"
+)
+
+func caller1() error {
+	err := caller2()
+	return err
+}
+
+func caller2() error {
+	err := caller3()
+	return err
+}
+
+func caller3() error {
+	err := caller4()
+	return New(err).WithMessage("it's caller 3.")
+}
+
+func caller4() error {
+	return errors.New("it's caller 4")
+}
+
 type ErrorTestSuite struct {
 	suite.Suite
 }
@@ -53,6 +78,15 @@ func (suite *ErrorTestSuite) TestNewCompatibleWithStdlib() {
 	err2 := errors.New("oops")
 
 	suite.Equal(err2.Error(), err1.Error())
+}
+
+func (suite *ErrorTestSuite) TestStackTrace() {
+	err := caller1()
+	suite.Contains(err.(*Error).StackTrace(), caller1Stack)
+	suite.Contains(err.(*Error).StackTrace(), caller2Stack)
+	suite.Contains(err.(*Error).StackTrace(), caller3Stack)
+	suite.Contains(err.Error(), "it's caller 3.")
+	suite.Contains(err.Error(), "it's caller 4")
 }
 
 func TestErrorTestSuite(t *testing.T) {
