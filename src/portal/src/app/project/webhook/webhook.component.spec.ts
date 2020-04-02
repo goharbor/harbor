@@ -73,6 +73,9 @@ describe('WebhookComponent', () => {
         },
         editWebhook() {
             return of(true);
+        },
+        eventTypeToText(eventType: string) {
+            return eventType;
         }
     };
     const mockActivatedRoute = {

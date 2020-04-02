@@ -30,6 +30,7 @@
                                 <clr-icon class="margin-top-0" size="16" shape="pencil"></clr-icon>
                                 <span id="edit-webhook" class="margin-left-10">{{'BUTTON.EDIT' | translate}}</span>
                             </button>
+                            <div class="dropdown-divider"></div>
                             <button clrDropdownItem (click)="deleteWebhook()"
                                     class="btn  btn-secondary" [disabled]="!(selectedRow && selectedRow.length >= 1)">
                                 <clr-icon class="margin-top-0" size="16" shape="times"></clr-icon>
@@ -49,9 +50,9 @@
             </div>
         </clr-dg-action-bar>
         <clr-dg-column  [clrDgField]="'name'">{{'WEBHOOK.NAME' | translate}}</clr-dg-column>
-        <clr-dg-column>{{'WEBHOOK.NOTIFY_TYPE' | translate}}</clr-dg-column>
-        <clr-dg-column class="width-340">{{'WEBHOOK.TARGET' | translate}}</clr-dg-column>
         <clr-dg-column>{{'WEBHOOK.ENABLED' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'WEBHOOK.NOTIFY_TYPE' | translate}}</clr-dg-column>
+        <clr-dg-column class="min-width-340">{{'WEBHOOK.TARGET' | translate}}</clr-dg-column>
         <clr-dg-column>{{'WEBHOOK.EVENT_TYPES' | translate}}</clr-dg-column>
         <clr-dg-column>{{'WEBHOOK.CREATED' | translate}}</clr-dg-column>
         <clr-dg-column>{{'WEBHOOK.DESCRIPTION' | translate}}</clr-dg-column>
@@ -60,8 +61,6 @@
         </clr-dg-placeholder>
         <clr-dg-row *clrDgItems="let w of webhookList" [clrDgItem]="w">
             <clr-dg-cell>{{w.name}}</clr-dg-cell>
-            <clr-dg-cell>{{w?.targets[0].type}}</clr-dg-cell>
-            <clr-dg-cell>{{w?.targets[0].address}}</clr-dg-cell>
             <clr-dg-cell [ngSwitch]="w.enabled">
                 <div *ngSwitchCase="true" class="icon-wrap">
                     <clr-icon shape="check-circle" size="20" class="is-success enabled-icon"></clr-icon>
@@ -72,10 +71,12 @@
                     <span>{{'WEBHOOK.DISABLED' | translate}}</span>
                 </div>
             </clr-dg-cell>
+            <clr-dg-cell>{{w?.targets[0].type}}</clr-dg-cell>
+            <clr-dg-cell>{{w?.targets[0].address}}</clr-dg-cell>
             <clr-dg-cell>
                 <div class="cell" *ngIf="w?.event_types?.length">
                     <div  class="bar-state">
-                        <span class="label" *ngIf="w?.event_types[0]">{{w?.event_types[0]}}</span>
+                        <span class="label" *ngIf="w?.event_types[0]">{{eventTypeToText(w?.event_types[0])}}</span>
                     </div>
                     <div class="signpost-item" [hidden]="w?.event_types?.length<=1">
                         <div class="trigger-item">
@@ -84,7 +85,7 @@
                                 <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
                                     <div>
                                         <div  *ngFor="let e of w?.event_types" class="bar-state">
-                                            <span class="label not-scan">{{e}}</span>
+                                            <span class="label not-scan">{{eventTypeToText(e)}}</span>
                                         </div>
                                     </div>
                                 </clr-signpost-content>
