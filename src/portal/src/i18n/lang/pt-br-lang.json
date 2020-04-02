@@ -640,7 +640,7 @@
         "COPY_DIGEST_ID": "Copiar Digest",
         "DELETE": "Remover",
         "NAME": "Nome",
-        "TAGS_COUNT": "Tags",
+        "TAGS": "Tags",
         "PLATFORM": "OS/ARCH",
         "ARTIFACT_TOOTIP": "Click this icon to enter the Artifact list of refer",
         "ARTIFACTS_COUNT": "Artifacts",

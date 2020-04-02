@@ -641,7 +641,7 @@
         "COPY_DIGEST_ID": "Copy Digest",
         "DELETE": "Eliminar",
         "NAME": "Nombre",
-        "TAGS_COUNT": "Etiquetas",
+        "TAGS": "Etiquetas",
         "PLATFORM": "OS/ARCH",
         "ARTIFACT_TOOTIP": "Click this icon to enter the Artifact list of refer",
         "ARTIFACTS_COUNT": "Artifacts",
