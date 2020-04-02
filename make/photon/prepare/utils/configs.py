@@ -360,8 +360,17 @@ def get_redis_configs(external_redis=None, with_clair=True):
     >>> get_redis_configs()['redis_url_clair']
     'redis://redis:6379/4'
 
+    >>> get_redis_configs({'host': 'localhost', 'password': ''})['redis_password']
+    ''
+    >>> get_redis_configs({'host': 'localhost', 'password': None})['redis_password']
+    ''
+    >>> get_redis_configs({'host': 'localhost', 'password': None})['redis_url_reg']
+    'redis://localhost:6379/1'
+
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['external_redis']
     True
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_password']
+    'pass'
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_reg']
     'redis://anonymous:pass@localhost:6379/1'
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_js']
@@ -372,6 +381,7 @@ def get_redis_configs(external_redis=None, with_clair=True):
     >>> 'redis_url_clair' not in get_redis_configs(with_clair=False)
     True
     """
+    external_redis = external_redis or {}
 
     configs = dict(external_redis=bool(external_redis))
 
@@ -387,7 +397,7 @@ def get_redis_configs(external_redis=None, with_clair=True):
     }
 
     # overwriting existing keys by external_redis
-    redis.update(external_redis or {})
+    redis.update({key: value for (key, value) in external_redis.items() if value})
 
     configs['redis_host'] = redis['host']
     configs['redis_port'] = redis['port']
