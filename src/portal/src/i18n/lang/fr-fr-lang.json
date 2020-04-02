@@ -385,7 +385,7 @@
         "ENABLE": "Enable",
         "DISABLE": "Disable",
         "NAME": "Name",
-        "TARGET": "Target",
+        "TARGET": "Endpoint URL",
         "EVENT_TYPES": "Event types",
         "DESCRIPTION": "Description",
         "NO_WEBHOOK": "No Webhook",

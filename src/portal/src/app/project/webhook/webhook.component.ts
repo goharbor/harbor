@@ -83,7 +83,13 @@ export class WebhookComponent implements OnInit {
         response => {
           this.metadata = response;
           if (this.metadata && this.metadata.event_type) {
-            this.metadata.event_type.sort();
+            // sort by text
+            this.metadata.event_type.sort((a: string, b: string) => {
+              if (this.eventTypeToText(a) === this.eventTypeToText(b)) {
+                return 0;
+              }
+              return this.eventTypeToText(a) > this.eventTypeToText(b) ? 1 : -1;
+            });
           }
         },
         error => {
@@ -221,5 +227,8 @@ export class WebhookComponent implements OnInit {
       ConfirmationButtons.DELETE_CANCEL
     );
     this.confirmationDialogComponent.open(msg);
+  }
+  eventTypeToText(eventType: string): string {
+    return this.webhookService.eventTypeToText(eventType);
   }
 }

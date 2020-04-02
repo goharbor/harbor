@@ -129,4 +129,7 @@ export class AddWebhookFormComponent implements OnInit {
       && this.webhook.event_types
       && this.webhook.event_types.length > 0;
   }
+  eventTypeToText(eventType: string): string {
+    return this.webhookService.eventTypeToText(eventType);
+  }
 }

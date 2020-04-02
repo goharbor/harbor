@@ -3,6 +3,7 @@ import {
     OnInit, SimpleChanges
 } from "@angular/core";
 import { LastTrigger } from "../webhook";
+import { WebhookService } from "../webhook.service";
 
 
 @Component({
@@ -14,7 +15,7 @@ export class LastTriggerComponent implements  OnInit , OnChanges {
     @Input()  inputLastTriggers: LastTrigger[];
     @Input()  webhookName: string;
     lastTriggers: LastTrigger[] = [];
-    constructor() {
+    constructor(private webhookService: WebhookService) {
     }
     ngOnChanges(changes: SimpleChanges): void {
        if (changes && changes['inputLastTriggers']) {
@@ -27,5 +28,8 @@ export class LastTriggerComponent implements  OnInit , OnChanges {
        }
     }
     ngOnInit(): void {
+    }
+    eventTypeToText(eventType: string): string {
+        return this.webhookService.eventTypeToText(eventType);
     }
 }

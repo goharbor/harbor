@@ -18,6 +18,20 @@ import { HttpClient } from "@angular/common/http";
 import { Webhook, LastTrigger } from "./webhook";
 import { CURRENT_BASE_HREF } from "../../../lib/utils/utils";
 
+const EVENT_TYPES_TEXT_MAP = {
+  'REPLICATION': 'Replication finished',
+  'PUSH_ARTIFACT': 'Artifact pushed',
+  'PULL_ARTIFACT': 'Artifact pulled',
+  'DELETE_ARTIFACT': 'Artifact deleted',
+  'DOWNLOAD_CHART': 'Chart downloaded',
+  'UPLOAD_CHART': 'Chart uploaded',
+  'DELETE_CHART': 'Chart deleted',
+  'QUOTA_EXCEED': 'Quota exceed',
+  'QUOTA_WARNING': 'Quota near threshold',
+  'SCANNING_FAILED': 'Scanning failed',
+  'SCANNING_COMPLETED': 'Scanning finished',
+};
+
 @Injectable()
 export class WebhookService {
   constructor(private http: HttpClient) { }
@@ -65,5 +79,12 @@ export class WebhookService {
     return this.http
       .get(`${CURRENT_BASE_HREF}/projects/${projectId}/webhook/events`)
       .pipe(catchError(error => observableThrowError(error)));
+  }
+
+  public eventTypeToText(eventType: string): string {
+    if (EVENT_TYPES_TEXT_MAP[eventType]) {
+      return EVENT_TYPES_TEXT_MAP[eventType];
+    }
+    return eventType;
   }
 }

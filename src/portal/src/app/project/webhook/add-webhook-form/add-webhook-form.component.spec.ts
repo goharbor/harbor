@@ -27,6 +27,9 @@ describe('AddWebhookFormComponent', () => {
         },
         testEndpoint() {
             return of(null);
+        },
+        eventTypeToText(eventType: string) {
+            return eventType;
         }
     };
     const mockMessageHandlerService = {

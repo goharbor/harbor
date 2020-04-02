@@ -5,6 +5,8 @@ import { SharedModule } from "../../../shared/shared.module";
 import { LastTriggerComponent } from "./last-trigger.component";
 import { LastTrigger } from "../webhook";
 import { SimpleChange } from "@angular/core";
+import { of } from "rxjs";
+import { WebhookService } from "../webhook.service";
 
 describe('LastTriggerComponent', () => {
   const mokedTriggers: LastTrigger[] = [
@@ -23,6 +25,11 @@ describe('LastTriggerComponent', () => {
       last_trigger_time: null
     }
   ];
+  const mockWebhookService = {
+    eventTypeToText(eventType: string) {
+      return eventType;
+    }
+  };
   let component: LastTriggerComponent;
   let fixture: ComponentFixture<LastTriggerComponent>;
   beforeEach(() => {
@@ -35,6 +42,7 @@ describe('LastTriggerComponent', () => {
       declarations: [
         LastTriggerComponent
       ],
+      providers: [{ provide: WebhookService, useValue: mockWebhookService }]
     });
   });
   beforeEach(() => {

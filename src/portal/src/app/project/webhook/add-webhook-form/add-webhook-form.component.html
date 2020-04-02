@@ -27,7 +27,7 @@
       <!-- notify type -->
       <clr-select-container>
         <label class="required">{{'WEBHOOK.NOTIFY_TYPE' | translate}}</label>
-        <select clrSelect name="notifyType" id="notify_type"  [(ngModel)]="webhook.targets[0].type" [disabled]="checking">
+        <select class="width-238" clrSelect name="notifyType" id="notify_type"  [(ngModel)]="webhook.targets[0].type" [disabled]="checking">
           <option *ngFor="let type of metadata?.notify_type" value="{{type}}">{{type}}</option>
         </select>
       </clr-select-container>
@@ -35,9 +35,9 @@
       <div class="clr-form-control">
         <label class="clr-control-label required">{{'WEBHOOK.EVENT_TYPE' | translate}}</label>
         <div class="clr-control-container clr-control-inline" [class.clr-error]="!hasEventType()">
-          <div class="clr-checkbox-wrapper" *ngFor="let item of metadata?.event_type">
+          <div class="clr-checkbox-wrapper width-7rem" *ngFor="let item of metadata?.event_type">
             <input type="checkbox" id="{{item}}" name="eventTypes" value="{{item}}" class="clr-checkbox" (change)="setEventType(item)" [checked]="getEventType(item)">
-            <label for="{{item}}" class="clr-control-label">{{item}}</label>
+            <label for="{{item}}" class="clr-control-label">{{eventTypeToText(item)}}</label>
           </div>
           <div class="clr-subtext-wrapper" *ngIf="!hasEventType()">
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
@@ -92,12 +92,12 @@
   </form>
   <div class="mt-1" *ngIf="!isModify">
       <button type="button" id="webhook-test-add" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
-      <button type="button" id="new-webhook-continue" class="btn btn-primary" [disabled]="!isValid" (click)="add()">{{'BUTTON.ADD' | translate}}</button>
       <button type="button" class="btn btn-outline" id="add-webhook-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+      <button type="button" id="new-webhook-continue" class="btn btn-primary" [disabled]="!isValid" (click)="add()">{{'BUTTON.ADD' | translate}}</button>
   </div>
   <div class="mt-1 bottom-btn" *ngIf="isModify">
       <button type="button" [clrLoading]="checkBtnState" class="btn btn-outline" id="webhook-test" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
-      <button type="button" class="btn btn-primary" id="edit-webhook-save" [disabled]="!isValid" (click)="save()">{{'BUTTON.SAVE' | translate}}</button>
       <button type="button" class="btn btn-outline" id="edit-webhook-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+      <button type="button" class="btn btn-primary" id="edit-webhook-save" [disabled]="!isValid" (click)="save()">{{'BUTTON.SAVE' | translate}}</button>
   </div>
 </div>
