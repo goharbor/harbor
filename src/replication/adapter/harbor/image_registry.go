@@ -146,7 +146,7 @@ func (a *adapter) listRepositories(project *project, filters []*model.Filter) ([
 
 func (a *adapter) listArtifacts(repository string, filters []*model.Filter) ([]*model.Artifact, error) {
 	project, repository := utils.ParseRepository(repository)
-	url := fmt.Sprintf("%s/api/%s/projects/%s/repositories/%s/artifacts?with_label=true",
+	url := fmt.Sprintf("%s/api/%s/projects/%s/repositories/%s/_self/artifacts?with_label=true",
 		a.getURL(), api.APIVersion, project, repository)
 	artifacts := []*artifact.Artifact{}
 	if err := a.client.GetAndIteratePagination(url, &artifacts); err != nil {

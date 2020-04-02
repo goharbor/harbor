@@ -39,7 +39,7 @@ func (artifact *Artifact) SetAdditionLink(addition, version string) {
 	}
 
 	projectName, repo := utils.ParseRepository(artifact.RepositoryName)
-	href := fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts/%s/additions/%s", version, projectName, repo, artifact.Digest, addition)
+	href := fmt.Sprintf("/api/%s/projects/%s/repositories/%s/_self/artifacts/%s/additions/%s", version, projectName, repo, artifact.Digest, addition)
 
 	artifact.AdditionLinks[addition] = &AdditionLink{HREF: href, Absolute: false}
 }

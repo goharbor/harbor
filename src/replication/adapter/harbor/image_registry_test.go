@@ -28,7 +28,7 @@ func TestFetchArtifacts(t *testing.T) {
 	server := test.NewServer([]*test.RequestHandlerMapping{
 		{
 			Method:  http.MethodGet,
-			Pattern: "/api/v2.0/projects/library/repositories/hello-world/artifacts",
+			Pattern: "/api/v2.0/projects/library/repositories/hello-world/_self/artifacts",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[
   {

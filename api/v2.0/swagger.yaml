@@ -16,6 +16,10 @@ consumes:
 securityDefinitions:
   basicAuth:
     type: basic
+# the "_self" suffix in the paths is used to avoid the conflict of repository name and URL path
+# e.g. the repository name can be "library/artifacts", we cannot distinguish the URL
+# "GET /projects/{project_name}/repositories/library/artifacts" is getting repository
+# or listing artifacts
 paths:
   /projects/{project_name}/repositories:
     get:
@@ -54,10 +58,6 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  # the _self suffix here is used to avoid the conflict of repository name and URL path
-  # e.g. the repository name can be "library/artifacts", we cannot distinguish the URL
-  # "GET /projects/{project_name}/repositories/library/artifacts" is getting repository
-  # or listing artifacts
   /projects/{project_name}/repositories/{repository_name}/_self:
     get:
       summary: Get repository
@@ -136,7 +136,7 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}/artifacts:
+  /projects/{project_name}/repositories/{repository_name}/_self/artifacts:
     get:
       summary: List artifacts
       description: List artifacts under the specific project and repository. Except the basic properties, the other supported queries in "q" includes "tags=*" to list only tagged artifacts, "tags=nil" to list only untagged artifacts, "tags=~v" to list artifacts whose tag fuzzy matches "v", "labels=(id1, id2)" to list artifacts that both labels with id1 and id2 are added to
@@ -234,7 +234,7 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}:
+  /projects/{project_name}/repositories/{repository_name}/_self/artifacts/{reference}:
     get:
       summary: Get the specific artifact
       description: Get the artifact specified by the reference under the project and repository. The reference can be digest or tag.
@@ -316,7 +316,7 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan:
+  /projects/{project_name}/repositories/{repository_name}/_self/artifacts/{reference}/scan:
     post:
       summary: Scan the artifact
       description: Scan the specified artifact
@@ -339,7 +339,7 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
+  /projects/{project_name}/repositories/{repository_name}/_self/artifacts/{reference}/scan/{report_id}/log:
     get:
       summary: Get the log of the scan report
       description: Get the log of the scan report
@@ -371,7 +371,7 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags:
+  /projects/{project_name}/repositories/{repository_name}/_self/artifacts/{reference}/tags:
     post:
       summary: Create tag
       description: Create a tag for the specified artifact
@@ -404,7 +404,7 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags/{tag_name}:
+  /projects/{project_name}/repositories/{repository_name}/_self/artifacts/{reference}/tags/{tag_name}:
     delete:
       summary: Delete tag
       description: Delete the tag of the specified artifact
@@ -428,7 +428,7 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/{addition}:
+  /projects/{project_name}/repositories/{repository_name}/_self/artifacts/{reference}/additions/{addition}:
     get:
       summary: Get the addition of the specific artifact
       description: Get the addition of the artifact specified by the reference under the project and repository.
@@ -465,7 +465,7 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels:
+  /projects/{project_name}/repositories/{repository_name}/_self/artifacts/{reference}/labels:
     post:
       summary: Add label to artifact
       description: Add label to the specified artiact.
@@ -498,7 +498,7 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels/{label_id}:
+  /projects/{project_name}/repositories/{repository_name}/_self/artifacts/{reference}/labels/{label_id}:
     delete:
       summary: Remove label from artifact
       description: Remove the label from the specified artiact.
@@ -529,7 +529,7 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}/tags:
+  /projects/{project_name}/repositories/{repository_name}/_self/tags:
     get:
       summary: List tags
       description: List tags under the specific project and repository.
