@@ -25,7 +25,8 @@ import (
 	"time"
 )
 
-var logger = New(os.Stdout, NewTextFormatter(), WarningLevel, 4)
+// NOTE: the default depth for the logger is 3 so that we can get the correct file and line when use the logger to log message
+var logger = New(os.Stdout, NewTextFormatter(), WarningLevel, 3)
 
 const srcSeparator = "harbor" + string(os.PathSeparator) + "src"
 
@@ -277,52 +278,52 @@ func (l *Logger) getLine() string {
 
 // Debug ...
 func Debug(v ...interface{}) {
-	logger.Debug(v...)
+	logger.WithDepth(4).Debug(v...)
 }
 
 // Debugf ...
 func Debugf(format string, v ...interface{}) {
-	logger.Debugf(format, v...)
+	logger.WithDepth(4).Debugf(format, v...)
 }
 
 // Info ...
 func Info(v ...interface{}) {
-	logger.Info(v...)
+	logger.WithDepth(4).Info(v...)
 }
 
 // Infof ...
 func Infof(format string, v ...interface{}) {
-	logger.Infof(format, v...)
+	logger.WithDepth(4).Infof(format, v...)
 }
 
 // Warning  ...
 func Warning(v ...interface{}) {
-	logger.Warning(v...)
+	logger.WithDepth(4).Warning(v...)
 }
 
 // Warningf ...
 func Warningf(format string, v ...interface{}) {
-	logger.Warningf(format, v...)
+	logger.WithDepth(4).Warningf(format, v...)
 }
 
 // Error ...
 func Error(v ...interface{}) {
-	logger.Error(v...)
+	logger.WithDepth(4).Error(v...)
 }
 
 // Errorf ...
 func Errorf(format string, v ...interface{}) {
-	logger.Errorf(format, v...)
+	logger.WithDepth(4).Errorf(format, v...)
 }
 
 // Fatal ...
 func Fatal(v ...interface{}) {
-	logger.Fatal(v...)
+	logger.WithDepth(4).Fatal(v...)
 }
 
 // Fatalf ...
 func Fatalf(format string, v ...interface{}) {
-	logger.Fatalf(format, v...)
+	logger.WithDepth(4).Fatalf(format, v...)
 }
 
 func line(callDepth int) string {

@@ -201,6 +201,24 @@ func TestErrorf(t *testing.T) {
 	}
 }
 
+func TestDefaultLoggerErrorf(t *testing.T) {
+	var (
+		expectedLevel = ErrorLevel.string()
+		expectLine    = "logger_test.go:214"
+		expectMsg     = "message"
+	)
+
+	buf := enter()
+	defer exit()
+
+	DefaultLogger().Errorf("%s", message)
+
+	str := buf.String()
+	if !contains(t, str, expectedLevel, expectLine, expectMsg) {
+		t.Errorf("unexpected message: %s, expected level: %s, expected line: %s, expected message: %s", str, expectedLevel, expectLine, expectMsg)
+	}
+}
+
 func enter() *bytes.Buffer {
 	b := make([]byte, 0, 32)
 	buf := bytes.NewBuffer(b)
