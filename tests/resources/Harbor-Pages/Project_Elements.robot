@@ -51,6 +51,7 @@ ${repo_list_spinner}  xpath=//clr-datagrid//clr-spinner
 ${repo_tag_1st_checkbox}  xpath=//clr-datagrid//clr-dg-row//clr-checkbox-wrapper
 ${tag_table_column_pull_command}  xpath=//clr-dg-column//span[contains(.,'Pull Command')]
 ${tag_table_column_vulnerabilities}  xpath=//clr-dg-column//span[contains(.,'Vulnerabilities')]
+${tag_table_column_os_arch}  xpath=//clr-dg-column//span[contains(.,'OS/ARCH')]
 ${tag_table_column_tag}  xpath=//clr-dg-column//span[contains(.,'Tag')]
 ${tag_table_column_size}  xpath=//clr-dg-column//span[contains(.,'Size')]
 ${tag_table_column_vulnerability}  xpath=//clr-dg-column//span[contains(.,'Vulnerability')]

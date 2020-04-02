@@ -693,7 +693,7 @@ Test Case - Push Docker Manifest Index and Display
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/index${d}
     Go Into Repo  test${d}/index${d}
-    Go Into Index
+    Retry Double Keywords When Error  Go Into Index  index_name=${null}  Page Should Contain Element  ${tag_table_column_os_arch}
     Page Should Contain Element  ${artifact_rows}  limit=2
 
 Test Case - Push CNAB Bundle and Display
@@ -711,3 +711,30 @@ Test Case - Push CNAB Bundle and Display
 
     Go Into Repo  test${d}/cnab${d}
     Wait Until Page Contains  cnab_tag${d}
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/cnab${d}
+    Go Into Repo  test${d}/cnab${d}
+    Retry Double Keywords When Error  Go Into Index  index_name=${null}  Page Should Contain Element  ${tag_table_column_os_arch}
+    Page Should Contain Element  ${artifact_rows}  limit=3
+
+Test Case - Push Helm Chart and Display
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    ${chart_file}=  Set Variable  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz
+    ${archive}=  Set Variable  harbor/
+    ${verion}=  Set Variable  0.2.0
+    ${repo_name}=  Set Variable  harbor_chart_test
+
+    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
+    Create An New Project  test${d}
+
+    Helm Chart Push  ${ip}  user010  Test1@34  ${chart_file}  ${archive}  test${d}  ${repo_name}  ${verion}
+
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/${repo_name}
+
+    Go Into Repo  test${d}/${repo_name}
+    Wait Until Page Contains  ${repo_name}
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/${repo_name}
+    Retry Double Keywords When Error  Go Into Repo  test${d}/${repo_name}  Page Should Contain Element  ${tag_table_column_vulnerabilities}

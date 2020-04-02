@@ -19,6 +19,6 @@ Documentation  This resource provides any keywords related to the Harbor private
 ${artifact_action_xpath}  //clr-dg-action-bar/clr-dropdown/span[contains(@class,'dropdown-toggle')]
 ${artifact_action_delete_xpath}  //clr-dropdown-menu//div[contains(.,'Delete')]
 ${artifact_action_copy_xpath}  //clr-dropdown-menu//div[contains(.,'Copy') and @aria-label='retag']
-${artifact_achieve_icon}  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256')]//clr-dg-cell[1]//clr-tooltip//clr-icon
+${artifact_achieve_icon}  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256')]//clr-dg-cell[1]//clr-tooltip//a
 ${artifact_rows}  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256')]
 

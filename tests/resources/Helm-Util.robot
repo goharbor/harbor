@@ -33,3 +33,9 @@ Helm Repo Push
     Run  cd ${current_dir}
     Run  wget ${harbor_chart_file_url}
     Wait Unitl Command Success  ${helm_cmd} push --ca-file=/helm_ca/server.crt --username=${user} --password=${pwd} ${chart_filename} ${helm_repo_name}
+
+Helm Chart Push
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${chart_file}  ${archive}  ${project}  ${repo_name}  ${verion}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/helm_push_chart.sh ${ip} ${user} ${pwd} ${chart_file} ${archive} ${project} ${repo_name} ${verion}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
