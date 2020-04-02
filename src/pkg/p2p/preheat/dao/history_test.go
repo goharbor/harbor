@@ -3,6 +3,8 @@ package dao
 import (
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/q"
+
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -94,14 +96,14 @@ func (hs *historySuite) TestListHistories() {
 	assert.Equal(t, 2, len(histories))
 
 	// limit 1
-	total, histories, err = ListHistoryRecords(&ListHistoryQuery{Page: 1, PageSize: 1})
+	total, histories, err = ListHistoryRecords(&q.Query{PageNumber: 1, PageSize: 1})
 	assert.Nil(t, err)
 	assert.Equal(t, 2, int(total))
 	assert.Equal(t, 1, len(histories))
 	assert.Equal(t, defaultHistory.ID, histories[0].ID)
 
 	// keyword search
-	total, histories, err = ListHistoryRecords(&ListHistoryQuery{Keyword: "java"})
+	total, histories, err = ListHistoryRecords(&q.Query{Keywords: map[string]interface{}{"image": &q.FuzzyMatchValue{Value: "java"}}})
 	assert.Nil(t, err)
 	assert.Equal(t, 1, int(total))
 	assert.Equal(t, 1, len(histories))

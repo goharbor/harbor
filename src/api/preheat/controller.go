@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib/q"
+
 	tk "github.com/docker/distribution/registry/auth/token"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
@@ -38,12 +40,12 @@ type Controller interface {
 
 	// List all the setup instances of distribution providers
 	//
-	// params *models.QueryParam : parameters for querying
+	// params *q.Query : parameters for querying
 	//
-	// If succeed, an provider instance list will be returned.
+	// If succeed, matched provider instance list will be returned.
 	// Otherwise, a non nil error will be returned
 	//
-	ListInstances(params *models.QueryParam) (int64, []*models.Metadata, error)
+	ListInstances(query *q.Query) (int64, []*models.Metadata, error)
 
 	// Get the metadata of the specified instance
 	//
@@ -90,9 +92,9 @@ type Controller interface {
 
 	// Load the history records on top of the query parameters.
 	//
-	// params *models.QueryParam : parameters for querying
+	// query *q.Query : parameters for querying
 	//
-	LoadHistoryRecords(params *models.QueryParam) (int64, []*models.HistoryRecord, error)
+	LoadHistoryRecords(query *q.Query) (int64, []*models.HistoryRecord, error)
 }
 
 // CoreController is the default implementation of Controller interface.
@@ -132,8 +134,8 @@ func (cc *CoreController) GetAvailableProviders() ([]*provider.Metadata, error) 
 }
 
 // ListInstances implements @Controller.ListInstances
-func (cc *CoreController) ListInstances(params *models.QueryParam) (int64, []*models.Metadata, error) {
-	return cc.iManager.List(params)
+func (cc *CoreController) ListInstances(query *q.Query) (int64, []*models.Metadata, error) {
+	return cc.iManager.List(query)
 }
 
 // CreateInstance implements @Controller.CreateInstance
@@ -301,8 +303,8 @@ func (cc *CoreController) PreheatImages(images ...models.ImageRepository) (Compo
 }
 
 // LoadHistoryRecords implements @Controller.LoadHistoryRecords
-func (cc *CoreController) LoadHistoryRecords(params *models.QueryParam) (int64, []*models.HistoryRecord, error) {
-	return cc.hManager.LoadHistories(params)
+func (cc *CoreController) LoadHistoryRecords(query *q.Query) (int64, []*models.HistoryRecord, error) {
+	return cc.hManager.LoadHistories(query)
 }
 
 // GetInstance implements @Controller.GetInstance

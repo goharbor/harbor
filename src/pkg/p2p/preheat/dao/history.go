@@ -3,6 +3,8 @@ package dao
 import (
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
+	liborm "github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
 )
 
@@ -56,17 +58,19 @@ func DeleteHistoryRecord(id int64) error {
 }
 
 // ListHistoryRecords lists history records by query parmas.
-func ListHistoryRecords(query *ListHistoryQuery) (int64, []*models.HistoryRecord, error) {
-	o := dao.GetOrmer()
-	qs := o.QueryTable(&models.HistoryRecord{})
-
-	if query != nil && len(query.Keyword) > 0 {
-		qs = qs.Filter("image__contains", query.Keyword)
+func ListHistoryRecords(query *q.Query) (int64, []*models.HistoryRecord, error) {
+	qs, err := liborm.WithFilters(liborm.NewContext(nil, dao.GetOrmer()), &models.HistoryRecord{}, query)
+	if err != nil {
+		return 0, nil, err
 	}
+
 	total, err := qs.Count()
+	if err != nil {
+		return 0, nil, err
+	}
 
 	if query != nil {
-		offset := (query.Page - 1) * query.PageSize
+		offset := (query.PageNumber - 1) * query.PageSize
 		qs = qs.Offset(offset).Limit(query.PageSize)
 	}
 

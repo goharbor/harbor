@@ -3,6 +3,8 @@ package dao
 import (
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/q"
+
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -93,14 +95,14 @@ func (is *instanceSuite) TestListInstances() {
 	assert.Len(t, instances, 2)
 
 	// limit 1
-	total, instances, err = ListInstances(&ListInstanceQuery{PageSize: 1, Page: 1})
+	total, instances, err = ListInstances(&q.Query{PageSize: 1, PageNumber: 1})
 	assert.Nil(t, err)
 	assert.Equal(t, 2, int(total))
 	assert.Len(t, instances, 1)
 	assert.Equal(t, defaultInstance.ID, instances[0].ID)
 
 	// keyword search
-	total, instances, err = ListInstances(&ListInstanceQuery{Keyword: "kraken"})
+	total, instances, err = ListInstances(&q.Query{Keywords: map[string]interface{}{"name": &q.FuzzyMatchValue{Value: "kraken"}}})
 	assert.Nil(t, err)
 	assert.Equal(t, 1, int(total))
 	assert.Len(t, instances, 1)
