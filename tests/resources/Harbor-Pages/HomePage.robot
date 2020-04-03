@@ -31,7 +31,8 @@ Sign In Harbor
     Retry Button Click  ${login_btn}
     Log To Console  ${user}
     Retry Wait Element  xpath=//span[contains(., '${user}')]
-    Run Keyword If  ${is_close_scan_plugin_mesg}==${true}  Run Keyword And Ignore Error  Retry Element Click  ${close_scan_plugin_mesg}
+    Click Element If Visible  ${close_scan_plugin_mesg}
+    #Run Keyword If  ${is_close_scan_plugin_mesg}==${true}  Run Keyword And Ignore Error  Retry Element Click  ${close_scan_plugin_mesg}
 
 Capture Screenshot And Source
     Capture Page Screenshot

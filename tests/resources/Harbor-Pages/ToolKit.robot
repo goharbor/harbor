@@ -74,6 +74,7 @@ Multi-delete Object
 Multi-delete User
     [Arguments]    @{obj}
     :For  ${obj}  in  @{obj}
+    \    Sleep  1
     \    Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//label
     Retry Element Click  ${member_action_xpath}
     Retry Element Click  //*[@id='deleteUser']
@@ -83,6 +84,7 @@ Multi-delete User
 Multi-delete Member
     [Arguments]    @{obj}
     :For  ${obj}  in  @{obj}
+    \    Sleep  1
     \    Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//clr-checkbox-wrapper/label
     Retry Double Keywords When Error  Retry Element Click  ${member_action_xpath}  Retry Wait Until Page Contains Element  ${delete_action_xpath}
     Retry Double Keywords When Error  Retry Element Click  ${delete_action_xpath}  Retry Wait Until Page Contains Element  ${delete_btn}

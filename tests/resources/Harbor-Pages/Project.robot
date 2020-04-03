@@ -205,6 +205,7 @@ Go Into Repo
     \    Sleep  2
     Capture Page Screenshot
     Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}  Retry Wait Until Page Not Contains Element  ${repo_name_element}
+    Capture Page Screenshot
     Retry Wait Element  ${tag_table_column_pull_command}
     Retry Wait Element  ${tag_images_btn}
     Capture Page Screenshot
