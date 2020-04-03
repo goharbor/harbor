@@ -19,10 +19,16 @@ The root key is generated at: `/root/.docker/trust/private/root_keys`
 You will also be asked to enter a new passphrase for the image. This is generated at `/root/.docker/trust/private/tuf_keys/[registry name] /[imagepath]`.
 If you are using a self-signed cert, make sure to copy the CA cert into `/etc/docker/certs.d/10.117.169.182` and `$HOME/.docker/tls/10.117.169.182:4443/`. When an image is signed, it is indicated in the Web UI.
 
+When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) is displayed instead.
+
+If you want to remove a tag signature from harbor, you can use 'notary remove' command:
+
+```sh
+notary remove -p 10.117.169.182/libary/alpine latest
+```
+
 {{< note >}}
 Replace "10.117.169.182" with the IP address or domain name of your Harbor node. In order to use content trust, HTTPS must be enabled in Harbor.
 {{< /note >}}
-
-When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) is displayed instead.
 
 ![browse project](../../../img/content-trust.png)
