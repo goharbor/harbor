@@ -268,6 +268,11 @@ services:
         source: {{internal_tls.job_service_key_path}}
         target: /etc/harbor/ssl/job_service.key
 {% endif %}
+{% if protocol == 'https' %}
+      - type: bind
+        source: {{data_volume}}/secret/cert/server.crt
+        target: /harbor_cust_cert/harbor_ca.crt
+{% endif %}
     networks:
       - harbor
 {% if with_clair %}
