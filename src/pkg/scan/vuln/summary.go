@@ -45,6 +45,11 @@ type NativeReportSummary struct {
 	CompleteCount int `json:"-"`
 }
 
+// IsSuccessStatus returns true when the scan status is success
+func (sum *NativeReportSummary) IsSuccessStatus() bool {
+	return sum.ScanStatus == job.SuccessStatus.String()
+}
+
 // Merge ...
 func (sum *NativeReportSummary) Merge(another *NativeReportSummary) *NativeReportSummary {
 	r := &NativeReportSummary{}
