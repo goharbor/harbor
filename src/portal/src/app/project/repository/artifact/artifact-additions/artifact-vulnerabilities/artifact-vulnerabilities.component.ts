@@ -99,7 +99,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
           res  => {
             this.scan_overview = res;
             if (this.scan_overview && this.scan_overview[DEFAULT_SUPPORTED_MIME_TYPE]) {
-              this.scanningResults = this.scan_overview[DEFAULT_SUPPORTED_MIME_TYPE].vulnerabilities;
+              this.scanningResults = this.scan_overview[DEFAULT_SUPPORTED_MIME_TYPE].vulnerabilities || [];
               // sort
               if (this.scanningResults) {
                 this.scanningResults.sort(((a, b) => this.getLevel(b) - this.getLevel(a)));

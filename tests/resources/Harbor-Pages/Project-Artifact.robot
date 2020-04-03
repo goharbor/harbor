@@ -17,3 +17,28 @@ Documentation  This resource provides any keywords related to the Harbor private
 Resource  ../../resources/Util.robot
 
 *** Keywords ***
+Go Into Artifact
+    [Arguments]  ${tag}
+    Retry Wait Until Page Not Contains Element  ${artifact_list_spinner}
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${tag}')]//a[contains(.,'sha256')]
+    Retry Wait Until Page Contains Element   ${artifact_tag_component}
+Should Contain Tag
+    [Arguments]  ${tag}
+    Retry Wait Until Page Contains Element   xpath=//artifact-tag//clr-dg-row//clr-dg-cell[contains(.,'${tag}')]
+
+Should Not Contain Tag
+    [Arguments]  ${tag}
+    Retry Wait Until Page Not Contains Element   xpath=//artifact-tag//clr-dg-row//clr-dg-cell[contains(.,'${tag}')]
+
+Add A New Tag
+    [Arguments]  ${tag}
+    Retry Element Click   ${add_tag_button}
+    Retry Text Input   ${tag_name_xpath}   ${tag}
+    Retry Element Click   ${add_ok_button}
+
+Delete A Tag
+    [Arguments]  ${tag}
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${tag}')]//clr-checkbox-wrapper//label[contains(@class,'clr-control-label')]
+    Retry Element Click    ${delete_tag_button}
+    Retry Wait Until Page Contains Element  ${dialog_delete_button}
+    Retry Element Click  ${dialog_delete_button}

@@ -575,6 +575,24 @@ Test Case - Webhook CRUD
     Delete A Webhook  newWebhook${d}
     Close Browser
 
+Test Case - Tag CRUD
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New Project  project${d}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
+    Switch To Project Repo
+    Go Into Repo   hello-world
+    Go Into Artifact   latest
+    Should Contain Tag   latest
+    # add more than one tag
+    Add A New Tag   123
+    Should Contain Tag   123
+    Add A New Tag   456
+    Should Contain Tag   456
+    Delete A Tag   latest
+    Should Not Contain Tag   latest
+
 Test Case - Tag Retention
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
