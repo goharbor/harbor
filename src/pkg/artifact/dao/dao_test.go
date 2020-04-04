@@ -379,8 +379,8 @@ func (d *daoTestSuite) TestUpdate() {
 	now := time.Now()
 	err := d.dao.Update(d.ctx, &Artifact{
 		ID:       d.parentArtID,
-		PushTime: now,
-	}, "PushTime")
+		PullTime: now,
+	}, "PullTime")
 	d.Require().Nil(err)
 
 	artifact, err := d.dao.Get(d.ctx, d.parentArtID)
