@@ -34,7 +34,6 @@ func New() http.Handler {
 		AuditlogAPI:   newAuditLogAPI(),
 		ScanAPI:       newScanAPI(),
 		ProjectAPI:    newProjectAPI(),
-		TagAPI:        newTagAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

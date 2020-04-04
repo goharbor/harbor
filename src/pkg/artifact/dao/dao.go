@@ -318,7 +318,10 @@ func setTagQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, e
 		qs = qs.FilterRaw("id", sql)
 		return qs, nil
 	}
-	// exact match, only handle "*" for listing tagged artifacts and "nil" for listing untagged artifacts
+	// exact match:
+	// "*" for listing tagged artifacts
+	// "nil" for listing untagged artifacts
+	// others for get the artifact with the specified tag
 	s, ok := tags.(string)
 	if ok {
 		if s == "*" {
@@ -329,9 +332,15 @@ func setTagQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, e
 			qs = qs.FilterRaw("id", untagged)
 			return qs, nil
 		}
+		sql := fmt.Sprintf(`IN (
+		SELECT DISTINCT art.id FROM artifact art
+		JOIN tag ON art.id=tag.artifact_id
+		WHERE tag.name = '%s')`, orm.Escape(s))
+		qs = qs.FilterRaw("id", sql)
+		return qs, nil
 	}
 	return qs, errors.New(nil).WithCode(errors.BadRequestCode).
-		WithMessage(`the value of "tags" query can only be fuzzy match value or exact match value with "*" and "nil"`)
+		WithMessage(`the value of "tags" query can only be fuzzy match value or exact match value`)
 }
 
 // handle query string: q=labels=(1 2 3)

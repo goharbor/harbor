@@ -139,7 +139,7 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts:
     get:
       summary: List artifacts
-      description: List artifacts under the specific project and repository. Except the basic properties, the other supported queries in "q" includes "tags=*" to list only tagged artifacts, "tags=nil" to list only untagged artifacts, "tags=~v" to list artifacts whose tag fuzzy matches "v", "labels=(id1, id2)" to list artifacts that both labels with id1 and id2 are added to
+      description: List artifacts under the specific project and repository. Except the basic properties, the other supported queries in "q" includes "tags=*" to list only tagged artifacts, "tags=nil" to list only untagged artifacts, "tags=~v" to list artifacts whose tag fuzzy matches "v", "tags=v" to list artifact whose tag exactly matches "v", "labels=(id1, id2)" to list artifacts that both labels with id1 and id2 are added to
       tags:
         - artifact
       operationId: listArtifacts
@@ -404,6 +404,56 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
+    get:
+      summary: List tags
+      description: List tags of the specific artifact
+      tags:
+        - artifact
+      operationId: listTags
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: with_signature
+          in: query
+          description: Specify whether the signature is included inside the returning tags
+          type: boolean
+          required: false
+          default: false
+        - name: with_immutable_status
+          in: query
+          description: Specify whether the immutable status is included inside the returning tags
+          type: boolean
+          required: false
+          default: false
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of tags
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Tag'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags/{tag_name}:
     delete:
       summary: Delete tag
@@ -527,56 +577,6 @@ paths:
           $ref: '#/responses/404'
         '409':
           $ref: '#/responses/409'
-        '500':
-          $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}/tags:
-    get:
-      summary: List tags
-      description: List tags under the specific project and repository.
-      tags:
-        - tag
-      operationId: listTags
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectName'
-        - $ref: '#/parameters/repositoryName'
-        - $ref: '#/parameters/query'
-        - $ref: '#/parameters/page'
-        - $ref: '#/parameters/pageSize'
-        - name: with_signature
-          in: query
-          description: Specify whether the signature is included inside the returning tags
-          type: boolean
-          required: false
-          default: false
-        - name: with_immutable_status
-          in: query
-          description: Specify whether the immutable status is included inside the returning tags
-          type: boolean
-          required: false
-          default: false
-      responses:
-        '200':
-          description: Success
-          headers:
-            X-Total-Count:
-              description: The total count of tags
-              type: integer
-            Link:
-              description: Link refers to the previous page and next page
-              type: string
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Tag'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
   /audit-logs:
