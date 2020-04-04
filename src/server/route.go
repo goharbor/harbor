@@ -24,9 +24,14 @@ import (
 	"github.com/goharbor/harbor/src/core/service/notifications/jobs"
 	"github.com/goharbor/harbor/src/core/service/notifications/scheduler"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/server/router"
+	"net/http"
 )
 
 func registerRoutes() {
+	// API version
+	router.NewRoute().Method(http.MethodGet).Path("/api/version").HandlerFunc(GetAPIVersion)
+
 	// Controller API:
 	beego.Router("/c/login", &controllers.CommonController{}, "post:Login")
 	beego.Router("/c/log_out", &controllers.CommonController{}, "get:LogOut")

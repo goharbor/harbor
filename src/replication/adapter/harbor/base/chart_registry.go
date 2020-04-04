@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package harbor
+package base
 
 import (
 	"bytes"
@@ -23,9 +23,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/goharbor/harbor/src/replication/filter"
-
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
@@ -46,17 +45,18 @@ type chartVersionMetadata struct {
 	URLs []string `json:"urls"`
 }
 
-func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {
-	projects, err := a.listProjects(filters)
+// FetchCharts fetches charts
+func (a *Adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {
+	projects, err := a.ListProjects(filters)
 	if err != nil {
 		return nil, err
 	}
 
 	resources := []*model.Resource{}
 	for _, project := range projects {
-		url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.getURL(), project.Name)
+		url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.url, project.Name)
 		repositories := []*model.Repository{}
-		if err := a.client.Get(url, &repositories); err != nil {
+		if err := a.httpClient.Get(url, &repositories); err != nil {
 			return nil, err
 		}
 		if len(repositories) == 0 {
@@ -72,9 +72,9 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 
 		for _, repository := range repositories {
 			name := strings.SplitN(repository.Name, "/", 2)[1]
-			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.getURL(), project.Name, name)
+			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.url, project.Name, name)
 			versions := []*chartVersion{}
-			if err := a.client.Get(url, &versions); err != nil {
+			if err := a.httpClient.Get(url, &versions); err != nil {
 				return nil, err
 			}
 			if len(versions) == 0 {
@@ -102,7 +102,7 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 			for _, artifact := range artifacts {
 				resources = append(resources, &model.Resource{
 					Type:     model.ResourceTypeChart,
-					Registry: a.registry,
+					Registry: a.Registry,
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{
 							Name:     repository.Name,
@@ -117,7 +117,8 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 	return resources, nil
 }
 
-func (a *adapter) ChartExist(name, version string) (bool, error) {
+// ChartExist checks the existence of the chart
+func (a *Adapter) ChartExist(name, version string) (bool, error) {
 	_, err := a.getChartInfo(name, version)
 	if err == nil {
 		return true, nil
@@ -128,20 +129,21 @@ func (a *adapter) ChartExist(name, version string) (bool, error) {
 	return false, err
 }
 
-func (a *adapter) getChartInfo(name, version string) (*chartVersionDetail, error) {
+func (a *Adapter) getChartInfo(name, version string) (*chartVersionDetail, error) {
 	project, name, err := parseChartName(name)
 	if err != nil {
 		return nil, err
 	}
 	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.url, project, name, version)
 	info := &chartVersionDetail{}
-	if err = a.client.Get(url, info); err != nil {
+	if err = a.httpClient.Get(url, info); err != nil {
 		return nil, err
 	}
 	return info, nil
 }
 
-func (a *adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
+// DownloadChart downloads the specific chart
+func (a *Adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
 	info, err := a.getChartInfo(name, version)
 	if err != nil {
 		return nil, err
@@ -162,7 +164,7 @@ func (a *adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := a.client.Do(req)
+	resp, err := a.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +178,8 @@ func (a *adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
-func (a *adapter) UploadChart(name, version string, chart io.Reader) error {
+// UploadChart uploads the chart
+func (a *Adapter) UploadChart(name, version string, chart io.Reader) error {
 	project, name, err := parseChartName(name)
 	if err != nil {
 		return err
@@ -200,7 +203,7 @@ func (a *adapter) UploadChart(name, version string, chart io.Reader) error {
 		return err
 	}
 	req.Header.Set("Content-Type", w.FormDataContentType())
-	resp, err := a.client.Do(req)
+	resp, err := a.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -219,13 +222,14 @@ func (a *adapter) UploadChart(name, version string, chart io.Reader) error {
 	return nil
 }
 
-func (a *adapter) DeleteChart(name, version string) error {
+// DeleteChart deletes the chart
+func (a *Adapter) DeleteChart(name, version string) error {
 	project, name, err := parseChartName(name)
 	if err != nil {
 		return err
 	}
 	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.url, project, name, version)
-	return a.client.Delete(url)
+	return a.httpClient.Delete(url)
 }
 
 // TODO merge this method and utils.ParseRepository?
