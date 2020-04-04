@@ -10,7 +10,7 @@ RUN chown -R harbor:harbor /etc/pki/tls/certs \
     && chown harbor:harbor /home/harbor/install_cert.sh && chmod u+x /home/harbor/install_cert.sh \
     && chown harbor:harbor /usr/bin/registry && chmod u+x /usr/bin/registry
 
-HEALTHCHECK CMD curl 127.0.0.1:5000/
+HEALTHCHECK CMD curl --fail -s http://127.0.0.1:5000 || curl -k --fail -s https://127.0.0.1:5443 || exit 1
 
 USER harbor
 

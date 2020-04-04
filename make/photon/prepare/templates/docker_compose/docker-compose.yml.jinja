@@ -480,7 +480,7 @@ services:
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /harbor_cust_cert/harbor_internal_ca.crt 
+        target: /harbor_cust_cert/harbor_internal_ca.crt
       - type: bind
         source: {{internal_tls.clair_crt_path}}
         target: /etc/harbor/ssl/clair.crt
@@ -559,7 +559,7 @@ services:
     volumes:
       - type: bind
         source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /harbor_cust_cert/harbor_internal_ca.crt 
+        target: /harbor_cust_cert/harbor_internal_ca.crt
       - type: bind
         source: {{internal_tls.trivy_adapter_crt_path}}
         target: /etc/harbor/ssl/trivy_adapter.crt
@@ -598,7 +598,7 @@ services:
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /etc/harbor/ssl/harbor_internal_ca.crt
+        target: /harbor_cust_cert/harbor_internal_ca.crt
       - type: bind
         source: {{internal_tls.chartmuseum_crt_path}}
         target: /etc/harbor/ssl/chartmuseum.crt
