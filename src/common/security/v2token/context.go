@@ -24,7 +24,7 @@ type tokenSecurityCtx struct {
 }
 
 func (t *tokenSecurityCtx) Name() string {
-	return "internal_token"
+	return "v2token"
 }
 
 func (t *tokenSecurityCtx) IsAuthenticated() bool {
