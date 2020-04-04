@@ -100,9 +100,9 @@ func (b *baseHandlerTestSuite) TestLinks() {
 	links = b.base.Links(nil, url, 3, 2, 1)
 	b.Require().Len(links, 2)
 	b.Equal("prev", links[0].Rel)
-	b.Equal("http://localhost/api/library/hello-world/artifacts?page=1&page_size=1&q=a=~b", links[0].URL)
+	b.Equal("http://localhost/api/library%252Fhello-world/artifacts?page=1&page_size=1&q=a=~b", links[0].URL)
 	b.Equal("next", links[1].Rel)
-	b.Equal("http://localhost/api/library/hello-world/artifacts?page=3&page_size=1&q=a=~b", links[1].URL)
+	b.Equal("http://localhost/api/library%252Fhello-world/artifacts?page=3&page_size=1&q=a=~b", links[1].URL)
 }
 
 func TestBaseHandler(t *testing.T) {

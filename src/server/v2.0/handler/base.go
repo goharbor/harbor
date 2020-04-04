@@ -139,12 +139,6 @@ func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, page
 		return links
 	}
 	ul := *u
-	// try to unescape the repository name which contains escaped slashes
-	if escapedPath, err := url.PathUnescape(ul.Path); err == nil {
-		ul.Path = escapedPath
-	} else {
-		log.Errorf("failed to unescape the path %s: %v", ul.Path, err)
-	}
 	// prev
 	if pageNumber > 1 && (pageNumber-1)*pageSize < total {
 		q := ul.Query()
