@@ -26,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/controller/chartmuseum"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/q"
 	dr "github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/graph-gophers/dataloader"
@@ -60,7 +59,6 @@ func (d *driver) HardLimits(ctx context.Context) types.ResourceList {
 	}
 
 	return types.ResourceList{
-		types.ResourceCount:   d.cfg.Get(common.CountPerProject).GetInt64(),
 		types.ResourceStorage: d.cfg.Get(common.StoragePerProject).GetInt64(),
 	}
 }
@@ -87,7 +85,6 @@ func (d *driver) Load(ctx context.Context, key string) (dr.RefObject, error) {
 
 func (d *driver) Validate(hardLimits types.ResourceList) error {
 	resources := map[types.ResourceName]bool{
-		types.ResourceCount:   true,
 		types.ResourceStorage: true,
 	}
 
@@ -116,23 +113,12 @@ func (d *driver) CalculateUsage(ctx context.Context, key string) (types.Resource
 		return nil, err
 	}
 
-	// HACK: base=* in KeyWords to filter all artifacts
-	artifactsCount, err := d.artifactCtl.Count(ctx, q.New(q.KeyWords{"project_id": projectID, "base": "*"}))
-	if err != nil {
-		return nil, err
-	}
-
-	chartsCount, err := d.chartCtl.Count(ctx, projectID)
-	if err != nil {
-		return nil, err
-	}
-
 	size, err := d.blobCtl.CalculateTotalSizeByProject(ctx, projectID, true)
 	if err != nil {
 		return nil, err
 	}
 
-	return types.ResourceList{types.ResourceCount: artifactsCount + chartsCount, types.ResourceStorage: size}, nil
+	return types.ResourceList{types.ResourceStorage: size}, nil
 }
 
 func newDriver() dr.Driver {

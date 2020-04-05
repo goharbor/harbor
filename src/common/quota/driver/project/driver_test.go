@@ -31,7 +31,7 @@ type DriverSuite struct {
 func (suite *DriverSuite) TestHardLimits() {
 	driver := newDriver()
 
-	suite.Equal(types.ResourceList{types.ResourceCount: -1, types.ResourceStorage: -1}, driver.HardLimits())
+	suite.Equal(types.ResourceList{types.ResourceStorage: -1}, driver.HardLimits())
 }
 
 func (suite *DriverSuite) TestLoad() {
@@ -59,11 +59,9 @@ func (suite *DriverSuite) TestLoad() {
 func (suite *DriverSuite) TestValidate() {
 	driver := newDriver()
 
-	suite.Nil(driver.Validate(types.ResourceList{types.ResourceCount: 1, types.ResourceStorage: 1024}))
 	suite.Error(driver.Validate(types.ResourceList{}))
-	suite.Error(driver.Validate(types.ResourceList{types.ResourceCount: 1}))
-	suite.Error(driver.Validate(types.ResourceList{types.ResourceCount: 1, types.ResourceStorage: 0}))
-	suite.Error(driver.Validate(types.ResourceList{types.ResourceCount: 1, types.ResourceName("foo"): 1}))
+	suite.Error(driver.Validate(types.ResourceList{types.ResourceStorage: 0}))
+	suite.Error(driver.Validate(types.ResourceList{types.ResourceName("foo"): 1}))
 }
 
 func TestMain(m *testing.M) {

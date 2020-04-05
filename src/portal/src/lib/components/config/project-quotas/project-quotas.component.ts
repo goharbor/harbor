@@ -19,7 +19,6 @@ import { QuotaService } from "../../../services/quota.service";
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 const quotaSort = {
-  count: 'used.count',
   storage: "used.storage",
   sortType: 'string'
 };
@@ -56,7 +55,6 @@ export class ProjectQuotasComponent implements OnChanges {
     this.config = cfg;
     this.configChange.emit(this.config);
   }
-  countComparator: Comparator<Quota> = new CustomComparator<Quota>(quotaSort.count, quotaSort.sortType);
   storageComparator: Comparator<Quota> = new CustomComparator<Quota>(quotaSort.storage, quotaSort.sortType);
   selectedRow: Quota[] = [];
 
@@ -71,13 +69,12 @@ export class ProjectQuotasComponent implements OnChanges {
     if (this.selectedRow && this.selectedRow.length === 1) {
       const defaultTexts = [this.translate.get('QUOTA.EDIT_PROJECT_QUOTAS')
         , this.translate.get('QUOTA.SET_QUOTAS', { params: this.selectedRow[0].ref.name })
-        , this.translate.get('QUOTA.COUNT_QUOTA'), this.translate.get('QUOTA.STORAGE_QUOTA')];
+        , this.translate.get('QUOTA.STORAGE_QUOTA')];
       forkJoin(...defaultTexts).subscribe(res => {
         const defaultTextsObj = {
           editQuota: res[0],
           setQuota: res[1],
-          countQuota: res[2],
-          storageQuota: res[3],
+          storageQuota: res[2],
           quotaHardLimitValue: this.selectedRow[0],
           isSystemDefaultQuota: false
         };
@@ -88,13 +85,12 @@ export class ProjectQuotasComponent implements OnChanges {
 
   editDefaultQuota(quotaHardLimitValue: QuotaHardLimitInterface) {
     const defaultTexts = [this.translate.get('QUOTA.EDIT_DEFAULT_PROJECT_QUOTAS'), this.translate.get('QUOTA.SET_DEFAULT_QUOTAS')
-      , this.translate.get('QUOTA.COUNT_DEFAULT_QUOTA'), this.translate.get('QUOTA.STORAGE_DEFAULT_QUOTA')];
+      , this.translate.get('QUOTA.STORAGE_DEFAULT_QUOTA')];
     forkJoin(...defaultTexts).subscribe(res => {
       const defaultTextsObj = {
         editQuota: res[0],
         setQuota: res[1],
-        countQuota: res[2],
-        storageQuota: res[3],
+        storageQuota: res[2],
         quotaHardLimitValue: quotaHardLimitValue,
         isSystemDefaultQuota: true
       };
@@ -113,9 +109,7 @@ export class ProjectQuotasComponent implements OnChanges {
   getQuotaChanges(allChanges) {
     let changes = {};
     for (let prop in allChanges) {
-      if (prop === 'storage_per_project'
-        || prop === 'count_per_project'
-      ) {
+      if (prop === 'storage_per_project') {
         changes[prop] = allChanges[prop];
       }
     }
@@ -123,7 +117,6 @@ export class ProjectQuotasComponent implements OnChanges {
   }
 
   public saveConfig(configQuota): void {
-    this.allConfig.count_per_project.value = configQuota.count;
     this.allConfig.storage_per_project.value = +configQuota.storage === QuotaUnlimited ?
       configQuota.storage : getByte(configQuota.storage, configQuota.storageUnit);
     let changes = this.getChanges();
@@ -157,10 +150,9 @@ export class ProjectQuotasComponent implements OnChanges {
     }
   }
   saveCurrentQuota(event) {
-    let count = +event.formValue.count;
     let storage = +event.formValue.storage === QuotaUnlimited ?
       +event.formValue.storage : getByte(+event.formValue.storage, event.formValue.storageUnit);
-    let rep: QuotaHard = { hard: { count, storage } };
+    let rep: QuotaHard = { hard: { storage } };
     this.loading = true;
     this.quotaService.updateQuota(event.id, rep).subscribe(res => {
       this.editQuotaDialog.openEditQuota = false;
@@ -176,8 +168,7 @@ export class ProjectQuotasComponent implements OnChanges {
     const storageNumberAndUnit = this.allConfig.storage_per_project ? this.allConfig.storage_per_project.value : QuotaUnlimited;
     const storageLimit = storageNumberAndUnit;
     const storageUnit = this.getIntegerAndUnit(storageNumberAndUnit, 0).partCharacterHard;
-    const countLimit = this.allConfig.count_per_project ? this.allConfig.count_per_project.value  : QuotaUnlimited;
-    this.quotaHardLimitValue = { storageLimit, storageUnit, countLimit };
+    this.quotaHardLimitValue = { storageLimit, storageUnit };
   }
   getQuotaList(state: State) {
     if (!state || !state.page) {

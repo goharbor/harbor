@@ -30,7 +30,7 @@ import (
 
 var (
 	reference  = "mock"
-	hardLimits = types.ResourceList{types.ResourceCount: -1, types.ResourceStorage: -1}
+	hardLimits = types.ResourceList{types.ResourceStorage: -1}
 )
 
 func init() {
@@ -96,7 +96,7 @@ func TestQuotaAPIGet(t *testing.T) {
 	code, quota, err := apiTest.QuotasGetByID(*admin, fmt.Sprintf("%d", quotaID))
 	assert.Nil(err)
 	assert.Equal(int(200), code)
-	assert.Equal(map[string]int64{"storage": -1, "count": -1}, quota.Hard)
+	assert.Equal(map[string]int64{"storage": -1}, quota.Hard)
 
 	code, _, err = apiTest.QuotasGetByID(*admin, "100")
 	assert.Nil(err)
@@ -116,18 +116,18 @@ func TestQuotaPut(t *testing.T) {
 	code, quota, err := apiTest.QuotasGetByID(*admin, fmt.Sprintf("%d", quotaID))
 	assert.Nil(err)
 	assert.Equal(int(200), code)
-	assert.Equal(map[string]int64{"count": -1, "storage": -1}, quota.Hard)
+	assert.Equal(map[string]int64{"storage": -1}, quota.Hard)
 
 	code, err = apiTest.QuotasPut(*admin, fmt.Sprintf("%d", quotaID), models.QuotaUpdateRequest{})
 	assert.Nil(err, err)
 	assert.Equal(int(400), code)
 
-	code, err = apiTest.QuotasPut(*admin, fmt.Sprintf("%d", quotaID), models.QuotaUpdateRequest{Hard: types.ResourceList{types.ResourceCount: 100, types.ResourceStorage: 100}})
+	code, err = apiTest.QuotasPut(*admin, fmt.Sprintf("%d", quotaID), models.QuotaUpdateRequest{Hard: types.ResourceList{types.ResourceStorage: 100}})
 	assert.Nil(err)
 	assert.Equal(int(200), code)
 
 	code, quota, err = apiTest.QuotasGetByID(*admin, fmt.Sprintf("%d", quotaID))
 	assert.Nil(err)
 	assert.Equal(int(200), code)
-	assert.Equal(map[string]int64{"count": 100, "storage": 100}, quota.Hard)
+	assert.Equal(map[string]int64{"storage": 100}, quota.Hard)
 }

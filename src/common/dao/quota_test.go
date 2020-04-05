@@ -159,10 +159,8 @@ func Test_quotaOrderBy(t *testing.T) {
 	}{
 		{"no query", args{nil}, "b.creation_time DESC"},
 		{"order by unsupport field", args{query("unknow")}, "b.creation_time DESC"},
-		{"order by count of hard", args{query("hard.count")}, "(CAST( (CASE WHEN (hard->>'count') IS NULL THEN '0' WHEN (hard->>'count') = '-1' THEN '9223372036854775807' ELSE (hard->>'count') END) AS BIGINT )) ASC"},
 		{"order by storage of hard", args{query("hard.storage")}, "(CAST( (CASE WHEN (hard->>'storage') IS NULL THEN '0' WHEN (hard->>'storage') = '-1' THEN '9223372036854775807' ELSE (hard->>'storage') END) AS BIGINT )) ASC"},
 		{"order by unsupport hard resource", args{query("hard.unknow")}, "b.creation_time DESC"},
-		{"order by count of used", args{query("used.count")}, "(CAST( (CASE WHEN (used->>'count') IS NULL THEN '0' WHEN (used->>'count') = '-1' THEN '9223372036854775807' ELSE (used->>'count') END) AS BIGINT )) ASC"},
 		{"order by storage of used", args{query("used.storage")}, "(CAST( (CASE WHEN (used->>'storage') IS NULL THEN '0' WHEN (used->>'storage') = '-1' THEN '9223372036854775807' ELSE (used->>'storage') END) AS BIGINT )) ASC"},
 		{"order by unsupport used resource", args{query("used.unknow")}, "b.creation_time DESC"},
 	}

@@ -97,7 +97,7 @@ func putManifestResources(r *http.Request, reference, referenceID string) (types
 		}
 	}
 
-	return types.ResourceList{types.ResourceCount: 1, types.ResourceStorage: size}, nil
+	return types.ResourceList{types.ResourceStorage: size}, nil
 }
 
 func putManifestResourcesEvent(level int) func(*http.Request, string, string, string) event.Metadata {

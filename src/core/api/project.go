@@ -134,7 +134,6 @@ func (p *ProjectAPI) Post() {
 		}
 
 		if !p.SecurityCtx.IsSysAdmin() {
-			pro.CountLimit = &setting.CountPerProject
 			pro.StorageLimit = &setting.StoragePerProject
 		}
 
@@ -560,11 +559,6 @@ func validateProjectReq(req *models.ProjectRequest) error {
 
 func projectQuotaHardLimits(req *models.ProjectRequest, setting *models.QuotaSetting) (types.ResourceList, error) {
 	hardLimits := types.ResourceList{}
-	if req.CountLimit != nil {
-		hardLimits[types.ResourceCount] = *req.CountLimit
-	} else {
-		hardLimits[types.ResourceCount] = setting.CountPerProject
-	}
 
 	if req.StorageLimit != nil {
 		hardLimits[types.ResourceStorage] = *req.StorageLimit

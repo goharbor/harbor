@@ -103,8 +103,8 @@ func (suite *CopyArtifactMiddlewareTestSuite) TestResourcesWarning() {
 
 	{
 		q := &quota.Quota{}
-		q.SetHard(types.ResourceList{types.ResourceCount: 100})
-		q.SetUsed(types.ResourceList{types.ResourceCount: 50})
+		q.SetHard(types.ResourceList{types.ResourceStorage: 100})
+		q.SetUsed(types.ResourceList{types.ResourceStorage: 50})
 		mock.OnAnything(suite.quotaController, "GetByRef").Return(q, nil).Once()
 
 		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0?from=library/photon:2.0.1", nil)
@@ -119,8 +119,8 @@ func (suite *CopyArtifactMiddlewareTestSuite) TestResourcesWarning() {
 
 	{
 		q := &quota.Quota{}
-		q.SetHard(types.ResourceList{types.ResourceCount: 100})
-		q.SetUsed(types.ResourceList{types.ResourceCount: 85})
+		q.SetHard(types.ResourceList{types.ResourceStorage: 100})
+		q.SetUsed(types.ResourceList{types.ResourceStorage: 85})
 		mock.OnAnything(suite.quotaController, "GetByRef").Return(q, nil).Once()
 
 		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0?from=library/photon:2.0.1", nil)

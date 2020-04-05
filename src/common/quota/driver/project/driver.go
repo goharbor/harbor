@@ -101,7 +101,6 @@ type driver struct {
 
 func (d *driver) HardLimits() types.ResourceList {
 	return types.ResourceList{
-		types.ResourceCount:   d.cfg.Get(common.CountPerProject).GetInt64(),
 		types.ResourceStorage: d.cfg.Get(common.StoragePerProject).GetInt64(),
 	}
 }
@@ -128,7 +127,6 @@ func (d *driver) Load(key string) (dr.RefObject, error) {
 
 func (d *driver) Validate(hardLimits types.ResourceList) error {
 	resources := map[types.ResourceName]bool{
-		types.ResourceCount:   true,
 		types.ResourceStorage: true,
 	}
 

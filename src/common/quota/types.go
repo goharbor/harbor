@@ -19,8 +19,6 @@ import (
 )
 
 var (
-	// ResourceCount alias types.ResourceCount
-	ResourceCount = types.ResourceCount
 	// ResourceStorage alias types.ResourceStorage
 	ResourceStorage = types.ResourceStorage
 )

@@ -117,7 +117,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
     this.configService.getConfiguration()
         .subscribe((configurations: Configuration) => {
           this.quotaObj = {
-            count_per_project: configurations.count_per_project ? configurations.count_per_project.value : -1,
             storage_per_project: configurations.storage_per_project ? configurations.storage_per_project.value : -1
           };
         });

@@ -48,7 +48,7 @@ func (suite *ControllerTestSuite) TestGetReservedResources() {
 		suite.Len(resources, 0)
 	}
 
-	suite.Nil(ctl.setReservedResources(context.TODO(), reference, referenceID, types.ResourceList{types.ResourceCount: 1}))
+	suite.Nil(ctl.setReservedResources(context.TODO(), reference, referenceID, types.ResourceList{types.ResourceStorage: 100}))
 
 	{
 		resources, err := ctl.getReservedResources(context.TODO(), reference, referenceID)
@@ -68,7 +68,7 @@ func (suite *ControllerTestSuite) TestGetReservedResources() {
 func (suite *ControllerTestSuite) TestReserveResources() {
 	quotaMgr := &quotatesting.Manager{}
 
-	hardLimits := types.ResourceList{types.ResourceCount: 1}
+	hardLimits := types.ResourceList{types.ResourceStorage: 100}
 
 	mock.OnAnything(quotaMgr, "GetByRefForUpdate").Return(&quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}, nil)
 
@@ -76,7 +76,7 @@ func (suite *ControllerTestSuite) TestReserveResources() {
 
 	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 	reference, referenceID := "reference", uuid.New().String()
-	resources := types.ResourceList{types.ResourceCount: 1}
+	resources := types.ResourceList{types.ResourceStorage: 100}
 
 	suite.Nil(ctl.reserveResources(ctx, reference, referenceID, resources))
 
@@ -86,7 +86,7 @@ func (suite *ControllerTestSuite) TestReserveResources() {
 func (suite *ControllerTestSuite) TestUnreserveResources() {
 	quotaMgr := &quotatesting.Manager{}
 
-	hardLimits := types.ResourceList{types.ResourceCount: 1}
+	hardLimits := types.ResourceList{types.ResourceStorage: 100}
 
 	mock.OnAnything(quotaMgr, "GetByRefForUpdate").Return(&quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}, nil)
 
@@ -94,7 +94,7 @@ func (suite *ControllerTestSuite) TestUnreserveResources() {
 
 	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 	reference, referenceID := "reference", uuid.New().String()
-	resources := types.ResourceList{types.ResourceCount: 1}
+	resources := types.ResourceList{types.ResourceStorage: 100}
 
 	suite.Nil(ctl.reserveResources(ctx, reference, referenceID, resources))
 
@@ -108,10 +108,10 @@ func (suite *ControllerTestSuite) TestUnreserveResources() {
 func (suite *ControllerTestSuite) TestRequest() {
 	quotaMgr := &quotatesting.Manager{}
 
-	hardLimits := types.ResourceList{types.ResourceCount: 1}
+	hardLimits := types.ResourceList{types.ResourceStorage: 100}
 
 	q := &quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}
-	used := types.ResourceList{types.ResourceCount: 0}
+	used := types.ResourceList{types.ResourceStorage: 0}
 
 	mock.OnAnything(quotaMgr, "GetByRefForUpdate").Return(q, nil)
 
@@ -122,7 +122,7 @@ func (suite *ControllerTestSuite) TestRequest() {
 	d := &drivertesting.Driver{}
 
 	mock.OnAnything(d, "CalculateUsage").Return(used, nil).Run(func(args mock.Arguments) {
-		used[types.ResourceCount]++
+		used[types.ResourceStorage]++
 	})
 
 	driver.Register("mock", d)
@@ -131,7 +131,7 @@ func (suite *ControllerTestSuite) TestRequest() {
 
 	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 	reference, referenceID := "mock", "1"
-	resources := types.ResourceList{types.ResourceCount: 1}
+	resources := types.ResourceList{types.ResourceStorage: 100}
 
 	{
 		suite.Nil(ctl.Request(ctx, reference, referenceID, resources, func() error { return nil }))
@@ -151,7 +151,7 @@ func BenchmarkGetReservedResources(b *testing.B) {
 
 	ctx := context.TODO()
 	reference, referenceID := "reference", uuid.New().String()
-	ctl.setReservedResources(ctx, reference, referenceID, types.ResourceList{types.ResourceCount: 1})
+	ctl.setReservedResources(ctx, reference, referenceID, types.ResourceList{types.ResourceStorage: 100})
 
 	for i := 0; i < b.N; i++ {
 		ctl.getReservedResources(ctx, reference, referenceID)
@@ -164,6 +164,6 @@ func BenchmarkSetReservedResources(b *testing.B) {
 	ctx := context.TODO()
 	for i := 0; i < b.N; i++ {
 		s := strconv.Itoa(i)
-		ctl.setReservedResources(ctx, "reference"+s, s, types.ResourceList{types.ResourceCount: 1})
+		ctl.setReservedResources(ctx, "reference"+s, s, types.ResourceList{types.ResourceStorage: 100})
 	}
 }

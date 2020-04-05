@@ -476,7 +476,7 @@ func TestProjectSummary(t *testing.T) {
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 		assert.Equal(int64(1), summary.ProjectAdminCount)
-		assert.Equal(map[string]int64{"count": -1, "storage": -1}, summary.Quota.Hard)
+		assert.Equal(map[string]int64{"storage": -1}, summary.Quota.Hard)
 	}
 
 	fmt.Printf("\n")

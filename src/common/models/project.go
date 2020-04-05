@@ -177,7 +177,6 @@ type ProjectRequest struct {
 	Metadata     map[string]string `json:"metadata"`
 	CVEWhitelist CVEWhitelist      `json:"cve_whitelist"`
 
-	CountLimit   *int64 `json:"count_limit,omitempty"`
 	StorageLimit *int64 `json:"storage_limit,omitempty"`
 }
 

@@ -72,16 +72,6 @@ func Test_isSafe(t *testing.T) {
 			},
 			false,
 		},
-		{
-			"hard limit not found",
-			args{
-				types.ResourceList{types.ResourceStorage: 100},
-				types.ResourceList{types.ResourceCount: 0},
-				types.ResourceList{types.ResourceCount: 1},
-				false,
-			},
-			true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
