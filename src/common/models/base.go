@@ -24,7 +24,6 @@ func init() {
 		new(Project),
 		new(Role),
 		new(RepoRecord),
-		new(ClairVulnTimestamp),
 		new(ProjectMetadata),
 		new(ConfigEntry),
 		new(Label),

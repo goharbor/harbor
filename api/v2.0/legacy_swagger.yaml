@@ -2155,7 +2155,7 @@ paths:
         '500':
           description: Unexpected internal errors.
         '503':
-          description: Harbor is not deployed with Clair.
+          description: Harbor is not deployed with scanners.
   /configurations:
     get:
       summary: Get system configurations.
@@ -3896,7 +3896,7 @@ definitions:
         type: boolean
       admin_role_in_auth:
         type: boolean
-        description: indicate the admin privilege is grant by authenticator (LDAP), is always false unless it is the current login user        
+        description: indicate the admin privilege is grant by authenticator (LDAP), is always false unless it is the current login user
       reset_uuid:
         type: string
       Salt:
@@ -4172,9 +4172,9 @@ definitions:
       with_notary:
         type: boolean
         description: If the Harbor instance is deployed with nested notary.
-      with_clair:
+      with_chartmuseum:
         type: boolean
-        description: If the Harbor instance is deployed with nested clair.
+        description: If the Harbor instance is deployed with nested chartmuseum.
       registry_url:
         type: string
         description: The url of registry against which the docker command should be issued.
@@ -4196,30 +4196,6 @@ definitions:
       harbor_version:
         type: string
         description: The build version of Harbor.
-      next_scan_all:
-        type: integer
-        description: 'The UTC time in milliseconds, after which user can call scanAll API to scan all images.'
-      clair_vulnerability_status:
-        type: object
-        description: The status of vulnerability data of Clair.
-        properties:
-          overall_last_update:
-            type: integer
-            description: 'The UTC timestamp in milliseconds of last successful update for Clair vulnerability data, when all the updaters are successfully executed.'
-          details:
-            type: array
-            description: Detail timestamp of different namespace.  This is introduced to handle the case when some updaters are executed successfully and some not.
-            items:
-              $ref: '#/definitions/VulnNamespaceTimestamp'
-  VulnNamespaceTimestamp:
-    type: object
-    properties:
-      namespace:
-        type: string
-        description: The namespace of the Vulnerability
-      last_update:
-        type: integer
-        description: The UTC timestamp in miliseconds of last successful update for vulnerability data.
   SystemInfo:
     type: object
     properties:
@@ -5632,124 +5608,6 @@ definitions:
       uuid:
         type: string
         description: The identifier of the scanner registration
-
-  VulnerabilityItem:
-    type: object
-    properties:
-      id:
-        type: string
-        description: ID of the CVE.
-        example: 'CVE-2017-8283'
-      package:
-        type: string
-        description: 'An operating system or software dependency package containing the vulnerability.'
-        example: 'dpkg'
-      version:
-        type: string
-        description: 'The version of the package containing the vulnerability.'
-        example: '1.17.27'
-      fix_version:
-        type: string
-        description: 'The version of the package containing the fix if available.'
-        example: '1.18.0'
-      severity:
-        type: string
-        description: 'A standard scale for measuring the severity of a vulnerability.'
-        example: 'high'
-      description:
-        type: string
-        description: 'Description of the CVE'
-        example: 'dpkg-source in dpkg 1.3.0 through 1.18.23 is able to use a non-GNU patch program'
-      links:
-        type: array
-        description: 'The list of link to the upstream database with the full description of the vulnerability.'
-        items:
-          type: string
-          example: 'https://security-tracker.debian.org/tracker/CVE-2017-8283'
-  Report:
-    type: object
-    description: 'The harbor native report format'
-    properties:
-      generated_at:
-        type: string
-        description: 'Time of generating this report'
-        example: '2006-01-02T15:04:05'
-      severity:
-        type: string
-        description: 'A standard scale for measuring the severity of a vulnerability.'
-        example: 'high'
-      vulnerabilities:
-        type: array
-        items:
-          $ref: '#/definitions/VulnerabilityItem'
-      scanner:
-        $ref: '#/definitions/Scanner'
-
-  ScanOverview:
-    type: object
-    description: 'The scan overview attached in the metadata of tag'
-    additionalProperties:
-      $ref: '#/definitions/NativeReportSummary'
-
-  NativeReportSummary:
-    type: object
-    description: 'The summary for the native report'
-    properties:
-      report_id:
-        type: string
-        description: 'id of the native scan report'
-        example: '5f62c830-f996-11e9-957f-0242c0a89008'
-      scan_status:
-        type: string
-        description: 'The status of the report generating process'
-        example: 'Success'
-      severity:
-        type: string
-        description: 'The overall severity'
-        example: 'High'
-      duration:
-        type: integer
-        format: int64
-        description: 'The seconds spent for generating the report'
-        example: 300
-      summary:
-        $ref: '#/definitions/VulnerabilitySummary'
-      start_time:
-        type: string
-        format: date-time
-        description: 'The start time of the scan process that generating report'
-        example: '2006-01-02T14:04:05'
-      end_time:
-        type: string
-        format: date-time
-        description: 'The end time of the scan process that generating report'
-        example: '2006-01-02T15:04:05'
-
-  VulnerabilitySummary:
-    type: object
-    description: |
-      VulnerabilitySummary contains the total number of the foun d vulnerabilities number and numbers of each severity level.
-    properties:
-      total:
-        type: integer
-        format: int
-        description: 'The total number of the found vulnerabilities'
-        example: 500
-      fixable:
-        type: integer
-        format: int
-        description: 'The number of the fixable vulnerabilities'
-        example: 100
-      summary:
-        type: object
-        description: 'Numbers of the vulnerabilities with different severity'
-        additionalProperties:
-          type: integer
-          format: int
-          example: 10
-        example:
-          'Critical': 5
-          'High': 5
 
   Stats:
     type: object

@@ -51,20 +51,19 @@ type Storage struct {
 
 // GeneralInfo wraps common systeminfo for anonymous request
 type GeneralInfo struct {
-	WithNotary                  bool                             `json:"with_notary"`
-	AuthMode                    string                           `json:"auth_mode"`
-	AuthProxySettings           *models.HTTPAuthProxy            `json:"authproxy_settings,omitempty"`
-	RegistryURL                 string                           `json:"registry_url"`
-	ExtURL                      string                           `json:"external_url"`
-	ProjectCreationRestrict     string                           `json:"project_creation_restriction"`
-	SelfRegistration            bool                             `json:"self_registration"`
-	HasCARoot                   bool                             `json:"has_ca_root"`
-	HarborVersion               string                           `json:"harbor_version"`
-	ClairVulnStatus             *models.ClairVulnerabilityStatus `json:"clair_vulnerability_status,omitempty"`
-	RegistryStorageProviderName string                           `json:"registry_storage_provider_name"`
-	ReadOnly                    bool                             `json:"read_only"`
-	WithChartMuseum             bool                             `json:"with_chartmuseum"`
-	NotificationEnable          bool                             `json:"notification_enable"`
+	WithNotary                  bool                  `json:"with_notary"`
+	AuthMode                    string                `json:"auth_mode"`
+	AuthProxySettings           *models.HTTPAuthProxy `json:"authproxy_settings,omitempty"`
+	RegistryURL                 string                `json:"registry_url"`
+	ExtURL                      string                `json:"external_url"`
+	ProjectCreationRestrict     string                `json:"project_creation_restriction"`
+	SelfRegistration            bool                  `json:"self_registration"`
+	HasCARoot                   bool                  `json:"has_ca_root"`
+	HarborVersion               string                `json:"harbor_version"`
+	RegistryStorageProviderName string                `json:"registry_storage_provider_name"`
+	ReadOnly                    bool                  `json:"read_only"`
+	WithChartMuseum             bool                  `json:"with_chartmuseum"`
+	NotificationEnable          bool                  `json:"notification_enable"`
 }
 
 // GetVolumeInfo gets specific volume storage info.
