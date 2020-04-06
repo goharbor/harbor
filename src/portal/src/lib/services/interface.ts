@@ -319,19 +319,16 @@ export interface Quota {
   creation_time: string;
   update_time: string;
   hard: {
-    count: number;
     storage: number;
   };
   used: {
-    count: number;
     storage: number;
   };
 }
 export interface QuotaHard {
-  hard: QuotaCountStorage;
+  hard: QuotaStorage;
 }
-export interface QuotaCountStorage {
-  count: number;
+export interface QuotaStorage {
   storage: number;
 }
 
@@ -449,7 +446,6 @@ export interface SystemCVEWhitelist {
   items: Array<{ "cve_id": string; }>;
 }
 export interface QuotaHardInterface {
-  count_per_project: number;
   storage_per_project: number;
 }
 
@@ -457,17 +453,14 @@ export interface QuotaUnitInterface {
   UNIT: string;
 }
 export interface QuotaHardLimitInterface {
-  countLimit: number;
   storageLimit: number;
   storageUnit: string;
   id?: string;
-  countUsed?: string;
   storageUsed?: string;
 }
 export interface EditQuotaQuotaInterface {
   editQuota: string;
   setQuota: string;
-  countQuota: string;
   storageQuota: string;
   quotaHardLimitValue: QuotaHardLimitInterface | any;
   isSystemDefaultQuota: boolean;

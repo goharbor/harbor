@@ -26,8 +26,8 @@ func TestGetWarningResources(t *testing.T) {
 
 	q := Quota{}
 
-	q.SetHard(types.ResourceList{types.ResourceCount: 3})
-	q.SetUsed(types.ResourceList{types.ResourceCount: 3})
+	q.SetHard(types.ResourceList{types.ResourceStorage: 300})
+	q.SetUsed(types.ResourceList{types.ResourceStorage: 300})
 
 	resources, err := q.GetWarningResources(85)
 	assert.Nil(err)

@@ -87,9 +87,8 @@ func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 		mock.OnAnything(suite.blobController, "FindMissingAssociationsForProject").Return(nil, nil).Once()
 		mock.OnAnything(suite.quotaController, "Request").Return(nil).Once().Run(func(args mock.Arguments) {
 			resources := args.Get(3).(types.ResourceList)
-			suite.Len(resources, 2)
+			suite.Len(resources, 1)
 			suite.Equal(resources[types.ResourceStorage], int64(100))
-			suite.Equal(resources[types.ResourceCount], int64(1))
 
 			f := args.Get(4).(func() error)
 			f()
@@ -114,9 +113,8 @@ func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 		mock.OnAnything(suite.blobController, "FindMissingAssociationsForProject").Return(missing, nil).Once()
 		mock.OnAnything(suite.quotaController, "Request").Return(nil).Once().Run(func(args mock.Arguments) {
 			resources := args.Get(3).(types.ResourceList)
-			suite.Len(resources, 2)
+			suite.Len(resources, 1)
 			suite.Equal(resources[types.ResourceStorage], int64(100+10))
-			suite.Equal(resources[types.ResourceCount], int64(1))
 
 			f := args.Get(4).(func() error)
 			f()
@@ -141,9 +139,8 @@ func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 		mock.OnAnything(suite.blobController, "FindMissingAssociationsForProject").Return(missing, nil).Once()
 		mock.OnAnything(suite.quotaController, "Request").Return(nil).Once().Run(func(args mock.Arguments) {
 			resources := args.Get(3).(types.ResourceList)
-			suite.Len(resources, 2)
+			suite.Len(resources, 1)
 			suite.Equal(resources[types.ResourceStorage], int64(100+20))
-			suite.Equal(resources[types.ResourceCount], int64(1))
 
 			f := args.Get(4).(func() error)
 			f()
@@ -168,9 +165,8 @@ func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 		mock.OnAnything(suite.blobController, "FindMissingAssociationsForProject").Return(missing, nil).Once()
 		mock.OnAnything(suite.quotaController, "Request").Return(nil).Once().Run(func(args mock.Arguments) {
 			resources := args.Get(3).(types.ResourceList)
-			suite.Len(resources, 2)
+			suite.Len(resources, 1)
 			suite.Equal(resources[types.ResourceStorage], int64(100))
-			suite.Equal(resources[types.ResourceCount], int64(1))
 
 			f := args.Get(4).(func() error)
 			f()
@@ -197,7 +193,6 @@ func (suite *PutManifestMiddlewareTestSuite) TestResourcesExceeded() {
 
 	{
 		var errs quota.Errors
-		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceCount, 10, 10, 11))
 		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceStorage, 100, 100, 110))
 		mock.OnAnything(suite.quotaController, "Request").Return(errs).Once()
 
@@ -213,7 +208,6 @@ func (suite *PutManifestMiddlewareTestSuite) TestResourcesExceeded() {
 
 	{
 		var errs quota.Errors
-		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceCount, 10, 10, 11))
 		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceStorage, 100, 100, 110))
 
 		err := errors.DeniedError(errs).WithMessage("Quota exceeded when processing the request of %v", errs)
@@ -247,8 +241,8 @@ func (suite *PutManifestMiddlewareTestSuite) TestResourcesWarning() {
 
 	{
 		q := &quota.Quota{}
-		q.SetHard(types.ResourceList{types.ResourceCount: 100})
-		q.SetUsed(types.ResourceList{types.ResourceCount: 50})
+		q.SetHard(types.ResourceList{types.ResourceStorage: 100})
+		q.SetUsed(types.ResourceList{types.ResourceStorage: 50})
 		mock.OnAnything(suite.quotaController, "GetByRef").Return(q, nil).Once()
 
 		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)
@@ -263,8 +257,8 @@ func (suite *PutManifestMiddlewareTestSuite) TestResourcesWarning() {
 
 	{
 		q := &quota.Quota{}
-		q.SetHard(types.ResourceList{types.ResourceCount: 100})
-		q.SetUsed(types.ResourceList{types.ResourceCount: 85})
+		q.SetHard(types.ResourceList{types.ResourceStorage: 100})
+		q.SetUsed(types.ResourceList{types.ResourceStorage: 85})
 		mock.OnAnything(suite.quotaController, "GetByRef").Return(q, nil).Once()
 
 		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)

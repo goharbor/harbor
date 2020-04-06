@@ -477,7 +477,6 @@ func QuotaSetting() (*models.QuotaSetting, error) {
 		return nil, err
 	}
 	return &models.QuotaSetting{
-		CountPerProject:   cfgMgr.Get(common.CountPerProject).GetInt64(),
 		StoragePerProject: cfgMgr.Get(common.StoragePerProject).GetInt64(),
 	}, nil
 }

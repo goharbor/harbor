@@ -566,17 +566,6 @@ export const GetIntegerAndUnit = (hardNumber: number, quotaUnitsDeep: QuotaUnitI
     }
 };
 
-export const validateCountLimit = () => {
-  return (control: AbstractControl) => {
-    if (control.value > LimitCount) {
-      return {
-        error: true
-      };
-    }
-    return null;
-  };
-};
-
 export const validateLimit = unitContrl => {
   return (control: AbstractControl) => {
     if (

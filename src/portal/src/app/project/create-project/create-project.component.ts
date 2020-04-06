@@ -31,7 +31,7 @@ import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.com
 import { Project } from "../project";
 import { QuotaUnits, QuotaUnlimited } from "../../../lib/entities/shared.const";
 import { ProjectService, QuotaHardInterface } from "../../../lib/services";
-import { clone, getByte, GetIntegerAndUnit, validateCountLimit, validateLimit } from "../../../lib/utils/utils";
+import { clone, getByte, GetIntegerAndUnit, validateLimit } from "../../../lib/utils/utils";
 
 
 @Component({
@@ -47,12 +47,10 @@ export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDest
   currentForm: NgForm;
   quotaUnits = QuotaUnits;
   project: Project = new Project();
-  countLimit: number;
   storageLimit: number;
   storageLimitUnit: string = QuotaUnits[3].UNIT;
   storageDefaultLimit: number;
   storageDefaultLimitUnit: string;
-  countDefaultLimit: number;
   initVal: Project = new Project();
 
   createProjectOpened: boolean;
@@ -124,12 +122,10 @@ export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDest
     }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes && changes["quotaObj"] && changes["quotaObj"].currentValue) {
-      this.countLimit = this.quotaObj.count_per_project;
       this.storageLimit = GetIntegerAndUnit(this.quotaObj.storage_per_project, clone(QuotaUnits), 0, clone(QuotaUnits)).partNumberHard;
       this.storageLimitUnit = this.storageLimit === QuotaUnlimited ? QuotaUnits[3].UNIT
       : GetIntegerAndUnit(this.quotaObj.storage_per_project, clone(QuotaUnits), 0, clone(QuotaUnits)).partCharacterHard;
 
-      this.countDefaultLimit = this.countLimit;
       this.storageDefaultLimit = this.storageLimit;
       this.storageDefaultLimitUnit = this.storageLimitUnit;
       if (this.isSystemAdmin) {
@@ -142,8 +138,7 @@ export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDest
       this.currentForm.form.controls['create_project_count_limit'].setValidators(
         [
           Validators.required,
-          Validators.pattern('(^-1$)|(^([1-9]+)([0-9]+)*$)'),
-          validateCountLimit()
+          Validators.pattern('(^-1$)|(^([1-9]+)([0-9]+)*$)')
         ]);
       }
       this.currentForm.form.valueChanges
@@ -171,7 +166,7 @@ export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDest
     this.isSubmitOnGoing = true;
     const storageByte = +this.storageLimit === QuotaUnlimited ? this.storageLimit : getByte(+this.storageLimit, this.storageLimitUnit);
     this.projectService
-      .createProject(this.project.name, this.project.metadata, +this.countLimit, +storageByte)
+      .createProject(this.project.name, this.project.metadata, +storageByte)
       .subscribe(
       status => {
         this.isSubmitOnGoing = false;
@@ -198,7 +193,6 @@ export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDest
         this.currentForm.controls["create_project_name"].reset();
     }
     this.inlineAlert.close();
-    this.countLimit = this.countDefaultLimit ;
     this.storageLimit = this.storageDefaultLimit;
     this.storageLimitUnit = this.storageDefaultLimitUnit;
   }

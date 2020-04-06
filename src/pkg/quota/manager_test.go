@@ -38,7 +38,7 @@ func (suite *ManagerTestSuite) TestCreate() {
 	ctx := suite.Context()
 
 	{
-		hardLimits := types.ResourceList{types.ResourceCount: 1, types.ResourceStorage: 100}
+		hardLimits := types.ResourceList{types.ResourceStorage: 100}
 		id, err := Mgr.Create(ctx, "project", "1000", hardLimits)
 
 		if suite.Nil(err) {
@@ -56,8 +56,8 @@ func (suite *ManagerTestSuite) TestCreate() {
 	}
 
 	{
-		hardLimits := types.ResourceList{types.ResourceCount: 1, types.ResourceStorage: 100}
-		usage := types.ResourceList{types.ResourceCount: 0, types.ResourceStorage: 10}
+		hardLimits := types.ResourceList{types.ResourceStorage: 100}
+		usage := types.ResourceList{types.ResourceStorage: 10}
 		id, err := Mgr.Create(ctx, "project", "1000", hardLimits, usage)
 
 		if suite.Nil(err) {
@@ -79,7 +79,7 @@ func (suite *ManagerTestSuite) TestUpdate() {
 	ctx := suite.Context()
 
 	{
-		hardLimits := types.ResourceList{types.ResourceCount: 1, types.ResourceStorage: 100}
+		hardLimits := types.ResourceList{types.ResourceStorage: 100}
 		id, err := Mgr.Create(ctx, "project", "1000", hardLimits)
 
 		q, err := Mgr.Get(ctx, id)

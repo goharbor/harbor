@@ -51,14 +51,12 @@ func (suite *DriverTestSuite) SetupTest() {
 func (suite *DriverTestSuite) TestCalculateUsage() {
 
 	{
-		mock.OnAnything(suite.artifactCtl, "Count").Return(int64(10), nil).Once()
 		mock.OnAnything(suite.blobCtl, "CalculateTotalSizeByProject").Return(int64(1000), nil).Once()
-		mock.OnAnything(suite.chartCtl, "Count").Return(int64(10), nil).Once()
 
 		resources, err := suite.d.CalculateUsage(context.TODO(), "1")
 		if suite.Nil(err) {
-			suite.Len(resources, 2)
-			suite.Equal(resources[types.ResourceCount], int64(20))
+			suite.Len(resources, 1)
+			suite.Equal(resources[types.ResourceStorage], int64(1000))
 		}
 	}
 }

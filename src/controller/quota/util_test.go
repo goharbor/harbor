@@ -104,13 +104,13 @@ func (suite *RefreshForProjectsTestSuite) TestRefreshForProjects() {
 	}, nil)
 
 	q := &quota.Quota{}
-	q.SetHard(types.ResourceList{types.ResourceCount: 10})
-	q.SetUsed(types.ResourceList{types.ResourceCount: 0})
+	q.SetHard(types.ResourceList{types.ResourceStorage: 10})
+	q.SetUsed(types.ResourceList{types.ResourceStorage: 0})
 
 	mock.OnAnything(suite.quotaMgr, "GetByRef").Return(q, nil)
 	mock.OnAnything(suite.quotaMgr, "GetByRefForUpdate").Return(q, nil)
 	mock.OnAnything(suite.quotaMgr, "Update").Return(nil)
-	mock.OnAnything(suite.driver, "CalculateUsage").Return(types.ResourceList{types.ResourceCount: 1}, nil)
+	mock.OnAnything(suite.driver, "CalculateUsage").Return(types.ResourceList{types.ResourceStorage: 1}, nil)
 
 	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 	RefreshForProjects(ctx)

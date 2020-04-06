@@ -31,9 +31,9 @@ func TestValidate(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"valid", args{"project", types.ResourceList{types.ResourceCount: 1, types.ResourceStorage: 1}}, false},
-		{"invalid", args{"project", types.ResourceList{types.ResourceCount: 1, types.ResourceStorage: 0}}, true},
-		{"not support", args{"not support", types.ResourceList{types.ResourceCount: 1}}, true},
+		{"valid", args{"project", types.ResourceList{types.ResourceStorage: 1}}, false},
+		{"invalid", args{"project", types.ResourceList{types.ResourceStorage: 0}}, true},
+		{"not support", args{"not support", types.ResourceList{types.ResourceStorage: 1}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

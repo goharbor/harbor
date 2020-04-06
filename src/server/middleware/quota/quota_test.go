@@ -164,7 +164,7 @@ func (suite *RequestMiddlewareTestSuite) TestResourcesRequestOK() {
 	rr := httptest.NewRecorder()
 
 	reference, referenceID := "project", "1"
-	resources := types.ResourceList{types.ResourceCount: 1}
+	resources := types.ResourceList{types.ResourceStorage: 100}
 	config := suite.makeRequestConfig(reference, referenceID, resources)
 
 	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
@@ -183,7 +183,7 @@ func (suite *RequestMiddlewareTestSuite) TestResourcesRequestFailed() {
 	rr := httptest.NewRecorder()
 
 	reference, referenceID := "project", "1"
-	resources := types.ResourceList{types.ResourceCount: 1}
+	resources := types.ResourceList{types.ResourceStorage: 100}
 	config := suite.makeRequestConfig(reference, referenceID, resources)
 
 	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)

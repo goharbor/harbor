@@ -40,8 +40,8 @@ func (suite *DaoTestSuite) SetupSuite() {
 }
 
 func (suite *DaoTestSuite) TestCreate() {
-	hardLimits := types.ResourceList{types.ResourceCount: 1}
-	usage := types.ResourceList{types.ResourceCount: 0}
+	hardLimits := types.ResourceList{types.ResourceStorage: 100}
+	usage := types.ResourceList{types.ResourceStorage: 0}
 	id, err := suite.dao.Create(suite.Context(), "project", "2", hardLimits, usage)
 	suite.Nil(err)
 
@@ -56,8 +56,8 @@ func (suite *DaoTestSuite) TestCreate() {
 }
 
 func (suite *DaoTestSuite) TestDelete() {
-	hardLimits := types.ResourceList{types.ResourceCount: 1}
-	usage := types.ResourceList{types.ResourceCount: 0}
+	hardLimits := types.ResourceList{types.ResourceStorage: 100}
+	usage := types.ResourceList{types.ResourceStorage: 0}
 
 	id, err := suite.dao.Create(suite.Context(), "project", "3", hardLimits, usage)
 	suite.Nil(err)
@@ -77,8 +77,8 @@ func (suite *DaoTestSuite) TestDelete() {
 }
 
 func (suite *DaoTestSuite) TestGetByRef() {
-	hardLimits := types.ResourceList{types.ResourceCount: 1}
-	usage := types.ResourceList{types.ResourceCount: 0}
+	hardLimits := types.ResourceList{types.ResourceStorage: 100}
+	usage := types.ResourceList{types.ResourceStorage: 0}
 
 	reference, referenceID := "project", "4"
 	id, err := suite.dao.Create(suite.Context(), reference, referenceID, hardLimits, usage)
@@ -99,8 +99,8 @@ func (suite *DaoTestSuite) TestGetByRef() {
 }
 
 func (suite *DaoTestSuite) TestGetByRefForUpdate() {
-	hardLimits := types.ResourceList{types.ResourceCount: 1}
-	usage := types.ResourceList{types.ResourceCount: 0}
+	hardLimits := types.ResourceList{types.ResourceStorage: 100}
+	usage := types.ResourceList{types.ResourceStorage: 0}
 
 	reference, referenceID := "project", "5"
 	id, err := suite.dao.Create(suite.Context(), reference, referenceID, hardLimits, usage)
@@ -119,7 +119,7 @@ func (suite *DaoTestSuite) TestGetByRefForUpdate() {
 				suite.Nil(err)
 
 				used, _ := q.GetUsed()
-				used[types.ResourceCount]++
+				used[types.ResourceStorage]++
 				q.SetUsed(used)
 
 				suite.dao.Update(ctx, q)
@@ -136,19 +136,19 @@ func (suite *DaoTestSuite) TestGetByRefForUpdate() {
 		q, err := suite.dao.Get(suite.Context(), id)
 		suite.Nil(err)
 		used, _ := q.GetUsed()
-		suite.Equal(count, used[types.ResourceCount])
+		suite.Equal(count, used[types.ResourceStorage])
 	}
 }
 
 func (suite *DaoTestSuite) TestUpdate() {
-	hardLimits := types.ResourceList{types.ResourceCount: 1}
-	usage := types.ResourceList{types.ResourceCount: 0}
+	hardLimits := types.ResourceList{types.ResourceStorage: 100}
+	usage := types.ResourceList{types.ResourceStorage: 0}
 
 	id, err := suite.dao.Create(suite.Context(), "project", "6", hardLimits, usage)
 	suite.Nil(err)
 
-	newHardLimits := types.ResourceList{types.ResourceCount: 2}
-	newUsage := types.ResourceList{types.ResourceCount: 1}
+	newHardLimits := types.ResourceList{types.ResourceStorage: 200}
+	newUsage := types.ResourceList{types.ResourceStorage: 1}
 
 	{
 		q, err := suite.dao.Get(suite.Context(), id)

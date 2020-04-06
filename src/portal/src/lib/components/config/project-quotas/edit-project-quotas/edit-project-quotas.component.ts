@@ -11,7 +11,7 @@ import { InlineAlertComponent } from '../../../inline-alert/inline-alert.compone
 
 import { QuotaUnits, QuotaUnlimited, QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COEFFICIENT } from "../../../../entities/shared.const";
 
-import { clone, getSuitableUnit, getByte, GetIntegerAndUnit, validateCountLimit, validateLimit } from '../../../../utils/utils';
+import { clone, getSuitableUnit, getByte, GetIntegerAndUnit, validateLimit } from '../../../../utils/utils';
 import { EditQuotaQuotaInterface, QuotaHardLimitInterface } from '../../../../services';
 import { distinctUntilChanged } from 'rxjs/operators';
 
@@ -22,17 +22,15 @@ import { distinctUntilChanged } from 'rxjs/operators';
 })
 export class EditProjectQuotasComponent implements OnInit {
   openEditQuota: boolean;
-  defaultTextsObj: { editQuota: string; setQuota: string; countQuota: string; storageQuota: string; isSystemDefaultQuota: boolean } = {
+  defaultTextsObj: { editQuota: string; setQuota: string; storageQuota: string; isSystemDefaultQuota: boolean } = {
     editQuota: '',
     setQuota: '',
-    countQuota: '',
     storageQuota: '',
     isSystemDefaultQuota: false,
   };
   quotaHardLimitValue: QuotaHardLimitInterface = {
     storageLimit: -1
     , storageUnit: ''
-    , countLimit: -1
   };
   quotaUnits = QuotaUnits;
   staticBackdrop = true;
@@ -73,7 +71,6 @@ export class EditProjectQuotasComponent implements OnInit {
         , storageUnit: defaultTextsObj.quotaHardLimitValue.storageLimit === QuotaUnlimited ?
           QuotaUnits[3].UNIT : GetIntegerAndUnit(defaultTextsObj.quotaHardLimitValue.storageLimit
             , clone(QuotaUnits), 0, clone(QuotaUnits)).partCharacterHard
-        , countLimit: defaultTextsObj.quotaHardLimitValue.countLimit
       };
     } else {
       this.quotaHardLimitValue = {
@@ -83,15 +80,12 @@ export class EditProjectQuotasComponent implements OnInit {
         , storageUnit: defaultTextsObj.quotaHardLimitValue.hard.storage === QuotaUnlimited ?
           QuotaUnits[3].UNIT : GetIntegerAndUnit(defaultTextsObj.quotaHardLimitValue.hard.storage
             , clone(QuotaUnits), defaultTextsObj.quotaHardLimitValue.used.storage, clone(QuotaUnits)).partCharacterHard
-        , countLimit: defaultTextsObj.quotaHardLimitValue.hard.count
         , id: defaultTextsObj.quotaHardLimitValue.id
-        , countUsed: defaultTextsObj.quotaHardLimitValue.used.count
         , storageUsed: defaultTextsObj.quotaHardLimitValue.used.storage
       };
     }
     let defaultForm = {
-      count: this.quotaHardLimitValue.countLimit
-      , storage: this.quotaHardLimitValue.storageLimit
+     storage: this.quotaHardLimitValue.storageLimit
       , storageUnit: this.quotaHardLimitValue.storageUnit
     };
     this.currentForm.resetForm(defaultForm);
@@ -103,16 +97,10 @@ export class EditProjectQuotasComponent implements OnInit {
         Validators.pattern('(^-1$)|(^([1-9]+)([0-9]+)*$)'),
         validateLimit(this.currentForm.form.controls['storageUnit'])
       ]);
-    this.currentForm.form.controls['count'].setValidators(
-      [
-        Validators.required,
-        Validators.pattern('(^-1$)|(^([1-9]+)([0-9]+)*$)'),
-        validateCountLimit()
-      ]);
     this.currentForm.form.valueChanges
       .pipe(distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)))
       .subscribe((data) => {
-        ['storage', 'storageUnit', 'count'].forEach(fieldName => {
+        ['storage', 'storageUnit'].forEach(fieldName => {
           if (this.currentForm.form.get(fieldName) && this.currentForm.form.get(fieldName).value !== null) {
             this.currentForm.form.get(fieldName).updateValueAndValidity();
           }

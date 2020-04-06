@@ -30,7 +30,7 @@ import (
 )
 
 var (
-	hardLimits = types.ResourceList{types.ResourceCount: -1, types.ResourceStorage: 1000}
+	hardLimits = types.ResourceList{types.ResourceStorage: 1000}
 	reference  = "mock"
 )
 
@@ -39,7 +39,6 @@ func init() {
 
 	mockHardLimitsFn := func() types.ResourceList {
 		return types.ResourceList{
-			types.ResourceCount:   -1,
 			types.ResourceStorage: -1,
 		}
 	}
@@ -124,7 +123,7 @@ func (suite *ManagerSuite) TestUpdateQuota() {
 	mgr := suite.quotaManager()
 
 	id, _ := mgr.NewQuota(hardLimits)
-	largeHardLimits := types.ResourceList{types.ResourceCount: -1, types.ResourceStorage: 1000000}
+	largeHardLimits := types.ResourceList{types.ResourceStorage: 1000000}
 
 	if err := mgr.UpdateQuota(largeHardLimits); suite.Nil(err) {
 		quota, _ := dao.GetQuota(id)
@@ -136,17 +135,17 @@ func (suite *ManagerSuite) TestSetResourceUsage() {
 	mgr := suite.quotaManager()
 	id, _ := mgr.NewQuota(hardLimits)
 
-	if err := mgr.SetResourceUsage(types.ResourceCount, 999999999999999999); suite.Nil(err) {
+	if err := mgr.SetResourceUsage(types.ResourceStorage, 999999999999999999); suite.Nil(err) {
 		quota, _ := dao.GetQuota(id)
 		suite.Equal(hardLimits, mustResourceList(quota.Hard))
 
 		usage, _ := dao.GetQuotaUsage(id)
-		suite.Equal(types.ResourceList{types.ResourceCount: 999999999999999999, types.ResourceStorage: 0}, mustResourceList(usage.Used))
+		suite.Equal(types.ResourceList{types.ResourceStorage: 999999999999999999}, mustResourceList(usage.Used))
 	}
 
 	if err := mgr.SetResourceUsage(types.ResourceStorage, 234); suite.Nil(err) {
 		usage, _ := dao.GetQuotaUsage(id)
-		suite.Equal(types.ResourceList{types.ResourceCount: 999999999999999999, types.ResourceStorage: 234}, mustResourceList(usage.Used))
+		suite.Equal(types.ResourceList{types.ResourceStorage: 234}, mustResourceList(usage.Used))
 	}
 }
 
@@ -154,8 +153,8 @@ func (suite *ManagerSuite) TestEnsureQuota() {
 	// non-existent
 	nonExistRefID := "3"
 	mgr := suite.quotaManager(nonExistRefID)
-	infinite := types.ResourceList{types.ResourceCount: -1, types.ResourceStorage: -1}
-	usage := types.ResourceList{types.ResourceCount: 10, types.ResourceStorage: 10}
+	infinite := types.ResourceList{types.ResourceStorage: -1}
+	usage := types.ResourceList{types.ResourceStorage: 10}
 	err := mgr.EnsureQuota(usage)
 	suite.Nil(err)
 	query := &models.QuotaQuery{
@@ -170,7 +169,7 @@ func (suite *ManagerSuite) TestEnsureQuota() {
 	// existent
 	existRefID := "4"
 	mgr = suite.quotaManager(existRefID)
-	used := types.ResourceList{types.ResourceCount: 11, types.ResourceStorage: 11}
+	used := types.ResourceList{types.ResourceStorage: 11}
 	if id, err := mgr.NewQuota(hardLimits, used); suite.Nil(err) {
 		quota, _ := dao.GetQuota(id)
 		suite.Equal(hardLimits, mustResourceList(quota.Hard))
@@ -179,7 +178,7 @@ func (suite *ManagerSuite) TestEnsureQuota() {
 		suite.Equal(used, mustResourceList(usage.Used))
 	}
 
-	usage2 := types.ResourceList{types.ResourceCount: 12, types.ResourceStorage: 12}
+	usage2 := types.ResourceList{types.ResourceStorage: 12}
 	err = mgr.EnsureQuota(usage2)
 	suite.Nil(err)
 	query2 := &models.QuotaQuery{
@@ -195,7 +194,7 @@ func (suite *ManagerSuite) TestEnsureQuota() {
 func (suite *ManagerSuite) TestQuotaAutoCreation() {
 	for i := 0; i < 10; i++ {
 		mgr := suite.quotaManager(fmt.Sprintf("%d", i))
-		resource := types.ResourceList{types.ResourceCount: 0, types.ResourceStorage: 100}
+		resource := types.ResourceList{types.ResourceStorage: 100}
 
 		suite.Nil(mgr.AddResources(resource))
 	}
@@ -205,7 +204,7 @@ func (suite *ManagerSuite) TestAddResources() {
 	mgr := suite.quotaManager()
 	id, _ := mgr.NewQuota(hardLimits)
 
-	resource := types.ResourceList{types.ResourceCount: 0, types.ResourceStorage: 100}
+	resource := types.ResourceList{types.ResourceStorage: 100}
 
 	if suite.Nil(mgr.AddResources(resource)) {
 		usage, _ := dao.GetQuotaUsage(id)
@@ -214,7 +213,7 @@ func (suite *ManagerSuite) TestAddResources() {
 
 	if suite.Nil(mgr.AddResources(resource)) {
 		usage, _ := dao.GetQuotaUsage(id)
-		suite.Equal(types.ResourceList{types.ResourceCount: 0, types.ResourceStorage: 200}, mustResourceList(usage.Used))
+		suite.Equal(types.ResourceList{types.ResourceStorage: 200}, mustResourceList(usage.Used))
 	}
 
 	if err := mgr.AddResources(types.ResourceList{types.ResourceStorage: 10000}); suite.Error(err) {
@@ -230,7 +229,7 @@ func (suite *ManagerSuite) TestSubtractResources() {
 	mgr := suite.quotaManager()
 	id, _ := mgr.NewQuota(hardLimits)
 
-	resource := types.ResourceList{types.ResourceCount: 0, types.ResourceStorage: 100}
+	resource := types.ResourceList{types.ResourceStorage: 100}
 
 	if suite.Nil(mgr.AddResources(resource)) {
 		usage, _ := dao.GetQuotaUsage(id)
@@ -239,7 +238,7 @@ func (suite *ManagerSuite) TestSubtractResources() {
 
 	if suite.Nil(mgr.SubtractResources(resource)) {
 		usage, _ := dao.GetQuotaUsage(id)
-		suite.Equal(types.ResourceList{types.ResourceCount: 0, types.ResourceStorage: 0}, mustResourceList(usage.Used))
+		suite.Equal(types.ResourceList{types.ResourceStorage: 0}, mustResourceList(usage.Used))
 	}
 }
 

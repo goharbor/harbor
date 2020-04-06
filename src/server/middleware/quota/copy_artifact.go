@@ -39,7 +39,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
@@ -110,20 +109,6 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 		return nil, err
 	}
 
-	// HACK: base=* in KeyWords to filter all artifacts
-	kw := q.KeyWords{"project_id": projectID, "digest__in": artifactDigests, "repository_name": repositoryName, "base": "*"}
-	count, err := artifactController.Count(ctx, q.New(kw))
-	if err != nil {
-		return nil, err
-	}
-
-	copyCount := int64(len(artifactDigests)) - count
-
-	if copyCount == 0 {
-		// artifacts  already exist in the repository of the project
-		return nil, nil
-	}
-
 	allBlobs, err := blobController.List(ctx, blob.ListParams{ArtifactDigests: artifactDigests})
 	if err != nil {
 		logger.Errorf("get blobs for artifacts %s failed, error: %v", strings.Join(artifactDigests, ", "), err)
@@ -143,7 +128,7 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 		}
 	}
 
-	return types.ResourceList{types.ResourceCount: copyCount, types.ResourceStorage: size}, nil
+	return types.ResourceList{types.ResourceStorage: size}, nil
 }
 
 func copyArtifactResourcesEvent(level int) func(*http.Request, string, string, string) event.Metadata {
