@@ -10,7 +10,6 @@ schemes:
 basePath: /api/v2.0
 produces:
   - application/json
-  - text/plain
 consumes:
   - application/json
 securityDefinitions:
