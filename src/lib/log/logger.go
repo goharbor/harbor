@@ -330,6 +330,7 @@ func line(callDepth int) string {
 	_, file, line, ok := runtime.Caller(callDepth)
 	if !ok {
 		file = "???"
+
 		line = 0
 	}
 	l := strings.SplitN(file, srcSeparator, 2)
