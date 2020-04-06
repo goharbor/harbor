@@ -21,7 +21,6 @@ import (
 )
 
 // RegisterRoutes for Harbor legacy APIs
-// TODO bump up the version of APIs called by clients
 func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &api.ProjectMemberAPI{})
 	beego.Router("/api/"+version+"/projects/", &api.ProjectAPI{}, "head:Head")
