@@ -1,6 +1,6 @@
-import { Component, OnInit, Input, ViewChild, Output, EventEmitter } from '@angular/core';
-import { Observable, of, forkJoin } from 'rxjs';
-import { map, catchError, finalize } from 'rxjs/operators';
+import { Component, OnInit, Input, ViewChild, OnDestroy } from '@angular/core';
+import { Observable, of, forkJoin, Subject, Subscription } from 'rxjs';
+import { map, catchError, finalize, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { NgForm } from '@angular/forms';
 import { AVAILABLE_TIME } from "../../artifact-list-page/artifact-list/artifact-list-tab/artifact-list-tab.component";
@@ -16,7 +16,6 @@ import { operateChanges, OperateInfo, OperationState } from "../../../../../lib/
 import { errorHandler } from "../../../../../lib/utils/shared/shared.utils";
 import { ArtifactFront as Artifact } from "../artifact";
 import { ArtifactService } from '../../../../../../ng-swagger-gen/services/artifact.service';
-import { TagService } from '../../../../../../ng-swagger-gen/services/tag.service';
 import { Tag } from '../../../../../../ng-swagger-gen/models/tag';
 import {
   UserPermissionService, USERSTATICPERMISSION
@@ -33,7 +32,7 @@ class InitTag {
   styleUrls: ['./artifact-tag.component.scss']
 })
 
-export class ArtifactTagComponent implements OnInit {
+export class ArtifactTagComponent implements OnInit, OnDestroy {
   @Input() artifactDetails: Artifact;
   @Input() projectName: string;
   @Input() projectId: number;
@@ -57,10 +56,12 @@ export class ArtifactTagComponent implements OnInit {
   currentTags: Tag[] = [];
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;
+  tagNameChecker: Subject<string> = new Subject<string>();
+  tagNameCheckSub: Subscription;
+  tagNameCheckOnGoing = false;
   constructor(
     private operationService: OperationService,
     private artifactService: ArtifactService,
-    private tagService: TagService,
     private translateService: TranslateService,
     private userPermissionService: UserPermissionService,
     private errorHandlerService: ErrorHandler
@@ -68,7 +69,39 @@ export class ArtifactTagComponent implements OnInit {
   ) { }
   ngOnInit() {
     this.getImagePermissionRule(this.projectId);
-    this.getAllTags();
+    this.invalidCreateTag();
+  }
+  checkTagName(name) {
+      let listArtifactParams: ArtifactService.ListArtifactsParams = {
+        projectName: this.projectName,
+        repositoryName: this.repositoryName,
+        withLabel: true,
+        withScanOverview: true,
+        withTag: true,
+        q: encodeURIComponent(`tags=${name}`)
+      };
+      return this.artifactService.listArtifacts(listArtifactParams)
+      .pipe(finalize(() => this.tagNameCheckOnGoing = false));
+  }
+  invalidCreateTag() {
+    if (!this.tagNameCheckSub) {
+      this.tagNameCheckSub = this.tagNameChecker
+        .pipe(debounceTime(200))
+        .pipe(distinctUntilChanged())
+        .pipe(switchMap(name => {
+          this.tagNameCheckOnGoing = true;
+          this.isTagNameExist = false;
+          return this.checkTagName(name);
+        }))
+        .subscribe(response => {
+        // tag existing
+        if (response && response.length) {
+            this.isTagNameExist = true;
+        }
+        }, error => {
+          this.errorHandlerService.error(error);
+        });
+    }
   }
   getCurrentArtifactTags(state: ClrDatagridStateInterface) {
     if (!state || !state.page) {
@@ -76,16 +109,16 @@ export class ArtifactTagComponent implements OnInit {
     }
     let pageNumber: number = calculatePage(state);
       if (pageNumber <= 0) { pageNumber = 1; }
-    let params: TagService.ListTagsParams = {
+    let params: ArtifactService.ListTagsParams = {
       projectName: this.projectName,
       repositoryName: this.repositoryName,
+      reference: this.artifactDetails.digest,
       page: pageNumber,
       withSignature: true,
       withImmutableStatus: true,
-      pageSize: this.pageSize,
-      q: encodeURIComponent(`artifact_id=${this.artifactDetails.id}`)
+      pageSize: this.pageSize
     };
-    this.tagService.listTagsResponse(params).pipe(finalize(() => {
+    this.artifactService.listTagsResponse(params).pipe(finalize(() => {
       this.loading = false;
     })).subscribe(res => {
       if (res.headers) {
@@ -95,17 +128,6 @@ export class ArtifactTagComponent implements OnInit {
         }
       }
       this.currentTags = res.body;
-    }, error => {
-      this.errorHandlerService.error(error);
-    });
-  }
-  getAllTags() {
-    let params: TagService.ListTagsParams = {
-      projectName: this.projectName,
-      repositoryName: this.repositoryName
-    };
-    this.tagService.listTags(params).subscribe(res => {
-      this.allTags = res;
     }, error => {
       this.errorHandlerService.error(error);
     });
@@ -142,7 +164,6 @@ export class ArtifactTagComponent implements OnInit {
     this.artifactService.createTag(createTagParams).subscribe(res => {
       this.newTagformShow = false;
       this.newTagName = new InitTag();
-      this.getAllTags();
       this.currentPage = 1;
       let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
       this.getCurrentArtifactTags(st);
@@ -249,15 +270,9 @@ export class ArtifactTagComponent implements OnInit {
   }
 
   existValid(name) {
-    this.isTagNameExist = false;
-    if (this.allTags) {
-      this.allTags.forEach(tag => {
-        if (tag.name === name) {
-          this.isTagNameExist = true;
-        }
-      });
+    if (name) {
+      this.tagNameChecker.next(name);
     }
-
   }
   toggleTagListOpenOrClose() {
     this.openTag = !this.openTag;
@@ -271,5 +286,8 @@ export class ArtifactTagComponent implements OnInit {
     this.currentPage = 1;
     let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
     this.getCurrentArtifactTags(st);
+  }
+  ngOnDestroy(): void {
+    this.tagNameCheckSub.unsubscribe();
   }
 }
