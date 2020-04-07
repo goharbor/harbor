@@ -212,6 +212,10 @@ func (f *fakedProjectMgr) GetPublic() ([]*models.Project, error) {
 	return nil, nil
 }
 
+func (f *fakedProjectMgr) GetAuthorized(user *models.User) ([]*models.Project, error) {
+	return nil, nil
+}
+
 // if the project manager uses a metadata manager, return it, otherwise return nil
 func (f *fakedProjectMgr) GetMetadataManager() metamgr.ProjectMetadataManager {
 	return nil

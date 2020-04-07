@@ -17,6 +17,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/security/local"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -101,17 +102,18 @@ func (s *StatisticAPI) Get() {
 		statistic[TRC] = n
 		statistic[PriRC] = n - statistic[PubRC]
 	} else {
-		// including the public ones
-		myProjects, err := s.SecurityCtx.GetMyProjects()
 		privProjectIDs := make([]int64, 0)
-		if err != nil {
-			s.ParseAndHandleError(fmt.Sprintf(
-				"failed to get projects of user %s", s.username), err)
-			return
-		}
-		for _, p := range myProjects {
-			if !p.IsPublic() {
-				privProjectIDs = append(privProjectIDs, p.ProjectID)
+		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok {
+			myProjects, err := s.ProjectMgr.GetAuthorized(sc.User())
+			if err != nil {
+				s.ParseAndHandleError(fmt.Sprintf(
+					"failed to get projects of user %s", s.username), err)
+				return
+			}
+			for _, p := range myProjects {
+				if !p.IsPublic() {
+					privProjectIDs = append(privProjectIDs, p.ProjectID)
+				}
 			}
 		}
 

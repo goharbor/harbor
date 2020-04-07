@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -272,43 +271,6 @@ func TestHasPushPullPermWithGroup(t *testing.T) {
 	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
 
-func TestGetMyProjects(t *testing.T) {
-	ctx := NewSecurityContext(guestUser, pm)
-	projects, err := ctx.GetMyProjects()
-	require.Nil(t, err)
-	assert.Equal(t, 1, len(projects))
-	assert.Equal(t, private.ProjectID, projects[0].ProjectID)
-}
-
-func TestGetProjectRoles(t *testing.T) {
-	// unauthenticated
-	ctx := NewSecurityContext(nil, pm)
-	roles := ctx.GetProjectRoles(private.Name)
-	assert.Equal(t, 0, len(roles))
-
-	// authenticated, project name of ID is nil
-	ctx = NewSecurityContext(guestUser, pm)
-	roles = ctx.GetProjectRoles(nil)
-	assert.Equal(t, 0, len(roles))
-
-	// authenticated, has read perm
-	ctx = NewSecurityContext(guestUser, pm)
-	roles = ctx.GetProjectRoles(private.Name)
-	assert.Equal(t, 1, len(roles))
-	assert.Equal(t, common.RoleGuest, roles[0])
-
-	// authenticated, has write perm
-	ctx = NewSecurityContext(developerUser, pm)
-	roles = ctx.GetProjectRoles(private.Name)
-	assert.Equal(t, 1, len(roles))
-	assert.Equal(t, common.RoleDeveloper, roles[0])
-
-	// authenticated, has all perms
-	ctx = NewSecurityContext(projectAdminUser, pm)
-	roles = ctx.GetProjectRoles(private.Name)
-	assert.Equal(t, 1, len(roles))
-	assert.Equal(t, common.RoleProjectAdmin, roles[0])
-}
 func PrepareGroupTest() {
 	initSqls := []string{
 		`insert into user_group (group_name, group_type, ldap_group_dn) values ('harbor_group_01', 1, 'cn=harbor_user,dc=example,dc=com')`,
@@ -328,107 +290,4 @@ func PrepareGroupTest() {
 		`delete from harbor_user where username = 'sample01'`,
 	}
 	dao.PrepareTestData(clearSqls, initSqls)
-}
-
-func TestSecurityContext_GetRolesByGroup(t *testing.T) {
-	PrepareGroupTest()
-	project, err := dao.GetProjectByName("group_project")
-	if err != nil {
-		t.Errorf("Error occurred when GetProjectByName: %v", err)
-	}
-	developer, err := dao.GetUser(models.User{Username: "sample01"})
-	if err != nil {
-		t.Errorf("Error occurred when GetUser: %v", err)
-	}
-	userGroups, err := group.QueryUserGroup(models.UserGroup{GroupType: common.LDAPGroupType, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"})
-	if err != nil {
-		t.Errorf("Failed to query user group %v", err)
-	}
-	if len(userGroups) < 1 {
-		t.Errorf("Failed to retrieve user group")
-	}
-
-	developer.GroupIDs = []int{userGroups[0].ID}
-	type fields struct {
-		user *models.User
-		pm   promgr.ProjectManager
-	}
-	type args struct {
-		projectIDOrName interface{}
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   []int
-	}{
-		{"Developer", fields{user: developer, pm: pm}, args{project.ProjectID}, []int{2}},
-		{"Guest", fields{user: guestUser, pm: pm}, args{project.ProjectID}, []int{}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &SecurityContext{
-				user: tt.fields.user,
-				pm:   tt.fields.pm,
-			}
-			if got := s.GetRolesByGroup(tt.args.projectIDOrName); !dao.ArrayEqual(got, tt.want) {
-				t.Errorf("SecurityContext.GetRolesByGroup() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestSecurityContext_GetMyProjects(t *testing.T) {
-	type fields struct {
-		user *models.User
-		pm   promgr.ProjectManager
-	}
-	tests := []struct {
-		name     string
-		fields   fields
-		wantSize int
-		wantErr  bool
-	}{
-		{"Admin", fields{user: projectAdminUser, pm: pm}, 1, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &SecurityContext{
-				user: tt.fields.user,
-				pm:   tt.fields.pm,
-			}
-			got, err := s.GetMyProjects()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("SecurityContext.GetMyProjects() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != tt.wantSize {
-				t.Errorf("SecurityContext.GetMyProjects() = %v, want %v", len(got), tt.wantSize)
-			}
-		})
-	}
-}
-
-func Test_mergeRoles(t *testing.T) {
-	type args struct {
-		rolesA []int
-		rolesB []int
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
-	}{
-		{"normal", args{[]int{3, 4}, []int{1, 2, 3, 4}}, []int{1, 2, 3, 4}},
-		{"empty", args{[]int{}, []int{}}, []int{}},
-		{"left empty", args{[]int{}, []int{1, 2, 3, 4}}, []int{1, 2, 3, 4}},
-		{"right empty", args{[]int{1, 2, 3, 4}, []int{}}, []int{1, 2, 3, 4}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := mergeRoles(tt.args.rolesA, tt.args.rolesB); !test.CheckSetsEqual(got, tt.want) {
-				t.Errorf("mergeRoles() = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }

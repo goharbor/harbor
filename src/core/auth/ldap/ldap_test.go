@@ -368,7 +368,7 @@ func TestAddProjectMemberWithLdapUser(t *testing.T) {
 		MemberUser: models.User{
 			Username: "mike",
 		},
-		Role: models.PROJECTADMIN,
+		Role: common.RoleProjectAdmin,
 	}
 	pmid, err := api.AddProjectMember(currentProject.ProjectID, member)
 	if err != nil {
@@ -387,7 +387,7 @@ func TestAddProjectMemberWithLdapUser(t *testing.T) {
 		MemberUser: models.User{
 			Username: "mike",
 		},
-		Role: models.PROJECTADMIN,
+		Role: common.RoleProjectAdmin,
 	}
 	pmid, err = api.AddProjectMember(currentProject.ProjectID, member2)
 	if err != nil {
@@ -409,7 +409,7 @@ func TestAddProjectMemberWithLdapGroup(t *testing.T) {
 		MemberGroup: models.UserGroup{
 			ID: groupIds[0],
 		},
-		Role: models.PROJECTADMIN,
+		Role: common.RoleProjectAdmin,
 	}
 	pmid, err := api.AddProjectMember(currentProject.ProjectID, member)
 	if err != nil {

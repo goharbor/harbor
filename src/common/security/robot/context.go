@@ -17,7 +17,6 @@ package robot
 import (
 	"sync"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
@@ -70,16 +69,6 @@ func (s *SecurityContext) IsSysAdmin() bool {
 // IsSolutionUser robot cannot be a system admin
 func (s *SecurityContext) IsSolutionUser() bool {
 	return false
-}
-
-// GetMyProjects no implementation
-func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
-	return nil, nil
-}
-
-// GetProjectRoles no implementation
-func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
-	return nil
 }
 
 // Can returns whether the robot can do action on resource

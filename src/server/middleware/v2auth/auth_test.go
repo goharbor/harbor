@@ -78,6 +78,10 @@ func (mockPM) GetPublic() ([]*models.Project, error) {
 	panic("implement me")
 }
 
+func (mockPM) GetAuthorized(user *models.User) ([]*models.Project, error) {
+	return nil, nil
+}
+
 func (mockPM) GetMetadataManager() metamgr.ProjectMetadataManager {
 	panic("implement me")
 }

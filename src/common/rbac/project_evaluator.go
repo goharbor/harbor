@@ -15,6 +15,8 @@
 package rbac
 
 import (
+	pro "github.com/goharbor/harbor/src/common/dao/project"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -24,8 +26,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
-// NewProjectRBACEvaluator returns permission evaluator for project
-func NewProjectRBACEvaluator(ctx security.Context, pm promgr.ProjectManager) evaluator.Evaluator {
+// NewProjectUserEvaluator returns permission evaluator for project
+func NewProjectUserEvaluator(user *models.User, pm promgr.ProjectManager) evaluator.Evaluator {
 	return namespace.New(ProjectNamespaceKind, func(ns types.Namespace) evaluator.Evaluator {
 		project, err := pm.Get(ns.Identity())
 		if err != nil || project == nil {
@@ -35,9 +37,13 @@ func NewProjectRBACEvaluator(ctx security.Context, pm promgr.ProjectManager) eva
 			return nil
 		}
 
-		if ctx.IsAuthenticated() {
-			roles := ctx.GetProjectRoles(project.ProjectID)
-			return rbac.New(NewProjectRBACUser(project, ctx.GetUsername(), roles...))
+		if user != nil {
+			roles, err := pro.ListRoles(user, project.ProjectID)
+			if err != nil {
+				log.Errorf("failed to list roles: %v", err)
+				return nil
+			}
+			return rbac.New(NewProjectRBACUser(project, user.Username, roles...))
 		} else if project.IsPublic() {
 			// anonymous access and the project is public
 			return rbac.New(NewProjectRBACUser(project, "anonymous"))

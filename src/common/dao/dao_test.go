@@ -399,22 +399,6 @@ func TestGetProjectById(t *testing.T) {
 	}
 }
 
-func TestGetUserProjectRoles(t *testing.T) {
-	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID, common.UserMember)
-	if err != nil {
-		t.Errorf("Error happened in GetUserProjectRole: %v, userID: %+v, project Id: %d", err, currentUser.UserID, currentProject.ProjectID)
-	}
-
-	// Get the size of current user project role.
-	if len(r) != 1 {
-		t.Errorf("The user, id: %d, should only have one role in project, id: %d, but actual: %d", currentUser.UserID, currentProject.ProjectID, len(r))
-	}
-
-	if r[0].Name != "projectAdmin" {
-		t.Errorf("the expected rolename is: projectAdmin, actual: %s", r[0].Name)
-	}
-}
-
 func TestGetTotalOfProjects(t *testing.T) {
 	total, err := GetTotalOfProjects(nil)
 	if err != nil {
@@ -436,23 +420,6 @@ func TestGetProjects(t *testing.T) {
 	}
 	if projects[1].Name != projectName {
 		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
-	}
-}
-
-func TestGetRoleByID(t *testing.T) {
-	r, err := GetRoleByID(models.PROJECTADMIN)
-	if err != nil {
-		t.Errorf("Failed to call GetRoleByID: %v", err)
-	}
-	if r == nil || r.Name != "projectAdmin" || r.RoleCode != "MDRWS" {
-		t.Errorf("Role does not match for role id: %d, actual: %+v", models.PROJECTADMIN, r)
-	}
-	r, err = GetRoleByID(9999)
-	if err != nil {
-		t.Errorf("Failed to call GetRoleByID: %v", err)
-	}
-	if r != nil {
-		t.Errorf("Role should nil for non-exist id 9999, actual: %+v", r)
 	}
 }
 

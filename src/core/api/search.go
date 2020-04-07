@@ -16,6 +16,8 @@ package api
 
 import (
 	"fmt"
+	pro "github.com/goharbor/harbor/src/common/dao/project"
+	"github.com/goharbor/harbor/src/common/security/local"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/dao"
@@ -47,7 +49,6 @@ type searchResult struct {
 // Get ...
 func (s *SearchAPI) Get() {
 	keyword := s.GetString("q")
-	isAuthenticated := s.SecurityCtx.IsAuthenticated()
 	isSysAdmin := s.SecurityCtx.IsSysAdmin()
 
 	var projects []*models.Project
@@ -66,11 +67,11 @@ func (s *SearchAPI) Get() {
 			s.ParseAndHandleError("failed to get projects", err)
 			return
 		}
-		if isAuthenticated {
-			mys, err := s.SecurityCtx.GetMyProjects()
+		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok {
+			mys, err := s.ProjectMgr.GetAuthorized(sc.User())
 			if err != nil {
 				s.SendInternalServerError(fmt.Errorf(
-					"failed to get projects: %v", err))
+					"failed to get authorized projects: %v", err))
 				return
 			}
 			exist := map[int64]bool{}
@@ -95,8 +96,12 @@ func (s *SearchAPI) Get() {
 			continue
 		}
 
-		if isAuthenticated {
-			roles := s.SecurityCtx.GetProjectRoles(p.ProjectID)
+		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok {
+			roles, err := pro.ListRoles(sc.User(), p.ProjectID)
+			if err != nil {
+				s.SendInternalServerError(fmt.Errorf("failed to list roles: %v", err))
+				return
+			}
 			p.Role = highestRole(roles)
 		}
 
