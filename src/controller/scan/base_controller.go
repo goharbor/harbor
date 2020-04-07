@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"strings"
 	"sync"
 
 	cj "github.com/goharbor/harbor/src/common/job"
@@ -435,12 +434,7 @@ func (bc *basicController) GetScanLog(uuid string) ([]byte, error) {
 		return nil, errors.New("empty uuid to get scan log")
 	}
 
-	data, err := base64.StdEncoding.DecodeString(uuid)
-	if err != nil {
-		data = []byte(uuid)
-	}
-
-	reportIDs := strings.Split(string(data), vuln.SummaryReportIDSeparator)
+	reportIDs := vuln.ParseReportIDs(uuid)
 
 	errs := map[string]error{}
 	logs := make(map[string][]byte, len(reportIDs))

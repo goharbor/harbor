@@ -50,12 +50,20 @@ func resolveVulnerabilitiesAddition(ctx context.Context, artifact *artifact.Arti
 			continue
 		}
 
-		vrp, err := report.ResolveData(rp.MimeType, []byte(rp.Report))
+		vrp, err := report.ResolveData(rp.MimeType, []byte(rp.Report), report.WithArtifactDigest(rp.Digest))
 		if err != nil {
 			return nil, err
 		}
 
-		vulnerabilities[rp.MimeType] = vrp
+		if v, ok := vulnerabilities[rp.MimeType]; ok {
+			r, err := report.Merge(rp.MimeType, v, vrp)
+			if err != nil {
+				return nil, err
+			}
+			vulnerabilities[rp.MimeType] = r
+		} else {
+			vulnerabilities[rp.MimeType] = vrp
+		}
 	}
 
 	content, _ := json.Marshal(vulnerabilities)

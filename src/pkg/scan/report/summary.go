@@ -36,6 +36,8 @@ func (cs CVESet) Contains(cve string) bool {
 
 // Options provides options for getting the report w/ summary.
 type Options struct {
+	// If it is set, the returned report will contains artifact digest for the vulnerabilities
+	ArtifactDigest string
 	// If it is set, the returned summary will not count the CVEs in the list in.
 	CVEWhitelist CVESet
 }
@@ -50,19 +52,26 @@ func WithCVEWhitelist(set *CVESet) Option {
 	}
 }
 
+// WithArtifactDigest is an option of setting artifact digest
+func WithArtifactDigest(artifactDigest string) Option {
+	return func(options *Options) {
+		options.ArtifactDigest = artifactDigest
+	}
+}
+
 // SummaryMerger is a helper function to merge summary together
 type SummaryMerger func(s1, s2 interface{}) (interface{}, error)
 
-// SupportedMergers declares mappings between mime type and summary merger func.
-var SupportedMergers = map[string]SummaryMerger{
+// SupportedSummaryMergers declares mappings between mime type and summary merger func.
+var SupportedSummaryMergers = map[string]SummaryMerger{
 	v1.MimeTypeNativeReport: MergeNativeSummary,
 }
 
 // MergeSummary merge summary s1 and s2
 func MergeSummary(mimeType string, s1, s2 interface{}) (interface{}, error) {
-	m, ok := SupportedMergers[mimeType]
+	m, ok := SupportedSummaryMergers[mimeType]
 	if !ok {
-		return nil, errors.Errorf("no mreger bound with mime type %s", mimeType)
+		return nil, errors.Errorf("no summary merger bound with mime type %s", mimeType)
 	}
 
 	return m(s1, s2)
