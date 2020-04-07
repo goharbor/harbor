@@ -18,10 +18,12 @@
                     <label class="clr-control-container" [class.clr-error]="isTagNameExist || name.hasError('pattern')">
                         <input clrInput type="text" id="name" name="name" required size="20" autocomplete="off"
                             [(ngModel)]="newTagName.name" #name="ngModel" pattern="^[\w][\w.-]{0,127}$" (keyup)="existValid(newTagName.name)">
-                        <clr-control-error class="position-ab" *ngIf="isTagNameExist">
+                        <span class="spinner spinner-inline spinner-tag" [hidden]="!tagNameCheckOnGoing"></span>
+
+                        <clr-control-error class="position-ab white-space-nowrap" *ngIf="isTagNameExist">
                             {{'TAG.NAME_ALREADY_EXISTS' | translate }}
                         </clr-control-error>
-                        <clr-control-error class="position-ab" *ngIf="name.hasError('pattern')">
+                        <clr-control-error class="position-ab white-space-nowrap" *ngIf="name.hasError('pattern')">
                             {{'RETAG.TIP_TAG' | translate }}
                         </clr-control-error>
                     </label>
@@ -31,7 +33,7 @@
                                         'BUTTON.CANCEL' | translate }}
                     </button>
                     <button type="submit" class="btn btn-sm btn-primary" (click)="saveAddTag()"
-                        [disabled]="isTagNameExist || !newTagName.name ||tagForm.invalid">{{
+                        [disabled]="isTagNameExist || tagNameCheckOnGoing || !newTagName.name ||tagForm.invalid">{{
                                         'BUTTON.OK' | translate }}
                     </button>
                 </label>
