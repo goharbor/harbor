@@ -15,88 +15,11 @@
 package vuln
 
 import (
-	"encoding/base64"
 	"testing"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/stretchr/testify/assert"
 )
-
-func Test_mergeReportID(t *testing.T) {
-	type args struct {
-		r1 string
-		r2 string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{"1|2", args{"1", "2"}, base64.StdEncoding.EncodeToString([]byte("1|2"))},
-		{"1|2|3", args{base64.StdEncoding.EncodeToString([]byte("1|2")), "3"}, base64.StdEncoding.EncodeToString([]byte("1|2|3"))},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := mergeReportID(tt.args.r1, tt.args.r2); got != tt.want {
-				t.Errorf("mergeReportID() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_mergeSeverity(t *testing.T) {
-	type args struct {
-		s1 Severity
-		s2 Severity
-	}
-	tests := []struct {
-		name string
-		args args
-		want Severity
-	}{
-		{"empty string and none", args{Severity(""), None}, None},
-		{"none and empty string", args{None, Severity("")}, None},
-		{"none and low", args{None, Low}, Low},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := mergeSeverity(tt.args.s1, tt.args.s2); got != tt.want {
-				t.Errorf("mergeSeverity() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_mergeScanStatus(t *testing.T) {
-	errorStatus := job.ErrorStatus.String()
-	runningStatus := job.RunningStatus.String()
-	successStatus := job.SuccessStatus.String()
-
-	type args struct {
-		s1 string
-		s2 string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{"running and error", args{runningStatus, errorStatus}, runningStatus},
-		{"running and success", args{runningStatus, successStatus}, runningStatus},
-		{"running and running", args{runningStatus, runningStatus}, runningStatus},
-		{"success and error", args{successStatus, errorStatus}, successStatus},
-		{"success and success", args{successStatus, successStatus}, successStatus},
-		{"error and error", args{errorStatus, errorStatus}, errorStatus},
-		{"error and empty string", args{errorStatus, ""}, errorStatus},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := mergeScanStatus(tt.args.s1, tt.args.s2); got != tt.want {
-				t.Errorf("mergeScanStatus() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestMergeVulnerabilitySummary(t *testing.T) {
 	assert := assert.New(t)

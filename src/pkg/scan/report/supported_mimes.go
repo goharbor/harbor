@@ -30,7 +30,7 @@ var SupportedMimes = map[string]interface{}{
 }
 
 // ResolveData is a helper func to parse the JSON data with the given mime type.
-func ResolveData(mime string, jsonData []byte) (interface{}, error) {
+func ResolveData(mime string, jsonData []byte, options ...Option) (interface{}, error) {
 	// If no resolver defined for the given mime types, directly ignore it.
 	// The raw data will be used.
 	t, ok := SupportedMimes[mime]
@@ -52,6 +52,17 @@ func ResolveData(mime string, jsonData []byte) (interface{}, error) {
 
 	if err := json.Unmarshal(jsonData, rp); err != nil {
 		return nil, err
+	}
+
+	ops := &Options{}
+	for _, op := range options {
+		op(ops)
+	}
+
+	if ops.ArtifactDigest != "" {
+		if w, ok := rp.(interface{ WithArtifactDigest(string) }); ok {
+			w.WithArtifactDigest(ops.ArtifactDigest)
+		}
 	}
 
 	return rp, nil
