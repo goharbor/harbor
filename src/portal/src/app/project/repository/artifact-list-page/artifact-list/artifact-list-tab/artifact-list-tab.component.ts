@@ -1091,19 +1091,26 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   get isFilterReadonly() {
     return this.filterByType === 'labels' ? 'readonly' : null;
   }
-  preheat(artifacts: Artifact[]) {
-    let images: string[] = [];
-    artifacts.map(artifact => {
-      artifact.tags.map(tag => {
-        // only preheat docker image
-        if (artifact.type === 'IMAGE' && artifact['repository_name']) {
-          images.push(`${artifact['repository_name']}:${tag.name}`);
-        }
+  canPreheat() {
+    if (this.selectedRow && this.selectedRow.length > 0) {
+      return this.selectedRow.some(item => {
+        return item.type === 'IMAGE' && item.tags && item.tags.length > 0;
       });
-      return images;
+    }
+    return false;
+  }
+  preheat() {
+    let images: string[] = [];
+    this.selectedRow.forEach(artifact => {
+      if (artifact.tags) {
+        artifact.tags.forEach(tag => {
+          // only preheat docker image
+          if (artifact.type === 'IMAGE') {
+            images.push(`${this.projectName}/${this.repoName}:${tag.name}`);
+          }
+        });
+      }
     });
-    this.selectedRow = [];
-
     // init operation info
     let operMessage = new OperateInfo();
     operMessage.name = 'DISTRIBUTION.PREHEAT_ACTION';
@@ -1122,7 +1129,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         operateChanges(operMessage, OperationState.success);
       },
       error => {
-        console.error('preheatImages 失败', error);
         const message = errorHandler(error);
         this.translateService
           .get('DISTRIBUTION.REQUEST_PREHEAT_FAILED')

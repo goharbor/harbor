@@ -5,6 +5,7 @@
 >
   <h3 class="modal-title">{{ title | translate }}</h3>
   <div class="modal-body">
+    <inline-alert class="modal-title"></inline-alert>
     <form #instanceForm="ngForm" class="clr-form clr-form-horizontal">
       <!-- 1. provider -->
       <clr-select-container>
@@ -224,6 +225,7 @@
       {{ 'BUTTON.CANCEL' | translate }}
     </button>
     <button
+      [clrLoading]="saveBtnState"
       type="button"
       class="btn btn-primary"
       (click)="submit()"
