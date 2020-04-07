@@ -15,6 +15,8 @@
 package vuln
 
 import (
+	"encoding/json"
+
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -28,6 +30,24 @@ type Report struct {
 	Severity Severity `json:"severity"`
 	// Vulnerability list
 	Vulnerabilities []*VulnerabilityItem `json:"vulnerabilities"`
+}
+
+// MarshalJSON custom function to dump nil slice of Vulnerabilities as empty slice
+// See https://github.com/goharbor/harbor/issues/11131 to get more details
+func (report *Report) MarshalJSON() ([]byte, error) {
+	type Alias Report
+
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(report),
+	}
+
+	if aux.Vulnerabilities == nil {
+		aux.Vulnerabilities = []*VulnerabilityItem{}
+	}
+
+	return json.Marshal(aux)
 }
 
 // Merge ...
