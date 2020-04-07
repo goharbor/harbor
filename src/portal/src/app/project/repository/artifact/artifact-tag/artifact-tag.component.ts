@@ -21,7 +21,7 @@ import {
   UserPermissionService, USERSTATICPERMISSION
 } from "../../../../../lib/services";
 import { ClrDatagridStateInterface } from '@clr/angular';
-import { DEFAULT_PAGE_SIZE, calculatePage } from '../../../../../lib/utils/utils';
+import { DEFAULT_PAGE_SIZE, calculatePage, dbEncodeURIComponent } from '../../../../../lib/utils/utils';
 
 class InitTag {
   name = "";
@@ -74,7 +74,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   checkTagName(name) {
       let listArtifactParams: ArtifactService.ListArtifactsParams = {
         projectName: this.projectName,
-        repositoryName: this.repositoryName,
+        repositoryName: dbEncodeURIComponent(this.repositoryName),
         withLabel: true,
         withScanOverview: true,
         withTag: true,
@@ -111,7 +111,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
       if (pageNumber <= 0) { pageNumber = 1; }
     let params: ArtifactService.ListTagsParams = {
       projectName: this.projectName,
-      repositoryName: this.repositoryName,
+      repositoryName: dbEncodeURIComponent(this.repositoryName),
       reference: this.artifactDetails.digest,
       page: pageNumber,
       withSignature: true,
@@ -272,6 +272,8 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   existValid(name) {
     if (name) {
       this.tagNameChecker.next(name);
+    } else {
+      this.isTagNameExist = false;
     }
   }
   toggleTagListOpenOrClose() {

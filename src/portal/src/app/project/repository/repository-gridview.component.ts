@@ -24,7 +24,7 @@ import {
   UserPermissionService, USERSTATICPERMISSION
 } from "../../../lib/services";
 import { FilterComponent } from "../../../lib/components/filter/filter.component";
-import { calculatePage, clone, DEFAULT_PAGE_SIZE } from "../../../lib/utils/utils";
+import { calculatePage, clone, DEFAULT_PAGE_SIZE, dbEncodeURIComponent } from "../../../lib/utils/utils";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../lib/entities/service.config";
 import { ErrorHandler } from "../../../lib/utils/error-handler";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../lib/entities/shared.const";
@@ -222,7 +222,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     this.operationService.publishInfo(operMessage);
     return this.newRepoService
       .deleteRepository({
-        repositoryName: repo.name,
+        repositoryName: dbEncodeURIComponent(repo.name),
         projectName: this.projectName
       })
       .pipe(map(

@@ -19,6 +19,7 @@ import { Artifact } from "../../../../ng-swagger-gen/models/artifact";
 import { ArtifactService } from "../../../../ng-swagger-gen/services/artifact.service";
 import { Project } from "../../project/project";
 import { ProjectService } from "../../../lib/services";
+import { dbEncodeURIComponent } from '../../../lib/utils/utils';
 
 @Injectable({
   providedIn: 'root'
@@ -38,7 +39,7 @@ export class ArtifactDetailRoutingResolverService implements Resolve<Artifact> {
       .pipe(
           mergeMap((project: Project) => {
             return forkJoin([this.artifactService.getArtifact({
-              repositoryName: repositoryName,
+              repositoryName: dbEncodeURIComponent(repositoryName),
               reference: artifactDigest,
               projectName: project.name,
               withLabel: true,

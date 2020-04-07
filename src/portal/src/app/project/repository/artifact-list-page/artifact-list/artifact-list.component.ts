@@ -27,6 +27,7 @@ import { Project } from '../../../project';
 import {
   RepositoryService as NewRepositoryService
 } from "../../../../../../ng-swagger-gen/services/repository.service";
+import { dbEncodeURIComponent } from '../../../../../lib/utils/utils';
 const TabLinkContentMap: { [index: string]: string } = {
   'repo-info': 'info',
   'repo-image': 'image'
@@ -117,7 +118,7 @@ export class ArtifactListComponent implements OnInit {
   retrieve(state?: State) {
     let params: NewRepositoryService.GetRepositoryParams = {
       projectName: this.projectName,
-      repositoryName: this.repoName
+      repositoryName: dbEncodeURIComponent(this.repoName),
     };
     this.newRepositoryService.getRepository(params)
       .subscribe(response => {
@@ -168,7 +169,7 @@ export class ArtifactListComponent implements OnInit {
     }
     this.onGoing = true;
     let params: NewRepositoryService.UpdateRepositoryParams = {
-      repositoryName: this.repoName,
+      repositoryName: dbEncodeURIComponent(this.repoName),
       repository: {description: this.imageInfo},
       projectName: this.projectName,
     };

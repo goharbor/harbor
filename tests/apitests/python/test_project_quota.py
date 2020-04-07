@@ -59,7 +59,7 @@ class TestProjects(unittest.TestCase):
                 self.assertEqual(quota[0].used["storage"], 2789002)
 
                 #8. Delete repository(RA) by user(UA);
-                self.repo.delete_repoitory(project_name, image, **ADMIN_CLIENT)
+                self.repo.delete_repoitory(project_name, "goharbor%2Falpine", **ADMIN_CLIENT)
 
                 #9. Quota should be 0
                 quota = self.system.get_project_quota("project", project_id, **ADMIN_CLIENT)
