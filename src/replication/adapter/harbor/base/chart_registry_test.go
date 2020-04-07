@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package harbor
+package base
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
@@ -31,7 +29,7 @@ func TestFetchCharts(t *testing.T) {
 	server := test.NewServer([]*test.RequestHandlerMapping{
 		{
 			Method:  http.MethodGet,
-			Pattern: fmt.Sprintf("/api/%s/projects", api.APIVersion),
+			Pattern: "/api/projects",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
 					"name": "library",
@@ -69,7 +67,7 @@ func TestFetchCharts(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter, err := newAdapter(registry)
+	adapter, err := New(registry)
 	require.Nil(t, err)
 	// nil filter
 	resources, err := adapter.FetchCharts(nil)
@@ -116,7 +114,7 @@ func TestChartExist(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter, err := newAdapter(registry)
+	adapter, err := New(registry)
 	require.Nil(t, err)
 	exist, err := adapter.ChartExist("library/harbor", "1.0")
 	require.Nil(t, err)
@@ -149,7 +147,7 @@ func TestDownloadChart(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter, err := newAdapter(registry)
+	adapter, err := New(registry)
 	require.Nil(t, err)
 	_, err = adapter.DownloadChart("library/harbor", "1.0")
 	require.Nil(t, err)
@@ -167,7 +165,7 @@ func TestUploadChart(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter, err := newAdapter(registry)
+	adapter, err := New(registry)
 	require.Nil(t, err)
 	err = adapter.UploadChart("library/harbor", "1.0", bytes.NewBuffer(nil))
 	require.Nil(t, err)
@@ -185,7 +183,7 @@ func TestDeleteChart(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter, err := newAdapter(registry)
+	adapter, err := New(registry)
 	require.Nil(t, err)
 	err = adapter.DeleteChart("library/harbor", "1.0")
 	require.Nil(t, err)

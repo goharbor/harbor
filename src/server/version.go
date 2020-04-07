@@ -12,23 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package route
+package server
 
 import (
-	"github.com/goharbor/harbor/src/server/middleware/apiversion"
-	"github.com/goharbor/harbor/src/server/router"
-	"github.com/goharbor/harbor/src/server/v2.0/handler"
+	"encoding/json"
+	"net/http"
+
+	serror "github.com/goharbor/harbor/src/server/error"
+	"github.com/goharbor/harbor/src/server/v2.0/route"
 )
 
-// const definition
-const (
-	APIVersion = "v2.0"
+var (
+	version = route.APIVersion
 )
 
-// RegisterRoutes for Harbor v2.0 APIs
-func RegisterRoutes() {
-	registerLegacyRoutes()
-	router.NewRoute().Path("/api/" + APIVersion + "/*").
-		Middleware(apiversion.Middleware(APIVersion)).
-		Handler(handler.New())
+// APIVersion model
+type APIVersion struct {
+	Version string `json:"version"`
+}
+
+// GetAPIVersion returns the current supported API version
+func GetAPIVersion(w http.ResponseWriter, r *http.Request) {
+	if err := json.NewEncoder(w).Encode(&APIVersion{Version: version}); err != nil {
+		serror.SendError(w, err)
+	}
 }

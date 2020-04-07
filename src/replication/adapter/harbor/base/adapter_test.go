@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package harbor
+package base
 
 import (
 	"net/http"
@@ -25,11 +25,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestGetAPIVersion(t *testing.T) {
+	adapter := &Adapter{
+		Client: &Client{APIVersion: "1.0"},
+	}
+	assert.Equal(t, "1.0", adapter.GetAPIVersion())
+}
+
 func TestInfo(t *testing.T) {
 	// chart museum enabled
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodGet,
-		Pattern: "/api/v2.0/systeminfo",
+		Pattern: "/api/systeminfo",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			data := `{"with_chartmuseum":true}`
 			w.Write([]byte(data))
@@ -38,23 +45,22 @@ func TestInfo(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter, err := newAdapter(registry)
+	adapter, err := New(registry)
 	require.Nil(t, err)
 	info, err := adapter.Info()
 	require.Nil(t, err)
 	assert.Equal(t, model.RegistryTypeHarbor, info.Type)
-	assert.Equal(t, 2, len(info.SupportedResourceFilters))
+	assert.Equal(t, 3, len(info.SupportedResourceFilters))
 	assert.Equal(t, 2, len(info.SupportedTriggers))
-	assert.Equal(t, 3, len(info.SupportedResourceTypes))
-	assert.Equal(t, model.ResourceTypeArtifact, info.SupportedResourceTypes[0])
-	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[1])
-	assert.Equal(t, model.ResourceTypeChart, info.SupportedResourceTypes[2])
+	assert.Equal(t, 2, len(info.SupportedResourceTypes))
+	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
+	assert.Equal(t, model.ResourceTypeChart, info.SupportedResourceTypes[1])
 	server.Close()
 
 	// chart museum disabled
 	server = test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodGet,
-		Pattern: "/api/v2.0/systeminfo",
+		Pattern: "/api/systeminfo",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			data := `{"with_chartmuseum":false}`
 			w.Write([]byte(data))
@@ -63,23 +69,22 @@ func TestInfo(t *testing.T) {
 	registry = &model.Registry{
 		URL: server.URL,
 	}
-	adapter, err = newAdapter(registry)
+	adapter, err = New(registry)
 	require.Nil(t, err)
 	info, err = adapter.Info()
 	require.Nil(t, err)
 	assert.Equal(t, model.RegistryTypeHarbor, info.Type)
-	assert.Equal(t, 2, len(info.SupportedResourceFilters))
+	assert.Equal(t, 3, len(info.SupportedResourceFilters))
 	assert.Equal(t, 2, len(info.SupportedTriggers))
-	assert.Equal(t, 2, len(info.SupportedResourceTypes))
-	assert.Equal(t, model.ResourceTypeArtifact, info.SupportedResourceTypes[0])
-	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[1])
+	assert.Equal(t, 1, len(info.SupportedResourceTypes))
+	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
 	server.Close()
 }
 
 func TestPrepareForPush(t *testing.T) {
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodPost,
-		Pattern: "/api/v2.0/projects",
+		Pattern: "/api/projects",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusCreated)
 		},
@@ -87,7 +92,7 @@ func TestPrepareForPush(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter, err := newAdapter(registry)
+	adapter, err := New(registry)
 	require.Nil(t, err)
 	// nil resource
 	err = adapter.PrepareForPush([]*model.Resource{nil})
@@ -133,7 +138,7 @@ func TestPrepareForPush(t *testing.T) {
 	// project already exists
 	server = test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodPost,
-		Pattern: "/api/v2.0/projects",
+		Pattern: "/api/projects",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusConflict)
 		},
@@ -141,7 +146,7 @@ func TestPrepareForPush(t *testing.T) {
 	registry = &model.Registry{
 		URL: server.URL,
 	}
-	adapter, err = newAdapter(registry)
+	adapter, err = New(registry)
 	require.Nil(t, err)
 	err = adapter.PrepareForPush(
 		[]*model.Resource{
