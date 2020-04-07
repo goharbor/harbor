@@ -104,7 +104,7 @@ openssl x509 -req -days $DAYS -sha256 -in trivy_adapter.csr -CA harbor_internal_
 openssl req -new \
         -newkey rsa:4096 -nodes -sha256 -keyout notary_signer.key \
         -out notary_signer.csr \
-        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=notary_signer"
+        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=notary-signer"
 
 # sign notary_signer csr with CA certificate and key
 openssl x509 -req -days $DAYS -sha256 -in notary_signer.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out notary_signer.crt
@@ -113,7 +113,7 @@ openssl x509 -req -days $DAYS -sha256 -in notary_signer.csr -CA harbor_internal_
 openssl req -new \
         -newkey rsa:4096 -nodes -sha256 -keyout notary_server.key \
         -out notary_server.csr \
-        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=notary_server"
+        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=notary-server"
 
 # sign notary_server csr with CA certificate and key
 openssl x509 -req -days $DAYS -sha256 -in notary_server.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out notary_server.crt
