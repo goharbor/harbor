@@ -44,7 +44,7 @@ func Middleware() func(http.Handler) http.Handler {
 		securityCtx, ok := security.FromContext(ctx)
 		// only authenticated robot account with scanner pull access can bypass.
 		if ok && securityCtx.IsAuthenticated() &&
-			securityCtx.Name() == "robot" &&
+			(securityCtx.Name() == "robot" || securityCtx.Name() == "v2token") &&
 			securityCtx.Can(rbac.ActionScannerPull, rbac.NewProjectNamespace(pro.ProjectID).Resource(rbac.ResourceRepository)) {
 			// the artifact is pulling by the scanner, skip the checking
 			logger.Debugf("artifact %s@%s is pulling by the scanner, skip the checking", af.Repository, af.Digest)

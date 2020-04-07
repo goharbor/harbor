@@ -120,10 +120,10 @@ class TestProjects(unittest.TestCase):
         self.project.disable_project_robot_account(TestProjects.project_ra_id_a, robot_id, True, **TestProjects.USER_RA_CLIENT)
 
         print "#13. Pull image(ImagePA) from project(PA) by robot account(RA), it must be not successful;"
-        pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_a, tag_a, expected_login_error_message = "401 Unauthorized")
+        pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_a, tag_a, expected_login_error_message = "unauthorized: authentication required")
 
         print "#14. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;"
-        push_image_to_project(TestProjects.project_ra_name_a, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_login_error_message = "401 Unauthorized")
+        push_image_to_project(TestProjects.project_ra_name_a, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_login_error_message = "unauthorized: authentication required")
 
         print "#15. Delete robot account(RA), it must be not successful."
         self.project.delete_project_robot_account(TestProjects.project_ra_id_a, robot_id, **TestProjects.USER_RA_CLIENT)

@@ -73,7 +73,7 @@ func Middleware() func(http.Handler) http.Handler {
 
 		securityCtx, ok := security.FromContext(ctx)
 		if ok &&
-			securityCtx.Name() == "robot" &&
+			(securityCtx.Name() == "robot" || securityCtx.Name() == "v2token") &&
 			securityCtx.Can(rbac.ActionScannerPull, rbac.NewProjectNamespace(proj.ProjectID).Resource(rbac.ResourceRepository)) {
 			// the artifact is pulling by the scanner, skip the checking
 			logger.Debugf("artifact %s@%s is pulling by the scanner, skip the checking", art.RepositoryName, art.Digest)
