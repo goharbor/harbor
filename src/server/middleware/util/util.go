@@ -32,8 +32,6 @@ func ParseProjectName(r *http.Request) string {
 
 	prefixes := []string{
 		fmt.Sprintf("/api/%s/projects/", api.APIVersion), // v2.0 management APIs
-		"/api/chartrepo/", // chartmuseum APIs
-		fmt.Sprintf("/api/%s/chartrepo/", api.APIVersion), // chartmuseum Label APIs
 	}
 
 	for _, prefix := range prefixes {

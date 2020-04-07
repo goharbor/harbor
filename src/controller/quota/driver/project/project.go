@@ -22,9 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
-	"github.com/goharbor/harbor/src/controller/chartmuseum"
 	"github.com/goharbor/harbor/src/lib/log"
 	dr "github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/types"
@@ -39,9 +37,7 @@ type driver struct {
 	cfg    *config.CfgManager
 	loader *dataloader.Loader
 
-	artifactCtl artifact.Controller
-	blobCtl     blob.Controller
-	chartCtl    chartmuseum.Controller
+	blobCtl blob.Controller
 }
 
 func (d *driver) Enabled(ctx context.Context, key string) (bool, error) {
@@ -127,10 +123,8 @@ func newDriver() dr.Driver {
 	loader := dataloader.NewBatchedLoader(getProjectsBatchFn)
 
 	return &driver{
-		cfg:         cfg,
-		loader:      loader,
-		artifactCtl: artifact.Ctl,
-		blobCtl:     blob.Ctl,
-		chartCtl:    chartmuseum.Ctl,
+		cfg:     cfg,
+		loader:  loader,
+		blobCtl: blob.Ctl,
 	}
 }

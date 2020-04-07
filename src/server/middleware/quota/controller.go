@@ -17,7 +17,6 @@ package quota
 import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
-	"github.com/goharbor/harbor/src/controller/chartmuseum"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/quota"
 )
@@ -25,7 +24,6 @@ import (
 var (
 	artifactController = artifact.Ctl
 	blobController     = blob.Ctl
-	chartController    = chartmuseum.Ctl
 	projectController  = project.Ctl
 	quotaController    = quota.Ctl
 )
