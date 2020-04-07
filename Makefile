@@ -80,7 +80,6 @@ CLAIRFLAG=false
 TRIVYFLAG=false
 HTTPPROXY=
 BUILDBIN=false
-MIGRATORFLAG=false
 NPM_REGISTRY=https://registry.npmjs.org
 # enable/disable chart repo supporting
 CHARTFLAG=false
@@ -285,9 +284,6 @@ ifeq ($(CLAIRFLAG), true)
 endif
 ifeq ($(TRIVYFLAG), true)
 	DOCKERSAVE_PARA+= goharbor/trivy-adapter-photon:$(VERSIONTAG)
-endif
-ifeq ($(MIGRATORFLAG), true)
-	DOCKERSAVE_PARA+= goharbor/harbor-migrator:$(VERSIONTAG)
 endif
 # append chartmuseum parameters if set
 ifeq ($(CHARTFLAG), true)

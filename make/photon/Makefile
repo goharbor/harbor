@@ -96,10 +96,6 @@ DOCKERFILEPATH_REDIS=$(DOCKERFILEPATH)/redis
 DOCKERFILENAME_REDIS=Dockerfile
 DOCKERIMAGENAME_REDIS=goharbor/redis-photon
 
-DOCKERFILEPATH_MIGRATOR=$(TOOLSPATH)/migration
-DOCKERFILENAME_MIGRATOR=Dockerfile
-DOCKERIMAGENAME_MIGRATOR=goharbor/harbor-migrator
-
 # for chart server (chartmuseum)
 DOCKERFILEPATH_CHART_SERVER=$(DOCKERFILEPATH)/chartserver
 DOCKERFILENAME_CHART_SERVER=Dockerfile
@@ -246,13 +242,6 @@ _build_redis:
 	@$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) -t $(DOCKERIMAGENAME_REDIS):$(VERSIONTAG) .
 	@echo "Done."
 
-_build_migrator:
-	@if [ "$(MIGRATORFLAG)" = "true" ] ; then \
-		echo "building db migrator container for photon..."; \
-		cd $(DOCKERFILEPATH_MIGRATOR) && $(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_MIGRATOR)/$(DOCKERFILENAME_MIGRATOR) -t $(DOCKERIMAGENAME_MIGRATOR):$(VERSIONTAG) . ; \
-		echo "Done."; \
-	fi
-
 define _extract_archive
 	$(WGET) --timeout 30 --no-check-certificate -O- $1 | tar xvz -C $2
 endef
@@ -261,7 +250,7 @@ define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2 || exit 1
 endef
 
-build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_clair_adapter _build_trivy_adapter _build_redis _build_migrator _build_chart_server
+build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_clair_adapter _build_trivy_adapter _build_redis _build_chart_server
 
 cleanimage:
 	@echo "cleaning image for photon..."
