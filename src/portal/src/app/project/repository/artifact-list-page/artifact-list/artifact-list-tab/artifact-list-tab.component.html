@@ -95,7 +95,7 @@
                     <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}
                 </button>
                 <button type="button" class="btn  btn-secondary scan-btn"
-                    (click)="preheat(selectedRow)" [disabled]="selectedRow.length < 1">
+                    (click)="preheat()" [disabled]="!canPreheat()">
                     <clr-icon shape="pop-out" size="16"></clr-icon>&nbsp;{{'DISTRIBUTION.PREHEAT_ACTION' | translate}}
                 </button>
 
