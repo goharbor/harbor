@@ -9,6 +9,8 @@ import { Instance } from "../../../../ng-swagger-gen/models/instance";
 import { Provider } from "../../../../ng-swagger-gen/models/provider";
 import { AuthMode } from "../distribution-interface";
 import { clone } from "../../../lib/utils/utils";
+import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
+import { ClrLoadingState } from "@clr/angular";
 
 @Component({
   selector: 'dist-setup-modal',
@@ -25,6 +27,8 @@ export class DistributionSetupModalComponent implements OnInit {
   authToken: string;
   authData: {[key: string]: any};
   @ViewChild('instanceForm', { static: true }) instanceForm: NgForm;
+  @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
+  saveBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
 
   constructor(
     private distributionService: PreheatService,
@@ -72,6 +76,7 @@ export class DistributionSetupModalComponent implements OnInit {
   }
 
   _open() {
+    this.inlineAlert.close();
     this.opened = true;
   }
 
@@ -109,6 +114,7 @@ export class DistributionSetupModalComponent implements OnInit {
         auth_mode: this.model.auth_mode,
         auth_data: this.model.auth_data
       };
+      this.saveBtnState = ClrLoadingState.LOADING;
       this.distributionService.UpdateInstance({instanceId: this.model.id, propertySet: data
         }).subscribe(
         response => {
@@ -116,35 +122,41 @@ export class DistributionSetupModalComponent implements OnInit {
             this.msgHandler.info(msg);
           });
           this.chanService.publish('updated');
+          this.saveBtnState = ClrLoadingState.SUCCESS;
+          this._close();
         },
         err => {
           const message = errorHandler(err);
           this.translate.get('DISTRIBUTION.UPDATE_FAILED').subscribe(msg => {
             this.translate.get(message).subscribe(errMsg => {
-              this.msgHandler.error(msg + ': ' + errMsg);
+              this.inlineAlert.showInlineError(msg + ': ' + errMsg);
+              this.saveBtnState = ClrLoadingState.ERROR;
             });
           });
         }
       );
     } else {
+      this.saveBtnState = ClrLoadingState.LOADING;
       this.distributionService.CreateInstance({instance: this.model}).subscribe(
         response => {
           this.translate.get('DISTRIBUTION.CREATE_SUCCESS').subscribe(msg => {
             this.msgHandler.info(msg);
           });
           this.chanService.publish('created');
+          this.saveBtnState = ClrLoadingState.SUCCESS;
+          this._close();
         },
         err => {
           const message = errorHandler(err);
           this.translate.get('DISTRIBUTION.CREATE_FAILED').subscribe(msg => {
             this.translate.get(message).subscribe(errMsg => {
-              this.msgHandler.error(msg + ': ' + errMsg);
+              this.inlineAlert.showInlineError(msg + ': ' + errMsg);
+              this.saveBtnState = ClrLoadingState.ERROR;
             });
           });
         }
       );
     }
-    this._close();
   }
 
   openSetupModal(editingMode: boolean, data?: Instance): void {
