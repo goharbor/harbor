@@ -53,11 +53,7 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  # the _self suffix here is used to avoid the conflict of repository name and URL path
-  # e.g. the repository name can be "library/artifacts", we cannot distinguish the URL
-  # "GET /projects/{project_name}/repositories/library/artifacts" is getting repository
-  # or listing artifacts
-  /projects/{project_name}/repositories/{repository_name}/_self:
+  /projects/{project_name}/repositories/{repository_name}:
     get:
       summary: Get repository
       description: Get the repository specified by name
@@ -671,7 +667,7 @@ parameters:
   repositoryName:
     name: repository_name
     in: path
-    description: The name of the repository
+    description: The name of the repository. If it contains slash, encode it with URL encoding. e.g. a/b -> a%252Fb
     required: true
     type: string
   reference:

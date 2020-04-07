@@ -624,3 +624,9 @@ export function mergeDeep(target, ...sources) {
     }
     return mergeDeep(target, ...sources);
 }
+export function dbEncodeURIComponent(url: string) {
+    if (typeof url === "string") {
+        return encodeURIComponent(encodeURIComponent(url));
+    }
+    return "";
+}

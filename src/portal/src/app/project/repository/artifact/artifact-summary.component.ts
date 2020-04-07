@@ -8,6 +8,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { AppConfigService } from "../../../services/app-config.service";
 import { Project } from "../../project";
 import { finalize } from "rxjs/operators";
+import { dbEncodeURIComponent } from "../../../../lib/utils/utils";
 
 @Component({
   selector: "artifact-summary",
@@ -87,7 +88,7 @@ export class ArtifactSummaryComponent implements OnInit {
   getArtifactDetails(): void {
     this.loading = true;
     this.artifactService.getArtifact({
-      repositoryName: this.repositoryName,
+      repositoryName: dbEncodeURIComponent(this.repositoryName),
       reference: this.artifactDigest,
       projectName: this.projectName,
       withLabel: true,
