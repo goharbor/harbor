@@ -19,6 +19,7 @@ import {
 import { ChannelService } from "../../../../../../lib/services/channel.service";
 import { ResultBarChartComponent } from "../../../vulnerability-scanning/result-bar-chart.component";
 import { Subscription } from "rxjs";
+import { Artifact } from "../../../../../../../ng-swagger-gen/models/artifact";
 
 @Component({
   selector: 'hbr-artifact-vulnerabilities',
@@ -36,6 +37,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   repoName: string;
   @Input()
   digest: string;
+  @Input() artifact: Artifact;
   scan_overview: any;
   scanner: ScannerVo;
 
@@ -50,6 +52,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   @ViewChild(ResultBarChartComponent, {static: false})
   resultBarChartComponent: ResultBarChartComponent;
   sub: Subscription;
+  hasViewInitWithDelay: boolean = false;
   constructor(
     private errorHandler: ErrorHandler,
     private additionsService: AdditionsService,
@@ -74,6 +77,9 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
         this.getVulnerabilities();
       });
     }
+    setTimeout(() => {
+      this.hasViewInitWithDelay = true;
+    }, 0);
   }
   ngOnDestroy() {
     if (this.sub) {
@@ -81,7 +87,6 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
       this.sub = null;
     }
   }
-
   getVulnerabilities() {
     if (this.vulnerabilitiesLink
       && !this.vulnerabilitiesLink.absolute
@@ -173,7 +178,13 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
     this.onSendingScanCommand = e;
   }
   shouldShowBar(): boolean {
-    return this.resultBarChartComponent
+    return this.hasViewInitWithDelay && this.resultBarChartComponent
       && (this.resultBarChartComponent.queued || this.resultBarChartComponent.scanning || this.resultBarChartComponent.error);
+  }
+  handleScanOverview(scanOverview: any): any {
+    if (scanOverview) {
+      return scanOverview[DEFAULT_SUPPORTED_MIME_TYPE];
+    }
+    return null;
   }
 }

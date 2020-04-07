@@ -6,7 +6,7 @@ export interface ThemeInterface {
     toggleFileName: string;
 }
 
-export const themeArray: ThemeInterface[] = [
+export const THEME_ARRAY: ThemeInterface[] = [
     {
         showStyle: "DARK",
         mode: "LIGHT",

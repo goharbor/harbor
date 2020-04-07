@@ -468,7 +468,7 @@
         "MONTH": "Ay",
         "DAY_MONTH": "Ayın günü",
         "DAY_WEEK": "Ayın haftası",
-        "CRON-TITLE": "Cron için kalıp açıklaması '* * * * * *'",
+        "CRON_TITLE": "Cron için kalıp açıklaması '* * * * * *'.The cron string is based on UTC time",
         "FIELD_NAME": "Alan adı",
         "MANDATORY": "Zorunlu?",
         "ALLOWED_VALUES": "İzin verilen değerler",

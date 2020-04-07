@@ -466,7 +466,7 @@
         "MONTH": "Month",
         "DAY_MONTH": "Day of month",
         "DAY_WEEK": "Day of week",
-        "CRON-TITLE": "Pattern description for cron '* * * * * *'",
+        "CRON_TITLE": "Pattern description for cron '* * * * * *'.The cron string is based on UTC time",
         "FIELD_NAME": "Field name",
         "MANDATORY": "Mandatory?",
         "ALLOWED_VALUES": "Allowed values",

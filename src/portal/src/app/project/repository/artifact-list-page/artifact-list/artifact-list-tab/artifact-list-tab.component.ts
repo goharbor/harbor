@@ -916,7 +916,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       });
   }
 
-  handleScanOverview(scanOverview: any): VulnerabilitySummary {
+  handleScanOverview(scanOverview: any): any {
     if (scanOverview) {
       return scanOverview[DEFAULT_SUPPORTED_MIME_TYPE];
     }
