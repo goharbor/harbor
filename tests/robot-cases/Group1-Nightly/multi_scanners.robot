@@ -1,3 +1,4 @@
+
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,14 +24,6 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
-Test Case - Manage project publicity
-    Body Of Manage project publicity
-
-Test Case - Scan A Tag In The Repo
-    Body Of Scan A Tag In The Repo Use Trivy
-
-Test Case - List Helm Charts
-    Body Of List Helm Charts
-
-Test Case - Admin Push Signed Image
-    Body Of Admin Push Signed Image
+Test Case - Get Harbor Version
+#Just get harbor version and log it
+    Get Harbor Version

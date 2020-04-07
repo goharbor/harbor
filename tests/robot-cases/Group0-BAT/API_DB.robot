@@ -67,3 +67,5 @@ Test Case - Scan Image
     Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
 Test Case - Scan All Images
     Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py
+Test Case - Registry API
+    Harbor API Test  ./tests/apitests/python/test_registry_api.py

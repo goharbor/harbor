@@ -133,13 +133,14 @@ Body Of Admin Push Signed Image
 Delete A Project Without Sign In Harbor
     [Arguments]  ${harbor_ip}=${ip}  ${username}=${HARBOR_ADMIN}  ${password}=${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New Project  project${d}
-    Push Image  ${harbor_ip}  ${username}  ${password}  project${d}  hello-world
-    Project Should Not Be Deleted  project${d}
-    Go Into Project  project${d}
-    Delete Repo  project${d}
+    ${project_name}=  Set Variable  000${d}
+    Create An New Project  ${project_name}
+    Push Image  ${harbor_ip}  ${username}  ${password}  ${project_name}  hello-world
+    Project Should Not Be Deleted  ${project_name}
+    Go Into Project  ${project_name}
+    Delete Repo  ${project_name}
     Navigate To Projects
-    Project Should Be Deleted  project${d}
+    Project Should Be Deleted  ${project_name}
 
 Manage Project Member Without Sign In Harbor
     [Arguments]  ${sign_in_user}  ${sign_in_pwd}  ${test_user1}=user005  ${test_user2}=user006  ${is_oidc_mode}=${false}
