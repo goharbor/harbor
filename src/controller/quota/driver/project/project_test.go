@@ -21,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/types"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	blobtesting "github.com/goharbor/harbor/src/testing/controller/blob"
-	charttesting "github.com/goharbor/harbor/src/testing/controller/chartmuseum"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -31,7 +30,6 @@ type DriverTestSuite struct {
 
 	artifactCtl *artifacttesting.Controller
 	blobCtl     *blobtesting.Controller
-	chartCtl    *charttesting.Controller
 
 	d *driver
 }
@@ -39,12 +37,9 @@ type DriverTestSuite struct {
 func (suite *DriverTestSuite) SetupTest() {
 	suite.artifactCtl = &artifacttesting.Controller{}
 	suite.blobCtl = &blobtesting.Controller{}
-	suite.chartCtl = &charttesting.Controller{}
 
 	suite.d = &driver{
-		artifactCtl: suite.artifactCtl,
-		blobCtl:     suite.blobCtl,
-		chartCtl:    suite.chartCtl,
+		blobCtl: suite.blobCtl,
 	}
 }
 
