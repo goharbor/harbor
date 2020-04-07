@@ -33,18 +33,11 @@ import (
 // New creates an instance of the base adapter
 func New(registry *model.Registry) (*Adapter, error) {
 	if isLocalHarbor(registry) {
-		// when the adapter is created for local Harbor, returns the "http://127.0.0.1:8080"
-		// as URL to avoid issue https://github.com/goharbor/harbor-helm/issues/222
-		// when harbor is deployed on Kubernetes
-		url := "http://127.0.0.1:8080"
-		if common_http.InternalTLSEnabled() {
-			url = "https://127.0.0.1:8443"
-		}
 		authorizer := common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)
 		httpClient := common_http.NewClient(&http.Client{
 			Transport: common_http.GetHTTPTransport(common_http.SecureTransport),
 		}, authorizer)
-		client, err := NewClient(url, httpClient)
+		client, err := NewClient(registry.URL, httpClient)
 		if err != nil {
 			return nil, err
 		}
@@ -52,7 +45,7 @@ func New(registry *model.Registry) (*Adapter, error) {
 			Adapter:    native.NewAdapterWithAuthorizer(registry, authorizer),
 			Registry:   registry,
 			Client:     client,
-			url:        url,
+			url:        registry.URL,
 			httpClient: httpClient,
 		}, nil
 	}
