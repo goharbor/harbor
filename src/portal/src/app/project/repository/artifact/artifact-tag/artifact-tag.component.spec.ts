@@ -11,7 +11,6 @@ import { ArtifactService } from '../../../../../../ng-swagger-gen/services/artif
 import { OperationService } from "../../../../../lib/components/operation/operation.service";
 import { CURRENT_BASE_HREF } from "../../../../../lib/utils/utils";
 import { USERSTATICPERMISSION, UserPermissionService, UserPermissionDefaultService } from '../../../../../lib/services';
-import { TagService } from '../../../../../../ng-swagger-gen/services/tag.service';
 import { delay } from 'rxjs/operators';
 
 
@@ -21,13 +20,11 @@ describe('ArtifactTagComponent', () => {
   const mockErrorHandler = {
     error: () => {}
   };
-  const mockTagService = {
-    listTagsResponse: () => of({headers: null, body: []}).pipe(delay(0)),
-    listTags: () => of([]),
-  };
   const mockArtifactService = {
     createTag: () => of([]),
     deleteTag: () => of(null),
+    listTagsResponse: () => of([]).pipe(delay(0))
+
   };
   const config: IServiceConfig = {
     repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories/testing"
@@ -54,7 +51,6 @@ describe('ArtifactTagComponent', () => {
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: mockErrorHandler, useValue: ErrorHandler },
         { provide: ArtifactService, useValue: mockArtifactService },
-        { provide: TagService, useValue: mockTagService },
         { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         { provide: OperationService },
       ]

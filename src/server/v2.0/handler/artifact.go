@@ -147,7 +147,6 @@ func (a *artifactAPI) DeleteArtifact(ctx context.Context, params operation.Delet
 	return operation.NewDeleteArtifactOK()
 }
 
-// TODO immutable, quota, readonly middlewares should cover this API
 func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArtifactParams) middleware.Responder {
 	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceArtifact); err != nil {
 		return a.SendError(ctx, err)
@@ -224,7 +223,7 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 		AttachedArtifact: &art.Artifact,
 	})
 
-	// TODO as we provide no API for get the single tag, ignore setting the location header here
+	// as we provide no API for get the single tag, ignore setting the location header here
 	return operation.NewCreateTagCreated()
 }
 
@@ -264,6 +263,52 @@ func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagP
 	})
 
 	return operation.NewDeleteTagOK()
+}
+
+func (a *artifactAPI) ListTags(ctx context.Context, params operation.ListTagsParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceTag); err != nil {
+		return a.SendError(ctx, err)
+	}
+	// set query
+	query, err := a.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	query.Keywords["ArtifactID"] = artifact.ID
+
+	// get the total count of tags
+	total, err := a.tagCtl.Count(ctx, query)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	// set option
+	option := &tag.Option{}
+	if params.WithSignature != nil {
+		option.WithSignature = *params.WithSignature
+	}
+	if params.WithImmutableStatus != nil {
+		option.WithImmutableStatus = *params.WithImmutableStatus
+	}
+	// list tags according to the query and option
+	tags, err := a.tagCtl.List(ctx, query, option)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	var ts []*models.Tag
+	for _, tag := range tags {
+		ts = append(ts, tag.ToSwagger())
+	}
+	return operation.NewListTagsOK().
+		WithXTotalCount(total).
+		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
+		WithPayload(ts)
 }
 
 func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAdditionParams) middleware.Responder {
