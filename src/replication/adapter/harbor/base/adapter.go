@@ -17,6 +17,7 @@ package base
 import (
 	"errors"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -32,7 +33,7 @@ import (
 
 // New creates an instance of the base adapter
 func New(registry *model.Registry) (*Adapter, error) {
-	if isLocalHarbor(registry) {
+	if isLocalHarbor(registry.URL) {
 		authorizer := common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)
 		httpClient := common_http.NewClient(&http.Client{
 			Transport: common_http.GetHTTPTransport(common_http.SecureTransport),
@@ -266,6 +267,11 @@ type Project struct {
 	Metadata map[string]interface{} `json:"metadata"`
 }
 
-func isLocalHarbor(registry *model.Registry) bool {
-	return registry.Type == model.RegistryTypeHarbor && registry.Name == "Local"
+func isLocalHarbor(url string) bool {
+	return url == os.Getenv("CORE_URL")
+}
+
+// check whether the current process is running inside core
+func isInCore() bool {
+	return len(os.Getenv("EXT_ENDPOINT")) > 0
 }
