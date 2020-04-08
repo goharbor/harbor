@@ -123,13 +123,14 @@ func (suite *EnqueuerTestSuite) prepare() {
 	now := time.Now()
 	minute := now.Minute()
 
-	coreSpec := fmt.Sprintf("0-59 %d-%d * * * *", minute, minute+2)
+	// Make sure we at least schedule jobs in the 3 minutes cycle
+	cronSpec := fmt.Sprintf("0-59 %d,%d,%d * * * *", minute, (minute+1)%60, (minute+2)%60)
 
 	// Prepare one
 	p := &Policy{
 		ID:       "fake_policy",
 		JobName:  job.SampleJob,
-		CronSpec: coreSpec,
+		CronSpec: cronSpec,
 	}
 	rawData, err := p.Serialize()
 	assert.Nil(suite.T(), err, "prepare data: nil error expected but got %s", err)
