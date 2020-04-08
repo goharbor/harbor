@@ -33,7 +33,6 @@ import (
 const (
 	enqueuerSleep   = 2 * time.Minute
 	enqueuerHorizon = 4 * time.Minute
-	neverExecuted   = 365 * 24 * time.Hour
 
 	// PeriodicExecutionMark marks the scheduled job to a periodic execution
 	PeriodicExecutionMark = "_job_kind_periodic_"
@@ -89,9 +88,6 @@ func (e *enqueuer) loop() {
 		case <-e.context.Done():
 			return // exit
 		case <-timer.C:
-			// Pause the timer for completing the processing this time
-			timer.Reset(neverExecuted)
-
 			// Check and enqueue.
 			// Set next turn with lower priority to balance workload with long
 			// round time if it hits.
@@ -158,7 +154,8 @@ func (e *enqueuer) enqueue() {
 
 // scheduleNextJobs schedules job for next time slots based on the policy
 func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
-	nowTime := time.Unix(time.Now().Unix(), 0)
+	// Follow UTC time spec
+	nowTime := time.Unix(time.Now().UTC().Unix(), 0).UTC()
 	horizon := nowTime.Add(enqueuerHorizon)
 
 	schedule, err := cron.Parse(p.CronSpec)
