@@ -15,12 +15,15 @@
 package util
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"path"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/api"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 )
 
@@ -50,4 +53,17 @@ func ParseProjectName(r *http.Request) string {
 	}
 
 	return projectName
+}
+
+// SkipPolicyChecking ...
+func SkipPolicyChecking(ctx context.Context, projectID int64) bool {
+	secCtx, ok := security.FromContext(ctx)
+
+	// only scanner pull access can bypass.
+	if ok && secCtx.Name() == "v2token" &&
+		secCtx.Can(rbac.ActionScannerPull, rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceRepository)) {
+		return true
+	}
+
+	return false
 }

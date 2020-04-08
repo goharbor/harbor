@@ -162,7 +162,7 @@ func (suite *MiddlewareTestSuite) TestPreventionDisabled() {
 	suite.Equal(rr.Code, http.StatusOK)
 }
 
-func (suite *MiddlewareTestSuite) TestNonRobotPulling() {
+func (suite *MiddlewareTestSuite) TestNonScannerPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	securityCtx := &securitytesting.Context{}
@@ -182,7 +182,7 @@ func (suite *MiddlewareTestSuite) TestScannerPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	securityCtx := &securitytesting.Context{}
-	mock.OnAnything(securityCtx, "Name").Return("robot")
+	mock.OnAnything(securityCtx, "Name").Return("v2token")
 	mock.OnAnything(securityCtx, "Can").Return(true, nil)
 
 	req := suite.makeRequest()
