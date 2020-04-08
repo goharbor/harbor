@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/goharbor/harbor/src/lib/q"
+
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao"
 	daomodels "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
@@ -21,7 +23,7 @@ type Manager interface {
 	// Load history records on top of the query parameters
 	// If succeed, a record list will be returned.
 	// Otherwise, a non nil error will be set.
-	LoadHistories(params *models.QueryParam) (int64, []*models.HistoryRecord, error)
+	LoadHistories(query *q.Query) (int64, []*models.HistoryRecord, error)
 }
 
 // DefaultManager implement the Manager interface
@@ -90,18 +92,6 @@ func convertFromDaoModel(record *daomodels.HistoryRecord) (*models.HistoryRecord
 	return hr, nil
 }
 
-func convertQueryParams(params *models.QueryParam) *dao.ListHistoryQuery {
-	if params != nil {
-		return &dao.ListHistoryQuery{
-			Page:     params.Page,
-			PageSize: params.PageSize,
-			Keyword:  params.Keyword,
-		}
-	}
-
-	return nil
-}
-
 // UpdateStatus implements @Manager.UpdateStatus
 func (dm *DefaultManager) UpdateStatus(taskID string, status models.TrackStatus, startTime, endTime string) error {
 	if len(taskID) == 0 {
@@ -129,8 +119,8 @@ func (dm *DefaultManager) UpdateStatus(taskID string, status models.TrackStatus,
 }
 
 // LoadHistories implements @Manager.LoadHistories
-func (dm *DefaultManager) LoadHistories(params *models.QueryParam) (int64, []*models.HistoryRecord, error) {
-	total, hrs, err := dao.ListHistoryRecords(convertQueryParams(params))
+func (dm *DefaultManager) LoadHistories(query *q.Query) (int64, []*models.HistoryRecord, error) {
+	total, hrs, err := dao.ListHistoryRecords(query)
 	if err != nil {
 		return 0, nil, err
 	}

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/goharbor/harbor/src/lib/q"
+
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao"
 	daomodels "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
@@ -49,12 +51,12 @@ type Manager interface {
 
 	// Query the instances by the param
 	//
-	// param *models.QueryParam : the query params
+	// query *q.Query : the query params
 	//
 	// If succeed, an instance metadata list is returned;
 	// otherwise, a non nil error is returned
 	//
-	List(param *models.QueryParam) (int64, []*models.Metadata, error)
+	List(query *q.Query) (int64, []*models.Metadata, error)
 }
 
 // DefaultManager implement the Manager interface
@@ -135,18 +137,6 @@ func convertFromDaoModel(inst *daomodels.Instance) (*models.Metadata, error) {
 	return instance, nil
 }
 
-func convertQueryParams(params *models.QueryParam) *dao.ListInstanceQuery {
-	if params != nil {
-		return &dao.ListInstanceQuery{
-			Page:     params.Page,
-			PageSize: params.PageSize,
-			Keyword:  params.Keyword,
-		}
-	}
-
-	return nil
-}
-
 // Delete implements @Manager.Delete
 func (dm *DefaultManager) Delete(id int64) error {
 	return dao.DeleteInstance(id)
@@ -182,8 +172,8 @@ func (dm *DefaultManager) Get(id int64) (*models.Metadata, error) {
 }
 
 // List implements @Manager.List
-func (dm *DefaultManager) List(param *models.QueryParam) (int64, []*models.Metadata, error) {
-	total, instances, err := dao.ListInstances(convertQueryParams(param))
+func (dm *DefaultManager) List(query *q.Query) (int64, []*models.Metadata, error) {
+	total, instances, err := dao.ListInstances(query)
 	if err != nil {
 		return 0, nil, err
 	}
