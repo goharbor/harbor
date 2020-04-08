@@ -15,12 +15,13 @@
 package quota
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
+	cq "github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
@@ -167,7 +168,13 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 			}
 
 			res.Reset()
-			serror.SendError(res, err)
+
+			var errs quota.Errors
+			if errors.As(err, &errs) {
+				serror.SendError(res, errors.DeniedError(nil).WithMessage(errs.Error()))
+			} else {
+				serror.SendError(res, err)
+			}
 		}
 
 	}, skippers...)
@@ -175,6 +182,9 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 
 // RefreshConfig refresh quota usage middleware config
 type RefreshConfig struct {
+	// IgnoreLimitation allow quota usage exceed the limitation when it's true
+	IgnoreLimitation bool
+
 	// ReferenceObject returns reference object its quota usage will refresh by reference and reference id
 	ReferenceObject func(*http.Request) (reference string, referenceID string, err error)
 }
@@ -210,8 +220,14 @@ func RefreshMiddleware(config RefreshConfig, skipers ...middleware.Skipper) func
 			return nil
 		}
 
-		if err = quotaController.Refresh(r.Context(), reference, referenceID); err != nil {
+		if err = quotaController.Refresh(r.Context(), reference, referenceID, cq.IgnoreLimitation(config.IgnoreLimitation)); err != nil {
 			logger.Errorf("refresh quota for %s %s failed, error: %v", reference, referenceID, err)
+
+			var errs quota.Errors
+			if errors.As(err, &errs) {
+				return errors.DeniedError(nil).WithMessage(errs.Error())
+			}
+
 			return err
 		}
 

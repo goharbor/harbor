@@ -16,6 +16,7 @@ package quota
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -34,6 +35,34 @@ import (
 
 type ControllerTestSuite struct {
 	suite.Suite
+
+	reference string
+	driver    *drivertesting.Driver
+	quotaMgr  *quotatesting.Manager
+	ctl       Controller
+
+	quota *quota.Quota
+}
+
+func (suite *ControllerTestSuite) SetupTest() {
+	suite.reference = "mock"
+
+	suite.driver = &drivertesting.Driver{}
+	driver.Register(suite.reference, suite.driver)
+
+	suite.quotaMgr = &quotatesting.Manager{}
+	suite.ctl = &controller{quotaMgr: suite.quotaMgr, reservedExpiration: defaultReservedExpiration}
+
+	hardLimits := types.ResourceList{types.ResourceStorage: 100}
+	suite.quota = &quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}
+}
+
+func (suite *ControllerTestSuite) PrepareForUpdate(q *quota.Quota, newUsage interface{}) {
+	mock.OnAnything(suite.quotaMgr, "GetByRefForUpdate").Return(q, nil)
+
+	mock.OnAnything(suite.driver, "CalculateUsage").Return(newUsage, nil)
+
+	mock.OnAnything(suite.quotaMgr, "Update").Return(nil)
 }
 
 func (suite *ControllerTestSuite) TestGetReservedResources() {
@@ -66,80 +95,113 @@ func (suite *ControllerTestSuite) TestGetReservedResources() {
 }
 
 func (suite *ControllerTestSuite) TestReserveResources() {
-	quotaMgr := &quotatesting.Manager{}
-
-	hardLimits := types.ResourceList{types.ResourceStorage: 100}
-
-	mock.OnAnything(quotaMgr, "GetByRefForUpdate").Return(&quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}, nil)
-
-	ctl := &controller{quotaMgr: quotaMgr, reservedExpiration: defaultReservedExpiration}
+	mock.OnAnything(suite.quotaMgr, "GetByRefForUpdate").Return(suite.quota, nil)
 
 	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
-	reference, referenceID := "reference", uuid.New().String()
+	referenceID := uuid.New().String()
 	resources := types.ResourceList{types.ResourceStorage: 100}
 
-	suite.Nil(ctl.reserveResources(ctx, reference, referenceID, resources))
+	ctl := suite.ctl.(*controller)
 
-	suite.Error(ctl.reserveResources(ctx, reference, referenceID, resources))
+	suite.Nil(ctl.reserveResources(ctx, suite.reference, referenceID, resources))
+
+	suite.Error(ctl.reserveResources(ctx, suite.reference, referenceID, resources))
 }
 
 func (suite *ControllerTestSuite) TestUnreserveResources() {
-	quotaMgr := &quotatesting.Manager{}
-
-	hardLimits := types.ResourceList{types.ResourceStorage: 100}
-
-	mock.OnAnything(quotaMgr, "GetByRefForUpdate").Return(&quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}, nil)
-
-	ctl := &controller{quotaMgr: quotaMgr, reservedExpiration: defaultReservedExpiration}
+	mock.OnAnything(suite.quotaMgr, "GetByRefForUpdate").Return(suite.quota, nil)
 
 	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
-	reference, referenceID := "reference", uuid.New().String()
+	referenceID := uuid.New().String()
 	resources := types.ResourceList{types.ResourceStorage: 100}
 
-	suite.Nil(ctl.reserveResources(ctx, reference, referenceID, resources))
+	ctl := suite.ctl.(*controller)
 
-	suite.Error(ctl.reserveResources(ctx, reference, referenceID, resources))
+	suite.Nil(ctl.reserveResources(ctx, suite.reference, referenceID, resources))
 
-	suite.Nil(ctl.unreserveResources(ctx, reference, referenceID, resources))
+	suite.Error(ctl.reserveResources(ctx, suite.reference, referenceID, resources))
 
-	suite.Nil(ctl.reserveResources(ctx, reference, referenceID, resources))
+	suite.Nil(ctl.unreserveResources(ctx, suite.reference, referenceID, resources))
+
+	suite.Nil(ctl.reserveResources(ctx, suite.reference, referenceID, resources))
 }
 
-func (suite *ControllerTestSuite) TestRequest() {
-	quotaMgr := &quotatesting.Manager{}
-
-	hardLimits := types.ResourceList{types.ResourceStorage: 100}
-
-	q := &quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}
-	used := types.ResourceList{types.ResourceStorage: 0}
-
-	mock.OnAnything(quotaMgr, "GetByRefForUpdate").Return(q, nil)
-
-	mock.OnAnything(quotaMgr, "Update").Return(nil).Run(func(mock.Arguments) {
-		q.SetUsed(used)
-	})
-
-	d := &drivertesting.Driver{}
-
-	mock.OnAnything(d, "CalculateUsage").Return(used, nil).Run(func(args mock.Arguments) {
-		used[types.ResourceStorage]++
-	})
-
-	driver.Register("mock", d)
-
-	ctl := &controller{quotaMgr: quotaMgr, reservedExpiration: defaultReservedExpiration}
+func (suite *ControllerTestSuite) TestRefresh() {
+	suite.PrepareForUpdate(suite.quota, types.ResourceList{types.ResourceStorage: 0})
 
 	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
-	reference, referenceID := "mock", "1"
+	referenceID := uuid.New().String()
+
+	suite.Nil(suite.ctl.Refresh(ctx, suite.reference, referenceID))
+}
+
+func (suite *ControllerTestSuite) TestRefreshDriverNotFound() {
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+
+	suite.Error(suite.ctl.Refresh(ctx, uuid.New().String(), uuid.New().String()))
+}
+
+func (suite *ControllerTestSuite) TestRefershNegativeUsage() {
+	suite.PrepareForUpdate(suite.quota, types.ResourceList{types.ResourceStorage: -1})
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	referenceID := uuid.New().String()
+
+	suite.Error(suite.ctl.Refresh(ctx, suite.reference, referenceID))
+}
+
+func (suite *ControllerTestSuite) TestRefreshUsageExceed() {
+	suite.PrepareForUpdate(suite.quota, types.ResourceList{types.ResourceStorage: 101})
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	referenceID := uuid.New().String()
+
+	suite.Error(suite.ctl.Refresh(ctx, suite.reference, referenceID))
+}
+
+func (suite *ControllerTestSuite) TestRefreshIgnoreLimitation() {
+	suite.PrepareForUpdate(suite.quota, types.ResourceList{types.ResourceStorage: 101})
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	referenceID := uuid.New().String()
+
+	suite.Nil(suite.ctl.Refresh(ctx, suite.reference, referenceID, IgnoreLimitation(true)))
+}
+
+func (suite *ControllerTestSuite) TestNoResourcesRequest() {
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	referenceID := uuid.New().String()
+
+	suite.Nil(suite.ctl.Request(ctx, suite.reference, referenceID, nil, func() error { return nil }))
+}
+func (suite *ControllerTestSuite) TestRequest() {
+	suite.PrepareForUpdate(suite.quota, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	referenceID := uuid.New().String()
 	resources := types.ResourceList{types.ResourceStorage: 100}
 
-	{
-		suite.Nil(ctl.Request(ctx, reference, referenceID, resources, func() error { return nil }))
-	}
+	suite.Nil(suite.ctl.Request(ctx, suite.reference, referenceID, resources, func() error { return nil }))
+}
 
-	{
-		suite.Error(ctl.Request(ctx, reference, referenceID, resources, func() error { return nil }))
-	}
+func (suite *ControllerTestSuite) TestRequestExceed() {
+	suite.PrepareForUpdate(suite.quota, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	referenceID := uuid.New().String()
+	resources := types.ResourceList{types.ResourceStorage: 101}
+
+	suite.Error(suite.ctl.Request(ctx, suite.reference, referenceID, resources, func() error { return nil }))
+}
+
+func (suite *ControllerTestSuite) TestRequestFunctionFailed() {
+	suite.PrepareForUpdate(suite.quota, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	referenceID := uuid.New().String()
+	resources := types.ResourceList{types.ResourceStorage: 100}
+
+	suite.Error(suite.ctl.Request(ctx, suite.reference, referenceID, resources, func() error { return fmt.Errorf("error") }))
 }
 
 func TestControllerTestSuite(t *testing.T) {
