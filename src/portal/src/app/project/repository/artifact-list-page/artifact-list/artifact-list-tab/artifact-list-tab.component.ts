@@ -69,6 +69,8 @@ import { ADDITIONS } from '../../../artifact/artifact-additions/models';
 
 import { MessageHandlerService } from '../../../../../shared/message-handler/message-handler.service';
 import { PreheatService } from "../../../../../../../ng-swagger-gen/services/preheat.service";
+import { PreheatingStatus } from "../../../../../../../ng-swagger-gen/models/preheating-status";
+import { PreheatingStatusEnum } from "../../../../../distribution/distribution-interface";
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
@@ -1109,22 +1111,30 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         });
       }
     });
-    // init operation info
-    let operMessage = new OperateInfo();
-    operMessage.name = 'DISTRIBUTION.PREHEAT_ACTION';
-    operMessage.data.id = images.toString();
-    operMessage.data.name = images.toString();
-    operMessage.state = OperationState.progressing;
-    this.operationService.publishInfo(operMessage);
-
     this.distributionService.PreheatImages({preheatReq: {images}}).subscribe(
       response => {
-        this.translateService
-          .get('DISTRIBUTION.REQUEST_PREHEAT_SUCCESS')
-          .subscribe(msg => {
-            this.msgHandler.info(msg);
-          });
-        operateChanges(operMessage, OperationState.success);
+        if (response) {
+          let arr: PreheatingStatus[] = [];
+          for (let name in response) {
+            if (response.hasOwnProperty(name)) {
+              arr = arr.concat(response[name]);
+            }
+          }
+          let errorMsg;
+          if (arr.some(item => {
+            errorMsg = item.error;
+            return item.status === PreheatingStatusEnum.FAIL;
+          })
+          ) {
+            this.msgHandler.error(`Some errors occurred when doing preheating: ${errorMsg}`);
+          } else {
+            this.translateService
+              .get('DISTRIBUTION.REQUEST_PREHEAT_SUCCESS')
+              .subscribe(msg => {
+                this.msgHandler.info(msg);
+              });
+          }
+        }
       },
       error => {
         const message = errorHandler(error);
@@ -1135,7 +1145,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               this.msgHandler.error(msg + ': ' + errMsg);
             });
           });
-        operateChanges(operMessage, OperationState.failure);
       }
     );
   }

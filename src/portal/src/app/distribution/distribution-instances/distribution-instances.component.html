@@ -137,7 +137,7 @@
           <clr-dg-cell>{{ instance.enabled || false }}</clr-dg-cell>
           <clr-dg-cell
             >{{
-              fmtTime(instance.setup_timestamp) | date: 'yyyy/MM/dd HH:mm:ss'
+              fmtTime(instance.setup_timestamp) | date: 'short'
             }}
           </clr-dg-cell>
           <clr-dg-cell>{{ instance.provider }}</clr-dg-cell>

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { DEFAULT_PAGE_SIZE } from '../../../lib/utils/utils';
 import { finalize } from "rxjs/operators";
 import { ErrorHandler } from "../../../lib/utils/error-handler";
@@ -10,8 +10,8 @@ import { PreheatHistory } from "../../../../ng-swagger-gen/models/preheat-histor
   templateUrl: './distribution-history.component.html',
   styleUrls: ['./distribution-history.component.scss']
 })
-export class DistributionHistoryComponent implements OnInit, OnDestroy {
-  loading: boolean = false;
+export class DistributionHistoryComponent  {
+  loading: boolean = true;
   records: PreheatHistory[] = [];
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage: number = 1;
@@ -22,13 +22,6 @@ export class DistributionHistoryComponent implements OnInit, OnDestroy {
 
   constructor(private disService: PreheatService,
               private errorHandler: ErrorHandler) {}
-
-  ngOnInit() {
-    this.loadData();
-  }
-
-  ngOnDestroy(): void {}
-
   loadData() {
     const queryParam: PreheatService.ListPreheatHistoriesParams = {
       page: this.currentPage,
