@@ -334,5 +334,5 @@ Get Project Count Quota Text From Project Quotas List
 Get Project Storage Quota Text From Project Quotas List
     [Arguments]    ${project_name}
     Switch To Project Quotas
-    ${storage_quota}=    Get Text    xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${project_name}')]//clr-dg-cell[4]//label
+    ${storage_quota}=    Get Text    xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${project_name}')]//clr-dg-cell[3]//label
     [Return]  ${storage_quota}

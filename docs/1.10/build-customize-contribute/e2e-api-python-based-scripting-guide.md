@@ -3,7 +3,7 @@ title: E2E (API) Python Based Test Scripting Guide
 draft: true
 ---
 
-**Preparation**
+#### Preparation ####
 
 After getting Harbor source code (git clone https://github.com/goharbor/harbor.git), Harbor E2E API  test scripts  can be found in tests/apitests/python directory.
 
@@ -30,7 +30,7 @@ Harbor E2E API test scripts will import python library under archive "harborclie
 
 Until now, we have all preparation work done.
 
-**Scripting**
+#### Scripting ####
 
 As you can see, we will use python library made by "make swagger_client", in this library, we have all API functions and models, but for more convenience we encapsulate one more level in archive "library", so the script structure is as bellow:
 
@@ -47,8 +47,8 @@ As you can see, we will use python library made by "make swagger_client", in thi
 You can add both library code and script code, since not all APIs have been encapsulated.
 
 
-**Execution Example**
-```
+#### Manual Execution Example ####
+
 root@harbor:/harbor/code/harbor# `python ./tests/apitests/python/test_add_sys_label_to_tag.py`
 
 2020-03-11 13:40:07,269 DEBUG Starting new HTTPS connection (1): 1.1.1.1:443
@@ -67,10 +67,15 @@ header: Content-Security-Policy: frame-ancestors 'none'
 2020-03-11 13:40:07,482 DEBUG https://1.1.1.1:443 "POST /api/v2.0/users HTTP/1.1" 201 0
 2020-03-11 13:40:07,483 DEBUG response body:
 
-...
+......
 
-...
+......
 
-...
+......
 
-```
+#### How To Trigger Script In CI ####
+
+If you like to have your scripts running in CI which is for verification of pull requests, please add your scripts into *https://github.com/goharbor/harbor/blob/master/tests/robot-cases/Group0-BAT/API_DB.robot* file, then scripts can be triggered once there is a pull request.
+
+
+
