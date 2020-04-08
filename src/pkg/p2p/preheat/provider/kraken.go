@@ -9,6 +9,7 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	common_models "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/client"
@@ -99,15 +100,26 @@ func (kd *KrakenDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingStatu
 	return &PreheatingStatus{
 		TaskID:     eventID,
 		Status:     models.PreheatingStatusSuccess,
+		StartTime:  time.Now().String(),
 		FinishTime: time.Now().String(),
 	}, nil
 }
 
 // CheckProgress implements @Driver.CheckProgress.
 func (kd *KrakenDriver) CheckProgress(taskID string) (*PreheatingStatus, error) {
+	hr, err := dao.GetHistoryRecordByTaskID(taskID)
+	if err != nil {
+		return nil, err
+	}
+
+	if hr == nil {
+		return nil, errors.New("preheat record not found")
+	}
+
 	return &PreheatingStatus{
 		TaskID:     taskID,
-		Status:     models.PreheatingStatusSuccess,
+		Status:     hr.Status,
+		StartTime:  time.Now().String(),
 		FinishTime: time.Now().String(),
 	}, nil
 }
