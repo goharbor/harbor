@@ -339,19 +339,44 @@ func (suite *MiddlewareTestSuite) TestPrevented() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
-	mock.OnAnything(suite.scanController, "GetSummary").Return(map[string]interface{}{
-		v1.MimeTypeNativeReport: &vuln.NativeReportSummary{
-			ScanStatus: "Success",
-			Severity:   vuln.Critical,
-			Summary:    &vuln.VulnerabilitySummary{Total: 1},
-		},
-	}, nil)
 
-	req := suite.makeRequest()
-	rr := httptest.NewRecorder()
+	{
+		// only one vulnerability
+		mock.OnAnything(suite.scanController, "GetSummary").Return(map[string]interface{}{
+			v1.MimeTypeNativeReport: &vuln.NativeReportSummary{
+				ScanStatus: "Success",
+				Severity:   vuln.Critical,
+				Summary:    &vuln.VulnerabilitySummary{Total: 1},
+			},
+		}, nil).Once()
 
-	Middleware()(suite.next).ServeHTTP(rr, req)
-	suite.Equal(rr.Code, http.StatusPreconditionFailed)
+		req := suite.makeRequest()
+		rr := httptest.NewRecorder()
+
+		Middleware()(suite.next).ServeHTTP(rr, req)
+		suite.Equal(rr.Code, http.StatusPreconditionFailed)
+
+		suite.Contains(rr.Body.String(), "current image with 1 vulnerability cannot be pulled")
+	}
+
+	{
+		// multiple vulnerabilities
+		mock.OnAnything(suite.scanController, "GetSummary").Return(map[string]interface{}{
+			v1.MimeTypeNativeReport: &vuln.NativeReportSummary{
+				ScanStatus: "Success",
+				Severity:   vuln.Critical,
+				Summary:    &vuln.VulnerabilitySummary{Total: 2},
+			},
+		}, nil).Once()
+
+		req := suite.makeRequest()
+		rr := httptest.NewRecorder()
+
+		Middleware()(suite.next).ServeHTTP(rr, req)
+		suite.Equal(rr.Code, http.StatusPreconditionFailed)
+
+		suite.Contains(rr.Body.String(), "current image with 2 vulnerabilities cannot be pulled")
+	}
 }
 
 func (suite *MiddlewareTestSuite) TestArtifactIsImageIndex() {
