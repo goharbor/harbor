@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/history"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
