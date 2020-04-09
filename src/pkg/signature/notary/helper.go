@@ -90,7 +90,7 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]model2
 	}
 	targets, err := notaryRepo.ListTargets(data.CanonicalTargetsRole)
 	if _, ok := err.(client.ErrRepositoryNotExist); ok {
-		log.Errorf("Repository not exist, repo: %s, error: %v, returning empty signature", fqRepo, err)
+		log.Debugf("Repository not exist, repo: %s, error: %v, returning empty signature", fqRepo, err)
 		return res, nil
 	} else if err != nil {
 		return res, err
