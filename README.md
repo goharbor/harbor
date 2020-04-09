@@ -1,6 +1,6 @@
 # Harbor
 
-![CI](https://github.com/goharbor/harbor/workflows/CI/badge.svg)
+[![CI](https://github.com/goharbor/harbor/workflows/CI/badge.svg?branch=master&event=push)](https:///github.com/goharbor/harbor/actions?query=event%3Apush+branch%3Amaster+workflow%3ACI+)
 [![Coverage Status](https://codecov.io/gh/goharbor/harbor/branch/master/graph/badge.svg)](https://codecov.io/gh/goharbor/harbor)
 [![Go Report Card](https://goreportcard.com/badge/github.com/goharbor/harbor)](https://goreportcard.com/report/github.com/goharbor/harbor)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2095/badge)](https://bestpractices.coreinfrastructure.org/projects/2095)
