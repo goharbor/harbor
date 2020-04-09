@@ -15,7 +15,7 @@
                     </div>
                     <div class="clr-col">
                         <div [hidden]="!shouldShowBar()">
-                            <hbr-vulnerability-bar [scanner]="scanner"
+                            <hbr-vulnerability-bar [summary]="handleScanOverview(artifact?.scan_overview)" [scanner]="scanner"
                                                    (submitFinish)="submitFinish($event)" [projectName]="projectName" [repoName]="repoName"
                                                    [artifactDigest]="digest">
                             </hbr-vulnerability-bar>

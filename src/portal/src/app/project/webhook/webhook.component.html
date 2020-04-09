@@ -17,11 +17,11 @@
                                   <span id="toggle-webhook">
                                        <span *ngIf="selectedRow[0] && !selectedRow[0].enabled">
                                            <clr-icon class="margin-top-2" size="16" shape="success-standard"></clr-icon>
-                                           <span class="margin-left-10">{{'WEBHOOK.ENABLE' | translate}}</span>
+                                           <span class="margin-left-10">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</span>
                                        </span>
                                        <span *ngIf="!(selectedRow[0] && !selectedRow[0].enabled)">
                                            <clr-icon class="margin-top-2" size="16" shape="ban"></clr-icon>
-                                          <span class="margin-left-10">{{'WEBHOOK.DISABLE' | translate}}</span>
+                                          <span class="margin-left-10">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
                                        </span>
                                   </span>
                             </button>

@@ -81,7 +81,17 @@
                 </clr-vertical-nav-group>
             </div>
             <div class="vertical-nav-footer">
-                <a clrVerticalNavLink target="_blank" routerLink="/devcenter">
+                <ng-container *ngFor="let theme of themeArray;let i=index">
+                    <ng-container *ngIf="theme.showStyle === styleMode">
+                        <a class="nav-link nav-icon theme-select"
+                           (click)="themeChanged(theme)">
+                            <clr-icon size="20" *ngIf="styleMode ==='DARK'" shape="sun" class="is-solid"></clr-icon>
+                            <clr-icon size="20" *ngIf="styleMode ==='LIGHT'" shape="moon" class="is-solid"></clr-icon>
+                            {{ theme.text | translate }}
+                        </a>
+                    </ng-container>
+                </ng-container>
+                <a class="mt-1" clrVerticalNavLink target="_blank" routerLink="/devcenter">
                     <button type="button" class="btn  api-button">
                         <span>{{'SIDE_NAV.API_EXPLORER' | translate }}</span>
                     </button>

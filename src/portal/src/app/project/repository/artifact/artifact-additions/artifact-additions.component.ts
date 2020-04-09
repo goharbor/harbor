@@ -2,6 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { ADDITIONS } from "./models";
 import { AdditionLinks } from "../../../../../../ng-swagger-gen/models/addition-links";
 import { AdditionLink } from "../../../../../../ng-swagger-gen/models/addition-link";
+import { Artifact } from "../../../../../../ng-swagger-gen/models/artifact";
 
 @Component({
   selector: 'artifact-additions',
@@ -9,6 +10,7 @@ import { AdditionLink } from "../../../../../../ng-swagger-gen/models/addition-l
   styleUrls: ['./artifact-additions.component.scss']
 })
 export class ArtifactAdditionsComponent implements OnInit {
+  @Input() artifact: Artifact;
   @Input() additionLinks: AdditionLinks;
   @Input() projectName: string;
   @Input()

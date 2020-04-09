@@ -467,7 +467,7 @@
         "MONTH": "月",
         "DAY_MONTH": "一个月的一天",
         "DAY_WEEK": "一周的一天",
-        "CRON-TITLE": "cron格式描述 '* * * * * *'",
+        "CRON_TITLE": "cron格式描述 '* * * * * *'。cron 基于 UTC 时间",
         "FIELD_NAME": "字段名称",
         "MANDATORY": "是否强制?",
         "ALLOWED_VALUES": "允许的值",

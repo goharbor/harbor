@@ -5,7 +5,7 @@
             <clr-tab *ngIf="getVulnerability()">
                 <button clrTabLink id="vulnerability">{{'REPOSITORY.VULNERABILITY' | translate}}</button>
                 <clr-tab-content id="vulnerability-content" *clrIfActive>
-                    <hbr-artifact-vulnerabilities  [projectName]="projectName"
+                    <hbr-artifact-vulnerabilities [artifact]="artifact"  [projectName]="projectName"
                                                    [projectId]="projectId"
                                                    [repoName]="repoName"
                                                    [digest]="digest" [vulnerabilitiesLink]="getVulnerability()"></hbr-artifact-vulnerabilities>

@@ -27,9 +27,13 @@ import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.com
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { CommonRoutes } from "../../../lib/entities/shared.const";
 import { ConfigScannerService, SCANNERS_DOC } from "../../config/scanner/config-scanner.service";
+import { THEME_ARRAY, ThemeInterface } from "../../services/theme";
+import { clone } from "../../../lib/utils/utils";
+import { ThemeService } from "../../services/theme.service";
 
 const HAS_SHOWED_SCANNER_INFO: string = 'hasShowScannerInfo';
 const YES: string = 'yes';
+const HAS_STYLE_MODE: string = 'styleModeLocal';
 
 @Component({
     selector: 'harbor-shell',
@@ -62,13 +66,17 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     isHttpAuthMode: boolean;
     showScannerInfo: boolean = false;
     scannerDocUrl: string = SCANNERS_DOC;
+    themeArray: ThemeInterface[] = clone(THEME_ARRAY);
+
+    styleMode = this.themeArray[0].showStyle;
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private session: SessionService,
         private searchTrigger: SearchTriggerService,
         private appConfigService: AppConfigService,
-        private scannerService: ConfigScannerService
+        private scannerService: ConfigScannerService,
+        public theme: ThemeService,
     ) { }
 
     ngOnInit() {
@@ -90,6 +98,10 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         });
         if (!(localStorage && localStorage.getItem(HAS_SHOWED_SCANNER_INFO) === YES)) {
             this.getDefaultScanner();
+        }
+        // set local in app
+        if (localStorage) {
+            this.styleMode = localStorage.getItem(HAS_STYLE_MODE);
         }
     }
     closeInfo() {
@@ -155,6 +167,13 @@ export class HarborShellComponent implements OnInit, OnDestroy {
                 break;
             default:
                 break;
+        }
+    }
+    themeChanged(theme) {
+        this.styleMode = theme.mode;
+        this.theme.loadStyle(theme.toggleFileName);
+        if (localStorage) {
+            localStorage.setItem(HAS_STYLE_MODE, this.styleMode);
         }
     }
 }
