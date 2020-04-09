@@ -76,10 +76,6 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
         }
     }
 
-    blurProjectInput(): void {
-        this.validateProjectName();
-    }
-
     get form(): AbstractControl {
         return this.imageNameForm;
     }

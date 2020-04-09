@@ -1,7 +1,9 @@
 import { Artifact } from "../../../../../ng-swagger-gen/models/artifact";
+import { Platform } from "../../../../../ng-swagger-gen/models/platform";
 
 export interface ArtifactFront extends Artifact {
     annotationsArray?: string[];
+    platform?: Platform;
     showImage?: string;
 }
 

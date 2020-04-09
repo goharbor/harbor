@@ -135,16 +135,11 @@ export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDest
           Validators.pattern('(^-1$)|(^([1-9]+)([0-9]+)*$)'),
           validateLimit(this.currentForm.form.controls['create_project_storage_limit_unit'])
       ]);
-      this.currentForm.form.controls['create_project_count_limit'].setValidators(
-        [
-          Validators.required,
-          Validators.pattern('(^-1$)|(^([1-9]+)([0-9]+)*$)')
-        ]);
       }
       this.currentForm.form.valueChanges
             .pipe(distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)))
             .subscribe((data) => {
-              ['create_project_storage_limit', 'create_project_storage_limit_unit', 'create_project_count_limit'].forEach(fieldName => {
+              ['create_project_storage_limit', 'create_project_storage_limit_unit'].forEach(fieldName => {
                 if (this.currentForm.form.get(fieldName) && this.currentForm.form.get(fieldName).value !== null) {
                   this.currentForm.form.get(fieldName).updateValueAndValidity();
                 }

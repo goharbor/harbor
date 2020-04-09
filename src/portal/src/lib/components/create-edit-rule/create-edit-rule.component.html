@@ -83,7 +83,7 @@
                 <select class="clr-select width-100" formControlName="value" #selectedValue id="{{'select_'+ supportedFilters[i]?.type}}"
                   name="{{supportedFilters[i]?.type}}">
                   <option value="">{{'REPLICATION.ALL' | translate}}</option>
-                  <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}</option>
+                  <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}{{value==='chart'? ' (chartmuseum)': ''}}</option>
                 </select>
               </div>
               <div class="select resource-box" *ngIf="supportedFilters[i]?.type==='label'&& supportedFilters[i]?.style==='list'">
@@ -93,7 +93,7 @@
                       <ng-template ngFor let-label [ngForOf]="filter.value.value" let-m="index">
                         <span class="label" *ngIf="m<1"> {{label}} </span>
                       </ng-template>
-                      <span class="ellipsis" *ngIf="filter.value.value.length>1">···</span>
+                      <span class="ellipsis color-white-dark" *ngIf="filter.value.value.length>1">···</span>
                       <div *ngFor="let label1 of filter.value.value;let k = index" hidden="true">
                         <input type="text" [formControlName]="k" #labelValue id="{{'label_'+ supportedFilters[i]?.type + '_' + label1}}" name="{{'label_'+ supportedFilters[i]?.type + '_' + label1}}"
                           placeholder="select labels">
