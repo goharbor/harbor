@@ -18,6 +18,21 @@ securityDefinitions:
 security:
   - basicAuth: []
 paths:
+  /version:
+    get:
+      summary: Get API version
+      description: Get the version of API that supported by the Harbor instance.
+      tags:
+        - Version
+      responses:
+        '200':
+          description: The supported API version
+          schema:
+            type: object
+            properties:
+              version:
+                type: string
+
   /chartrepo/health:
     get:
       summary: Check the health of chart repository service.
