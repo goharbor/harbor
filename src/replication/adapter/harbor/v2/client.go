@@ -31,7 +31,7 @@ type client struct {
 
 func (c *client) listRepositories(project *base.Project) ([]*model.Repository, error) {
 	repositories := []*models.RepoRecord{}
-	url := fmt.Sprintf("%s/projects/%s/repositories", c.BaseURL(), project.Name)
+	url := fmt.Sprintf("%s/projects/%s/repositories", c.BasePath(), project.Name)
 	if err := c.C.GetAndIteratePagination(url, &repositories); err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (c *client) listArtifacts(repository string) ([]*model.Artifact, error) {
 	project, repository := utils.ParseRepository(repository)
 	repository = url.PathEscape(url.PathEscape(repository))
 	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts?with_label=true",
-		c.BaseURL(), project, repository)
+		c.BasePath(), project, repository)
 	artifacts := []*artifact.Artifact{}
 	if err := c.C.GetAndIteratePagination(url, &artifacts); err != nil {
 		return nil, err
@@ -75,6 +75,6 @@ func (c *client) deleteTag(repository, tag string) error {
 	project, repository := utils.ParseRepository(repository)
 	repository = url.PathEscape(url.PathEscape(repository))
 	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts/%s/tags/%s",
-		c.BaseURL(), project, repository, tag, tag)
+		c.BasePath(), project, repository, tag, tag)
 	return c.C.Delete(url)
 }

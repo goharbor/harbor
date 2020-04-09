@@ -28,7 +28,7 @@ type client struct {
 
 func (c *client) listRepositories(project *base.Project) ([]*model.Repository, error) {
 	repositories := []*models.RepoRecord{}
-	url := fmt.Sprintf("%s/repositories?project_id=%d", c.BaseURL(), project.ID)
+	url := fmt.Sprintf("%s/repositories?project_id=%d", c.BasePath(), project.ID)
 	if err := c.C.GetAndIteratePagination(url, &repositories); err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (c *client) listRepositories(project *base.Project) ([]*model.Repository, e
 }
 
 func (c *client) listArtifacts(repository string) ([]*model.Artifact, error) {
-	url := fmt.Sprintf("%s/repositories/%s/tags", c.BaseURL(), repository)
+	url := fmt.Sprintf("%s/repositories/%s/tags", c.BasePath(), repository)
 	tags := []*struct {
 		Name   string `json:"name"`
 		Labels []*struct {
@@ -68,6 +68,6 @@ func (c *client) listArtifacts(repository string) ([]*model.Artifact, error) {
 }
 
 func (c *client) deleteManifest(repository, reference string) error {
-	url := fmt.Sprintf("%s/repositories/%s/tags/%s", c.BaseURL(), repository, reference)
+	url := fmt.Sprintf("%s/repositories/%s/tags/%s", c.BasePath(), repository, reference)
 	return c.C.Delete(url)
 }

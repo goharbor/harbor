@@ -48,7 +48,7 @@ func (c *Client) GetAPIVersion() (string, error) {
 	version := &struct {
 		Version string `json:"version"`
 	}{}
-	err := c.C.Get(c.URL+"/api/version", version)
+	err := c.C.Get(c.GetURL()+"/api/version", version)
 	if err == nil {
 		return version.Version, nil
 	}
@@ -64,7 +64,7 @@ func (c *Client) ChartRegistryEnabled() (bool, error) {
 	sys := &struct {
 		ChartRegistryEnabled bool `json:"with_chartmuseum"`
 	}{}
-	if err := c.C.Get(c.BaseURL()+"/systeminfo", sys); err != nil {
+	if err := c.C.Get(c.BasePath()+"/systeminfo", sys); err != nil {
 		return false, err
 	}
 	return sys.ChartRegistryEnabled, nil
@@ -75,7 +75,7 @@ func (c *Client) ListLabels() ([]string, error) {
 	labels := []*struct {
 		Name string `json:"name"`
 	}{}
-	err := c.C.Get(c.BaseURL()+"/labels?scope=g", &labels)
+	err := c.C.Get(c.BasePath()+"/labels?scope=g", &labels)
 	if err == nil {
 		var lbs []string
 		for _, label := range labels {
@@ -99,13 +99,13 @@ func (c *Client) CreateProject(name string, metadata map[string]interface{}) err
 		Name:     name,
 		Metadata: metadata,
 	}
-	return c.C.Post(c.BaseURL()+"/projects", project)
+	return c.C.Post(c.BasePath()+"/projects", project)
 }
 
 // ListProjects lists projects
 func (c *Client) ListProjects(name string) ([]*Project, error) {
 	projects := []*Project{}
-	url := fmt.Sprintf("%s/projects?name=%s", c.BaseURL(), name)
+	url := fmt.Sprintf("%s/projects?name=%s", c.BasePath(), name)
 	if err := c.C.GetAndIteratePagination(url, &projects); err != nil {
 		return nil, err
 	}
@@ -126,10 +126,27 @@ func (c *Client) GetProject(name string) (*Project, error) {
 	return nil, nil
 }
 
-// BaseURL returns the base URL of APIs
-func (c *Client) BaseURL() string {
-	if len(c.APIVersion) == 0 {
-		return fmt.Sprintf("%s/api", c.URL)
+// BasePath returns the API base path that contains version part
+func (c *Client) BasePath() string {
+	path := fmt.Sprintf("%s/api", c.GetURL())
+	if len(c.APIVersion) > 0 {
+		path = fmt.Sprintf("%s/%s", path, c.APIVersion)
 	}
-	return fmt.Sprintf("%s/api/%s", c.URL, c.APIVersion)
+	return path
+}
+
+// GetURL returns the URL of the registry that the client is for
+func (c *Client) GetURL() string {
+	if !isLocalHarbor(c.URL) || !isInCore() {
+		return c.URL
+	}
+	// if the adapter is created for local Harbor and the process is running
+	// inside core, returns the "127.0.0.1" as URL to avoid the issue:
+	// https://github.com/goharbor/harbor-helm/issues/222
+	// when harbor is deployed on Kubernetes with hairpin mode disabled
+	url := "http://127.0.0.1:8080"
+	if common_http.InternalTLSEnabled() {
+		url = "https://127.0.0.1:8443"
+	}
+	return url
 }

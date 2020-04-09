@@ -54,7 +54,7 @@ func (a *Adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 
 	resources := []*model.Resource{}
 	for _, project := range projects {
-		url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.url, project.Name)
+		url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.Client.GetURL(), project.Name)
 		repositories := []*model.Repository{}
 		if err := a.httpClient.Get(url, &repositories); err != nil {
 			return nil, err
@@ -72,7 +72,7 @@ func (a *Adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 
 		for _, repository := range repositories {
 			name := strings.SplitN(repository.Name, "/", 2)[1]
-			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.url, project.Name, name)
+			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.Client.GetURL(), project.Name, name)
 			versions := []*chartVersion{}
 			if err := a.httpClient.Get(url, &versions); err != nil {
 				return nil, err
@@ -134,7 +134,7 @@ func (a *Adapter) getChartInfo(name, version string) (*chartVersionDetail, error
 	if err != nil {
 		return nil, err
 	}
-	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.url, project, name, version)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.Client.GetURL(), project, name, version)
 	info := &chartVersionDetail{}
 	if err = a.httpClient.Get(url, info); err != nil {
 		return nil, err
@@ -158,7 +158,7 @@ func (a *Adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
 		if err != nil {
 			return nil, err
 		}
-		url = fmt.Sprintf("%s/chartrepo/%s/%s", a.url, project, url)
+		url = fmt.Sprintf("%s/chartrepo/%s/%s", a.Client.GetURL(), project, url)
 	}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -196,7 +196,7 @@ func (a *Adapter) UploadChart(name, version string, chart io.Reader) error {
 	}
 	w.Close()
 
-	url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.url, project)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.Client.GetURL(), project)
 
 	req, err := http.NewRequest(http.MethodPost, url, buf)
 	if err != nil {
@@ -228,7 +228,7 @@ func (a *Adapter) DeleteChart(name, version string) error {
 	if err != nil {
 		return err
 	}
-	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.url, project, name, version)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.Client.GetURL(), project, name, version)
 	return a.httpClient.Delete(url)
 }
 
