@@ -73,8 +73,8 @@ func EnsureDefaultScanner(scannerURL string) (err error) {
 		err = errors.Errorf("getting default scanner: %v", err)
 		return
 	}
-	if defaultScanner != nil && defaultScanner.URL == scannerURL {
-		log.Infof("The default scanner is already set: %s", defaultScanner.URL)
+	if defaultScanner != nil {
+		log.Infof("Skipped setting %s as the default scanner. The default scanner is already set to %s", scannerURL, defaultScanner.URL)
 		return
 	}
 	scanners, err := scannerManager.List(&q.Query{

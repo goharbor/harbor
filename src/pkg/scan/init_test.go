@@ -95,7 +95,7 @@ func TestEnsureDefaultScanner(t *testing.T) {
 		scannerManager = mgr
 
 		mgr.On("GetDefault").Return(&scanner.Registration{
-			URL: "http://trivy:8080",
+			URL: "http://clair:8080",
 		}, nil)
 
 		err := EnsureDefaultScanner("http://trivy:8080")
