@@ -143,8 +143,13 @@ func Middleware() func(http.Handler) http.Handler {
 
 		// Do judgement
 		if summary.Severity.Code() >= projectSeverity.Code() {
-			msg := fmt.Sprintf(`current image with %d vulnerabilities cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
-				`To continue with pull, please contact your project administrator to exempt matched vulnerabilities through configuring the CVE whitelist.`, summary.TotalCount, projectSeverity)
+			thing := "vulnerability"
+			if summary.Summary.Total > 1 {
+				thing = "vulnerabilities"
+			}
+			msg := fmt.Sprintf(`current image with %d %s cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
+				`To continue with pull, please contact your project administrator to exempt matched vulnerabilities through configuring the CVE whitelist.`,
+				summary.Summary.Total, thing, projectSeverity)
 			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
 		}
 
