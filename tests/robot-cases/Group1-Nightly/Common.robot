@@ -480,7 +480,7 @@ Test Case - Project Storage Quotas Dispaly And Control
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
     Should Be Equal As Strings  ${storage_quota_ret}  ${image_b_size} of ${storage_quota}${storage_quota_unit}
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 25.8 MiB of storage resource, which when updated to current usage of 329.3 MiB will exceed the configured upper limit of 330.0 MiB
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=adding 25.8 MiB of storage resource, which when updated to current usage of 329.3 MiB will exceed the configured upper limit of 330.0 MiB
     Go Into Project  project${d}
     Delete Repo  project${d}/${image_b}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}  tag=${image_a_ver}  tag1=${image_a_ver}
