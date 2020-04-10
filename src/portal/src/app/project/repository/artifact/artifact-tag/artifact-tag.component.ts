@@ -22,6 +22,7 @@ import {
 } from "../../../../../lib/services";
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { DEFAULT_PAGE_SIZE, calculatePage, dbEncodeURIComponent } from '../../../../../lib/utils/utils';
+import { AppConfigService } from "../../../../services/app-config.service";
 
 class InitTag {
   name = "";
@@ -64,6 +65,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     private artifactService: ArtifactService,
     private translateService: TranslateService,
     private userPermissionService: UserPermissionService,
+    private appConfigService: AppConfigService,
     private errorHandlerService: ErrorHandler
 
   ) { }
@@ -156,7 +158,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     // const tag: NewTag = {name: this.newTagName};
     const createTagParams: ArtifactService.CreateTagParams = {
       projectName: this.projectName,
-      repositoryName: this.repositoryName,
+      repositoryName: dbEncodeURIComponent(this.repositoryName),
       reference: this.artifactDetails.digest,
       tag:  this.newTagName
     };
@@ -249,7 +251,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     this.operationService.publishInfo(operMessage);
      const deleteTagParams: ArtifactService.DeleteTagParams = {
       projectName: this.projectName,
-      repositoryName: this.repositoryName,
+      repositoryName: dbEncodeURIComponent(this.repositoryName),
       reference: this.artifactDetails.digest,
       tagName: tag.name
     };
@@ -291,5 +293,8 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy(): void {
     this.tagNameCheckSub.unsubscribe();
+  }
+  get withNotary(): boolean {
+    return this.appConfigService.getConfig().with_notary;
   }
 }

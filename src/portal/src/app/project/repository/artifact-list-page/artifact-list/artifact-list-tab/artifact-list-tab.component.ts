@@ -58,6 +58,7 @@ import { ArtifactFront as Artifact, mutipleFilter } from "../../../artifact/arti
 import { Project } from "../../../../project";
 import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 import { ADDITIONS } from "../../../artifact/artifact-additions/models";
+import { Platform } from "../../../../../../../ng-swagger-gen/models/platform";
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
@@ -347,6 +348,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         this.newArtifactService.getArtifact(artifactParam).subscribe(
           res => {
             let observableLists: Observable<Artifact>[] = [];
+            let platFormAttr: { platform: Platform }[] = [];
             this.totalCount = res.references.length;
             res.references.forEach((child, index) => {
               if (index >= (pageNumber - 1) * this.pageSize && index < pageNumber * this.pageSize) {
@@ -360,6 +362,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                   withSignature: true,
                   withTag: true
                 };
+                platFormAttr.push({platform: child.platform});
                 observableLists.push(this.newArtifactService.getArtifact(childParams));
               }
             });
@@ -367,6 +370,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               this.loading = false;
             })).subscribe(artifacts => {
               this.artifactList = artifacts;
+              this.artifactList.forEach((artifact, index) => {
+                artifact.platform = clone(platFormAttr[index].platform);
+              });
               this.getArtifactAnnotationsArray(this.artifactList);
             }, error => {
               this.errorHandlerService.error(error);
@@ -681,12 +687,12 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     this.newArtifactService.CopyArtifact(params)
       .pipe(finalize(() => {
         this.imageNameInput.form.reset();
+        this.retagDialogOpened = false;
       }))
       .subscribe(response => {
         this.translateService.get('RETAG.MSG_SUCCESS').subscribe((res: string) => {
           this.errorHandlerService.info(res);
         });
-        this.retagDialogOpened = false;
       }, error => {
         this.errorHandlerService.error(error);
       });

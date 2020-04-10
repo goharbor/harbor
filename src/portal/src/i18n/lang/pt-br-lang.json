@@ -334,8 +334,8 @@
         "ENABLE_ACCOUNT": "Ativar conta",
         "DELETE": "Remover",
         "CREAT_ROBOT_ACCOUNT": "CRIA robô conta",
-        "PERMISSIONS_IMAGE": "Image",
-        "PERMISSIONS_HELMCHART": "Helm Chart",
+        "PERMISSIONS_ARTIFACT": "Artifact",
+        "PERMISSIONS_HELMCHART": "Helm Chart (Chart Museum)",
         "PUSH": "Push",
         "PULL": "Pull",
         "FILTER_PLACEHOLDER": "Filtro robot accounts",
@@ -642,7 +642,7 @@
         "NAME": "Nome",
         "TAGS": "Tags",
         "PLATFORM": "OS/ARCH",
-        "ARTIFACT_TOOTIP": "Click this icon to enter the Artifact list of refer",
+        "ARTIFACT_TOOTIP": "Click to view this OCI index's artifact list",
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Comando de Pull",
@@ -786,6 +786,7 @@
         "SUB_TITLE_SUFIX": "logs"
     },
     "CONFIG": {
+        "HISTORY": "History",
         "TITLE": "Configuração",
         "AUTH": "Autenticação",
         "REPLICATION": "Replicação",
