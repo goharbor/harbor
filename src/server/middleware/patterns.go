@@ -1,15 +1,10 @@
 package middleware
 
 import (
-	"context"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"regexp"
 
 	"github.com/docker/distribution/reference"
-	"github.com/goharbor/harbor/src/controller/artifact"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/opencontainers/go-digest"
 )
 
@@ -34,31 +29,3 @@ var (
 	// V2CatalogURLRe is the regular expression for mathing the request to v2 handler to list catalog
 	V2CatalogURLRe = regexp.MustCompile(`^/v2/_catalog$`)
 )
-
-// EnsureArtifactDigest get artifactInfo from context and set the digest for artifact that has project name repository and reference
-func EnsureArtifactDigest(ctx context.Context) error {
-	info := lib.GetArtifactInfo(ctx)
-	none := lib.ArtifactInfo{}
-
-	if info == none {
-		return fmt.Errorf("no artifact info in context")
-	}
-	if len(info.Digest) > 0 {
-		return nil
-	}
-	af, err := artifact.Ctl.GetByReference(ctx, info.Repository, info.Reference, nil)
-	if err != nil || af == nil {
-		return fmt.Errorf("failed to get artifact for populating digest, error: %v", err)
-	}
-	info.Digest = af.Digest
-	return nil
-}
-
-// CopyResp ...
-func CopyResp(rec *httptest.ResponseRecorder, rw http.ResponseWriter) {
-	for k, v := range rec.Header() {
-		rw.Header()[k] = v
-	}
-	rw.WriteHeader(rec.Result().StatusCode)
-	rw.Write(rec.Body.Bytes())
-}
