@@ -36,7 +36,11 @@ func New(registry *model.Registry) (*Adapter, error) {
 	if isLocalHarbor(registry.URL) {
 		authorizer := common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)
 		httpClient := common_http.NewClient(&http.Client{
-			Transport: common_http.GetHTTPTransport(common_http.SecureTransport),
+			// when it's a local Harbor instance, the code runs inside the same process with
+			// core, so insecure transport is ok
+			// If using the secure one, as we'll replace the URL with 127.0.0.1 and this will
+			// cause error "x509: cannot validate certificate for 127.0.0.1 because it doesn't contain any IP SANs"
+			Transport: common_http.GetHTTPTransport(common_http.InsecureTransport),
 		}, authorizer)
 		client, err := NewClient(registry.URL, httpClient)
 		if err != nil {
