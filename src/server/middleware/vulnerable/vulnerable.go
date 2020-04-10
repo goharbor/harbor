@@ -18,7 +18,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib"
@@ -114,7 +115,7 @@ func Middleware() func(http.Handler) http.Handler {
 
 		if art.IsImageIndex() {
 			// artifact is image index, skip the checking when it is in the whitelist
-			skippingWhitelist := []string{artifact.ImageType, artifact.CNABType}
+			skippingWhitelist := []string{image.ArtifactTypeImage, cnab.ArtifactTypeCNAB}
 			for _, t := range skippingWhitelist {
 				if art.Type == t {
 					logger.Debugf("artifact %s@%s is image index and its type is %s in skipping whitelist, "+

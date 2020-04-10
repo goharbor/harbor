@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/scanner"
 	models "github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 )
@@ -88,7 +89,7 @@ func (c *checker) IsScannable(ctx context.Context, art *artifact.Artifact) (bool
 func hasCapability(r *models.Registration, a *artifact.Artifact) bool {
 	// use whitelist here because currently only docker image is supported by the scanner
 	// https://github.com/goharbor/pluggable-scanner-spec/issues/2
-	whitelist := []string{artifact.ImageType}
+	whitelist := []string{image.ArtifactTypeImage}
 	for _, t := range whitelist {
 		if a.Type == t {
 			return r.HasCapability(a.ManifestMediaType)
