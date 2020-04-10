@@ -28,9 +28,12 @@ from swagger_client.models.project_metadata import ProjectMetadata
 from swagger_client.models.project_member import ProjectMember
 from swagger_client.models.user_group import UserGroup
 from swagger_client.models.configurations import Configurations
+from library.projectV2 import ProjectV2
+from testutils import ADMIN_CLIENT
+from library.base import _assert_status_code
 
 
-from swagger_client.rest import ApiException
+from v2_swagger_client.rest import ApiException
 from pprint import pprint
 
 #Testcase
@@ -44,6 +47,8 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
     docker_client = docker.from_env()
 
     def setUp(self):
+        self.projectv2= ProjectV2()
+
         #login with admin, create a project and assign role to ldap group
         result = self.product_api.configurations_put(configurations=Configurations(ldap_filter="", ldap_group_attribute_name="cn", ldap_group_base_dn="ou=groups,dc=example,dc=com", ldap_group_search_filter="objectclass=groupOfNames", ldap_group_search_scope=2))
         pprint(result)
@@ -118,11 +123,10 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
         self.dockerCmdLoginDev(username="dev_user", password="zhu88jie")
         self.dockerCmdLoginGuest(username="guest_user", password="zhu88jie")
 
-        #ToDo, enable them
-        #self.assertTrue(self.queryUserLogs(username="admin_user", password="zhu88jie")>0, "admin user can see logs")
-        #self.assertTrue(self.queryUserLogs(username="dev_user", password="zhu88jie")>0, "dev user can see logs")
-        #self.assertTrue(self.queryUserLogs(username="guest_user", password="zhu88jie")>0, "guest user can see logs")
-        #self.assertTrue(self.queryUserLogs(username="test", password="123456")==0, "test user can not see any logs")
+        self.assertTrue(self.queryUserLogs(username="admin_user", password="zhu88jie")>0, "admin user can see logs")
+        self.assertTrue(self.queryUserLogs(username="dev_user", password="zhu88jie")>0, "dev user can see logs")
+        self.assertTrue(self.queryUserLogs(username="guest_user", password="zhu88jie")>0, "guest user can see logs")
+        self.assertTrue(self.queryUserLogs(username="test", password="123456", status_code=403)==0, "test user can not see any logs")
 
         pass
 
@@ -160,13 +164,17 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
         self.docker_client.images.pull(repository=self.harbor_host+"/ldap_group_test_prj/busybox", tag="latest")
         pass
     # check can see his log in current project
-    def queryUserLogs(self, username, password, harbor_host=harbor_host):
-        client_product_api = testutils.GetProductApi(username=username, password=password)
-        logs = client_product_api.logs_get(repository="ldap_group_test_prj", username=username)
-        if logs == None:
+    def queryUserLogs(self, username, password, status_code=200):
+        client=dict(endpoint = ADMIN_CLIENT["endpoint"], username = username, password = password)
+        try:
+            logs = self.projectv2.get_project_log("ldap_group_test_prj", status_code, **client)
+            count = 0
+            for log in list(logs):
+                count = count + 1
+            return count
+        except ApiException as e:
+            _assert_status_code(status_code, e.status)
             return 0
-        else:
-            return logs.count
 
 if __name__ == '__main__':
     unittest.main()
