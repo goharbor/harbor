@@ -94,13 +94,16 @@ func New(ctx context.Context, name string, access []*registry_token.ResourceActi
 		}
 		actionMap := make(map[types.Action]struct{})
 		for _, a := range ac.Actions {
-			if a == "pull" || a == "*" {
+			switch a {
+			case "pull":
 				actionMap[rbac.ActionPull] = struct{}{}
-			}
-			if a == "push" || a == "*" {
+			case "push":
 				actionMap[rbac.ActionPush] = struct{}{}
-			}
-			if a == "scanner-pull" {
+			case "*":
+				actionMap[rbac.ActionPull] = struct{}{}
+				actionMap[rbac.ActionPush] = struct{}{}
+				actionMap[rbac.ActionDelete] = struct{}{}
+			case "scanner-pull":
 				actionMap[rbac.ActionScannerPull] = struct{}{}
 			}
 		}
