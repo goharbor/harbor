@@ -23,6 +23,7 @@ import (
 // RefreshForProjectMiddleware middleware which refresh the quota usage of project after the response success
 func RefreshForProjectMiddleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
 	return RefreshMiddleware(RefreshConfig{
-		ReferenceObject: projectReferenceObject,
+		IgnoreLimitation: true,
+		ReferenceObject:  projectReferenceObject,
 	}, skippers...)
 }
