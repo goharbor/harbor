@@ -71,6 +71,11 @@ func TestAll(t *testing.T) {
 		},
 		{
 			resource: rbac.NewProjectNamespace(2).Resource(rbac.ResourceRepository),
+			action:   rbac.ActionDelete,
+			expect:   true,
+		},
+		{
+			resource: rbac.NewProjectNamespace(2).Resource(rbac.ResourceRepository),
 			action:   rbac.ActionScannerPull,
 			expect:   false,
 		},
