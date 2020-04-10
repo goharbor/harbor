@@ -6,21 +6,19 @@ import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from "ngx-cookie";
 import * as SwaggerUI from 'swagger-ui';
-import { mergeDeep } from "../../lib/utils/utils";
-import { DevCenterBase } from "./dev-center-base";
+import { DevCenterBase } from './dev-center-base';
 
 enum SwaggerJsonUrls {
-  SWAGGER1 = '/swagger.json',
-  SWAGGER2 = '/swagger2.json'
+  CHARTMUSEUM = '/swagger3.json'
 }
 
 @Component({
-  selector: 'dev-center',
+  selector: 'dev-center-other',
   templateUrl: 'dev-center.component.html',
   viewProviders: [Title],
   styleUrls: ['dev-center.component.scss']
 })
-export class DevCenterComponent extends DevCenterBase implements AfterViewInit, OnInit {
+export class DevCenterOtherComponent extends DevCenterBase implements AfterViewInit, OnInit {
   private ui: any;
   constructor(
     private el: ElementRef,
@@ -28,7 +26,7 @@ export class DevCenterComponent extends DevCenterBase implements AfterViewInit, 
     public translate: TranslateService,
     public cookieService: CookieService,
     public titleService: Title) {
-      super(translate, cookieService, titleService);
+    super(translate, cookieService, titleService);
   }
 
   ngAfterViewInit() {
@@ -36,11 +34,9 @@ export class DevCenterComponent extends DevCenterBase implements AfterViewInit, 
   }
   getSwaggerUI() {
     const _this = this;
-    forkJoin([this.http.get(SwaggerJsonUrls.SWAGGER1), this.http.get(SwaggerJsonUrls.SWAGGER2)])
+    this.http.get(SwaggerJsonUrls.CHARTMUSEUM)
       .pipe(catchError(error => observableThrowError(error)))
-      .subscribe(jsonArr => {
-        const json: object = {};
-        mergeDeep(json, jsonArr[0], jsonArr[1]);
+      .subscribe(json => {
         json['host'] = window.location.host;
         const protocal = window.location.protocol;
         json['schemes'] = [protocal.replace(":", "")];
@@ -61,4 +57,5 @@ export class DevCenterComponent extends DevCenterBase implements AfterViewInit, 
         });
       });
   }
+
 }

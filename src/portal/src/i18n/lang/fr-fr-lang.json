@@ -167,7 +167,9 @@
         },
         "LOGS": "Logs",
         "TASKS": "Tasks",
-        "API_EXPLORER": "API EXPLORER"
+        "API_EXPLORER": "Api Explorer",
+        "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
+        "HELM_API_MANAGEMENT": "Harbor API"
     },
     "USER": {
         "ADD_ACTION": "UTILISATEUR",
