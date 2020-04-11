@@ -73,8 +73,6 @@ jobs:
           env
           bash ./tests/showtime.sh ./tests/ci/ut_install.sh
       - name: script
-        env:
-          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo IP: $IP
           cd src/github.com/goharbor/harbor
@@ -83,7 +81,7 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           file: ./src/github.com/goharbor/harbor/profile.cov
-          yml: ./src/github.com/goharbor/harbor/.github/codecov-ut-config/codecov.yml
+          flags: unittests
 
   APITEST_DB:
     env:
@@ -275,39 +273,13 @@ jobs:
       - uses: actions/checkout@v2
         with:
           path: src/github.com/goharbor/harbor
-      - name: setup env
-        run: |
-          cd src/github.com/goharbor/harbor
-          pwd
-          go env
-          echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
-          echo "::add-path::$(go env GOPATH)/bin"
-          echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem"
-        shell: bash
-      - name: before_install
-        run: |
-          set -x
-          cd src/github.com/goharbor/harbor
-          pwd
-          env
-          #sudo apt install -y xvfb
-          #xvfb-run ls
-          #curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          #chmod +x docker-compose
-          #sudo mv docker-compose /usr/local/bin
-          IP=`hostname -I | awk '{print $1}'`
-          #echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
-          echo "::set-env name=IP::$IP"
-          sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
-          sudo update-ca-certificates
-          #sudo service docker restart
       - name: script
         run: |
           echo IP: $IP
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
       - name: Codecov For UI
-        uses: codecov/codecov-action@v1.0.5
+        uses: codecov/codecov-action@v1
         with:
           file:  ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
-          yml: ./src/github.com/goharbor/harbor/.github/codecov-ut-config/codecov.yml
+          flags: unittests
