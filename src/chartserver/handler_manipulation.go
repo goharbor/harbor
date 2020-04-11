@@ -99,7 +99,11 @@ func (c *Controller) DeleteChartVersion(namespace, chartName, version string) er
 						Repository: &model.Repository{
 							Name: fmt.Sprintf("%s/%s", namespace, chartName),
 						},
-						Vtags: []string{version},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{version},
+							},
+						},
 					},
 				},
 			}
