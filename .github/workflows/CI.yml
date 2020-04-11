@@ -306,8 +306,3 @@ jobs:
           echo IP: $IP
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
-      - name: Codecov For UI
-        uses: codecov/codecov-action@v1.0.5
-        with:
-          file:  ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
-          yml: ./src/github.com/goharbor/harbor/.github/codecov-ut-config/codecov.yml
