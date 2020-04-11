@@ -166,7 +166,7 @@ func GetGroupProjects(groupIDs []int, query *models.ProjectQueryParam) ([]*model
 		     from project p
 		     left join project_member pm on p.project_id = pm.project_id
 		     left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g'
-			 where ug.id in ( %s )`,
+			 where p.deleted=false and ug.id in ( %s )`,
 			sql, groupIDCondition)
 	}
 	sql = sql + ` order by name`
@@ -192,7 +192,7 @@ func GetTotalGroupProjects(groupIDs []int, query *models.ProjectQueryParam) (int
 			   from project p
 			   left join project_member pm on p.project_id = pm.project_id
 			   left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g'
-			   where ug.id in ( %s )) t`,
+			   where p.deleted=false and ug.id in ( %s )) t`,
 			sqlCondition, groupIDCondition)
 	}
 	log.Debugf("query sql:%v", sql)
