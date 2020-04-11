@@ -63,7 +63,7 @@ func (d *dao) Delete(ctx context.Context, id int64) (err error) {
 	return nil
 }
 
-// Filter ...
+// Filter the results are: all of records in artifact_trash excludes the records in artifact with same repo and digest.
 func (d *dao) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error) {
 	var deletedAfs []model.ArtifactTrash
 	ormer, err := orm.FromContext(ctx)
@@ -71,12 +71,13 @@ func (d *dao) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error
 		return deletedAfs, err
 	}
 
-	sql := `SELECT * FROM artifact_trash where artifact_trash.digest NOT IN (select digest from artifact)`
+	sql := `SELECT aft.* FROM artifact_trash AS aft LEFT JOIN artifact af ON (aft.repository_name=af.repository_name AND aft.digest=af.digest) WHERE (af.digest IS NULL AND af.repository_name IS NULL)`
 
 	_, err = ormer.Raw(sql).QueryRows(&deletedAfs)
 	if err != nil {
 		return deletedAfs, err
 	}
+
 	return deletedAfs, nil
 }
 

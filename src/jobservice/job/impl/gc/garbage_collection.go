@@ -215,10 +215,14 @@ func (gc *GarbageCollector) cleanCache() error {
 // 1, required part, the artifacts were removed from Harbor.
 // 2, optional part, the untagged artifacts.
 func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
+	if os.Getenv("UTTEST") == "true" {
+		gc.logger = ctx.GetLogger()
+	}
 	// default is not to clean trash
 	flushTrash := false
 	defer func() {
 		if flushTrash {
+			gc.logger.Info("flush artifact trash")
 			if err := gc.artrashMgr.Flush(ctx.SystemContext()); err != nil {
 				gc.logger.Errorf("failed to flush artifact trash: %v", err)
 			}
@@ -235,14 +239,17 @@ func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
 		if err != nil {
 			return err
 		}
+		gc.logger.Info("start to delete untagged artifact.")
 		for _, art := range untagged {
-			gc.logger.Infof("delete the untagged artifact: ProjectID:(%d)-RepositoryName(%s)-MediaType:(%s)-Digest:(%s)",
-				art.ProjectID, art.RepositoryName, art.ManifestMediaType, art.Digest)
 			if err := gc.artCtl.Delete(ctx.SystemContext(), art.ID); err != nil {
 				// the failure ones can be GCed by the next execution
 				gc.logger.Errorf("failed to delete untagged:%d artifact in DB, error, %v", art.ID, err)
+				continue
 			}
+			gc.logger.Infof("delete the untagged artifact: ProjectID:(%d)-RepositoryName(%s)-MediaType:(%s)-Digest:(%s)",
+				art.ProjectID, art.RepositoryName, art.ManifestMediaType, art.Digest)
 		}
+		gc.logger.Info("end to delete untagged artifact.")
 	}
 
 	// handle the trash
@@ -250,13 +257,15 @@ func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
 	if err != nil {
 		return err
 	}
+	gc.logger.Info("required candidate: %+v", required)
 	for _, art := range required {
-		gc.logger.Infof("delete the manifest with registry v2 API: RepositoryName(%s)-MediaType:(%s)-Digest:(%s)",
-			art.RepositoryName, art.ManifestMediaType, art.Digest)
 		if err := deleteManifest(art.RepositoryName, art.Digest); err != nil {
 			return fmt.Errorf("failed to delete manifest, %s:%s with error: %v", art.RepositoryName, art.Digest, err)
 		}
+		gc.logger.Infof("delete the manifest with registry v2 API: RepositoryName(%s)-MediaType:(%s)-Digest:(%s)",
+			art.RepositoryName, art.ManifestMediaType, art.Digest)
 	}
+	gc.logger.Info("end to delete required artifact.")
 	flushTrash = true
 	return nil
 }
