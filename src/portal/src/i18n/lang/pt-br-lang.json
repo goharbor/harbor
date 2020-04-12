@@ -1014,8 +1014,14 @@
         "SCAN_NOW": "Analisar"
     },
     "PUSH_IMAGE": {
-        "TITLE": "Enviar Imagem",
-        "TOOLTIP": "Referência de comando para enviar uma imagem para esse projeto.",
+        "TITLE": "Push Command",
+        "DOCKER": "Docker",
+        "HELM": "Helm",
+        "CNAB": "CNAB",
+        "TAG_COMMAND_CHART": "Tag a chart for this project:",
+        "PUSH_COMMAND_CHART": "Push a chart to this project:",
+        "PUSH_COMMAND_CNAB": "Push a CNAB to this project:",
+        "TOOLTIP": "Command references for pushing an artifact to this project.",
         "TAG_COMMAND": "Taggeia uma imagem para esse projeto:",
         "PUSH_COMMAND": "Envia uma imagem para esse projeto:",
         "COPY_ERROR": "Copia falhou, por favor tente copiar o comando de referência manualmente."

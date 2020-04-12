@@ -648,7 +648,7 @@
         "ARTIFACT_TOOTIP": "点击查看此 OCI 索引的 Artifact 列表",
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "下载数",
-        "PULL_COMMAND": "Pull命令",
+        "PULL_COMMAND": "拉取命令",
         "PULL_TIME": "拉取时间",
         "PUSH_TIME": "推送时间",
         "IMMUTABLE": "不可变的",
@@ -1018,8 +1018,14 @@
         "SCAN_NOW": "扫描"
     },
     "PUSH_IMAGE": {
-        "TITLE": "推送镜像的Docker命令",
-        "TOOLTIP": "推送一个镜像到当前项目的参考命令。",
+        "TITLE": "推送命令",
+        "DOCKER": "Docker",
+        "HELM": "Helm",
+        "CNAB": "CNAB",
+        "TAG_COMMAND_CHART": "在项目中标记 chart",
+        "PUSH_COMMAND_CHART": "推送 chart 到当前项目",
+        "PUSH_COMMAND_CNAB": "推送 CNAB 到当前项目",
+        "TOOLTIP": "推送一个 artifact 到当前项目的参考命令。",
         "TAG_COMMAND": "在项目中标记镜像：",
         "PUSH_COMMAND": "推送镜像到当前项目：",
         "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。"

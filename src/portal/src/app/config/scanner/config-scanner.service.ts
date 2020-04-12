@@ -6,7 +6,7 @@ import { HttpClient } from "@angular/common/http";
 import { ScannerMetadata } from "./scanner-metadata";
 import { CURRENT_BASE_HREF } from "../../../lib/utils/utils";
 
-export const SCANNERS_DOC: string = "https://github.com/goharbor/harbor/blob/master/docs/harbor_compatibility_list.md";
+export const SCANNERS_DOC: string = "https://goharbor.io/blog/harbor-1.10-release/#vulnerability-scanning-with-pluggable-scanners";
 
 @Injectable()
 export class ConfigScannerService {
