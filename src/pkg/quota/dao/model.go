@@ -15,13 +15,42 @@
 package dao
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
+	"time"
+
+	"github.com/astaxie/beego/orm"
 )
 
-// TODO: move Quota and QuotaUsage models to here
+func init() {
+	orm.RegisterModel(&Quota{})
+	orm.RegisterModel(&QuotaUsage{})
+}
 
-// Quota quota model alias from models
-type Quota = models.Quota
+// Quota model for quota
+type Quota struct {
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	Reference    string    `orm:"column(reference)" json:"reference"` // The reference type for quota, eg: project, user
+	ReferenceID  string    `orm:"column(reference_id)" json:"reference_id"`
+	Hard         string    `orm:"column(hard);type(jsonb)" json:"-"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+}
 
-// QuotaUsage quota usage model alias from models
-type QuotaUsage = models.QuotaUsage
+// TableName returns table name for orm
+func (q *Quota) TableName() string {
+	return "quota"
+}
+
+// QuotaUsage model for quota usage
+type QuotaUsage struct {
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	Reference    string    `orm:"column(reference)" json:"reference"` // The reference type for quota usage, eg: project, user
+	ReferenceID  string    `orm:"column(reference_id)" json:"reference_id"`
+	Used         string    `orm:"column(used);type(jsonb)" json:"-"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+}
+
+// TableName returns table name for orm
+func (qu *QuotaUsage) TableName() string {
+	return "quota_usage"
+}

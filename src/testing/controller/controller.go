@@ -16,7 +16,6 @@ package controller
 
 //go:generate mockery -case snake -dir ../../controller/artifact -name Controller -output ./artifact -outpkg artifact
 //go:generate mockery -case snake -dir ../../controller/blob -name Controller -output ./blob -outpkg blob
-//go:generate mockery -case snake -dir ../../controller/chartmuseum -name Controller -output ./chartmuseum -outpkg chartmuseum
 //go:generate mockery -case snake -dir ../../controller/project -name Controller -output ./project -outpkg project
 //go:generate mockery -case snake -dir ../../controller/quota -name Controller -output ./quota -outpkg quota
 //go:generate mockery -case snake -dir ../../controller/scan -name Controller -output ./scan -outpkg scan

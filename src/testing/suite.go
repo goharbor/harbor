@@ -16,12 +16,10 @@ package testing
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"sync"
 	"time"
 
@@ -31,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/suite"
 )
@@ -160,15 +157,4 @@ func (suite *Suite) ExecSQL(query string, args ...interface{}) {
 // IsNotFoundErr ...
 func (suite *Suite) IsNotFoundErr(err error) bool {
 	return suite.True(errors.IsNotFoundErr(err))
-}
-
-// AssertResourceUsage ...
-func (suite *Suite) AssertResourceUsage(expected int64, resource types.ResourceName, projectID int64) {
-	usage := models.QuotaUsage{Reference: "project", ReferenceID: strconv.FormatInt(projectID, 10)}
-	err := dao.GetOrmer().Read(&usage, "reference", "reference_id")
-	suite.Nil(err, fmt.Sprintf("Failed to get resource %s usage of project %d, error: %v", resource, projectID, err))
-
-	used, err := types.NewResourceList(usage.Used)
-	suite.Nil(err, "Bad resource usage of project %d", projectID)
-	suite.Equal(expected, used[resource])
 }

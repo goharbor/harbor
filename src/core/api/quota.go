@@ -17,11 +17,17 @@ package api
 import (
 	"fmt"
 
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/quota"
+	"github.com/goharbor/harbor/src/controller/quota"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/quota/models"
+	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
 )
+
+// QuotaUpdateRequest struct for the body of put quota API
+type QuotaUpdateRequest struct {
+	Hard types.ResourceList `json:"hard"`
+}
 
 // QuotaAPI handles request to /api/quotas/
 type QuotaAPI struct {
@@ -56,14 +62,9 @@ func (qa *QuotaAPI) Prepare() {
 			return
 		}
 
-		quota, err := dao.GetQuota(id)
+		quota, err := quota.Ctl.Get(qa.Ctx.Request.Context(), id)
 		if err != nil {
-			qa.SendInternalServerError(fmt.Errorf("failed to get quota %d, error: %v", id, err))
-			return
-		}
-
-		if quota == nil {
-			qa.SendNotFoundError(fmt.Errorf("quota %d not found", id))
+			qa.SendError(err)
 			return
 		}
 
@@ -73,45 +74,27 @@ func (qa *QuotaAPI) Prepare() {
 
 // Get returns quota by id
 func (qa *QuotaAPI) Get() {
-	query := &models.QuotaQuery{
-		ID: qa.quota.ID,
-	}
-
-	quotas, err := dao.ListQuotas(query)
-	if err != nil {
-		qa.SendInternalServerError(fmt.Errorf("failed to get quota %d, error: %v", qa.quota.ID, err))
-		return
-	}
-
-	if len(quotas) == 0 {
-		qa.SendNotFoundError(fmt.Errorf("quota %d not found", qa.quota.ID))
-		return
-	}
-
-	qa.Data["json"] = quotas[0]
+	qa.Data["json"] = qa.quota
 	qa.ServeJSON()
 }
 
 // Put update the quota
 func (qa *QuotaAPI) Put() {
-	var req *models.QuotaUpdateRequest
+	var req *QuotaUpdateRequest
 	if err := qa.DecodeJSONReq(&req); err != nil {
 		qa.SendBadRequestError(err)
 		return
 	}
 
-	if err := quota.Validate(qa.quota.Reference, req.Hard); err != nil {
+	ctx := qa.Ctx.Request.Context()
+	if err := quota.Validate(ctx, qa.quota.Reference, req.Hard); err != nil {
 		qa.SendBadRequestError(err)
 		return
 	}
 
-	mgr, err := quota.NewManager(qa.quota.Reference, qa.quota.ReferenceID)
-	if err != nil {
-		qa.SendInternalServerError(fmt.Errorf("failed to create quota manager, error: %v", err))
-		return
-	}
+	qa.quota.SetHard(req.Hard)
 
-	if err := mgr.UpdateQuota(req.Hard); err != nil {
+	if err := quota.Ctl.Update(ctx, qa.quota); err != nil {
 		qa.SendInternalServerError(fmt.Errorf("failed to update hard limits of the quota, error: %v", err))
 		return
 	}
@@ -125,25 +108,25 @@ func (qa *QuotaAPI) List() {
 		return
 	}
 
-	query := &models.QuotaQuery{
-		Reference:   qa.GetString("reference"),
-		ReferenceID: qa.GetString("reference_id"),
-		Pagination: models.Pagination{
-			Page: page,
-			Size: size,
+	query := &q.Query{
+		Keywords: q.KeyWords{
+			"reference":    qa.GetString("reference"),
+			"reference_id": qa.GetString("reference_id"),
 		},
-		Sorting: models.Sorting{
-			Sort: qa.GetString("sort"),
-		},
+		PageNumber: page,
+		PageSize:   size,
+		Sorting:    qa.GetString("sort"),
 	}
 
-	total, err := dao.GetTotalOfQuotas(query)
+	ctx := qa.Ctx.Request.Context()
+
+	total, err := quota.Ctl.Count(ctx, query)
 	if err != nil {
 		qa.SendInternalServerError(fmt.Errorf("failed to query database for total of quotas, error: %v", err))
 		return
 	}
 
-	quotas, err := dao.ListQuotas(query)
+	quotas, err := quota.Ctl.List(ctx, query)
 	if err != nil {
 		qa.SendInternalServerError(fmt.Errorf("failed to query database for quotas, error: %v", err))
 		return

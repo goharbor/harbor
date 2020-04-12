@@ -49,5 +49,12 @@ func (r *ResponseRecorder) WriteHeader(statusCode int) {
 
 // Success checks whether the status code is >= 200 & <= 399
 func (r *ResponseRecorder) Success() bool {
-	return r.StatusCode >= http.StatusOK && r.StatusCode < http.StatusBadRequest
+	statusCode := r.StatusCode
+	if statusCode == 0 {
+		// NOTE: r.code is zero means that `WriteHeader` not called by the http handler,
+		// so process it as http.StatusOK
+		statusCode = http.StatusOK
+	}
+
+	return statusCode >= http.StatusOK && statusCode < http.StatusBadRequest
 }

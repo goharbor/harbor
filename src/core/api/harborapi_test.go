@@ -28,8 +28,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/goharbor/harbor/src/server/middleware/security"
-
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
 	"github.com/goharbor/harbor/src/common/api"
@@ -44,6 +42,9 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/orm"
+	"github.com/goharbor/harbor/src/server/middleware/security"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 )
 
@@ -217,7 +218,8 @@ func init() {
 	mockServer := test.NewJobServiceServer()
 	defer mockServer.Close()
 
-	handler = security.Middleware()(beego.BeeApp.Handlers)
+	chain := middleware.Chain(orm.Middleware(), security.Middleware())
+	handler = chain(beego.BeeApp.Handlers)
 }
 
 func request0(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, http.Header, []byte, error) {
@@ -1064,7 +1066,7 @@ func (a testapi) QuotasGetByID(authInfo usrInfo, quotaID string) (int, apilib.Qu
 }
 
 // Update spec for the quota
-func (a testapi) QuotasPut(authInfo usrInfo, quotaID string, req models.QuotaUpdateRequest) (int, error) {
+func (a testapi) QuotasPut(authInfo usrInfo, quotaID string, req QuotaUpdateRequest) (int, error) {
 	path := "/api/quotas/" + quotaID
 	_sling := sling.New().Put(a.basePath).Path(path).BodyJSON(req)
 

@@ -15,6 +15,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -26,12 +27,12 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	pro "github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
@@ -138,7 +139,7 @@ func (p *ProjectAPI) Post() {
 			pro.StorageLimit = &setting.StoragePerProject
 		}
 
-		hardLimits, err = projectQuotaHardLimits(pro, setting)
+		hardLimits, err = projectQuotaHardLimits(p.Ctx.Request.Context(), pro, setting)
 		if err != nil {
 			log.Errorf("Invalid project request, error: %v", err)
 			p.SendBadRequestError(fmt.Errorf("invalid request: %v", err))
@@ -201,12 +202,9 @@ func (p *ProjectAPI) Post() {
 	}
 
 	if config.QuotaPerProjectEnable() {
-		quotaMgr, err := quota.NewManager("project", strconv.FormatInt(projectID, 10))
-		if err != nil {
-			p.SendInternalServerError(fmt.Errorf("failed to get quota manager: %v", err))
-			return
-		}
-		if _, err := quotaMgr.NewQuota(hardLimits); err != nil {
+		ctx := p.Ctx.Request.Context()
+		referenceID := quota.ReferenceID(projectID)
+		if _, err := quota.Ctl.Create(ctx, quota.ProjectReference, referenceID, hardLimits); err != nil {
 			p.SendInternalServerError(fmt.Errorf("failed to create quota for project: %v", err))
 			return
 		}
@@ -285,14 +283,16 @@ func (p *ProjectAPI) Delete() {
 		return
 	}
 
-	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(p.project.ProjectID, 10))
+	ctx := p.Ctx.Request.Context()
+	referenceID := quota.ReferenceID(p.project.ProjectID)
+	q, err := quota.Ctl.GetByRef(ctx, quota.ProjectReference, referenceID)
 	if err != nil {
-		p.SendInternalServerError(fmt.Errorf("failed to get quota manager: %v", err))
-		return
-	}
-	if err := quotaMgr.DeleteQuota(); err != nil {
-		p.SendInternalServerError(fmt.Errorf("failed to delete quota for project: %v", err))
-		return
+		log.Warningf("failed to get quota for project %s, error: %v", p.project.Name, err)
+	} else {
+		if err := quota.Ctl.Delete(ctx, q.ID); err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to delete quota for project: %v", err))
+			return
+		}
 	}
 
 	// fire event
@@ -516,7 +516,7 @@ func (p *ProjectAPI) Summary() {
 		ChartCount: p.project.ChartCount,
 	}
 
-	var fetchSummaries []func(int64, *models.ProjectSummary)
+	var fetchSummaries []func(context.Context, int64, *models.ProjectSummary)
 
 	if hasPerm, _ := p.HasProjectPermission(p.project.ProjectID, rbac.ActionRead, rbac.ResourceQuota); hasPerm {
 		fetchSummaries = append(fetchSummaries, getProjectQuotaSummary)
@@ -526,6 +526,8 @@ func (p *ProjectAPI) Summary() {
 		fetchSummaries = append(fetchSummaries, getProjectMemberSummary)
 	}
 
+	ctx := p.Ctx.Request.Context()
+
 	var wg sync.WaitGroup
 	for _, fn := range fetchSummaries {
 		fn := fn
@@ -533,7 +535,7 @@ func (p *ProjectAPI) Summary() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			fn(p.project.ProjectID, summary)
+			fn(ctx, p.project.ProjectID, summary)
 		}()
 	}
 	wg.Wait()
@@ -563,7 +565,7 @@ func validateProjectReq(req *models.ProjectRequest) error {
 	return nil
 }
 
-func projectQuotaHardLimits(req *models.ProjectRequest, setting *models.QuotaSetting) (types.ResourceList, error) {
+func projectQuotaHardLimits(ctx context.Context, req *models.ProjectRequest, setting *models.QuotaSetting) (types.ResourceList, error) {
 	hardLimits := types.ResourceList{}
 
 	if req.StorageLimit != nil {
@@ -572,38 +574,31 @@ func projectQuotaHardLimits(req *models.ProjectRequest, setting *models.QuotaSet
 		hardLimits[types.ResourceStorage] = setting.StoragePerProject
 	}
 
-	if err := quota.Validate("project", hardLimits); err != nil {
+	if err := quota.Validate(ctx, quota.ProjectReference, hardLimits); err != nil {
 		return nil, err
 	}
 
 	return hardLimits, nil
 }
 
-func getProjectQuotaSummary(projectID int64, summary *models.ProjectSummary) {
+func getProjectQuotaSummary(ctx context.Context, projectID int64, summary *models.ProjectSummary) {
 	if !config.QuotaPerProjectEnable() {
 		log.Debug("Quota per project disabled")
 		return
 	}
 
-	quotas, err := dao.ListQuotas(&models.QuotaQuery{Reference: "project", ReferenceID: strconv.FormatInt(projectID, 10)})
+	q, err := quota.Ctl.GetByRef(ctx, quota.ProjectReference, quota.ReferenceID(projectID))
 	if err != nil {
 		log.Debugf("failed to get quota for project: %d", projectID)
 		return
 	}
 
-	if len(quotas) == 0 {
-		log.Debugf("quota not found for project: %d", projectID)
-		return
-	}
-
-	quota := quotas[0]
-
 	summary.Quota = &models.QuotaSummary{}
-	summary.Quota.Hard, _ = types.NewResourceList(quota.Hard)
-	summary.Quota.Used, _ = types.NewResourceList(quota.Used)
+	summary.Quota.Hard, _ = types.NewResourceList(q.Hard)
+	summary.Quota.Used, _ = types.NewResourceList(q.Used)
 }
 
-func getProjectMemberSummary(projectID int64, summary *models.ProjectSummary) {
+func getProjectMemberSummary(ctx context.Context, projectID int64, summary *models.ProjectSummary) {
 	var wg sync.WaitGroup
 
 	for _, e := range []struct {

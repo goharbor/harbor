@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota/dao"
 	"github.com/goharbor/harbor/src/pkg/quota/models"
 	"github.com/goharbor/harbor/src/pkg/types"
@@ -30,6 +31,9 @@ type Quota = models.Quota
 type Manager interface {
 	// Create create quota for the reference object
 	Create(ctx context.Context, reference, referenceID string, hardLimits types.ResourceList, usages ...types.ResourceList) (int64, error)
+
+	// Count returns the total count of quotas according to the query.
+	Count(ctx context.Context, query *q.Query) (int64, error)
 
 	// Delete delete quota by id
 	Delete(ctx context.Context, id int64) error
@@ -45,6 +49,9 @@ type Manager interface {
 
 	// Update update quota
 	Update(ctx context.Context, quota *Quota) error
+
+	// List list quotas
+	List(ctx context.Context, query *q.Query) ([]*Quota, error)
 }
 
 var (
@@ -75,8 +82,16 @@ func (m *manager) Create(ctx context.Context, reference, referenceID string, har
 	return id, err
 }
 
+func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return m.dao.Count(ctx, query)
+}
+
 func (m *manager) Delete(ctx context.Context, id int64) error {
-	return m.dao.Delete(ctx, id)
+	h := func(ctx context.Context) error {
+		return m.dao.Delete(ctx, id)
+	}
+
+	return orm.WithTransaction(h)(ctx)
 }
 
 func (m *manager) Get(ctx context.Context, id int64) (*Quota, error) {
@@ -92,7 +107,15 @@ func (m *manager) GetByRefForUpdate(ctx context.Context, reference, referenceID 
 }
 
 func (m *manager) Update(ctx context.Context, q *Quota) error {
-	return m.dao.Update(ctx, q)
+	h := func(ctx context.Context) error {
+		return m.dao.Update(ctx, q)
+	}
+
+	return orm.WithTransaction(h)(ctx)
+}
+
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*Quota, error) {
+	return m.dao.List(ctx, query)
 }
 
 // NewManager returns quota manager
