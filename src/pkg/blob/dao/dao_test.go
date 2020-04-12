@@ -267,13 +267,59 @@ func (suite *DaoTestSuite) TestExistProjectBlob() {
 func (suite *DaoTestSuite) TestDeleteProjectBlob() {
 	ctx := suite.Context()
 
-	projectID := int64(1)
-	blobID := int64(1000)
-
-	_, err := suite.dao.CreateProjectBlob(ctx, projectID, blobID)
+	digest := suite.DigestString()
+	blobID, err := suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest})
 	suite.Nil(err)
 
-	suite.Nil(suite.dao.DeleteProjectBlob(ctx, projectID, blobID))
+	projectID1 := int64(1)
+	projectID2 := int64(2)
+	projectID3 := int64(3)
+
+	_, err = suite.dao.CreateProjectBlob(ctx, projectID1, blobID)
+	suite.Nil(err)
+
+	_, err = suite.dao.CreateProjectBlob(ctx, projectID2, blobID)
+	suite.Nil(err)
+
+	{
+		exist, err := suite.dao.ExistProjectBlob(ctx, projectID1, digest)
+		suite.Nil(err)
+		suite.True(exist)
+	}
+
+	{
+		exist, err := suite.dao.ExistProjectBlob(ctx, projectID2, digest)
+		suite.Nil(err)
+		suite.True(exist)
+	}
+
+	suite.Nil(suite.dao.DeleteProjectBlob(ctx, projectID3, blobID))
+
+	{
+		exist, err := suite.dao.ExistProjectBlob(ctx, projectID1, digest)
+		suite.Nil(err)
+		suite.True(exist)
+	}
+
+	{
+		exist, err := suite.dao.ExistProjectBlob(ctx, projectID2, digest)
+		suite.Nil(err)
+		suite.True(exist)
+	}
+
+	suite.Nil(suite.dao.DeleteProjectBlob(ctx, projectID1, blobID))
+
+	{
+		exist, err := suite.dao.ExistProjectBlob(ctx, projectID1, digest)
+		suite.Nil(err)
+		suite.False(exist)
+	}
+
+	{
+		exist, err := suite.dao.ExistProjectBlob(ctx, projectID2, digest)
+		suite.Nil(err)
+		suite.True(exist)
+	}
 }
 
 func TestDaoTestSuite(t *testing.T) {
