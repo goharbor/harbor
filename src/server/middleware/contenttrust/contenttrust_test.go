@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
@@ -59,7 +60,7 @@ func (suite *MiddlewareTestSuite) SetupTest() {
 
 	suite.isArtifactSigned = isArtifactSigned
 	suite.artifact = &artifact.Artifact{}
-	suite.artifact.Type = artifact.ImageType
+	suite.artifact.Type = image.ArtifactTypeImage
 	suite.artifact.ProjectID = 1
 	suite.artifact.RepositoryName = "library/photon"
 	suite.artifact.Digest = "digest"
