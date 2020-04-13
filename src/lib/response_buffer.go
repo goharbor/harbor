@@ -79,7 +79,8 @@ func (r *ResponseBuffer) Flush() (int, error) {
 
 // Success checks whether the status code is >= 200 & <= 399
 func (r *ResponseBuffer) Success() bool {
-	return r.code >= http.StatusOK && r.code < http.StatusBadRequest
+	code := r.StatusCode()
+	return code >= http.StatusOK && code < http.StatusBadRequest
 }
 
 // Reset reset the response buffer
@@ -98,5 +99,10 @@ func (r *ResponseBuffer) Reset() error {
 
 // StatusCode returns the status code
 func (r *ResponseBuffer) StatusCode() int {
+	if r.code == 0 {
+		// NOTE: r.code is zero means that `WriteHeader` not called by the http handler,
+		// so process it as http.StatusOK
+		return http.StatusOK
+	}
 	return r.code
 }

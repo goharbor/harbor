@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/types"
@@ -44,6 +45,9 @@ var (
 
 // Controller defines the operations related with quotas
 type Controller interface {
+	// Count returns the total count of quotas according to the query.
+	Count(ctx context.Context, query *q.Query) (int64, error)
+
 	// Create ensure quota for the reference object
 	Create(ctx context.Context, reference, referenceID string, hardLimits types.ResourceList, used ...types.ResourceList) (int64, error)
 
@@ -59,6 +63,9 @@ type Controller interface {
 	// IsEnabled returns true when quota enabled for reference object
 	IsEnabled(ctx context.Context, reference, referenceID string) (bool, error)
 
+	// List list quotas
+	List(ctx context.Context, query *q.Query) ([]*quota.Quota, error)
+
 	// Refresh refresh quota for the reference object
 	Refresh(ctx context.Context, reference, referenceID string, options ...Option) error
 
@@ -67,6 +74,9 @@ type Controller interface {
 	// then runs f and refresh quota when f success，
 	// in the finally it releases the resources which reserved at the beginning.
 	Request(ctx context.Context, reference, referenceID string, resources types.ResourceList, f func() error) error
+
+	// Update update quota
+	Update(ctx context.Context, q *quota.Quota) error
 }
 
 // NewController creates an instance of the default quota controller
@@ -81,6 +91,10 @@ type controller struct {
 	reservedExpiration time.Duration
 
 	quotaMgr quota.Manager
+}
+
+func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return c.quotaMgr.Count(ctx, query)
 }
 
 func (c *controller) Create(ctx context.Context, reference, referenceID string, hardLimits types.ResourceList, used ...types.ResourceList) (int64, error) {
@@ -106,6 +120,10 @@ func (c *controller) IsEnabled(ctx context.Context, reference, referenceID strin
 	}
 
 	return d.Enabled(ctx, referenceID)
+}
+
+func (c *controller) List(ctx context.Context, query *q.Query) ([]*quota.Quota, error) {
+	return c.quotaMgr.List(ctx, query)
 }
 
 func (c *controller) getReservedResources(ctx context.Context, reference, referenceID string) (types.ResourceList, error) {
@@ -283,6 +301,32 @@ func (c *controller) Request(ctx context.Context, reference, referenceID string,
 	return c.Refresh(ctx, reference, referenceID)
 }
 
+func (c *controller) Update(ctx context.Context, u *quota.Quota) error {
+	update := func(ctx context.Context) error {
+		q, err := c.quotaMgr.GetByRefForUpdate(ctx, u.Reference, u.ReferenceID)
+		if err != nil {
+			return err
+		}
+
+		if q.Hard != u.Hard {
+			if hard, err := u.GetHard(); err == nil {
+				q.SetHard(hard)
+			}
+		}
+
+		if q.Used != u.Used {
+			if used, err := u.GetUsed(); err == nil {
+				q.SetUsed(used)
+			}
+		}
+
+		q.UpdateTime = time.Now()
+		return c.quotaMgr.Update(ctx, q)
+	}
+
+	return orm.WithTransaction(update)(ctx)
+}
+
 // Driver returns quota driver for the reference
 func Driver(ctx context.Context, reference string) (driver.Driver, error) {
 	d, ok := driver.Get(reference)
@@ -291,6 +335,16 @@ func Driver(ctx context.Context, reference string) (driver.Driver, error) {
 	}
 
 	return d, nil
+}
+
+// Validate validate hard limits
+func Validate(ctx context.Context, reference string, hardLimits types.ResourceList) error {
+	d, err := Driver(ctx, reference)
+	if err != nil {
+		return err
+	}
+
+	return d.Validate(hardLimits)
 }
 
 func reservedResourcesKey(reference, referenceID string) string {

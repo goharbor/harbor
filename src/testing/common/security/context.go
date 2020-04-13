@@ -3,7 +3,6 @@
 package security
 
 import (
-	models "github.com/goharbor/harbor/src/common/models"
 	mock "github.com/stretchr/testify/mock"
 
 	types "github.com/goharbor/harbor/src/pkg/permission/types"
@@ -23,45 +22,6 @@ func (_m *Context) Can(action types.Action, resource types.Resource) bool {
 		r0 = rf(action, resource)
 	} else {
 		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
-// GetMyProjects provides a mock function with given fields:
-func (_m *Context) GetMyProjects() ([]*models.Project, error) {
-	ret := _m.Called()
-
-	var r0 []*models.Project
-	if rf, ok := ret.Get(0).(func() []*models.Project); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Project)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetProjectRoles provides a mock function with given fields: projectIDOrName
-func (_m *Context) GetProjectRoles(projectIDOrName interface{}) []int {
-	ret := _m.Called(projectIDOrName)
-
-	var r0 []int
-	if rf, ok := ret.Get(0).(func(interface{}) []int); ok {
-		r0 = rf(projectIDOrName)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]int)
-		}
 	}
 
 	return r0

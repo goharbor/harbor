@@ -25,6 +25,8 @@ type Query struct {
 	PageSize int64
 	// List of key words
 	Keywords KeyWords
+	// Sorting
+	Sorting string
 }
 
 // New returns Query with keywords
