@@ -23,6 +23,8 @@ redis:
 http:
 {% if internal_tls.enabled %}
   addr: :5443
+  tls:
+    minimumtls: tls1.2
 {% else %}
   addr: :5000
 {% endif %}
