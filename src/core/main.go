@@ -24,6 +24,7 @@ import (
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/job"
@@ -163,10 +164,12 @@ func main() {
 		iTLSCertPath := os.Getenv("INTERNAL_TLS_CERT_PATH")
 
 		log.Infof("load client key: %s client cert: %s", iTLSKeyPath, iTLSCertPath)
+		beego.BConfig.Listen.EnableHTTP = false
 		beego.BConfig.Listen.EnableHTTPS = true
 		beego.BConfig.Listen.HTTPSPort = 8443
 		beego.BConfig.Listen.HTTPSKeyFile = iTLSKeyPath
 		beego.BConfig.Listen.HTTPSCertFile = iTLSCertPath
+		beego.BeeApp.Server.TLSConfig = common_http.NewServerTLSConfig()
 	}
 
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)

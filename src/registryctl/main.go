@@ -34,16 +34,15 @@ type RegistryCtl struct {
 // Start the registry controller
 func (s *RegistryCtl) Start() {
 	regCtl := &http.Server{
-		Addr:    ":" + s.ServerConf.Port,
-		Handler: s.Handler,
+		Addr:      ":" + s.ServerConf.Port,
+		Handler:   s.Handler,
+		TLSConfig: common_http.NewServerTLSConfig(),
 	}
 
 	var err error
 	if s.ServerConf.Protocol == "https" {
 		if common_http.InternalEnableVerifyClientCert() {
-			regCtl.TLSConfig = &tls.Config{
-				ClientAuth: tls.RequireAndVerifyClientCert,
-			}
+			regCtl.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		}
 		err = regCtl.ListenAndServeTLS(s.ServerConf.HTTPSConfig.Cert, s.ServerConf.HTTPSConfig.Key)
 	} else {
