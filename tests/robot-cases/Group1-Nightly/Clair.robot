@@ -43,7 +43,7 @@ Test Case - Disable Scan Schedule
     Close Browser
 
 Test Case - Scan A Tag In The Repo
-    Body Of Scan A Tag In The Repo
+    Body Of Scan A Tag In The Repo  hello-world  latest
 
 Test Case - Scan As An Unprivileged User
     Init Chrome Driver
