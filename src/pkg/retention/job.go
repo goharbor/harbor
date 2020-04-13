@@ -18,9 +18,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/selector"
 	"strings"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/selector"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -44,6 +45,11 @@ type Job struct{}
 // MaxFails of the job
 func (pj *Job) MaxFails() uint {
 	return 3
+}
+
+// MaxCurrency is implementation of same method in Interface.
+func (pj *Job) MaxCurrency() uint {
+	return 0
 }
 
 // ShouldRetry indicates job can be retried if failed

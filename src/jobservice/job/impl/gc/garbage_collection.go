@@ -16,14 +16,15 @@ package gc
 
 import (
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/pkg/blob"
-	"os"
-	"time"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/common"
@@ -78,6 +79,11 @@ type GarbageCollector struct {
 
 // MaxFails implements the interface in job/Interface
 func (gc *GarbageCollector) MaxFails() uint {
+	return 1
+}
+
+// MaxCurrency is implementation of same method in Interface.
+func (gc *GarbageCollector) MaxCurrency() uint {
 	return 1
 }
 

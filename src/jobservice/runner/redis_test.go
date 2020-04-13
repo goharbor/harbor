@@ -196,6 +196,10 @@ func (j *fakeParentJob) MaxFails() uint {
 	return 1
 }
 
+func (j *fakeParentJob) MaxCurrency() uint {
+	return 0
+}
+
 func (j *fakeParentJob) ShouldRetry() bool {
 	return false
 }
@@ -215,6 +219,10 @@ type fakePanicJob struct {
 
 func (j *fakePanicJob) MaxFails() uint {
 	return 1
+}
+
+func (j *fakePanicJob) MaxCurrency() uint {
+	return 0
 }
 
 func (j *fakePanicJob) ShouldRetry() bool {

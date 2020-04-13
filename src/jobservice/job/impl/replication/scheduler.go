@@ -43,6 +43,11 @@ func (s *Scheduler) MaxFails() uint {
 	return 0
 }
 
+// MaxCurrency is implementation of same method in Interface.
+func (s *Scheduler) MaxCurrency() uint {
+	return 0
+}
+
 // Validate ....
 func (s *Scheduler) Validate(params job.Parameters) error {
 	return nil
