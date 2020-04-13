@@ -21,7 +21,13 @@ import {
   UserPermissionService, USERSTATICPERMISSION
 } from "../../../../../lib/services";
 import { ClrDatagridStateInterface } from '@clr/angular';
-import { DEFAULT_PAGE_SIZE, calculatePage, dbEncodeURIComponent } from '../../../../../lib/utils/utils';
+import {
+  DEFAULT_PAGE_SIZE,
+  calculatePage,
+  dbEncodeURIComponent,
+  doFiltering,
+  doSorting
+} from '../../../../../lib/utils/utils';
 import { AppConfigService } from "../../../../services/app-config.service";
 
 class InitTag {
@@ -130,6 +136,9 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
         }
       }
       this.currentTags = res.body;
+      // Do customising filtering and sorting
+      this.currentTags = doFiltering<Tag>(this.currentTags, state);
+      this.currentTags = doSorting<Tag>(this.currentTags, state);
     }, error => {
       this.errorHandlerService.error(error);
     });
