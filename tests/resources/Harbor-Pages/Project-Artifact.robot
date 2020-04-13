@@ -42,3 +42,9 @@ Delete A Tag
     Retry Element Click    ${delete_tag_button}
     Retry Wait Until Page Contains Element  ${dialog_delete_button}
     Retry Element Click  ${dialog_delete_button}
+
+Should Contain Artifact
+    Retry Wait Until Page Contains Element   xpath=//artifact-list-tab//clr-dg-row//a[contains(.,'sha256')]
+
+Should Not Contain Any Artifact
+    Retry Wait Until Page Not Contains Element   xpath=//artifact-list-tab//clr-dg-row
