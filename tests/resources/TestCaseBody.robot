@@ -53,34 +53,19 @@ Body Of Manage project publicity
     Close Browser
 
 Body Of Scan A Tag In The Repo
+    [Arguments]  ${image_argument}  ${tag_argument}
     Init Chrome Driver
     ${d}=  get current date  result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user023  Test1@34
     Create An New Project  project${d}
     Go Into Project  project${d}  has_image=${false}
-    Push Image  ${ip}  user023  Test1@34  project${d}  hello-world
+    Push Image  ${ip}  user023  Test1@34  project${d}  ${image_argument}:${tag_argument}
     Go Into Project  project${d}
-    Go Into Repo  project${d}/hello-world
-    Scan Repo  latest  Succeed
-    Summary Chart Should Display  latest
-    Pull Image  ${ip}  user023  Test1@34  project${d}  hello-world
-    # Edit Repo Info
-    Close Browser
-
-Body Of Scan A Tag In The Repo Use Trivy
-    Init Chrome Driver
-    ${d}=  get current date  result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user023  Test1@34
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
-    Push Image  ${ip}  user023  Test1@34  project${d}  vmware/photon:1.0
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/vmware/photon
-    Scan Repo  1.0  Succeed
-    Summary Chart Should Display  1.0
-    Pull Image  ${ip}  user023  Test1@34  project${d}  vmware/photon  1.0
+    Go Into Repo  project${d}/${image_argument}
+    Scan Repo  ${tag_argument}  Succeed
+    Summary Chart Should Display  ${tag_argument}
+    Pull Image  ${ip}  user023  Test1@34  project${d}  ${image_argument}  ${tag_argument}
     # Edit Repo Info
     Close Browser
 
