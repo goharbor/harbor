@@ -150,7 +150,7 @@ func (suite *MiddlewareTestSuite) TestScannerPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 	securityCtx := &securitytesting.Context{}
-	mock.OnAnything(securityCtx, "Name").Return("robot")
+	mock.OnAnything(securityCtx, "Name").Return("v2token")
 	mock.OnAnything(securityCtx, "Can").Return(true, nil)
 	mock.OnAnything(securityCtx, "IsAuthenticated").Return(true)
 

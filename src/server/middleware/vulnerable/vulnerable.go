@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
@@ -30,6 +28,7 @@ import (
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/util"
 )
 
 var (
@@ -71,10 +70,7 @@ func Middleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		securityCtx, ok := security.FromContext(ctx)
-		if ok &&
-			(securityCtx.Name() == "robot" || securityCtx.Name() == "v2token") &&
-			securityCtx.Can(rbac.ActionScannerPull, rbac.NewProjectNamespace(proj.ProjectID).Resource(rbac.ResourceRepository)) {
+		if util.SkipPolicyChecking(ctx, proj.ProjectID) {
 			// the artifact is pulling by the scanner, skip the checking
 			logger.Debugf("artifact %s@%s is pulling by the scanner, skip the checking", art.RepositoryName, art.Digest)
 			return nil

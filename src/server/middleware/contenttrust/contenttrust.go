@@ -2,16 +2,16 @@ package contenttrust
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/security"
+	"net/http"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	"github.com/goharbor/harbor/src/server/middleware"
-	"net/http"
+	"github.com/goharbor/harbor/src/server/middleware/util"
 )
 
 var (
@@ -30,6 +30,9 @@ var (
 func Middleware() func(http.Handler) http.Handler {
 	return middleware.BeforeRequest(func(r *http.Request) error {
 		ctx := r.Context()
+
+		logger := log.G(ctx)
+
 		none := lib.ArtifactInfo{}
 		af := lib.GetArtifactInfo(ctx)
 		if af == none {
@@ -46,11 +49,8 @@ func Middleware() func(http.Handler) http.Handler {
 		if err != nil {
 			return err
 		}
-		securityCtx, ok := security.FromContext(ctx)
-		// only authenticated robot account with scanner pull access can bypass.
-		if ok && securityCtx.IsAuthenticated() &&
-			(securityCtx.Name() == "robot" || securityCtx.Name() == "v2token") &&
-			securityCtx.Can(rbac.ActionScannerPull, rbac.NewProjectNamespace(pro.ProjectID).Resource(rbac.ResourceRepository)) {
+
+		if util.SkipPolicyChecking(ctx, pro.ProjectID) {
 			// the artifact is pulling by the scanner, skip the checking
 			logger.Debugf("artifact %s@%s is pulling by the scanner, skip the checking", af.Repository, af.Digest)
 			return nil

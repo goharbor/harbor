@@ -17,7 +17,6 @@ package scan
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"sync"
 
@@ -28,7 +27,6 @@ import (
 	sc "github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -217,7 +215,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 	errs = errs[:0]
 	for _, param := range params {
 		if err := bc.scanArtifact(ctx, r, param.Artifact, param.TrackID, param.ProducesMimes); err != nil {
-			log.Warningf("scan artifact %s@%s failed, error: %v", artifact.RepositoryName, artifact.Digest, err)
+			log.G(ctx).Warningf("scan artifact %s@%s failed, error: %v", artifact.RepositoryName, artifact.Digest, err)
 			errs = append(errs, err)
 		}
 	}
@@ -298,7 +296,7 @@ func (bc *basicController) scanArtifact(ctx context.Context, r *scanner.Registra
 	// Insert the generated job ID now
 	// It will not block the whole process. If any errors happened, just logged.
 	if err := bc.manager.UpdateScanJobID(trackID, jobID); err != nil {
-		logger.Error(errors.Wrap(err, "scan controller: scan"))
+		log.G(ctx).Error(errors.Wrap(err, "scan controller: scan"))
 	}
 
 	return nil
@@ -508,14 +506,22 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 	// Clear robot account
 	// Only when the job is successfully done!
 	if change.Status == job.SuccessStatus.String() {
-		if v, ok := change.Metadata.Parameters[sca.JobParameterRobotID]; ok {
-			if rid, y := v.(float64); y {
-				if err := robot.RobotCtr.DeleteRobotAccount(int64(rid)); err != nil {
-					// Should not block the main flow, just logged
+		if v, ok := change.Metadata.Parameters[sca.JobParameterRobot]; ok {
+			if jsonData, y := v.(string); y {
+				r := &model.Robot{}
+				if err := r.FromJSON(jsonData); err != nil {
 					log.Error(errors.Wrap(err, "scan controller: handle job hook"))
-				} else {
-					log.Debugf("Robot account with id %d for the scan %s is removed", int64(rid), trackID)
 				}
+
+				if r.ID > 0 {
+					if err := robot.RobotCtr.DeleteRobotAccount(r.ID); err != nil {
+						// Should not block the main flow, just logged
+						log.Error(errors.Wrap(err, "scan controller: handle job hook"))
+					} else {
+						log.Debugf("Robot account with id %d for the scan %s is removed", r.ID, trackID)
+					}
+				}
+
 			}
 		}
 	}
@@ -617,14 +623,10 @@ func (bc *basicController) launchScanJob(trackID string, artifact *ar.Artifact, 
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}
 
-	basic := fmt.Sprintf("%s:%s", robot.Name, robot.Token)
-	authorization := fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(basic)))
-
 	// Set job parameters
 	scanReq := &v1.ScanRequest{
 		Registry: &v1.Registry{
-			URL:           registryAddr,
-			Authorization: authorization,
+			URL: registryAddr,
 		},
 		Artifact: &v1.Artifact{
 			NamespaceID: artifact.ProjectID,
@@ -644,11 +646,17 @@ func (bc *basicController) launchScanJob(trackID string, artifact *ar.Artifact, 
 		return "", errors.Wrap(err, "launch scan job")
 	}
 
+	robotJSON, err := robot.ToJSON()
+	if err != nil {
+		return "", errors.Wrap(err, "launch scan job")
+	}
+
 	params := make(map[string]interface{})
 	params[sca.JobParamRegistration] = rJSON
+	params[sca.JobParameterAuthType] = registration.GetRegistryAuthorizationType()
 	params[sca.JobParameterRequest] = sJSON
 	params[sca.JobParameterMimes] = mimes
-	params[sca.JobParameterRobotID] = robot.ID
+	params[sca.JobParameterRobot] = robotJSON
 
 	// Launch job
 	callbackURL, err := bc.config(configCoreInternalAddr)
