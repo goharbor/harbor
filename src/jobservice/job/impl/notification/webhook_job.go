@@ -3,12 +3,13 @@ package notification
 import (
 	"bytes"
 	"fmt"
-	commonhttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/logger"
 	"net/http"
 	"os"
 	"strconv"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/logger"
 )
 
 // Max retry has the same meaning as max fails.
@@ -34,6 +35,11 @@ func (wj *WebhookJob) MaxFails() uint {
 	// Default max fails count is 10, and its max retry interval is around 3h
 	// Large enough to ensure most situations can notify successfully
 	return 10
+}
+
+// MaxCurrency is implementation of same method in Interface.
+func (wj *WebhookJob) MaxCurrency() uint {
+	return 0
 }
 
 // ShouldRetry ...

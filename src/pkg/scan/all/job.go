@@ -35,6 +35,11 @@ func (sa *Job) MaxFails() uint {
 	return 1
 }
 
+// MaxCurrency is implementation of same method in Interface.
+func (sa *Job) MaxCurrency() uint {
+	return 0
+}
+
 // ShouldRetry implements the interface in job/Interface
 func (sa *Job) ShouldRetry() bool {
 	return false

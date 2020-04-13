@@ -34,6 +34,11 @@ func (pj *PeriodicJob) MaxFails() uint {
 	return 3
 }
 
+// MaxCurrency is implementation of same method in Interface.
+func (pj *PeriodicJob) MaxCurrency() uint {
+	return 0
+}
+
 // ShouldRetry indicates job can be retried if failed
 func (pj *PeriodicJob) ShouldRetry() bool {
 	return true

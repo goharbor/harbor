@@ -226,6 +226,10 @@ func (j *fakeJob) MaxFails() uint {
 	return 3
 }
 
+func (j *fakeJob) MaxCurrency() uint {
+	return 0
+}
+
 func (j *fakeJob) ShouldRetry() bool {
 	return false
 }
@@ -251,6 +255,10 @@ type fakeLongRunJob struct{}
 
 func (j *fakeLongRunJob) MaxFails() uint {
 	return 3
+}
+
+func (j *fakeLongRunJob) MaxCurrency() uint {
+	return 0
 }
 
 func (j *fakeLongRunJob) ShouldRetry() bool {
