@@ -86,6 +86,7 @@ func (a *authorizer) initialize(u *url.URL) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	challenges := challenge.ResponseChallenges(resp)
 	// no challenge, mean no auth
