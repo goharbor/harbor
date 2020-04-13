@@ -27,40 +27,50 @@ const (
 
 // NotFoundError is error for the case of object not found
 func NotFoundError(err error) *Error {
-	return New(err).WithCode(NotFoundCode).WithMessage("resource not found")
+	return New("resource not found").WithCode(NotFoundCode).WithCause(err)
 }
 
 // ConflictError is error for the case of object conflict
 func ConflictError(err error) *Error {
-	return New(err).WithCode(ConflictCode).WithMessage("resource conflict")
+	return New("resource conflict").WithCode(ConflictCode).WithCause(err)
 }
 
 // DeniedError is error for the case of denied
 func DeniedError(err error) *Error {
-	return New(err).WithCode(DENIED).WithMessage("denied")
+	return New("denied").WithCode(DENIED).WithCause(err)
 }
 
 // UnauthorizedError is error for the case of unauthorized accessing
 func UnauthorizedError(err error) *Error {
-	return New(err).WithCode(UnAuthorizedCode).WithMessage("unauthorized")
+	return New("unauthorized").WithCode(UnAuthorizedCode).WithCause(err)
 }
 
 // BadRequestError is error for the case of bad request
 func BadRequestError(err error) *Error {
-	return New(err).WithCode(BadRequestCode).WithMessage("bad request")
+	return New("bad request").WithCode(BadRequestCode).WithCause(err)
 }
 
 // ForbiddenError is error for the case of forbidden
 func ForbiddenError(err error) *Error {
-	return New(err).WithCode(ForbiddenCode).WithMessage("forbidden")
+	return New("forbidden").WithCode(ForbiddenCode).WithCause(err)
 }
 
 // PreconditionFailedError is error for the case of precondition failed
 func PreconditionFailedError(err error) *Error {
-	return New(err).WithCode(PreconditionCode).WithMessage("precondition failed")
+	return New("precondition failed").WithCode(PreconditionCode).WithCause(err)
 }
 
 // UnknownError ...
 func UnknownError(err error) *Error {
-	return New(err).WithCode(GeneralCode).WithMessage("unknown")
+	return New("unknown").WithCode(GeneralCode).WithCause(err)
+}
+
+// IsNotFoundErr returns true when the error is NotFoundError
+func IsNotFoundErr(err error) bool {
+	return IsErr(err, NotFoundCode)
+}
+
+// IsConflictErr checks whether the err chain contains conflict error
+func IsConflictErr(err error) bool {
+	return IsErr(err, ConflictCode)
 }
