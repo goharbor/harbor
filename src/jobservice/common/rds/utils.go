@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/gomodule/redigo/redis"
-	"github.com/pkg/errors"
 )
 
 // ErrNoElements is a pre defined error to describe the case that no elements got

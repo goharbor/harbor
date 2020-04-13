@@ -16,6 +16,7 @@ package errors
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -126,6 +127,11 @@ func (suite *ErrorTestSuite) TestWithCauseMessage() {
 	cause := errors.New("stdErr")
 	err := New("root").WithCause(cause).WithMessage("With Message")
 	suite.Equal("With Message: stdErr", err.Error())
+}
+
+func (suite *ErrorTestSuite) TestFormat() {
+	err := New("empty job ID")
+	suite.Equal("empty job ID", fmt.Sprintf("%s", err))
 }
 
 func (suite *ErrorTestSuite) TestWrap() {

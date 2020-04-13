@@ -18,8 +18,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/selector"
 	"sync"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
-	"github.com/pkg/errors"
 )
 
 func init() {

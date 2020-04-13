@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"k8s.io/helm/cmd/helm/search"
 
 	"github.com/goharbor/harbor/src/core/config"
