@@ -556,6 +556,38 @@ Test Case - Tag CRUD
     Should Contain Tag   456
     Delete A Tag   latest
     Should Not Contain Tag   latest
+    Close Browser
+
+Test Case - GC Untagged Images
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New Project  project${d}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
+    # make hello-world untagged
+    Go Into Project   project${d}
+    Go Into Repo   hello-world
+    Go Into Artifact   latest
+    Should Contain Tag   latest
+    Delete A Tag   latest
+    Should Not Contain Tag   latest
+    # run gc without param delete untagged artifacts checked,  should not delete hello-world:latest
+    Switch To Garbage Collection
+    Click GC Now
+    Go Into Project   project${d}
+    Switch To Project Repo
+    Go Into Repo   hello-world
+    Should Contain Artifact
+    # run gc with param delete untagged artifacts checked,  should delete hello-world
+    Switch To Garbage Collection
+    Click GC Now With Param Delete Untagged Artifacts
+    Go Into Project   project${d}
+    Switch To Project Repo
+    Go Into Repo   hello-world
+    Should Not Contain Any Artifact
+    Close Browser
+
+
 
 Test Case - Tag Retention
     Init Chrome Driver

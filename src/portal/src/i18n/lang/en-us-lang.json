@@ -1041,7 +1041,7 @@
         "TAGGED": "Tagged",
         "UNTAGGED": "Untagged",
         "ALL": "All",
-        "PLACEHOLDER": "We couldn't find any artifactds!",
+        "PLACEHOLDER": "We couldn't find any artifacts!",
         "SCAN_UNSUPPORTED": "Unsupported"
     },
     "TAG": {
