@@ -22,3 +22,10 @@ ${artifact_action_copy_xpath}  //clr-dropdown-menu//div[contains(.,'Copy') and @
 ${artifact_achieve_icon}  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256')]//clr-dg-cell[1]//clr-tooltip//a
 ${artifact_rows}  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256')]
 
+${artifact_list_spinner}   xpath=//clr-datagrid//clr-spinner
+${artifact_tag_component}   xpath=//artifact-tag
+${add_tag_button}          xpath=//*[@id='new-tag']
+${tag_name_xpath}          xpath=//*[@id='name']
+${add_ok_button}           xpath=//*[@id='add-ok']
+${delete_tag_button}       xpath=//*[@id='delete-tag']
+${dialog_delete_button}    xpath=//clr-modal//button[contains(.,'DELETE')]

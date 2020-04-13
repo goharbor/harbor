@@ -2,10 +2,10 @@
 
 <clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="getCurrentArtifactTags($event)"  [(clrDgSelected)]="selectedRow" [clrDgRowSelection]="true">
     <clr-dg-action-bar>
-        <button type="button" [disabled]="!hasCreateTagPermission" class="btn btn-secondary" (click)="addTag()">
+        <button id="new-tag" type="button" [disabled]="!hasCreateTagPermission" class="btn btn-secondary" (click)="addTag()">
             <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'TAG.ADD_TAG' | translate}}
         </button>
-        <button type="button" class="btn btn-secondary" [disabled]="!(selectedRow.length>=1&& !hasImmutableOnTag() && hasDeleteTagPermission)" (click)="removeTag()">
+        <button id="delete-tag" type="button" class="btn btn-secondary" [disabled]="!(selectedRow.length>=1&& !hasImmutableOnTag() && hasDeleteTagPermission)" (click)="removeTag()">
             <clr-icon shape="trash" size="16"></clr-icon>&nbsp;{{'TAG.REMOVE_TAG' | translate}}
         </button>
         <span class="refresh-btn" (click)="refresh()">
@@ -32,7 +32,7 @@
                     <button type="button" class="btn btn-sm btn-outline" (click)="cancelAddTag()">{{
                                         'BUTTON.CANCEL' | translate }}
                     </button>
-                    <button type="submit" class="btn btn-sm btn-primary" (click)="saveAddTag()"
+                    <button id="add-ok" type="submit" class="btn btn-sm btn-primary" (click)="saveAddTag()"
                         [disabled]="isTagNameExist || tagNameCheckOnGoing || !newTagName.name ||tagForm.invalid">{{
                                         'BUTTON.OK' | translate }}
                     </button>
