@@ -412,6 +412,7 @@ func (w *basicWorker) registerJob(name string, j interface{}) (err error) {
 		work.JobOptions{
 			MaxFails:       theJ.MaxFails(),
 			MaxConcurrency: theJ.MaxCurrency(),
+			Priority:       job.Priority().For(name),
 			SkipDead:       true,
 		},
 		// Use generic handler to handle as we do not accept context with this way.
