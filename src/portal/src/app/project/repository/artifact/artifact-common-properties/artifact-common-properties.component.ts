@@ -33,7 +33,7 @@ export class ArtifactCommonPropertiesComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes && changes["artifactDetails"]) {
       if (this.artifactDetails) {
-        Object.assign(this.commonProperties, this.artifactDetails.extra_attrs);
+        Object.assign(this.commonProperties, this.artifactDetails.extra_attrs, this.artifactDetails.annotations);
         for (let name in this.commonProperties) {
           if (this.commonProperties.hasOwnProperty(name)) {
             if (typeof (this.commonProperties[name]) === 'object') {

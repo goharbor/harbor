@@ -991,8 +991,14 @@
         "SCAN_NOW": "Analyser"
     },
     "PUSH_IMAGE": {
-        "TITLE": "Pousser l'Image",
-        "TOOLTIP": "Commandes de références pour pousser une image vers ce projet.",
+        "TITLE": "Push Command",
+        "DOCKER": "Docker",
+        "HELM": "Helm",
+        "CNAB": "CNAB",
+        "TAG_COMMAND_CHART": "Tag a chart for this project:",
+        "PUSH_COMMAND_CHART": "Push a chart to this project:",
+        "PUSH_COMMAND_CNAB": "Push a CNAB to this project:",
+        "TOOLTIP": "Command references for pushing an artifact to this project.",
         "TAG_COMMAND": "Tagger une image pour ce projet :",
         "PUSH_COMMAND": "Pousser une image dans ce projet :",
         "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence."

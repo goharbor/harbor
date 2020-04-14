@@ -54,7 +54,7 @@ import {
 } from "../../../../../../lib/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../../lib/components/operation/operate";
 import { errorHandler } from "../../../../../../lib/utils/shared/shared.utils";
-import { ArtifactFront as Artifact, mutipleFilter } from "../../../artifact/artifact";
+import { ArtifactFront as Artifact, mutipleFilter, artifactPullCommands } from "../../../artifact/artifact";
 import { Project } from "../../../../project";
 import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 import { ADDITIONS } from "../../../artifact/artifact-additions/models";
@@ -373,7 +373,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               this.artifactList.forEach((artifact, index) => {
                 artifact.platform = clone(platFormAttr[index].platform);
               });
-              this.getArtifactAnnotationsArray(this.artifactList);
+              this.getPullCommand(this.artifactList);
             }, error => {
               this.errorHandlerService.error(error);
             });
@@ -400,7 +400,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               }
             }
             this.artifactList = res.body;
-            this.getArtifactAnnotationsArray(this.artifactList);
+            this.getPullCommand(this.artifactList);
           }, error => {
             // error
             this.errorHandlerService.error(error);
@@ -419,19 +419,16 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     }
     this.clrLoad(st);
   }
-  getArtifactAnnotationsArray(artifactList: Artifact[]) {
+
+  getPullCommand(artifactList: Artifact[]) {
     artifactList.forEach(artifact => {
-      artifact.annotationsArray = [];
-      if (artifact.annotations) {
-        for (const key in artifact.annotations) {
-          if (artifact.annotations.hasOwnProperty(key)) {
-            const annotation = artifact.annotations[key];
-            artifact.annotationsArray.push(`${key} : ${annotation}`);
-          }
+      artifact.pullCommand = '';
+      artifactPullCommands.forEach(artifactPullCommand => {
+        if (artifactPullCommand.type === artifact.type) {
+          artifact.pullCommand =
+          `${artifactPullCommand.pullCommand} ${this.registryUrl}/${this.projectName}/${this.repoName}@${artifact.digest}`;
         }
-        // todo : cannot support Object.entries
-        // artifact.annotationsArray = Object.entries(artifact.annotations).map(item => `${item[0]} : ${item[1]}`);
-      }
+      });
     });
   }
   getAllLabels(): void {

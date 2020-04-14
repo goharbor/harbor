@@ -148,6 +148,7 @@
 
             <clr-dg-column class="flex-max-width">{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}
             </clr-dg-column>
+            <clr-dg-column>{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
             <clr-dg-column *ngIf="depth">{{'REPOSITORY.PLATFORM' | translate}}</clr-dg-column>
             <clr-dg-column class="w-rem-4">{{'REPOSITORY.TAGS' | translate}}</clr-dg-column>
             <clr-dg-column >{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
@@ -179,6 +180,9 @@
                             </clr-tooltip-content>
                         </clr-tooltip>
                     </div>
+                </clr-dg-cell>
+                <clr-dg-cell class="truncated" title="{{artifact.pullCommand}}">
+                    <hbr-copy-input *ngIf="artifact.pullCommand" #copyInput (onCopyError)="onCpError($event)" iconMode="true" defaultValue="{{artifact.pullCommand}}"></hbr-copy-input>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="depth">
                     <div class="cell">

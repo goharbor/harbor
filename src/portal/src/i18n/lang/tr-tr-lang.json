@@ -1018,8 +1018,14 @@
         "SCAN_NOW": "Tara"
     },
     "PUSH_IMAGE": {
-        "TITLE": "İmajı Yükle",
-        "TOOLTIP": "Bu projeye bir imaj yüklemek için komut referansları.",
+        "TITLE": "Push Command",
+        "DOCKER": "Docker",
+        "HELM": "Helm",
+        "CNAB": "CNAB",
+        "TAG_COMMAND_CHART": "Tag a chart for this project:",
+        "PUSH_COMMAND_CHART": "Push a chart to this project:",
+        "PUSH_COMMAND_CNAB": "Push a CNAB to this project:",
+        "TOOLTIP": "Command references for pushing an artifact to this project.",
         "TAG_COMMAND": "Bu proje için bir imaj etiketleyin:",
         "PUSH_COMMAND": "Bu projeye bir imaj gönder:",
         "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin."
