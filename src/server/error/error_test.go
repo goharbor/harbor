@@ -78,7 +78,7 @@ func TestAPIError(t *testing.T) {
 	e := pkg_errors.New("customized error")
 	statusCode, payload, stacktrace = apiError(e)
 	assert.Equal(t, http.StatusInternalServerError, statusCode)
-	assert.Equal(t, `{"errors":[{"code":"UNKNOWN","message":"customized error"}]}`, payload)
+	assert.Equal(t, `{"errors":[{"code":"UNKNOWN","message":"unknown: customized error"}]}`, payload)
 	assert.Contains(t, stacktrace, ``)
 
 }
