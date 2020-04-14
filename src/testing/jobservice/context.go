@@ -44,7 +44,7 @@ func (mjc *MockJobContext) Checkin(status string) error {
 // OPCommand ...
 func (mjc *MockJobContext) OPCommand() (job.OPCommand, bool) {
 	args := mjc.Called()
-	return (job.OPCommand)(args.String(0)), args.Bool(1)
+	return args.Get(0).(job.OPCommand), args.Bool(1)
 }
 
 // GetLogger ...

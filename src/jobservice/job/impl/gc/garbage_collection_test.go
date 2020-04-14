@@ -4,6 +4,7 @@ import (
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
 	commom_regctl "github.com/goharbor/harbor/src/common/registryctl"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
@@ -117,6 +118,7 @@ func (suite *gcTestSuite) TestInit() {
 	logger := &mockjobservice.MockJobLogger{}
 	mock.OnAnything(ctx, "Get").Return("core url", true)
 	ctx.On("GetLogger").Return(logger)
+	ctx.On("OPCommand").Return(job.NilCommand, true)
 
 	gc := &GarbageCollector{
 		registryCtlClient: suite.registryCtlClient,
@@ -149,10 +151,39 @@ func (suite *gcTestSuite) TestInit() {
 	suite.True(gc.deleteUntagged)
 }
 
+func (suite *gcTestSuite) TestStop() {
+	ctx := &mockjobservice.MockJobContext{}
+	logger := &mockjobservice.MockJobLogger{}
+	mock.OnAnything(ctx, "Get").Return("core url", true)
+	ctx.On("GetLogger").Return(logger)
+	ctx.On("OPCommand").Return(job.StopCommand, true)
+
+	gc := &GarbageCollector{
+		registryCtlClient: suite.registryCtlClient,
+	}
+	params := map[string]interface{}{
+		"delete_untagged": true,
+		"redis_url_reg":   "redis url",
+	}
+	suite.Nil(gc.init(ctx, params))
+
+	ctx = &mockjobservice.MockJobContext{}
+	mock.OnAnything(ctx, "Get").Return("core url", true)
+	ctx.On("OPCommand").Return(job.StopCommand, false)
+	suite.Nil(gc.init(ctx, params))
+
+	ctx = &mockjobservice.MockJobContext{}
+	mock.OnAnything(ctx, "Get").Return("core url", true)
+	ctx.On("OPCommand").Return(job.NilCommand, true)
+	suite.Nil(gc.init(ctx, params))
+
+}
+
 func (suite *gcTestSuite) TestRun() {
 	ctx := &mockjobservice.MockJobContext{}
 	logger := &mockjobservice.MockJobLogger{}
 	ctx.On("GetLogger").Return(logger)
+	ctx.On("OPCommand").Return(job.NilCommand, true)
 	mock.OnAnything(ctx, "Get").Return("core url", true)
 
 	suite.artrashMgr.On("Flush").Return(nil)

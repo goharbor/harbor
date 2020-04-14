@@ -149,6 +149,11 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 	regCtlInit()
 	gc.logger = ctx.GetLogger()
+	opCmd, flag := ctx.OPCommand()
+	if flag && opCmd.IsStop() {
+		gc.logger.Info("received the stop signal, quit GC job.")
+		return nil
+	}
 	// UT will use the mock client, ctl and mgr
 	if os.Getenv("UTTEST") != "true" {
 		gc.registryCtlClient = registryctl.RegistryCtlClient
