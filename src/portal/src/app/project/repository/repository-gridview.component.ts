@@ -24,7 +24,14 @@ import {
   UserPermissionService, USERSTATICPERMISSION
 } from "../../../lib/services";
 import { FilterComponent } from "../../../lib/components/filter/filter.component";
-import { calculatePage, clone, DEFAULT_PAGE_SIZE, dbEncodeURIComponent } from "../../../lib/utils/utils";
+import {
+  calculatePage,
+  clone,
+  DEFAULT_PAGE_SIZE,
+  dbEncodeURIComponent,
+  doFiltering,
+  doSorting
+} from "../../../lib/utils/utils";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../lib/entities/service.config";
 import { ErrorHandler } from "../../../lib/utils/error-handler";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../lib/entities/shared.const";
@@ -372,7 +379,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
 
         this.totalCount = +repo.headers.get('x-total-count');
         this.repositories = repo.body;
-
+        // Do customising filtering and sorting
+        this.repositories = doFiltering<NewRepository>(this.repositories, state);
+        this.repositories = doSorting<NewRepository>(this.repositories, state);
         this.signedCon = {};
         this.loading = false;
       }, error => {
