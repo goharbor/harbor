@@ -70,14 +70,13 @@ func NewServer(ctx context.Context, router Router, cfg ServerConfig) *Server {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  60 * time.Second,
+		TLSConfig:    commonhttp.NewServerTLSConfig(),
 	}
 
 	// Initialize TLS/SSL config if protocol is https
 	if cfg.Protocol == config.JobServiceProtocolHTTPS && commonhttp.InternalEnableVerifyClientCert() {
 		logger.Infof("mTLS enabled ...")
-		srv.TLSConfig = &tls.Config{
-			ClientAuth: tls.RequireAndVerifyClientCert,
-		}
+		srv.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 	}
 
 	apiServer.httpServer = srv
