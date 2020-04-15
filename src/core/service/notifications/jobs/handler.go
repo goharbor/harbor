@@ -212,7 +212,8 @@ func (h *Handler) HandleRetentionTask() {
 			Total:    retainObj.Total,
 			Retained: retainObj.Retained,
 			Deleted:  retainObj.Deleted,
-			Status:   status,
+			Status:   "SUCCESS",
+			TaskID:   taskID,
 		}
 
 		if err := e.Build(metaData); err == nil {

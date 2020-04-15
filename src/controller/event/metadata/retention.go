@@ -14,6 +14,7 @@ type RetentionMetaData struct {
 	Retained int
 	Deleted  []*selector.Result
 	Status   string
+	TaskID   int64
 }
 
 // Resolve tag retention metadata into tag retention event
@@ -23,6 +24,7 @@ func (r *RetentionMetaData) Resolve(evt *event.Event) error {
 		OccurAt:   time.Now(),
 		Status:    r.Status,
 		Deleted:   r.Deleted,
+		TaskID:    r.TaskID,
 	}
 
 	evt.Topic = event2.TopicTagRetention
