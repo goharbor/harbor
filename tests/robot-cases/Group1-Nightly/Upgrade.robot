@@ -27,7 +27,7 @@ Test Case - Manage project publicity
     Body Of Manage project publicity
 
 Test Case - Scan A Tag In The Repo
-    Body Of Scan A Tag In The Repo Use Trivy
+    Body Of Scan A Tag In The Repo hello-world latest
 
 Test Case - List Helm Charts
     Body Of List Helm Charts
