@@ -21,11 +21,11 @@ cur=$PWD
 # The temporary directory to clone Clair adapter source code
 TEMP=$(mktemp -d ${TMPDIR-/tmp}/clair-adapter.XXXXXX)
 git clone https://github.com/goharbor/harbor-scanner-clair.git $TEMP
-cd $TEMP; git checkout $VERSION; cd -
+cd $TEMP; git checkout $VERSION; export COMMIT=$(git rev-list -1 HEAD); cd -
 
 echo "Building Clair adapter binary based on golang:1.13.8..."
 cp Dockerfile.binary $TEMP
-docker build -f $TEMP/Dockerfile.binary -t clair-adapter-golang $TEMP
+docker build --build-arg VERSION=${VERSION} --build-arg COMMIT=${COMMIT} -f $TEMP/Dockerfile.binary -t clair-adapter-golang $TEMP
 
 echo "Copying Clair adapter binary from the container to the local directory..."
 ID=$(docker create clair-adapter-golang)
