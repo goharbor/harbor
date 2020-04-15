@@ -5,12 +5,12 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/token"
 	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
-	"github.com/pkg/errors"
 	"time"
 )
 

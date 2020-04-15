@@ -16,7 +16,7 @@ package all
 
 import (
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 const (

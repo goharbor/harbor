@@ -20,9 +20,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/scan/rest/auth"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	"github.com/pkg/errors"
 )
 
 const (

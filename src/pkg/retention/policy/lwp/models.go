@@ -18,8 +18,8 @@ package lwp
 import (
 	"encoding/json"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/pkg/errors"
 )
 
 // Metadata contains partial metadata of policy

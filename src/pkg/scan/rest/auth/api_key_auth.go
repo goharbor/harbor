@@ -17,7 +17,7 @@ package auth
 import (
 	"net/http"
 
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // apiKeyAuthorizer authorize by adding a header `X-ScannerAdapter-API-Key` with value "credential"

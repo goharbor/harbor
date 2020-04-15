@@ -18,9 +18,9 @@ import (
 	"encoding/json"
 	"reflect"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
-	"github.com/pkg/errors"
 )
 
 // SupportedMimes indicates what mime types are supported to render at UI end.

@@ -28,8 +28,8 @@ import (
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/core/api/models"
 	utils_core "github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/pkg/errors"
 )
 
 // AJAPI manages the CRUD of admin job and its schedule, any API wants to handle manual and cron job like ScanAll and GC cloud reuse it.

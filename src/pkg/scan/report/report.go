@@ -15,9 +15,9 @@
 package report
 
 import (
+	"github.com/goharbor/harbor/src/lib/errors"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
-	"github.com/pkg/errors"
 )
 
 // Merger is a helper function to merge report together

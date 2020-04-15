@@ -17,7 +17,7 @@ package core
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/robfig/cron"
 
 	"github.com/goharbor/harbor/src/jobservice/common/query"

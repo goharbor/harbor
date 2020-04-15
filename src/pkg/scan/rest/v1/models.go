@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // Scanner represents metadata of a Scanner Adapter which allow Harbor to lookup a scanner capable of

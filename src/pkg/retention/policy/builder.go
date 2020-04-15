@@ -26,9 +26,9 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
-	"github.com/pkg/errors"
 )
 
 // Builder builds the runnable processor from the raw policy

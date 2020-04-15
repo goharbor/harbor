@@ -28,7 +28,7 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
 

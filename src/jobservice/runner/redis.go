@@ -25,7 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/period"
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // RedisJob is a job wrapper to wrap the job.Interface to the style which can be recognized by the redis worker.
