@@ -19,9 +19,9 @@ import (
 	"net/http"
 
 	s "github.com/goharbor/harbor/src/controller/scanner"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
-	"github.com/pkg/errors"
 )
 
 // ScannerAPI provides the API for managing the plugin scanners
@@ -140,7 +140,7 @@ func (sa *ScannerAPI) Create() {
 
 	uuid, err := sa.c.CreateRegistration(r)
 	if err != nil {
-		sa.SendInternalServerError(errors.Wrap(err, "scanner API: create"))
+		sa.SendError(errors.Wrap(err, "scanner API: create"))
 		return
 	}
 
