@@ -34,7 +34,12 @@ func (r *RetentionHandler) Handle(value interface{}) error {
 		return fmt.Errorf("nil tag retention event")
 	}
 
-	payload, project, err := constructRetentionPayload(trEvent)
+	payload, dryRun, project, err := constructRetentionPayload(trEvent)
+	// if dry run, do not trigger webhook
+	if dryRun {
+		log.Debugf("retention task %v is dry run", trEvent.TaskID)
+		return nil
+	}
 	if err != nil {
 		return err
 	}
@@ -60,32 +65,36 @@ func (r *RetentionHandler) IsStateful() bool {
 	return false
 }
 
-func constructRetentionPayload(event *event.RetentionEvent) (*model.Payload, int64, error) {
+func constructRetentionPayload(event *event.RetentionEvent) (*model.Payload, bool, int64, error) {
 	task, err := api.RetentionController.GetRetentionExecTask(event.TaskID)
 	if err != nil {
 		log.Errorf("failed to get retention task %d: error: %v", event.TaskID, err)
-		return nil, 0, err
+		return nil, false, 0, err
 	}
 	if task == nil {
-		return nil, 0, fmt.Errorf("task %d not found with retention event", event.TaskID)
+		return nil, false, 0, fmt.Errorf("task %d not found with retention event", event.TaskID)
 	}
 
 	execution, err := api.RetentionController.GetRetentionExec(task.ExecutionID)
 	if err != nil {
 		log.Errorf("failed to get retention execution %d: error: %v", task.ExecutionID, err)
-		return nil, 0, err
+		return nil, false, 0, err
 	}
 	if execution == nil {
-		return nil, 0, fmt.Errorf("execution %d not found with retention event", task.ExecutionID)
+		return nil, false, 0, fmt.Errorf("execution %d not found with retention event", task.ExecutionID)
+	}
+
+	if execution.DryRun {
+		return nil, true, 0, nil
 	}
 
 	md, err := api.RetentionController.GetRetention(execution.PolicyID)
 	if err != nil {
 		log.Errorf("failed to get tag retention policy %d: error: %v", execution.PolicyID, err)
-		return nil, 0, err
+		return nil, false, 0, err
 	}
 	if md == nil {
-		return nil, 0, fmt.Errorf("policy %d not found with tag retention event", execution.PolicyID)
+		return nil, false, 0, fmt.Errorf("policy %d not found with tag retention event", execution.PolicyID)
 	}
 
 	extURL, err := config.ExtURL()
@@ -115,7 +124,7 @@ func constructRetentionPayload(event *event.RetentionEvent) (*model.Payload, int
 		target := v.Target
 		succeedArtifact := &model.ArtifactInfo{
 			Type:       target.Kind,
-			Status:     task.Status,
+			Status:     event.Status,
 			NameAndTag: target.Repository + ":" + target.Tags[0],
 		}
 		payload.EventData.Retention.SuccessfulArtifact = []*model.ArtifactInfo{succeedArtifact}
@@ -131,5 +140,5 @@ func constructRetentionPayload(event *event.RetentionEvent) (*model.Payload, int
 		payload.EventData.Retention.RetentionRules = append(payload.EventData.Retention.RetentionRules, retentionRule)
 	}
 
-	return payload, event.Deleted[0].Target.NamespaceID, nil
+	return payload, false, event.Deleted[0].Target.NamespaceID, nil
 }
