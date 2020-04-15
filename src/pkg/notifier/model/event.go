@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
 
 // HookEvent is hook related event data to publish
@@ -25,6 +26,7 @@ type EventData struct {
 	Resources   []*Resource       `json:"resources,omitempty"`
 	Repository  *Repository       `json:"repository,omitempty"`
 	Replication *Replication      `json:"replication,omitempty"`
+	Retention   *Retention        `json:"retention,omitempty"`
 	Custom      map[string]string `json:"custom_attributes,omitempty"`
 }
 
@@ -62,7 +64,7 @@ type Replication struct {
 	FailedArtifact     []*ArtifactInfo      `json:"failed_artifact,omitempty"`
 }
 
-// ArtifactInfo describe info of artifact replicated
+// ArtifactInfo describe info of artifact
 type ArtifactInfo struct {
 	Type       string `json:"type"`
 	Status     string `json:"status"`
@@ -77,4 +79,29 @@ type ReplicationResource struct {
 	Endpoint     string `json:"endpoint"`
 	Provider     string `json:"provider,omitempty"`
 	Namespace    string `json:"namespace,omitempty"`
+}
+
+// Retention describes tag retention infos
+type Retention struct {
+	Total              int              `json:"total"`
+	Retained           int              `json:"retained"`
+	HarborHostname     string           `json:"harbor_hostname,omitempty"`
+	ProjectName        string           `json:"project_name,omitempty"`
+	RetentionPolicyID  int64            `json:"retention_policy_id,omitempty"`
+	RetentionRules     []*RetentionRule `json:"retention_rule,omitempty"`
+	Status             string           `json:"result,omitempty"`
+	SuccessfulArtifact []*ArtifactInfo  `json:"success_artifact,omitempty"`
+	FailedArtifact     []*ArtifactInfo  `json:"failed_artifact,omitempty"`
+}
+
+// RetentionRule describes tag retention rule
+type RetentionRule struct {
+	// Template ID
+	Template string `json:"template,omitempty"`
+	// The parameters of this rule
+	Parameters map[string]rule.Parameter `json:"params,omitempty"`
+	// Selector attached to the rule for filtering tags
+	TagSelectors []*rule.Selector `json:"tag_selectors,omitempty" `
+	// Selector attached to the rule for filtering scope (e.g: repositories or namespaces)
+	ScopeSelectors map[string][]*rule.Selector `json:"scope_selectors,omitempty"`
 }

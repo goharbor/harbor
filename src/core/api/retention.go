@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/core/config"
 	"net/http"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -126,7 +126,7 @@ func (r *RetentionAPI) GetRetention() {
 		r.SendBadRequestError(err)
 		return
 	}
-	p, err := retentionController.GetRetention(id)
+	p, err := RetentionController.GetRetention(id)
 	if err != nil {
 		r.SendBadRequestError(err)
 		return
@@ -183,7 +183,7 @@ func (r *RetentionAPI) CreateRetention() {
 		r.SendBadRequestError(fmt.Errorf("project %v already has retention policy %v", p.Scope.Reference, old["retention_id"]))
 		return
 	}
-	id, err := retentionController.CreateRetention(p)
+	id, err := RetentionController.CreateRetention(p)
 	if err != nil {
 		r.SendInternalServerError(err)
 		return
@@ -220,7 +220,7 @@ func (r *RetentionAPI) UpdateRetention() {
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
-	if err = retentionController.UpdateRetention(p); err != nil {
+	if err = RetentionController.UpdateRetention(p); err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
@@ -257,7 +257,7 @@ func (r *RetentionAPI) TriggerRetentionExec() {
 		r.SendBadRequestError(err)
 		return
 	}
-	p, err := retentionController.GetRetention(id)
+	p, err := RetentionController.GetRetention(id)
 	if err != nil {
 		r.SendBadRequestError(err)
 		return
@@ -265,7 +265,7 @@ func (r *RetentionAPI) TriggerRetentionExec() {
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
-	eid, err := retentionController.TriggerRetentionExec(id, retention.ExecutionTriggerManual, d.DryRun)
+	eid, err := RetentionController.TriggerRetentionExec(id, retention.ExecutionTriggerManual, d.DryRun)
 	if err != nil {
 		r.SendInternalServerError(err)
 		return
@@ -293,7 +293,7 @@ func (r *RetentionAPI) OperateRetentionExec() {
 		r.SendBadRequestError(err)
 		return
 	}
-	p, err := retentionController.GetRetention(id)
+	p, err := RetentionController.GetRetention(id)
 	if err != nil {
 		r.SendBadRequestError(err)
 		return
@@ -301,7 +301,7 @@ func (r *RetentionAPI) OperateRetentionExec() {
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
-	if err = retentionController.OperateRetentionExec(eid, a.Action); err != nil {
+	if err = RetentionController.OperateRetentionExec(eid, a.Action); err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
@@ -323,7 +323,7 @@ func (r *RetentionAPI) ListRetentionExecs() {
 		PageNumber: page,
 		PageSize:   size,
 	}
-	p, err := retentionController.GetRetention(id)
+	p, err := RetentionController.GetRetention(id)
 	if err != nil {
 		r.SendBadRequestError(err)
 		return
@@ -331,12 +331,12 @@ func (r *RetentionAPI) ListRetentionExecs() {
 	if !r.requireAccess(p, rbac.ActionList) {
 		return
 	}
-	execs, err := retentionController.ListRetentionExecs(id, query)
+	execs, err := RetentionController.ListRetentionExecs(id, query)
 	if err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
-	total, err := retentionController.GetTotalOfRetentionExecs(id)
+	total, err := RetentionController.GetTotalOfRetentionExecs(id)
 	if err != nil {
 		r.SendInternalServerError(err)
 		return
@@ -366,7 +366,7 @@ func (r *RetentionAPI) ListRetentionExecTasks() {
 		PageNumber: page,
 		PageSize:   size,
 	}
-	p, err := retentionController.GetRetention(id)
+	p, err := RetentionController.GetRetention(id)
 	if err != nil {
 		r.SendBadRequestError(err)
 		return
@@ -374,12 +374,12 @@ func (r *RetentionAPI) ListRetentionExecTasks() {
 	if !r.requireAccess(p, rbac.ActionList) {
 		return
 	}
-	his, err := retentionController.ListRetentionExecTasks(eid, query)
+	his, err := RetentionController.ListRetentionExecTasks(eid, query)
 	if err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
-	total, err := retentionController.GetTotalOfRetentionExecTasks(eid)
+	total, err := RetentionController.GetTotalOfRetentionExecTasks(eid)
 	if err != nil {
 		r.SendInternalServerError(err)
 		return
@@ -400,7 +400,7 @@ func (r *RetentionAPI) GetRetentionExecTaskLog() {
 		r.SendBadRequestError(err)
 		return
 	}
-	p, err := retentionController.GetRetention(id)
+	p, err := RetentionController.GetRetention(id)
 	if err != nil {
 		r.SendBadRequestError(err)
 		return
@@ -408,7 +408,7 @@ func (r *RetentionAPI) GetRetentionExecTaskLog() {
 	if !r.requireAccess(p, rbac.ActionRead) {
 		return
 	}
-	log, err := retentionController.GetRetentionExecTaskLog(tid)
+	log, err := RetentionController.GetRetentionExecTaskLog(tid)
 	if err != nil {
 		r.SendInternalServerError(err)
 		return

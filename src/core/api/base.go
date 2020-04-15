@@ -46,7 +46,7 @@ var (
 	retentionScheduler  scheduler.Scheduler
 	retentionMgr        retention.Manager
 	retentionLauncher   retention.Launcher
-	retentionController retention.APIController
+	RetentionController retention.APIController
 )
 
 // BaseController ...
@@ -176,7 +176,7 @@ func Init() error {
 
 	retentionLauncher = retention.NewLauncher(projectMgr, repository.Mgr, retentionMgr)
 
-	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, retentionScheduler, retentionLauncher)
+	RetentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, retentionScheduler, retentionLauncher)
 
 	callbackFun := func(p interface{}) error {
 		str, ok := p.(string)
@@ -187,7 +187,7 @@ func Init() error {
 		if err := json.Unmarshal([]byte(str), param); err != nil {
 			return fmt.Errorf("failed to unmarshal the param: %v", err)
 		}
-		_, err := retentionController.TriggerRetentionExec(param.PolicyID, param.Trigger, false)
+		_, err := RetentionController.TriggerRetentionExec(param.PolicyID, param.Trigger, false)
 		return err
 	}
 	err := scheduler.Register(retention.SchedulerCallback, callbackFun)

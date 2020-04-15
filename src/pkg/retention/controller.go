@@ -52,6 +52,8 @@ type APIController interface {
 	GetTotalOfRetentionExecTasks(executionID int64) (int64, error)
 
 	GetRetentionExecTaskLog(taskID int64) ([]byte, error)
+
+	GetRetentionExecTask(taskID int64) (*Task, error)
 }
 
 // DefaultAPIController ...
@@ -252,6 +254,11 @@ func (r *DefaultAPIController) GetTotalOfRetentionExecTasks(executionID int64) (
 // GetRetentionExecTaskLog Get Retention Execution Task Log
 func (r *DefaultAPIController) GetRetentionExecTaskLog(taskID int64) ([]byte, error) {
 	return r.manager.GetTaskLog(taskID)
+}
+
+// GetRetentionExecTask Get Retention Execution Task
+func (r *DefaultAPIController) GetRetentionExecTask(taskID int64) (*Task, error) {
+	return r.manager.GetTask(taskID)
 }
 
 // NewAPIController ...
