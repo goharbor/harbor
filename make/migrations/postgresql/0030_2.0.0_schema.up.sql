@@ -200,3 +200,7 @@ ALTER TABLE replication_task ALTER COLUMN dst_resource TYPE varchar(512);
 /*remove count from quota hard and quota_usage used json*/
 UPDATE quota SET hard = hard - 'count';
 UPDATE quota_usage SET used = used - 'count';
+
+/* make Clair and Trivy as reserved name for scanners in-tree */
+UPDATE scanner_registration SET name = concat_ws('-', name, uuid) WHERE name IN ('Clair', 'Trivy') AND immutable = FALSE;
+UPDATE scanner_registration SET name = split_part(name, '-', 1) WHERE immutable = TRUE;
