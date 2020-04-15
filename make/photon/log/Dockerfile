@@ -17,6 +17,8 @@ COPY ./make/photon/log/start.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/start.sh /etc/rsyslog.d/ && \
     chown -R 10000:10000 /etc/rsyslog.conf /etc/rsyslog.d/ /run /var/lib/logrotate/
 
+RUN chage -M 99999 root
+
 HEALTHCHECK CMD netstat -ltun|grep 10514
 
 VOLUME /var/log/docker/ /run/ /etc/logrotate.d/
