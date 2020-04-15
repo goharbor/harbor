@@ -1,7 +1,11 @@
 FROM golang:1.13.8
 
+ARG VERSION
+ARG COMMIT
+
 ADD .   /go/src/github.com/goharbor/harbor-scanner-clair/
 WORKDIR /go/src/github.com/goharbor/harbor-scanner-clair/
 
 RUN export GOFLAGS=-mod=vendor GOOS=linux GO111MODULE=on CGO_ENABLED=0 && \
-	go build -o harbor-scanner-clair cmd/harbor-scanner-clair/main.go
+	go build -ldflags "-X main.version=$VERSION -X main.commit=$COMMIT -X main.date=`date -u --iso-8601=seconds`" \
+	-o harbor-scanner-clair cmd/harbor-scanner-clair/main.go
