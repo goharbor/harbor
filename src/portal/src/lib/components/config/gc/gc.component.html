@@ -1,6 +1,5 @@
 <form class="clr-form clr-form-horizontal">
     <clr-checkbox-container>
-        <label class="parameters">{{'GC.PARAMETERS' | translate}}</label>
         <clr-checkbox-wrapper>
             <input type="checkbox" clrCheckbox name="delete_untagged" id="delete_untagged"
                    [(ngModel)]="shouldDeleteUntagged"/>
@@ -9,7 +8,7 @@
     </clr-checkbox-container>
 </form>
 <div class="cron-selection">
-    <cron-selection [buttonMarginLeft]="'200px'" [labelCurrent]="getLabelCurrent" #CronScheduleComponent [labelEdit]='getText'
+    <cron-selection [buttonMarginLeft]="'0'" [labelCurrent]="getLabelCurrent" #CronScheduleComponent [labelEdit]='getText'
                     [originCron]='originCron' (inputvalue)="scheduleGc($event)"></cron-selection>
     <button class="btn btn-outline  gc-start-btn" (click)="gcNow()"
             [disabled]="disableGC">{{'GC.GC_NOW' | translate}}</button>
