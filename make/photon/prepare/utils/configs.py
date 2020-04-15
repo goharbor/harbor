@@ -245,6 +245,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
     config_dict['trivy_github_token'] = trivy_configs.get("github_token") or ''
     config_dict['trivy_skip_update'] = trivy_configs.get("skip_update") or False
     config_dict['trivy_ignore_unfixed'] = trivy_configs.get("ignore_unfixed") or False
+    config_dict['trivy_insecure'] = trivy_configs.get("insecure") or False
 
     # Chart configs
     chart_configs = configs.get("chart") or {}
