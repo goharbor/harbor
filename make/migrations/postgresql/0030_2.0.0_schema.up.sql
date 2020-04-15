@@ -191,6 +191,9 @@ DROP TABLE IF EXISTS access_log;
 /*remove the constraint for project_id in table 'notification_policy'*/
 ALTER TABLE notification_policy DROP CONSTRAINT unique_project_id;
 
+/*the existing policy has no name, to make sure the unique constraint for name works, use the id as name*/
+/*if the name is set via API, it will be force to be changed with new pattern*/
+UPDATE notification_policy SET name=CONCAT('policy_', id);
 /*add the unique constraint for name in table 'notification_policy'*/
 ALTER TABLE notification_policy ADD UNIQUE (name);
 
