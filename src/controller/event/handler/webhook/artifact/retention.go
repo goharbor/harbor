@@ -31,17 +31,17 @@ func (r *RetentionHandler) Handle(value interface{}) error {
 		return errors.New("invalid tag retention event type")
 	}
 	if trEvent == nil {
-		return fmt.Errorf("nil tag retention event")
+		return errors.New("nil tag retention event")
 	}
 
 	payload, dryRun, project, err := constructRetentionPayload(trEvent)
+	if err != nil {
+		return err
+	}
 	// if dry run, do not trigger webhook
 	if dryRun {
 		log.Debugf("retention task %v is dry run", trEvent.TaskID)
 		return nil
-	}
-	if err != nil {
-		return err
 	}
 
 	policies, err := notification.PolicyMgr.GetRelatedPolices(project, trEvent.EventType)
