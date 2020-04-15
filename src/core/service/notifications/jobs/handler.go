@@ -18,14 +18,14 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/goharbor/harbor/src/core/service/notifications"
-
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/scan"
+	"github.com/goharbor/harbor/src/core/service/notifications"
 	jjob "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -188,8 +188,9 @@ func (h *Handler) HandleRetentionTask() {
 	// handle checkin
 	if h.checkIn != "" {
 		var retainObj struct {
-			Total    int `json:"total"`
-			Retained int `json:"retained"`
+			Total    int                `json:"total"`
+			Retained int                `json:"retained"`
+			Deleted  []*selector.Result `json:"deleted"`
 		}
 		if err := json.Unmarshal([]byte(h.checkIn), &retainObj); err != nil {
 			log.Errorf("failed to resolve checkin of retention task %d: %v", taskID, err)
@@ -205,6 +206,23 @@ func (h *Handler) HandleRetentionTask() {
 			h.SendInternalServerError(err)
 			return
 		}
+
+		e := &event.Event{}
+		metaData := &metadata.RetentionMetaData{
+			Total:    retainObj.Total,
+			Retained: retainObj.Retained,
+			Deleted:  retainObj.Deleted,
+			Status:   status,
+		}
+
+		if err := e.Build(metaData); err == nil {
+			if err := e.Publish(); err != nil {
+				log.Error(errors.Wrap(err, "tag retention job hook handler: event publish"))
+			}
+		} else {
+			log.Error(errors.Wrap(err, "tag retention job hook handler: event publish"))
+		}
+
 		return
 	}
 
