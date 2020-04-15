@@ -26,8 +26,8 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/scan/rest/auth"
-	"github.com/pkg/errors"
 )
 
 const (

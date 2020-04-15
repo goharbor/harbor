@@ -15,11 +15,11 @@
 package scan
 
 import (
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	sc "github.com/goharbor/harbor/src/pkg/scan/scanner"
-	"github.com/pkg/errors"
 )
 
 var (

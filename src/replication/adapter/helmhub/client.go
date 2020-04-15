@@ -3,9 +3,9 @@ package helmhub
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 )

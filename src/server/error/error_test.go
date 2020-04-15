@@ -15,10 +15,10 @@
 package error
 
 import (
+	std_errors "errors"
 	openapi "github.com/go-openapi/errors"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/errors"
-	pkg_errors "github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -75,7 +75,7 @@ func TestAPIError(t *testing.T) {
 	assert.Contains(t, stacktrace, `error.TestAPIError`)
 
 	// common error, common error has no stacktrace
-	e := pkg_errors.New("customized error")
+	e := std_errors.New("customized error")
 	statusCode, payload, stacktrace = apiError(e)
 	assert.Equal(t, http.StatusInternalServerError, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"UNKNOWN","message":"unknown: customized error"}]}`, payload)

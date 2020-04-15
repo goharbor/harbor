@@ -26,11 +26,11 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/scan"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/project"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	"github.com/pkg/errors"
 )
 
 // Handler preprocess scan artifact event

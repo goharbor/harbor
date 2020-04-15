@@ -21,9 +21,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	immumodel "github.com/goharbor/harbor/src/pkg/immutabletag/model"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"

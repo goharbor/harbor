@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/core/service/notifications"
 	jjob "github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/notification"
@@ -33,7 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/operation/hook"
 	"github.com/goharbor/harbor/src/replication/policy/scheduler"
-	"github.com/pkg/errors"
 )
 
 var statusMap = map[string]string{

@@ -17,13 +17,12 @@ package scanner
 import (
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	lerrors "github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	rscanner "github.com/goharbor/harbor/src/pkg/scan/scanner"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -67,7 +66,7 @@ func (bc *basicController) ListRegistrations(query *q.Query) ([]*scanner.Registr
 // CreateRegistration ...
 func (bc *basicController) CreateRegistration(registration *scanner.Registration) (string, error) {
 	if isReservedName(registration.Name) {
-		return "", lerrors.BadRequestError(nil).WithMessage(`name "%s" is reserved, please try a different name`, registration.Name)
+		return "", errors.BadRequestError(nil).WithMessage(`name "%s" is reserved, please try a different name`, registration.Name)
 	}
 
 	// Check if the registration is available
@@ -121,7 +120,7 @@ func (bc *basicController) UpdateRegistration(registration *scanner.Registration
 	}
 
 	if isReservedName(registration.Name) {
-		return lerrors.BadRequestError(nil).WithMessage(`name "%s" is reserved, please try a different name`, registration.Name)
+		return errors.BadRequestError(nil).WithMessage(`name "%s" is reserved, please try a different name`, registration.Name)
 	}
 
 	return bc.manager.Update(registration)

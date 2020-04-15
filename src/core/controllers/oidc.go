@@ -28,8 +28,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/pkg/errors"
 )
 
 const tokenKey = "oidc_token"

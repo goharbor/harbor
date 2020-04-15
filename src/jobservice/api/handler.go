@@ -30,7 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"strconv"
 )
 

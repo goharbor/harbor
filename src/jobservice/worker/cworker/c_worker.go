@@ -29,8 +29,8 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/goharbor/harbor/src/jobservice/runner"
 	"github.com/goharbor/harbor/src/jobservice/worker"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/gomodule/redigo/redis"
-	"github.com/pkg/errors"
 )
 
 var (

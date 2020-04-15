@@ -29,6 +29,7 @@ import (
 	cmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	pq "github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project"
@@ -36,7 +37,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"github.com/pkg/errors"
 )
 
 const (

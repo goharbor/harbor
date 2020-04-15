@@ -18,10 +18,10 @@ import (
 	"reflect"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
-	"github.com/pkg/errors"
 )
 
 // CVESet defines the CVE whitelist with a hash set way for easy query.

@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/lib/log"
 
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 const (

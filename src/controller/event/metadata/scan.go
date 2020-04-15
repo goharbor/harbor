@@ -3,9 +3,9 @@ package metadata
 import (
 	"github.com/goharbor/harbor/src/common/models"
 	event2 "github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	"github.com/pkg/errors"
 	"time"
 )
 

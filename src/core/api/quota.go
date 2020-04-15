@@ -18,10 +18,10 @@ import (
 	"fmt"
 
 	"github.com/goharbor/harbor/src/controller/quota"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota/models"
 	"github.com/goharbor/harbor/src/pkg/types"
-	"github.com/pkg/errors"
 )
 
 // QuotaUpdateRequest struct for the body of put quota API

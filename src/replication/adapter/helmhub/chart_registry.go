@@ -22,9 +22,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/pkg/errors"
 )
 
 func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {

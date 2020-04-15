@@ -10,11 +10,11 @@ import (
 
 	"github.com/ghodss/yaml"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/pkg/errors"
 	helm_repo "k8s.io/helm/pkg/repo"
 )
 

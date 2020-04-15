@@ -6,8 +6,8 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/pkg/errors"
 )
 
 // UpdateNotificationJob update notification job
