@@ -252,6 +252,28 @@ func (suite *ErrorTestSuite) TestCauseStd() {
 	suite.Equal(root, Cause(cause3))
 }
 
+func (suite *ErrorTestSuite) TestMarshalJSON() {
+	stdErr := errors.New("stdErr")
+	err := Wrap(stdErr, "root").WithCode(ConflictCode)
+	err2 := Wrap(err, "append message").WithCode(ConflictCode)
+
+	out, marErr := err2.MarshalJSON()
+	suite.Nil(marErr)
+	suite.Equal(`{"code":"CONFLICT","message":"append message: root: stdErr"}`, string(out))
+}
+
+func (suite *ErrorTestSuite) TestErrors() {
+	stdErr := errors.New("stdErr")
+	suite.Equal(`{"errors":[{"code":"UNKNOWN","message":"unknown: stdErr"}]}`, NewErrs(stdErr).Error())
+
+	err := Wrap(stdErr, "root").WithCode(ConflictCode)
+	err2 := Wrap(err, "append message").WithCode(ConflictCode)
+	suite.Equal(`{"errors":[{"code":"CONFLICT","message":"append message: root: stdErr"}]}`, NewErrs(err2).Error())
+
+	err = New(nil).WithCode(GeneralCode).WithMessage("internal server error")
+	suite.Equal(`{"errors":[{"code":"UNKNOWN","message":"internal server error"}]}`, NewErrs(err).Error())
+}
+
 func TestErrorTestSuite(t *testing.T) {
 	suite.Run(t, &ErrorTestSuite{})
 }

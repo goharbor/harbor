@@ -51,6 +51,17 @@ func (e *Error) StackTrace() string {
 	return e.Stack.frames().format()
 }
 
+// MarshalJSON ...
+func (e *Error) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	}{
+		Code:    e.Code,
+		Message: e.Error(),
+	})
+}
+
 // WithMessage ...
 func (e *Error) WithMessage(format string, v ...interface{}) *Error {
 	e.Message = fmt.Sprintf(format, v...)
@@ -86,7 +97,7 @@ func (errs Errors) Error() string {
 	for _, e := range errs {
 		err, ok := e.(*Error)
 		if !ok {
-			err = UnknownError(e).WithMessage(e.Error())
+			err = UnknownError(e)
 		}
 		if err.Code == "" {
 			err.Code = GeneralCode
