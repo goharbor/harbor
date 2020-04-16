@@ -118,14 +118,14 @@ func modifyResponse(res *http.Response) error {
 			}()
 
 			// Trigger harbor webhook
-			if e != nil && e.Resource != nil && e.Resource.Metadata != nil && len(e.Resource.Metadata.Vtags) > 0 &&
+			if e != nil && e.Resource != nil && e.Resource.Metadata != nil && len(e.Resource.Metadata.Artifacts) > 0 &&
 				len(e.Resource.ExtendedInfo) > 0 {
 				event := &n_event.Event{}
 				metaData := &metadata.ChartUploadMetaData{
 					ChartMetaData: metadata.ChartMetaData{
 						ProjectName: e.Resource.ExtendedInfo["projectName"].(string),
 						ChartName:   e.Resource.ExtendedInfo["chartName"].(string),
-						Versions:    e.Resource.Metadata.Vtags,
+						Versions:    e.Resource.Metadata.Artifacts[0].Tags,
 						OccurAt:     time.Now(),
 						Operator:    e.Resource.ExtendedInfo["operator"].(string),
 					},

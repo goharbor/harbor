@@ -507,7 +507,11 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 								"public": strconv.FormatBool(public),
 							},
 						},
-						Vtags: []string{chartDetails.Metadata.Version},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{chartDetails.Metadata.Version},
+							},
+						},
 					},
 					ExtendedInfo: extInfo,
 				},
