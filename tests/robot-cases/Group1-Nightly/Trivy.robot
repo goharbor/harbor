@@ -153,35 +153,3 @@ Test Case - Verfiy Project Level CVE Whitelist
 
 Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Body Of Verfiy Project Level CVE Whitelist By Quick Way of Add System  goharbor/harbor-portal  2cb6a1c24dd6b88f11fd44ccc6560cb7be969f8ac5f752802c99cae6bcd592bb  CVE-2019-19317\nCVE-2019-19646 \nCVE-2019-5188 \nCVE-2019-20387 \nCVE-2019-17498 \nCVE-2019-20372 \nCVE-2019-19244 \nCVE-2019-19603 \nCVE-2019-19880 \nCVE-2019-19923 \nCVE-2019-19925 \nCVE-2019-19926 \nCVE-2019-19959 \nCVE-2019-20218 \nCVE-2019-19232 \nCVE-2019-19234 \nCVE-2019-19645 \nCVE-2019-18276
-
-Test Case - Switch Scanner
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    ${d}=  get current date  result_format=%m%s
-
-    Switch To Scanners Page
-
-    Should Display The Default Trivy Scanner
-
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
-    Push Image  ${ip}  admin  Harbor12345  project${d}  hello-world:latest
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/hello-world
-    Scan Repo  latest  Fail
-    View Scan Error Log
-
-    Switch To Scanners Page
-
-    Set Default Scanner  Clair
-    Should Display The Default Clair Scanner
-
-    Go Into Project  project${d} 
-    Go Into Repo  project${d}/hello-world
-    Scan Repo  latest  Succeed
-    Move To Summary Chart
-    Wait Until Page Contains  No vulnerability
-
-    Switch To Scanners Page
-    Set Default Scanner  Trivy
-    Close Browser
