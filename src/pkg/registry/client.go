@@ -396,7 +396,7 @@ func (c *client) monolithicBlobUpload(location, digest string, size int64, data 
 	if err != nil {
 		return err
 	}
-	req.ContentLength = size
+	req.ContentLength = -1
 	resp, err := c.do(req)
 	if err != nil {
 		return err
