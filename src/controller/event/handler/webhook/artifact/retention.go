@@ -122,12 +122,12 @@ func constructRetentionPayload(event *event.RetentionEvent) (*model.Payload, boo
 
 	for _, v := range event.Deleted {
 		target := v.Target
-		succeedArtifact := &model.ArtifactInfo{
+		deletedArtifact := &model.ArtifactInfo{
 			Type:       target.Kind,
 			Status:     event.Status,
 			NameAndTag: target.Repository + ":" + target.Tags[0],
 		}
-		payload.EventData.Retention.SuccessfulArtifact = []*model.ArtifactInfo{succeedArtifact}
+		payload.EventData.Retention.DeletedArtifact = []*model.ArtifactInfo{deletedArtifact}
 	}
 
 	for _, v := range md.Rules {

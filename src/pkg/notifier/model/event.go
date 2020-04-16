@@ -83,15 +83,14 @@ type ReplicationResource struct {
 
 // Retention describes tag retention infos
 type Retention struct {
-	Total              int              `json:"total"`
-	Retained           int              `json:"retained"`
-	HarborHostname     string           `json:"harbor_hostname,omitempty"`
-	ProjectName        string           `json:"project_name,omitempty"`
-	RetentionPolicyID  int64            `json:"retention_policy_id,omitempty"`
-	RetentionRules     []*RetentionRule `json:"retention_rule,omitempty"`
-	Status             string           `json:"result,omitempty"`
-	SuccessfulArtifact []*ArtifactInfo  `json:"success_artifact,omitempty"`
-	FailedArtifact     []*ArtifactInfo  `json:"failed_artifact,omitempty"`
+	Total             int              `json:"total"`
+	Retained          int              `json:"retained"`
+	HarborHostname    string           `json:"harbor_hostname,omitempty"`
+	ProjectName       string           `json:"project_name,omitempty"`
+	RetentionPolicyID int64            `json:"retention_policy_id,omitempty"`
+	RetentionRules    []*RetentionRule `json:"retention_rule,omitempty"`
+	Status            string           `json:"result,omitempty"`
+	DeletedArtifact   []*ArtifactInfo  `json:"deleted_artifact,omitempty"`
 }
 
 // RetentionRule describes tag retention rule
