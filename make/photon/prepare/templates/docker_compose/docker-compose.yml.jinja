@@ -555,7 +555,12 @@ services:
       - type: bind
         source: {{data_volume}}/trivy-adapter/reports
         target: /home/scanner/.cache/reports
-{%if internal_tls.enabled %}
+{% if protocol == 'https' %}
+      - type: bind
+        source: {{data_volume}}/secret/cert/server.crt
+        target: /harbor_cust_cert/harbor_ca.crt
+{% endif %}
+{% if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.harbor_internal_ca_crt_path}}
         target: /harbor_cust_cert/harbor_internal_ca.crt
