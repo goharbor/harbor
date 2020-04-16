@@ -27,3 +27,35 @@ ${HARBOR_ADMIN}  admin
 Test Case - Get Harbor Version
 #Just get harbor version and log it
     Get Harbor Version
+
+Test Case - Switch Scanner
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=  get current date  result_format=%m%s
+
+    Switch To Scanners Page
+
+    Should Display The Default Trivy Scanner
+
+    Create An New Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
+    Push Image  ${ip}  admin  Harbor12345  project${d}  hello-world:latest
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/hello-world
+    Scan Repo  latest  Fail
+    View Scan Error Log
+
+    Switch To Scanners Page
+
+    Set Default Scanner  Clair
+    Should Display The Default Clair Scanner
+
+    Go Into Project  project${d} 
+    Go Into Repo  project${d}/hello-world
+    Scan Repo  latest  Succeed
+    Move To Summary Chart
+    Wait Until Page Contains  No vulnerability
+
+    Switch To Scanners Page
+    Set Default Scanner  Trivy
+    Close Browser
