@@ -28,6 +28,7 @@ Test Case - Get Harbor Version
 #Just get harbor version and log it
     Get Harbor Version
 
+
 Test Case - Switch Scanner
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
