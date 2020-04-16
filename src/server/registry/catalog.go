@@ -15,10 +15,13 @@
 package registry
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/registry/util"
 	"net/http"
@@ -29,11 +32,13 @@ import (
 func newRepositoryHandler() http.Handler {
 	return &repositoryHandler{
 		repoCtl: repository.Ctl,
+		artCtl:  artifact.Ctl,
 	}
 }
 
 type repositoryHandler struct {
 	repoCtl repository.Controller
+	artCtl  artifact.Controller
 }
 
 func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -54,7 +59,6 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 
 	repoNames := make([]string, 0)
 	// get all repositories
-	// ToDo filter out the untagged repos
 	repoRecords, err := r.repoCtl.List(req.Context(), nil)
 	if err != nil {
 		serror.SendError(w, err)
@@ -64,8 +68,15 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		r.sendResponse(w, req, repoNames)
 		return
 	}
-	for _, r := range repoRecords {
-		repoNames = append(repoNames, r.Name)
+	for _, repo := range repoRecords {
+		valid, err := r.validateRepo(req.Context(), repo.RepositoryID)
+		if err != nil {
+			serror.SendError(w, err)
+			return
+		}
+		if valid {
+			repoNames = append(repoNames, repo.Name)
+		}
 	}
 	sort.Strings(repoNames)
 	if !withN {
@@ -127,6 +138,34 @@ func (r *repositoryHandler) sendResponse(w http.ResponseWriter, req *http.Reques
 		serror.SendError(w, err)
 		return
 	}
+}
+
+// empty repo and all of artifacts are untagged should be filtered out.
+func (r *repositoryHandler) validateRepo(ctx context.Context, repositoryID int64) (bool, error) {
+	arts, err := r.artCtl.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"RepositoryID": repositoryID,
+		},
+	}, &artifact.Option{
+		WithTag: true,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	// empty repo
+	if len(arts) == 0 {
+		return false, nil
+	}
+
+	for _, art := range arts {
+		if len(art.Tags) != 0 {
+			return true, nil
+		}
+	}
+
+	// if all of artifact are untagged, filter out
+	return false, nil
 }
 
 type catalogAPIResponse struct {
