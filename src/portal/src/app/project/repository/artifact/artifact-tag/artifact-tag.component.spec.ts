@@ -10,7 +10,7 @@ import { ErrorHandler } from "../../../../../lib/utils/error-handler";
 import { ArtifactService } from '../../../../../../ng-swagger-gen/services/artifact.service';
 import { OperationService } from "../../../../../lib/components/operation/operation.service";
 import { CURRENT_BASE_HREF } from "../../../../../lib/utils/utils";
-import { USERSTATICPERMISSION, UserPermissionService, UserPermissionDefaultService } from '../../../../../lib/services';
+import { USERSTATICPERMISSION, UserPermissionService, UserPermissionDefaultService, SystemInfoService } from '../../../../../lib/services';
 import { delay } from 'rxjs/operators';
 import { AppConfigService } from "../../../../services/app-config.service";
 
@@ -28,6 +28,9 @@ describe('ArtifactTagComponent', () => {
   };
   const config: IServiceConfig = {
     repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories/testing"
+  };
+  const mockSystemInfoService = {
+    getSystemInfo: () => of( false )
   };
   const mockAppConfigService = {
     getConfig: () => {
@@ -64,6 +67,7 @@ describe('ArtifactTagComponent', () => {
         { provide: mockErrorHandler, useValue: ErrorHandler },
         { provide: ArtifactService, useValue: mockArtifactService },
         { provide: AppConfigService, useValue: mockAppConfigService },
+        { provide: SystemInfoService, useValue: mockSystemInfoService },
         { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         { provide: OperationService },
       ]
