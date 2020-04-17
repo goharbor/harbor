@@ -256,7 +256,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     }
   }
 
-  delOperate(tag): Observable<any> | null {
+  delOperate(tag: Tag): Observable<any> | null {
     // init operation info
     let operMessage = new OperateInfo();
     operMessage.name = 'OPERATION.DELETE_TAG';
@@ -264,7 +264,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     operMessage.data.name = tag.name;
     this.operationService.publishInfo(operMessage);
 
-    if (tag.signature) {
+    if (tag.signed) {
       forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
         this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
           let wrongInfo: string = res[1] + DeleteTagWithNotoryCommand1 + this.registryUrl +
