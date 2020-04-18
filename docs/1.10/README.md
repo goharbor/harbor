@@ -47,7 +47,7 @@ This section describes how to use and maintain Harbor after deployment. These da
     - [Import Vulnerability Data to an Offline Harbor instance](administration/vulnerability-scanning/import-vulnerability-data.md)
     - [Configure System-Wide CVE Whitelists](administration/vulnerability-scanning/configure-system-whitelist.md)
 - [Garbage Collection](administration/garbage-collection/_index.md)
-- [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade-migrate-data.md)
+- [Upgrade Harbor and Migrate Data](administration/upgrade/_index.md)
   - [Upgrading Harbor Deployed with Helm](administration/upgrade/helm-upgrade.md)
   - [Roll Back an Upgrade](administration/upgrade/roll-back-upgrade.md)
   - [Test Harbor Upgrade](administration/upgrade/upgrade-test.md)
