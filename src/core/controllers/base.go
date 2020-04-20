@@ -122,6 +122,14 @@ func (cc *CommonController) LogOut() {
 
 // UserExists checks if user exists when user input value in sign in form.
 func (cc *CommonController) UserExists() {
+	flag, err := config.SelfRegistration()
+	if err != nil {
+		log.Errorf("Failed to get the status of self registration flag, error: %v, disabling user existence check", err)
+	}
+	if !flag {
+		cc.CustomAbort(http.StatusPreconditionFailed, "self registration disabled.")
+	}
+
 	target := cc.GetString("target")
 	value := cc.GetString("value")
 
