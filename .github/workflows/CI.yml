@@ -71,12 +71,15 @@ jobs:
         run: |
           cd src/github.com/goharbor/harbor
           env
+          df -h
           bash ./tests/showtime.sh ./tests/ci/ut_install.sh
       - name: script
         run: |
           echo IP: $IP
+          df -h
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
+          df -h
       - name: Codecov For BackEnd
         uses: codecov/codecov-action@v1
         with:
@@ -120,6 +123,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           env
+          df -h
           #sudo apt install -y xvfb
           #xvfb-run ls
           curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
@@ -143,12 +147,15 @@ jobs:
         run: |
           cd src/github.com/goharbor/harbor
           env
+          df -h
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
       - name: script
         run: |
           cd src/github.com/goharbor/harbor
           echo IP: $IP
+          df -h
           bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
+          df -h
 
   APITEST_LDAP:
     env:
@@ -185,6 +192,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           env
+          df -h
           #sudo apt install -y xvfb
           #xvfb-run ls
           curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
@@ -200,12 +208,15 @@ jobs:
         run: |
           cd src/github.com/goharbor/harbor
           env
+          df -h
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP LDAP
       - name: script
         run: |
           echo IP: $IP
+          df -h
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/api_run.sh LDAP $IP
+          df -h
 
   OFFLINE:
     env:
@@ -243,6 +254,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           env
+          df -h
           #sudo apt install -y xvfb
           #xvfb-run ls
           curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
@@ -257,8 +269,10 @@ jobs:
       - name: script
         run: |
           echo IP: $IP
+          df -h
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/distro_installer.sh
+          df -h
 
   UI_UT:
     env:
@@ -276,8 +290,10 @@ jobs:
       - name: script
         run: |
           echo IP: $IP
+          df -h
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
+          df -h
       - name: Codecov For UI
         uses: codecov/codecov-action@v1
         with:
