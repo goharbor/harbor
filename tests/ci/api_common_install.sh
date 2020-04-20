@@ -4,6 +4,7 @@ set -x
 set +e
 sudo rm -fr /data/*
 sudo mkdir -p /data
+docker system prune -a -f
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
 set -e
