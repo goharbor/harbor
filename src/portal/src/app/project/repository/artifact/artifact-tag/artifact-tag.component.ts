@@ -18,7 +18,7 @@ import { ArtifactFront as Artifact } from "../artifact";
 import { ArtifactService } from '../../../../../../ng-swagger-gen/services/artifact.service';
 import { Tag } from '../../../../../../ng-swagger-gen/models/tag';
 import {
-  UserPermissionService, USERSTATICPERMISSION
+  UserPermissionService, USERSTATICPERMISSION, SystemInfoService, SystemInfo
 } from "../../../../../lib/services";
 import { ClrDatagridStateInterface } from '@clr/angular';
 import {
@@ -33,12 +33,13 @@ import { AppConfigService } from "../../../../services/app-config.service";
 class InitTag {
   name = "";
 }
+const DeleteTagWithNotoryCommand1 = 'notary -s https://';
+const DeleteTagWithNotoryCommand2 = ':4443 -d ~/.docker/trust remove -p ';
 @Component({
   selector: 'artifact-tag',
   templateUrl: './artifact-tag.component.html',
   styleUrls: ['./artifact-tag.component.scss']
 })
-
 export class ArtifactTagComponent implements OnInit, OnDestroy {
   @Input() artifactDetails: Artifact;
   @Input() projectName: string;
@@ -66,11 +67,13 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   tagNameChecker: Subject<string> = new Subject<string>();
   tagNameCheckSub: Subscription;
   tagNameCheckOnGoing = false;
+  systemInfo: SystemInfo;
   constructor(
     private operationService: OperationService,
     private artifactService: ArtifactService,
     private translateService: TranslateService,
     private userPermissionService: UserPermissionService,
+    private systemInfoService: SystemInfoService,
     private appConfigService: AppConfigService,
     private errorHandlerService: ErrorHandler
 
@@ -78,6 +81,8 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.getImagePermissionRule(this.projectId);
     this.invalidCreateTag();
+    this.systemInfoService.getSystemInfo()
+      .subscribe(systemInfo => this.systemInfo = systemInfo, error => this.errorHandlerService.error(error));
   }
   checkTagName(name) {
       let listArtifactParams: ArtifactService.ListArtifactsParams = {
@@ -251,13 +256,25 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     }
   }
 
-  delOperate(tag): Observable<any> | null {
+  delOperate(tag: Tag): Observable<any> | null {
     // init operation info
     let operMessage = new OperateInfo();
     operMessage.name = 'OPERATION.DELETE_TAG';
     operMessage.state = OperationState.progressing;
     operMessage.data.name = tag.name;
     this.operationService.publishInfo(operMessage);
+
+    if (tag.signed) {
+      forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
+        this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
+          let wrongInfo: string = res[1] + DeleteTagWithNotoryCommand1 + this.registryUrl +
+            DeleteTagWithNotoryCommand2 +
+            this.registryUrl + "/" + this.repositoryName +
+            " " + name;
+          operateChanges(operMessage, OperationState.failure, wrongInfo);
+        });
+        return of(null);
+    } else {
      const deleteTagParams: ArtifactService.DeleteTagParams = {
       projectName: this.projectName,
       repositoryName: dbEncodeURIComponent(this.repositoryName),
@@ -278,6 +295,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
           );
           return of(error);
         }));
+      }
   }
 
   existValid(name) {
@@ -305,5 +323,8 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   }
   get withNotary(): boolean {
     return this.appConfigService.getConfig().with_notary;
+  }
+  public get registryUrl(): string {
+    return this.systemInfo ? this.systemInfo.registry_url : '';
   }
 }
