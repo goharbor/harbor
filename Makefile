@@ -383,8 +383,8 @@ build:
 build_base_docker:
 	@for name in chartserver clair clair-adapter trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
 		echo $$name ; \
-		$(DOCKERBUILD) --pull -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) . ; \
-		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) ; \
+		$(DOCKERBUILD) --pull -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) . && \
+		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
 	done
 
 pull_base_docker:

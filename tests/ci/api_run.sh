@@ -28,13 +28,9 @@ function uploader {
 set +e
 
 docker ps
-# Log storage space before running API_DB.robot
-df -H
 # run db auth api cases
 if [ "$1" = 'DB' ]; then
     pybot -X -v ip:$2 -v HARBOR_PASSWORD:Harbor12345 $DIR/../../tests/robot-cases/Group0-BAT/API_DB.robot
-    # Log storage space after running API_DB.robot
-    df -H
 elif [ "$1" = 'LDAP' ]; then
     # run ldap api cases
     python $DIR/../../tests/configharbor.py -H $IP -u $HARBOR_ADMIN -p $HARBOR_ADMIN_PASSWD -c auth_mode=ldap_auth \
