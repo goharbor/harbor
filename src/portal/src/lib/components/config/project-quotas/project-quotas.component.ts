@@ -159,7 +159,7 @@ export class ProjectQuotasComponent implements OnChanges {
       this.getQuotaList(this.currentState);
       this.errorHandler.info('QUOTA.SAVE_SUCCESS');
     }, error => {
-      this.errorHandler.error(error);
+      this.editQuotaDialog.inlineAlert.showInlineError(error);
       this.loading = false;
     });
   }
