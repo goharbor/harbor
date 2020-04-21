@@ -342,7 +342,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
     if internal_tls_config and internal_tls_config.get('enabled'):
         config_dict['internal_tls'] = InternalTLS(
             internal_tls_config['enabled'],
-            internal_tls_config['verify_client_cert'],
+            False,
             internal_tls_config['dir'],
             configs['data_volume'],
             with_notary=with_notary,
