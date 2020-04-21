@@ -1,6 +1,7 @@
 package notification
 
 import (
+	"github.com/goharbor/harbor/src/jobservice/job"
 	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -10,8 +11,8 @@ import (
 	"testing"
 )
 
-func TestMaxFails(t *testing.T) {
-	rep := &WebhookJob{}
+func TestSlackJobMaxFails(t *testing.T) {
+	rep := &SlackJob{}
 	// test default max fails
 	assert.Equal(t, uint(10), rep.MaxFails())
 
@@ -24,33 +25,37 @@ func TestMaxFails(t *testing.T) {
 	assert.Equal(t, uint(10), rep.MaxFails())
 }
 
-func TestShouldRetry(t *testing.T) {
-	rep := &WebhookJob{}
+func TestSlackJobShouldRetry(t *testing.T) {
+	rep := &SlackJob{}
 	assert.True(t, rep.ShouldRetry())
 }
 
-func TestValidate(t *testing.T) {
-	rep := &WebhookJob{}
-	assert.Nil(t, rep.Validate(nil))
+func TestSlackJobValidate(t *testing.T) {
+	rep := &SlackJob{}
+	assert.NotNil(t, rep.Validate(nil))
+
+	jp := job.Parameters{
+		"address": "https://webhook.slack.com/hsdouihhsd988",
+		"payload": "slack payload",
+	}
+	assert.Nil(t, rep.Validate(jp))
 }
 
-func TestRun(t *testing.T) {
+func TestSlackJobRun(t *testing.T) {
 	ctx := &mockjobservice.MockJobContext{}
 	logger := &mockjobservice.MockJobLogger{}
 
 	ctx.On("GetLogger").Return(logger)
 
-	rep := &WebhookJob{}
+	rep := &SlackJob{}
 
-	// test webhook request
+	// test slack request
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			body, _ := ioutil.ReadAll(r.Body)
 
 			// test request method
 			assert.Equal(t, http.MethodPost, r.Method)
-			// test request header
-			assert.Equal(t, "auth_test", r.Header.Get("Authorization"))
 			// test request body
 			assert.Equal(t, string(body), `{"key": "value"}`)
 		}))
@@ -59,9 +64,8 @@ func TestRun(t *testing.T) {
 		"skip_cert_verify": true,
 		"payload":          `{"key": "value"}`,
 		"address":          ts.URL,
-		"auth_header":      "auth_test",
 	}
-	// test correct webhook response
+	// test correct slack response
 	assert.Nil(t, rep.Run(ctx, params))
 
 	tsWrong := httptest.NewServer(
@@ -73,8 +77,7 @@ func TestRun(t *testing.T) {
 		"skip_cert_verify": true,
 		"payload":          `{"key": "value"}`,
 		"address":          tsWrong.URL,
-		"auth_header":      "auth_test",
 	}
-	// test incorrect webhook response
+	// test incorrect slack response
 	assert.NotNil(t, rep.Run(ctx, paramsWrong))
 }
