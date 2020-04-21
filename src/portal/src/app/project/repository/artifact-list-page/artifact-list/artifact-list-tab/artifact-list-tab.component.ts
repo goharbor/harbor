@@ -34,7 +34,7 @@ import {
   clone,
   CustomComparator,
   DEFAULT_PAGE_SIZE, DEFAULT_SUPPORTED_MIME_TYPE,
-  formatSize, VULNERABILITY_SCAN_STATUS, dbEncodeURIComponent
+  formatSize, VULNERABILITY_SCAN_STATUS, dbEncodeURIComponent, doSorting
 } from "../../../../../../lib/utils/utils";
 import {
   ConfirmationAcknowledgement,
@@ -400,6 +400,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               }
             }
             this.artifactList = res.body;
+            this.artifactList = doSorting<Artifact>(this.artifactList, state);
+
             this.getPullCommand(this.artifactList);
           }, error => {
             // error
