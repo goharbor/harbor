@@ -7,7 +7,6 @@ sudo sed "s/reg.mydomain.com/$IP/" make/harbor.yml.tmpl |sudo tee make/harbor.ym
 # enable internal tls
 echo "internal_tls:" >> make/harbor.yml
 echo "  enabled: true" >> make/harbor.yml
-echo "  verify_client_cert: true" >> make/harbor.yml
 echo "  dir: /etc/harbor/tls/internal" >> make/harbor.yml
 
 # TODO: remove it when scanner adapter support internal access of harbor
