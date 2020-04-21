@@ -1153,7 +1153,7 @@
     },
     "UNKNOWN_ERROR": "Bilinmeyen hatalar oluştu. Lütfen daha sonra tekrar deneyiniz.",
     "UNAUTHORIZED_ERROR": "Oturumunuz geçersiz veya süresi dolmuş. İşleminize devam etmek için oturum açmanız gerekir.",
-    "REPO_READ_ONLY": "Harbor salt okunur moduna ayarlandı, Depoyu silme, etiketleme ve imaj yükleme salt okunur modda devre dışı bırakılacak.",
+    "REPO_READ_ONLY": "Harbor salt okunur moduna ayarlandı, Depoyu silme, artifact, etiketleme ve imaj yükleme salt okunur modda devre dışı bırakılacak.",
     "FORBIDDEN_ERROR": "İşlemi gerçekleştirmek için gereken ayrıcalıklarınız yok.",
     "GENERAL_ERROR": "Servis çağrısı yapılırken hatalar oluştu: {{param}}.",
     "BAD_REQUEST_ERROR": "Kötü bir istek nedeniyle işleminizi gerçekleştiremiyoruz.",

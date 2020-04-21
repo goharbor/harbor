@@ -1122,7 +1122,7 @@
     },
     "UNKNOWN_ERROR": "Des erreurs inconnues sont survenues. Veuillez réessayer plus tard.",
     "UNAUTHORIZED_ERROR": "Votre session est invalide ou a expiré. Vous devez vous connecter pour continuer votre action.",
-    "REPO_READ_ONLY": "Harbor is set to read-only mode, Deleting repository, tag and pushing image will be disabled under read-only mode.",
+    "REPO_READ_ONLY": "Harbor is set to read-only mode, Deleting repository, artifact, tag and pushing image will be disabled under read-only mode.",
     "FORBIDDEN_ERROR": "Vous n'avez pas les privilèges appropriés pour effectuer l'action.",
     "GENERAL_ERROR": "Des erreurs sont survenues lors de l'appel à un service : {{param}}.",
     "BAD_REQUEST_ERROR": "Nous ne pouvons pas exécuter votre action à cause d'une mauvaise requête.",
