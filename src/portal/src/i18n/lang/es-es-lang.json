@@ -1151,7 +1151,7 @@
     },
     "UNKNOWN_ERROR": "Ha ocurrido un error desconocido. Por favor, inténtelo de nuevo más tarde.",
     "UNAUTHORIZED_ERROR": "La sesión no es válida o ha caducado. Necesita identificarse de nuevo para llevar a cabo esa acción.",
-    "REPO_READ_ONLY": "Harbor is set to read-only mode, Deleting repository, tag and pushing image will be disabled under read-only mode.",
+    "REPO_READ_ONLY": "Harbor is set to read-only mode, Deleting repository, artifact, tag and pushing image will be disabled under read-only mode.",
     "FORBIDDEN_ERROR": "No tienes permisos para llevar a cabo esa acción.",
     "GENERAL_ERROR": "Han ocurrido errores cuando se llamaba al servicio: {{param}}.",
     "BAD_REQUEST_ERROR": "No hemos podido llevar la acción debido a una solicitud incorrecta.",

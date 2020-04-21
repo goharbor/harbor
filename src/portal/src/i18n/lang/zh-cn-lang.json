@@ -1150,7 +1150,7 @@
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试。",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续。",
-    "REPO_READ_ONLY": "Harbor 被设置为只读模式，在此模式下，不能删除仓库、Tag 及推送镜像。",
+    "REPO_READ_ONLY": "Harbor 被设置为只读模式，在此模式下，不能删除仓库、artifact、 Tag 及推送镜像。",
     "FORBIDDEN_ERROR": "当前操作被禁止，请确认你有合法的权限。",
     "GENERAL_ERROR": "调用后台服务时出现错误: {{param}}。",
     "BAD_REQUEST_ERROR": "错误请求, 操作无法完成。",
