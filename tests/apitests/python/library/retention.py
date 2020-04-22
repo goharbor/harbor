@@ -134,6 +134,7 @@ class Retention(base.Base):
                                                     {
                                                         "kind": "doublestar",
                                                         "decoration": "matches",
+                                                        "extras":'["untagged":True]',
                                                         "pattern": selector_tag
                                                     }
                                                 ]

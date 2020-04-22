@@ -7,13 +7,14 @@ from testutils import ADMIN_CLIENT
 from testutils import TEARDOWN
 from testutils import harbor_server
 from library.repository import push_special_image_to_project
+from library.docker_api import list_image_tags
 
 from library.retention import Retention
 from library.project import Project
 from library.repository import Repository
 from library.user import User
 from library.system import System
-
+from library.artifact import Artifact
 
 class TestProjects(unittest.TestCase):
     """
@@ -38,6 +39,8 @@ class TestProjects(unittest.TestCase):
         self.repo = Repository()
         self.project = Project()
         self.retention = Retention()
+        self.artifact = Artifact()
+        self.repo_name_1 = "test1"
 
     def testTagRetention(self):
         user_ra_password = "Aa123456"
@@ -51,13 +54,19 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_src_repo_id, TestProjects.project_src_repo_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_RA_CLIENT)
 
         # Push image test1:1.0, test1:2.0, test1:3.0,latest, test2:1.0, test2:latest, test3:1.0
-        push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test1", ['1.0'])
-        push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test1", ['2.0'])
-        push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test1", ['3.0','latest'])
+        push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, self.repo_name_1, ['1.0'])
+        push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, self.repo_name_1, ['2.0'])
+        push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, self.repo_name_1, ['3.0','latest'])
         push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test2", ['1.0'])
         push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test2", ['latest'])
         push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test3", ['1.0'])
         push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test4", ['1.0'])
+
+        tags = list_image_tags(harbor_server, TestProjects.project_src_repo_name+"/"+self.repo_name_1, user_ra_name, user_ra_password)
+        #Delete all tags of "artifact3" in repostory "image1";
+        self.artifact.delete_tag(TestProjects.project_src_repo_name, self.repo_name_1, "3.0", "latest",**TestProjects.USER_RA_CLIENT)
+        self.artifact.delete_tag(TestProjects.project_src_repo_name, self.repo_name_1, "3.0", "3.0",**TestProjects.USER_RA_CLIENT)
+        tags = list_image_tags(harbor_server, TestProjects.project_src_repo_name+"/"+self.repo_name_1, user_ra_name, user_ra_password)
 
         resp=self.repo.list_repositories(TestProjects.project_src_repo_name, **TestProjects.USER_RA_CLIENT)
         self.assertEqual(len(resp), 4)
@@ -77,7 +86,13 @@ class TestProjects(unittest.TestCase):
         resp=self.retention.get_retention_exec_tasks(retention_id,execution.id, **TestProjects.USER_RA_CLIENT)
         self.assertEqual(len(resp), 4)
         resp=self.retention.get_retention_exec_task_log(retention_id,execution.id,resp[0].id, **TestProjects.USER_RA_CLIENT)
-        print(resp)
+        #For Debug:
+        print("Task 0 log begin:-----------------------------")
+        i=0
+        for line in resp.split("\n"):
+            print("Line"+str(i)+": "+line)
+            i=i+1
+        print("Task 0 log end:-----------------------------")
 
         # Real run
         self.retention.trigger_retention_policy(retention_id, dry_run=False, **TestProjects.USER_RA_CLIENT)
@@ -94,6 +109,13 @@ class TestProjects(unittest.TestCase):
         # resp=self.repo.list_repositories(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
         # self.assertEqual(len(resp), 3)
 
+        #List artifacts successfully;
+        artifacts = self.artifact.list_artifacts(TestProjects.project_src_repo_name, self.repo_name_1, **TestProjects.USER_RA_CLIENT)
+        print artifacts
+        # 'test1' has 3 artifacts, artifact1 with tag '1.0' and artifact2 with tag '2.0' should be deleted because they doesn't match 'latest'
+        # artifact3 should be retained because it has no tag, so count of artifacts should be 1.
+        # TODO: This verfication should be enhanced by verify sha256 at the same time;
+        self.assertTrue(len(artifacts)==1)
 
     @classmethod
     def tearDownClass(self):

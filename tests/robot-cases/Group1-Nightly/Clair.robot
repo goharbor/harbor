@@ -105,6 +105,7 @@ Test Case - Scan Image On Push
     Go Into Project  library
     Go Into Repo  memcached
     Summary Chart Should Display  latest
+    View Repo Scan Details
     Close Browser
 
 Test Case - View Scan Results
