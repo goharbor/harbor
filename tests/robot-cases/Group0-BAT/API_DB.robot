@@ -95,3 +95,6 @@ Test Case - Scan All Images
 Test Case - Registry API
     [Tags]  reg_api
     Harbor API Test  ./tests/apitests/python/test_registry_api.py
+Test Case - Push Image With Special Name
+    [Tags]  special_repo_name
+    Harbor API Test  ./tests/apitests/python/test_push_image_with_special_name.py
