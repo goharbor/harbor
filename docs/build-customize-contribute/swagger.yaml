@@ -4008,7 +4008,7 @@ paths:
           schema:
             type: array
             items:
-            $ref: '#/definitions/ImmutableTagRule'
+              $ref: '#/definitions/ImmutableTagRule'
         '400':
           description: Illegal format of provided ID value.
         '401':
@@ -4117,7 +4117,6 @@ paths:
         '200':
           description: Get Retention Metadatas successfully.
           schema:
-            type: object
             $ref: '#/definitions/RetentionMetadata'
 
   '/retentions':
@@ -4167,7 +4166,6 @@ paths:
         '200':
           description: Get Retention Policy successfully.
           schema:
-            type: object
             $ref: '#/definitions/RetentionPolicy'
         '401':
           description: User need to log in first.
@@ -4255,7 +4253,6 @@ paths:
           schema:
             type: array
             items:
-              type: object
               $ref: '#/definitions/RetentionExecution'
         '401':
           description: User need to log in first.
@@ -4329,7 +4326,6 @@ paths:
           schema:
             type: array
             items:
-              type: object
               $ref: '#/definitions/RetentionExecutionTask'
         '401':
           description: User need to log in first.
@@ -6273,13 +6269,9 @@ definitions:
         items:
           $ref: '#/definitions/RetentionRule'
       trigger:
-        type: object
-        items:
-          $ref: '#/definitions/RetentionRuleTrigger'
+        $ref: '#/definitions/RetentionRuleTrigger'
       scope:
-        type: object
-        items:
-          $ref: '#/definitions/RetentionPolicyScope'
+        $ref: '#/definitions/RetentionPolicyScope'
 
   RetentionRuleTrigger:
     type: object
