@@ -1145,7 +1145,7 @@
     },
     "UNKNOWN_ERROR": "Ocorreram erros desconhecidos. Tente novamente mais tarde",
     "UNAUTHORIZED_ERROR": "Sua sessão é inválida ou expirou. Você deve logar-se novamente para continuar essa ação.",
-    "REPO_READ_ONLY": "Harbor está em modo somente leitura, remover repositórios, tag e o envio de imagens serão desabilitados em modo somente leitura.",
+    "REPO_READ_ONLY": "Harbor está em modo somente leitura, remover repositórios, artifact, tag e o envio de imagens serão desabilitados em modo somente leitura.",
     "FORBIDDEN_ERROR": "Você não possui privilégios para executar a ação.",
     "GENERAL_ERROR": "Erros ocorreram ao executar a chamada ao serviço: {{param}}.",
     "BAD_REQUEST_ERROR": "Não foi possível executar suas ações pois ocorreu uma requisição mal formada.",
