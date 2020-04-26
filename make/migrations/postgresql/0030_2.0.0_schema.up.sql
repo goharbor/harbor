@@ -215,3 +215,20 @@ UPDATE quota_usage SET used = used - 'count';
 /* make Clair and Trivy as reserved name for scanners in-tree */
 UPDATE scanner_registration SET name = concat_ws('-', name, uuid) WHERE name IN ('Clair', 'Trivy') AND immutable = FALSE;
 UPDATE scanner_registration SET name = split_part(name, '-', 1) WHERE immutable = TRUE;
+
+/*update event types in table 'notification_policy'*/
+UPDATE notification_policy SET event_types = '["DOWNLOAD_CHART","DELETE_CHART","UPLOAD_CHART","DELETE_ARTIFACT","PULL_ARTIFACT","PUSH_ARTIFACT","SCANNING_FAILED","SCANNING_COMPLETED"]';
+
+/*update event type in table 'notification_job'*/
+UPDATE notification_job
+SET event_type = CASE
+	WHEN notification_job.event_type = 'downloadChart' THEN 'DOWNLOAD_CHART'
+	WHEN notification_job.event_type = 'deleteChart' THEN 'DELETE_CHART'
+	WHEN notification_job.event_type = 'uploadChart' THEN 'UPLOAD_CHART'
+	WHEN notification_job.event_type = 'deleteImage' THEN 'DELETE_ARTIFACT'
+	WHEN notification_job.event_type = 'pullImage' THEN 'PULL_ARTIFACT'
+	WHEN notification_job.event_type = 'pushImage' THEN 'PUSH_ARTIFACT'
+	WHEN notification_job.event_type = 'scanningFailed' THEN 'SCANNING_FAILED'
+	WHEN notification_job.event_type = 'scanningCompleted' THEN 'SCANNING_COMPLETED'
+	ELSE event_type
+END;
