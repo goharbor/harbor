@@ -54,7 +54,7 @@ func (pj *Job) MaxCurrency() uint {
 
 // ShouldRetry indicates job can be retried if failed
 func (pj *Job) ShouldRetry() bool {
-	return true
+	return false
 }
 
 // Validate the parameters
