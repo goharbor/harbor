@@ -48,7 +48,7 @@ func Middleware() func(http.Handler) http.Handler {
 		none := lib.ArtifactInfo{}
 		info := lib.GetArtifactInfo(ctx)
 		if info == none {
-			return fmt.Errorf("artifactinfo middleware required before this middleware")
+			return errors.New("artifactinfo middleware required before this middleware").WithCode(errors.NotFoundCode)
 		}
 
 		art, err := artifactController.GetByReference(ctx, info.Repository, info.Reference, nil)
