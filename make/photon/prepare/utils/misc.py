@@ -175,5 +175,5 @@ def get_realpath(path: str) -> Path:
     """
 
     if os.path.isdir(host_root_dir):
-        return os.path.join(host_root_dir, path.lstrip('/'))
+        return host_root_dir.joinpath(path.lstrip('/'))
     return Path(path)
