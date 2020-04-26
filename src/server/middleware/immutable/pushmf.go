@@ -40,7 +40,7 @@ func handlePush(req *http.Request) error {
 	none := lib.ArtifactInfo{}
 	art := lib.GetArtifactInfo(req.Context())
 	if art == none {
-		return errors.New("cannot get the manifest information from request context")
+		return errors.New("cannot get the manifest information from request context").WithCode(errors.NotFoundCode)
 	}
 
 	af, err := artifact.Ctl.GetByReference(req.Context(), art.Repository, art.Tag, &artifact.Option{
