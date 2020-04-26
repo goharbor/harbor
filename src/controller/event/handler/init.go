@@ -9,6 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/chart"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/quota"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/scan"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 )
 
@@ -44,5 +45,6 @@ func init() {
 	notifier.Subscribe(event.TopicDeleteTag, &auditlog.Handler{})
 
 	// internal
-	notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{})
+	notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{Context: orm.Context})
+	notifier.Subscribe(event.TopicPushArtifact, &internal.Handler{Context: orm.Context})
 }
