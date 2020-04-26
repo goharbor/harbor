@@ -115,9 +115,10 @@ func (a *Handler) constructArtifactPayload(event *event.ArtifactEvent) (*model.P
 	repoRecord, err := repository.Mgr.GetByName(ctx, repoName)
 	if err != nil {
 		log.Errorf("failed to get repository with name %s: %v", repoName, err)
-		return nil, err
+	} else {
+		// for the delete repository event, it cannot get the repo info here, just let the creation time be empty.
+		payload.EventData.Repository.DateCreated = repoRecord.CreationTime.Unix()
 	}
-	payload.EventData.Repository.DateCreated = repoRecord.CreationTime.Unix()
 
 	var reference string
 	if len(event.Tags) == 0 {
