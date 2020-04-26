@@ -5346,6 +5346,8 @@ definitions:
         type: string
       pattern:
         type: string
+      extras:
+        type: string
 
   RetentionExecution:
     type: object
