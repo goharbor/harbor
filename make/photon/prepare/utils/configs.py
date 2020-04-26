@@ -249,7 +249,10 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
 
     # Chart configs
     chart_configs = configs.get("chart") or {}
-    config_dict['chart_absolute_url'] = chart_configs.get('absolute_url') or ''
+    if chart_configs.get('absolute_url') == 'enabled':
+        config_dict['chart_absolute_url'] = True
+    else:
+        config_dict['chart_absolute_url'] = False
 
     # jobservice config
     js_config = configs.get('jobservice') or {}
