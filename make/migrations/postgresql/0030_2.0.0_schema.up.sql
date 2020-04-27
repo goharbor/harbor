@@ -49,6 +49,14 @@ UPDATE artifact AS art
     )
     FROM repository AS repo, blob AS blob
     WHERE art.repo=repo.name AND art.digest=blob.digest;
+/*
+It's a workaround for issue https://github.com/goharbor/harbor/issues/11754
+
+The phenomenon is the repository data is gone, but artifacts belong to the repository are still there.
+To set the repository_id to a negative, and cannot duplicate.
+*/
+UPDATE artifact SET repository_id = 0-artifact.id, type='IMAGE', media_type='UNKNOWN', manifest_media_type='UNKNOWN' WHERE repository_id IS NULL;
+
 ALTER TABLE artifact ALTER COLUMN repository_id SET NOT NULL;
 ALTER TABLE artifact ALTER COLUMN media_type SET NOT NULL;
 ALTER TABLE artifact ALTER COLUMN manifest_media_type SET NOT NULL;
