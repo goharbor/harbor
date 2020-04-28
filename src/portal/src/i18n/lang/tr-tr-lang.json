@@ -1304,7 +1304,7 @@
         "RULE_TEMPLATE_6": " imajlar son # gün içinde imdirilmiş",
         "RULE_TEMPLATE_7": " imajlar son # gün içinde yüklendi.",
         "SCHEDULE": "Program",
-        "SCHEDULE_WARNING": "Executing retention policy results in the irreversible effect of deleting images from the Harbor project.  Please double check all policies before scheduling.",
+        "SCHEDULE_WARNING": "Executing retention policy results in the irreversible effect of deleting artifacts from the Harbor project.  Please double check all policies before scheduling.",
         "EXISTING_RULE": "Existing rule",
         "ILLEGAL_RULE": "Illegal rule",
         "INVALID_RULE": "Invalid rule",
