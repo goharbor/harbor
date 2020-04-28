@@ -17,6 +17,7 @@ package quota
 import (
 	"errors"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
@@ -101,11 +102,14 @@ func constructQuotaPayload(event *event.QuotaEvent) (*model.Payload, error) {
 			Custom: quotaCustom,
 		},
 	}
-	resource := &notifyModel.Resource{
-		Tag:    event.Resource.Tag,
-		Digest: event.Resource.Digest,
+
+	if event.Resource != nil {
+		resource := &notifyModel.Resource{
+			Tag:    event.Resource.Tag,
+			Digest: event.Resource.Digest,
+		}
+		payload.EventData.Resources = append(payload.EventData.Resources, resource)
 	}
-	payload.EventData.Resources = append(payload.EventData.Resources, resource)
 
 	return payload, nil
 }

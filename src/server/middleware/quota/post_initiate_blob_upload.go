@@ -27,8 +27,10 @@ import (
 // PostInitiateBlobUploadMiddleware middleware to add blob to project after mount blob success
 func PostInitiateBlobUploadMiddleware() func(http.Handler) http.Handler {
 	return RequestMiddleware(RequestConfig{
-		ReferenceObject: projectReferenceObject,
-		Resources:       postInitiateBlobUploadResources,
+		ReferenceObject:   projectReferenceObject,
+		Resources:         postInitiateBlobUploadResources,
+		ResourcesExceeded: projectResourcesEvent(1),
+		ResourcesWarning:  projectResourcesEvent(2),
 	})
 }
 
