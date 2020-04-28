@@ -23,6 +23,7 @@ from utils.nginx import prepare_nginx, nginx_confd_dir
 from utils.redis import prepare_redis
 from utils.internal_tls import prepare_tls
 from utils.trivy_adapter import prepare_trivy_adapter
+from utils.portal import prepare_portal
 from g import (config_dir, input_config_path, private_key_pem_path, root_crt_path, secret_key_dir,
 old_private_key_pem_path, old_crt_path)
 
@@ -43,6 +44,7 @@ def prepare(conf, with_notary, with_clair, with_trivy, with_chartmuseum):
         logging.error(e)
         sys.exit(-1)
 
+    prepare_portal(config_dict)
     prepare_log_configs(config_dict)
     prepare_nginx(config_dict)
     prepare_core(config_dict, with_notary=with_notary, with_clair=with_clair, with_trivy=with_trivy, with_chartmuseum=with_chartmuseum)
