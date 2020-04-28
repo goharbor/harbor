@@ -518,7 +518,6 @@ swagger_client:
 	mkdir  -p harborclient/harbor_client
 	mkdir  -p harborclient/harbor_swagger_client
 	mkdir  -p harborclient/harbor_v2_swagger_client
-	sed -i "/type: basic/ a\\security:\n  - basicAuth: []" api/v2.0/swagger.yaml
 	java -jar swagger-codegen-cli.jar generate -i api/swagger.yaml -l python -o harborclient/harbor_client -DpackageName=client
 	java -jar swagger-codegen-cli.jar generate -i api/v2.0/legacy_swagger.yaml -l python -o harborclient/harbor_swagger_client -DpackageName=swagger_client
 	java -jar swagger-codegen-cli.jar generate -i api/v2.0/swagger.yaml -l python -o harborclient/harbor_v2_swagger_client -DpackageName=v2_swagger_client

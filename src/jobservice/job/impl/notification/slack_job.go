@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/pkg/errors"
-	"reflect"
-	"time"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // SlackJob implements the job interface, which send notification to slack by slack incoming webhooks.
