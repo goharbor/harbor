@@ -307,6 +307,7 @@ Click GC Now
 Click GC Now With Param Delete Untagged Artifacts
     Sleep  1
     Retry Element Click    xpath=${checkbox_delete_untagged_artifacts}
+    Sleep  1
     Retry Element Click    xpath=${gc_now_xpath}
     Sleep  5
 
@@ -339,6 +340,7 @@ Get Project Count Quota Text From Project Quotas List
 
 Get Project Storage Quota Text From Project Quotas List
     [Arguments]    ${project_name}
+    Switch To Configure
     Switch To Project Quotas
     ${storage_quota}=    Get Text    xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${project_name}')]//clr-dg-cell[3]//label
     [Return]  ${storage_quota}
