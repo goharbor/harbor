@@ -239,6 +239,19 @@ Retry Keyword When Error
     Should Be Equal As Strings  '${out[0]}'  'PASS'
     [Return]  ${out[1]}
 
+Retry Keyword N Times When Error
+    [Arguments]  ${times}  ${keyword}  @{elements}
+    :For  ${n}  IN RANGE  1  ${times}
+    \    Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
+    \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
+    \    Log To Console  Return value is ${out} and ${out[0]}
+    \    Run Keyword If  '${keyword}'=='Make Swagger Client'  Exit For Loop If  '${out[0]}'=='PASS' and '${out[1]}'=='0'
+    \    ...  ELSE  Exit For Loop If  '${out[0]}'=='PASS'
+    \    Sleep  10
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+    [Return]  ${out[1]}
+
 Retry Keyword When Return Value Mismatch
     [Arguments]  ${keyword}  ${expected_value}  ${count}  @{elements}
     :For  ${n}  IN RANGE  1  ${count}
