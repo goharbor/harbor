@@ -93,6 +93,11 @@ services:
       - type: bind
         source: ./common/config/shared/trust-certificates
         target: /harbor_cust_cert
+{% if gcs_keyfile %}
+      - type: bind
+        source: {{gcs_keyfile}}
+        target: /etc/registry/gcs.key
+{% endif %}
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.registryctl_crt_path}}
