@@ -20,7 +20,6 @@
               "src/images",
               "src/favicon.ico",
               "src/setting.json",
-              "src/i18n"
             ],
             "styles": [
               "node_modules/@clr/icons/clr-icons.min.css",

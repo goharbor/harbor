@@ -9,7 +9,7 @@ import { MarkdownModule } from 'ngx-markdown';
 import { IServiceConfig, SERVICE_CONFIG } from "../../entities/service.config";
 import { TranslateHttpLoader } from "@ngx-translate/http-loader";
 import { MyMissingTranslationHandler } from "../../i18n/missing-trans.handler";
-import { TranslatorJsonLoader } from "../../i18n/local-json.loader";
+import { TranslatorJsonDynamicLoader, TranslatorJsonLoader } from '../../i18n/local-json.loader';
 import { ClipboardModule } from "../../components/third-party/ngx-clipboard";
 
 export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig) {
@@ -45,8 +45,7 @@ export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,
-                useFactory: (GeneralTranslatorLoader),
-                deps: [HttpClient, SERVICE_CONFIG]
+                useClass: TranslatorJsonDynamicLoader
             },
             missingTranslationHandler: {
                 provide: MissingTranslationHandler,

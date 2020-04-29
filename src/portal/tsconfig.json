@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "module": "es2015",
+    "module": "esNext",
     "moduleResolution": "node",
     "sourceMap": true,
     "emitDecoratorMetadata": true,
