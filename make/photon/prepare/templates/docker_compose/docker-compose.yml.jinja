@@ -81,6 +81,11 @@ services:
       - type: bind
         source: ./common/config/registryctl/config.yml
         target: /etc/registryctl/config.yml
+{% if gcs_keyfile %}
+      - type: bind
+        source: {{gcs_keyfile}}
+        target: /etc/registry/gcs.key
+{% endif %}
 {%if registry_custom_ca_bundle_path %}
       - type: bind
         source: {{registry_custom_ca_bundle_path}}
