@@ -21,11 +21,12 @@ Resource  ../../resources/Util.robot
 *** Keywords ***
 Go Into Project
     [Arguments]  ${project}  ${has_image}=${true}
+    Sleep  2
+    Retry Element Click  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[1]/a/span
+    Sleep  2
+    Retry Text Input  ${search_input}  ${project}
     :For  ${n}  IN RANGE  1  5
     \    Sleep  2
-    \    Retry Wait Element  ${search_input}
-    \    Retry Clear Element Text  ${search_input}
-    \    Input Text  ${search_input}  ${project}
     \    ${out}  Run Keyword If  ${has_image}==${false}  Retry Double Keywords When Error  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]  DoAssert=${false}
     \    ...  ELSE  Retry Double Keywords When Error  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  Wait Until Element Is Visible And Enabled  xpath=//project-detail//hbr-repository-gridview//clr-dg-cell[contains(.,'${project}/')]  DoAssert=${false}
     \    Log To Console  ${out}

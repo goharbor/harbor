@@ -304,13 +304,6 @@ Click GC Now
     Retry Element Click  xpath=${gc_now_xpath}
     Sleep  2
 
-Click GC Now With Param Delete Untagged Artifacts
-    Sleep  1
-    Retry Element Click    xpath=${checkbox_delete_untagged_artifacts}
-    Sleep  1
-    Retry Element Click    xpath=${gc_now_xpath}
-    Sleep  5
-
 View GC Details
     Retry Element Click  xpath=${gc_log_details_xpath}
     Sleep  2
