@@ -56,5 +56,5 @@ Add A New User
     Retry Text Input  xpath=${newPassword_xpath}  ${newPassword}
     Retry Text Input  xpath=${confirmPassword_xpath}  ${newPassword}
     Retry Text Input  xpath=${comment_xpath}  ${comment}
-    Retry Element Click  xpath=${save_new_user_button}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${save_new_user_button}  Retry Wait Until Page Not Contains Element  xpath=${save_new_user_button}
     Retry Wait Until Page Contains Element  xpath=//harbor-user//clr-dg-row//clr-dg-cell[contains(., '${username}')]
