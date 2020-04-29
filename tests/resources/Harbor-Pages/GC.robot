@@ -29,4 +29,4 @@ GC Now
     Switch To Garbage Collection
     Sleep  1
     Switch To GC History
-    Retry Wait Until Page Contains  Finished
+    Retry Keyword N Times When Error  60  Retry Wait Until Page Contains  Finished
