@@ -7,9 +7,9 @@ By default, users can repeatedly push an image with the same tag to repositories
 
 Moreover, the Docker implementation requires that deleting a tag results in the deletion of all other tags that point to the same digest, causing unwanted image deletions.
 
-To prevent this, Harbor allows you to configure tag immutability at the project level, so that images with certain tags cannot be pushed into Harbor if their tags match existing tags. This prevents existing images from being overwritten. Tag immutability guarantees that an immutable tagged image cannot be deleted, and cannot be altered through repushing, retagging, or replication. 
+To prevent this, Harbor allows you to configure tag immutability at the project level, so that images with certain tags cannot be pushed into Harbor if their tags match existing tags. This prevents existing images from being overwritten. Tag immutability guarantees that an immutable tagged image cannot be deleted, and cannot be altered through repushing, retagging, or replication.
 
-Immutability rules use `OR` logic, so if you set multiple rules and a tag is matched by any of those rules, it is marked as immutable. 
+Immutability rules use `OR` logic, so if you set multiple rules and a tag is matched by any of those rules, it is marked as immutable.
 
 ## How Immutable Tags Prevent Tag Deletion
 
@@ -20,29 +20,31 @@ Tags that share a common digest cannot be deleted even if only a single tag is c
 1. Push `hello-world:v2` to the same project.
 1. In the Harbor interface, attempt to delete `hello-world:v2`.
 
-In this case, you cannot delete `hello-world:v2` because it shares the sha256 digest with `hello-world:v1`, and `hello-world:v1` is an immutable tag. 
+In this case, you cannot delete `hello-world:v2` because it shares the sha256 digest with `hello-world:v1`, and `hello-world:v1` is an immutable tag.
 
 ## Create a Tag Immutability Rule
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
 1. Go to **Projects**, select a project, and select **Tag Immutability**.
 
-    ![Add an immutability rule](../../../img/tag-immutability.png)
+   ![Add an immutability rule](../../img/tag-immutability.png)
 
 1. Click **Add Rule**.
 
-    - In the **Respositories** row, enter a comma-separated list of repositories to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
-    - In the **Tags** row, enter a comma-separated list of tags to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
- 
-      ![Add an immutability rule](../../../img/add-immutability-rule.png)
+   - In the **Respositories** row, enter a comma-separated list of repositories to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
+   - In the **Tags** row, enter a comma-separated list of tags to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
+
+     ![Add an immutability rule](../../img/add-immutability-rule.png)
+
 1. Click **Add** to save the rule.
 
-    You can add a maximum of 15 immutability rules per project. 
+   You can add a maximum of 15 immutability rules per project.
 
-    After you add a rule, any tags that are identified by the rule are marked **Immutable** in the Repositories tab.
-1. To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
+   After you add a rule, any tags that are identified by the rule are marked **Immutable** in the Repositories tab.
 
-    ![Immutability rules](../../../img/edit-tag-immutability.png)
+1. To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule.
+
+   ![Immutability rules](../../img/edit-tag-immutability.png)
 
 ## Example
 

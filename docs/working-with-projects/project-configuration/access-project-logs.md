@@ -13,22 +13,22 @@ Log in to Harbor with a Harbor administrator, project administrator, master, dev
 
 1. Go to **Projects**, select a project, and select **Logs**.
 
-    ![View logs](../../../img/project-logs.png)
+   ![View logs](../../img/project-logs.png)
 
-    All logs for the project are displayed.
+   All logs for the project are displayed.
 
-1. Click the **Search** icon and start typing to filter the logs by name.
- 
-    ![Filter logs](../../../img/log-filter.png)
+2. Click the **Search** icon and start typing to filter the logs by name.
 
-1. Click **Advanced**.
+   ![Filter logs](../../img/log-filter.png)
 
-    ![Advanced log search](../../../img/log-search-advanced.png)
+3. Click **Advanced**.
 
-1. Use the **Operations** drop-down menu to filter by operation type.
+   ![Advanced log search](../../img/log-search-advanced.png)
 
-    ![Search logs by operation type](../../../img/new-project-log.png)
+4. Use the **Operations** drop-down menu to filter by operation type.
 
-1. Click the calendar icons to enter dates between which to search for logs of the types you set in the **Operations** drop-down menu. 
+   ![Search logs by operation type](./../img/new-project-log.png)
 
-    ![Filter logs by date](../../../img/log-search-advanced-date.png)
+5. Click the calendar icons to enter dates between which to search for logs of the types you set in the **Operations** drop-down menu.
+
+   ![Filter logs by date](../../img/log-search-advanced-date.png)

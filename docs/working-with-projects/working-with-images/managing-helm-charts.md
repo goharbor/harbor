@@ -10,12 +10,13 @@ weight: 95
 ### List charts
 
 Click your project to enter the project detail page after successful logging in. The existing helm charts will be listed under the tab `Helm Charts` which is beside the image `Repositories` tab with the following information:
-* Name of helm chart
-* The status of the chart: Active or Deprecated
-* The count of chart versions
-* The created time of the chart
 
-![list charts](../../../img/list-charts.png)
+- Name of helm chart
+- The status of the chart: Active or Deprecated
+- The count of chart versions
+- The created time of the chart
+
+![list charts](../../img/list-charts.png)
 
 You can click the icon buttons on the top right to switch views between card view and list view.
 
@@ -23,7 +24,7 @@ You can click the icon buttons on the top right to switch views between card vie
 
 Click the `UPLOAD` button on the top left to open the chart uploading dialog. Choose the uploading chart from your filesystem. Click the `UPLOAD` button to upload it to the chart repository server.
 
-![upload charts](../../../img/upload-charts.png)
+![upload charts](../../img/upload-charts.png)
 
 If the chart is signed, you can choose the corresponding provenance file from your filesystem and Click the `UPLOAD` button to upload them together at once.
 
@@ -32,45 +33,50 @@ If the chart is successfully uploaded, it will be displayed in the chart list at
 ### List Chart Versions
 
 Clicking the chart name from the chart list will show all the available versions of that chart with the following information:
-* the chart version number
-* the maintainers of the chart version
-* the template engine used (default is gotpl)
-* the created timestamp of the chart version
 
-![list charts versions](../../../img/list-chart-versions.png)
+- the chart version number
+- the maintainers of the chart version
+- the template engine used (default is gotpl)
+- the created timestamp of the chart version
+
+![list charts versions](../../img/list-chart-versions.png)
 
 Obviously, there will be at least 1 version for each of the charts in the top chart list. Same with chart list view, you can also click the icon buttons on the top right to switch views between card view and list view.
 
 Check the checkbox at the 1st column to select the specified chart versions:
-* Click the `DELETE` button to delete all the selected chart versions from the chart repository server. Batch operation is supported.
-* Click the `DOWNLOAD` button to download the chart artifact file. Batch operation is not supported.
-* Click the `UPLOAD` button to upload the new chart version for the current chart
+
+- Click the `DELETE` button to delete all the selected chart versions from the chart repository server. Batch operation is supported.
+- Click the `DOWNLOAD` button to download the chart artifact file. Batch operation is not supported.
+- Click the `UPLOAD` button to upload the new chart version for the current chart
 
 ### Adding Labels to and Removing Labels from Chart Versions
+
 Users who have Harbor system administrator, project administrator or project developer role can click the `ADD LABELS` button to add labels to or remove labels from chart versions.
 
-![add labels to chart versions](../../../img/add-labels-to-chart-versions.png)
-
+![add labels to chart versions](../../img/add-labels-to-chart-versions.png)
 
 ### Filtering Chart Versions by Label
+
 The chart versions can be filtered by labels:
 
-![filter chart versions by labels](../../../img/filter-chart-versions-by-label.png)
+![filter chart versions by labels](./../img/filter-chart-versions-by-label.png)
 
 ### View Chart Version Details
+
 Clicking the chart version number link will open the chart version details view. You can see more details about the specified chart version here. There are three content sections:
-* **Summary:**
-  * readme of the chart
-  * overall metadata like home, created timestamp and application version
-  * related helm commands for reference, such as `helm add repo` and `helm install` etc.
-![chart details](../../../img/chart-details.png)
-* **Dependencies:**
-  * list all the dependant sun charts with 'name', 'version' and 'repository' fields
-![chart dependencies](../../../img/chart-dependencies.png)
-* **Values:**
-  * display the content from `values.yaml` file with highlight code preview
-  * clicking the icon buttons on the top right to switch the yaml file view to k-v value pair list view
-![chart values](../../../img/chart-values.png)
+
+- **Summary:**
+  - readme of the chart
+  - overall metadata like home, created timestamp and application version
+  - related helm commands for reference, such as `helm add repo` and `helm install` etc.
+    ![chart details](../../img/chart-details.png)
+- **Dependencies:**
+  - list all the dependant sun charts with 'name', 'version' and 'repository' fields
+    ![chart dependencies](../../img/chart-dependencies.png)
+- **Values:**
+  - display the content from `values.yaml` file with highlight code preview
+  - clicking the icon buttons on the top right to switch the yaml file view to k-v value pair list view
+    ![chart values](../../img/chart-values.png)
 
 Clicking the `DOWNLOAD` button on the top right will start the downloading process.
 
@@ -89,25 +95,25 @@ helm version
 
 Before working, Harbor should be added into the repository list with `helm repo add` command. Two different modes are supported.
 
-* Add Harbor as a unified single index entry point
+- Add Harbor as a unified single index entry point
 
-    With this mode Helm can be made aware of all the charts located in different projects and which are accessible by the currently authenticated user.
+  With this mode Helm can be made aware of all the charts located in different projects and which are accessible by the currently authenticated user.
 
-    ```sh
-    helm repo add --ca-file ca.crt --username=admin --password=Passw0rd myrepo https://xx.xx.xx.xx/chartrepo
-    ```
+  ```sh
+  helm repo add --ca-file ca.crt --username=admin --password=Passw0rd myrepo https://xx.xx.xx.xx/chartrepo
+  ```
 
-   {{< note >}}
-   Providing both a CA file and cert files is necessary due to an issue in Helm.
-   {{< /note >}}
+  {{< note >}}
+  Providing both a CA file and cert files is necessary due to an issue in Helm.
+  {{< /note >}}
 
-* Add Harbor project as separate index entry point
+- Add Harbor project as separate index entry point
 
-    With this mode, Helm can only pull charts in the specified project.
+  With this mode, Helm can only pull charts in the specified project.
 
-    ```sh
-    helm repo add --ca-file ca.crt --username=admin --password=Passw0rd myrepo https://xx.xx.xx.xx/chartrepo/myproject
-    ```
+  ```sh
+  helm repo add --ca-file ca.crt --username=admin --password=Passw0rd myrepo https://xx.xx.xx.xx/chartrepo/myproject
+  ```
 
 ### Push Charts to the Repository Server with the CLI
 
@@ -136,7 +142,7 @@ Search the chart with the keyword if you're not sure where it is:
 ```sh
 helm search hello
 
-#NAME                            CHART VERSION   APP VERSION     DESCRIPTION                
+#NAME                            CHART VERSION   APP VERSION     DESCRIPTION
 #local/hello-helm                0.3.10          1.3             A Helm chart for Kubernetes
 #myrepo/chart_repo/hello-helm    0.1.10          1.2             A Helm chart for Kubernetes
 #myrepo/library/hello-helm       0.3.10          1.3             A Helm chart for Kubernetes
@@ -149,4 +155,3 @@ helm install --ca-file=ca.crt --username=admin --password=Passw0rd --version 0.1
 ```
 
 For other more helm commands like how to sign a chart, please refer to the [helm doc](https://docs.helm.sh/helm/#helm).
-

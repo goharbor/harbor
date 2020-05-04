@@ -3,19 +3,19 @@ title: Create Tag Retention Rules
 weight: 80
 ---
 
-A repository can rapidly accumulate a large number of image tags, many of which might not be required after a given time or once they have been superseded by a subsequent image build. These excess tags can obviously consume large quantities of storage capacity. As a Harbor system administrator, you can define rules that govern how many tags of a given repository to retain, or for how long to retain certain tags. 
+A repository can rapidly accumulate a large number of image tags, many of which might not be required after a given time or once they have been superseded by a subsequent image build. These excess tags can obviously consume large quantities of storage capacity. As a Harbor system administrator, you can define rules that govern how many tags of a given repository to retain, or for how long to retain certain tags.
 
 ## How Tag Retention Rules Work
 
-You define tag retention rules on repositories, not on projects. This allows for greater granularity when defining your retention rules. As the name suggests, when you define a retention rule for a repository, you are identifying which tags to retain. You do not define rules to explicitly remove tags. Rather, when you set a rule, any tags in a repository that are not identified as being eligible for retention are discarded. 
+You define tag retention rules on repositories, not on projects. This allows for greater granularity when defining your retention rules. As the name suggests, when you define a retention rule for a repository, you are identifying which tags to retain. You do not define rules to explicitly remove tags. Rather, when you set a rule, any tags in a repository that are not identified as being eligible for retention are discarded.
 
 A tag retention rule has 3 filters that are applied sequentially, as described in the following table.
 
-|Order|Filter|Description|
-|---|---|---|
-|First|Repository or repositories|Identify the repository or repositories on which to apply the rule. You can identify repositories that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards (for example `*repo`, `repo*`, and `**`) are permitted. The repository filter is applied first to mark the repositories to which to apply the retention rule. The identified repositories are earmarked for further matching based on the tag criteria. No action is taken on the nonspecified repositories at this stage.|
-|Second|Quantity to retain|Set which tags to retain either by specifying a maximum number of tags, or by specifying a maximum period for which to retain tags.|
-|Third|Tags to retain|Identify the tag or tags on which to apply the rule. You can identify tags that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards (for example `*tag`, `tag*`, and `**`) are permitted.|
+| Order  | Filter                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------ | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| First  | Repository or repositories | Identify the repository or repositories on which to apply the rule. You can identify repositories that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards (for example `*repo`, `repo*`, and `**`) are permitted. The repository filter is applied first to mark the repositories to which to apply the retention rule. The identified repositories are earmarked for further matching based on the tag criteria. No action is taken on the nonspecified repositories at this stage. |
+| Second | Quantity to retain         | Set which tags to retain either by specifying a maximum number of tags, or by specifying a maximum period for which to retain tags.                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Third  | Tags to retain             | Identify the tag or tags on which to apply the rule. You can identify tags that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards (for example `*tag`, `tag*`, and `**`) are permitted.                                                                                                                                                                                                                                                                                             |
 
 For information about how the `**` wildcard is applied, see https://github.com/bmatcuk/doublestar#patterns.
 
@@ -72,12 +72,12 @@ This example uses a different repository to the previous examples.
 
 - You have a repository that has 12 tags:
 
-  |Production|Release Candidate|Release|
-  |---|---|---|
-  |`2.1-your_repo-prod`|`2.1-your_repo-rc`|`2.1-your_repo-release`|
-  |`2.2-your_repo-prod`|`2.2-your_repo-rc`|`2.2-your_repo-release`|
-  |`3.1-your_repo-prod`|`3.1-your_repo-rc`|`3.1-your_repo-release`|
-  |`4.4-your_repo-prod`|`4.4-your_repo-rc`|`4.4-your_repo-release`| 
+  | Production           | Release Candidate  | Release                 |
+  | -------------------- | ------------------ | ----------------------- |
+  | `2.1-your_repo-prod` | `2.1-your_repo-rc` | `2.1-your_repo-release` |
+  | `2.2-your_repo-prod` | `2.2-your_repo-rc` | `2.2-your_repo-release` |
+  | `3.1-your_repo-prod` | `3.1-your_repo-rc` | `3.1-your_repo-release` |
+  | `4.4-your_repo-prod` | `4.4-your_repo-rc` | `4.4-your_repo-release` |
 
 - You define three tag retention rules on this repository:
   - Retain the 10 most recently pushed image tags that start with `2`.
@@ -96,7 +96,7 @@ In this example, the rules are applied to the following 7 tags:
 
 ## How Tag Retention Rules Interact with Project Quotas
 
-The Harbor system administrator can set a maximum on the number of tags that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Configure Project Quotas](../../administration/configure-project-quotas/_index.md). 
+The Harbor system administrator can set a maximum on the number of tags that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Configure Project Quotas](../../administration/configure-project-quotas/_index.md).
 
 If you set a quota on a project, this quota cannot be exceeded. The quota is applied to a project even if you set a retention rule that would exceed it. In other words, you cannot use retention rules to bypass quotas.
 
@@ -105,56 +105,60 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
 1. Go to **Projects**, select a project, and select **Tag Retention**.
 
-   ![Tag options](../../../img/tag-retention1.png)
+   ![Tag options](../../img/tag-retention1.png)
+
 1. Click **Add Rule** to add a rule.
 1. In the **Repositories** drop-down menu, select **matching** or **excluding**.
-  ![Select repositories](../../../img/tag-retention2.png)
+   ![Select repositories](../../img/tag-retention2.png)
 1. In the **Repositories** text box, identify the repositories on which to apply the rule.
-  
+
    You can define the repositories on which to apply the rule by entering the following information:
-  
+
    - A repository name, for example `my_repo_1`.
    - A comma-separated list of repository names, for example `my_repo_1,my_repo_2,your_repo_3`.
    - A partial repository name with wildcards, for example `my_*`, `*_3`, or `*_repo_*`.
-   - `**` to apply the rule to all of the repositories in the project. 
-  
+   - `**` to apply the rule to all of the repositories in the project.
+
    If you selected **matching**, the rule is applied to the repositories you identified. If you selected **excluding**, the rule is applied to all of the repositories in the project except for the ones that you identified.
+
 1. In the **By image count or number of days** drop-down menu, define how many tags to retain or the period to retain tags.
-  ![Select retention criteria](../../../img/tag-retention3.png)
-  
-   |Option|Description|
-   |---|---|
-   |**retain the most recently pushed # images**|Enter the maximum number of images to retain, keeping the ones that have been pushed most recently. There is no maximum age for an image.|
-   |**retain the most recently pulled # images**|Enter the maximum number of images to retain, keeping only the ones that have been pulled recently. There is no maximum age for an image.|
-   |**retain the images pushed within the last # days**|Enter the number of days to retain images, keeping only the ones that have been pushed during this period. There is no maximum number of images.|
-   |**retain the images pulled within the last # days**|Enter the number of days to retain images, keeping only the ones that have been pulled during this period. There is no maximum number of images.|
-   |**retain always**|Always retain the images identified by this rule.| 
+   ![Select retention criteria](../../img/tag-retention3.png)
+
+   | Option                                              | Description                                                                                                                                      |
+   | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+   | **retain the most recently pushed # images**        | Enter the maximum number of images to retain, keeping the ones that have been pushed most recently. There is no maximum age for an image.        |
+   | **retain the most recently pulled # images**        | Enter the maximum number of images to retain, keeping only the ones that have been pulled recently. There is no maximum age for an image.        |
+   | **retain the images pushed within the last # days** | Enter the number of days to retain images, keeping only the ones that have been pushed during this period. There is no maximum number of images. |
+   | **retain the images pulled within the last # days** | Enter the number of days to retain images, keeping only the ones that have been pulled during this period. There is no maximum number of images. |
+   | **retain always**                                   | Always retain the images identified by this rule.                                                                                                |
 
 1. In the **Tags** drop-down menu, select **matching** or **excluding**.
 1. In the **Tags** text box, identify the tags on which to apply the rule.
-  
+
    You can define the tags on which to apply the rule by entering the following information:
-  
+
    - A tag name, for example `my_tag_1`.
    - A comma-separated list of tag names, for example `my_tag_1,my_tag_2,your_tag_3`.
    - A partial tag name with wildcards, for example `my_*`, `*_3`, or `*_tag_*`.
-   - `**` to apply the rule to all of the tags in the project. 
-  
+   - `**` to apply the rule to all of the tags in the project.
+
    If you selected **matching**, the rule is applied to the tags you identified. If you selected **excluding**, the rule is applied to all of the tags in the repository except for the ones that you identified.
+
 1. Click **Add** to save the rule.
 1. (Optional) Click **Add Rule** to add more rules, up to a maximum of 15 per project.
 1. (Optional) Under Schedule, click **Edit** and select how often to run the rule.
 
-   ![Select retention criteria](../../../img/tag-retention4.png)
-   
-   If you select **Custom**, enter a cron job command to schedule the rule. 
-  
-   **NOTE**: If you define multiple rules, the schedule is applied to all of the rules. You cannot schedule different rules to run at different times. 
+   ![Select retention criteria](../../img/tag-retention4.png)
+
+   If you select **Custom**, enter a cron job command to schedule the rule.
+
+   **NOTE**: If you define multiple rules, the schedule is applied to all of the rules. You cannot schedule different rules to run at different times.
+
 1. Click **Dry Run** to test the rule or rules that you have defined.
 1. Click **Run Now** to run the rule immediately.
 
-**WARNING**: You cannot revert a rule after you run it. It is strongly recommended to perform a dry run before you run rules. 
+**WARNING**: You cannot revert a rule after you run it. It is strongly recommended to perform a dry run before you run rules.
 
-To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
+To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule.
 
-![Modify tag retention rules](../../../img/tag-retention5.png)
+![Modify tag retention rules](../../img/tag-retention5.png)
