@@ -34,6 +34,7 @@ be added to this list as they transition to production deployments.
 <a href="https://www.163yun.com" target="_blank" border="0"><img alt="Netease Cloud" src="docs/adopters/wangyi.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="http://www.yanrongyun.com" target="_blank" border="0"><img alt="Yanrongyun" src="docs/adopters/Yanrong.jpg" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://anchore.com" target="_blank" border="0"><img alt="Anchore" src="docs/adopters/anchore_logo.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://www.payvision.com" target="_blank" border="0"><img alt="Payvision" src="docs/adopters/payvision.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 
 ## Success Stories
 **JD.com:** Harbor is the registry service of JD.com’s JDOS
