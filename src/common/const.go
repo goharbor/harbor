@@ -106,7 +106,9 @@ const (
 	OIDCClientSecret                 = "oidc_client_secret"
 	OIDCVerifyCert                   = "oidc_verify_cert"
 	OIDCGroupsClaim                  = "oidc_groups_claim"
+	OIDCAutoOnboard                  = "oidc_auto_onboard"
 	OIDCScope                        = "oidc_scope"
+	OIDCUserClaim                    = "oidc_user_claim"
 
 	CfgDriverDB                       = "db"
 	NewHarborAdminName                = "admin@harbor.local"
