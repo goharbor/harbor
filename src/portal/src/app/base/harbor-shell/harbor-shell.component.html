@@ -81,19 +81,15 @@
                 </clr-vertical-nav-group>
             </div>
             <div>
-            <div class="vertical-nav-footer">
-                <ng-container *ngFor="let theme of themeArray;let i=index">
-                    <ng-container *ngIf="theme.showStyle === styleMode">
-                        <a class="nav-link nav-icon theme-select"
-                           (click)="themeChanged(theme)">
-                            <clr-icon size="20" *ngIf="styleMode ==='DARK'" shape="sun" class="is-solid"></clr-icon>
-                            <clr-icon size="20" *ngIf="styleMode ==='LIGHT'" shape="moon" class="is-solid"></clr-icon>
+            <ng-container *ngFor="let theme of themeArray;let i=index">
+                 <ng-container *ngIf="theme.showStyle === styleMode">
+                        <a clrVerticalNavLink (click)="themeChanged(theme)">
+                            <clr-icon clrVerticalNavIcon size="20" *ngIf="styleMode ==='DARK'" shape="sun" class="is-solid"></clr-icon>
+                            <clr-icon clrVerticalNavIcon size="20" *ngIf="styleMode ==='LIGHT'" shape="moon" class="is-solid"></clr-icon>
                             {{ theme.text | translate }}
                         </a>
-                    </ng-container>
-                </ng-container>
-            </div>
-
+                  </ng-container>
+            </ng-container>
             <clr-vertical-nav-group routerLinkActive="active">
                 <clr-icon shape="network-globe" clrVerticalNavIcon></clr-icon>
                 {{'SIDE_NAV.API_EXPLORER' | translate}}
