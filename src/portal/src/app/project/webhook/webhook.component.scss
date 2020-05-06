@@ -39,3 +39,50 @@
     justify-content: center;
     align-items: center;
 }
+.cell {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+.font-size-20 {
+    font-size: 20px;
+}
+.action-head-pos {
+    padding-right: 18px;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.min-width-340 {
+    min-width: 340px!important;
+}
+.margin-left-10 {
+    margin-left: 10px;
+}
+.event-types {
+    padding-right: 14px;
+}
+.bar-state {
+    width: 100%;
+}
+.label-flex {
+    width: 100%;
+    letter-spacing: 0em;
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border: 1px solid;
+    border-radius: 9px;
+    padding: 0 7px 0px 10px;
+    text-align: center;
+}
+
+.ellipsis-btn {
+    min-width: 20px;
+    letter-spacing: 0px;
+    margin: 0;
+    margin-top: -0.4rem;
+}

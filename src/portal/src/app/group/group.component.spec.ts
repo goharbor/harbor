@@ -9,7 +9,7 @@ import { GroupService } from "./group.service";
 import { of } from "rxjs";
 import { ConfirmationDialogService } from "./../shared/confirmation-dialog/confirmation-dialog.service";
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-import { AppConfigService } from '../app-config.service';
+import { AppConfigService } from '../services/app-config.service';
 import { OperationService } from "../../lib/components/operation/operation.service";
 
 describe('GroupComponent', () => {

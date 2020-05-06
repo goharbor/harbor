@@ -18,21 +18,22 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetPolicies(t *testing.T) {
 
-	rbacPolicy := &rbac.Policy{
+	rbacPolicy := &types.Policy{
 		Resource: "/project/libray/repository",
 		Action:   "pull",
 	}
-	policies := []*rbac.Policy{}
+	policies := []*types.Policy{}
 	policies = append(policies, rbacPolicy)
 
 	robot := robot{
 		username:  "test",
-		namespace: rbac.NewProjectNamespace(1, false),
+		namespace: rbac.NewProjectNamespace(1),
 		policies:  policies,
 	}
 
@@ -42,13 +43,13 @@ func TestGetPolicies(t *testing.T) {
 }
 
 func TestNewRobot(t *testing.T) {
-	policies := []*rbac.Policy{
-		{Resource: "/project/1/repository", Action: "pull"},
+	policies := []*types.Policy{
+		{Resource: "/project/1/repository", Action: "push"},
 		{Resource: "/project/1/repository", Action: "scanner-pull"},
 		{Resource: "/project/library/repository", Action: "pull"},
 		{Resource: "/project/library/repository", Action: "push"},
 	}
 
-	robot := NewRobot("test", rbac.NewProjectNamespace(1, false), policies)
-	assert.Len(t, robot.GetPolicies(), 2)
+	robot := NewRobot("test", rbac.NewProjectNamespace(1), policies)
+	assert.Len(t, robot.GetPolicies(), 3)
 }

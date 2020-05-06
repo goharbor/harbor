@@ -25,11 +25,11 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	common_job "github.com/goharbor/harbor/src/common/job"
 	common_models "github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/core/api/models"
 	utils_core "github.com/goharbor/harbor/src/core/utils"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // AJAPI manages the CRUD of admin job and its schedule, any API wants to handle manual and cron job like ScanAll and GC cloud reuse it.
@@ -133,7 +133,7 @@ func (aj *AJAPI) list(name string) {
 
 // getSchedule gets admin job schedule ...
 func (aj *AJAPI) getSchedule(name string) {
-	adminJobSchedule := models.AdminJobSchedule{}
+	result := models.AdminJobRep{}
 
 	jobs, err := dao.GetAdminJobs(&common_models.AdminJobQuery{
 		Name: name,
@@ -154,10 +154,11 @@ func (aj *AJAPI) getSchedule(name string) {
 			aj.SendInternalServerError(fmt.Errorf("failed to convert admin job response: %v", err))
 			return
 		}
-		adminJobSchedule.Schedule = adminJobRep.Schedule
+		result.Schedule = adminJobRep.Schedule
+		result.Parameters = adminJobRep.Parameters
 	}
 
-	aj.Data["json"] = adminJobSchedule
+	aj.Data["json"] = result
 	aj.ServeJSON()
 }
 
@@ -285,9 +286,10 @@ func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
 	}
 
 	id, err := dao.AddAdminJob(&common_models.AdminJob{
-		Name: ajr.Name,
-		Kind: ajr.JobKind(),
-		Cron: ajr.CronString(),
+		Name:       ajr.Name,
+		Kind:       ajr.JobKind(),
+		Cron:       ajr.CronString(),
+		Parameters: ajr.ParamString(),
 	})
 	if err != nil {
 		aj.SendInternalServerError(err)
@@ -345,6 +347,7 @@ func convertToAdminJobRep(job *common_models.AdminJob) (models.AdminJobRep, erro
 		Name:         job.Name,
 		Kind:         job.Kind,
 		Status:       job.Status,
+		Parameters:   job.Parameters,
 		CreationTime: job.CreationTime,
 		UpdateTime:   job.UpdateTime,
 	}

@@ -16,6 +16,7 @@ Create A Robot Account And Return Token
     Switch To Project Robot Account
     Retry Element Click    ${project_robot_account_create_btn}
     Retry Text Input    ${project_robot_account_create_name_input}    ${robot_account_name}
+    Retry Element Click    ${project_robot_account_never_expired_chkbox}
     Retry Double Keywords When Error    Retry Element Click    ${project_robot_account_create_save_btn}    Retry Wait Until Page Not Contains Element    ${project_robot_account_create_save_btn}
     ${token}=    Get Value    ${project_robot_account_token_input}
     [Return]    ${token}

@@ -10,6 +10,7 @@ import {SystemCVEWhitelist, SystemInfo} from '../../services/interface';
 import { Project } from './project';
 import { UserPermissionService } from '../../services/permission.service';
 import { of } from 'rxjs';
+import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 const mockSystemInfo: SystemInfo[] = [
   {
@@ -80,8 +81,8 @@ const mockSystemWhitelist: SystemCVEWhitelist = {
   "project_id": 0
 };
 const config: IServiceConfig = {
-  projectPolicyEndpoint: '/api/projects/testing',
-  systemInfoEndpoint: '/api/systeminfo/testing',
+  projectPolicyEndpoint: CURRENT_BASE_HREF + '/projects/testing',
+  systemInfoEndpoint: CURRENT_BASE_HREF + '/systeminfo/testing',
 };
 const projectService = {
   getProject() {

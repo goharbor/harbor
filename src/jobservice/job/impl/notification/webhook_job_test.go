@@ -1,7 +1,7 @@
 package notification
 
 import (
-	"github.com/goharbor/harbor/src/jobservice/job/impl"
+	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -35,6 +35,11 @@ func TestValidate(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
+	ctx := &mockjobservice.MockJobContext{}
+	logger := &mockjobservice.MockJobLogger{}
+
+	ctx.On("GetLogger").Return(logger)
+
 	rep := &WebhookJob{}
 
 	// test webhook request
@@ -57,7 +62,7 @@ func TestRun(t *testing.T) {
 		"auth_header":      "auth_test",
 	}
 	// test correct webhook response
-	assert.Nil(t, rep.Run(&impl.Context{}, params))
+	assert.Nil(t, rep.Run(ctx, params))
 
 	tsWrong := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -71,5 +76,5 @@ func TestRun(t *testing.T) {
 		"auth_header":      "auth_test",
 	}
 	// test incorrect webhook response
-	assert.NotNil(t, rep.Run(&impl.Context{}, paramsWrong))
+	assert.NotNil(t, rep.Run(ctx, paramsWrong))
 }

@@ -1,0 +1,29 @@
+<h4>{{'WEBHOOK.LAST_TRIGGER' | translate}}</h4>
+<clr-datagrid>
+    <clr-dg-column [clrDgField]="'event_type'">{{'WEBHOOK.TYPE' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'WEBHOOK.STATUS' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'WEBHOOK.LAST_TRIGGERED' | translate}}</clr-dg-column>
+    <clr-dg-row *clrDgItems="let item of lastTriggers">
+        <clr-dg-cell>{{eventTypeToText(item.event_type)}}</clr-dg-cell>
+        <clr-dg-cell [ngSwitch]="item.enabled">
+            <div *ngSwitchCase="true" class="icon-wrap">
+                <clr-icon shape="check-circle" size="20" class="is-success enabled-icon"></clr-icon>
+                <span>{{'WEBHOOK.ENABLED' | translate}}</span>
+            </div>
+            <div *ngSwitchCase="false" class="icon-wrap">
+                <clr-icon shape="exclamation-triangle" size="20" class="is-warning"></clr-icon>
+                <span>{{'WEBHOOK.DISABLED' | translate}}</span>
+            </div>
+        </clr-dg-cell>
+        <clr-dg-cell>{{item.last_trigger_time | date: 'short'}}</clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-placeholder>
+        {{'WEBHOOK.NO_TRIGGER' | translate}}
+    </clr-dg-placeholder>
+    <clr-dg-footer>
+        <span *ngIf="lastTriggers.length">1 - {{lastTriggers.length}} {{'WEBHOOK.OF' | translate}} </span> {{lastTriggers.length}} {{'WEBHOOK.ITEMS' | translate}}
+        <clr-dg-pagination [clrDgPageSize]="10"></clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>
+
+

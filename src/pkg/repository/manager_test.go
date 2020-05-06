@@ -17,7 +17,7 @@ package repository
 import (
 	"context"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -51,6 +51,10 @@ func (f *fakeDao) Update(ctx context.Context, repository *models.RepoRecord, pro
 	args := f.Called()
 	return args.Error(0)
 }
+func (f *fakeDao) AddPullCount(ctx context.Context, id int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
 
 type managerTestSuite struct {
 	suite.Suite
@@ -65,18 +69,22 @@ func (m *managerTestSuite) SetupTest() {
 	}
 }
 
+func (m *managerTestSuite) TestCount() {
+	m.dao.On("Count", mock.Anything).Return(1, nil)
+	total, err := m.mgr.Count(nil, nil)
+	m.Require().Nil(err)
+	m.Equal(int64(1), total)
+}
+
 func (m *managerTestSuite) TestList() {
 	repository := &models.RepoRecord{
 		RepositoryID: 1,
 		ProjectID:    1,
 		Name:         "library/hello-world",
 	}
-	m.dao.On("Count", mock.Anything).Return(1, nil)
 	m.dao.On("List", mock.Anything).Return([]*models.RepoRecord{repository}, nil)
-	total, repositories, err := m.mgr.List(nil, nil)
+	repositories, err := m.mgr.List(nil, nil)
 	m.Require().Nil(err)
-	m.dao.AssertExpectations(m.T())
-	m.Equal(int64(1), total)
 	m.Equal(1, len(repositories))
 	m.Equal(repository.RepositoryID, repositories[0].RepositoryID)
 }
@@ -101,7 +109,6 @@ func (m *managerTestSuite) TestGetByName() {
 		ProjectID:    1,
 		Name:         "library/hello-world",
 	}
-	m.dao.On("Count", mock.Anything).Return(1, nil)
 	m.dao.On("List", mock.Anything).Return([]*models.RepoRecord{repository}, nil)
 	repo, err := m.mgr.GetByName(nil, "library/hello-world")
 	m.Require().Nil(err)
@@ -133,6 +140,13 @@ func (m *managerTestSuite) TestUpdate() {
 	err := m.mgr.Update(nil, &models.RepoRecord{
 		RepositoryID: 1,
 	})
+	m.Require().Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestAddPullCount() {
+	m.dao.On("AddPullCount", mock.Anything).Return(nil)
+	err := m.mgr.AddPullCount(nil, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }

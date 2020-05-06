@@ -17,9 +17,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
+	"testing"
+	"time"
+
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/goharbor/harbor/src/jobservice/worker"
@@ -27,9 +33,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"sync"
-	"testing"
-	"time"
 )
 
 // CWorkerTestSuite tests functions of c worker
@@ -50,6 +53,7 @@ type CWorkerTestSuite struct {
 func (suite *CWorkerTestSuite) SetupSuite() {
 	suite.namespace = tests.GiveMeTestNamespace()
 	suite.pool = tests.GiveMeRedisPool()
+	common_dao.PrepareTestForPostgresSQL()
 
 	// Append node ID
 	vCtx := context.WithValue(context.Background(), utils.NodeID, utils.GenerateNodeID())
@@ -61,6 +65,7 @@ func (suite *CWorkerTestSuite) SetupSuite() {
 		SystemContext: ctx,
 		WG:            new(sync.WaitGroup),
 		ErrorChan:     make(chan error, 1),
+		JobContext:    impl.NewDefaultContext(ctx),
 	}
 	suite.context = envCtx
 
@@ -85,8 +90,6 @@ func (suite *CWorkerTestSuite) SetupSuite() {
 // TearDownSuite clears the test suite
 func (suite *CWorkerTestSuite) TearDownSuite() {
 	suite.cancel()
-
-	suite.context.WG.Wait()
 
 	conn := suite.pool.Get()
 	defer func() {
@@ -185,26 +188,24 @@ func (suite *CWorkerTestSuite) TestStopJob() {
 
 	genericJob, err := suite.cWorker.Enqueue("fake_long_run_job", params, false, "")
 	require.NoError(suite.T(), err, "enqueue job: nil error expected but got %s", err)
-	t, err := suite.lcmCtl.New(genericJob)
+	_, err = suite.lcmCtl.New(genericJob)
 	require.NoError(suite.T(), err, "new job stats: nil error expected but got %s", err)
 
-	tk := time.NewTicker(500 * time.Millisecond)
-	defer tk.Stop()
+	/*
+		// Check if the job is running
+		times := 20
+		sleep := 500 * time.Millisecond
 
-LOOP:
-	for {
-		select {
-		case <-tk.C:
-			latest, err := t.Status()
-			require.NoError(suite.T(), err, "get latest status: nil error expected but got %s", err)
-			if latest.Compare(job.RunningStatus) == 0 {
-				break LOOP
+		for times > 0 {
+			st, err := t.Status()
+			require.NoError(suite.T(), err, "retrieve enqueued job status")
+			if st.Compare(job.RunningStatus) >= 0 {
+				break
 			}
-		case <-time.After(30 * time.Second):
-			require.NoError(suite.T(), errors.New("check running status time out"))
-			break LOOP
-		}
-	}
+
+			times--
+			time.Sleep(sleep)
+		}*/
 
 	err = suite.cWorker.StopJob(genericJob.Info.JobID)
 	require.NoError(suite.T(), err, "stop job: nil error expected but got %s", err)
@@ -212,7 +213,7 @@ LOOP:
 	// Stop scheduled job
 	scheduledJob, err := suite.cWorker.Schedule("fake_long_run_job", params, 120, false, "")
 	require.NoError(suite.T(), err, "schedule job: nil error expected but got %s", err)
-	t, err = suite.lcmCtl.New(scheduledJob)
+	_, err = suite.lcmCtl.New(scheduledJob)
 	require.NoError(suite.T(), err, "new job stats: nil error expected but got %s", err)
 
 	err = suite.cWorker.StopJob(scheduledJob.Info.JobID)
@@ -223,6 +224,10 @@ type fakeJob struct{}
 
 func (j *fakeJob) MaxFails() uint {
 	return 3
+}
+
+func (j *fakeJob) MaxCurrency() uint {
+	return 0
 }
 
 func (j *fakeJob) ShouldRetry() bool {
@@ -250,6 +255,10 @@ type fakeLongRunJob struct{}
 
 func (j *fakeLongRunJob) MaxFails() uint {
 	return 3
+}
+
+func (j *fakeLongRunJob) MaxCurrency() uint {
+	return 0
 }
 
 func (j *fakeLongRunJob) ShouldRetry() bool {

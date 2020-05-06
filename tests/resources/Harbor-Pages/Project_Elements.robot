@@ -26,7 +26,7 @@ ${project_replication_xpath}  //project-detail//a[contains(.,'Replication')]
 ${project_log_xpath}  //project-detail//a[contains(.,'Logs')]
 ${project_member_xpath}  //project-detail//a[contains(.,'Members')]
 ${project_config_tabsheet}  xpath=//project-detail//a[contains(.,'Configuration')]
-${project_tag_strategy_xpath}  //clr-tabs//a[contains(.,'Tag')]
+${project_tag_strategy_xpath}  //clr-tabs//a[contains(.,'Policy')]
 ${project_tab_overflow_btn}  //clr-tabs//li//button[contains(@class,"dropdown-toggle")]
 
 ${project_tag_immutability_switch}  //project-detail/app-tag-feature-integration//label/a[contains(.,'Tag Immutability')]
@@ -39,8 +39,8 @@ ${repo_delete_confirm_btn}  xpath=//clr-modal//button[2]
 ${repo_retag_confirm_dlg}  css=${modal-dialog}
 ${repo_delete_on_card_view_btn}  //clr-modal//button[contains(.,'DELETE')]
 ${delete_btn}  //button[contains(.,'Delete')]
-${repo_delete_btn}  xpath=//repository//button[contains(.,'Delete')]
-${project_delete_btn}  xpath=//list-project//clr-datagrid//button[contains(.,'Delete')]
+${repo_delete_btn}  xpath=//hbr-repository-gridview//button[contains(.,'Delete')]
+${project_delete_btn}  xpath=//button[@id='delete-project']
 ${tag_delete_btn}  xpath=//tag-repository//clr-datagrid//button[contains(.,'Delete')]
 ${user_delete_btn}  xpath=/clr-dropdown-menu//button[contains(.,'Delete')]
 ${repo_search_icon}  xpath=//hbr-filter//clr-icon
@@ -50,12 +50,14 @@ ${repo_list_spinner}  xpath=//clr-datagrid//clr-spinner
 #${repo_search_input}  xpath=//div[@class[contains(.,'datagrid-filter')]]//input
 ${repo_tag_1st_checkbox}  xpath=//clr-datagrid//clr-dg-row//clr-checkbox-wrapper
 ${tag_table_column_pull_command}  xpath=//clr-dg-column//span[contains(.,'Pull Command')]
+${tag_table_column_vulnerabilities}  xpath=//clr-dg-column//span[contains(.,'Vulnerabilities')]
+${tag_table_column_os_arch}  xpath=//clr-dg-column//span[contains(.,'OS/ARCH')]
 ${tag_table_column_tag}  xpath=//clr-dg-column//span[contains(.,'Tag')]
 ${tag_table_column_size}  xpath=//clr-dg-column//span[contains(.,'Size')]
 ${tag_table_column_vulnerability}  xpath=//clr-dg-column//span[contains(.,'Vulnerability')]
 ${tag_images_btn}  xpath=//hbr-repository//button[contains(.,'Images')]
 ${project_member_action_xpath}  xpath=//*[@id='member-action']
-${project_member_set_role_xpath}  xpath=//clr-dropdown-menu//label[contains(.,'SET ROLE')]
+${project_member_set_role_xpath}  xpath=//clr-dropdown-menu//label[contains(.,'Set Role')]
 ${project_config_public_checkbox}  xpath=//input[@name='public']
 ${project_config_content_trust_checkbox}  xpath=//input[@name='content-trust']
 ${project_config_scan_images_on_push_checkbox}  xpath=//input[@name='scan-image-on-push']
@@ -65,6 +67,8 @@ ${project_config_public_checkbox_label}  xpath=//*[@id="clr-wrapper-public"]/div
 ${project_config_prevent_vulenrability_checkbox_label}    xpath=//*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
 ${project_config_system_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'System whitelist')]
 ${project_config_project_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'Project whitelist')]
+${project_config_system_wl_radio_input_id}    systemWhitelistOrProjectWhitelist
+${project_config_project_wl_radio_input_id}    systemWhitelistOrProjectWhitelist
 ${project_config_project_wl_add_btn}    xpath=//*[@id='show-add-modal']
 ${project_config_project_wl_add_confirm_btn}    xpath=//*[@id='add-to-whitelist']
 ${project_config_save_btn}    xpath=//hbr-project-policy-config//button[contains(.,'SAVE')]

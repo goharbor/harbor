@@ -26,9 +26,9 @@ import (
 	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/secret"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
@@ -217,12 +217,21 @@ func SelfRegistration() (bool, error) {
 
 // RegistryURL ...
 func RegistryURL() (string, error) {
-	return cfgMgr.Get(common.RegistryURL).GetString(), nil
+	url := os.Getenv("REGISTRY_URL")
+	if len(url) == 0 {
+		url = "http://registry:5000"
+	}
+	return url, nil
 }
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
 	return strings.TrimSuffix(cfgMgr.Get(common.JobServiceURL).GetString(), "/")
+}
+
+// GetCoreURL returns the url of core from env
+func GetCoreURL() string {
+	return os.Getenv("CORE_URL")
 }
 
 // InternalCoreURL returns the local harbor core url
@@ -344,6 +353,16 @@ func ClairAdapterEndpoint() string {
 	return cfgMgr.Get(common.ClairAdapterURL).GetString()
 }
 
+// WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.
+func WithTrivy() bool {
+	return cfgMgr.Get(common.WithTrivy).GetBool()
+}
+
+// TrivyAdapterURL returns the endpoint URL of a Trivy adapter instance, by default it's the one deployed within Harbor.
+func TrivyAdapterURL() string {
+	return cfgMgr.Get(common.TrivyAdapterURL).GetString()
+}
+
 // UAASettings returns the UAASettings to access UAA service.
 func UAASettings() (*models.UAASettings, error) {
 	err := cfgMgr.Load()
@@ -395,7 +414,7 @@ func GetPortalURL() string {
 
 // GetRegistryCtlURL returns the URL of registryctl
 func GetRegistryCtlURL() string {
-	url := os.Getenv("REGISTRYCTL_URL")
+	url := os.Getenv("REGISTRY_CONTROLLER_URL")
 	if len(url) == 0 {
 		return common.DefaultRegistryCtlURL
 	}
@@ -458,7 +477,6 @@ func QuotaSetting() (*models.QuotaSetting, error) {
 		return nil, err
 	}
 	return &models.QuotaSetting{
-		CountPerProject:   cfgMgr.Get(common.CountPerProject).GetInt64(),
 		StoragePerProject: cfgMgr.Get(common.StoragePerProject).GetInt64(),
 	}, nil
 }

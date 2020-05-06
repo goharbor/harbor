@@ -15,12 +15,13 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
 	"time"
 
-	"context"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 )
@@ -69,24 +70,13 @@ func NewServer(ctx context.Context, router Router, cfg ServerConfig) *Server {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  60 * time.Second,
+		TLSConfig:    commonhttp.NewServerTLSConfig(),
 	}
 
 	// Initialize TLS/SSL config if protocol is https
-	if cfg.Protocol == config.JobServiceProtocolHTTPS {
-		tlsCfg := &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-			PreferServerCipherSuites: true,
-			CipherSuites: []uint16{
-				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-			},
-		}
-
-		srv.TLSConfig = tlsCfg
-		srv.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
+	if cfg.Protocol == config.JobServiceProtocolHTTPS && commonhttp.InternalEnableVerifyClientCert() {
+		logger.Infof("mTLS enabled ...")
+		srv.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 	}
 
 	apiServer.httpServer = srv

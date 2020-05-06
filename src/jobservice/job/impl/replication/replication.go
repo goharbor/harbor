@@ -60,6 +60,11 @@ func (r *Replication) MaxFails() uint {
 	return 3
 }
 
+// MaxCurrency is implementation of same method in Interface.
+func (r *Replication) MaxCurrency() uint {
+	return 0
+}
+
 // ShouldRetry always returns true which means the job is needed to be restarted when fails
 func (r *Replication) ShouldRetry() bool {
 	return true

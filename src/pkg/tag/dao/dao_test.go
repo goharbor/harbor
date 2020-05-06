@@ -16,13 +16,12 @@ package dao
 
 import (
 	"context"
-	"errors"
 	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/internal/orm"
+	errors "github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	artdao "github.com/goharbor/harbor/src/pkg/artifact/dao"
-	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -61,7 +60,6 @@ func (d *daoTestSuite) TearDownSuite() {
 }
 
 func (d *daoTestSuite) SetupTest() {
-
 	tag := &tag.Tag{
 		RepositoryID: 1000,
 		ArtifactID:   d.artifactID,
@@ -124,7 +122,7 @@ func (d *daoTestSuite) TestGet() {
 	// get the non-exist tag
 	_, err := d.dao.Get(d.ctx, 10000)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+	d.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// get the exist tag
 	tag, err := d.dao.Get(d.ctx, d.tagID)
@@ -146,7 +144,7 @@ func (d *daoTestSuite) TestCreate() {
 	}
 	_, err := d.dao.Create(d.ctx, tg)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ConflictCode))
+	d.True(errors.IsErr(err, errors.ConflictCode))
 
 	// violating foreign key constraint: the artifact that the tag tries to attach doesn't exist
 	tg = &tag.Tag{
@@ -158,7 +156,7 @@ func (d *daoTestSuite) TestCreate() {
 	}
 	_, err = d.dao.Create(d.ctx, tg)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ViolateForeignKeyConstraintCode))
+	d.True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
 }
 
 func (d *daoTestSuite) TestDelete() {
@@ -167,9 +165,9 @@ func (d *daoTestSuite) TestDelete() {
 	// not exist
 	err := d.dao.Delete(d.ctx, 10000)
 	d.Require().NotNil(err)
-	var e *ierror.Error
+	var e *errors.Error
 	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.Equal(errors.NotFoundCode, e.Code)
 }
 
 func (d *daoTestSuite) TestUpdate() {
@@ -211,16 +209,63 @@ func (d *daoTestSuite) TestUpdate() {
 		ArtifactID: 2,
 	}, "ArtifactID")
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ViolateForeignKeyConstraintCode))
+	d.True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
 
 	// not exist
 	err = d.dao.Update(d.ctx, &tag.Tag{
 		ID: 10000,
 	})
 	d.Require().NotNil(err)
-	var e *ierror.Error
+	var e *errors.Error
 	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.Equal(errors.NotFoundCode, e.Code)
+}
+
+func (d *daoTestSuite) TestDeleteOfArtifact() {
+	artifactID, err := d.artDAO.Create(d.ctx, &artdao.Artifact{
+		Type:              "IMAGE",
+		MediaType:         "application/vnd.oci.image.config.v1+json",
+		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
+		ProjectID:         1,
+		RepositoryID:      1000,
+		Digest:            "sha256:digest02",
+	})
+	d.Require().Nil(err)
+	defer d.artDAO.Delete(d.ctx, artifactID)
+
+	tag1 := &tag.Tag{
+		RepositoryID: 1000,
+		ArtifactID:   artifactID,
+		Name:         "tag1",
+	}
+	_, err = d.dao.Create(d.ctx, tag1)
+	d.Require().Nil(err)
+	tag2 := &tag.Tag{
+		RepositoryID: 1000,
+		ArtifactID:   artifactID,
+		Name:         "tag2",
+	}
+	_, err = d.dao.Create(d.ctx, tag2)
+	d.Require().Nil(err)
+
+	tags, err := d.dao.List(d.ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"ArtifactID": artifactID,
+		},
+	})
+	d.Require().Nil(err)
+	d.Require().Len(tags, 2)
+
+	err = d.dao.DeleteOfArtifact(d.ctx, artifactID)
+	d.Require().Nil(err)
+
+	tags, err = d.dao.List(d.ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"ArtifactID": artifactID,
+		},
+	})
+	d.Require().Nil(err)
+	d.Require().Len(tags, 0)
 }
 
 func TestDaoTestSuite(t *testing.T) {

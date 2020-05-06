@@ -24,10 +24,9 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 var creatorMap map[string]Creator
@@ -203,15 +202,12 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	scopes := parseScopes(r.URL)
 	log.Debugf("scopes: %v", scopes)
 
-	ctx, err := filter.GetSecurityContext(r)
-	if err != nil {
+	ctx, ok := security.FromContext(r.Context())
+	if !ok {
 		return nil, fmt.Errorf("failed to  get security context from request")
 	}
 
-	pm, err := filter.GetProjectManager(r)
-	if err != nil {
-		return nil, fmt.Errorf("failed to  get project manager from request")
-	}
+	pm := config.GlobalProjectMgr
 
 	// for docker login
 	if !ctx.IsAuthenticated() {

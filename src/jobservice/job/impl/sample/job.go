@@ -32,6 +32,11 @@ func (j *Job) MaxFails() uint {
 	return 3
 }
 
+// MaxCurrency is implementation of same method in Interface.
+func (j *Job) MaxCurrency() uint {
+	return 1
+}
+
 // ShouldRetry ...
 func (j *Job) ShouldRetry() bool {
 	return true

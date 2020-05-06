@@ -12,14 +12,15 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/common"
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
-	n_event "github.com/goharbor/harbor/src/core/notifier/event"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
+	hlog "github.com/goharbor/harbor/src/lib/log"
+	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
-	"github.com/justinas/alice"
-	"time"
 )
 
 const (
@@ -43,7 +44,7 @@ type ProxyEngine struct {
 }
 
 // NewProxyEngine is constructor of NewProxyEngine
-func NewProxyEngine(target *url.URL, cred *Credential, chains ...*alice.Chain) *ProxyEngine {
+func NewProxyEngine(target *url.URL, cred *Credential, middlewares ...func(http.Handler) http.Handler) *ProxyEngine {
 	var engine http.Handler
 
 	engine = &httputil.ReverseProxy{
@@ -52,11 +53,14 @@ func NewProxyEngine(target *url.URL, cred *Credential, chains ...*alice.Chain) *
 			director(target, cred, req)
 		},
 		ModifyResponse: modifyResponse,
+		Transport:      commonhttp.GetHTTPTransport(commonhttp.SecureTransport),
 	}
 
-	if len(chains) > 0 {
+	if len(middlewares) > 0 {
 		hlog.Info("New chart server traffic proxy with middlewares")
-		engine = chains[0].Then(engine)
+		for i := len(middlewares) - 1; i >= 0; i-- {
+			engine = middlewares[i](engine)
+		}
 	}
 
 	return &ProxyEngine{
@@ -114,14 +118,14 @@ func modifyResponse(res *http.Response) error {
 			}()
 
 			// Trigger harbor webhook
-			if e != nil && e.Resource != nil && e.Resource.Metadata != nil && len(e.Resource.Metadata.Vtags) > 0 &&
+			if e != nil && e.Resource != nil && e.Resource.Metadata != nil && len(e.Resource.Metadata.Artifacts) > 0 &&
 				len(e.Resource.ExtendedInfo) > 0 {
 				event := &n_event.Event{}
-				metaData := &n_event.ChartUploadMetaData{
-					ChartMetaData: n_event.ChartMetaData{
+				metaData := &metadata.ChartUploadMetaData{
+					ChartMetaData: metadata.ChartMetaData{
 						ProjectName: e.Resource.ExtendedInfo["projectName"].(string),
 						ChartName:   e.Resource.ExtendedInfo["chartName"].(string),
-						Versions:    e.Resource.Metadata.Vtags,
+						Versions:    e.Resource.Metadata.Artifacts[0].Tags,
 						OccurAt:     time.Now(),
 						Operator:    e.Resource.ExtendedInfo["operator"].(string),
 					},
@@ -140,7 +144,7 @@ func modifyResponse(res *http.Response) error {
 	// Process downloading chart success webhook event
 	if res.StatusCode == http.StatusOK {
 		chartDownloadEvent := res.Request.Context().Value(common.ChartDownloadCtxKey)
-		eventMetaData, ok := chartDownloadEvent.(*n_event.ChartDownloadMetaData)
+		eventMetaData, ok := chartDownloadEvent.(*metadata.ChartDownloadMetaData)
 		if ok && eventMetaData != nil {
 			// Trigger harbor webhook
 			event := &n_event.Event{}

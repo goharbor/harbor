@@ -16,13 +16,14 @@ package artifact
 
 import (
 	"context"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/pkg/artifact/dao"
-	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/artifact/dao"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 )
 
 type fakeDao struct {
@@ -38,6 +39,10 @@ func (f *fakeDao) List(ctx context.Context, query *q.Query) ([]*dao.Artifact, er
 	return args.Get(0).([]*dao.Artifact), args.Error(1)
 }
 func (f *fakeDao) Get(ctx context.Context, id int64) (*dao.Artifact, error) {
+	args := f.Called()
+	return args.Get(0).(*dao.Artifact), args.Error(1)
+}
+func (f *fakeDao) GetByDigest(ctx context.Context, repository, digest string) (*dao.Artifact, error) {
 	args := f.Called()
 	return args.Get(0).(*dao.Artifact), args.Error(1)
 }
@@ -61,6 +66,10 @@ func (f *fakeDao) ListReferences(ctx context.Context, query *q.Query) ([]*dao.Ar
 	args := f.Called()
 	return args.Get(0).([]*dao.ArtifactReference), args.Error(1)
 }
+func (f *fakeDao) DeleteReference(ctx context.Context, id int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
 func (f *fakeDao) DeleteReferences(ctx context.Context, parentID int64) error {
 	args := f.Called()
 	return args.Error(0)
@@ -79,12 +88,19 @@ func (m *managerTestSuite) SetupTest() {
 	}
 }
 
+func (m *managerTestSuite) TestCount() {
+	m.dao.On("Count", mock.Anything).Return(1, nil)
+	total, err := m.mgr.Count(nil, nil)
+	m.Require().Nil(err)
+	m.Equal(int64(1), total)
+}
+
 func (m *managerTestSuite) TestAssemble() {
 	art := &dao.Artifact{
 		ID:                1,
 		Type:              "IMAGE",
 		MediaType:         "application/vnd.oci.image.config.v1+json",
-		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
+		ManifestMediaType: v1.MediaTypeImageIndex,
 		ProjectID:         1,
 		RepositoryID:      1,
 		Digest:            "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
@@ -129,13 +145,10 @@ func (m *managerTestSuite) TestList() {
 		ExtraAttrs:        `{"attr1":"value1"}`,
 		Annotations:       `{"anno1":"value1"}`,
 	}
-	m.dao.On("Count", mock.Anything).Return(1, nil)
 	m.dao.On("List", mock.Anything).Return([]*dao.Artifact{art}, nil)
 	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{}, nil)
-	total, artifacts, err := m.mgr.List(nil, nil)
+	artifacts, err := m.mgr.List(nil, nil)
 	m.Require().Nil(err)
-	m.dao.AssertExpectations(m.T())
-	m.Equal(int64(1), total)
 	m.Equal(1, len(artifacts))
 	m.Equal(art.ID, artifacts[0].ID)
 }
@@ -145,7 +158,7 @@ func (m *managerTestSuite) TestGet() {
 		ID:                1,
 		Type:              "IMAGE",
 		MediaType:         "application/vnd.oci.image.config.v1+json",
-		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
+		ManifestMediaType: v1.MediaTypeImageIndex,
 		ProjectID:         1,
 		RepositoryID:      1,
 		Digest:            "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
@@ -160,6 +173,29 @@ func (m *managerTestSuite) TestGet() {
 	artifact, err := m.mgr.Get(nil, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+	m.Require().NotNil(artifact)
+	m.Equal(art.ID, artifact.ID)
+}
+
+func (m *managerTestSuite) TestGetByDigest() {
+	art := &dao.Artifact{
+		ID:                1,
+		Type:              "IMAGE",
+		MediaType:         "application/vnd.oci.image.config.v1+json",
+		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
+		ProjectID:         1,
+		RepositoryID:      1,
+		Digest:            "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
+		Size:              1024,
+		PushTime:          time.Now(),
+		PullTime:          time.Now(),
+		ExtraAttrs:        `{"attr1":"value1"}`,
+		Annotations:       `{"anno1":"value1"}`,
+	}
+	m.dao.On("GetByDigest", mock.Anything).Return(art, nil)
+	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{}, nil)
+	artifact, err := m.mgr.GetByDigest(nil, "library/hello-world", "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180")
+	m.Require().Nil(err)
 	m.Require().NotNil(artifact)
 	m.Equal(art.ID, artifact.ID)
 }
@@ -180,37 +216,41 @@ func (m *managerTestSuite) TestCreate() {
 }
 
 func (m *managerTestSuite) TestDelete() {
-	// referenced by other artifacts, delete failed
-	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{
-		{
-			ParentID: 1,
-			ChildID:  1,
-		},
-	}, nil)
-	err := m.mgr.Delete(nil, 1)
-	m.Require().NotNil(err)
-	m.dao.AssertExpectations(m.T())
-	e, ok := err.(*ierror.Error)
-	m.Require().True(ok)
-	m.Equal(ierror.PreconditionCode, e.Code)
-
-	// reset the mock
-	m.SetupTest()
-
-	// // referenced by no artifacts
-	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{}, nil)
 	m.dao.On("Delete", mock.Anything).Return(nil)
 	m.dao.On("DeleteReferences").Return(nil)
-	err = m.mgr.Delete(nil, 1)
+	err := m.mgr.Delete(nil, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }
 
-func (m *managerTestSuite) TestUpdatePullTime() {
+func (m *managerTestSuite) TestUpdate() {
 	m.dao.On("Update", mock.Anything).Return(nil)
-	err := m.mgr.UpdatePullTime(nil, 1, time.Now())
+	err := m.mgr.Update(nil, &Artifact{
+		ID:       1,
+		PullTime: time.Now(),
+	}, "PullTime")
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestListReferences() {
+	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{
+		{
+			ID:       1,
+			ParentID: 1,
+			ChildID:  2,
+		},
+	}, nil)
+	references, err := m.mgr.ListReferences(nil, nil)
+	m.Require().Nil(err)
+	m.Require().Len(references, 1)
+	m.Equal(int64(1), references[0].ID)
+}
+
+func (m *managerTestSuite) TestDeleteReference() {
+	m.dao.On("DeleteReference").Return(nil)
+	err := m.mgr.DeleteReference(nil, 1)
+	m.Require().Nil(err)
 }
 
 func TestManager(t *testing.T) {

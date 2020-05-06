@@ -12,10 +12,6 @@ import {
   ReplicationDefaultService,
   QuotaService,
   QuotaDefaultService,
-  RepositoryService,
-  RepositoryDefaultService,
-  TagService,
-  TagDefaultService,
   ScanningResultService,
   ScanningResultDefaultService,
   ConfigurationService,
@@ -26,10 +22,8 @@ import {
   ProjectDefaultService,
   LabelService,
   LabelDefaultService,
-  RetagService,
-  RetagDefaultService,
   UserPermissionService,
-  UserPermissionDefaultService
+  UserPermissionDefaultService,
 } from './services';
 import { GcRepoService } from './components/config/gc/gc.service';
 import { ScanAllRepoService } from './components/config/vulnerability/scanAll.service';
@@ -40,7 +34,7 @@ import {
   ErrorHandler,
   DefaultErrorHandler
 } from './utils/error-handler';
-import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG } from './utils/utils';
+import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG, CURRENT_BASE_HREF, V1_BASE_HREF } from './utils/utils';
 import { OperationService } from './components/operation/operation.service';
 import { GcHistoryComponent } from "./components/config/gc/gc-history/gc-history.component";
 import { GcComponent } from "./components/config/gc/gc.component";
@@ -59,7 +53,6 @@ import { CronScheduleComponent, CronTooltipComponent } from "./components/cron-s
 import { DateValidatorDirective } from "./components/datetime-picker/date-validator.directive";
 import { DatePickerComponent } from "./components/datetime-picker/datetime-picker.component";
 import { EndpointComponent } from "./components/endpoint/endpoint.component";
-import { GridViewComponent } from "./components/gridview/grid-view.component";
 import { ImageNameInputComponent } from "./components/image-name-input/image-name-input.component";
 import { InlineAlertComponent } from "./components/inline-alert/inline-alert.component";
 import { LabelSignPostComponent } from "./components/label/label-signpost/label-signpost.component";
@@ -72,19 +65,8 @@ import { CopyInputComponent } from "./components/push-image/copy-input.component
 import { PushImageButtonComponent } from "./components/push-image/push-image.component";
 import { ReplicationTasksComponent } from "./components/replication/replication-tasks/replication-tasks.component";
 import { ReplicationComponent } from "./components/replication/replication.component";
-import { RepositoryComponent } from "./components/repository/repository.component";
-import { RepositoryGridviewComponent } from "./components/repository-gridview/repository-gridview.component";
-import { TagComponent } from "./components/tag/tag.component";
-import { TagDetailComponent } from "./components/tag/tag-detail.component";
-import { TagHistoryComponent } from "./components/tag/tag-history.component";
-import { HistogramChartComponent } from "./components/vulnerability-scanning/histogram-chart/histogram-chart.component";
-import { ResultTipHistogramComponent } from "./components/vulnerability-scanning/result-tip-histogram/result-tip-histogram.component";
-import { ResultBarChartComponent } from "./components/vulnerability-scanning/result-bar-chart.component";
-import { ResultGridComponent } from "./components/vulnerability-scanning/result-grid.component";
-import { ResultTipComponent } from "./components/vulnerability-scanning/result-tip.component";
 import { FilterComponent } from "./components/filter/filter.component";
 import { ListReplicationRuleComponent } from "./components/list-replication-rule/list-replication-rule.component";
-import { ClipboardDirective } from "./components/third-party/ngx-clipboard/clipboard.directive";
 import { ChannelService } from "./services/channel.service";
 import { SharedModule } from "./utils/shared/shared.module";
 import { TranslateServiceInitializer } from "./i18n";
@@ -94,16 +76,16 @@ import { TranslateServiceInitializer } from "./i18n";
  * this default configuration.
  */
 export const DefaultServiceConfig: IServiceConfig = {
-  baseEndpoint: "/api",
-  systemInfoEndpoint: "/api/systeminfo",
-  repositoryBaseEndpoint: "/api/repositories",
-  logBaseEndpoint: "/api/logs",
-  targetBaseEndpoint: "/api/registries",
-  replicationBaseEndpoint: "/api/replication",
-  replicationRuleEndpoint: "/api/replication/policies",
-  vulnerabilityScanningBaseEndpoint: "/api/repositories",
-  projectPolicyEndpoint: "/api/projects/configs",
-  projectBaseEndpoint: "/api/projects",
+  baseEndpoint: CURRENT_BASE_HREF,
+  systemInfoEndpoint: CURRENT_BASE_HREF + "/systeminfo",
+  repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories",
+  logBaseEndpoint: CURRENT_BASE_HREF + "/logs",
+  targetBaseEndpoint: CURRENT_BASE_HREF + "/registries",
+  replicationBaseEndpoint: CURRENT_BASE_HREF + "/replication",
+  replicationRuleEndpoint: CURRENT_BASE_HREF + "/replication/policies",
+  vulnerabilityScanningBaseEndpoint: CURRENT_BASE_HREF + "/repositories",
+  projectPolicyEndpoint: CURRENT_BASE_HREF + "/projects/configs",
+  projectBaseEndpoint: CURRENT_BASE_HREF + "/projects",
   enablei18Support: false,
   langCookieKey: DEFAULT_LANG_COOKIE_KEY,
   supportedLangs: DEFAULT_SUPPORTING_LANGS,
@@ -112,13 +94,14 @@ export const DefaultServiceConfig: IServiceConfig = {
   langMessagePathForHttpLoader: "i18n/langs/",
   langMessageFileSuffixForHttpLoader: "-lang.json",
   localI18nMessageVariableMap: {},
-  configurationEndpoint: "/api/configurations",
-  scanJobEndpoint: "/api/jobs/scan",
-  labelEndpoint: "/api/labels",
-  helmChartEndpoint: "/api/chartrepo",
+  configurationEndpoint: CURRENT_BASE_HREF + "/configurations",
+  scanJobEndpoint: CURRENT_BASE_HREF + "/jobs/scan",
+  labelEndpoint: CURRENT_BASE_HREF + "/labels",
+  helmChartEndpoint: V1_BASE_HREF + "/chartrepo",
+  helmChartLabelEndpoint: CURRENT_BASE_HREF + "/chartrepo",
   downloadChartEndpoint: "/chartrepo",
-  gcEndpoint: "/api/system/gc",
-  ScanAllEndpoint: "/api/system/scanAll"
+  gcEndpoint: CURRENT_BASE_HREF + "/system/gc",
+  ScanAllEndpoint: CURRENT_BASE_HREF + "/system/scanAll"
 };
 
 /**
@@ -169,12 +152,6 @@ export interface HarborModuleConfig {
   // Service implementation for repository
   repositoryService?: Provider;
 
-  // Service implementation for tag
-  tagService?: Provider;
-
-  // Service implementation for retag
-  retagService?: Provider;
-
   // Service implementation for vulnerability scanning
   scanningService?: Provider;
 
@@ -194,6 +171,7 @@ export interface HarborModuleConfig {
   helmChartService?: Provider;
   // Service implementation for userPermission
   userPermissionService?: Provider;
+  artifactService?: Provider;
 
   // Service implementation for gc
   gcApiRepository?: Provider;
@@ -206,7 +184,7 @@ export interface HarborModuleConfig {
 
 @NgModule({
     imports: [
-      SharedModule
+        SharedModule,
     ],
     declarations: [
       GcHistoryComponent,
@@ -228,7 +206,6 @@ export interface HarborModuleConfig {
       DatePickerComponent,
       EndpointComponent,
       FilterComponent,
-      GridViewComponent,
       ImageNameInputComponent,
       InlineAlertComponent,
       LabelSignPostComponent,
@@ -242,16 +219,6 @@ export interface HarborModuleConfig {
       PushImageButtonComponent,
       ReplicationTasksComponent,
       ReplicationComponent,
-      RepositoryComponent,
-      RepositoryGridviewComponent,
-      TagComponent,
-      TagDetailComponent,
-      TagHistoryComponent,
-      HistogramChartComponent,
-      ResultTipHistogramComponent,
-      ResultBarChartComponent,
-      ResultGridComponent,
-      ResultTipComponent
   ],
   exports: [
       SharedModule,
@@ -274,7 +241,6 @@ export interface HarborModuleConfig {
       DatePickerComponent,
       EndpointComponent,
       FilterComponent,
-      GridViewComponent,
       ImageNameInputComponent,
       InlineAlertComponent,
       LabelSignPostComponent,
@@ -288,16 +254,6 @@ export interface HarborModuleConfig {
       PushImageButtonComponent,
       ReplicationTasksComponent,
       ReplicationComponent,
-      RepositoryComponent,
-      RepositoryGridviewComponent,
-      TagComponent,
-      TagDetailComponent,
-      TagHistoryComponent,
-      HistogramChartComponent,
-      ResultTipHistogramComponent,
-      ResultBarChartComponent,
-      ResultGridComponent,
-      ResultTipComponent
   ],
   providers: []
 })
@@ -314,9 +270,6 @@ export class HarborLibraryModule {
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.QuotaService || { provide: QuotaService, useClass: QuotaDefaultService },
-        config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
-        config.tagService || { provide: TagService, useClass: TagDefaultService },
-        config.retagService || { provide: RetagService, useClass: RetagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
@@ -353,9 +306,6 @@ export class HarborLibraryModule {
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.QuotaService || { provide: QuotaService, useClass: QuotaDefaultService },
-        config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
-        config.tagService || { provide: TagService, useClass: TagDefaultService },
-        config.retagService || { provide: RetagService, useClass: RetagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },

@@ -16,20 +16,19 @@ package retention
 
 import (
 	"fmt"
-	htesting "github.com/goharbor/harbor/src/testing"
-	"testing"
-
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
-	_ "github.com/goharbor/harbor/src/pkg/art/selectors/doublestar"
+	_ "github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
 	hjob "github.com/goharbor/harbor/src/testing/job"
+	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"testing"
 )
 
 type fakeProjectManager struct {
@@ -132,7 +131,7 @@ func (f *fakeRetentionManager) ListHistories(executionID int64, query *q.Query) 
 type launchTestSuite struct {
 	suite.Suite
 	projectMgr       project.Manager
-	repositoryMgr    *htesting.FakeRepositoryManager
+	repositoryMgr    *repository.FakeManager
 	retentionMgr     Manager
 	jobserviceClient job.Client
 }
@@ -150,7 +149,7 @@ func (l *launchTestSuite) SetupTest() {
 		projects: []*models.Project{
 			pro1, pro2,
 		}}
-	l.repositoryMgr = &htesting.FakeRepositoryManager{}
+	l.repositoryMgr = &repository.FakeManager{}
 	l.retentionMgr = &fakeRetentionManager{}
 	l.jobserviceClient = &hjob.MockJobClient{
 		JobUUID: []string{"1"},
@@ -166,7 +165,7 @@ func (l *launchTestSuite) TestGetProjects() {
 }
 
 func (l *launchTestSuite) TestGetRepositories() {
-	l.repositoryMgr.On("List").Return(1, []*models.RepoRecord{
+	l.repositoryMgr.On("List").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			ProjectID:    1,
@@ -212,7 +211,7 @@ func (l *launchTestSuite) TestLaunch() {
 	require.NotNil(l.T(), err)
 
 	// system scope
-	l.repositoryMgr.On("List").Return(2, []*models.RepoRecord{
+	l.repositoryMgr.On("List").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			ProjectID:    1,

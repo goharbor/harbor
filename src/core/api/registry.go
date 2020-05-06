@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/event"
@@ -208,10 +207,13 @@ func (t *RegistryAPI) Post() {
 		t.SendConflictError(fmt.Errorf("name '%s' is already used", r.Name))
 		return
 	}
-	i := strings.Index(r.URL, "://")
-	if i == -1 {
-		r.URL = fmt.Sprintf("http://%s", r.URL)
+	url, err := utils.ParseEndpoint(r.URL)
+	if err != nil {
+		t.SendBadRequestError(err)
+		return
 	}
+	// Prevent SSRF security issue #3755
+	r.URL = url.Scheme + "://" + url.Host + url.Path
 
 	status, err := registry.CheckHealthStatus(r)
 	if err != nil {
@@ -223,6 +225,7 @@ func (t *RegistryAPI) Post() {
 		return
 	}
 
+	r.Status = model.Healthy
 	id, err := t.manager.Add(r)
 	if err != nil {
 		log.Errorf("Add registry '%s' error: %v", r.URL, err)
@@ -309,6 +312,7 @@ func (t *RegistryAPI) Put() {
 		return
 	}
 
+	r.Status = model.Healthy
 	if err := t.manager.Update(r); err != nil {
 		log.Errorf("Update registry %d error: %v", id, err)
 		t.SendInternalServerError(err)
@@ -414,7 +418,7 @@ func (t *RegistryAPI) GetInfo() {
 	}
 	info, err := adp.Info()
 	if err != nil {
-		t.SendInternalServerError(fmt.Errorf("failed to get registry info %d: %v", id, err))
+		t.ParseAndHandleError(fmt.Sprintf("failed to get registry info %d", id), err)
 		return
 	}
 	// currently, only the local Harbor registry supports the event based trigger, append it here

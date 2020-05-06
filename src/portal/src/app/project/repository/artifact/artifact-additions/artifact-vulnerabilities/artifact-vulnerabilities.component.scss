@@ -1,0 +1,48 @@
+.result-row {
+  position: relative;
+}
+
+.rightPos{
+  position: absolute;
+  z-index: 100;
+  right: 0;
+  margin-top: 1.25rem;
+}
+
+.option-right {
+  padding-right: 16px;
+  margin-top: 5px;
+}
+
+.center {
+  align-items: center;
+}
+.label-critical {
+  background:red;
+  color:#621501;
+}
+
+
+.label-danger {
+  background:#e64524!important;
+  color:#621501!important;
+}
+.label-medium {
+  background-color: orange;
+  color:#621501;
+}
+.label-low {
+  background: #007CBB;
+  color:#cab6b1;
+}
+.label-negligible {
+  background-color: green;
+  color:#bad7ba;
+}
+.label-unknown {
+  background-color: grey;
+  color:#bad7ba;
+}
+.no-border {
+  border: none;
+}

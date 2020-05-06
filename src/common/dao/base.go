@@ -23,7 +23,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
@@ -87,33 +87,6 @@ func InitDatabase(database *models.Database) error {
 	}
 
 	log.Info("Register database completed")
-	return nil
-}
-
-// InitAndUpgradeDatabase - init database and upgrade when required
-func InitAndUpgradeDatabase(database *models.Database) error {
-	if err := InitDatabase(database); err != nil {
-		return err
-	}
-	if err := UpgradeSchema(database); err != nil {
-		return err
-	}
-	if err := CheckSchemaVersion(); err != nil {
-		return err
-	}
-	return nil
-}
-
-// CheckSchemaVersion checks that whether the schema version matches with the expected one
-func CheckSchemaVersion() error {
-	version, err := GetSchemaVersion()
-	if err != nil {
-		return err
-	}
-	if version.Version != SchemaVersion {
-		return fmt.Errorf("unexpected database schema version, expected %s, got %s",
-			SchemaVersion, version.Version)
-	}
 	return nil
 }
 
@@ -195,30 +168,4 @@ func Escape(str string) string {
 	str = strings.Replace(str, `%`, `\%`, -1)
 	str = strings.Replace(str, `_`, `\_`, -1)
 	return str
-}
-
-// WithTransaction helper for transaction
-func WithTransaction(handler func(o orm.Ormer) error) error {
-	o := orm.NewOrm()
-
-	if err := o.Begin(); err != nil {
-		log.Errorf("begin transaction failed: %v", err)
-		return err
-	}
-
-	if err := handler(o); err != nil {
-		if e := o.Rollback(); e != nil {
-			log.Errorf("rollback transaction failed: %v", e)
-			return e
-		}
-
-		return err
-	}
-
-	if err := o.Commit(); err != nil {
-		log.Errorf("commit transaction failed: %v", err)
-		return err
-	}
-
-	return nil
 }

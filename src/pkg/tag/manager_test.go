@@ -16,7 +16,7 @@ package tag
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -52,6 +52,10 @@ func (f *fakeDao) Delete(ctx context.Context, id int64) error {
 	args := f.Called()
 	return args.Error(0)
 }
+func (f *fakeDao) DeleteOfArtifact(ctx context.Context, artifactID int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
 
 type managerTestSuite struct {
 	suite.Suite
@@ -66,6 +70,13 @@ func (m *managerTestSuite) SetupTest() {
 	}
 }
 
+func (m *managerTestSuite) TestCount() {
+	m.dao.On("Count", mock.Anything).Return(1, nil)
+	total, err := m.mgr.Count(nil, nil)
+	m.Require().Nil(err)
+	m.Equal(int64(1), total)
+}
+
 func (m *managerTestSuite) TestList() {
 	tg := &tag.Tag{
 		ID:           1,
@@ -75,12 +86,9 @@ func (m *managerTestSuite) TestList() {
 		PushTime:     time.Now(),
 		PullTime:     time.Now(),
 	}
-	m.dao.On("Count", mock.Anything).Return(1, nil)
 	m.dao.On("List", mock.Anything).Return([]*tag.Tag{tg}, nil)
-	total, tags, err := m.mgr.List(nil, nil)
+	tags, err := m.mgr.List(nil, nil)
 	m.Require().Nil(err)
-	m.dao.AssertExpectations(m.T())
-	m.Equal(int64(1), total)
 	m.Equal(1, len(tags))
 	m.Equal(tg.ID, tags[0].ID)
 }
@@ -111,6 +119,12 @@ func (m *managerTestSuite) TestDelete() {
 	err := m.mgr.Delete(nil, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestDeleteOfArtifact() {
+	m.dao.On("DeleteOfArtifact", mock.Anything).Return(nil)
+	err := m.mgr.DeleteOfArtifact(nil, 1)
+	m.Require().Nil(err)
 }
 
 func TestManager(t *testing.T) {

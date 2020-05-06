@@ -57,8 +57,7 @@ func generateData() ([]*ScheduleItem, error) {
 			Repository: &model.Repository{
 				Name: "namespace1",
 			},
-			Vtags:  []string{"latest"},
-			Labels: []string{"latest"},
+			Vtags: []string{"latest"},
 		},
 		Registry: &model.Registry{
 			Credential: &model.Credential{},
@@ -69,8 +68,7 @@ func generateData() ([]*ScheduleItem, error) {
 			Repository: &model.Repository{
 				Name: "namespace2",
 			},
-			Vtags:  []string{"v1", "v2"},
-			Labels: []string{"latest"},
+			Vtags: []string{"v1", "v2"},
 		},
 		Registry: &model.Registry{
 			Credential: &model.Credential{},

@@ -35,18 +35,14 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
                 Validators.required,
                 Validators.maxLength(256),
                 Validators.pattern('^[a-z0-9]+(?:[._-][a-z0-9]+)*(/[a-z0-9]+(?:[._-][a-z0-9]+)*)*')
-            ])],
-            tagName: ["", Validators.compose([
-                Validators.required,
-                Validators.pattern('^[\\w][\\w.-]{0,127}$')
-            ])],
+            ])]
         });
     }
 
     ngOnInit(): void {
         this.proNameChecker
             .pipe(debounceTime(200))
-            .pipe(distinctUntilChanged(),
+            .pipe(
                 switchMap(name => {
                     this.noProjectInfo = "";
                     this.selectedProjectList = [];
@@ -80,10 +76,6 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
         }
     }
 
-    blurProjectInput(): void {
-        this.validateProjectName();
-    }
-
     get form(): AbstractControl {
         return this.imageNameForm;
     }
@@ -94,10 +86,6 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
 
     get repoName(): AbstractControl {
         return this.imageNameForm.get("repoName");
-    }
-
-    get tagName(): AbstractControl {
-        return this.imageNameForm.get("tagName");
     }
 
     ngOnDestroy(): void {

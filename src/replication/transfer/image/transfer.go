@@ -16,14 +16,16 @@ package image
 
 import (
 	"errors"
+	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/docker/distribution/manifest/schema1"
+	common_http "github.com/goharbor/harbor/src/common/http"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"net/http"
 	"strings"
 
-	"github.com/docker/distribution/manifest/manifestlist"
-
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	trans "github.com/goharbor/harbor/src/replication/transfer"
@@ -31,6 +33,9 @@ import (
 
 func init() {
 	if err := trans.RegisterFactory(model.ResourceTypeImage, factory); err != nil {
+		log.Errorf("failed to register transfer factory: %v", err)
+	}
+	if err := trans.RegisterFactory(model.ResourceTypeArtifact, factory); err != nil {
 		log.Errorf("failed to register transfer factory: %v", err)
 	}
 }
@@ -50,8 +55,8 @@ func factory(logger trans.Logger, stopFunc trans.StopFunc) (trans.Transfer, erro
 type transfer struct {
 	logger    trans.Logger
 	isStopped trans.StopFunc
-	src       adapter.ImageRegistry
-	dst       adapter.ImageRegistry
+	src       adapter.ArtifactRegistry
+	dst       adapter.ArtifactRegistry
 }
 
 func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
@@ -60,24 +65,40 @@ func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
 		return err
 	}
 
-	// delete the repository on destination registry
+	// delete the artifacts/tags on the destination registry
 	if dst.Deleted {
-		return t.delete(&repository{
-			repository: dst.Metadata.GetResourceName(),
-			tags:       dst.Metadata.Vtags,
-		})
+		// delete tag
+		if dst.IsDeleteTag {
+			return t.deleteTag(dst)
+		}
+		// delete artifact
+		return t.delete(t.convert(dst))
 	}
 
-	srcRepo := &repository{
-		repository: src.Metadata.GetResourceName(),
-		tags:       src.Metadata.Vtags,
-	}
-	dstRepo := &repository{
-		repository: dst.Metadata.GetResourceName(),
-		tags:       dst.Metadata.Vtags,
-	}
 	// copy the repository from source registry to the destination
-	return t.copy(srcRepo, dstRepo, dst.Override)
+	return t.copy(t.convert(src), t.convert(dst), dst.Override)
+}
+
+func (t *transfer) convert(resource *model.Resource) *repository {
+	repository := &repository{
+		repository: resource.Metadata.Repository.Name,
+	}
+	for _, artifact := range resource.Metadata.Artifacts {
+		if len(artifact.Tags) > 0 {
+			repository.tags = append(repository.tags, artifact.Tags...)
+			continue
+		}
+		// no tags
+		if len(artifact.Digest) > 0 {
+			repository.tags = append(repository.tags, artifact.Digest)
+		}
+	}
+	if len(repository.tags) > 0 {
+		return repository
+	}
+	// fallback to vtags
+	repository.tags = resource.Metadata.Vtags
+	return repository
 }
 
 func (t *transfer) initialize(src *model.Resource, dst *model.Resource) error {
@@ -107,7 +128,7 @@ func (t *transfer) initialize(src *model.Resource, dst *model.Resource) error {
 	return nil
 }
 
-func createRegistry(reg *model.Registry) (adapter.ImageRegistry, error) {
+func createRegistry(reg *model.Registry) (adapter.ArtifactRegistry, error) {
 	factory, err := adapter.GetFactory(reg.Type)
 	if err != nil {
 		return nil, err
@@ -116,9 +137,9 @@ func createRegistry(reg *model.Registry) (adapter.ImageRegistry, error) {
 	if err != nil {
 		return nil, err
 	}
-	registry, ok := ad.(adapter.ImageRegistry)
+	registry, ok := ad.(adapter.ArtifactRegistry)
 	if !ok {
-		return nil, errors.New("the adapter doesn't implement the \"ImageRegistry\" interface")
+		return nil, errors.New("the adapter doesn't implement the \"ArtifactRegistry\" interface")
 	}
 	return registry, nil
 }
@@ -138,12 +159,14 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 		srcRepo, strings.Join(src.tags, ","), dstRepo, strings.Join(dst.tags, ","))
 	var err error
 	for i := range src.tags {
-		if e := t.copyImage(srcRepo, src.tags[i], dstRepo, dst.tags[i], override); e != nil {
+		if e := t.copyArtifact(srcRepo, src.tags[i], dstRepo, dst.tags[i], override); e != nil {
 			t.logger.Errorf(e.Error())
 			err = e
 		}
 	}
 	if err != nil {
+		err = errors.New("got error during the whole transfer period, mark the job failure")
+		t.logger.Error(err)
 		return err
 	}
 
@@ -152,7 +175,7 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 	return nil
 }
 
-func (t *transfer) copyImage(srcRepo, srcRef, dstRepo, dstRef string, override bool) error {
+func (t *transfer) copyArtifact(srcRepo, srcRef, dstRepo, dstRef string, override bool) error {
 	t.logger.Infof("copying %s:%s(source registry) to %s:%s(destination registry)...",
 		srcRepo, srcRef, dstRepo, dstRef)
 	// pull the manifest from the source registry
@@ -161,26 +184,26 @@ func (t *transfer) copyImage(srcRepo, srcRef, dstRepo, dstRef string, override b
 		return err
 	}
 
-	// check the existence of the image on the destination registry
+	// check the existence of the artifact on the destination registry
 	exist, digest2, err := t.exist(dstRepo, dstRef)
 	if err != nil {
 		return err
 	}
 	if exist {
-		// the same image already exists
+		// the same artifact already exists
 		if digest == digest2 {
-			t.logger.Infof("the image %s:%s already exists on the destination registry, skip",
+			t.logger.Infof("the artifact %s:%s already exists on the destination registry, skip",
 				dstRepo, dstRef)
 			return nil
 		}
-		// the same name image exists, but not allowed to override
+		// the same name artifact exists, but not allowed to override
 		if !override {
-			t.logger.Warningf("the same name image %s:%s exists on the destination registry, but the \"override\" is set to false, skip",
+			t.logger.Warningf("the same name artifact %s:%s exists on the destination registry, but the \"override\" is set to false, skip",
 				dstRepo, dstRef)
 			return nil
 		}
-		// the same name image exists, but allowed to override
-		t.logger.Warningf("the same name image %s:%s exists on the destination registry and the \"override\" is set to true, continue...",
+		// the same name artifact exists, but allowed to override
+		t.logger.Warningf("the same name artifact %s:%s exists on the destination registry and the \"override\" is set to true, continue...",
 			dstRepo, dstRef)
 	}
 
@@ -205,16 +228,18 @@ func (t *transfer) copyImage(srcRepo, srcRef, dstRepo, dstRef string, override b
 func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo string) error {
 	digest := content.Digest.String()
 	switch content.MediaType {
-	// when the media type of pulled manifest is manifest list,
-	// the contents it contains are a few manifests
-	case schema2.MediaTypeManifest:
+	// when the media type of pulled manifest is index,
+	// the contents it contains are a few manifests/indexes
+	case v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList,
+		v1.MediaTypeImageManifest, schema2.MediaTypeManifest,
+		schema1.MediaTypeSignedManifest, schema1.MediaTypeManifest:
 		// as using digest as the reference, so set the override to true directly
-		return t.copyImage(srcRepo, digest, dstRepo, digest, true)
+		return t.copyArtifact(srcRepo, digest, dstRepo, digest, true)
 	// handle foreign layer
 	case schema2.MediaTypeForeignLayer:
 		t.logger.Infof("the layer %s is a foreign layer, skip", digest)
 		return nil
-	// copy layer or image config
+	// copy layer or artifact config
 	// the media type of the layer or config can be "application/octet-stream",
 	// schema1.MediaTypeManifestLayer, schema2.MediaTypeLayer, schema2.MediaTypeImageConfig
 	default:
@@ -222,7 +247,7 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 	}
 }
 
-// copy the layer or image config from the source registry to destination
+// copy the layer or artifact config from the source registry to destination
 func (t *transfer) copyBlob(srcRepo, dstRepo, digest string) error {
 	if t.shouldStop() {
 		return nil
@@ -257,19 +282,13 @@ func (t *transfer) pullManifest(repository, reference string) (
 	if t.shouldStop() {
 		return nil, "", nil
 	}
-	t.logger.Infof("pulling the manifest of image %s:%s ...", repository, reference)
-	// TODO add OCI media types
-	manifest, digest, err := t.src.PullManifest(repository, reference, []string{
-		schema1.MediaTypeManifest,
-		schema1.MediaTypeSignedManifest,
-		schema2.MediaTypeManifest,
-		manifestlist.MediaTypeManifestList,
-	})
+	t.logger.Infof("pulling the manifest of artifact %s:%s ...", repository, reference)
+	manifest, digest, err := t.src.PullManifest(repository, reference)
 	if err != nil {
-		t.logger.Errorf("failed to pull the manifest of image %s:%s: %v", repository, reference, err)
+		t.logger.Errorf("failed to pull the manifest of artifact %s:%s: %v", repository, reference, err)
 		return nil, "", err
 	}
-	t.logger.Infof("the manifest of image %s:%s pulled", repository, reference)
+	t.logger.Infof("the manifest of artifact %s:%s pulled", repository, reference)
 
 	return manifest, digest, nil
 }
@@ -277,7 +296,7 @@ func (t *transfer) pullManifest(repository, reference string) (
 func (t *transfer) exist(repository, tag string) (bool, string, error) {
 	exist, digest, err := t.dst.ManifestExist(repository, tag)
 	if err != nil {
-		t.logger.Errorf("failed to check the existence of the manifest of image %s:%s on the destination registry: %v",
+		t.logger.Errorf("failed to check the existence of the manifest of artifact %s:%s on the destination registry: %v",
 			repository, tag, err)
 		return false, "", err
 	}
@@ -288,19 +307,19 @@ func (t *transfer) pushManifest(manifest distribution.Manifest, repository, tag 
 	if t.shouldStop() {
 		return nil
 	}
-	t.logger.Infof("pushing the manifest of image %s:%s ...", repository, tag)
+	t.logger.Infof("pushing the manifest of artifact %s:%s ...", repository, tag)
 	mediaType, payload, err := manifest.Payload()
 	if err != nil {
-		t.logger.Errorf("failed to push manifest of image %s:%s: %v",
+		t.logger.Errorf("failed to push manifest of artifact %s:%s: %v",
 			repository, tag, err)
 		return err
 	}
-	if err := t.dst.PushManifest(repository, tag, mediaType, payload); err != nil {
-		t.logger.Errorf("failed to push manifest of image %s:%s: %v",
+	if _, err := t.dst.PushManifest(repository, tag, mediaType, payload); err != nil {
+		t.logger.Errorf("failed to push manifest of artifact %s:%s: %v",
 			repository, tag, err)
 		return err
 	}
-	t.logger.Infof("the manifest of image %s:%s pushed",
+	t.logger.Infof("the manifest of artifact %s:%s pushed",
 		repository, tag)
 	return nil
 }
@@ -314,21 +333,43 @@ func (t *transfer) delete(repo *repository) error {
 	for _, tag := range repo.tags {
 		exist, _, err := t.dst.ManifestExist(repository, tag)
 		if err != nil {
-			t.logger.Errorf("failed to check the existence of the manifest of image %s:%s on the destination registry: %v",
+			t.logger.Errorf("failed to check the existence of the manifest of artifact %s:%s on the destination registry: %v",
 				repository, tag, err)
 			return err
 		}
 		if !exist {
-			t.logger.Infof("the image %s:%s doesn't exist on the destination registry, skip",
+			t.logger.Infof("the artifact %s:%s doesn't exist on the destination registry, skip",
 				repository, tag)
 			continue
 		}
 		if err := t.dst.DeleteManifest(repository, tag); err != nil {
-			t.logger.Errorf("failed to delete the manifest of image %s:%s on the destination registry: %v",
+			t.logger.Errorf("failed to delete the manifest of artifact %s:%s on the destination registry: %v",
 				repository, tag, err)
 			return err
 		}
-		t.logger.Infof("the manifest of image %s:%s is deleted", repository, tag)
+		t.logger.Infof("the manifest of artifact %s:%s is deleted", repository, tag)
+	}
+	return nil
+}
+
+func (t *transfer) deleteTag(res *model.Resource) error {
+	if t.shouldStop() {
+		return nil
+	}
+	repository := res.Metadata.Repository.Name
+	for _, art := range res.Metadata.Artifacts {
+		for _, tag := range art.Tags {
+			if err := t.dst.DeleteTag(repository, tag); err != nil {
+				if e, ok := err.(*common_http.Error); ok && e.Code == http.StatusNotFound {
+					t.logger.Infof("the tag %s:%s doesn't exist on the destination registry, skip", repository, tag)
+					continue
+				}
+				t.logger.Errorf("failed to delete the tag %s:%s on the destination registry: %v",
+					repository, tag, err)
+				return err
+			}
+			t.logger.Infof("the tag %s:%s is deleted", repository, tag)
+		}
 	}
 	return nil
 }

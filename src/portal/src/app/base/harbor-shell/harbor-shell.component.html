@@ -13,7 +13,7 @@
             <clr-icon (click)="closeInfo()" class="close-icon" shape="times" size="24"></clr-icon>
         </div>
     </div>
-    <global-message [isAppLevel]="true" ></global-message>
+    <global-message [isAppLevel]="true"></global-message>
     <navigator (showAccountSettingsModal)="openModal($event)" (showDialogModalAction)="openModal($event)"></navigator>
     <div class="content-container">
         <div class="content-area" [class.container-override]="showSearch"
@@ -80,14 +80,33 @@
                     </clr-vertical-nav-group-children>
                 </clr-vertical-nav-group>
             </div>
+            <div>
             <div class="vertical-nav-footer">
-                <a clrVerticalNavLink target="_blank" routerLink="/devcenter">
-                    <button type="button" class="btn  api-button">
-                        <span>{{'SIDE_NAV.API_EXPLORER' | translate }}</span>
-                    </button>
-                </a>
+                <ng-container *ngFor="let theme of themeArray;let i=index">
+                    <ng-container *ngIf="theme.showStyle === styleMode">
+                        <a class="nav-link nav-icon theme-select"
+                           (click)="themeChanged(theme)">
+                            <clr-icon size="20" *ngIf="styleMode ==='DARK'" shape="sun" class="is-solid"></clr-icon>
+                            <clr-icon size="20" *ngIf="styleMode ==='LIGHT'" shape="moon" class="is-solid"></clr-icon>
+                            {{ theme.text | translate }}
+                        </a>
+                    </ng-container>
+                </ng-container>
             </div>
 
+            <clr-vertical-nav-group routerLinkActive="active">
+                <clr-icon shape="network-globe" clrVerticalNavIcon></clr-icon>
+                {{'SIDE_NAV.API_EXPLORER' | translate}}
+                <a routerLink="#" hidden aria-hidden="true"></a>
+                <clr-vertical-nav-group-children *clrIfExpanded="true">
+                    <a class="font-size-13" clrVerticalNavLink target="_blank" routerLink="/devcenter-api-2.0"
+                        routerLinkActive="active">
+                        <clr-icon shape="network-globe" clrVerticalNavIcon></clr-icon>
+                        {{'SIDE_NAV.HARBOR_API_MANAGEMENT' | translate}}
+                    </a>
+                </clr-vertical-nav-group-children>
+            </clr-vertical-nav-group>
+            </div>
         </clr-vertical-nav>
         <hbr-operation-model *ngIf="isUserExisting"></hbr-operation-model>
     </div>

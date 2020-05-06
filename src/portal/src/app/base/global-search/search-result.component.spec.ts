@@ -4,13 +4,13 @@ import { SearchResults } from './search-results';
 import { SearchTriggerService } from './search-trigger.service';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AppConfigService } from './../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { ListProjectROComponent } from '../../shared/list-project-ro/list-project-ro.component';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { SearchResultComponent } from './search-result.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
-import { AppConfig } from '../../app-config';
+import { AppConfig } from '../../services/app-config';
 import { ClarityModule } from '@clr/angular';
 
 describe('SearchResultComponent', () => {

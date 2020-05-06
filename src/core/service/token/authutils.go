@@ -27,13 +27,14 @@ import (
 	"github.com/docker/libtrust"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
-	issuer = "harbor-token-issuer"
+	// Issuer is the issuer of the internal token service in Harbor for registry
+	Issuer = "harbor-token-issuer"
 )
 
 var privateKey string
@@ -110,7 +111,7 @@ func MakeToken(username, service string, access []*token.ResourceActions) (*mode
 		return nil, err
 	}
 
-	tk, expiresIn, issuedAt, err := makeTokenCore(issuer, username, service, expiration, access, pk)
+	tk, expiresIn, issuedAt, err := makeTokenCore(Issuer, username, service, expiration, access, pk)
 	if err != nil {
 		return nil, err
 	}

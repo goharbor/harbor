@@ -23,8 +23,6 @@ const (
 	// UNLIMITED unlimited resource value
 	UNLIMITED = -1
 
-	// ResourceCount count, in number
-	ResourceCount ResourceName = "count"
 	// ResourceStorage storage size, in bytes
 	ResourceStorage ResourceName = "storage"
 )
@@ -139,7 +137,7 @@ func IsNegative(a ResourceList) []ResourceName {
 // IsValidResource returns true when resource was supported
 func IsValidResource(resource ResourceName) bool {
 	switch resource {
-	case ResourceCount, ResourceStorage:
+	case ResourceStorage:
 		return true
 	default:
 		return false

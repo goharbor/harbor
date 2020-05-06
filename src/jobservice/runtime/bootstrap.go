@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/hook"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
@@ -40,12 +41,12 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/migration"
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	sc "github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/gomodule/redigo/redis"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -85,6 +86,10 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		if err != nil {
 			return errors.Errorf("initialize job context error: %s", err)
 		}
+	}
+	// Make sure the job context is created
+	if rootContext.JobContext == nil {
+		rootContext.JobContext = impl.NewDefaultContext(ctx)
 	}
 
 	// Alliance to config
@@ -225,6 +230,7 @@ func (bs *Bootstrap) createAPIServer(ctx context.Context, cfg *config.Configurat
 		Port:     cfg.Port,
 	}
 	if cfg.HTTPSConfig != nil {
+		serverConfig.Protocol = config.JobServiceProtocolHTTPS
 		serverConfig.Cert = cfg.HTTPSConfig.Cert
 		serverConfig.Key = cfg.HTTPSConfig.Key
 	}
@@ -255,6 +261,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.Retention:              (*retention.Job)(nil),
 			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),
 			job.WebhookJob:             (*notification.WebhookJob)(nil),
+			job.SlackJob:               (*notification.SlackJob)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

@@ -18,10 +18,10 @@ import (
 	"reflect"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
-	"github.com/pkg/errors"
 )
 
 // CVESet defines the CVE whitelist with a hash set way for easy query.
@@ -36,6 +36,8 @@ func (cs CVESet) Contains(cve string) bool {
 
 // Options provides options for getting the report w/ summary.
 type Options struct {
+	// If it is set, the returned report will contains artifact digest for the vulnerabilities
+	ArtifactDigest string
 	// If it is set, the returned summary will not count the CVEs in the list in.
 	CVEWhitelist CVESet
 }
@@ -48,6 +50,46 @@ func WithCVEWhitelist(set *CVESet) Option {
 	return func(options *Options) {
 		options.CVEWhitelist = *set
 	}
+}
+
+// WithArtifactDigest is an option of setting artifact digest
+func WithArtifactDigest(artifactDigest string) Option {
+	return func(options *Options) {
+		options.ArtifactDigest = artifactDigest
+	}
+}
+
+// SummaryMerger is a helper function to merge summary together
+type SummaryMerger func(s1, s2 interface{}) (interface{}, error)
+
+// SupportedSummaryMergers declares mappings between mime type and summary merger func.
+var SupportedSummaryMergers = map[string]SummaryMerger{
+	v1.MimeTypeNativeReport: MergeNativeSummary,
+}
+
+// MergeSummary merge summary s1 and s2
+func MergeSummary(mimeType string, s1, s2 interface{}) (interface{}, error) {
+	m, ok := SupportedSummaryMergers[mimeType]
+	if !ok {
+		return nil, errors.Errorf("no summary merger bound with mime type %s", mimeType)
+	}
+
+	return m(s1, s2)
+}
+
+// MergeNativeSummary merge vuln.NativeReportSummary together
+func MergeNativeSummary(s1, s2 interface{}) (interface{}, error) {
+	nrs1, ok := s1.(*vuln.NativeReportSummary)
+	if !ok {
+		return nil, errors.New("native report summary required")
+	}
+
+	nrs2, ok := s2.(*vuln.NativeReportSummary)
+	if !ok {
+		return nil, errors.New("native report summary required")
+	}
+
+	return nrs1.Merge(nrs2), nil
 }
 
 // SupportedGenerators declares mappings between mime type and summary generator func.
@@ -94,6 +136,8 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 		sum.ScanStatus = r.Status
 	}
 
+	sum.TotalCount = 1
+
 	// If the status is not success/stopped, there will not be any report.
 	if r.Status != job.SuccessStatus.String() &&
 		r.Status != job.StoppedStatus.String() {
@@ -114,6 +158,9 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 	if !ok {
 		return nil, errors.Errorf("type mismatch: expect *vuln.Report but got %s", reflect.TypeOf(raw).String())
 	}
+
+	sum.CompleteCount = 1
+	sum.CompletePercent = 100
 
 	sum.Severity = rp.Severity
 	vsum := &vuln.VulnerabilitySummary{

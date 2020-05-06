@@ -2,13 +2,57 @@
   <inline-alert class="modal-title"></inline-alert>
   <form #webhookForm="ngForm" class="clr-form clr-form-horizontal">
     <section class="form-block webhook-section">
+      <!-- name -->
+      <div class="clr-form-control">
+        <label for="edit_endpoint_url" class="clr-control-label required">{{'WEBHOOK.NAME' | translate}}</label>
+        <div class="clr-control-container" [class.clr-error]="name.errors && name.errors.required && (name.dirty || name.touched)">
+          <div class="clr-input-wrapper">
+            <input autocomplete="off"  class="clr-input" type="text" id="name" [disabled]="checking" [(ngModel)]="webhook.name"
+                   size="30" name="notify-type" #name="ngModel" required>
+            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+          </div>
+          <clr-control-error *ngIf="name.errors && name.errors.required && (name.dirty || name.touched)" class="tooltip-content">
+            {{'WEBHOOK.NAME_REQUIRED' | translate}}
+          </clr-control-error>
+        </div>
+      </div>
+      <!-- description -->
+      <div class="clr-form-control">
+        <label for="edit_endpoint_url" class="clr-control-label">{{'WEBHOOK.DESCRIPTION' | translate}}</label>
+        <div class="clr-control-container">
+          <textarea autocomplete="off" class="clr-textarea width-238" type="text" id="description" [disabled]="checking" [(ngModel)]="webhook.description"
+                      name="description"></textarea>
+        </div>
+      </div>
+      <!-- notify type -->
+      <clr-select-container>
+        <label class="required">{{'WEBHOOK.NOTIFY_TYPE' | translate}}</label>
+        <select class="width-238" clrSelect name="notifyType" id="notify_type"  [(ngModel)]="webhook.targets[0].type" [disabled]="checking">
+          <option *ngFor="let type of metadata?.notify_type" value="{{type}}">{{type}}</option>
+        </select>
+      </clr-select-container>
+
+      <div class="clr-form-control">
+        <label class="clr-control-label required">{{'WEBHOOK.EVENT_TYPE' | translate}}</label>
+        <div class="clr-control-container clr-control-inline" [class.clr-error]="!hasEventType()">
+          <div class="clr-checkbox-wrapper width-7rem" *ngFor="let item of metadata?.event_type">
+            <input type="checkbox" id="{{item}}" name="eventTypes" value="{{item}}" class="clr-checkbox" (change)="setEventType(item)" [checked]="getEventType(item)">
+            <label for="{{item}}" class="clr-control-label">{{eventTypeToText(item)}}</label>
+          </div>
+          <div class="clr-subtext-wrapper" *ngIf="!hasEventType()">
+            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+            <span class="clr-subtext">{{'WEBHOOK.EVENT_TYPE_REQUIRED' | translate}}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- endpoint URL -->
       <div class="clr-form-control">
         <label for="edit_endpoint_url" class="clr-control-label required">{{'WEBHOOK.ENDPOINT_URL' | translate}}</label>
         <div class="clr-control-container" [class.clr-error]="enpointURL.errors && enpointURL.errors.required && (enpointURL.dirty || enpointURL.touched)">
           <div class="clr-input-wrapper">
-            <input class="clr-input" type="text" id="edit_endpoint_url" [disabled]="checking" [(ngModel)]="webhookTarget.address"
-                   size="30" name="edit_endpoint_url" #enpointURL="ngModel" required placeholder="http(s)://192.168.1.1">
+            <input autocomplete="off"  class="clr-input" type="text" id="edit_endpoint_url" [disabled]="checking" [(ngModel)]="webhook.targets[0].address"
+                   size="30" name="edit_endpoint_url" #enpointURL="ngModel" required [placeholder]="webhook.targets[0].type ==='http'?'http(s)://192.168.1.1':''">
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
           </div>
           <clr-control-error *ngIf="enpointURL.errors && enpointURL.errors.required && (enpointURL.dirty || enpointURL.touched)" class="tooltip-content">
@@ -17,16 +61,18 @@
         </div>
       </div>
       <!-- auth_header -->
-      <div class="clr-form-control">
+      <div class="clr-form-control" *ngIf="webhook?.targets[0]?.type ==='http'">
         <label for="auth_header" class="clr-control-label">{{ 'WEBHOOK.AUTH_HEADER' |
                 translate }}</label>
         <div class="clr-control-container">
           <div class="clr-input-wrapper">
-            <input class="clr-input" type="text" id="auth_header" [disabled]="checking"
-                   [(ngModel)]="webhookTarget.auth_header" size="30" name="auth_header">
+            <input autocomplete="off"  class="clr-input" type="text" id="auth_header" [disabled]="checking"
+                   [(ngModel)]="webhook.targets[0].auth_header" size="30" name="auth_header">
           </div>
         </div>
       </div>
+
+
       <!-- verify remote cert -->
       <div class="clr-form-control">
         <label for="verify_remote_cert" class="clr-control-label">
@@ -40,17 +86,18 @@
         </label>
         <div class="clr-control-container padding-top-3">
           <input type="checkbox" [disabled]="checking" clrCheckbox name="verify_remote_cert" id="verify_remote_cert"
-                 (ngModelChange)="setCertValue($event)" [ngModel]="!webhookTarget.skip_cert_verify"/>          </div>
+                 (ngModelChange)="setCertValue($event)" [ngModel]="!webhook?.targets[0]?.skip_cert_verify"/>          </div>
       </div>
     </section>
   </form>
   <div class="mt-1" *ngIf="!isModify">
-      <button type="button" id="new-webhook-continue" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.CONTINUE' | translate}}</button>
-      <button type="button" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
+      <button type="button" id="webhook-test-add" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
+      <button type="button" class="btn btn-outline" id="add-webhook-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+      <button type="button" id="new-webhook-continue" class="btn btn-primary" [disabled]="!isValid" (click)="add()">{{'BUTTON.ADD' | translate}}</button>
   </div>
-  <div class="mt-1" *ngIf="isModify">
+  <div class="mt-1 bottom-btn" *ngIf="isModify">
       <button type="button" [clrLoading]="checkBtnState" class="btn btn-outline" id="webhook-test" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
       <button type="button" class="btn btn-outline" id="edit-webhook-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-      <button type="button" class="btn btn-primary" id="edit-webhook-save" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.SAVE' | translate}}</button>
+      <button type="button" class="btn btn-primary" id="edit-webhook-save" [disabled]="!isValid" (click)="save()">{{'BUTTON.SAVE' | translate}}</button>
   </div>
 </div>

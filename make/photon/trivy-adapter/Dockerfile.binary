@@ -1,0 +1,7 @@
+FROM golang:1.13.8
+
+ADD .   /go/src/github.com/aquasecurity/harbor-scanner-trivy/
+WORKDIR /go/src/github.com/aquasecurity/harbor-scanner-trivy/
+
+RUN export GOOS=linux GO111MODULE=on CGO_ENABLED=0 && \
+	go build -o scanner-trivy cmd/scanner-trivy/main.go

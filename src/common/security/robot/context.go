@@ -15,26 +15,36 @@
 package robot
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
+	"sync"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 )
 
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
-	robot  *model.Robot
-	pm     promgr.ProjectManager
-	policy []*rbac.Policy
+	robot     *model.Robot
+	pm        promgr.ProjectManager
+	policy    []*types.Policy
+	evaluator evaluator.Evaluator
+	once      sync.Once
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(robot *model.Robot, pm promgr.ProjectManager, policy []*rbac.Policy) *SecurityContext {
+func NewSecurityContext(robot *model.Robot, pm promgr.ProjectManager, policy []*types.Policy) *SecurityContext {
 	return &SecurityContext{
 		robot:  robot,
 		pm:     pm,
 		policy: policy,
 	}
+}
+
+// Name returns the name of the security context
+func (s *SecurityContext) Name() string {
+	return "robot"
 }
 
 // IsAuthenticated returns true if the user has been authenticated
@@ -61,29 +71,15 @@ func (s *SecurityContext) IsSolutionUser() bool {
 	return false
 }
 
-// GetMyProjects no implementation
-func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
-	return nil, nil
-}
-
-// GetProjectRoles no implementation
-func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
-	return nil
-}
-
 // Can returns whether the robot can do action on resource
-func (s *SecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
-	ns, err := resource.GetNamespace()
-	if err == nil {
-		switch ns.Kind() {
-		case "project":
-			projectID := ns.Identity().(int64)
-			isPublicProject, _ := s.pm.IsPublic(projectID)
-			projectNamespace := rbac.NewProjectNamespace(projectID, isPublicProject)
-			robot := NewRobot(s.GetUsername(), projectNamespace, s.policy)
-			return rbac.HasPermission(robot, resource, action)
+func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool {
+	s.once.Do(func() {
+		robotFactory := func(ns types.Namespace) types.RBACUser {
+			return NewRobot(s.GetUsername(), ns, s.policy)
 		}
-	}
 
-	return false
+		s.evaluator = rbac.NewProjectRobotEvaluator(s, s.pm, robotFactory)
+	})
+
+	return s.evaluator != nil && s.evaluator.HasPermission(resource, action)
 }

@@ -173,7 +173,9 @@
         },
         "LOGS": "Kayıtlar",
         "TASKS": "Görevler",
-        "API_EXPLORER": "API KEŞFİ"
+        "API_EXPLORER": "Api Explorer",
+        "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
+        "HELM_API_MANAGEMENT": "Harbor API"
     },
     "USER": {
         "ADD_ACTION": "Yeni Kullanıcı",
@@ -251,7 +253,7 @@
         "ROBOT_ACCOUNTS": "Robot Hesapları",
         "WEBHOOKS": "Ağ Kancaları",
         "IMMUTABLE_TAG": "Tag Immutability",
-        "TAG_STRATEGY": "Tag Strategy"
+        "POLICY": "Policy"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Proje kaydı",
@@ -336,8 +338,8 @@
         "ENABLE_ACCOUNT": "Hesabı Etkinleştir",
         "DELETE": "Sil",
         "CREAT_ROBOT_ACCOUNT": "Robot Hesabı Yarat",
-        "PERMISSIONS_IMAGE": "İmaj",
-        "PERMISSIONS_HELMCHART": "Helm Tablosu",
+        "PERMISSIONS_ARTIFACT": "Artifact",
+        "PERMISSIONS_HELMCHART": "Helm Tablosu (Chart Museum)",
         "PUSH": "Yükle",
         "PULL": "Çek",
         "FILTER_PLACEHOLDER": "Robot Hesaplarını Filtrele",
@@ -349,7 +351,11 @@
         "DELETION_TITLE": "Robot hesaplarının kaldırılmasını onaylayın",
         "DELETION_SUMMARY": "Robot hesaplarını silmek istiyor musunuz {{param}}?",
         "PULL_IS_MUST": "Çekme izni varsayılan olarak kontrol edilir ve değiştirilemez.",
-        "EXPORT_TO_FILE": "dosyayı dışarı aktar"
+        "EXPORT_TO_FILE": "dosyayı dışarı aktar",
+        "EXPIRES_AT": "Expires At",
+        "EXPIRATION_TOOLTIP": "If not set, the expiration time of system configuration will be used",
+        "INVALID_VALUE": "The value of the expiration time is invalid",
+        "NEVER_EXPIRED": "Never Expired"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "DÜZENLE",
@@ -363,7 +369,8 @@
         "OF": "of",
         "ITEMS": "adetler",
         "LAST_TRIGGERED": "Son Tetiklenen",
-        "EDIT_WEBHOOK": "Ağ Kancası Uç Noktası",
+        "EDIT_WEBHOOK": "Edit Webhook",
+        "ADD_WEBHOOK": "Add Webhook",
         "CREATE_WEBHOOK": "Ağ kancaları ile başladı",
         "EDIT_WEBHOOK_DESC": "Ağ kancası bildirimleri almak için bitiş noktasını belirtin",
         "CREATE_WEBHOOK_DESC": "Ağ kancalarına başlamak için, web kanca sunucusuna erişmek için bir uç nokta ve kimlik bilgisi sağlayın.",
@@ -377,10 +384,28 @@
         "SAVE_BUTTON": "KAYDET",
         "TEST_ENDPOINT_SUCCESS": "Connection tested successfully.",
         "TEST_ENDPOINT_FAILURE": "Failed to ping endpoint.",
-        "ENABLED_WEBHOOK_TITLE": "Proje Ağ Kancalarını Etkinleştir",
-        "ENABLED_WEBHOOK_SUMMARY": "Proje için ağ kancalarını etkinleştirmek istiyor musunuz?",
-        "DISABLED_WEBHOOK_TITLE": "Proje Ağ kancalarını Devre Dışı Bırak",
-        "DISABLED_WEBHOOK_SUMMARY": "Proje için ağ kancalarını devre dışı bırakmak istiyor musunuz?"
+        "ENABLED_WEBHOOK_TITLE": "Enable  Webhook",
+        "ENABLED_WEBHOOK_SUMMARY": "Do you want to enable webhook {{name}}?",
+        "DISABLED_WEBHOOK_TITLE": "Disable Webhook",
+        "DISABLED_WEBHOOK_SUMMARY": "Do you want to disable webhook {{name}}?",
+        "DELETE_WEBHOOK_TITLE": "Delete Webhook(s)",
+        "DELETE_WEBHOOK_SUMMARY": "Do you want to delete webhook(s) {{names}}?",
+        "WEBHOOKS": "Webhooks",
+        "NEW_WEBHOOK": "New Webhook",
+        "ENABLE": "Enable",
+        "DISABLE": "Disable",
+        "NAME": "Name",
+        "TARGET": "Endpoint URL",
+        "EVENT_TYPES": "Event types",
+        "DESCRIPTION": "Description",
+        "NO_WEBHOOK": "No Webhook",
+        "LAST_TRIGGER": "Last Trigger",
+        "WEBHOOK_NAME": "Webhook Name",
+        "NO_TRIGGER": "No Trigger",
+        "NAME_REQUIRED": "Name is required",
+        "NOTIFY_TYPE": "Notify Type",
+        "EVENT_TYPE": "Event Type",
+        "EVENT_TYPE_REQUIRED": "Require at least one event type"
     },
     "GROUP": {
         "GROUP": "Grup",
@@ -432,7 +457,10 @@
         "ITEMS": "adet",
         "FILTER_PLACEHOLDER": "Günlükleri Filtrele",
         "INVALID_DATE": "Geçersiz tarih.",
-        "OF": "of"
+        "OF": "of",
+        "NOT_FOUND": "We couldn't find any logs!",
+        "RESOURCE": "Resource",
+        "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
         "YES": "Evet",
@@ -442,7 +470,7 @@
         "MONTH": "Ay",
         "DAY_MONTH": "Ayın günü",
         "DAY_WEEK": "Ayın haftası",
-        "CRON-TITLE": "Cron için kalıp açıklaması '* * * * * *'",
+        "CRON_TITLE": "Cron için kalıp açıklaması '* * * * * *'.The cron string is based on UTC time",
         "FIELD_NAME": "Alan adı",
         "MANDATORY": "Zorunlu?",
         "ALLOWED_VALUES": "İzin verilen değerler",
@@ -614,7 +642,10 @@
         "COPY_DIGEST_ID": "Özet Kopyala",
         "DELETE": "Sil",
         "NAME": "İsim",
-        "TAGS_COUNT": "Etiketler",
+        "TAGS": "Etiketler",
+        "PLATFORM": "OS/ARCH",
+        "ARTIFACT_TOOTIP": "Click to view this OCI index's artifact list",
+        "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "İndirmeler",
         "PULL_COMMAND": "İndirme Komutu",
         "PULL_TIME": "İndirme Zamanı",
@@ -626,13 +657,17 @@
         "DELETION_TITLE_REPO_SIGNED": "Depo silinemez",
         "DELETION_SUMMARY_REPO_SIGNED": "Depo '{{repoName}}' aşağıdaki imzalanmış görüntüler mevcut olduğu için silinemez. \n {{signedImages}} \nBir depoyu silmeden önce imzalı tüm imajları imzalamanız gerekir!",
         "DELETION_SUMMARY_REPO": "Depoyu silmek istiyor musunuz?{{repoName}}?",
+        "DELETION_TITLE_ARTIFACT": "Confirm Artifact Deletion",
+        "DELETION_SUMMARY_ARTIFACT": "Do you want to delete artifact {{param}}? If you delete this artifact, all tags referenced by the digest will also be deleted.",
         "DELETION_TITLE_TAG": "Etiket Silme İşlemini Onayla",
-        "DELETION_SUMMARY_TAG": "Etiketi silmek ister misiniz {{param}}? If you delete this tag, all other tags referenced by the same digest will also be deleted",
+        "DELETION_SUMMARY_TAG": "Etiketi silmek ister misiniz {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "İmzalı etiket silinemez",
         "DELETION_SUMMARY_TAG_DENIED": "Etiket silinmeden önce Harbordan kaldırılmalıdır. \nBu komutla Harbor'den silin: \n",
         "TAGS_NO_DELETE": "Salt okunur modda silmek yasaktır.",
         "FILTER_FOR_REPOSITORIES": "Depoları Filtrele",
         "TAG": "Etiket",
+        "ARTIFACT": "Aarifact",
+        "ARTIFACTS": "Artifacts",
         "SIZE": "Boyut",
         "VULNERABILITY": "Güvenlik Açığı",
         "BUILD_HISTORY": "Geçmişi Oluştur",
@@ -659,8 +694,9 @@
         "LABELS": "Etiketler",
         "ADD_LABEL_TO_IMAGE": "Bu imaja etiketler ekle",
         "FILTER_BY_LABEL": "İmajları etikete göre filtrele",
+        "FILTER_ARTIFACT_BY_LABEL": "Filter actifact by label",
         "ADD_LABELS": "Etiketler Ekle",
-        "RETAG": "Yeniden etiketleme",
+        "RETAG": "Copy",
         "ACTION": "AKSİYON",
         "DEPLOY": "YÜKLE",
         "ADDITIONAL_INFO": "Ek Bilgi Ekle",
@@ -957,6 +993,8 @@
         },
         "CHART": {
             "SCANNING_TIME": "Tarama tamamlanma zamanı:",
+            "SCANNING_PERCENT": "Scan completed percent:",
+            "SCANNING_PERCENT_EXPLAIN": "Scan completed percentage is calculated as # of successfully scanned images / total number of images referenced within the image index.",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} 'nın {{totalPackages}} {{package}} bilinen {{vulnerability}}.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} 'nın {{totalPackages}} {{package}} bilinen {{vulnerability}}.",
             "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
@@ -980,11 +1018,31 @@
         "SCAN_NOW": "Tara"
     },
     "PUSH_IMAGE": {
-        "TITLE": "İmajı Yükle",
-        "TOOLTIP": "Bu projeye bir imaj yüklemek için komut referansları.",
+        "TITLE": "Push Command",
+        "DOCKER": "Docker",
+        "HELM": "Helm",
+        "CNAB": "CNAB",
+        "TAG_COMMAND_CHART": "Tag a chart for this project:",
+        "PUSH_COMMAND_CHART": "Push a chart to this project:",
+        "PUSH_COMMAND_CNAB": "Push a CNAB to this project:",
+        "TOOLTIP": "Command references for pushing an artifact to this project.",
         "TAG_COMMAND": "Bu proje için bir imaj etiketleyin:",
         "PUSH_COMMAND": "Bu projeye bir imaj gönder:",
         "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin."
+    },
+    "ARTIFACT": {
+        "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
+        "ADDITIONS": "Additions",
+        "ANNOTATION": "Annotations",
+        "OVERVIEW": "Overview",
+        "IMAGE": "IMAGE",
+        "CHART": "CHART",
+        "CNAB": "CNAB",
+        "TAGGED": "Tagged",
+        "UNTAGGED": "Untagged",
+        "ALL": "All",
+        "PLACEHOLDER": "We couldn't find any artifacts!",
+        "SCAN_UNSUPPORTED": "Unsupported"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Oluştur",
@@ -1006,7 +1064,16 @@
         "AUTHOR": "Yazar",
         "LABELS": "Etiketler",
         "CREATION": "Oluşturma",
-        "COMMAND": "Komutlar"
+        "COMMAND": "Komutlar",
+        "UPLOADTIME": "Upload Time",
+        "NAME": "Name",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
+        "OF": "of",
+        "ITEMS": "items",
+        "ADD_TAG": "ADD TAG",
+        "REMOVE_TAG": "REMOVE TAG",
+        "NAME_ALREADY_EXISTS": "Tag already exists under the repository"
     },
     "LABEL": {
         "LABEL": "Etiket",
@@ -1086,7 +1153,7 @@
     },
     "UNKNOWN_ERROR": "Bilinmeyen hatalar oluştu. Lütfen daha sonra tekrar deneyiniz.",
     "UNAUTHORIZED_ERROR": "Oturumunuz geçersiz veya süresi dolmuş. İşleminize devam etmek için oturum açmanız gerekir.",
-    "REPO_READ_ONLY": "Harbor salt okunur moduna ayarlandı, Depoyu silme, etiketleme ve imaj yükleme salt okunur modda devre dışı bırakılacak.",
+    "REPO_READ_ONLY": "Harbor salt okunur moduna ayarlandı, Depoyu silme, artifact, etiketleme ve imaj yükleme salt okunur modda devre dışı bırakılacak.",
     "FORBIDDEN_ERROR": "İşlemi gerçekleştirmek için gereken ayrıcalıklarınız yok.",
     "GENERAL_ERROR": "Servis çağrısı yapılırken hatalar oluştu: {{param}}.",
     "BAD_REQUEST_ERROR": "Kötü bir istek nedeniyle işleminizi gerçekleştiremiyoruz.",
@@ -1098,6 +1165,7 @@
     "UNKNOWN": "n/a",
     "STATUS": "Durum",
     "START_TIME": "Başlama Zamanı",
+    "CREATION_TIME": "Creation Time",
     "UPDATE_TIME": "Güncelleme Zamanı",
     "LOGS": "Kayıtlar",
     "PENDING": "Askıda",
@@ -1127,10 +1195,12 @@
         "LATEST_JOBS": "Son {{param}} İşler",
         "MSG_SUCCESS": "Çöp Toplama Başarılı",
         "MSG_SCHEDULE_SET": "Çöp Toplama programı belirlendi",
-        "MSG_SCHEDULE_RESET": "Çöp Toplama programı sıfırlandı"
+        "MSG_SCHEDULE_RESET": "Çöp Toplama programı sıfırlandı",
+        "PARAMETERS": "Parameters",
+        "DELETE_UNTAGGED": "Delete Untagged Artifacts"
     },
     "RETAG": {
-        "MSG_SUCCESS": "Başarıyla yeniden etiketle",
+        "MSG_SUCCESS": "Copy artifact successfully",
         "TIP_REPO": "Bir depo adı yol bileşenlerine bölünmüştür. Depo adının bir bileşeni, isteğe bağlı olarak nokta, kısa çizgi veya alt çizgi ile ayrılmış en az bir küçük harf, alfa sayısal karakterler olmalıdır. Daha kesin olarak, [a-z0-9] + (?: [._-] [a-z0-9] +) * normal ifadesiyle eşleşmelidir. Eğer bir depo adı iki veya daha fazla yol bileşenine sahipse, eğik çizgi ile ayrılmış ('/').Eğik çizgi içeren bir depo adının toplam uzunluğu, 256 karakterden az olmalıdır.",
         "TIP_TAG": "Etiket, bir depodaki Docker imajına uygulanan bir etikettir. Etiketler, bir depodaki çeşitli imajların birbirlerinden nasıl ayırt edildikleridir. Regex ile eşleşmesi gerekir: (`[\\ w] [\\ w .-] {0,127}`)"
     },
@@ -1195,9 +1265,11 @@
         "IN_REPOSITORIES": "Depolar için",
         "REP_SEPARATOR": "Birden çok virgülle ayrılmış depolar, depo* veya ** girin",
         "TAGS": "Etiketler",
+        "INCLUDE_UNTAGGED": " untagged artifacts",
+        "UNTAGGED": " untagged",
         "MATCHES_TAGS": "Etiketleri eşleşir",
         "MATCHES_EXCEPT_TAGS": "Etiketler hariç eşleşir",
-        "TAG_SEPARATOR": "Birden çok virgülle ayrılmış etiket, etiket * veya ** girin",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags, tag*, or **. Optionally include all untagged artifacts when applying the ‘including’ or ‘excluding’ selector by checking the box above.",
         "LABELS": "Etiketler",
         "MATCHES_LABELS": "Eşleşen Etiketler",
         "MATCHES_EXCEPT_LABELS": "Etiketler hariç eşleşmeler",
@@ -1232,7 +1304,7 @@
         "RULE_TEMPLATE_6": " imajlar son # gün içinde imdirilmiş",
         "RULE_TEMPLATE_7": " imajlar son # gün içinde yüklendi.",
         "SCHEDULE": "Program",
-        "SCHEDULE_WARNING": "Executing retention policy results in the irreversible effect of deleting images from the Harbor project.  Please double check all policies before scheduling.",
+        "SCHEDULE_WARNING": "Executing retention policy results in the irreversible effect of deleting artifacts from the Harbor project.  Please double check all policies before scheduling.",
         "EXISTING_RULE": "Existing rule",
         "ILLEGAL_RULE": "Illegal rule",
         "INVALID_RULE": "Invalid rule",
@@ -1342,6 +1414,7 @@
         "VIEW_DOC": "view documentation",
         "ALL_SCANNERS": "All scanners",
         "HELP_INFO_1": "The default scanner has been installed. To install other scanners refer to the ",
-        "HELP_INFO_2": "documentation."
+        "HELP_INFO_2": "documentation.",
+        "NO_DEFAULT_SCANNER": "No default scanner"
     }
 }

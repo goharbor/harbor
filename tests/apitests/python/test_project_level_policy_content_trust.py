@@ -6,6 +6,7 @@ from testutils import ADMIN_CLIENT
 from testutils import harbor_server
 
 from testutils import TEARDOWN
+from library.artifact import Artifact
 from library.project import Project
 from library.user import User
 from library.repository import Repository
@@ -15,14 +16,10 @@ from library.repository import pull_harbor_image
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        repo = Repository()
-        self.repo= repo
+        self.project= Project()
+        self.user= User()
+        self.artifact= Artifact()
+        self.repo= Repository()
 
     @classmethod
     def tearDown(self):
@@ -31,7 +28,7 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(TestProjects.repo_name, **TestProjects.USER_CONTENT_TRUST_CLIENT)
+        self.repo.delete_repoitory(TestProjects.project_content_trust_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_CONTENT_TRUST_CLIENT)
 
         #2. Delete project(PA);
         self.project.delete_project(TestProjects.project_content_trust_id, **TestProjects.USER_CONTENT_TRUST_CLIENT)
@@ -57,6 +54,7 @@ class TestProjects(unittest.TestCase):
             3. Delete user(UA);
         """
         url = ADMIN_CLIENT["endpoint"]
+        image = "hello-world"
         admin_name = ADMIN_CLIENT["username"]
         admin_password = ADMIN_CLIENT["password"]
         user_content_trust_password = "Aa123456"
@@ -67,13 +65,14 @@ class TestProjects(unittest.TestCase):
         TestProjects.USER_CONTENT_TRUST_CLIENT=dict(endpoint = url, username = user_content_trust_name, password = user_content_trust_password)
 
         #2. Create a new project(PA) by user(UA);
-        TestProjects.project_content_trust_id, project_content_trust_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_CONTENT_TRUST_CLIENT)
+        TestProjects.project_content_trust_id, TestProjects.project_content_trust_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_CONTENT_TRUST_CLIENT)
 
         #3. Push a new image(IA) in project(PA) by admin;
-        TestProjects.repo_name, tag = push_image_to_project(project_content_trust_name, harbor_server, admin_name, admin_password, "hello-world", "latest")
+        TestProjects.repo_name, tag = push_image_to_project(TestProjects.project_content_trust_name, harbor_server, admin_name, admin_password, image, "latest")
 
         #4. Image(IA) should exist;
-        self.repo.image_should_exist(TestProjects.repo_name, tag, **TestProjects.USER_CONTENT_TRUST_CLIENT)
+        artifact = self.artifact.get_reference_info(TestProjects.project_content_trust_name, image, tag, **TestProjects.USER_CONTENT_TRUST_CLIENT)
+        self.assertEqual(artifact[0].tags[0].name, tag)
 
         #5. Pull image(IA) successfully;
         pull_harbor_image(harbor_server, admin_name, admin_password, TestProjects.repo_name, tag)

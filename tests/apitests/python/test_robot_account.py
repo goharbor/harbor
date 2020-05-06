@@ -15,14 +15,9 @@ from library.base import _assert_status_code
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        repo = Repository()
-        self.repo= repo
+        self.project = Project()
+        self.user = User()
+        self.repo = Repository()
 
     @classmethod
     def tearDown(self):
@@ -31,17 +26,17 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(TestProjects.repo_name_in_project_a, **TestProjects.USER_RA_CLIENT)
-        self.repo.delete_repoitory(TestProjects.repo_name_in_project_b, **TestProjects.USER_RA_CLIENT)
-        self.repo.delete_repoitory(TestProjects.repo_name_in_project_c, **TestProjects.USER_RA_CLIENT)
-        self.repo.delete_repoitory(TestProjects.repo_name_pa, **TestProjects.USER_RA_CLIENT)
+        self.repo.delete_repoitory(TestProjects.project_ra_name_a, TestProjects.repo_name_in_project_a.split('/')[1], **TestProjects.USER_RA_CLIENT)
+        self.repo.delete_repoitory(TestProjects.project_ra_name_b, TestProjects.repo_name_in_project_b.split('/')[1], **TestProjects.USER_RA_CLIENT)
+        self.repo.delete_repoitory(TestProjects.project_ra_name_c, TestProjects.repo_name_in_project_c.split('/')[1], **TestProjects.USER_RA_CLIENT)
+        self.repo.delete_repoitory(TestProjects.project_ra_name_a, TestProjects.repo_name_pa.split('/')[1], **TestProjects.USER_RA_CLIENT)
 
         #2. Delete project(PA);
         self.project.delete_project(TestProjects.project_ra_id_a, **TestProjects.USER_RA_CLIENT)
         self.project.delete_project(TestProjects.project_ra_id_b, **TestProjects.USER_RA_CLIENT)
         self.project.delete_project(TestProjects.project_ra_id_c, **TestProjects.USER_RA_CLIENT)
 
-        #3. Delete user(UA);
+        #3. Delete user(UA).
         self.user.delete_user(TestProjects.user_ra_id, **ADMIN_CLIENT)
 
     def testRobotAccount(self):
@@ -63,10 +58,11 @@ class TestProjects(unittest.TestCase):
 			12. Update action property of robot account(RA);
 			13. Pull image(ImagePA) from project(PA) by robot account(RA), it must be not successful;
 			14. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;
-			15. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;
+			15. Delete robot account(RA), it must be not successful.
         Tear down:
-            1. Delete project(PA) (PB) (PC);
-            2. Delete user(UA).
+            1. Delete repository(RA) by user(UA);
+            2. Delete project(PA);
+            3. Delete user(UA).
         """
         url = ADMIN_CLIENT["endpoint"]
         admin_name = ADMIN_CLIENT["username"]
@@ -75,7 +71,7 @@ class TestProjects(unittest.TestCase):
         image_project_a = "haproxy"
         image_project_b = "hello-world"
         image_project_c = "httpd"
-        image_robot_account = "mariadb"
+        image_robot_account = "alpine"
         tag = "latest"
 
         print "#1. Create user(UA);"
@@ -83,17 +79,17 @@ class TestProjects(unittest.TestCase):
         TestProjects.USER_RA_CLIENT=dict(endpoint = url, username = user_ra_name, password = user_ra_password)
 
         print "#2. Create private project(PA), private project(PB) and public project(PC) by user(UA);"
-        TestProjects.project_ra_id_a, project_ra_name_a = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_RA_CLIENT)
-        TestProjects.project_ra_id_b, project_ra_name_b = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_RA_CLIENT)
-        TestProjects.project_ra_id_c, project_ra_name_c = self.project.create_project(metadata = {"public": "true"}, **TestProjects.USER_RA_CLIENT)
+        TestProjects.project_ra_id_a, TestProjects.project_ra_name_a = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_RA_CLIENT)
+        TestProjects.project_ra_id_b, TestProjects.project_ra_name_b = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_RA_CLIENT)
+        TestProjects.project_ra_id_c, TestProjects.project_ra_name_c = self.project.create_project(metadata = {"public": "true"}, **TestProjects.USER_RA_CLIENT)
 
         print "#3. Push image(ImagePA) to project(PA), image(ImagePB) to project(PB) and image(ImagePC) to project(PC) by user(UA);"
-        TestProjects.repo_name_in_project_a, tag_a = push_image_to_project(project_ra_name_a, harbor_server, user_ra_name, user_ra_password, image_project_a, tag)
-        TestProjects.repo_name_in_project_b, tag_b = push_image_to_project(project_ra_name_b, harbor_server, user_ra_name, user_ra_password, image_project_b, tag)
-        TestProjects.repo_name_in_project_c, tag_c = push_image_to_project(project_ra_name_c, harbor_server, user_ra_name, user_ra_password, image_project_c, tag)
+        TestProjects.repo_name_in_project_a, tag_a = push_image_to_project(TestProjects.project_ra_name_a, harbor_server, user_ra_name, user_ra_password, image_project_a, tag)
+        TestProjects.repo_name_in_project_b, tag_b = push_image_to_project(TestProjects.project_ra_name_b, harbor_server, user_ra_name, user_ra_password, image_project_b, tag)
+        TestProjects.repo_name_in_project_c, tag_c = push_image_to_project(TestProjects.project_ra_name_c, harbor_server, user_ra_name, user_ra_password, image_project_c, tag)
 
         print "#4. Create a new robot account(RA) with pull and push privilige in project(PA) by user(UA);"
-        robot_id, robot_account = self.project.add_project_robot_account(TestProjects.project_ra_id_a, project_ra_name_a,
+        robot_id, robot_account = self.project.add_project_robot_account(TestProjects.project_ra_id_a, TestProjects.project_ra_name_a,
                                                                          2441000531 ,**TestProjects.USER_RA_CLIENT)
         print robot_account.name
         print robot_account.token
@@ -106,30 +102,30 @@ class TestProjects(unittest.TestCase):
         pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_a, tag_a)
 
         print "#7. Push image(ImageRA) to project(PA) by robot account(RA), it must be successful;"
-        TestProjects.repo_name_pa, _ = push_image_to_project(project_ra_name_a, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag)
+        TestProjects.repo_name_pa, _ = push_image_to_project(TestProjects.project_ra_name_a, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag)
 
         print "#8. Push image(ImageRA) to project(PB) by robot account(RA), it must be not successful;"
-        push_image_to_project(project_ra_name_b, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_error_message = "denied: requested access to the resource is denied")
+        push_image_to_project(TestProjects.project_ra_name_b, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_error_message = "unauthorized to access repository")
 
         print "#9. Pull image(ImagePB) from project(PB) by robot account(RA), it must be not successful;"
-        pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_b, tag_b, expected_error_message = r"pull access denied for " + harbor_server + "/" + TestProjects.repo_name_in_project_b)
+        pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_b, tag_b, expected_error_message = "unauthorized to access repository")
 
         print "#10. Pull image from project(PC), it must be successful;"
         pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_c, tag_c)
 
         print "#11. Push image(ImageRA) to project(PC) by robot account(RA), it must be not successful;"
-        push_image_to_project(project_ra_name_c, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_error_message = "denied: requested access to the resource is denied")
+        push_image_to_project(TestProjects.project_ra_name_c, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_error_message = "unauthorized to access repository")
 
         print "#12. Update action property of robot account(RA);"
         self.project.disable_project_robot_account(TestProjects.project_ra_id_a, robot_id, True, **TestProjects.USER_RA_CLIENT)
 
         print "#13. Pull image(ImagePA) from project(PA) by robot account(RA), it must be not successful;"
-        pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_a, tag_a, expected_login_error_message = "401 Client Error: Unauthorized")
+        pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_a, tag_a, expected_login_error_message = "unauthorized: authentication required")
 
         print "#14. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;"
-        push_image_to_project(project_ra_name_a, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_login_error_message = "401 Client Error: Unauthorized")
+        push_image_to_project(TestProjects.project_ra_name_a, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_login_error_message = "unauthorized: authentication required")
 
-        print "#15. Delete robot account(RA), it must be not successful;"
+        print "#15. Delete robot account(RA), it must be not successful."
         self.project.delete_project_robot_account(TestProjects.project_ra_id_a, robot_id, **TestProjects.USER_RA_CLIENT)
 
 if __name__ == '__main__':

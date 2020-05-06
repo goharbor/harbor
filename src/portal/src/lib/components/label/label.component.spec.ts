@@ -14,6 +14,7 @@ import {ErrorHandler} from "../../utils/error-handler/error-handler";
 import {IServiceConfig, SERVICE_CONFIG} from "../../entities/service.config";
 import { OperationService } from "../operation/operation.service";
 import { of } from "rxjs";
+import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 describe('LabelComponent (inline template)', () => {
 
@@ -60,7 +61,7 @@ describe('LabelComponent (inline template)', () => {
     let spyOneLabel: jasmine.Spy;
 
     let config: IServiceConfig = {
-        systemInfoEndpoint: '/api/label/testing'
+        systemInfoEndpoint: CURRENT_BASE_HREF + '/label/testing'
     };
 
     beforeEach(async(() => {

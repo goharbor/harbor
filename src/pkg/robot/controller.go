@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/token"
 	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
-	"github.com/pkg/errors"
 	"time"
 )
 
@@ -86,10 +86,14 @@ func (d *DefaultAPIController) CreateRobotAccount(robotReq *model.RobotCreate) (
 		ProjectID: robotReq.ProjectID,
 		Access:    robotReq.Access,
 		StandardClaims: jwt.StandardClaims{
-			IssuedAt:  time.Now().UTC().Unix(),
-			ExpiresAt: robotReq.ExpiresAt,
-			Issuer:    opt.Issuer,
+			IssuedAt: time.Now().UTC().Unix(),
+			Issuer:   opt.Issuer,
 		},
+	}
+	// "-1" means the robot account is a permanent account, no expiration time set.
+	// 	The ExpiresAt claim is optional, so if it's not set, it will still be considered a valid claim
+	if robot.ExpiresAt != -1 {
+		rClaims.ExpiresAt = robotReq.ExpiresAt
 	}
 	tk, err := token.New(opt, rClaims)
 	if err != nil {

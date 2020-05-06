@@ -17,9 +17,9 @@ package dao
 import (
 	"context"
 	beego_orm "github.com/astaxie/beego/orm"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/internal/orm"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 
@@ -41,6 +41,8 @@ type DAO interface {
 	Update(ctx context.Context, tag *tag.Tag, props ...string) (err error)
 	// Delete the tag specified by ID
 	Delete(ctx context.Context, id int64) (err error)
+	// DeleteOfArtifact deletes all tags attached to the artifact
+	DeleteOfArtifact(ctx context.Context, artifactID int64) (err error)
 }
 
 // New returns an instance of the default DAO
@@ -69,6 +71,7 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*tag.Tag, error) {
 	if err != nil {
 		return nil, err
 	}
+	qs = qs.OrderBy("-PushTime", "ID")
 	if _, err = qs.All(&tags); err != nil {
 		return nil, err
 	}
@@ -96,12 +99,14 @@ func (d *dao) Create(ctx context.Context, tag *tag.Tag) (int64, error) {
 		return 0, err
 	}
 	id, err := ormer.Insert(tag)
-	if e := orm.AsConflictError(err, "tag %s already exists under the repository %d",
-		tag.Name, tag.RepositoryID); e != nil {
-		err = e
-	} else if e := orm.AsForeignKeyError(err, "the tag %s tries to attach to a non existing artifact %d",
-		tag.Name, tag.ArtifactID); e != nil {
-		err = e
+	if err != nil {
+		if e := orm.AsConflictError(err, "tag %s already exists under the repository %d",
+			tag.Name, tag.RepositoryID); e != nil {
+			err = e
+		} else if e := orm.AsForeignKeyError(err, "the tag %s tries to attach to a non existing artifact %d",
+			tag.Name, tag.ArtifactID); e != nil {
+			err = e
+		}
 	}
 	return id, err
 }
@@ -119,7 +124,7 @@ func (d *dao) Update(ctx context.Context, tag *tag.Tag, props ...string) error {
 		return err
 	}
 	if n == 0 {
-		return ierror.NotFoundError(nil).WithMessage("tag %d not found", tag.ID)
+		return errors.NotFoundError(nil).WithMessage("tag %d not found", tag.ID)
 	}
 	return nil
 }
@@ -135,7 +140,20 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return ierror.NotFoundError(nil).WithMessage("tag %d not found", id)
+		return errors.NotFoundError(nil).WithMessage("tag %d not found", id)
 	}
 	return nil
+}
+
+func (d *dao) DeleteOfArtifact(ctx context.Context, artifactID int64) error {
+	qs, err := orm.QuerySetter(ctx, &tag.Tag{}, &q.Query{
+		Keywords: map[string]interface{}{
+			"ArtifactID": artifactID,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	_, err = qs.Delete()
+	return err
 }

@@ -1,0 +1,33 @@
+.arrow-block a{
+    cursor: pointer;
+    color: #007cbb;
+    font-size: 16px;
+    padding: 5px;
+    border-radius: 2px;
+    margin-right: 5px;
+}
+.back-icon {
+    color: gray;
+}
+
+.margin-top-5px {
+    margin-top: 5px;
+}
+
+.center {
+    justify-content: center;
+    align-items: center;
+}
+.center-align-items {
+    display: flex;
+    align-items: center;
+    clr-icon {
+        margin-left: 10px;
+    }
+    img {
+        margin-right: 10px;
+    }
+}
+.artifact-icon {
+    width: 25px;
+}

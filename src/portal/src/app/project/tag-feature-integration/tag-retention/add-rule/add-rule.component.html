@@ -10,7 +10,7 @@
                 <div class="clr-col-4">
                     <span>{{'TAG_RETENTION.IN_REPOSITORIES' | translate}}</span>
                 </div>
-                <div class="clr-col-3">
+                <div class="clr-col-2">
                     <div class="clr-select-wrapper w-100">
                         <select [(ngModel)]="repoSelect" class="clr-select w-100">
                              <option *ngFor="let d of metadata?.scope_selectors[0]?.decorations"
@@ -18,7 +18,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="clr-col-5">
+                <div class="clr-col-6">
                     <div class="w-100">
                         <input id="repos" required [(ngModel)]="repositories" class="clr-input w-100">
                     </div>
@@ -57,12 +57,12 @@
                 </div>
             </div>
         </div>
-        <div class="height-72">
+        <div class="height-85">
             <div class="clr-row">
                 <div class="clr-col-4">
                     <label>{{'TAG_RETENTION.TAGS' | translate}}</label>
                 </div>
-                <div class="clr-col-3">
+                <div class="clr-col-2">
                     <div class="clr-select-wrapper w-100">
                         <select [(ngModel)]="tagsSelect" class="clr-select w-100">
                             <option *ngFor="let d of metadata?.tag_selectors[0]?.decorations"
@@ -70,16 +70,22 @@
                         </select>
                     </div>
                 </div>
-                <div class="clr-col-5">
+                <div class="clr-col-3">
                     <div class="w-100">
                         <input id="tags" required [(ngModel)]="tagsInput" class="clr-input w-100">
+                    </div>
+                </div>
+                <div class="clr-col-3 p-0">
+                    <div class="w-100 untagged">
+                        <label for="untagged">{{'TAG_RETENTION.INCLUDE_UNTAGGED' | translate}}</label>
+                        <input type="checkbox" [(ngModel)]="untagged" name="untagged" id="untagged" class="clr-input w-100" clrCheckbox />
                     </div>
                 </div>
             </div>
             <div class="clr-row">
                 <div class="clr-col-4"></div>
                 <div class="clr-col-8">
-                    <span>{{'TAG_RETENTION.TAG_SEPARATOR' | translate}}</span>
+                    <span class="tootip">{{'TAG_RETENTION.TAG_SEPARATOR' | translate}}</span>
                 </div>
             </div>
         </div>

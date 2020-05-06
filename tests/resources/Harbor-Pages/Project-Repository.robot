@@ -19,7 +19,7 @@ Resource  ../../resources/Util.robot
 *** Keywords ***
 View Repo Scan Details
     Retry Element Click  xpath=${first_repo_xpath}
-    Capture Page Screenshot  viewcve1.png
+    Capture Page Screenshot
     Retry Wait Until Page Contains  unknown
     Retry Wait Until Page Contains  high
     Retry Wait Until Page Contains  medium

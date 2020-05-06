@@ -15,31 +15,76 @@
 package registry
 
 import (
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/pkg/project"
-	"github.com/goharbor/harbor/src/server/middleware/immutable"
-	"github.com/goharbor/harbor/src/server/middleware/manifestinfo"
-	"github.com/goharbor/harbor/src/server/middleware/readonly"
-	"github.com/goharbor/harbor/src/server/registry/manifest"
-	"github.com/goharbor/harbor/src/server/router"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
+
+	"github.com/goharbor/harbor/src/server/middleware/artifactinfo"
+	"github.com/goharbor/harbor/src/server/middleware/blob"
+	"github.com/goharbor/harbor/src/server/middleware/contenttrust"
+	"github.com/goharbor/harbor/src/server/middleware/immutable"
+	"github.com/goharbor/harbor/src/server/middleware/quota"
+	"github.com/goharbor/harbor/src/server/middleware/v2auth"
+	"github.com/goharbor/harbor/src/server/middleware/vulnerable"
+	"github.com/goharbor/harbor/src/server/router"
 )
 
 // RegisterRoutes for OCI registry APIs
 func RegisterRoutes() {
-	// TODO remove
-	regURL, _ := config.RegistryURL()
-	url, _ := url.Parse(regURL)
-	proxy := httputil.NewSingleHostReverseProxy(url)
-
-	router.NewRoute().Path("/v2/*").Handler(New(url))
-	router.NewRoute().
+	root := router.NewRoute().
+		Path("/v2").
+		Middleware(artifactinfo.Middleware()).
+		Middleware(v2auth.Middleware())
+	// catalog
+	root.NewRoute().
+		Method(http.MethodGet).
+		Path("/_catalog").
+		Handler(newRepositoryHandler())
+	// list tags
+	root.NewRoute().
+		Method(http.MethodGet).
+		Path("/*/tags/list").
+		Handler(newTagHandler())
+	// manifest
+	root.NewRoute().
+		Method(http.MethodGet).
+		Path("/*/manifests/:reference").
+		Middleware(contenttrust.Middleware()).
+		Middleware(vulnerable.Middleware()).
+		HandlerFunc(getManifest)
+	root.NewRoute().
+		Method(http.MethodHead).
+		Path("/*/manifests/:reference").
+		HandlerFunc(getManifest)
+	root.NewRoute().
+		Method(http.MethodDelete).
+		Path("/*/manifests/:reference").
+		Middleware(quota.RefreshForProjectMiddleware()).
+		HandlerFunc(deleteManifest)
+	root.NewRoute().
 		Method(http.MethodPut).
-		Path("/v2/*/manifests/:reference").
-		Middleware(readonly.Middleware()).
-		Middleware(manifestinfo.Middleware()).
-		Middleware(immutable.MiddlewarePush()).
-		Handler(manifest.NewHandler(project.Mgr, proxy))
+		Path("/*/manifests/:reference").
+		Middleware(immutable.Middleware()).
+		Middleware(quota.PutManifestMiddleware()).
+		Middleware(blob.PutManifestMiddleware()).
+		HandlerFunc(putManifest)
+	// initiate blob upload
+	root.NewRoute().
+		Method(http.MethodPost).
+		Path("/*/blobs/uploads").
+		Middleware(quota.PostInitiateBlobUploadMiddleware()).
+		Middleware(blob.PostInitiateBlobUploadMiddleware()).
+		Handler(proxy)
+	// blob upload
+	root.NewRoute().
+		Method(http.MethodPatch).
+		Path("/*/blobs/uploads/:session_id").
+		Middleware(blob.PatchBlobUploadMiddleware()).
+		Handler(proxy)
+	root.NewRoute().
+		Method(http.MethodPut).
+		Path("/*/blobs/uploads/:session_id").
+		Middleware(quota.PutBlobUploadMiddleware()).
+		Middleware(blob.PutBlobUploadMiddleware()).
+		Handler(proxy)
+	// others
+	root.NewRoute().Path("/*").Handler(proxy)
 }

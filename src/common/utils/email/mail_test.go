@@ -42,7 +42,7 @@ func TestSend(t *testing.T) {
 	// TODO
 	// assert.Nil(t, err)
 
-	/*not work on travis
+	/*not work on ci
 	// non-tls connection
 	addr = "smtp.gmail.com:25"
 	tls = false
@@ -82,7 +82,7 @@ func TestPing(t *testing.T) {
 	// TODO
 	// assert.Nil(t, err)
 
-	/*not work on travis
+	/*not work on ci
 	// non-tls connection
 	addr = "smtp.gmail.com:25"
 	tls = false

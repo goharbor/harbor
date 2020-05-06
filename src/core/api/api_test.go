@@ -28,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 
-	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
@@ -40,8 +39,8 @@ import (
 )
 
 var (
-	nonSysAdminID, projAdminID, projDeveloperID, projGuestID, projAdminRobotID int64
-	projAdminPMID, projDeveloperPMID, projGuestPMID, projAdminRobotPMID        int
+	nonSysAdminID, projAdminID, projDeveloperID, projGuestID, projLimitedGuestID, projAdminRobotID int64
+	projAdminPMID, projDeveloperPMID, projGuestPMID, projLimitedGuestPMID, projAdminRobotPMID      int
 	// The following users/credentials are registered and assigned roles at the beginning of
 	// running testing and cleaned up at the end.
 	// Do not try to change the system and project roles that the users have during
@@ -65,6 +64,10 @@ var (
 	}
 	projGuest = &usrInfo{
 		Name:   "proj_guest",
+		Passwd: "Harbor12345",
+	}
+	projLimitedGuest = &usrInfo{
+		Name:   "proj_limited_guest",
 		Passwd: "Harbor12345",
 	}
 	projAdmin4Robot = &usrInfo{
@@ -139,7 +142,7 @@ func handle(r *testingRequest) (*httptest.ResponseRecorder, error) {
 	}
 
 	resp := httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(resp, req)
+	handler.ServeHTTP(resp, req)
 	return resp, nil
 }
 
@@ -249,7 +252,7 @@ func prepare() error {
 
 	if projAdminPMID, err = project.AddProjectMember(models.Member{
 		ProjectID:  1,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 		EntityID:   int(projAdminID),
 		EntityType: common.UserMember,
 	}); err != nil {
@@ -268,7 +271,7 @@ func prepare() error {
 
 	if projAdminRobotPMID, err = project.AddProjectMember(models.Member{
 		ProjectID:  1,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 		EntityID:   int(projAdminRobotID),
 		EntityType: common.UserMember,
 	}); err != nil {
@@ -287,7 +290,7 @@ func prepare() error {
 
 	if projDeveloperPMID, err = project.AddProjectMember(models.Member{
 		ProjectID:  1,
-		Role:       models.DEVELOPER,
+		Role:       common.RoleDeveloper,
 		EntityID:   int(projDeveloperID),
 		EntityType: common.UserMember,
 	}); err != nil {
@@ -306,8 +309,26 @@ func prepare() error {
 
 	if projGuestPMID, err = project.AddProjectMember(models.Member{
 		ProjectID:  1,
-		Role:       models.GUEST,
+		Role:       common.RoleGuest,
 		EntityID:   int(projGuestID),
+		EntityType: common.UserMember,
+	}); err != nil {
+		return err
+	}
+
+	// register projLimitedGuest and assign project limit guest role
+	projLimitedGuestID, err = dao.Register(models.User{
+		Username: projLimitedGuest.Name,
+		Password: projLimitedGuest.Passwd,
+		Email:    projLimitedGuest.Name + "@test.com",
+	})
+	if err != nil {
+		return err
+	}
+	if projLimitedGuestPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  1,
+		Role:       common.RoleLimitedGuest,
+		EntityID:   int(projLimitedGuestID),
 		EntityType: common.UserMember,
 	}); err != nil {
 		return err

@@ -16,18 +16,27 @@ package scan
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"reflect"
 	"sync"
 	"time"
 
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -37,11 +46,18 @@ const (
 	JobParameterRequest = "scanRequest"
 	// JobParameterMimes ...
 	JobParameterMimes = "mimeTypes"
-	// JobParameterRobotID ...
-	JobParameterRobotID = "robotID"
+	// JobParameterAuthType ...
+	JobParameterAuthType = "authType"
+	// JobParameterRobot ...
+	JobParameterRobot = "robotAccount"
 
 	checkTimeout       = 30 * time.Minute
 	firstCheckInterval = 2 * time.Second
+
+	authorizationBearer = "Bearer"
+	authorizationBasic  = "Basic"
+
+	service = "harbor-registry"
 )
 
 // CheckInReport defines model for checking in the scan report with specified mime.
@@ -79,6 +95,11 @@ func (j *Job) MaxFails() uint {
 	return 3
 }
 
+// MaxCurrency is implementation of same method in Interface.
+func (j *Job) MaxCurrency() uint {
+	return 0
+}
+
 // ShouldRetry indicates if the job should be retried
 func (j *Job) ShouldRetry() bool {
 	return true
@@ -103,9 +124,18 @@ func (j *Job) Validate(params job.Parameters) error {
 		return errors.Wrap(err, "job validate")
 	}
 
-	// No need to check param robotID which os treated as an optional one.
-	// It is used to clear the generated robot account to reduce dirty data.
-	// Failure of doing this will not influence the main flow.
+	if _, err := extractRobotAccount(params); err != nil {
+		return errors.Wrap(err, "job validate")
+	}
+
+	authType, err := extractAuthType(params)
+	if err != nil {
+		return errors.Wrap(err, "job validate")
+	}
+
+	if authType != authorizationBearer && authType != authorizationBasic {
+		return errors.Wrapf(err, "job validate: not support auth type %s", authType)
+	}
 
 	return nil
 }
@@ -126,13 +156,32 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	myLogger.Infof("Report mime types: %v\n", mimes)
 
 	// Submit scan request to the scanner adapter
-	client, err := v1.DefaultClientPool.Get(r)
+	client, err := r.Client(v1.DefaultClientPool)
 	if err != nil {
 		return logAndWrapError(myLogger, err, "scan job: get client")
 	}
 
 	// Ignore the namespace ID here
 	req.Artifact.NamespaceID = 0
+
+	robotAccount, _ := extractRobotAccount(params)
+
+	var authorization string
+	authType, _ := extractAuthType(params)
+	if authType == authorizationBearer {
+		tokenURL, err := getInternalTokenServiceEndpoint(ctx)
+		if err != nil {
+			return errors.Wrap(err, "scan job: get token service endpoint")
+		}
+		authorization, err = makeBearerAuthorization(robotAccount, tokenURL, req.Artifact.Repository)
+	} else {
+		authorization, err = makeBasicAuthorization(robotAccount)
+	}
+	if err != nil {
+		logAndWrapError(myLogger, err, "scan job: make authorization")
+	}
+
+	req.Registry.Authorization = authorization
 	resp, err := client.SubmitScan(req)
 	if err != nil {
 		return logAndWrapError(myLogger, err, "scan job: submit scan request")
@@ -331,6 +380,29 @@ func extractRegistration(params job.Parameters) (*scanner.Registration, error) {
 	return r, nil
 }
 
+func extractRobotAccount(params job.Parameters) (*model.Robot, error) {
+	v, ok := params[JobParameterRobot]
+	if !ok {
+		return nil, errors.Errorf("missing job parameter '%s'", JobParameterRobot)
+	}
+
+	jsonData, ok := v.(string)
+	if !ok {
+		return nil, errors.Errorf(
+			"malformed job parameter '%s', expecting string but got %s",
+			JobParameterRobot,
+			reflect.TypeOf(v).String(),
+		)
+	}
+	r := &model.Robot{}
+
+	if err := r.FromJSON(jsonData); err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
 func extractMimeTypes(params job.Parameters) ([]string, error) {
 	v, ok := params[JobParameterMimes]
 	if !ok {
@@ -357,4 +429,86 @@ func extractMimeTypes(params job.Parameters) ([]string, error) {
 	}
 
 	return mimes, nil
+}
+
+func extractAuthType(params job.Parameters) (string, error) {
+	v, ok := params[JobParameterAuthType]
+	if !ok {
+		return "", errors.Errorf("missing job parameter '%s'", JobParameterAuthType)
+	}
+
+	authType, ok := v.(string)
+	if !ok {
+		return "", errors.Errorf(
+			"malformed job parameter '%s', expecting string but got %s",
+			JobParameterAuthType,
+			reflect.TypeOf(v).String(),
+		)
+	}
+
+	return authType, nil
+}
+
+func getInternalTokenServiceEndpoint(ctx job.Context) (string, error) {
+	cfgMgr, ok := config.FromContext(ctx.SystemContext())
+	if !ok {
+		return "", errors.Errorf("failed to get config manager")
+	}
+
+	return cfgMgr.Get(common.CoreURL).GetString() + "/service/token", nil
+}
+
+// makeBasicAuthorization creates authorization from a robot account based on the arguments for scanning.
+func makeBasicAuthorization(robotAccount *model.Robot) (string, error) {
+	basic := fmt.Sprintf("%s:%s", robotAccount.Name, robotAccount.Token)
+	encoded := base64.StdEncoding.EncodeToString([]byte(basic))
+
+	return fmt.Sprintf("Basic %s", encoded), nil
+}
+
+// makeBearerAuthorization creates bearer token from a robot account
+func makeBearerAuthorization(robotAccount *model.Robot, tokenURL string, repository string) (string, error) {
+	u, err := url.Parse(tokenURL)
+	if err != nil {
+		return "", err
+	}
+
+	query := u.Query()
+	query.Add("service", service)
+	query.Add("scope", fmt.Sprintf("repository:%s:pull", repository))
+	u.RawQuery = query.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return "", err
+	}
+
+	auth, _ := makeBasicAuthorization(robotAccount)
+	req.Header.Set("Authorization", auth)
+
+	client := &http.Client{
+		Transport: commonhttp.GetHTTPTransportByInsecure(true),
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("get bearer token failed, %s", string(data))
+	}
+
+	token := &models.Token{}
+	if err = json.Unmarshal(data, token); err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("Bearer %s", token.GetToken()), nil
 }

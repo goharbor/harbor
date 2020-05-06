@@ -14,8 +14,12 @@ services:
       - SETUID
     volumes:
       - {{log_location}}/:/var/log/docker/:z
-      - ./common/config/log/logrotate.conf:/etc/logrotate.d/logrotate.conf:z
-      - ./common/config/log/rsyslog_docker.conf:/etc/rsyslog.d/rsyslog_docker.conf:z
+      - type: bind
+        source: ./common/config/log/logrotate.conf
+        target: /etc/logrotate.d/logrotate.conf
+      - type: bind
+        source: ./common/config/log/rsyslog_docker.conf
+        target: /etc/rsyslog.d/rsyslog_docker.conf
     ports:
       - 127.0.0.1:1514:10514
     networks:
@@ -36,15 +40,24 @@ services:
       - type: bind
         source: {{data_volume}}/secret/registry/root.crt
         target: /etc/registry/root.crt
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
 {% if gcs_keyfile %}
       - type: bind
         source: {{gcs_keyfile}}
         target: /etc/registry/gcs.key
 {% endif %}
-{%if registry_custom_ca_bundle_path %}
+{%if internal_tls.enabled %}
       - type: bind
-        source: {{registry_custom_ca_bundle_path}}
-        target: /harbor_cust_cert/custom-ca-bundle.crt
+        source: {{internal_tls.core_crt_path}}
+        target: /harbor_cust_cert/core.crt
+      - type: bind
+        source: {{internal_tls.registry_crt_path}}
+        target: /etc/harbor/tls/registry.crt
+      - type: bind
+        source: {{internal_tls.registry_key_path}}
+        target: /etc/harbor/tls/registry.key
 {% endif %}
     networks:
       - harbor
@@ -77,10 +90,21 @@ services:
       - type: bind
         source: ./common/config/registryctl/config.yml
         target: /etc/registryctl/config.yml
-{%if registry_custom_ca_bundle_path %}
       - type: bind
-        source: {{registry_custom_ca_bundle_path}}
-        target: /harbor_cust_cert/custom-ca-bundle.crt
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{% if gcs_keyfile %}
+      - type: bind
+        source: {{gcs_keyfile}}
+        target: /etc/registry/gcs.key
+{% endif %}
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.registryctl_crt_path}}
+        target: /etc/harbor/ssl/registryctl.crt
+      - type: bind
+        source: {{internal_tls.registryctl_key_path}}
+        target: /etc/harbor/ssl/registryctl.key
 {% endif %}
     networks:
       - harbor
@@ -153,10 +177,21 @@ services:
       - type: bind
         source: {{data_volume}}/secret/keys/secretkey
         target: /etc/core/key
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
 {% if uaa_ca_file %}
       - type: bind
         source: {{uaa_ca_file}}
         target: /etc/core/certificates/uaa_ca.pem
+{% endif %}
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.core_crt_path}}
+        target: /etc/harbor/ssl/core.crt
+      - type: bind
+        source: {{internal_tls.core_key_path}}
+        target: /etc/harbor/ssl/core.key
 {% endif %}
     networks:
       harbor:
@@ -227,6 +262,17 @@ services:
       - type: bind
         source: ./common/config/jobservice/config.yml
         target: /etc/jobservice/config.yml
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.job_service_crt_path}}
+        target: /etc/harbor/ssl/job_service.crt
+      - type: bind
+        source: {{internal_tls.job_service_key_path}}
+        target: /etc/harbor/ssl/job_service.key
+{% endif %}
     networks:
       - harbor
 {% if with_clair %}
@@ -290,6 +336,17 @@ services:
 {% if protocol == 'https' %}
       - {{data_volume}}/secret/cert:/etc/cert:z
 {% endif %}
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.proxy_crt_path}}
+        target: /etc/harbor/tls/proxy.crt
+      - type: bind
+        source: {{internal_tls.proxy_key_path}}
+        target: /etc/harbor/tls/proxy.key
+{% endif %}
     networks:
       - harbor
 {% if with_notary %}
@@ -331,6 +388,17 @@ services:
       - type: bind
         source: {{data_volume}}/secret/registry/root.crt
         target: /etc/notary/root.crt
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.notary_server_crt_path}}
+        target: /etc/harbor/ssl/notary_server.crt
+      - type: bind
+        source: {{internal_tls.notary_server_key_path}}
+        target: /etc/harbor/ssl/notary_server.key
+{% endif %}
     env_file:
       - ./common/config/notary/server_env
     depends_on:
@@ -361,6 +429,17 @@ services:
       - type: bind
         source: {{data_volume}}/secret/notary/notary-signer.key
         target: /etc/notary/notary-signer.key
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.notary_signer_crt_path}}
+        target: /etc/harbor/ssl/notary_signer.crt
+      - type: bind
+        source: {{internal_tls.notary_signer_key_path}}
+        target: /etc/harbor/ssl/notary_signer.key
+{% endif %}
     env_file:
       - ./common/config/notary/signer_env
     depends_on:
@@ -398,11 +477,17 @@ services:
       - type: bind
         source: ./common/config/clair/config.yaml
         target: /etc/clair/config.yaml
-  {%if registry_custom_ca_bundle_path %}
       - type: bind
-        source: {{registry_custom_ca_bundle_path}}
-        target: /harbor_cust_cert/custom-ca-bundle.crt
-  {% endif %}
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.clair_crt_path}}
+        target: /etc/harbor/ssl/clair.crt
+      - type: bind
+        source: {{internal_tls.clair_key_path}}
+        target: /etc/harbor/ssl/clair.key
+{% endif %}
     logging:
       driver: "syslog"
       options:
@@ -429,6 +514,18 @@ services:
 {% if external_redis == False %}
       - redis
 {% endif %}
+    volumes:
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.clair_adapter_crt_path}}
+        target: /etc/harbor/ssl/clair_adapter.crt
+      - type: bind
+        source: {{internal_tls.clair_adapter_key_path}}
+        target: /etc/harbor/ssl/clair_adapter.key
+{% endif %}
     logging:
       driver: "syslog"
       options:
@@ -436,6 +533,46 @@ services:
         tag: "clair-adapter"
     env_file:
       ./common/config/clair-adapter/env
+{% endif %}
+{% if with_trivy %}
+  trivy-adapter:
+    container_name: trivy-adapter
+    image: goharbor/trivy-adapter-photon:{{trivy_adapter_version}}
+    restart: always
+    cap_drop:
+      - ALL
+    dns_search: .
+    networks:
+      - harbor
+{% if external_redis == False %}
+    depends_on:
+      - redis
+{% endif %}
+    volumes:
+      - type: bind
+        source: {{data_volume}}/trivy-adapter/trivy
+        target: /home/scanner/.cache/trivy
+      - type: bind
+        source: {{data_volume}}/trivy-adapter/reports
+        target: /home/scanner/.cache/reports
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{% if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.trivy_adapter_crt_path}}
+        target: /etc/harbor/ssl/trivy_adapter.crt
+      - type: bind
+        source: {{internal_tls.trivy_adapter_key_path}}
+        target: /etc/harbor/ssl/trivy_adapter.key
+{% endif %}
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "trivy-adapter"
+    env_file:
+      ./common/config/trivy-adapter/env
 {% endif %}
 {% if with_chartmuseum %}
   chartmuseum:
@@ -457,15 +594,21 @@ services:
     volumes:
       - {{data_volume}}/chart_storage:/chart_storage:z
       - ./common/config/chartserver:/etc/chartserver:z
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.chartmuseum_crt_path}}
+        target: /etc/harbor/ssl/chartmuseum.crt
+      - type: bind
+        source: {{internal_tls.chartmuseum_key_path}}
+        target: /etc/harbor/ssl/chartmuseum.key
+{% endif %}
 {% if gcs_keyfile %}
       - type: bind
         source: {{gcs_keyfile}}
         target: /etc/chartserver/gcs.key
-{% endif %}
-{%if registry_custom_ca_bundle_path %}
-      - type: bind
-        source: {{registry_custom_ca_bundle_path}}
-        target: /harbor_cust_cert/custom-ca-bundle.crt
 {% endif %}
     logging:
       driver: "syslog"

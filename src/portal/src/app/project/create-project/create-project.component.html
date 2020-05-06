@@ -31,21 +31,6 @@
                     <label>{{ 'PROJECT.PUBLIC' | translate}}</label>
                 </clr-checkbox-wrapper>
             </clr-checkbox-container>
-            <clr-input-container *ngIf="isSystemAdmin">
-                <label for="create_project_count_limit" class="required">{{'PROJECT.COUNT_QUOTA' | translate}}
-                    <clr-tooltip>
-                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                        <clr-tooltip-content clrPosition="bottom-left" clrSize="lg" *clrIfOpen>
-                            <span>{{'PROJECT.QUOTA_UNLIMIT_TIP' | translate }}</span>
-                        </clr-tooltip-content>
-                    </clr-tooltip>
-                </label>
-                <input clrInput type="text" id="create_project_count_limit" [(ngModel)]="countLimit" name="create_project_count_limit" class="input-width"
-                    #projectCountLimit="ngModel" autocomplete="off">
-                <clr-control-error class="tooltip-content">
-                    {{ 'PROJECT.COUNT_QUOTA_TIP' | translate }}
-                </clr-control-error>
-            </clr-input-container>
             <div class="clr-form-control" *ngIf="isSystemAdmin">
                 <label for="create_project_storage_limit" class="required clr-control-label">{{'PROJECT.STORAGE_QUOTA' | translate}}
                     <clr-tooltip>

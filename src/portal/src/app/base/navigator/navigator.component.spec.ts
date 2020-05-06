@@ -6,10 +6,10 @@ import { PlatformLocation } from '@angular/common';
 import { NavigatorComponent } from './navigator.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { CookieService } from 'ngx-cookie';
-import { AppConfigService } from '../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
-import { SkinableConfig } from "../../skinable-config.service";
+import { SkinableConfig } from "../../services/skinable-config.service";
 
 describe('NavigatorComponent', () => {
     let component: NavigatorComponent;

@@ -17,26 +17,26 @@ package retention
 import (
 	"fmt"
 	beegoorm "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/internal/orm"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/art/selectors/index"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 
 	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
 	cmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
+	pq "github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project"
-	pq "github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -87,7 +87,7 @@ func NewLauncher(projectMgr project.Manager, repositoryMgr repository.Manager,
 
 type jobData struct {
 	TaskID     int64
-	Repository art.Repository
+	Repository selector.Repository
 	JobName    string
 	JobParams  map[string]interface{}
 }
@@ -114,9 +114,9 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 	if scope == nil {
 		return 0, launcherError(fmt.Errorf("the scope of policy is nil"))
 	}
-	repositoryRules := make(map[art.Repository]*lwp.Metadata, 0)
+	repositoryRules := make(map[selector.Repository]*lwp.Metadata, 0)
 	level := scope.Level
-	var allProjects []*art.Candidate
+	var allProjects []*selector.Candidate
 	var err error
 	if level == "system" {
 		// get projects
@@ -137,7 +137,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 			// filter projects according to the project selectors
 			for _, projectSelector := range rule.ScopeSelectors["project"] {
 				selector, err := index.Get(projectSelector.Kind, projectSelector.Decoration,
-					projectSelector.Pattern)
+					projectSelector.Pattern, "")
 				if err != nil {
 					return 0, launcherError(err)
 				}
@@ -147,12 +147,12 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 				}
 			}
 		case "project":
-			projectCandidates = append(projectCandidates, &art.Candidate{
+			projectCandidates = append(projectCandidates, &selector.Candidate{
 				NamespaceID: scope.Reference,
 			})
 		}
 
-		var repositoryCandidates []*art.Candidate
+		var repositoryCandidates []*selector.Candidate
 		// get repositories of projects
 		for _, projectCandidate := range projectCandidates {
 			repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, projectCandidate.NamespaceID, l.chartServerEnabled)
@@ -166,7 +166,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 		// filter repositories according to the repository selectors
 		for _, repositorySelector := range rule.ScopeSelectors["repository"] {
 			selector, err := index.Get(repositorySelector.Kind, repositorySelector.Decoration,
-				repositorySelector.Pattern)
+				repositorySelector.Pattern, repositorySelector.Extras)
 			if err != nil {
 				return 0, launcherError(err)
 			}
@@ -177,7 +177,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 		}
 
 		for _, repositoryCandidate := range repositoryCandidates {
-			reposit := art.Repository{
+			reposit := selector.Repository{
 				NamespaceID: repositoryCandidate.NamespaceID,
 				Namespace:   repositoryCandidate.Namespace,
 				Name:        repositoryCandidate.Repository,
@@ -218,7 +218,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 	return int64(len(jobDatas)), nil
 }
 
-func createJobs(repositoryRules map[art.Repository]*lwp.Metadata, isDryRun bool) ([]*jobData, error) {
+func createJobs(repositoryRules map[selector.Repository]*lwp.Metadata, isDryRun bool) ([]*jobData, error) {
 	jobDatas := []*jobData{}
 	for repository, policy := range repositoryRules {
 		jobData := &jobData{
@@ -324,14 +324,14 @@ func launcherError(err error) error {
 	return errors.Wrap(err, "launcher")
 }
 
-func getProjects(projectMgr project.Manager) ([]*art.Candidate, error) {
+func getProjects(projectMgr project.Manager) ([]*selector.Candidate, error) {
 	projects, err := projectMgr.List()
 	if err != nil {
 		return nil, err
 	}
-	var candidates []*art.Candidate
+	var candidates []*selector.Candidate
 	for _, pro := range projects {
-		candidates = append(candidates, &art.Candidate{
+		candidates = append(candidates, &selector.Candidate{
 			NamespaceID: pro.ProjectID,
 			Namespace:   pro.Name,
 		})
@@ -340,8 +340,8 @@ func getProjects(projectMgr project.Manager) ([]*art.Candidate, error) {
 }
 
 func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manager,
-	projectID int64, chartServerEnabled bool) ([]*art.Candidate, error) {
-	var candidates []*art.Candidate
+	projectID int64, chartServerEnabled bool) ([]*selector.Candidate, error) {
+	var candidates []*selector.Candidate
 	/*
 		pro, err := projectMgr.Get(projectID)
 		if err != nil {
@@ -350,7 +350,7 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 	*/
 	// get image repositories
 	// TODO set the context which contains the ORM
-	_, imageRepositories, err := repositoryMgr.List(orm.NewContext(nil, beegoorm.NewOrm()), &pq.Query{
+	imageRepositories, err := repositoryMgr.List(orm.NewContext(nil, beegoorm.NewOrm()), &pq.Query{
 		Keywords: map[string]interface{}{
 			"ProjectID": projectID,
 		},
@@ -360,7 +360,7 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 	}
 	for _, r := range imageRepositories {
 		namespace, repo := utils.ParseRepository(r.Name)
-		candidates = append(candidates, &art.Candidate{
+		candidates = append(candidates, &selector.Candidate{
 			NamespaceID: projectID,
 			Namespace:   namespace,
 			Repository:  repo,

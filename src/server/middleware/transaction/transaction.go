@@ -20,9 +20,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/internal"
-	"github.com/goharbor/harbor/src/internal/orm"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
@@ -30,28 +31,17 @@ var (
 	errNonSuccess = errors.New("non success status code")
 )
 
-type committableContext struct {
-	context.Context
-	committed bool
-}
-
-func (ctx *committableContext) Commit() {
-	ctx.committed = true
-}
-
-type committable interface {
-	Commit()
-}
+type committedKey struct{}
 
 // MustCommit mark http.Request as committed so that transaction
 // middleware ignore the status code of the response and commit transaction for this request
 func MustCommit(r *http.Request) error {
-	c, ok := r.Context().(committable)
+	committed, ok := r.Context().Value(committedKey{}).(*bool)
 	if !ok {
 		return fmt.Errorf("%s URL %s is not committable, please enable transaction middleware for it", r.Method, r.URL.Path)
 	}
 
-	c.Commit()
+	*committed = true
 
 	return nil
 }
@@ -59,17 +49,19 @@ func MustCommit(r *http.Request) error {
 // Middleware middleware which add transaction for the http request with default config
 func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
-		res, ok := w.(*internal.ResponseBuffer)
+		res, ok := w.(*lib.ResponseBuffer)
 		if !ok {
-			res = internal.NewResponseBuffer(w)
+			res = lib.NewResponseBuffer(w)
 			defer res.Flush()
 		}
 
 		h := func(ctx context.Context) error {
-			cc := &committableContext{Context: ctx}
+			committed := new(bool) // default false, not must commit
+
+			cc := context.WithValue(ctx, committedKey{}, committed)
 			next.ServeHTTP(res, r.WithContext(cc))
 
-			if !cc.committed && !res.Success() {
+			if !(*committed) && !res.Success() {
 				return errNonSuccess
 			}
 
@@ -77,7 +69,7 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 		}
 
 		if err := orm.WithTransaction(h)(r.Context()); err != nil && err != errNonSuccess {
-			log.Errorf("deal with %s request in transaction failed: %v", r.URL.Path, err)
+			err = fmt.Errorf("deal with %s request in transaction failed: %v", r.URL.Path, err)
 
 			// begin, commit or rollback transaction db error happened,
 			// reset the response and set status code to 500
@@ -85,7 +77,7 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 				log.Errorf("reset the response failed: %v", err)
 				return
 			}
-			res.WriteHeader(http.StatusInternalServerError)
+			serror.SendError(res, err)
 		}
 	}, skippers...)
 }

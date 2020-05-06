@@ -24,8 +24,7 @@ def prepare_registry(config_dict):
     prepare_dir(registry_data_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
     prepare_dir(registry_config_dir)
 
-    if config_dict['registry_use_basic_auth']:
-        gen_passwd_file(config_dict)
+    gen_passwd_file(config_dict)
     storage_provider_info = get_storage_provider_info(
     config_dict['storage_provider_name'],
     config_dict['storage_provider_config'])

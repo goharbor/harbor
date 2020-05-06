@@ -208,6 +208,18 @@
                      ]
                   }
                ],
+               "tag_retention_rule":{
+                  "repository_patten":"*photon*",
+                  "tag_decoration":"*v1.*",
+                  "latestPushedK":666,
+                  "cron":"0 0 0 1 8 0"
+               },
+               "tag_immutability_rule":{
+                  "repo_decoration":"repoMatches",
+                  "tag_decoration":"excludes",
+                  "repo_pattern":"*alpine*",
+                  "tag_pattern":"*v1.2*"
+               },
                "webhook":{
                   "address":"https://1.1.1.1",
                   "skip_cert_verify":true,
@@ -327,11 +339,23 @@
                       ]
                   }
                ],
+               "tag_retention_rule":{
+                  "repository_patten":"*centos*",
+                  "tag_decoration":"*latest",
+                  "latestPushedK":999,
+                  "cron":"0 0 0 1 6 0"
+               },
+               "tag_immutability_rule":{
+                  "repo_decoration":"repoExcludes",
+                  "tag_decoration":"matches",
+                  "repo_pattern":"*buxybox*",
+                  "tag_pattern":"*v3*"
+               },
                "webhook":{
-                  "address":"https://1.1.1.1",
-                  "skip_cert_verify":true,
-                  "auth_header":"aaa",
-                  "enabled":true
+                  "address":"https://2.2.2.2",
+                  "skip_cert_verify":false,
+                  "auth_header":"bbb",
+                  "enabled":false
                },
               "configuration":{
                  "public":"false",

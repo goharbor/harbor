@@ -16,16 +16,14 @@ package api
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common"
-	"net/http"
-	"strconv"
-	"testing"
-	"time"
-
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"net/http"
+	"strconv"
+	"testing"
 )
 
 var addProject *apilib.ProjectReq
@@ -410,53 +408,6 @@ func TestPut(t *testing.T) {
 
 	fmt.Printf("\n")
 }
-func TestProjectLogsFilter(t *testing.T) {
-	fmt.Println("\nTest for search access logs filtered by operations and date time ranges..")
-	assert := assert.New(t)
-
-	apiTest := newHarborAPI()
-
-	query := &apilib.LogQuery{
-		Username:       "admin",
-		Repository:     "",
-		Tag:            "",
-		Operation:      []string{""},
-		BeginTimestamp: 0,
-		EndTimestamp:   time.Now().Unix(),
-	}
-
-	// -------------------case1: Response Code=200------------------------------//
-	fmt.Println("case 1: response code:200")
-	projectID := "1"
-	httpStatusCode, _, err := apiTest.ProjectLogs(*admin, projectID, query)
-	if err != nil {
-		t.Error("Error while search access logs")
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
-	}
-	// -------------------case2: Response Code=401:User need to log in first.------------------------------//
-	fmt.Println("case 2: response code:401:User need to log in first.")
-	projectID = "1"
-	httpStatusCode, _, err = apiTest.ProjectLogs(*unknownUsr, projectID, query)
-	if err != nil {
-		t.Error("Error while search access logs")
-		t.Log(err)
-	} else {
-		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 401")
-	}
-	// -------------------case3: Response Code=404:Project does not exist.-------------------------//
-	fmt.Println("case 3: response code:404:Illegal format of provided ID value.")
-	projectID = "11111"
-	httpStatusCode, _, err = apiTest.ProjectLogs(*admin, projectID, query)
-	if err != nil {
-		t.Error("Error while search access logs")
-		t.Log(err)
-	} else {
-		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
-	}
-	fmt.Printf("\n")
-}
 
 func TestDeletable(t *testing.T) {
 	apiTest := newHarborAPI()
@@ -525,7 +476,7 @@ func TestProjectSummary(t *testing.T) {
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 		assert.Equal(int64(1), summary.ProjectAdminCount)
-		assert.Equal(map[string]int64{"count": -1, "storage": -1}, summary.Quota.Hard)
+		assert.Equal(map[string]int64{"storage": -1}, summary.Quota.Hard)
 	}
 
 	fmt.Printf("\n")

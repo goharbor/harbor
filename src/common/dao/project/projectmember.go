@@ -16,10 +16,9 @@ package project
 
 import (
 	"fmt"
-
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // GetProjectMember gets all members of the project.
@@ -168,4 +167,31 @@ func SearchMemberByName(projectID int64, entityName string) ([]*models.Member, e
 	log.Debugf("Query sql: %v", sql)
 	_, err := o.Raw(sql, queryParam).QueryRows(&members)
 	return members, err
+}
+
+// ListRoles lists the roles of user for the specific project
+func ListRoles(user *models.User, projectID int64) ([]int, error) {
+	if user == nil {
+		return nil, nil
+	}
+	var params []interface{}
+	sql := `
+		select role
+			from project_member
+			where entity_type = 'u' and entity_id = ? and project_id = ? `
+	params = append(params, user.UserID, projectID)
+	if len(user.GroupIDs) > 0 {
+		sql += fmt.Sprintf(`union
+			select role
+			from project_member
+			where entity_type = 'g' and entity_id in ( %s ) and project_id = ? `, dao.ParamPlaceholderForIn(len(user.GroupIDs)))
+		params = append(params, user.GroupIDs)
+		params = append(params, projectID)
+	}
+	roles := []int{}
+	_, err := dao.GetOrmer().Raw(sql, params).QueryRows(&roles)
+	if err != nil {
+		return nil, err
+	}
+	return roles, nil
 }

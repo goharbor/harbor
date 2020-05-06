@@ -10,7 +10,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { ProjectService, UserPermissionService } from "../../../lib/services";
 import { ErrorHandler } from "../../../lib/utils/error-handler";
 

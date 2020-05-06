@@ -2,28 +2,27 @@ package immutable
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/core/middlewares/util"
-	internal_orm "github.com/goharbor/harbor/src/internal/orm"
-	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/opencontainers/go-digest"
-	"time"
-
 	"fmt"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/pkg/immutabletag"
-	immu_model "github.com/goharbor/harbor/src/pkg/immutabletag/model"
-	"github.com/goharbor/harbor/src/pkg/tag"
-	tag_model "github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
+
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib"
+	internal_orm "github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/immutabletag"
+	immu_model "github.com/goharbor/harbor/src/pkg/immutabletag/model"
+	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/pkg/tag"
+	tag_model "github.com/goharbor/harbor/src/pkg/tag/model/tag"
+	"github.com/opencontainers/go-digest"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type HandlerSuite struct {
@@ -36,11 +35,11 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 	url := fmt.Sprintf("/v2/%s/manifests/%s", repository, tag)
 	req, _ := http.NewRequest("PUT", url, nil)
 
-	mfInfo := &middleware.ManifestInfo{
-		ProjectID:  projectID,
-		Repository: repository,
-		Tag:        tag,
-		Digest:     dgt,
+	afInfo := lib.ArtifactInfo{
+		ProjectName: projectName,
+		Repository:  repository,
+		Tag:         tag,
+		Digest:      dgt,
 	}
 	rr := httptest.NewRecorder()
 
@@ -53,39 +52,9 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 		}
 	}
 	*req = *(req.WithContext(internal_orm.NewContext(context.TODO(), dao.GetOrmer())))
-	*req = *(req.WithContext(middleware.NewManifestInfoContext(req.Context(), mfInfo)))
-	h := MiddlewarePush()(n)
-	h.ServeHTTP(util.NewCustomResponseWriter(rr), req)
-
-	return rr.Code
-}
-
-func doDeleteManifestRequest(projectID int64, projectName, name, tag, dgt string, next ...http.HandlerFunc) int {
-	repository := fmt.Sprintf("%s/%s", projectName, name)
-
-	url := fmt.Sprintf("/v2/%s/manifests/%s", repository, tag)
-	req, _ := http.NewRequest("DELETE", url, nil)
-
-	mfInfo := &middleware.ManifestInfo{
-		ProjectID:  projectID,
-		Repository: repository,
-		Tag:        tag,
-		Digest:     dgt,
-	}
-	rr := httptest.NewRecorder()
-
-	var n http.HandlerFunc
-	if len(next) > 0 {
-		n = next[0]
-	} else {
-		n = func(w http.ResponseWriter, req *http.Request) {
-			w.WriteHeader(http.StatusCreated)
-		}
-	}
-	*req = *(req.WithContext(internal_orm.NewContext(context.TODO(), dao.GetOrmer())))
-	*req = *(req.WithContext(middleware.NewManifestInfoContext(req.Context(), mfInfo)))
-	h := MiddlewareDelete()(n)
-	h.ServeHTTP(util.NewCustomResponseWriter(rr), req)
+	*req = *(req.WithContext(lib.WithArtifactInfo(req.Context(), afInfo)))
+	h := Middleware()(n)
+	h.ServeHTTP(rr, req)
 
 	return rr.Code
 }
@@ -110,15 +79,16 @@ func (suite *HandlerSuite) addProject(projectName string) int64 {
 	return projectID
 }
 
-func (suite *HandlerSuite) addArt(ctx context.Context, pid, repositoryID int64, dgt string) int64 {
+func (suite *HandlerSuite) addArt(ctx context.Context, pid, repositoryID int64, repositoryName, dgt string) int64 {
 	af := &artifact.Artifact{
-		Type:         "Docker-Image",
-		ProjectID:    pid,
-		RepositoryID: repositoryID,
-		Digest:       dgt,
-		Size:         1024,
-		PushTime:     time.Now(),
-		PullTime:     time.Now(),
+		Type:           "Docker-Image",
+		ProjectID:      pid,
+		RepositoryID:   repositoryID,
+		RepositoryName: repositoryName,
+		Digest:         dgt,
+		Size:           1024,
+		PushTime:       time.Now(),
+		PullTime:       time.Now(),
 	}
 	afid, err := artifact.Mgr.Create(ctx, af)
 	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
@@ -185,7 +155,7 @@ func (suite *HandlerSuite) TestPutDeleteManifestCreated() {
 	projectID := suite.addProject(projectName)
 	immuRuleID := suite.addImmutableRule(projectID)
 	repoID := suite.addRepo(ctx, projectID, repoName)
-	afID := suite.addArt(ctx, projectID, repoID, dgt)
+	afID := suite.addArt(ctx, projectID, repoID, repoName, dgt)
 	tagID := suite.addTags(ctx, repoID, afID, "release-1.10")
 
 	defer func() {
@@ -201,12 +171,6 @@ func (suite *HandlerSuite) TestPutDeleteManifestCreated() {
 
 	code2 := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt)
 	suite.Equal(http.StatusCreated, code2)
-
-	code3 := doDeleteManifestRequest(projectID, projectName, "photon", "release-1.10", dgt)
-	suite.Equal(http.StatusPreconditionFailed, code3)
-
-	code4 := doDeleteManifestRequest(projectID, projectName, "photon", "latest", dgt)
-	suite.Equal(http.StatusPreconditionFailed, code4)
 
 }
 

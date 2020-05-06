@@ -128,6 +128,7 @@ func GetUnitTestConfig() map[string]interface{} {
 		common.WithClair:              "true",
 		common.TokenServiceURL:        "http://core:8080/service/token",
 		common.RegistryURL:            fmt.Sprintf("http://%s:5000", ipAddress),
+		common.ReadOnly:               false,
 	}
 }
 

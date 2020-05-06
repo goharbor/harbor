@@ -17,97 +17,371 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/docker/distribution/reference"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/goharbor/harbor/src/api/artifact"
-	"github.com/goharbor/harbor/src/pkg/project"
-	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/artifact/processor"
+	"github.com/goharbor/harbor/src/controller/repository"
+	"github.com/goharbor/harbor/src/controller/scan"
+	"github.com/goharbor/harbor/src/controller/tag"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
+	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/artifact"
+	"github.com/opencontainers/go-digest"
+)
+
+const (
+	vulnerabilitiesAddition = "vulnerabilities"
 )
 
 func newArtifactAPI() *artifactAPI {
 	return &artifactAPI{
 		artCtl:  artifact.Ctl,
-		proMgr:  project.Mgr,
-		repoMgr: repository.Mgr,
+		repoCtl: repository.Ctl,
+		scanCtl: scan.DefaultController,
+		tagCtl:  tag.Ctl,
 	}
 }
 
 type artifactAPI struct {
 	BaseAPI
 	artCtl  artifact.Controller
-	proMgr  project.Manager
-	repoMgr repository.Manager
+	repoCtl repository.Controller
+	scanCtl scan.Controller
+	tagCtl  tag.Controller
 }
 
-// TODO do auth in a separate middleware
+func (a *artifactAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+	if err := unescapePathParams(params, "RepositoryName"); err != nil {
+		a.SendError(ctx, err)
+	}
+
+	return nil
+}
 
 func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListArtifactsParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceArtifact); err != nil {
+		return a.SendError(ctx, err)
+	}
+
 	// set query
-	query := &q.Query{
-		Keywords: map[string]interface{}{},
-	}
-	if params.Type != nil {
-		query.Keywords["Type"] = *(params.Type)
-	}
-	if params.Page != nil {
-		query.PageNumber = *(params.Page)
-	}
-	if params.PageSize != nil {
-		query.PageSize = *(params.PageSize)
-	}
-	repository, err := a.repoMgr.GetByName(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName))
+	query, err := a.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	query.Keywords["RepositoryID"] = repository.RepositoryID
+	query.Keywords["RepositoryName"] = fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
 
 	// set option
-	option := &artifact.Option{
-		WithTag: true, // return the tag by default
-	}
-	if params.WithTag != nil {
-		option.WithTag = *(params.WithTag)
-	}
-	if option.WithTag {
-		if params.WithImmutableStatus != nil {
-			option.TagOption = &artifact.TagOption{
-				WithImmutableStatus: *(params.WithImmutableStatus),
-			}
-		}
-	}
-	if params.WithLabel != nil {
-		option.WithLabel = *(params.WithLabel)
-	}
-	if params.WithScanOverview != nil {
-		option.WithScanOverview = *(params.WithScanOverview)
-	}
-	if params.WithSignatrue != nil {
-		option.WithSignature = *(params.WithSignatrue)
-	}
+	option := option(params.WithTag, params.WithImmutableStatus,
+		params.WithLabel, params.WithSignature)
 
+	// get the total count of artifacts
+	total, err := a.artCtl.Count(ctx, query)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
 	// list artifacts according to the query and option
-	total, arts, err := a.artCtl.List(ctx, query, option)
+	arts, err := a.artCtl.List(ctx, query, option)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
 
+	assembler := assembler.NewVulAssembler(boolValue(params.WithScanOverview))
 	var artifacts []*models.Artifact
 	for _, art := range arts {
-		artifacts = append(artifacts, art.ToSwagger())
+		artifact := &model.Artifact{}
+		artifact.Artifact = *art
+		assembler.WithArtifacts(artifact).Assemble(ctx)
+		artifacts = append(artifacts, artifact.ToSwagger())
 	}
 
-	// TODO add link header
-	return operation.NewListArtifactsOK().WithXTotalCount(total).WithLink("").WithPayload(artifacts)
+	return operation.NewListArtifactsOK().
+		WithXTotalCount(total).
+		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
+		WithPayload(artifacts)
 }
 
 func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtifactParams) middleware.Responder {
-	// TODO implement
-	return operation.NewGetArtifactOK()
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourceArtifact); err != nil {
+		return a.SendError(ctx, err)
+	}
+	// set option
+	option := option(params.WithTag, params.WithImmutableStatus,
+		params.WithLabel, params.WithSignature)
+
+	// get the artifact
+	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, option)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	art := &model.Artifact{}
+	art.Artifact = *artifact
+
+	assembler.NewVulAssembler(boolValue(params.WithScanOverview)).WithArtifacts(art).Assemble(ctx)
+
+	return operation.NewGetArtifactOK().WithPayload(art.ToSwagger())
 }
 
 func (a *artifactAPI) DeleteArtifact(ctx context.Context, params operation.DeleteArtifactParams) middleware.Responder {
-	// TODO implement
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionDelete, rbac.ResourceArtifact); err != nil {
+		return a.SendError(ctx, err)
+	}
+	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err = a.artCtl.Delete(ctx, artifact.ID); err != nil {
+		return a.SendError(ctx, err)
+	}
 	return operation.NewDeleteArtifactOK()
+}
+
+func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArtifactParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceArtifact); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	srcRepo, ref, err := parse(params.From)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	srcPro, _ := utils.ParseRepository(srcRepo)
+	if err = a.RequireProjectAccess(ctx, srcPro, rbac.ActionRead, rbac.ResourceArtifact); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	dstRepo := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
+	_, _, err = a.repoCtl.Ensure(ctx, dstRepo)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	_, err = a.artCtl.Copy(ctx, srcRepo, ref, dstRepo)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	location := strings.TrimSuffix(params.HTTPRequest.URL.Path, "/") + "/" + ref
+	return operation.NewCopyArtifactCreated().WithLocation(location)
+}
+
+// parse "repository:tag" or "repository@digest" into repository and reference parts
+func parse(s string) (string, string, error) {
+	matches := reference.ReferenceRegexp.FindStringSubmatch(s)
+	if matches == nil {
+		return "", "", errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessage("invalid input: %s", s)
+	}
+	repository := matches[1]
+	reference := matches[2]
+	if matches[3] != "" {
+		_, err := digest.Parse(matches[3])
+		if err != nil {
+			return "", "", errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessage("invalid input: %s", s)
+		}
+		reference = matches[3]
+	}
+	return repository, reference, nil
+}
+
+func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceTag); err != nil {
+		return a.SendError(ctx, err)
+	}
+	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
+		params.Reference, &artifact.Option{
+			WithTag: true,
+		})
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	tag := &tag.Tag{}
+	tag.RepositoryID = art.RepositoryID
+	tag.ArtifactID = art.ID
+	tag.Name = params.Tag.Name
+	tag.PushTime = time.Now()
+	if _, err = a.tagCtl.Create(ctx, tag); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	// fire event
+	notification.AddEvent(ctx, &metadata.CreateTagEventMetadata{
+		Ctx:              ctx,
+		Tag:              tag.Name,
+		AttachedArtifact: &art.Artifact,
+	})
+
+	// as we provide no API for get the single tag, ignore setting the location header here
+	return operation.NewCreateTagCreated()
+}
+
+func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionDelete, rbac.ResourceTag); err != nil {
+		return a.SendError(ctx, err)
+	}
+	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
+		params.Reference, &artifact.Option{
+			WithTag: true,
+		})
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	var id int64
+	for _, tag := range artifact.Tags {
+		if tag.Name == params.TagName {
+			id = tag.ID
+			break
+		}
+	}
+	// the tag not found
+	if id == 0 {
+		err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage(
+			"tag %s attached to artifact %d not found", params.TagName, artifact.ID)
+		return a.SendError(ctx, err)
+	}
+	if err = a.tagCtl.Delete(ctx, id); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	// fire event
+	notification.AddEvent(ctx, &metadata.DeleteTagEventMetadata{
+		Ctx:              ctx,
+		Tag:              params.TagName,
+		AttachedArtifact: &artifact.Artifact,
+	})
+
+	return operation.NewDeleteTagOK()
+}
+
+func (a *artifactAPI) ListTags(ctx context.Context, params operation.ListTagsParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceTag); err != nil {
+		return a.SendError(ctx, err)
+	}
+	// set query
+	query, err := a.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	query.Keywords["ArtifactID"] = artifact.ID
+
+	// get the total count of tags
+	total, err := a.tagCtl.Count(ctx, query)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	// set option
+	option := &tag.Option{}
+	if params.WithSignature != nil {
+		option.WithSignature = *params.WithSignature
+	}
+	if params.WithImmutableStatus != nil {
+		option.WithImmutableStatus = *params.WithImmutableStatus
+	}
+	// list tags according to the query and option
+	tags, err := a.tagCtl.List(ctx, query, option)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	var ts []*models.Tag
+	for _, tag := range tags {
+		ts = append(ts, tag.ToSwagger())
+	}
+	return operation.NewListTagsOK().
+		WithXTotalCount(total).
+		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
+		WithPayload(ts)
+}
+
+func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAdditionParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourceArtifactAddition); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	var addition *processor.Addition
+
+	if params.Addition == vulnerabilitiesAddition {
+		addition, err = resolveVulnerabilitiesAddition(ctx, artifact)
+	} else {
+		addition, err = a.artCtl.GetAddition(ctx, artifact.ID, strings.ToUpper(params.Addition))
+	}
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	return middleware.ResponderFunc(func(w http.ResponseWriter, p runtime.Producer) {
+		w.Header().Set("Content-Type", addition.ContentType)
+		w.Write(addition.Content)
+	})
+}
+
+func (a *artifactAPI) AddLabel(ctx context.Context, params operation.AddLabelParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceArtifactLabel); err != nil {
+		return a.SendError(ctx, err)
+	}
+	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err = a.artCtl.AddLabel(ctx, art.ID, params.Label.ID); err != nil {
+		return a.SendError(ctx, err)
+	}
+	return operation.NewAddLabelOK()
+}
+
+func (a *artifactAPI) RemoveLabel(ctx context.Context, params operation.RemoveLabelParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionDelete, rbac.ResourceArtifactLabel); err != nil {
+		return a.SendError(ctx, err)
+	}
+	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err = a.artCtl.RemoveLabel(ctx, art.ID, params.LabelID); err != nil {
+		return a.SendError(ctx, err)
+	}
+	return operation.NewRemoveLabelOK()
+}
+
+func option(withTag, withImmutableStatus, withLabel, withSignature *bool) *artifact.Option {
+	option := &artifact.Option{
+		WithTag:   true, // return the tag by default
+		WithLabel: boolValue(withLabel),
+	}
+
+	if withTag != nil {
+		option.WithTag = *(withTag)
+	}
+
+	if option.WithTag {
+		option.TagOption = &tag.Option{
+			WithImmutableStatus: boolValue(withImmutableStatus),
+			WithSignature:       boolValue(withSignature),
+		}
+	}
+
+	return option
 }

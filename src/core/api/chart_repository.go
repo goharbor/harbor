@@ -15,16 +15,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/controller/event/metadata"
+
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/label"
-	"github.com/goharbor/harbor/src/core/middlewares"
-	n_event "github.com/goharbor/harbor/src/core/notifier/event"
+	hlog "github.com/goharbor/harbor/src/lib/log"
+	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/server/middleware/orm"
 )
 
 const (
@@ -280,8 +282,8 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 	}
 
 	event := &n_event.Event{}
-	metaData := &n_event.ChartDeleteMetaData{
-		ChartMetaData: n_event.ChartMetaData{
+	metaData := &metadata.ChartDeleteMetaData{
+		ChartMetaData: metadata.ChartMetaData{
 			ProjectName: cra.namespace,
 			ChartName:   chartName,
 			Versions:    []string{version},
@@ -388,8 +390,8 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 	}
 
 	event := &n_event.Event{}
-	metaData := &n_event.ChartDeleteMetaData{
-		ChartMetaData: n_event.ChartMetaData{
+	metaData := &metadata.ChartDeleteMetaData{
+		ChartMetaData: metadata.ChartMetaData{
 			ProjectName: cra.namespace,
 			ChartName:   chartName,
 			Versions:    versions,
@@ -505,7 +507,11 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 								"public": strconv.FormatBool(public),
 							},
 						},
-						Vtags: []string{chartDetails.Metadata.Version},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{chartDetails.Metadata.Version},
+							},
+						},
 					},
 					ExtendedInfo: extInfo,
 				},
@@ -520,8 +526,8 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 
 func (cra *ChartRepositoryAPI) addDownloadChartEventContext(fileName, namespace string, request *http.Request) {
 	chartName, version := parseChartVersionFromFilename(fileName)
-	event := &n_event.ChartDownloadMetaData{
-		ChartMetaData: n_event.ChartMetaData{
+	event := &metadata.ChartDownloadMetaData{
+		ChartMetaData: metadata.ChartMetaData{
 			ProjectName: namespace,
 			ChartName:   chartName,
 			Versions:    []string{version},
@@ -598,7 +604,7 @@ func initializeChartController() (*chartserver.Controller, error) {
 		return nil, errors.New("Endpoint URL of chart storage server is malformed")
 	}
 
-	controller, err := chartserver.NewController(url, middlewares.New(middlewares.ChartMiddlewares).Create())
+	controller, err := chartserver.NewController(url, orm.Middleware())
 	if err != nil {
 		return nil, errors.New("Failed to initialize chart API controller")
 	}

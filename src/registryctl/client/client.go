@@ -24,7 +24,7 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/registryctl/api"
 )
 
@@ -57,7 +57,9 @@ func NewClient(baseURL string, cfg *Config) Client {
 	}
 	if cfg != nil {
 		authorizer := auth.NewSecretAuthorizer(cfg.Secret)
-		client.client = common_http.NewClient(nil, authorizer)
+		client.client = common_http.NewClient(&http.Client{
+			Transport: common_http.GetHTTPTransport(common_http.SecureTransport),
+		}, authorizer)
 	}
 	return client
 }

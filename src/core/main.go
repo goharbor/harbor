@@ -19,38 +19,34 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
+
 	"github.com/goharbor/harbor/src/common/dao"
+	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
-	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	_ "github.com/goharbor/harbor/src/controller/event/handler"
 	"github.com/goharbor/harbor/src/core/api"
-	quota "github.com/goharbor/harbor/src/core/api/quota"
-	_ "github.com/goharbor/harbor/src/core/api/quota/chart"
-	_ "github.com/goharbor/harbor/src/core/api/quota/registry"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	_ "github.com/goharbor/harbor/src/core/auth/oidc"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
-	_ "github.com/goharbor/harbor/src/core/notifier/topic"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/migration"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
-	"github.com/goharbor/harbor/src/pkg/scan/event"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
-	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/server"
@@ -82,69 +78,6 @@ func updateInitPassword(userID int, password string) error {
 		log.Infof("User id: %d updated its encrypted password successfully.", userID)
 	} else {
 		log.Infof("User id: %d already has its encrypted password.", userID)
-	}
-	return nil
-}
-
-// Quota migration
-func quotaSync() error {
-	projects, err := dao.GetProjects(nil)
-	if err != nil {
-		log.Errorf("list project error, %v", err)
-		return err
-	}
-
-	var pids []string
-	for _, project := range projects {
-		pids = append(pids, strconv.FormatInt(project.ProjectID, 10))
-	}
-	usages, err := dao.ListQuotaUsages(&models.QuotaUsageQuery{Reference: "project", ReferenceIDs: pids})
-	if err != nil {
-		log.Errorf("list quota usage error, %v", err)
-		return err
-	}
-
-	// The condition handles these two cases:
-	// 1, len(project) > 1 && len(usages) == 1. existing projects without usage, as we do always has 'library' usage in DB.
-	// 2, migration fails at the phase of inserting usage into DB, and parts of them are inserted successfully.
-	if len(projects) != len(usages) {
-		log.Info("Start to sync quota data .....")
-		if err := quota.Sync(config.GlobalProjectMgr, true); err != nil {
-			log.Errorf("Fail to sync quota data, %v", err)
-			return err
-		}
-		log.Info("Success to sync quota data .....")
-		return nil
-	}
-
-	// Only has one project without usage
-	zero := common_quota.ResourceList{
-		common_quota.ResourceCount:   0,
-		common_quota.ResourceStorage: 0,
-	}
-	if len(projects) == 1 && len(usages) == 1 {
-		totalRepo, err := dao.GetTotalOfRepositories()
-		if totalRepo == 0 {
-			return nil
-		}
-		refID, err := strconv.ParseInt(usages[0].ReferenceID, 10, 64)
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-		usedRes, err := types.NewResourceList(usages[0].Used)
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-		if types.Equals(usedRes, zero) && refID == projects[0].ProjectID {
-			log.Info("Start to sync quota data .....")
-			if err := quota.Sync(config.GlobalProjectMgr, true); err != nil {
-				log.Errorf("Fail to sync quota data, %v", err)
-				return err
-			}
-			log.Info("Success to sync quota data .....")
-		}
 	}
 	return nil
 }
@@ -183,8 +116,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
 	}
-	if err := dao.InitAndUpgradeDatabase(database); err != nil {
+	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
+	}
+	if err = migration.Migrate(database); err != nil {
+		log.Fatalf("failed to migrate: %v", err)
 	}
 	if err := config.Load(); err != nil {
 		log.Fatalf("failed to load config: %v", err)
@@ -208,31 +144,7 @@ func main() {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
 	}
 
-	if config.WithClair() {
-		clairDB, err := config.ClairDB()
-		if err != nil {
-			log.Fatalf("failed to load clair database information: %v", err)
-		}
-		if err := dao.InitClairDB(clairDB); err != nil {
-			log.Fatalf("failed to initialize clair database: %v", err)
-		}
-
-		reg := &scanner.Registration{
-			Name:            "Clair",
-			Description:     "The clair scanner adapter",
-			URL:             config.ClairAdapterEndpoint(),
-			UseInternalAddr: true,
-			Immutable:       true,
-		}
-
-		if err := scan.EnsureScanner(reg, true); err != nil {
-			log.Fatalf("failed to initialize clair scanner: %v", err)
-		}
-	} else {
-		if err := scan.RemoveImmutableScanners(); err != nil {
-			log.Warningf("failed to remove immutable scanners: %v", err)
-		}
-	}
+	registerScanners()
 
 	closing := make(chan struct{})
 	done := make(chan struct{})
@@ -243,51 +155,95 @@ func main() {
 
 	log.Info("initializing notification...")
 	notification.Init()
-	// Initialize the event handlers for handling artifact cascade deletion
-	event.Init()
-
-	filter.Init()
-	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
-	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
-	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
 
 	server.RegisterRoutes()
 
-	syncRegistry := os.Getenv("SYNC_REGISTRY")
-	sync, err := strconv.ParseBool(syncRegistry)
-	if err != nil {
-		log.Errorf("Failed to parse SYNC_REGISTRY: %v", err)
-		// if err set it default to false
-		sync = false
-	}
-	if sync {
-		if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {
-			log.Error(err)
-		}
-	} else {
-		log.Infof("Because SYNC_REGISTRY set false , no need to sync registry \n")
-	}
+	if common_http.InternalTLSEnabled() {
+		log.Info("internal TLS enabled, Init TLS ...")
+		iTLSKeyPath := os.Getenv("INTERNAL_TLS_KEY_PATH")
+		iTLSCertPath := os.Getenv("INTERNAL_TLS_CERT_PATH")
 
-	log.Info("Init proxy")
-	if err := middlewares.Init(); err != nil {
-		log.Fatalf("init proxy error, %v", err)
-	}
-
-	syncQuota := os.Getenv("SYNC_QUOTA")
-	doSyncQuota, err := strconv.ParseBool(syncQuota)
-	if err != nil {
-		log.Errorf("Failed to parse SYNC_QUOTA: %v", err)
-		doSyncQuota = true
-	}
-	if doSyncQuota {
-		if err := quotaSync(); err != nil {
-			log.Fatalf("quota migration error, %v", err)
-		}
-	} else {
-		log.Infof("Because SYNC_QUOTA set false , no need to sync quota \n")
+		log.Infof("load client key: %s client cert: %s", iTLSKeyPath, iTLSCertPath)
+		beego.BConfig.Listen.EnableHTTP = false
+		beego.BConfig.Listen.EnableHTTPS = true
+		beego.BConfig.Listen.HTTPSPort = 8443
+		beego.BConfig.Listen.HTTPSKeyFile = iTLSKeyPath
+		beego.BConfig.Listen.HTTPSCertFile = iTLSCertPath
+		beego.BeeApp.Server.TLSConfig = common_http.NewServerTLSConfig()
 	}
 
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
-
 	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
+}
+
+const (
+	clairScanner = "Clair"
+	trivyScanner = "Trivy"
+)
+
+func registerScanners() {
+	wantedScanners := make([]scanner.Registration, 0)
+	uninstallScannerNames := make([]string, 0)
+
+	if config.WithTrivy() {
+		log.Info("Registering Trivy scanner")
+		wantedScanners = append(wantedScanners, scanner.Registration{
+			Name:            trivyScanner,
+			Description:     "The Trivy scanner adapter",
+			URL:             config.TrivyAdapterURL(),
+			UseInternalAddr: true,
+			Immutable:       true,
+		})
+	} else {
+		log.Info("Removing Trivy scanner")
+		uninstallScannerNames = append(uninstallScannerNames, trivyScanner)
+	}
+
+	if config.WithClair() {
+		clairDB, err := config.ClairDB()
+		if err != nil {
+			log.Fatalf("failed to load clair database information: %v", err)
+		}
+		if err := dao.InitClairDB(clairDB); err != nil {
+			log.Fatalf("failed to initialize clair database: %v", err)
+		}
+
+		log.Info("Registering Clair scanner")
+		wantedScanners = append(wantedScanners, scanner.Registration{
+			Name:            clairScanner,
+			Description:     "The Clair scanner adapter",
+			URL:             config.ClairAdapterEndpoint(),
+			UseInternalAddr: true,
+			Immutable:       true,
+		})
+	} else {
+		log.Info("Removing Clair scanner")
+		uninstallScannerNames = append(uninstallScannerNames, clairScanner)
+	}
+
+	if err := scan.EnsureScanners(wantedScanners); err != nil {
+		log.Fatalf("failed to register scanners: %v", err)
+	}
+
+	if defaultScannerName := getDefaultScannerName(); defaultScannerName != "" {
+		log.Infof("Setting %s as default scanner", defaultScannerName)
+		if err := scan.EnsureDefaultScanner(defaultScannerName); err != nil {
+			log.Fatalf("failed to set default scanner: %v", err)
+		}
+	}
+
+	if err := scan.RemoveImmutableScanners(uninstallScannerNames); err != nil {
+		log.Warningf("failed to remove scanners: %v", err)
+	}
+
+}
+
+func getDefaultScannerName() string {
+	if config.WithTrivy() {
+		return trivyScanner
+	}
+	if config.WithClair() {
+		return clairScanner
+	}
+	return ""
 }

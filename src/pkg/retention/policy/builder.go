@@ -16,19 +16,19 @@ package policy
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/selector"
 
 	index4 "github.com/goharbor/harbor/src/pkg/retention/policy/action/index"
 
 	index3 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
 
-	index2 "github.com/goharbor/harbor/src/pkg/art/selectors/index"
+	index2 "github.com/goharbor/harbor/src/lib/selector/selectors/index"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 
-	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
-	"github.com/pkg/errors"
 )
 
 // Builder builds the runnable processor from the raw policy
@@ -46,7 +46,7 @@ type Builder interface {
 }
 
 // NewBuilder news a basic builder
-func NewBuilder(all []*art.Candidate) Builder {
+func NewBuilder(all []*selector.Candidate) Builder {
 	return &basicBuilder{
 		allCandidates: all,
 	}
@@ -54,7 +54,7 @@ func NewBuilder(all []*art.Candidate) Builder {
 
 // basicBuilder is default implementation of Builder interface
 type basicBuilder struct {
-	allCandidates []*art.Candidate
+	allCandidates []*selector.Candidate
 }
 
 // Build policy processor from the raw policy
@@ -76,9 +76,9 @@ func (bb *basicBuilder) Build(policy *lwp.Metadata, isDryRun bool) (alg.Processo
 			return nil, errors.Wrap(err, "get action performer by metadata")
 		}
 
-		sl := make([]art.Selector, 0)
+		sl := make([]selector.Selector, 0)
 		for _, s := range r.TagSelectors {
-			sel, err := index2.Get(s.Kind, s.Decoration, s.Pattern)
+			sel, err := index2.Get(s.Kind, s.Decoration, s.Pattern, s.Extras)
 			if err != nil {
 				return nil, errors.Wrap(err, "get selector by metadata")
 			}

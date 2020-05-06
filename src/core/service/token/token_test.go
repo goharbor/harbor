@@ -226,6 +226,10 @@ type fakeSecurityContext struct {
 	isAdmin bool
 }
 
+func (f *fakeSecurityContext) Name() string {
+	return "fake"
+}
+
 func (f *fakeSecurityContext) IsAuthenticated() bool {
 	return true
 }

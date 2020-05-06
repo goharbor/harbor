@@ -95,7 +95,7 @@ export NPM_REGISTRY=$NPM_REGISTRY
 
 # release branch must have their own base image with branch name, master and others will use the dev as base.
 if [[ $DRONE_BRANCH == "release-"* ]]; then
-  Harbor_Build_Base_Tag=$DRONE_BRANCH
+  Harbor_Build_Base_Tag=$target_release_version
 else
   Harbor_Build_Base_Tag=dev
 fi
@@ -104,6 +104,7 @@ export Harbor_Build_Base_Tag=$Harbor_Build_Base_Tag
 echo "--------------------------------------------------"
 echo "Harbor Package version: $Harbor_Package_Version"
 echo "Harbor Assets version: $Harbor_Assets_Version"
+echo "Harbor Build Base tag: $Harbor_Build_Base_Tag"
 echo "--------------------------------------------------"
 
 # GS util
@@ -137,7 +138,7 @@ function publishImage {
     # rename the images with tag "dev" and push to Docker Hub
     docker images
     docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
-    docker images | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:$image_tag;docker push \1:$image_tag|p" | bash
+    docker images | grep goharbor | grep -v "\-base" | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:$image_tag;docker push \1:$image_tag|p" | bash
     echo "Images are published successfully"
     docker images
 }

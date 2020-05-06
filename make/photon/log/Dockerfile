@@ -1,5 +1,6 @@
 ARG harbor_base_image_version
-FROM goharbor/harbor-log-base:${harbor_base_image_version}
+ARG harbor_base_namespace
+FROM ${harbor_base_namespace}/harbor-log-base:${harbor_base_image_version}
 
 COPY ./make/photon/log/rsyslog.conf /etc/rsyslog.conf
 
@@ -15,6 +16,8 @@ COPY ./make/photon/log/logrotate /etc/cron.hourly/
 COPY ./make/photon/log/start.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/start.sh /etc/rsyslog.d/ && \
     chown -R 10000:10000 /etc/rsyslog.conf /etc/rsyslog.d/ /run /var/lib/logrotate/
+
+RUN chage -M 99999 root
 
 HEALTHCHECK CMD netstat -ltun|grep 10514
 

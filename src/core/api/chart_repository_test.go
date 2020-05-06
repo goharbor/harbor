@@ -8,7 +8,6 @@ import (
 
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 )
 
@@ -259,62 +258,11 @@ func (mpm *mockProjectManager) GetPublic() ([]*models.Project, error) {
 	return nil, errors.New("Not implemented")
 }
 
+func (mpm *mockProjectManager) GetAuthorized(user *models.User) ([]*models.Project, error) {
+	return nil, nil
+}
+
 // if the project manager uses a metadata manager, return it, otherwise return nil
 func (mpm *mockProjectManager) GetMetadataManager() metamgr.ProjectMetadataManager {
 	return nil
-}
-
-// mock security context
-type mockSecurityContext struct{}
-
-// IsAuthenticated returns whether the context has been authenticated or not
-func (msc *mockSecurityContext) IsAuthenticated() bool {
-	return true
-}
-
-// GetUsername returns the username of user related to the context
-func (msc *mockSecurityContext) GetUsername() string {
-	return "amdin"
-}
-
-// IsSysAdmin returns whether the user is system admin
-func (msc *mockSecurityContext) IsSysAdmin() bool {
-	return true
-}
-
-// IsSolutionUser returns whether the user is solution user
-func (msc *mockSecurityContext) IsSolutionUser() bool {
-	return false
-}
-
-// Can returns whether the user can do action on resource
-func (msc *mockSecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
-	namespace, err := resource.GetNamespace()
-	if err != nil || namespace.Kind() != "project" {
-		return false
-	}
-
-	projectIDOrName := namespace.Identity()
-
-	if projectIDOrName == nil {
-		return false
-	}
-
-	if ns, ok := projectIDOrName.(string); ok {
-		if ns == "library" {
-			return true
-		}
-	}
-
-	return false
-}
-
-// Get current user's all project
-func (msc *mockSecurityContext) GetMyProjects() ([]*models.Project, error) {
-	return []*models.Project{{ProjectID: 0, Name: "library"}}, nil
-}
-
-// Get user's role in provided project
-func (msc *mockSecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
-	return []int{0, 1, 2, 3}
 }

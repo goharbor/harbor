@@ -10,14 +10,9 @@ from library.configurations import Configurations
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        conf = Configurations()
-        self.conf= conf
-
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
+        self.conf= Configurations()
+        self.project= Project()
+        self.user= User()
 
     @classmethod
     def tearDown(self):
@@ -59,7 +54,7 @@ class TestProjects(unittest.TestCase):
 
         #3. Create a new project(PA) by user(UA), and fail to create a new project;
         self.project.create_project(metadata = {"public": "false"}, expect_status_code = 403,
-            expect_response_body = "{\"code\":403,\"message\":\"Only system admin can create project\"}", **TestProjects.USER_edit_project_creation_CLIENT)
+            expect_response_body = "{\"errors\":[{\"code\":\"FORBIDDEN\",\"message\":\"Only system admin can create project\"}]}", **TestProjects.USER_edit_project_creation_CLIENT)
 
         #4. Set project creation to "everyone";
         self.conf.set_configurations_of_project_creation_restriction("everyone", **ADMIN_CLIENT)

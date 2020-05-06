@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"strings"
 	"time"
@@ -73,7 +73,11 @@ func (r *robotAccountDao) ListRobotAccounts(query *q.Query) ([]*model.Robot, err
 	if query != nil {
 		if len(query.Keywords) > 0 {
 			for k, v := range query.Keywords {
-				qt = qt.Filter(fmt.Sprintf("%s__icontains", k), v)
+				if k == "ProjectID" {
+					qt = qt.Filter("ProjectID", v)
+				} else {
+					qt = qt.Filter(fmt.Sprintf("%s__icontains", k), v)
+				}
 			}
 		}
 

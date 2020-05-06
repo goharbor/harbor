@@ -23,7 +23,8 @@ import (
 	"testing"
 
 	o "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/internal/orm"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -129,7 +130,13 @@ func TestTransaction(t *testing.T) {
 
 	req5 := newRequest(http.MethodGet, "/req", nil)
 	rec5 := httptest.NewRecorder()
-	Middleware()(txMustCommit(http.StatusBadRequest)).ServeHTTP(rec5, req5)
+
+	m1 := middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		type key struct{}
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), key{}, "value")))
+	})
+
+	Middleware()(m1((txMustCommit(http.StatusBadRequest)))).ServeHTTP(rec5, req5)
 	assert.Equal(http.StatusBadRequest, rec2.Code)
 	assert.NotEmpty(mo.records)
 }
@@ -140,6 +147,9 @@ func TestMustCommit(t *testing.T) {
 		return req.WithContext(ctx)
 	}
 
+	ctx := context.Background()
+	committableCtx := context.WithValue(ctx, committedKey{}, new(bool))
+
 	type args struct {
 		r *http.Request
 	}
@@ -148,8 +158,8 @@ func TestMustCommit(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"request committable", args{newRequest(&committableContext{Context: context.Background()})}, false},
-		{"request not committable", args{newRequest(context.Background())}, true},
+		{"request committable", args{newRequest(committableCtx)}, false},
+		{"request not committable", args{newRequest(ctx)}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

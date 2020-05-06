@@ -5,7 +5,7 @@ import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { SessionService } from "../../shared/session.service";
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { RouterTestingModule } from '@angular/router/testing';
 import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";

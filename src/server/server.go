@@ -15,15 +15,13 @@
 package server
 
 import (
-	// "github.com/goharbor/harbor/src/server/registry"
-	v1 "github.com/goharbor/harbor/src/server/v1.0/route"
+	"github.com/goharbor/harbor/src/server/registry"
 	v2 "github.com/goharbor/harbor/src/server/v2.0/route"
 )
 
 // RegisterRoutes register all routes
 func RegisterRoutes() {
-	// TODO move the v1 APIs to v2
-	v1.RegisterRoutes() // v1.0 APIs
-	v2.RegisterRoutes() // v2.0 APIs
-	// registry.RegisterRoutes() // OCI registry APIs
+	registerRoutes()          // service/internal API/UI controller/etc.
+	registry.RegisterRoutes() // OCI registry APIs
+	v2.RegisterRoutes()       // v2.0 APIs
 }

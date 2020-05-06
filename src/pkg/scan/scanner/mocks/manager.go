@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	q "github.com/goharbor/harbor/src/pkg/q"
+	q "github.com/goharbor/harbor/src/lib/q"
 	mock "github.com/stretchr/testify/mock"
 
 	scanner "github.com/goharbor/harbor/src/pkg/scan/dao/scanner"

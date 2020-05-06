@@ -1,17 +1,19 @@
 package robot
 
 import (
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	core_cfg "github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type ControllerTestSuite struct {
@@ -41,11 +43,11 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 
 	res := rbac.Resource("/project/1")
 
-	rbacPolicy := &rbac.Policy{
+	rbacPolicy := &types.Policy{
 		Resource: res.Subresource(rbac.ResourceRepository),
 		Action:   "pull",
 	}
-	policies := []*rbac.Policy{}
+	policies := []*types.Policy{}
 	policies = append(policies, rbacPolicy)
 
 	tokenDuration := time.Duration(30) * time.Minute
@@ -79,12 +81,21 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	robot2 := &model.RobotCreate{
 		Name:        "robot2",
 		Description: "TestCreateRobotAccount",
-		ExpiresAt:   expiresAt,
+		ExpiresAt:   -1,
 		ProjectID:   int64(1),
 		Access:      policies,
 	}
 	r2, _ := s.ctr.CreateRobotAccount(robot2)
 	s.robotID = r2.ID
+
+	robot3 := &model.RobotCreate{
+		Name:        "robot3",
+		Description: "TestCreateRobotAccount",
+		ExpiresAt:   expiresAt,
+		ProjectID:   int64(11),
+		Access:      policies,
+	}
+	r3, _ := s.ctr.CreateRobotAccount(robot3)
 
 	keywords := make(map[string]interface{})
 	keywords["ProjectID"] = int64(1)
@@ -97,6 +108,8 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	s.require.Equal(robots[1].Name, common.RobotPrefix+"robot2")
 
 	err = s.ctr.DeleteRobotAccount(robot.ID)
+	s.require.Nil(err)
+	err = s.ctr.DeleteRobotAccount(r3.ID)
 	s.require.Nil(err)
 
 	robots, err = s.ctr.ListRobotAccount(query)

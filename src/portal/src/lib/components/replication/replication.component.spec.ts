@@ -26,6 +26,7 @@ import {FilterLabelComponent} from "../create-edit-rule/filter-label.component";
 import {LabelPieceComponent} from "../label-piece/label-piece.component";
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
+import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 
 describe('Replication Component (inline template)', () => {
@@ -149,7 +150,7 @@ describe('Replication Component (inline template)', () => {
   let elJob: HTMLElement;
 
   let config: IServiceConfig = {
-    replicationRuleEndpoint: '/api/policies/replication/testing'
+    replicationRuleEndpoint: CURRENT_BASE_HREF + '/policies/replication/testing'
   };
 
   beforeEach(async(() => {

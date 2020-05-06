@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
@@ -96,8 +96,11 @@ func (suite *EnqueuerTestSuite) TestEnqueuer() {
 		}
 	}()
 
-	tk := time.NewTicker(500 * time.Millisecond)
+	tk := time.NewTicker(497 * time.Millisecond)
 	defer tk.Stop()
+
+	tm := time.NewTimer(15 * time.Second)
+	defer tm.Stop()
 
 	for {
 		select {
@@ -109,7 +112,7 @@ func (suite *EnqueuerTestSuite) TestEnqueuer() {
 			}, "at least one job should be scheduled for the periodic job policy") {
 				return
 			}
-		case <-time.After(15 * time.Second):
+		case <-tm.C:
 			require.NoError(suite.T(), errors.New("timeout (15s): expect at 1 scheduled job but still get nothing"))
 			return
 		}
@@ -120,13 +123,14 @@ func (suite *EnqueuerTestSuite) prepare() {
 	now := time.Now()
 	minute := now.Minute()
 
-	coreSpec := fmt.Sprintf("0-59 %d * * * *", minute)
+	// Make sure we at least schedule jobs in the 3 minutes cycle
+	cronSpec := fmt.Sprintf("0-59 %d,%d,%d * * * *", minute, (minute+1)%60, (minute+2)%60)
 
 	// Prepare one
 	p := &Policy{
 		ID:       "fake_policy",
 		JobName:  job.SampleJob,
-		CronSpec: coreSpec,
+		CronSpec: cronSpec,
 	}
 	rawData, err := p.Serialize()
 	assert.Nil(suite.T(), err, "prepare data: nil error expected but got %s", err)

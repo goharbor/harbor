@@ -16,18 +16,20 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"sync"
 	"time"
 
-	"errors"
+	o "github.com/astaxie/beego/orm"
 	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/logger/sweeper"
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 const (
@@ -53,7 +55,7 @@ type Context struct {
 // NewContext ...
 func NewContext(sysCtx context.Context, cfgMgr *comcfg.CfgManager) *Context {
 	return &Context{
-		sysContext: sysCtx,
+		sysContext: comcfg.NewContext(sysCtx, cfgMgr),
 		cfgMgr:     *cfgMgr,
 		properties: make(map[string]interface{}),
 	}
@@ -101,7 +103,7 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 	}
 
 	jContext := &Context{
-		sysContext: c.sysContext,
+		sysContext: orm.NewContext(c.sysContext, o.NewOrm()),
 		cfgMgr:     c.cfgMgr,
 		properties: make(map[string]interface{}),
 		tracker:    tracker,

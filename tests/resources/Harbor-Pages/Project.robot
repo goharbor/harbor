@@ -106,7 +106,9 @@ Make Project Private
     Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
     Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
     Retry Element Click  //button[contains(.,'SAVE')]
-    Retry Wait Until Page Contains  Configuration has been successfully saved
+    Go Into Project  ${project name}
+    Switch To Project Configuration
+    Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
 
 Make Project Public
     [Arguments]  ${projectname}
@@ -115,7 +117,9 @@ Make Project Public
     Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
     Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
     Retry Element Click  //button[contains(.,'SAVE')]
-    Retry Wait Until Page Contains  Configuration has been successfully saved
+    Go Into Project  ${project name}
+    Switch To Project Configuration
+    Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
 
 Delete Repo
     [Arguments]  ${projectname}
@@ -156,10 +160,11 @@ Advanced Search Should Display
 # it's not a common keywords, only used into log case.
 Do Log Advanced Search
     Capture Page Screenshot  LogAdvancedSearch.png
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'pull')]
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'push')]
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'create')]
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'delete')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'pull')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'create')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'delete')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'project') and contains(.,'create')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'repository') and contains(.,'delete')]
     Retry Element Click  xpath=//audit-log//div[@class='flex-xs-middle']/button
     Retry Element Click  xpath=//project-detail//audit-log//clr-dropdown/button
     #pull log
@@ -201,9 +206,13 @@ Go Into Repo
     \    Capture Page Screenshot  gointo_${repoName}.png
     \    Sleep  2
     Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}  Retry Wait Until Page Not Contains Element  ${repo_name_element}
-    Retry Wait Element  ${tag_table_column_pull_command}
-    Retry Wait Element  ${tag_images_btn}
+    Retry Wait Element  ${tag_table_column_vulnerabilities}
+    Retry Wait Element  ${tag_table_column_size}
     Capture Page Screenshot  gointo_${repoName}.png
+
+Go Into Index
+    [Arguments]  ${index_name}=${null}
+    Retry Element Click  ${artifact_achieve_icon}
 
 Switch To CardView
     Retry Element Click  xpath=//hbr-repository-gridview//span[@class='card-btn']/clr-icon
@@ -242,13 +251,16 @@ Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label
     Capture Page Screenshot  add_${labelName}.png
-    Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//button
+    Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span
+    Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'Add Labels')]
     Retry Element Click  xpath=//clr-dropdown//div//label[contains(.,'${labelName}')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row//label[contains(.,'${labelName}')]
 
 Filter Labels In Tags
     [Arguments]  ${labelName1}  ${labelName2}
     Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
+    Retry Element Click  xpath=//clr-main-container//artifact-list-tab//clr-select-container//select
+    Retry Element Click  xpath=//clr-main-container//artifact-list-tab//clr-select-container//select/option[@value='labels']
     Retry Wait Until Page Contains Element  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName1}')]
     Retry Element Click  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName1}')]
     Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon

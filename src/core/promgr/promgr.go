@@ -20,9 +20,9 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // ProjectManager is the project manager which abstracts the operations related
@@ -37,6 +37,8 @@ type ProjectManager interface {
 	Exists(projectIDOrName interface{}) (bool, error)
 	// get all public project
 	GetPublic() ([]*models.Project, error)
+	// get all projects that the user is authorized
+	GetAuthorized(user *models.User) ([]*models.Project, error)
 	// if the project manager uses a metadata manager, return it, otherwise return nil
 	GetMetadataManager() metamgr.ProjectMetadataManager
 }
@@ -247,6 +249,23 @@ func (d *defaultProjectManager) GetPublic() ([]*models.Project, error) {
 	result, err := d.List(&models.ProjectQueryParam{
 		Public: &value,
 	})
+	if err != nil {
+		return nil, err
+	}
+	return result.Projects, nil
+}
+
+func (d *defaultProjectManager) GetAuthorized(user *models.User) ([]*models.Project, error) {
+	if user == nil {
+		return nil, nil
+	}
+	result, err := d.List(
+		&models.ProjectQueryParam{
+			Member: &models.MemberQuery{
+				Name:     user.Username,
+				GroupIDs: user.GroupIDs,
+			},
+		})
 	if err != nil {
 		return nil, err
 	}

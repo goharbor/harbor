@@ -16,10 +16,12 @@ import { NgForm } from '@angular/forms';
 import { Subscription } from "rxjs";
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ConfirmMessageHandler } from '../config.msg.utils';
-import { AppConfigService } from '../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { ConfigurationService } from '../config.service';
 import { Configuration } from "../../../lib/components/config/config";
 import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { errorHandler as errorHandlerFn } from "../../../lib/utils/shared/shared.utils";
+
 import { SystemInfoService } from "../../../lib/services";
 import { clone, isEmpty, getChanges as getChangesFunc } from "../../../lib/utils/utils";
 import { CONFIG_AUTH_MODE } from "../../../lib/entities/shared.const";
@@ -142,7 +144,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
                     this.msgHandler.showSuccess('CONFIG.TEST_LDAP_SUCCESS');
                 }, error => {
                     this.testingOnGoing = false;
-                    let err = error.error;
+                    let err = errorHandlerFn(error);
                     if (!err || !err.trim()) {
                         err = 'UNKNOWN';
                     }

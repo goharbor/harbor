@@ -1,11 +1,14 @@
 package model
 
 import (
+	"encoding/json"
+	"errors"
+	"time"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
-	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
-	"time"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 // RobotTable is the name of table in DB that holds the robot object
@@ -34,6 +37,25 @@ func (r *Robot) TableName() string {
 	return RobotTable
 }
 
+// FromJSON parses robot from json data
+func (r *Robot) FromJSON(jsonData string) error {
+	if len(jsonData) == 0 {
+		return errors.New("empty json data to parse")
+	}
+
+	return json.Unmarshal([]byte(jsonData), r)
+}
+
+// ToJSON marshals Robot to JSON data
+func (r *Robot) ToJSON() (string, error) {
+	data, err := json.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
+}
+
 // RobotQuery ...
 type RobotQuery struct {
 	Name           string
@@ -45,13 +67,13 @@ type RobotQuery struct {
 
 // RobotCreate ...
 type RobotCreate struct {
-	Name        string         `json:"name"`
-	ProjectID   int64          `json:"pid"`
-	Description string         `json:"description"`
-	Disabled    bool           `json:"disabled"`
-	ExpiresAt   int64          `json:"expires_at"`
-	Visible     bool           `json:"-"`
-	Access      []*rbac.Policy `json:"access"`
+	Name        string          `json:"name"`
+	ProjectID   int64           `json:"pid"`
+	Description string          `json:"description"`
+	Disabled    bool            `json:"disabled"`
+	ExpiresAt   int64           `json:"expires_at"`
+	Visible     bool            `json:"-"`
+	Access      []*types.Policy `json:"access"`
 }
 
 // Pagination ...
@@ -68,8 +90,8 @@ func (rq *RobotCreate) Valid(v *validation.Validation) {
 	if utils.IsContainIllegalChar(rq.Name, []string{",", "~", "#", "$", "%"}) {
 		v.SetError("name", "robot name contains illegal characters")
 	}
-	if rq.ExpiresAt < 0 {
-		v.SetError("expires_at", "expiration time must be a positive integer if set")
+	if rq.ExpiresAt < -1 {
+		v.SetError("expires_at", "expiration time must be a positive integer or -1 if set")
 	}
 }
 

@@ -18,7 +18,7 @@ import {
 import { IServiceConfig, SERVICE_CONFIG } from "../../entities/service.config";
 import { OperationService } from "../operation/operation.service";
 
-import { click } from "../../utils/utils";
+import { click, CURRENT_BASE_HREF } from "../../utils/utils";
 import { of } from "rxjs";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { HttpClient } from "@angular/common/http";
@@ -311,7 +311,7 @@ describe("EndpointComponent (inline template)", () => {
   let comp: EndpointComponent;
   let fixture: ComponentFixture<EndpointComponent>;
   let config: IServiceConfig = {
-    systemInfoEndpoint: "/api/endpoints/testing"
+    systemInfoEndpoint: CURRENT_BASE_HREF + "/endpoints/testing"
   };
 
   let endpointService: EndpointService;
@@ -368,7 +368,7 @@ describe("EndpointComponent (inline template)", () => {
 
   it("should endpoint be initialized", () => {
     fixture.detectChanges();
-    expect(config.systemInfoEndpoint).toEqual("/api/endpoints/testing");
+    expect(config.systemInfoEndpoint).toEqual(CURRENT_BASE_HREF + "/endpoints/testing");
   });
 
   it("should open create endpoint modal", async(() => {

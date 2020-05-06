@@ -4,51 +4,41 @@
             <div class="default-quota">
                 <div>
                     <div class="default-quota-text">
-                        <span class="width-10rem">{{'QUOTA.PROJECT_QUOTA_DEFAULT_ARTIFACT' | translate}}</span>
-                        <span class="num-count">{{ quotaHardLimitValue?.countLimit === -1 ? ('QUOTA.UNLIMITED'| translate) : quotaHardLimitValue?.countLimit }}</span>
-                        <button id="open-edit" class="btn btn-link btn-sm  default-quota-edit-button"
-                    (click)="editDefaultQuota(quotaHardLimitValue)">{{'QUOTA.EDIT' | translate}}</button>
-                    </div>
-                    <div class="default-quota-text">
                         <span class="width-10rem">{{'QUOTA.PROJECT_QUOTA_DEFAULT_DISK' | translate}}</span>
                         <span class="num-count">{{ quotaHardLimitValue?.storageLimit === -1?('QUOTA.UNLIMITED' | translate): getIntegerAndUnit(quotaHardLimitValue?.storageLimit, 0).partNumberHard}}
                             {{ quotaHardLimitValue?.storageLimit === -1?'':quotaHardLimitValue?.storageUnit }}</span>
+                        <button id="open-edit" class="btn btn-link btn-sm  default-quota-edit-button"
+                                (click)="editDefaultQuota(quotaHardLimitValue)">{{'QUOTA.EDIT' | translate}}</button>
                     </div>
                 </div>
             </div>
-            <div class="refresh-div mr-1">
-                <span class="refresh-btn" (click)="refresh()">
-                    <clr-icon shape="refresh"></clr-icon>
-                </span>
-            </div>
         </div>
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="getQuotaList($event)">
+            <clr-datagrid [(clrDgSelected)]="selectedRow" [clrDgLoading]="loading" (clrDgRefresh)="getQuotaList($event)">
+                <clr-dg-action-bar>
+                    <div class="clr-row">
+                        <div class="clr-col">
+                            <button type="button" class="btn  btn-secondary" [disabled]="!(selectedRow && selectedRow.length === 1)" (click)="editQuota()">
+                                {{'QUOTA.EDIT' | translate}}
+                            </button>
+                        </div>
+                        <div class="clr-col-1">
+                            <div class="action-head-pos">
+                               <span class="refresh-btn" (click)="refresh()">
+                                   <clr-icon shape="refresh"></clr-icon>
+                               </span>
+                            </div>
+                        </div>
+                    </div>
+                </clr-dg-action-bar>
                 <clr-dg-column>{{'QUOTA.PROJECT' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'QUOTA.OWNER' | translate}}</clr-dg-column>
-                <clr-dg-column [clrDgSortBy]="countComparator">{{'QUOTA.COUNT' | translate }}</clr-dg-column>
                 <clr-dg-column [clrDgSortBy]="storageComparator">{{'QUOTA.STORAGE' | translate }}</clr-dg-column>
                 <clr-dg-placeholder>{{'QUOTA.PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let quota of quotaList" [clrDgItem]='quota'>
-                    <clr-dg-action-overflow>
-                        <button class="action-item" (click)="editQuota(quota)">{{'QUOTA.EDIT' | translate}}</button>
-                    </clr-dg-action-overflow>
                     <clr-dg-cell>
                         <a href="javascript:void(0)" (click)="goToLink(quota?.ref?.id)">{{quota?.ref?.name}}</a></clr-dg-cell>
                     <clr-dg-cell>{{quota?.ref?.owner_name}}</clr-dg-cell>
-                    <clr-dg-cell>
-                        <div class="progress-block progress-min-width">
-                            <div class="progress success"
-                                [class.danger]="quota.hard.count!==-1?quota.used.count/quota.hard.count>quotaDangerCoefficient:false"
-                                [class.warning]="quota.hard.count!==-1?quota.used.count/quota.hard.count<=quotaDangerCoefficient &&quota.used.count/quota.hard.count>=quotaWarningCoefficient:false"
-                                >
-                                <progress value="{{quota.hard.count===-1? 0 : quota.used.count}}"
-                                    max="{{quota.hard.count}}" data-displayval="100%"></progress>
-                            </div>
-                            <label class="min-label-width">{{ quota?.used?.count }} {{ 'QUOTA.OF' | translate }}
-                                {{ quota?.hard.count ===-1?('QUOTA.UNLIMITED' | translate): quota?.hard?.count }}</label>
-                        </div>
-                    </clr-dg-cell>
                     <clr-dg-cell>
                         <div class="progress-block progress-min-width">
                             <div class="progress success"

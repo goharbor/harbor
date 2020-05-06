@@ -17,9 +17,10 @@ import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { AppConfigService } from "../../../app-config.service";
+import { AppConfigService } from "../../../services/app-config.service";
 import { ErrorHandler } from "../../../../lib/utils/error-handler";
-
+const ONE_THOUSAND: number = 1000;
+const NEVER_EXPIRED: number = -1;
 @Component({
   selector: "add-robot",
   templateUrl: "./add-robot.component.html",
@@ -50,6 +51,9 @@ export class AddRobotComponent implements OnInit, OnDestroy {
   @Output() create = new EventEmitter<boolean>();
   @ViewChild("robotForm", {static: true}) currentForm: NgForm;
   @ViewChild("copyAlert", {static: false}) copyAlert: InlineAlertComponent;
+  private _expiresDate: Date;
+  isNeverExpired: boolean = false;
+  expiresDatePlaceholder: string = ' ';
   constructor(
       private robotService: RobotService,
       private translate: TranslateService,
@@ -114,6 +118,9 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     this.isRobotNameValid = true;
     this.robot = new Robot();
     this.nameTooltipText = "ROBOT_ACCOUNT.ROBOT_NAME";
+    this.isNeverExpired = false;
+    this.expiresDate = null;
+    this.expiresDatePlaceholder = ' ';
     this.copyAlert.close();
   }
 
@@ -136,6 +143,18 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     } else {
       this.robot.access.isPullImage = true;
       this.robot.access.isPushOrPullImage = false;
+    }
+    if (this.isNeverExpired) {
+      this.robot.expires_at = NEVER_EXPIRED;
+    } else {
+      if (this.expiresDate) {
+        if (this.expiresDate <= new Date()) {
+          this.copyAlert.showInlineError("ROBOT_ACCOUNT.INVALID_VALUE");
+          return;
+        } else {
+          this.robot.expires_at = Math.floor(this.expiresDate.getTime() / ONE_THOUSAND);
+        }
+      }
     }
     this.isSubmitOnGoing = true;
     this.robotService
@@ -213,5 +232,24 @@ export class AddRobotComponent implements OnInit, OnDestroy {
 
   closeModal() {
     this.copyToken = false;
+  }
+  switch() {
+    if (this.isNeverExpired) {
+      this.expiresDate = null;
+      this.translate.get('ROBOT_ACCOUNT.NEVER_EXPIRED').subscribe(value => {
+        this.expiresDatePlaceholder = value;
+      });
+    } else {
+      this.expiresDatePlaceholder = ' ';
+    }
+  }
+  get expiresDate(): Date {
+    return this._expiresDate;
+  }
+  set expiresDate(date: Date) {
+    if (date) {
+      this.isNeverExpired = false;
+    }
+    this._expiresDate = date;
   }
 }

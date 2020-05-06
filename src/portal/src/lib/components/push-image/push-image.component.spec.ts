@@ -51,10 +51,10 @@ describe('PushImageButtonComponent (inline template)', () => {
       let copyInputs: HTMLInputElement[] = fixture.nativeElement.querySelectorAll('.command-input');
       fixture.whenStable().then(() => {
         fixture.detectChanges();
-        expect(copyInputs.length).toEqual(2);
+        expect(copyInputs.length).toEqual(5);
         expect(copyInputs[0].value.trim())
-        .toEqual(`docker tag SOURCE_IMAGE[:TAG] ${component.registryUrl}/${component.projectName}/IMAGE[:TAG]`);
-        expect(copyInputs[1].value.trim()).toEqual(`docker push ${component.registryUrl}/${component.projectName}/IMAGE[:TAG]`);
+        .toEqual(`docker tag SOURCE_IMAGE[:TAG] ${component.registryUrl}/${component.projectName}/REPOSITORY[:TAG]`);
+        expect(copyInputs[1].value.trim()).toEqual(`docker push ${component.registryUrl}/${component.projectName}/REPOSITORY[:TAG]`);
       });
     });
   });

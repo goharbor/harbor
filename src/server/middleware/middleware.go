@@ -16,6 +16,9 @@ package middleware
 
 import (
 	"net/http"
+
+	"github.com/goharbor/harbor/src/lib"
+	serror "github.com/goharbor/harbor/src/server/error"
 )
 
 // Middleware receives a handler and returns another handler.
@@ -23,13 +26,21 @@ import (
 // the requirement
 type Middleware func(http.Handler) http.Handler
 
+// Chain make middlewares together
+func Chain(middlewares ...Middleware) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		for i := len(middlewares) - 1; i >= 0; i-- {
+			h = middlewares[i](h)
+		}
+
+		return h
+	}
+}
+
 // WithMiddlewares apply the middlewares to the handler.
 // The middlewares are executed in the order that they are applied
 func WithMiddlewares(handler http.Handler, middlewares ...Middleware) http.Handler {
-	for i := len(middlewares) - 1; i >= 0; i-- {
-		handler = middlewares[i](handler)
-	}
-	return handler
+	return Chain(middlewares...)(handler)
 }
 
 // New make a middleware from fn which type is func(w http.ResponseWriter, r *http.Request, next http.Handler)
@@ -46,4 +57,35 @@ func New(fn func(http.ResponseWriter, *http.Request, http.Handler), skippers ...
 			fn(w, r, next)
 		})
 	}
+}
+
+// BeforeRequest make a middleware which will call hook before the next handler
+func BeforeRequest(hook func(*http.Request) error, skippers ...Skipper) func(http.Handler) http.Handler {
+	return New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		if err := hook(lib.NopCloseRequest(r)); err != nil {
+			serror.SendError(w, err)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+
+	}, skippers...)
+}
+
+// AfterResponse make a middleware which will call hook after the next handler
+func AfterResponse(hook func(http.ResponseWriter, *http.Request, int) error, skippers ...Skipper) func(http.Handler) http.Handler {
+	return New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		res, ok := w.(*lib.ResponseBuffer)
+		if !ok {
+			res = lib.NewResponseBuffer(w)
+			defer res.Flush()
+		}
+
+		next.ServeHTTP(res, r)
+
+		if err := hook(res, r, res.StatusCode()); err != nil {
+			res.Reset()
+			serror.SendError(res, err)
+		}
+	}, skippers...)
 }

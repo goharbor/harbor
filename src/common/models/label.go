@@ -16,6 +16,8 @@ package models
 
 import (
 	"fmt"
+	"github.com/go-openapi/strfmt"
+	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"time"
 
 	"github.com/astaxie/beego/validation"
@@ -34,6 +36,20 @@ type Label struct {
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 	Deleted      bool      `orm:"column(deleted)" json:"deleted"`
+}
+
+// ToSwagger converts the label to the swagger model
+func (l *Label) ToSwagger() *models.Label {
+	return &models.Label{
+		Color:        l.Color,
+		CreationTime: strfmt.DateTime(l.CreationTime),
+		Description:  l.Description,
+		ID:           l.ID,
+		Name:         l.Name,
+		ProjectID:    l.ProjectID,
+		Scope:        l.Scope,
+		UpdateTime:   strfmt.DateTime(l.UpdateTime),
+	}
 }
 
 // TableName ...

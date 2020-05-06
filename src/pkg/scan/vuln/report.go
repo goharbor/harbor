@@ -15,6 +15,8 @@
 package vuln
 
 import (
+	"encoding/json"
+
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -28,6 +30,55 @@ type Report struct {
 	Severity Severity `json:"severity"`
 	// Vulnerability list
 	Vulnerabilities []*VulnerabilityItem `json:"vulnerabilities"`
+}
+
+// MarshalJSON custom function to dump nil slice of Vulnerabilities as empty slice
+// See https://github.com/goharbor/harbor/issues/11131 to get more details
+func (report *Report) MarshalJSON() ([]byte, error) {
+	type Alias Report
+
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(report),
+	}
+
+	if aux.Vulnerabilities == nil {
+		aux.Vulnerabilities = []*VulnerabilityItem{}
+	}
+
+	return json.Marshal(aux)
+}
+
+// Merge ...
+func (report *Report) Merge(another *Report) *Report {
+	generatedAt := report.GeneratedAt
+	if another.GeneratedAt > generatedAt {
+		generatedAt = another.GeneratedAt
+	}
+
+	vulnerabilities := report.Vulnerabilities
+	if vulnerabilities == nil {
+		vulnerabilities = another.Vulnerabilities
+	} else {
+		vulnerabilities = append(vulnerabilities, another.Vulnerabilities...)
+	}
+
+	r := &Report{
+		GeneratedAt:     generatedAt,
+		Scanner:         report.Scanner,
+		Severity:        mergeSeverity(report.Severity, another.Severity),
+		Vulnerabilities: vulnerabilities,
+	}
+
+	return r
+}
+
+// WithArtifactDigest set artifact digest for the report
+func (report *Report) WithArtifactDigest(artifactDigest string) {
+	for _, vul := range report.Vulnerabilities {
+		vul.ArtifactDigest = artifactDigest
+	}
 }
 
 // VulnerabilityItem represents one found vulnerability
@@ -55,4 +106,7 @@ type VulnerabilityItem struct {
 	// Format: URI
 	// e.g: List [ "https://security-tracker.debian.org/tracker/CVE-2017-8283" ]
 	Links []string `json:"links"`
+	// The artifact digest which the vulnerability belonged
+	// e.g: sha256@ee1d00c5250b5a886b09be2d5f9506add35dfb557f1ef37a7e4b8f0138f32956
+	ArtifactDigest string `json:"artifact_digest"`
 }

@@ -48,14 +48,14 @@
 
         </clr-input-container>
         <label *ngIf="canDownloadCert" for="certDownloadLink"
-            class="required clr-control-label mt-1">{{'CONFIG.ROOT_CERT' | translate}}
-            <a #certDownloadLink [href]="downloadLink" target="_blank">{{'CONFIG.ROOT_CERT_LINK' | translate}}</a>
+            class="clr-control-label cert-down-label mt-1">{{'CONFIG.ROOT_CERT' | translate}}
             <clr-tooltip>
                 <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                 <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
                     <span>{{'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate}}</span>
                 </clr-tooltip-content>
             </clr-tooltip>
+            <a #certDownloadLink class="cert-down" [href]="downloadLink" target="_blank">{{'CONFIG.ROOT_CERT_LINK' | translate}}</a>
         </label>
         <clr-checkbox-container *ngIf="!withAdmiral">
             <label id="repo_read_only_lbl" for="repoReadOnly">{{'CONFIG.REPO_READ_ONLY' | translate}}
@@ -97,7 +97,7 @@
                             <button id="show-add-modal-button" (click)="showAddModal=!showAddModal"
                                 class="btn btn-link">{{'CVE_WHITELIST.ADD'|translate}}</button>
                         </div>
-                        <div class="add-modal" *ngIf="showAddModal">
+                        <div class="add-modal add-modal-dark" *ngIf="showAddModal">
                             <clr-icon (click)="showAddModal=false" class="float-lg-right margin-top-4"
                                 shape="window-close"></clr-icon>
                             <div>

@@ -21,13 +21,59 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"reflect"
-	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/lib"
 )
+
+const (
+	// InsecureTransport used to get the insecure http Transport
+	InsecureTransport = iota
+	// SecureTransport used to get the external secure http Transport
+	SecureTransport
+)
+
+var (
+	secureHTTPTransport   *http.Transport
+	insecureHTTPTransport *http.Transport
+)
+
+func init() {
+	secureHTTPTransport = newDefaultTransport()
+	insecureHTTPTransport = newDefaultTransport()
+	insecureHTTPTransport.TLSClientConfig.InsecureSkipVerify = true
+
+	if InternalTLSEnabled() {
+		tlsConfig, err := GetInternalTLSConfig()
+		if err != nil {
+			panic(err)
+		}
+		secureHTTPTransport.TLSClientConfig = tlsConfig
+	}
+}
+
+// Use this instead of Default Transport in library because it sets ForceAttemptHTTP2 to true
+// And that options introduced in go 1.13 will cause the https requests hang forever in replication environment
+func newDefaultTransport() *http.Transport {
+	return &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		TLSClientConfig:       &tls.Config{},
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+}
 
 // Client is a util for common HTTP operations, such Get, Head, Post, Put and Delete.
 // Use Do instead if  those methods can not meet your requirement
@@ -36,31 +82,22 @@ type Client struct {
 	client    *http.Client
 }
 
-var defaultHTTPTransport, secureHTTPTransport, insecureHTTPTransport *http.Transport
-
-func init() {
-	defaultHTTPTransport = &http.Transport{}
-
-	secureHTTPTransport = &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
-		},
-	}
-	insecureHTTPTransport = &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
+// GetHTTPTransport returns HttpTransport based on insecure configuration
+func GetHTTPTransport(clientType uint) *http.Transport {
+	switch clientType {
+	case SecureTransport:
+		return secureHTTPTransport
+	case InsecureTransport:
+		return insecureHTTPTransport
+	default:
+		// default Transport is secure one
+		return secureHTTPTransport
 	}
 }
 
-// GetHTTPTransport returns HttpTransport based on insecure configuration
-func GetHTTPTransport(insecure ...bool) *http.Transport {
-	if len(insecure) == 0 {
-		return defaultHTTPTransport
-	}
-	if insecure[0] {
+// GetHTTPTransportByInsecure returns a insecure HttpTransport if insecure is true or it returns secure one
+func GetHTTPTransportByInsecure(insecure bool) *http.Transport {
+	if insecure {
 		return insecureHTTPTransport
 	}
 	return secureHTTPTransport
@@ -75,9 +112,7 @@ func NewClient(c *http.Client, modifiers ...modifier.Modifier) *Client {
 	}
 	if client.client == nil {
 		client.client = &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-			},
+			Transport: GetHTTPTransport(SecureTransport),
 		}
 	}
 	if len(modifiers) > 0 {
@@ -231,8 +266,8 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
 		data, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
 		if err != nil {
 			return err
 		}
@@ -250,12 +285,10 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 		resources = reflect.AppendSlice(resources, reflect.Indirect(res))
 
 		endpoint = ""
-		link := resp.Header.Get("Link")
-		for _, str := range strings.Split(link, ",") {
-			if strings.HasSuffix(str, `rel="next"`) &&
-				strings.Index(str, "<") >= 0 &&
-				strings.Index(str, ">") >= 0 {
-				endpoint = url.Scheme + "://" + url.Host + str[strings.Index(str, "<")+1:strings.Index(str, ">")]
+		links := lib.ParseLinks(resp.Header.Get("Link"))
+		for _, link := range links {
+			if link.Rel == "next" {
+				endpoint = url.Scheme + "://" + url.Host + link.URL
 				break
 			}
 		}
