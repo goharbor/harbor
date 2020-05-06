@@ -70,6 +70,7 @@ jobs:
           df -h
       - name: upload test result to gs
         run: |
-          gsutil cp report.html gs://harbor-conformance-test/report.html
+          cd src/github.com/goharbor/harbor
+          gsutil cp ./distribution-spec/conformance/report.html gs://harbor-conformance-test/report.html
           gsutil acl ch -u AllUsers:R gs://harbor-conformance-test/report.html
         if: always()
