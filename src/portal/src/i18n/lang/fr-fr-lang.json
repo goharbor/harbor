@@ -970,7 +970,7 @@
             "SCANNING_PERCENT_EXPLAIN": "Scan completed percentage is calculated as # of successfully scanned images / total number of images referenced within the image index.",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} de {{totalPackages}} {{package}} ont des {{vulnerability}} connues.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} de {{totalPackages}} {{package}} a des {{vulnerability}} connues.",
-            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability detected"
         },
         "SEVERITY": {
             "CRITICAL": "Critique",
