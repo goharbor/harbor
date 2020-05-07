@@ -6,7 +6,7 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2095/badge)](https://bestpractices.coreinfrastructure.org/projects/2095)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c8d726c9cfd047ffaf681449d673f246)](https://www.codacy.com/app/goharbor/harbor?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=goharbor/harbor&amp;utm_campaign=Badge_Grade)
 [![Nightly Status](https://us-central1-eminent-nation-87317.cloudfunctions.net/harbor-nightly-result)](https://www.googleapis.com/storage/v1/b/harbor-nightly/o)
-[![Conformance Status](https://github.com/goharbor/harbor/workflows/conformance_test/badge.svg)](https://github.com/goharbor/harbor/actions?query=workflow%3Aconformance_test)
+[![Conformance Status](https://github.com/goharbor/harbor/workflows/conformance_test/badge.svg)](https://github.com/goharbor/harbor/actions?query=workflow%3ACONFORMANCE_TEST)
 </br>
 
 |![notification](docs/img/bell-outline-badged.svg)Community Meeting|
