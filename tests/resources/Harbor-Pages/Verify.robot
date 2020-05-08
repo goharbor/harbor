@@ -309,6 +309,17 @@ Verify Project Setting
     \    Run Keyword If  ${scanonpush} == "true"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='scan-image-on-push-wrapper']//input
     \   Close Browser
 
+Verify Interrogation Services
+    [Arguments]    ${json}
+    Log To Console  "Verify Interrogation Services..."
+    @{cron}=  Get Value From Json  ${json}  $.interrogation_services..cron
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Vulnerability Page
+    Page Should Contain  Custom
+    Page Should Contain  @{cron}[0]
+    Close Browser
+
 Verify System Setting
     [Arguments]    ${json}
     Log To Console  "Verify System Setting..."
@@ -320,6 +331,7 @@ Verify System Setting
     @{emailuser}=  Get Value From Json  ${json}  $.configuration..emailuser
     @{emailfrom}=  Get Value From Json  ${json}  $.configuration..emailfrom
     @{token}=  Get Value From Json  ${json}  $.configuration..token
+    @{robot_token}=  Get Value From Json  ${json}  $.configuration..robot_token
     @{scanschedule}=  Get Value From Json  ${json}  $.configuration..scanall
     @{cve_ids}=  Get Value From Json  ${json}  $.configuration..cve
     Init Chrome Driver
@@ -337,9 +349,7 @@ Verify System Setting
     ${ret}  Get Selected List Value  xpath=//select[@id='proCreation']
     Should Be Equal As Strings  ${ret}  @{creation}[0]
     Token Must Be Match  @{token}[0]
-    #ToDo:These 2 lines below should be uncommented right after issue 9211 was fixed
-    #Switch To Vulnerability Page
-    #Page Should Contain  None
+    Robot Account Token Must Be Match  @{robot_token}[0]
     Close Browser
 
 Verify Project-level Whitelist
@@ -383,4 +393,11 @@ Verify Clair Is Default Scanner
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Scanners Page
     Should Display The Default Clair Scanner
+    Close Browser
+
+Verify Trivy Is Default Scanner
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Scanners Page
+    Should Display The Default Trivy Scanner
     Close Browser

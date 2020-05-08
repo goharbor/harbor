@@ -36,10 +36,11 @@ Test Case - Upgrade Verify
     Run Keyword  Verify Endpoint  ${data}
     Run Keyword  Verify Replicationrule  ${data}
     Run Keyword  Verify Project Setting  ${data}
+    Run Keyword  Verify Interrogation Services  ${data}
     Run Keyword  Verify System Setting  ${data}
     Run Keyword  Verify System Setting Whitelist  ${data}
     Run Keyword  Verify Image Tag  ${data}
-    Run Keyword  Verify Clair Is Default Scanner
+    Run Keyword  Verify Trivy Is Default Scanner
 
 Test Case - Upgrade Verify
     [Tags]  1.10-latest
@@ -56,6 +57,7 @@ Test Case - Upgrade Verify
     Run Keyword  Verify Endpoint  ${data}
     Run Keyword  Verify Replicationrule  ${data}
     Run Keyword  Verify Project Setting  ${data}
+    Run Keyword  Verify Interrogation Services  ${data}
     Run Keyword  Verify System Setting  ${data}
     Run Keyword  Verify System Setting Whitelist  ${data}
     Run Keyword  Verify Image Tag  ${data}
