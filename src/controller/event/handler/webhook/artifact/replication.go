@@ -201,6 +201,10 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 }
 
 func getMetadataFromResource(resource string) (namespace, nameAndTag string) {
+	// Usually resource format likes 'library/busybox:v1', but it could be 'busybox:v1' in docker registry
 	meta := strings.Split(resource, "/")
+	if len(meta) == 1 {
+		return "", meta[0]
+	}
 	return meta[0], meta[1]
 }
