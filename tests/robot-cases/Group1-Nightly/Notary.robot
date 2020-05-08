@@ -35,8 +35,12 @@ Test Case - Project Level Policy Content Trust
     Click Content Trust
     Save Project Config
     # Verify
+    # Unsigned image can not be pulled
     Content Trust Should Be Selected
     Cannot Pull Unsigned Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
+    # Signed image can be pulled
+    Body Of Admin Push Signed Image  image=redis  project=project${d}
+    Pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  redis  tag=latest
     Close Browser
 
 Test Case - Admin Push Signed Image

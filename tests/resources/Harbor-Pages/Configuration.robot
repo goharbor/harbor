@@ -169,6 +169,10 @@ Token Must Be Match
     [Arguments]  ${minutes}
     Textfield Value Should Be  xpath=//*[@id='tokenExpiration']  ${minutes}
 
+Robot Account Token Must Be Match
+    [Arguments]  ${days}
+    Textfield Value Should Be  xpath=//*[@id='robotTokenExpiration']  ${days}
+
 ## Replication
 Check Verify Remote Cert
     Mouse Down  xpath=//*[@id='clr-checkbox-verifyRemoteCert']
