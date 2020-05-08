@@ -429,7 +429,9 @@
         "PROJECT_MASTER": "Propriétaire",
         "DEVELOPER": "Développeur",
         "GUEST": "Invité",
-        "LIMITED_GUEST": "Invité avec droits limités"
+        "LIMITED_GUEST": "Invité avec droits limités",
+        "DELETION_TITLE": "Confirmer la suppression des membres du groupe",
+        "DELETION_SUMMARY": "Voulez-vous supprimer le(s) membre(s) du groupe {{param}} ?"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nom d'utilisateur",

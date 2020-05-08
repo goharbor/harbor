@@ -437,7 +437,9 @@
         "PROJECT_MASTER": "Master",
         "DEVELOPER": "Developer",
         "GUEST": "Guest",
-        "LIMITED_GUEST": "Limited Guest"
+        "LIMITED_GUEST": "Limited Guest",
+        "DELETION_TITLE": "Confirm group members deletion",
+        "DELETION_SUMMARY": "Do you want to delete group member(s) {{param}}?"
     },
     "AUDIT_LOG": {
         "USERNAME": "Username",
