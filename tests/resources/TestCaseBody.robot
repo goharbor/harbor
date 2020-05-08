@@ -53,7 +53,7 @@ Body Of Manage project publicity
     Close Browser
 
 Body Of Scan A Tag In The Repo
-    [Arguments]  ${image_argument}  ${tag_argument}
+    [Arguments]  ${image_argument}  ${tag_argument}  ${is_no_vulerabilty}=${false}
     Init Chrome Driver
     ${d}=  get current date  result_format=%m%s
 
@@ -64,9 +64,66 @@ Body Of Scan A Tag In The Repo
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image_argument}
     Scan Repo  ${tag_argument}  Succeed
-    Summary Chart Should Display  ${tag_argument}
+    Scan Result Should Display In List Row  ${tag_argument}  is_no_vulerabilty=${is_no_vulerabilty}
     Pull Image  ${ip}  user023  Test1@34  project${d}  ${image_argument}  ${tag_argument}
     # Edit Repo Info
+    Close Browser
+
+Body Of Scan Image With Empty Vul
+    [Arguments]  ${image_argument}  ${tag_argument}
+    Init Chrome Driver
+    ${tag}=  Set Variable  ${tag_argument}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  ${image_argument}:${tag_argument}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Go Into Repo  ${image_argument}
+    Scan Repo  ${tag}  Succeed
+    Move To Summary Chart
+    Scan Result Should Display In List Row  ${tag}  is_no_vulerabilty=${true}
+    Close Browser
+
+Body Of Manual Scan All
+    [Arguments]  @{vulnerability_levels}
+    Init Chrome Driver
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Vulnerability Page
+    Trigger Scan Now And Wait Until The Result Appears
+    Navigate To Projects
+    Go Into Project  library
+    Go Into Repo  redis
+    Scan Result Should Display In List Row  latest
+    View Repo Scan Details  @{vulnerability_levels}
+    Close Browser
+
+Body Of View Scan Results
+    [Arguments]  @{vulnerability_levels}
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+
+    Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
+    Create An New Project  project${d}
+    Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/tomcat
+    Scan Repo  latest  Succeed
+    Scan Result Should Display In List Row  latest
+    View Repo Scan Details  @{vulnerability_levels}
+    Close Browser
+
+Body Of Scan Image On Push
+    [Arguments]  @{vulnerability_levels}
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Goto Project Config
+    Enable Scan On Push
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
+    Navigate To Projects
+    Go Into Project  library
+    Go Into Repo  memcached
+    Scan Result Should Display In List Row  latest
+    View Repo Scan Details  @{vulnerability_levels}
     Close Browser
 
 Body Of List Helm Charts
@@ -99,15 +156,15 @@ Body Of List Helm Charts
     Close Browser
 
 Body Of Admin Push Signed Image
-    [Arguments]  ${image}=tomcat  ${with_remove}=${false}
+    [Arguments]  ${image}=tomcat  ${project}=library  ${with_remove}=${false}
     Enable Notary Client
 
     Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} library ${image} latest ${notaryServerEndpoint} ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:latest
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${project} ${image} latest ${notaryServerEndpoint} ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:latest
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/library/repositories/${image}/artifacts/latest?with_signature=true"
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/${project}/repositories/${image}/artifacts/latest?with_signature=true"
 
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
