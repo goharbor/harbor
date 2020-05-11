@@ -92,7 +92,15 @@ func (f *fakedReplicationMgr) GetExecution(int64) (*daoModels.Execution, error) 
 func (f *fakedReplicationMgr) ListTasks(...*daoModels.TaskQuery) (int64, []*daoModels.Task, error) {
 	return 0, nil, nil
 }
-func (f *fakedReplicationMgr) GetTask(int64) (*daoModels.Task, error) {
+func (f *fakedReplicationMgr) GetTask(id int64) (*daoModels.Task, error) {
+	if id == 1 {
+		return &daoModels.Task{
+			ExecutionID: 1,
+			// project info not included when replicating with docker registry
+			SrcResource: "alpine:[v1]",
+			DstResource: "gxt/alpine:[v1] ",
+		}, nil
+	}
 	return &daoModels.Task{
 		ExecutionID: 1,
 		SrcResource: "library/alpine:[v1]",
@@ -254,17 +262,27 @@ func TestReplicationHandler_Handle(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "ImagePreprocessHandler Want Error 1",
+			name: "ReplicationHandler Want Error 1",
 			args: args{
 				data: "",
 			},
 			wantErr: true,
 		},
 		{
-			name: "ImagePreprocessHandler 1",
+			name: "ReplicationHandler 1",
 			args: args{
 				data: &event.ReplicationEvent{
 					OccurAt: time.Now(),
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "ReplicationHandler with docker registry",
+			args: args{
+				data: &event.ReplicationEvent{
+					OccurAt:           time.Now(),
+					ReplicationTaskID: 1,
 				},
 			},
 			wantErr: false,
