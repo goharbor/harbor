@@ -13,6 +13,7 @@ When you delete images from Harbor, space is not automatically freed up. You mus
 
     ![Garbage collection](../../img/garbage-collection.png)
 
+1. To delete untagged artifacts, select the check box **Delete Untagged Artifacts**. 
 1. To run garbage collection immediately, click **GC Now**.
 
 When you run garbage collection, Harbor goes into read-only mode. All modifications to the registry are prohibited.
@@ -32,6 +33,8 @@ To avoid triggering the garbage collection process too frequently, the availabil
     * **Daily**: Run garbage collection at midnight every day.
     * **Weekly**: Run garbage collection at midnight every Saturday.
     * **Custom**: Run garbage collection according to a `cron` job.
+    
+1. To delete untagged artifacts, select the check box **Delete Untagged Artifacts**.     
 1. Click **Save**.
 1. Select the **History** tab to view records of the 10 most recent garbage collection runs.
 
