@@ -72,6 +72,7 @@ Cannot Pull Unsigned Image
     [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pass} ${ip}
     ${output}=  Command Should be Failed  docker pull ${ip}/${proj}/${imagewithtag}
+    Log To Console  ${output}
     Should Contain  ${output}  The image is not signed in Notary
 
 Cannot Push image

@@ -77,6 +77,9 @@
               "tag_filters":"tagfilter2"
             }
          ],
+         "interrogation_services":{
+           "cron":"0 0 0 6 3 0"
+         },
          "configuration":{
            "authmode":"Database",
            "projectcreation":"everyone",
@@ -90,6 +93,7 @@
               "verifycert":false
            },
            "token":"40",
+           "robot_token":"31",
            "readonly":false,
            "scanall":{
               "type":"none",
