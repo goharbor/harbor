@@ -29,7 +29,7 @@ git clone https://github.com/goharbor/harbor
 
 ### Configuration
 
-Edit the file **make/harbor.yml** and make necessary configuration changes such as hostname, admin password and mail server. Refer to [Harbor Installation and Configuration](../install-config/_index.md) for more info.
+Copy the file **make/harbor.yml.tmp** to **make/harbor.yml**, and make necessary configuration changes such as hostname, admin password and mail server. Refer to [Harbor Installation and Configuration](../install-config/_index.md) for more info.
 
 ```sh
 cd harbor
