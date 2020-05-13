@@ -60,6 +60,23 @@ You can use certificates that are signed by a trusted third-party CA, or you can
     <td valign="top"><code>private_key</code></td>
     <td valign="top">The path to the SSL key.</td>
   </tr>
+
+  <tr>
+    <td valign="top"><code>internal_tls</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"> Use HTTPS to communicate between harbor components</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>enabled</code></td>
+    <td valign="top">Set this flag to <code>true</code> means internal tls is enabled</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>certificate</code></td>
+    <td valign="top">The path to the directory that contains internal certs and keys</td>
+  </tr>
+
   <tr>
     <td valign="top"><code>harbor_admin_password</code></td>
     <td valign="top">None</td>
