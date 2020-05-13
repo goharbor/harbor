@@ -3,16 +3,16 @@ title: Configure the Harbor YML File
 weight: 35
 ---
 
-You set system level parameters for Harbor in the `harbor.yml` file that is contained in the installer package. These parameters take effect when you run the `install.sh` script to install or reconfigure Harbor. 
+You set system level parameters for Harbor in the `harbor.yml` file that is contained in the installer package. These parameters take effect when you run the `install.sh` script to install or reconfigure Harbor.
 
-After the initial deployment and after you have started Harbor, you perform additional configuration in the Harbor Web Portal. 
+After the initial deployment and after you have started Harbor, you perform additional configuration in the Harbor Web Portal.
 
 ## Required Parameters
 
 The table below lists the parameters that must be set when you deploy Harbor. By default, all of the required parameters are uncommented in the `harbor.yml` file. The optional parameters are commented with `#`. You do not necessarily need to change the values of the required parameters from the defaults that are provided, but these parameters must remain uncommented. At the very least, you must update the `hostname` parameter.
 
-**IMPORTANT**: Harbor does not ship with any certificates. In versions up to and including 1.9.x, by default Harbor uses HTTP to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary to properly sign all images, you must use HTTPS. 
-  
+**IMPORTANT**: Harbor does not ship with any certificates. In versions up to and including 1.9.x, by default Harbor uses HTTP to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary to properly sign all images, you must use HTTPS.
+
 You can use certificates that are signed by a trusted third-party CA, or you can use self-signed certificates. For information about how to create a CA, and how to use a CA to sign a server certificate and a client certificate, see [Configuring Harbor with HTTPS Access](configure-https.md).
 
 <table width="100%" border="0">
@@ -96,6 +96,31 @@ You can use certificates that are signed by a trusted third-party CA, or you can
     <td valign="top">Set an interval for Clair updates, in hours. Set to 0 to disable the updates. The default is 12 hours.</td>
   </tr>
   <tr>
+    <td valign="top"><code>trivy</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">Configure Trivy scanner.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>ignore_unfixed</code></td>
+    <td valign="top">Set the flag to <code>true</code> to display only fixed vulnerabilities. The default value is <code>false</code></td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>skip_update</code></td>
+    <td valign="top">You might want to enable this flag in test or CI/CD environments to avoid GitHub rate limiting issues. If the flag is enabled you have to manually download the `trivy.db` file and mount it in the <code>/home/scanner/.cache/trivy/db/trivy.db</code> path in container. The default value is <code>false</code></td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>insecure</code></td>
+    <td valign="top">Set the flag to <code>true</code> to skip verifying registry certificate. The default value is <code>false</code></td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>github_token</code></td>
+    <td valign="top">Set the GitHub access token to download Trivy DB. Trivy DB is downloaded by Trivy from the GitHub release page. Anonymous downloads from GitHub are subject to the limit of 60 requests per hour. Normally such rate limit is enough for production operations. If, for any reason, it's not enough, you could increase the rate limit to 5000 requests per hour by specifying the GitHub access token. For more details on GitHub rate limiting please consult https://developer.github.com/v3/#rate-limiting .You can create a GitHub token by following the instuctions in https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line</td>
+  </tr>
+  <tr>
     <td valign="top"><code>jobservice</code></td>
     <td valign="top"><code>max_job_workers</code></td>
     <td valign="top">The maximum number of replication workers in the job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, set the value of this attribute based on the hardware resource of the host. The default is 10.</td>
@@ -160,7 +185,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
     <td valign="top">Configure when not to use a proxy, for example, <code>127.0.0.1,localhost,core,registry</code>.</td>
   </tr>
 </table>
-  
+
 ## Optional Parameters
 
 The following table lists the additional, optional parameters that you can set to configure your Harbor deployment beyond the minimum required settings. To enable a setting, you must uncomment it in `harbor.yml` by deleting the leading `#` character.
