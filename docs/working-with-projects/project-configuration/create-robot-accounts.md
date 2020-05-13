@@ -17,7 +17,7 @@ You can create robot accounts to run automated operations. Robot accounts have t
 
 1. Click **New Robot Account**.
 1. Enter a name and an optional description for this robot account.
-1. Set expiration time for this robot account. If not set, the expiration time of system configuration will be used for this robot account.
+1. Set expiration time for this robot account, you can also select checkbox **Never Expired** if you want to create a never expiring robot account. If not set, the expiration time of system configuration will be used for this robot account. 
 1. Grant permission to the robot account to push images and to push and pull Helm charts.
 
     Robot accounts can always pull images, so you cannot deselect this option.
