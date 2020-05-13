@@ -107,6 +107,7 @@ Test Case - Scan Image On Push
     Go Into Project  library
     Go Into Repo  memcached
     Summary Chart Should Display  latest
+    View Repo Scan Details
     Close Browser
 
 Test Case - View Scan Results
@@ -122,7 +123,7 @@ Test Case - View Scan Results
     Scan Repo  latest  Succeed
     Summary Chart Should Display  latest
     View Repo Scan Details
-    Close Browser 
+    Close Browser
 Test Case - Project Level Image Serverity Policy
     [Tags]  run-once
     Init Chrome Driver

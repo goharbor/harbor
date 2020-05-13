@@ -27,8 +27,10 @@ import (
 // PutBlobUploadMiddleware middleware to request storage resource for the project
 func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 	return RequestMiddleware(RequestConfig{
-		ReferenceObject: projectReferenceObject,
-		Resources:       putBlobUploadResources,
+		ReferenceObject:   projectReferenceObject,
+		Resources:         putBlobUploadResources,
+		ResourcesExceeded: projectResourcesEvent(1),
+		ResourcesWarning:  projectResourcesEvent(2),
 	})
 }
 
