@@ -42,6 +42,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/azurecr"
 	// register the AliACR adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/aliacr"
+	// register the AliACREE adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/aliacree"
 	// register the Jfrog Artifactory adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/jfrog"
 	// register the Quay.io adapter

@@ -8,13 +8,12 @@ require (
 	github.com/Masterminds/semver v1.4.2
 	github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d // indirect
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
-	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
+	github.com/aliyun/alibaba-cloud-sdk-go v1.60.261
 	github.com/astaxie/beego v1.12.1
 	github.com/aws/aws-sdk-go v1.19.47
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bitly/go-hostpool v0.0.0-20171023180738-a3a6125de932 // indirect
 	github.com/bmatcuk/doublestar v1.1.1
-	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/bugsnag/bugsnag-go v1.5.2 // indirect
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/casbin/casbin v1.7.0

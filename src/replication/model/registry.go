@@ -30,6 +30,7 @@ const (
 	RegistryTypeAwsEcr           RegistryType = "aws-ecr"
 	RegistryTypeAzureAcr         RegistryType = "azure-acr"
 	RegistryTypeAliAcr           RegistryType = "ali-acr"
+	RegistryTypeAliAcrEE         RegistryType = "ali-acr-ee"
 	RegistryTypeJfrogArtifactory RegistryType = "jfrog-artifactory"
 	RegistryTypeQuayio           RegistryType = "quay-io"
 	RegistryTypeGitLab           RegistryType = "gitlab"
