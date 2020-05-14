@@ -43,7 +43,7 @@ git fetch $USER
 ```
 **NOTES:** Note that GOPATH can be any directory, the example above uses $HOME/go. Change $USER above to your own GitHub username.
 
-To build the project, please refer the [build](docs/compile_guide.md) guideline.
+To build the project, please refer the [build](docs/build-customize-contribute/compile-guide.md) guideline.
 
 ### Repository Structure
 
