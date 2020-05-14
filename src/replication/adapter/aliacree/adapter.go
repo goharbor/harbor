@@ -277,7 +277,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 						Repository: &model.Repository{
 							Name: filepath.Join(repo.RepoNamespaceName, repo.RepoName),
 						},
-						Vtags:  filterTags,
+						Vtags: filterTags,
 					},
 				}
 			}
