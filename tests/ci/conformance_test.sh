@@ -15,9 +15,11 @@ export OCI_NAMESPACE="conformance/testrepo"
 export OCI_USERNAME="admin"
 export OCI_PASSWORD="Harbor12345"
 export OCI_DEBUG="true"
-## will add more test, so far only cover pull & push
+
 export OCI_TEST_PUSH=1
 export OCI_TEST_PULL=1
+export OCI_TEST_CONTENT_DISCOVERY=1
+export OCI_TEST_CONTENT_MANAGEMENT=1
 
 cd ./distribution-spec/conformance
 go test .
