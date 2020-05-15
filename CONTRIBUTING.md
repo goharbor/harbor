@@ -252,7 +252,7 @@ Run UI library test cases:
 npm run test
 ```
 
-To build code, please refer to [build](docs/compile_guide.md) guideline.
+To build the code, please refer to [build](docs/build-customize-contribute/compile-guide.md) guideline.
 
 ###  Keep sync with upstream
 
