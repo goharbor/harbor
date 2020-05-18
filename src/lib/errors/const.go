@@ -23,6 +23,8 @@ const (
 	ViolateForeignKeyConstraintCode = "VIOLATE_FOREIGN_KEY_CONSTRAINT"
 	// DIGESTINVALID ...
 	DIGESTINVALID = "DIGEST_INVALID"
+	// MANIFESTINVALID ...
+	MANIFESTINVALID = "MANIFEST_INVALID"
 )
 
 // NotFoundError is error for the case of object not found
