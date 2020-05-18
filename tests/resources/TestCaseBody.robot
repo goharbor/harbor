@@ -23,7 +23,7 @@ Body Of Manage project publicity
     ${d}=    Get Current Date  result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user007  Test1@34
-    Create An New Project  project${d}  public=true
+    Create An New Project And Go Into Project  project${d}  public=true
 
     Push image  ${ip}  user007  Test1@34  project${d}  hello-world:latest
     Pull image  ${ip}  user008  Test1@34  project${d}  hello-world:latest
@@ -58,8 +58,7 @@ Body Of Scan A Tag In The Repo
     ${d}=  get current date  result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user023  Test1@34
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
+    Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  user023  Test1@34  project${d}  ${image_argument}:${tag_argument}
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image_argument}
@@ -102,7 +101,7 @@ Body Of View Scan Results
     ${d}=  get current date  result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
     Go Into Project  project${d}
     Go Into Repo  project${d}/tomcat
@@ -131,8 +130,7 @@ Body Of List Helm Charts
     ${d}=   Get Current Date    result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user027  Test1@34
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
+    Create An New Project And Go Into Project  project${d}
 
     Switch To Project Charts
     Upload Chart files
@@ -176,7 +174,7 @@ Delete A Project Without Sign In Harbor
     [Arguments]  ${harbor_ip}=${ip}  ${username}=${HARBOR_ADMIN}  ${password}=${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s
     ${project_name}=  Set Variable  000${d}
-    Create An New Project  ${project_name}
+    Create An New Project And Go Into Project  ${project_name}
     Push Image  ${harbor_ip}  ${username}  ${password}  ${project_name}  hello-world
     Project Should Not Be Deleted  ${project_name}
     Go Into Project  ${project_name}
@@ -187,7 +185,7 @@ Delete A Project Without Sign In Harbor
 Manage Project Member Without Sign In Harbor
     [Arguments]  ${sign_in_user}  ${sign_in_pwd}  ${test_user1}=user005  ${test_user2}=user006  ${is_oidc_mode}=${false}
     ${d}=    Get current Date  result_format=%m%s
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Push image  ip=${ip}  user=${sign_in_user}  pwd=${sign_in_pwd}  project=project${d}  image=hello-world
     Logout Harbor
 
@@ -208,10 +206,9 @@ Manage Project Member Without Sign In Harbor
 Helm CLI Push Without Sign In Harbor
     [Arguments]  ${sign_in_user}  ${sign_in_pwd}
     ${d}=   Get Current Date    result_format=%m%s
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Helm Repo Add  ${HARBOR_URL}  ${sign_in_user}  ${sign_in_pwd}  project_name=project${d}
     Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}
-    Go Into Project  project${d}  has_image=${false}
     Switch To Project Charts
     Go Into Chart Version  ${harbor_chart_name}
     Retry Wait Until Page Contains  ${harbor_chart_version}
@@ -220,9 +217,8 @@ Helm CLI Push Without Sign In Harbor
 Helm3 CLI Push Without Sign In Harbor
     [Arguments]  ${sign_in_user}  ${sign_in_pwd}
     ${d}=   Get Current Date    result_format=%m%s
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}  helm_repo_name=${HARBOR_URL}/chartrepo/project${d}  helm_cmd=helm3
-    Go Into Project  project${d}  has_image=${false}
     Switch To Project Charts
     Retry Double Keywords When Error  Go Into Chart Version  ${harbor_chart_name}  Retry Wait Until Page Contains  ${harbor_chart_version}
     Capture Page Screenshot
@@ -240,7 +236,7 @@ Body Of Verfiy System Level CVE Whitelist
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project    project${d}
+    Create An New Project And Go Into Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
@@ -272,7 +268,7 @@ Body Of Verfiy Project Level CVE Whitelist
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project    project${d}
+    Create An New Project And Go Into Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
@@ -305,7 +301,7 @@ Body Of Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Add Items To System CVE Whitelist    ${cve_list}
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project    project${d}
+    Create An New Project And Go Into Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
