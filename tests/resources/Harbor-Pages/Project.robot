@@ -19,7 +19,7 @@ Resource  ../../resources/Util.robot
 *** Variables ***
 
 *** Keywords ***
-Create An New Project
+Create An New Project And Go Into Project
     [Arguments]  ${projectname}  ${public}=false  ${count_quota}=${null}  ${storage_quota}=${null}  ${storage_quota_unit}=${null}
     Navigate To Projects
     Retry Button Click  xpath=${create_project_button_xpath}
@@ -40,7 +40,7 @@ Create An New Project With New User
     Create An New User  url=${url}  username=${username}  email=${email}  realname=${realname}  newPassword=${newPassword}  comment=${comment}
     Logout Harbor
     Sign In Harbor  ${url}  ${username}  ${newPassword}
-    Create An New Project  ${projectname}  ${public}
+    Create An New Project And Go Into Project  ${projectname}  ${public}
     Sleep  1
 
 #It's the log of project.
