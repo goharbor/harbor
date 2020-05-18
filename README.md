@@ -6,10 +6,10 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2095/badge)](https://bestpractices.coreinfrastructure.org/projects/2095)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c8d726c9cfd047ffaf681449d673f246)](https://www.codacy.com/app/goharbor/harbor?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=goharbor/harbor&amp;utm_campaign=Badge_Grade)
 [![Nightly Status](https://us-central1-eminent-nation-87317.cloudfunctions.net/harbor-nightly-result)](https://www.googleapis.com/storage/v1/b/harbor-nightly/o)
-[![Conformance Status](https://github.com/goharbor/harbor/workflows/conformance_test/badge.svg)](https://github.com/goharbor/harbor/actions?query=workflow%3ACONFORMANCE_TEST)
+![CONFORMANCE_TEST](https://github.com/goharbor/harbor/workflows/CONFORMANCE_TEST/badge.svg)
 </br>
 
-|![notification](docs/img/bell-outline-badged.svg)Community Meeting|
+|![notification](docs/img/readme/bell-outline-badged.svg)Community Meeting|
 |------------------|
 |The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
 
@@ -18,7 +18,7 @@
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
 Please use [releases](https://github.com/vmware/harbor/releases) instead of the `master` branch in order to get a stable set of binaries.
 
-<img alt="Harbor" src="docs/img/harbor_logo.png">
+<img alt="Harbor" src="docs/img/readme/harbor_logo.png">
 
 Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
 
@@ -40,18 +40,15 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **RESTful API**: RESTful APIs are provided to facilitate administrative operations, and are easy to use for integration with external systems. An embedded Swagger UI is available for exploring and testing the API.
 * **Easy deployment**: Harbor can be deployed via Docker compose as well Helm Chart. A Harbor Operator was added recently as well - https://goharbor.io/docs/1.10/build-customize-contribute/e2e_api_python_based_scripting_guide/
 
+## Architecture
+
+For learning the architecture design of Harbor, check the document [Architecture Overview of Harbor](https://github.com/goharbor/harbor/wiki/Architecture-Overview-of-Harbor).
+
 ## API
 
-* [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/v2.0/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically.
-  - Spec validation status: <img src="http://validator.swagger.io/validator?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/harbor/swagger.yaml">
-
-## Compatibility
-
-The [compatibility list](./docs/harbor_compatibility_list.md) document provides compatibility information for the Harbor components.
-
-- [Replication adapters](./docs/harbor_compatibility_list.md#Replication-Adapters)
-- [OIDC adapters](./docs/harbor_compatibility_list.md#OIDC-Adapters)
-- [Scanner adapters](./docs/harbor_compatibility_list.md#Scanner-Adapters)
+* Harbor RESTful API: The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically.
+  * Part 1: [New or changed APIs](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/v2.0/swagger.yaml)
+  * Part 2: [Legacy APIs](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/v2.0/legacy_swagger.yaml)
 
 ## Install & Run
 
@@ -65,20 +62,24 @@ If you want to deploy Harbor on Kubernetes, please use the **[Harbor chart](http
 
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
+## OCI Distribution Conformance Tests
+
+Check the OCI distribution conformance tests [report](https://storage.googleapis.com/harbor-conformance-test/report.html) of Harbor.
+
+## Compatibility
+
+The [compatibility list](./docs/install-config/harbor-compatibility-list.md) document provides compatibility information for the Harbor components.
+
+* [Replication adapters](./docs/install-config/harbor-compatibility-list.md#Replication-Adapters)
+* [OIDC adapters](./docs/install-config/harbor-compatibility-list.md#OIDC-Adapters)
+* [Scanner adapters](./docs/install-config/harbor-compatibility-list.md#Scanner-Adapters)
+
 ## Community
 
 * **Twitter:** [@project_harbor](https://twitter.com/project_harbor)  
 * **User Group:** Join Harbor user email group: [harbor-users@lists.cncf.io](https://lists.cncf.io/g/harbor-users) to get update of Harbor's news, features, releases, or to provide suggestion and feedback.  
 * **Developer Group:** Join Harbor developer group: [harbor-dev@lists.cncf.io](https://lists.cncf.io/g/harbor-dev) for discussion on Harbor development and contribution.
 * **Slack:** Join Harbor's community for discussion and ask questions: [Cloud Native Computing Foundation](https://slack.cncf.io/), channel: [#harbor](https://cloud-native.slack.com/messages/harbor/) and [#harbor-dev](https://cloud-native.slack.com/messages/harbor-dev/)
-
-## Additional Tools
-
-Tools layered on top of Harbor and contributed by community.
-
-* **[Harbor.Tagd](https://github.com/HylandSoftware/Harbor.Tagd)**
-  - Automates the process of cleaning up old tags from your Harbor container registries.
-  - Lead by [@nlowe](https://github.com/nlowe) from HylandSoftware.
 
 ## Demos
 
@@ -102,7 +103,6 @@ email to acknowledge your report, and we'll send an additional email when we've 
 positively or negatively.
 
 For further details please see our complete [security release process](SECURITY.md).
-
 
 ## License
 

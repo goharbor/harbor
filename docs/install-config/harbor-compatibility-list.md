@@ -43,9 +43,9 @@ This document provides compatibility information for all Harbor components.
 |---|----------|-----------|-----------|------------|--------------------|
 | [Clair](https://github.com/goharbor/harbor-scanner-clair)    |![Clair](../../img/scanners/clair.png)| CentOS    |![Y](../../img/replication-adapters/right.png)|![Y](../../img/replication-adapters/right.png)| v1.10 |
 | [Anchore](https://github.com/anchore/harbor-scanner-adapter) |![Anchore](../../img/scanners/anchore.png)   | Anchore    |![Y](../../img/replication-adapters/right.png)| N | v1.10 |
-| [Trivy](https://github.com/aquasecurity/harbor-scanner-trivy)|![Trivy](../../img/scanners/trivy.png)| Aqua    |![Y](../../img/replication-adapters/right.png)| N | v1.10 |
-| [CSP](https://github.com/aquasecurity/harbor-scanner-aqua)   |![Aqua](../../img/scanners/aqua.png)| Aqua    | N | N | v1.10 |
-| [DoSec](https://github.com/dosec-cn/harbor-scanner/blob/master/README_en.md)|![DoSec](../../img/scanners/dosec.png)    | DoSec    | N | N | v1.10 |
+| [Trivy](https://github.com/aquasecurity/harbor-scanner-trivy)|![Trivy](../../img/scanners/trivy.png)| Aqua    |![Y](../../img/replication-adapters/right.png)| ![Y](../../img/replication-adapters/right.png) | v1.10 |
+| [CSP](https://github.com/aquasecurity/harbor-scanner-aqua)   |![Aqua](../../img/scanners/aqua.png)| Aqua    | ![Y](../../img/replication-adapters/right.png) | N | v1.10 |
+| [DoSec](https://github.com/dosec-cn/harbor-scanner/blob/master/README_en.md)|![DoSec](../../img/scanners/dosec.png)    | DoSec    | ![Y](../../img/replication-adapters/right.png) | N | v1.10 |
 
 {{< note >}}
 * `Evaluated` means that the scanner implementation has been officially tested and verified.
