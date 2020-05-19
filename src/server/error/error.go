@@ -31,6 +31,7 @@ var (
 		errors.BadRequestCode:                  http.StatusBadRequest,
 		errors.DIGESTINVALID:                   http.StatusBadRequest,
 		errors.MANIFESTINVALID:                 http.StatusBadRequest,
+		errors.UNSUPPORTED:                     http.StatusBadRequest,
 		errors.UnAuthorizedCode:                http.StatusUnauthorized,
 		errors.ForbiddenCode:                   http.StatusForbidden,
 		errors.DENIED:                          http.StatusForbidden,
