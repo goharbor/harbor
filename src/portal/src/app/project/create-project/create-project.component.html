@@ -13,7 +13,7 @@
                         <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
                     </div>
                     <clr-control-error *ngIf="!isNameValid" class="tooltip-content">
-                        {{ nameTooltipText | translate }}
+                        <span id="name-error">{{ nameTooltipText | translate }}</span>
                     </clr-control-error>
                 </div>
             </div>
@@ -61,7 +61,7 @@
         </form>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+        <button id="new-project-cancel" type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button id="new-project-ok" type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>
