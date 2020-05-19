@@ -43,7 +43,7 @@ When an artifact is not referenced by any OCI index, you can delete the artifact
 
 When an artifact is referenced by an OCI index, you cannot delete it.  To delete a referenced artifact, you must first delete all OCI indexes referencing the artifact. Remember that an artifact can be referenced by multiple parent artifacts pushed onto Harbor by different users.  So when you delete an OCI index holding 9 child artifacts that are not referenced by any other index and 1 child artifact referenced by another index, only 9 out of 10 child artifacts are deleted.
 
-To delete an artifact in the Harbor interface, click on the artifact and select **Delete**, and then confirm.  
+To delete an artifact in the Harbor interface, select the artifact and click **Delete**, and then confirm.  
 
 ![delete image1](../../../img/deleteimage1.png)
 
