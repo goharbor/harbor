@@ -11,7 +11,7 @@ Immutability rules use `OR` logic, so if you set multiple rules and a tag is mat
 
 ## How Immutable Tags Prevent Tag Deletion
 
-Since v2.0, you can delete any tag of an artifact without deleting the artifact itself. Therefore, you can lock down a particular tag by configuring an immutability rule matching this tag which means the artifact holding the tag also cannot be overwritten or deleted. However you can still delete other tags associated with this immutable artifact. Consider the follow example:
+Since v2.0, you can delete any tag of an artifact without deleting the artifact itself. Therefore, you can lock down a particular tag by configuring an immutability rule matching this tag which means the artifact holding the tag also cannot be overwritten or deleted. However you can still delete other tags associated with this immutable artifact. Consider the following example:
 
 1. In the Docker client, push `hello-world:v1` into a project.
 1. In the project, set an immutable tag rule in this project that matches the image and tag `hello-world:v1`.
@@ -20,19 +20,19 @@ Since v2.0, you can delete any tag of an artifact without deleting the artifact 
 1. Push `hello-world:v2` to the project.
 1. In the Harbor interface, attempt to delete tag `v1` and `v2` of `hello-world` sequentially.
 
-In this case, you cannot delete tag `v1` as it's an immutable tag and you cannot delete the artifact `hello-world` holding this tag. But you can delete tag `v2` even it shares the sha256 digest with `v1`. 
+In this case, you cannot delete tag `v1` because it's an immutable tag and you cannot delete the artifact `hello-world` holding this tag. But you can delete tag `v2` even though it shares the sha256 digest with `v1`. 
 
 ## Create a Tag Immutability Rule
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
-1. Go to **Projects**, select a project, select policy, and select **Tag Immutability**.
+1. Go to **Projects**, select a project, click **Policy**, and then click **Tag Immutability**.
 
     ![Add an immutability rule](../../../img/tag-immutability.png)
 
 1. Click **Add Rule**.
 
-    - In the **Respositories** row, enter a comma-separated list of repositories to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
-    - In the **Tags** row, enter a comma-separated list of tags to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
+    - In the **Respositories** row, enter a comma-separated list of repositories to which you want to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
+    - In the **Tags** row, enter a comma-separated list of tags to which you want to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
  
       ![Add an immutability rule](../../../img/add-immutability-rule.png)
 1. Click **Add** to save the rule.
