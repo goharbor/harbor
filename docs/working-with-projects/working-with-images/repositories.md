@@ -11,13 +11,13 @@ Log in and click your project to view the project detail page. On the project de
 
 ![list_repositories](../../../img/list-repositories.png)
 
-### Description of a repository
+### Description of a Repository
 
 Click the repository, and then click the **Info** tab to see a description of the repository.  If you have the project admin, master, or developer role, you can click **Edit** to edit the description, which supports Markdown syntax.
 
 ![edit_repository_description](../../../img/edit-repository-description.png)
 
-### List artifacts in a repository
+### List Artifacts in a Repository
 
 To view the list of artifacts in a repository, click the **Artifacts** tab. 
 
