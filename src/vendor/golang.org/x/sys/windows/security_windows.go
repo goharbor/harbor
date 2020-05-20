@@ -170,10 +170,7 @@ const (
 //sys	CopySid(destSidLen uint32, destSid *SID, srcSid *SID) (err error) = advapi32.CopySid
 //sys	AllocateAndInitializeSid(identAuth *SidIdentifierAuthority, subAuth byte, subAuth0 uint32, subAuth1 uint32, subAuth2 uint32, subAuth3 uint32, subAuth4 uint32, subAuth5 uint32, subAuth6 uint32, subAuth7 uint32, sid **SID) (err error) = advapi32.AllocateAndInitializeSid
 //sys	createWellKnownSid(sidType WELL_KNOWN_SID_TYPE, domainSid *SID, sid *SID, sizeSid *uint32) (err error) = advapi32.CreateWellKnownSid
-<<<<<<< HEAD
-=======
 //sys	isWellKnownSid(sid *SID, sidType WELL_KNOWN_SID_TYPE) (isWellKnown bool) = advapi32.IsWellKnownSid
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 //sys	FreeSid(sid *SID) (err error) [failretval!=0] = advapi32.FreeSid
 //sys	EqualSid(sid1 *SID, sid2 *SID) (isEqual bool) = advapi32.EqualSid
 //sys	getSidIdentifierAuthority(sid *SID) (authority *SidIdentifierAuthority) = advapi32.GetSidIdentifierAuthority
@@ -329,11 +326,7 @@ func (sid *SID) LookupAccount(system string) (account, domain string, accType ui
 	}
 }
 
-<<<<<<< HEAD
-// Various types of pre-specified sids that can be synthesized at runtime.
-=======
 // Various types of pre-specified SIDs that can be synthesized and compared at runtime.
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 type WELL_KNOWN_SID_TYPE uint32
 
 const (
@@ -459,21 +452,13 @@ const (
 	WinBuiltinDeviceOwnersSid                     = 119
 )
 
-<<<<<<< HEAD
-// Creates a sid for a well-known predefined alias, generally using the constants of the form
-=======
 // Creates a SID for a well-known predefined alias, generally using the constants of the form
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 // Win*Sid, for the local machine.
 func CreateWellKnownSid(sidType WELL_KNOWN_SID_TYPE) (*SID, error) {
 	return CreateWellKnownDomainSid(sidType, nil)
 }
 
-<<<<<<< HEAD
-// Creates a sid for a well-known predefined alias, generally using the constants of the form
-=======
 // Creates a SID for a well-known predefined alias, generally using the constants of the form
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 // Win*Sid, for the domain specified by the domainSid parameter.
 func CreateWellKnownDomainSid(sidType WELL_KNOWN_SID_TYPE, domainSid *SID) (*SID, error) {
 	n := uint32(50)
@@ -659,11 +644,8 @@ func (tml *Tokenmandatorylabel) Size() uint32 {
 //sys	DuplicateTokenEx(existingToken Token, desiredAccess uint32, tokenAttributes *SecurityAttributes, impersonationLevel uint32, tokenType uint32, newToken *Token) (err error) = advapi32.DuplicateTokenEx
 //sys	GetUserProfileDirectory(t Token, dir *uint16, dirLen *uint32) (err error) = userenv.GetUserProfileDirectoryW
 //sys	getSystemDirectory(dir *uint16, dirLen uint32) (len uint32, err error) = kernel32.GetSystemDirectoryW
-<<<<<<< HEAD
-=======
 //sys	getWindowsDirectory(dir *uint16, dirLen uint32) (len uint32, err error) = kernel32.GetWindowsDirectoryW
 //sys	getSystemWindowsDirectory(dir *uint16, dirLen uint32) (len uint32, err error) = kernel32.GetSystemWindowsDirectoryW
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 
 // An access token contains the security information for a logon session.
 // The system creates an access token when a user logs on, and every
@@ -783,10 +765,6 @@ func (t Token) GetUserProfileDirectory() (string, error) {
 	}
 }
 
-<<<<<<< HEAD
-// GetSystemDirectory retrieves path to current location of the system
-// directory, which is typically, though not always, C:\Windows\System32.
-=======
 // IsElevated returns whether the current token is elevated from a UAC perspective.
 func (token Token) IsElevated() bool {
 	var isElevated uint32
@@ -811,7 +789,6 @@ func (token Token) GetLinkedToken() (Token, error) {
 
 // GetSystemDirectory retrieves the path to current location of the system
 // directory, which is typically, though not always, `C:\Windows\System32`.
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 func GetSystemDirectory() (string, error) {
 	n := uint32(MAX_PATH)
 	for {
@@ -827,8 +804,6 @@ func GetSystemDirectory() (string, error) {
 	}
 }
 
-<<<<<<< HEAD
-=======
 // GetWindowsDirectory retrieves the path to current location of the Windows
 // directory, which is typically, though not always, `C:\Windows`. This may
 // be a private user directory in the case that the application is running
@@ -865,7 +840,6 @@ func GetSystemWindowsDirectory() (string, error) {
 	}
 }
 
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 // IsMember reports whether the access token t is a member of the provided SID.
 func (t Token) IsMember(sid *SID) (bool, error) {
 	var b int32

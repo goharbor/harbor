@@ -628,10 +628,7 @@ const (
 	FAN_ALL_MARK_FLAGS                   = 0xff
 	FAN_ALL_OUTGOING_EVENTS              = 0x3403b
 	FAN_ALL_PERM_EVENTS                  = 0x30000
-<<<<<<< HEAD
-=======
 	FAN_ATTRIB                           = 0x4
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 	FAN_AUDIT                            = 0x10
 	FAN_CLASS_CONTENT                    = 0x4
 	FAN_CLASS_NOTIF                      = 0x0
@@ -640,17 +637,12 @@ const (
 	FAN_CLOSE                            = 0x18
 	FAN_CLOSE_NOWRITE                    = 0x10
 	FAN_CLOSE_WRITE                      = 0x8
-<<<<<<< HEAD
-	FAN_DENY                             = 0x2
-	FAN_ENABLE_AUDIT                     = 0x40
-=======
 	FAN_CREATE                           = 0x100
 	FAN_DELETE                           = 0x200
 	FAN_DELETE_SELF                      = 0x400
 	FAN_DENY                             = 0x2
 	FAN_ENABLE_AUDIT                     = 0x40
 	FAN_EVENT_INFO_TYPE_FID              = 0x1
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 	FAN_EVENT_METADATA_LEN               = 0x18
 	FAN_EVENT_ON_CHILD                   = 0x8000000
 	FAN_MARK_ADD                         = 0x1
@@ -664,13 +656,10 @@ const (
 	FAN_MARK_ONLYDIR                     = 0x8
 	FAN_MARK_REMOVE                      = 0x2
 	FAN_MODIFY                           = 0x2
-<<<<<<< HEAD
-=======
 	FAN_MOVE                             = 0xc0
 	FAN_MOVED_FROM                       = 0x40
 	FAN_MOVED_TO                         = 0x80
 	FAN_MOVE_SELF                        = 0x800
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 	FAN_NOFD                             = -0x1
 	FAN_NONBLOCK                         = 0x2
 	FAN_ONDIR                            = 0x40000000
@@ -679,10 +668,7 @@ const (
 	FAN_OPEN_EXEC_PERM                   = 0x40000
 	FAN_OPEN_PERM                        = 0x10000
 	FAN_Q_OVERFLOW                       = 0x4000
-<<<<<<< HEAD
-=======
 	FAN_REPORT_FID                       = 0x200
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 	FAN_REPORT_TID                       = 0x100
 	FAN_UNLIMITED_MARKS                  = 0x20
 	FAN_UNLIMITED_QUEUE                  = 0x10

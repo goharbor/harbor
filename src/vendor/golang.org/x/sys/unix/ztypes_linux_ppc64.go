@@ -625,10 +625,7 @@ const (
 	SizeofRtAttr            = 0x4
 	SizeofIfInfomsg         = 0x10
 	SizeofIfAddrmsg         = 0x8
-<<<<<<< HEAD
-=======
 	SizeofIfaCacheinfo      = 0x10
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 	SizeofRtMsg             = 0xc
 	SizeofRtNexthop         = 0x8
 	SizeofNdUseroptmsg      = 0x10
@@ -2171,8 +2168,6 @@ type FanotifyResponse struct {
 	Fd       int32
 	Response uint32
 }
-<<<<<<< HEAD
-=======
 
 const (
 	CRYPTO_MSG_BASE      = 0x10
@@ -2600,4 +2595,3 @@ const (
 	TIPC_CLUSTER_SCOPE = 0x2
 	TIPC_NODE_SCOPE    = 0x3
 )
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6

@@ -87,3 +87,5 @@ require (
 	k8s.io/client-go v0.17.3
 	k8s.io/helm v2.16.3+incompatible
 )
+
+replace github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.3+incompatible

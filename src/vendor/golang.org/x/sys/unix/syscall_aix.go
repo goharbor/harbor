@@ -525,8 +525,6 @@ func Poll(fds []PollFd, timeout int) (n int, err error) {
 //sys	Utime(path string, buf *Utimbuf) (err error)
 
 //sys	Getsystemcfg(label int) (n uint64)
-<<<<<<< HEAD
-=======
 
 //sys	umount(target string) (err error)
 func Unmount(target string, flags int) (err error) {
@@ -536,4 +534,3 @@ func Unmount(target string, flags int) (err error) {
 	}
 	return umount(target)
 }
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6

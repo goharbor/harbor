@@ -202,15 +202,7 @@ struct ltchars {
 #include <linux/if_ppp.h>
 #include <linux/if_tun.h>
 #include <linux/if_packet.h>
-<<<<<<< HEAD
-#include <linux/if_addr.h>
-#include <linux/falloc.h>
-#include <linux/fanotify.h>
-#include <linux/filter.h>
-#include <linux/fs.h>
-=======
 #include <linux/if_xdp.h>
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 #include <linux/kexec.h>
 #include <linux/keyctl.h>
 #include <linux/loop.h>

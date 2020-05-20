@@ -1,4 +1,4 @@
-# cloud.google.com/go v0.37.4
+# cloud.google.com/go v0.38.0
 cloud.google.com/go/compute/metadata
 # github.com/Azure/azure-sdk-for-go v37.2.0+incompatible
 github.com/Azure/azure-sdk-for-go/storage
@@ -41,13 +41,9 @@ github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils
 github.com/aliyun/alibaba-cloud-sdk-go/services/cr
-<<<<<<< HEAD
-# github.com/astaxie/beego v1.9.0
-=======
 # github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496
 github.com/asaskevich/govalidator
 # github.com/astaxie/beego v1.12.1
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 github.com/astaxie/beego
 github.com/astaxie/beego/cache
 github.com/astaxie/beego/cache/redis
@@ -82,35 +78,24 @@ github.com/aws/aws-sdk-go/aws/request
 github.com/aws/aws-sdk-go/aws/session
 github.com/aws/aws-sdk-go/aws/signer/v4
 github.com/aws/aws-sdk-go/internal/ini
-<<<<<<< HEAD
 github.com/aws/aws-sdk-go/internal/s3err
-=======
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 github.com/aws/aws-sdk-go/internal/sdkio
 github.com/aws/aws-sdk-go/internal/sdkrand
 github.com/aws/aws-sdk-go/internal/sdkuri
 github.com/aws/aws-sdk-go/internal/shareddefaults
 github.com/aws/aws-sdk-go/private/protocol
-<<<<<<< HEAD
 github.com/aws/aws-sdk-go/private/protocol/eventstream
 github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi
-=======
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
 github.com/aws/aws-sdk-go/private/protocol/jsonrpc
 github.com/aws/aws-sdk-go/private/protocol/query
 github.com/aws/aws-sdk-go/private/protocol/query/queryutil
 github.com/aws/aws-sdk-go/private/protocol/rest
-<<<<<<< HEAD
 github.com/aws/aws-sdk-go/private/protocol/restxml
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/cloudfront/sign
 github.com/aws/aws-sdk-go/service/ecr
 github.com/aws/aws-sdk-go/service/s3
-=======
-github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
-github.com/aws/aws-sdk-go/service/ecr
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 github.com/aws/aws-sdk-go/service/sts
 # github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 github.com/beego/i18n
@@ -129,11 +114,7 @@ github.com/casbin/casbin/persist/file-adapter
 github.com/casbin/casbin/rbac
 github.com/casbin/casbin/rbac/default-role-manager
 github.com/casbin/casbin/util
-<<<<<<< HEAD
-# github.com/coreos/go-oidc v2.0.0+incompatible
-=======
 # github.com/coreos/go-oidc v2.1.0+incompatible
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 github.com/coreos/go-oidc
 # github.com/cyphar/filepath-securejoin v0.2.2
 github.com/cyphar/filepath-securejoin
@@ -149,10 +130,7 @@ github.com/dghubble/sling
 github.com/dgrijalva/jwt-go
 # github.com/docker/distribution v2.7.1+incompatible
 github.com/docker/distribution
-<<<<<<< HEAD
 github.com/docker/distribution/configuration
-=======
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 github.com/docker/distribution/context
 github.com/docker/distribution/digestset
 github.com/docker/distribution/health
@@ -161,16 +139,12 @@ github.com/docker/distribution/manifest/manifestlist
 github.com/docker/distribution/manifest/ocischema
 github.com/docker/distribution/manifest/schema1
 github.com/docker/distribution/manifest/schema2
-<<<<<<< HEAD
 github.com/docker/distribution/metrics
-=======
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 github.com/docker/distribution/reference
 github.com/docker/distribution/registry/api/errcode
 github.com/docker/distribution/registry/auth
 github.com/docker/distribution/registry/auth/token
 github.com/docker/distribution/registry/client/auth/challenge
-<<<<<<< HEAD
 github.com/docker/distribution/registry/client/transport
 github.com/docker/distribution/registry/storage
 github.com/docker/distribution/registry/storage/cache
@@ -187,8 +161,7 @@ github.com/docker/distribution/registry/storage/driver/middleware/redirect
 github.com/docker/distribution/registry/storage/driver/oss
 github.com/docker/distribution/registry/storage/driver/s3-aws
 github.com/docker/distribution/registry/storage/driver/swift
-=======
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
+github.com/docker/distribution/testutil
 github.com/docker/distribution/uuid
 github.com/docker/distribution/version
 # github.com/docker/go v0.0.0-20160303222718-d30aec9fd63c
@@ -253,16 +226,9 @@ github.com/golang-migrate/migrate/database
 github.com/golang-migrate/migrate/database/postgres
 github.com/golang-migrate/migrate/source
 github.com/golang-migrate/migrate/source/file
-<<<<<<< HEAD
-# github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-github.com/golang/glog
-# github.com/golang/protobuf v1.3.1
-github.com/golang/protobuf/proto
-github.com/golang/protobuf/ptypes
-=======
 # github.com/golang/protobuf v1.3.2
 github.com/golang/protobuf/proto
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
+github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
@@ -285,7 +251,7 @@ github.com/gorilla/mux
 github.com/gorilla/securecookie
 # github.com/graph-gophers/dataloader v5.0.0+incompatible
 github.com/graph-gophers/dataloader
-# github.com/hashicorp/golang-lru v0.5.0
+# github.com/hashicorp/golang-lru v0.5.1
 github.com/hashicorp/golang-lru/simplelru
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
@@ -334,40 +300,33 @@ github.com/pmezard/go-difflib/difflib
 # github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35
 github.com/pquerna/cachecontrol
 github.com/pquerna/cachecontrol/cacheobject
-# github.com/prometheus/client_golang v0.9.4
+# github.com/prometheus/client_golang v1.0.0
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 github.com/prometheus/client_golang/prometheus/promhttp
-# github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
+# github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4
 github.com/prometheus/client_model/go
 # github.com/prometheus/common v0.4.1
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
 github.com/prometheus/common/model
-# github.com/prometheus/procfs v0.0.2
+# github.com/prometheus/procfs v0.0.5
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
+github.com/prometheus/procfs/internal/util
 # github.com/robfig/cron v1.0.0
 github.com/robfig/cron
-<<<<<<< HEAD
 # github.com/satori/go.uuid v1.2.0
 github.com/satori/go.uuid
-# github.com/sirupsen/logrus v1.4.1
-=======
 # github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644
 github.com/shiena/ansicolor
 # github.com/sirupsen/logrus v1.4.2
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 github.com/sirupsen/logrus
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
 # github.com/stretchr/objx v0.2.0
 github.com/stretchr/objx
-<<<<<<< HEAD
-# github.com/stretchr/testify v1.3.0
-=======
 # github.com/stretchr/testify v1.4.0
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 github.com/stretchr/testify/require
@@ -386,8 +345,14 @@ github.com/theupdateframework/notary/tuf/data
 github.com/theupdateframework/notary/tuf/signed
 github.com/theupdateframework/notary/tuf/utils
 github.com/theupdateframework/notary/tuf/validation
-<<<<<<< HEAD
-# go.opencensus.io v0.20.1
+# go.mongodb.org/mongo-driver v1.1.2
+go.mongodb.org/mongo-driver/bson
+go.mongodb.org/mongo-driver/bson/bsoncodec
+go.mongodb.org/mongo-driver/bson/bsonrw
+go.mongodb.org/mongo-driver/bson/bsontype
+go.mongodb.org/mongo-driver/bson/primitive
+go.mongodb.org/mongo-driver/x/bsonx/bsoncore
+# go.opencensus.io v0.22.0
 go.opencensus.io
 go.opencensus.io/internal
 go.opencensus.io/internal/tagencoding
@@ -404,19 +369,9 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
-# golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
-=======
-# go.mongodb.org/mongo-driver v1.1.2
-go.mongodb.org/mongo-driver/bson
-go.mongodb.org/mongo-driver/bson/bsoncodec
-go.mongodb.org/mongo-driver/bson/bsonrw
-go.mongodb.org/mongo-driver/bson/bsontype
-go.mongodb.org/mongo-driver/bson/primitive
-go.mongodb.org/mongo-driver/x/bsonx/bsoncore
 # golang.org/x/crypto v0.0.0-20200128174031-69ecbb4d6d5d
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 golang.org/x/crypto/cast5
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
@@ -429,35 +384,23 @@ golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/ssh/terminal
-<<<<<<< HEAD
-# golang.org/x/net v0.0.0-20190522155817-f3200d17e092
-=======
 # golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
-<<<<<<< HEAD
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
-=======
 # golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
-<<<<<<< HEAD
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20190412213103-97732733099d
-=======
 # golang.org/x/sys v0.0.0-20190916202348-b4ddaad3f8a3
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/text v0.3.2
@@ -465,10 +408,10 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-<<<<<<< HEAD
+golang.org/x/text/width
 # golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 golang.org/x/time/rate
-# google.golang.org/api v0.3.1
+# google.golang.org/api v0.4.0
 google.golang.org/api/gensupport
 google.golang.org/api/googleapi
 google.golang.org/api/googleapi/internal/uritemplates
@@ -478,19 +421,11 @@ google.golang.org/api/option
 google.golang.org/api/storage/v1
 google.golang.org/api/transport/http
 google.golang.org/api/transport/http/internal/propagation
-# google.golang.org/appengine v1.4.0
+# google.golang.org/appengine v1.5.0
 google.golang.org/appengine
 google.golang.org/appengine/cloudsql
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/app_identity
-=======
-golang.org/x/text/width
-# golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
-golang.org/x/time/rate
-# google.golang.org/appengine v1.5.0
-google.golang.org/appengine/cloudsql
-google.golang.org/appengine/internal
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 google.golang.org/appengine/internal/base
 google.golang.org/appengine/internal/datastore
 google.golang.org/appengine/internal/log
@@ -498,16 +433,17 @@ google.golang.org/appengine/internal/modules
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-<<<<<<< HEAD
 # google.golang.org/cloud v0.0.0-20151119220103-975617b05ea8
 google.golang.org/cloud
 google.golang.org/cloud/internal
 google.golang.org/cloud/internal/opts
 google.golang.org/cloud/storage
-# google.golang.org/genproto v0.0.0-20190404172233-64821d5d2107
+# google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.21.0
+# google.golang.org/grpc v1.27.0
 google.golang.org/grpc
+google.golang.org/grpc/attributes
+google.golang.org/grpc/backoff
 google.golang.org/grpc/balancer
 google.golang.org/grpc/balancer/base
 google.golang.org/grpc/balancer/roundrobin
@@ -523,10 +459,13 @@ google.golang.org/grpc/internal
 google.golang.org/grpc/internal/backoff
 google.golang.org/grpc/internal/balancerload
 google.golang.org/grpc/internal/binarylog
+google.golang.org/grpc/internal/buffer
 google.golang.org/grpc/internal/channelz
 google.golang.org/grpc/internal/envconfig
 google.golang.org/grpc/internal/grpcrand
 google.golang.org/grpc/internal/grpcsync
+google.golang.org/grpc/internal/resolver/dns
+google.golang.org/grpc/internal/resolver/passthrough
 google.golang.org/grpc/internal/syscall
 google.golang.org/grpc/internal/transport
 google.golang.org/grpc/keepalive
@@ -534,13 +473,10 @@ google.golang.org/grpc/metadata
 google.golang.org/grpc/naming
 google.golang.org/grpc/peer
 google.golang.org/grpc/resolver
-google.golang.org/grpc/resolver/dns
-google.golang.org/grpc/resolver/passthrough
+google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-=======
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 # gopkg.in/asn1-ber.v1 v1.0.0-20150924051756-4e86f4367175
 gopkg.in/asn1-ber.v1
 # gopkg.in/inf.v0 v0.9.1
@@ -555,10 +491,6 @@ gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json
 # gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2
-<<<<<<< HEAD
-# k8s.io/api v0.0.0-20190222213804-5cb15d344471
-k8s.io/api/admissionregistration/v1alpha1
-=======
 # helm.sh/helm/v3 v3.1.1
 helm.sh/helm/v3/internal/ignore
 helm.sh/helm/v3/internal/sympath
@@ -566,7 +498,6 @@ helm.sh/helm/v3/pkg/chart
 helm.sh/helm/v3/pkg/chart/loader
 # k8s.io/api v0.17.3
 k8s.io/api/admissionregistration/v1
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 k8s.io/api/admissionregistration/v1beta1
 k8s.io/api/apps/v1
 k8s.io/api/apps/v1beta1
@@ -606,11 +537,7 @@ k8s.io/api/settings/v1alpha1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-<<<<<<< HEAD
-# k8s.io/apimachinery v0.0.0-20180704011316-f534d624797b
-=======
 # k8s.io/apimachinery v0.17.3
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/api/resource
 k8s.io/apimachinery/pkg/apis/meta/v1
@@ -634,28 +561,17 @@ k8s.io/apimachinery/pkg/util/errors
 k8s.io/apimachinery/pkg/util/framer
 k8s.io/apimachinery/pkg/util/intstr
 k8s.io/apimachinery/pkg/util/json
-<<<<<<< HEAD
-=======
 k8s.io/apimachinery/pkg/util/naming
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 k8s.io/apimachinery/pkg/util/net
 k8s.io/apimachinery/pkg/util/runtime
 k8s.io/apimachinery/pkg/util/sets
 k8s.io/apimachinery/pkg/util/validation
 k8s.io/apimachinery/pkg/util/validation/field
-<<<<<<< HEAD
-k8s.io/apimachinery/pkg/util/wait
-=======
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 k8s.io/apimachinery/pkg/util/yaml
 k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/reflect
-<<<<<<< HEAD
-# k8s.io/client-go v8.0.0+incompatible
-=======
 # k8s.io/client-go v0.17.3
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 k8s.io/client-go/kubernetes/scheme
 k8s.io/client-go/pkg/apis/clientauthentication
 k8s.io/client-go/pkg/apis/clientauthentication/v1alpha1
@@ -671,13 +587,8 @@ k8s.io/client-go/util/cert
 k8s.io/client-go/util/connrotation
 k8s.io/client-go/util/flowcontrol
 k8s.io/client-go/util/homedir
-<<<<<<< HEAD
-k8s.io/client-go/util/integer
-# k8s.io/helm v2.9.1+incompatible
-=======
 k8s.io/client-go/util/keyutil
 # k8s.io/helm v2.16.3+incompatible
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 k8s.io/helm/cmd/helm/search
 k8s.io/helm/pkg/chartutil
 k8s.io/helm/pkg/getter
@@ -693,12 +604,9 @@ k8s.io/helm/pkg/sympath
 k8s.io/helm/pkg/tlsutil
 k8s.io/helm/pkg/urlutil
 k8s.io/helm/pkg/version
-<<<<<<< HEAD
-=======
 # k8s.io/klog v1.0.0
 k8s.io/klog
 # k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
 k8s.io/utils/integer
 # sigs.k8s.io/yaml v1.1.0
 sigs.k8s.io/yaml
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6

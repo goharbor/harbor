@@ -45,8 +45,6 @@ func nametomib(name string) (mib []_C_int, err error) {
 	return nil, EINVAL
 }
 
-<<<<<<< HEAD
-=======
 func direntIno(buf []byte) (uint64, bool) {
 	return readInt(buf, unsafe.Offsetof(Dirent{}.Fileno), unsafe.Sizeof(Dirent{}.Fileno))
 }
@@ -59,7 +57,6 @@ func direntNamlen(buf []byte) (uint64, bool) {
 	return readInt(buf, unsafe.Offsetof(Dirent{}.Namlen), unsafe.Sizeof(Dirent{}.Namlen))
 }
 
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 func SysctlClockinfo(name string) (*Clockinfo, error) {
 	mib, err := sysctlmib(name)
 	if err != nil {

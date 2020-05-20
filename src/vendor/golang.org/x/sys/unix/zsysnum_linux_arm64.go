@@ -286,8 +286,6 @@ const (
 	SYS_IO_PGETEVENTS          = 292
 	SYS_RSEQ                   = 293
 	SYS_KEXEC_FILE_LOAD        = 294
-<<<<<<< HEAD
-=======
 	SYS_PIDFD_SEND_SIGNAL      = 424
 	SYS_IO_URING_SETUP         = 425
 	SYS_IO_URING_ENTER         = 426
@@ -299,5 +297,4 @@ const (
 	SYS_FSMOUNT                = 432
 	SYS_FSPICK                 = 433
 	SYS_PIDFD_OPEN             = 434
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 )

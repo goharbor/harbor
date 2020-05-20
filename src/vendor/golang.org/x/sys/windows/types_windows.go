@@ -4,15 +4,11 @@
 
 package windows
 
-<<<<<<< HEAD
-import "syscall"
-=======
 import (
 	"net"
 	"syscall"
 	"unsafe"
 )
->>>>>>> a07cc7bb2a14d59210d0067f3d21db496cd258a6
 
 const (
 	// Invented values to support what package os expects.
