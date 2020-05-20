@@ -120,17 +120,17 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>ignore_unfixed</code></td>
-    <td valign="top">Set the flag to <code>true</code> to display only fixed vulnerabilities. The default value is <code>false</code></td>
+    <td valign="top">Set the flag to <code>true</code> to display only fixed vulnerabilities. The default value is <code>false</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>skip_update</code></td>
-    <td valign="top">You might want to enable this flag in test or CI/CD environments to avoid GitHub rate limiting issues. If the flag is enabled you have to manually download the `trivy.db` file and mount it in the <code>/home/scanner/.cache/trivy/db/trivy.db</code> path in container. The default value is <code>false</code></td>
+    <td valign="top">You might want to enable this flag in test or CI/CD environments to avoid GitHub rate limiting issues. If the flag is enabled you have to manually download the `trivy.db` file and mount it in the <code>/home/scanner/.cache/trivy/db/trivy.db</code> path in container. The default value is <code>false</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>insecure</code></td>
-    <td valign="top">Set the flag to <code>true</code> to skip verifying registry certificate. The default value is <code>false</code></td>
+    <td valign="top">Set the flag to <code>true</code> to skip verifying registry certificate. The default value is <code>false</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
