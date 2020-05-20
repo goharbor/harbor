@@ -74,12 +74,8 @@ func deleteManifest(w http.ResponseWriter, req *http.Request) {
 	// Do not add the logic into GetByReference as it's a shared method for PUT/GET/DELETE/Internal call,
 	// and NOT_FOUND satisfy PUT/GET/Internal call.
 	if _, err := digest.Parse(reference); err != nil {
-		switch err {
-		case digest.ErrDigestInvalidFormat:
-			serror.SendError(w, errors.New(nil).WithCode(errors.DIGESTINVALID).
-				WithMessage(digest.ErrDigestInvalidFormat.Error()))
-			return
-		}
+		serror.SendError(w, errors.Wrapf(err, "unsupported digest %s", reference).WithCode(errors.UNSUPPORTED))
+		return
 	}
 	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
