@@ -37,8 +37,7 @@ Test Case - Switch Scanner
 
     Should Display The Default Trivy Scanner
 
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
+    Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  admin  Harbor12345  project${d}  hello-world:latest
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
@@ -50,7 +49,7 @@ Test Case - Switch Scanner
     Set Default Scanner  Clair
     Should Display The Default Clair Scanner
 
-    Go Into Project  project${d} 
+    Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
     Scan Repo  latest  Succeed
     Move To Summary Chart
