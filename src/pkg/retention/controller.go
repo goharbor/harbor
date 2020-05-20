@@ -25,6 +25,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 )
 
+// go:generate mockery -name APIController -case snake
+
 // APIController to handle the requests related with retention
 type APIController interface {
 	GetRetention(id int64) (*policy.Metadata, error)

@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/registryctl/auth"
 	gorilla_handlers "github.com/gorilla/handlers"
 )

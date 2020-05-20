@@ -499,9 +499,12 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     let end_time = new Date(j.end_time).getTime();
     let timesDiff = end_time - start_time;
     let timesDiffSeconds = timesDiff / 1000;
-    let minutes = Math.floor(((timesDiffSeconds % ONE_DAY_SECONDS) % ONE_HOUR_SECONDS) / ONE_MINUTE_SECONDS);
+    let minutes = Math.floor(timesDiffSeconds / ONE_MINUTE_SECONDS);
     let seconds = Math.floor(timesDiffSeconds % ONE_MINUTE_SECONDS);
     if (minutes > 0) {
+      if (seconds === 0) {
+        return minutes + "m";
+      }
       return minutes + "m" + seconds + "s";
     }
 

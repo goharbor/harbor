@@ -448,7 +448,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       supportedFilter.values.forEach( value => {
         this.supportedFilterLabels.push({
           name: value,
-          color: '#fff',
+          color: '#FFFFFF',
           select: false,
           scope: 'g'
         });
@@ -468,7 +468,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           this.supportedFilterLabels = [
             {
             name: labelValue,
-            color: '#fff',
+            color: '#FFFFFF',
             select: true,
             scope: 'g'
           }, ...this.supportedFilterLabels];

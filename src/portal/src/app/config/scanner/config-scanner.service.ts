@@ -4,8 +4,9 @@ import { forkJoin, Observable, throwError as observableThrowError } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 import { HttpClient } from "@angular/common/http";
 import { ScannerMetadata } from "./scanner-metadata";
+import { CURRENT_BASE_HREF } from "../../../lib/utils/utils";
 
-export const SCANNERS_DOC: string = "https://github.com/goharbor/harbor/blob/master/docs/harbor_compatibility_list.md";
+export const SCANNERS_DOC: string = "https://goharbor.io/blog/harbor-1.10-release/#vulnerability-scanning-with-pluggable-scanners";
 
 @Injectable()
 export class ConfigScannerService {
@@ -13,35 +14,35 @@ export class ConfigScannerService {
     constructor( private http: HttpClient) {}
     getScannersByName(name: string): Observable<Scanner[]> {
         name = encodeURIComponent(name);
-            return this.http.get(`/api/scanners?ex_name=${name}`)
+            return this.http.get(`${ CURRENT_BASE_HREF }/scanners?ex_name=${name}`)
                 .pipe(catchError(error => observableThrowError(error)))
                 .pipe(map(response => response as Scanner[]));
     }
     getScannersByEndpointUrl(endpointUrl: string): Observable<Scanner[]> {
         endpointUrl = encodeURIComponent(endpointUrl);
-        return this.http.get(`/api/scanners?ex_url=${endpointUrl}`)
+        return this.http.get(`${ CURRENT_BASE_HREF }/scanners?ex_url=${endpointUrl}`)
             .pipe(catchError(error => observableThrowError(error)))
             .pipe(map(response => response as Scanner[]));
     }
     testEndpointUrl(testValue: any): Observable<any> {
-        return this.http.post(`/api/scanners/ping`, testValue)
+        return this.http.post(`${ CURRENT_BASE_HREF }/scanners/ping`, testValue)
             .pipe(catchError(error => observableThrowError(error)));
     }
     addScanner(scanner: Scanner): Observable<any> {
-        return this.http.post('/api/scanners', scanner )
+        return this.http.post(CURRENT_BASE_HREF + '/scanners', scanner )
                 .pipe(catchError(error => observableThrowError(error)));
     }
     getScanners(): Observable<Scanner[]> {
-        return this.http.get('/api/scanners')
+        return this.http.get(CURRENT_BASE_HREF + '/scanners')
             .pipe(map(response => response as Scanner[]))
             .pipe(catchError(error => observableThrowError(error)));
     }
     updateScanner(scanner: Scanner): Observable<any> {
-        return this.http.put(`/api/scanners/${scanner.uuid}`, scanner )
+        return this.http.put(`${ CURRENT_BASE_HREF }/scanners/${scanner.uuid}`, scanner )
             .pipe(catchError(error => observableThrowError(error)));
     }
     deleteScanner(scanner: Scanner): Observable<any> {
-        return this.http.delete(`/api/scanners/${scanner.uuid}`)
+        return this.http.delete(`${ CURRENT_BASE_HREF }/scanners/${scanner.uuid}`)
             .pipe(catchError(error => observableThrowError(error)));
     }
     deleteScanners(scanners: Scanner[]): Observable<any> {
@@ -54,25 +55,25 @@ export class ConfigScannerService {
         }
     }
     getProjectScanner(projectId: number): Observable<Scanner>  {
-        return this.http.get(`/api/projects/${projectId}/scanner`)
+        return this.http.get(`${ CURRENT_BASE_HREF }/projects/${projectId}/scanner`)
             .pipe(map(response => response as Scanner))
             .pipe(catchError(error => observableThrowError(error)));
     }
     updateProjectScanner(projectId: number , uid: string): Observable<any>  {
-        return this.http.put(`/api/projects/${projectId}/scanner` , {uuid: uid})
+        return this.http.put(`${ CURRENT_BASE_HREF }/projects/${projectId}/scanner` , {uuid: uid})
             .pipe(catchError(error => observableThrowError(error)));
     }
     getScannerMetadata(uid: string): Observable<ScannerMetadata> {
-        return this.http.get(`/api/scanners/${uid}/metadata`)
+        return this.http.get(`${ CURRENT_BASE_HREF }/scanners/${uid}/metadata`)
             .pipe(map(response => response as ScannerMetadata))
             .pipe(catchError(error => observableThrowError(error)));
     }
     setAsDefault(uid: string): Observable<any> {
-        return this.http.patch(`/api/scanners/${uid}`, {is_default: true} )
+        return this.http.patch(`${ CURRENT_BASE_HREF }/scanners/${uid}`, {is_default: true} )
             .pipe(catchError(error => observableThrowError(error)));
     }
     getProjectScanners(projectId: number) {
-        return this.http.get(`/api/projects/${projectId}/scanner/candidates`)
+        return this.http.get(`${ CURRENT_BASE_HREF }/projects/${projectId}/scanner/candidates`)
             .pipe(map(response => response as Scanner[]))
             .pipe(catchError(error => observableThrowError(error)));
     }

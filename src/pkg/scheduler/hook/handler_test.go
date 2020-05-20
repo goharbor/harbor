@@ -15,16 +15,15 @@
 package hook
 
 import (
-	"testing"
-
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/scheduler/model"
-	htesting "github.com/goharbor/harbor/src/testing"
+	schedulertesting "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 var h = &controller{
-	manager: &htesting.FakeSchedulerManager{},
+	manager: &schedulertesting.FakeManager{},
 }
 
 func TestUpdateStatus(t *testing.T) {
@@ -33,7 +32,7 @@ func TestUpdateStatus(t *testing.T) {
 	require.NotNil(t, err)
 
 	// pass
-	h.manager.(*htesting.FakeSchedulerManager).Schedules = []*model.Schedule{
+	h.manager.(*schedulertesting.FakeManager).Schedules = []*model.Schedule{
 		{
 			ID:     1,
 			Status: "",

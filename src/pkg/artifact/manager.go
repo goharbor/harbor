@@ -16,12 +16,8 @@ package artifact
 
 import (
 	"context"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
-	"github.com/goharbor/harbor/src/pkg/q"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var (
@@ -31,18 +27,28 @@ var (
 
 // Manager is the only interface of artifact module to provide the management functions for artifacts
 type Manager interface {
-	// List artifacts according to the query, returns all artifacts if query is nil
-	List(ctx context.Context, query *q.Query) (total int64, artifacts []*Artifact, err error)
+	// Count returns the total count of artifacts according to the query.
+	// The artifacts that referenced by others and without tags are not counted
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
+	// List artifacts according to the query. The artifacts that referenced by others and
+	// without tags are not returned
+	List(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error)
 	// Get the artifact specified by the ID
 	Get(ctx context.Context, id int64) (artifact *Artifact, err error)
+	// GetByDigest returns the artifact specified by repository and digest
+	GetByDigest(ctx context.Context, repository, digest string) (artifact *Artifact, err error)
 	// Create the artifact. If the artifact is an index, make sure all the artifacts it references
 	// already exist
 	Create(ctx context.Context, artifact *Artifact) (id int64, err error)
 	// Delete just deletes the artifact record. The underlying data of registry will be
 	// removed during garbage collection
 	Delete(ctx context.Context, id int64) (err error)
-	// UpdatePullTime updates the pull time of the artifact
-	UpdatePullTime(ctx context.Context, artifactID int64, time time.Time) (err error)
+	// Update the artifact. Only the properties specified by "props" will be updated if it is set
+	Update(ctx context.Context, artifact *Artifact, props ...string) (err error)
+	// ListReferences according to the query
+	ListReferences(ctx context.Context, query *q.Query) (references []*Reference, err error)
+	// DeleteReference specified by ID
+	DeleteReference(ctx context.Context, id int64) (err error)
 }
 
 // NewManager returns an instance of the default manager
@@ -58,24 +64,24 @@ type manager struct {
 	dao dao.DAO
 }
 
-func (m *manager) List(ctx context.Context, query *q.Query) (int64, []*Artifact, error) {
-	total, err := m.dao.Count(ctx, query)
-	if err != nil {
-		return 0, nil, err
-	}
+func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return m.dao.Count(ctx, query)
+}
+
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*Artifact, error) {
 	arts, err := m.dao.List(ctx, query)
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	var artifacts []*Artifact
 	for _, art := range arts {
 		artifact, err := m.assemble(ctx, art)
 		if err != nil {
-			return 0, nil, err
+			return nil, err
 		}
 		artifacts = append(artifacts, artifact)
 	}
-	return total, artifacts, nil
+	return artifacts, nil
 }
 
 func (m *manager) Get(ctx context.Context, id int64) (*Artifact, error) {
@@ -85,6 +91,15 @@ func (m *manager) Get(ctx context.Context, id int64) (*Artifact, error) {
 	}
 	return m.assemble(ctx, art)
 }
+
+func (m *manager) GetByDigest(ctx context.Context, repository, digest string) (*Artifact, error) {
+	art, err := m.dao.GetByDigest(ctx, repository, digest)
+	if err != nil {
+		return nil, err
+	}
+	return m.assemble(ctx, art)
+}
+
 func (m *manager) Create(ctx context.Context, artifact *Artifact) (int64, error) {
 	id, err := m.dao.Create(ctx, artifact.To())
 	if err != nil {
@@ -99,24 +114,6 @@ func (m *manager) Create(ctx context.Context, artifact *Artifact) (int64, error)
 	return id, nil
 }
 func (m *manager) Delete(ctx context.Context, id int64) error {
-	// check whether the artifact is referenced by other artifacts
-	references, err := m.dao.ListReferences(ctx, &q.Query{
-		Keywords: map[string]interface{}{
-			"child_id": id,
-		},
-	})
-	if err != nil {
-		return err
-	}
-	if len(references) > 0 {
-		var ids []string
-		for _, reference := range references {
-			ids = append(ids, strconv.FormatInt(reference.ParentID, 10))
-		}
-		return ierror.PreconditionFailedError(nil).
-			WithMessage("artifact %d is referenced by other artifacts: %s", id, strings.Join(ids, ","))
-	}
-
 	// delete references
 	if err := m.dao.DeleteReferences(ctx, id); err != nil {
 		return err
@@ -124,11 +121,27 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 	// delete artifact
 	return m.dao.Delete(ctx, id)
 }
-func (m *manager) UpdatePullTime(ctx context.Context, artifactID int64, time time.Time) error {
-	return m.dao.Update(ctx, &dao.Artifact{
-		ID:       artifactID,
-		PullTime: time,
-	}, "PullTime")
+
+func (m *manager) Update(ctx context.Context, artifact *Artifact, props ...string) (err error) {
+	return m.dao.Update(ctx, artifact.To(), props...)
+}
+
+func (m *manager) ListReferences(ctx context.Context, query *q.Query) ([]*Reference, error) {
+	references, err := m.dao.ListReferences(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var refs []*Reference
+	for _, reference := range references {
+		ref := &Reference{}
+		ref.From(reference)
+		refs = append(refs, ref)
+	}
+	return refs, nil
+}
+
+func (m *manager) DeleteReference(ctx context.Context, id int64) error {
+	return m.dao.DeleteReference(ctx, id)
 }
 
 // assemble the artifact with references populated
@@ -136,19 +149,15 @@ func (m *manager) assemble(ctx context.Context, art *dao.Artifact) (*Artifact, e
 	artifact := &Artifact{}
 	// convert from database object
 	artifact.From(art)
+
 	// populate the references
-	refs, err := m.dao.ListReferences(ctx, &q.Query{
-		Keywords: map[string]interface{}{
-			"parent_id": artifact.ID,
-		},
-	})
-	if err != nil {
-		return nil, err
+	if artifact.IsImageIndex() {
+		references, err := m.ListReferences(ctx, q.New(q.KeyWords{"ParentID": artifact.ID}))
+		if err != nil {
+			return nil, err
+		}
+		artifact.References = references
 	}
-	for _, ref := range refs {
-		reference := &Reference{}
-		reference.From(ref)
-		artifact.References = append(artifact.References, reference)
-	}
+
 	return artifact, nil
 }

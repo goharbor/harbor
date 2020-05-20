@@ -17,12 +17,12 @@ package or
 import (
 	"errors"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/art"
-	"github.com/goharbor/harbor/src/pkg/art/selectors/doublestar"
-	"github.com/goharbor/harbor/src/pkg/art/selectors/label"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/label"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
@@ -39,7 +39,7 @@ import (
 type ProcessorTestSuite struct {
 	suite.Suite
 
-	all []*art.Candidate
+	all []*selector.Candidate
 
 	oldClient dep.Client
 }
@@ -52,12 +52,12 @@ func TestProcessor(t *testing.T) {
 // SetupSuite ...
 func (suite *ProcessorTestSuite) SetupSuite() {
 	dao.PrepareTestForPostgresSQL()
-	suite.all = []*art.Candidate{
+	suite.all = []*selector.Candidate{
 		{
 			Namespace:  "library",
 			Repository: "harbor",
 			Kind:       "image",
-			Tag:        "latest",
+			Tags:       []string{"latest"},
 			Digest:     "latest",
 			PushedTime: time.Now().Unix(),
 			Labels:     []string{"L1", "L2"},
@@ -66,7 +66,7 @@ func (suite *ProcessorTestSuite) SetupSuite() {
 			Namespace:  "library",
 			Repository: "harbor",
 			Kind:       "image",
-			Tag:        "dev",
+			Tags:       []string{"dev"},
 			Digest:     "dev",
 			PushedTime: time.Now().Unix(),
 			Labels:     []string{"L3"},
@@ -92,9 +92,9 @@ func (suite *ProcessorTestSuite) TestProcess() {
 	lastxParams[lastx.ParameterX] = 10
 	params = append(params, &alg.Parameter{
 		Evaluator: lastx.New(lastxParams),
-		Selectors: []art.Selector{
-			doublestar.New(doublestar.Matches, "*dev*"),
-			label.New(label.With, "L1,L2"),
+		Selectors: []selector.Selector{
+			doublestar.New(doublestar.Matches, "*dev*", ""),
+			label.New(label.With, "L1,L2", ""),
 		},
 		Performer: perf,
 	})
@@ -103,8 +103,8 @@ func (suite *ProcessorTestSuite) TestProcess() {
 	latestKParams[latestps.ParameterK] = 10
 	params = append(params, &alg.Parameter{
 		Evaluator: latestps.New(latestKParams),
-		Selectors: []art.Selector{
-			label.New(label.With, "L3"),
+		Selectors: []selector.Selector{
+			label.New(label.With, "L3", ""),
 		},
 		Performer: perf,
 	})
@@ -133,9 +133,9 @@ func (suite *ProcessorTestSuite) TestProcess2() {
 	alwaysParams := make(map[string]rule.Parameter)
 	params = append(params, &alg.Parameter{
 		Evaluator: always.New(alwaysParams),
-		Selectors: []art.Selector{
-			doublestar.New(doublestar.Matches, "latest"),
-			label.New(label.With, ""),
+		Selectors: []selector.Selector{
+			doublestar.New(doublestar.Matches, "latest", ""),
+			label.New(label.With, "", ""),
 		},
 		Performer: perf,
 	})
@@ -152,7 +152,7 @@ func (suite *ProcessorTestSuite) TestProcess2() {
 				return false
 			}
 
-			if r.Target.Tag == "dev" {
+			if r.Target.Tags[0] == "dev" {
 				found = true
 			}
 		}
@@ -165,16 +165,16 @@ func (suite *ProcessorTestSuite) TestProcess2() {
 type fakeRetentionClient struct{}
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *art.Repository) ([]*art.Candidate, error) {
+func (frc *fakeRetentionClient) GetCandidates(repo *selector.Repository) ([]*selector.Candidate, error) {
 	return nil, errors.New("not implemented")
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *art.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *selector.Candidate) error {
 	return nil
 }
 
 // DeleteRepository ...
-func (frc *fakeRetentionClient) DeleteRepository(repo *art.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *selector.Repository) error {
 	panic("implement me")
 }

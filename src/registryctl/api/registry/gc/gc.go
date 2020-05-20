@@ -2,7 +2,7 @@ package gc
 
 import (
 	"bytes"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/registryctl/api"
 	"github.com/goharbor/harbor/src/registryctl/config/registry"
 	"net/http"

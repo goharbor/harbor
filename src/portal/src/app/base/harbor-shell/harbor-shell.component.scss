@@ -32,29 +32,16 @@ clr-vertical-nav {
             justify-content: space-between;
         }
     }
-    .vertical-nav-footer {
-        margin: 15px 20px;
-        a {
-            display: inline-block;
-            line-height: 0;
-            padding: 0;
-            height: 24px;
-            &:hover {
-                background: transparent;
-                cursor: default;
-            }
-            .api-button {
-                margin: 0;
-            }
-        }
-	}
+}
+.font-size-13 {
+    font-size: 13px;
 }
 
 .scanner-info {
     margin-right: 0;
     margin-left: 0;
     background-color: #0079b8;
-    height: 2rem;
+    min-height: 2rem;
     color: #fff;
     align-items: center;
     font-size: 0.5rem;

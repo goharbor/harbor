@@ -10,46 +10,10 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/test"
-	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestAdapter_NewAdapter(t *testing.T) {
-	factory, err := adp.GetFactory("BadName")
-	assert.Nil(t, factory)
-	assert.NotNil(t, err)
-
-	factory, err = adp.GetFactory(model.RegistryTypeAliAcr)
-	assert.Nil(t, err)
-	assert.NotNil(t, factory)
-
-	// test case for URL is registry.
-	adapter, err := newAdapter(&model.Registry{
-		Type: model.RegistryTypeAliAcr,
-		Credential: &model.Credential{
-			AccessKey:    "MockAccessKey",
-			AccessSecret: "MockAccessSecret",
-		},
-		URL: "https://registry.test-region.aliyuncs.com",
-	})
-	assert.Nil(t, err)
-	assert.NotNil(t, adapter)
-
-	// test case for URL is cr service.
-	adapter, err = newAdapter(&model.Registry{
-		Type: model.RegistryTypeAliAcr,
-		Credential: &model.Credential{
-			AccessKey:    "MockAccessKey",
-			AccessSecret: "MockAccessSecret",
-		},
-		URL: "https://cr.test-region.aliyuncs.com",
-	})
-	assert.Nil(t, err)
-	assert.NotNil(t, adapter)
-
-}
 
 func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Server) {
 	server := test.NewServer(
@@ -96,12 +60,8 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 			AccessSecret: "MockAccessSecret",
 		}
 	}
-	nativeRegistry, err := native.NewAdapter(registry)
-	if err != nil {
-		panic(err)
-	}
 	return &adapter{
-		Adapter:  nativeRegistry,
+		Adapter:  native.NewAdapter(registry),
 		region:   "test-region",
 		domain:   server.URL,
 		registry: registry,
@@ -158,11 +118,11 @@ func BenchmarkGetRegion(b *testing.B) {
 	}
 }
 
-func Test_adapter_FetchImages(t *testing.T) {
+func Test_adapter_FetchArtifacts(t *testing.T) {
 	a, s := getMockAdapter(t, true, true)
 	defer s.Close()
 	var filters = []*model.Filter{}
-	var resources, err = a.FetchImages(filters)
+	var resources, err = a.FetchArtifacts(filters)
 	assert.NotNil(t, err)
 	assert.Nil(t, resources)
 }

@@ -15,32 +15,35 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/quota"
-	"github.com/goharbor/harbor/src/common/quota/driver"
-	"github.com/goharbor/harbor/src/common/quota/driver/mocks"
+	o "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/controller/quota"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
+	"github.com/goharbor/harbor/src/testing/mock"
+	drivertesting "github.com/goharbor/harbor/src/testing/pkg/quota/driver"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 var (
-	reference  = "mock"
-	hardLimits = types.ResourceList{types.ResourceCount: -1, types.ResourceStorage: -1}
+	reference  = uuid.New().String()
+	hardLimits = types.ResourceList{types.ResourceStorage: -1}
 )
 
 func init() {
-	mockDriver := &mocks.Driver{}
+	mockDriver := &drivertesting.Driver{}
 
 	mockHardLimitsFn := func() types.ResourceList {
 		return hardLimits
 	}
 
-	mockLoadFn := func(key string) driver.RefObject {
+	mockLoadFn := func(ctx context.Context, key string) driver.RefObject {
 		return driver.RefObject{"id": key}
 	}
 
@@ -53,8 +56,8 @@ func init() {
 	}
 
 	mockDriver.On("HardLimits").Return(mockHardLimitsFn)
-	mockDriver.On("Load", mock.AnythingOfType("string")).Return(mockLoadFn, nil)
-	mockDriver.On("Validate", mock.AnythingOfType("types.ResourceList")).Return(mockValidateFn)
+	mock.OnAnything(mockDriver, "Load").Return(mockLoadFn, nil)
+	mock.OnAnything(mockDriver, "Validate").Return(mockValidateFn)
 
 	driver.Register(reference, mockDriver)
 }
@@ -63,13 +66,19 @@ func TestQuotaAPIList(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
+	ctx := orm.NewContext(context.TODO(), o.NewOrm())
+	var quotaIDs []int64
+	defer func() {
+		for _, quotaID := range quotaIDs {
+			quota.Ctl.Delete(ctx, quotaID)
+		}
+	}()
+
 	count := 10
 	for i := 0; i < count; i++ {
-		mgr, err := quota.NewManager(reference, fmt.Sprintf("%d", i))
+		quotaID, err := quota.Ctl.Create(ctx, reference, uuid.New().String(), hardLimits)
 		assert.Nil(err)
-
-		_, err = mgr.NewQuota(hardLimits)
-		assert.Nil(err)
+		quotaIDs = append(quotaIDs, quotaID)
 	}
 
 	code, quotas, err := apiTest.QuotasGet(&apilib.QuotaQuery{Reference: reference}, *admin)
@@ -87,16 +96,15 @@ func TestQuotaAPIGet(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	mgr, err := quota.NewManager(reference, "quota-get")
+	ctx := orm.NewContext(context.TODO(), o.NewOrm())
+	quotaID, err := quota.Ctl.Create(ctx, reference, uuid.New().String(), hardLimits)
 	assert.Nil(err)
-
-	quotaID, err := mgr.NewQuota(hardLimits)
-	assert.Nil(err)
+	defer quota.Ctl.Delete(ctx, quotaID)
 
 	code, quota, err := apiTest.QuotasGetByID(*admin, fmt.Sprintf("%d", quotaID))
 	assert.Nil(err)
 	assert.Equal(int(200), code)
-	assert.Equal(map[string]int64{"storage": -1, "count": -1}, quota.Hard)
+	assert.Equal(map[string]int64{"storage": -1}, quota.Hard)
 
 	code, _, err = apiTest.QuotasGetByID(*admin, "100")
 	assert.Nil(err)
@@ -107,27 +115,26 @@ func TestQuotaPut(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	mgr, err := quota.NewManager(reference, "quota-put")
+	ctx := orm.NewContext(context.TODO(), o.NewOrm())
+	quotaID, err := quota.Ctl.Create(ctx, reference, uuid.New().String(), hardLimits)
 	assert.Nil(err)
-
-	quotaID, err := mgr.NewQuota(hardLimits)
-	assert.Nil(err)
+	defer quota.Ctl.Delete(ctx, quotaID)
 
 	code, quota, err := apiTest.QuotasGetByID(*admin, fmt.Sprintf("%d", quotaID))
 	assert.Nil(err)
 	assert.Equal(int(200), code)
-	assert.Equal(map[string]int64{"count": -1, "storage": -1}, quota.Hard)
+	assert.Equal(map[string]int64{"storage": -1}, quota.Hard)
 
-	code, err = apiTest.QuotasPut(*admin, fmt.Sprintf("%d", quotaID), models.QuotaUpdateRequest{})
+	code, err = apiTest.QuotasPut(*admin, fmt.Sprintf("%d", quotaID), QuotaUpdateRequest{})
 	assert.Nil(err, err)
 	assert.Equal(int(400), code)
 
-	code, err = apiTest.QuotasPut(*admin, fmt.Sprintf("%d", quotaID), models.QuotaUpdateRequest{Hard: types.ResourceList{types.ResourceCount: 100, types.ResourceStorage: 100}})
+	code, err = apiTest.QuotasPut(*admin, fmt.Sprintf("%d", quotaID), QuotaUpdateRequest{Hard: types.ResourceList{types.ResourceStorage: 100}})
 	assert.Nil(err)
 	assert.Equal(int(200), code)
 
 	code, quota, err = apiTest.QuotasGetByID(*admin, fmt.Sprintf("%d", quotaID))
 	assert.Nil(err)
 	assert.Equal(int(200), code)
-	assert.Equal(map[string]int64{"count": 100, "storage": 100}, quota.Hard)
+	assert.Equal(map[string]int64{"storage": 100}, quota.Hard)
 }

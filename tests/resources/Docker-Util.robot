@@ -40,10 +40,10 @@ Push image
     ${image_with_sha256}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}@sha256:${sha256}
     ${image_with_tag}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}:${sha256}
     Log To Console  \nRunning docker push ${image}...
-    Docker Pull  ${image_with_sha256}
+    Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_with_sha256}
     Run Keyword If  ${is_robot}==${false}  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${user} -p ${pwd} ${ip}
-    Wait Unitl Command Success  docker tag ${image_with_sha256} ${ip}/${project}/${image_with_tag}
+    Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_with_sha256} ${ip}/${project}/${image_with_tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image_with_tag}
     Wait Unitl Command Success  docker logout ${ip}
     Sleep  1
@@ -52,9 +52,9 @@ Push Image With Tag
 #tag1 is tag of image on docker hub,default latest,use a version existing if you do not want to use latest
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}  ${tag1}=latest
     Log To Console  \nRunning docker push ${image}...
-    Docker Pull  ${image}:${tag1}
+    Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
-    Wait Unitl Command Success  docker tag ${image}:${tag1} ${ip}/${project}/${image}:${tag}
+    Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1} ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker logout ${ip}
 
@@ -72,16 +72,18 @@ Cannot Pull Unsigned Image
     [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pass} ${ip}
     ${output}=  Command Should be Failed  docker pull ${ip}/${proj}/${imagewithtag}
+    Log To Console  ${output}
     Should Contain  ${output}  The image is not signed in Notary
 
 Cannot Push image
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${err_msg}=${null}
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${err_msg}=${null}  ${err_msg_2}=${null}
     Log To Console  \nRunning docker push ${image}...
-    Docker Pull  ${image}
+    Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
-    Wait Unitl Command Success  docker tag ${image} ${ip}/${project}/${image}
+    Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image} ${ip}/${project}/${image}
     ${output}=  Command Should be Failed  docker push ${ip}/${project}/${image}
     Run Keyword If  '${err_msg}' != '${null}'  Should Contain  ${output}  ${err_msg}
+    Run Keyword If  '${err_msg_2}' != '${null}'  Should Contain  ${output}  ${err_msg_2}
     Wait Unitl Command Success  docker logout ${ip}
 
 Wait Until Container Stops
@@ -107,6 +109,9 @@ Get Container IP
 # If you are running this keyword in a container, make sure it is run with --privileged turned on
 Start Docker Daemon Locally
     ${pid}=  Run  pidof dockerd
+    #${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/docker_config.sh
+    #Log  ${output}
+    #Should Be Equal As Integers  ${rc}  0
     Return From Keyword If  '${pid}' != '${EMPTY}'
     OperatingSystem.File Should Exist  /usr/local/bin/dockerd-entrypoint.sh
     ${handle}=  Start Process  /usr/local/bin/dockerd-entrypoint.sh dockerd>./daemon-local.log 2>&1  shell=True
@@ -122,6 +127,8 @@ Prepare Docker Cert
     [Arguments]  ${ip}
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
     Wait Unitl Command Success  cp harbor_ca.crt /etc/docker/certs.d/${ip}
+    Wait Unitl Command Success  cp harbor_ca.crt /usr/local/share/ca-certificates/
+    Wait Unitl Command Success  update-ca-certificates
 
 Kill Local Docker Daemon
     [Arguments]  ${handle}  ${dockerd-pid}
@@ -133,7 +140,7 @@ Docker Login Fail
     [Arguments]  ${ip}  ${user}  ${pwd}
     Log To Console  \nRunning docker login ${ip} ...
     ${output}=  Command Should be Failed  docker login -u ${user} -p ${pwd} ${ip}
-    Should Contain  ${output}  unauthorized: authentication required
+    Should Contain  ${output}  unauthorized
     Should Not Contain  ${output}  500 Internal Server Error
 
 Docker Login
@@ -154,3 +161,9 @@ Docker Tag
 Docker Push
     [Arguments]  ${image}
     Wait Unitl Command Success  docker push ${image}
+
+Docker Push Index
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${index}  ${image1}  ${image2}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/docker_push_manifest_list.sh ${ip} ${user} ${pwd} ${index} ${image1} ${image2}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0

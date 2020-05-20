@@ -4,7 +4,7 @@ import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import {SystemCVEWhitelist, SystemInfo} from './interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../entities/service.config';
-import {HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS} from "../utils/utils";
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../utils/utils";
 
 /**
  * Get System information about current backend server.
@@ -42,18 +42,18 @@ export class SystemInfoDefaultService extends SystemInfoService {
     super();
   }
   getSystemInfo(): Observable<SystemInfo> {
-    let url = this.config.systemInfoEndpoint ? this.config.systemInfoEndpoint : '/api/systeminfo';
+    let url = this.config.systemInfoEndpoint ? this.config.systemInfoEndpoint : CURRENT_BASE_HREF + '/systeminfo';
     return this.http.get(url, HTTP_GET_OPTIONS)
       .pipe(map(systemInfo => systemInfo as SystemInfo)
       , catchError(error => observableThrowError(error)));
   }
   public getSystemWhitelist(): Observable<SystemCVEWhitelist> {
-    return this.http.get("/api/system/CVEWhitelist", HTTP_GET_OPTIONS)
+    return this.http.get(CURRENT_BASE_HREF + "/system/CVEWhitelist", HTTP_GET_OPTIONS)
         .pipe(map(systemCVEWhitelist => systemCVEWhitelist as SystemCVEWhitelist)
             , catchError(error => observableThrowError(error)));
   }
   public updateSystemWhitelist(systemCVEWhitelist: SystemCVEWhitelist): Observable<any> {
-    return this.http.put("/api/system/CVEWhitelist", JSON.stringify(systemCVEWhitelist), HTTP_JSON_OPTIONS)
+    return this.http.put(CURRENT_BASE_HREF + "/system/CVEWhitelist", JSON.stringify(systemCVEWhitelist), HTTP_JSON_OPTIONS)
         .pipe(map(response => response)
             , catchError(error => observableThrowError(error)));
   }

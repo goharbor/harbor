@@ -85,6 +85,10 @@ RUN wget https://get.helm.sh/helm-v3.0.0-linux-386.tar.gz && tar zxvf helm-v3.0.
     mv linux-386/helm /usr/local/bin/helm3 && \
 	helm3 plugin install https://github.com/chartmuseum/helm-push
 
+RUN wget https://github.com/theupdateframework/notary/releases/download/v0.6.1/notary-Linux-amd64 && \
+    chmod +x notary-Linux-amd64 && \
+    mv notary-Linux-amd64 /usr/local/bin/notary
+
 RUN wget http://nchc.dl.sourceforge.net/sourceforge/tcl/tcl8.4.11-src.tar.gz && \
     tar xfvz tcl8.4.11-src.tar.gz && \
     cd tcl8.4.11/unix && \
@@ -104,6 +108,12 @@ RUN wget http://nchc.dl.sourceforge.net/sourceforge/tcl/tcl8.4.11-src.tar.gz && 
     make install && \
     cd /ixdba.net/bin && \
     mv  expect /usr/local/bin/expect
+
+RUN CNAB_PATH=$(go env GOPATH)/src/github.com/docker && mkdir -p $CNAB_PATH && cd $CNAB_PATH && git clone https://github.com/cnabio/cnab-to-oci.git && \
+    cd cnab-to-oci && git checkout v0.3.0-beta4 && \
+    go list && \
+    make build && \
+    mv bin/cnab-to-oci /usr/local/bin
 
 # Add docker in docker support
 # version: docker:1.13-dind

@@ -15,7 +15,7 @@
 package always
 
 import (
-	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
@@ -28,7 +28,7 @@ const (
 type evaluator struct{}
 
 // Process for the "always" Evaluator simply returns the input with no error
-func (e *evaluator) Process(artifacts []*art.Candidate) ([]*art.Candidate, error) {
+func (e *evaluator) Process(artifacts []*selector.Candidate) ([]*selector.Candidate, error) {
 	return artifacts, nil
 }
 

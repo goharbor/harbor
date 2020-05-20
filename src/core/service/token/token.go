@@ -19,19 +19,12 @@ import (
 	"net/http"
 
 	"github.com/astaxie/beego"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // Handler handles request on /service/token, which is the auth provider for registry.
 type Handler struct {
 	beego.Controller
-}
-
-// Prepare disables xsrf for /service/token endpoint.
-// This is done on purpose b/c containerd will try to send POST and fallback to GET
-// more details see #10305
-func (h *Handler) Prepare() {
-	h.EnableXSRF = false
 }
 
 // Get handles GET request, it checks the http header for user credentials

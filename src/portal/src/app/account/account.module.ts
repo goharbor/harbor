@@ -13,11 +13,8 @@
 // limitations under the License.
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-
 import { CoreModule } from '../core/core.module';
 import { SharedModule } from '../shared/shared.module';
-import { RepositoryModule } from '../repository/repository.module';
-
 import { PasswordSettingComponent } from './password-setting/password-setting.component';
 import { AccountSettingsModalComponent } from './account-settings/account-settings-modal.component';
 import { SignUpComponent } from './sign-up/sign-up.component';
@@ -33,7 +30,6 @@ import { AccountSettingsModalService } from './account-settings/account-settings
     CoreModule,
     RouterModule,
     SharedModule,
-    RepositoryModule
   ],
   declarations: [
     PasswordSettingComponent,

@@ -1,5 +1,6 @@
 ARG harbor_base_image_version
-FROM goharbor/harbor-db-base:${harbor_base_image_version}
+ARG harbor_base_namespace
+FROM ${harbor_base_namespace}/harbor-db-base:${harbor_base_image_version}
 
 VOLUME /var/lib/postgresql/data
 

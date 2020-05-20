@@ -20,9 +20,8 @@ sys.path.append(os.environ["SWAGGER_CLIENT_PATH"])
 import unittest
 import testutils
 import swagger_client
-from swagger_client.models.project_req import ProjectReq  
-from swagger_client.models.access_log import AccessLog  
-from swagger_client.models.configurations import Configurations 
+from swagger_client.models.project_req import ProjectReq
+from swagger_client.models.configurations import Configurations
 from swagger_client.rest import ApiException
 from swagger_client.models.configurations import Configurations 
 from pprint import pprint

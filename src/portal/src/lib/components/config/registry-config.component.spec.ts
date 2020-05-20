@@ -23,6 +23,7 @@ import {
 } from '../../services';
 import { Configuration } from './config';
 import { of } from 'rxjs';
+import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 describe('RegistryConfigComponent (inline template)', () => {
 
@@ -41,7 +42,7 @@ describe('RegistryConfigComponent (inline template)', () => {
     }
   };
   let config: IServiceConfig = {
-    configurationEndpoint: '/api/configurations/testing'
+    configurationEndpoint: CURRENT_BASE_HREF + '/configurations/testing'
   };
   let mockSystemInfo: SystemInfo = {
     "with_notary": true,

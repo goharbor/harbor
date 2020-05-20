@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 log-top">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 reverse-row log-top">
         <div class="row flex-items-xs-right option-right display-f">
             <div class="flex-xs-middle">
                 <button class="btn btn-link" (click)="toggleOptionalName(currentOption)">{{toggleName[currentOption] | translate}}</button>
@@ -30,16 +30,16 @@
         </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 datagrid-margin-top ">
-        <clr-datagrid (clrDgRefresh)="retrievePage()">
+        <clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="retrieve()">
             <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.RESOURCE' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.RESOURCE_TYPE' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
             <clr-dg-row *ngFor="let l of auditLogs">
                 <clr-dg-cell>{{l.username}}</clr-dg-cell>
-                <clr-dg-cell>{{l.repo_name}}</clr-dg-cell>
-                <clr-dg-cell>{{l.repo_tag}}</clr-dg-cell>
+                <clr-dg-cell>{{l.resource}}</clr-dg-cell>
+                <clr-dg-cell>{{l.resource_type}}</clr-dg-cell>
                 <clr-dg-cell>{{l.operation}}</clr-dg-cell>
                 <clr-dg-cell>{{l.op_time | date: 'short'}}</clr-dg-cell>
             </clr-dg-row>

@@ -17,7 +17,7 @@ package helmhub
 import (
 	"errors"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -52,6 +52,11 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 		},
 	}
 }
+
+var (
+	_ adp.Adapter       = (*adapter)(nil)
+	_ adp.ChartRegistry = (*adapter)(nil)
+)
 
 type adapter struct {
 	registry *model.Registry

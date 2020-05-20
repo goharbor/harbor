@@ -138,6 +138,19 @@ func TestCronString(t *testing.T) {
 	assert.True(t, strings.EqualFold(cronStr, "{\"type\":\"Daily\",\"Cron\":\"20 3 0 * * *\"}"))
 }
 
+func TestParamString(t *testing.T) {
+	adminJobPara := make(map[string]interface{})
+	adminJobPara["key1"] = "value1"
+	adminJobPara["key2"] = true
+	adminJobPara["key3"] = 88
+
+	adminjob := &AdminJobReq{
+		Parameters: adminJobPara,
+	}
+	paramStr := adminjob.ParamString()
+	assert.True(t, strings.EqualFold(paramStr, "{\"key1\":\"value1\",\"key2\":true,\"key3\":88}"))
+}
+
 func TestConvertSchedule(t *testing.T) {
 	schedule1 := "{\"type\":\"Daily\",\"cron\":\"20 3 0 * * *\"}"
 	converted1, err1 := ConvertSchedule(schedule1)

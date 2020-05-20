@@ -26,7 +26,7 @@ for item in args.config :
         reqJson[key] = value
 
 # Sample Basic Auth Url with login values as username and password
-url = "https://"+args.host+"/api/configurations"
+url = "https://"+args.host+"/api/v2.0/configurations"
 user = args.user
 passwd = args.password
 

@@ -20,10 +20,10 @@ import (
 
 // Tag model in database
 type Tag struct {
-	ID           int64     `orm:"pk;auto;column(id)"`
-	RepositoryID int64     `orm:"column(repository_id)"` // tags are the resources of repository, one repository only contains one same name tag
-	ArtifactID   int64     `orm:"column(artifact_id)"`   // the artifact ID that the tag attaches to, it changes when pushing a same name but different digest artifact
-	Name         string    `orm:"column(name)"`
-	PushTime     time.Time `orm:"column(push_time)"`
-	PullTime     time.Time `orm:"column(pull_time)"`
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	RepositoryID int64     `orm:"column(repository_id)" json:"repository_id"` // tags are the resources of repository, one repository only contains one same name tag
+	ArtifactID   int64     `orm:"column(artifact_id)" json:"artifact_id"`     // the artifact ID that the tag attaches to, it changes when pushing a same name but different digest artifact
+	Name         string    `orm:"column(name)" json:"name"`
+	PushTime     time.Time `orm:"column(push_time)" json:"push_time"`
+	PullTime     time.Time `orm:"column(pull_time)" json:"pull_time"`
 }

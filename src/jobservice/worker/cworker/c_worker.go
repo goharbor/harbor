@@ -29,8 +29,8 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/goharbor/harbor/src/jobservice/runner"
 	"github.com/goharbor/harbor/src/jobservice/worker"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/gomodule/redigo/redis"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -54,6 +54,7 @@ type basicWorker struct {
 	context   *env.Context
 	scheduler period.Scheduler
 	ctl       lcm.Controller
+	reaper    *reaper
 
 	// key is name of known job
 	// value is the type of known job
@@ -92,6 +93,13 @@ func NewWorker(ctx *env.Context, namespace string, workerCount uint, redisPool *
 		ctl:       ctl,
 		context:   ctx,
 		knownJobs: new(sync.Map),
+		reaper: &reaper{
+			context:   ctx.SystemContext,
+			namespace: namespace,
+			pool:      redisPool,
+			lcmCtl:    ctl,
+			jobTypes:  make([]string, 0), // Append data later (at the start step)
+		},
 	}
 }
 
@@ -121,16 +129,7 @@ func (w *basicWorker) Start() error {
 	}
 
 	// Start the periodic scheduler
-	w.context.WG.Add(1)
-	go func() {
-		defer func() {
-			w.context.WG.Done()
-		}()
-		// Blocking call
-		if err := w.scheduler.Start(); err != nil {
-			w.context.ErrorChan <- err
-		}
-	}()
+	w.scheduler.Start()
 
 	// Listen to the system signal
 	w.context.WG.Add(1)
@@ -139,10 +138,8 @@ func (w *basicWorker) Start() error {
 			w.context.WG.Done()
 			logger.Infof("Basic worker is stopped")
 		}()
+
 		<-w.context.SystemContext.Done()
-		if err := w.scheduler.Stop(); err != nil {
-			logger.Errorf("stop scheduler error: %s", err)
-		}
 		w.pool.Stop()
 	}()
 
@@ -151,7 +148,15 @@ func (w *basicWorker) Start() error {
 	w.pool.Middleware((*workerContext).logJob)
 	// Non blocking call
 	w.pool.Start()
-	logger.Infof("Redis worker is started")
+	logger.Infof("Basic worker is started")
+
+	// Start the reaper
+	w.knownJobs.Range(func(k interface{}, v interface{}) bool {
+		w.reaper.jobTypes = append(w.reaper.jobTypes, k.(string))
+
+		return true
+	})
+	w.reaper.start()
 
 	return nil
 }
@@ -405,8 +410,10 @@ func (w *basicWorker) registerJob(name string, j interface{}) (err error) {
 	w.pool.JobWithOptions(
 		name,
 		work.JobOptions{
-			MaxFails: theJ.MaxFails(),
-			SkipDead: true,
+			MaxFails:       theJ.MaxFails(),
+			MaxConcurrency: theJ.MaxCurrency(),
+			Priority:       job.Priority().For(name),
+			SkipDead:       true,
 		},
 		// Use generic handler to handle as we do not accept context with this way.
 		func(job *work.Job) error {

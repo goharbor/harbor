@@ -3,7 +3,7 @@ package backend
 import (
 	"os"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // FileLogger is an implementation of logger.Interface.

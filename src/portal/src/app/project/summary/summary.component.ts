@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COEFFICIENT, QuotaUnits } from "../../../lib/entities/shared.const";
 import { ProjectService, UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
 import { ErrorHandler } from "../../../lib/utils/error-handler";

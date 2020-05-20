@@ -16,24 +16,24 @@ package latestk
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/stretchr/testify/suite"
 )
 
 type EvaluatorTestSuite struct {
 	suite.Suite
 
-	artifacts []*art.Candidate
+	artifacts []*selector.Candidate
 }
 
 func (e *EvaluatorTestSuite) SetupSuite() {
-	e.artifacts = []*art.Candidate{
+	e.artifacts = []*selector.Candidate{
 		{PulledTime: 1, PushedTime: 2},
 		{PulledTime: 3, PushedTime: 4},
 		{PulledTime: 6, PushedTime: 5},

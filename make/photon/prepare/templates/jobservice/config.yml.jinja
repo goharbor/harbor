@@ -1,14 +1,20 @@
 ---
 #Protocol used to serve
-protocol: "http"
+{% if internal_tls.enabled %}
+protocol: "https"
 
-#Config certification if use 'https' protocol
-#https_config:
-#  cert: "server.crt"
-#  key: "server.key"
+https_config:
+  cert: "/etc/harbor/ssl/job_service.crt"
+  key: "/etc/harbor/ssl/job_service.key"
+
+#Server listening port
+port: 8443
+{% else %}
+protocol: "http"
 
 #Server listening port
 port: 8080
+{% endif %}
 
 #Worker pool
 worker_pool:

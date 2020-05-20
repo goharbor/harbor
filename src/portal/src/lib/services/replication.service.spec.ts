@@ -3,11 +3,12 @@ import { TestBed, inject } from '@angular/core/testing';
 import { ReplicationService, ReplicationDefaultService } from './replication.service';
 import { SharedModule } from '../utils/shared/shared.module';
 import { SERVICE_CONFIG, IServiceConfig } from '../entities/service.config';
+import { CURRENT_BASE_HREF } from "../utils/utils";
 
 describe('ReplicationService', () => {
   const mockConfig: IServiceConfig = {
-    replicationRuleEndpoint: "/api/policies/replication/testing",
-    replicationBaseEndpoint: "/api/replication/testing"
+    replicationRuleEndpoint: CURRENT_BASE_HREF + "/policies/replication/testing",
+    replicationBaseEndpoint: CURRENT_BASE_HREF + "/replication/testing"
   };
 
   let config: IServiceConfig;
@@ -37,7 +38,7 @@ describe('ReplicationService', () => {
 
   it('should inject the right config', () => {
     expect(config).toBeTruthy();
-    expect(config.replicationRuleEndpoint).toEqual("/api/policies/replication/testing");
-    expect(config.replicationBaseEndpoint).toEqual("/api/replication/testing");
+    expect(config.replicationRuleEndpoint).toEqual(CURRENT_BASE_HREF + "/policies/replication/testing");
+    expect(config.replicationBaseEndpoint).toEqual(CURRENT_BASE_HREF + "/replication/testing");
   });
 });

@@ -75,6 +75,9 @@ type Selector struct {
 
 	// Param for the selector
 	Pattern string `json:"pattern" valid:"Required"`
+
+	// Extras for other settings
+	Extras string `json:"extras"`
 }
 
 // Parameters of rule, indexed by the key

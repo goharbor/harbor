@@ -17,7 +17,7 @@ package dao
 import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 
 	"fmt"
 	"time"
@@ -39,7 +39,7 @@ func AddProject(project models.Project) (int64, error) {
 	pmID, err := addProjectMember(models.Member{
 		ProjectID:  projectID,
 		EntityID:   project.OwnerID,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 		EntityType: common.UserMember,
 	})
 	if err != nil {
@@ -146,7 +146,6 @@ func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
 		p.creation_time, p.update_time ` + sqlStr + ` order by p.name`
 	sqlStr, queryParam = CreatePagination(query, sqlStr, queryParam)
 
-	log.Debugf("sql:=%+v, param= %+v", sqlStr, queryParam)
 	var projects []*models.Project
 	_, err := GetOrmer().Raw(sqlStr, queryParam).QueryRows(&projects)
 
@@ -167,7 +166,7 @@ func GetGroupProjects(groupIDs []int, query *models.ProjectQueryParam) ([]*model
 		     from project p
 		     left join project_member pm on p.project_id = pm.project_id
 		     left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g'
-			 where ug.id in ( %s )`,
+			 where p.deleted=false and ug.id in ( %s )`,
 			sql, groupIDCondition)
 	}
 	sql = sql + ` order by name`
@@ -193,7 +192,7 @@ func GetTotalGroupProjects(groupIDs []int, query *models.ProjectQueryParam) (int
 			   from project p
 			   left join project_member pm on p.project_id = pm.project_id
 			   left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g'
-			   where ug.id in ( %s )) t`,
+			   where p.deleted=false and ug.id in ( %s )) t`,
 			sqlCondition, groupIDCondition)
 	}
 	log.Debugf("query sql:%v", sql)
@@ -294,26 +293,4 @@ func DeleteProject(id int64) error {
 		where project_id = ?`
 	_, err = GetOrmer().Raw(sql, name, id).Exec()
 	return err
-}
-
-// GetRolesByGroupID - Get Project roles of the
-// specified group is a member of current project
-func GetRolesByGroupID(projectID int64, groupIDs []int) ([]int, error) {
-	var roles []int
-	if len(groupIDs) == 0 {
-		return roles, nil
-	}
-	groupIDCondition := JoinNumberConditions(groupIDs)
-	o := GetOrmer()
-	sql := fmt.Sprintf(
-		`select distinct pm.role from project_member pm
-		left join user_group ug on pm.entity_type = 'g' and pm.entity_id = ug.id
-		where ug.id in ( %s ) and pm.project_id = ?`,
-		groupIDCondition)
-	log.Debugf("sql for GetRolesByGroupID(project ID: %d, group ids: %v):%v", projectID, groupIDs, sql)
-	if _, err := o.Raw(sql, projectID).QueryRows(&roles); err != nil {
-		log.Warningf("Error in GetRolesByGroupID, error: %v", err)
-		return nil, err
-	}
-	return roles, nil
 }

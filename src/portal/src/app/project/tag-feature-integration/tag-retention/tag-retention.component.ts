@@ -37,6 +37,13 @@ const SCHEDULE_TYPE = {
     HOURLY: "Hourly",
     CUSTOM: "Custom"
 };
+const DECORATION = {
+    MATCHES: "matches",
+    EXCLUDES: "excludes",
+};
+const RUNNING: string = "Running";
+const PENDING: string = "pending";
+const TIMEOUT: number = 5000;
 @Component({
     selector: 'tag-retention',
     templateUrl: './tag-retention.component.html',
@@ -173,6 +180,8 @@ export class TagRetentionComponent implements OnInit {
                             if (!item.params) {
                                 item.params = {};
                             }
+                            this.setRuleUntagged(item);
+
                         });
                     }
                     this.retention = response;
@@ -222,7 +231,28 @@ export class TagRetentionComponent implements OnInit {
                 this.errorHandler.error(error);
             });
     }
+    setRuleUntagged(rule) {
+        if (!rule.tag_selectors[0].extras) {
+            if (rule.tag_selectors[0].decoration === DECORATION.MATCHES) {
+                rule.tag_selectors[0].extras = JSON.stringify({untagged: true});
+            }
+            if (rule.tag_selectors[0].decoration === DECORATION.EXCLUDES) {
+                rule.tag_selectors[0].extras = JSON.stringify({untagged: false});
 
+            }
+        } else {
+            let extras = JSON.parse(rule.tag_selectors[0].extras);
+            if (extras.untagged === undefined) {
+                if (rule.tag_selectors[0].decoration === DECORATION.MATCHES) {
+                    extras.untagged = true;
+                }
+                if (rule.tag_selectors[0].decoration === DECORATION.EXCLUDES) {
+                    extras.untagged = false;
+                }
+                rule.tag_selectors[0].extras = JSON.stringify(extras);
+            }
+        }
+    }
     openAddRule() {
         this.addRuleComponent.open();
         this.addRuleComponent.isAdd = true;
@@ -341,6 +371,14 @@ export class TagRetentionComponent implements OnInit {
                         }
                         this.historyList = response.body as Array<any>;
                         TagRetentionComponent.calculateDuration(this.historyList);
+                        if (this.historyList && this.historyList.length
+                            && this.historyList.some(item => {
+                                return item.status === RUNNING || item.status === PENDING;
+                            })) {
+                            setTimeout(() => {
+                                 this.loadLog();
+                            }, TIMEOUT);
+                        }
                     }, error => {
                         this.errorHandler.error(error);
                     });
@@ -362,6 +400,7 @@ export class TagRetentionComponent implements OnInit {
         this.tagRetentionService.getProjectInfo(this.projectId).subscribe(
             response => {
                 this.retentionId = response.metadata.retention_id;
+                this.refreshList();
                 this.getRetention();
             }, error => {
                 this.loadingRule = false;
@@ -435,6 +474,14 @@ export class TagRetentionComponent implements OnInit {
         return this.tagRetentionService.getI18nKey(str);
     }
     clrLoad() {
+
         this.refreshList();
+    }
+    /**
+     *
+     * @param extras Json string
+     */
+    showUntagged(extras) {
+        return JSON.parse(extras).untagged;
     }
 }

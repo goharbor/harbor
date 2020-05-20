@@ -27,11 +27,11 @@
                                         [disabled]="!(selectedRow && !selectedRow.is_default)">
                                     <span *ngIf="selectedRow && selectedRow.disabled">
                                         <clr-icon class="margin-top-2" size="16" shape="success-standard"></clr-icon>
-                                        <span class="margin-left-10">{{'SCANNER.ENABLE' | translate}}</span>
+                                        <span class="margin-left-10">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</span>
                                     </span>
                                     <span *ngIf="!(selectedRow && selectedRow.disabled)">
                                         <clr-icon class="margin-top-2" size="16" shape="ban"></clr-icon>
-                                        <span class="margin-left-10">{{'SCANNER.DISABLE' | translate}}</span>
+                                        <span class="margin-left-10">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
                                     </span>
                                 </button>
                                 <button clrDropdownItem

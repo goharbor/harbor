@@ -10,6 +10,7 @@ import { IServiceConfig, SERVICE_CONFIG } from "../../entities/service.config";
 import { CreateEditLabelComponent } from "./create-edit-label.component";
 import { LabelDefaultService, LabelService } from "../../services/label.service";
 import { of } from "rxjs";
+import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 describe("CreateEditLabelComponent (inline template)", () => {
   let mockOneData: Label = {
@@ -27,7 +28,7 @@ describe("CreateEditLabelComponent (inline template)", () => {
   let fixture: ComponentFixture<CreateEditLabelComponent>;
 
   let config: IServiceConfig = {
-    systemInfoEndpoint: "/api/label/testing"
+    systemInfoEndpoint: CURRENT_BASE_HREF + "/label/testing"
   };
 
   let labelService: LabelService;

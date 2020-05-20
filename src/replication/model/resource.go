@@ -16,8 +16,9 @@ package model
 
 // the resource type
 const (
-	ResourceTypeImage ResourceType = "image"
-	ResourceTypeChart ResourceType = "chart"
+	ResourceTypeArtifact ResourceType = "artifact"
+	ResourceTypeImage    ResourceType = "image"
+	ResourceTypeChart    ResourceType = "chart"
 )
 
 // ResourceType represents the type of the resource
@@ -28,29 +29,6 @@ func (r ResourceType) Valid() bool {
 	return len(r) > 0
 }
 
-// ResourceMetadata of resource
-type ResourceMetadata struct {
-	Repository *Repository `json:"repository"`
-	Vtags      []string    `json:"v_tags"`
-	// TODO the labels should be put into tag and repository level?
-	Labels []string `json:"labels"`
-}
-
-// GetResourceName returns the name of the resource
-// TODO remove
-func (r *ResourceMetadata) GetResourceName() string {
-	if r.Repository == nil {
-		return ""
-	}
-	return r.Repository.Name
-}
-
-// Repository info of the resource
-type Repository struct {
-	Name     string                 `json:"name"`
-	Metadata map[string]interface{} `json:"metadata"`
-}
-
 // Resource represents the general replicating content
 type Resource struct {
 	Type         ResourceType           `json:"type"`
@@ -59,6 +37,29 @@ type Resource struct {
 	ExtendedInfo map[string]interface{} `json:"extended_info"`
 	// Indicate if the resource is a deleted resource
 	Deleted bool `json:"deleted"`
+	// indicate the resource is a tag deletion
+	IsDeleteTag bool `json:"is_delete_tag"`
 	// indicate whether the resource can be overridden
 	Override bool `json:"override"`
+}
+
+// ResourceMetadata of resource
+type ResourceMetadata struct {
+	Repository *Repository `json:"repository"`
+	Artifacts  []*Artifact `json:"artifacts"`
+	Vtags      []string    `json:"v_tags"` // deprecated, use Artifacts instead
+}
+
+// Repository info of the resource
+type Repository struct {
+	Name     string                 `json:"name"`
+	Metadata map[string]interface{} `json:"metadata"`
+}
+
+// Artifact is the individual unit that can be replicated
+type Artifact struct {
+	Type   string   `json:"type"`
+	Digest string   `json:"digest"`
+	Labels []string `json:"labels"`
+	Tags   []string `json:"tags"`
 }

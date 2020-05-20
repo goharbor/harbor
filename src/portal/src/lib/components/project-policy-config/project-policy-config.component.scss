@@ -51,7 +51,6 @@
 .add-modal {
   position: absolute;
   padding: 0 8px;
-  background-color: rgb(238, 238, 238);
   .flex-direction-column {
     flex-direction: column;
   }
@@ -74,10 +73,6 @@
   font-size: 0.55rem;
   line-height: 1.2rem;
   font-weight: 300;
-}
-
-.mt-05 {
-  margin-bottom: 0.5rem;
 }
 
 .col-flex-grow-0 {

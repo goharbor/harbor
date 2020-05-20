@@ -26,9 +26,8 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/scan/rest/auth"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -81,7 +80,7 @@ type basicClient struct {
 }
 
 // NewClient news a basic client
-func NewClient(r *scanner.Registration) (Client, error) {
+func NewClient(url, authType, accessCredential string, skipCertVerify bool) (Client, error) {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
@@ -93,11 +92,11 @@ func NewClient(r *scanner.Registration) (Client, error) {
 		TLSHandshakeTimeout:   10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: r.SkipCertVerify,
+			InsecureSkipVerify: skipCertVerify,
 		},
 	}
 
-	authorizer, err := auth.GetAuthorizer(r.Auth, r.AccessCredential)
+	authorizer, err := auth.GetAuthorizer(authType, accessCredential)
 	if err != nil {
 		return nil, errors.Wrap(err, "new v1 client")
 	}
@@ -109,7 +108,7 @@ func NewClient(r *scanner.Registration) (Client, error) {
 				return http.ErrUseLastResponse
 			},
 		},
-		spec:       NewSpec(r.URL),
+		spec:       NewSpec(url),
 		authorizer: authorizer,
 	}, nil
 }

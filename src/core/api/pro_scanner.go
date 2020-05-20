@@ -16,9 +16,9 @@ package api
 
 import (
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scanner"
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/controller/scanner"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 )
 
 // ProjectScannerAPI provides rest API for managing the project level scanner(s).

@@ -1,0 +1,134 @@
+@mixin text-overflow
+{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap:break-word;
+    white-space: nowrap
+}
+
+
+@mixin text-overflow-param($width) {
+    width: $width;
+    @include text-overflow;
+}
+
+@mixin grid-right-top-pos{
+    position: absolute;
+    z-index: 100;
+    right: 35px;
+    margin-top: 4px;
+}
+
+@mixin absolute-center($width:108px) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: $width !important;
+    height: $width !important;
+}
+
+@mixin flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@mixin dropdown-as-action-button {
+    margin: .25rem .5rem .25rem 0;
+}
+
+.rightPos{
+    @include grid-right-top-pos;
+    top: 22px;
+}
+
+.toolbar {
+    overflow: hidden;
+}
+
+.download-link {
+    font-size: 14px;
+}
+
+.filter-divider {
+    display: inline-block;
+    height: 16px;
+    width: 2px;
+    background-color: #ccc;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    position: relative;
+    top: 9px;
+    margin-right: 6px;
+    margin-left: 6px;
+}
+
+.card-block {
+    margin-top: 24px;
+    min-height: 100px;
+}
+
+.form-group {
+    display: flex;
+}
+
+.form-group > label {
+    width: 100px;
+}
+
+.card-media-block > img {
+    height: 45px;
+    width: 45px;
+}
+
+.card-media-title {
+    height: 24px;
+    @include text-overflow;
+}
+.card-media-text {
+    overflow: hidden;
+    height: 21px
+}
+
+.card-media-description {
+    height: 45px;
+}
+.card-media-description > p {
+    margin-top:  0px;
+}
+
+.card-text {
+    height: 45px;
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+.card-block {
+    margin-top: 0px;
+}
+
+.card-footer {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.list-img > img {
+    height: 24px;
+    width: 24px;
+    margin-right: 12px;
+}
+
+.position-relative {
+    position: relative;
+}
+
+.push-image-button {
+    display: inline-block;
+}
+
+.repository-box {
+    margin-top: 5px;
+}

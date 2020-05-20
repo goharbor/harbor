@@ -1,7 +1,7 @@
 package robot
 
 import (
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

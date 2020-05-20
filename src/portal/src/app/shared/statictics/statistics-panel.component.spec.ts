@@ -13,7 +13,7 @@ import { StatisticsService } from "./statistics.service";
 import { SessionService } from "../session.service";
 import { MessageHandlerService } from "../message-handler/message-handler.service";
 import { StatisticHandler } from "./statistic-handler.service";
-import { AppConfigService } from "./../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { Statistics } from './statistics';
 import { Volumes } from './volumes';
 describe('StatisticsPanelComponent', () => {

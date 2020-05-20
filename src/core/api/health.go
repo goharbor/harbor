@@ -26,8 +26,8 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	httputil "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -131,7 +131,8 @@ func HTTPStatusCodeHealthChecker(method string, url string, header http.Header,
 		}
 
 		client := httputil.NewClient(&http.Client{
-			Timeout: timeout,
+			Transport: httputil.GetHTTPTransport(httputil.SecureTransport),
+			Timeout:   timeout,
 		})
 		resp, err := client.Do(req)
 		if err != nil {

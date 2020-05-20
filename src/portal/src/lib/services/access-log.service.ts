@@ -4,7 +4,11 @@ import { AccessLog, AccessLogItem } from "./interface";
 import { Injectable, Inject } from "@angular/core";
 import { SERVICE_CONFIG, IServiceConfig } from "../entities/service.config";
 import { HttpClient, HttpResponse } from "@angular/common/http";
-import { buildHttpRequestOptionsWithObserveResponse, HTTP_GET_OPTIONS_OBSERVE_RESPONSE } from "../utils/utils";
+import {
+  buildHttpRequestOptionsWithObserveResponse,
+  CURRENT_BASE_HREF,
+  HTTP_GET_OPTIONS_OBSERVE_RESPONSE
+} from "../utils/utils";
 import { map, catchError } from "rxjs/operators";
 
 /**
@@ -77,7 +81,7 @@ export class AccessLogDefaultService extends AccessLogService {
       ? this.config.logBaseEndpoint
       : "";
     if (url === "") {
-      url = "/api/logs";
+      url = CURRENT_BASE_HREF + "/logs";
     }
 
     return this.http

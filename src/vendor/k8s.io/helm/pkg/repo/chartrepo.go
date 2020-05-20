@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors All rights reserved.
+Copyright The Helm Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -111,14 +112,13 @@ func (r *ChartRepository) Load() error {
 // cachePath is prepended to any index that does not have an absolute path. This
 // is for pre-2.2.0 repo files.
 func (r *ChartRepository) DownloadIndexFile(cachePath string) error {
-	var indexURL string
 	parsedURL, err := url.Parse(r.Config.URL)
 	if err != nil {
 		return err
 	}
-	parsedURL.Path = strings.TrimSuffix(parsedURL.Path, "/") + "/index.yaml"
-
-	indexURL = parsedURL.String()
+	parsedURL.RawPath = path.Join(parsedURL.RawPath, "index.yaml")
+	parsedURL.Path = path.Join(parsedURL.Path, "index.yaml")
+	indexURL := parsedURL.String()
 
 	r.setCredentials()
 	resp, err := r.Client.Get(indexURL)
@@ -270,5 +270,15 @@ func ResolveReferenceURL(baseURL, refURL string) (string, error) {
 		return "", fmt.Errorf("failed to parse %s as URL: %v", refURL, err)
 	}
 
-	return parsedBaseURL.ResolveReference(parsedRefURL).String(), nil
+	// We need a trailing slash for ResolveReference to work, but make sure there isn't already one
+	parsedBaseURL.Path = strings.TrimSuffix(parsedBaseURL.Path, "/") + "/"
+	resolvedURL := parsedBaseURL.ResolveReference(parsedRefURL)
+	// if the base URL contains query string parameters,
+	// propagate them to the child URL but only if the
+	// refURL is relative to baseURL
+	if (resolvedURL.Hostname() == parsedBaseURL.Hostname()) && (resolvedURL.Port() == parsedBaseURL.Port()) {
+		resolvedURL.RawQuery = parsedBaseURL.RawQuery
+	}
+
+	return resolvedURL.String(), nil
 }

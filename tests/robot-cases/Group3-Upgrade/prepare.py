@@ -188,8 +188,14 @@ class HarborAPI:
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
 
+    @get_feature_branch
+    def update_interrogation_services(self, cron, **kwargs):
+        payload = {"schedule":{"type":"Custom","cron": cron}}
+        print payload
+        body=dict(body=payload)
+        request(url+"system/scanAll/schedule", 'post', **body)
 
-    def update_systemsetting(self, emailfrom, emailhost, emailport, emailuser, creation, selfreg, token):
+    def update_systemsetting(self, emailfrom, emailhost, emailport, emailuser, creation, selfreg, token, robot_token):
         payload = {
             "auth_mode": "db_auth",
             "email_from": emailfrom,
@@ -203,6 +209,7 @@ class HarborAPI:
             "read_only": False,
             "self_registration": selfreg,
             "token_expiration": token,
+            "robot_token_duration":robot_token,
             "scan_all_policy": {
                 "type": "none",
                 "parameter": {
@@ -210,6 +217,7 @@ class HarborAPI:
                 }
             }
         }
+        print payload
         body=dict(body=payload)
         request(url+"configurations", 'put', **body)
 
@@ -253,11 +261,98 @@ class HarborAPI:
         request(url+"projects/"+projectid+"/robots", 'post', **body)
 
     @get_feature_branch
-    def add_tag_retention_rule(self, project, robot_account, **kwargs):
-        return
+    def add_tag_retention_rule(self, project, tag_retention_rule, **kwargs):
+        r = request(url+"projects?name="+project+"", 'get')
+        projectid = str(r.json()[0]['project_id'])
+        if kwargs["branch"] == 1:
+            payload = {
+                "algorithm":"or",
+                "rules":
+                [
+                    {
+                        "disabled":False,
+                        "action":"retain",
+                        "scope_selectors":
+                        {
+                            "repository":
+                            [
+                                {
+                                    "kind":"doublestar",
+                                    "decoration":"repoMatches",
+                                    "pattern":tag_retention_rule["repository_patten"]
+                                }
+                            ]
+                        },
+                        "tag_selectors":
+                        [
+                            {
+                                "kind":"doublestar",
+                                "decoration":"matches","pattern":tag_retention_rule["tag_decoration"]
+                            }
+                        ],
+                        "params":{"latestPushedK":tag_retention_rule["latestPushedK"]},
+                        "template":"latestPushedK"
+                    }
+                ],
+                "trigger":
+                {
+                    "kind":"Schedule",
+                    "references":{},
+                    "settings":{"cron":tag_retention_rule["cron"]}
+                },
+                "scope":
+                {
+                "level":"project",
+                    "ref":int(projectid)
+                }
+            }
+            print payload
+            body=dict(body=payload)
+            request(url+"retentions", 'post', **body)
+        else:
+            raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, kwargs["branch"]))
 
     @get_feature_branch
-    def add_webhook(self, webhook, **kwargs):
+    def add_tag_immutability_rule(self, project, tag_immutability_rule, **kwargs):
+        r = request(url+"projects?name="+project+"", 'get')
+        projectid = str(r.json()[0]['project_id'])
+        if kwargs["branch"] == 1:
+            payload = {
+                "disabled":False,
+                "action":"immutable",
+                "scope_selectors":
+                {
+                    "repository":
+                    [
+                        {
+                            "kind":"doublestar",
+                            "decoration":tag_immutability_rule["repo_decoration"],
+                            "pattern":tag_immutability_rule["repo_pattern"]
+                        }
+                    ]
+                },
+                "tag_selectors":
+                [
+                    {
+                        "kind":"doublestar",
+                        "decoration":tag_immutability_rule["tag_decoration"],
+                        "pattern":tag_immutability_rule["tag_pattern"]
+                    }
+                ],
+                "project_id":int(projectid),
+                "priority":0,
+                "template":"immutable_template"
+            }
+            print payload
+            body=dict(body=payload)
+            request(url+"projects/"+projectid+"/immutabletagrules", 'post', **body)
+        else:
+            raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, kwargs["branch"]))
+
+    @get_feature_branch
+    def add_webhook(self, project, webhook, **kwargs):
+        r = request(url+"projects?name="+project+"", 'get')
+        projectid = str(r.json()[0]['project_id'])
         if kwargs["branch"] == 1:
             payload = {
                 "targets":[
@@ -278,15 +373,17 @@ class HarborAPI:
                     "scanningFailed",
                     "scanningCompleted"
                 ],
-                "enabled":+webhook["enabled"]
+                "enabled":webhook["enabled"]
             }
+            print payload
             body=dict(body=payload)
-            request(url+"system/CVEWhitelist", 'put', **body)
+            request(url+"projects/"+projectid+"/webhook/policies", 'post', **body)
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, kwargs["branch"]))
 
     def update_repoinfo(self, reponame):
         payload = {"description": "testdescription"}
+        print payload
         body=dict(body=payload)
         request(url+"repositories/"+reponame+"", 'put', **body)
 
@@ -318,7 +415,7 @@ def request(url, method, user = None, userp = None, **kwargs):
         kwargs['headers']['Content-Type'] = 'application/json'
         kwargs['data'] = json.dumps(kwargs['body'])
         del kwargs['body']
-
+    print "url: ", url
     resp = requests.request(method, url, verify=False, auth=(user, userp), **kwargs)
     if resp.status_code >= 400:
         raise Exception("[Exception Message] - {}".format(resp.text))
@@ -355,7 +452,9 @@ def do_data_creation():
             harborAPI.add_member(project["name"], member["name"], member["role"], version=args.version)
         for robot_account in project["robot_account"]:
             harborAPI.add_project_robot_account(project["name"], robot_account, version=args.version)
-        harborAPI.add_webhook(project["webhook"], version=args.version)
+        harborAPI.add_webhook(project["name"], project["webhook"], version=args.version)
+        harborAPI.add_tag_retention_rule(project["name"], project["tag_retention_rule"], version=args.version)
+        harborAPI.add_tag_immutability_rule(project["name"], project["tag_immutability_rule"], version=args.version)
 
     pull_image("busybox", "redis", "haproxy", "alpine", "httpd:2")
     push_image("busybox", data["projects"][0]["name"])
@@ -378,7 +477,9 @@ def do_data_creation():
     for project in data["projects"]:
         harborAPI.update_project_setting_whitelist(project["name"],
                                     project["configuration"]["reuse_sys_cve_whitelist"],
-                                    project["configuration"]["deployment_security"],version=args.version)
+                                    project["configuration"]["deployment_security"], version=args.version)
+
+    harborAPI.update_interrogation_services(data["interrogation_services"]["cron"], version=args.version)
 
     harborAPI.update_systemsetting(data["configuration"]["emailsetting"]["emailfrom"],
                                    data["configuration"]["emailsetting"]["emailserver"],
@@ -386,8 +487,9 @@ def do_data_creation():
                                    data["configuration"]["emailsetting"]["emailuser"],
                                    data["configuration"]["projectcreation"],
                                    data["configuration"]["selfreg"],
-                                   float(data["configuration"]["token"]))
+                                   float(data["configuration"]["token"]),
+                                   float(data["configuration"]["robot_token"])*60*24)
 
-    harborAPI.add_sys_whitelist(data["configuration"]["deployment_security"],version=args.version)
+    harborAPI.add_sys_whitelist(data["configuration"]["deployment_security"], version=args.version)
 
 do_data_creation()

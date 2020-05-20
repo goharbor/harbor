@@ -5,14 +5,13 @@
     height: 100%;
     left:28px;
     padding-top: 20px;
-    background: #fff;
     border-left: 1px solid #e0e0e0;
 }
 .eventInfo {display: flex; justify-content: flex-start; align-content: flex-start;
     padding: 8px 5px 8px 10px; border-bottom: 1px solid #ccc;}
 .iconsArea{ flex-shrink: 1;}
 .infoArea{ margin-left: 10px; width: 270px;}
-.eventName{display: block; margin-bottom: -5px;font-size: 16px; color: rgb(11, 127, 189); }
+.eventName{display: block; margin-bottom: -5px;font-size: 16px; }
 .eventErrorInf {display:block; font-size: 12px;color:red;line-height: .6rem;}
 .eventTarget{display: inline-flex; width: 172px; font-size: 12px; flex-shrink:1; overflow: hidden; text-overflow: ellipsis;white-space: nowrap;}
 .eventTime{ float: right; font-size: 12px;}
@@ -35,7 +34,6 @@
     padding: 0 10px;
     height: 25px;
     line-height: 25px;
-    background-color: white;
     letter-spacing: 1.2px;
     font-weight: 500;
     box-shadow: -2px -1px 3px #bebbbb;

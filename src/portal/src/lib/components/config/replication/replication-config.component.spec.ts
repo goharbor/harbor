@@ -3,11 +3,12 @@ import { ReplicationConfigComponent } from "./replication-config.component";
 import { HarborLibraryModule } from "../../../harbor-library.module";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../entities/service.config";
 import { Configuration } from "../config";
+import { CURRENT_BASE_HREF } from "../../../utils/utils";
 describe('ReplicationConfigComponent', () => {
   let component: ReplicationConfigComponent;
   let fixture: ComponentFixture<ReplicationConfigComponent>;
   const config: IServiceConfig = {
-    baseEndpoint: "/api/testing"
+    baseEndpoint: CURRENT_BASE_HREF + "/testing"
   };
   beforeEach(() => {
     TestBed.configureTestingModule({

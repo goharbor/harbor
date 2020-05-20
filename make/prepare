@@ -2,7 +2,7 @@
 set -e
 
 # If compiling source code this dir is harbor's make dir.
-# If installing harbor via pacakge, this dir is harbor's root dir.
+# If installing harbor via package, this dir is harbor's root dir.
 if [[ -n "$HARBOR_BUNDLE_DIR" ]]; then
     harbor_prepare_path=$HARBOR_BUNDLE_DIR
 else
@@ -32,8 +32,6 @@ fi
 
 data_path=$(grep '^[^#]*data_volume:' $input_dir/harbor.yml | awk '{print $NF}')
 
-echo "VERSIONTAG:${VERSIONTAG:=dev}"
-
 # If previous secretkeys exist, move it to new location
 previous_secretkey_path=/data/secretkey
 previous_defaultalias_path=/data/defaultalias
@@ -57,9 +55,8 @@ docker run --rm -v $input_dir:/input:z \
                     -v $data_path:/data:z \
                     -v $harbor_prepare_path:/compose_location:z \
                     -v $config_dir:/config:z \
-                    -v $secret_dir:/secret:z \
                     -v /:/hostfs:z \
-                    goharbor/prepare:${VERSIONTAG} $@
+                    goharbor/prepare:dev prepare $@
 
 echo "Clean up the input dir"
 # Clean up input dir

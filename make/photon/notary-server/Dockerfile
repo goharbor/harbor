@@ -1,5 +1,6 @@
 ARG harbor_base_image_version
-FROM goharbor/harbor-notary-server-base:${harbor_base_image_version}
+ARG harbor_base_namespace
+FROM ${harbor_base_namespace}/harbor-notary-server-base:${harbor_base_image_version}
 
 COPY ./make/photon/notary/migrate-patch /bin/migrate-patch
 COPY ./make/photon/notary/binary/notary-server /bin/notary-server

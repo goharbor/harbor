@@ -16,20 +16,14 @@ package native
 
 import (
 	"fmt"
-	"io"
-	"net/http"
-	"strings"
-	"sync"
 
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/goharbor/harbor/src/common/http/modifier"
-	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	registry_pkg "github.com/goharbor/harbor/src/common/utils/registry"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/registry"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 )
@@ -44,12 +38,11 @@ func init() {
 
 var _ adp.Adapter = &Adapter{}
 
-type factory struct {
-}
+type factory struct{}
 
 // Create ...
 func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
-	return NewAdapter(r)
+	return NewAdapter(r), nil
 }
 
 // AdapterPattern ...
@@ -57,59 +50,38 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return nil
 }
 
+var (
+	_ adp.Adapter          = (*Adapter)(nil)
+	_ adp.ArtifactRegistry = (*Adapter)(nil)
+)
+
 // Adapter implements an adapter for Docker registry. It can be used to all registries
 // that implement the registry V2 API
 type Adapter struct {
-	sync.RWMutex
-	*registry_pkg.Registry
 	registry *model.Registry
-	client   *http.Client
-	clients  map[string]*registry_pkg.Repository // client for repositories
+	registry.Client
 }
 
 // NewAdapter returns an instance of the Adapter
-func NewAdapter(registry *model.Registry) (*Adapter, error) {
-	var cred modifier.Modifier
-	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
-		if registry.Credential.Type == model.CredentialTypeSecret {
-			cred = common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)
-		} else {
-			cred = auth.NewBasicAuthCredential(
-				registry.Credential.AccessKey,
-				registry.Credential.AccessSecret)
-		}
+func NewAdapter(reg *model.Registry) *Adapter {
+	adapter := &Adapter{
+		registry: reg,
 	}
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-		Transport: util.GetHTTPTransport(registry.Insecure),
-	}, cred, registry.TokenServiceURL)
-
-	return NewAdapterWithCustomizedAuthorizer(registry, authorizer)
+	username, password := "", ""
+	if reg.Credential != nil {
+		username = reg.Credential.AccessKey
+		password = reg.Credential.AccessSecret
+	}
+	adapter.Client = registry.NewClient(reg.URL, username, password, reg.Insecure)
+	return adapter
 }
 
-// NewAdapterWithCustomizedAuthorizer returns an instance of the Adapter with the customized authorizer
-func NewAdapterWithCustomizedAuthorizer(registry *model.Registry, authorizer modifier.Modifier) (*Adapter, error) {
-	transport := util.GetHTTPTransport(registry.Insecure)
-	modifiers := []modifier.Modifier{
-		&auth.UserAgentModifier{
-			UserAgent: adp.UserAgentReplication,
-		},
-	}
-	if authorizer != nil {
-		modifiers = append(modifiers, authorizer)
-	}
-	client := &http.Client{
-		Transport: registry_pkg.NewTransport(transport, modifiers...),
-	}
-	reg, err := registry_pkg.NewRegistry(registry.URL, client)
-	if err != nil {
-		return nil, err
-	}
+// NewAdapterWithAuthorizer returns an instance of the Adapter with provided authorizer
+func NewAdapterWithAuthorizer(reg *model.Registry, authorizer lib.Authorizer) *Adapter {
 	return &Adapter{
-		Registry: reg,
-		registry: registry,
-		client:   client,
-		clients:  map[string]*registry_pkg.Repository{},
-	}, nil
+		registry: reg,
+		Client:   registry.NewClientWithAuthorizer(reg.URL, authorizer, reg.Insecure),
+	}
 }
 
 // Info returns the basic information about the adapter
@@ -157,19 +129,14 @@ func (a *Adapter) HealthCheck() (model.HealthStatus, error) {
 	return model.Healthy, nil
 }
 
-// FetchImages ...
-func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
-	repositories, err := a.getRepositories(filters)
+// FetchArtifacts ...
+func (a *Adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
+	repositories, err := a.listRepositories(filters)
 	if err != nil {
 		return nil, err
 	}
 	if len(repositories) == 0 {
 		return nil, nil
-	}
-	for _, filter := range filters {
-		if err = filter.DoFilter(&repositories); err != nil {
-			return nil, err
-		}
 	}
 
 	var rawResources = make([]*model.Resource, len(repositories))
@@ -180,24 +147,12 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		index := i
 		repo := r
 		runner.AddTask(func() error {
-			vTags, err := a.getVTags(repo.Name)
+			artifacts, err := a.listArtifacts(repo.Name, filters)
 			if err != nil {
-				return fmt.Errorf("List tags for repo '%s' error: %v", repo.Name, err)
+				return fmt.Errorf("failed to list artifacts of repository %s: %v", repo.Name, err)
 			}
-			if len(vTags) == 0 {
+			if len(artifacts) == 0 {
 				return nil
-			}
-			for _, filter := range filters {
-				if err = filter.DoFilter(&vTags); err != nil {
-					return fmt.Errorf("Filter tags %v error: %v", vTags, err)
-				}
-			}
-			if len(vTags) == 0 {
-				return nil
-			}
-			tags := []string{}
-			for _, vTag := range vTags {
-				tags = append(tags, vTag.Name)
 			}
 			rawResources[index] = &model.Resource{
 				Type:     model.ResourceTypeImage,
@@ -206,7 +161,7 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 					Repository: &model.Repository{
 						Name: repo.Name,
 					},
-					Vtags: tags,
+					Artifacts: artifacts,
 				},
 			}
 
@@ -216,7 +171,7 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	runner.Wait()
 
 	if runner.IsCancelled() {
-		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+		return nil, fmt.Errorf("FetchArtifacts error when collect tags for repos")
 	}
 
 	var resources []*model.Resource
@@ -229,7 +184,7 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	return resources, nil
 }
 
-func (a *Adapter) getRepositories(filters []*model.Filter) ([]*adp.Repository, error) {
+func (a *Adapter) listRepositories(filters []*model.Filter) ([]*model.Repository, error) {
 	pattern := ""
 	for _, filter := range filters {
 		if filter.Type == model.FilterTypeName {
@@ -251,156 +206,43 @@ func (a *Adapter) getRepositories(filters []*model.Filter) ([]*adp.Repository, e
 		}
 	}
 
-	result := []*adp.Repository{}
+	var result []*model.Repository
 	for _, repository := range repositories {
-		result = append(result, &adp.Repository{
-			ResourceType: string(model.ResourceTypeImage),
-			Name:         repository,
+		result = append(result, &model.Repository{
+			Name: repository,
 		})
 	}
-	return result, nil
+	return filter.DoFilterRepositories(result, filters)
 }
 
-func (a *Adapter) getVTags(repository string) ([]*adp.VTag, error) {
-	tags, err := a.ListTag(repository)
+func (a *Adapter) listArtifacts(repository string, filters []*model.Filter) ([]*model.Artifact, error) {
+	tags, err := a.ListTags(repository)
 	if err != nil {
 		return nil, err
 	}
-	var result []*adp.VTag
+	var artifacts []*model.Artifact
 	for _, tag := range tags {
-		result = append(result, &adp.VTag{
-			ResourceType: string(model.ResourceTypeImage),
-			Name:         tag,
+		artifacts = append(artifacts, &model.Artifact{
+			Tags: []string{tag},
 		})
 	}
-	return result, nil
+	return filter.DoFilterArtifacts(artifacts, filters)
 }
 
-// ManifestExist ...
-func (a *Adapter) ManifestExist(repository, reference string) (bool, string, error) {
-	client, err := a.getClient(repository)
-	if err != nil {
-		return false, "", err
+// PingSimple checks whether the registry is available. It checks the connectivity and certificate (if TLS enabled)
+// only, regardless of 401/403 error.
+func (a *Adapter) PingSimple() error {
+	err := a.Ping()
+	if err == nil {
+		return nil
 	}
-	digest, exist, err := client.ManifestExist(reference)
-	return exist, digest, err
-}
-
-// PullManifest ...
-func (a *Adapter) PullManifest(repository, reference string, accepttedMediaTypes []string) (distribution.Manifest, string, error) {
-	client, err := a.getClient(repository)
-	if err != nil {
-		return nil, "", err
+	if errors.IsErr(err, errors.UnAuthorizedCode) || errors.IsErr(err, errors.ForbiddenCode) {
+		return nil
 	}
-	digest, mediaType, payload, err := client.PullManifest(reference, accepttedMediaTypes)
-	if err != nil {
-		return nil, "", err
-	}
-	if strings.Contains(mediaType, "application/json") {
-		mediaType = schema1.MediaTypeManifest
-	}
-	manifest, _, err := registry_pkg.UnMarshal(mediaType, payload)
-	if err != nil {
-		return nil, "", err
-	}
-	return manifest, digest, nil
-}
-
-// PushManifest ...
-func (a *Adapter) PushManifest(repository, reference, mediaType string, payload []byte) error {
-	client, err := a.getClient(repository)
-	if err != nil {
-		return err
-	}
-	_, err = client.PushManifest(reference, mediaType, payload)
 	return err
 }
 
-// DeleteManifest ...
-func (a *Adapter) DeleteManifest(repository, reference string) error {
-	client, err := a.getClient(repository)
-	if err != nil {
-		return err
-	}
-	digest := reference
-	if !isDigest(digest) {
-		dgt, exist, err := client.ManifestExist(reference)
-		if err != nil {
-			return err
-		}
-		if !exist {
-			log.Debugf("the manifest of %s:%s doesn't exist", repository, reference)
-			return nil
-		}
-		digest = dgt
-	}
-	return client.DeleteManifest(digest)
-}
-
-// BlobExist ...
-func (a *Adapter) BlobExist(repository, digest string) (bool, error) {
-	client, err := a.getClient(repository)
-	if err != nil {
-		return false, err
-	}
-	return client.BlobExist(digest)
-}
-
-// PullBlob ...
-func (a *Adapter) PullBlob(repository, digest string) (int64, io.ReadCloser, error) {
-	client, err := a.getClient(repository)
-	if err != nil {
-		return 0, nil, err
-	}
-	return client.PullBlob(digest)
-}
-
-// PushBlob ...
-func (a *Adapter) PushBlob(repository, digest string, size int64, blob io.Reader) error {
-	client, err := a.getClient(repository)
-	if err != nil {
-		return err
-	}
-	return client.PushBlob(digest, size, blob)
-}
-
-func isDigest(str string) bool {
-	return strings.Contains(str, ":")
-}
-
-// ListTag ...
-func (a *Adapter) ListTag(repository string) ([]string, error) {
-	client, err := a.getClient(repository)
-	if err != nil {
-		return []string{}, err
-	}
-	return client.ListTag()
-}
-
-func (a *Adapter) getClient(repository string) (*registry_pkg.Repository, error) {
-	a.RLock()
-	client, exist := a.clients[repository]
-	a.RUnlock()
-	if exist {
-		return client, nil
-	}
-
-	return a.create(repository)
-}
-
-func (a *Adapter) create(repository string) (*registry_pkg.Repository, error) {
-	a.Lock()
-	defer a.Unlock()
-	// double check
-	client, exist := a.clients[repository]
-	if exist {
-		return client, nil
-	}
-
-	client, err := registry_pkg.NewRepository(repository, a.registry.URL, a.client)
-	if err != nil {
-		return nil, err
-	}
-	a.clients[repository] = client
-	return client, nil
+// DeleteTag isn't supported for docker registry
+func (a *Adapter) DeleteTag(repository, tag string) error {
+	return errors.New("the tag deletion isn't supported")
 }

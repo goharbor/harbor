@@ -1,16 +1,33 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package api
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/retention/dao"
-	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
-	"github.com/goharbor/harbor/src/pkg/retention/policy"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/goharbor/harbor/src/pkg/retention/dao"
+	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
+	"github.com/goharbor/harbor/src/pkg/retention/mocks"
+	"github.com/goharbor/harbor/src/pkg/retention/policy"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetMetadatas(t *testing.T) {
@@ -30,6 +47,16 @@ func TestGetMetadatas(t *testing.T) {
 }
 
 func TestCreatePolicy(t *testing.T) {
+	// mock retention api controller
+	mockController := &mocks.APIController{}
+	mockController.On("CreateRetention", mock.AnythingOfType("*policy.Metadata")).Return(int64(1), nil)
+
+	controller := retentionController
+	retentionController = mockController
+	defer func() {
+		retentionController = controller
+	}()
+
 	p1 := &policy.Metadata{
 		Algorithm: "or",
 		Rules: []rule.Metadata{
@@ -87,7 +114,7 @@ func TestCreatePolicy(t *testing.T) {
 				bodyJSON:   p1,
 				credential: sysAdmin,
 			},
-			code: http.StatusOK,
+			code: http.StatusCreated,
 		},
 		{
 			request: &testingRequest{
@@ -267,6 +294,23 @@ func TestPolicy(t *testing.T) {
 	require.Nil(t, err)
 	require.True(t, id > 0)
 
+	// mock retention api controller
+	mockController := &mocks.APIController{}
+	mockController.On("GetRetention", mock.AnythingOfType("int64")).Return(p, nil)
+	mockController.On("UpdateRetention", mock.AnythingOfType("*policy.Metadata")).Return(nil)
+	mockController.On("TriggerRetentionExec",
+		mock.AnythingOfType("int64"),
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("bool")).Return(int64(1), nil)
+	mockController.On("ListRetentionExecs", mock.AnythingOfType("int64"), mock.AnythingOfType("*q.Query")).Return(nil, nil)
+	mockController.On("GetTotalOfRetentionExecs", mock.AnythingOfType("int64")).Return(int64(0), nil)
+
+	controller := retentionController
+	retentionController = mockController
+	defer func() {
+		retentionController = controller
+	}()
+
 	cases := []*codeCheckingCase{
 		{
 			request: &testingRequest{
@@ -408,7 +452,7 @@ func TestPolicy(t *testing.T) {
 				},
 				credential: sysAdmin,
 			},
-			code: http.StatusOK,
+			code: http.StatusCreated,
 		},
 		{
 			request: &testingRequest{

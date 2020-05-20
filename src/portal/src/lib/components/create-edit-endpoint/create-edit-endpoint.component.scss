@@ -3,11 +3,6 @@
     font-weight: 400;
   }
 
-  clr-tooltip {
-    top: 3px;
-    position: relative;
-  }
-
   .form-height {
     height: 30px;
   }
@@ -64,4 +59,8 @@
   }
   .endpoint-input {
     padding-right: 21px;
+  }
+  .destination-insecure-label {
+    display: flex;
+    align-items: center;
   }

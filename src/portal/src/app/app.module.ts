@@ -14,7 +14,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, APP_INITIALIZER, LOCALE_ID, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AppComponent } from './app.component';
-import { InterceptHttpService } from './intercept-http.service';
+import { InterceptHttpService } from './services/intercept-http.service';
 
 import { BaseModule } from './base/base.module';
 import { HarborRoutingModule } from './harbor-routing.module';
@@ -26,8 +26,8 @@ import { DeveloperCenterModule } from './dev-center/dev-center.module';
 import { registerLocaleData } from '@angular/common';
 
 import { TranslateService } from "@ngx-translate/core";
-import { AppConfigService } from './app-config.service';
-import { SkinableConfig } from "./skinable-config.service";
+import { AppConfigService } from './services/app-config.service';
+import { SkinableConfig } from "./services/skinable-config.service";
 import { ProjectConfigComponent } from './project/project-config/project-config.component';
 
 import zh from '@angular/common/locales/zh-Hans';
@@ -45,7 +45,7 @@ import { LabelsComponent } from './labels/labels.component';
 import { ProjectQuotasComponent } from './project-quotas/project-quotas.component';
 import { HarborLibraryModule } from "../lib/harbor-library.module";
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
-
+import { AllPipesModule } from './all-pipes/all-pipes.module';
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
 registerLocaleData(localeFr, 'fr-fr');
@@ -84,7 +84,8 @@ export function getCurrentLanguage(translateService: TranslateService) {
         DeveloperCenterModule,
         OidcOnboardModule,
         LicenseModule,
-        HarborLibraryModule
+        HarborLibraryModule,
+        AllPipesModule
     ],
     exports: [
     ],

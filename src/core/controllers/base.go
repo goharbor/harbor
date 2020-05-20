@@ -17,7 +17,6 @@ package controllers
 import (
 	"bytes"
 	"context"
-	"github.com/goharbor/harbor/src/core/api"
 	"html/template"
 	"net"
 	"net/http"
@@ -31,12 +30,14 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
 	email_util "github.com/goharbor/harbor/src/common/utils/email"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
@@ -60,8 +61,7 @@ type messageDetail struct {
 }
 
 func redirectForOIDC(ctx context.Context, username string) bool {
-	am, _ := ctx.Value(filter.AuthModeKey).(string)
-	if am != common.OIDCAuth {
+	if lib.GetAuthMode(ctx) != common.OIDCAuth {
 		return false
 	}
 	u, err := dao.GetUser(models.User{Username: username})
@@ -123,6 +123,16 @@ func (cc *CommonController) LogOut() {
 
 // UserExists checks if user exists when user input value in sign in form.
 func (cc *CommonController) UserExists() {
+	flag, err := config.SelfRegistration()
+	if err != nil {
+		log.Errorf("Failed to get the status of self registration flag, error: %v, disabling user existence check", err)
+	}
+	securityCtx, ok := security.FromContext(cc.Ctx.Request.Context())
+	isAdmin := ok && securityCtx.IsSysAdmin()
+	if !flag && !isAdmin {
+		cc.CustomAbort(http.StatusPreconditionFailed, "self registration disabled, only sysadmin can check user existence")
+	}
+
 	target := cc.GetString("target")
 	value := cc.GetString("value")
 

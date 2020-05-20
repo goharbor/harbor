@@ -4,7 +4,7 @@ import { ImmutableRetentionRule, RuleMetadate } from "../tag-retention/retention
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { map, catchError } from "rxjs/operators";
 import { Project } from "../../project";
-import { HTTP_JSON_OPTIONS } from "../../../../lib/utils/utils";
+import { CURRENT_BASE_HREF, HTTP_JSON_OPTIONS } from "../../../../lib/utils/utils";
 
 
 @Injectable()
@@ -33,34 +33,34 @@ export class ImmutableTagService {
     }
 
     getRetentionMetadata(): Observable<RuleMetadate> {
-        return this.http.get(`/api/retentions/metadatas`)
+        return this.http.get(`${ CURRENT_BASE_HREF }/retentions/metadatas`)
             .pipe(map(response => response as RuleMetadate))
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     getRules(projectId): Observable<ImmutableRetentionRule[]> {
-        return this.http.get(`/api/projects/${projectId}/immutabletagrules`)
+        return this.http.get(`${ CURRENT_BASE_HREF }/projects/${projectId}/immutabletagrules`)
             .pipe(map(response => response as ImmutableRetentionRule[]))
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     createRule(projectId: number, retention: ImmutableRetentionRule) {
-        return this.http.post(`/api/projects/${projectId}/immutabletagrules`, retention)
+        return this.http.post(`${ CURRENT_BASE_HREF }/projects/${projectId}/immutabletagrules`, retention)
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     updateRule(projectId, immutabletagrule: ImmutableRetentionRule) {
-        return this.http.put(`/api/projects/${projectId}/immutabletagrules/${immutabletagrule.id}`, immutabletagrule)
+        return this.http.put(`${ CURRENT_BASE_HREF }/projects/${projectId}/immutabletagrules/${immutabletagrule.id}`, immutabletagrule)
             .pipe(catchError(error => observableThrowError(error)));
     }
     deleteRule(projectId, ruleId) {
 
-        return this.http.delete(`/api/projects/${projectId}/immutabletagrules/${ruleId}`, HTTP_JSON_OPTIONS)
+        return this.http.delete(`${ CURRENT_BASE_HREF }/projects/${projectId}/immutabletagrules/${ruleId}`, HTTP_JSON_OPTIONS)
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     getProjectInfo(projectId) {
-        return this.http.get(`/api/projects/${projectId}`)
+        return this.http.get(`${ CURRENT_BASE_HREF }/projects/${projectId}`)
             .pipe(map(response => response as Project))
             .pipe(catchError(error => observableThrowError(error)));
     }

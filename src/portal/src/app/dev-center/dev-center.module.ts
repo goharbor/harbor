@@ -4,6 +4,7 @@ import { CommonModule } from "@angular/common";
 import { ClarityModule } from '@clr/angular';
 import { SharedModule } from '../shared/shared.module';
 import { DevCenterComponent } from "./dev-center.component";
+import { DevCenterOtherComponent } from "./dev-center-other.component";
 
 
 @NgModule({
@@ -18,6 +19,7 @@ import { DevCenterComponent } from "./dev-center.component";
     ],
     declarations: [
         DevCenterComponent,
+        DevCenterOtherComponent,
     ],
 })
 export class DeveloperCenterModule {}

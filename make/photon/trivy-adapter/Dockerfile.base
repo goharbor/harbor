@@ -1,0 +1,6 @@
+FROM photon:2.0
+
+RUN tdnf install -y sudo rpm >> /dev/null \
+    && tdnf clean all \
+    && groupadd -r -g 10000 scanner \
+    && useradd --no-log-init -m -r -g 10000 -u 10000 scanner

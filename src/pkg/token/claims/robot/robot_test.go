@@ -1,18 +1,19 @@
 package robot
 
 import (
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/permission/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValid(t *testing.T) {
 
-	rbacPolicy := &rbac.Policy{
+	rbacPolicy := &types.Policy{
 		Resource: "/project/libray/repository",
 		Action:   "pull",
 	}
-	policies := []*rbac.Policy{}
+	policies := []*types.Policy{}
 	policies = append(policies, rbacPolicy)
 
 	rClaims := &Claim{
@@ -25,11 +26,11 @@ func TestValid(t *testing.T) {
 
 func TestUnValidTokenID(t *testing.T) {
 
-	rbacPolicy := &rbac.Policy{
+	rbacPolicy := &types.Policy{
 		Resource: "/project/libray/repository",
 		Action:   "pull",
 	}
-	policies := []*rbac.Policy{}
+	policies := []*types.Policy{}
 	policies = append(policies, rbacPolicy)
 
 	rClaims := &Claim{
@@ -42,11 +43,11 @@ func TestUnValidTokenID(t *testing.T) {
 
 func TestUnValidProjectID(t *testing.T) {
 
-	rbacPolicy := &rbac.Policy{
+	rbacPolicy := &types.Policy{
 		Resource: "/project/libray/repository",
 		Action:   "pull",
 	}
-	policies := []*rbac.Policy{}
+	policies := []*types.Policy{}
 	policies = append(policies, rbacPolicy)
 
 	rClaims := &Claim{

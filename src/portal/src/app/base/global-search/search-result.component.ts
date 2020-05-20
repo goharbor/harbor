@@ -18,7 +18,7 @@ import { GlobalSearchService } from './global-search.service';
 import { SearchResults } from './search-results';
 import { SearchTriggerService } from './search-trigger.service';
 
-import { AppConfigService } from './../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { filter, switchMap } from "rxjs/operators";
 

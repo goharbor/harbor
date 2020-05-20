@@ -60,16 +60,16 @@
             <label for="systemWhitelist" class="clr-control-label">{{'CVE_WHITELIST.CVE_WHITELIST'|translate}}</label>
             <div class="w-100 clr-control-container">
                 <div class="config-subtext">
-                    <div class="mt-05">
+                    <div>
                         <span>{{'CVE_WHITELIST.PRO_WHITELIST_EXPLAIN'|translate}}</span>
                     </div>
-                    <div class="mt-05">
+                    <div>
                         <span>{{'CVE_WHITELIST.PRO_OR_SYS'|translate}}</span>
                     </div>
-                    <div class="mt-05">
+                    <div>
                         <span>{{'CVE_WHITELIST.MERGE_INTO'|translate}}</span>
                     </div>
-                    <div *ngIf="hasExpired" class="mt-05">
+                    <div *ngIf="hasExpired">
                         <span *ngIf="isUseSystemWhitelist()"
                             class="label label-warning">{{'CVE_WHITELIST.WARNING_SYS'|translate}}</span>
                         <span *ngIf="!isUseSystemWhitelist()"

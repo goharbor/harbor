@@ -39,15 +39,22 @@ Filter Object
     Retry Element Click  xpath=//hbr-filter//clr-icon
     ${element}=  Set Variable  xpath=//hbr-filter//input
     Wait Until Element Is Visible And Enabled  ${element}
-    Input Text   ${element}  ${kw}
+    Retry Clear Element Text  ${element}
+    Retry Text Input   ${element}  ${kw}
     Sleep  3
+
+Filter Project
+#Filter project repo user tag.
+    [Arguments]    ${kw}
+    Retry Element Click  ${log_xpath} 
+    Retry Element Click  ${projects_xpath}
+    Filter Object  ${kw}
 
 Select Object
 #select single element such as user project repo tag
     [Arguments]    ${obj}
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${obj}')]//label
 
-# This func cannot support as the delete user flow changed.
 Multi-delete Object
     [Arguments]    ${delete_btn}  @{obj}
     :For  ${obj}  in  @{obj}
@@ -56,6 +63,24 @@ Multi-delete Object
     Sleep  1
     Capture Page Screenshot
     Retry Element Click  ${delete_btn}
+    Sleep  1
+    Capture Page Screenshot
+    Retry Element Click  ${repo_delete_on_card_view_btn}
+    Sleep  1
+    Capture Page Screenshot
+    Sleep  1
+
+# This func cannot support as the delete user flow changed.
+Multi-delete Artifact
+    [Arguments]    ${delete_btn}  @{obj}
+    :For  ${obj}  in  @{obj}
+    \    ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
+    \    Retry Element Click  ${element}
+    Sleep  1
+    Capture Page Screenshot
+    Retry Element Click  ${artifact_action_xpath}
+    Sleep  1
+    Retry Element Click  ${artifact_action_delete_xpath}
     Sleep  1
     Capture Page Screenshot
     Retry Element Click  ${repo_delete_on_card_view_btn}

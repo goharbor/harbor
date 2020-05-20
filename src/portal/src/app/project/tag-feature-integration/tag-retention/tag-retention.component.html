@@ -44,6 +44,9 @@
                             <span>{{'TAG_RETENTION.LOWER_TAGS' | translate}}</span>
                             <span>{{getI18nKey(rule?.tag_selectors[0]?.decoration)|translate}}</span>
                             <span>{{formatPattern(rule?.tag_selectors[0]?.pattern)}}</span>
+                            <span class="color-97">{{ showUntagged(rule?.tag_selectors[0]?.extras) ? ('TAG_RETENTION.WITH_CONDITION' | translate) :''}}</span>
+                            <span>{{ showUntagged(rule?.tag_selectors[0]?.extras) ? ( 'TAG_RETENTION.UNTAGGED' | translate ) : ''}}</span>
+
                             <ng-container *ngIf="rule?.tag_selectors[1]?.pattern && rule?.tag_selectors[1]?.pattern">
                                 <span class="color-97">{{'TAG_RETENTION.AND' | translate}}</span>
                                 <span>{{'TAG_RETENTION.LOWER_LABELS' | translate}}</span>
@@ -59,9 +62,6 @@
             <div class="clr-col-2 flex-150"></div>
             <div class="flex-8p">
                 <button id="add-rule" [disabled]="retention?.rules?.length >= 15" class="btn btn-primary " (click)="openAddRule()">{{'TAG_RETENTION.ADD_RULE' | translate}}</button>
-            </div>
-            <div class="clr-col-6 color-97 font-size-54">
-                {{'TAG_RETENTION.ADD_RULE_HELP_1' | translate}}
             </div>
         </div>
     </div>

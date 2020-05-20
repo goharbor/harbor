@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors All rights reserved.
+Copyright The Helm Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -94,6 +94,22 @@ func (v Values) Encode(w io.Writer) error {
 	return err
 }
 
+// MergeInto takes the properties in src and merges them into Values. Maps
+// are merged while values and arrays are replaced.
+func (v Values) MergeInto(src Values) {
+	for key, srcVal := range src {
+		destVal, found := v[key]
+
+		if found && istable(srcVal) && istable(destVal) {
+			destMap := destVal.(map[string]interface{})
+			srcMap := srcVal.(map[string]interface{})
+			Values(destMap).MergeInto(Values(srcMap))
+		} else {
+			v[key] = srcVal
+		}
+	}
+}
+
 func tableLookup(v Values, simple string) (Values, error) {
 	v2, ok := v[simple]
 	if !ok {
@@ -150,15 +166,10 @@ func CoalesceValues(chrt *chart.Chart, vals *chart.Config) (Values, error) {
 		if err != nil {
 			return cvals, err
 		}
-		cvals, err = coalesce(chrt, evals)
-		if err != nil {
-			return cvals, err
-		}
+		return coalesce(chrt, evals)
 	}
 
-	var err error
-	cvals, err = coalesceDeps(chrt, cvals)
-	return cvals, err
+	return coalesceDeps(chrt, cvals)
 }
 
 // coalesce coalesces the dest values and the chart values, giving priority to the dest values.
@@ -170,8 +181,7 @@ func coalesce(ch *chart.Chart, dest map[string]interface{}) (map[string]interfac
 	if err != nil {
 		return dest, err
 	}
-	coalesceDeps(ch, dest)
-	return dest, nil
+	return coalesceDeps(ch, dest)
 }
 
 // coalesceDeps coalesces the dependencies of the given chart.
@@ -187,7 +197,7 @@ func coalesceDeps(chrt *chart.Chart, dest map[string]interface{}) (map[string]in
 			dvmap := dv.(map[string]interface{})
 
 			// Get globals out of dest and merge them into dvmap.
-			coalesceGlobals(dvmap, dest)
+			dvmap = coalesceGlobals(dvmap, dest, chrt.Metadata.Name)
 
 			var err error
 			// Now coalesce the rest of the values.
@@ -203,62 +213,37 @@ func coalesceDeps(chrt *chart.Chart, dest map[string]interface{}) (map[string]in
 // coalesceGlobals copies the globals out of src and merges them into dest.
 //
 // For convenience, returns dest.
-func coalesceGlobals(dest, src map[string]interface{}) map[string]interface{} {
+func coalesceGlobals(dest, src map[string]interface{}, chartName string) map[string]interface{} {
 	var dg, sg map[string]interface{}
 
 	if destglob, ok := dest[GlobalKey]; !ok {
 		dg = map[string]interface{}{}
 	} else if dg, ok = destglob.(map[string]interface{}); !ok {
-		log.Printf("warning: skipping globals because destination %s is not a table.", GlobalKey)
+		log.Printf("Warning: Skipping globals for chart '%s' because destination '%s' is not a table.", chartName, GlobalKey)
 		return dg
 	}
 
 	if srcglob, ok := src[GlobalKey]; !ok {
 		sg = map[string]interface{}{}
 	} else if sg, ok = srcglob.(map[string]interface{}); !ok {
-		log.Printf("warning: skipping globals because source %s is not a table.", GlobalKey)
+		log.Printf("Warning: skipping globals for chart '%s' because source '%s' is not a table.", chartName, GlobalKey)
 		return dg
+	}
+
+	rv := make(map[string]interface{})
+	for k, v := range dest {
+		rv[k] = v
 	}
 
 	// EXPERIMENTAL: In the past, we have disallowed globals to test tables. This
 	// reverses that decision. It may somehow be possible to introduce a loop
 	// here, but I haven't found a way. So for the time being, let's allow
 	// tables in globals.
-	for key, val := range sg {
-		if istable(val) {
-			vv := copyMap(val.(map[string]interface{}))
-			if destv, ok := dg[key]; ok {
-				if destvmap, ok := destv.(map[string]interface{}); ok {
-					// Basically, we reverse order of coalesce here to merge
-					// top-down.
-					coalesceTables(vv, destvmap)
-					dg[key] = vv
-					continue
-				} else {
-					log.Printf("Conflict: cannot merge map onto non-map for %q. Skipping.", key)
-				}
-			} else {
-				// Here there is no merge. We're just adding.
-				dg[key] = vv
-			}
-		} else if dv, ok := dg[key]; ok && istable(dv) {
-			// It's not clear if this condition can actually ever trigger.
-			log.Printf("key %s is table. Skipping", key)
-			continue
-		}
-		// TODO: Do we need to do any additional checking on the value?
-		dg[key] = val
-	}
-	dest[GlobalKey] = dg
-	return dest
-}
 
-func copyMap(src map[string]interface{}) map[string]interface{} {
-	dest := make(map[string]interface{}, len(src))
-	for k, v := range src {
-		dest[k] = v
-	}
-	return dest
+	// Basically, we reverse order of coalesce here to merge
+	// top-down.
+	rv[GlobalKey] = coalesceTables(sg, dg, chartName)
+	return rv
 }
 
 // coalesceValues builds up a values map for a particular chart.
@@ -275,60 +260,61 @@ func coalesceValues(c *chart.Chart, v map[string]interface{}) (map[string]interf
 		// On error, we return just the overridden values.
 		// FIXME: We should log this error. It indicates that the YAML data
 		// did not parse.
-		return v, fmt.Errorf("error reading default values (%s): %s", c.Values.Raw, err)
+		return v, fmt.Errorf("Error: Reading chart '%s' default values (%s): %s", c.Metadata.Name, c.Values.Raw, err)
 	}
 
-	for key, val := range nv {
-		if value, ok := v[key]; ok {
-			if value == nil {
-				// When the YAML value is null, we remove the value's key.
-				// This allows Helm's various sources of values (value files or --set) to
-				// remove incompatible keys from any previous chart, file, or set values.
-				delete(v, key)
-			} else if dest, ok := value.(map[string]interface{}); ok {
-				// if v[key] is a table, merge nv's val table into v[key].
-				src, ok := val.(map[string]interface{})
-				if !ok {
-					log.Printf("warning: skipped value for %s: Not a table.", key)
-					continue
-				}
-				// Because v has higher precedence than nv, dest values override src
-				// values.
-				coalesceTables(dest, src)
-			}
-		} else {
-			// If the key is not in v, copy it from nv.
-			v[key] = val
-		}
-	}
-	return v, nil
+	return coalesceTables(v, nv.AsMap(), c.Metadata.Name), nil
 }
 
 // coalesceTables merges a source map into a destination map.
 //
 // dest is considered authoritative.
-func coalesceTables(dst, src map[string]interface{}) map[string]interface{} {
+func coalesceTables(dst, src map[string]interface{}, chartName string) map[string]interface{} {
 	// Because dest has higher precedence than src, dest values override src
 	// values.
+
+	rv := make(map[string]interface{})
 	for key, val := range src {
-		if istable(val) {
-			if innerdst, ok := dst[key]; !ok {
-				dst[key] = val
-			} else if istable(innerdst) {
-				coalesceTables(innerdst.(map[string]interface{}), val.(map[string]interface{}))
-			} else {
-				log.Printf("warning: cannot overwrite table with non table for %s (%v)", key, val)
-			}
-			continue
-		} else if dv, ok := dst[key]; ok && istable(dv) {
-			log.Printf("warning: destination for %s is a table. Ignoring non-table value %v", key, val)
-			continue
-		} else if !ok { // <- ok is still in scope from preceding conditional.
-			dst[key] = val
+		dv, ok := dst[key]
+		if !ok { // if not in dst, then copy from src
+			rv[key] = val
 			continue
 		}
+		if dv == nil { // if set to nil in dst, then ignore
+			// When the YAML value is null, we skip the value's key.
+			// This allows Helm's various sources of values (value files or --set) to
+			// remove incompatible keys from any previous chart, file, or set values.
+			continue
+		}
+
+		srcTable, srcIsTable := val.(map[string]interface{})
+		dstTable, dstIsTable := dv.(map[string]interface{})
+		switch {
+		case srcIsTable && dstIsTable: // both tables, we coalesce
+			rv[key] = coalesceTables(dstTable, srcTable, chartName)
+		case srcIsTable && !dstIsTable:
+			log.Printf("Warning: Merging destination map for chart '%s'. Overwriting table item '%s', with non table value: %v", chartName, key, dv)
+			rv[key] = dv
+		case !srcIsTable && dstIsTable:
+			log.Printf("Warning: Merging destination map for chart '%s'. The destination item '%s' is a table and ignoring the source '%s' as it has a non-table value of: %v", chartName, key, key, val)
+			rv[key] = dv
+		default: // neither are tables, simply take the dst value
+			rv[key] = dv
+		}
 	}
-	return dst
+
+	// do we have anything in dst that wasn't processed already that we need to copy across?
+	for key, val := range dst {
+		if val == nil {
+			continue
+		}
+		_, ok := rv[key]
+		if !ok {
+			rv[key] = val
+		}
+	}
+
+	return rv
 }
 
 // ReleaseOptions represents the additional release options needed

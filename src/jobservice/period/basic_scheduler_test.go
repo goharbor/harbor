@@ -16,6 +16,10 @@ package period
 import (
 	"context"
 	"fmt"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -25,9 +29,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"sync"
-	"testing"
-	"time"
 )
 
 // BasicSchedulerTestSuite tests functions of basic scheduler
@@ -63,6 +64,7 @@ func (suite *BasicSchedulerTestSuite) SetupSuite() {
 	)
 
 	suite.scheduler = NewScheduler(ctx, suite.namespace, suite.pool, suite.lcmCtl)
+	suite.scheduler.Start()
 }
 
 // TearDownSuite clears the test suite
@@ -84,20 +86,6 @@ func TestSchedulerTestSuite(t *testing.T) {
 
 // TestScheduler tests scheduling and un-scheduling
 func (suite *BasicSchedulerTestSuite) TestScheduler() {
-	go func() {
-		<-time.After(1 * time.Second)
-		_ = suite.scheduler.Stop()
-	}()
-
-	go func() {
-		var err error
-		defer func() {
-			require.NoError(suite.T(), err, "start scheduler: nil error expected but got %s", err)
-		}()
-
-		err = suite.scheduler.Start()
-	}()
-
 	// Prepare one
 	now := time.Now()
 	minute := now.Minute()

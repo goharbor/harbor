@@ -102,10 +102,6 @@ h4 {
     top: 8px;
 }
 
-.is-solid {
-    cursor: pointer;
-}
-
 .selectBox {
     position: absolute;
     width: 100%;
@@ -154,8 +150,6 @@ h4 {
 }
 
 .go-link {
-    color: blue;
-    border-bottom: 1px solid blue;
     line-height: 1rem;
     cursor: pointer;
 }
@@ -289,3 +283,13 @@ clr-modal {
 .select-width {
     min-width:11rem;
 }
+::ng-deep {
+    .modal-title {
+      padding-bottom: 0;
+    }
+    .modal-header {
+      .modal-title {
+        padding: 0;
+      }
+    }
+  }

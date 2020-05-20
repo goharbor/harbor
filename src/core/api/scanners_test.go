@@ -19,13 +19,11 @@ import (
 	"net/http"
 	"testing"
 
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-
-	"github.com/goharbor/harbor/src/pkg/q"
-	sc "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
+	sc "github.com/goharbor/harbor/src/controller/scanner"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -39,7 +37,7 @@ type ScannerAPITestSuite struct {
 	suite.Suite
 
 	originC sc.Controller
-	mockC   *MockScannerAPIController
+	mockC   *scannertesting.Controller
 }
 
 // TestScannerAPI is the entry of ScannerAPITestSuite
@@ -50,7 +48,7 @@ func TestScannerAPI(t *testing.T) {
 // SetupSuite prepares testing env
 func (suite *ScannerAPITestSuite) SetupTest() {
 	suite.originC = sc.DefaultController
-	m := &MockScannerAPIController{}
+	m := &scannertesting.Controller{}
 	sc.DefaultController = m
 
 	suite.mockC = m
@@ -274,100 +272,4 @@ func (suite *ScannerAPITestSuite) mockQuery(r *scanner.Registration) {
 		Keywords: kw2,
 	}
 	suite.mockC.On("ListRegistrations", query2).Return(emptyL, nil)
-}
-
-// MockScannerAPIController is mock of scanner API controller
-type MockScannerAPIController struct {
-	mock.Mock
-}
-
-// ListRegistrations ...
-func (m *MockScannerAPIController) ListRegistrations(query *q.Query) ([]*scanner.Registration, error) {
-	args := m.Called(query)
-	return args.Get(0).([]*scanner.Registration), args.Error(1)
-}
-
-// CreateRegistration ...
-func (m *MockScannerAPIController) CreateRegistration(registration *scanner.Registration) (string, error) {
-	args := m.Called(registration)
-	return args.String(0), args.Error(1)
-}
-
-// GetRegistration ...
-func (m *MockScannerAPIController) GetRegistration(registrationUUID string) (*scanner.Registration, error) {
-	args := m.Called(registrationUUID)
-	s := args.Get(0)
-	if s == nil {
-		return nil, args.Error(1)
-	}
-
-	return s.(*scanner.Registration), args.Error(1)
-}
-
-// RegistrationExists ...
-func (m *MockScannerAPIController) RegistrationExists(registrationUUID string) bool {
-	args := m.Called(registrationUUID)
-	return args.Bool(0)
-}
-
-// UpdateRegistration ...
-func (m *MockScannerAPIController) UpdateRegistration(registration *scanner.Registration) error {
-	args := m.Called(registration)
-	return args.Error(0)
-}
-
-// DeleteRegistration ...
-func (m *MockScannerAPIController) DeleteRegistration(registrationUUID string) (*scanner.Registration, error) {
-	args := m.Called(registrationUUID)
-	s := args.Get(0)
-	if s == nil {
-		return nil, args.Error(1)
-	}
-
-	return s.(*scanner.Registration), args.Error(1)
-}
-
-// SetDefaultRegistration ...
-func (m *MockScannerAPIController) SetDefaultRegistration(registrationUUID string) error {
-	args := m.Called(registrationUUID)
-	return args.Error(0)
-}
-
-// SetRegistrationByProject ...
-func (m *MockScannerAPIController) SetRegistrationByProject(projectID int64, scannerID string) error {
-	args := m.Called(projectID, scannerID)
-	return args.Error(0)
-}
-
-// GetRegistrationByProject ...
-func (m *MockScannerAPIController) GetRegistrationByProject(projectID int64) (*scanner.Registration, error) {
-	args := m.Called(projectID)
-	s := args.Get(0)
-	if s == nil {
-		return nil, args.Error(1)
-	}
-
-	return s.(*scanner.Registration), args.Error(1)
-}
-
-// Ping ...
-func (m *MockScannerAPIController) Ping(registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error) {
-	args := m.Called(registration)
-	sam := args.Get(0)
-	if sam == nil {
-		return nil, args.Error(1)
-	}
-
-	return sam.(*v1.ScannerAdapterMetadata), nil
-}
-
-// GetMetadata ...
-func (m *MockScannerAPIController) GetMetadata(registrationUUID string) (*v1.ScannerAdapterMetadata, error) {
-	args := m.Called(registrationUUID)
-	sam := args.Get(0)
-	if sam == nil {
-		return nil, args.Error(1)
-	}
-
-	return sam.(*v1.ScannerAdapterMetadata), nil
 }

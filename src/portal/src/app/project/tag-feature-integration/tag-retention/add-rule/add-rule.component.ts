@@ -123,6 +123,24 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     get tagsInput() {
         return this.rule.tag_selectors[0].pattern.replace(/[{}]/g, "");
     }
+    set untagged(untagged) {
+        let extras = JSON.parse(this.rule.tag_selectors[0].extras);
+        extras.untagged = untagged;
+        this.rule.tag_selectors[0].extras = JSON.stringify(extras);
+    }
+
+    get untagged() {
+        if (this.rule.tag_selectors[0] && this.rule.tag_selectors[0].extras) {
+            let extras = JSON.parse(this.rule.tag_selectors[0].extras);
+            if (extras.untagged !== undefined) {
+                return extras.untagged;
+            }
+            return false;
+        } else {
+            return false;
+        }
+
+    }
 
     get labelsSelect() {
         return this.rule.tag_selectors[1].decoration;
@@ -225,6 +243,9 @@ export class AddRuleComponent implements OnInit, OnDestroy {
             return false;
         }
         if (this.rule.tag_selectors[0].decoration !== rule.tag_selectors[0].decoration) {
+            return false;
+        }
+        if (this.rule.tag_selectors[0].extras !== rule.tag_selectors[0].extras) {
             return false;
         }
         return this.rule.tag_selectors[0].pattern === rule.tag_selectors[0].pattern;

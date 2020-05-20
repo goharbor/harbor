@@ -29,13 +29,13 @@ import { EndpointService } from "../../services/endpoint.service";
 import { ErrorHandler } from "../../utils/error-handler";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { Endpoint, PingEndpoint } from "../../services/interface";
-import { clone, compareValue, isEmptyObject } from "../../utils/utils";
+import { clone, compareValue, CURRENT_BASE_HREF, isEmptyObject } from "../../utils/utils";
 import { HttpClient } from "@angular/common/http";
 import { catchError } from "rxjs/operators";
 
 const FAKE_PASSWORD = "rjGcfuRu";
 const FAKE_JSON_KEY = "No Change";
-const METADATA_URL = "/api/replication/adapterinfos";
+const METADATA_URL = CURRENT_BASE_HREF + "/replication/adapterinfos";
 @Component({
   selector: "hbr-create-edit-endpoint",
   templateUrl: "./create-edit-endpoint.component.html",

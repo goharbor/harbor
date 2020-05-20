@@ -112,7 +112,7 @@
         <clr-dg-cell>{{t.start_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>{{t.end_time && t.end_time != '0001-01-01T00:00:00Z' ? (t.end_time | date: 'short') : "-"}}</clr-dg-cell>
         <clr-dg-cell>
-          <a target="_blank" [href]="viewLog(t.id)">
+          <a target="_blank" [href]="viewLog(t.id)" *ngIf="t.status !== 'Initialized'">
             <clr-icon shape="list"></clr-icon>
           </a>
         </clr-dg-cell>

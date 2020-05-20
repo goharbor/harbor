@@ -16,7 +16,11 @@ package mgt
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/gocraft/work"
+	"github.com/goharbor/harbor/src/jobservice/common/list"
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/tests"
@@ -24,8 +28,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 // BasicManagerTestSuite tests the function of basic manager
@@ -56,7 +58,7 @@ func (suite *BasicManagerTestSuite) SetupSuite() {
 		},
 	}
 
-	t := job.NewBasicTrackerWithStats(context.TODO(), periodicJob, suite.namespace, suite.pool, nil)
+	t := job.NewBasicTrackerWithStats(context.TODO(), periodicJob, suite.namespace, suite.pool, nil, list.New())
 	err := t.Save()
 	require.NoError(suite.T(), err)
 
@@ -71,7 +73,7 @@ func (suite *BasicManagerTestSuite) SetupSuite() {
 			UpstreamJobID: "1000",
 		},
 	}
-	t = job.NewBasicTrackerWithStats(context.TODO(), execution, suite.namespace, suite.pool, nil)
+	t = job.NewBasicTrackerWithStats(context.TODO(), execution, suite.namespace, suite.pool, nil, list.New())
 	err = t.Save()
 	require.NoError(suite.T(), err)
 }
@@ -117,7 +119,7 @@ func (suite *BasicManagerTestSuite) TestGetPeriodicExecutions() {
 	assert.Equal(suite.T(), int64(1), total)
 	assert.Equal(suite.T(), int64(1), int64(len(jobs)))
 
-	t := job.NewBasicTrackerWithID(context.TODO(), "1001", suite.namespace, suite.pool, nil)
+	t := job.NewBasicTrackerWithID(context.TODO(), "1001", suite.namespace, suite.pool, nil, list.New())
 	err = t.Load()
 	require.NoError(suite.T(), err)
 	err = t.PeriodicExecutionDone()
@@ -147,17 +149,17 @@ func (suite *BasicManagerTestSuite) TestGetScheduledJobs() {
 		},
 	}
 
-	t := job.NewBasicTrackerWithStats(context.TODO(), stats, suite.namespace, suite.pool, nil)
+	t := job.NewBasicTrackerWithStats(context.TODO(), stats, suite.namespace, suite.pool, nil, list.New())
 	err = t.Save()
 	require.NoError(suite.T(), err)
 
-	list, total, err := suite.manager.GetScheduledJobs(&query.Parameter{
+	l, total, err := suite.manager.GetScheduledJobs(&query.Parameter{
 		PageNumber: 1,
 		PageSize:   10,
 	})
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), int64(1), total)
-	assert.Equal(suite.T(), int64(1), int64(len(list)))
+	assert.Equal(suite.T(), int64(1), int64(len(l)))
 }
 
 // TestGetJob tests get job

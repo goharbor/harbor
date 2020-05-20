@@ -17,12 +17,17 @@ import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { User, LDAPUser } from './user';
 import LDAPUsertoUser from './user';
-import { buildHttpRequestOptionsWithObserveResponse, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../lib/utils/utils";
+import {
+    buildHttpRequestOptionsWithObserveResponse,
+    CURRENT_BASE_HREF,
+    HTTP_GET_OPTIONS,
+    HTTP_JSON_OPTIONS
+} from "../../lib/utils/utils";
 
 
-const userMgmtEndpoint = '/api/users';
-const userListSearch = '/api/users/search?';
-const ldapUserEndpoint = '/api/ldap/users';
+const userMgmtEndpoint = CURRENT_BASE_HREF + '/users';
+const userListSearch = CURRENT_BASE_HREF + '/users/search?';
+const ldapUserEndpoint = CURRENT_BASE_HREF + '/ldap/users';
 
 /**
  * Define related methods to handle account and session corresponding things

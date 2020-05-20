@@ -39,50 +39,40 @@ func (suite *ResourcesSuite) TestEquals() {
 	suite.True(Equals(ResourceList{}, ResourceList{}))
 	suite.True(Equals(ResourceList{ResourceStorage: 100}, ResourceList{ResourceStorage: 100}))
 	suite.False(Equals(ResourceList{ResourceStorage: 100}, ResourceList{ResourceStorage: 200}))
-	suite.False(Equals(ResourceList{ResourceStorage: 100}, ResourceList{ResourceStorage: 100, ResourceCount: 10}))
-	suite.False(Equals(ResourceList{ResourceStorage: 100, ResourceCount: 10}, ResourceList{ResourceStorage: 100}))
 }
 
 func (suite *ResourcesSuite) TestAdd() {
 	res1 := ResourceList{ResourceStorage: 100}
 	res2 := ResourceList{ResourceStorage: 100}
-	res3 := ResourceList{ResourceStorage: 100, ResourceCount: 10}
-	res4 := ResourceList{ResourceCount: 10}
+	res3 := ResourceList{ResourceStorage: 100}
 
 	suite.Equal(res1, Add(ResourceList{}, res1))
 	suite.Equal(ResourceList{ResourceStorage: 200}, Add(res1, res2))
-	suite.Equal(ResourceList{ResourceStorage: 200, ResourceCount: 10}, Add(res1, res3))
-	suite.Equal(ResourceList{ResourceStorage: 100, ResourceCount: 10}, Add(res1, res4))
+	suite.Equal(ResourceList{ResourceStorage: 200}, Add(res1, res3))
 }
 
 func (suite *ResourcesSuite) TestSubtract() {
 	res1 := ResourceList{ResourceStorage: 100}
 	res2 := ResourceList{ResourceStorage: 100}
-	res3 := ResourceList{ResourceStorage: 100, ResourceCount: 10}
-	res4 := ResourceList{ResourceCount: 10}
+	res3 := ResourceList{ResourceStorage: 100}
 
 	suite.Equal(res1, Subtract(res1, ResourceList{}))
 	suite.Equal(ResourceList{ResourceStorage: 0}, Subtract(res1, res2))
-	suite.Equal(ResourceList{ResourceStorage: 0, ResourceCount: -10}, Subtract(res1, res3))
-	suite.Equal(ResourceList{ResourceStorage: 100, ResourceCount: -10}, Subtract(res1, res4))
+	suite.Equal(ResourceList{ResourceStorage: 0}, Subtract(res1, res3))
 }
 
 func (suite *ResourcesSuite) TestZero() {
 	res1 := ResourceList{ResourceStorage: 100}
-	res2 := ResourceList{ResourceCount: 10, ResourceStorage: 100}
+	res2 := ResourceList{ResourceStorage: 100}
 
 	suite.Equal(ResourceList{}, Zero(ResourceList{}))
 	suite.Equal(ResourceList{ResourceStorage: 0}, Zero(res1))
-	suite.Equal(ResourceList{ResourceStorage: 0, ResourceCount: 0}, Zero(res2))
+	suite.Equal(ResourceList{ResourceStorage: 0}, Zero(res2))
 }
 
 func (suite *ResourcesSuite) TestIsNegative() {
-	suite.Len(IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: 100}), 1)
-	suite.Contains(IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: 100}), ResourceStorage)
-
-	suite.Len(IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: -100}), 2)
-	suite.Contains(IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: -100}), ResourceStorage)
-	suite.Contains(IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: -100}), ResourceCount)
+	suite.Len(IsNegative(ResourceList{ResourceStorage: -100}), 1)
+	suite.Contains(IsNegative(ResourceList{ResourceStorage: -100}), ResourceStorage)
 }
 
 func TestRunResourcesSuite(t *testing.T) {

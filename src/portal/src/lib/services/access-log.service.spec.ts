@@ -3,10 +3,11 @@ import { TestBed, inject } from '@angular/core/testing';
 import { AccessLogService, AccessLogDefaultService } from './access-log.service';
 import { SharedModule } from '../utils/shared/shared.module';
 import { SERVICE_CONFIG, IServiceConfig } from '../entities/service.config';
+import { CURRENT_BASE_HREF } from "../utils/utils";
 
 describe('AccessLogService', () => {
   const mockConfig: IServiceConfig = {
-    logBaseEndpoint: "/api/logs/testing"
+    logBaseEndpoint: CURRENT_BASE_HREF + "/logs/testing"
   };
 
   let config: IServiceConfig;
@@ -36,7 +37,7 @@ describe('AccessLogService', () => {
 
   it('should inject the right config', () => {
     expect(config).toBeTruthy();
-    expect(config.logBaseEndpoint).toEqual("/api/logs/testing");
+    expect(config.logBaseEndpoint).toEqual(CURRENT_BASE_HREF + "/logs/testing");
   });
 
 });

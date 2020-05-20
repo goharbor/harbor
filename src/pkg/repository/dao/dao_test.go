@@ -15,12 +15,14 @@
 package dao
 
 import (
-	"errors"
+	"context"
 	"fmt"
+	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
@@ -34,11 +36,13 @@ type daoTestSuite struct {
 	suite.Suite
 	dao DAO
 	id  int64
+	ctx context.Context
 }
 
 func (d *daoTestSuite) SetupSuite() {
 	d.dao = New()
 	common_dao.PrepareTestForPostgresSQL()
+	d.ctx = orm.NewContext(nil, beegoorm.NewOrm())
 }
 
 func (d *daoTestSuite) SetupTest() {
@@ -47,24 +51,24 @@ func (d *daoTestSuite) SetupTest() {
 		ProjectID:   1,
 		Description: "",
 	}
-	id, err := d.dao.Create(nil, repository)
+	id, err := d.dao.Create(d.ctx, repository)
 	d.Require().Nil(err)
 	d.id = id
 }
 
 func (d *daoTestSuite) TearDownTest() {
-	err := d.dao.Delete(nil, d.id)
+	err := d.dao.Delete(d.ctx, d.id)
 	d.Require().Nil(err)
 }
 
 func (d *daoTestSuite) TestCount() {
 	// nil query
-	total, err := d.dao.Count(nil, nil)
+	total, err := d.dao.Count(d.ctx, nil)
 	d.Require().Nil(err)
 	d.True(total > 0)
 
 	// query by name
-	total, err = d.dao.Count(nil, &q.Query{
+	total, err = d.dao.Count(d.ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"name": repository,
 		},
@@ -75,7 +79,7 @@ func (d *daoTestSuite) TestCount() {
 
 func (d *daoTestSuite) TestList() {
 	// nil query
-	repositories, err := d.dao.List(nil, nil)
+	repositories, err := d.dao.List(d.ctx, nil)
 	d.Require().Nil(err)
 	found := false
 	for _, repository := range repositories {
@@ -87,7 +91,7 @@ func (d *daoTestSuite) TestList() {
 	d.True(found)
 
 	// query by name
-	repositories, err = d.dao.List(nil, &q.Query{
+	repositories, err = d.dao.List(d.ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"name": repository,
 		},
@@ -99,12 +103,12 @@ func (d *daoTestSuite) TestList() {
 
 func (d *daoTestSuite) TestGet() {
 	// get the non-exist repository
-	_, err := d.dao.Get(nil, 10000)
+	_, err := d.dao.Get(d.ctx, 10000)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+	d.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// get the exist repository
-	repository, err := d.dao.Get(nil, d.id)
+	repository, err := d.dao.Get(d.ctx, d.id)
 	d.Require().Nil(err)
 	d.Require().NotNil(repository)
 	d.Equal(d.id, repository.RepositoryID)
@@ -118,43 +122,64 @@ func (d *daoTestSuite) TestCreate() {
 		Name:      repository,
 		ProjectID: 1,
 	}
-	_, err := d.dao.Create(nil, repository)
+	_, err := d.dao.Create(d.ctx, repository)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ConflictCode))
+	d.True(errors.IsErr(err, errors.ConflictCode))
 }
 
 func (d *daoTestSuite) TestDelete() {
 	// the happy pass case is covered in TearDown
 
 	// not exist
-	err := d.dao.Delete(nil, 100021)
+	err := d.dao.Delete(d.ctx, 100021)
 	d.Require().NotNil(err)
-	var e *ierror.Error
+	var e *errors.Error
 	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.Equal(errors.NotFoundCode, e.Code)
 }
 
 func (d *daoTestSuite) TestUpdate() {
 	// pass
-	err := d.dao.Update(nil, &models.RepoRecord{
+	err := d.dao.Update(d.ctx, &models.RepoRecord{
 		RepositoryID: d.id,
 		PullCount:    1,
 	}, "PullCount")
 	d.Require().Nil(err)
 
-	repository, err := d.dao.Get(nil, d.id)
+	repository, err := d.dao.Get(d.ctx, d.id)
 	d.Require().Nil(err)
 	d.Require().NotNil(repository)
 	d.Equal(int64(1), repository.PullCount)
 
 	// not exist
-	err = d.dao.Update(nil, &models.RepoRecord{
+	err = d.dao.Update(d.ctx, &models.RepoRecord{
 		RepositoryID: 10000,
 	})
 	d.Require().NotNil(err)
-	var e *ierror.Error
+	var e *errors.Error
 	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.Equal(errors.NotFoundCode, e.Code)
+}
+
+func (d *daoTestSuite) TestAddPullCount() {
+	repository := &models.RepoRecord{
+		Name:        "test/pullcount",
+		ProjectID:   10,
+		Description: "test pull count",
+		PullCount:   1,
+	}
+	id, err := d.dao.Create(d.ctx, repository)
+	d.Require().Nil(err)
+
+	err = d.dao.AddPullCount(d.ctx, id)
+	d.Require().Nil(err)
+
+	repository, err = d.dao.Get(d.ctx, id)
+	d.Require().Nil(err)
+	d.Require().NotNil(repository)
+	d.Equal(int64(2), repository.PullCount)
+
+	d.dao.Delete(d.ctx, id)
 }
 
 func TestDaoTestSuite(t *testing.T) {

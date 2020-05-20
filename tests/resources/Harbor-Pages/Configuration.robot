@@ -169,6 +169,10 @@ Token Must Be Match
     [Arguments]  ${minutes}
     Textfield Value Should Be  xpath=//*[@id='tokenExpiration']  ${minutes}
 
+Robot Account Token Must Be Match
+    [Arguments]  ${days}
+    Textfield Value Should Be  xpath=//*[@id='robotTokenExpiration']  ${days}
+
 ## Replication
 Check Verify Remote Cert
     Mouse Down  xpath=//*[@id='clr-checkbox-verifyRemoteCert']
@@ -231,12 +235,12 @@ Click Scan Now
 
 
 Enable Read Only
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X PUT -d '{"read_only":true}' "https://${ip}/api/configurations"
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X PUT -d '{"read_only":true}' "https://${ip}/api/v2.0/configurations"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
 
 Disable Read Only
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X PUT -d '{"read_only":false}' "https://${ip}/api/configurations"
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X PUT -d '{"read_only":false}' "https://${ip}/api/v2.0/configurations"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
 
@@ -333,6 +337,7 @@ Get Project Count Quota Text From Project Quotas List
 
 Get Project Storage Quota Text From Project Quotas List
     [Arguments]    ${project_name}
+    Switch To Configure
     Switch To Project Quotas
-    ${storage_quota}=    Get Text    xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${project_name}')]//clr-dg-cell[4]//label
+    ${storage_quota}=    Get Text    xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${project_name}')]//clr-dg-cell[3]//label
     [Return]  ${storage_quota}

@@ -16,7 +16,7 @@ package api
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/jobservice/errs"

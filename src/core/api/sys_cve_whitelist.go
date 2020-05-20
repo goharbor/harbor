@@ -18,7 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
 	"net/http"
 )

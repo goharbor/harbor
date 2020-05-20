@@ -28,7 +28,6 @@
               "node_modules/swagger-ui/dist/swagger-ui.css",
               "node_modules/prismjs/themes/prism-solarizedlight.css",
               "src/global.scss",
-              "src/styles.css",
               {
                 "input": "src/css/dark-theme.scss",
                 "bundleName": "dark-theme",
@@ -108,8 +107,7 @@
             "styles": [
               "node_modules/@clr/icons/clr-icons.min.css",
               "node_modules/@clr/ui/clr-ui.min.css",
-              "node_modules/prismjs/themes/prism-solarizedlight.css",
-              "src/styles.css"
+              "node_modules/prismjs/themes/prism-solarizedlight.css"
             ],
             "assets": [
               "src/images",

@@ -17,61 +17,6 @@ export interface Base {
 }
 
 /**
- * Interface for Repository Info
- *
- **
- * interface Repository
- * extends {Base}
- */
-export interface RepositoryItem extends Base {
-  [key: string]: any | any[];
-  name: string;
-  tags_count: number;
-  owner_id?: number;
-  project_id?: number;
-  description?: string;
-  star_count?: number;
-  pull_count?: number;
-}
-
-/**
- * Interface for repository
- *
- **
- * interface Repository
- */
-export interface Repository {
-  metadata?: Metadata;
-  data: RepositoryItem[];
-}
-
-/**
- * Interface for the tag of repository
- *
- **
- * interface Tag
- * extends {Base}
- */
-
-export interface Tag extends Base {
-  digest: string;
-  name: string;
-  size: string;
-  architecture: string;
-  os: string;
-  'os.version': string;
-  docker_version: string;
-  author: string;
-  created: Date;
-  signature?: string;
-  scan_overview?: ScanOverview;
-  labels: Label[];
-  push_time?: string;
-  pull_time?: string;
-  immutable?: boolean;
-}
-
-/**
  * Interface for registry endpoints.
  *
  **
@@ -313,6 +258,7 @@ export interface VulnerabilitySummary {
     start_time?: Date;
     end_time?: Date;
     scanner?: ScannerVo;
+    complete_percent?: number;
 }
 export interface ScannerVo {
     name?: string;
@@ -347,10 +293,11 @@ export interface VulnerabilitySeverityMetrics {
   count: number;
 }
 
-export interface TagClickEvent {
+export interface ArtifactClickEvent {
   project_id: string | number;
   repository_name: string;
-  tag_name: string;
+  digest: string;
+  artifact_id: number;
 }
 
 export interface Label {
@@ -372,19 +319,16 @@ export interface Quota {
   creation_time: string;
   update_time: string;
   hard: {
-    count: number;
     storage: number;
   };
   used: {
-    count: number;
     storage: number;
   };
 }
 export interface QuotaHard {
-  hard: QuotaCountStorage;
+  hard: QuotaStorage;
 }
-export interface QuotaCountStorage {
-  count: number;
+export interface QuotaStorage {
   storage: number;
 }
 
@@ -502,7 +446,6 @@ export interface SystemCVEWhitelist {
   items: Array<{ "cve_id": string; }>;
 }
 export interface QuotaHardInterface {
-  count_per_project: number;
   storage_per_project: number;
 }
 
@@ -510,17 +453,14 @@ export interface QuotaUnitInterface {
   UNIT: string;
 }
 export interface QuotaHardLimitInterface {
-  countLimit: number;
   storageLimit: number;
   storageUnit: string;
   id?: string;
-  countUsed?: string;
   storageUsed?: string;
 }
 export interface EditQuotaQuotaInterface {
   editQuota: string;
   setQuota: string;
-  countQuota: string;
   storageQuota: string;
   quotaHardLimitValue: QuotaHardLimitInterface | any;
   isSystemDefaultQuota: boolean;

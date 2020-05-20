@@ -13,35 +13,3 @@
 // limitations under the License.
 
 package model
-
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
-
-func TestGetResourceName(t *testing.T) {
-	r := &ResourceMetadata{}
-	assert.Equal(t, "", r.GetResourceName())
-
-	r = &ResourceMetadata{
-		Repository: &Repository{
-			Name: "library",
-		},
-	}
-	assert.Equal(t, "library", r.GetResourceName())
-
-	r = &ResourceMetadata{
-		Repository: &Repository{
-			Name: "hello-world",
-		},
-	}
-	assert.Equal(t, "hello-world", r.GetResourceName())
-
-	r = &ResourceMetadata{
-		Repository: &Repository{
-			Name: "library/hello-world",
-		},
-	}
-	assert.Equal(t, "library/hello-world", r.GetResourceName())
-}

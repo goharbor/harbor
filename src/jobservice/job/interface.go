@@ -22,6 +22,12 @@ type Interface interface {
 	// uint: the failure count allowed. If it is set to 0, then default value 4 is used.
 	MaxFails() uint
 
+	// Max currency of the job. Unlike the WorkerPool concurrency, it controls the limit on the number jobs of that type
+	// that can be active at one time by within a single redis instance.
+	//
+	// The default value is 0, which means "no limit on job concurrency".
+	MaxCurrency() uint
+
 	// Tell the worker worker if retry the failed job when the fails is
 	// still less that the number declared by the method 'MaxFails'.
 	//

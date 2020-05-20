@@ -23,8 +23,8 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const dupProjectPattern = `duplicate key value violates unique constraint \"project_name_key\"`

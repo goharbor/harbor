@@ -67,7 +67,7 @@
       <div class="clr-form-control">
         <label for="destination_password" class="clr-control-label">{{ 'DESTINATION.ACCESS_SECRET' | translate }}</label>
         <div class="clr-control-container">
-          <div class="clr-textarea-wrapper">
+          <div class="clr-textarea-wrapper mt-0">
             <input autocomplete="off" class="clr-input" *ngIf="isNormalCredential();else gcr_secret" type="password" placeholder="Access Secret"
               id="destination_password" [disabled]="testOngoing" [readonly]="!editable" [(ngModel)]="target.credential.access_secret"
               size="30" name="access_secret" #access_secret="ngModel">
@@ -80,8 +80,8 @@
       </div>
       <!-- Verify Remote Cert -->
       <clr-checkbox-container>
-        <label id="destination_insecure_checkbox"
-          for="destination_insecure">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}
+        <label class="destination-insecure-label" id="destination_insecure_checkbox"
+          for="destination_insecure"><span>{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</span>
           <clr-tooltip>
             <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
             <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>

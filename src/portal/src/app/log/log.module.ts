@@ -14,7 +14,6 @@
 import { NgModule } from '@angular/core';
 import { AuditLogComponent } from './audit-log.component';
 import { SharedModule } from '../shared/shared.module';
-import { AuditLogService } from './audit-log.service';
 import { LogPageComponent } from './log-page.component';
 
 @NgModule({
@@ -23,7 +22,6 @@ import { LogPageComponent } from './log-page.component';
     AuditLogComponent,
     LogPageComponent
   ],
-  providers: [AuditLogService],
   exports: [
     AuditLogComponent,
     LogPageComponent]

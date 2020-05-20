@@ -23,8 +23,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/lib/log"
 	yaml "gopkg.in/yaml.v2"
 )
 

@@ -28,8 +28,8 @@ func init() {
 	HWAdapter = *adp.(*adapter)
 }
 
-func TestAdapter_FetchImages(t *testing.T) {
-	resources, err := HWAdapter.FetchImages(nil)
+func TestAdapter_FetchArtifacts(t *testing.T) {
+	resources, err := HWAdapter.FetchArtifacts(nil)
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "[401]") {
 			t.Log("huawei ak/sk is not available", err.Error())
