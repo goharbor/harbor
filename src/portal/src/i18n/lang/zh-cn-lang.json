@@ -594,7 +594,7 @@
         "DELETE_ENABLED": "默认启用该规则",
         "NEW": "新增",
         "NAME_TOOLTIP": "项目名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
-        "DESTINATION_NAME_TOOLTIP": "目标名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
+        "DESTINATION_NAME_TOOLTIP": "目标名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
         "ACKNOWLEDGE": "确认",
         "RULE_DISABLED": "这个规则因为过滤选项中的标签被删除已经不能用了，更新过滤项以便重新启用规则。",
         "REPLI_MODE": "复制模式",
