@@ -5,20 +5,23 @@ weight: 40
 
 You can create robot accounts to run automated operations. Robot accounts have the following limitations:
 
-1. Robot Accounts cannot log in to the Harbor interface.
-1. Robot Accounts can only perform operations by using the Docker and Helm CLIs.
+1. Robot accounts cannot log in to the Harbor interface.
+1. Robot accounts can only perform operations by using the Docker and Helm CLIs.
 
 ### Add a Robot Account
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
-1. Go to **Projects**, select a project, and select **Robot Accounts**.
+1. Go to **Projects**, select a project, and click the **Robot Accounts** tab.
 
     ![Robot accounts](../../../img/add-robot-account.png)
 
 1. Click **New Robot Account**.
 1. Enter a name and an optional description for this robot account.
-1. Set expiration time for this robot account, you can also select checkbox **Never Expired** if you want to create a never expiring robot account. If not set, the expiration time of system configuration will be used for this robot account. 
-1. Grant permission to the robot account to push images and to push and pull Helm charts.
+1. Set expiration time for this robot account. You can also select checkbox **Never Expired** to create a never-expiring robot account. 
+
+    If not set, the expiration time of system configuration is used for this robot account.
+    
+1. Grant permissions to the robot account, as necessary, to push images and to push and pull Helm charts.
 
     Robot accounts can always pull images, so you cannot deselect this option.
    
