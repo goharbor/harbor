@@ -23,7 +23,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	case http.MethodPost:
 		h.start(w, req)
 	default:
-		api.HandleForbidden(w, req)
+		api.HandleForbidden(w)
 	}
 }
 
@@ -37,7 +37,7 @@ type Result struct {
 
 // start ...
 func (h *handler) start(w http.ResponseWriter, r *http.Request) {
-	cmd := exec.Command("/bin/bash", "-c", "registry garbage-collect --delete-untagged=true "+registry.RegConf)
+	cmd := exec.Command("/bin/bash", "-c", "registry garbage-collect --delete-untagged=false "+registry.DefaultRegConf)
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = &outBuf
 	cmd.Stderr = &errBuf
@@ -46,12 +46,12 @@ func (h *handler) start(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("Start to execute garbage collection...")
 	if err := cmd.Run(); err != nil {
 		log.Errorf("Fail to execute GC: %v, command err: %s", err, errBuf.String())
-		api.HandleInternalServerError(w, r)
+		api.HandleInternalServerError(w, err)
 		return
 	}
 
 	gcr := Result{true, outBuf.String(), start, time.Now()}
-	if err := api.WriteJSON(w, r, gcr); err != nil {
+	if err := api.WriteJSON(w, gcr); err != nil {
 		log.Errorf("failed to write response: %v", err)
 		return
 	}

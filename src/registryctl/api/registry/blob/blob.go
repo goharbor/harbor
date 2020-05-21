@@ -22,7 +22,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	case http.MethodDelete:
 		h.delete(w, req)
 	default:
-		api.HandleForbidden(w, req)
+		api.HandleForbidden(w)
 	}
 }
 
@@ -30,12 +30,12 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func (h *handler) delete(w http.ResponseWriter, r *http.Request) {
 	digest := mux.Vars(r)["reference"]
 	if digest == "" {
-		api.HandleBadRequest(w, r, errors.New("no reference specified"))
+		api.HandleBadRequest(w, errors.New("no reference specified"))
 		return
 	}
 	cleaner := storage.NewVacuum(r.Context(), regConf.StorageDriver)
 	if err := cleaner.RemoveBlob(digest); err != nil {
-		api.HandleInternalServerError(w, r)
+		api.HandleError(w, err)
 		return
 	}
 }

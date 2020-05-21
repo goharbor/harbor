@@ -37,8 +37,6 @@ import (
 	_ "github.com/docker/distribution/registry/storage/driver/swift"
 )
 
-const RegConf = "/etc/registry/config.yml"
-
 // RegistryCtl for registry controller
 type RegistryCtl struct {
 	ServerConf config.Configuration
@@ -90,7 +88,7 @@ func main() {
 	}
 
 	// set the global driver
-	rConf, err := regConf.ResolveConfiguration(RegConf)
+	rConf, err := regConf.ResolveConfiguration()
 	if err != nil {
 		log.Error(err)
 		return

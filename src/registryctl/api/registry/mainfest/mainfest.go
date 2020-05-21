@@ -1,8 +1,8 @@
 package mainfest
 
 import (
-	"errors"
 	"github.com/docker/distribution/registry/storage"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/registryctl/api"
 	regConf "github.com/goharbor/harbor/src/registryctl/config/registry"
 	"github.com/gorilla/mux"
@@ -24,7 +24,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	case http.MethodDelete:
 		h.delete(w, req)
 	default:
-		api.HandleForbidden(w, req)
+		api.HandleForbidden(w)
 	}
 }
 
@@ -32,16 +32,16 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func (h *handler) delete(w http.ResponseWriter, r *http.Request) {
 	dgst, err := digest.Parse(mux.Vars(r)["reference"])
 	if err != nil {
-		api.HandleBadRequest(w, r, err)
+		api.HandleBadRequest(w, errors.Wrap(err, "reference parsed error"))
 		return
 	}
 	if dgst == "" {
-		api.HandleBadRequest(w, r, errors.New("no reference specified"))
+		api.HandleBadRequest(w, errors.New("no reference specified"))
 		return
 	}
 	repoName := mux.Vars(r)["name"]
 	if repoName == "" {
-		api.HandleBadRequest(w, r, errors.New("no name specified"))
+		api.HandleBadRequest(w, errors.New("no name specified"))
 		return
 	}
 	var tags []string
@@ -51,7 +51,7 @@ func (h *handler) delete(w http.ResponseWriter, r *http.Request) {
 
 	cleaner := storage.NewVacuum(r.Context(), regConf.StorageDriver)
 	if err := cleaner.RemoveManifest(repoName, dgst, tags); err != nil {
-		api.HandleInternalServerError(w, r)
+		api.HandleInternalServerError(w, err)
 		return
 	}
 }
