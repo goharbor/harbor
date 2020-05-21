@@ -124,11 +124,13 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
     config_dict['protocol'] = 'http'
     http_config = configs.get('http') or {}
     config_dict['http_port'] = http_config.get('port', 80)
+    config_dict['http_ip'] = http_config.get('ip', '0.0.0.0')
 
     https_config = configs.get('https')
     if https_config:
         config_dict['protocol'] = 'https'
         config_dict['https_port'] = https_config.get('port', 443)
+        config_dict['https_ip'] = https_config.get('ip', '0.0.0.0')
         config_dict['cert_path'] = https_config["certificate"]
         config_dict['cert_key_path'] = https_config["private_key"]
 
@@ -169,6 +171,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
             config_dict['clair_db_sslmode'] = 'disable'
 
         if with_notary:
+            notary_configs = configs.get('notary')
             # notary signer
             config_dict['notary_signer_db_host'] = 'postgresql'
             config_dict['notary_signer_db_port'] = 5432
@@ -183,6 +186,9 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
             config_dict['notary_server_db_username'] = 'server'
             config_dict['notary_server_db_password'] = 'password'
             config_dict['notary_server_db_sslmode'] = 'disable'
+            config_dict['notary_ip'] = '0.0.0.0'
+            if notary_configs:
+                config_dict['notary_ip'] = notary_configs.get('ip')
 
 
     # Data path volume

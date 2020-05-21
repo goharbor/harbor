@@ -354,12 +354,12 @@ services:
 {% endif %}
     dns_search: .
     ports:
-      - {{http_port}}:8080
+      - {{http_ip}}:{{http_port}}:8080
 {% if protocol == 'https' %}
-      - {{https_port}}:8443
+      - {{https_ip}}:{{https_port}}:8443
 {% endif %}
 {% if with_notary %}
-      - 4443:4443
+      - {{notary_ip}}:4443:4443
 {% endif %}
     depends_on:
       - registry

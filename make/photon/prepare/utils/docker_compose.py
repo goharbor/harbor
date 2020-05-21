@@ -25,6 +25,7 @@ def prepare_docker_compose(configs, with_clair, with_trivy, with_notary, with_ch
         'log_location': configs['log_location'],
         'protocol': configs['protocol'],
         'http_port': configs['http_port'],
+        'http_ip': configs['http_ip'],
         'external_redis': configs['external_redis'],
         'external_database': configs['external_database'],
         'with_notary': with_notary,
@@ -47,6 +48,10 @@ def prepare_docker_compose(configs, with_clair, with_trivy, with_notary, with_ch
         rendering_variables['cert_key_path'] = configs['cert_key_path']
         rendering_variables['cert_path'] = configs['cert_path']
         rendering_variables['https_port'] = configs['https_port']
+        rendering_variables['https_ip'] = configs['https_ip']
+
+    if with_notary:
+        rendering_variables['notary_ip'] = configs['notary_ip']
 
     # internal cert pairs
     rendering_variables['internal_tls'] = configs['internal_tls']
