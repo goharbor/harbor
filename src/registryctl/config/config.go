@@ -33,6 +33,7 @@ type Configuration struct {
 		Cert string `yaml:"cert"`
 		Key  string `yaml:"key"`
 	} `yaml:"https_config,omitempty"`
+	RegistryConfig string `yaml:"registry_config"`
 }
 
 // Load the configuration options from the specified yaml file.
@@ -98,6 +99,11 @@ func (c *Configuration) loadEnvs() {
 	loggerLevel := os.Getenv("LOG_LEVEL")
 	if len(loggerLevel) != 0 {
 		c.LogLevel = loggerLevel
+	}
+
+	registryConf := os.Getenv("REGISTRY_CONFIG")
+	if len(registryConf) != 0 {
+		c.RegistryConfig = registryConf
 	}
 
 }

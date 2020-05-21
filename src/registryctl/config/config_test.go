@@ -38,6 +38,7 @@ func TestConfigLoadingWithEnv(t *testing.T) {
 	assert.Equal(t, "https", cfg.Protocol)
 	assert.Equal(t, "1000", cfg.Port)
 	assert.Equal(t, "DEBUG", cfg.LogLevel)
+	assert.Equal(t, "/etc/registry/config.yml", cfg.RegistryConfig)
 }
 
 func TestConfigLoadingWithYml(t *testing.T) {
@@ -47,6 +48,7 @@ func TestConfigLoadingWithYml(t *testing.T) {
 	assert.Equal(t, "http", cfg.Protocol)
 	assert.Equal(t, "1234", cfg.Port)
 	assert.Equal(t, "ERROR", cfg.LogLevel)
+	assert.Equal(t, "/etc/registry/config.yml", cfg.RegistryConfig)
 }
 
 func TestGetLogLevel(t *testing.T) {

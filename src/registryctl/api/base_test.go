@@ -15,15 +15,34 @@
 package api
 
 import (
+	"github.com/goharbor/harbor/src/lib/errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func TestHandleInternalServerError(t *testing.T) {
+func TestHandleError(t *testing.T) {
 	w := httptest.NewRecorder()
-	handleInternalServerError(w)
+	HandleInternalServerError(w, errors.New("internal"))
 
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusInternalServerError)
+	}
+
+	w = httptest.NewRecorder()
+	HandleBadRequest(w, errors.New("BadRequest"))
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusBadRequest)
+	}
+
+	w = httptest.NewRecorder()
+	HandleForbidden(w)
+	if w.Code != http.StatusForbidden {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusForbidden)
+	}
+
+	w = httptest.NewRecorder()
+	HandleError(w, errors.New("handle error"))
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusInternalServerError)
 	}
