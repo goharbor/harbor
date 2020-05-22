@@ -36,7 +36,7 @@ GC Now
 
 Retry GC Should Be Successful
     [Arguments]  ${history_id}  ${expected_msg}
-    Retry Keyword When Error  GC Should Be Successful  ${history_id}  ${expected_msg}
+    Retry Keyword N Times When Error  15  GC Should Be Successful  ${history_id}  ${expected_msg}
 
 GC Should Be Successful
     [Arguments]  ${history_id}  ${expected_msg}
