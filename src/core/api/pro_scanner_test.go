@@ -19,12 +19,12 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/q"
+	sc "github.com/goharbor/harbor/src/controller/scanner"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	sc "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -33,7 +33,7 @@ type ProScannerAPITestSuite struct {
 	suite.Suite
 
 	originC sc.Controller
-	mockC   *MockScannerAPIController
+	mockC   *scannertesting.Controller
 }
 
 // TestProScannerAPI is the entry of ProScannerAPITestSuite
@@ -44,7 +44,7 @@ func TestProScannerAPI(t *testing.T) {
 // SetupSuite prepares testing env
 func (suite *ProScannerAPITestSuite) SetupTest() {
 	suite.originC = sc.DefaultController
-	m := &MockScannerAPIController{}
+	m := &scannertesting.Controller{}
 	sc.DefaultController = m
 
 	suite.mockC = m

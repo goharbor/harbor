@@ -16,8 +16,8 @@ package action
 
 import (
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 )
@@ -37,7 +37,7 @@ type Performer interface {
 	//  Returns:
 	//    []*art.Result : result infos
 	//    error     : common error if any errors occurred
-	Perform(candidates []*art.Candidate) ([]*art.Result, error)
+	Perform(candidates []*selector.Candidate) ([]*selector.Result, error)
 }
 
 // PerformerFactory is factory method for creating Performer
@@ -45,19 +45,16 @@ type PerformerFactory func(params interface{}, isDryRun bool) Performer
 
 // retainAction make sure all the candidates will be retained and others will be cleared
 type retainAction struct {
-	all []*art.Candidate
+	all []*selector.Candidate
 	// Indicate if it is a dry run
 	isDryRun bool
 }
 
 // Perform the action
-func (ra *retainAction) Perform(candidates []*art.Candidate) (results []*art.Result, err error) {
-	retained := make(map[string]bool)
-	immutable := make(map[string]bool)
+func (ra *retainAction) Perform(candidates []*selector.Candidate) (results []*selector.Result, err error) {
 	retainedShare := make(map[string]bool)
 	immutableShare := make(map[string]bool)
 	for _, c := range candidates {
-		retained[c.NameHash()] = true
 		retainedShare[c.Hash()] = true
 	}
 
@@ -66,7 +63,6 @@ func (ra *retainAction) Perform(candidates []*art.Candidate) (results []*art.Res
 			continue
 		}
 		if isImmutable(c) {
-			immutable[c.NameHash()] = true
 			immutableShare[c.Hash()] = true
 		}
 	}
@@ -74,24 +70,20 @@ func (ra *retainAction) Perform(candidates []*art.Candidate) (results []*art.Res
 	// start to delete
 	if len(ra.all) > 0 {
 		for _, c := range ra.all {
-			if _, ok := retained[c.NameHash()]; !ok {
-				if _, ok = retainedShare[c.Hash()]; !ok {
-					result := &art.Result{
-						Target: c,
-					}
-					if _, ok = immutable[c.NameHash()]; ok {
-						result.Error = &art.ImmutableError{}
-					} else if _, ok = immutableShare[c.Hash()]; ok {
-						result.Error = &art.ImmutableError{IsShareDigest: true}
-					} else {
-						if !ra.isDryRun {
-							if err := dep.DefaultClient.Delete(c); err != nil {
-								result.Error = err
-							}
+			if _, ok := retainedShare[c.Hash()]; !ok {
+				result := &selector.Result{
+					Target: c,
+				}
+				if _, ok = immutableShare[c.Hash()]; ok {
+					result.Error = &selector.ImmutableError{}
+				} else {
+					if !ra.isDryRun {
+						if err := dep.DefaultClient.Delete(c); err != nil {
+							result.Error = err
 						}
 					}
-					results = append(results, result)
 				}
+				results = append(results, result)
 			}
 		}
 	}
@@ -99,14 +91,13 @@ func (ra *retainAction) Perform(candidates []*art.Candidate) (results []*art.Res
 	return
 }
 
-func isImmutable(c *art.Candidate) bool {
+func isImmutable(c *selector.Candidate) bool {
 	projectID := c.NamespaceID
 	repo := c.Repository
-	tag := c.Tag
 	_, repoName := utils.ParseRepository(repo)
-	matched, err := rule.NewRuleMatcher(projectID).Match(art.Candidate{
+	matched, err := rule.NewRuleMatcher().Match(projectID, selector.Candidate{
 		Repository:  repoName,
-		Tag:         tag,
+		Tags:        c.Tags,
 		NamespaceID: projectID,
 	})
 	if err != nil {
@@ -119,7 +110,7 @@ func isImmutable(c *art.Candidate) bool {
 // NewRetainAction is factory method for RetainAction
 func NewRetainAction(params interface{}, isDryRun bool) Performer {
 	if params != nil {
-		if all, ok := params.([]*art.Candidate); ok {
+		if all, ok := params.([]*selector.Candidate); ok {
 			return &retainAction{
 				all:      all,
 				isDryRun: isDryRun,
@@ -128,7 +119,7 @@ func NewRetainAction(params interface{}, isDryRun bool) Performer {
 	}
 
 	return &retainAction{
-		all:      make([]*art.Candidate, 0),
+		all:      make([]*selector.Candidate, 0),
 		isDryRun: isDryRun,
 	}
 }

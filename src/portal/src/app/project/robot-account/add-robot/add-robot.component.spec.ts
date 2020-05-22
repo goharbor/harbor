@@ -7,7 +7,7 @@ import { RobotService } from "../robot-account.service";
 import { of } from "rxjs";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AppConfigService } from "../../../app-config.service";
+import { AppConfigService } from "../../../services/app-config.service";
 import { ErrorHandler } from "../../../../lib/utils/error-handler";
 
 describe('AddRobotComponent', () => {

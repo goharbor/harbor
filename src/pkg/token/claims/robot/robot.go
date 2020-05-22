@@ -2,16 +2,17 @@ package robot
 
 import (
 	"errors"
+
 	"github.com/dgrijalva/jwt-go"
-	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 // Claim implements the interface of jwt.Claims
 type Claim struct {
 	jwt.StandardClaims
-	TokenID   int64          `json:"id"`
-	ProjectID int64          `json:"pid"`
-	Access    []*rbac.Policy `json:"access"`
+	TokenID   int64           `json:"id"`
+	ProjectID int64           `json:"pid"`
+	Access    []*types.Policy `json:"access"`
 }
 
 // Valid valid the claims "tokenID, projectID and access".

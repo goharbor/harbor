@@ -44,8 +44,9 @@ func (suite *AdminJobSuite) SetupSuite() {
 	}
 
 	job0 := &models.AdminJob{
-		Name: "GC",
-		Kind: "testKind",
+		Name:       "GC",
+		Kind:       "testKind",
+		Parameters: "{test:test}",
 	}
 
 	suite.ids = make([]int64, 0)
@@ -77,6 +78,7 @@ func (suite *AdminJobSuite) TestAdminJobBase() {
 	require.Nil(suite.T(), err)
 	suite.Equal(job1.ID, suite.job0.ID)
 	suite.Equal(job1.Name, suite.job0.Name)
+	suite.Equal(job1.Parameters, suite.job0.Parameters)
 
 	// set uuid
 	err = SetAdminJobUUID(suite.job0.ID, "f5ef34f4cb3588d663176132")

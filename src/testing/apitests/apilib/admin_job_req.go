@@ -24,9 +24,11 @@ package apilib
 
 // AdminJobReq holds request information for admin job
 type AdminJobReq struct {
-	Schedule *ScheduleParam `json:"schedule,omitempty"`
-	Status   string         `json:"status,omitempty"`
-	ID       int64          `json:"id,omitempty"`
+	Schedule   *ScheduleParam         `json:"schedule,omitempty"`
+	Name       string                 `json:"name"`
+	Status     string                 `json:"status,omitempty"`
+	ID         int64                  `json:"id,omitempty"`
+	Parameters map[string]interface{} `json:"parameters"`
 }
 
 // ScheduleParam ...

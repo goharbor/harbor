@@ -92,14 +92,20 @@ class System(base.Base):
 
     def create_gc_schedule(self, schedule_type, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
-        gcscheduleschedule = swagger_client.AdminJobScheduleObj()
-        gcscheduleschedule.type = schedule_type
-        if cron is not None:
-            gcscheduleschedule.cron = cron
 
-        gc_schedule = swagger_client.AdminJobSchedule(gcscheduleschedule)
+        gc_parameters = {'delete_untagged':True}
+
+        gc_schedule = swagger_client.AdminJobScheduleObj()
+        gc_schedule.type = schedule_type
+        if cron is not None:
+            gc_schedule.cron = cron
+
+        gc_job = swagger_client.AdminJobSchedule()
+        gc_job.schedule = gc_schedule
+        gc_job.parameters = gc_parameters
+
         try:
-            _, status_code, header = client.system_gc_schedule_post_with_http_info(gc_schedule)
+            _, status_code, header = client.system_gc_schedule_post_with_http_info(gc_job)
         except ApiException as e:
             if e.status == expect_status_code:
                 if expect_response_body is not None and e.body.strip() != expect_response_body.strip():

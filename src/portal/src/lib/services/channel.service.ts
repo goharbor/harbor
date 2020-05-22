@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Observable, Subject} from "rxjs";
-import { Tag } from './index';
+import { Subject } from "rxjs";
+import { ArtifactFront as Artifact } from "../../app/project/repository/artifact/artifact";
 
 @Injectable()
 export class ChannelService {
@@ -25,5 +25,5 @@ export class ChannelService {
   publishScanEvent(tagId: string): void {
     this.scanCommandSource.next(tagId);
   }
-  tagDetail$ = new Subject<Tag>();
+  ArtifactDetail$ = new Subject<Artifact>();
 }

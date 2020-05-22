@@ -7,10 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var adminJob001 apilib.AdminJobReq
-
 func TestGCPost(t *testing.T) {
 
+	adminJob001 := apilib.AdminJobReq{
+		Parameters: map[string]interface{}{"delete_untagged": false},
+	}
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 

@@ -27,7 +27,20 @@ func (t timeUnix) String() string {
 	return t.ToTime().String()
 }
 
-type aliRepoResp struct {
+type aliACRNamespaceResp struct {
+	Data struct {
+		Namespaces []aliACRNamespace `json:"namespaces"`
+	} `json:"data"`
+	RequestID string `json:"requestId"`
+}
+
+type aliACRNamespace struct {
+	Namespace       string `json:"namespace"`
+	AuthorizeType   string `json:"authorizeType"`
+	NamespaceStatus string `json:"namespaceStatus"`
+}
+
+type aliReposResp struct {
 	Data struct {
 		Page     int       `json:"page"`
 		Total    int       `json:"total"`

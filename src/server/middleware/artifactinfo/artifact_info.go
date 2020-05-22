@@ -15,17 +15,17 @@
 package artifactinfo
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
-	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
-	reg_err "github.com/goharbor/harbor/src/server/registry/error"
 	"github.com/opencontainers/go-digest"
 )
 
@@ -34,6 +34,7 @@ const (
 	blobFromQuery   = "from"
 	blobMountDigest = "blob_mount_digest"
 	blobMountRepo   = "blob_mount_repo"
+	tag             = "tag"
 )
 
 var (
@@ -58,10 +59,10 @@ func Middleware() func(http.Handler) http.Handler {
 			repo := m[middleware.RepositorySubexp]
 			pn, err := projectNameFromRepo(repo)
 			if err != nil {
-				reg_err.Handle(rw, req, ierror.BadRequestError(err))
+				serror.SendError(rw, errors.BadRequestError(err))
 				return
 			}
-			art := &middleware.ArtifactInfo{
+			art := lib.ArtifactInfo{
 				Repository:  repo,
 				ProjectName: pn,
 			}
@@ -71,20 +72,22 @@ func Middleware() func(http.Handler) http.Handler {
 			if ref, ok := m[middleware.ReferenceSubexp]; ok {
 				art.Reference = ref
 			}
-
+			if t, ok := m[tag]; ok {
+				art.Tag = t
+			}
 			if bmr, ok := m[blobMountRepo]; ok {
 				// Fail early for now, though in docker registry an invalid may return 202
 				// it's not clear in OCI spec how to handle invalid from parm
 				bmp, err := projectNameFromRepo(bmr)
 				if err != nil {
-					reg_err.Handle(rw, req, ierror.BadRequestError(err))
+					serror.SendError(rw, errors.BadRequestError(err))
 					return
 				}
 				art.BlobMountDigest = m[blobMountDigest]
 				art.BlobMountProjectName = bmp
 				art.BlobMountRepository = bmr
 			}
-			ctx := context.WithValue(req.Context(), middleware.ArtifactInfoKey, art)
+			ctx := lib.WithArtifactInfo(req.Context(), art)
 			next.ServeHTTP(rw, req.WithContext(ctx))
 		})
 	}
@@ -119,6 +122,8 @@ func parse(url *url.URL) (map[string]string, bool) {
 	}
 	if digest.DigestRegexp.MatchString(m[middleware.ReferenceSubexp]) {
 		m[middleware.DigestSubexp] = m[middleware.ReferenceSubexp]
+	} else if ref, ok := m[middleware.ReferenceSubexp]; ok {
+		m[tag] = ref
 	}
 	return m, match
 }

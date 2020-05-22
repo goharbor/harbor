@@ -41,7 +41,7 @@ func TestAdapter_Info(t *testing.T) {
 
 func TestAdapter_PullManifests(t *testing.T) {
 	quayAdapter := getMockAdapter(t)
-	registry, _, err := quayAdapter.(*adapter).PullManifest("quay/busybox", "latest", []string{})
+	registry, _, err := quayAdapter.(*adapter).PullManifest("quay/busybox", "latest")
 	assert.Nil(t, err)
 	assert.NotNil(t, registry)
 	t.Log(registry)

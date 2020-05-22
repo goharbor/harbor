@@ -22,7 +22,7 @@ import { Volumes } from "./volumes";
 
 import { MessageHandlerService } from "../message-handler/message-handler.service";
 import { StatisticHandler } from "./statistic-handler.service";
-import { AppConfigService } from "./../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 
 
 @Component({

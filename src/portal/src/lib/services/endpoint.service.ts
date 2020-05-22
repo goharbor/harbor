@@ -6,7 +6,7 @@ import { IServiceConfig, SERVICE_CONFIG } from "../entities/service.config";
 import {
   buildHttpRequestOptions,
   HTTP_JSON_OPTIONS,
-  HTTP_GET_OPTIONS
+  HTTP_GET_OPTIONS, CURRENT_BASE_HREF
 } from "../utils/utils";
 import { RequestQueryParams } from "./RequestQueryParams";
 import { Endpoint, ReplicationRule, PingEndpoint } from "./interface";
@@ -145,7 +145,7 @@ export class EndpointDefaultService extends EndpointService {
     super();
     this._endpointUrl = config.targetBaseEndpoint
       ? config.targetBaseEndpoint
-      : "/api/registries";
+      : CURRENT_BASE_HREF + "/registries";
   }
 
   public getEndpoints(
@@ -180,7 +180,7 @@ export class EndpointDefaultService extends EndpointService {
 
   public getAdapters(): Observable<any> {
     return this.http
-    .get(`/api/replication/adapters`)
+    .get(`${ CURRENT_BASE_HREF }/replication/adapters`)
     .pipe(catchError(error => observableThrowError(error)));
 }
 

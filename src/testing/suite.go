@@ -15,15 +15,21 @@
 package testing
 
 import (
-	"fmt"
+	"context"
+	"io"
 	"math/rand"
-	"strconv"
+	"net/http"
+	"net/http/httptest"
+	"sync"
 	"time"
 
+	o "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -31,15 +37,34 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+var (
+	once sync.Once
+)
+
 // Suite ...
 type Suite struct {
 	suite.Suite
+	ClearTables []string
+	ClearSQLs   []string
 }
 
 // SetupSuite ...
 func (suite *Suite) SetupSuite() {
-	config.Init()
-	dao.PrepareTestForPostgresSQL()
+	once.Do(func() {
+		config.Init()
+		dao.PrepareTestForPostgresSQL()
+	})
+}
+
+// TearDownSuite ...
+func (suite *Suite) TearDownSuite() {
+	for _, sql := range suite.ClearSQLs {
+		suite.ExecSQL(sql)
+	}
+
+	for _, table := range suite.ClearTables {
+		dao.ClearTable(table)
+	}
 }
 
 // RandString ...
@@ -55,6 +80,16 @@ func (suite *Suite) RandString(n int, letters ...string) string {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
 	return string(b)
+}
+
+// Digest ...
+func (suite *Suite) Digest() digest.Digest {
+	return digest.FromString(suite.RandString(128))
+}
+
+// DigestString ...
+func (suite *Suite) DigestString() string {
+	return suite.Digest().String()
 }
 
 // WithProject ...
@@ -81,13 +116,45 @@ func (suite *Suite) WithProject(f func(int64, string), projectNames ...string) {
 	f(projectID, projectName)
 }
 
-// AssertResourceUsage ...
-func (suite *Suite) AssertResourceUsage(expected int64, resource types.ResourceName, projectID int64) {
-	usage := models.QuotaUsage{Reference: "project", ReferenceID: strconv.FormatInt(projectID, 10)}
-	err := dao.GetOrmer().Read(&usage, "reference", "reference_id")
-	suite.Nil(err, fmt.Sprintf("Failed to get resource %s usage of project %d, error: %v", resource, projectID, err))
+// Context ...
+func (suite *Suite) Context() context.Context {
+	return orm.NewContext(context.TODO(), o.NewOrm())
+}
 
-	used, err := types.NewResourceList(usage.Used)
-	suite.Nil(err, "Bad resource usage of project %d", projectID)
-	suite.Equal(expected, used[resource])
+// NewRequest ...
+func (suite *Suite) NewRequest(method, target string, body io.Reader, queries ...map[string]string) *http.Request {
+	req := httptest.NewRequest(method, target, body)
+
+	if len(queries) > 0 {
+		q := req.URL.Query()
+		for key, value := range queries[0] {
+			q.Add(key, value)
+		}
+		req.URL.RawQuery = q.Encode()
+	}
+
+	return req.WithContext(suite.Context())
+}
+
+// NextHandler ...
+func (suite *Suite) NextHandler(statusCode int, headers map[string]string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(statusCode)
+		for key, value := range headers {
+			w.Header().Set(key, value)
+		}
+	})
+}
+
+// ExecSQL ...
+func (suite *Suite) ExecSQL(query string, args ...interface{}) {
+	o := o.NewOrm()
+
+	_, err := o.Raw(query, args...).Exec()
+	suite.Nil(err)
+}
+
+// IsNotFoundErr ...
+func (suite *Suite) IsNotFoundErr(err error) bool {
+	return suite.True(errors.IsNotFoundErr(err))
 }

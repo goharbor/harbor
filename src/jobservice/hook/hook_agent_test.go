@@ -23,7 +23,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/job"

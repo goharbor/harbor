@@ -8,7 +8,7 @@ import { ScannerMetadata } from "../scanner-metadata";
 import { DatePipe } from "@angular/common";
 import { TranslateService } from "@ngx-translate/core";
 import { ErrorHandler } from "../../../../lib/utils/error-handler";
-import { DATABASE_UPDATED_PROPERTY } from "../../../../lib/utils/utils";
+import {DATABASE_NEXT_UPDATE_PROPERTY, DATABASE_UPDATED_PROPERTY} from "../../../../lib/utils/utils";
 
 @Component({
     selector: 'scanner-metadata',
@@ -34,13 +34,25 @@ export class ScannerMetadataComponent implements  OnInit {
             });
     }
     parseDate(item: any): string {
-        if (item && item.value && item.key === DATABASE_UPDATED_PROPERTY) {
+        if (this.hasValue(item) && this.hasDateValue(item)) {
             return new DatePipe(this.translate.currentLang).transform(item.value, 'short');
         }
-        if (item && item.value) {
+        if (this.hasValue(item)) {
             return item.value;
         }
         return '';
+    }
+    hasValue(item: any): boolean {
+        return item && item.value;
+    }
+    hasDateValue(item: any): boolean {
+        switch (item.key) {
+            case DATABASE_UPDATED_PROPERTY:
+            case DATABASE_NEXT_UPDATE_PROPERTY:
+                return true;
+            default:
+                return false;
+        }
     }
     toString(arr: string[]) {
         if (arr && arr.length > 0) {

@@ -55,7 +55,6 @@ Select Object
     [Arguments]    ${obj}
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${obj}')]//label
 
-# This func cannot support as the delete user flow changed.
 Multi-delete Object
     [Arguments]    ${delete_btn}  @{obj}
     :For  ${obj}  in  @{obj}
@@ -64,6 +63,24 @@ Multi-delete Object
     Sleep  1
     Capture Page Screenshot
     Retry Element Click  ${delete_btn}
+    Sleep  1
+    Capture Page Screenshot
+    Retry Element Click  ${repo_delete_on_card_view_btn}
+    Sleep  1
+    Capture Page Screenshot
+    Sleep  1
+
+# This func cannot support as the delete user flow changed.
+Multi-delete Artifact
+    [Arguments]    ${delete_btn}  @{obj}
+    :For  ${obj}  in  @{obj}
+    \    ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
+    \    Retry Element Click  ${element}
+    Sleep  1
+    Capture Page Screenshot
+    Retry Element Click  ${artifact_action_xpath}
+    Sleep  1
+    Retry Element Click  ${artifact_action_delete_xpath}
     Sleep  1
     Capture Page Screenshot
     Retry Element Click  ${repo_delete_on_card_view_btn}

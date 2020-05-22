@@ -14,10 +14,13 @@ export class GcRepoService {
         private errorHandler: ErrorHandler) {
     }
 
-    public manualGc(): Observable <any> {
-        let param = {
+    public manualGc(shouldDeleteUntagged: boolean): Observable<any> {
+        const param = {
             "schedule": {
                 "type": "Manual"
+            },
+            parameters: {
+                delete_untagged: shouldDeleteUntagged
             }
         };
         return this.gcApiRepository.postSchedule(param);
@@ -35,22 +38,28 @@ export class GcRepoService {
         return this.gcApiRepository.getSchedule();
     }
 
-    public postScheduleGc(type, cron): Observable <any> {
+    public postScheduleGc(shouldDeleteUntagged: boolean, type, cron): Observable <any> {
         let param = {
             "schedule": {
                 "type": type,
                 "cron": cron,
+            },
+            parameters: {
+                delete_untagged: shouldDeleteUntagged
             }
         };
 
         return this.gcApiRepository.postSchedule(param);
     }
 
-    public putScheduleGc(type, cron): Observable <any> {
+    public putScheduleGc(shouldDeleteUntagged, type, cron): Observable <any> {
         let param = {
             "schedule": {
                 "type": type,
                 "cron": cron,
+            },
+            parameters: {
+                delete_untagged: shouldDeleteUntagged
             }
         };
 

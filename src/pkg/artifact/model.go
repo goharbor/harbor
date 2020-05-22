@@ -18,8 +18,10 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
+	"github.com/goharbor/harbor/src/server/v2.0/models"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -27,19 +29,26 @@ import (
 // underlying concrete detail and provides an unified artifact view
 // for all users.
 type Artifact struct {
-	ID                int64
-	Type              string // image, chart, etc
-	MediaType         string // the media type of artifact. Mostly, it's the value of `manifest.config.mediatype`
-	ManifestMediaType string // the media type of manifest/index
-	ProjectID         int64
-	RepositoryID      int64
-	Digest            string
-	Size              int64
-	PushTime          time.Time
-	PullTime          time.Time
-	ExtraAttrs        map[string]interface{} // only contains the simple attributes specific for the different artifact type, most of them should come from the config layer
-	Annotations       map[string]string
-	References        []*Reference // child artifacts referenced by the parent artifact if the artifact is an index
+	ID                int64                  `json:"id"`
+	Type              string                 `json:"type"`                // image, chart, etc
+	MediaType         string                 `json:"media_type"`          // the media type of artifact. Mostly, it's the value of `manifest.config.mediatype`
+	ManifestMediaType string                 `json:"manifest_media_type"` // the media type of manifest/index
+	ProjectID         int64                  `json:"project_id"`
+	RepositoryID      int64                  `json:"repository_id"`
+	RepositoryName    string                 `json:"repository_name"`
+	Digest            string                 `json:"digest"`
+	Size              int64                  `json:"size"`
+	PushTime          time.Time              `json:"push_time"`
+	PullTime          time.Time              `json:"pull_time"`
+	ExtraAttrs        map[string]interface{} `json:"extra_attrs"` // only contains the simple attributes specific for the different artifact type, most of them should come from the config layer
+	Annotations       map[string]string      `json:"annotations"`
+	References        []*Reference           `json:"references"` // child artifacts referenced by the parent artifact if the artifact is an index
+}
+
+// IsImageIndex returns true when artifact is image index
+func (a *Artifact) IsImageIndex() bool {
+	return a.ManifestMediaType == v1.MediaTypeImageIndex ||
+		a.ManifestMediaType == manifestlist.MediaTypeManifestList
 }
 
 // From converts the database level artifact to the business level object
@@ -50,6 +59,7 @@ func (a *Artifact) From(art *dao.Artifact) {
 	a.ManifestMediaType = art.ManifestMediaType
 	a.ProjectID = art.ProjectID
 	a.RepositoryID = art.RepositoryID
+	a.RepositoryName = art.RepositoryName
 	a.Digest = art.Digest
 	a.Size = art.Size
 	a.PushTime = art.PushTime
@@ -77,6 +87,7 @@ func (a *Artifact) To() *dao.Artifact {
 		ManifestMediaType: a.ManifestMediaType,
 		ProjectID:         a.ProjectID,
 		RepositoryID:      a.RepositoryID,
+		RepositoryName:    a.RepositoryName,
 		Digest:            a.Digest,
 		Size:              a.Size,
 		PushTime:          a.PushTime,
@@ -101,19 +112,37 @@ func (a *Artifact) To() *dao.Artifact {
 
 // Reference records the child artifact referenced by parent artifact
 type Reference struct {
-	ParentID int64
-	ChildID  int64
-	Platform *v1.Platform
+	ID          int64  `json:"id"`
+	ParentID    int64  `json:"parent_id"`
+	ChildID     int64  `json:"child_id"`
+	ChildDigest string `json:"child_digest"`
+	Platform    *v1.Platform
+	URLs        []string          `json:"urls"`
+	Annotations map[string]string `json:"annotations"`
 }
 
 // From converts the data level reference to business level
 func (r *Reference) From(ref *dao.ArtifactReference) {
+	r.ID = ref.ID
 	r.ParentID = ref.ParentID
 	r.ChildID = ref.ChildID
+	r.ChildDigest = ref.ChildDigest
 	if len(ref.Platform) > 0 {
 		r.Platform = &v1.Platform{}
 		if err := json.Unmarshal([]byte(ref.Platform), r.Platform); err != nil {
 			log.Errorf("failed to unmarshal the platform of reference: %v", err)
+		}
+	}
+	if len(ref.URLs) > 0 {
+		r.URLs = []string{}
+		if err := json.Unmarshal([]byte(ref.URLs), &r.URLs); err != nil {
+			log.Errorf("failed to unmarshal the URLs of reference: %v", err)
+		}
+	}
+	if len(ref.Annotations) > 0 {
+		r.Annotations = map[string]string{}
+		if err := json.Unmarshal([]byte(ref.Annotations), &r.Annotations); err != nil {
+			log.Errorf("failed to unmarshal the annotations of reference: %v", err)
 		}
 	}
 }
@@ -121,8 +150,10 @@ func (r *Reference) From(ref *dao.ArtifactReference) {
 // To converts the reference to data level object
 func (r *Reference) To() *dao.ArtifactReference {
 	ref := &dao.ArtifactReference{
-		ParentID: r.ParentID,
-		ChildID:  r.ChildID,
+		ID:          r.ID,
+		ParentID:    r.ParentID,
+		ChildID:     r.ChildID,
+		ChildDigest: r.ChildDigest,
 	}
 	if r.Platform != nil {
 		platform, err := json.Marshal(r.Platform)
@@ -130,6 +161,41 @@ func (r *Reference) To() *dao.ArtifactReference {
 			log.Errorf("failed to marshal the platform of reference: %v", err)
 		}
 		ref.Platform = string(platform)
+	}
+	if len(r.URLs) > 0 {
+		urls, err := json.Marshal(r.URLs)
+		if err != nil {
+			log.Errorf("failed to marshal the URLs of reference: %v", err)
+		}
+		ref.URLs = string(urls)
+	}
+	if len(r.Annotations) > 0 {
+		annotations, err := json.Marshal(r.Annotations)
+		if err != nil {
+			log.Errorf("failed to marshal the annotations of reference: %v", err)
+		}
+		ref.Annotations = string(annotations)
+	}
+	return ref
+}
+
+// ToSwagger converts the reference to the swagger model
+func (r *Reference) ToSwagger() *models.Reference {
+	ref := &models.Reference{
+		ChildDigest: r.ChildDigest,
+		ChildID:     r.ChildID,
+		ParentID:    r.ParentID,
+		Annotations: r.Annotations,
+		Urls:        r.URLs,
+	}
+	if r.Platform != nil {
+		ref.Platform = &models.Platform{
+			Architecture: r.Platform.Architecture,
+			Os:           r.Platform.OS,
+			OsFeatures:   r.Platform.OSFeatures,
+			OsVersion:    r.Platform.OSVersion,
+			Variant:      r.Platform.Variant,
+		}
 	}
 	return ref
 }

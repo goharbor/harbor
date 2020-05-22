@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gocraft/work"
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"io"
 	"net"
 	"net/url"

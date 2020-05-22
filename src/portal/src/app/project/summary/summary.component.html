@@ -23,27 +23,10 @@
       </ul>
     </div>
   </div>
-  <div *ngIf="showQuotaInfo" class="summary-right pt-1">
+  <div *ngIf="showQuotaInfo && summaryInformation?.quota" class="summary-right pt-1">
     <div class="display-flex  project-detail">
       <h5 class="mt-0">{{'SUMMARY.PROJECT_QUOTAS' | translate}}</h5>
       <div class="ml-1">
-        <div class="display-flex quotas-progress">
-          <label class="mr-1">{{'SUMMARY.ARTIFACT_COUNT' | translate}}</label>
-          <label class="progress-label">{{ summaryInformation?.quota?.used?.count }} {{ 'QUOTA.OF' | translate }}
-            {{ summaryInformation?.quota?.hard?.count ===-1?('QUOTA.UNLIMITED' | translate): summaryInformation?.quota?.hard?.count }}
-          </label>
-        </div>
-
-        <div>
-          <div class="progress-block progress-min-width progress-div">
-            <div class="progress success" [class.danger]="summaryInformation?.quota?.hard?.count!==-1?summaryInformation?.quota?.used?.count/summaryInformation?.quota?.hard?.count>quotaDangerCoefficient:false"
-              [class.warning]="summaryInformation?.quota?.hard?.count!==-1?summaryInformation?.quota?.used?.count/summaryInformation?.quota?.hard?.count<=quotaDangerCoefficient&&summaryInformation?.quota?.used?.count/summaryInformation?.quota?.hard?.count>=quotaWarningCoefficient:false">
-              <progress
-                value="{{summaryInformation?.quota?.hard?.count===-1? 0 : summaryInformation?.quota?.used?.count}}"
-                max="{{summaryInformation?.quota?.hard?.count}}" data-displayval="100%"></progress>
-            </div>
-          </div>
-        </div>
         <div class="display-flex quotas-progress">
           <label class="mr-1">{{'SUMMARY.STORAGE_CONSUMPTION' | translate}}</label>
           <label class="progress-label">

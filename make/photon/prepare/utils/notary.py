@@ -1,5 +1,5 @@
 import os, shutil, pathlib
-from g import templates_dir, config_dir, root_crt_path, secret_key_dir,DEFAULT_UID, DEFAULT_GID
+from g import templates_dir, config_dir, root_crt_path, secret_key_dir, secret_dir, DEFAULT_UID, DEFAULT_GID
 from .cert import openssl_installed, create_cert, create_root_cert, get_alias
 from .jinja import render_jinja
 from .misc import mark_file, prepare_dir
@@ -25,7 +25,7 @@ def prepare_env_notary(nginx_config_dir):
     old_signer_key_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer.key'))
     old_signer_ca_cert_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer-ca.crt'))
 
-    notary_secret_dir = prepare_dir('/secret/notary')
+    notary_secret_dir = prepare_dir(secret_dir ,'notary')
     signer_cert_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer.crt'))
     signer_key_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer.key'))
     signer_ca_cert_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer-ca.crt'))

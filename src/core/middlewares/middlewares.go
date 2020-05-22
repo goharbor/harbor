@@ -15,30 +15,57 @@
 package middlewares
 
 import (
+	"github.com/goharbor/harbor/src/server/middleware/csrf"
+	"github.com/goharbor/harbor/src/server/middleware/log"
+	"github.com/goharbor/harbor/src/server/middleware/requestid"
 	"net/http"
+	"path"
 	"regexp"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/notification"
 	"github.com/goharbor/harbor/src/server/middleware/orm"
-	"github.com/goharbor/harbor/src/server/middleware/requestid"
+	"github.com/goharbor/harbor/src/server/middleware/readonly"
+	"github.com/goharbor/harbor/src/server/middleware/security"
+	"github.com/goharbor/harbor/src/server/middleware/session"
 	"github.com/goharbor/harbor/src/server/middleware/transaction"
 )
 
 var (
-	blobURLRe = regexp.MustCompile("^/v2/(" + reference.NameRegexp.String() + ")/blobs/" + reference.DigestRegexp.String())
+	match         = regexp.MustCompile
+	numericRegexp = match(`[0-9]+`)
+
+	blobURLRe = match("^/v2/(" + reference.NameRegexp.String() + ")/blobs/" + reference.DigestRegexp.String())
 
 	// fetchBlobAPISkipper skip transaction middleware for fetch blob API
 	// because transaction use the ResponseBuffer for the response which will degrade the performance for fetch blob
 	fetchBlobAPISkipper = middleware.MethodAndPathSkipper(http.MethodGet, blobURLRe)
+
+	// readonlySkippers skip the post request when harbor sets to readonly.
+	readonlySkippers = []middleware.Skipper{
+		middleware.MethodAndPathSkipper(http.MethodPut, match("^/api/v2.0/configurations")),
+		middleware.MethodAndPathSkipper(http.MethodPut, match("^/api/internal/configurations")),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/login")),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/userExists")),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/oidc/onboard")),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/adminjob/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/replication/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/replication/task/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/webhook/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/retention/task/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/schedules/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/webhook/"+numericRegexp.String())),
+	}
 )
 
 // legacyAPISkipper skip middleware for legacy APIs
 func legacyAPISkipper(r *http.Request) bool {
+	path := path.Clean(r.URL.EscapedPath())
 	for _, prefix := range []string{"/v2/", "/api/v2.0/"} {
-		if strings.HasPrefix(r.URL.Path, prefix) {
+		if strings.HasPrefix(path, prefix) {
 			return false
 		}
 	}
@@ -50,7 +77,14 @@ func legacyAPISkipper(r *http.Request) bool {
 func MiddleWares() []beego.MiddleWare {
 	return []beego.MiddleWare{
 		requestid.Middleware(),
+		log.Middleware(),
+		session.Middleware(),
+		csrf.Middleware(),
+		security.Middleware(),
+		readonly.Middleware(readonlySkippers...),
 		orm.Middleware(legacyAPISkipper),
+		// notification must ahead of transaction ensure the DB transaction execution complete
+		notification.Middleware(),
 		transaction.Middleware(legacyAPISkipper, fetchBlobAPISkipper),
 	}
 }

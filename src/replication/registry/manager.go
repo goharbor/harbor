@@ -18,7 +18,7 @@ import (
 	"fmt"
 
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/dao"

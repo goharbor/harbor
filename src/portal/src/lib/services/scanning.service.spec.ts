@@ -3,10 +3,11 @@ import { TestBed, inject } from '@angular/core/testing';
 import { ScanningResultService, ScanningResultDefaultService } from './scanning.service';
 import { SharedModule } from '../utils/shared/shared.module';
 import { SERVICE_CONFIG, IServiceConfig } from '../entities/service.config';
+import { CURRENT_BASE_HREF } from "../utils/utils";
 
 describe('ScanningResultService', () => {
   const mockConfig: IServiceConfig = {
-    vulnerabilityScanningBaseEndpoint: "/api/vulnerability/testing"
+    vulnerabilityScanningBaseEndpoint: CURRENT_BASE_HREF + "/vulnerability/testing"
   };
 
   let config: IServiceConfig;
@@ -36,6 +37,6 @@ describe('ScanningResultService', () => {
 
   it('should inject the right config', () => {
     expect(config).toBeTruthy();
-    expect(config.vulnerabilityScanningBaseEndpoint).toEqual("/api/vulnerability/testing");
+    expect(config.vulnerabilityScanningBaseEndpoint).toEqual(CURRENT_BASE_HREF + "/vulnerability/testing");
   });
 });

@@ -24,7 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -61,27 +61,6 @@ func cleanByUser(username string) {
 
 	err = execUpdate(o, `delete
 		from project_member
-		where project_id = (
-			select project_id
-			from project
-			where name = ?
-		)`, projectName)
-	if err != nil {
-		o.Rollback()
-		log.Error(err)
-	}
-
-	err = execUpdate(o, `delete
-		from access_log
-		where username = ?
-		`, username)
-	if err != nil {
-		o.Rollback()
-		log.Error(err)
-	}
-
-	err = execUpdate(o, `delete
-		from access_log
 		where project_id = (
 			select project_id
 			from project
@@ -158,7 +137,7 @@ func testForAll(m *testing.M) int {
 
 func clearAll() {
 	tables := []string{"project_member",
-		"project_metadata", "access_log", "repository", "replication_policy",
+		"project_metadata", "repository", "replication_policy",
 		"registry", "replication_execution", "replication_task",
 		"replication_schedule_job", "project", "harbor_user"}
 	for _, t := range tables {
@@ -409,155 +388,6 @@ func TestGetProject(t *testing.T) {
 	}
 }
 
-func TestGetAccessLog(t *testing.T) {
-
-	accessLog := models.AccessLog{
-		Username:  currentUser.Username,
-		ProjectID: currentProject.ProjectID,
-		RepoName:  currentProject.Name + "/",
-		RepoTag:   "N/A",
-		GUID:      "N/A",
-		Operation: "create",
-		OpTime:    time.Now(),
-	}
-	if err := AddAccessLog(accessLog); err != nil {
-		t.Errorf("failed to add access log: %v", err)
-	}
-
-	query := &models.LogQueryParam{
-		Username:   currentUser.Username,
-		ProjectIDs: []int64{currentProject.ProjectID},
-	}
-	accessLogs, err := GetAccessLogs(query)
-	if err != nil {
-		t.Errorf("Error occurred in GetAccessLog: %v", err)
-	}
-	if len(accessLogs) != 1 {
-		t.Errorf("The length of accesslog list should be 1, actual: %d", len(accessLogs))
-	}
-	if accessLogs[0].RepoName != projectName+"/" {
-		t.Errorf("The project name does not match, expected: %s, actual: %s", projectName+"/", accessLogs[0].RepoName)
-	}
-}
-
-func TestGetTotalOfAccessLogs(t *testing.T) {
-	query := &models.LogQueryParam{
-		Username:   currentUser.Username,
-		ProjectIDs: []int64{currentProject.ProjectID},
-	}
-	total, err := GetTotalOfAccessLogs(query)
-	if err != nil {
-		t.Fatalf("failed to get total of access log: %v", err)
-	}
-
-	if total != 1 {
-		t.Errorf("unexpected total %d != %d", total, 1)
-	}
-}
-
-func TestAddAccessLog(t *testing.T) {
-	var err error
-	var accessLogList []models.AccessLog
-	accessLog := models.AccessLog{
-		Username:  currentUser.Username,
-		ProjectID: currentProject.ProjectID,
-		RepoName:  currentProject.Name + "/",
-		RepoTag:   repoTag,
-		GUID:      "N/A",
-		Operation: "create",
-		OpTime:    time.Now(),
-	}
-	err = AddAccessLog(accessLog)
-	if err != nil {
-		t.Errorf("Error occurred in AddAccessLog: %v", err)
-	}
-
-	query := &models.LogQueryParam{
-		Username:   accessLog.Username,
-		ProjectIDs: []int64{accessLog.ProjectID},
-		Repository: accessLog.RepoName,
-		Tag:        accessLog.RepoTag,
-		Operations: []string{accessLog.Operation},
-	}
-	accessLogList, err = GetAccessLogs(query)
-	if err != nil {
-		t.Errorf("Error occurred in GetAccessLog: %v", err)
-	}
-	if len(accessLogList) != 1 {
-		t.Errorf("The length of accesslog list should be 1, actual: %d", len(accessLogList))
-	}
-	if accessLogList[0].RepoName != projectName+"/" {
-		t.Errorf("The project name does not match, expected: %s, actual: %s", projectName+"/", accessLogList[0].RepoName)
-	}
-	if accessLogList[0].RepoTag != repoTag {
-		t.Errorf("The repo tag does not match, expected: %s, actual: %s", repoTag, accessLogList[0].RepoTag)
-	}
-}
-
-func TestCountPull(t *testing.T) {
-	var err error
-	if err = AddAccessLog(models.AccessLog{
-		Username:  currentUser.Username,
-		ProjectID: currentProject.ProjectID,
-		RepoName:  currentProject.Name + "/tomcat",
-		RepoTag:   repoTag2,
-		Operation: "pull",
-		OpTime:    time.Now(),
-	}); err != nil {
-		t.Errorf("Error occurred in AccessLog: %v", err)
-	}
-
-	if err = AddAccessLog(models.AccessLog{
-		Username:  currentUser.Username,
-		ProjectID: currentProject.ProjectID,
-		RepoName:  currentProject.Name + "/tomcat",
-		RepoTag:   repoTag2,
-		Operation: "pull",
-		OpTime:    time.Now(),
-	}); err != nil {
-		t.Errorf("Error occurred in AccessLog: %v", err)
-	}
-
-	if err = AddAccessLog(models.AccessLog{
-		Username:  currentUser.Username,
-		ProjectID: currentProject.ProjectID,
-		RepoName:  currentProject.Name + "/tomcat",
-		RepoTag:   repoTag2,
-		Operation: "pull",
-		OpTime:    time.Now(),
-	}); err != nil {
-		t.Errorf("Error occurred in AccessLog: %v", err)
-	}
-
-	pullCount, err := CountPull(currentProject.Name + "/tomcat")
-	if err != nil {
-		t.Errorf("Error occurred in CountPull: %v", err)
-	}
-	if pullCount != 3 {
-		t.Errorf("The access log pull count does not match, expected: 3, actual: %d", pullCount)
-	}
-}
-
-/*
-func TestProjectExists(t *testing.T) {
-	var exists bool
-	var err error
-	exists, err = ProjectExists(currentProject.ProjectID)
-	if err != nil {
-		t.Errorf("Error occurred in ProjectExists: %v", err)
-	}
-	if !exists {
-		t.Errorf("The project with id: %d, does not exist", currentProject.ProjectID)
-	}
-	exists, err = ProjectExists(currentProject.Name)
-	if err != nil {
-		t.Errorf("Error occurred in ProjectExists: %v", err)
-	}
-	if !exists {
-		t.Errorf("The project with name: %s, does not exist", currentProject.Name)
-	}
-}
-*/
 func TestGetProjectById(t *testing.T) {
 	id := currentProject.ProjectID
 	p, err := GetProjectByID(id)
@@ -566,22 +396,6 @@ func TestGetProjectById(t *testing.T) {
 	}
 	if p.Name != currentProject.Name {
 		t.Errorf("project name does not match, expected: %s, actual: %s", currentProject.Name, p.Name)
-	}
-}
-
-func TestGetUserProjectRoles(t *testing.T) {
-	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID, common.UserMember)
-	if err != nil {
-		t.Errorf("Error happened in GetUserProjectRole: %v, userID: %+v, project Id: %d", err, currentUser.UserID, currentProject.ProjectID)
-	}
-
-	// Get the size of current user project role.
-	if len(r) != 1 {
-		t.Errorf("The user, id: %d, should only have one role in project, id: %d, but actual: %d", currentUser.UserID, currentProject.ProjectID, len(r))
-	}
-
-	if r[0].Name != "projectAdmin" {
-		t.Errorf("the expected rolename is: projectAdmin, actual: %s", r[0].Name)
 	}
 }
 
@@ -606,23 +420,6 @@ func TestGetProjects(t *testing.T) {
 	}
 	if projects[1].Name != projectName {
 		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
-	}
-}
-
-func TestGetRoleByID(t *testing.T) {
-	r, err := GetRoleByID(models.PROJECTADMIN)
-	if err != nil {
-		t.Errorf("Failed to call GetRoleByID: %v", err)
-	}
-	if r == nil || r.Name != "projectAdmin" || r.RoleCode != "MDRWS" {
-		t.Errorf("Role does not match for role id: %d, actual: %+v", models.PROJECTADMIN, r)
-	}
-	r, err = GetRoleByID(9999)
-	if err != nil {
-		t.Errorf("Failed to call GetRoleByID: %v", err)
-	}
-	if r != nil {
-		t.Errorf("Role should nil for non-exist id 9999, actual: %+v", r)
 	}
 }
 
@@ -751,29 +548,6 @@ func TestGetRepositoryByName(t *testing.T) {
 	}
 }
 
-func TestIncreasePullCount(t *testing.T) {
-	if err := IncreasePullCount(currentRepository.Name); err != nil {
-		log.Errorf("Error happens when increasing pull count: %v", currentRepository.Name)
-	}
-
-	repository, err := GetRepositoryByName(currentRepository.Name)
-	if err != nil {
-		t.Errorf("Error occurred in GetRepositoryByName: %v", err)
-	}
-
-	if repository.PullCount != 1 {
-		t.Errorf("repository pull count is not 1 after IncreasePullCount, expected: 1, actual: %d", repository.PullCount)
-	}
-}
-
-func TestRepositoryExists(t *testing.T) {
-	var exists bool
-	exists = RepositoryExists(currentRepository.Name)
-	if !exists {
-		t.Errorf("The repository with name: %s, does not exist", currentRepository.Name)
-	}
-}
-
 func TestDeleteRepository(t *testing.T) {
 	err := DeleteRepository(currentRepository.Name)
 	if err != nil {
@@ -895,54 +669,4 @@ func TestSaveConfigEntries(t *testing.T) {
 func TestIsDupRecError(t *testing.T) {
 	assert.True(t, IsDupRecErr(fmt.Errorf("pq: duplicate key value violates unique constraint \"properties_k_key\"")))
 	assert.False(t, IsDupRecErr(fmt.Errorf("other error")))
-}
-
-func TestWithTransaction(t *testing.T) {
-	reference := "transaction"
-
-	quota := models.Quota{
-		Reference:   reference,
-		ReferenceID: "1",
-		Hard:        "{}",
-	}
-
-	failed := func(o orm.Ormer) error {
-		o.Insert(&quota)
-
-		return fmt.Errorf("failed")
-	}
-
-	var quotaID int64
-	success := func(o orm.Ormer) error {
-		id, err := o.Insert(&quota)
-		if err != nil {
-			return err
-		}
-
-		quotaID = id
-		return nil
-	}
-
-	assert := assert.New(t)
-
-	if assert.Error(WithTransaction(failed)) {
-		var quota models.Quota
-		quota.Reference = reference
-		quota.ReferenceID = "1"
-		err := GetOrmer().Read(&quota, "reference", "reference_id")
-		assert.Error(err)
-		assert.False(quota.ID != 0)
-	}
-
-	if assert.Nil(WithTransaction(success)) {
-		var quota models.Quota
-		quota.Reference = reference
-		quota.ReferenceID = "1"
-		err := GetOrmer().Read(&quota, "reference", "reference_id")
-		assert.Nil(err)
-		assert.True(quota.ID != 0)
-		assert.Equal(quotaID, quota.ID)
-
-		GetOrmer().Delete(&models.Quota{ID: quotaID}, "id")
-	}
 }

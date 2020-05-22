@@ -18,9 +18,9 @@ import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from 'ngx-cookie';
 
 import { SessionService } from './shared/session.service';
-import { AppConfigService } from './app-config.service';
-import { ThemeService } from './theme.service';
-import { themeArray, ThemeInterface } from './theme';
+import { AppConfigService } from './services/app-config.service';
+import { ThemeService } from './services/theme.service';
+import { THEME_ARRAY, ThemeInterface } from './services/theme';
 import { clone } from '../lib/utils/utils';
 
 const HAS_STYLE_MODE: string = 'styleModeLocal';
@@ -30,7 +30,7 @@ const HAS_STYLE_MODE: string = 'styleModeLocal';
     templateUrl: 'app.component.html'
 })
 export class AppComponent {
-    themeArray: ThemeInterface[] = clone(themeArray);
+    themeArray: ThemeInterface[] = clone(THEME_ARRAY);
 
     styleMode: string = this.themeArray[0].showStyle;
     constructor(

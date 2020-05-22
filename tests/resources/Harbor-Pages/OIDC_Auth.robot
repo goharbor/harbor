@@ -40,10 +40,10 @@ Sign In Harbor With OIDC User
 
 Get Secrete By API
     [Arguments]  ${url}  ${username}=${OIDC_USERNAME}
-    ${json}=  Run Curl And Return Json  curl -s -k -X GET --header 'Accept: application/json' -u '${HARBOR_ADMIN}:${HARBOR_PASSWORD}' '${url}/api/users/search?username=${username}'
+    ${json}=  Run Curl And Return Json  curl -s -k -X GET --header 'Accept: application/json' -u '${HARBOR_ADMIN}:${HARBOR_PASSWORD}' '${url}/api/v2.0/users/search?username=${username}'
     ${user_info}=    Set Variable    ${json[0]}
     ${user_id}=    Set Variable    ${user_info["user_id"]}
-    ${json}=  Run Curl And Return Json   curl -s -k -X GET --header 'Accept: application/json' -u '${HARBOR_ADMIN}:${HARBOR_PASSWORD}' '${url}/api/users/${user_id}'
+    ${json}=  Run Curl And Return Json   curl -s -k -X GET --header 'Accept: application/json' -u '${HARBOR_ADMIN}:${HARBOR_PASSWORD}' '${url}/api/v2.0/users/${user_id}'
     ${secret}=    Set Variable    ${json["oidc_user_meta"]["secret"]}
     [Return]  ${secret}
 

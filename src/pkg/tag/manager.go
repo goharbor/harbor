@@ -16,7 +16,7 @@ package tag
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/tag/dao"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
@@ -28,8 +28,10 @@ var (
 
 // Manager manages the tags
 type Manager interface {
+	// Count returns the total count of tags according to the query.
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List tags according to the query
-	List(ctx context.Context, query *q.Query) (total int64, tags []*tag.Tag, err error)
+	List(ctx context.Context, query *q.Query) (tags []*tag.Tag, err error)
 	// Get the tag specified by ID
 	Get(ctx context.Context, id int64) (tag *tag.Tag, err error)
 	// Create the tag and returns the ID
@@ -38,6 +40,8 @@ type Manager interface {
 	Update(ctx context.Context, tag *tag.Tag, props ...string) (err error)
 	// Delete the tag specified by ID
 	Delete(ctx context.Context, id int64) (err error)
+	// DeleteOfArtifact deletes all tags attached to the artifact
+	DeleteOfArtifact(ctx context.Context, artifactID int64) (err error)
 }
 
 // NewManager creates an instance of the default tag manager
@@ -51,16 +55,12 @@ type manager struct {
 	dao dao.DAO
 }
 
-func (m *manager) List(ctx context.Context, query *q.Query) (int64, []*tag.Tag, error) {
-	total, err := m.dao.Count(ctx, query)
-	if err != nil {
-		return 0, nil, err
-	}
-	tags, err := m.dao.List(ctx, query)
-	if err != nil {
-		return 0, nil, err
-	}
-	return total, tags, nil
+func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return m.dao.Count(ctx, query)
+}
+
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*tag.Tag, error) {
+	return m.dao.List(ctx, query)
 }
 
 func (m *manager) Get(ctx context.Context, id int64) (*tag.Tag, error) {
@@ -77,4 +77,8 @@ func (m *manager) Update(ctx context.Context, tag *tag.Tag, props ...string) err
 
 func (m *manager) Delete(ctx context.Context, id int64) error {
 	return m.dao.Delete(ctx, id)
+}
+
+func (m *manager) DeleteOfArtifact(ctx context.Context, artifactID int64) error {
+	return m.dao.DeleteOfArtifact(ctx, artifactID)
 }

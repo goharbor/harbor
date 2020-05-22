@@ -8,31 +8,6 @@
       [class.clr-form-compact-common]="!defaultTextsObj.isSystemDefaultQuota">
 
       <clr-input-container>
-          <label class="left-label left-label-light required" for="storage">{{ defaultTextsObj?.countQuota | translate}}
-              <clr-tooltip>
-                  <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                  <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                      <span>{{'PROJECT.QUOTA_UNLIMIT_TIP' | translate }}</span>
-                  </clr-tooltip-content>
-              </clr-tooltip>
-              <div class="progress-block progress-min-width progress-div" *ngIf="!defaultTextsObj.isSystemDefaultQuota">
-                  <div class="progress success" [class.warning]="isWarningColor(+quotaHardLimitValue.countLimit, quotaHardLimitValue.countUsed)"
-                  [class.danger]="isDangerColor(+quotaHardLimitValue.countLimit, quotaHardLimitValue.countUsed)">
-                    <progress value="{{countInput.invalid || +quotaHardLimitValue.countLimit===-1?0:quotaHardLimitValue.countUsed}}"
-                      max="{{countInput.invalid?100:quotaHardLimitValue.countLimit}}" data-displayval="100%"></progress>
-                  </div>
-                  <label class="progress-label">{{ quotaHardLimitValue?.countUsed }} {{ 'QUOTA.OF' | translate }}
-                    {{ countInput?.valid?+quotaHardLimitValue?.countLimit===-1 ? ('QUOTA.UNLIMITED' | translate): quotaHardLimitValue?.countLimit:('QUOTA.INVALID_INPUT' | translate)}}
-                  </label>
-                </div>
-          </label>
-          <input clrInput type="text" name="count" #countInput="ngModel" class="quota-input"
-          [(ngModel)]="quotaHardLimitValue.countLimit" pattern="(^-1$)|(^([1-9]+)([0-9]+)*$)" required id="count"
-          size="40" />
-          <clr-control-error>{{ 'PROJECT.COUNT_QUOTA_TIP' | translate }}</clr-control-error>
-      </clr-input-container>
-
-      <clr-input-container>
           <label for="count" class="left-label required">{{ defaultTextsObj.storageQuota | translate}}
               <clr-tooltip>
                   <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>

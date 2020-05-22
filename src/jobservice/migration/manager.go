@@ -21,7 +21,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // Manager for managing the related migrators

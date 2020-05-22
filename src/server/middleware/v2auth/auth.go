@@ -15,65 +15,59 @@
 package v2auth
 
 import (
-	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/server/middleware"
-	reg_err "github.com/goharbor/harbor/src/server/registry/error"
+	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
+	serror "github.com/goharbor/harbor/src/server/error"
+)
+
+const (
+	authHeader = "Authorization"
 )
 
 type reqChecker struct {
 	pm promgr.ProjectManager
 }
 
-func (rc *reqChecker) check(req *http.Request) error {
-	if rc.hasRegistryCred(req) {
-		// TODO: May consider implement a local authorizer for registry, more details see #10602
-		return nil
-	}
+func (rc *reqChecker) check(req *http.Request) (string, error) {
 	securityCtx, ok := security.FromContext(req.Context())
 	if !ok {
-		return fmt.Errorf("the security context got from request is nil")
+		return "", fmt.Errorf("the security context got from request is nil")
 	}
-	if a, ok := middleware.ArtifactInfoFromContext(req.Context()); ok {
-		action := getAction(req)
-		if action == "" {
-			return nil
+	al := accessList(req)
+
+	for _, a := range al {
+		if a.target == login && !securityCtx.IsAuthenticated() {
+			return getChallenge(req, al), errors.New("unauthorized")
 		}
-		log.Debugf("action: %s, repository: %s", action, a.Repository)
-		pid, err := rc.projectID(a.ProjectName)
-		if err != nil {
-			return err
+		if a.target == catalog && !securityCtx.IsSysAdmin() {
+			return getChallenge(req, al), fmt.Errorf("unauthorized to list catalog")
 		}
-		resource := rbac.NewProjectNamespace(pid).Resource(rbac.ResourceRepository)
-		if !securityCtx.Can(action, resource) {
-			return fmt.Errorf("unauthorized to access repository: %s, action: %s", a.Repository, action)
-		}
-		if req.Method == http.MethodPost && a.BlobMountProjectName != "" { // check permission for the source of blob mount
-			p, err := rc.pm.Get(a.BlobMountProjectName)
+		if a.target == repository && req.Header.Get(authHeader) == "" && req.Method == http.MethodHead { // make sure 401 is returned for CLI HEAD, see #11271
+			return getChallenge(req, al), fmt.Errorf("authorize header needed to send HEAD to repository")
+		} else if a.target == repository {
+			pn := strings.Split(a.name, "/")[0]
+			pid, err := rc.projectID(pn)
 			if err != nil {
-				return err
+				return "", err
 			}
-			resource := rbac.NewProjectNamespace(p.ProjectID).Resource(rbac.ResourceRepository)
-			if !securityCtx.Can(rbac.ActionPull, resource) {
-				return fmt.Errorf("unauthorized to access repository from which to mount blob: %s, action: %s", a.BlobMountRepository, rbac.ActionPull)
+			resource := rbac.NewProjectNamespace(pid).Resource(rbac.ResourceRepository)
+			if !securityCtx.Can(a.action, resource) {
+				return getChallenge(req, al), fmt.Errorf("unauthorized to access repository: %s, action: %s", a.name, a.action)
 			}
 		}
-	} else if len(middleware.V2CatalogURLRe.FindStringSubmatch(req.URL.Path)) == 1 && !securityCtx.IsSysAdmin() {
-		return fmt.Errorf("unauthorized to list catalog")
-	} else if req.URL.Path == "/v2/" && !securityCtx.IsAuthenticated() {
-		ctx := context.WithValue(req.Context(), middleware.SkipInjectRegistryCredKey, true)
-		*req = *(req.WithContext(ctx))
 	}
-	return nil
+	return "", nil
 }
 
 func (rc *reqChecker) projectID(name string) (int64, error) {
@@ -87,31 +81,44 @@ func (rc *reqChecker) projectID(name string) (int64, error) {
 	return p.ProjectID, nil
 }
 
-func (rc *reqChecker) hasRegistryCred(req *http.Request) bool {
-	u, p, ok := req.BasicAuth()
-	regUser, regPass := config.RegistryCredential()
-	return ok && u == regUser && p == regPass
+func getChallenge(req *http.Request, accessList []access) string {
+	logger := log.G(req.Context())
+	auth := req.Header.Get(authHeader)
+	if len(auth) > 0 {
+		// Return basic auth challenge by default
+		return `Basic realm="harbor"`
+	}
+	// No auth header, treat it as CLI and redirect to token service
+	ep, err := tokenSvcEndpoint(req)
+	if err != nil {
+		logger.Errorf("failed to get the endpoint for token service, error: %v", err)
+	}
+	tokenSvc := fmt.Sprintf("%s/service/token", strings.TrimSuffix(ep, "/"))
+	scope := ""
+	for _, a := range accessList {
+		if len(scope) > 0 {
+			scope += " "
+		}
+		scope += a.scopeStr(req.Context())
+	}
+	challenge := fmt.Sprintf(`Bearer realm="%s",service="%s"`, tokenSvc, token.Registry)
+	if len(scope) > 0 {
+		challenge = fmt.Sprintf(`%s,scope="%s"`, challenge, scope)
+	}
+	return challenge
 }
 
-func getAction(req *http.Request) rbac.Action {
-	pushActions := map[string]struct{}{
-		http.MethodPost:   {},
-		http.MethodDelete: {},
-		http.MethodPatch:  {},
-		http.MethodPut:    {},
+func tokenSvcEndpoint(req *http.Request) (string, error) {
+	logger := log.G(req.Context())
+	rawCoreURL := config.InternalCoreURL()
+	if coreURL, err := url.Parse(rawCoreURL); err == nil {
+		if req.Host == coreURL.Host {
+			return rawCoreURL, nil
+		}
+	} else {
+		logger.Errorf("Failed to parse core url, error: %v, fallback to external endpoint", err)
 	}
-	pullActions := map[string]struct{}{
-		http.MethodGet:  {},
-		http.MethodHead: {},
-	}
-	if _, ok := pushActions[req.Method]; ok {
-		return rbac.ActionPush
-	}
-	if _, ok := pullActions[req.Method]; ok {
-		return rbac.ActionPull
-	}
-	return ""
-
+	return config.ExtEndpoint()
 }
 
 var (
@@ -130,8 +137,11 @@ func Middleware() func(http.Handler) http.Handler {
 	})
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-			if err := checker.check(req); err != nil {
-				reg_err.Handle(rw, req, ierror.UnauthorizedError(err).WithMessage(err.Error()))
+			if challenge, err := checker.check(req); err != nil {
+				// the header is needed for "docker manifest" commands: https://github.com/docker/cli/issues/989
+				rw.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
+				rw.Header().Set("Www-Authenticate", challenge)
+				serror.SendError(rw, errors.UnauthorizedError(err).WithMessage(err.Error()))
 				return
 			}
 			next.ServeHTTP(rw, req)

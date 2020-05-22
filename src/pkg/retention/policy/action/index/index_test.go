@@ -15,10 +15,10 @@
 package index
 
 import (
+	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,7 +29,7 @@ import (
 type IndexTestSuite struct {
 	suite.Suite
 
-	candidates []*art.Candidate
+	candidates []*selector.Candidate
 }
 
 // TestIndexEntry is entry of IndexTestSuite
@@ -41,11 +41,11 @@ func TestIndexEntry(t *testing.T) {
 func (suite *IndexTestSuite) SetupSuite() {
 	Register("fakeAction", newFakePerformer)
 
-	suite.candidates = []*art.Candidate{{
+	suite.candidates = []*selector.Candidate{{
 		Namespace:  "library",
 		Repository: "harbor",
 		Kind:       "image",
-		Tag:        "latest",
+		Tags:       []string{"latest"},
 		PushedTime: time.Now().Unix(),
 		Labels:     []string{"L1", "L2"},
 	}}
@@ -65,7 +65,7 @@ func (suite *IndexTestSuite) TestGet() {
 		success = r.Target != nil &&
 			r.Error == nil &&
 			r.Target.Repository == "harbor" &&
-			r.Target.Tag == "latest"
+			r.Target.Tags[0] == "latest"
 
 		return
 	})
@@ -77,9 +77,9 @@ type fakePerformer struct {
 }
 
 // Perform the artifacts
-func (p *fakePerformer) Perform(candidates []*art.Candidate) (results []*art.Result, err error) {
+func (p *fakePerformer) Perform(candidates []*selector.Candidate) (results []*selector.Result, err error) {
 	for _, c := range candidates {
-		results = append(results, &art.Result{
+		results = append(results, &selector.Result{
 			Target: c,
 		})
 	}

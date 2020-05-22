@@ -3,10 +3,11 @@ import { TestBed, inject } from '@angular/core/testing';
 import { SystemInfoService, SystemInfoDefaultService } from './system-info.service';
 import { SharedModule } from '../utils/shared/shared.module';
 import { SERVICE_CONFIG, IServiceConfig } from '../entities/service.config';
+import { CURRENT_BASE_HREF } from "../utils/utils";
 
 describe('SystemInfoService', () => {
   const mockConfig: IServiceConfig = {
-    systemInfoEndpoint: "/api/systeminfo/testing"
+    systemInfoEndpoint: CURRENT_BASE_HREF + "/systeminfo/testing"
   };
 
   let config: IServiceConfig;
@@ -36,6 +37,6 @@ describe('SystemInfoService', () => {
 
   it('should inject the right config', () => {
     expect(config).toBeTruthy();
-    expect(config.systemInfoEndpoint).toEqual("/api/systeminfo/testing");
+    expect(config.systemInfoEndpoint).toEqual(CURRENT_BASE_HREF + "/systeminfo/testing");
   });
 });

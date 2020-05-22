@@ -22,8 +22,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 const (
@@ -44,7 +43,7 @@ type ClientPool interface {
 	//  Returns:
 	//   Client : v1 client
 	//   error  : non nil error if any errors occurred
-	Get(r *scanner.Registration) (Client, error)
+	Get(url, authType, accessCredential string, skipCertVerify bool) (Client, error)
 }
 
 // PoolConfig provides configurations for the client pool.
@@ -97,20 +96,12 @@ func NewClientPool(config *PoolConfig) ClientPool {
 // add the following func after the first time initializing the client.
 // pool item represents the client with a timestamp of last accessed.
 
-func (bcp *basicClientPool) Get(r *scanner.Registration) (Client, error) {
-	if r == nil {
-		return nil, errors.New("nil scanner registration")
-	}
-
-	if err := r.Validate(false); err != nil {
-		return nil, errors.Wrap(err, "client pool: get")
-	}
-
-	k := key(r)
+func (bcp *basicClientPool) Get(url, authType, accessCredential string, skipCertVerify bool) (Client, error) {
+	k := fmt.Sprintf("%s:%s:%s:%v", url, authType, accessCredential, skipCertVerify)
 
 	item, ok := bcp.pool.Load(k)
 	if !ok {
-		nc, err := NewClient(r)
+		nc, err := NewClient(url, authType, accessCredential, skipCertVerify)
 		if err != nil {
 			return nil, errors.Wrap(err, "client pool: get")
 		}
@@ -156,13 +147,4 @@ func (bcp *basicClientPool) deadCheck(key string, item *poolItem) {
 			}
 		}
 	}()
-}
-
-func key(r *scanner.Registration) string {
-	return fmt.Sprintf("%s:%s:%s:%v",
-		r.URL,
-		r.Auth,
-		r.AccessCredential,
-		r.SkipCertVerify,
-	)
 }

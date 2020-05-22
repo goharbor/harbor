@@ -15,11 +15,20 @@
 package route
 
 import (
+	"github.com/goharbor/harbor/src/server/middleware/apiversion"
 	"github.com/goharbor/harbor/src/server/router"
 	"github.com/goharbor/harbor/src/server/v2.0/handler"
 )
 
+// const definition
+const (
+	APIVersion = "v2.0"
+)
+
 // RegisterRoutes for Harbor v2.0 APIs
 func RegisterRoutes() {
-	router.NewRoute().Path("/api/v2.0/*").Handler(handler.New())
+	registerLegacyRoutes()
+	router.NewRoute().Path("/api/" + APIVersion + "/*").
+		Middleware(apiversion.Middleware(APIVersion)).
+		Handler(handler.New())
 }

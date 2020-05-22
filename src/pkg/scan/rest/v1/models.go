@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // Scanner represents metadata of a Scanner Adapter which allow Harbor to lookup a scanner capable of
@@ -63,6 +63,32 @@ type ScannerAdapterMetadata struct {
 	Scanner      *Scanner             `json:"scanner"`
 	Capabilities []*ScannerCapability `json:"capabilities"`
 	Properties   ScannerProperties    `json:"properties"`
+}
+
+// HasCapability returns true when mine type of the artifact support by the scanner
+func (md *ScannerAdapterMetadata) HasCapability(mimeType string) bool {
+	for _, capability := range md.Capabilities {
+		for _, mt := range capability.ConsumesMimeTypes {
+			if mt == mimeType {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// GetCapability returns capability for the mime type
+func (md *ScannerAdapterMetadata) GetCapability(mimeType string) *ScannerCapability {
+	for _, capability := range md.Capabilities {
+		for _, mt := range capability.ConsumesMimeTypes {
+			if mt == mimeType {
+				return capability
+			}
+		}
+	}
+
+	return nil
 }
 
 // Artifact represents an artifact stored in Registry.
@@ -123,8 +149,7 @@ func (s *ScanRequest) ToJSON() (string, error) {
 // Validate ScanRequest
 func (s *ScanRequest) Validate() error {
 	if s.Registry == nil ||
-		len(s.Registry.URL) == 0 ||
-		len(s.Registry.Authorization) == 0 {
+		len(s.Registry.URL) == 0 {
 		return errors.New("scan request: invalid registry")
 	}
 

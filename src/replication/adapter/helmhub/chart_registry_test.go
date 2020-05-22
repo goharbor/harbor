@@ -36,8 +36,8 @@ func TestFetchCharts(t *testing.T) {
 	require.Nil(t, err)
 	assert.NotZero(t, len(resources))
 	assert.Equal(t, model.ResourceTypeChart, resources[0].Type)
-	assert.Equal(t, 1, len(resources[0].Metadata.Vtags))
-	assert.NotNil(t, resources[0].Metadata.Vtags[0])
+	assert.Equal(t, 1, len(resources[0].Metadata.Artifacts))
+	assert.NotNil(t, resources[0].Metadata.Artifacts[0].Tags[0])
 	// filter 2
 	filters = []*model.Filter{
 		{
@@ -50,8 +50,8 @@ func TestFetchCharts(t *testing.T) {
 	assert.NotZero(t, len(resources))
 	assert.Equal(t, model.ResourceTypeChart, resources[0].Type)
 	assert.Equal(t, "harbor/harbor", resources[0].Metadata.Repository.Name)
-	assert.Equal(t, 1, len(resources[0].Metadata.Vtags))
-	assert.NotNil(t, resources[0].Metadata.Vtags[0])
+	assert.Equal(t, 1, len(resources[0].Metadata.Artifacts))
+	assert.NotNil(t, resources[0].Metadata.Artifacts[0].Tags[0])
 }
 
 func TestChartExist(t *testing.T) {

@@ -21,7 +21,7 @@ import {
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
 import { AdmiralQueryParamKey } from '../../shared/shared.const';
-import { AppConfigService } from '../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { maintainUrlQueryParmas } from '../../shared/shared.utils';
 import { MessageHandlerService } from '../message-handler/message-handler.service';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';

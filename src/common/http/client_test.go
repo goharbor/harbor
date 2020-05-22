@@ -7,8 +7,8 @@ import (
 )
 
 func TestGetHTTPTransport(t *testing.T) {
-	transport := GetHTTPTransport(true)
+	transport := GetHTTPTransport(InsecureTransport)
 	assert.True(t, transport.TLSClientConfig.InsecureSkipVerify)
-	transport = GetHTTPTransport(false)
+	transport = GetHTTPTransport(SecureTransport)
 	assert.False(t, transport.TLSClientConfig.InsecureSkipVerify)
 }

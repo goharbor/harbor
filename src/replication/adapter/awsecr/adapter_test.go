@@ -133,13 +133,9 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 			AccessSecret: "ppp",
 		}
 	}
-	dockerRegistryAdapter, err := native.NewAdapter(registry)
-	if err != nil {
-		panic(err)
-	}
 	return &adapter{
 		registry:      registry,
-		Adapter:       dockerRegistryAdapter,
+		Adapter:       native.NewAdapter(registry),
 		region:        "test-region",
 		forceEndpoint: &server.URL,
 	}, server
@@ -200,7 +196,7 @@ func TestAdapter_PrepareForPush(t *testing.T) {
 func TestAdapter_FetchImages(t *testing.T) {
 	a, s := getMockAdapter(t, true, true)
 	defer s.Close()
-	resources, err := a.FetchImages([]*model.Filter{
+	resources, err := a.FetchArtifacts([]*model.Filter{
 		{
 			Type:  model.FilterTypeName,
 			Value: "*",

@@ -17,8 +17,8 @@ package repository
 import (
 	"context"
 	"github.com/goharbor/harbor/src/common/models"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/repository/dao"
 )
 
@@ -27,8 +27,10 @@ var Mgr = New()
 
 // Manager is used for repository management
 type Manager interface {
+	// Count returns the total count of repositories according to the query
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List repositories according to the query
-	List(ctx context.Context, query *q.Query) (total int64, repositories []*models.RepoRecord, err error)
+	List(ctx context.Context, query *q.Query) (repositories []*models.RepoRecord, err error)
 	// Get the repository specified by ID
 	Get(ctx context.Context, id int64) (repository *models.RepoRecord, err error)
 	// GetByName gets the repository specified by name
@@ -39,6 +41,8 @@ type Manager interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Update updates the repository. Only the properties specified by "props" will be updated if it is set
 	Update(ctx context.Context, repository *models.RepoRecord, props ...string) (err error)
+	// AddPullCount increase one pull count for the specified repository
+	AddPullCount(ctx context.Context, id int64) error
 }
 
 // New returns a default implementation of Manager
@@ -52,16 +56,16 @@ type manager struct {
 	dao dao.DAO
 }
 
-func (m *manager) List(ctx context.Context, query *q.Query) (int64, []*models.RepoRecord, error) {
-	total, err := m.dao.Count(ctx, query)
-	if err != nil {
-		return 0, nil, err
-	}
+func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return m.dao.Count(ctx, query)
+}
+
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, error) {
 	repositories, err := m.dao.List(ctx, query)
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
-	return total, repositories, nil
+	return repositories, nil
 }
 
 func (m *manager) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
@@ -69,7 +73,7 @@ func (m *manager) Get(ctx context.Context, id int64) (*models.RepoRecord, error)
 }
 
 func (m *manager) GetByName(ctx context.Context, name string) (repository *models.RepoRecord, err error) {
-	_, repositories, err := m.List(ctx, &q.Query{
+	repositories, err := m.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"Name": name,
 		},
@@ -78,7 +82,7 @@ func (m *manager) GetByName(ctx context.Context, name string) (repository *model
 		return nil, err
 	}
 	if len(repositories) == 0 {
-		return nil, ierror.New(nil).WithCode(ierror.NotFoundCode).
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
 			WithMessage("repository %s not found", name)
 	}
 	return repositories[0], nil
@@ -92,5 +96,9 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 	return m.dao.Delete(ctx, id)
 }
 func (m *manager) Update(ctx context.Context, repository *models.RepoRecord, props ...string) error {
-	return m.dao.Update(ctx, repository)
+	return m.dao.Update(ctx, repository, props...)
+}
+
+func (m *manager) AddPullCount(ctx context.Context, id int64) error {
+	return m.dao.AddPullCount(ctx, id)
 }

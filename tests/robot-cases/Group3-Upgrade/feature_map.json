@@ -188,5 +188,15 @@
             "branch":1,
             "version":"1.10"
         }
+    ],
+    "update_interrogation_services":[
+        {
+            "branch":1,
+            "version":"1.9"
+        },
+        {
+            "branch":1,
+            "version":"1.10"
+        }
     ]
  }

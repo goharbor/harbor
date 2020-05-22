@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors All rights reserved.
+Copyright The Helm Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ func (p Providers) ByScheme(scheme string) (Constructor, error) {
 }
 
 // All finds all of the registered getters as a list of Provider instances.
-// Currently the build-in http/https getter and the discovered
+// Currently the built-in http/https getter and the discovered
 // plugins with downloader notations are collected.
 func All(settings environment.EnvSettings) Providers {
 	result := Providers{

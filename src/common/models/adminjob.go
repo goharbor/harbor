@@ -29,6 +29,7 @@ type AdminJob struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	Name         string    `orm:"column(job_name)"  json:"job_name"`
 	Kind         string    `orm:"column(job_kind)"  json:"job_kind"`
+	Parameters   string    `orm:"column(job_parameters)"  json:"job_parameters"`
 	Cron         string    `orm:"column(cron_str)"  json:"cron_str"`
 	Status       string    `orm:"column(status)"  json:"job_status"`
 	UUID         string    `orm:"column(job_uuid)" json:"-"`

@@ -2,7 +2,7 @@ package driver
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"

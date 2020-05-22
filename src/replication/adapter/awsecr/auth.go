@@ -18,18 +18,19 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry"
-	"net/http"
-	"net/url"
-	"strings"
-	"time"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // Credential ...
@@ -96,11 +97,18 @@ func (a *awsAuthCredential) getAuthorization() (string, string, string, *time.Ti
 		a.accessKey,
 		a.accessSecret,
 		"")
+
+	var tr *http.Transport
+	if a.insecure {
+		tr = commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
+	} else {
+		tr = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
+	}
 	config := &aws.Config{
 		Credentials: cred,
 		Region:      &a.region,
 		HTTPClient: &http.Client{
-			Transport: registry.GetHTTPTransport(a.insecure),
+			Transport: tr,
 		},
 	}
 	if a.forceEndpoint != nil {

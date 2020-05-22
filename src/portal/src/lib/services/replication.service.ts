@@ -6,7 +6,7 @@ import {
   HTTP_JSON_OPTIONS,
   HTTP_GET_OPTIONS,
   buildHttpRequestOptionsWithObserveResponse,
-  HTTP_GET_OPTIONS_OBSERVE_RESPONSE
+  HTTP_GET_OPTIONS_OBSERVE_RESPONSE, CURRENT_BASE_HREF
 } from "../utils/utils";
 import {
   ReplicationJob,
@@ -219,11 +219,11 @@ export class ReplicationDefaultService extends ReplicationService {
     super();
     this._ruleBaseUrl = config.replicationRuleEndpoint
       ? config.replicationRuleEndpoint
-      : "/api/replication/policies";
+      : CURRENT_BASE_HREF + "/replication/policies";
     this._replicateUrl = config.replicationBaseEndpoint
       ? config.replicationBaseEndpoint
-      : "/api/replication";
-    this._baseUrl = config.baseEndpoint ? config.baseEndpoint : "/api";
+      : CURRENT_BASE_HREF + "/replication";
+    this._baseUrl = config.baseEndpoint ? config.baseEndpoint : CURRENT_BASE_HREF + "";
   }
 
   // Private methods

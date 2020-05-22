@@ -6,7 +6,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	k8s_api_v1beta1 "k8s.io/api/authentication/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -24,7 +24,7 @@ func TokenReview(rawToken string, authProxyConfig *models.HTTPAuthProxy) (k8s_ap
 		Host: authProxyConfig.TokenReviewEndpoint,
 		ContentConfig: rest.ContentConfig{
 			GroupVersion:         &schema.GroupVersion{},
-			NegotiatedSerializer: serializer.DirectCodecFactory{CodecFactory: scheme.Codecs},
+			NegotiatedSerializer: serializer.WithoutConversionCodecFactory{CodecFactory: scheme.Codecs},
 		},
 		BearerToken:     rawToken,
 		TLSClientConfig: getTLSConfig(authProxyConfig),

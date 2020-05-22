@@ -116,6 +116,12 @@ body {
 button:focus {
   outline: none;
 }
+clr-dropdown {
+  div:focus {
+    outline: none;
+  }
+}
+
 
 .w-100 {
   width: 100% !important;
@@ -446,4 +452,10 @@ clr-datagrid {
 }
 button:focus {
   outline: none !important;
+}
+.cursor-pointer {
+  cursor: pointer
+}
+.text-align-r {
+  text-align: right !important;
 }

@@ -15,7 +15,7 @@ import { Component, OnInit, HostListener, AfterViewInit, OnDestroy, ChangeDetect
 import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from '../project';
 import { SessionService } from '../../shared/session.service';
-import { AppConfigService } from "../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 import { forkJoin, Subject, Subscription } from "rxjs";
 import { UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
 import { ErrorHandler } from "../../../lib/utils/error-handler";
@@ -85,15 +85,9 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
       permissions: () => this.hasScannerReadPermission
     },
     {
-      linkName: "configs",
-      tabLinkInOverflow: false,
-      showTabName: "PROJECT_DETAIL.CONFIG",
-      permissions: () => this.isSessionValid && this.hasConfigurationListPermission
-    },
-    {
       linkName: "tag-strategy",
       tabLinkInOverflow: false,
-      showTabName: "PROJECT_DETAIL.TAG_STRATEGY",
+      showTabName: "PROJECT_DETAIL.POLICY",
       permissions: () => this.hasTagRetentionPermission
     },
     {
@@ -113,6 +107,12 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
       tabLinkInOverflow: false,
       showTabName: "PROJECT_DETAIL.LOGS",
       permissions: () => this.hasLogListPermission
+    },
+    {
+      linkName: "configs",
+      tabLinkInOverflow: false,
+      showTabName: "PROJECT_DETAIL.CONFIG",
+      permissions: () => this.isSessionValid && this.hasConfigurationListPermission
     }
   ];
   previousWindowWidth: number;

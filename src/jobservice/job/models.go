@@ -16,7 +16,7 @@ package job
 
 import (
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // Parameters for job execution.

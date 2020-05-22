@@ -17,7 +17,6 @@ package secret
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/stretchr/testify/assert"
@@ -153,35 +152,4 @@ func TestHasPushPullPerm(t *testing.T) {
 	// project ID
 	resource = rbac.Resource("/project/1/repository")
 	assert.False(t, context.Can(rbac.ActionPush, resource) && context.Can(rbac.ActionPull, resource))
-}
-
-func TestGetMyProjects(t *testing.T) {
-	context := NewSecurityContext("secret",
-		secret.NewStore(map[string]string{
-			"secret": "username",
-		}))
-
-	_, err := context.GetMyProjects()
-	assert.NotNil(t, err)
-}
-
-func TestGetProjectRoles(t *testing.T) {
-	// invalid secret
-	context := NewSecurityContext("invalid_secret",
-		secret.NewStore(map[string]string{
-			"jobservice_secret": secret.JobserviceUser,
-		}))
-
-	roles := context.GetProjectRoles("any_project")
-	assert.Equal(t, 0, len(roles))
-
-	// valid secret
-	context = NewSecurityContext("jobservice_secret",
-		secret.NewStore(map[string]string{
-			"jobservice_secret": secret.JobserviceUser,
-		}))
-
-	roles = context.GetProjectRoles("any_project")
-	assert.Equal(t, 1, len(roles))
-	assert.Equal(t, common.RoleGuest, roles[0])
 }

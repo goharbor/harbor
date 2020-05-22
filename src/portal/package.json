@@ -19,7 +19,8 @@
     "build": "ng build --aot",
     "release": "ng build --prod",
     "build-mock-api-server": "tsc -p server",
-    "mock-api-server": "npm run build-mock-api-server && node server/dist/server/src/mock-api.js"
+    "mock-api-server": "npm run build-mock-api-server && node server/dist/server/src/mock-api.js",
+    "generate-build-timestamp": "node scripts/generate-build-timestamp.js"
   },
   "private": true,
   "dependencies": {
@@ -31,9 +32,9 @@
     "@angular/platform-browser": "^8.2.0",
     "@angular/platform-browser-dynamic": "^8.2.0",
     "@angular/router": "^8.2.0",
-    "@clr/angular": "^2.2.0",
-    "@clr/icons": "^2.2.0",
-    "@clr/ui": "^2.2.0",
+    "@clr/angular": "^2.3.8",
+    "@clr/icons": "^2.3.8",
+    "@clr/ui": "^2.3.8",
     "@fortawesome/fontawesome-free": "^5.1.0-4",
     "@ng-bootstrap/ng-bootstrap": "^5.1.1",
     "@ngx-translate/core": "^10.0.2",

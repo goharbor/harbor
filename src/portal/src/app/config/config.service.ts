@@ -16,12 +16,12 @@ import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { Configuration } from "../../lib/components/config/config";
-import { HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../lib/utils/utils";
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../lib/utils/utils";
 
-const configEndpoint = "/api/configurations";
-const emailEndpoint = "/api/email/ping";
-const ldapEndpoint = "/api/ldap/ping";
-const oidcEndpoint = "/api/system/oidc/ping";
+const configEndpoint = CURRENT_BASE_HREF + "/configurations";
+const emailEndpoint = CURRENT_BASE_HREF + "/email/ping";
+const ldapEndpoint = CURRENT_BASE_HREF + "/ldap/ping";
+const oidcEndpoint = CURRENT_BASE_HREF + "/system/oidc/ping";
 
 @Injectable()
 export class ConfigurationService {

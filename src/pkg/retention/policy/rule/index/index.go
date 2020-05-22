@@ -17,6 +17,7 @@ package index
 import (
 	"sync"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
@@ -26,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestpl"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
-	"github.com/pkg/errors"
 )
 
 // index for keeping the mapping between template ID and evaluator

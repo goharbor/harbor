@@ -10,8 +10,8 @@ import (
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
-// FetchImages gets resources from Huawei SWR
-func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+// FetchArtifacts gets resources from Huawei SWR
+func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
 
 	resources := []*model.Resource{}
 
@@ -151,7 +151,6 @@ func parseRepoQueryResultToResource(repo hwRepoQueryResult) *model.Resource {
 	resource.Metadata = &model.ResourceMetadata{
 		Repository: repository,
 		Vtags:      repo.Tags,
-		Labels:     []string{},
 	}
 	resource.Deleted = false
 	resource.Override = false

@@ -5,6 +5,7 @@ export class Robot {
   description: string;
   expires_at: number;
   disabled: boolean;
+  creation_time?: Date;
   access: {
     isPullImage: boolean;
     isPushOrPullImage: boolean;

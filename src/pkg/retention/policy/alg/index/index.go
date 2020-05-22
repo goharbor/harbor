@@ -17,9 +17,9 @@ package index
 import (
 	"sync"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
-	"github.com/pkg/errors"
 )
 
 const (

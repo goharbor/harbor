@@ -18,7 +18,7 @@ import (
 	"fmt"
 
 	"github.com/goharbor/harbor/src/common/job"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/policy/manager"

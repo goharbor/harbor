@@ -6,13 +6,14 @@ import { OperationService } from './operation.service';
 import { HarborLibraryModule } from '../../harbor-library.module';
 import { IServiceConfig, SERVICE_CONFIG } from '../../entities/service.config';
 import { OperateInfo } from './operate';
+import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 describe('OperationComponent', () => {
 
     let component: OperationComponent;
     let fixture: ComponentFixture<OperationComponent>;
     let config: IServiceConfig = {
-        configurationEndpoint: '/api/configurations/testing'
+        configurationEndpoint: CURRENT_BASE_HREF + '/configurations/testing'
     };
 
     beforeEach(() => {

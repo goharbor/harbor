@@ -18,7 +18,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // MinInterval defines the minimum interval to check registries' health status.

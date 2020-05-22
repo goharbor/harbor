@@ -10,13 +10,14 @@ import { CronScheduleComponent } from '../../cron-schedule/cron-schedule.compone
 import { CronTooltipComponent } from "../../cron-schedule/cron-tooltip/cron-tooltip.component";
 import { of } from 'rxjs';
 import { GcJobData } from './gcLog';
+import { CURRENT_BASE_HREF } from "../../../utils/utils";
 
 describe('GcComponent', () => {
   let component: GcComponent;
   let fixture: ComponentFixture<GcComponent>;
   let gcRepoService: GcRepoService;
   let config: IServiceConfig = {
-    systemInfoEndpoint: "/api/system/gc"
+    systemInfoEndpoint: CURRENT_BASE_HREF + "/system/gc"
   };
   let mockSchedule = [];
   let mockJobs: GcJobData[] = [

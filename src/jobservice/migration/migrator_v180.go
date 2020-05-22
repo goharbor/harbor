@@ -25,8 +25,8 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/period"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/gomodule/redigo/redis"
-	"github.com/pkg/errors"
 )
 
 // PolicyMigrator migrate the cron job policy to new schema

@@ -16,7 +16,7 @@ import { UserGroup } from "./group";
 import { GroupService } from "./group.service";
 import { MessageHandlerService } from "../shared/message-handler/message-handler.service";
 import { throwError as observableThrowError } from "rxjs";
-import { AppConfigService } from '../app-config.service';
+import { AppConfigService } from '../services/app-config.service';
 import { OperationService } from "../../lib/components/operation/operation.service";
 import { operateChanges, OperateInfo, OperationState } from "../../lib/components/operation/operate";
 import { errorHandler } from "../../lib/utils/shared/shared.utils";
@@ -110,8 +110,8 @@ export class GroupComponent implements OnInit, OnDestroy {
       });
       // batchInfo.id = group.id;
       let deletionMessage = new ConfirmationMessage(
-        "MEMBER.DELETION_TITLE",
-        "MEMBER.DELETION_SUMMARY",
+        "GROUP.DELETION_TITLE",
+        "GROUP.DELETION_SUMMARY",
         nameArr.join(","),
         this.selectedGroups,
         ConfirmationTargets.PROJECT_MEMBER,
@@ -185,7 +185,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
   get canDeleteGroup(): boolean {
     return (
-      this.selectedGroups.length === 1 &&
+      this.selectedGroups.length >= 1 &&
       this.session.currentUser.has_admin_role
     );
   }

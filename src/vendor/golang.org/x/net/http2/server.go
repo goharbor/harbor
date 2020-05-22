@@ -322,7 +322,7 @@ type ServeConnOpts struct {
 }
 
 func (o *ServeConnOpts) context() context.Context {
-	if o != nil && o.Context != nil {
+	if o.Context != nil {
 		return o.Context
 	}
 	return context.Background()

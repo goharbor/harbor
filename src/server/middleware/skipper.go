@@ -16,6 +16,7 @@ package middleware
 
 import (
 	"net/http"
+	"path"
 	"regexp"
 )
 
@@ -28,10 +29,18 @@ type Skipper func(*http.Request) bool
 // when method is "*" it equals all http method
 func MethodAndPathSkipper(method string, re *regexp.Regexp) func(r *http.Request) bool {
 	return func(r *http.Request) bool {
-		if (method == "*" || r.Method == method) && re.MatchString(r.URL.Path) {
+		path := path.Clean(r.URL.EscapedPath())
+		if (method == "*" || r.Method == method) && re.MatchString(path) {
 			return true
 		}
 
 		return false
+	}
+}
+
+// NegativeSkipper returns skipper which is negative of the input skipper
+func NegativeSkipper(skipper Skipper) func(*http.Request) bool {
+	return func(r *http.Request) bool {
+		return !skipper(r)
 	}
 }

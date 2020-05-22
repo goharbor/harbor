@@ -1,7 +1,7 @@
 import { TestBed, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SystemAdminGuard } from './system-admin-activate.service';
-import { AppConfigService } from '../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { SessionService } from '../../shared/session.service';
 
 describe('SystemAdminGuard', () => {

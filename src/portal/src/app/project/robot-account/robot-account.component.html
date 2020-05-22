@@ -54,7 +54,7 @@
         </clr-dg-cell>
         <clr-dg-cell>{{r.description}}</clr-dg-cell>
         <clr-dg-cell>{{r.creation_time | date: 'short'}}</clr-dg-cell>
-        <clr-dg-cell>{{r.expires_at * 1000 | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{r.expires_at === -1?("ROBOT_ACCOUNT.NEVER_EXPIRED" | translate):(r.expires_at * 1000 | date: 'short')}}</clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
         <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}}

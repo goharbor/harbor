@@ -39,12 +39,14 @@ Resource  Harbor-Pages/Project-Webhooks.robot
 Resource  Harbor-Pages/Project-Webhooks_Elements.robot
 Resource  Harbor-Pages/Project-Repository.robot
 Resource  Harbor-Pages/Project-Repository_Elements.robot
+Resource  Harbor-Pages/Project-Artifact.robot
+Resource  Harbor-Pages/Project-Artifact-Elements.robot
 Resource  Harbor-Pages/Project-Config.robot
 Resource  Harbor-Pages/Project-Config-Elements.robot
 Resource  Harbor-Pages/Project-Helmcharts.robot
 Resource  Harbor-Pages/Project-Helmcharts_Elements.robot
-Resource  Harbor-Pages/Project-Retag.robot
-Resource  Harbor-Pages/Project-Retag_Elements.robot
+Resource  Harbor-Pages/Project-Copy.robot
+Resource  Harbor-Pages/Project-Copy-Elements.robot
 Resource  Harbor-Pages/Project-Tag-Retention.robot
 Resource  Harbor-Pages/Project-Tag-Retention_Elements.robot
 Resource  Harbor-Pages/Project_Robot_Account.robot
@@ -67,6 +69,7 @@ Resource  Harbor-Pages/OIDC_Auth.robot
 Resource  Harbor-Pages/OIDC_Auth_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
+Resource  CNAB_Util.robot
 Resource  Helm-Util.robot
 Resource  OVA-Util.robot
 Resource  Cert-Util.robot
@@ -225,12 +228,26 @@ Command Should be Failed
 
 Retry Keyword When Error
     [Arguments]  ${keyword}  @{elements}
-    :For  ${n}  IN RANGE  1  6
+    :For  ${n}  IN RANGE  1  10
     \    Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
     \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
-    \    Log To Console  Return value is ${out[0]}
-    \    Exit For Loop If  '${out[0]}'=='PASS'
-    \    Sleep  2
+    \    Log To Console  Return value is ${out} and ${out[0]}
+    \    Run Keyword If  '${keyword}'=='Make Swagger Client'  Exit For Loop If  '${out[0]}'=='PASS' and '${out[1]}'=='0'
+    \    ...  ELSE  Exit For Loop If  '${out[0]}'=='PASS'
+    \    Sleep  10
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+    [Return]  ${out[1]}
+
+Retry Keyword N Times When Error
+    [Arguments]  ${times}  ${keyword}  @{elements}
+    :For  ${n}  IN RANGE  1  ${times}
+    \    Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
+    \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
+    \    Log To Console  Return value is ${out} and ${out[0]}
+    \    Run Keyword If  '${keyword}'=='Make Swagger Client'  Exit For Loop If  '${out[0]}'=='PASS' and '${out[1]}'=='0'
+    \    ...  ELSE  Exit For Loop If  '${out[0]}'=='PASS'
+    \    Sleep  10
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
     [Return]  ${out[1]}
@@ -248,8 +265,8 @@ Retry Keyword When Return Value Mismatch
     Should Be Equal As Strings  ${status}  'PASS'
 
 Retry Double Keywords When Error
-    [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}  ${DoAssert}=${true}
-    :For  ${n}  IN RANGE  1  5
+    [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}  ${DoAssert}=${true}  ${times}=3
+    :For  ${n}  IN RANGE  1  ${times}
     \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
     \    Capture Page Screenshot

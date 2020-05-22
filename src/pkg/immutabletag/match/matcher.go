@@ -1,11 +1,11 @@
 package match
 
 import (
-	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/lib/selector"
 )
 
 // ImmutableTagMatcher ...
 type ImmutableTagMatcher interface {
 	// Match whether the candidate is in the immutable list
-	Match(c art.Candidate) (bool, error)
+	Match(pid int64, c selector.Candidate) (bool, error)
 }

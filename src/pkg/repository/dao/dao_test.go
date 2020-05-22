@@ -16,14 +16,13 @@ package dao
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/internal/orm"
-	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
@@ -106,7 +105,7 @@ func (d *daoTestSuite) TestGet() {
 	// get the non-exist repository
 	_, err := d.dao.Get(d.ctx, 10000)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+	d.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// get the exist repository
 	repository, err := d.dao.Get(d.ctx, d.id)
@@ -125,7 +124,7 @@ func (d *daoTestSuite) TestCreate() {
 	}
 	_, err := d.dao.Create(d.ctx, repository)
 	d.Require().NotNil(err)
-	d.True(ierror.IsErr(err, ierror.ConflictCode))
+	d.True(errors.IsErr(err, errors.ConflictCode))
 }
 
 func (d *daoTestSuite) TestDelete() {
@@ -134,9 +133,9 @@ func (d *daoTestSuite) TestDelete() {
 	// not exist
 	err := d.dao.Delete(d.ctx, 100021)
 	d.Require().NotNil(err)
-	var e *ierror.Error
+	var e *errors.Error
 	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.Equal(errors.NotFoundCode, e.Code)
 }
 
 func (d *daoTestSuite) TestUpdate() {
@@ -157,9 +156,30 @@ func (d *daoTestSuite) TestUpdate() {
 		RepositoryID: 10000,
 	})
 	d.Require().NotNil(err)
-	var e *ierror.Error
+	var e *errors.Error
 	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.Equal(errors.NotFoundCode, e.Code)
+}
+
+func (d *daoTestSuite) TestAddPullCount() {
+	repository := &models.RepoRecord{
+		Name:        "test/pullcount",
+		ProjectID:   10,
+		Description: "test pull count",
+		PullCount:   1,
+	}
+	id, err := d.dao.Create(d.ctx, repository)
+	d.Require().Nil(err)
+
+	err = d.dao.AddPullCount(d.ctx, id)
+	d.Require().Nil(err)
+
+	repository, err = d.dao.Get(d.ctx, id)
+	d.Require().Nil(err)
+	d.Require().NotNil(repository)
+	d.Equal(int64(2), repository.PullCount)
+
+	d.dao.Delete(d.ctx, id)
 }
 
 func TestDaoTestSuite(t *testing.T) {

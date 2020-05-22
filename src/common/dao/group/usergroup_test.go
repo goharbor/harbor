@@ -23,7 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -282,7 +282,6 @@ func TestGetGroupProjects(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when AddProject: %v", err)
 	}
-	defer dao.DeleteProject(projectID2)
 	groupID, err := AddUserGroup(models.UserGroup{
 		GroupName:   "test_group_03",
 		GroupType:   1,
@@ -298,8 +297,18 @@ func TestGetGroupProjects(t *testing.T) {
 		EntityType: "g",
 	})
 	defer project.DeleteProjectMemberByID(pmid)
+	pmid2, err := project.AddProjectMember(models.Member{
+		ProjectID:  projectID2,
+		EntityID:   groupID,
+		EntityType: "g",
+	})
+	defer project.DeleteProjectMemberByID(pmid2)
+	if err := dao.DeleteProject(projectID2); err != nil {
+		t.Errorf("Error occurred when DeleteProject: %v", err)
+	}
 	type args struct {
-		query *models.ProjectQueryParam
+		query    *models.ProjectQueryParam
+		groupIDs []int
 	}
 	member := &models.MemberQuery{
 		Name: "grouptestu09",
@@ -311,22 +320,30 @@ func TestGetGroupProjects(t *testing.T) {
 		wantErr  bool
 	}{
 		{"Query with group DN",
-			args{&models.ProjectQueryParam{
-				Member: member,
-			}},
+			args{
+				query: &models.ProjectQueryParam{
+					Member: member,
+				},
+				groupIDs: []int{groupID},
+			},
 			1, false},
 		{"Query without group DN",
-			args{&models.ProjectQueryParam{}},
-			1, false},
+			args{
+				query: &models.ProjectQueryParam{
+					Member: member,
+				},
+				groupIDs: []int{},
+			},
+			0, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := dao.GetGroupProjects([]int{groupID}, tt.args.query)
+			got, err := dao.GetGroupProjects(tt.args.groupIDs, tt.args.query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetGroupProjects() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if len(got) < tt.wantSize {
+			if len(got) != tt.wantSize {
 				t.Errorf("GetGroupProjects() size: %v, want %v", len(got), tt.wantSize)
 			}
 		})
@@ -349,7 +366,7 @@ func TestGetTotalGroupProjects(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when AddProject: %v", err)
 	}
-	defer dao.DeleteProject(projectID2)
+
 	groupID, err := AddUserGroup(models.UserGroup{
 		GroupName:   "test_group_05",
 		GroupType:   1,
@@ -365,8 +382,18 @@ func TestGetTotalGroupProjects(t *testing.T) {
 		EntityType: "g",
 	})
 	defer project.DeleteProjectMemberByID(pmid)
+	pmid2, err := project.AddProjectMember(models.Member{
+		ProjectID:  projectID2,
+		EntityID:   groupID,
+		EntityType: "g",
+	})
+	defer project.DeleteProjectMemberByID(pmid2)
+	if err := dao.DeleteProject(projectID2); err != nil { // deleted project should not be counted
+		t.Errorf("Error occurred when delete project: %v", err)
+	}
 	type args struct {
-		query *models.ProjectQueryParam
+		query    *models.ProjectQueryParam
+		groupIDs []int
 	}
 	tests := []struct {
 		name     string
@@ -375,72 +402,34 @@ func TestGetTotalGroupProjects(t *testing.T) {
 		wantErr  bool
 	}{
 		{"Query with group ID",
-			args{&models.ProjectQueryParam{}},
-			1, false},
+			args{
+				query: &models.ProjectQueryParam{
+					Member: &models.MemberQuery{
+						Name: "member_test_01",
+					},
+				},
+				groupIDs: []int{groupID},
+			},
+			2, false},
 		{"Query without group ID",
-			args{&models.ProjectQueryParam{}},
+			args{
+				query: &models.ProjectQueryParam{
+					Member: &models.MemberQuery{
+						Name: "member_test_01",
+					},
+				},
+				groupIDs: []int{}},
 			1, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := dao.GetTotalGroupProjects([]int{groupID}, tt.args.query)
+			got, err := dao.GetTotalGroupProjects(tt.args.groupIDs, tt.args.query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetGroupProjects() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got < tt.wantSize {
+			if got != tt.wantSize {
 				t.Errorf("GetGroupProjects() size: %v, want %v", got, tt.wantSize)
-			}
-		})
-	}
-}
-func TestGetRolesByLDAPGroup(t *testing.T) {
-
-	userGroupList, err := QueryUserGroup(models.UserGroup{LdapGroupDN: "cn=harbor_users,ou=sample,ou=vmware,dc=harbor,dc=com", GroupType: 1})
-	if err != nil || len(userGroupList) < 1 {
-		t.Errorf("failed to query user group, err %v", err)
-	}
-
-	userGroups := []models.UserGroup{
-		{GroupName: "test_http_group", GroupType: common.HTTPGroupType},
-		{GroupName: "test_myhttp_group", GroupType: common.HTTPGroupType},
-	}
-
-	gl2, err2 := PopulateGroup(userGroups)
-	if err2 != nil || len(gl2) != 2 {
-		t.Errorf("failed to query http user group, err %v", err)
-	}
-	project, err := dao.GetProjectByName("member_test_01")
-	if err != nil {
-		t.Errorf("Error occurred when Get project by name: %v", err)
-	}
-	privateProject, err := dao.GetProjectByName("group_project_private")
-	if err != nil {
-		t.Errorf("Error occurred when Get project by name: %v", err)
-	}
-
-	type args struct {
-		projectID int64
-		groupIDs  []int
-	}
-	tests := []struct {
-		name     string
-		args     args
-		wantSize int
-		wantErr  bool
-	}{
-		{"Check normal", args{projectID: project.ProjectID, groupIDs: []int{userGroupList[0].ID, gl2[0], gl2[1]}}, 2, false},
-		{"Check non exist", args{projectID: privateProject.ProjectID, groupIDs: []int{9999}}, 0, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := dao.GetRolesByGroupID(tt.args.projectID, tt.args.groupIDs)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TestGetRolesByLDAPGroup() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != tt.wantSize {
-				t.Errorf("TestGetRolesByLDAPGroup() = %v, want %v", len(got), tt.wantSize)
 			}
 		})
 	}

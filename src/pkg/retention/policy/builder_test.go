@@ -16,6 +16,7 @@ package policy
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
 
@@ -23,17 +24,17 @@ import (
 
 	index2 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
 
-	"github.com/goharbor/harbor/src/pkg/art/selectors/index"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/lib/errors"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
 
-	"github.com/goharbor/harbor/src/pkg/art/selectors/label"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/label"
 
-	"github.com/goharbor/harbor/src/pkg/art/selectors/doublestar"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
 
@@ -47,8 +48,6 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 
-	"github.com/goharbor/harbor/src/pkg/art"
-
 	"github.com/stretchr/testify/suite"
 )
 
@@ -56,7 +55,7 @@ import (
 type TestBuilderSuite struct {
 	suite.Suite
 
-	all       []*art.Candidate
+	all       []*selector.Candidate
 	oldClient dep.Client
 }
 
@@ -68,13 +67,13 @@ func TestBuilder(t *testing.T) {
 // SetupSuite prepares the testing content if needed
 func (suite *TestBuilderSuite) SetupSuite() {
 	dao.PrepareTestForPostgresSQL()
-	suite.all = []*art.Candidate{
+	suite.all = []*selector.Candidate{
 		{
 			NamespaceID: 1,
 			Namespace:   "library",
 			Repository:  "harbor",
 			Kind:        "image",
-			Tag:         "latest",
+			Tags:        []string{"latest"},
 			Digest:      "latest",
 			PushedTime:  time.Now().Unix(),
 			Labels:      []string{"L1", "L2"},
@@ -84,7 +83,7 @@ func (suite *TestBuilderSuite) SetupSuite() {
 			Namespace:   "library",
 			Repository:  "harbor",
 			Kind:        "image",
-			Tag:         "dev",
+			Tags:        []string{"dev"},
 			Digest:      "dev",
 			PushedTime:  time.Now().Unix(),
 			Labels:      []string{"L3"},
@@ -157,7 +156,7 @@ func (suite *TestBuilderSuite) TestBuild() {
 		success = art.Error == nil &&
 			art.Target != nil &&
 			art.Target.Repository == "harbor" &&
-			art.Target.Tag == "dev"
+			art.Target.Tags[0] == "dev"
 
 		return
 	})
@@ -165,21 +164,21 @@ func (suite *TestBuilderSuite) TestBuild() {
 
 type fakeRetentionClient struct{}
 
-func (frc *fakeRetentionClient) DeleteRepository(repo *art.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *selector.Repository) error {
 	panic("implement me")
 }
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *art.Repository) ([]*art.Candidate, error) {
+func (frc *fakeRetentionClient) GetCandidates(repo *selector.Repository) ([]*selector.Candidate, error) {
 	return nil, errors.New("not implemented")
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *art.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *selector.Candidate) error {
 	return nil
 }
 
 // SubmitTask ...
-func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *art.Repository, meta *lwp.Metadata) (string, error) {
+func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *selector.Repository, meta *lwp.Metadata) (string, error) {
 	return "", errors.New("not implemented")
 }

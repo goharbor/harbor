@@ -1,6 +1,7 @@
 import { TestBed, inject, getTestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { PasswordSettingService } from './password-setting.service';
+import { CURRENT_BASE_HREF } from "../../../lib/utils/utils";
 
 describe('PasswordSettingService', () => {
   let injector: TestBed;
@@ -32,7 +33,7 @@ describe('PasswordSettingService', () => {
       expect(res).toEqual(null);
     });
 
-    const req = httpMock.expectOne('/api/users/1/password');
+    const req = httpMock.expectOne(CURRENT_BASE_HREF + '/users/1/password');
     expect(req.request.method).toBe('PUT');
     req.flush(null);
   });

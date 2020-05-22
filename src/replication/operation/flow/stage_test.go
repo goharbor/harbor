@@ -59,7 +59,7 @@ func (f *fakedAdapter) PrepareForPush([]*model.Resource) error {
 func (f *fakedAdapter) HealthCheck() (model.HealthStatus, error) {
 	return model.Healthy, nil
 }
-func (f *fakedAdapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+func (f *fakedAdapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
 	return []*model.Resource{
 		{
 			Type: model.ResourceTypeImage,
@@ -77,11 +77,11 @@ func (f *fakedAdapter) FetchImages(filters []*model.Filter) ([]*model.Resource, 
 func (f *fakedAdapter) ManifestExist(repository, reference string) (exist bool, digest string, err error) {
 	return false, "", nil
 }
-func (f *fakedAdapter) PullManifest(repository, reference string, accepttedMediaTypes []string) (manifest distribution.Manifest, digest string, err error) {
+func (f *fakedAdapter) PullManifest(repository, reference string, accepttedMediaTypes ...string) (manifest distribution.Manifest, digest string, err error) {
 	return nil, "", nil
 }
-func (f *fakedAdapter) PushManifest(repository, reference, mediaType string, payload []byte) error {
-	return nil
+func (f *fakedAdapter) PushManifest(repository, reference, mediaType string, payload []byte) (string, error) {
+	return "", nil
 }
 func (f *fakedAdapter) DeleteManifest(repository, digest string) error {
 	return nil
@@ -93,6 +93,9 @@ func (f *fakedAdapter) PullBlob(repository, digest string) (size int64, blob io.
 	return 0, nil, nil
 }
 func (f *fakedAdapter) PushBlob(repository, digest string, size int64, blob io.Reader) error {
+	return nil
+}
+func (f *fakedAdapter) DeleteTag(repository, tag string) error {
 	return nil
 }
 func (f *fakedAdapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {
@@ -223,9 +226,11 @@ func TestFilterResources(t *testing.T) {
 				Repository: &model.Repository{
 					Name: "library/hello-world",
 				},
-				Vtags: []string{"latest"},
-				// TODO test labels
-				Labels: nil,
+				Artifacts: []*model.Artifact{
+					{
+						Tags: []string{"latest"},
+					},
+				},
 			},
 			Deleted:  true,
 			Override: true,
@@ -236,9 +241,14 @@ func TestFilterResources(t *testing.T) {
 				Repository: &model.Repository{
 					Name: "library/harbor",
 				},
-				Vtags: []string{"0.2.0", "0.3.0"},
-				// TODO test labels
-				Labels: nil,
+				Artifacts: []*model.Artifact{
+					{
+						Tags: []string{"0.2.0"},
+					},
+					{
+						Tags: []string{"0.3.0"},
+					},
+				},
 			},
 			Deleted:  true,
 			Override: true,
@@ -249,9 +259,11 @@ func TestFilterResources(t *testing.T) {
 				Repository: &model.Repository{
 					Name: "library/mysql",
 				},
-				Vtags: []string{"1.0"},
-				// TODO test labels
-				Labels: nil,
+				Artifacts: []*model.Artifact{
+					{
+						Tags: []string{"1.0"},
+					},
+				},
 			},
 			Deleted:  true,
 			Override: true,
@@ -279,8 +291,8 @@ func TestFilterResources(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(res))
 	assert.Equal(t, "library/harbor", res[0].Metadata.Repository.Name)
-	assert.Equal(t, 1, len(res[0].Metadata.Vtags))
-	assert.Equal(t, "0.2.0", res[0].Metadata.Vtags[0])
+	assert.Equal(t, 1, len(res[0].Metadata.Artifacts))
+	assert.Equal(t, "0.2.0", res[0].Metadata.Artifacts[0].Tags[0])
 }
 
 func TestAssembleSourceResources(t *testing.T) {

@@ -16,22 +16,24 @@ package jobs
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/core/service/notifications"
 	"time"
+
+	"github.com/goharbor/harbor/src/core/service/notifications"
 
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/notifier/event"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/scan"
 	jjob "github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	sc "github.com/goharbor/harbor/src/pkg/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/operation/hook"
 	"github.com/goharbor/harbor/src/replication/policy/scheduler"
-	"github.com/pkg/errors"
 )
 
 var statusMap = map[string]string{
@@ -115,7 +117,7 @@ func (h *Handler) HandleScan() {
 			log.Debugf("Scan %s for artifact: %#v", h.status, req.Artifact)
 
 			e := &event.Event{}
-			metaData := &event.ScanImageMetaData{
+			metaData := &metadata.ScanImageMetaData{
 				Artifact: req.Artifact,
 				Status:   h.status,
 			}
@@ -152,10 +154,28 @@ func (h *Handler) HandleReplicationScheduleJob() {
 // HandleReplicationTask handles the webhook of replication task
 func (h *Handler) HandleReplicationTask() {
 	log.Debugf("received replication task status update event: task-%d, status-%s", h.id, h.status)
+
 	if err := hook.UpdateTask(replication.OperationCtl, h.id, h.rawStatus, h.revision); err != nil {
 		log.Errorf("failed to update the status of the replication task %d: %v", h.id, err)
 		h.SendInternalServerError(err)
 		return
+	}
+
+	// Trigger artifict webhook event only for JobFinished and JobError status
+	if h.status == models.JobFinished || h.status == models.JobError || h.status == models.JobStopped {
+		e := &event.Event{}
+		metaData := &metadata.ReplicationMetaData{
+			ReplicationTaskID: h.id,
+			Status:            h.rawStatus,
+		}
+
+		if err := e.Build(metaData); err == nil {
+			if err := e.Publish(); err != nil {
+				log.Error(errors.Wrap(err, "replication job hook handler: event publish"))
+			}
+		} else {
+			log.Error(errors.Wrap(err, "replication job hook handler: event publish"))
+		}
 	}
 }
 

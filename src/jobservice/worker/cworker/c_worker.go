@@ -29,8 +29,8 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/goharbor/harbor/src/jobservice/runner"
 	"github.com/goharbor/harbor/src/jobservice/worker"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/gomodule/redigo/redis"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -410,8 +410,10 @@ func (w *basicWorker) registerJob(name string, j interface{}) (err error) {
 	w.pool.JobWithOptions(
 		name,
 		work.JobOptions{
-			MaxFails: theJ.MaxFails(),
-			SkipDead: true,
+			MaxFails:       theJ.MaxFails(),
+			MaxConcurrency: theJ.MaxCurrency(),
+			Priority:       job.Priority().For(name),
+			SkipDead:       true,
 		},
 		// Use generic handler to handle as we do not accept context with this way.
 		func(job *work.Job) error {

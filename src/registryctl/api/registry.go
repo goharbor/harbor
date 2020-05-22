@@ -21,7 +21,7 @@ import (
 
 	"os/exec"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
@@ -38,7 +38,7 @@ type GCResult struct {
 
 // StartGC ...
 func StartGC(w http.ResponseWriter, r *http.Request) {
-	cmd := exec.Command("/bin/bash", "-c", "registry garbage-collect --delete-untagged=true "+regConf)
+	cmd := exec.Command("/bin/bash", "-c", "registry_DO_NOT_USE_GC garbage-collect --delete-untagged=false "+regConf)
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = &outBuf
 	cmd.Stderr = &errBuf

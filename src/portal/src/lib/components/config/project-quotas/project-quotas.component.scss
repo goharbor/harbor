@@ -4,17 +4,18 @@
   .default-quota-text {
     display: flex;
     align-items: center;
-    text-transform: uppercase;
     font-family: Metropolis, "Avenir Next", "Helvetica Neue", Arial, sans-serif;
     .width-10rem {
       width: 15rem;
+      font-size: 15px;
     }
 
     .num-count {
       display: inline-block;
       min-width: 2rem;
       font-weight: 600;
-      font-size: 18px;
+      font-size: 15px;
+      text-transform: uppercase;
     }
   }
 }
@@ -50,11 +51,6 @@
   margin-bottom: .35rem;
 }
 
-.refresh-div {
-  margin-top: auto;
-  cursor: pointer;
-}
-
 ::ng-deep {
   .progress {
     &.warning>progress {
@@ -72,4 +68,12 @@
       height: 75%;
     }
   }
+}
+
+.action-head-pos {
+  padding-right: 18px;
+  height: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }

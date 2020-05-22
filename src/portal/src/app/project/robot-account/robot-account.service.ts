@@ -47,6 +47,7 @@ export class RobotService {
 
     let param = {
       name: robot.name,
+      expires_at: +robot.expires_at,
       description: robot.description,
       access
     };

@@ -24,9 +24,9 @@ import (
 	"github.com/goharbor/harbor/src/common/config/metadata"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
 	corecfg "github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // ConfigAPI ...

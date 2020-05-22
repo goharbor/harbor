@@ -15,35 +15,36 @@
 package handler
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"net/http/httptest"
-	"strings"
 
-	"github.com/go-openapi/errors"
-	ierrors "github.com/goharbor/harbor/src/internal/error"
+	serror "github.com/goharbor/harbor/src/server/error"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/blob"
+	"github.com/goharbor/harbor/src/server/middleware/quota"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 )
 
 // New returns http handler for API V2.0
 func New() http.Handler {
 	h, api, err := restapi.HandlerAPI(restapi.Config{
-		ArtifactAPI: newArtifactAPI(),
+		ArtifactAPI:   newArtifactAPI(),
+		RepositoryAPI: newRepositoryAPI(),
+		AuditlogAPI:   newAuditLogAPI(),
+		ScanAPI:       newScanAPI(),
+		ProjectAPI:    newProjectAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	api.RegisterMiddleware("CopyArtifact", middleware.Chain(quota.CopyArtifactMiddleware(), blob.CopyArtifactMiddleware()))
+	api.RegisterMiddleware("DeleteArtifact", quota.RefreshForProjectMiddleware())
+	api.RegisterMiddleware("DeleteRepository", quota.RefreshForProjectMiddleware())
+
 	api.ServeError = serveError
 
 	return h
-}
-
-type apiError struct {
-	Code    int32  `json:"code"`
-	Message string `json:"message"`
 }
 
 // Before executing operation handler, go-swagger will bind a parameters object to a request and validate the request,
@@ -51,21 +52,5 @@ type apiError struct {
 // The response format of the default ServeError implementation does not match the internal error response format.
 // So we needed to convert the format to the internal error response format.
 func serveError(rw http.ResponseWriter, r *http.Request, err error) {
-	w := httptest.NewRecorder()
-	errors.ServeError(w, r, err)
-
-	rw.WriteHeader(w.Code)
-	for key, values := range w.Header() {
-		for _, value := range values {
-			rw.Header().Add(key, value)
-		}
-	}
-
-	var er apiError
-	json.Unmarshal(w.Body.Bytes(), &er)
-
-	code := strings.Replace(strings.ToUpper(http.StatusText(w.Code)), " ", "_", -1)
-
-	e := ierrors.New(fmt.Errorf(er.Message)).WithCode(code)
-	rw.Write([]byte(e.Error()))
+	serror.SendError(rw, err)
 }

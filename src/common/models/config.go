@@ -90,7 +90,6 @@ type OIDCSetting struct {
 
 // QuotaSetting wraps the settings for Quota
 type QuotaSetting struct {
-	CountPerProject   int64 `json:"count_per_project"`
 	StoragePerProject int64 `json:"storage_per_project"`
 }
 

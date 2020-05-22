@@ -38,10 +38,6 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	err = dao.ClearTable("access_log")
-	if err != nil {
-		panic(err)
-	}
 	err = dao.ClearTable("project")
 	if err != nil {
 		panic(err)

@@ -20,7 +20,7 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 var defaultRegistered = false
