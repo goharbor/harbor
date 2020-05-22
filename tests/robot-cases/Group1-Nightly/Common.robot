@@ -611,8 +611,7 @@ Test Case - Push Docker Manifest Index and Display
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/index${d}
     Go Into Repo  test${d}/index${d}
-    Retry Double Keywords When Error  Go Into Index  index_name=${null}  Page Should Contain Element  ${tag_table_column_os_arch}
-    Page Should Contain Element  ${artifact_rows}  limit=2
+    Go Into Index And Contain Artifacts  index_tag${d}  limit=2
     Close Browser
 
 Test Case - Push CNAB Bundle and Display
@@ -633,8 +632,7 @@ Test Case - Push CNAB Bundle and Display
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/cnab${d}
     Go Into Repo  test${d}/cnab${d}
-    Retry Double Keywords When Error  Go Into Index  index_name=${null}  Page Should Contain Element  ${tag_table_column_os_arch}
-    Page Should Contain Element  ${artifact_rows}  limit=3
+    Go Into Index And Contain Artifacts  cnab_tag${d}  limit=3
     Close Browser
 
 Test Case - Push Helm Chart and Display
