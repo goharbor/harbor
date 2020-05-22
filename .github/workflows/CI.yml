@@ -148,6 +148,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           env
           df -h
+          docker system prune -a -f
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
       - name: script
         run: |
