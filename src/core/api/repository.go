@@ -103,18 +103,6 @@ func (ra *RepositoryAPI) Get() {
 		return
 	}
 
-	exist, err := ra.ProjectMgr.Exists(projectID)
-	if err != nil {
-		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d",
-			projectID), err)
-		return
-	}
-
-	if !exist {
-		ra.SendNotFoundError(fmt.Errorf("project %d not found", projectID))
-		return
-	}
-
 	if !ra.RequireProjectAccess(projectID, rbac.ActionList, rbac.ResourceRepository) {
 		return
 	}
@@ -411,6 +399,10 @@ func (ra *RepositoryAPI) Delete() {
 func (ra *RepositoryAPI) GetTag() {
 	repository := ra.GetString(":splat")
 	tag := ra.GetString(":tag")
+	projectName, _ := utils.ParseRepository(repository)
+	if !ra.RequireProjectAccess(projectName, rbac.ActionRead, rbac.ResourceRepositoryTag) {
+		return
+	}
 	exist, _, err := ra.checkExistence(repository, tag)
 	if err != nil {
 		ra.SendInternalServerError(fmt.Errorf("failed to check the existence of resource, error: %v", err))
@@ -418,11 +410,6 @@ func (ra *RepositoryAPI) GetTag() {
 	}
 	if !exist {
 		ra.SendNotFoundError(fmt.Errorf("resource: %s:%s not found", repository, tag))
-		return
-	}
-
-	projectName, _ := utils.ParseRepository(repository)
-	if !ra.RequireProjectAccess(projectName, rbac.ActionRead, rbac.ResourceRepositoryTag) {
 		return
 	}
 
@@ -559,6 +546,9 @@ func (ra *RepositoryAPI) GetTags() {
 	}
 
 	projectName, _ := utils.ParseRepository(repoName)
+	if !ra.RequireProjectAccess(projectName, rbac.ActionList, rbac.ResourceRepositoryTag) {
+		return
+	}
 	project, err := ra.ProjectMgr.Get(projectName)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to get the project %s",
@@ -568,10 +558,6 @@ func (ra *RepositoryAPI) GetTags() {
 
 	if project == nil {
 		ra.SendNotFoundError(fmt.Errorf("project %s not found", projectName))
-		return
-	}
-
-	if !ra.RequireProjectAccess(projectName, rbac.ActionList, rbac.ResourceRepositoryTag) {
 		return
 	}
 
@@ -853,18 +839,6 @@ func (ra *RepositoryAPI) GetManifests() {
 	}
 
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exists(projectName)
-	if err != nil {
-		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
-			projectName), err)
-		return
-	}
-
-	if !exist {
-		ra.SendNotFoundError(fmt.Errorf("project %s not found", projectName))
-		return
-	}
-
 	if !ra.RequireProjectAccess(projectName, rbac.ActionRead, rbac.ResourceRepositoryTagManifest) {
 		return
 	}
@@ -1011,18 +985,6 @@ func (ra *RepositoryAPI) GetSignatures() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exists(projectName)
-	if err != nil {
-		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
-			projectName), err)
-		return
-	}
-
-	if !exist {
-		ra.SendNotFoundError(fmt.Errorf("project %s not found", projectName))
-		return
-	}
-
 	if !ra.RequireProjectAccess(projectName, rbac.ActionRead, rbac.ResourceRepository) {
 		return
 	}

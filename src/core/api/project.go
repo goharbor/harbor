@@ -76,7 +76,7 @@ func (p *ProjectAPI) Prepare() {
 		}
 
 		if project == nil {
-			p.SendNotFoundError(fmt.Errorf("project %d not found", id))
+			p.handleProjectNotFound(id)
 			return
 		}
 

@@ -48,11 +48,11 @@ func TestGetRepos(t *testing.T) {
 	}
 
 	// -------------------case 2 : response code = 404------------------------//
-	fmt.Println("case 2 : response code = 404:project  not found")
+	fmt.Println("case 2 : response code = 404: project  not found")
 	projectID = "111"
 	httpStatusCode, _, err := apiTest.GetRepos(*admin, projectID, keyword)
 	if err != nil {
-		t.Error("Error whihle get repos by projectID", err.Error())
+		t.Error("Error while get repos by projectID", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
@@ -77,8 +77,8 @@ func TestGetReposTags(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	// -------------------case 1 : response code = 404------------------------//
-	fmt.Println("case 1 : response code = 404,repo not found")
+	// -------------------case 1 : response code = 404---------------------//
+	fmt.Println("case 1 : response code = 404")
 	repository := "errorRepos"
 	code, _, err := apiTest.GetReposTags(*admin, repository)
 	if err != nil {
@@ -155,7 +155,7 @@ func TestGetReposManifests(t *testing.T) {
 	}
 
 	// -------------------case 3 : response code = 404------------------------//
-	fmt.Println("case 3 : response code = 404,repo not found")
+	fmt.Println("case 3 : response code = 404")
 	repoName = "111"
 	httpStatusCode, err = apiTest.GetReposManifests(*admin, repoName, tag)
 	if err != nil {
