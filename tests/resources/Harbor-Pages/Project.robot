@@ -43,6 +43,9 @@ Create An New Project With New User
     Create An New Project And Go Into Project  ${projectname}  ${public}
     Sleep  1
 
+Artifact Exist
+    [Arguments]  ${tag_name}
+    Retry Wait Until Page Contains Element  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256') and contains(.,'${tag_name}')]
 #It's the log of project.
 Go To Project Log
     #Switch To Project Tab Overflow
