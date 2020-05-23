@@ -38,7 +38,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **Auditing**: All the operations to the repositories are tracked through logs.
 * **RESTful API**: RESTful APIs are provided to facilitate administrative operations, and are easy to use for integration with external systems. An embedded Swagger UI is available for exploring and testing the API.
-* **Easy deployment**: Harbor can be deployed via Docker compose as well Helm Chart. A Harbor Operator was added recently as well - https://goharbor.io/docs/1.10/build-customize-contribute/e2e_api_python_based_scripting_guide/
+* **Easy deployment**: Harbor can be deployed via Docker compose as well Helm Chart. A Harbor Operator was added recently as well.
 
 ## Architecture
 
