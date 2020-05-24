@@ -914,7 +914,7 @@
             "SCOPE": "OIDC Scope",
             "OIDC_VERIFYCERT": "Verify Certificate",
             "OIDC_AUTOONBOARD": "Automatic onboarding",
-            "USER_CLAIM": "OIDC Username Claim",    
+            "USER_CLAIM": "Username Claim",    
             "OIDC_SETNAME": "Set OIDC Username",
             "OIDC_SETNAMECONTENT": "You must create a Harbor username the first time when authenticating via a third party(OIDC).This will be used within Harbor to be associated with projects, roles, etc.",
             "OIDC_USERNAME": "Username",
