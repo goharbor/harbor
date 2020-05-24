@@ -321,11 +321,11 @@ func userInfoFromClaims(c claimsProvider, g, u string) (*UserInfo, error) {
 			return nil, err
 		}
 
-		if username, ok := allClaims[u].(string); !ok {
-			log.Warningf("OIDC. Failed to recover Username from claim. Claim '%s' is empty", u)
-		} else {
-			res.Username = username
+		username, ok := allClaims[u].(string)
+		if !ok {
+			return nil, fmt.Errorf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", u)
 		}
+		res.Username = username
 
 	}
 	res.Groups, res.hasGroupClaim = GroupsFromClaims(c, g)
