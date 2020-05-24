@@ -286,4 +286,38 @@ describe('Replication Component (inline template)', () => {
       expect(el.textContent.trim()).toEqual('library/nginx');
     });
   }));
+
+  it('function "getDuration" should work', () => {
+    // ms level
+    const item: ReplicationJobItem = {
+      start_time: 1589340503637,
+      end_time: 1589340503638,
+      id: 3,
+      status: "stopped",
+      policy_id: 2,
+      trigger: "Manual",
+      total: 1,
+      failed: 1,
+      succeed: 0,
+      in_progress: 0,
+      stopped: 0
+    };
+    expect(comp.getDuration(item)).toEqual('1ms');
+    // sec level
+    item.start_time = 1589340503637;
+    item.end_time = 1589340504638;
+    expect(comp.getDuration(item)).toEqual('1s');
+    // min level
+    item.start_time = 1589340503637;
+    item.end_time = 1589340564638;
+    expect(comp.getDuration(item)).toEqual('1m1s');
+    // hour level
+    item.start_time = 1589340503637;
+    item.end_time = 1589344164638;
+    expect(comp.getDuration(item)).toEqual('61m1s');
+    // day level
+    item.start_time = "5/8/20,11:20 AM";
+    item.end_time = "5/9/20,11:24 AM";
+    expect(comp.getDuration(item)).toEqual('1444m');
+  });
 });

@@ -5,7 +5,9 @@ weight: 95
 
 [Helm](https://helm.sh) is a package manager for [Kubernetes](https://kubernetes.io). Helm uses a packaging format called [charts](https://docs.helm.sh/developing_charts). Since version 1.6.0 Harbor is now a composite cloud-native registry which supports both container image management and Helm charts management. Access to Helm charts in Harbor is controlled by [role-based access controls (RBAC)](https://en.wikipedia.org/wiki/Role-based_access_control) and is restricted by projects.
 
-## Manage Helm Charts via the Harbor Interface
+There are two places to manage helm charts. First one is in the ChartMuseum which is provided by Harbor from version 1.6.0. The second one is in the OCI-compatible registry which is provided by Harbor from version 2.0.0. This means you can now manage Helm charts alongside your container images through the same set of projects and repositories.
+
+## Manage Helm Charts with the ChartMuseum in Harbor Interface
 
 ### List charts
 
@@ -74,9 +76,9 @@ Clicking the chart version number link will open the chart version details view.
 
 Clicking the `DOWNLOAD` button on the top right will start the downloading process.
 
-## Working with the Helm CLI
+## Working with ChartMuseum via the Helm CLI
 
-As a helm chart repository, Harbor can work smoothly with Helm CLI. About how to install Helm CLI, please refer [install helm](https://docs.helm.sh/using_helm/#installing-helm). Run command `helm version` to make sure the version of Helm CLI is v2.9.1+.
+As a helm chart repository, Harbor can interoperate with Helm CLI. To install Helm CLI, please refer [install helm](https://helm.sh/docs/intro/install/). Run command `helm version` to make sure the version of Helm CLI is v2.9.1+.
 
 ```sh
 helm version
@@ -136,7 +138,7 @@ Search the chart with the keyword if you're not sure where it is:
 ```sh
 helm search hello
 
-#NAME                            CHART VERSION   APP VERSION     DESCRIPTION                
+#NAME                            CHART VERSION   APP VERSION     DESCRIPTION
 #local/hello-helm                0.3.10          1.3             A Helm chart for Kubernetes
 #myrepo/chart_repo/hello-helm    0.1.10          1.2             A Helm chart for Kubernetes
 #myrepo/library/hello-helm       0.3.10          1.3             A Helm chart for Kubernetes
@@ -150,3 +152,54 @@ helm install --ca-file=ca.crt --username=admin --password=Passw0rd --version 0.1
 
 For other more helm commands like how to sign a chart, please refer to the [helm doc](https://docs.helm.sh/helm/#helm).
 
+
+## Manage Helm Charts with the OCI-compatible registry of Harbor
+
+Helm 3 now supports registry operations for an OCI-compatible registry including pushing and pulling. To install the latest Helm CLI, please refer [install helm](https://helm.sh/docs/intro/install/). Please also run `helm version` command to make sure the version of Helm CLI is v3.0.0+.
+
+```sh
+helm version
+
+#version.BuildInfo{Version:"v3.2.1", GitCommit:"fe51cd1e31e6a202cba7dead9552a6d418ded79a", GitTreeState:"clean", GoVersion:"go1.13.10"}
+```
+
+### Login to the OCI-compatible registry of Harbor
+
+Before pull/push helm charts with the OCI-compatible registry of Harbor, Harbor should be logged with `helm registry login` command.
+
+```sh
+helm registry login xx.xx.xx.xx
+```
+
+{{< note >}}
+The CA file used by the Harbor is necessary to be trusted in the system due to an [issue](https://github.com/helm/helm/issues/6324) in Helm.
+{{< /note >}}
+
+### Push Charts to the artifact Repository with the CLI
+
+After logging in, run the `helm chart save` command to save a chart directory which will prepare the artifact for the pushing.
+
+```sh
+helm chart save dummy-chart xx.xx.xx.xx/library/dummy-chart
+```
+
+
+When the chart was saved run the `helm chart push` command to push your charts:
+
+```sh
+helm chart push xx.xx.xx.xx/library/dummy-chart:version
+```
+
+### Pull Charts from the artifact Repository with the CLI
+
+To pull charts from the the OCI-compatible registry of Harbor, run the `helm chart pull` command just like pulling image via docker cli.
+
+```sh
+helm chart pull xx.xx.xx.xx/library/dummy-chart:version
+```
+
+### Manage Helm Charts artifacts in Harbor Interface
+
+The charts pushed to the OCI-compatible registry of Harbor are treated like any other type of artifact. We can list, copy, delete, update labels, get details, add or remove tags for them just like we can for container images.
+
+![chart artifact details](../../../img/chart-artifact-details.png)

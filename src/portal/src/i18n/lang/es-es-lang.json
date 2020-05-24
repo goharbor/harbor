@@ -219,7 +219,7 @@
         "PROJECT": "Proyecto",
         "NEW_PROJECT": "Nuevo proyecto",
         "NAME_TOOLTIP": "Project name should be 1~255 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
-        "DESTINATION_NAME_TOOLTIP": "Destination name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "DESTINATION_NAME_TOOLTIP": "Destination name should be at least 2 characters long with lower case characters, numbers and ._-/ and must be start with characters or numbers.",
         "NAME_IS_REQUIRED": "El nombre del proyecto es obligatorio.",
         "NAME_ALREADY_EXISTS": "Ya existe un proyecto con ese nombre.",
         "NAME_IS_ILLEGAL": "El nombre del proyecto no es valido.",
@@ -437,7 +437,9 @@
         "PROJECT_MASTER": "Master",
         "DEVELOPER": "Developer",
         "GUEST": "Guest",
-        "LIMITED_GUEST": "Limited Guest"
+        "LIMITED_GUEST": "Limited Guest",
+        "DELETION_TITLE": "Confirm group members deletion",
+        "DELETION_SUMMARY": "Do you want to delete group member(s) {{param}}?"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nombre de usuario",
@@ -997,7 +999,7 @@
             "SCANNING_PERCENT_EXPLAIN": "Scan completed percentage is calculated as # of successfully scanned images / total number of images referenced within the image index.",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}.",
-            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability detected"
         },
         "SEVERITY": {
             "CRITICAL": "Critical",

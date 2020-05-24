@@ -437,7 +437,9 @@
         "PROJECT_MASTER": "Uzman",
         "DEVELOPER": "Geliştirici",
         "GUEST": "Misafir",
-        "LIMITED_GUEST": "Limited Guest"
+        "LIMITED_GUEST": "Limited Guest",
+        "DELETION_TITLE": "Confirm group members deletion",
+        "DELETION_SUMMARY": "Do you want to delete group member(s) {{param}}?"
     },
     "AUDIT_LOG": {
         "USERNAME": "Kullanıcı Adı",
@@ -591,7 +593,7 @@
         "DELETE_ENABLED": "Bu politika etkinleştirildi",
         "NEW": "Yeni",
         "NAME_TOOLTIP": "Çoğaltma kuralı adı, en küçük harf, sayı ve ._- ile en az 2 karakter uzunluğunda olmalı ve karakter ya da sayılarla başlamalıdır.",
-        "DESTINATION_NAME_TOOLTIP": "Hedef adı, en az 2 karakter uzunluğunda, küçük harf, rakam ve ._ ile yazılmalı ve karakter veya rakamlarla başlamalıdır.",
+        "DESTINATION_NAME_TOOLTIP": "Hedef adı, en az 2 karakter uzunluğunda, küçük harf, rakam ve ._-/ ile yazılmalı ve karakter veya rakamlarla başlamalıdır.",
         "ACKNOWLEDGE": "Onaylamak",
         "RULE_DISABLED": "Bu kural, filtresinde kullanılan bir etiket silindiğinden dolayı devre dışı bırakıldı. \n Kuralı düzenleyin ve etkinleştirmek için filtresini güncelleyin.",
         "REPLI_MODE": "Çoğaltma modu",
@@ -997,7 +999,7 @@
             "SCANNING_PERCENT_EXPLAIN": "Scan completed percentage is calculated as # of successfully scanned images / total number of images referenced within the image index.",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} 'nın {{totalPackages}} {{package}} bilinen {{vulnerability}}.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} 'nın {{totalPackages}} {{package}} bilinen {{vulnerability}}.",
-            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability detected"
         },
         "SEVERITY": {
             "CRITICAL": "Kritik",

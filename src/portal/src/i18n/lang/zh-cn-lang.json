@@ -272,7 +272,7 @@
         "NEW_USER": "添加用户成员",
         "NEW_MEMBER": "新建成员",
         "MEMBER": "成员",
-        "NAME": "姓名",
+        "NAME": "名称",
         "EMAIL": "邮箱",
         "ROLE": "角色",
         "SYS_ADMIN": "系统管理员",
@@ -319,7 +319,7 @@
         "REMOVE": "移除成员"
     },
     "ROBOT_ACCOUNT": {
-        "NAME": "姓名",
+        "NAME": "名称",
         "PERMISSIONS": "权限",
         "TOKEN": "令牌",
         "NEW_ROBOT_ACCOUNT": "添加机器人账户",
@@ -436,7 +436,9 @@
         "PROJECT_MASTER": "维护人员",
         "DEVELOPER": "开发者",
         "GUEST": "访客",
-        "LIMITED_GUEST": "受限访客"
+        "LIMITED_GUEST": "受限访客",
+        "DELETION_TITLE": "删除组成员确认",
+        "DELETION_SUMMARY": "确认删除组成员 {{param}}?"
     },
     "AUDIT_LOG": {
         "USERNAME": "用户名",
@@ -592,7 +594,7 @@
         "DELETE_ENABLED": "默认启用该规则",
         "NEW": "新增",
         "NAME_TOOLTIP": "项目名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
-        "DESTINATION_NAME_TOOLTIP": "目标名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
+        "DESTINATION_NAME_TOOLTIP": "目标名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
         "ACKNOWLEDGE": "确认",
         "RULE_DISABLED": "这个规则因为过滤选项中的标签被删除已经不能用了，更新过滤项以便重新启用规则。",
         "REPLI_MODE": "复制模式",
@@ -900,7 +902,7 @@
             "SCOPE": "OIDC Scope",
             "OIDC_VERIFYCERT": "验证证书",
             "OIDC_SETNAME": "设置OIDC用户名",
-            "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在端口中用于与项目、角色等关联。",
+            "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在Harbor中用于与项目、角色等关联。",
             "OIDC_USERNAME": "用户名",
             "GROUP_CLAIM_NAME": "组名称"
         },
@@ -997,7 +999,7 @@
             "SCANNING_PERCENT_EXPLAIN": "扫描完成度是扫描成功的镜像数与总共需要扫描的镜像数的比值，总共需要的扫描的镜像不包含 Index 。",
             "TOOLTIPS_TITLE": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
-            "TOOLTIPS_TITLE_ZERO": "没有发现可识别的漏洞"
+            "TOOLTIPS_TITLE_ZERO": "没有检测到可识别的漏洞"
         },
         "SEVERITY": {
             "CRITICAL": "危急",

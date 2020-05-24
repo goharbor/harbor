@@ -59,34 +59,20 @@ Test Case - Scan As An Unprivileged User
     Select Object  latest
     Scan Is Disabled
     Close Browser
-# chose a emptyVul repo
+
+# Chose a empty Vul repo
 Test Case - Scan Image With Empty Vul
-    Init Chrome Driver
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  photon:2.0_scan
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
-    Go Into Repo  library/photon
-    Scan Repo  2.0  Succeed
-    Move To Summary Chart
-    Wait Until Page Contains  No vulnerability
-    Close Browser
+    Body Of Scan Image With Empty Vul  photon  2.0_scan
+
 Test Case - Manual Scan All
-    Init Chrome Driver
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Vulnerability Page
-    Trigger Scan Now And Wait Until The Result Appears
-    Navigate To Projects
-    Go Into Project  library
-    Go Into Repo  redis
-    Summary Chart Should Display  latest
-    Close Browser
+    Body Of Manual Scan All  Critical  High  Medium
+
 Test Case - View Scan Error
     Init Chrome Driver
     ${d}=  get current date  result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user026  Test1@34
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  user026  Test1@34  project${d}  busybox:latest
     Go Into Project  project${d}
     Go Into Repo  project${d}/busybox
@@ -96,34 +82,12 @@ Test Case - View Scan Error
 
 Test Case - Scan Image On Push
     [Tags]  run-once
-    Init Chrome Driver
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
-    Goto Project Config
-    Enable Scan On Push
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
-    Navigate To Projects
-    Go Into Project  library
-    Go Into Repo  memcached
-    Summary Chart Should Display  latest
-    View Repo Scan Details
-    Close Browser
+    Body Of Scan Image On Push  Critical  High  Medium
 
 Test Case - View Scan Results
     [Tags]  run-once
-    Init Chrome Driver
-    ${d}=  get current date  result_format=%m%s
+    Body Of View Scan Results  Critical  High
 
-    Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
-    Create An New Project  project${d}
-    Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/tomcat
-    Scan Repo  latest  Succeed
-    Summary Chart Should Display  latest
-    View Repo Scan Details
-    Close Browser
 Test Case - Project Level Image Serverity Policy
     [Tags]  run-once
     Init Chrome Driver
@@ -134,7 +98,7 @@ Test Case - Project Level Image Serverity Policy
     #For internal CPE harbor registry
     ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
     ${image}=  Set Variable  redis
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
     Go Into Project  project${d}
     Go Into Repo  ${image}

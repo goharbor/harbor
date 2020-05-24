@@ -23,7 +23,7 @@ Body Of Manage project publicity
     ${d}=    Get Current Date  result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user007  Test1@34
-    Create An New Project  project${d}  public=true
+    Create An New Project And Go Into Project  project${d}  public=true
 
     Push image  ${ip}  user007  Test1@34  project${d}  hello-world:latest
     Pull image  ${ip}  user008  Test1@34  project${d}  hello-world:latest
@@ -53,20 +53,76 @@ Body Of Manage project publicity
     Close Browser
 
 Body Of Scan A Tag In The Repo
-    [Arguments]  ${image_argument}  ${tag_argument}
+    [Arguments]  ${image_argument}  ${tag_argument}  ${is_no_vulerabilty}=${false}
     Init Chrome Driver
     ${d}=  get current date  result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user023  Test1@34
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
+    Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  user023  Test1@34  project${d}  ${image_argument}:${tag_argument}
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image_argument}
     Scan Repo  ${tag_argument}  Succeed
-    Summary Chart Should Display  ${tag_argument}
+    Scan Result Should Display In List Row  ${tag_argument}  is_no_vulerabilty=${is_no_vulerabilty}
     Pull Image  ${ip}  user023  Test1@34  project${d}  ${image_argument}  ${tag_argument}
     # Edit Repo Info
+    Close Browser
+
+Body Of Scan Image With Empty Vul
+    [Arguments]  ${image_argument}  ${tag_argument}
+    Init Chrome Driver
+    ${tag}=  Set Variable  ${tag_argument}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  ${image_argument}:${tag_argument}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Go Into Repo  ${image_argument}
+    Scan Repo  ${tag}  Succeed
+    Move To Summary Chart
+    Scan Result Should Display In List Row  ${tag}  is_no_vulerabilty=${true}
+    Close Browser
+
+Body Of Manual Scan All
+    [Arguments]  @{vulnerability_levels}
+    Init Chrome Driver
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Vulnerability Page
+    Trigger Scan Now And Wait Until The Result Appears
+    Navigate To Projects
+    Go Into Project  library
+    Go Into Repo  redis
+    Scan Result Should Display In List Row  latest
+    View Repo Scan Details  @{vulnerability_levels}
+    Close Browser
+
+Body Of View Scan Results
+    [Arguments]  @{vulnerability_levels}
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+
+    Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/tomcat
+    Scan Repo  latest  Succeed
+    Scan Result Should Display In List Row  latest
+    View Repo Scan Details  @{vulnerability_levels}
+    Close Browser
+
+Body Of Scan Image On Push
+    [Arguments]  @{vulnerability_levels}
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Goto Project Config
+    Enable Scan On Push
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
+    Navigate To Projects
+    Go Into Project  library
+    Go Into Repo  memcached
+    Scan Result Should Display In List Row  latest
+    View Repo Scan Details  @{vulnerability_levels}
     Close Browser
 
 Body Of List Helm Charts
@@ -74,8 +130,7 @@ Body Of List Helm Charts
     ${d}=   Get Current Date    result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user027  Test1@34
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
+    Create An New Project And Go Into Project  project${d}
 
     Switch To Project Charts
     Upload Chart files
@@ -99,15 +154,15 @@ Body Of List Helm Charts
     Close Browser
 
 Body Of Admin Push Signed Image
-    [Arguments]  ${image}=tomcat  ${with_remove}=${false}
+    [Arguments]  ${image}=tomcat  ${project}=library  ${with_remove}=${false}
     Enable Notary Client
 
     Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} library ${image} latest ${notaryServerEndpoint} ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:latest
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${project} ${image} latest ${notaryServerEndpoint} ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:latest
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/library/repositories/${image}/artifacts/latest?with_signature=true"
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/${project}/repositories/${image}/artifacts/latest?with_signature=true"
 
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
@@ -119,7 +174,7 @@ Delete A Project Without Sign In Harbor
     [Arguments]  ${harbor_ip}=${ip}  ${username}=${HARBOR_ADMIN}  ${password}=${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s
     ${project_name}=  Set Variable  000${d}
-    Create An New Project  ${project_name}
+    Create An New Project And Go Into Project  ${project_name}
     Push Image  ${harbor_ip}  ${username}  ${password}  ${project_name}  hello-world
     Project Should Not Be Deleted  ${project_name}
     Go Into Project  ${project_name}
@@ -130,7 +185,7 @@ Delete A Project Without Sign In Harbor
 Manage Project Member Without Sign In Harbor
     [Arguments]  ${sign_in_user}  ${sign_in_pwd}  ${test_user1}=user005  ${test_user2}=user006  ${is_oidc_mode}=${false}
     ${d}=    Get current Date  result_format=%m%s
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Push image  ip=${ip}  user=${sign_in_user}  pwd=${sign_in_pwd}  project=project${d}  image=hello-world
     Logout Harbor
 
@@ -151,10 +206,9 @@ Manage Project Member Without Sign In Harbor
 Helm CLI Push Without Sign In Harbor
     [Arguments]  ${sign_in_user}  ${sign_in_pwd}
     ${d}=   Get Current Date    result_format=%m%s
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Helm Repo Add  ${HARBOR_URL}  ${sign_in_user}  ${sign_in_pwd}  project_name=project${d}
     Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}
-    Go Into Project  project${d}  has_image=${false}
     Switch To Project Charts
     Go Into Chart Version  ${harbor_chart_name}
     Retry Wait Until Page Contains  ${harbor_chart_version}
@@ -163,9 +217,8 @@ Helm CLI Push Without Sign In Harbor
 Helm3 CLI Push Without Sign In Harbor
     [Arguments]  ${sign_in_user}  ${sign_in_pwd}
     ${d}=   Get Current Date    result_format=%m%s
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}  helm_repo_name=${HARBOR_URL}/chartrepo/project${d}  helm_cmd=helm3
-    Go Into Project  project${d}  has_image=${false}
     Switch To Project Charts
     Retry Double Keywords When Error  Go Into Chart Version  ${harbor_chart_name}  Retry Wait Until Page Contains  ${harbor_chart_version}
     Capture Page Screenshot
@@ -183,7 +236,7 @@ Body Of Verfiy System Level CVE Whitelist
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project    project${d}
+    Create An New Project And Go Into Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
@@ -215,7 +268,7 @@ Body Of Verfiy Project Level CVE Whitelist
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project    project${d}
+    Create An New Project And Go Into Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
@@ -248,7 +301,7 @@ Body Of Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Add Items To System CVE Whitelist    ${cve_list}
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project    project${d}
+    Create An New Project And Go Into Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
