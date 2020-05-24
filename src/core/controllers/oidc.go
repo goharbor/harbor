@@ -212,7 +212,6 @@ func userOnboard(oc *OIDCController, info *oidc.UserInfo, username string, token
 		}
 
 		oc.SendInternalServerError(err)
-		oc.DelSession(userInfoKey)
 		return nil, false
 	}
 
@@ -260,6 +259,7 @@ func (oc *OIDCController) Onboard() {
 		oc.DelSession(userInfoKey)
 		oc.PopulateUserSession(*user)
 	}
+
 }
 
 func secretAndToken(tokenBytes []byte) (string, string, error) {
