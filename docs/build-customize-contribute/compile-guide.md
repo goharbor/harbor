@@ -42,6 +42,8 @@ You can compile the code by one of the three approaches:
 
 #### I. Build with official Golang image
 
+NOTE: Ensure you have your $GOPATH/src/github.com/goharbor is accessible in the File Sharing of Docker.
+
 - Get official Golang image from docker hub:
 
     ```sh
