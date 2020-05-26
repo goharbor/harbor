@@ -440,7 +440,7 @@ func (cra *ChartRepositoryAPI) requireNamespace(namespace string) bool {
 
 	// Not existing
 	if !existing {
-		cra.SendBadRequestError(fmt.Errorf("namespace %s is not existing", namespace))
+		cra.handleProjectNotFound(namespace)
 		return false
 	}
 
