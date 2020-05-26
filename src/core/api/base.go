@@ -102,24 +102,19 @@ func (b *BaseController) RequireAuthenticated() bool {
 
 // HasProjectPermission returns true when the request has action permission on project subresource
 func (b *BaseController) HasProjectPermission(projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) (bool, error) {
-	projectID, projectName, err := utils.ParseProjectIDOrName(projectIDOrName)
+	_, _, err := utils.ParseProjectIDOrName(projectIDOrName)
 	if err != nil {
 		return false, err
 	}
-
-	if projectName != "" {
-		project, err := b.ProjectMgr.Get(projectName)
-		if err != nil {
-			return false, err
-		}
-		if project == nil {
-			return false, errNotFound
-		}
-
-		projectID = project.ProjectID
+	project, err := b.ProjectMgr.Get(projectIDOrName)
+	if err != nil {
+		return false, err
+	}
+	if project == nil {
+		return false, errNotFound
 	}
 
-	resource := rbac.NewProjectNamespace(projectID).Resource(subresource...)
+	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(subresource...)
 	if !b.SecurityCtx.Can(action, resource) {
 		return false, nil
 	}
@@ -133,25 +128,37 @@ func (b *BaseController) RequireProjectAccess(projectIDOrName interface{}, actio
 	hasPermission, err := b.HasProjectPermission(projectIDOrName, action, subresource...)
 	if err != nil {
 		if err == errNotFound {
-			b.SendNotFoundError(fmt.Errorf("project %v not found", projectIDOrName))
+			b.handleProjectNotFound(projectIDOrName)
 		} else {
 			b.SendInternalServerError(err)
 		}
-
 		return false
 	}
-
 	if !hasPermission {
-		if !b.SecurityCtx.IsAuthenticated() {
-			b.SendUnAuthorizedError(errors.New("UnAuthorized"))
-		} else {
-			b.SendForbiddenError(errors.New(b.SecurityCtx.GetUsername()))
-		}
-
+		b.SendPermissionError()
 		return false
 	}
-
 	return true
+}
+
+// This should be called when a project is not found, if the caller is a system admin it returns 404.
+// If it's regular user, it will render permission error
+func (b *BaseController) handleProjectNotFound(projectIDOrName interface{}) {
+	if b.SecurityCtx.IsSysAdmin() {
+		b.SendNotFoundError(fmt.Errorf("project %v not found", projectIDOrName))
+	} else {
+		b.SendPermissionError()
+	}
+}
+
+// SendPermissionError is a shortcut for sending different http error based on authentication status.
+func (b *BaseController) SendPermissionError() {
+	if !b.SecurityCtx.IsAuthenticated() {
+		b.SendUnAuthorizedError(errors.New("UnAuthorized"))
+	} else {
+		b.SendForbiddenError(errors.New(b.SecurityCtx.GetUsername()))
+	}
+
 }
 
 // WriteJSONData writes the JSON data to the client.

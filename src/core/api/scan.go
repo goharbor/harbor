@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
@@ -47,6 +48,10 @@ func (sa *ScanAPI) Prepare() {
 	// Call super prepare method
 	sa.BaseController.Prepare()
 
+	// Check authentication
+	if !sa.RequireAuthenticated() {
+		return
+	}
 	// Parse parameters
 	repoName := sa.GetString(":splat")
 	tag := sa.GetString(":tag")
@@ -58,15 +63,11 @@ func (sa *ScanAPI) Prepare() {
 		return
 	}
 	if pro == nil {
-		sa.SendNotFoundError(errors.Errorf("project %s not found", projectName))
+		log.Errorf("project %s not found", projectName)
+		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
 		return
 	}
 	sa.pro = pro
-
-	// Check authentication
-	if !sa.RequireAuthenticated() {
-		return
-	}
 
 	// Assemble artifact object
 	digest, err := digestFunc(repoName, tag, sa.SecurityCtx.GetUsername())
