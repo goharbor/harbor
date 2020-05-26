@@ -86,7 +86,7 @@ func getAdapter(t *testing.T) adp.Adapter {
 	assertions.Nil(err)
 	assertions.NotNil(factory)
 	server := getServer(t)
-	adapter, err := newAdapter(&model.Registry{
+	adapter := newAdapter(&model.Registry{
 		Type: model.RegistryTypeGitLab,
 		URL:  server.URL,
 		Credential: &model.Credential{
@@ -112,7 +112,7 @@ func TestFetchImages(t *testing.T) {
 		"library/*":          2,
 	}
 	for k, v := range templates {
-		resources, err := adapter.FetchImages([]*model.Filter{
+		resources, err := adapter.FetchArtifacts([]*model.Filter{
 			{
 				Type:  model.FilterTypeName,
 				Value: k,
