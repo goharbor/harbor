@@ -206,6 +206,7 @@ export class WebhookComponent implements OnInit {
       this.addWebhookComponent.isEdit = true;
       this.addWebhookComponent.addWebhookFormComponent.isModify = true;
       this.addWebhookComponent.addWebhookFormComponent.webhook = clone(this.selectedRow[0]);
+      this.addWebhookComponent.addWebhookFormComponent.originValue = clone(this.selectedRow[0]);
       this.addWebhookComponent.addWebhookFormComponent.webhook.event_types = clone(this.selectedRow[0].event_types);
     }
   }
