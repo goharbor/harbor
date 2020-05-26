@@ -128,14 +128,6 @@ describe('AddWebhookFormComponent', () => {
         const errorEle: HTMLElement = fixture.nativeElement.querySelector("clr-control-error");
         expect(errorEle.innerText).toEqual('WEBHOOK.NAME_REQUIRED');
     });
-    it("test button should work", async () => {
-        const spy: jasmine.Spy = spyOn(component, 'onTestEndpoint').and.returnValue(undefined);
-        const testButton: HTMLButtonElement = fixture.nativeElement.querySelector("#webhook-test-add");
-        testButton.dispatchEvent(new Event('click'));
-        fixture.detectChanges();
-        await fixture.whenStable();
-        expect(spy.calls.count()).toEqual(1);
-    });
     it("add button should work", async () => {
         const spy: jasmine.Spy = spyOn(component, 'add').and.returnValue(undefined);
         component.webhook = mockedWehook;
