@@ -107,7 +107,7 @@ TRIVYVERSION=v0.6.0
 TRIVYADAPTERVERSION=v0.9.0
 
 # version of chartmuseum
-CHARTMUSEUMVERSION=v0.9.0
+CHARTMUSEUMVERSION=v0.12.0
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.7.1
