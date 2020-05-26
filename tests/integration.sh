@@ -177,6 +177,7 @@ set -e
 if [ $upload_build == true ]; then
     cp ${harbor_offline_build_bundle}     harbor-offline-installer-latest.tgz
     cp ${harbor_offline_build_bundle}.asc harbor-offline-installer-latest.tgz.asc
+    ls -l
     uploader ${harbor_offline_build_bundle}     $harbor_target_bucket
     uploader ${harbor_offline_build_bundle}.asc $harbor_target_bucket
     uploader ${harbor_online_build_bundle}     $harbor_target_bucket
