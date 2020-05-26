@@ -103,7 +103,7 @@ NOTARYMIGRATEVERSION=v3.5.4
 CLAIRADAPTERVERSION=v1.0.1
 
 # version of chartmuseum
-CHARTMUSEUMVERSION=v0.9.0
+CHARTMUSEUMVERSION=v0.12.0
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.7.1
