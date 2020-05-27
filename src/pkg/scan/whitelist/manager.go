@@ -63,14 +63,17 @@ func (d *defaultManager) Set(projectID int64, list models.CVEWhitelist) error {
 // Get gets the whitelist for given project
 func (d *defaultManager) Get(projectID int64) (*models.CVEWhitelist, error) {
 	wl, err := dao.GetCVEWhitelist(projectID)
-	if wl == nil && err == nil {
-		log.Debugf("No CVE whitelist found for project %d, returning empty list.", projectID)
-		return &models.CVEWhitelist{ProjectID: projectID, Items: []models.CVEWhitelistItem{}}, nil
+	if err != nil {
+		return nil, err
 	}
-	if wl.Items == nil {
+
+	if wl == nil {
+		log.Debugf("No CVE whitelist found for project %d, returning empty list.", projectID)
+		wl = &models.CVEWhitelist{ProjectID: projectID, Items: []models.CVEWhitelistItem{}}
+	} else if wl.Items == nil {
 		wl.Items = []models.CVEWhitelistItem{}
 	}
-	return wl, err
+	return wl, nil
 }
 
 // SetSys sets the system level whitelist
