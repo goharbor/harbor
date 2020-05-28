@@ -15,16 +15,41 @@
 package models
 
 import (
+	"github.com/astaxie/beego/orm"
+	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/models"
+	"time"
 )
 
-// TODO: move ArtifactAndBlob, Blob and ProjectBlob to here
+func init() {
+	orm.RegisterModel(&Blob{})
+}
+
+// TODO: move ArtifactAndBlob, ProjectBlob to here
 
 // ArtifactAndBlob alias ArtifactAndBlob model
 type ArtifactAndBlob = models.ArtifactAndBlob
 
-// Blob alias Blob model
-type Blob = models.Blob
+// Blob holds the details of a blob.
+type Blob struct {
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	Digest       string    `orm:"column(digest)" json:"digest"`
+	ContentType  string    `orm:"column(content_type)" json:"content_type"`
+	Size         int64     `orm:"column(size)" json:"size"`
+	Status       string    `orm:"column(status)" json:"status"`
+	UpdateTime   time.Time `orm:"column(update_time);auto_now_add" json:"update_time"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+}
+
+// TableName ...
+func (b *Blob) TableName() string {
+	return "blob"
+}
+
+// IsForeignLayer returns true if the blob is foreign layer
+func (b *Blob) IsForeignLayer() bool {
+	return b.ContentType == schema2.MediaTypeForeignLayer
+}
 
 // ProjectBlob alias ProjectBlob model
 type ProjectBlob = models.ProjectBlob

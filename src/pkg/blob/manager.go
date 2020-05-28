@@ -19,6 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/blob/dao"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
+	"time"
 )
 
 // Blob alias `models.Blob` to make it natural to use the Manager
@@ -60,6 +61,12 @@ type Manager interface {
 
 	// List returns blobs by params
 	List(ctx context.Context, params ListParams) ([]*Blob, error)
+
+	// DeleteBlob delete blob
+	Delete(ctx context.Context, id int64) (err error)
+
+	// ReFreshUpdateTime updates the blob update time
+	ReFreshUpdateTime(ctx context.Context, digest string, time time.Time) error
 }
 
 type manager struct {
@@ -114,6 +121,14 @@ func (m *manager) Update(ctx context.Context, blob *Blob) error {
 
 func (m *manager) List(ctx context.Context, params ListParams) ([]*Blob, error) {
 	return m.dao.ListBlobs(ctx, params)
+}
+
+func (m *manager) Delete(ctx context.Context, id int64) error {
+	return m.dao.DeleteBlob(ctx, id)
+}
+
+func (m *manager) ReFreshUpdateTime(ctx context.Context, digest string, time time.Time) error {
+	return m.dao.ReFreshUpdateTime(ctx, digest, time)
 }
 
 // NewManager returns blob manager

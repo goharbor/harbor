@@ -1,0 +1,2 @@
+ALTER TABLE blob ADD COLUMN IF NOT EXISTS update_time timestamp default CURRENT_TIMESTAMP;
+ALTER TABLE blob ADD COLUMN IF NOT EXISTS status varchar(255);

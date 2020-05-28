@@ -17,6 +17,7 @@ package blob
 import (
 	"context"
 	"testing"
+	"time"
 
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
@@ -254,6 +255,40 @@ func (suite *ManagerTestSuite) TestListByArtifact() {
 	blobs, err = Mgr.List(ctx, ListParams{ArtifactDigest: artifact2})
 	suite.Nil(err)
 	suite.Len(blobs, 3)
+}
+
+func (suite *ManagerTestSuite) TestDelete() {
+	ctx := suite.Context()
+	digest := suite.DigestString()
+	blobID, err := Mgr.Create(ctx, digest, "media type", 100)
+	suite.Nil(err)
+
+	err = Mgr.Delete(ctx, blobID)
+	suite.Nil(err)
+}
+
+func (suite *ManagerTestSuite) TestReFreshUpdateTime() {
+	ctx := suite.Context()
+
+	digest := suite.DigestString()
+	_, err := Mgr.Create(ctx, digest, "media type", 100)
+	suite.Nil(err)
+
+	time.Sleep(1 * time.Second)
+	now := time.Now()
+
+	blob, err := Mgr.Get(ctx, digest)
+	if suite.Nil(err) {
+		blob.UpdateTime = now
+		suite.Nil(Mgr.Update(ctx, blob))
+
+		{
+			blob, err := Mgr.Get(ctx, digest)
+			suite.Nil(err)
+			suite.Equal(digest, blob.Digest)
+			suite.Equal(now.Unix(), blob.UpdateTime.Unix())
+		}
+	}
 }
 
 func TestManagerTestSuite(t *testing.T) {

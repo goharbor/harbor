@@ -15,7 +15,9 @@
 package dao
 
 import (
+	"github.com/goharbor/harbor/src/lib/errors"
 	"testing"
+	"time"
 
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	htesting "github.com/goharbor/harbor/src/testing"
@@ -319,6 +321,39 @@ func (suite *DaoTestSuite) TestDeleteProjectBlob() {
 		exist, err := suite.dao.ExistProjectBlob(ctx, projectID2, digest)
 		suite.Nil(err)
 		suite.True(exist)
+	}
+}
+
+func (suite *DaoTestSuite) TestDelete() {
+	ctx := suite.Context()
+
+	err := suite.dao.DeleteBlob(ctx, 100021)
+	suite.Require().NotNil(err)
+	suite.True(errors.IsErr(err, errors.NotFoundCode))
+
+	digest := suite.DigestString()
+	id, err := suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest})
+	suite.Nil(err)
+	err = suite.dao.DeleteBlob(ctx, id)
+	suite.Require().Nil(err)
+}
+
+func (suite *DaoTestSuite) TestReFreshUpdateTime() {
+	ctx := suite.Context()
+	digest := suite.DigestString()
+	suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest})
+	blob, err := suite.dao.GetBlobByDigest(ctx, digest)
+	suite.Require().Nil(err)
+
+	time.Sleep(1 * time.Second)
+	now := time.Now()
+	suite.NotEqual(blob.UpdateTime, now)
+
+	if suite.Nil(suite.dao.ReFreshUpdateTime(ctx, blob.Digest, now)) {
+		blob, err := suite.dao.GetBlobByDigest(ctx, digest)
+		if suite.Nil(err) {
+			suite.Equal(now.Unix(), blob.UpdateTime.Unix())
+		}
 	}
 }
 
