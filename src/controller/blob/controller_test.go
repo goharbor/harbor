@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/pkg/blob"
@@ -265,6 +266,21 @@ func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
 	size, err = Ctl.GetAcceptedBlobSize(sessionID)
 	suite.Nil(err)
 	suite.Equal(int64(100), size)
+}
+
+func (suite *ControllerTestSuite) TestReFreshUpdateTime() {
+	ctx := suite.Context()
+
+	digest := suite.prepareBlob()
+	blob, err := Ctl.Get(ctx, digest)
+	suite.Nil(err)
+
+	now := time.Now()
+	suite.NotEqual(blob.UpdateTime, now)
+
+	err = Ctl.ReFreshUpdateTime(ctx, blob.Digest, now)
+	suite.Nil(err)
+	suite.Equal(blob.UpdateTime.Unix(), now.Unix())
 }
 
 func TestControllerTestSuite(t *testing.T) {
