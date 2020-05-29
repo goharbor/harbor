@@ -102,7 +102,7 @@ Test Case - Project Level Image Serverity Policy
     Navigate To Projects
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  3
-    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}
+    Cannot Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}  err_msg=To continue with pull, please contact your project administrator to exempt matched vulnerabilities through configuring the CVE whitelist
     Close Browser
 
 #Important Note: All CVE IDs in CVE Whitelist cases must unique!
