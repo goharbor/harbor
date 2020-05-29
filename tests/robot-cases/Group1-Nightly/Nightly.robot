@@ -195,7 +195,7 @@ Test Case - Manage project publicity
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
     Project Should Not Display  project${d}
-    Cannot Pull image  ${ip}  userb${d}  Test1@34  project${d}  hello-world:latest
+    Cannot Pull Image  ${ip}  userb${d}  Test1@34  project${d}  hello-world:latest
 
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34

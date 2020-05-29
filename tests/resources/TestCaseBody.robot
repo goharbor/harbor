@@ -41,7 +41,7 @@ Body Of Manage project publicity
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  user008  Test1@34
     Project Should Not Display  project${d}
-    Cannot Pull image  ${ip}  user008  Test1@34  project${d}  hello-world:latest
+    Cannot Pull Image  ${ip}  user008  Test1@34  project${d}  hello-world:latest  err_msg=unauthorized to access repository
 
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  user007  Test1@34
@@ -240,7 +240,7 @@ Body Of Verfiy System Level CVE Whitelist
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
-    Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=current image without vulnerability scanning cannot be pulled due to configured policy
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image}
     Scan Repo  ${sha256}  Succeed
@@ -250,12 +250,12 @@ Body Of Verfiy System Level CVE Whitelist
     Switch To Configuration System Setting
     # Add Items To System CVE Whitelist    CVE-2019-19317\nCVE-2019-19646 \nCVE-2019-5188 \nCVE-2019-20387 \nCVE-2019-17498 \nCVE-2019-20372 \nCVE-2019-19244 \nCVE-2019-19603 \nCVE-2019-19880 \nCVE-2019-19923 \nCVE-2019-19925 \nCVE-2019-19926 \nCVE-2019-19959 \nCVE-2019-20218 \nCVE-2019-19232 \nCVE-2019-19234 \nCVE-2019-19645
     Add Items To System CVE Whitelist    ${most_cve_list}
-    Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
     # Add Items To System CVE Whitelist    CVE-2019-18276
     Add Items To System CVE Whitelist    ${single_cve}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Delete Top Item In System CVE Whitelist  count=6
-    Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
     Close Browser
 
 Body Of Verfiy Project Level CVE Whitelist
@@ -273,17 +273,17 @@ Body Of Verfiy Project Level CVE Whitelist
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
-    Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image}
     Scan Repo  ${sha256}  Succeed
     Go Into Project  project${d}
     Add Items to Project CVE Whitelist    ${most_cve_list}
-    Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Add Items to Project CVE Whitelist    ${single_cve}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Delete Top Item In Project CVE Whitelist
-    Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Close Browser
 
 Body Of Verfiy Project Level CVE Whitelist By Quick Way of Add System
@@ -311,7 +311,7 @@ Body Of Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
     Set Project To Project Level CVE Whitelist
-    Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Add System CVE Whitelist to Project CVE Whitelist By Add System Button Click
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Close Browser
