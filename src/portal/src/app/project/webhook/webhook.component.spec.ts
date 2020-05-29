@@ -31,6 +31,9 @@ describe('WebhookComponent', () => {
                 }
             ]);
         },
+        getPermissions() {
+            return of([true, true]);
+        }
     };
     const mockActivatedRoute = {
         RouterparamMap: of({ get: (key) => 'value' }),

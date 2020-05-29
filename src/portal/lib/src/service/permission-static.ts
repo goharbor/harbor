@@ -155,6 +155,9 @@ export const USERSTATICPERMISSION = {
         "VALUE": {
             "LIST": "list",
             "READ": "read",
+            "CREATE": "create",
+            "UPDATE": "update",
+            "DELETE": "delete"
         }
     },
     "SCANNER": {

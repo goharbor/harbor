@@ -40,6 +40,8 @@ export class AddWebhookFormComponent implements OnInit, OnChanges {
   @Output() close = new EventEmitter<boolean>();
   @ViewChild("webhookForm", { static: true }) currentForm: NgForm;
   @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
+  hasCreatPermission: boolean = false;
+  hasUpdatePermission: boolean = false;
 
   constructor(
     private webhookService: WebhookService,
@@ -48,6 +50,14 @@ export class AddWebhookFormComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit() {
+   this.getPermissions();
+  }
+  getPermissions() {
+    this.webhookService.getPermissions(this.projectId).subscribe(
+      rules => {
+        [this.hasCreatPermission, this.hasUpdatePermission] = rules;
+      }
+    );
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -55,7 +65,6 @@ export class AddWebhookFormComponent implements OnInit, OnChanges {
       Object.assign(this.webhookTarget, this.webhook.targets[0]);
     }
   }
-
   onTestEndpoint() {
     this.checkBtnState = ClrLoadingState.LOADING;
     this.checking = true;

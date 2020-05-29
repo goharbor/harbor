@@ -11,15 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { throwError as observableThrowError, Observable } from "rxjs";
+import { throwError as observableThrowError, Observable, forkJoin } from 'rxjs';
 import { map, catchError } from "rxjs/operators";
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Webhook, LastTrigger } from "./webhook";
+import { UserPermissionService, USERSTATICPERMISSION } from '@harbor/ui';
 
 @Injectable()
 export class WebhookService {
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient,
+              private userPermissionService: UserPermissionService) { }
 
   public listWebhook(projectId: number): Observable<Webhook[]> {
     return this.http
@@ -52,5 +54,14 @@ export class WebhookService {
     return this.http
       .post(`/api/projects/${projectId}/webhook/policies/test`, param)
       .pipe(catchError(error => observableThrowError(error)));
+  }
+
+  getPermissions(projectId: number): Observable<any>  {
+    const permissionsList: Observable<boolean>[] = [];
+    permissionsList.push(this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.WEBHOOK.KEY, USERSTATICPERMISSION.WEBHOOK.VALUE.CREATE));
+    permissionsList.push(this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.WEBHOOK.KEY, USERSTATICPERMISSION.WEBHOOK.VALUE.UPDATE));
+    return forkJoin(...permissionsList);
   }
 }
