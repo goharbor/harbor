@@ -210,9 +210,20 @@ Go Into Repo
     Retry Wait Element  ${tag_table_column_size}
     Capture Page Screenshot  gointo_${repoName}.png
 
-Go Into Index
-    [Arguments]  ${index_name}=${null}
-    Retry Element Click  ${artifact_achieve_icon}
+Click Index Achieve
+    [Arguments]  ${tag_name}
+    Retry Element Click  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256') and contains(.,'${tag_name}')]//clr-dg-cell[1]//clr-tooltip//a
+
+Go Into Index And Contain Artifacts
+    [Arguments]  ${tag_name}  ${limit}=3
+    Retry Double Keywords When Error  Click Index Achieve  ${tag_name}  Page Should Contain Element  ${tag_table_column_os_arch}
+    :For  ${n}  IN RANGE  1  10
+    \    ${out}  Run Keyword And Ignore Error  Page Should Contain Element  ${artifact_rows}  limit=${limit}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    \    Capture Page Screenshot  gointo_${tag_name}.png
+    \    Sleep  3
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
 
 Switch To CardView
     Retry Element Click  xpath=//hbr-repository-gridview//span[@class='card-btn']/clr-icon
