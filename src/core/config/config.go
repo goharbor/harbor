@@ -330,11 +330,6 @@ func WithClair() bool {
 	return cfgMgr.Get(common.WithClair).GetBool()
 }
 
-// ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.
-func ClairEndpoint() string {
-	return cfgMgr.Get(common.ClairURL).GetString()
-}
-
 // ClairDB return Clair db info
 func ClairDB() (*models.PostGreSQL, error) {
 	clairDB := &models.PostGreSQL{
