@@ -126,8 +126,8 @@ User Should Not Be A Member Of Project
     ${password}=  Set Variable If  ${is_oidc_mode} == ${true}  ${pwd_oidc}  ${pwd}
     Project Should Not Display  ${project}
     Logout Harbor
-    Cannot Pull image  ${ip}  ${user}  ${password}  ${project}  ${ip}/${project}/hello-world
-    Cannot Push image  ${ip}  ${user}  ${password}  ${project}  hello-world
+    Cannot Pull Image  ${ip}  ${user}  ${password}  ${project}  ${ip}/${project}/hello-world
+    Cannot Pull Image  ${ip}  ${user}  ${password}  ${project}  hello-world
 
 Manage Project Member
     [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${op}  ${has_image}=${true}  ${is_oidc_mode}=${false}

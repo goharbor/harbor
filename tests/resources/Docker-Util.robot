@@ -39,6 +39,7 @@ Push image
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${sha256}=${null}  ${is_robot}=${false}
     ${image_with_sha256}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}@sha256:${sha256}
     ${image_with_tag}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}:${sha256}
+    Sleep  3
     Log To Console  \nRunning docker push ${image}...
     Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_with_sha256}
     Run Keyword If  ${is_robot}==${false}  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
@@ -62,11 +63,17 @@ Cannot Docker Login Harbor
     [Arguments]  ${ip}  ${user}  ${pwd}
     Command Should be Failed  docker login -u ${user} -p ${pwd} ${ip}
 
-Cannot Pull image
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}=${null}
+Cannot Pull Image
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}=${null}  ${err_msg}=${null}
     ${image_with_tag}=  Set Variable If  '${tag}'=='${null}'  ${image}  ${image}:${tag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
-    Command Should be Failed  docker pull ${ip}/${project}/${image_with_tag}
+    :FOR  ${idx}  IN RANGE  0  4
+    \   ${out}  Run Keyword And Ignore Error  Command Should be Failed  docker pull ${ip}/${project}/${image_with_tag}
+    \   Exit For Loop If  '${out[0]}'=='PASS'
+    \   Sleep  3
+    Log To Console  Cannot Pull Image - Pull Log: ${out[1]}
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+    Run Keyword If  '${err_msg}' != '${null}'  Should Contain  ${out[1]}  ${err_msg}
 
 Cannot Pull Unsigned Image
     [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}
