@@ -34,7 +34,6 @@ import { ConfirmationDialogComponent } from "../../shared/confirmation-dialog/co
 @Component({
   templateUrl: './webhook.component.html',
   styleUrls: ['./webhook.component.scss'],
-  // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WebhookComponent implements OnInit {
   @ViewChild(AddWebhookComponent, { static: false } )
@@ -53,6 +52,8 @@ export class WebhookComponent implements OnInit {
   loadingWebhook: boolean = true;
   projectId: number;
   projectName: string;
+  hasCreatPermission: boolean = false;
+  hasUpdatePermission: boolean = false;
   constructor(
     private route: ActivatedRoute,
     private translate: TranslateService,
@@ -67,8 +68,15 @@ export class WebhookComponent implements OnInit {
       this.projectName = project.name;
     }
     this.getData(this.projectId);
+    this.getPermissions();
   }
-
+  getPermissions() {
+    this.webhookService.getPermissions(this.projectId).subscribe(
+      rules => {
+        [this.hasCreatPermission, this.hasUpdatePermission] = rules;
+      }
+    );
+  }
   getData(projectId: number) {
     this.getLastTriggers(projectId);
     this.getWebhook(projectId);

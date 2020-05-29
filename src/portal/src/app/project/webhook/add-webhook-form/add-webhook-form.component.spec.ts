@@ -17,6 +17,9 @@ describe('AddWebhookFormComponent', () => {
     const mockWebhookService = {
         getCurrentUser: () => {
             return of(null);
+        },
+        getPermissions() {
+            return of([true, true]);
         }
     };
     const mockMessageHandlerService = {
