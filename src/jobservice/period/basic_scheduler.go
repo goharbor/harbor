@@ -143,11 +143,6 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 		return err
 	}
 
-	// Expire periodic job stats
-	if err := tracker.Expire(); err != nil {
-		logger.Error(err)
-	}
-
 	// Switch the job stats to stopped
 	// Should not block the next clear action
 	err = tracker.Stop()
