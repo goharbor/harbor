@@ -65,7 +65,7 @@
               <a href="javascript:void(0)" (click)="goToLink(j.id)">{{j.id}}</a>
           </clr-dg-cell>
           <clr-dg-cell>
-            {{j.status}}
+            {{getStatusStr(j.status)}}
             <clr-tooltip>
                 <clr-icon *ngIf="j.status_text" clrTooltipTrigger shape="info-circle" size="20"></clr-icon>
                 <clr-tooltip-content [clrPosition]="'left'" clrSize="md" *clrIfOpen>
