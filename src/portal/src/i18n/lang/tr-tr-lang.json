@@ -703,7 +703,8 @@
         "DEPLOY": "YÜKLE",
         "ADDITIONAL_INFO": "Ek Bilgi Ekle",
         "REPO_NAME": "Depo",
-        "MARKDOWN": "Markdown ile stil desteklenir"
+        "MARKDOWN": "Markdown ile stil desteklenir",
+        "LAST_MODIFIED": "Last Modified Time"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Tablolar",
