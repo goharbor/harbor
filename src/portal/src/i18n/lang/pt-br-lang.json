@@ -702,7 +702,8 @@
         "ACTION": "AÇÃO",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Adicionar informação adicional",
-        "MARKDOWN": "Styling with Markdown is supported"
+        "MARKDOWN": "Styling with Markdown is supported",
+        "LAST_MODIFIED": "Last Modified Time"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",

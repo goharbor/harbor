@@ -690,7 +690,8 @@
         "DEPLOY": "DEPLOYER",
         "ADDITIONAL_INFO": "Ajouter des informations additionnelles",
         "REPO_NAME": "Dépôt",
-        "MARKDOWN": "La syntaxe Markdown est supportée"
+        "MARKDOWN": "La syntaxe Markdown est supportée",
+        "LAST_MODIFIED": "Dernière modification"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",

@@ -82,6 +82,10 @@ export class SearchOption {
   pageSize: number = DEFAULT_PAGE_SIZE;
 }
 
+const STATUS_MAP = {
+  "Succeed": "Succeeded"
+};
+
 @Component({
   selector: "hbr-replication",
   templateUrl: "./replication.component.html",
@@ -517,5 +521,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     } else {
       return '-';
     }
+  }
+  getStatusStr(status: string): string {
+    if (STATUS_MAP && STATUS_MAP[status]) {
+      return STATUS_MAP[status];
+    }
+    return status;
   }
 }
