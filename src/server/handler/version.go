@@ -12,18 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package handler
 
 import (
-	"github.com/goharbor/harbor/src/server/handler/registry"
-	v20 "github.com/goharbor/harbor/src/server/handler/v2.0/route"
-	v21 "github.com/goharbor/harbor/src/server/handler/v2.1/route"
+	"encoding/json"
+	"net/http"
+
+	serror "github.com/goharbor/harbor/src/server/error"
+	"github.com/goharbor/harbor/src/server/handler/base"
 )
 
-// RegisterRoutes register all routes
-func RegisterRoutes() {
-	registerRoutes()          // service/internal API/UI controller/etc.
-	registry.RegisterRoutes() // OCI registry APIs
-	v20.RegisterRoutes()      // v2.0 APIs
-	v21.RegisterRoutes()      // v2.1 APIs
+// APIVersion model
+type APIVersion struct {
+	Version string `json:"version"`
+}
+
+// GetAPIVersion returns the recommended API version in current deployment
+func GetAPIVersion(w http.ResponseWriter, r *http.Request) {
+	if err := json.NewEncoder(w).Encode(&APIVersion{Version: base.RecommendedAPIVersion}); err != nil {
+		serror.SendError(w, err)
+	}
 }

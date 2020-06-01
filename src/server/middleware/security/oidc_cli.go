@@ -20,13 +20,13 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/server/handler/base"
 )
 
 type oidcCli struct{}
@@ -34,12 +34,7 @@ type oidcCli struct{}
 func (o *oidcCli) Generate(req *http.Request) security.Context {
 	log := log.G(req.Context())
 	path := req.URL.Path
-	// only handles request by docker CLI or helm CLI
-	if path != "/service/token" &&
-		!strings.HasPrefix(path, "/v2") &&
-		!strings.HasPrefix(path, "/chartrepo/") &&
-		!strings.HasPrefix(path, "/api/chartrepo/") &&
-		!strings.HasPrefix(path, fmt.Sprintf("/api/%s/chartrepo/", api.APIVersion)) {
+	if !isTarget(path) {
 		return nil
 	}
 	if lib.GetAuthMode(req.Context()) != common.OIDCAuth {
@@ -56,4 +51,23 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 	}
 	log.Debugf("an OIDC CLI security context generated for request %s %s", req.Method, req.URL.Path)
 	return local.NewSecurityContext(user, config.GlobalProjectMgr)
+}
+
+// only handles request by docker CLI or helm CLI
+func isTarget(path string) bool {
+	if path == "/service/token" {
+		return true
+	}
+	if path == "/service/token" ||
+		strings.HasPrefix(path, "/v2") ||
+		strings.HasPrefix(path, "/chartrepo/") ||
+		strings.HasPrefix(path, "/api/chartrepo/") {
+		return true
+	}
+	for _, version := range base.AvailableAPIVersions {
+		if strings.HasPrefix(path, fmt.Sprintf("/api/%s/chartrepo/", version)) {
+			return true
+		}
+	}
+	return false
 }

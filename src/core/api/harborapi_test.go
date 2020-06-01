@@ -30,7 +30,6 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
-	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
@@ -42,6 +41,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/server/handler/base"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/orm"
 	"github.com/goharbor/harbor/src/server/middleware/security"
@@ -184,8 +184,8 @@ func init() {
 	beego.Router("/chartrepo/:repo/charts/:filename", chartRepositoryAPIType, "get:DownloadChart")
 	// Labels for chart
 	chartLabelAPIType := &ChartLabelAPI{}
-	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
-	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
+	beego.Router("/api/"+base.RecommendedAPIVersion+"/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
+	beego.Router("/api/"+base.RecommendedAPIVersion+"/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 
 	quotaAPIType := &QuotaAPI{}
 	beego.Router("/api/quotas", quotaAPIType, "get:List")

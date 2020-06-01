@@ -15,8 +15,6 @@
 package models
 
 import (
-	"github.com/go-openapi/strfmt"
-	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"time"
 
 	"github.com/goharbor/harbor/src/pkg/signature/notary/model"
@@ -38,19 +36,6 @@ type RepoRecord struct {
 	StarCount    int64     `orm:"column(star_count)" json:"star_count"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
-}
-
-// ToSwagger converts the repository into the swagger model
-func (r *RepoRecord) ToSwagger() *models.Repository {
-	return &models.Repository{
-		CreationTime: strfmt.DateTime(r.CreationTime),
-		Description:  r.Description,
-		ID:           r.RepositoryID,
-		Name:         r.Name,
-		ProjectID:    r.ProjectID,
-		PullCount:    r.PullCount,
-		UpdateTime:   strfmt.DateTime(r.UpdateTime),
-	}
 }
 
 // TableName is required by by beego orm to map RepoRecord to table repository

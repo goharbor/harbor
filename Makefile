@@ -322,7 +322,8 @@ define swagger_generate_server
 endef
 
 gen_apis: SWAGGER_IMAGENAME
-	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
+	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/handler/v2.0,harbor)
+	$(call swagger_generate_server,api/v2.1/swagger.yaml,src/server/handler/v2.1,harbor)
 
 export VERSIONS_FOR_PREPARE
 versions_prepare:

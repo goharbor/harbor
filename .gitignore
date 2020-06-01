@@ -45,5 +45,7 @@ src/portal/ng-swagger-gen
 **/.bin
 src/core/conf/app.conf
 
-src/server/v2.0/models/
-src/server/v2.0/restapi/
+src/server/handler/v2.0/models/
+src/server/handler/v2.0/restapi/
+src/server/handler/v2.1/models/
+src/server/handler/v2.1/restapi/

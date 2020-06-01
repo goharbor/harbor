@@ -22,17 +22,17 @@ import (
 
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/server/handler/base"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var (
-	resourceLabelAPIPath                = fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor/0.2.0/labels", api.APIVersion)
-	resourceLabelAPIPathWithFakeProject = fmt.Sprintf("/api/%s/chartrepo/not-exist/charts/harbor/0.2.0/labels", api.APIVersion)
-	resourceLabelAPIPathWithFakeChart   = fmt.Sprintf("/api/%s/chartrepo/library/charts/not-exist/0.2.0/labels", api.APIVersion)
+	resourceLabelAPIPath                = fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor/0.2.0/labels", base.RecommendedAPIVersion)
+	resourceLabelAPIPathWithFakeProject = fmt.Sprintf("/api/%s/chartrepo/not-exist/charts/harbor/0.2.0/labels", base.RecommendedAPIVersion)
+	resourceLabelAPIPathWithFakeChart   = fmt.Sprintf("/api/%s/chartrepo/library/charts/not-exist/0.2.0/labels", base.RecommendedAPIVersion)
 	cProLibraryLabelID                  int64
 	mockChartServer                     *httptest.Server
 	oldChartController                  *chartserver.Controller

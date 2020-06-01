@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package route
 
 import (
-	"github.com/goharbor/harbor/src/server/handler/registry"
-	v20 "github.com/goharbor/harbor/src/server/handler/v2.0/route"
-	v21 "github.com/goharbor/harbor/src/server/handler/v2.1/route"
+	"github.com/goharbor/harbor/src/server/handler/base"
+	"github.com/goharbor/harbor/src/server/handler/v2.1/handler"
+	"github.com/goharbor/harbor/src/server/middleware/apiversion"
+	"github.com/goharbor/harbor/src/server/router"
 )
 
-// RegisterRoutes register all routes
+// RegisterRoutes for Harbor v2.1 APIs
 func RegisterRoutes() {
-	registerRoutes()          // service/internal API/UI controller/etc.
-	registry.RegisterRoutes() // OCI registry APIs
-	v20.RegisterRoutes()      // v2.0 APIs
-	v21.RegisterRoutes()      // v2.1 APIs
+	registerLegacyRoutes()
+	router.NewRoute().Path("/api/" + base.APIVersionV21 + "/*").
+		Middleware(apiversion.Middleware(base.APIVersionV21)).
+		Handler(handler.New())
 }

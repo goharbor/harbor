@@ -18,11 +18,13 @@ import (
 	"fmt"
 	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/encode/repository"
+	"github.com/goharbor/harbor/src/server/handler/base"
 )
 
 func (c *client) ListAllArtifacts(project, repo string) ([]*modelsv2.Artifact, error) {
 	repo = repository.Encode(repo)
-	url := c.buildURL(fmt.Sprintf("/api/v2.0/projects/%s/repositories/%s/artifacts", project, repo))
+	url := c.buildURL(fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts",
+		base.RecommendedAPIVersion, project, repo))
 	var arts []*modelsv2.Artifact
 	if err := c.httpclient.GetAndIteratePagination(url, &arts); err != nil {
 		return nil, err
@@ -32,7 +34,8 @@ func (c *client) ListAllArtifacts(project, repo string) ([]*modelsv2.Artifact, e
 
 func (c *client) DeleteArtifact(project, repo, digest string) error {
 	repo = repository.Encode(repo)
-	url := c.buildURL(fmt.Sprintf("/api/v2.0/projects/%s/repositories/%s/artifacts/%s", project, repo, digest))
+	url := c.buildURL(fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts/%s",
+		base.RecommendedAPIVersion, project, repo, digest))
 	return c.httpclient.Delete(url)
 }
 

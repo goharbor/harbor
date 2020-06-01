@@ -15,6 +15,8 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
@@ -24,13 +26,13 @@ import (
 	"github.com/goharbor/harbor/src/core/service/notifications/jobs"
 	"github.com/goharbor/harbor/src/core/service/notifications/scheduler"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/server/handler"
 	"github.com/goharbor/harbor/src/server/router"
-	"net/http"
 )
 
 func registerRoutes() {
 	// API version
-	router.NewRoute().Method(http.MethodGet).Path("/api/version").HandlerFunc(GetAPIVersion)
+	router.NewRoute().Method(http.MethodGet).Path("/api/version").HandlerFunc(handler.GetAPIVersion)
 
 	// Controller API:
 	beego.Router("/c/login", &controllers.CommonController{}, "post:Login")

@@ -21,20 +21,23 @@ import (
 	"path"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/pkg/distribution"
+	"github.com/goharbor/harbor/src/server/handler/base"
 )
 
 // ParseProjectName parse project name from v2 and v2.0 API URL path
 func ParseProjectName(r *http.Request) string {
 	path := path.Clean(r.URL.EscapedPath())
 
-	var projectName string
+	var (
+		projectName string
+		prefixes    []string
+	)
 
-	prefixes := []string{
-		fmt.Sprintf("/api/%s/projects/", api.APIVersion), // v2.0 management APIs
+	for _, version := range base.AvailableAPIVersions {
+		prefixes = append(prefixes, fmt.Sprintf("/api/%s/projects/", version))
 	}
 
 	for _, prefix := range prefixes {

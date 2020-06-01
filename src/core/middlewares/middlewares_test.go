@@ -52,6 +52,7 @@ func Test_legacyAPISkipper(t *testing.T) {
 		want bool
 	}{
 		{"/api/v2.0/projects", args{httptest.NewRequest(http.MethodGet, "/api/v2.0/projects", nil)}, false},
+		{"/api/v2.1/projects", args{httptest.NewRequest(http.MethodGet, "/api/v2.1/projects", nil)}, false},
 		{"//api/v2.0/projects", args{httptest.NewRequest(http.MethodGet, "//api/v2.0/projects", nil)}, false},
 		{"/api/v2.0//projects", args{httptest.NewRequest(http.MethodGet, "/api/v2.0//projects", nil)}, false},
 		{"/v2/library/photon/tags", args{httptest.NewRequest(http.MethodGet, "/v2/library/photon/tags", nil)}, false},

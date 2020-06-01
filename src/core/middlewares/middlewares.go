@@ -15,6 +15,8 @@
 package middlewares
 
 import (
+	"fmt"
+	"github.com/goharbor/harbor/src/server/handler/base"
 	"github.com/goharbor/harbor/src/server/middleware/csrf"
 	"github.com/goharbor/harbor/src/server/middleware/log"
 	"github.com/goharbor/harbor/src/server/middleware/requestid"
@@ -45,26 +47,35 @@ var (
 	fetchBlobAPISkipper = middleware.MethodAndPathSkipper(http.MethodGet, blobURLRe)
 
 	// readonlySkippers skip the post request when harbor sets to readonly.
-	readonlySkippers = []middleware.Skipper{
-		middleware.MethodAndPathSkipper(http.MethodPut, match("^/api/v2.0/configurations")),
-		middleware.MethodAndPathSkipper(http.MethodPut, match("^/api/internal/configurations")),
-		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/login")),
-		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/userExists")),
-		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/oidc/onboard")),
-		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/adminjob/"+numericRegexp.String())),
-		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/replication/"+numericRegexp.String())),
-		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/replication/task/"+numericRegexp.String())),
-		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/webhook/"+numericRegexp.String())),
-		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/retention/task/"+numericRegexp.String())),
-		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/schedules/"+numericRegexp.String())),
-		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/webhook/"+numericRegexp.String())),
-	}
+	readonlySkippers = func() []middleware.Skipper {
+		skippers := []middleware.Skipper{
+			middleware.MethodAndPathSkipper(http.MethodPut, match("^/api/internal/configurations")),
+			middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/login")),
+			middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/userExists")),
+			middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/oidc/onboard")),
+			middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/adminjob/"+numericRegexp.String())),
+			middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/replication/"+numericRegexp.String())),
+			middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/replication/task/"+numericRegexp.String())),
+			middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/webhook/"+numericRegexp.String())),
+			middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/retention/task/"+numericRegexp.String())),
+			middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/schedules/"+numericRegexp.String())),
+			middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/webhook/"+numericRegexp.String())),
+		}
+		for _, version := range base.AvailableAPIVersions {
+			skippers = append(skippers, middleware.MethodAndPathSkipper(http.MethodPut, match(fmt.Sprintf("^/api/%s/configurations", version))))
+		}
+		return skippers
+	}()
 )
 
 // legacyAPISkipper skip middleware for legacy APIs
 func legacyAPISkipper(r *http.Request) bool {
+	prefixes := []string{"/v2/"}
+	for _, version := range base.AvailableAPIVersions {
+		prefixes = append(prefixes, fmt.Sprintf("/api/%s/", version))
+	}
 	path := path.Clean(r.URL.EscapedPath())
-	for _, prefix := range []string{"/v2/", "/api/v2.0/"} {
+	for _, prefix := range prefixes {
 		if strings.HasPrefix(path, prefix) {
 			return false
 		}

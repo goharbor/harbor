@@ -31,9 +31,6 @@ import (
 const (
 	defaultPageSize int64 = 500
 	maxPageSize     int64 = 500
-
-	// APIVersion is the current core api version
-	APIVersion = "v2.0"
 )
 
 // BaseAPI wraps common methods for controllers to host API

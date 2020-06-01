@@ -21,7 +21,6 @@ import (
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
-	"github.com/goharbor/harbor/src/server/v2.0/models"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -175,27 +174,6 @@ func (r *Reference) To() *dao.ArtifactReference {
 			log.Errorf("failed to marshal the annotations of reference: %v", err)
 		}
 		ref.Annotations = string(annotations)
-	}
-	return ref
-}
-
-// ToSwagger converts the reference to the swagger model
-func (r *Reference) ToSwagger() *models.Reference {
-	ref := &models.Reference{
-		ChildDigest: r.ChildDigest,
-		ChildID:     r.ChildID,
-		ParentID:    r.ParentID,
-		Annotations: r.Annotations,
-		Urls:        r.URLs,
-	}
-	if r.Platform != nil {
-		ref.Platform = &models.Platform{
-			Architecture: r.Platform.Architecture,
-			Os:           r.Platform.OS,
-			OsFeatures:   r.Platform.OSFeatures,
-			OsVersion:    r.Platform.OSVersion,
-			Variant:      r.Platform.Variant,
-		}
 	}
 	return ref
 }

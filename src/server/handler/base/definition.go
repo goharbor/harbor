@@ -12,18 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package base
 
-import (
-	"github.com/goharbor/harbor/src/server/handler/registry"
-	v20 "github.com/goharbor/harbor/src/server/handler/v2.0/route"
-	v21 "github.com/goharbor/harbor/src/server/handler/v2.1/route"
+// variable definitions
+var (
+	// API version v2.0
+	APIVersionV20 = "v2.0"
+	// API version v2.1
+	APIVersionV21 = "v2.1"
+	// The commended API version in current deployment
+	RecommendedAPIVersion = APIVersionV21
+	// All available API versions maintained by the current deployment
+	AvailableAPIVersions = []string{APIVersionV20, APIVersionV21}
 )
-
-// RegisterRoutes register all routes
-func RegisterRoutes() {
-	registerRoutes()          // service/internal API/UI controller/etc.
-	registry.RegisterRoutes() // OCI registry APIs
-	v20.RegisterRoutes()      // v2.0 APIs
-	v21.RegisterRoutes()      // v2.1 APIs
-}

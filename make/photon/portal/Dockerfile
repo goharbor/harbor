@@ -12,8 +12,8 @@ RUN apt-get update \
 COPY src/portal/package.json /build_dir
 COPY src/portal/package-lock.json /build_dir
 COPY src/portal/scripts /build_dir
-COPY ./api/v2.0/legacy_swagger.yaml /build_dir/swagger.yaml
-COPY ./api/v2.0/swagger.yaml /build_dir/swagger2.yaml
+COPY ./api/v2.1/legacy_swagger.yaml /build_dir/swagger.yaml
+COPY ./api/v2.1/swagger.yaml /build_dir/swagger2.yaml
 COPY ./api/swagger.yaml /build_dir/swagger3.yaml
 
 RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > swagger.json
