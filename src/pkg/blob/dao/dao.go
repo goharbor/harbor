@@ -21,12 +21,11 @@ import (
 	"strings"
 	"time"
 
+	beego_orm "github.com/astaxie/beego/orm"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
-
-	beego_orm "github.com/astaxie/beego/orm"
 )
 
 // DAO the dao for Blob, ArtifactAndBlob and ProjectBlob
@@ -52,6 +51,9 @@ type DAO interface {
 	// UpdateBlob update blob
 	UpdateBlob(ctx context.Context, blob *models.Blob) error
 
+	// UpdateBlob update blob status
+	UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, error)
+
 	// ListBlobs list blobs by query
 	ListBlobs(ctx context.Context, params models.ListParams) ([]*models.Blob, error)
 
@@ -72,9 +74,6 @@ type DAO interface {
 
 	// DeleteBlob delete blob
 	DeleteBlob(ctx context.Context, id int64) (err error)
-
-	// ReFreshUpdateTime updates the blob update time
-	ReFreshUpdateTime(ctx context.Context, digest string, time time.Time) error
 }
 
 // New returns an instance of the default DAO
@@ -171,13 +170,50 @@ func (d *dao) GetBlobByDigest(ctx context.Context, digest string) (*models.Blob,
 	return blob, nil
 }
 
+func (d *dao) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return -1, err
+	}
+
+	// each update will auto increase version and update time
+	data := make(beego_orm.Params)
+	data["version"] = beego_orm.ColValue(beego_orm.ColAdd, 1)
+	data["update_time"] = time.Now()
+	data["status"] = blob.Status
+
+	qt := o.QueryTable(&models.Blob{})
+	cond := beego_orm.NewCondition()
+	var c *beego_orm.Condition
+
+	// In the multiple blob head scenario, if one request success mark the blob from StatusDelete to StatusNone, then version should increase one.
+	// in the meantime, the other requests tries to do the same thing, use 'where version >= blob.version' can handle it.
+	if blob.Status == models.StatusNone {
+		c = cond.And("version__gte", blob.Version)
+	} else {
+		c = cond.And("version", blob.Version)
+	}
+
+	/*
+		generated simple sql string.
+		UPDATE "blob" SET "version" = "version" + $1, "update_time" = $2, "status" = $3
+		WHERE "id" IN ( SELECT T0."id" FROM "blob" T0 WHERE T0."version" >= $4 AND T0."id" = $5 AND T0."status"  IN ('delete', 'deleting')  )
+	*/
+
+	return qt.SetCond(c).Filter("id", blob.ID).
+		Filter("status__in", models.StatusMap[blob.Status]).
+		Update(data)
+}
+
+// UpdateBlob cannot handle the status change.
 func (d *dao) UpdateBlob(ctx context.Context, blob *models.Blob) error {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
-
-	_, err = o.Update(blob)
+	blob.Version = blob.Version + 1
+	blob.UpdateTime = time.Now()
+	_, err = o.Update(blob, "size", "content_type", "version", "update_time")
 	return err
 }
 
@@ -343,14 +379,4 @@ func (d *dao) DeleteBlob(ctx context.Context, id int64) error {
 		return errors.NotFoundError(nil).WithMessage("blob %d not found", id)
 	}
 	return nil
-}
-
-func (d *dao) ReFreshUpdateTime(ctx context.Context, digest string, time time.Time) error {
-	qs, err := orm.QuerySetter(ctx, &models.Blob{}, &q.Query{
-		Keywords: map[string]interface{}{
-			"digest": digest,
-		},
-	})
-	_, err = qs.Update(beego_orm.Params{"update_time": time})
-	return err
 }

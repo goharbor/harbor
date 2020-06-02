@@ -16,12 +16,10 @@ package dao
 
 import (
 	"github.com/goharbor/harbor/src/lib/errors"
-	"testing"
-	"time"
-
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
+	"testing"
 )
 
 type DaoTestSuite struct {
@@ -131,19 +129,59 @@ func (suite *DaoTestSuite) TestUpdateBlob() {
 	digest := suite.DigestString()
 
 	suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest})
-
 	blob, err := suite.dao.GetBlobByDigest(ctx, digest)
 	if suite.Nil(err) {
 		suite.Equal(int64(0), blob.Size)
 	}
 
 	blob.Size = 100
-
 	if suite.Nil(suite.dao.UpdateBlob(ctx, blob)) {
 		blob, err := suite.dao.GetBlobByDigest(ctx, digest)
 		if suite.Nil(err) {
 			suite.Equal(int64(100), blob.Size)
+			suite.Equal(int64(1), blob.Version)
 		}
+	}
+
+	blob.Status = "deleting"
+	suite.Nil(suite.dao.UpdateBlob(ctx, blob), "cannot be updated.")
+	blob, err = suite.dao.GetBlobByDigest(ctx, digest)
+	if suite.Nil(err) {
+		suite.Equal(int64(2), blob.Version)
+		suite.Equal(models.StatusNone, blob.Status)
+	}
+}
+
+func (suite *DaoTestSuite) TestUpdateBlobStatus() {
+	ctx := suite.Context()
+
+	digest := suite.DigestString()
+
+	suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest})
+	blob, err := suite.dao.GetBlobByDigest(ctx, digest)
+	if suite.Nil(err) {
+		suite.Equal(int64(0), blob.Size)
+	}
+
+	// StatusNone cannot be updated to StatusDeleting directly
+	blob.Status = models.StatusDeleting
+	count, err := suite.dao.UpdateBlobStatus(ctx, blob)
+	suite.Nil(err)
+	suite.Equal(int64(0), count)
+	blob, err = suite.dao.GetBlobByDigest(ctx, digest)
+	if suite.Nil(err) {
+		suite.Equal(int64(0), blob.Version)
+		suite.Equal(models.StatusNone, blob.Status)
+	}
+
+	blob.Status = models.StatusDelete
+	count, err = suite.dao.UpdateBlobStatus(ctx, blob)
+	suite.Nil(err)
+	suite.Equal(int64(1), count)
+	blob, err = suite.dao.GetBlobByDigest(ctx, digest)
+	if suite.Nil(err) {
+		suite.Equal(int64(1), blob.Version)
+		suite.Equal(models.StatusDelete, blob.Status)
 	}
 }
 
@@ -336,25 +374,6 @@ func (suite *DaoTestSuite) TestDelete() {
 	suite.Nil(err)
 	err = suite.dao.DeleteBlob(ctx, id)
 	suite.Require().Nil(err)
-}
-
-func (suite *DaoTestSuite) TestReFreshUpdateTime() {
-	ctx := suite.Context()
-	digest := suite.DigestString()
-	suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest})
-	blob, err := suite.dao.GetBlobByDigest(ctx, digest)
-	suite.Require().Nil(err)
-
-	time.Sleep(1 * time.Second)
-	now := time.Now()
-	suite.NotEqual(blob.UpdateTime, now)
-
-	if suite.Nil(suite.dao.ReFreshUpdateTime(ctx, blob.Digest, now)) {
-		blob, err := suite.dao.GetBlobByDigest(ctx, digest)
-		if suite.Nil(err) {
-			suite.Equal(now.Unix(), blob.UpdateTime.Unix())
-		}
-	}
 }
 
 func TestDaoTestSuite(t *testing.T) {
