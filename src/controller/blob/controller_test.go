@@ -17,8 +17,8 @@ package blob
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"testing"
-	"time"
 
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/pkg/blob"
@@ -268,19 +268,38 @@ func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
 	suite.Equal(int64(100), size)
 }
 
-func (suite *ControllerTestSuite) TestReFreshUpdateTime() {
+func (suite *ControllerTestSuite) TestUpdateStatus() {
 	ctx := suite.Context()
 
 	digest := suite.prepareBlob()
 	blob, err := Ctl.Get(ctx, digest)
 	suite.Nil(err)
 
-	now := time.Now()
-	suite.NotEqual(blob.UpdateTime, now)
-
-	err = Ctl.ReFreshUpdateTime(ctx, blob.Digest, now)
+	suite.Equal(blob.Status, models.StatusNone)
+	blob.Status = models.StatusDelete
+	count, err := Ctl.Touch(ctx, blob)
 	suite.Nil(err)
-	suite.Equal(blob.UpdateTime.Unix(), now.Unix())
+	suite.Equal(blob.Status, models.StatusDelete)
+	suite.Equal(int64(1), count)
+}
+
+func (suite *ControllerTestSuite) TestDelete() {
+	ctx := suite.Context()
+
+	digest := suite.DigestString()
+	_, err := Ctl.Ensure(ctx, digest, "application/octet-stream", 100)
+	suite.Nil(err)
+
+	blob, err := Ctl.Get(ctx, digest)
+	suite.Nil(err)
+	suite.Equal(digest, blob.Digest)
+
+	err = Ctl.Delete(ctx, blob.ID)
+	suite.Nil(err)
+
+	exist, err := Ctl.Exist(ctx, digest)
+	suite.Nil(err)
+	suite.False(exist)
 }
 
 func TestControllerTestSuite(t *testing.T) {
