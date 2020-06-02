@@ -34,7 +34,7 @@ This document provides compatibility information for all Harbor components.
 | [Google Identity](https://developers.google.com/identity/protocols/OpenIDConnect) | ![google identity](../../img/OIDC/google-identity.png)| ![Y](../../img/replication-adapters/right.png) |  |V1.9|
 | [Dex](https://github.com/dexidp/dex) | ![dex](../../img/OIDC/dex.png) | ![Y](../../img/replication-adapters/right.png)| | V1.9 |
 | [Ping Identity](https://www.pingidentity.com) | ![ping identity](../../img/OIDC/ping.png) | | ![Y](../../img/replication-adapters/right.png)| V1.9 |
-| [Keycloak](https://www.keycloak.org/) | ![Keycloak](../../img/OIDC/keycloak.png) | ![Y](../../img/replication-adapters/right.png) | | V1.10 |
+| [Keycloak](https://www.keycloak.org/) | ![Keycloak](../img/OIDC/keycloak.png) | ![Y](../img/replication-adapters/right.png) | | V1.10 |
 | [Auth0](https://auth0.com/) | ![Auth0](../../img/OIDC/auth0.png) | ![Y](../../img/replication-adapters/right.png) | | V1.10 |
 
 ## Scanner Adapters
