@@ -446,20 +446,19 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
 
   labelSelectedChange(artifact?: Artifact[]): void {
-    if (artifact && artifact[0].labels) {
-      this.imageStickLabels.forEach(data => {
-        data.iconsShow = false;
-        data.show = true;
-      });
-      if (artifact[0].labels.length) {
-        artifact[0].labels.forEach((labelInfo: Label) => {
-          let findedLabel = this.imageStickLabels.find(data => labelInfo.id === data['label'].id);
+    this.imageStickLabels.forEach(data => {
+      data.iconsShow = false;
+      data.show = true;
+    });
+    if (artifact && artifact[0].labels && artifact[0].labels.length) {
+      artifact[0].labels.forEach((labelInfo: Label) => {
+        let findedLabel = this.imageStickLabels.find(data => labelInfo.id === data['label'].id);
+        if (findedLabel) {
           this.imageStickLabels.splice(this.imageStickLabels.indexOf(findedLabel), 1);
           this.imageStickLabels.unshift(findedLabel);
-
           findedLabel.iconsShow = true;
-        });
-      }
+        }
+      });
     }
   }
 
@@ -491,7 +490,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       };
       this.newArtifactService.addLabel(params).subscribe(res => {
         this.refresh();
-
         // set the selected label in front
         this.imageStickLabels.splice(this.imageStickLabels.indexOf(labelInfo), 1);
         this.imageStickLabels.some((data, i) => {
