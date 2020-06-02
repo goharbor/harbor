@@ -15,7 +15,7 @@ Harbor is deployed as several Docker containers and most of the code is written 
 | python         | 2.7 +            |
 | git            | 1.9.1 +          |
 | make           | 3.81 +           |
-| golang\*       | 1.7.3 +          |
+| golang\*       | 1.13.12 +        |
 
 \*optional, required only if you use your own Golang environment.
 
@@ -38,32 +38,32 @@ vi make/harbor.yml
 
 ### Compiling and Running
 
-You can compile the code by one of the three approaches:
+You can compile the code by one of the two approaches:
 
 #### I. Build with official Golang image
 
 - Get official Golang image from docker hub:
 
     ```sh
-    docker pull golang:1.12.5
+    docker pull golang:1.13.12
     ```
 
 - Build, install and bring up Harbor without Notary:
 
     ```sh
-    make install GOBUILDIMAGE=golang:1.12.5 COMPILETAG=compile_golangimage
+    make install GOBUILDIMAGE=golang:1.13.12 COMPILETAG=compile_golangimage
     ```
 
 - Build, install and bring up Harbor with Notary:
 
     ```sh
-    make install GOBUILDIMAGE=golang:1.12.5 COMPILETAG=compile_golangimage NOTARYFLAG=true
+    make install GOBUILDIMAGE=golang:1.13.12 COMPILETAG=compile_golangimage NOTARYFLAG=true
     ```
 
 - Build, install and bring up Harbor with Clair:
 
    ```sh
-   make install GOBUILDIMAGE=golang:1.12.5 COMPILETAG=compile_golangimage CLAIRFLAG=true
+   make install GOBUILDIMAGE=golang:1.13.12 COMPILETAG=compile_golangimage CLAIRFLAG=true
    ```
 
 #### II. Compile code with your own Golang environment, then build Harbor
