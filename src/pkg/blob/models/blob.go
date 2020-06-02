@@ -30,6 +30,37 @@ func init() {
 // ArtifactAndBlob alias ArtifactAndBlob model
 type ArtifactAndBlob = models.ArtifactAndBlob
 
+/*
+the status are used for Garbage Collection
+StatusNone, the blob is using in Harbor as normal.
+StatusDelete, the blob is marked as GC candidate.
+StatusDeleting, the blob undergo a GC blob deletion.
+StatusDeleteFailed, the blob is failed to delete from the backend storage.
+
+The status transitions
+StatusNone -> StatusDelete : Mark the blob as candidate.
+StatusDelete -> StatusDeleting : Select the blob and call the API to delete asset in the backend storage.
+StatusDeleting -> Trash : Delete success from the backend storage.
+StatusDelete -> StatusNone : Client asks the existence of blob, remove it from the candidate.
+StatusDelete -> StatusDeleteFailed : The storage driver returns fail when to delete the real data from the configurated file system.
+StatusDeleteFailed -> StatusNone : The delete failed blobs can be pushed again, and back to normal.
+StatusDeleteFailed -> StatusDelete : The delete failed blobs should be in the candidate.
+*/
+const (
+	StatusNone         = ""
+	StatusDelete       = "delete"
+	StatusDeleting     = "deleting"
+	StatusDeleteFailed = "deletefailed"
+)
+
+// StatusMap key is the target status, values are the accept source status. For example, only StatusNone and StatusDeleteFailed can be convert to StatusDelete.
+var StatusMap = map[string][]string{
+	StatusNone:         {StatusNone, StatusDelete, StatusDeleteFailed},
+	StatusDelete:       {StatusNone, StatusDeleteFailed},
+	StatusDeleting:     {StatusDelete},
+	StatusDeleteFailed: {StatusDeleting},
+}
+
 // Blob holds the details of a blob.
 type Blob struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
@@ -38,6 +69,7 @@ type Blob struct {
 	Size         int64     `orm:"column(size)" json:"size"`
 	Status       string    `orm:"column(status)" json:"status"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now_add" json:"update_time"`
+	Version      int64     `orm:"column(version)" json:"version"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 }
 

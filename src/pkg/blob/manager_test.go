@@ -16,11 +16,11 @@ package blob
 
 import (
 	"context"
-	"testing"
-	"time"
-
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
+	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/blob/models"
 )
 
 type ManagerTestSuite struct {
@@ -201,6 +201,7 @@ func (suite *ManagerTestSuite) TestUpdate() {
 			suite.Equal(digest, blob.Digest)
 			suite.Equal("media type", blob.ContentType)
 			suite.Equal(int64(1000), blob.Size)
+			suite.Equal(models.StatusNone, blob.Status)
 		}
 	}
 }
@@ -267,26 +268,24 @@ func (suite *ManagerTestSuite) TestDelete() {
 	suite.Nil(err)
 }
 
-func (suite *ManagerTestSuite) TestReFreshUpdateTime() {
+func (suite *ManagerTestSuite) TestUpdateStatus() {
 	ctx := suite.Context()
 
 	digest := suite.DigestString()
 	_, err := Mgr.Create(ctx, digest, "media type", 100)
 	suite.Nil(err)
 
-	time.Sleep(1 * time.Second)
-	now := time.Now()
-
 	blob, err := Mgr.Get(ctx, digest)
 	if suite.Nil(err) {
-		blob.UpdateTime = now
-		suite.Nil(Mgr.Update(ctx, blob))
+		blob.Status = models.StatusDelete
+		_, err := Mgr.UpdateBlobStatus(ctx, blob)
+		suite.Nil(err)
 
 		{
 			blob, err := Mgr.Get(ctx, digest)
 			suite.Nil(err)
 			suite.Equal(digest, blob.Digest)
-			suite.Equal(now.Unix(), blob.UpdateTime.Unix())
+			suite.Equal(models.StatusDelete, blob.Status)
 		}
 	}
 }
