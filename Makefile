@@ -513,7 +513,7 @@ down:
 
 swagger_client:
 	@echo "Generate swagger client"
-	wget -q https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
+	wget https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_client
 	mkdir  -p harborclient/harbor_swagger_client

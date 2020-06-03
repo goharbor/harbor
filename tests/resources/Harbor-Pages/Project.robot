@@ -33,6 +33,7 @@ Create An New Project And Go Into Project
     Capture Page Screenshot
     Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
     Capture Page Screenshot
+    Sleep  2
     Go Into Project  ${projectname}  has_image=${false}
 
 Create An New Project With New User
@@ -43,6 +44,9 @@ Create An New Project With New User
     Create An New Project And Go Into Project  ${projectname}  ${public}
     Sleep  1
 
+Artifact Exist
+    [Arguments]  ${tag_name}
+    Retry Wait Until Page Contains Element  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256') and contains(.,'${tag_name}')]
 #It's the log of project.
 Go To Project Log
     #Switch To Project Tab Overflow
