@@ -96,11 +96,7 @@ export class ListProjectComponent implements OnDestroy {
     }
 
     get withChartMuseum(): boolean {
-        if (this.appConfigService.getConfig().with_chartmuseum) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.appConfigService.getConfig().with_chartmuseum;
     }
 
     public get isSystemAdmin(): boolean {
@@ -129,7 +125,7 @@ export class ListProjectComponent implements OnDestroy {
     goToLink(proId: number): void {
         this.searchTrigger.closeSearch(true);
 
-        let linkUrl = ["harbor", "projects", proId, "summary"];
+        let linkUrl = ["harbor", "projects", proId];
         this.router.navigate(linkUrl);
     }
 

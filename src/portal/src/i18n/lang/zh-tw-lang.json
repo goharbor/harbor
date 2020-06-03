@@ -1,11 +1,11 @@
 {
   "APP_TITLE":{
-    "VMW_HARBOR":"VMW_HARBOR",
-    "HARBOR":"HARBOR",
+    "VMW_HARBOR":"Harbor",
+    "HARBOR":"Harbor",
     "VIC":"vSphere Integrated Containers",
     "MGMT":"管理",
     "REG":"註冊表",
-    "HARBOR_SWAGGER":"HARBOR_SWAGGER",
+    "HARBOR_SWAGGER":"Harbor Swagger",
     "THEME_DARK_TEXT": "深色主題",
     "THEME_LIGHT_TEXT": "淺色主題"
   },
@@ -270,7 +270,7 @@
     "NEW_USER": "添加用戶成員",
     "NEW_MEMBER": "新建成員",
     "MEMBER": "成員",
-    "NAME": "姓名",
+    "NAME": "名稱",
     "EMAIL": "郵箱",
     "ROLE": "角色",
     "SYS_ADMIN": "系統管理員",
@@ -317,7 +317,7 @@
     "REMOVE": "移除成員"
   },
   "ROBOT_ACCOUNT":{
-    "NAME": "姓名",
+    "NAME": "名稱",
     "PERMISSIONS": "權限",
     "TOKEN": "令牌",
     "NEW_ROBOT_ACCOUNT": "添加機器人帳戶",
@@ -700,7 +700,8 @@
     "DEPLOY": "部署",
     "ADDITIONAL_INFO": "添加信息",
     "REPO_NAME": "鏡像倉庫",
-    "MARKDOWN": "支持使用Markdown進行樣式設置"
+    "MARKDOWN": "支持使用Markdown進行樣式設置",
+    "LAST_MODIFIED": "Last Modified Time"
   },
   "HELM_CHART":{
     "HELMCHARTS":"圖表",

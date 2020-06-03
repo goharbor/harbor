@@ -320,7 +320,12 @@ const harborRoutes: Routes = [
               }
             },
             component: ScannerComponent
-          }
+          },
+          {
+            path: '',
+            redirectTo: 'repositories',
+            pathMatch: 'full'
+          },
         ]
       },
       {
