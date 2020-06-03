@@ -981,4 +981,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   get isFilterReadonly() {
     return this.filterByType === 'labels' ? 'readonly' : null;
   }
+  // when finished, remove it from selectedRow
+  scanFinished(artifact: Artifact) {
+    if (this.selectedRow && this.selectedRow.length) {
+      for ( let i = 0; i < this.selectedRow.length; i++) {
+        if (artifact.digest === this.selectedRow[i].digest) {
+          this.selectedRow.splice(i, 1);
+          break;
+        }
+      }
+    }
+  }
 }
