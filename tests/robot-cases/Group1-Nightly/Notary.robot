@@ -37,7 +37,7 @@ Test Case - Project Level Policy Content Trust
     # Verify
     # Unsigned image can not be pulled
     Content Trust Should Be Selected
-    Cannot Pull Unsigned Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
+    Cannot Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest  err_msg=The image is not signed in Notary
     # Signed image can be pulled
     Body Of Admin Push Signed Image  image=redis  project=project${d}
     Pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  redis  tag=latest
