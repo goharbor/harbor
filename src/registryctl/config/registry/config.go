@@ -7,10 +7,10 @@ import (
 	"os"
 )
 
-// StorageDriver ...
+// StorageDriver the storage driver bases on the registry configurations, like filesystem, oss, gcs, S3, and etc.
 var StorageDriver storagedriver.StorageDriver
 
-// ResolveConfiguration ...
+// ResolveConfiguration loads the mounted registry configuration file, which is shared with the registry controller.
 func ResolveConfiguration(configPath string) (*configuration.Configuration, error) {
 	fp, err := os.Open(configPath)
 	if err != nil {

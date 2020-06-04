@@ -36,9 +36,9 @@ func TestHandleError(t *testing.T) {
 	}
 
 	w = httptest.NewRecorder()
-	HandleForbidden(w)
-	if w.Code != http.StatusForbidden {
-		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusForbidden)
+	HandleNotMethodAllowed(w)
+	if w.Code != http.StatusMethodNotAllowed {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusMethodNotAllowed)
 	}
 
 	w = httptest.NewRecorder()

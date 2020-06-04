@@ -26,7 +26,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	case http.MethodPost:
 		h.start(w, req)
 	default:
-		api.HandleForbidden(w)
+		api.HandleNotMethodAllowed(w)
 	}
 }
 

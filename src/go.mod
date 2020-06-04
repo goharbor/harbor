@@ -2,8 +2,6 @@ module github.com/goharbor/harbor/src
 
 go 1.13
 
-replace github.com/goharbor/harbor => ../
-
 require (
 	github.com/Azure/azure-sdk-for-go v37.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.9.3 // indirect
@@ -88,4 +86,7 @@ require (
 	k8s.io/helm v2.16.3+incompatible
 )
 
-replace github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.3+incompatible
+replace (
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.3+incompatible
+	github.com/goharbor/harbor => ../
+)

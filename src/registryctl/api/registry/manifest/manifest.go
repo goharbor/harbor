@@ -3,6 +3,7 @@ package manifest
 import (
 	"github.com/docker/distribution/registry/storage"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/registryctl/api"
 	regConf "github.com/goharbor/harbor/src/registryctl/config/registry"
 	"github.com/gorilla/mux"
@@ -24,7 +25,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	case http.MethodDelete:
 		h.delete(w, req)
 	default:
-		api.HandleForbidden(w)
+		api.HandleNotMethodAllowed(w)
 	}
 }
 
@@ -52,6 +53,7 @@ func (h *handler) delete(w http.ResponseWriter, r *http.Request) {
 
 	cleaner := storage.NewVacuum(r.Context(), regConf.StorageDriver)
 	if err := cleaner.RemoveManifest(repoName, dgst, tags); err != nil {
+		log.Infof("failed to remove manifest: %s, with error:%v", ref, err)
 		api.HandleInternalServerError(w, err)
 		return
 	}

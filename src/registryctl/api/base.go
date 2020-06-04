@@ -26,9 +26,9 @@ func HandleInternalServerError(w http.ResponseWriter, err error) {
 	HandleError(w, errors.UnknownError(err))
 }
 
-// HandleForbidden ...
-func HandleForbidden(w http.ResponseWriter) {
-	HandleError(w, errors.ForbiddenError(nil))
+// HandleNotMethodAllowed ...
+func HandleNotMethodAllowed(w http.ResponseWriter) {
+	HandleError(w, errors.MethodNotAllowedError(nil))
 }
 
 // HandleBadRequest ...
