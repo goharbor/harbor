@@ -59,7 +59,7 @@ Test Case - Scan Schedule Job
     Go Into Project  ${project_name}
     Go Into Repo  ${project_name}/${image}
     Scan Result Should Display In List Row  ${tag}
-    View Repo Scan Details  Critical  High  Medium
+    View Repo Scan Details  High  Medium
 
 Test Case - Replication Schedule Job
     Init Chrome Driver
