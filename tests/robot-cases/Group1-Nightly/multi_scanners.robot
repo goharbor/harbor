@@ -41,8 +41,9 @@ Test Case - Switch Scanner
     Push Image  ${ip}  admin  Harbor12345  project${d}  hello-world:latest
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
-    Scan Repo  latest  Fail
-    View Scan Error Log
+    Scan Repo  latest  Succeed
+    Move To Summary Chart
+    Wait Until Page Contains  No vulnerability
 
     Switch To Scanners Page
 
@@ -51,6 +52,7 @@ Test Case - Switch Scanner
 
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
+    Retry Wait Until Page Contains Element  ${not_scanned_icon}
     Scan Repo  latest  Succeed
     Move To Summary Chart
     Wait Until Page Contains  No vulnerability
