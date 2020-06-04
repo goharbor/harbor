@@ -67,7 +67,7 @@ Cannot Pull Image
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}=${null}  ${err_msg}=${null}
     ${image_with_tag}=  Set Variable If  '${tag}'=='${null}'  ${image}  ${image}:${tag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
-    :FOR  ${idx}  IN RANGE  0  4
+    :FOR  ${idx}  IN RANGE  0  30
     \   ${out}  Run Keyword And Ignore Error  Command Should be Failed  docker pull ${ip}/${project}/${image_with_tag}
     \   Exit For Loop If  '${out[0]}'=='PASS'
     \   Sleep  3
