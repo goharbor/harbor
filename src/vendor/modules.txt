@@ -1,4 +1,4 @@
-# cloud.google.com/go v0.38.0
+# cloud.google.com/go v0.53.0
 cloud.google.com/go/compute/metadata
 # github.com/Azure/azure-sdk-for-go v37.2.0+incompatible
 github.com/Azure/azure-sdk-for-go/storage
@@ -202,7 +202,7 @@ github.com/go-openapi/strfmt
 github.com/go-openapi/swag
 # github.com/go-openapi/validate v0.19.5
 github.com/go-openapi/validate
-# github.com/go-sql-driver/mysql v1.4.1
+# github.com/go-sql-driver/mysql v1.5.0
 github.com/go-sql-driver/mysql
 # github.com/go-stack/stack v1.8.0
 github.com/go-stack/stack
@@ -220,13 +220,17 @@ github.com/gocraft/work
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
-# github.com/golang-migrate/migrate v3.3.0+incompatible
-github.com/golang-migrate/migrate
-github.com/golang-migrate/migrate/database
-github.com/golang-migrate/migrate/database/postgres
-github.com/golang-migrate/migrate/source
-github.com/golang-migrate/migrate/source/file
-# github.com/golang/protobuf v1.3.2
+# github.com/golang-migrate/migrate/v4 v4.11.0
+github.com/golang-migrate/migrate/v4
+github.com/golang-migrate/migrate/v4/database
+github.com/golang-migrate/migrate/v4/database/postgres
+github.com/golang-migrate/migrate/v4/internal/url
+github.com/golang-migrate/migrate/v4/source
+github.com/golang-migrate/migrate/v4/source/file
+github.com/golang-migrate/migrate/v4/source/httpfs
+# github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
+github.com/golang/groupcache/lru
+# github.com/golang/protobuf v1.3.3
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
@@ -235,24 +239,28 @@ github.com/golang/protobuf/ptypes/timestamp
 # github.com/gomodule/redigo v2.0.0+incompatible
 github.com/gomodule/redigo/internal
 github.com/gomodule/redigo/redis
-# github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135
+# github.com/google/go-querystring v1.0.0
 github.com/google/go-querystring/query
 # github.com/google/gofuzz v1.0.0
 github.com/google/gofuzz
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
+# github.com/googleapis/gax-go/v2 v2.0.5
+github.com/googleapis/gax-go/v2
 # github.com/gorilla/csrf v1.6.2
 github.com/gorilla/csrf
-# github.com/gorilla/handlers v1.3.0
+# github.com/gorilla/handlers v1.4.2
 github.com/gorilla/handlers
-# github.com/gorilla/mux v1.7.2
+# github.com/gorilla/mux v1.7.4
 github.com/gorilla/mux
 # github.com/gorilla/securecookie v1.1.1
 github.com/gorilla/securecookie
 # github.com/graph-gophers/dataloader v5.0.0+incompatible
 github.com/graph-gophers/dataloader
-# github.com/hashicorp/golang-lru v0.5.1
-github.com/hashicorp/golang-lru/simplelru
+# github.com/hashicorp/errwrap v1.0.0
+github.com/hashicorp/errwrap
+# github.com/hashicorp/go-multierror v1.1.0
+github.com/hashicorp/go-multierror
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
 # github.com/json-iterator/go v1.1.8
@@ -261,7 +269,7 @@ github.com/json-iterator/go
 github.com/justinas/alice
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/lib/pq v1.1.0
+# github.com/lib/pq v1.3.0
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
@@ -352,7 +360,7 @@ go.mongodb.org/mongo-driver/bson/bsonrw
 go.mongodb.org/mongo-driver/bson/bsontype
 go.mongodb.org/mongo-driver/bson/primitive
 go.mongodb.org/mongo-driver/x/bsonx/bsoncore
-# go.opencensus.io v0.22.0
+# go.opencensus.io v0.22.3
 go.opencensus.io
 go.opencensus.io/internal
 go.opencensus.io/internal/tagencoding
@@ -369,7 +377,7 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
-# golang.org/x/crypto v0.0.0-20200128174031-69ecbb4d6d5d
+# golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/cast5
@@ -384,7 +392,7 @@ golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+# golang.org/x/net v0.0.0-20200202094626-16171245cfb2
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts
@@ -393,14 +401,14 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+# golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20190916202348-b4ddaad3f8a3
+# golang.org/x/sys v0.0.0-20200212091648-12a6c2dcc1e4
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/text v0.3.2
@@ -411,19 +419,18 @@ golang.org/x/text/unicode/norm
 golang.org/x/text/width
 # golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 golang.org/x/time/rate
-# google.golang.org/api v0.4.0
-google.golang.org/api/gensupport
+# google.golang.org/api v0.17.0
 google.golang.org/api/googleapi
-google.golang.org/api/googleapi/internal/uritemplates
 google.golang.org/api/googleapi/transport
 google.golang.org/api/internal
+google.golang.org/api/internal/gensupport
+google.golang.org/api/internal/third_party/uritemplates
 google.golang.org/api/option
 google.golang.org/api/storage/v1
 google.golang.org/api/transport/http
 google.golang.org/api/transport/http/internal/propagation
-# google.golang.org/appengine v1.5.0
+# google.golang.org/appengine v1.6.5
 google.golang.org/appengine
-google.golang.org/appengine/cloudsql
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/app_identity
 google.golang.org/appengine/internal/base
@@ -438,9 +445,9 @@ google.golang.org/cloud
 google.golang.org/cloud/internal
 google.golang.org/cloud/internal/opts
 google.golang.org/cloud/storage
-# google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55
+# google.golang.org/genproto v0.0.0-20200212174721-66ed5ce911ce
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.27.0
+# google.golang.org/grpc v1.27.1
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff

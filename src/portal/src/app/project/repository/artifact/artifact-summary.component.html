@@ -1,7 +1,7 @@
 <div class="arrow-block" *ngIf="!withAdmiral">
     <a class="pl-0" (click)="goBackPro()">{{'SIDE_NAV.PROJECTS'| translate}}</a>
     <span class="back-icon"><</span>
-    <a (click)="goBackRep()">{{'REPOSITORY.REPOSITORIES'| translate}}</a>
+    <a (click)="goBackRep()">{{projectName}}</a>
     <span class="back-icon"><</span>
     <a (click)="goBack()">{{repositoryName}}</a>
 

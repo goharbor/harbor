@@ -704,7 +704,8 @@
         "DEPLOY": "部署",
         "ADDITIONAL_INFO": "添加信息",
         "REPO_NAME": "镜像仓库",
-        "MARKDOWN": "支持使用Markdown进行样式设置"
+        "MARKDOWN": "支持使用Markdown进行样式设置",
+        "LAST_MODIFIED": "最新变更时间"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",
