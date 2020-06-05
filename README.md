@@ -83,7 +83,7 @@ The [compatibility list](./docs/install-config/harbor-compatibility-list.md) doc
 
 ## Demos
 
-* **[Live Demo](https://demo.goharbor.io)** - A demo environment with the latest Harbor stable build installed. For additional information please refer to [this page](docs/demo_server.md).
+* **[Live Demo](https://demo.goharbor.io)** - A demo environment with the latest Harbor stable build installed. For additional information please refer to [this page](docs/install-config/demo-server.md).
 * **[Video Demos](https://github.com/goharbor/harbor/wiki/Video-demos-for-Harbor)** - Demos for Harbor features and continuously updated.
 
 ## Partners and Users
