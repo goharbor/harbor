@@ -28,6 +28,8 @@ import (
 	_ "github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	// register CNAB resolver
 	_ "github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
+	// register Model resolver
+	_ "github.com/goharbor/harbor/src/controller/artifact/processor/model"
 
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
