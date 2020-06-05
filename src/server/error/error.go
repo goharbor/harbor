@@ -34,6 +34,7 @@ var (
 		errors.UNSUPPORTED:                     http.StatusBadRequest,
 		errors.UnAuthorizedCode:                http.StatusUnauthorized,
 		errors.ForbiddenCode:                   http.StatusForbidden,
+		errors.MethodNotAllowedCode:            http.StatusMethodNotAllowed,
 		errors.DENIED:                          http.StatusForbidden,
 		errors.NotFoundCode:                    http.StatusNotFound,
 		errors.ConflictCode:                    http.StatusConflict,

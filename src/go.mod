@@ -2,9 +2,10 @@ module github.com/goharbor/harbor/src
 
 go 1.13
 
-replace github.com/goharbor/harbor => ../
-
 require (
+	github.com/Azure/azure-sdk-for-go v37.2.0+incompatible // indirect
+	github.com/Azure/go-autorest/autorest v0.9.3 // indirect
+	github.com/Azure/go-autorest/autorest/to v0.3.0 // indirect
 	github.com/Masterminds/semver v1.4.2
 	github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d // indirect
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
@@ -19,6 +20,7 @@ require (
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e // indirect
 	github.com/coreos/go-oidc v2.1.0+incompatible
+	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
 	github.com/dghubble/sling v1.1.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docker/distribution v2.7.1+incompatible
@@ -50,6 +52,7 @@ require (
 	github.com/lib/pq v1.3.0
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/miekg/pkcs11 v0.0.0-20170220202408-7283ca79f35e // indirect
+	github.com/ncw/swift v1.0.49 // indirect
 	github.com/olekukonko/tablewriter v0.0.1
 	github.com/opencontainers/go-digest v1.0.0-rc1
 	github.com/opencontainers/image-spec v1.0.1
@@ -75,4 +78,9 @@ require (
 	k8s.io/apimachinery v0.17.3
 	k8s.io/client-go v0.17.3
 	k8s.io/helm v2.16.3+incompatible
+)
+
+replace (
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.3+incompatible
+	github.com/goharbor/harbor => ../
 )
