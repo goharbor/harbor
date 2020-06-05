@@ -22,9 +22,9 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/golang-migrate/migrate"
-	_ "github.com/golang-migrate/migrate/database/postgres" // import pgsql driver for migrator
-	_ "github.com/golang-migrate/migrate/source/file"       // import local file driver for migrator
+	migrate "github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres" // import pgsql driver for migrator
+	_ "github.com/golang-migrate/migrate/v4/source/file"       // import local file driver for migrator
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
