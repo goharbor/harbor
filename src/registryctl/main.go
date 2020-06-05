@@ -17,8 +17,6 @@ package main
 import (
 	"crypto/tls"
 	"flag"
-	"github.com/docker/distribution/registry/storage/driver/factory"
-	regConf "github.com/goharbor/harbor/src/registryctl/config/registry"
 	"net/http"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
@@ -69,7 +67,6 @@ func (s *RegistryCtl) Start() {
 }
 
 func main() {
-
 	configPath := flag.String("c", "", "Specify registryCtl configuration file path")
 	flag.Parse()
 
@@ -85,18 +82,5 @@ func main() {
 		ServerConf: *config.DefaultConfig,
 		Handler:    handlers.NewHandlerChain(*config.DefaultConfig),
 	}
-
-	// set the global driver
-	rConf, err := regConf.ResolveConfiguration(config.DefaultConfig.RegistryConfig)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	regConf.StorageDriver, err = factory.Create(rConf.Storage.Type(), rConf.Storage.Parameters())
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
 	regCtl.Start()
 }

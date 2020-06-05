@@ -19,6 +19,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
 )
 
 func TestConfigDoesNotExists(t *testing.T) {
@@ -38,7 +40,7 @@ func TestConfigLoadingWithEnv(t *testing.T) {
 	assert.Equal(t, "https", cfg.Protocol)
 	assert.Equal(t, "1000", cfg.Port)
 	assert.Equal(t, "DEBUG", cfg.LogLevel)
-	assert.Equal(t, "/etc/registry/config.yml", cfg.RegistryConfig)
+	assert.Equal(t, "../reg_conf_test.yml", cfg.RegistryConfig)
 }
 
 func TestConfigLoadingWithYml(t *testing.T) {
@@ -48,7 +50,8 @@ func TestConfigLoadingWithYml(t *testing.T) {
 	assert.Equal(t, "http", cfg.Protocol)
 	assert.Equal(t, "1234", cfg.Port)
 	assert.Equal(t, "ERROR", cfg.LogLevel)
-	assert.Equal(t, "/etc/registry/config.yml", cfg.RegistryConfig)
+	assert.Equal(t, "../reg_conf_test.yml", cfg.RegistryConfig)
+	assert.True(t, cfg.StorageDriver.Name() == "filesystem")
 }
 
 func TestGetLogLevel(t *testing.T) {

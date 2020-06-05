@@ -6,7 +6,6 @@ import (
 	"github.com/docker/distribution/registry/storage/driver/inmemory"
 	"github.com/docker/distribution/testutil"
 	"github.com/goharbor/harbor/src/registryctl/api/registry/test"
-	regConf "github.com/goharbor/harbor/src/registryctl/config/registry"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -17,7 +16,6 @@ import (
 func TestDeleteManifest(t *testing.T) {
 	ctx := context.Background()
 	inmemoryDriver := inmemory.New()
-	regConf.StorageDriver = inmemoryDriver
 
 	registry := test.CreateRegistry(t, inmemoryDriver)
 	repo := test.MakeRepository(t, registry, "mftest")
@@ -57,7 +55,7 @@ func TestDeleteManifest(t *testing.T) {
 	varMap["name"] = fmt.Sprintf("%v", repo.Named())
 	req = mux.SetURLVars(req, varMap)
 
-	manifestHandler := NewHandler()
+	manifestHandler := NewHandler(inmemoryDriver)
 	rec := httptest.NewRecorder()
 	manifestHandler.ServeHTTP(rec, req)
 	assert.True(t, rec.Result().StatusCode == 200)

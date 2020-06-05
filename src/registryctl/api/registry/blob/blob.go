@@ -3,19 +3,23 @@ package blob
 import (
 	"errors"
 	"github.com/docker/distribution/registry/storage"
+	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/registryctl/api"
-	regConf "github.com/goharbor/harbor/src/registryctl/config/registry"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
 // NewHandler returns the handler to handler blob request
-func NewHandler() http.Handler {
-	return &handler{}
+func NewHandler(storageDriver storagedriver.StorageDriver) http.Handler {
+	return &handler{
+		storageDriver: storageDriver,
+	}
 }
 
-type handler struct{}
+type handler struct {
+	storageDriver storagedriver.StorageDriver
+}
 
 // ServeHTTP ...
 func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -35,7 +39,7 @@ func (h *handler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// don't parse the reference here as RemoveBlob does.
-	cleaner := storage.NewVacuum(r.Context(), regConf.StorageDriver)
+	cleaner := storage.NewVacuum(r.Context(), h.storageDriver)
 	if err := cleaner.RemoveBlob(ref); err != nil {
 		log.Infof("failed to remove blob: %s, with error:%v", ref, err)
 		api.HandleError(w, err)

@@ -7,4 +7,4 @@ https_config:
   cert: "server.crt"
   key: "server.key"
 
-registry_config: "/etc/registry/config.yml"
+registry_config: "../reg_conf_test.yml"

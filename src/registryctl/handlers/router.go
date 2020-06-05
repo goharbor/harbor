@@ -32,7 +32,7 @@ func newRouter(conf config.Configuration) http.Handler {
 	rootRouter.HandleFunc("/api/health", api.Health).Methods("GET")
 
 	rootRouter.Path("/api/registry/gc").Methods(http.MethodPost).Handler(gc.NewHandler(conf.RegistryConfig))
-	rootRouter.Path("/api/registry/blob/{reference}").Methods(http.MethodDelete).Handler(blob.NewHandler())
-	rootRouter.Path("/api/registry/{name}/manifests/{reference}").Methods(http.MethodDelete).Handler(manifest.NewHandler())
+	rootRouter.Path("/api/registry/blob/{reference}").Methods(http.MethodDelete).Handler(blob.NewHandler(conf.StorageDriver))
+	rootRouter.Path("/api/registry/{name}/manifests/{reference}").Methods(http.MethodDelete).Handler(manifest.NewHandler(conf.StorageDriver))
 	return rootRouter
 }

@@ -4,7 +4,6 @@ import (
 	"github.com/docker/distribution/registry/storage/driver/inmemory"
 	"github.com/docker/distribution/testutil"
 	"github.com/goharbor/harbor/src/registryctl/api/registry/test"
-	regConf "github.com/goharbor/harbor/src/registryctl/config/registry"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -14,7 +13,6 @@ import (
 
 func TestDeletionBlob(t *testing.T) {
 	inmemoryDriver := inmemory.New()
-	regConf.StorageDriver = inmemoryDriver
 
 	registry := test.CreateRegistry(t, inmemoryDriver)
 	repo := test.MakeRepository(t, registry, "blobdeletion")
@@ -46,7 +44,7 @@ func TestDeletionBlob(t *testing.T) {
 	varMap["reference"] = test.GetKeys(randomLayers1)[0].String()
 	req = mux.SetURLVars(req, varMap)
 
-	blobHandler := NewHandler()
+	blobHandler := NewHandler(inmemoryDriver)
 	rec := httptest.NewRecorder()
 	blobHandler.ServeHTTP(rec, req)
 	assert.True(t, rec.Result().StatusCode == 200)
