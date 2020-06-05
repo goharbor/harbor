@@ -16,24 +16,36 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/lib/errors"
+	server_error "github.com/goharbor/harbor/src/server/error"
 	"net/http"
 )
 
-func handleInternalServerError(w http.ResponseWriter) {
-	http.Error(w, http.StatusText(http.StatusInternalServerError),
-		http.StatusInternalServerError)
+// HandleInternalServerError ...
+func HandleInternalServerError(w http.ResponseWriter, err error) {
+	HandleError(w, errors.UnknownError(err))
 }
 
-func handleUnauthorized(w http.ResponseWriter) {
-	http.Error(w, http.StatusText(http.StatusUnauthorized),
-		http.StatusUnauthorized)
+// HandleNotMethodAllowed ...
+func HandleNotMethodAllowed(w http.ResponseWriter) {
+	HandleError(w, errors.MethodNotAllowedError(nil))
 }
 
-// response status code will be written automatically if there is an error
-func writeJSON(w http.ResponseWriter, v interface{}) error {
+// HandleBadRequest ...
+func HandleBadRequest(w http.ResponseWriter, err error) {
+	HandleError(w, errors.BadRequestError(err))
+}
+
+// HandleError ...
+func HandleError(w http.ResponseWriter, err error) {
+	server_error.SendError(w, err)
+}
+
+// WriteJSON response status code will be written automatically if there is an error
+func WriteJSON(w http.ResponseWriter, v interface{}) error {
 	b, err := json.Marshal(v)
 	if err != nil {
-		handleInternalServerError(w)
+		HandleInternalServerError(w, err)
 		return err
 	}
 
