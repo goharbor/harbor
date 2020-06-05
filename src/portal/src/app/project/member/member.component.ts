@@ -202,7 +202,7 @@ export class MemberComponent implements OnInit, OnDestroy {
         .changeMemberRole(projectId, member.id, roleId)
         .pipe(map(() => this.batchChangeRoleInfos[member.id] = 'done')
           , catchError(error => {
-            this.messageHandlerService.handleError(error + ": " + member.entity_name);
+            this.messageHandlerService.handleError(error);
             return observableThrowError(error);
           }));
     };
