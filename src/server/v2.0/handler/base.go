@@ -20,6 +20,7 @@ import (
 	"context"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/q"
 	"net/url"
 	"strconv"
@@ -30,7 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
-	errs "github.com/goharbor/harbor/src/server/error"
 )
 
 // BaseAPI base API handler
@@ -43,7 +43,7 @@ func (*BaseAPI) Prepare(ctx context.Context, operation string, params interface{
 
 // SendError returns response for the err
 func (*BaseAPI) SendError(ctx context.Context, err error) middleware.Responder {
-	return errs.NewErrResponder(err)
+	return http.NewErrResponder(err)
 }
 
 // HasPermission returns true when the request has action permission on resource
