@@ -54,7 +54,7 @@
   },
   "BATCH":{
     "DELETED_SUCCESS": "刪除成功",
-    "DELETED_FAILURE": "刪除失敗",
+    "DELETED_FAILURE": "Deleted failed or partly failed",
     "SWITCH_SUCCESS": "切換成功",
     "SWITCH_FAILURE": "切換失敗",
     "REPLICATE_SUCCESS": "開始成功",
@@ -1184,7 +1184,8 @@
     "MSG_SCHEDULE_SET": "垃圾回收定時任務設置成功",
     "MSG_SCHEDULE_RESET": "垃圾回收定時任務已被重置",
     "PARAMETERS": "參數",
-    "DELETE_UNTAGGED": "刪除無Tag 的Artifacts"
+    "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
+    "EXPLAIN": "GC is a compute intensive operation that may impact registry performance"
   },
   "RETAG":{
     "MSG_SUCCESS": "Artifact 拷貝成功",

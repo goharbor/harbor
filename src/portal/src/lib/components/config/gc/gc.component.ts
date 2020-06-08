@@ -29,8 +29,7 @@ export class GcComponent implements OnInit {
   schedule: GCSchedule = {};
   originCron: OriginCron;
   disableGC: boolean = false;
-  getText = '';
-  getLabelCurrent = '';
+  getLabelCurrent = 'GC.CURRENT_SCHEDULE';
   @Output() loadingGcStatus = new EventEmitter<boolean>();
   @ViewChild(CronScheduleComponent, {static: false})
   CronScheduleComponent: CronScheduleComponent;
