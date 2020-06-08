@@ -117,9 +117,10 @@
                             <li *ngIf="systemWhitelist?.items?.length<1" class="none">{{'CVE_WHITELIST.NONE'|translate}}
                             </li>
                             <li *ngFor="let item of systemWhitelist?.items;let i = index;">
-                                <span class="hand" (click)="goToDetail(item.cve_id)">{{item.cve_id}}</span>
-                                <clr-icon (click)="deleteItem(i)" class="float-lg-right margin-top-4"
-                                    shape="times-circle"></clr-icon>
+                                <a href="javascript:void(0)" (click)="goToDetail(item.cve_id)">{{item.cve_id}}</a>
+                                <a  class="float-lg-right" href="javascript:void(0)" (click)="deleteItem(i)">
+                                    <clr-icon shape="times-circle"></clr-icon>
+                                </a>
                             </li>
                         </ul>
                     </div>

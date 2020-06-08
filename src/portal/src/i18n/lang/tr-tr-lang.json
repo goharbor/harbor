@@ -54,7 +54,7 @@
     },
     "BATCH": {
         "DELETED_SUCCESS": "Başarı ile silindi.",
-        "DELETED_FAILURE": "Silme başarısız.",
+        "DELETED_FAILURE": "Deleted failed or partly failed",
         "SWITCH_SUCCESS": "Değiştirme başarılı",
         "SWITCH_FAILURE": "Değiştirme başarısız",
         "REPLICATE_SUCCESS": "Başlatma başarılı.",
@@ -1190,7 +1190,7 @@
 
     },
     "GC": {
-        "CURRENT_SCHEDULE": "Mevcut Program",
+        "CURRENT_SCHEDULE": "Schedule to GC",
         "GC_NOW": "ŞİMDİ ÇT",
         "JOB_HISTORY": "ÇT Geçmişi",
         "JOB_ID": "İş ID",
@@ -1200,7 +1200,8 @@
         "MSG_SCHEDULE_SET": "Çöp Toplama programı belirlendi",
         "MSG_SCHEDULE_RESET": "Çöp Toplama programı sıfırlandı",
         "PARAMETERS": "Parameters",
-        "DELETE_UNTAGGED": "Delete Untagged Artifacts"
+        "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
+        "EXPLAIN": "GC is a compute intensive operation that may impact registry performance"
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",

@@ -477,4 +477,8 @@ export class CreateEditEndpointComponent
     }
     return changes;
   }
+
+  getAdapterText(adapter: string): string {
+    return this.endpointService.getAdapterText(adapter);
+  }
 }
