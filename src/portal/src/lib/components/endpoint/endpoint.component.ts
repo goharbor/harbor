@@ -234,4 +234,8 @@ export class EndpointComponent implements OnInit, OnDestroy {
             }
         }, duration);
     }
+
+    getAdapterText(adapter: string): string {
+        return this.endpointService.getAdapterText(adapter);
+    }
 }

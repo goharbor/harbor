@@ -50,6 +50,7 @@
         "DISABLE": "DESACTIVER"
     },
     "BATCH": {
+<<<<<<< HEAD
         "DELETED_SUCCESS": "Suppression effectuée",
         "DELETED_FAILURE": "Suppression echouée",
         "SWITCH_SUCCESS": "Bascule effectuée",
@@ -59,6 +60,17 @@
         "STOP_SUCCESS": "Arrêt effectué",
         "STOP_FAILURE": "Arrêt échoué",
         "TIME_OUT": "Temps d'attente de la passerelle dépassé"
+=======
+        "DELETED_SUCCESS": "Deleted successfully",
+        "DELETED_FAILURE": "Deleted failed or partly failed",
+        "SWITCH_SUCCESS": "Switch successfully",
+        "SWITCH_FAILURE": "Switch failed",
+        "REPLICATE_SUCCESS": "Started successfully",
+        "REPLICATE_FAILURE": "Started failed",
+        "STOP_SUCCESS": "Stop successfully",
+        "STOP_FAILURE": "Stop execution failed",
+        "TIME_OUT": "Gateway time-out"
+>>>>>>> Fix UI issues with label target 2.0.1
     },
     "TOOLTIP": {
         "NAME_FILTER": "Filtrer le nom de la ressource. Laissez vide ou utilisez '**' pour tout inclure. 'library/**' n'inclut que les ressources dans 'library'. Pour plus de patterns, référez-vous au guide d'utilisation.",
@@ -227,12 +239,21 @@
         "TOGGLED_SUCCESS": "Projet basculé avec succès.",
         "FAILED_TO_DELETE_PROJECT": "Le projet contient des dépôts, des règles de réplication ou des charts Helm et ne peut pas être supprimé.",
         "INLINE_HELP_PUBLIC": "Lorsqu'un projet est mis en public, n'importe qui a l'autorisation de lire les dépôts sous ce projet, et l'utilisateur n' a pas besoin d'exécuter \"docker login\" avant de prendre des images de ce projet.",
+<<<<<<< HEAD
         "OF": "sur",
         "COUNT_QUOTA": "Quota de nombre",
         "STORAGE_QUOTA": "Quota de stockage",
         "COUNT_QUOTA_TIP": "Entrez un entier entre '1' et '100000000', ou '-1' pour un quota illimité",
         "STORAGE_QUOTA_TIP": "La limite haute du Quota de stockage n'accepte que des valeurs entières, au maximum '1024TB'. Entrez '-1' pour un quota illimité",
         "QUOTA_UNLIMIT_TIP": "Pour un quota illimité, entrez '-1'."
+=======
+        "OF": "de",
+        "COUNT_QUOTA": "Count quota",
+        "STORAGE_QUOTA": "Storage quota",
+        "COUNT_QUOTA_TIP": "Please enter an integer between '1' & '100,000,000', '-1' for unlimited",
+        "STORAGE_QUOTA_TIP": "The upper limit of Storage Quota only takes integer values, capped at '1024TB'.  Enter '-1' for unlimited quota",
+        "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'."
+>>>>>>> Fix UI issues with label target 2.0.1
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Résumé",
@@ -1168,7 +1189,8 @@
         "MSG_SCHEDULE_SET": "La planification de la Garbage Collection a été configurée",
         "MSG_SCHEDULE_RESET": "La planification de la Garbage Collection a été réinitialisée",
         "PARAMETERS": "Paramètres",
-        "DELETE_UNTAGGED": "Supprimer les artefacts non taggués"
+        "DELETE_UNTAGGED": "Supprimer les artefacts non taggués",
+        "EXPLAIN": "GC est une opération gourmande en puissance de calcul qui peut impacter les performances  du registre"
     },
     "RETAG": {
         "MSG_SUCCESS": "Artefact copié",
