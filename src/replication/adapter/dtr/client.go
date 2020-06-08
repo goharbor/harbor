@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	adp "github.com/goharbor/harbor/src/replication/adapter"
+
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 )
@@ -100,7 +100,7 @@ func (c *Client) getAndIteratePagination(endpoint string, v interface{}) error {
 }
 
 // getRepositories returns a list of repositories in DTR
-func (c *Client) getRepositories() ([]*adp.Repository, error) {
+func (c *Client) getRepositories() ([]*model.Repository, error) {
 	var repositories []Repository
 	var dtrRepositories Repositories
 
@@ -151,19 +151,19 @@ func (c *Client) getRepositories() ([]*adp.Repository, error) {
 		}
 	}
 
-	result := []*adp.Repository{}
+	result := []*model.Repository{}
+
 	for _, repository := range repositories {
 		log.Debugf("Processing DTR repo %s", repository.Name)
-		result = append(result, &adp.Repository{
-			ResourceType: string(model.ResourceTypeImage),
-			Name:         fmt.Sprintf("%s/%s", repository.Namespace, repository.Name),
+		result = append(result, &model.Repository{
+			Name: fmt.Sprintf("%s/%s", repository.Namespace, repository.Name),
 		})
 	}
 	return result, nil
 }
 
-// getVTags looks up a repositories tags in DTR
-func (c *Client) getVTags(repository string) ([]*adp.VTag, error) {
+// getTags looks up a repositories tags in DTR
+func (c *Client) getTags(repository string) ([]string, error) {
 	var tags []*Tag
 	// This assumes repository is of form namespace/repo
 	urlAPI := fmt.Sprintf("%s/api/v0/repositories/%s/tags?pageSize=100", c.url, repository)
@@ -173,12 +173,9 @@ func (c *Client) getVTags(repository string) ([]*adp.VTag, error) {
 		return nil, err
 	}
 
-	var result []*adp.VTag
+	var result []string
 	for _, tag := range tags {
-		result = append(result, &adp.VTag{
-			ResourceType: string(model.ResourceTypeImage),
-			Name:         tag.Name,
-		})
+		result = append(result, tag.Name)
 	}
 	return result, nil
 }

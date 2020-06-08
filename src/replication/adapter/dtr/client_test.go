@@ -1,13 +1,14 @@
 package dtr
 
 import (
+	"net/http"
+	"testing"
+
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/replication/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"testing"
 )
 
 func TestProjects(t *testing.T) {
@@ -177,13 +178,13 @@ func TestProjects(t *testing.T) {
 	assert.Equal(t, 1, len(namespaces))
 	assert.Equal(t, "mynamespace", namespaces[0].Name)
 
-	tags, e := client.getVTags("mynamespace/myrepo")
+	tags, e := client.getTags("mynamespace/myrepo")
 	require.Nil(t, e)
 	assert.Equal(t, 1, len(tags))
-	assert.Equal(t, "mytag", tags[0].Name)
+	assert.Equal(t, "mytag", tags[0])
 
 	// List tags for missign image
-	_, e = client.getVTags("mynamespace/missingimage")
+	_, e = client.getTags("mynamespace/missingimage")
 	require.NotNil(t, e)
 
 	e = client.createRepository("mynamespace/myrepo")

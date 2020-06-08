@@ -3,16 +3,14 @@ package dtr
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
+	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
+	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/util"
 )
 
 func init() {
@@ -29,13 +27,17 @@ type factory struct {
 
 // Create ...
 func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
-	return newAdapter(r)
+	return newAdapter(r), nil
 }
 
 // AdapterPattern ...
 func (f *factory) AdapterPattern() *model.AdapterPattern {
 	return nil
 }
+
+var (
+	_ adp.Adapter = (*adapter)(nil)
+)
 
 type adapter struct {
 	*native.Adapter
@@ -46,36 +48,13 @@ type adapter struct {
 	clientDTRAPI *Client
 }
 
-func newAdapter(registry *model.Registry) (adp.Adapter, error) {
-	log.Debugf("Entering DTR newAdapter")
-
-	var credential auth.Credential
-	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
-		log.Debugf("Setting up DTR for basic auth")
-		credential = auth.NewBasicAuthCredential(
-			registry.Credential.AccessKey,
-			registry.Credential.AccessSecret)
-	}
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-		Transport: util.GetHTTPTransport(registry.Insecure),
-	}, credential)
-
-	dockerRegistryAdapter, err := native.NewAdapterWithCustomizedAuthorizer(&model.Registry{
-		Name:       registry.Name,
-		URL:        registry.URL,
-		Credential: registry.Credential,
-		Insecure:   registry.Insecure,
-	}, authorizer)
-	if err != nil {
-		return nil, err
-	}
-
+func newAdapter(registry *model.Registry) *adapter {
 	return &adapter{
 		registry:     registry,
 		url:          registry.URL,
 		clientDTRAPI: NewClient(registry),
-		Adapter:      dockerRegistryAdapter,
-	}, nil
+		Adapter:      native.NewAdapter(registry),
+	}
 }
 
 // Info returns information of the registry
@@ -102,8 +81,10 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	}, nil
 }
 
-// FetchImages ...
-func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+// FetchArtifacts ...
+func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
+	var resources []*model.Resource
+
 	repositories, err := a.clientDTRAPI.getRepositories()
 	if err != nil {
 		log.Error("Failed to lookup repositories from DTR")
@@ -112,65 +93,43 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	if len(repositories) == 0 {
 		return nil, nil
 	}
-	log.Debugf("Time to filter")
-	for _, filter := range filters {
-		if err = filter.DoFilter(&repositories); err != nil {
-			return nil, err
-		}
+	log.Debugf("%d of repositories pre filter", len(repositories))
+	repositories, err = filter.DoFilterRepositories(repositories, filters)
+	if err != nil {
+		return nil, err
 	}
+	log.Debugf("%d of repositories post filter", len(repositories))
 
-	var rawResources = make([]*model.Resource, len(repositories))
 	runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
 	defer runner.Cancel()
 
-	for i, r := range repositories {
-		index := i
+	for _, r := range repositories {
 		repo := r
 		runner.AddTask(func() error {
-			vTags, err := a.clientDTRAPI.getVTags(repo.Name)
+			artifacts, err := a.listArtifacts(repo.Name, filters)
 			if err != nil {
-				return fmt.Errorf("List tags for repo '%s' error: %v", repo.Name, err)
+				return fmt.Errorf("failed to list artifacts of repository %s: %v", repo.Name, err)
 			}
-			if len(vTags) == 0 {
-				return nil
-			}
-			for _, filter := range filters {
-				if err = filter.DoFilter(&vTags); err != nil {
-					return fmt.Errorf("Filter tags %v error: %v", vTags, err)
-				}
-			}
-			if len(vTags) == 0 {
-				return nil
-			}
-			tags := []string{}
-			for _, vTag := range vTags {
-				tags = append(tags, vTag.Name)
-			}
-			rawResources[index] = &model.Resource{
+			log.Debugf("%s has %d artifacts", repo.Name, len(artifacts))
+
+			resources = append(resources, &model.Resource{
 				Type:     model.ResourceTypeImage,
 				Registry: a.registry,
 				Metadata: &model.ResourceMetadata{
 					Repository: &model.Repository{
 						Name: repo.Name,
 					},
-					Vtags: tags,
+					Artifacts: artifacts,
 				},
-			}
-
+			})
 			return nil
 		})
 	}
+
 	runner.Wait()
 
 	if runner.IsCancelled() {
-		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
-	}
-
-	var resources []*model.Resource
-	for _, r := range rawResources {
-		if r != nil {
-			resources = append(resources, r)
-		}
+		return nil, fmt.Errorf("FetchArtifacts error when collect tags for repos")
 	}
 
 	return resources, nil
@@ -250,4 +209,18 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 	}
 
 	return nil
+}
+
+func (a *adapter) listArtifacts(repository string, filters []*model.Filter) ([]*model.Artifact, error) {
+	tags, err := a.clientDTRAPI.getTags(repository)
+	if err != nil {
+		return nil, fmt.Errorf("List tags for repo '%s' error: %v", repository, err)
+	}
+	var artifacts []*model.Artifact
+	for _, tag := range tags {
+		artifacts = append(artifacts, &model.Artifact{
+			Tags: []string{tag},
+		})
+	}
+	return filter.DoFilterArtifacts(artifacts, filters)
 }
