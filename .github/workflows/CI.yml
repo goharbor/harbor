@@ -143,6 +143,10 @@ jobs:
           go list
           make build
           sudo mv bin/cnab-to-oci /usr/local/bin
+          curl -LO https://github.com/deislabs/oras/releases/download/v0.8.1/oras_0.8.1_linux_amd64.tar.gz
+          mkdir -p oras-install/
+          tar -zxf oras_0.8.1_*.tar.gz -C oras-install/
+          sudo mv oras-install/oras /usr/local/bin/
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
