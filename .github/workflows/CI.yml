@@ -147,6 +147,21 @@ jobs:
           mkdir -p oras-install/
           tar -zxf oras_0.8.1_*.tar.gz -C oras-install/
           sudo mv oras-install/oras /usr/local/bin/
+          sudo apt-get update && sudo apt-get install -y \
+          build-essential \
+          uuid-dev \
+          libgpgme-dev \
+          squashfs-tools \
+          libseccomp-dev \
+          pkg-config \
+          cryptsetup-bin
+          export VERSION=3.5.3 && \
+          wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz && \
+          tar -xzf singularity-${VERSION}.tar.gz && \
+          cd singularity
+          ./mconfig && \
+          make -C builddir && \
+          sudo make -C builddir install
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
