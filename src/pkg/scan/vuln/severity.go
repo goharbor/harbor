@@ -49,7 +49,7 @@ type Severity string
 // Code returns the int code of the severity for comparing.
 func (s Severity) Code() int {
 	switch s {
-	case None:
+	case None, Unknown:
 		return 0
 	case Negligible:
 		return 1
@@ -62,7 +62,7 @@ func (s Severity) Code() int {
 	case Critical:
 		return 5
 	default:
-		// Assign the highest code to the unknown severity to provide more secure protection.
+		// Assign the highest code to the unrecognized severity to provide more secure protection.
 		return 99
 	}
 }
