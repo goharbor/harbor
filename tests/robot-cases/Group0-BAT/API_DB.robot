@@ -100,4 +100,7 @@ Test Case - Push Image With Special Name
     Harbor API Test  ./tests/apitests/python/test_push_image_with_special_name.py
 Test Case - Push Artifact With ORAS CLI
     [Tags]  oras
-    Harbor API Test  ./tests/apitests/python/test_oras_cli.py
+    Harbor API Test  ./tests/apitests/python/test_push_files_by_oras.py
+Test Case - Push Singularity file With Singularity CLI
+    [Tags]  singularity
+    Harbor API Test  ./tests/apitests/python/test_push_sif_by_singularity.py
