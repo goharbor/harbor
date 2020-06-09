@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
+import { DebugElement, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 
 import { SharedModule } from '../../utils/shared/shared.module';
@@ -155,6 +155,7 @@ describe('Replication Component (inline template)', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
       imports: [
         SharedModule,
         NoopAnimationsModule,
