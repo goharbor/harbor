@@ -17,6 +17,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/replication"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -126,6 +127,24 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 
+	// trying to create a proxy cache project
+	if pro.RegistryID > 0 {
+		// only system admin can create the proxy cache project
+		if !p.SecurityCtx.IsSysAdmin() {
+			p.SendForbiddenError(errors.New("Only system admin can create proxy cache project"))
+			return
+		}
+		registry, err := replication.RegistryMgr.Get(pro.RegistryID)
+		if err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to get the registry %d: %v", pro.RegistryID, err))
+			return
+		}
+		if registry == nil {
+			p.SendNotFoundError(fmt.Errorf("registry %d not found", pro.RegistryID))
+			return
+		}
+	}
+
 	var hardLimits types.ResourceList
 	if config.QuotaPerProjectEnable() {
 		setting, err := config.QuotaSetting()
@@ -187,9 +206,10 @@ func (p *ProjectAPI) Post() {
 		owner = user.Username
 	}
 	projectID, err := p.ProjectMgr.Create(&models.Project{
-		Name:      pro.Name,
-		OwnerName: owner,
-		Metadata:  pro.Metadata,
+		Name:       pro.Name,
+		OwnerName:  owner,
+		Metadata:   pro.Metadata,
+		RegistryID: pro.RegistryID,
 	})
 	if err != nil {
 		if err == errutil.ErrDupProject {
