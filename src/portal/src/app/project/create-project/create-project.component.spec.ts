@@ -7,6 +7,10 @@ import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ProjectService } from "../../../lib/services";
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+import { ErrorHandler } from '../../../lib/utils/error-handler';
 
 describe('CreateProjectComponent', () => {
     let component: CreateProjectComponent;
@@ -37,6 +41,7 @@ describe('CreateProjectComponent', () => {
                 TranslateService,
                 {provide: ProjectService, useValue: mockProjectService},
                 {provide: MessageHandlerService, useValue: mockMessageHandlerService},
+                ErrorHandler
             ]
         }).compileComponents();
     }));
