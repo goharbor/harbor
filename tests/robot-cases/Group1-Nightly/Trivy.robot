@@ -65,28 +65,28 @@ Test Case - Scan Image With Empty Vul
     Body Of Scan Image With Empty Vul  photon  2.0_scan
 
 Test Case - Manual Scan All
-    Body Of Manual Scan All  Critical  High  Medium
+    Body Of Manual Scan All  High  Medium
 
-Test Case - View Scan Error
-    Init Chrome Driver
-    ${d}=  get current date  result_format=%m%s
+#Test Case - View Scan Error
+#    Init Chrome Driver
+#    ${d}=  get current date  result_format=%m%s
 
-    Sign In Harbor  ${HARBOR_URL}  user026  Test1@34
-    Create An New Project And Go Into Project  project${d}
-    Push Image  ${ip}  user026  Test1@34  project${d}  busybox:latest
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/busybox
-    Scan Repo  latest  Fail
-    View Scan Error Log
-    Close Browser
+#    Sign In Harbor  ${HARBOR_URL}  user026  Test1@34
+#    Create An New Project And Go Into Project  project${d}
+#    Push Image  ${ip}  user026  Test1@34  project${d}  busybox:latest
+#    Go Into Project  project${d}
+#    Go Into Repo  project${d}/busybox
+#    Scan Repo  latest  Fail
+#    View Scan Error Log
+#    Close Browser
 
 Test Case - Scan Image On Push
     [Tags]  run-once
-    Body Of Scan Image On Push  Critical  High  Medium
+    Body Of Scan Image On Push  High  Medium
 
 Test Case - View Scan Results
     [Tags]  run-once
-    Body Of View Scan Results  Critical  High
+    Body Of View Scan Results  High
 
 Test Case - Project Level Image Serverity Policy
     [Tags]  run-once
@@ -106,7 +106,7 @@ Test Case - Project Level Image Serverity Policy
     Navigate To Projects
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  3
-    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}
+    Cannot Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}  err_msg=To continue with pull, please contact your project administrator to exempt matched vulnerabilities through configuring the CVE whitelist
     Close Browser
 
 #Important Note: All CVE IDs in CVE Whitelist cases must unique!
