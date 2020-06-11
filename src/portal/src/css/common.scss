@@ -17,7 +17,8 @@
 }
 
 .harbor-icon {
-  filter: drop-shadow($fill-color1 58px 2px) !important;
+  transform: translateX($harbor-icon-translate-x) !important;
+  filter: drop-shadow($fill-color1 $harbor-icon-drop-shadow-x 2px) !important;
 }
 
 .color-white-dark {
