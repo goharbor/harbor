@@ -35,6 +35,6 @@ ${configuration_project_quotas_tabsheet_id}  //*[@id='config-quotas']
 ${configuration_system_wl_add_btn}    //*[@id='show-add-modal-button']
 ${configuration_system_wl_textarea}    //*[@id='whitelist-textarea']
 ${configuration_system_wl_add_confirm_btn}    //*[@id='add-to-system']
-${configuration_system_wl_delete_a_cve_id_icon}    //system-settings/form/section//ul/li[1]/clr-icon
+${configuration_system_wl_delete_a_cve_id_icon}    //system-settings/form/section//ul/li[1]/a[2]/clr-icon
 ${configuration_sys_repo_readonly_chb_id}  //*[@id='repo_read_only_lbl']
-${checkbox_delete_untagged_artifacts}   //gc-config//clr-checkbox-wrapper//label[contains(@for,'delete_untagged')]
+${checkbox_delete_untagged_artifacts}  //gc-config//clr-toggle-wrapper/label[contains(@for,'delete_untagged')]
