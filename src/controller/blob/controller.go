@@ -17,14 +17,15 @@ package blob
 import (
 	"context"
 	"fmt"
+
 	"github.com/docker/distribution"
-	"github.com/garyburd/redigo/redis"
-	util "github.com/goharbor/harbor/src/common/utils/redis"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
+	"github.com/gomodule/redigo/redis"
 )
 
 var (
@@ -290,7 +291,7 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 }
 
 func (c *controller) SetAcceptedBlobSize(sessionID string, size int64) error {
-	conn := util.DefaultPool().Get()
+	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
 	key := fmt.Sprintf("upload:%s:size", sessionID)
@@ -307,7 +308,7 @@ func (c *controller) SetAcceptedBlobSize(sessionID string, size int64) error {
 }
 
 func (c *controller) GetAcceptedBlobSize(sessionID string) (int64, error) {
-	conn := util.DefaultPool().Get()
+	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
 	key := fmt.Sprintf("upload:%s:size", sessionID)
