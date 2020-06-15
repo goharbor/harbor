@@ -2,9 +2,9 @@ package gc
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/registry"
+	"github.com/gomodule/redigo/redis"
 )
 
 // delKeys ...

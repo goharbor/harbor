@@ -20,6 +20,9 @@ github.com/Azure/go-autorest/logger
 github.com/Azure/go-autorest/tracing
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
+# github.com/FZambia/sentinel v1.1.0
+## explicit
+github.com/FZambia/sentinel
 # github.com/Knetic/govaluate v3.0.0+incompatible
 github.com/Knetic/govaluate
 # github.com/Masterminds/semver v1.4.2
@@ -64,6 +67,7 @@ github.com/astaxie/beego/logs
 github.com/astaxie/beego/orm
 github.com/astaxie/beego/session
 github.com/astaxie/beego/session/redis
+github.com/astaxie/beego/session/redis_sentinel
 github.com/astaxie/beego/toolbox
 github.com/astaxie/beego/utils
 github.com/astaxie/beego/validation
@@ -207,10 +211,6 @@ github.com/docker/go-metrics
 # github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
 ## explicit
 github.com/docker/libtrust
-# github.com/garyburd/redigo v1.6.0
-## explicit
-github.com/garyburd/redigo/internal
-github.com/garyburd/redigo/redis
 # github.com/ghodss/yaml v1.0.0
 ## explicit
 github.com/ghodss/yaml
@@ -248,6 +248,15 @@ github.com/go-openapi/swag
 # github.com/go-openapi/validate v0.19.5
 ## explicit
 github.com/go-openapi/validate
+# github.com/go-redis/redis v6.14.2+incompatible
+github.com/go-redis/redis
+github.com/go-redis/redis/internal
+github.com/go-redis/redis/internal/consistenthash
+github.com/go-redis/redis/internal/hashtag
+github.com/go-redis/redis/internal/pool
+github.com/go-redis/redis/internal/proto
+github.com/go-redis/redis/internal/singleflight
+github.com/go-redis/redis/internal/util
 # github.com/go-sql-driver/mysql v1.5.0
 ## explicit
 github.com/go-sql-driver/mysql

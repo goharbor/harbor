@@ -19,15 +19,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
-	util "github.com/goharbor/harbor/src/common/utils/redis"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
+	"github.com/gomodule/redigo/redis"
 
 	// quota driver
 	_ "github.com/goharbor/harbor/src/controller/quota/driver"
@@ -127,7 +127,7 @@ func (c *controller) List(ctx context.Context, query *q.Query) ([]*quota.Quota, 
 }
 
 func (c *controller) getReservedResources(ctx context.Context, reference, referenceID string) (types.ResourceList, error) {
-	conn := util.DefaultPool().Get()
+	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
 	key := reservedResourcesKey(reference, referenceID)
@@ -143,7 +143,7 @@ func (c *controller) getReservedResources(ctx context.Context, reference, refere
 }
 
 func (c *controller) setReservedResources(ctx context.Context, reference, referenceID string, resources types.ResourceList) error {
-	conn := util.DefaultPool().Get()
+	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
 	key := reservedResourcesKey(reference, referenceID)

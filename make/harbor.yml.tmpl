@@ -171,9 +171,14 @@ _version: 2.0.0
 
 # Uncomment external_redis if using external Redis server
 # external_redis:
-#   host: redis
-#   port: 6379
+#   # support redis, redis+sentinel
+#   # host for redis: <host_redis>:<port_redis>
+#   # host for redis+sentinel:
+#   #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
+#   host: redis:6379
 #   password:
+#   # sentinel_master_set must be set to support redis+sentinel
+#   #sentinel_master_set:
 #   # db_index 0 is for core, it's unchangeable
 #   registry_db_index: 1
 #   jobservice_db_index: 2
