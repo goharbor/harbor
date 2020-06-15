@@ -57,3 +57,9 @@ type Task struct {
 	UpdateTime     time.Time `orm:"column(update_time)"`
 	EndTime        time.Time `orm:"column(end_time)"`
 }
+
+// StatusCount model
+type StatusCount struct {
+	Status string `orm:"column(status)"`
+	Count  int64  `orm:"column(count)"`
+}
