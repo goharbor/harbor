@@ -3766,6 +3766,10 @@ definitions:
         type: integer
         format: int64
         description: The storage quota of the project.
+      registry_id:
+        type: integer
+        format: int64
+        description: The ID of referenced registry when creating the proxy cache project
   Project:
     type: object
     properties:
@@ -3780,6 +3784,10 @@ definitions:
       name:
         type: string
         description: The name of the project.
+      registry_id:
+        type: integer
+        format: int64
+        description: The ID of referenced registry when the project is a proxy cache project.
       creation_time:
         type: string
         description: The creation time of the project.
