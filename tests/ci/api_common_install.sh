@@ -37,4 +37,5 @@ for((i=1;i<=30;i++)); do
   echo $i waiting 10 seconds...
   sleep 10
   curl -k -L -f 127.0.0.1/api/v2.0/systeminfo && break
+  docker ps
 done
