@@ -19,7 +19,7 @@ CURL=$(shell which curl)
 DOCKERCMD=$(shell which docker)
 DOCKERBUILD=$(DOCKERCMD) build
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
-DOCKERIMASES=$(DOCKERCMD) images
+DOCKERIMAGES=$(DOCKERCMD) images
 BASEIMAGENAMESPACE=goharbor
 
 # binary
