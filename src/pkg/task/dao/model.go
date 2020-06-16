@@ -45,7 +45,7 @@ type Execution struct {
 type Task struct {
 	ID             int64     `orm:"pk;auto;column(id)"`
 	ExecutionID    int64     `orm:"column(execution_id)"`
-	JobID          int64     `orm:"column(job_id)"`
+	JobID          string    `orm:"column(job_id)"`
 	Status         string    `orm:"column(status)"`
 	StatusCode     int       `orm:"column(status_code)"`
 	StatusRevision int64     `orm:"column(status_revision)"`

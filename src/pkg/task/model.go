@@ -15,9 +15,12 @@
 package task
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/task/dao"
 )
 
 // const definitions
@@ -85,6 +88,27 @@ type Task struct {
 	StartTime  time.Time `json:"start_time"`
 	UpdateTime time.Time `json:"update_time"`
 	EndTime    time.Time `json:"end_time"`
+}
+
+// From constructs a task from DAO model
+func (t *Task) From(task *dao.Task) {
+	t.ID = task.ID
+	t.ExecutionID = task.ExecutionID
+	t.Status = task.Status
+	t.StatusMessage = task.StatusMessage
+	t.RunCount = task.RunCount
+	t.CreationTime = task.CreationTime
+	t.StartTime = task.StartTime
+	t.UpdateTime = task.UpdateTime
+	t.EndTime = task.EndTime
+	if len(task.ExtraAttrs) > 0 {
+		extras := map[string]interface{}{}
+		if err := json.Unmarshal([]byte(task.ExtraAttrs), &extras); err != nil {
+			log.Errorf("failed to unmarshal the extra attributes of task %d: %v", task.ID, err)
+			return
+		}
+		t.ExtraAttrs = extras
+	}
 }
 
 // Job is the model represents the requested jobservice job

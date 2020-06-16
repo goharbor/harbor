@@ -27,7 +27,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	_ "github.com/goharbor/harbor/src/controller/event/handler"
@@ -126,8 +125,6 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	// init the jobservice client
-	job.Init()
 	// init the scheduler
 	scheduler.Init()
 
