@@ -231,7 +231,7 @@ func RegistryURL() (string, error) {
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
-	return strings.TrimSuffix(cfgMgr.Get(common.JobServiceURL).GetString(), "/")
+	return os.Getenv("JOBSERVICE_URL")
 }
 
 // GetCoreURL returns the url of core from env
