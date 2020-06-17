@@ -7,7 +7,7 @@ To replicate image repositories from one instance of Harbor to another Harbor or
 
 1. Go to **Registries** and click the **+ New Endpoint** button.
 
-   ![New replication endpoint](../../../img/replication-endpoint1.png)
+   ![New replication endpoint](../../img/replication-endpoint1.png)
 
 1. For **Provider**, use the drop-down menu to select the type of registry to set up as a replication endpoint.
 
@@ -25,7 +25,7 @@ To replicate image repositories from one instance of Harbor to another Harbor or
    - Quay.io
    - Jfrog Artifactory
 
-   ![Replication providers](../../../img/replication-endpoint2.png)
+   ![Replication providers](../../img/replication-endpoint2.png)
 
 1. Enter a suitable name and description for the new replication endpoint.
 1. Enter the full URL of the registry to set up as a replication endpoint.
@@ -52,7 +52,7 @@ To replicate image repositories from one instance of Harbor to another Harbor or
 
 You can list, add, edit and delete registries under **Administration** -> **Registries**. Only registries which are not referenced by any rules can be deleted.  
 
-![browse project](../../../img/manage-registry.png)
+![browse project](../../img/manage-registry.png)
 
 ## What to Do Next
 

@@ -100,7 +100,7 @@ You can configure your continuous integration and development infrastructure so 
 
 1. Go to **Projects**, select a project, and select **Webhooks**.
 
-    ![Webhooks option](../../../img/webhooks1.png)
+    ![Webhooks option](../../img/webhooks1.png)
 
 1. Select notify type `HTTP`, so the webhook will be send to a HTTP endpoint.
 
@@ -112,7 +112,7 @@ You can configure your continuous integration and development infrastructure so 
 
 1. To implement `HTTPS POST` instead of `HTTP POST`, select the **Verifiy Remote Certficate** check box.
 
-    ![Webhook URL](../../../img/webhooks2.png)
+    ![Webhook URL](../../img/webhooks2.png)
 
 1. Click **Test Endpoint** to make sure that Harbor can connect to the listener.
 
@@ -122,7 +122,7 @@ When you have created the webhook, you can click on the arrow at the left end to
 
 You can modify the webhook, you can also `Enable` or `Disable` the webhook.
 
-![Webhook Status](../../../img/webhooks3.png)
+![Webhook Status](../../img/webhooks3.png)
 
 If a webhook notification fails to send, or if it receives an HTTP error response with a code other than `2xx`, the notification is re-sent based on the configuration that you set in `harbor.yml`. 
 
@@ -133,4 +133,4 @@ As a Harbor system administrator, you can enable and disable webhook notificatio
 1. Go to **Configuration** > **System Settings**.
 1. Scroll down and check or uncheck the **Webhooks enabled** check box.
 
-    ![Enable/disable webhooks](../../../img/webhooks4.png)
+    ![Enable/disable webhooks](../../img/webhooks4.png)

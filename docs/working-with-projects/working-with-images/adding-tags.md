@@ -9,5 +9,5 @@ Users can add as many tags to any artifact as they wish without impacting the ar
 
 In the Harbor interface, click on an artifact to see its current set of tags, then click 'ADD TAG', specify the name and click 'OK'
 
-![add artifact](../../../img/addtag1.png)
+![add artifact](../../img/addtag1.png)
 

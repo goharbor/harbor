@@ -9,6 +9,6 @@ Users can delete any existing tag from an artifact without deleting the artifact
 
 In the Harbor interface, click on an artifact to see its current set of tags, then select the tag you wish to delete and click 'REMOVE TAG', and then click 'OK'
 
-![delete tag](../../../img/deletetag1.png)
+![delete tag](../../img/deletetag1.png)
 
 You can remove all tags from an artifact without deleting the artifact manifest itself.  The artifact is still visible on the web console with nothing listed under 'Tags '

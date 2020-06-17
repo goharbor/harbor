@@ -12,8 +12,8 @@ To copy an artifact, you must have read permission (guest role or above) in the 
 
 In the Harbor interface, select the artifact to copy, and click `Copy`.
 
-![retag artifact](../../../img/retag1.png)
+![retag artifact](../../img/retag1.png)
 
 In the Retag window, enter the project name, repository name, the new tag name, and click **Confirm**. 
 
-![retag artifact](../../../img/retag2.png)
+![retag artifact](../../img/retag2.png)

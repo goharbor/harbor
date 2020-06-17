@@ -45,6 +45,6 @@ When an artifact is referenced by an OCI index, you cannot delete it.  In order 
 
 To delete any artifact in the Harbor interface, click on the artifact and select 'Delete' and confirm.  
 
-![delete image1](../../../img/deleteimage1.png)
+![delete image1](../../img/deleteimage1.png)
 
-![delete image2](../../../img/deleteimage2.png)
+![delete image2](../../img/deleteimage2.png)

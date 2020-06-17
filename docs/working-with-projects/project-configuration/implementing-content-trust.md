@@ -31,4 +31,4 @@ notary remove -p 10.117.169.182/libary/alpine latest
 Replace "10.117.169.182" with the IP address or domain name of your Harbor node. In order to use content trust, HTTPS must be enabled in Harbor.
 {{< /note >}}
 
-![browse project](../../../img/content-trust.png)
+![browse project](../../img/content-trust.png)
