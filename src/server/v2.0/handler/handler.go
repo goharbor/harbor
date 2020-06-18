@@ -15,10 +15,10 @@
 package handler
 
 import (
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"log"
 	"net/http"
 
-	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/blob"
 	"github.com/goharbor/harbor/src/server/middleware/quota"
@@ -52,5 +52,5 @@ func New() http.Handler {
 // The response format of the default ServeError implementation does not match the internal error response format.
 // So we needed to convert the format to the internal error response format.
 func serveError(rw http.ResponseWriter, r *http.Request, err error) {
-	serror.SendError(rw, err)
+	lib_http.SendError(rw, err)
 }
