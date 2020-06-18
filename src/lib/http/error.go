@@ -17,8 +17,6 @@ package http
 import (
 	"fmt"
 	openapi "github.com/go-openapi/errors"
-	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/runtime/middleware"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -93,21 +91,4 @@ func apiError(err error) (statusCode int, errPayload, stackTrace string) {
 		fullStack = err.(*errors.Error).StackTrace()
 	}
 	return code, errors.NewErrs(err).Error(), fullStack
-}
-
-var _ middleware.Responder = &ErrResponder{}
-
-// ErrResponder error responder
-type ErrResponder struct {
-	err error
-}
-
-// WriteResponse ...
-func (r *ErrResponder) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-	SendError(rw, r.err)
-}
-
-// NewErrResponder returns responder for err
-func NewErrResponder(err error) *ErrResponder {
-	return &ErrResponder{err: err}
 }

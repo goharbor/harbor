@@ -18,10 +18,12 @@ package handler
 
 import (
 	"context"
+	"github.com/go-openapi/runtime"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/http"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/q"
+	"net/http"
 	"net/url"
 	"strconv"
 
@@ -43,7 +45,7 @@ func (*BaseAPI) Prepare(ctx context.Context, operation string, params interface{
 
 // SendError returns response for the err
 func (*BaseAPI) SendError(ctx context.Context, err error) middleware.Responder {
-	return http.NewErrResponder(err)
+	return NewErrResponder(err)
 }
 
 // HasPermission returns true when the request has action permission on resource
@@ -178,4 +180,21 @@ func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, page
 		links = append(links, link)
 	}
 	return links
+}
+
+var _ middleware.Responder = &ErrResponder{}
+
+// ErrResponder error responder
+type ErrResponder struct {
+	err error
+}
+
+// WriteResponse ...
+func (r *ErrResponder) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+	lib_http.SendError(rw, r.err)
+}
+
+// NewErrResponder returns responder for err
+func NewErrResponder(err error) *ErrResponder {
+	return &ErrResponder{err: err}
 }
