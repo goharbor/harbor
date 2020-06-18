@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package error
+package http
 
 import (
 	std_errors "errors"
@@ -55,7 +55,7 @@ func TestAPIError(t *testing.T) {
 	statusCode, payload, stacktrace := apiError(err)
 	assert.Equal(t, http.StatusBadRequest, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"BAD_REQUEST","message":"bad request"}]}`, payload)
-	assert.Contains(t, stacktrace, `error.apiError`)
+	assert.Contains(t, stacktrace, `http.apiError`)
 
 	// legacy error
 	err = &commonhttp.Error{
@@ -65,14 +65,14 @@ func TestAPIError(t *testing.T) {
 	statusCode, payload, stacktrace = apiError(err)
 	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"not found"}]}`, payload)
-	assert.Contains(t, stacktrace, `error.apiError`)
+	assert.Contains(t, stacktrace, `http.apiError`)
 
 	// errors.Error
 	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("resource not found")
 	statusCode, payload, stacktrace = apiError(err)
 	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"resource not found"}]}`, payload)
-	assert.Contains(t, stacktrace, `error.TestAPIError`)
+	assert.Contains(t, stacktrace, `http.TestAPIError`)
 
 	// common error, common error has no stacktrace
 	e := std_errors.New("customized error")
