@@ -30,4 +30,4 @@ The following table includes the current roadmap for Harbor. If you have any que
 |I&AM and RBAC|Improved Multi-tenancy through granular access and ability to manage teams of users and robot accounts through workspaces|Dec 2020|
 |Observability|Expose Harbor metrics through Prometheus Integration|Mar 2021|
 |Backup & Restore|Leverage Velero to offer application-aware Harbor backup, including databases, Kubernetes objects and persistent volumes|Mar 2021|
-|Networking|Support an IPv6-only network for Harbor pods in a Kubernetes clusters|Mar 2021|
+|Networking|Support an IPv6-only network for Harbor pods in a Kubernetes cluster|Mar 2021|
