@@ -11,7 +11,7 @@ require (
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
 	github.com/astaxie/beego v1.12.1
-	github.com/aws/aws-sdk-go v1.19.47
+	github.com/aws/aws-sdk-go v1.32.5
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bmatcuk/doublestar v1.1.1
 	github.com/bugsnag/bugsnag-go v1.5.2 // indirect
@@ -61,7 +61,7 @@ require (
 	github.com/robfig/cron v1.0.0
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
 	github.com/spf13/viper v1.4.0 // indirect
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	github.com/theupdateframework/notary v0.6.1
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
