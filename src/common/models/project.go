@@ -45,6 +45,7 @@ type Project struct {
 	ChartCount   uint64            `orm:"-" json:"chart_count"`
 	Metadata     map[string]string `orm:"-" json:"metadata"`
 	CVEWhitelist CVEWhitelist      `orm:"-" json:"cve_whitelist"`
+	RegistryID   int64             `orm:"column(registry_id)" json:"registry_id"`
 }
 
 // GetMetadata ...
@@ -136,9 +137,10 @@ func isTrue(value string) bool {
 // List projects which user1 is member of: query := &QueryParam{Member:&Member{Name:"user1"}}
 // List projects which user1 is the project admin : query := &QueryParam{Member:&Member{Name:"user1",Role:1}}
 type ProjectQueryParam struct {
-	Name       string       // the name of project
-	Owner      string       // the username of project owner
-	Public     *bool        // the project is public or not, can be ture, false and nil
+	Name       string // the name of project
+	Owner      string // the username of project owner
+	Public     *bool  // the project is public or not, can be ture, false and nil
+	RegistryID int64
 	Member     *MemberQuery // the member of project
 	Pagination *Pagination  // pagination information
 	ProjectIDs []int64      // project ID list
@@ -178,6 +180,7 @@ type ProjectRequest struct {
 	CVEWhitelist CVEWhitelist      `json:"cve_whitelist"`
 
 	StorageLimit *int64 `json:"storage_limit,omitempty"`
+	RegistryID   int64  `json:"registry_id"`
 }
 
 // ProjectQueryResult ...

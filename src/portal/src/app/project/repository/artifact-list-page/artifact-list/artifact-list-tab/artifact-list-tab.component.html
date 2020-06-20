@@ -264,7 +264,7 @@
                         <span *ngIf="!hasVul(artifact)">
                             {{'ARTIFACT.SCAN_UNSUPPORTED' | translate}}
                         </span>
-                        <hbr-vulnerability-bar *ngIf="hasVul(artifact)" [scanner]="handleScanOverview(artifact.scan_overview)?.scanner"
+                        <hbr-vulnerability-bar (scanFinished)="scanFinished($event)"  *ngIf="hasVul(artifact)" [scanner]="handleScanOverview(artifact.scan_overview)?.scanner"
                             (submitFinish)="submitFinish($event)" [projectName]="projectName" [repoName]="repoName"
                             [artifactDigest]="artifact.digest" [summary]="handleScanOverview(artifact.scan_overview)">
                         </hbr-vulnerability-bar>
@@ -299,7 +299,7 @@
                             <div class="trigger-item">
                                 <clr-signpost>
                                     <button class="btn btn-link" clrSignpostTrigger>...</button>
-                                    <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
+                                    <clr-signpost-content [clrPosition]="'top-middle'" *clrIfOpen>
                                         <div>
                                             <hbr-label-piece *ngFor="let label of artifact.labels" [label]="label">
                                             </hbr-label-piece>

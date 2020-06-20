@@ -29,6 +29,8 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
 	"github.com/goharbor/harbor/src/lib/log"
+
+	"github.com/goharbor/harbor/src/common/utils"
 )
 
 const (
@@ -48,6 +50,8 @@ var (
 	// defined as a var for testing.
 	defaultCACertPath = "/etc/core/ca/ca.crt"
 	cfgMgr            *comcfg.CfgManager
+	// ProxyServiceSecret is the secret used by proxy service
+	ProxyServiceSecret = utils.GenerateRandomStringWithLen(16)
 )
 
 // Init configurations
@@ -88,6 +92,7 @@ func initKeyProvider() {
 func initSecretStore() {
 	m := map[string]string{}
 	m[JobserviceSecret()] = secret.JobserviceUser
+	m[ProxyServiceSecret] = secret.ProxyserviceUser
 	SecretStore = secret.NewStore(m)
 }
 
@@ -328,11 +333,6 @@ func WithNotary() bool {
 // WithClair returns a bool value to indicate if Harbor's deployed with Clair
 func WithClair() bool {
 	return cfgMgr.Get(common.WithClair).GetBool()
-}
-
-// ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.
-func ClairEndpoint() string {
-	return cfgMgr.Get(common.ClairURL).GetString()
 }
 
 // ClairDB return Clair db info

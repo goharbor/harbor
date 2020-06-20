@@ -11,6 +11,7 @@ import { MessageHandlerService } from "../../../shared/message-handler/message-h
 import { of } from 'rxjs';
 import { Webhook } from "../webhook";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
+import { ErrorHandler } from '../../../../lib/utils/error-handler';
 
 describe('AddWebhookFormComponent', () => {
     let component: AddWebhookFormComponent;
@@ -91,6 +92,7 @@ describe('AddWebhookFormComponent', () => {
                 TranslateService,
                 { provide: WebhookService, useValue: mockWebhookService },
                 { provide: MessageHandlerService, useValue: mockMessageHandlerService },
+                ErrorHandler
 
 
             ]

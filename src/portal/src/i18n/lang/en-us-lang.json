@@ -54,7 +54,7 @@
     },
     "BATCH": {
         "DELETED_SUCCESS": "Deleted successfully",
-        "DELETED_FAILURE": "Deleted failed",
+        "DELETED_FAILURE": "Deleted failed or partly failed",
         "SWITCH_SUCCESS": "Switch successfully",
         "SWITCH_FAILURE": "Switch failed",
         "REPLICATE_SUCCESS": "Started successfully",
@@ -238,7 +238,7 @@
         "STORAGE_QUOTA": "Storage quota",
         "COUNT_QUOTA_TIP": "Please enter an integer between '1' & '100,000,000', '-1' for unlimited.",
         "STORAGE_QUOTA_TIP": "The upper limit of Storage Quota only takes integer values, capped at '1024TB'. Enter '-1' for unlimited quota",
-        "QUOTA_UNLIMIT_TIP": "For unlimited quota, please enter '-1'."
+        "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",
@@ -503,10 +503,10 @@
         "ENDPOINTS": "Endpoints",
         "FILTER_POLICIES_PLACEHOLDER": "Filter Rules",
         "FILTER_EXECUTIONS_PLACEHOLDER": "Filter Executions",
-        "DELETION_TITLE": "Confirm Rules Deletion",
-        "DELETION_SUMMARY": "Do you want to delete rules {{param}}?",
-        "REPLICATION_TITLE": "Confirm Rules replication",
-        "REPLICATION_SUMMARY": "Do you want to replicate the Rules {{param}}?",
+        "DELETION_TITLE": "Confirm Replication Rule Deletion",
+        "DELETION_SUMMARY": "Do you want to delete replication rule {{param}}?",
+        "REPLICATION_TITLE": "Confirm Rule Replication",
+        "REPLICATION_SUMMARY": "Do you want to replicate the rule {{param}}?",
         "DELETION_TITLE_FAILURE": "failed to delete Rule Deletion",
         "DELETION_SUMMARY_FAILURE": "have pending/running/retrying status",
         "REPLICATE_SUMMARY_FAILURE": "have pending/running status",
@@ -703,7 +703,8 @@
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info",
         "REPO_NAME": "Repository",
-        "MARKDOWN": "Styling with Markdown is supported"
+        "MARKDOWN": "Styling with Markdown is supported",
+        "LAST_MODIFIED": "Last Modified Time"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",
@@ -1189,7 +1190,7 @@
 
     },
     "GC": {
-        "CURRENT_SCHEDULE": "Current Schedule",
+        "CURRENT_SCHEDULE": "Schedule to GC",
         "GC_NOW": "GC NOW",
         "JOB_HISTORY": "GC History",
         "JOB_ID": "Job ID",
@@ -1199,7 +1200,8 @@
         "MSG_SCHEDULE_SET": "Garbage Collection schedule has been set",
         "MSG_SCHEDULE_RESET": "Garbage Collection schedule has been reset",
         "PARAMETERS": "Parameters",
-        "DELETE_UNTAGGED": "Delete Untagged Artifacts"
+        "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
+        "EXPLAIN": "GC is a compute intensive operation that may impact registry performance"
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",

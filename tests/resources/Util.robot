@@ -224,6 +224,7 @@ Command Should be Failed
     [Arguments]  ${cmd}
     ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
     Should Not Be Equal As Strings  '${rc}'  '0'
+    Log  ${output}
     [Return]  ${output}
 
 Retry Keyword N Times When Error

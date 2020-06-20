@@ -135,6 +135,10 @@ jobs:
           sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
           sudo update-ca-certificates
           sudo service docker restart
+          wget https://get.helm.sh/helm-v2.14.1-linux-386.tar.gz && tar zxvf helm-v2.14.1-linux-386.tar.gz
+          sudo mv linux-386/helm /usr/local/bin/helm2
+          helm2 init --client-only
+          helm2 plugin install https://github.com/chartmuseum/helm-push
           wget https://get.helm.sh/helm-v3.1.1-linux-386.tar.gz && tar zxvf helm-v3.1.1-linux-386.tar.gz
           sudo mv linux-386/helm /usr/local/bin/helm3
           helm3 plugin install https://github.com/chartmuseum/helm-push
@@ -143,6 +147,25 @@ jobs:
           go list
           make build
           sudo mv bin/cnab-to-oci /usr/local/bin
+          curl -LO https://github.com/deislabs/oras/releases/download/v0.8.1/oras_0.8.1_linux_amd64.tar.gz
+          mkdir -p oras-install/
+          tar -zxf oras_0.8.1_*.tar.gz -C oras-install/
+          sudo mv oras-install/oras /usr/local/bin/
+          sudo apt-get update && sudo apt-get install -y \
+          build-essential \
+          uuid-dev \
+          libgpgme-dev \
+          squashfs-tools \
+          libseccomp-dev \
+          pkg-config \
+          cryptsetup-bin
+          export VERSION=3.5.3 && \
+          wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz && \
+          tar -xzf singularity-${VERSION}.tar.gz && \
+          cd singularity
+          ./mconfig && \
+          make -C builddir && \
+          sudo make -C builddir install
       - name: install
         run: |
           cd src/github.com/goharbor/harbor

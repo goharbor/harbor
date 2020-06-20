@@ -100,14 +100,14 @@ PREPARE_VERSION_NAME=versions
 #versions
 REGISTRYVERSION=v2.7.1-patch-2819-2553
 NOTARYVERSION=v0.6.1
-CLAIRVERSION=v2.1.3
+CLAIRVERSION=v2.1.4
 NOTARYMIGRATEVERSION=v3.5.4
 CLAIRADAPTERVERSION=v1.0.2
-TRIVYVERSION=v0.6.0
-TRIVYADAPTERVERSION=v0.9.0
+TRIVYVERSION=v0.9.0
+TRIVYADAPTERVERSION=v0.11.0
 
 # version of chartmuseum
-CHARTMUSEUMVERSION=v0.9.0
+CHARTMUSEUMVERSION=v0.12.0
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.7.1
@@ -513,7 +513,7 @@ down:
 
 swagger_client:
 	@echo "Generate swagger client"
-	wget -q https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
+	wget https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_client
 	mkdir  -p harborclient/harbor_swagger_client

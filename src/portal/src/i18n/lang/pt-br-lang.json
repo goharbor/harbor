@@ -54,7 +54,7 @@
     },
     "BATCH": {
         "DELETED_SUCCESS": "Removido com sucesso",
-        "DELETED_FAILURE": "Falha ao remover",
+        "DELETED_FAILURE": "Deleted failed or partly failed",
         "SWITCH_SUCCESS": "Alterado com sucesso",
         "SWITCH_FAILURE": "Falha ao alterar",
         "REPLICATE_SUCCESS": "Iniciado com sucesso",
@@ -236,7 +236,7 @@
         "STORAGE_QUOTA": "Storage quota",
         "COUNT_QUOTA_TIP": "Please enter an integer between '1' & '100,000,000', '-1' for unlimited",
         "STORAGE_QUOTA_TIP": "The upper limit of Storage Quota only takes integer values, capped at '1024TB'.  Enter '-1' for unlimited quota",
-        "QUOTA_UNLIMIT_TIP": "For unlimited quota, please enter '-1'."
+        "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",
@@ -702,7 +702,8 @@
         "ACTION": "AÇÃO",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Adicionar informação adicional",
-        "MARKDOWN": "Styling with Markdown is supported"
+        "MARKDOWN": "Styling with Markdown is supported",
+        "LAST_MODIFIED": "Last Modified Time"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",
@@ -1181,7 +1182,7 @@
 
     },
     "GC": {
-        "CURRENT_SCHEDULE": "Agendamento atual",
+        "CURRENT_SCHEDULE": "Schedule to GC",
         "ON": "em",
         "AT": "em",
         "GC_NOW": "GC AGORA",
@@ -1195,7 +1196,8 @@
         "MSG_SCHEDULE_SET": "Agendamento de Garbage Collection efetuado",
         "MSG_SCHEDULE_RESET": "Agendamento de Garbage Collection foi redefinido",
         "PARAMETERS": "Parameters",
-        "DELETE_UNTAGGED": "Delete Untagged Artifacts"
+        "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
+        "EXPLAIN": "GC is a compute intensive operation that may impact registry performance"
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",
