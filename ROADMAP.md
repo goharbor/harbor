@@ -26,6 +26,7 @@ The following table includes the current roadmap for Harbor. If you have any que
 |Image Distribution|Leverage P2P providers like Alibaba Dragonfly and Uber Kraken to geo-distribute artifacts at higher rates|Oct 2020|
 |Deployment|Kubernetes operator for Harbor, enabling Day1 and Day2 operations including enterprise grade HA|Oct 2020|
 |Extensibility|Allow vendors to publish and share OCI artifacts like Machine Learning (Kubeflow) workloads generated datatypes on Harbor|Oct 2020|
+|Registry|Improve support for Windows containers layers|Oct 2020|
 |I&AM and RBAC|Service accounts with proper RBAC and differentiated access permissions|Dec 2020|
 |I&AM and RBAC|Improved Multi-tenancy through granular access and ability to manage teams of users and robot accounts through workspaces|Dec 2020|
 |Observability|Expose Harbor metrics through Prometheus Integration|Mar 2021|
