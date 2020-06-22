@@ -239,21 +239,12 @@
         "TOGGLED_SUCCESS": "Projet basculé avec succès.",
         "FAILED_TO_DELETE_PROJECT": "Le projet contient des dépôts, des règles de réplication ou des charts Helm et ne peut pas être supprimé.",
         "INLINE_HELP_PUBLIC": "Lorsqu'un projet est mis en public, n'importe qui a l'autorisation de lire les dépôts sous ce projet, et l'utilisateur n' a pas besoin d'exécuter \"docker login\" avant de prendre des images de ce projet.",
-<<<<<<< HEAD
         "OF": "sur",
         "COUNT_QUOTA": "Quota de nombre",
         "STORAGE_QUOTA": "Quota de stockage",
         "COUNT_QUOTA_TIP": "Entrez un entier entre '1' et '100000000', ou '-1' pour un quota illimité",
         "STORAGE_QUOTA_TIP": "La limite haute du Quota de stockage n'accepte que des valeurs entières, au maximum '1024TB'. Entrez '-1' pour un quota illimité",
         "QUOTA_UNLIMIT_TIP": "Pour un quota illimité, entrez '-1'."
-=======
-        "OF": "de",
-        "COUNT_QUOTA": "Count quota",
-        "STORAGE_QUOTA": "Storage quota",
-        "COUNT_QUOTA_TIP": "Please enter an integer between '1' & '100,000,000', '-1' for unlimited",
-        "STORAGE_QUOTA_TIP": "The upper limit of Storage Quota only takes integer values, capped at '1024TB'.  Enter '-1' for unlimited quota",
-        "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'."
->>>>>>> Fix UI issues with label target 2.0.1
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Résumé",
@@ -1197,6 +1188,7 @@
         "TIP_REPO": "Un nom de dépôt est divisé en composants de chemin. Un composant d'un nom de dépôt doit être composé d'au moins un caractère alphanumérique en minuscule, éventuellement séparé par .-_. Plus strictement, il doit correspondre à l'expression régulière [a-z0-9] + (?: [._-] [a-z0-9] +) *. Si un nom de dépôt a deux ou plusieurs composants de chemin, ils doivent être séparés par une barre oblique ('/'). La longueur totale d'un nom de référentiel, y compris les barres obliques, doit être inférieure à 256 caractères.",
         "TIP_TAG": "Un tag est un label appliqué à une image Docker dans un dépôt. Les tags sont la façon dont les différentes images d'un dépôt se distinguent les unes des autres.Elles doivent correspondre à la regex: (`[\\ w] [\\ w .-] {0,127}`)"
     },
+<<<<<<< HEAD
     "CVE_WHITELIST": {
         "DEPLOYMENT_SECURITY": "Sécurité de déploiement",
         "CVE_WHITELIST": "Liste blanche de CVE",
@@ -1215,6 +1207,27 @@
         "MERGE_INTO": "Ajoutez des Ids de CVE individuels avant de cliquer sur 'COPIER DEPUIS SYSTEME' pour ajouter également la liste blanche système",
         "PRO_WHITELIST": "Liste blanche projet",
         "ADD_SYSTEM": "COPIER DEPUIS SYSTEME"
+=======
+    "CVE_ALLOWLIST": {
+        "DEPLOYMENT_SECURITY": "Deployment security",
+        "CVE_ALLOWLIST": "CVE allowlist",
+        "SYS_ALLOWLIST_EXPLAIN": "System allowlist allows vulnerabilities in this list to be ignored when calculating the vulnerability of an image.",
+        "ADD_SYS": "Add CVE IDs to the system allowlist",
+        "WARNING_SYS": "The system CVE allowlist has expired. You can enable the allowlist by extending the expiration date.",
+        "WARNING_PRO": "The project CVE allowlist has expired. You can enable the allowlist by extending the expiration date.",
+        "ADD": "ADD",
+        "ENTER": "Enter CVE ID(s)",
+        "HELP": "Separator: commas or newline characters",
+        "NONE": "None",
+        "EXPIRES_AT": "Expires at",
+        "NEVER_EXPIRES": "Never expires",
+        "PRO_ALLOWLIST_EXPLAIN": "Project allowlist allows vulnerabilities in this list to be ignored in this project when pushing and pulling images.",
+        "PRO_OR_SYS": "You can either use the default allowlist configured at the system level or click on 'Project allowlist' to create a new allowlist",
+        "MERGE_INTO": "Add individual CVE IDs before clicking 'COPY FROM SYSTEM' to add system allowlist as well.",
+        "SYS_ALLOWLIST": "System allowlist",
+        "PRO_ALLOWLIST": "Project allowlist",
+        "ADD_SYSTEM": "COPY FROM SYSTEM"
+>>>>>>> Replace all whitelist with allowlist
     },
     "TAG_RETENTION": {
         "TAG_RETENTION": "Rétention de Tags",

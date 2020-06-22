@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package whitelist
+package allowlist
 
 import (
 	"fmt"
@@ -48,24 +48,24 @@ func TestIsInvalidErr(t *testing.T) {
 
 func TestValidate(t *testing.T) {
 	cases := []struct {
-		l       models.CVEWhitelist
+		l       models.CVEAllowlist
 		noError bool
 	}{
 		{
-			l: models.CVEWhitelist{
+			l: models.CVEAllowlist{
 				Items: nil,
 			},
 			noError: true,
 		},
 		{
-			l: models.CVEWhitelist{
-				Items: []models.CVEWhitelistItem{},
+			l: models.CVEAllowlist{
+				Items: []models.CVEAllowlistItem{},
 			},
 			noError: true,
 		},
 		{
-			l: models.CVEWhitelist{
-				Items: []models.CVEWhitelistItem{
+			l: models.CVEAllowlist{
+				Items: []models.CVEAllowlistItem{
 					{CVEID: "breakit"},
 					{CVEID: "breakit"},
 				},
@@ -73,8 +73,8 @@ func TestValidate(t *testing.T) {
 			noError: false,
 		},
 		{
-			l: models.CVEWhitelist{
-				Items: []models.CVEWhitelistItem{
+			l: models.CVEAllowlist{
+				Items: []models.CVEAllowlistItem{
 					{CVEID: "CVE-2014-456132"},
 					{CVEID: "CVE-2014-7654321"},
 				},
@@ -82,8 +82,8 @@ func TestValidate(t *testing.T) {
 			noError: true,
 		},
 		{
-			l: models.CVEWhitelist{
-				Items: []models.CVEWhitelistItem{
+			l: models.CVEAllowlist{
+				Items: []models.CVEAllowlistItem{
 					{CVEID: "CVE-2014-456132"},
 					{CVEID: "CVE-2014-456132"},
 					{CVEID: "CVE-2014-7654321"},
