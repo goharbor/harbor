@@ -1192,25 +1192,25 @@
     "TIP_REPO": "鏡像倉庫名被分解為路徑組件。倉庫名必須至少有一個小寫字母、字母數字字符,可選句點、破折號或下劃線分隔。嚴格意義上說,它必須匹配正規表達式[a- z0-9]+(?[.-][a-z0-9]+)*.如果倉庫名有兩個或多個路徑組件,則它們必須用正斜杠('/')分隔。包括斜槓在內的倉庫名的總長度必須小於256個字符。",
     "TIP_TAG": "Tag 是應用於存儲庫中的Docker 映像的一種標籤,它用於區分多種鏡像。它需要匹配Regex：([\\w][\\w.-]{0,127}) "
   },
-  "CVE_WHITELIST":{
+  "CVE_ALLOWLIST":{
     "DEPLOYMENT_SECURITY": "部署安全性",
-    "CVE_WHITELIST": "CVE白名單",
-    "SYS_WHITELIST_EXPLAIN": "在計算鏡像的的安全性漏洞時,在系統的CVE白名單中的漏洞將會被忽略。",
-    "ADD_SYS": "可添加一條或多條CVE ID至系統的CVE白名單中",
-    "WARNING_SYS": "系統的CVE白名單已過期. 請延長有效期以使白名單生效",
-    "WARNING_PRO": "該項目的CVE白名單已過期. 請延長有效期以使白名單生效",
+    "CVE_ALLOWLIST": "CVE特赦名單",
+    "SYS_ALLOWLIST_EXPLAIN": "在計算鏡像的的安全性漏洞時,在系統的CVE特赦名單中的漏洞將會被忽略。",
+    "ADD_SYS": "可添加一條或多條CVE ID至系統的CVE特赦名單中",
+    "WARNING_SYS": "系統的CVE特赦名單已過期. 請延長有效期以使特赦名單生效",
+    "WARNING_PRO": "該項目的CVE特赦名單已過期. 請延長有效期以使特赦名單生效",
     "ADD":"添加",
     "ENTER": "輸入一條或多條CVE ID",
     "HELP": "CVE ID之間請用英文逗號隔開或者換行",
     "NONE":"無",
     "EXPIRES_AT": "有效期至",
     "NEVER_EXPIRES": "永不過期",
-    "PRO_WHITELIST_EXPLAIN": "在推送和拉取鏡像時,在項目的CVE白名單中的漏洞將會被忽略",
-    "PRO_OR_SYS": "您可以選擇使用系統的CVE白名單作為該項目的白名單,也可勾選“啟用項目白名單”項來建立該項目自己的CVE白名單,",
-    "MERGE_INTO": "您可以點擊“複製系統白名單”項將系統白名單合併至該項目白名單中,並可為該項目白名單添加特有的CVE IDs",
-    "SYS_WHITELIST": "啟用系統白名單",
-    "PRO_WHITELIST": "啟用項目白名單",
-    "ADD_SYSTEM": "複製系統白名單"
+    "PRO_ALLOWLIST_EXPLAIN": "在推送和拉取鏡像時,在項目的CVE特赦名單中的漏洞將會被忽略",
+    "PRO_OR_SYS": "您可以選擇使用系統的CVE特赦名單作為該項目的特赦名單,也可勾選“啟用項目特赦名單”項來建立該項目自己的CVE特赦名單,",
+    "MERGE_INTO": "您可以點擊“複製系統特赦名單”項將系統特赦名單合併至該項目特赦名單中,並可為該項目特赦名單添加特有的CVE IDs",
+    "SYS_ALLOWLIST": "啟用系統特赦名單",
+    "PRO_ALLOWLIST": "啟用項目特赦名單",
+    "ADD_SYSTEM": "複製系統特赦名單"
   },
   "TAG_RETENTION":{
     "TAG_RETENTION":"標籤保留",

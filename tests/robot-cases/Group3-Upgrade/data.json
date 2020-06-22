@@ -236,7 +236,7 @@
                  "auto_scan":"true",
                  "prevent_vul":"true",
                  "severity":"high",
-                 "reuse_sys_cve_whitelist":"false",
+                 "reuse_sys_cve_allowlist":"false",
                  "deployment_security":{
                   "cve":[
                      {
@@ -367,7 +367,7 @@
                  "auto_scan":"false",
                  "prevent_vul":"true",
                  "severity":"medium",
-                 "reuse_sys_cve_whitelist":"true",
+                 "reuse_sys_cve_allowlist":"true",
                  "deployment_security":{
                   "cve":[
                   ]

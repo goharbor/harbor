@@ -21,16 +21,16 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
-// CreateCVEWhitelist creates the CVE whitelist
-func CreateCVEWhitelist(l models.CVEWhitelist) (int64, error) {
+// CreateCVEAllowlist creates the CVE allowlist
+func CreateCVEAllowlist(l models.CVEAllowlist) (int64, error) {
 	o := GetOrmer()
 	itemsBytes, _ := json.Marshal(l.Items)
 	l.ItemsText = string(itemsBytes)
 	return o.Insert(&l)
 }
 
-// UpdateCVEWhitelist Updates the vulnerability white list to DB
-func UpdateCVEWhitelist(l models.CVEWhitelist) (int64, error) {
+// UpdateCVEAllowlist Updates the vulnerability white list to DB
+func UpdateCVEAllowlist(l models.CVEAllowlist) (int64, error) {
 	o := GetOrmer()
 	itemsBytes, _ := json.Marshal(l.Items)
 	l.ItemsText = string(itemsBytes)
@@ -38,22 +38,22 @@ func UpdateCVEWhitelist(l models.CVEWhitelist) (int64, error) {
 	return id, err
 }
 
-// GetCVEWhitelist Gets the CVE whitelist of the project based on the project ID in parameter
-func GetCVEWhitelist(pid int64) (*models.CVEWhitelist, error) {
+// GetCVEAllowlist Gets the CVE allowlist of the project based on the project ID in parameter
+func GetCVEAllowlist(pid int64) (*models.CVEAllowlist, error) {
 	o := GetOrmer()
-	qs := o.QueryTable(&models.CVEWhitelist{})
+	qs := o.QueryTable(&models.CVEAllowlist{})
 	qs = qs.Filter("ProjectID", pid)
-	r := []*models.CVEWhitelist{}
+	r := []*models.CVEAllowlist{}
 	_, err := qs.All(&r)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get CVE whitelist for project %d, error: %v", pid, err)
+		return nil, fmt.Errorf("failed to get CVE allowlist for project %d, error: %v", pid, err)
 	}
 	if len(r) == 0 {
 		return nil, nil
 	} else if len(r) > 1 {
-		log.Infof("Multiple CVE whitelists found for project %d, length: %d, returning first element.", pid, len(r))
+		log.Infof("Multiple CVE allowlists found for project %d, length: %d, returning first element.", pid, len(r))
 	}
-	items := []models.CVEWhitelistItem{}
+	items := []models.CVEAllowlistItem{}
 	err = json.Unmarshal([]byte(r[0].ItemsText), &items)
 	if err != nil {
 		log.Errorf("Failed to decode item list, err: %v, text: %s", err, r[0].ItemsText)

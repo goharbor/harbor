@@ -19,8 +19,8 @@ import (
 	"testing"
 )
 
-func TestSysCVEWhitelistAPIGet(t *testing.T) {
-	url := "/api/system/CVEWhitelist"
+func TestSysCVEAllowlistAPIGet(t *testing.T) {
+	url := "/api/system/CVEAllowlist"
 	cases := []*codeCheckingCase{
 		// 401
 		{
@@ -43,8 +43,8 @@ func TestSysCVEWhitelistAPIGet(t *testing.T) {
 	runCodeCheckingCases(t, cases...)
 }
 
-func TestSysCVEWhitelistAPIPut(t *testing.T) {
-	url := "/api/system/CVEWhitelist"
+func TestSysCVEAllowlistAPIPut(t *testing.T) {
+	url := "/api/system/CVEAllowlist"
 	s := int64(1573254000)
 	cases := []*codeCheckingCase{
 		// 401
@@ -79,9 +79,9 @@ func TestSysCVEWhitelistAPIPut(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    url,
-				bodyJSON: models.CVEWhitelist{
+				bodyJSON: models.CVEAllowlist{
 					ExpiresAt: &s,
-					Items: []models.CVEWhitelistItem{
+					Items: []models.CVEAllowlistItem{
 						{CVEID: "CVE-2019-12310"},
 					},
 					ProjectID: 2,
@@ -95,9 +95,9 @@ func TestSysCVEWhitelistAPIPut(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    url,
-				bodyJSON: models.CVEWhitelist{
+				bodyJSON: models.CVEAllowlist{
 					ExpiresAt: &s,
-					Items: []models.CVEWhitelistItem{
+					Items: []models.CVEAllowlistItem{
 						{CVEID: "CVE-2019-12310"},
 						{CVEID: "CVE-2019-12310"},
 					},
@@ -111,9 +111,9 @@ func TestSysCVEWhitelistAPIPut(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    url,
-				bodyJSON: models.CVEWhitelist{
+				bodyJSON: models.CVEAllowlist{
 					ExpiresAt: &s,
-					Items: []models.CVEWhitelistItem{
+					Items: []models.CVEAllowlistItem{
 						{CVEID: "CVE-2019-12310"},
 						{CVEID: "RHSA-2019:2237"},
 					},

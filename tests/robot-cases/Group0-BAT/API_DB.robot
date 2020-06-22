@@ -78,13 +78,13 @@ Test Case - Project Quota
     [Tags]  quota
     Harbor API Test  ./tests/apitests/python/test_project_quota.py
 
-Test Case - System Level CVE Whitelist
+Test Case - System Level CVE Allowlist
     [Tags]  sys_cve
-    Harbor API Test  ./tests/apitests/python/test_sys_cve_whitelists.py
+    Harbor API Test  ./tests/apitests/python/test_sys_cve_allowlists.py
 
-Test Case - Project Level CVE Whitelist
+Test Case - Project Level CVE Allowlist
     [Tags]  pro_cve
-    Harbor API Test  ./tests/apitests/python/test_project_level_cve_whitelist.py
+    Harbor API Test  ./tests/apitests/python/test_project_level_cve_allowlist.py
 
 Test Case - Tag Retention
     [Tags]  tag_retention
