@@ -21,35 +21,35 @@ import (
 	"testing"
 )
 
-func TestUpdateAndGetCVEWhitelist(t *testing.T) {
-	require.Nil(t, ClearTable("cve_whitelist"))
-	l2, err := GetCVEWhitelist(5)
+func TestUpdateAndGetCVEAllowlist(t *testing.T) {
+	require.Nil(t, ClearTable("cve_allowlist"))
+	l2, err := GetCVEAllowlist(5)
 	assert.Nil(t, err)
 	assert.Nil(t, l2)
 
-	longList := []models.CVEWhitelistItem{}
+	longList := []models.CVEAllowlistItem{}
 	for i := 0; i < 50; i++ {
-		longList = append(longList, models.CVEWhitelistItem{CVEID: "CVE-1999-0067"})
+		longList = append(longList, models.CVEAllowlistItem{CVEID: "CVE-1999-0067"})
 	}
 
 	e := int64(1573254000)
-	in1 := models.CVEWhitelist{ProjectID: 3, Items: longList, ExpiresAt: &e}
-	_, err = UpdateCVEWhitelist(in1)
+	in1 := models.CVEAllowlist{ProjectID: 3, Items: longList, ExpiresAt: &e}
+	_, err = UpdateCVEAllowlist(in1)
 	require.Nil(t, err)
 	// assert.Equal(t, int64(1), n)
-	out1, err := GetCVEWhitelist(3)
+	out1, err := GetCVEAllowlist(3)
 	require.Nil(t, err)
 	assert.Equal(t, int64(3), out1.ProjectID)
 	assert.Equal(t, longList, out1.Items)
 	assert.Equal(t, e, *out1.ExpiresAt)
 
-	sysCVEs := []models.CVEWhitelistItem{
+	sysCVEs := []models.CVEAllowlistItem{
 		{CVEID: "CVE-2019-10164"},
 		{CVEID: "CVE-2017-12345"},
 	}
-	in3 := models.CVEWhitelist{Items: sysCVEs}
-	_, err = UpdateCVEWhitelist(in3)
+	in3 := models.CVEAllowlist{Items: sysCVEs}
+	_, err = UpdateCVEAllowlist(in3)
 	require.Nil(t, err)
 
-	require.Nil(t, ClearTable("cve_whitelist"))
+	require.Nil(t, ClearTable("cve_allowlist"))
 }

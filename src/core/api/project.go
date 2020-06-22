@@ -513,7 +513,7 @@ func (p *ProjectAPI) Put() {
 	if err := p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
 			Metadata:     req.Metadata,
-			CVEWhitelist: req.CVEWhitelist,
+			CVEAllowlist: req.CVEAllowlist,
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",
 			p.project.ProjectID), err)

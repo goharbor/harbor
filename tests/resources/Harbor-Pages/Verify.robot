@@ -352,9 +352,9 @@ Verify System Setting
     Robot Account Token Must Be Match  @{robot_token}[0]
     Close Browser
 
-Verify Project-level Whitelist
+Verify Project-level Allowlist
     [Arguments]    ${json}
-    Log To Console  "Verify Project-level Whitelist..."
+    Log To Console  "Verify Project-level Allowlist..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -363,8 +363,8 @@ Verify Project-level Whitelist
     \    ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
     \    Go Into Project  ${project}  has_image=${has_image}
     \    Switch To Project Configuration
-    \    @{is_reuse_sys_cve_whitelist}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.reuse_sys_cve_whitelist
-    \    Run Keyword If  "@{is_reuse_sys_cve_whitelist}[0]" == "true"  Retry Wait Element Should Be Disabled   ${project_config_project_wl_add_btn}
+    \    @{is_reuse_sys_cve_allowlist}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.reuse_sys_cve_allowlist
+    \    Run Keyword If  "@{is_reuse_sys_cve_allowlist}[0]" == "true"  Retry Wait Element Should Be Disabled   ${project_config_project_wl_add_btn}
     \    ...  ELSE  Retry Wait Element  ${project_config_project_wl_add_btn}
     \    @{cve_ids}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.cve
     \    Loop Verifiy CVE_IDs  @{cve_ids}
@@ -376,9 +376,9 @@ Loop Verifiy CVE_IDs
     :For    ${cve_id}    In    @{cve_ids}
     \    Page Should Contain    ${cve_id}
 
-Verify System Setting Whitelist
+Verify System Setting Allowlist
     [Arguments]    ${json}
-    Log To Console  "Verify Verify System Setting Whitelist..."
+    Log To Console  "Verify Verify System Setting Allowlist..."
     @{cve_ids}=  Get Value From Json  ${json}  $.configuration..cve..id
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
