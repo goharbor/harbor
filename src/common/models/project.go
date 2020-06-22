@@ -44,7 +44,7 @@ type Project struct {
 	RepoCount    int64             `orm:"-" json:"repo_count"`
 	ChartCount   uint64            `orm:"-" json:"chart_count"`
 	Metadata     map[string]string `orm:"-" json:"metadata"`
-	CVEWhitelist CVEWhitelist      `orm:"-" json:"cve_whitelist"`
+	CVEAllowlist CVEAllowlist      `orm:"-" json:"cve_allowlist"`
 }
 
 // GetMetadata ...
@@ -92,9 +92,9 @@ func (p *Project) VulPrevented() bool {
 	return isTrue(prevent)
 }
 
-// ReuseSysCVEWhitelist ...
-func (p *Project) ReuseSysCVEWhitelist() bool {
-	r, ok := p.GetMetadata(ProMetaReuseSysCVEWhitelist)
+// ReuseSysCVEAllowlist ...
+func (p *Project) ReuseSysCVEAllowlist() bool {
+	r, ok := p.GetMetadata(ProMetaReuseSysCVEAllowlist)
 	if !ok {
 		return true
 	}
@@ -175,7 +175,7 @@ type ProjectRequest struct {
 	Name         string            `json:"project_name"`
 	Public       *int              `json:"public"` // deprecated, reserved for project creation in replication
 	Metadata     map[string]string `json:"metadata"`
-	CVEWhitelist CVEWhitelist      `json:"cve_whitelist"`
+	CVEAllowlist CVEAllowlist      `json:"cve_allowlist"`
 
 	StorageLimit *int64 `json:"storage_limit,omitempty"`
 }

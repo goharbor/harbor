@@ -77,9 +77,9 @@ class Project(base.Base):
         base._assert_status_code(200, status_code)
         return data
 
-    def update_project(self, project_id, expect_status_code=200, metadata=None, cve_whitelist=None, **kwargs):
+    def update_project(self, project_id, expect_status_code=200, metadata=None, cve_allowlist=None, **kwargs):
         client = self._get_client(**kwargs)
-        project = swagger_client.ProjectReq(metadata=metadata, cve_whitelist=cve_whitelist)
+        project = swagger_client.ProjectReq(metadata=metadata, cve_allowlist=cve_allowlist)
         try:
             _, sc, _ = client.projects_project_id_put_with_http_info(project_id, project)
         except ApiException as e:

@@ -227,8 +227,8 @@ Helm3 CLI Push Without Sign In Harbor
     Retry Double Keywords When Error  Go Into Chart Version  ${harbor_chart_name}  Retry Wait Until Page Contains  ${harbor_chart_version}
     Capture Page Screenshot
 
-#Important Note: All CVE IDs in CVE Whitelist cases must unique!
-Body Of Verfiy System Level CVE Whitelist
+#Important Note: All CVE IDs in CVE Allowlist cases must unique!
+Body Of Verfiy System Level CVE Allowlist
     [Arguments]  ${image_argument}  ${sha256_argument}  ${most_cve_list}  ${single_cve}
     [Tags]  run-once
     Init Chrome Driver
@@ -252,17 +252,17 @@ Body Of Verfiy System Level CVE Whitelist
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    # Add Items To System CVE Whitelist    CVE-2019-19317\nCVE-2019-19646 \nCVE-2019-5188 \nCVE-2019-20387 \nCVE-2019-17498 \nCVE-2019-20372 \nCVE-2019-19244 \nCVE-2019-19603 \nCVE-2019-19880 \nCVE-2019-19923 \nCVE-2019-19925 \nCVE-2019-19926 \nCVE-2019-19959 \nCVE-2019-20218 \nCVE-2019-19232 \nCVE-2019-19234 \nCVE-2019-19645
-    Add Items To System CVE Whitelist    ${most_cve_list}
+    # Add Items To System CVE Allowlist    CVE-2019-19317\nCVE-2019-19646 \nCVE-2019-5188 \nCVE-2019-20387 \nCVE-2019-17498 \nCVE-2019-20372 \nCVE-2019-19244 \nCVE-2019-19603 \nCVE-2019-19880 \nCVE-2019-19923 \nCVE-2019-19925 \nCVE-2019-19926 \nCVE-2019-19959 \nCVE-2019-20218 \nCVE-2019-19232 \nCVE-2019-19234 \nCVE-2019-19645
+    Add Items To System CVE Allowlist    ${most_cve_list}
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    # Add Items To System CVE Whitelist    CVE-2019-18276
-    Add Items To System CVE Whitelist    ${single_cve}
+    # Add Items To System CVE Allowlist    CVE-2019-18276
+    Add Items To System CVE Allowlist    ${single_cve}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Delete Top Item In System CVE Whitelist  count=6
+    Delete Top Item In System CVE Allowlist  count=6
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Close Browser
 
-Body Of Verfiy Project Level CVE Whitelist
+Body Of Verfiy Project Level CVE Allowlist
     [Arguments]  ${image_argument}  ${sha256_argument}  ${most_cve_list}  ${single_cve}
     [Tags]  run-once
     Init Chrome Driver
@@ -282,15 +282,15 @@ Body Of Verfiy Project Level CVE Whitelist
     Go Into Repo  project${d}/${image}
     Scan Repo  ${sha256}  Succeed
     Go Into Project  project${d}
-    Add Items to Project CVE Whitelist    ${most_cve_list}
+    Add Items to Project CVE Allowlist    ${most_cve_list}
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Add Items to Project CVE Whitelist    ${single_cve}
+    Add Items to Project CVE Allowlist    ${single_cve}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Delete Top Item In Project CVE Whitelist
+    Delete Top Item In Project CVE Allowlist
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Close Browser
 
-Body Of Verfiy Project Level CVE Whitelist By Quick Way of Add System
+Body Of Verfiy Project Level CVE Allowlist By Quick Way of Add System
     [Arguments]  ${image_argument}  ${sha256_argument}  ${cve_list}
     [Tags]  run-once
     Init Chrome Driver
@@ -302,7 +302,7 @@ Body Of Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    Add Items To System CVE Whitelist    ${cve_list}
+    Add Items To System CVE Allowlist    ${cve_list}
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project    project${d}
@@ -314,8 +314,8 @@ Body Of Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Scan Repo  ${sha256}  Succeed
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
-    Set Project To Project Level CVE Whitelist
+    Set Project To Project Level CVE Allowlist
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Add System CVE Whitelist to Project CVE Whitelist By Add System Button Click
+    Add System CVE Allowlist to Project CVE Allowlist By Add System Button Click
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Close Browser

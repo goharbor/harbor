@@ -29,7 +29,7 @@ Test Case - Upgrade Verify
     Run Keyword  Verify Project  ${data}
     Run Keyword  Verify Member Exist  ${data}
     Run Keyword  Verify Robot Account Exist  ${data}
-    Run Keyword  Verify Project-level Whitelist  ${data}
+    Run Keyword  Verify Project-level Allowlist  ${data}
     Run Keyword  Verify Webhook  ${data}
     Run Keyword  Verify Tag Retention Rule  ${data}
     Run Keyword  Verify User System Admin Role  ${data}
@@ -38,7 +38,7 @@ Test Case - Upgrade Verify
     Run Keyword  Verify Project Setting  ${data}
     Run Keyword  Verify Interrogation Services  ${data}
     Run Keyword  Verify System Setting  ${data}
-    Run Keyword  Verify System Setting Whitelist  ${data}
+    Run Keyword  Verify System Setting Allowlist  ${data}
     Run Keyword  Verify Image Tag  ${data}
     Run Keyword  Verify Trivy Is Default Scanner
 
@@ -49,7 +49,7 @@ Test Case - Upgrade Verify
     Run Keyword  Verify Project  ${data}
     Run Keyword  Verify Member Exist  ${data}
     Run Keyword  Verify Robot Account Exist  ${data}
-    Run Keyword  Verify Project-level Whitelist  ${data}
+    Run Keyword  Verify Project-level Allowlist  ${data}
     Run Keyword  Verify Webhook  ${data}
     Run Keyword  Verify Tag Retention Rule  ${data}
     Run Keyword  Verify Tag Immutability Rule  ${data}
@@ -59,6 +59,6 @@ Test Case - Upgrade Verify
     Run Keyword  Verify Project Setting  ${data}
     Run Keyword  Verify Interrogation Services  ${data}
     Run Keyword  Verify System Setting  ${data}
-    Run Keyword  Verify System Setting Whitelist  ${data}
+    Run Keyword  Verify System Setting Allowlist  ${data}
     Run Keyword  Verify Image Tag  ${data}
     Run Keyword  Verify Clair Is Default Scanner

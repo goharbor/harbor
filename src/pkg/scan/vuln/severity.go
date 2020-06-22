@@ -21,7 +21,7 @@ import (
 const (
 	// None - only used to mark the overall severity of the scanned artifacts,
 	// means no vulnerabilities attached with the artifacts,
-	// (might be bypassed by the CVE whitelist).
+	// (might be bypassed by the CVE allowlist).
 	None Severity = "None"
 	// Unknown - either a security problem that has not been assigned to a priority yet or
 	// a priority that the scanner did not recognize.

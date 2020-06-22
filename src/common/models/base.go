@@ -37,6 +37,6 @@ func init() {
 		new(Blob),
 		new(ProjectBlob),
 		new(ArtifactAndBlob),
-		new(CVEWhitelist),
+		new(CVEAllowlist),
 	)
 }

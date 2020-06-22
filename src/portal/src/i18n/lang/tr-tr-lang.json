@@ -1208,10 +1208,10 @@
         "TIP_REPO": "Bir depo adı yol bileşenlerine bölünmüştür. Depo adının bir bileşeni, isteğe bağlı olarak nokta, kısa çizgi veya alt çizgi ile ayrılmış en az bir küçük harf, alfa sayısal karakterler olmalıdır. Daha kesin olarak, [a-z0-9] + (?: [._-] [a-z0-9] +) * normal ifadesiyle eşleşmelidir. Eğer bir depo adı iki veya daha fazla yol bileşenine sahipse, eğik çizgi ile ayrılmış ('/').Eğik çizgi içeren bir depo adının toplam uzunluğu, 256 karakterden az olmalıdır.",
         "TIP_TAG": "Etiket, bir depodaki Docker imajına uygulanan bir etikettir. Etiketler, bir depodaki çeşitli imajların birbirlerinden nasıl ayırt edildikleridir. Regex ile eşleşmesi gerekir: (`[\\ w] [\\ w .-] {0,127}`)"
     },
-    "CVE_WHITELIST": {
+    "CVE_ALLOWLIST": {
         "DEPLOYMENT_SECURITY": "Dağıtım güvenliği",
-        "CVE_WHITELIST": "CVE beyaz listesi",
-        "SYS_WHITELIST_EXPLAIN": "Sistem beyaz listesi, bir görüntünün güvenlik açığını hesaplarken bu listedeki güvenlik açıklarının göz ardı edilmesine izin verir.",
+        "CVE_ALLOWLIST": "CVE beyaz listesi",
+        "SYS_ALLOWLIST_EXPLAIN": "Sistem beyaz listesi, bir görüntünün güvenlik açığını hesaplarken bu listedeki güvenlik açıklarının göz ardı edilmesine izin verir.",
         "ADD_SYS": "Sistemin beyaz listesine CVE kimlikleri ekle",
         "WARNING_SYS": "Sistem CVE beyaz listesinin süresi doldu. Beyaz listeyi son kullanma tarihini uzatarak etkinleştirebilirsiniz.",
         "WARNING_PRO": "Proje CVE beyaz listesinin süresi doldu. Beyaz listeyi son kullanma tarihini uzatarak etkinleştirebilirsiniz.",
@@ -1221,11 +1221,11 @@
         "NONE": "Hiç",
         "EXPIRES_AT": "Sonunda sona eriyor",
         "NEVER_EXPIRES": "Hiçbir zaman sona ermez",
-        "PRO_WHITELIST_EXPLAIN": "Proje beyaz listesi, görüntüleri iterken ve çekerken bu listedeki güvenlik açıklarının bu projede göz ardı edilmesine izin verir.",
+        "PRO_ALLOWLIST_EXPLAIN": "Proje beyaz listesi, görüntüleri iterken ve çekerken bu listedeki güvenlik açıklarının bu projede göz ardı edilmesine izin verir.",
         "PRO_OR_SYS": "Sistemin beyaz listesini olduğu gibi kullanın veya yeni bir beyaz liste oluşturmak için “Proje beyaz listesini” seçin.",
         "MERGE_INTO": "Sistemin beyaz listesini bu projeye dahil edin, bireysel CVE ID'leri ekleyin.",
-        "SYS_WHITELIST": "Sistem beyaz listesi",
-        "PRO_WHITELIST": "Proje beyaz listesi",
+        "SYS_ALLOWLIST": "Sistem beyaz listesi",
+        "PRO_ALLOWLIST": "Proje beyaz listesi",
         "ADD_SYSTEM": "SİSTEM EKLE"
     },
     "TAG_RETENTION": {
