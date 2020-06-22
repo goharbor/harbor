@@ -5,9 +5,9 @@ import (
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
-	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"net/http"
 )
@@ -16,7 +16,7 @@ import (
 func HeadBlobMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(rw http.ResponseWriter, req *http.Request, next http.Handler) {
 		if err := handleHead(req); err != nil {
-			serror.SendError(rw, err)
+			lib_http.SendError(rw, err)
 			return
 		}
 		next.ServeHTTP(rw, req)
