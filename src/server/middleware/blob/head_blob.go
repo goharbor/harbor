@@ -9,6 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/requestid"
 	"net/http"
 )
 
@@ -26,29 +27,26 @@ func HeadBlobMiddleware() func(http.Handler) http.Handler {
 // handleHead ...
 func handleHead(req *http.Request) error {
 	none := lib.ArtifactInfo{}
-	art := lib.GetArtifactInfo(req.Context())
-	if art == none {
-		return errors.New("cannot get the artifact information from request context").WithCode(errors.NotFoundCode)
+	// for head blob, the GetArtifactInfo is actually get the information of blob.
+	blobInfo := lib.GetArtifactInfo(req.Context())
+	if blobInfo == none {
+		return errors.New("cannot get the blob information from request context").WithCode(errors.NotFoundCode)
 	}
 
-	bb, err := blob.Ctl.Get(req.Context(), art.Digest)
+	bb, err := blob.Ctl.Get(req.Context(), blobInfo.Digest)
 	if err != nil {
 		return err
 	}
 
 	switch bb.Status {
 	case blob_models.StatusNone, blob_models.StatusDelete:
-		bb.Status = blob_models.StatusNone
-		count, err := blob.Ctl.Touch(req.Context(), bb)
+		err := blob.Ctl.Touch(req.Context(), bb)
 		if err != nil {
-			log.Errorf("failed to update blob: %s status to None, error:%v", art.Digest, err)
-			return err
-		}
-		if count == 0 {
-			return errors.New("the asking blob is in GC, mark it as non existing").WithCode(errors.NotFoundCode)
+			log.Errorf("failed to update blob: %s status to StatusNone, error:%v", blobInfo.Digest, err)
+			return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", req.Header.Get(requestid.HeaderXRequestID)))
 		}
 	case blob_models.StatusDeleting, blob_models.StatusDeleteFailed:
-		return errors.New("the asking blob is in GC, mark it as non existing").WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessage(fmt.Sprintf("the asking blob is in GC, mark it as non existing, request id: %s", req.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)
 	default:
 		return errors.New(nil).WithMessage(fmt.Sprintf("wrong blob status, %s", bb.Status))
 	}

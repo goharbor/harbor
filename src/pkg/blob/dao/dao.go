@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"strings"
 	"time"
 
@@ -200,20 +201,28 @@ func (d *dao) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, e
 		WHERE "id" IN ( SELECT T0."id" FROM "blob" T0 WHERE T0."version" >= $4 AND T0."id" = $5 AND T0."status"  IN ('delete', 'deleting')  )
 	*/
 
-	return qt.SetCond(c).Filter("id", blob.ID).
+	count, err := qt.SetCond(c).Filter("id", blob.ID).
 		Filter("status__in", models.StatusMap[blob.Status]).
 		Update(data)
+	if err != nil {
+		return count, err
+	}
+	if count == 0 {
+		log.Warningf("no blob is updated according to query condition, id: %d, status_in, %v", blob.ID, models.StatusMap[blob.Status])
+		return 0, nil
+	}
+	return count, nil
 }
 
-// UpdateBlob cannot handle the status change.
+// UpdateBlob cannot handle the status change and version increase, for handling blob status change, please call
+// for the UpdateBlobStatus.
 func (d *dao) UpdateBlob(ctx context.Context, blob *models.Blob) error {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
-	blob.Version = blob.Version + 1
 	blob.UpdateTime = time.Now()
-	_, err = o.Update(blob, "size", "content_type", "version", "update_time")
+	_, err = o.Update(blob, "size", "content_type", "update_time")
 	return err
 }
 

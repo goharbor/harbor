@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/blob"
+	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 )
 
 var (
@@ -74,8 +75,8 @@ type Controller interface {
 	// GetAcceptedBlobSize returns the accepted size of stream upload blob.
 	GetAcceptedBlobSize(sessionID string) (int64, error)
 
-	// Touch updates the blob status and increase version every time.
-	Touch(ctx context.Context, blob *blob.Blob) (int64, error)
+	// Touch updates the blob status to StatusNone and increase version every time.
+	Touch(ctx context.Context, blob *blob.Blob) error
 
 	// Update updates the blob, it cannot handle blob status transitions.
 	Update(ctx context.Context, blob *blob.Blob) error
@@ -322,8 +323,16 @@ func (c *controller) GetAcceptedBlobSize(sessionID string) (int64, error) {
 	return size, nil
 }
 
-func (c *controller) Touch(ctx context.Context, blob *blob.Blob) (int64, error) {
-	return c.blobMgr.UpdateBlobStatus(ctx, blob)
+func (c *controller) Touch(ctx context.Context, blob *blob.Blob) error {
+	blob.Status = blob_models.StatusNone
+	count, err := c.blobMgr.UpdateBlobStatus(ctx, blob)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return errors.New(nil).WithMessage(fmt.Sprintf("no blob item is updated to StatusNone, id:%d, digest:%s", blob.ID, blob.Digest)).WithCode(errors.NotFoundCode)
+	}
+	return nil
 }
 
 func (c *controller) Update(ctx context.Context, blob *blob.Blob) error {

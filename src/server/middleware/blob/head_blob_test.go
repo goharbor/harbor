@@ -6,6 +6,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/orm"
+	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
 	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
@@ -64,9 +65,9 @@ func (suite *HeadBlobUploadMiddlewareTestSuite) TestHeadBlobStatusDeleting() {
 		suite.Nil(err)
 
 		// status-none -> status-delete -> status-deleting
-		_, err = blob.Ctl.Touch(suite.Context(), &blob_models.Blob{ID: id, Status: blob_models.StatusDelete})
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), &blob_models.Blob{ID: id, Status: blob_models.StatusDelete})
 		suite.Nil(err)
-		_, err = blob.Ctl.Touch(suite.Context(), &blob_models.Blob{ID: id, Status: blob_models.StatusDeleting, Version: 1})
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), &blob_models.Blob{ID: id, Status: blob_models.StatusDeleting, Version: 1})
 		suite.Nil(err)
 
 		req := suite.NewRequest(http.MethodHead, fmt.Sprintf("/v2/%s/blobs/%s", projectName, digest), nil)
