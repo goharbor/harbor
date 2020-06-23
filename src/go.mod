@@ -11,7 +11,7 @@ require (
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
 	github.com/astaxie/beego v1.12.1
-	github.com/aws/aws-sdk-go v1.19.47
+	github.com/aws/aws-sdk-go v1.23.22
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bmatcuk/doublestar v1.1.1
 	github.com/bugsnag/bugsnag-go v1.5.2 // indirect
