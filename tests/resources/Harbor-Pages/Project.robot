@@ -196,6 +196,18 @@ Do Log Advanced Search
     ${rc} =  Get Element Count  //audit-log//clr-dg-row
     Should Be Equal As Integers  ${rc}  0
 
+Retry Click Repo Name
+    [Arguments]  ${repo_name_element}
+    :For  ${n}  IN RANGE  1  10
+    \    ${out}  Run Keyword And Ignore Error  Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}   Retry Wait Element  ${tag_table_column_vulnerabilities}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+    :For  ${n}  IN RANGE  1  10
+    \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+
 Go Into Repo
     [Arguments]  ${repoName}
     Sleep  2
@@ -206,13 +218,12 @@ Go Into Repo
     \    Retry Clear Element Text  ${repo_search_input}
     \    Retry Text Input  ${repo_search_input}  ${repoName}
     \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  ${repo_name_element}
-    \    Exit For Loop If  '${out[0]}'=='PASS'
-    \    Capture Page Screenshot  gointo_${repoName}.png
     \    Sleep  2
-    Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}  Retry Wait Until Page Not Contains Element  ${repo_name_element}
-    Retry Wait Element  ${tag_table_column_vulnerabilities}
-    Retry Wait Element  ${tag_table_column_size}
-    Capture Page Screenshot  gointo_${repoName}.png
+    \    Continue For Loop If  '${out[0]}'=='FAIL'
+    \    ${out}  Retry Click Repo Name  ${repo_name_element}
+    \    Sleep  2
+    \    Exit For Loop
+
 
 Click Index Achieve
     [Arguments]  ${tag_name}
