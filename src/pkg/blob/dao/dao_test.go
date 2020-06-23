@@ -139,7 +139,7 @@ func (suite *DaoTestSuite) TestUpdateBlob() {
 		blob, err := suite.dao.GetBlobByDigest(ctx, digest)
 		if suite.Nil(err) {
 			suite.Equal(int64(100), blob.Size)
-			suite.Equal(int64(1), blob.Version)
+			suite.Equal(int64(0), blob.Version)
 		}
 	}
 
@@ -147,7 +147,7 @@ func (suite *DaoTestSuite) TestUpdateBlob() {
 	suite.Nil(suite.dao.UpdateBlob(ctx, blob), "cannot be updated.")
 	blob, err = suite.dao.GetBlobByDigest(ctx, digest)
 	if suite.Nil(err) {
-		suite.Equal(int64(2), blob.Version)
+		suite.Equal(int64(0), blob.Version)
 		suite.Equal(models.StatusNone, blob.Status)
 	}
 }
