@@ -7,6 +7,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
+	pkg_blob "github.com/goharbor/harbor/src/pkg/blob/models"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
@@ -93,7 +94,7 @@ func (suite *gcTestSuite) TestRemoveUntaggedBlobs() {
 		},
 	}, nil)
 
-	mock.OnAnything(suite.blobMgr, "List").Return([]*models.Blob{
+	mock.OnAnything(suite.blobMgr, "List").Return([]*pkg_blob.Blob{
 		{
 			ID:     1234,
 			Digest: "sha256:1234",
@@ -203,7 +204,7 @@ func (suite *gcTestSuite) TestRun() {
 		},
 	}, nil)
 
-	mock.OnAnything(suite.blobMgr, "List").Return([]*models.Blob{
+	mock.OnAnything(suite.blobMgr, "List").Return([]*pkg_blob.Blob{
 		{
 			ID:     12345,
 			Digest: "sha256:12345",
