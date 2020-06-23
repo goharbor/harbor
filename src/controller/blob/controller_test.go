@@ -17,6 +17,7 @@ package blob
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"testing"
 
@@ -28,6 +29,8 @@ import (
 	blobtesting "github.com/goharbor/harbor/src/testing/pkg/blob"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
+
+	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
 )
 
 type ControllerTestSuite struct {
@@ -268,19 +271,25 @@ func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
 	suite.Equal(int64(100), size)
 }
 
-func (suite *ControllerTestSuite) TestUpdateStatus() {
+func (suite *ControllerTestSuite) TestTouch() {
 	ctx := suite.Context()
+
+	err := Ctl.Touch(ctx, &blob.Blob{
+		Status: models.StatusNone,
+	})
+	suite.NotNil(err)
+	suite.True(errors.IsNotFoundErr(err))
 
 	digest := suite.prepareBlob()
 	blob, err := Ctl.Get(ctx, digest)
 	suite.Nil(err)
-
-	suite.Equal(blob.Status, models.StatusNone)
 	blob.Status = models.StatusDelete
-	count, err := Ctl.Touch(ctx, blob)
+	_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), blob)
 	suite.Nil(err)
-	suite.Equal(blob.Status, models.StatusDelete)
-	suite.Equal(int64(1), count)
+
+	err = Ctl.Touch(ctx, blob)
+	suite.Nil(err)
+	suite.Equal(blob.Status, models.StatusNone)
 }
 
 func (suite *ControllerTestSuite) TestDelete() {
