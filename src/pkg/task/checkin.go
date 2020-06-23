@@ -15,6 +15,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -25,7 +26,7 @@ var (
 )
 
 // CheckInProcessor is the processor to process the check in data which is sent by jobservice via webhook
-type CheckInProcessor func(task *Task, change *job.StatusChange) (err error)
+type CheckInProcessor func(ctx context.Context, task *Task, change *job.StatusChange) (err error)
 
 // Register check in processor for the specific vendor type
 func Register(vendorType string, processor CheckInProcessor) error {
