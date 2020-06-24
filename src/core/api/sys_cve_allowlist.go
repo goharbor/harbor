@@ -19,18 +19,18 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
+	"github.com/goharbor/harbor/src/pkg/scan/allowlist"
 	"net/http"
 )
 
-// SysCVEWhitelistAPI Handles the requests to manage system level CVE whitelist
-type SysCVEWhitelistAPI struct {
+// SysCVEAllowlistAPI Handles the requests to manage system level CVE allowlist
+type SysCVEAllowlistAPI struct {
 	BaseController
-	manager whitelist.Manager
+	manager allowlist.Manager
 }
 
 // Prepare validates the request initially
-func (sca *SysCVEWhitelistAPI) Prepare() {
+func (sca *SysCVEAllowlistAPI) Prepare() {
 	sca.BaseController.Prepare()
 	if !sca.SecurityCtx.IsAuthenticated() {
 		sca.SendUnAuthorizedError(errors.New("Unauthorized"))
@@ -42,11 +42,11 @@ func (sca *SysCVEWhitelistAPI) Prepare() {
 		sca.SendForbiddenError(errors.New(msg))
 		return
 	}
-	sca.manager = whitelist.NewDefaultManager()
+	sca.manager = allowlist.NewDefaultManager()
 }
 
-// Get handles the GET request to retrieve the system level CVE whitelist
-func (sca *SysCVEWhitelistAPI) Get() {
+// Get handles the GET request to retrieve the system level CVE allowlist
+func (sca *SysCVEAllowlistAPI) Get() {
 	l, err := sca.manager.GetSys()
 	if err != nil {
 		sca.SendInternalServerError(err)
@@ -55,23 +55,23 @@ func (sca *SysCVEWhitelistAPI) Get() {
 	sca.WriteJSONData(l)
 }
 
-// Put handles the PUT request to update the system level CVE whitelist
-func (sca *SysCVEWhitelistAPI) Put() {
-	var l models.CVEWhitelist
+// Put handles the PUT request to update the system level CVE allowlist
+func (sca *SysCVEAllowlistAPI) Put() {
+	var l models.CVEAllowlist
 	if err := sca.DecodeJSONReq(&l); err != nil {
 		log.Errorf("Failed to decode JSON array from request")
 		sca.SendBadRequestError(err)
 		return
 	}
 	if l.ProjectID != 0 {
-		msg := fmt.Sprintf("Non-zero project ID for system CVE whitelist: %d.", l.ProjectID)
+		msg := fmt.Sprintf("Non-zero project ID for system CVE allowlist: %d.", l.ProjectID)
 		log.Error(msg)
 		sca.SendBadRequestError(errors.New(msg))
 		return
 	}
 	if err := sca.manager.SetSys(l); err != nil {
-		if whitelist.IsInvalidErr(err) {
-			log.Errorf("Invalid CVE whitelist: %v", err)
+		if allowlist.IsInvalidErr(err) {
+			log.Errorf("Invalid CVE allowlist: %v", err)
 			sca.SendBadRequestError(err)
 			return
 		}

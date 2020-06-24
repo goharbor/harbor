@@ -21,38 +21,38 @@ import (
 	"time"
 )
 
-func TestCVEWhitelist_All(t *testing.T) {
+func TestCVEAllowlist_All(t *testing.T) {
 	future := int64(4411494000)
 	now := time.Now().Unix()
 	cases := []struct {
-		input   CVEWhitelist
+		input   CVEAllowlist
 		cveset  map[string]struct{}
 		expired bool
 	}{
 		{
-			input: CVEWhitelist{
+			input: CVEAllowlist{
 				ID:        1,
 				ProjectID: 0,
-				Items:     []CVEWhitelistItem{},
+				Items:     []CVEAllowlistItem{},
 			},
 			cveset:  map[string]struct{}{},
 			expired: false,
 		},
 		{
-			input: CVEWhitelist{
+			input: CVEAllowlist{
 				ID:        1,
 				ProjectID: 0,
-				Items:     []CVEWhitelistItem{},
+				Items:     []CVEAllowlistItem{},
 				ExpiresAt: &now,
 			},
 			cveset:  map[string]struct{}{},
 			expired: true,
 		},
 		{
-			input: CVEWhitelist{
+			input: CVEAllowlist{
 				ID:        2,
 				ProjectID: 3,
-				Items: []CVEWhitelistItem{
+				Items: []CVEAllowlistItem{
 					{CVEID: "CVE-1999-0067"},
 					{CVEID: "CVE-2016-7654321"},
 				},

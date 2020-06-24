@@ -47,8 +47,8 @@ export abstract class ProjectService {
   abstract updateProjectPolicy(
     projectId: number | string,
     projectPolicy: ProjectPolicy,
-    reuseSysCVEVWhitelist: string,
-    projectWhitelist: object
+    reuseSysCVEVAllowlist: string,
+    projectAllowlist: object
   ): Observable<any>;
 
   /**
@@ -109,8 +109,8 @@ export class ProjectDefaultService extends ProjectService {
   public updateProjectPolicy(
     projectId: number | string,
     projectPolicy: ProjectPolicy,
-    reuseSysCVEVWhitelist: string,
-    projectWhitelist: object
+    reuseSysCVEVAllowlist: string,
+    projectAllowlist: object
   ): any {
     let baseUrl: string = this.config.projectBaseEndpoint
       ? this.config.projectBaseEndpoint
@@ -125,9 +125,9 @@ export class ProjectDefaultService extends ProjectService {
               prevent_vul: projectPolicy.PreventVulImg ? "true" : "false",
               severity: projectPolicy.PreventVulImgSeverity,
               auto_scan: projectPolicy.ScanImgOnPush ? "true" : "false",
-              reuse_sys_cve_whitelist: reuseSysCVEVWhitelist
+              reuse_sys_cve_allowlist: reuseSysCVEVAllowlist
           },
-            cve_whitelist: projectWhitelist
+            cve_allowlist: projectAllowlist
         },
         HTTP_JSON_OPTIONS
       )

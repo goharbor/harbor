@@ -102,15 +102,15 @@ Test Case - Project Level Image Serverity Policy
     Navigate To Projects
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  3
-    Cannot Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}  err_msg=To continue with pull, please contact your project administrator to exempt matched vulnerabilities through configuring the CVE whitelist
+    Cannot Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}  err_msg=To continue with pull, please contact your project administrator to exempt matched vulnerabilities through configuring the CVE allowlist
     Close Browser
 
-#Important Note: All CVE IDs in CVE Whitelist cases must unique!
-Test Case - Verfiy System Level CVE Whitelist
-    Body Of Verfiy System Level CVE Whitelist  mariadb  b5e273ed46d2b5a1c96bf8f3ae37aa5e90c6c481e7f7ae66744610d7df79cbd1  CVE-2019-13050\nCVE-2018-19591\nCVE-2018-11236\nCVE-2018-11237\nCVE-2019-13627\nCVE-2018-20839\nCVE-2019-2923\nCVE-2019-2922\nCVE-2019-2911\nCVE-2019-2914\nCVE-2019-2924\nCVE-2019-2910\nCVE-2019-2938\nCVE-2019-2993\nCVE-2019-2974\nCVE-2019-2960\nCVE-2019-2948\nCVE-2019-2946  CVE-2019-2969
+#Important Note: All CVE IDs in CVE Allowlist cases must unique!
+Test Case - Verfiy System Level CVE Allowlist
+    Body Of Verfiy System Level CVE Allowlist  mariadb  b5e273ed46d2b5a1c96bf8f3ae37aa5e90c6c481e7f7ae66744610d7df79cbd1  CVE-2019-13050\nCVE-2018-19591\nCVE-2018-11236\nCVE-2018-11237\nCVE-2019-13627\nCVE-2018-20839\nCVE-2019-2923\nCVE-2019-2922\nCVE-2019-2911\nCVE-2019-2914\nCVE-2019-2924\nCVE-2019-2910\nCVE-2019-2938\nCVE-2019-2993\nCVE-2019-2974\nCVE-2019-2960\nCVE-2019-2948\nCVE-2019-2946  CVE-2019-2969
 
-Test Case - Verfiy Project Level CVE Whitelist
-    Body Of Verfiy Project Level CVE Whitelist  mariadb  b5e273ed46d2b5a1c96bf8f3ae37aa5e90c6c481e7f7ae66744610d7df79cbd1  CVE-2019-13050\nCVE-2018-19591\nCVE-2018-11236\nCVE-2018-11237\nCVE-2019-13627\nCVE-2018-20839\nCVE-2019-2923\nCVE-2019-2922\nCVE-2019-2911\nCVE-2019-2914\nCVE-2019-2924\nCVE-2019-2910\nCVE-2019-2938\nCVE-2019-2993\nCVE-2019-2974\nCVE-2019-2960\nCVE-2019-2948\nCVE-2019-2946  CVE-2019-2969
+Test Case - Verfiy Project Level CVE Allowlist
+    Body Of Verfiy Project Level CVE Allowlist  mariadb  b5e273ed46d2b5a1c96bf8f3ae37aa5e90c6c481e7f7ae66744610d7df79cbd1  CVE-2019-13050\nCVE-2018-19591\nCVE-2018-11236\nCVE-2018-11237\nCVE-2019-13627\nCVE-2018-20839\nCVE-2019-2923\nCVE-2019-2922\nCVE-2019-2911\nCVE-2019-2914\nCVE-2019-2924\nCVE-2019-2910\nCVE-2019-2938\nCVE-2019-2993\nCVE-2019-2974\nCVE-2019-2960\nCVE-2019-2948\nCVE-2019-2946  CVE-2019-2969
 
-Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
-    Body Of Verfiy Project Level CVE Whitelist By Quick Way of Add System  mariadb  b5e273ed46d2b5a1c96bf8f3ae37aa5e90c6c481e7f7ae66744610d7df79cbd1  CVE-2019-13050\nCVE-2018-19591\nCVE-2018-11236\nCVE-2018-11237\nCVE-2019-13627\nCVE-2018-20839\nCVE-2019-2923\nCVE-2019-2922\nCVE-2019-2911\nCVE-2019-2914\nCVE-2019-2924\nCVE-2019-2910\nCVE-2019-2938\nCVE-2019-2993\nCVE-2019-2974\nCVE-2019-2960\nCVE-2019-2948\nCVE-2019-2946\nCVE-2019-2969
+Test Case - Verfiy Project Level CVE Allowlist By Quick Way of Add System
+    Body Of Verfiy Project Level CVE Allowlist By Quick Way of Add System  mariadb  b5e273ed46d2b5a1c96bf8f3ae37aa5e90c6c481e7f7ae66744610d7df79cbd1  CVE-2019-13050\nCVE-2018-19591\nCVE-2018-11236\nCVE-2018-11237\nCVE-2019-13627\nCVE-2018-20839\nCVE-2019-2923\nCVE-2019-2922\nCVE-2019-2911\nCVE-2019-2914\nCVE-2019-2924\nCVE-2019-2910\nCVE-2019-2938\nCVE-2019-2993\nCVE-2019-2974\nCVE-2019-2960\nCVE-2019-2948\nCVE-2019-2946\nCVE-2019-2969

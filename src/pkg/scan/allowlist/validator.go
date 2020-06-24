@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package whitelist
+package allowlist
 
 import (
 	"fmt"
@@ -42,8 +42,8 @@ func IsInvalidErr(err error) bool {
 
 const cveIDPattern = `^CVE-\d{4}-\d+$`
 
-// Validate help validates the CVE whitelist, to ensure the CVE ID is valid and there's no duplication
-func Validate(wl models.CVEWhitelist) error {
+// Validate help validates the CVE allowlist, to ensure the CVE ID is valid and there's no duplication
+func Validate(wl models.CVEAllowlist) error {
 	m := map[string]struct{}{}
 	//	re := regexp.MustCompile(cveIDPattern)
 	for _, it := range wl.Items {
@@ -52,7 +52,7 @@ func Validate(wl models.CVEWhitelist) error {
 		//			return &invalidErr{fmt.Sprintf("invalid CVE ID: %s", it.CVEID)}
 		//		}
 		if _, ok := m[it.CVEID]; ok {
-			return &invalidErr{fmt.Sprintf("duplicate CVE ID in whitelist: %s", it.CVEID)}
+			return &invalidErr{fmt.Sprintf("duplicate CVE ID in allowlist: %s", it.CVEID)}
 		}
 		m[it.CVEID] = struct{}{}
 	}
