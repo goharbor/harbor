@@ -24,6 +24,69 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 )
 
+// WithFilters generates the query setter according to the query. "ignoredCols" is used to set the
+// columns that will not be queried. Here pagination is not applied.
+func WithFilters(ctx context.Context, model interface{}, query *q.Query, ignoredCols ...string) (orm.QuerySeter, error) {
+	ormer, err := FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	qs := ormer.QueryTable(model)
+	if query == nil {
+		return qs, nil
+	}
+
+	// the program will panic when querying the columns that doesn't exist
+	// list the supported columns first to avoid the panic
+	cols := listQueriableCols(model, ignoredCols...)
+	for k, v := range query.Keywords {
+		col := strings.SplitN(k, orm.ExprSep, 2)[0]
+		if _, exist := cols[col]; !exist {
+			continue
+		}
+
+		// fuzzy match
+		f, ok := v.(*q.FuzzyMatchValue)
+		if ok {
+			qs = qs.Filter(k+"__icontains", f.Value)
+			continue
+		}
+
+		// range
+		r, ok := v.(*q.Range)
+		if ok {
+			if r.Min != nil {
+				qs = qs.Filter(k+"__gte", r.Min)
+			}
+			if r.Max != nil {
+				qs = qs.Filter(k+"__lte", r.Max)
+			}
+			continue
+		}
+
+		// or list
+		ol, ok := v.(*q.OrList)
+		if ok {
+			if len(ol.Values) > 0 {
+				qs = qs.Filter(k+"__in", ol.Values...)
+			}
+			continue
+		}
+
+		// and list
+		_, ok = v.(*q.AndList)
+		if ok {
+			// do nothing as and list needs to be handled by the logic of DAO
+			continue
+		}
+
+		// exact match
+		qs = qs.Filter(k, v)
+	}
+
+	return qs, nil
+}
+
 // QuerySetter generates the query setter according to the query. "ignoredCols" is used to set the
 // columns that will not be queried
 func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignoredCols ...string) (orm.QuerySeter, error) {
