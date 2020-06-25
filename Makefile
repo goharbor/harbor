@@ -100,14 +100,14 @@ PREPARE_VERSION_NAME=versions
 #versions
 REGISTRYVERSION=v2.7.1-patch-2819-2553
 NOTARYVERSION=v0.6.1
-CLAIRVERSION=v2.1.2
+CLAIRVERSION=v2.1.4
 NOTARYMIGRATEVERSION=v3.5.4
 CLAIRADAPTERVERSION=v1.0.2
-TRIVYVERSION=v0.6.0
-TRIVYADAPTERVERSION=v0.9.0
+TRIVYVERSION=v0.9.0
+TRIVYADAPTERVERSION=v0.11.0
 
 # version of chartmuseum
-CHARTMUSEUMVERSION=v0.9.0
+CHARTMUSEUMVERSION=v0.12.0
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.7.1
@@ -137,7 +137,7 @@ DOCKERCMD=$(shell which docker)
 DOCKERBUILD=$(DOCKERCMD) build
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERPULL=$(DOCKERCMD) pull
-DOCKERIMASES=$(DOCKERCMD) images
+DOCKERIMAGES=$(DOCKERCMD) images
 DOCKERSAVE=$(DOCKERCMD) save
 DOCKERCOMPOSECMD=$(shell which docker-compose)
 DOCKERTAG=$(DOCKERCMD) tag
@@ -304,11 +304,11 @@ SWAGGER_IMAGENAME=goharbor/swagger
 SWAGGER_VERSION=v0.21.0
 SWAGGER=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH) ${SWAGGER_IMAGENAME}:${SWAGGER_VERSION}
 SWAGGER_GENERATE_SERVER=${SWAGGER} generate server --template-dir=$(TOOLSPATH)/swagger/templates --exclude-main
-SWAAGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) .
+SWAGGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) .
 
 SWAGGER_IMAGENAME:
-	@if [ "$(shell ${DOCKERIMASES} -q ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) 2> /dev/null)" == "" ]; then \
-		${SWAAGER_IMAGE_BUILD_CMD} && echo "build swagger image successfully" || (echo "build swagger image failed" && exit 1) ; \
+	@if [ "$(shell ${DOCKERIMAGES} -q ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) 2> /dev/null)" == "" ]; then \
+		${SWAGGER_IMAGE_BUILD_CMD} && echo "build swagger image successfully" || (echo "build swagger image failed" && exit 1) ; \
 	fi
 
 # $1 the path of swagger spec
@@ -513,7 +513,7 @@ down:
 
 swagger_client:
 	@echo "Generate swagger client"
-	wget -q https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
+	wget https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_client
 	mkdir  -p harborclient/harbor_swagger_client

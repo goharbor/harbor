@@ -110,8 +110,8 @@ export class GroupComponent implements OnInit, OnDestroy {
       });
       // batchInfo.id = group.id;
       let deletionMessage = new ConfirmationMessage(
-        "MEMBER.DELETION_TITLE",
-        "MEMBER.DELETION_SUMMARY",
+        "GROUP.DELETION_TITLE",
+        "GROUP.DELETION_SUMMARY",
         nameArr.join(","),
         this.selectedGroups,
         ConfirmationTargets.PROJECT_MEMBER,
@@ -185,7 +185,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
   get canDeleteGroup(): boolean {
     return (
-      this.selectedGroups.length === 1 &&
+      this.selectedGroups.length >= 1 &&
       this.session.currentUser.has_admin_role
     );
   }

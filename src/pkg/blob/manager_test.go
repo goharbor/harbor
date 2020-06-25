@@ -16,10 +16,11 @@ package blob
 
 import (
 	"context"
-	"testing"
-
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
+	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/blob/models"
 )
 
 type ManagerTestSuite struct {
@@ -200,6 +201,7 @@ func (suite *ManagerTestSuite) TestUpdate() {
 			suite.Equal(digest, blob.Digest)
 			suite.Equal("media type", blob.ContentType)
 			suite.Equal(int64(1000), blob.Size)
+			suite.Equal(models.StatusNone, blob.Status)
 		}
 	}
 }
@@ -254,6 +256,38 @@ func (suite *ManagerTestSuite) TestListByArtifact() {
 	blobs, err = Mgr.List(ctx, ListParams{ArtifactDigest: artifact2})
 	suite.Nil(err)
 	suite.Len(blobs, 3)
+}
+
+func (suite *ManagerTestSuite) TestDelete() {
+	ctx := suite.Context()
+	digest := suite.DigestString()
+	blobID, err := Mgr.Create(ctx, digest, "media type", 100)
+	suite.Nil(err)
+
+	err = Mgr.Delete(ctx, blobID)
+	suite.Nil(err)
+}
+
+func (suite *ManagerTestSuite) TestUpdateStatus() {
+	ctx := suite.Context()
+
+	digest := suite.DigestString()
+	_, err := Mgr.Create(ctx, digest, "media type", 100)
+	suite.Nil(err)
+
+	blob, err := Mgr.Get(ctx, digest)
+	if suite.Nil(err) {
+		blob.Status = models.StatusDelete
+		_, err := Mgr.UpdateBlobStatus(ctx, blob)
+		suite.Nil(err)
+
+		{
+			blob, err := Mgr.Get(ctx, digest)
+			suite.Nil(err)
+			suite.Equal(digest, blob.Digest)
+			suite.Equal(models.StatusDelete, blob.Status)
+		}
+	}
 }
 
 func TestManagerTestSuite(t *testing.T) {

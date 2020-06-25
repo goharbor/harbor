@@ -51,7 +51,7 @@
     },
     "BATCH": {
         "DELETED_SUCCESS": "Deleted successfully",
-        "DELETED_FAILURE": "Deleted failed",
+        "DELETED_FAILURE": "Deleted failed or partly failed",
         "SWITCH_SUCCESS": "Switch successfully",
         "SWITCH_FAILURE": "Switch failed",
         "REPLICATE_SUCCESS": "Started successfully",
@@ -232,7 +232,7 @@
         "STORAGE_QUOTA": "Storage quota",
         "COUNT_QUOTA_TIP": "Please enter an integer between '1' & '100,000,000', '-1' for unlimited",
         "STORAGE_QUOTA_TIP": "The upper limit of Storage Quota only takes integer values, capped at '1024TB'.  Enter '-1' for unlimited quota",
-        "QUOTA_UNLIMIT_TIP": "For unlimited quota, please enter '-1'."
+        "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",
@@ -429,7 +429,9 @@
         "PROJECT_MASTER": "Master",
         "DEVELOPER": "Developer",
         "GUEST": "Guest",
-        "LIMITED_GUEST": "Limited Guest"
+        "LIMITED_GUEST": "Limited Guest",
+        "DELETION_TITLE": "Confirm group members deletion",
+        "DELETION_SUMMARY": "Do you want to delete group member(s) {{param}}?"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nom d'utilisateur",
@@ -581,7 +583,7 @@
         "DELETE_ENABLED": "Enabled this policy",
         "NEW": "New",
         "NAME_TOOLTIP": "replication rule name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
-        "DESTINATION_NAME_TOOLTIP": "Destination name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "DESTINATION_NAME_TOOLTIP": "Destination name should be at least 2 characters long with lower case characters, numbers and ._-/ and must be start with characters or numbers.",
         "ACKNOWLEDGE": "Acknowledge",
         "RULE_DISABLED": "This rule has been disabled because a label used in its filter has been deleted. \n Edit the rule and update its filter to enable it.",
         "REPLI_MODE": "Replication mode",
@@ -688,7 +690,8 @@
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info",
         "REPO_NAME": "Repository",
-        "MARKDOWN": "Styling with Markdown is supported"
+        "MARKDOWN": "Styling with Markdown is supported",
+        "LAST_MODIFIED": "Last Modified Time"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",
@@ -970,7 +973,7 @@
             "SCANNING_PERCENT_EXPLAIN": "Scan completed percentage is calculated as # of successfully scanned images / total number of images referenced within the image index.",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} de {{totalPackages}} {{package}} ont des {{vulnerability}} connues.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} de {{totalPackages}} {{package}} a des {{vulnerability}} connues.",
-            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability detected"
         },
         "SEVERITY": {
             "CRITICAL": "Critique",
@@ -1155,7 +1158,7 @@
         "NOSCHEDULE": "An error occurred in Get schedule"
     },
     "GC": {
-        "CURRENT_SCHEDULE": "Current Schedule",
+        "CURRENT_SCHEDULE": "Schedule to GC",
         "GC_NOW": "GC NOW",
         "JOB_HISTORY": "GC History",
         "JOB_ID": "Job ID",
@@ -1165,31 +1168,32 @@
         "MSG_SCHEDULE_SET": "Garbage Collection schedule has been set",
         "MSG_SCHEDULE_RESET": "Garbage Collection schedule has been reset",
         "PARAMETERS": "Parameters",
-        "DELETE_UNTAGGED": "Delete Untagged Artifacts"
+        "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
+        "EXPLAIN": "GC is a compute intensive operation that may impact registry performance"
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",
         "TIP_REPO": "A repository name is broken up into path components. A component of a repository name must be at least one lowercase, alpha-numeric characters, optionally separated by periods, dashes or underscores. More strictly, it must match the regular expression [a-z0-9]+(?:[._-][a-z0-9]+)*.If a repository name has two or more path components, they must be separated by a forward slash ('/').The total length of a repository name, including slashes, must be less the 256 characters.",
         "TIP_TAG": "A tag is a label applied to a Docker image in a repository. Tags are how various images in a repository are distinguished from each other.It need to match Regex: (`[\\w][\\w.-]{0,127}`)"
     },
-    "CVE_WHITELIST": {
+    "CVE_ALLOWLIST": {
         "DEPLOYMENT_SECURITY": "Deployment security",
-        "CVE_WHITELIST": "CVE whitelist",
-        "SYS_WHITELIST_EXPLAIN": "System whitelist allows vulnerabilities in this list to be ignored when calculating the vulnerability of an image.",
-        "ADD_SYS": "Add CVE IDs to the system whitelist",
-        "WARNING_SYS": "The system CVE whitelist has expired. You can enable the whitelist by extending the expiration date.",
-        "WARNING_PRO": "The project CVE whitelist has expired. You can enable the whitelist by extending the expiration date.",
+        "CVE_ALLOWLIST": "CVE allowlist",
+        "SYS_ALLOWLIST_EXPLAIN": "System allowlist allows vulnerabilities in this list to be ignored when calculating the vulnerability of an image.",
+        "ADD_SYS": "Add CVE IDs to the system allowlist",
+        "WARNING_SYS": "The system CVE allowlist has expired. You can enable the allowlist by extending the expiration date.",
+        "WARNING_PRO": "The project CVE allowlist has expired. You can enable the allowlist by extending the expiration date.",
         "ADD": "ADD",
         "ENTER": "Enter CVE ID(s)",
         "HELP": "Separator: commas or newline characters",
         "NONE": "None",
         "EXPIRES_AT": "Expires at",
         "NEVER_EXPIRES": "Never expires",
-        "PRO_WHITELIST_EXPLAIN": "Project whitelist allows vulnerabilities in this list to be ignored in this project when pushing and pulling images.",
-        "PRO_OR_SYS": "You can either use the default whitelist configured at the system level or click on 'Project whitelist' to create a new whitelist",
-        "MERGE_INTO": "Add individual CVE IDs before clicking 'COPY FROM SYSTEM' to add system whitelist as well.",
-        "SYS_WHITELIST": "System whitelist",
-        "PRO_WHITELIST": "Project whitelist",
+        "PRO_ALLOWLIST_EXPLAIN": "Project allowlist allows vulnerabilities in this list to be ignored in this project when pushing and pulling images.",
+        "PRO_OR_SYS": "You can either use the default allowlist configured at the system level or click on 'Project allowlist' to create a new allowlist",
+        "MERGE_INTO": "Add individual CVE IDs before clicking 'COPY FROM SYSTEM' to add system allowlist as well.",
+        "SYS_ALLOWLIST": "System allowlist",
+        "PRO_ALLOWLIST": "Project allowlist",
         "ADD_SYSTEM": "COPY FROM SYSTEM"
     },
     "TAG_RETENTION": {

@@ -3,29 +3,29 @@ title: Tag Immutability Rules
 weight: 85
 ---
 
-By default, users can repeatedly push an image with the same tag to repositories in Harbor. This causes the previous image to effectively be overwritten with each push, in that the tag now points to a different image and the image that previously used the tag now becomes tagless. This is due to the Docker implementation, that does not enforce the mapping between an image tag and the image digest. This can be undesirable in certain cases, because the tag can no longer be trusted to identify the image version. The sha256 digest remains reliable and always points to the same build, but it is not rendered in a human-readable format.
+By default, users can repeatedly push an artifact with the same tag to a repository in Harbor. This causes the tag to migrate across the artifacts and every artifact that has its tag taken away becomes tagless. This is due to Docker distribution upstream which does not enforce the mapping between an image tag and the image digest. This can be undesirable in certain cases, because the tag can no longer be trusted to identify the image version. The sha256 digest remains reliable and always points to the same build, but it is not rendered in a human-readable format.
 
-Moreover, the Docker implementation requires that deleting a tag results in the deletion of all other tags that point to the same digest, causing unwanted image deletions.
-
-To prevent this, Harbor allows you to configure tag immutability at the project level, so that images with certain tags cannot be pushed into Harbor if their tags match existing tags. This prevents existing images from being overwritten. Tag immutability guarantees that an immutable tagged image cannot be deleted, and cannot be altered through repushing, retagging, or replication. 
+To prevent this, Harbor allows you to configure tag immutability at the project level, so that artifacts with certain tags cannot be pushed into Harbor if their tags match existing tags. This prevents existing artifacts from being overwritten. Tag immutability guarantees that an immutable tagged artifact cannot be deleted, and also cannot be altered in any way such as through re-pushing, re-tagging, or replication from another target registry.
 
 Immutability rules use `OR` logic, so if you set multiple rules and a tag is matched by any of those rules, it is marked as immutable. 
 
 ## How Immutable Tags Prevent Tag Deletion
 
-Tags that share a common digest cannot be deleted even if only a single tag is configured as immutable. For example:
+Since v2.0, you can delete any tag of an artifact without deleting the artifact itself. Therefore, you can lock down a particular tag by configuring an immutability rule matching this tag which means the artifact holding the tag also cannot be overwritten or deleted. However you can still delete other tags associated with this immutable artifact. Consider the follow example:
 
-1. In a project, set an immutable tag rule that matches the image and tag `hello-world:v1`.
-1. In the Docker client, pull `hello-world:v1` and retag it to `hello-world:v2`.
-1. Push `hello-world:v2` to the same project.
-1. In the Harbor interface, attempt to delete `hello-world:v2`.
+1. In the Docker client, push `hello-world:v1` into a project.
+1. In the project, set an immutable tag rule in this project that matches the image and tag `hello-world:v1`.
+1. Push `hello-world:v1` to the project.
+1. In your local env, retag `hello-world:v1` to `hello-world:v2`.
+1. Push `hello-world:v2` to the project.
+1. In the Harbor interface, attempt to delete tag `v1` and `v2` of `hello-world` sequentially.
 
-In this case, you cannot delete `hello-world:v2` because it shares the sha256 digest with `hello-world:v1`, and `hello-world:v1` is an immutable tag. 
+In this case, you cannot delete tag `v1` as it's an immutable tag and you cannot delete the artifact `hello-world` holding this tag. But you can delete tag `v2` even it shares the sha256 digest with `v1`. 
 
 ## Create a Tag Immutability Rule
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
-1. Go to **Projects**, select a project, and select **Tag Immutability**.
+1. Go to **Projects**, select a project, select policy, and select **Tag Immutability**.
 
     ![Add an immutability rule](../../../img/tag-immutability.png)
 

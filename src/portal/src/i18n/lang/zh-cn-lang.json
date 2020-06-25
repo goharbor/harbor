@@ -54,7 +54,7 @@
     },
     "BATCH": {
         "DELETED_SUCCESS": "删除成功",
-        "DELETED_FAILURE": "删除失败",
+        "DELETED_FAILURE": "删除失败或部分失败",
         "SWITCH_SUCCESS": "切换成功",
         "SWITCH_FAILURE": "切换失败",
         "REPLICATE_SUCCESS": "开始成功",
@@ -272,7 +272,7 @@
         "NEW_USER": "添加用户成员",
         "NEW_MEMBER": "新建成员",
         "MEMBER": "成员",
-        "NAME": "姓名",
+        "NAME": "名称",
         "EMAIL": "邮箱",
         "ROLE": "角色",
         "SYS_ADMIN": "系统管理员",
@@ -319,7 +319,7 @@
         "REMOVE": "移除成员"
     },
     "ROBOT_ACCOUNT": {
-        "NAME": "姓名",
+        "NAME": "名称",
         "PERMISSIONS": "权限",
         "TOKEN": "令牌",
         "NEW_ROBOT_ACCOUNT": "添加机器人账户",
@@ -436,7 +436,9 @@
         "PROJECT_MASTER": "维护人员",
         "DEVELOPER": "开发者",
         "GUEST": "访客",
-        "LIMITED_GUEST": "受限访客"
+        "LIMITED_GUEST": "受限访客",
+        "DELETION_TITLE": "删除组成员确认",
+        "DELETION_SUMMARY": "确认删除组成员 {{param}}?"
     },
     "AUDIT_LOG": {
         "USERNAME": "用户名",
@@ -592,7 +594,7 @@
         "DELETE_ENABLED": "默认启用该规则",
         "NEW": "新增",
         "NAME_TOOLTIP": "项目名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
-        "DESTINATION_NAME_TOOLTIP": "目标名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
+        "DESTINATION_NAME_TOOLTIP": "目标名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
         "ACKNOWLEDGE": "确认",
         "RULE_DISABLED": "这个规则因为过滤选项中的标签被删除已经不能用了，更新过滤项以便重新启用规则。",
         "REPLI_MODE": "复制模式",
@@ -702,7 +704,8 @@
         "DEPLOY": "部署",
         "ADDITIONAL_INFO": "添加信息",
         "REPO_NAME": "镜像仓库",
-        "MARKDOWN": "支持使用Markdown进行样式设置"
+        "MARKDOWN": "支持使用Markdown进行样式设置",
+        "LAST_MODIFIED": "最新变更时间"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",
@@ -900,7 +903,7 @@
             "SCOPE": "OIDC Scope",
             "OIDC_VERIFYCERT": "验证证书",
             "OIDC_SETNAME": "设置OIDC用户名",
-            "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在端口中用于与项目、角色等关联。",
+            "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在Harbor中用于与项目、角色等关联。",
             "OIDC_USERNAME": "用户名",
             "GROUP_CLAIM_NAME": "组名称"
         },
@@ -997,7 +1000,7 @@
             "SCANNING_PERCENT_EXPLAIN": "扫描完成度是扫描成功的镜像数与总共需要扫描的镜像数的比值，总共需要的扫描的镜像不包含 Index 。",
             "TOOLTIPS_TITLE": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
-            "TOOLTIPS_TITLE_ZERO": "没有发现可识别的漏洞"
+            "TOOLTIPS_TITLE_ZERO": "没有检测到可识别的漏洞"
         },
         "SEVERITY": {
             "CRITICAL": "危急",
@@ -1194,32 +1197,33 @@
         "MSG_SCHEDULE_SET": "垃圾回收定时任务设置成功",
         "MSG_SCHEDULE_RESET": "垃圾回收定时任务已被重置",
         "PARAMETERS": "参数",
-        "DELETE_UNTAGGED": "删除无 Tag 的 Artifacts"
+        "DELETE_UNTAGGED": "允许回收无 tag 的 artifacts",
+        "EXPLAIN": "垃圾回收是一个计算密集型操作，可能会影响仓库性能"
     },
     "RETAG": {
         "MSG_SUCCESS": "Artifact 拷贝成功",
         "TIP_REPO": "镜像仓库名被分解为路径组件。仓库名必须至少有一个小写字母、字母数字字符，可选句点、破折号或下划线分隔。严格意义上说，它必须匹配正则表达式[a-z0-9]+(?[.-][a-z0-9]+)*.如果仓库名有两个或多个路径组件，则它们必须用正斜杠('/')分隔。包括斜杠在内的仓库名的总长度必须小于256个字符。",
         "TIP_TAG": "Tag 是应用于存储库中的 Docker 映像的一种标签，它用于区分多种镜像。它需要匹配 Regex：([\\w][\\w.-]{0,127})"
     },
-    "CVE_WHITELIST": {
+    "CVE_ALLOWLIST": {
         "DEPLOYMENT_SECURITY": "部署安全性",
-        "CVE_WHITELIST": "CVE白名单",
-        "SYS_WHITELIST_EXPLAIN": "在计算镜像的的安全性漏洞时，在系统的CVE白名单中的漏洞将会被忽略。",
-        "ADD_SYS": "可添加一条或多条CVE ID至系统的CVE白名单中",
-        "WARNING_SYS": "系统的CVE白名单已过期. 请延长有效期以使白名单生效",
-        "WARNING_PRO": "该项目的CVE白名单已过期. 请延长有效期以使白名单生效",
+        "CVE_ALLOWLIST": "CVE特赦名单",
+        "SYS_ALLOWLIST_EXPLAIN": "在计算镜像的的安全性漏洞时，在系统的CVE特赦名单中的漏洞将会被忽略。",
+        "ADD_SYS": "可添加一条或多条CVE ID至系统的CVE特赦名单中",
+        "WARNING_SYS": "系统的CVE特赦名单已过期. 请延长有效期以使特赦名单生效",
+        "WARNING_PRO": "该项目的CVE特赦名单已过期. 请延长有效期以使特赦名单生效",
         "ADD": "添加",
         "ENTER": "输入一条或多条CVE ID",
         "HELP": "CVE ID之间请用英文逗号隔开或者换行",
         "NONE": "无",
         "EXPIRES_AT": "有效期至",
         "NEVER_EXPIRES": "永不过期",
-        "PRO_WHITELIST_EXPLAIN": "在推送和拉取镜像时，在项目的CVE白名单中的漏洞将会被忽略",
-        "PRO_OR_SYS": "您可以选择使用系统的CVE白名单作为该项目的白名单，也可勾选“启用项目白名单”项来建立该项目自己的CVE白名单，",
-        "MERGE_INTO": "您可以点击“复制系统白名单”项将系统白名单合并至该项目白名单中，并可为该项目白名单添加特有的CVE IDs",
-        "SYS_WHITELIST": "启用系统白名单",
-        "PRO_WHITELIST": "启用项目白名单",
-        "ADD_SYSTEM": "复制系统白名单"
+        "PRO_ALLOWLIST_EXPLAIN": "在推送和拉取镜像时，在项目的CVE特赦名单中的漏洞将会被忽略",
+        "PRO_OR_SYS": "您可以选择使用系统的CVE特赦名单作为该项目的特赦名单，也可勾选“启用项目特赦名单”项来建立该项目自己的CVE特赦名单，",
+        "MERGE_INTO": "您可以点击“复制系统特赦名单”项将系统特赦名单合并至该项目特赦名单中，并可为该项目特赦名单添加特有的CVE IDs",
+        "SYS_ALLOWLIST": "启用系统特赦名单",
+        "PRO_ALLOWLIST": "启用项目特赦名单",
+        "ADD_SYSTEM": "复制系统特赦名单"
     },
     "TAG_RETENTION": {
         "TAG_RETENTION": "Tag保留",

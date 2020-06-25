@@ -152,7 +152,7 @@ Test Case - Replication Of Pull Images from DockerHub To Self
     ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project    project${d}
+    Create An New Project And Go Into Project  project${d}
     Switch To Registries
     Create A New Endpoint    docker-hub    e${d}    https://hub.docker.com/    danfengliu    Aa123456    Y
     Switch To Replication Manage
@@ -168,7 +168,7 @@ Test Case - Replication Of Push Images from Self To Harbor
     ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project    project${d}
+    Create An New Project And Go Into Project    project${d}
     Push Image    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    hello-world
     Push Image    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    busybox:latest
     Push Image With Tag    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    hello-world    v1
@@ -179,7 +179,7 @@ Test Case - Replication Of Push Images from Self To Harbor
     #logout and login target
     Logout Harbor
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project    project_dest${d}
+    Create An New Project And Go Into Project    project_dest${d}
     #logout and login source
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
@@ -197,8 +197,7 @@ Test Case - Replication Of Push Chart from Self To Harbor
     ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project    project${d}
-    Go Into Project  project${d}  has_image=${false}
+    Create An New Project And Go Into Project    project${d}
     Switch To Project Charts
     Upload Chart files
     Switch To Registries
@@ -208,7 +207,7 @@ Test Case - Replication Of Push Chart from Self To Harbor
     #logout and login target
     Logout Harbor
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project    project_dest${d}
+    Create An New Project And Go Into Project    project_dest${d}
     #logout and login source
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
@@ -229,7 +228,7 @@ Test Case - Replication Of Push Images from Self To Harbor By Push Event
     ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project    project${d}
+    Create An New Project And Go Into Project    project${d}
     Switch To Registries
     Create A New Endpoint    harbor    e${d}    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Replication Manage
@@ -238,7 +237,7 @@ Test Case - Replication Of Push Images from Self To Harbor By Push Event
     #logout and login target
     Logout Harbor
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project    project_dest${d}
+    Create An New Project And Go Into Project    project_dest${d}
     Push Image    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    centos
     Image Should Be Replicated To Project  project_dest${d}  centos
     Close Browser
@@ -248,7 +247,7 @@ Test Case - Replication Of Pull Images from AWS-ECR To Self
     ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project    project${d}
+    Create An New Project And Go Into Project    project${d}
     Switch To Registries
     Create A New Endpoint    aws-ecr    e${d}    us-east-2    ${ecr_ac_id}    ${ecr_ac_key}    Y
     Switch To Replication Manage
@@ -264,7 +263,7 @@ Test Case - Replication Of Pull Images from Google-GCR To Self
     ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project    project${d}
+    Create An New Project And Go Into Project    project${d}
     Switch To Registries
     Create A New Endpoint    google-gcr    e${d}    asia.gcr.io    ${null}    ${gcr_ac_key}    Y
     Switch To Replication Manage

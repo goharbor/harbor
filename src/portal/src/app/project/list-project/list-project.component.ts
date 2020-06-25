@@ -96,11 +96,7 @@ export class ListProjectComponent implements OnDestroy {
     }
 
     get withChartMuseum(): boolean {
-        if (this.appConfigService.getConfig().with_chartmuseum) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.appConfigService.getConfig().with_chartmuseum;
     }
 
     public get isSystemAdmin(): boolean {
@@ -129,7 +125,7 @@ export class ListProjectComponent implements OnDestroy {
     goToLink(proId: number): void {
         this.searchTrigger.closeSearch(true);
 
-        let linkUrl = ["harbor", "projects", proId, "summary"];
+        let linkUrl = ["harbor", "projects", proId];
         this.router.navigate(linkUrl);
     }
 
@@ -204,6 +200,9 @@ export class ListProjectComponent implements OnDestroy {
                 observableLists.push(this.delOperate(data));
             });
             forkJoin(...observableLists).subscribe(item => {
+                this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
+                    this.msgHandler.showSuccess(res);
+                });
                 let st: State = this.getStateAfterDeletion();
                 this.selectedRow = [];
                 if (!st) {
@@ -212,6 +211,10 @@ export class ListProjectComponent implements OnDestroy {
                     this.clrLoad(st);
                     this.statisticHandler.refresh();
                 }
+            }, error => {
+                this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
+                    this.msgHandler.handleError(res);
+                });
             });
         }
     }
@@ -224,13 +227,10 @@ export class ListProjectComponent implements OnDestroy {
         operMessage.state = OperationState.progressing;
         operMessage.data.name = project.name;
         this.operationService.publishInfo(operMessage);
-
         return this.proService.deleteProject(project.project_id)
             .pipe(map(
                 () => {
-                    this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
-                        operateChanges(operMessage, OperationState.success);
-                    });
+                    operateChanges(operMessage, OperationState.success);
                 }), catchError(
                 error => {
                     const message = errorHandler(error);

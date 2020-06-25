@@ -122,7 +122,6 @@ const (
 	UserMember                        = "u"
 	GroupMember                       = "g"
 	ReadOnly                          = "read_only"
-	ClairURL                          = "clair_url"
 	ClairAdapterURL                   = "clair_adapter_url"
 	TrivyAdapterURL                   = "trivy_adapter_url"
 	NotaryURL                         = "notary_url"

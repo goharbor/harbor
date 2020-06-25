@@ -21,8 +21,8 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/q"
-	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/registry/util"
 	"net/http"
 	"sort"
@@ -52,7 +52,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		maxEntries, err = strconv.Atoi(reqQ.Get("n"))
 		if err != nil || maxEntries < 0 {
 			err := errors.New(err).WithCode(errors.BadRequestCode).WithMessage("the N must be a positive int type")
-			serror.SendError(w, err)
+			lib_http.SendError(w, err)
 			return
 		}
 	}
@@ -61,7 +61,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	// get all repositories
 	repoRecords, err := r.repoCtl.List(req.Context(), nil)
 	if err != nil {
-		serror.SendError(w, err)
+		lib_http.SendError(w, err)
 		return
 	}
 	if len(repoRecords) <= 0 {
@@ -71,7 +71,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	for _, repo := range repoRecords {
 		valid, err := r.validateRepo(req.Context(), repo.RepositoryID)
 		if err != nil {
-			serror.SendError(w, err)
+			lib_http.SendError(w, err)
 			return
 		}
 		if valid {
@@ -93,7 +93,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		lastEntryIndex := util.IndexString(repoNames, lastEntry)
 		if lastEntryIndex == -1 {
 			err := errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(fmt.Sprintf("the last: %s should be a valid repository name.", lastEntry))
-			serror.SendError(w, err)
+			lib_http.SendError(w, err)
 			return
 		}
 		if lastEntryIndex+1+maxEntries > repoNamesLen {
@@ -118,7 +118,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	if repoNames[len(repoNames)-1] != resRepos[len(resRepos)-1] {
 		urlStr, err := util.SetLinkHeader(req.URL.String(), maxEntries, resRepos[len(resRepos)-1])
 		if err != nil {
-			serror.SendError(w, err)
+			lib_http.SendError(w, err)
 			return
 		}
 		w.Header().Set("Link", urlStr)
@@ -135,7 +135,7 @@ func (r *repositoryHandler) sendResponse(w http.ResponseWriter, req *http.Reques
 	if err := enc.Encode(catalogAPIResponse{
 		Repositories: repositoryNames,
 	}); err != nil {
-		serror.SendError(w, err)
+		lib_http.SendError(w, err)
 		return
 	}
 }

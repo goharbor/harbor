@@ -54,7 +54,7 @@
     },
     "BATCH": {
         "DELETED_SUCCESS": "Başarı ile silindi.",
-        "DELETED_FAILURE": "Silme başarısız.",
+        "DELETED_FAILURE": "Deleted failed or partly failed",
         "SWITCH_SUCCESS": "Değiştirme başarılı",
         "SWITCH_FAILURE": "Değiştirme başarısız",
         "REPLICATE_SUCCESS": "Başlatma başarılı.",
@@ -437,7 +437,9 @@
         "PROJECT_MASTER": "Uzman",
         "DEVELOPER": "Geliştirici",
         "GUEST": "Misafir",
-        "LIMITED_GUEST": "Limited Guest"
+        "LIMITED_GUEST": "Limited Guest",
+        "DELETION_TITLE": "Confirm group members deletion",
+        "DELETION_SUMMARY": "Do you want to delete group member(s) {{param}}?"
     },
     "AUDIT_LOG": {
         "USERNAME": "Kullanıcı Adı",
@@ -591,7 +593,7 @@
         "DELETE_ENABLED": "Bu politika etkinleştirildi",
         "NEW": "Yeni",
         "NAME_TOOLTIP": "Çoğaltma kuralı adı, en küçük harf, sayı ve ._- ile en az 2 karakter uzunluğunda olmalı ve karakter ya da sayılarla başlamalıdır.",
-        "DESTINATION_NAME_TOOLTIP": "Hedef adı, en az 2 karakter uzunluğunda, küçük harf, rakam ve ._ ile yazılmalı ve karakter veya rakamlarla başlamalıdır.",
+        "DESTINATION_NAME_TOOLTIP": "Hedef adı, en az 2 karakter uzunluğunda, küçük harf, rakam ve ._-/ ile yazılmalı ve karakter veya rakamlarla başlamalıdır.",
         "ACKNOWLEDGE": "Onaylamak",
         "RULE_DISABLED": "Bu kural, filtresinde kullanılan bir etiket silindiğinden dolayı devre dışı bırakıldı. \n Kuralı düzenleyin ve etkinleştirmek için filtresini güncelleyin.",
         "REPLI_MODE": "Çoğaltma modu",
@@ -701,7 +703,8 @@
         "DEPLOY": "YÜKLE",
         "ADDITIONAL_INFO": "Ek Bilgi Ekle",
         "REPO_NAME": "Depo",
-        "MARKDOWN": "Markdown ile stil desteklenir"
+        "MARKDOWN": "Markdown ile stil desteklenir",
+        "LAST_MODIFIED": "Last Modified Time"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Tablolar",
@@ -997,7 +1000,7 @@
             "SCANNING_PERCENT_EXPLAIN": "Scan completed percentage is calculated as # of successfully scanned images / total number of images referenced within the image index.",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} 'nın {{totalPackages}} {{package}} bilinen {{vulnerability}}.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} 'nın {{totalPackages}} {{package}} bilinen {{vulnerability}}.",
-            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability detected"
         },
         "SEVERITY": {
             "CRITICAL": "Kritik",
@@ -1187,7 +1190,7 @@
 
     },
     "GC": {
-        "CURRENT_SCHEDULE": "Mevcut Program",
+        "CURRENT_SCHEDULE": "Schedule to GC",
         "GC_NOW": "ŞİMDİ ÇT",
         "JOB_HISTORY": "ÇT Geçmişi",
         "JOB_ID": "İş ID",
@@ -1197,17 +1200,18 @@
         "MSG_SCHEDULE_SET": "Çöp Toplama programı belirlendi",
         "MSG_SCHEDULE_RESET": "Çöp Toplama programı sıfırlandı",
         "PARAMETERS": "Parameters",
-        "DELETE_UNTAGGED": "Delete Untagged Artifacts"
+        "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
+        "EXPLAIN": "GC is a compute intensive operation that may impact registry performance"
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",
         "TIP_REPO": "Bir depo adı yol bileşenlerine bölünmüştür. Depo adının bir bileşeni, isteğe bağlı olarak nokta, kısa çizgi veya alt çizgi ile ayrılmış en az bir küçük harf, alfa sayısal karakterler olmalıdır. Daha kesin olarak, [a-z0-9] + (?: [._-] [a-z0-9] +) * normal ifadesiyle eşleşmelidir. Eğer bir depo adı iki veya daha fazla yol bileşenine sahipse, eğik çizgi ile ayrılmış ('/').Eğik çizgi içeren bir depo adının toplam uzunluğu, 256 karakterden az olmalıdır.",
         "TIP_TAG": "Etiket, bir depodaki Docker imajına uygulanan bir etikettir. Etiketler, bir depodaki çeşitli imajların birbirlerinden nasıl ayırt edildikleridir. Regex ile eşleşmesi gerekir: (`[\\ w] [\\ w .-] {0,127}`)"
     },
-    "CVE_WHITELIST": {
+    "CVE_ALLOWLIST": {
         "DEPLOYMENT_SECURITY": "Dağıtım güvenliği",
-        "CVE_WHITELIST": "CVE beyaz listesi",
-        "SYS_WHITELIST_EXPLAIN": "Sistem beyaz listesi, bir görüntünün güvenlik açığını hesaplarken bu listedeki güvenlik açıklarının göz ardı edilmesine izin verir.",
+        "CVE_ALLOWLIST": "CVE beyaz listesi",
+        "SYS_ALLOWLIST_EXPLAIN": "Sistem beyaz listesi, bir görüntünün güvenlik açığını hesaplarken bu listedeki güvenlik açıklarının göz ardı edilmesine izin verir.",
         "ADD_SYS": "Sistemin beyaz listesine CVE kimlikleri ekle",
         "WARNING_SYS": "Sistem CVE beyaz listesinin süresi doldu. Beyaz listeyi son kullanma tarihini uzatarak etkinleştirebilirsiniz.",
         "WARNING_PRO": "Proje CVE beyaz listesinin süresi doldu. Beyaz listeyi son kullanma tarihini uzatarak etkinleştirebilirsiniz.",
@@ -1217,11 +1221,11 @@
         "NONE": "Hiç",
         "EXPIRES_AT": "Sonunda sona eriyor",
         "NEVER_EXPIRES": "Hiçbir zaman sona ermez",
-        "PRO_WHITELIST_EXPLAIN": "Proje beyaz listesi, görüntüleri iterken ve çekerken bu listedeki güvenlik açıklarının bu projede göz ardı edilmesine izin verir.",
+        "PRO_ALLOWLIST_EXPLAIN": "Proje beyaz listesi, görüntüleri iterken ve çekerken bu listedeki güvenlik açıklarının bu projede göz ardı edilmesine izin verir.",
         "PRO_OR_SYS": "Sistemin beyaz listesini olduğu gibi kullanın veya yeni bir beyaz liste oluşturmak için “Proje beyaz listesini” seçin.",
         "MERGE_INTO": "Sistemin beyaz listesini bu projeye dahil edin, bireysel CVE ID'leri ekleyin.",
-        "SYS_WHITELIST": "Sistem beyaz listesi",
-        "PRO_WHITELIST": "Proje beyaz listesi",
+        "SYS_ALLOWLIST": "Sistem beyaz listesi",
+        "PRO_ALLOWLIST": "Proje beyaz listesi",
         "ADD_SYSTEM": "SİSTEM EKLE"
     },
     "TAG_RETENTION": {

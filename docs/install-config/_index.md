@@ -19,6 +19,7 @@ The standard Harbor installation process involves the following stages:
 1. [Download the Harbor Installer](download-installer.md)
 1. [Configure HTTPS Access to Harbor](configure-https.md)
 1. [Configure the Harbor YML File](configure-yml-file.md)
+1. [Configure Enabling Internal TLS](configure-internal-tls.md)
 1. [Run the Installer Script](run-installer-script.md)
 
 If installation fails, see [Troubleshooting Harbor Installation](troubleshoot-installation.md).
