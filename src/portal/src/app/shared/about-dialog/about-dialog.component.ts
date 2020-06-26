@@ -16,6 +16,7 @@ import { TranslateService } from "@ngx-translate/core";
 
 import { AppConfigService } from '../../services/app-config.service';
 import { SkinableConfig } from "../../services/skinable-config.service";
+import { SessionService } from '../../shared/session.service';
 
 @Component({
     selector: 'about-dialog',
