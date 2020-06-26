@@ -17,6 +17,7 @@ package provider
 import (
 	"encoding/json"
 
+	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
@@ -33,6 +34,10 @@ const (
 	PreheatingStatusFail = "FAIL"
 )
 
+func init() {
+	orm.RegisterModel(&Instance{})
+}
+
 // Instance defines the properties of the preheating provider instance.
 type Instance struct {
 	ID          int64  `orm:"pk;auto;column(id)" json:"id"`
@@ -42,11 +47,11 @@ type Instance struct {
 	Endpoint    string `orm:"column(endpoint)" json:"endpoint"`
 	AuthMode    string `orm:"column(auth_mode)" json:"auth_mode"`
 	// The auth credential data if exists
-	AuthInfo map[string]string `orm:"column(-)" json:"auth_info,omitempty"`
+	AuthInfo map[string]string `orm:"-" json:"auth_info,omitempty"`
 	// Data format for "AuthInfo"
 	AuthData string `orm:"column(auth_data)" json:"-"`
 	// Default 'Unknown', use separate API for client to retrieve
-	Status         string `orm:"column(-)" json:"status"`
+	Status         string `orm:"-" json:"status"`
 	Enabled        bool   `orm:"column(enabled)" json:"enabled"`
 	Default        bool   `orm:"column(is_default)" json:"default"`
 	Insecure       bool   `orm:"column(insecure)" json:"insecure"`
@@ -74,4 +79,9 @@ func (ins *Instance) ToJSON() (string, error) {
 	}
 
 	return string(data), nil
+}
+
+// TableName ...
+func (ins *Instance) TableName() string {
+	return "p2p_preheat_instance"
 }
