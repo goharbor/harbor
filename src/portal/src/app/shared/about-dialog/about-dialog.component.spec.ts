@@ -4,6 +4,7 @@ import { AppConfigService } from '../../services/app-config.service';
 import { SkinableConfig } from "../../services/skinable-config.service";
 import { AboutDialogComponent } from './about-dialog.component';
 import { ClarityModule } from "@clr/angular";
+import { SessionService } from '../../shared/session.service';
 
 describe('AboutDialogComponent', () => {
     let component: AboutDialogComponent;
@@ -22,6 +23,14 @@ describe('AboutDialogComponent', () => {
             };
         }
     };
+    let fakeSessionService = {
+        getCurrentUser: function () {
+            return {
+                username: 'abc',
+                has_admin_role: true
+            };
+        }
+    };
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
@@ -33,7 +42,8 @@ describe('AboutDialogComponent', () => {
             providers: [
                 TranslateService,
                 { provide: AppConfigService, useValue: fakeAppConfigService },
-                { provide: SkinableConfig, useValue: fakeSkinableConfig }
+                { provide: SkinableConfig, useValue: fakeSkinableConfig },
+                { provide: SessionService, useValue: fakeSessionService }
             ]
         }).compileComponents();
     }));

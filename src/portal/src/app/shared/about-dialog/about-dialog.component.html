@@ -5,7 +5,7 @@
         </div>
         <div class="content" tabindex="1">
             <div>{{customName?.name? customName?.name : ('APP_TITLE.HARBOR' | translate)}}</div>
-            <div>
+            <div *ngIf="isSessionValid">
                 <span class="p5 about-version">{{'ABOUT.VERSION' | translate}} {{version}}</span>
             </div>
             <div *ngIf="!customIntroduction">

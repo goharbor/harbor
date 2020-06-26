@@ -30,7 +30,8 @@ export class AboutDialogComponent implements OnInit {
 
     constructor(private appConfigService: AppConfigService,
         private translate: TranslateService,
-        private skinableConfig: SkinableConfig) {
+        private skinableConfig: SkinableConfig,
+        private session: SessionService) {
     }
 
     ngOnInit(): void {
@@ -57,4 +58,9 @@ export class AboutDialogComponent implements OnInit {
     public close(): void {
         this.opened = false;
     }
+
+    public get isSessionValid(): boolean {
+        return this.session.getCurrentUser() != null;
+    }
+
 }
