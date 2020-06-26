@@ -37,6 +37,20 @@ ALTER TABLE blob ADD COLUMN IF NOT EXISTS version BIGINT default 0;
 CREATE INDEX IF NOT EXISTS idx_status ON blob (status);
 CREATE INDEX IF NOT EXISTS idx_version ON blob (version);
 
+CREATE TABLE p2p_preheat_instance (
+  id          SERIAL PRIMARY KEY NOT NULL,
+  name        varchar(255) NOT NULL,
+  description varchar(255),
+  vendor	  varchar(255) NOT NULL,
+  endpoint    varchar(255) NOT NULL,
+  auth_mode   varchar(255),
+  auth_data   text,
+  enabled     boolean,
+  is_default  boolean,
+  insecure    boolean,
+  setup_timestamp int
+);
+
 CREATE TABLE IF NOT EXISTS p2p_preheat_policy (
     id SERIAL PRIMARY KEY NOT NULL,
     name varchar(255) NOT NULL,

@@ -15,9 +15,10 @@
 package handler
 
 import (
-	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"log"
 	"net/http"
+
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/blob"
@@ -33,6 +34,7 @@ func New() http.Handler {
 		AuditlogAPI:   newAuditLogAPI(),
 		ScanAPI:       newScanAPI(),
 		ProjectAPI:    newProjectAPI(),
+		PreheatAPI:    newPreheatAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

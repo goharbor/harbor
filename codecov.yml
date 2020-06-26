@@ -27,14 +27,6 @@ comment:
   require_changes: no
 
 ignore:
-  - "**/*.md"
-  - "**/*.yml"
-  - "docs"
-  - "api"
-  - "make"
-  - "contrib"
-  - "tests"
-  - "tools"
   - "src/vendor"
-  - "src/server/v2.0/models/**/*"
-  - "src/server/v2.0/restapi/**/*"
+  - "src/github.com/goharbor/harbor/src/server/v2.0/restapi/**/*"
+  - "src/github.com/goharbor/harbor/src/server/v2.0/models"
