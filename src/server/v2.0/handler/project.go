@@ -8,6 +8,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/audit"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/project"
+	"time"
 )
 
 func newProjectAPI() *projectAPI {
@@ -54,7 +55,7 @@ func (a *projectAPI) GetLogs(ctx context.Context, params operation.GetLogsParams
 			ResourceType: log.ResourceType,
 			Username:     log.Username,
 			Operation:    log.Operation,
-			OpTime:       log.OpTime.String(),
+			OpTime:       log.OpTime.Format(time.RFC3339),
 		})
 	}
 	return operation.NewGetLogsOK().

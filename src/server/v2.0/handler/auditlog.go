@@ -14,6 +14,7 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/auditlog"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/auditlog"
+	"time"
 )
 
 func newAuditLogAPI() *auditlogAPI {
@@ -78,7 +79,7 @@ func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAud
 			ResourceType: log.ResourceType,
 			Username:     log.Username,
 			Operation:    log.Operation,
-			OpTime:       log.OpTime.String(),
+			OpTime:       log.OpTime.Format(time.RFC3339),
 		})
 	}
 	return operation.NewListAuditLogsOK().
