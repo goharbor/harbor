@@ -23,11 +23,12 @@ A replication endpoint must exist before you create a replication rule. To creat
    * **Label**: Replicate resources with a given label by using the drop-down menu to select from the available labels.
    * **Resource**: Replicate artifacts, charts, or both.
 
-   The name filter and tag filters support the following patterns:
+   The name filter and tag filter support the following patterns:
 
-   * **\***: Matches any sequence of non-separator characters `/`.
-   * **\*\***: Matches any sequence of characters, including path separators `/`. Note that the doublestar must appear as a path component by itself. A pattern such as /path\*\* is invalid and will be treated the same as /path*, but /path\*/\*\* should achieve the desired result.
-   * **?**: Matches any single non-separator character `/`.
+   * **\***: Matches any sequence of characters, excluding separators  (`/`).
+   * **\*\***: Matches any sequence of characters, including path separators (`/`). 
+       Note that the double star must appear as a path component by itself. A pattern such as `/path**` is invalid and will be treated the same as `/path*`, but `/path*/**` should achieve the desired result.
+   * **?**: Matches any single character, excluding separators  (`/`).
    * **{alt1,...}**: Matches a sequence of characters if one of the comma-separated alternatives matches.
 
    **NOTE:** You must add `library` if you want to replicate the official artifacts of Docker Hub. For example, `library/hello-world` matches the official hello-world artifacts.  
@@ -48,9 +49,11 @@ A replication endpoint must exist before you create a replication rule. To creat
    **NOTE:** Because of major API changes in the v2.0 release to support [OCI](https://github.com/opencontainers/distribution-spec).
    You **can not** replicate from harbor 1.x to 2.0, and you **can not** replicate artifacts with **manifest list** from 2.0 to 1.x. 
    
-1. Use the Trigger Mode drop-down menu to select how and when to run the rule.
-   * **Manual**: Replicate the resources manually when needed. **Note**: Deletion operations are not replicated. 
-   * **Scheduled**: Replicate the resources periodically by defining a cron job. **Note**: Deletion operations are not replicated. 
+1. Use the **Trigger Mode** drop-down menu to select how and when to run the rule.
+   * **Manual**: Replicate the resources manually when needed.  
+     **Note**: Deletion operations are not replicated. 
+   * **Scheduled**: Replicate the resources periodically by defining a cron job.  
+     **Note**: Deletion operations are not replicated. 
    * **Event Based**: When a new resource is pushed to the project, or an artifact is retagged, it is replicated to the remote registry immediately. If you select the **Delete remote resources when locally deleted**, if you delete an artifact, it is automatically deleted from the replication target.
 
    {{< note >}}
@@ -59,7 +62,7 @@ A replication endpoint must exist before you create a replication rule. To creat
 
    ![Trigger mode](../../../img/replication-rule5.png)
       
-1. Optionally select the Override checkbox to force replicated resources to replace resources at the destination with the same name.
+1. You can optionally select the **Override** checkbox to force replicated resources to replace resources at the destination with the same name.
 1. Click **Save** to create the replication rule.  
 
 ## What to Do Next

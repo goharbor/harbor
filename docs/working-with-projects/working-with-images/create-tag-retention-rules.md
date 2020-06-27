@@ -3,19 +3,19 @@ title: Create Tag Retention Rules
 weight: 80
 ---
 
-A repository can rapidly accumulate a large number of artifacts, many of which might not be required after a given time or once they have been superseded by a subsequent artifact build. These excess artifacts can obviously consume large quantities of storage capacity. As a Harbor system administrator, you can define rules that govern how many artifacts of a given repository to retain, or for how long to retain certain artifacts. 
+A repository can rapidly accumulate a large number of artifacts, many of which might not be required after a given time or after they have been superseded by a subsequent artifact build. These excess artifacts can obviously consume large quantities of storage capacity. As a Harbor system administrator, you can define rules that govern how many artifacts of a given repository to retain, or for how long to retain certain artifacts. 
 
 ## How Tag Retention Rules Work
 
 You define tag retention rules on repositories, not on projects. This allows for greater granularity when defining your retention rules. As the name suggests, when you define a retention rule for a repository, you are identifying which tags to retain. You do not define rules to explicitly remove tags. Rather, when you set a rule, any tags in a repository that are not identified as being eligible for retention are discarded. 
 
-A tag retention rule has 3 filters that are applied sequentially, as described in the following table.
+A tag retention rule has three filters that are applied sequentially, as described in the following table.
 
 |Order|Filter|Description|
 |---|---|---|
-|First|Repository or repositories|Identity the tags on which to apply the rule. You can identify repositories that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards (for example `*repo`, `repo*`, and `**`) are permitted. The repository filter is applied first to mark the repositories to which to apply the retention rule. The identified repositories are earmarked for further matching based on the tag criteria. No action is taken on the nonspecified repositories at this stage.|
+|First|Repository or repositories|Identify the tags on which to apply the rule. You can identify repositories that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards are permitted (for example, `*repo`, `repo*`, and `**`). The repository filter is applied first to mark the repositories to which to apply the retention rule. The identified repositories are marked for further matching based on the tag criteria. No action is taken on the nonspecified repositories at this stage.|
 |Second|Quantity to retain|Set which tags to retain either by specifying a maximum number of tags, or by specifying a maximum period for which to retain tags.|
-|Third|Tags to retain|Identify the tag or tags on which to apply the rule. You can identify tags that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards (for example `*tag`, `tag*`, and `**`) are permitted. Use the checkbox to select whether untagged artifacts should be captured as part of the set of artifacts eligible for tag retention.|
+|Third|Tags to retain|Identify the tag or tags on which to apply the rule. You can identify tags that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards are permitted (for example, `*tag`, `tag*`, and `**`). Select the checkbox to indicate that untagged artifacts should be captured as part of the set of artifacts eligible for tag retention.|
 
 For information about how the `**` wildcard is applied, see https://github.com/bmatcuk/doublestar#patterns.
 
@@ -36,15 +36,13 @@ So, even if the 11th to 100th tags in repository A have been pulled more recentl
 
 This example uses the same project and repositories as example 1, but sets the retention policy to retain the artifacts in each repository that have been pulled in the last 7 days.
 
-In this case, all of the 100 tagged artifacts in repository A are retained because they have been pulled in the last 7 days. None of the artifacts in repositories B to E are retained, because none of them has been pulled in the last week. In this example, 100 artifacts are retained, as opposed to 34 artifacts in example 1.
-And all untagged artifacts are deleted.
+In this case, all of the 100 tagged artifacts in repository A are retained because they have been pulled in the last 7 days. None of the artifacts in repositories B to E are retained, because none of them have been pulled in the last week. In this example, 100 artifacts are retained, as opposed to 34 artifacts in example 1, and all untagged artifacts are deleted.
 
 ### Example 3
 
-This example uses the same project and repositories as example 2, but checked "untagged artifacts", then all artifacts in repository A are retained.
+This example uses the same project and repositories as example 2, but checked "untagged artifacts". As a result, all artifacts in repository A are retained.
 
-In this case, all of the 103 artifacts in repository A are retained because they have been pulled in the last 7 days. None of the artifacts in repositories B to E are retained, because none of them has been pulled in the last week. In this example, 103 artifacts are retained, as opposed to 100 artifacts in example 2.
-And all untagged artifacts are retained.
+In this case, all of the 103 artifacts in repository A are retained because they have been pulled in the last 7 days. None of the artifacts in repositories B to E are retained, because none of them have been pulled in the last week. In this example, 103 artifacts are retained, as opposed to 100 artifacts in example 2, and all untagged artifacts are retained.
 
 ### Tag Retention Rules and Native Docker Tag Deletion
 
@@ -115,7 +113,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 ## Configure Tag Retention Rules
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
-1. Go to **Projects**, select a project, select **Policy**, and select **Tag Retention**.
+1. Go to **Projects**, select a project, click the **Policy** tab, and then click **Tag Retention**.
 
    ![Tag options](../../../img/tag-retention1.png)
 1. Click **Add Rule** to add a rule.
@@ -130,7 +128,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
    - A partial repository name with wildcards, for example `my_*`, `*_3`, or `*_repo_*`.
    - `**` to apply the rule to all of the repositories in the project. 
   
-   If you selected **matching**, the rule is applied to the repositories you identified. If you selected **excluding**, the rule is applied to all of the repositories in the project except for the ones that you identified.
+   If you select **matching**, the rule is applied to the repositories you identified. If you select **excluding**, the rule is applied to all of the repositories in the project except for the ones that you identified.
 1. In the **By artifact count or number of days** drop-down menu, define how many tags to retain or the period to retain tags.
   ![Select retention criteria](../../../img/tag-retention3.png)
   
@@ -152,7 +150,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
    - A partial tag name with wildcards, for example `my_*`, `*_3`, or `*_tag_*`.
    - `**` to apply the rule to all of the tags in the project. 
   
-   If you selected **matching**, the rule is applied to the tags you identified. If you selected **excluding**, the rule is applied to all of the tags in the repository except for the ones that you identified.
+   If you select **matching**, the rule is applied to the tags you identified. If you select **excluding**, the rule is applied to all of the tags in the repository except for the ones that you identified.
 1. Click **Add** to save the rule.
 1. (Optional) Click **Add Rule** to add more rules, up to a maximum of 15 per project.
 1. (Optional) Under Schedule, click **Edit** and select how often to run the rule.
@@ -165,7 +163,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 1. Click **Dry Run** to test the rule or rules that you have defined.
 1. Click **Run Now** to run the rule immediately.
 
-**WARNING**: You cannot revert a rule after you run it. It is strongly recommended to perform a dry run before you run rules. 
+**WARNING**: You cannot revert the actions performed by a rule after you run it. It is strongly recommended to perform a dry run before you run rules. 
 
 To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
 

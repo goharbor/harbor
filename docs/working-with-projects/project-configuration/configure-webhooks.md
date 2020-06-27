@@ -23,11 +23,11 @@ You can define multiple webhook endpoints per project. Harbor supports two kinds
 |Image scan failed|`SCANNING_FAILED`|Repository namespace name, repository name, tag scanned, image name, error that occurred, username of user who performed scan|
 |Project quota exceeded|`QUOTA_EXCEED`|Repository namespace name, repository name, tags, manifest digest, artifact name, push time timestamp, username of user who pushed artifact|
 |Project quota near threshold|`QUOTA_WARNING`|Repository namespace name, repository name, tags, manifest digest, artifact name, push time timestamp, username of user who pushed artifact|
-|Artifact replication finished|`REPLICATION`|Repository namespace name, repository name, tags, manifest digest, artifact name, push time timestamp, username of user who trigger the replication|
+|Artifact replication finished|`REPLICATION`|Repository namespace name, repository name, tags, manifest digest, artifact name, push time timestamp, username of user who triggered the replication|
 
 #### Payload Format
 
-The webhook notification is delivered in JSON format. The following example shows the JSON notification for a push artifact event when using `HTTP` kind endpoint:
+The webhook notification is delivered in JSON format. The following example shows a JSON notification for a push artifact event when using an `HTTP` endpoint:
 
 ```json
 {
@@ -50,7 +50,7 @@ The webhook notification is delivered in JSON format. The following example show
 	}
 }
 ```
-when you select the Slack type, and fill a Slack incoming webhook URL as endpoint, the message you received in Slack will be like,
+When you select the Slack type, and fill a Slack incoming webhook URL as endpoint, the message you receive in Slack looks something like this:
 ```json
 Harbor webhook events
 event_type: PUSH_ARTIFACT
@@ -77,9 +77,11 @@ event_data:
 
 ### Webhook Endpoint Recommendations
 
-There are two kinds of endpoints.  For `HTTP` the endpoint that receives the webhook should ideally have a webhook listener that is capable of interpreting the payload and acting upon the information it contains. For example, running a shell script.
+There are two kinds of endpoints: `HTTP` and Slack.  
 
-And for Slack endpoint, you should follow the [guide of Slack incoming webhook](https://api.slack.com/messaging/webhooks).
+For an `HTTP` endpoint, the endpoint that receives the webhook should have a webhook listener that is capable of interpreting the payload and acting upon the information it contains (for example, running a shell script).
+
+For a Slack endpoint, follow the guidance on [incoming webhooks](https://api.slack.com/messaging/webhooks) in the Slack API documentation.
 
 ### Example Use Cases
 
@@ -98,13 +100,13 @@ You can configure your continuous integration and development infrastructure so 
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
 
-1. Go to **Projects**, select a project, and select **Webhooks**.
+1. Go to **Projects**, select a project, and then click the **Webhooks** tab.
 
     ![Webhooks option](../../../img/webhooks1.png)
 
-1. Select notify type `HTTP`, so the webhook will be send to a HTTP endpoint.
+1. Select notify type `HTTP`, so the webhook will be sent to an HTTP endpoint.
 
-1. Select events that you want to subscribe.
+1. Select events to which you want to subscribe.
 
 1. Enter the URL for your webhook endpoint listener.
 
@@ -118,7 +120,7 @@ You can configure your continuous integration and development infrastructure so 
 
 1. Click **Continue** to create the webhook.
 
-When you have created the webhook, you can click on the arrow at the left end to see the status of the different notifications and the  timestamp of the last time each notification was triggered. You can also manage the webhook by clicking the drop list button of `ACTION...` . 
+After you create the webhook, you can click on the arrow at the left to see the status of the different notifications and the  timestamp of the last time each notification was triggered. You can also manage the webhook by clicking the `ACTION` dropdown. 
 
 You can modify the webhook, you can also `Enable` or `Disable` the webhook.
 
@@ -131,6 +133,6 @@ If a webhook notification fails to send, or if it receives an HTTP error respons
 As a Harbor system administrator, you can enable and disable webhook notifications for all projects.
 
 1. Go to **Configuration** > **System Settings**.
-1. Scroll down and check or uncheck the **Webhooks enabled** check box.
+1. Scroll down and select or deselect the **Webhooks enabled** check box.
 
     ![Enable/disable webhooks](../../../img/webhooks4.png)

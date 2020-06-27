@@ -120,22 +120,22 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>ignore_unfixed</code></td>
-    <td valign="top">Set the flag to <code>true</code> to display only fixed vulnerabilities. The default value is <code>false</code></td>
+    <td valign="top">Set the flag to <code>true</code> to display only fixed vulnerabilities. The default value is <code>false</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>skip_update</code></td>
-    <td valign="top">You might want to enable this flag in test or CI/CD environments to avoid GitHub rate limiting issues. If the flag is enabled you have to manually download the `trivy.db` file and mount it in the <code>/home/scanner/.cache/trivy/db/trivy.db</code> path in container. The default value is <code>false</code></td>
+    <td valign="top">You might want to enable this flag in test or CI/CD environments to avoid GitHub rate limiting issues. If the flag is enabled you have to manually download the `trivy.db` file and mount it in the <code>/home/scanner/.cache/trivy/db/trivy.db</code> path in container. The default value is <code>false</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>insecure</code></td>
-    <td valign="top">Set the flag to <code>true</code> to skip verifying registry certificate. The default value is <code>false</code></td>
+    <td valign="top">Set the flag to <code>true</code> to skip verifying registry certificate. The default value is <code>false</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>github_token</code></td>
-    <td valign="top">Set the GitHub access token to download Trivy DB. Trivy DB is downloaded by Trivy from the GitHub release page. Anonymous downloads from GitHub are subject to the limit of 60 requests per hour. Normally such rate limit is enough for production operations. If, for any reason, it's not enough, you could increase the rate limit to 5000 requests per hour by specifying the GitHub access token. For more details on GitHub rate limiting please consult https://developer.github.com/v3/#rate-limiting .You can create a GitHub token by following the instuctions in https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line</td>
+    <td valign="top">Set the GitHub access token to download Trivy DB. Trivy DB is downloaded by Trivy from the GitHub release page. Anonymous downloads from GitHub are subject to the limit of 60 requests per hour. Normally such rate limit is enough for production operations. If, however, that's not enough, you can increase the rate limit to 5000 requests per hour by specifying the GitHub access token. For more details on GitHub rate limiting, see (https://developer.github.com/v3/#rate-limiting). You can create a GitHub token by following the instructions in (https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line).</td>
   </tr>
   <tr>
     <td valign="top"><code>jobservice</code></td>
