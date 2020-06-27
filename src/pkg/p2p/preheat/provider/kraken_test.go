@@ -15,13 +15,9 @@
 package provider
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	cm "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/stretchr/testify/require"
@@ -43,48 +39,7 @@ func TestKraken(t *testing.T) {
 
 // SetupSuite prepares the env for KrakenTestSuite.
 func (suite *KrakenTestSuite) SetupSuite() {
-	suite.kraken = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.RequestURI {
-		case krakenHealthPath:
-			if r.Method != http.MethodGet {
-				w.WriteHeader(http.StatusNotImplemented)
-				return
-			}
-
-			w.WriteHeader(http.StatusOK)
-		case krakenPreheatPath:
-			if r.Method != http.MethodPost {
-				w.WriteHeader(http.StatusNotImplemented)
-				return
-			}
-
-			data, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte(err.Error()))
-				return
-			}
-
-			var payload = &cm.Notification{
-				Events: []cm.Event{},
-			}
-
-			if err := json.Unmarshal(data, payload); err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte(err.Error()))
-				return
-			}
-
-			if len(payload.Events) > 0 {
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-
-			w.WriteHeader(http.StatusBadRequest)
-		default:
-			w.WriteHeader(http.StatusNotImplemented)
-		}
-	}))
+	suite.kraken = MockKrakenProvider()
 
 	suite.kraken.StartTLS()
 
