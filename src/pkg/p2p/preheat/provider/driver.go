@@ -49,24 +49,6 @@ type DriverStatus struct {
 	Status string `json:"status"`
 }
 
-// PreheatImage contains related information which can help providers to get/pull the images.
-type PreheatImage struct {
-	// The image content type, only support 'image' now
-	Type string `json:"type"`
-
-	// The access URL of the preheating image
-	URL string `json:"url"`
-
-	// The headers which will be sent to the above URL of preheating image
-	Headers map[string]interface{} `json:"headers"`
-
-	// The image name
-	ImageName string `json:"image,omitempty"`
-
-	// The tag
-	Tag string `json:"tag,omitempty"`
-}
-
 // PreheatingStatus contains the related results/status of the preheating operation
 // from the provider.
 type PreheatingStatus struct {
