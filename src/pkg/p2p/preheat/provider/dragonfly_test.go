@@ -15,13 +15,8 @@
 package provider
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
@@ -44,62 +39,7 @@ func TestDragonfly(t *testing.T) {
 
 // SetupSuite prepares the env for DragonflyTestSuite.
 func (suite *DragonflyTestSuite) SetupSuite() {
-	suite.dragonfly = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.RequestURI {
-		case healthCheckEndpoint:
-			if r.Method != http.MethodGet {
-				w.WriteHeader(http.StatusNotImplemented)
-				return
-			}
-
-			w.WriteHeader(http.StatusOK)
-		case preheatEndpoint:
-			if r.Method != http.MethodPost {
-				w.WriteHeader(http.StatusNotImplemented)
-				return
-			}
-
-			data, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte(err.Error()))
-				return
-			}
-
-			image := &PreheatImage{}
-			if err := json.Unmarshal(data, image); err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte(err.Error()))
-				return
-			}
-
-			if image.Type == "image" &&
-				image.URL == "https://harbor.com" &&
-				image.ImageName == "busybox" &&
-				image.Tag == "latest" {
-				w.WriteHeader(http.StatusOK)
-				_, _ = w.Write([]byte(`{"ID":"dragonfly-id"}`))
-				return
-			}
-
-			w.WriteHeader(http.StatusBadRequest)
-		case strings.Replace(preheatTaskEndpoint, "{task_id}", "dragonfly-id", 1):
-			if r.Method != http.MethodGet {
-				w.WriteHeader(http.StatusNotImplemented)
-				return
-			}
-			status := &dragonflyPreheatInfo{
-				ID:         "dragonfly-id",
-				StartTime:  time.Now().UTC().String(),
-				FinishTime: time.Now().Add(5 * time.Minute).UTC().String(),
-				Status:     "SUCCESS",
-			}
-			bytes, _ := json.Marshal(status)
-			_, _ = w.Write(bytes)
-		default:
-			w.WriteHeader(http.StatusNotImplemented)
-		}
-	}))
+	suite.dragonfly = MockDragonflyProvider()
 
 	suite.dragonfly.StartTLS()
 

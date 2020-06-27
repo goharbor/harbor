@@ -33,8 +33,8 @@ func ListProviders() ([]*Metadata, error) {
 
 	// Sort results
 	if len(results) > 1 {
-		sort.SliceIsSorted(results, func(i, j int) bool {
-			return strings.Compare(results[i].ID, results[j].ID) > 0
+		sort.SliceStable(results, func(i, j int) bool {
+			return strings.Compare(results[i].ID, results[j].ID) < 0
 		})
 	}
 

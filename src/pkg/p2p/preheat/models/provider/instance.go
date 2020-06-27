@@ -14,6 +14,12 @@
 
 package provider
 
+import (
+	"encoding/json"
+
+	"github.com/goharbor/harbor/src/lib/errors"
+)
+
 const (
 	// PreheatingImageTypeImage defines the 'image' type of preheating images
 	PreheatingImageTypeImage = "image"
@@ -45,4 +51,27 @@ type Instance struct {
 	Default        bool   `orm:"column(is_default)" json:"default"`
 	Insecure       bool   `orm:"column(insecure)" json:"insecure"`
 	SetupTimestamp int64  `orm:"column(setup_timestamp)" json:"setup_timestamp"`
+}
+
+// FromJSON build instance from the given data.
+func (ins *Instance) FromJSON(data string) error {
+	if len(data) == 0 {
+		return errors.New("empty JSON data")
+	}
+
+	if err := json.Unmarshal([]byte(data), ins); err != nil {
+		return errors.Wrap(err, "construct preheat instance error")
+	}
+
+	return nil
+}
+
+// ToJSON encodes the instance to JSON data.
+func (ins *Instance) ToJSON() (string, error) {
+	data, err := json.Marshal(ins)
+	if err != nil {
+		return "", errors.Wrap(err, "encode preheat instance error")
+	}
+
+	return string(data), nil
 }
