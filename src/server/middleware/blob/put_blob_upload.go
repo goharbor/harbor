@@ -15,17 +15,57 @@
 package blob
 
 import (
-	"net/http"
-	"strconv"
-
+	"fmt"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/requestid"
+	"net/http"
+	"strconv"
 )
 
-// PutBlobUploadMiddleware middleware to create Blob and ProjectBlob after PUT /v2/<name>/blobs/uploads/<session_id> success
+// PutBlobUploadMiddleware middleware is to update the blob status according to the different situation before the request passed into proxy(distribution).
+// And it creates Blob and ProjectBlob after PUT /v2/<name>/blobs/uploads/<session_id>?digest=<digest> success - http.StatusCreated
+// Why to use the middleware to handle blob status?
+// 1, As Put blob will always happen after head blob gets a 404, but the 404 could be caused by blob status is deleting, which is marked by GC.
+// 2, It has to deal with the concurrence blob push.
 func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
-	return middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
+
+	before := middleware.BeforeRequest(func(r *http.Request) error {
+		ctx := r.Context()
+		logger := log.G(ctx)
+
+		v := r.URL.Query()
+		digest := v.Get("digest")
+
+		// digest empty is handled by the blob controller GET method
+		bb, err := blobController.Get(r.Context(), digest)
+		if err != nil {
+			if errors.IsNotFoundErr(err) {
+				return nil
+			}
+			return err
+		}
+
+		switch bb.Status {
+		case blob_models.StatusNone, blob_models.StatusDelete, blob_models.StatusDeleteFailed:
+			err := blobController.Touch(r.Context(), bb)
+			if err != nil {
+				logger.Errorf("failed to update blob: %s status to StatusNone, error:%v", bb.Digest, err)
+				return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", r.Header.Get(requestid.HeaderXRequestID)))
+			}
+		case blob_models.StatusDeleting:
+			logger.Warningf(fmt.Sprintf("the asking blob is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID)))
+			return errors.New(nil).WithMessage(fmt.Sprintf("the asking blob is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)
+		default:
+			return nil
+		}
+		return nil
+	})
+
+	after := middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
 		if statusCode != http.StatusCreated {
 			return nil
 		}
@@ -63,4 +103,6 @@ func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 
 		return nil
 	})
+
+	return middleware.Chain(before, after)
 }
