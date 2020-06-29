@@ -18,9 +18,14 @@ import (
 	"fmt"
 	"time"
 
+	beego_orm "github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
 	"github.com/robfig/cron"
 )
+
+func init() {
+	beego_orm.RegisterModel(&Schema{})
+}
 
 const (
 	// Filters:
@@ -54,18 +59,23 @@ type Schema struct {
 	ID          int64  `orm:"column(id)" json:"id"`
 	Name        string `orm:"column(name)" json:"name"`
 	Description string `orm:"column(description)" json:"description"`
-	// use project name
-	Project    string    `orm:"column(project)" json:"project"`
+	// use project id
+	ProjectID  int64     `orm:"column(project_id)" json:"project_id"`
 	ProviderID int64     `orm:"column(provider_id)" json:"provider_id"`
-	Filters    []*Filter `orm:"column(-)" json:"filters"`
+	Filters    []*Filter `orm:"-" json:"filters"`
 	// Use JSON data format （query by filter type should be supported)
 	FiltersStr string   `orm:"column(filters)" json:"-"`
-	Trigger    *Trigger `orm:"column(-)" json:"trigger"`
+	Trigger    *Trigger `orm:"-" json:"trigger"`
 	// Use JSON data format (query by trigger type should be supported)
 	TriggerStr  string    `orm:"column(trigger)" json:"-"`
 	Enabled     bool      `orm:"column(enabled)" json:"enabled"`
 	CreatedAt   time.Time `orm:"column(creation_time)" json:"creation_time"`
 	UpdatedTime time.Time `orm:"column(update_time)" json:"update_time"`
+}
+
+// TableName specifies the policy schema table name.
+func (s *Schema) TableName() string {
+	return "p2p_preheat_policy"
 }
 
 // FilterType represents the type info of the filter.
