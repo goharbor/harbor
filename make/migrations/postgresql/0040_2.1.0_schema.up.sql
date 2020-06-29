@@ -36,3 +36,16 @@ ALTER TABLE blob ADD COLUMN IF NOT EXISTS status varchar(255);
 ALTER TABLE blob ADD COLUMN IF NOT EXISTS version BIGINT default 0;
 CREATE INDEX IF NOT EXISTS idx_status ON blob (status);
 CREATE INDEX IF NOT EXISTS idx_version ON blob (version);
+
+CREATE TABLE IF NOT EXISTS p2p_preheat_policy (
+    id SERIAL PRIMARY KEY NOT NULL,
+    name varchar(255) NOT NULL,
+    description varchar(1024),
+    project_id int NOT NULL,
+    provider_id int NOT NULL,
+    filters varchar(1024),
+    trigger varchar(16),
+    enabled boolean,
+    creation_time timestamp,
+    update_time timestamp
+);
