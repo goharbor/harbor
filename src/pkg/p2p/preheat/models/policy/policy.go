@@ -27,8 +27,8 @@ const (
 	//  Repository : type=Repository value=name text (double star pattern used)
 	//  Tag: type=Tag value=tag text (double star pattern used)
 	//  Signature: type=Signature value=bool (True/False)
-	//  Vulnerability: type=Vulnerability value=Severity (expected bar)
-	//  Label: type=Label value=label array
+	//  Vulnerability: type=Vulnerability value=Severity (int) (expected bar)
+	//  Label: type=Label value=label array (with format: lb1,lb2,lb3)
 
 	// FilterTypeRepository represents the repository filter type
 	FilterTypeRepository FilterType = "repository"
