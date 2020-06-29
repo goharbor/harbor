@@ -153,7 +153,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestRequestWithoutDigest() {
 		next := suite.NextHandler(http.StatusCreated, map[string]string{})
 		res := httptest.NewRecorder()
 		PutBlobUploadMiddleware()(next).ServeHTTP(res, req)
-		suite.Equal(http.StatusInternalServerError, res.Code)
+		suite.Equal(http.StatusBadRequest, res.Code)
 	})
 }
 

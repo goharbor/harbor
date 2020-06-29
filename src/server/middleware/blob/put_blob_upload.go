@@ -27,18 +27,17 @@ import (
 	"strconv"
 )
 
-// PutBlobUploadMiddleware middleware to create Blob and ProjectBlob after PUT /v2/<name>/blobs/uploads/<session_id> success
+// PutBlobUploadMiddleware middleware to create Blob and ProjectBlob after PUT /v2/<name>/blobs/uploads/<session_id>?digest=<digest> success
 func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 
 	before := middleware.BeforeRequest(func(r *http.Request) error {
+		ctx := r.Context()
+		logger := log.G(ctx)
+
 		v := r.URL.Query()
 		digest := v.Get("digest")
 
-		if digest == "" {
-			log.Warningf(fmt.Sprintf("the put blob request has no digest in query, %s", r.URL.String()))
-			return errors.New(nil).WithMessage(fmt.Sprintf("the put blob request has no digest in query, %s", r.URL.String()))
-		}
-
+		// digest empty is handled by the blob controller GET method
 		bb, err := blob.Ctl.Get(r.Context(), digest)
 		if err != nil {
 			if errors.IsNotFoundErr(err) {
@@ -51,7 +50,7 @@ func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 		case blob_models.StatusNone, blob_models.StatusDelete, blob_models.StatusDeleteFailed:
 			err := blob.Ctl.Touch(r.Context(), bb)
 			if err != nil {
-				log.Errorf("failed to update blob: %s status to StatusNone, error:%v", bb.Digest, err)
+				logger.Errorf("failed to update blob: %s status to StatusNone, error:%v", bb.Digest, err)
 				return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", r.Header.Get(requestid.HeaderXRequestID)))
 			}
 		case blob_models.StatusDeleting:
