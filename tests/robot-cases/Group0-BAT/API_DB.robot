@@ -137,3 +137,7 @@ Test Case - Push Singularity file With Singularity CLI
 Test Case - Push Chart File To Chart Repository By Helm V2 With Robot Account
     [Tags]  helm2
     Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm2_helm3_with_robot_Account.py
+
+Test Case - Replication From Dockerhub
+    [Tags]  replic_dockerhub
+    Harbor API Test  ./tests/apitests/python/test_replication_from_dockerhub.py
