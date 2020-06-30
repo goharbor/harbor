@@ -65,6 +65,9 @@ type Manager interface {
 
 	// DeleteBlob delete blob
 	Delete(ctx context.Context, id int64) (err error)
+
+	// UselessBlobs useless blob is the blob that is not used in any of projects.
+	UselessBlobs(ctx context.Context, timeWindowHours int64) ([]*models.Blob, error)
 }
 
 type manager struct {
@@ -127,6 +130,10 @@ func (m *manager) List(ctx context.Context, params ListParams) ([]*Blob, error) 
 
 func (m *manager) Delete(ctx context.Context, id int64) error {
 	return m.dao.DeleteBlob(ctx, id)
+}
+
+func (m *manager) UselessBlobs(ctx context.Context, timeWindowHours int64) ([]*models.Blob, error) {
+	return m.dao.GetBlobsNotRefedByProjectBlob(ctx, timeWindowHours)
 }
 
 // NewManager returns blob manager

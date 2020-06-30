@@ -290,6 +290,32 @@ func (suite *ManagerTestSuite) TestUpdateStatus() {
 	}
 }
 
+func (suite *ManagerTestSuite) TestUselessBlobs() {
+	ctx := suite.Context()
+
+	blobs, err := Mgr.UselessBlobs(ctx, 0)
+	suite.Require().Nil(err)
+	beforeAdd := len(blobs)
+
+	Mgr.Create(ctx, suite.DigestString(), "media type", 100)
+	Mgr.Create(ctx, suite.DigestString(), "media type", 100)
+	digest := suite.DigestString()
+	blobID, err := Mgr.Create(ctx, digest, "media type", 100)
+	suite.Nil(err)
+
+	projectID := int64(1)
+	_, err = Mgr.AssociateWithProject(ctx, blobID, projectID)
+	suite.Nil(err)
+
+	blobs, err = Mgr.UselessBlobs(ctx, 0)
+	suite.Require().Nil(err)
+	suite.Require().Equal(2+beforeAdd, len(blobs))
+
+	blobs, err = Mgr.UselessBlobs(ctx, 2)
+	suite.Require().Nil(err)
+	suite.Require().Equal(0, len(blobs))
+}
+
 func TestManagerTestSuite(t *testing.T) {
 	suite.Run(t, &ManagerTestSuite{})
 }
