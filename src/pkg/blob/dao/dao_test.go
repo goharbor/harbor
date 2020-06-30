@@ -376,6 +376,34 @@ func (suite *DaoTestSuite) TestDelete() {
 	suite.Require().Nil(err)
 }
 
+func (suite *DaoTestSuite) TestGetBlobsNotRefedByProjectBlob() {
+	ctx := suite.Context()
+
+	blobs, err := suite.dao.GetBlobsNotRefedByProjectBlob(ctx, 0)
+	suite.Require().Nil(err)
+	beforeAdd := len(blobs)
+
+	suite.dao.CreateBlob(ctx, &models.Blob{Digest: suite.DigestString()})
+	suite.dao.CreateBlob(ctx, &models.Blob{Digest: suite.DigestString()})
+	digest := suite.DigestString()
+	suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest})
+
+	blob, err := suite.dao.GetBlobByDigest(ctx, digest)
+	suite.Nil(err)
+
+	projectID := int64(1)
+	_, err = suite.dao.CreateProjectBlob(ctx, projectID, blob.ID)
+	suite.Nil(err)
+
+	blobs, err = suite.dao.GetBlobsNotRefedByProjectBlob(ctx, 0)
+	suite.Require().Nil(err)
+	suite.Require().Equal(2+beforeAdd, len(blobs))
+
+	blobs, err = suite.dao.GetBlobsNotRefedByProjectBlob(ctx, 2)
+	suite.Require().Nil(err)
+	suite.Require().Equal(0, len(blobs))
+}
+
 func TestDaoTestSuite(t *testing.T) {
 	suite.Run(t, &DaoTestSuite{})
 }
