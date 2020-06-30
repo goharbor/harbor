@@ -15,21 +15,60 @@
 package blob
 
 import (
+	"fmt"
+	"github.com/goharbor/harbor/src/lib/errors"
+	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
+	"github.com/goharbor/harbor/src/server/middleware/requestid"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/justinas/alice"
 )
 
-// PutManifestMiddleware middleware which create Blobs for the foreign layers and associate them with the project,
-// update the content type of the Blobs which already exist,
+// PutManifestMiddleware middleware middleware is to update the manifest status according to the different situation before the request passed into proxy(distribution).
+// and it creates Blobs for the foreign layers and associate them with the project, updates the content type of the Blobs which already exist,
 // create Blob for the manifest, associate all Blobs with the manifest after PUT /v2/<name>/manifests/<reference> success.
 func PutManifestMiddleware() func(http.Handler) http.Handler {
 	before := middleware.BeforeRequest(func(r *http.Request) error {
-		// Do nothing, only make the request nopclose
+		ctx := r.Context()
+		logger := log.G(ctx)
+
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return err
+		}
+
+		contentType := r.Header.Get("Content-Type")
+		_, descriptor, err := distribution.UnmarshalManifest(contentType, body)
+		if err != nil {
+			logger.Errorf("unmarshal manifest failed, error: %v", err)
+			return errors.Wrapf(err, "unmarshal manifest failed").WithCode(errors.MANIFESTINVALID)
+		}
+
+		// bb here is the actually a manifest, which is also stored as a blob in DB and storage.
+		bb, err := blobController.Get(r.Context(), descriptor.Digest.String())
+		if err != nil {
+			if errors.IsNotFoundErr(err) {
+				return nil
+			}
+			return err
+		}
+
+		switch bb.Status {
+		case blob_models.StatusNone, blob_models.StatusDelete, blob_models.StatusDeleteFailed:
+			err := blobController.Touch(r.Context(), bb)
+			if err != nil {
+				logger.Errorf("failed to update manifest: %s status to StatusNone, error:%v", bb.Digest, err)
+				return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", r.Header.Get(requestid.HeaderXRequestID)))
+			}
+		case blob_models.StatusDeleting:
+			logger.Warningf(fmt.Sprintf("the asking manifest is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID)))
+			return errors.New(nil).WithMessage(fmt.Sprintf("the asking manifest is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)
+		default:
+			return nil
+		}
 		return nil
 	})
 
@@ -99,7 +138,5 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		return nil
 	})
 
-	return func(next http.Handler) http.Handler {
-		return alice.New(before, after).Then(next)
-	}
+	return middleware.Chain(before, after)
 }
