@@ -25,3 +25,16 @@ comment:
   layout: "reach,diff,flags,tree"
   behavior: default
   require_changes: no
+
+ignore:
+  - "**/*.md"
+  - "**/*.yml"
+  - "docs"
+  - "api"
+  - "make"
+  - "contrib"
+  - "tests"
+  - "tools"
+  - "src/vendor"
+  - "src/server/v2.0/models/**/*"
+  - "src/server/v2.0/restapi/**/*"
