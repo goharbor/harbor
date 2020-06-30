@@ -19,7 +19,6 @@ import (
 
 	"github.com/astaxie/beego/validation"
 	"github.com/stretchr/testify/require"
-
 	"github.com/stretchr/testify/suite"
 )
 
