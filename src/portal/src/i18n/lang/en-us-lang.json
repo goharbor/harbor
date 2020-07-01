@@ -235,10 +235,15 @@
         "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project.",
         "OF": "of",
         "COUNT_QUOTA": "Count quota",
-        "STORAGE_QUOTA": "Storage quota",
+        "STORAGE_QUOTA": "Storage Quota",
         "COUNT_QUOTA_TIP": "Please enter an integer between '1' & '100,000,000', '-1' for unlimited.",
         "STORAGE_QUOTA_TIP": "The upper limit of Storage Quota only takes integer values, capped at '1024TB'. Enter '-1' for unlimited quota",
-        "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'."
+        "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'.",
+        "TYPE": "Type",
+        "PROXY_CACHE": "Proxy Cache",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular namespace within a target registry.Harbor can only act a proxy for DockerHub and Harbor registries.",
+        "ENDPOINT": "Endpoint",
+        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",

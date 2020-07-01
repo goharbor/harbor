@@ -237,7 +237,12 @@
         "STORAGE_QUOTA": "存储容量",
         "COUNT_QUOTA_TIP": "请输入一个'1' ~ '100000000'之间的整数, '-1'表示不设置上限。",
         "STORAGE_QUOTA_TIP": "存储配额的上限仅采用整数值，上限为1024TB。输入“-1”作为无限制配额。",
-        "QUOTA_UNLIMIT_TIP": "如果你想要对存储不设置上限，请输入-1。"
+        "QUOTA_UNLIMIT_TIP": "如果你想要对存储不设置上限，请输入-1。",
+        "TYPE": "类型",
+        "PROXY_CACHE": "镜像代理",
+        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 Docker Hub 和 Harbor 类型的仓库",
+        "ENDPOINT": "地址",
+        "PROXY_CACHE_ENDPOINT": "镜像代理地址"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "概要",

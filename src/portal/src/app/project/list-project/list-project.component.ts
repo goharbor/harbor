@@ -55,11 +55,16 @@ export class ListProjectComponent implements OnDestroy {
     timeComparator: Comparator<Project> = new CustomComparator<Project>("creation_time", "date");
     accessLevelComparator: Comparator<Project> = new CustomComparator<Project>("public", "string");
     roleComparator: Comparator<Project> = new CustomComparator<Project>("current_user_role_id", "number");
+    typeComparator: Comparator<Project> = new CustomComparator<Project>("registry_id", "number");
     currentPage = 1;
     totalCount = 0;
     pageSize = 15;
     currentState: State;
     subscription: Subscription;
+    projectTypeMap: any = {
+        0: "Project",
+        1: "Proxy Cache"
+    };
 
     constructor(
         private session: SessionService,
