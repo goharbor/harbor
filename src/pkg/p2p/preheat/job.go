@@ -25,10 +25,10 @@ import (
 )
 
 const (
-	// parameter keeps the preheating provider instance info.
-	preheatParamProvider = "provider"
-	// parameter keeps the preheating artifact (image) info.
-	preheatParamImage = "image"
+	// PreheatParamProvider is a parameter keeping the preheating provider instance info.
+	PreheatParamProvider = "provider"
+	// PreheatParamImage is a parameter keeping the preheating artifact (image) info.
+	PreheatParamImage = "image"
 	// checkInterval indicates the interval of loop check.
 	checkInterval = 10 * time.Second
 	// checkTimeout indicates the overall timeout of the loop check.
@@ -181,7 +181,7 @@ func preheatJobRunningError(err error) error {
 
 // parseParamProvider parses the provider param.
 func parseParamProvider(params job.Parameters) (*provider.Instance, error) {
-	data, err := parseStrValue(params, preheatParamProvider)
+	data, err := parseStrValue(params, PreheatParamProvider)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func parseParamProvider(params job.Parameters) (*provider.Instance, error) {
 
 // parseParamImage parses the preheating image param.
 func parseParamImage(params job.Parameters) (*pr.PreheatImage, error) {
-	data, err := parseStrValue(params, preheatParamImage)
+	data, err := parseStrValue(params, PreheatParamImage)
 	if err != nil {
 		return nil, err
 	}
