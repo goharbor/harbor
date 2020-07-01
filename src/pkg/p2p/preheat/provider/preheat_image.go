@@ -42,6 +42,9 @@ type PreheatImage struct {
 
 	// The tag
 	Tag string `json:"tag,omitempty"`
+
+	// Digest of the preheating image
+	Digest string `json:"digest"`
 }
 
 // FromJSON build preheating image from the given data.

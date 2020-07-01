@@ -36,4 +36,6 @@ const (
 	SlackJob = "SLACK"
 	// Retention : the name of the retention job
 	Retention = "RETENTION"
+	// P2PPreheat : the name of the P2P preheat job
+	P2PPreheat = "P2P_PREHEAT"
 )
