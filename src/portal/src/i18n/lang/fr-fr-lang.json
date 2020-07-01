@@ -244,7 +244,12 @@
         "STORAGE_QUOTA": "Quota de stockage",
         "COUNT_QUOTA_TIP": "Entrez un entier entre '1' et '100000000', ou '-1' pour un quota illimité",
         "STORAGE_QUOTA_TIP": "La limite haute du Quota de stockage n'accepte que des valeurs entières, au maximum '1024TB'. Entrez '-1' pour un quota illimité",
-        "QUOTA_UNLIMIT_TIP": "Pour un quota illimité, entrez '-1'."
+        "QUOTA_UNLIMIT_TIP": "Pour un quota illimité, entrez '-1'.",
+        "TYPE": "Type",
+        "PROXY_CACHE": "Proxy Cache",
+        "PROXY_CACHE_TOOLTIP": "Activez cette option pour permettre à ce projet d'agir comme un cache de pull pour un espace de noms particulier dans un registre cible. Harbor ne peut agir en tant que proxy que pour les registres DockerHub et Harbor.",
+        "ENDPOINT": "Endpoint",
+        "PROXY_CACHE_ENDPOINT": "Endpoint du Proxy Cache"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Résumé",
