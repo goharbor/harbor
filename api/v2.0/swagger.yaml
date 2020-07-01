@@ -774,9 +774,12 @@ responses:
 definitions:
   Errors:
     description: The error array that describe the errors got during the handling of request
-    type: array
-    items:
-      $ref: '#/definitions/Error'
+    type: object
+    properties:
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/Error'
   Error:
     description: a model for all the error response coming from harbor
     type: object
