@@ -238,7 +238,12 @@
         "STORAGE_QUOTA": "Depolama kotası",
         "COUNT_QUOTA_TIP": "Sayı Kotasının üst sınırı tamsayı olmalıdır.\n",
         "STORAGE_QUOTA_TIP": "Depolama Kotasının üst sınırı tamsayı olmalı ve maksimum üst sınır 1024 TB",
-        "QUOTA_UNLIMIT_TIP": "Bu kotayı sınırsız istiyorsanız, lütfen -1 girin."
+        "QUOTA_UNLIMIT_TIP": "Bu kotayı sınırsız istiyorsanız, lütfen -1 girin.",
+        "TYPE": "Type",
+        "PROXY_CACHE": "Proxy Cache",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular namespace within a target registry.Harbor can only act a proxy for DockerHub and Harbor registries.",
+        "ENDPOINT": "Endpoint",
+        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Özet",

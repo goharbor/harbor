@@ -235,7 +235,12 @@
     "STORAGE_QUOTA": "存儲容量",
     "COUNT_QUOTA_TIP": "請輸入一個'1' ~ '100000000'之間的整數, '-1'表示不設置上限。",
     "STORAGE_QUOTA_TIP": "存儲配額的上限僅採用整數值,上限為1024TB。輸入“-1”作為無限製配額。",
-    "QUOTA_UNLIMIT_TIP": "如果你想要對存儲不設置上限,請輸入-1。"
+    "QUOTA_UNLIMIT_TIP": "如果你想要對存儲不設置上限,請輸入-1。",
+    "TYPE": "Type",
+    "PROXY_CACHE": "Proxy Cache",
+    "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular namespace within a target registry.Harbor can only act a proxy for DockerHub and Harbor registries.",
+    "ENDPOINT": "Endpoint",
+    "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
   },
   "PROJECT_DETAIL":{
     "SUMMARY": "概要",
