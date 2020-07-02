@@ -5,6 +5,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication"
 	daoModels "github.com/goharbor/harbor/src/replication/dao/models"
@@ -158,7 +159,7 @@ func (f *fakedReplicationRegistryMgr) Add(*model.Registry) (int64, error) {
 }
 
 // List registries, returns total count, registry list and error
-func (f *fakedReplicationRegistryMgr) List(...*model.RegistryQuery) (int64, []*model.Registry, error) {
+func (f *fakedReplicationRegistryMgr) List(query *q.Query) (int64, []*model.Registry, error) {
 	return 0, nil, nil
 }
 
