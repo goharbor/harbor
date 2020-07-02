@@ -15,10 +15,7 @@
 package blob
 
 import (
-	"fmt"
 	"github.com/goharbor/harbor/src/lib/errors"
-	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
-	"github.com/goharbor/harbor/src/server/middleware/requestid"
 	"io/ioutil"
 	"net/http"
 
@@ -47,29 +44,7 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 			return errors.Wrapf(err, "unmarshal manifest failed").WithCode(errors.MANIFESTINVALID)
 		}
 
-		// bb here is the actually a manifest, which is also stored as a blob in DB and storage.
-		bb, err := blobController.Get(r.Context(), descriptor.Digest.String())
-		if err != nil {
-			if errors.IsNotFoundErr(err) {
-				return nil
-			}
-			return err
-		}
-
-		switch bb.Status {
-		case blob_models.StatusNone, blob_models.StatusDelete, blob_models.StatusDeleteFailed:
-			err := blobController.Touch(r.Context(), bb)
-			if err != nil {
-				logger.Errorf("failed to update manifest: %s status to StatusNone, error:%v", bb.Digest, err)
-				return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", r.Header.Get(requestid.HeaderXRequestID)))
-			}
-		case blob_models.StatusDeleting:
-			logger.Warningf(fmt.Sprintf("the asking manifest is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID)))
-			return errors.New(nil).WithMessage(fmt.Sprintf("the asking manifest is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)
-		default:
-			return nil
-		}
-		return nil
+		return probeBlob(r, descriptor.Digest.String())
 	})
 
 	after := middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
