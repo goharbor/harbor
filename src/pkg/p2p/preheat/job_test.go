@@ -101,12 +101,12 @@ func (suite *JobTestSuite) validateJob(j job.Interface, params job.Parameters) {
 func (suite *JobTestSuite) runJob(ins *p.Instance) {
 	params := make(job.Parameters)
 	data, err := ins.ToJSON()
-	require.NoError(suite.T(), err, "encode parameter", preheatParamProvider)
-	params[preheatParamProvider] = data
+	require.NoError(suite.T(), err, "encode parameter", PreheatParamProvider)
+	params[PreheatParamProvider] = data
 
 	data, err = suite.preheatingImage.ToJSON()
-	require.NoError(suite.T(), err, "encode parameter", preheatParamImage)
-	params[preheatParamImage] = data
+	require.NoError(suite.T(), err, "encode parameter", PreheatParamImage)
+	params[PreheatParamImage] = data
 
 	j := &Job{}
 	suite.validateJob(j, params)
