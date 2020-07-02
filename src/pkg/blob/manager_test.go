@@ -19,6 +19,7 @@ import (
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
 	"testing"
+	"time"
 
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 )
@@ -222,6 +223,11 @@ func (suite *ManagerTestSuite) TestList() {
 	blobs, err = Mgr.List(ctx, ListParams{BlobDigests: []string{digest1, digest2}})
 	suite.Nil(err)
 	suite.Len(blobs, 2)
+
+	blobs, err = Mgr.List(ctx, models.ListParams{UpdateTime: time.Now().Add(-time.Hour)})
+	if suite.Nil(err) {
+		suite.Len(blobs, 0)
+	}
 }
 
 func (suite *ManagerTestSuite) TestListByArtifact() {
