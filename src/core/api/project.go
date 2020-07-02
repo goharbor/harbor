@@ -143,6 +143,17 @@ func (p *ProjectAPI) Post() {
 			p.SendNotFoundError(fmt.Errorf("registry %d not found", pro.RegistryID))
 			return
 		}
+		permitted := false
+		for _, t := range config.GetPermittedRegistryTypesForProxyCache() {
+			if string(registry.Type) == t {
+				permitted = true
+				break
+			}
+		}
+		if !permitted {
+			p.SendBadRequestError(fmt.Errorf("unsupported registry type %s", string(registry.Type)))
+			return
+		}
 	}
 
 	var hardLimits types.ResourceList
