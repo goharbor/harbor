@@ -20,6 +20,7 @@ import (
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
 	"testing"
+	"time"
 )
 
 type DaoTestSuite struct {
@@ -202,6 +203,18 @@ func (suite *DaoTestSuite) TestListBlobs() {
 	blobs, err = suite.dao.ListBlobs(ctx, models.ListParams{BlobDigests: []string{digest1, digest2}})
 	if suite.Nil(err) {
 		suite.Len(blobs, 2)
+	}
+
+	blobs, err = suite.dao.ListBlobs(ctx, models.ListParams{UpdateTime: time.Now().Add(-time.Hour)})
+	if suite.Nil(err) {
+		suite.Len(blobs, 0)
+	}
+
+	digest3 := suite.DigestString()
+	suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest3, UpdateTime: time.Now().Add(-time.Hour * 2)})
+	blobs, err = suite.dao.ListBlobs(ctx, models.ListParams{UpdateTime: time.Now().Add(-time.Hour)})
+	if suite.Nil(err) {
+		suite.Len(blobs, 1)
 	}
 }
 
