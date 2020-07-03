@@ -71,6 +71,13 @@ func (d *daoTestSuite) TearDownSuite() {
 	d.Require().Nil(err)
 }
 
+// TestCount tests count total
+func (d *daoTestSuite) TestCount() {
+	total, err := d.dao.Count(d.ctx, nil)
+	d.Require().Nil(err)
+	d.Equal(int64(1), total)
+}
+
 // TestCreate tests create a policy schema.
 func (d *daoTestSuite) TestCreate() {
 	// create duplicate policy should return error
@@ -139,9 +146,8 @@ func (d *daoTestSuite) TestList() {
 		d.Require().Nil(err)
 	}()
 
-	total, policies, err := d.dao.List(d.ctx, &q.Query{})
+	policies, err := d.dao.List(d.ctx, &q.Query{})
 	d.Require().Nil(err)
-	d.Equal(int64(2), total)
 	d.Len(policies, 2, "list all policy schemas")
 
 	// list policy filter by project
@@ -150,9 +156,8 @@ func (d *daoTestSuite) TestList() {
 			"project_id": 1,
 		},
 	}
-	total, policies, err = d.dao.List(d.ctx, query)
+	policies, err = d.dao.List(d.ctx, query)
 	d.Require().Nil(err)
-	d.Equal(int64(1), total)
 	d.Len(policies, 1, "list policy schemas by project")
 	d.Equal(d.defaultPolicy.Name, policies[0].Name)
 }

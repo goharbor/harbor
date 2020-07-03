@@ -26,6 +26,8 @@ import (
 
 // DAO is the data access object for policy.
 type DAO interface {
+	// Count returns the total count of policies according to the query
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// Create the policy schema
 	Create(ctx context.Context, schema *policy.Schema) (id int64, err error)
 	// Update the policy schema, Only the properties specified by "props" will be updated if it is set
@@ -35,7 +37,7 @@ type DAO interface {
 	// Delete the policy schema by id
 	Delete(ctx context.Context, id int64) (err error)
 	// List policy schemas by query
-	List(ctx context.Context, query *q.Query) (total int64, schemas []*policy.Schema, err error)
+	List(ctx context.Context, query *q.Query) (schemas []*policy.Schema, err error)
 }
 
 // New returns an instance of the default DAO.
@@ -44,6 +46,23 @@ func New() DAO {
 }
 
 type dao struct{}
+
+// Count returns the total count of policies according to the query
+func (d *dao) Count(ctx context.Context, query *q.Query) (total int64, err error) {
+	if query != nil {
+		// ignore the page number and size
+		query = &q.Query{
+			Keywords: query.Keywords,
+		}
+	}
+
+	qs, err := orm.QuerySetter(ctx, &policy.Schema{}, query)
+	if err != nil {
+		return 0, err
+	}
+
+	return qs.Count()
+}
 
 // Create a policy schema.
 func (d *dao) Create(ctx context.Context, schema *policy.Schema) (id int64, err error) {
@@ -126,14 +145,9 @@ func (d *dao) Delete(ctx context.Context, id int64) (err error) {
 }
 
 // List policies by query.
-func (d *dao) List(ctx context.Context, query *q.Query) (total int64, schemas []*policy.Schema, err error) {
+func (d *dao) List(ctx context.Context, query *q.Query) (schemas []*policy.Schema, err error) {
 	var qs beego_orm.QuerySeter
 	qs, err = orm.QuerySetter(ctx, &policy.Schema{}, query)
-	if err != nil {
-		return
-	}
-
-	total, err = qs.Count()
 	if err != nil {
 		return
 	}
@@ -143,5 +157,5 @@ func (d *dao) List(ctx context.Context, query *q.Query) (total int64, schemas []
 		return
 	}
 
-	return total, schemas, nil
+	return schemas, nil
 }
