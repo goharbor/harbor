@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/core/config"
-	imocks "github.com/goharbor/harbor/src/pkg/p2p/preheat/instance/mocks"
 	providerModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
+	"github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/instance"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -18,12 +18,12 @@ type preheatSuite struct {
 	suite.Suite
 	ctx         context.Context
 	controller  Controller
-	fackManager *imocks.Manager
+	fackManager *instance.FakeManager
 }
 
 func TestPreheatSuite(t *testing.T) {
 	t.Log("Start TestPreheatSuite")
-	fackManager := &imocks.Manager{}
+	fackManager := &instance.FakeManager{}
 
 	var c = &controller{
 		iManager: fackManager,
@@ -149,7 +149,7 @@ func (s *preheatSuite) TestUpdateInstance() {
 }
 
 func (s *preheatSuite) TestGetInstance() {
-	instance, err := s.controller.GetInstance(s.ctx, 1)
+	inst, err := s.controller.GetInstance(s.ctx, 1)
 	s.NoError(err)
-	s.NotNil(instance)
+	s.NotNil(inst)
 }
