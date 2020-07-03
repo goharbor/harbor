@@ -12,7 +12,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/client"
-	"github.com/goharbor/harbor/src/pkg/registry"
 )
 
 const (
@@ -20,13 +19,10 @@ const (
 	krakenPreheatPath = "/registry/notifications"
 )
 
-type digestFetcherFunc func(repoName, tag string) (string, error)
-
 // KrakenDriver implements the provider driver interface for Uber kraken.
 // More details, please refer to https://github.com/uber/kraken
 type KrakenDriver struct {
-	instance      *provider.Instance
-	digestFetcher digestFetcherFunc
+	instance *provider.Instance
 }
 
 // Self implements @Driver.Self.
@@ -73,20 +69,13 @@ func (kd *KrakenDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingStatu
 	url := fmt.Sprintf("%s%s", strings.TrimSuffix(kd.instance.Endpoint, "/"), krakenPreheatPath)
 	var events = make([]cm.Event, 0)
 	eventID := utils.GenerateRandomString()
-	if kd.digestFetcher == nil {
-		kd.digestFetcher = fetchDigest
-	}
-	digest, err := kd.digestFetcher(preheatingImage.ImageName, preheatingImage.Tag)
-	if err != nil {
-		return nil, err
-	}
 	event := cm.Event{
 		ID:        eventID,
 		TimeStamp: time.Now().UTC(),
 		Action:    "push",
 		Target: &cm.Target{
 			MediaType:  schema2.MediaTypeManifest,
-			Digest:     digest,
+			Digest:     preheatingImage.Digest,
 			Repository: preheatingImage.ImageName,
 			URL:        preheatingImage.URL,
 			Tag:        preheatingImage.Tag,
@@ -96,7 +85,7 @@ func (kd *KrakenDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingStatu
 	var payload = cm.Notification{
 		Events: events,
 	}
-	_, err = client.GetHTTPClient(kd.instance.Insecure).Post(url, kd.getCred(), payload, nil)
+	_, err := client.GetHTTPClient(kd.instance.Insecure).Post(url, kd.getCred(), payload, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -123,15 +112,4 @@ func (kd *KrakenDriver) getCred() *auth.Credential {
 		Mode: kd.instance.AuthMode,
 		Data: kd.instance.AuthInfo,
 	}
-}
-
-func fetchDigest(repoName, tag string) (string, error) {
-	exist, digest, err := registry.Cli.ManifestExist(repoName, tag)
-	if err != nil {
-		return "", err
-	}
-	if !exist {
-		return "", errors.New("image not found")
-	}
-	return digest, nil
 }

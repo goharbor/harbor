@@ -55,9 +55,6 @@ func (suite *KrakenTestSuite) SetupSuite() {
 			Insecure: true,
 			Status:   DriverStatusHealthy,
 		},
-		digestFetcher: func(repoName, tag string) (s string, e error) {
-			return "image@digest", nil
-		},
 	}
 }
 
@@ -84,6 +81,7 @@ func (suite *KrakenTestSuite) TestPreheat() {
 	st, err := suite.driver.Preheat(&PreheatImage{
 		Type:      "image",
 		ImageName: "busybox",
+		Digest:    "sha256@fake",
 		Tag:       "latest",
 		URL:       "https://harbor.com",
 	})

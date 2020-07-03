@@ -17,6 +17,8 @@ package preheat
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -26,6 +28,9 @@ import (
 	"github.com/goharbor/harbor/src/lib/selector"
 	ar "github.com/goharbor/harbor/src/pkg/artifact"
 	po "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
+	pr "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	ta "github.com/goharbor/harbor/src/pkg/tag/model/tag"
@@ -33,6 +38,7 @@ import (
 	"github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/controller/scan"
 	"github.com/goharbor/harbor/src/testing/mock"
+	"github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/instance"
 	"github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/policy"
 	"github.com/goharbor/harbor/src/testing/pkg/task"
 	"github.com/stretchr/testify/require"
@@ -44,6 +50,7 @@ type EnforcerTestSuite struct {
 	suite.Suite
 
 	enforcer *defaultEnforcer
+	server   *httptest.Server
 }
 
 // TestEnforcer is an entry method of running EnforcerTestSuite
@@ -53,6 +60,12 @@ func TestEnforcer(t *testing.T) {
 
 // SetupSuite prepares env for running EnforcerTestSuite
 func (suite *EnforcerTestSuite) SetupSuite() {
+	// Start mock server
+	suite.server = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	suite.server.StartTLS()
+
 	fakePolicies := mockPolicies()
 	fakePolicyManager := &policy.FakeManager{}
 	fakePolicyManager.On("Get",
@@ -108,6 +121,20 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		CVEAllowlist: models.CVEAllowlist{},
 	}, nil)
 
+	fakeInstanceMgr := &instance.FakeManager{}
+	fakeInstanceMgr.On("Get",
+		context.TODO(),
+		mock.AnythingOfType("int64"),
+	).Return(&pr.Instance{
+		ID:       1,
+		Name:     "my_preheat_provider1",
+		Vendor:   provider.DriverKraken,
+		Endpoint: suite.server.URL,
+		Status:   provider.DriverStatusHealthy,
+		AuthMode: auth.AuthModeNone,
+		Insecure: true,
+	}, nil)
+
 	suite.enforcer = &defaultEnforcer{
 		policyMgr:    fakePolicyManager,
 		executionMgr: fakeExecManager,
@@ -115,6 +142,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		artCtl:       fakeArtCtl,
 		scanCtl:      fakeScanCtl,
 		proCtl:       fakeProCtl,
+		instMgr:      fakeInstanceMgr,
 		fullURLGetter: func(c *selector.Candidate) (s string, e error) {
 			r := fmt.Sprintf("%s/%s", c.Namespace, c.Repository)
 			return fmt.Sprintf(manifestAPIPattern, "https://testing.harbor.com", r, c.Tags[0]), nil
@@ -123,7 +151,11 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 			return "fake-token", nil
 		},
 	}
+}
 
+// TearDownSuite cleans the testing env
+func (suite *EnforcerTestSuite) TearDownSuite() {
+	suite.server.Close()
 }
 
 // TestEnforcePolicy tests the policy enforcement case.
