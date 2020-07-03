@@ -63,7 +63,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		context.TODO(),
 		mock.AnythingOfType("int64"),
 		mock.AnythingOfType("*q.Query"),
-	).Return((int64)(2), fakePolicies, nil)
+	).Return(fakePolicies, nil)
 
 	fakeExecManager := &task.FakeExecutionManager{}
 	fakeExecManager.On("Create",
