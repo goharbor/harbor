@@ -5,7 +5,7 @@ package policy
 import (
 	context "context"
 
-	policy "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
+	modelspolicy "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	mock "github.com/stretchr/testify/mock"
 
 	q "github.com/goharbor/harbor/src/lib/q"
@@ -16,19 +16,40 @@ type FakeManager struct {
 	mock.Mock
 }
 
+// Count provides a mock function with given fields: ctx, query
+func (_m *FakeManager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) int64); ok {
+		r0 = rf(ctx, query)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *q.Query) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: ctx, schema
-func (_m *FakeManager) Create(ctx context.Context, schema *policy.Schema) (int64, error) {
+func (_m *FakeManager) Create(ctx context.Context, schema *modelspolicy.Schema) (int64, error) {
 	ret := _m.Called(ctx, schema)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, *policy.Schema) int64); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *modelspolicy.Schema) int64); ok {
 		r0 = rf(ctx, schema)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *policy.Schema) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *modelspolicy.Schema) error); ok {
 		r1 = rf(ctx, schema)
 	} else {
 		r1 = ret.Error(1)
@@ -52,15 +73,15 @@ func (_m *FakeManager) Delete(ctx context.Context, id int64) error {
 }
 
 // Get provides a mock function with given fields: ctx, id
-func (_m *FakeManager) Get(ctx context.Context, id int64) (*policy.Schema, error) {
+func (_m *FakeManager) Get(ctx context.Context, id int64) (*modelspolicy.Schema, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 *policy.Schema
-	if rf, ok := ret.Get(0).(func(context.Context, int64) *policy.Schema); ok {
+	var r0 *modelspolicy.Schema
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *modelspolicy.Schema); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*policy.Schema)
+			r0 = ret.Get(0).(*modelspolicy.Schema)
 		}
 	}
 
@@ -75,67 +96,53 @@ func (_m *FakeManager) Get(ctx context.Context, id int64) (*policy.Schema, error
 }
 
 // ListPolicies provides a mock function with given fields: ctx, query
-func (_m *FakeManager) ListPolicies(ctx context.Context, query *q.Query) (int64, []*policy.Schema, error) {
+func (_m *FakeManager) ListPolicies(ctx context.Context, query *q.Query) ([]*modelspolicy.Schema, error) {
 	ret := _m.Called(ctx, query)
 
-	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) int64); ok {
+	var r0 []*modelspolicy.Schema
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) []*modelspolicy.Schema); ok {
 		r0 = rf(ctx, query)
 	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	var r1 []*policy.Schema
-	if rf, ok := ret.Get(1).(func(context.Context, *q.Query) []*policy.Schema); ok {
-		r1 = rf(ctx, query)
-	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]*policy.Schema)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*modelspolicy.Schema)
 		}
 	}
 
-	var r2 error
-	if rf, ok := ret.Get(2).(func(context.Context, *q.Query) error); ok {
-		r2 = rf(ctx, query)
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *q.Query) error); ok {
+		r1 = rf(ctx, query)
 	} else {
-		r2 = ret.Error(2)
+		r1 = ret.Error(1)
 	}
 
-	return r0, r1, r2
+	return r0, r1
 }
 
 // ListPoliciesByProject provides a mock function with given fields: ctx, project, query
-func (_m *FakeManager) ListPoliciesByProject(ctx context.Context, project int64, query *q.Query) (int64, []*policy.Schema, error) {
+func (_m *FakeManager) ListPoliciesByProject(ctx context.Context, project int64, query *q.Query) ([]*modelspolicy.Schema, error) {
 	ret := _m.Called(ctx, project, query)
 
-	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, int64, *q.Query) int64); ok {
+	var r0 []*modelspolicy.Schema
+	if rf, ok := ret.Get(0).(func(context.Context, int64, *q.Query) []*modelspolicy.Schema); ok {
 		r0 = rf(ctx, project, query)
 	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	var r1 []*policy.Schema
-	if rf, ok := ret.Get(1).(func(context.Context, int64, *q.Query) []*policy.Schema); ok {
-		r1 = rf(ctx, project, query)
-	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]*policy.Schema)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*modelspolicy.Schema)
 		}
 	}
 
-	var r2 error
-	if rf, ok := ret.Get(2).(func(context.Context, int64, *q.Query) error); ok {
-		r2 = rf(ctx, project, query)
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int64, *q.Query) error); ok {
+		r1 = rf(ctx, project, query)
 	} else {
-		r2 = ret.Error(2)
+		r1 = ret.Error(1)
 	}
 
-	return r0, r1, r2
+	return r0, r1
 }
 
 // Update provides a mock function with given fields: ctx, schema, props
-func (_m *FakeManager) Update(ctx context.Context, schema *policy.Schema, props ...string) error {
+func (_m *FakeManager) Update(ctx context.Context, schema *modelspolicy.Schema, props ...string) error {
 	_va := make([]interface{}, len(props))
 	for _i := range props {
 		_va[_i] = props[_i]
@@ -146,7 +153,7 @@ func (_m *FakeManager) Update(ctx context.Context, schema *policy.Schema, props 
 	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *policy.Schema, ...string) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *modelspolicy.Schema, ...string) error); ok {
 		r0 = rf(ctx, schema, props...)
 	} else {
 		r0 = ret.Error(0)

@@ -28,6 +28,10 @@ type fakeDao struct {
 	mock.Mock
 }
 
+func (f *fakeDao) Count(ctx context.Context, q *q.Query) (int64, error) {
+	args := f.Called()
+	return int64(args.Int(0)), args.Error(1)
+}
 func (f *fakeDao) Create(ctx context.Context, schema *policy.Schema) (int64, error) {
 	args := f.Called()
 	return int64(args.Int(0)), args.Error(1)
@@ -48,13 +52,13 @@ func (f *fakeDao) Delete(ctx context.Context, id int64) error {
 	args := f.Called()
 	return args.Error(0)
 }
-func (f *fakeDao) List(ctx context.Context, query *q.Query) (int64, []*policy.Schema, error) {
+func (f *fakeDao) List(ctx context.Context, query *q.Query) ([]*policy.Schema, error) {
 	args := f.Called()
 	var schemas []*policy.Schema
 	if args.Get(0) != nil {
 		schemas = args.Get(0).([]*policy.Schema)
 	}
-	return 0, schemas, args.Error(1)
+	return schemas, args.Error(1)
 }
 
 type managerTestSuite struct {
@@ -78,6 +82,13 @@ func (m *managerTestSuite) SetupSuite() {
 func (m *managerTestSuite) TearDownSuite() {
 	m.dao = nil
 	m.mgr = nil
+}
+
+// TestCount tests Count method.
+func (m *managerTestSuite) TestCount() {
+	m.dao.On("Count").Return(1, nil)
+	_, err := m.mgr.Count(nil, nil)
+	m.Require().Nil(err)
 }
 
 // TestCreate tests Create method.
@@ -111,13 +122,13 @@ func (m *managerTestSuite) TestDelete() {
 // TestListPolicies tests ListPolicies method.
 func (m *managerTestSuite) TestListPolicies() {
 	m.dao.On("List").Return(nil, nil)
-	_, _, err := m.mgr.ListPolicies(nil, nil)
+	_, err := m.mgr.ListPolicies(nil, nil)
 	m.Require().Nil(err)
 }
 
 // TestListPoliciesByProject tests ListPoliciesByProject method.
 func (m *managerTestSuite) TestListPoliciesByProject() {
 	m.dao.On("List").Return(nil, nil)
-	_, _, err := m.mgr.ListPoliciesByProject(nil, 1, nil)
+	_, err := m.mgr.ListPoliciesByProject(nil, 1, nil)
 	m.Require().Nil(err)
 }
