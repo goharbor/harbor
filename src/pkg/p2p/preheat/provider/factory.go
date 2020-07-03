@@ -14,5 +14,5 @@ func DragonflyFactory(instance *provider.Instance) (Driver, error) {
 
 // KrakenFactory creates kraken driver
 func KrakenFactory(instance *provider.Instance) (Driver, error) {
-	return &KrakenDriver{instance, nil}, nil
+	return &KrakenDriver{instance}, nil
 }

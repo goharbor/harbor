@@ -91,6 +91,23 @@ func (suite *JobTestSuite) TestJobWithDragonflyDriver() {
 	suite.runJob(ins)
 }
 
+// TestJobWithKrakenDriver test preheat job running with Kraken driver.
+func (suite *JobTestSuite) TestJobWithKrakenDriver() {
+	ins := &p.Instance{
+		ID:       2,
+		Name:     "test-instance2",
+		Vendor:   provider.DriverKraken,
+		Endpoint: suite.kraken.URL,
+		AuthMode: auth.AuthModeNone,
+		Enabled:  true,
+		Default:  true,
+		Insecure: true,
+		Status:   provider.DriverStatusHealthy,
+	}
+
+	suite.runJob(ins)
+}
+
 func (suite *JobTestSuite) validateJob(j job.Interface, params job.Parameters) {
 	require.Equal(suite.T(), uint(1), j.MaxFails(), "max fails")
 	require.Equal(suite.T(), false, j.ShouldRetry(), "should retry")

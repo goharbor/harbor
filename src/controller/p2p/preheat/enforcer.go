@@ -33,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
 	pol "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/policy"
@@ -112,8 +113,8 @@ type defaultEnforcer struct {
 	scanCtl scan.Controller
 	// for getting project related info
 	proCtl project.Controller
-	// TODO: Need preheat provider manager
-	//
+	// for getting provider instance
+	instMgr instance.Manager
 	// for getting the access endpoint of registry V2
 	fullURLGetter extURLGetter
 	// for creating the access credential
@@ -129,6 +130,7 @@ func NewEnforcer() Enforcer {
 		artCtl:       artifact.NewController(),
 		scanCtl:      scan.DefaultController,
 		proCtl:       project.NewController(),
+		instMgr:      instance.Mgr,
 		fullURLGetter: func(c *selector.Candidate) (s string, e error) {
 			edp, err := config.ExtEndpoint()
 			if err != nil {
@@ -172,6 +174,16 @@ func (de *defaultEnforcer) EnforcePolicy(ctx context.Context, policyID int64) (i
 		return -1, enforceError(errors.Errorf("policy %d:%s is not enabled", pl.ID, pl.Name))
 	}
 
+	// Get and check if the provider instance bound with the policy is healthy
+	inst, err := de.instMgr.Get(ctx, pl.ProviderID)
+	if err != nil {
+		return -1, enforceError(err)
+	}
+
+	if err := checkProviderHealthy(inst); err != nil {
+		return -1, enforceError(err)
+	}
+
 	// Retrieve the initial candidates
 	candidates, err := de.getCandidates(ctx, pl)
 	if err != nil {
@@ -187,7 +199,7 @@ func (de *defaultEnforcer) EnforcePolicy(ctx context.Context, policyID int64) (i
 	}
 
 	// Launch execution
-	eid, err := de.launchExecutions(ctx, filtered, pl)
+	eid, err := de.launchExecutions(ctx, filtered, pl, inst)
 	if err != nil {
 		// NOTES: Please pay attention here, even the non-nil error returned, it does not mean
 		// the relevant execution is not available. The execution ID should also be checked(>0)
@@ -237,6 +249,19 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 			continue
 		}
 
+		// Get and check if the provider instance bound with the policy is healthy
+		inst, err := de.instMgr.Get(ctx, pl.ProviderID)
+		if err != nil {
+			logger.Errorf("Failed to get the preheat provider instance bound with the policy %d:%s with error: %s", pl.ID, pl.Name, err.Error())
+			continue
+		}
+
+		// Skip unhealthy instance
+		if err := checkProviderHealthy(inst); err != nil {
+			logger.Errorf("The preheat provider instance bound with the policy %d:%s is not healthy: %s", pl.ID, pl.Name, err.Error())
+			continue
+		}
+
 		filtered, err := policy.NewFilter().BuildFrom(pl).Filter(candidates)
 		if err != nil {
 			// Log error and continue
@@ -248,7 +273,7 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 
 		if len(filtered) > 0 {
 			// Matched
-			eid, err := de.launchExecutions(ctx, filtered, pl)
+			eid, err := de.launchExecutions(ctx, filtered, pl, inst)
 			if err != nil {
 				// Log error and continue
 				logger.Errorf("Failed to launch execution for policy %d:%s with error: %s", pl.ID, pl.Name, err.Error())
@@ -299,7 +324,7 @@ func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema) ([
 }
 
 // launchExecutions create execution record and launch tasks to preheat the filtered artifacts.
-func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*selector.Candidate, pl *pol.Schema) (int64, error) {
+func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*selector.Candidate, pl *pol.Schema, inst *provider.Instance) (int64, error) {
 	// Create execution first anyway
 	attrs := map[string]interface{}{
 		extraAttrTotal:          len(candidates),
@@ -325,10 +350,7 @@ func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*s
 		return eid, nil
 	}
 
-	// TODO: Get provider instance by the provider ID
-	// Placeholder
-	ins := &provider.Instance{}
-	insData, err := ins.ToJSON()
+	insData, err := inst.ToJSON()
 	if err != nil {
 		// In case
 		if er := de.executionMgr.MarkError(ctx, eid, err.Error()); er != nil {
@@ -494,4 +516,31 @@ func getLabels(labels []*models.Label) []string {
 	}
 
 	return lt
+}
+
+// check the health of the given provider instance
+func checkProviderHealthy(inst *provider.Instance) error {
+	// Get driver factory for the given provider
+	fac, ok := pr.GetProvider(inst.Vendor)
+	if !ok {
+		return errors.Errorf("no driver registered for provider %s", inst.Vendor)
+	}
+
+	// Construct driver
+	d, err := fac(inst)
+	if err != nil {
+		return err
+	}
+
+	// Check health
+	h, err := d.GetHealth()
+	if err != nil {
+		return err
+	}
+
+	if h.Status != pr.DriverStatusHealthy {
+		return errors.Errorf("preheat provider instance %s-%s:%s is not healthy", inst.Vendor, inst.Name, inst.Endpoint)
+	}
+
+	return nil
 }
