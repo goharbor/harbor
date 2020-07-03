@@ -27,6 +27,8 @@ var Mgr = New()
 
 // Manager manages the policy
 type Manager interface {
+	// Count returns the total count of policies according to the query
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// Create the policy schema
 	Create(ctx context.Context, schema *policy.Schema) (id int64, err error)
 	// Update the policy schema, Only the properties specified by "props" will be updated if it is set
@@ -36,9 +38,9 @@ type Manager interface {
 	// Delete the policy schema by id
 	Delete(ctx context.Context, id int64) (err error)
 	// List policy schemas by query
-	ListPolicies(ctx context.Context, query *q.Query) (total int64, schemas []*policy.Schema, err error)
+	ListPolicies(ctx context.Context, query *q.Query) (schemas []*policy.Schema, err error)
 	// list policy schema under project
-	ListPoliciesByProject(ctx context.Context, project int64, query *q.Query) (total int64, schemas []*policy.Schema, err error)
+	ListPoliciesByProject(ctx context.Context, project int64, query *q.Query) (schemas []*policy.Schema, err error)
 }
 
 type manager struct {
@@ -50,6 +52,11 @@ func New() Manager {
 	return &manager{
 		dao: dao.New(),
 	}
+}
+
+// Count returns the total count of policies according to the query
+func (m *manager) Count(ctx context.Context, query *q.Query) (total int64, err error) {
+	return m.dao.Count(ctx, query)
 }
 
 // Create the policy schema
@@ -73,12 +80,12 @@ func (m *manager) Delete(ctx context.Context, id int64) (err error) {
 }
 
 // List policy schemas by query
-func (m *manager) ListPolicies(ctx context.Context, query *q.Query) (total int64, schemas []*policy.Schema, err error) {
+func (m *manager) ListPolicies(ctx context.Context, query *q.Query) (schemas []*policy.Schema, err error) {
 	return m.dao.List(ctx, query)
 }
 
 // list policy schema under project
-func (m *manager) ListPoliciesByProject(ctx context.Context, project int64, query *q.Query) (total int64, schemas []*policy.Schema, err error) {
+func (m *manager) ListPoliciesByProject(ctx context.Context, project int64, query *q.Query) (schemas []*policy.Schema, err error) {
 	if query == nil {
 		query = &q.Query{}
 	}

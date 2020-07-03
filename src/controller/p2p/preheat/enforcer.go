@@ -217,7 +217,7 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 	}
 
 	// Find all the policies that match the given artifact
-	_, l, err := de.policyMgr.ListPoliciesByProject(ctx, art.ProjectID, nil)
+	l, err := de.policyMgr.ListPoliciesByProject(ctx, art.ProjectID, nil)
 	if err != nil {
 		return nil, enforceErrorExt(err, art)
 	}
