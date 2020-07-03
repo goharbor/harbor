@@ -15,13 +15,9 @@
 package blob
 
 import (
-	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/goharbor/harbor/src/server/middleware/requestid"
 	"net/http"
 	"strconv"
 )
@@ -34,35 +30,9 @@ import (
 func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 
 	before := middleware.BeforeRequest(func(r *http.Request) error {
-		ctx := r.Context()
-		logger := log.G(ctx)
-
 		v := r.URL.Query()
 		digest := v.Get("digest")
-
-		// digest empty is handled by the blob controller GET method
-		bb, err := blobController.Get(r.Context(), digest)
-		if err != nil {
-			if errors.IsNotFoundErr(err) {
-				return nil
-			}
-			return err
-		}
-
-		switch bb.Status {
-		case blob_models.StatusNone, blob_models.StatusDelete, blob_models.StatusDeleteFailed:
-			err := blobController.Touch(r.Context(), bb)
-			if err != nil {
-				logger.Errorf("failed to update blob: %s status to StatusNone, error:%v", bb.Digest, err)
-				return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", r.Header.Get(requestid.HeaderXRequestID)))
-			}
-		case blob_models.StatusDeleting:
-			logger.Warningf(fmt.Sprintf("the asking blob is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID)))
-			return errors.New(nil).WithMessage(fmt.Sprintf("the asking blob is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)
-		default:
-			return nil
-		}
-		return nil
+		return probeBlob(r, digest)
 	})
 
 	after := middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
