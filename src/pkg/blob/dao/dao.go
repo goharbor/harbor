@@ -239,6 +239,10 @@ func (d *dao) ListBlobs(ctx context.Context, params models.ListParams) ([]*model
 		qs = qs.Filter("digest__in", params.BlobDigests)
 	}
 
+	if !params.UpdateTime.IsZero() {
+		qs = qs.Filter("update_time__lte", params.UpdateTime)
+	}
+
 	if params.ArtifactDigest != "" {
 		params.ArtifactDigests = append(params.ArtifactDigests, params.ArtifactDigest)
 	}
