@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/q"
-
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
+	policyModels "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	providerModels "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/policy"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
 )
 
@@ -85,6 +86,23 @@ type Controller interface {
 	// Any problems met, a non nil error will be returned
 	//
 	UpdateInstance(ctx context.Context, instance *providerModels.Instance, properties ...string) error
+
+	// do not provide another policy controller, mixed in preheat controller
+
+	// CountPolicy returns the total count of the policy.
+	CountPolicy(ctx context.Context, query *q.Query) (int64, error)
+	// CreatePolicy creates the policy.
+	CreatePolicy(ctx context.Context, schema *policyModels.Schema) (int64, error)
+	// GetPolicy gets the policy by id.
+	GetPolicy(ctx context.Context, id int64) (*policyModels.Schema, error)
+	// UpdatePolicy updates the policy.
+	UpdatePolicy(ctx context.Context, schema *policyModels.Schema, props ...string) error
+	// DeletePolicy deletes the policy by id.
+	DeletePolicy(ctx context.Context, id int64) error
+	// ListPolicies lists policies by query.
+	ListPolicies(ctx context.Context, query *q.Query) ([]*policyModels.Schema, error)
+	// ListPoliciesByProject lists policies by project.
+	ListPoliciesByProject(ctx context.Context, project int64, query *q.Query) ([]*policyModels.Schema, error)
 }
 
 var _ Controller = (*controller)(nil)
@@ -94,32 +112,35 @@ var _ Controller = (*controller)(nil)
 type controller struct {
 	// For instance
 	iManager instance.Manager
+	// For policy
+	pManager policy.Manager
 }
 
 // NewController is constructor of controller
 func NewController() Controller {
 	return &controller{
 		iManager: instance.Mgr,
+		pManager: policy.Mgr,
 	}
 }
 
 // GetAvailableProviders implements @Controller.GetAvailableProviders
-func (cc *controller) GetAvailableProviders() ([]*provider.Metadata, error) {
+func (c *controller) GetAvailableProviders() ([]*provider.Metadata, error) {
 	return provider.ListProviders()
 }
 
 // CountInstance implements @Controller.CountInstance
-func (cc *controller) CountInstance(ctx context.Context, query *q.Query) (int64, error) {
-	return cc.iManager.Count(ctx, query)
+func (c *controller) CountInstance(ctx context.Context, query *q.Query) (int64, error) {
+	return c.iManager.Count(ctx, query)
 }
 
-// List implements @Controller.ListInstance
-func (cc *controller) ListInstance(ctx context.Context, query *q.Query) ([]*providerModels.Instance, error) {
-	return cc.iManager.List(ctx, query)
+// ListInstance implements @Controller.ListInstance
+func (c *controller) ListInstance(ctx context.Context, query *q.Query) ([]*providerModels.Instance, error) {
+	return c.iManager.List(ctx, query)
 }
 
 // CreateInstance implements @Controller.CreateInstance
-func (cc *controller) CreateInstance(ctx context.Context, instance *providerModels.Instance) (int64, error) {
+func (c *controller) CreateInstance(ctx context.Context, instance *providerModels.Instance) (int64, error) {
 	if instance == nil {
 		return 0, errors.New("nil instance object provided")
 	}
@@ -130,7 +151,7 @@ func (cc *controller) CreateInstance(ctx context.Context, instance *providerMode
 			"endpoint": instance.Endpoint,
 		},
 	}
-	num, err := cc.iManager.Count(ctx, query)
+	num, err := c.iManager.Count(ctx, query)
 	if err != nil {
 		return 0, err
 	}
@@ -145,24 +166,59 @@ func (cc *controller) CreateInstance(ctx context.Context, instance *providerMode
 
 	instance.SetupTimestamp = time.Now().Unix()
 
-	return cc.iManager.Save(ctx, instance)
+	return c.iManager.Save(ctx, instance)
 }
 
-// Delete implements @Controller.Delete
-func (cc *controller) DeleteInstance(ctx context.Context, id int64) error {
-	return cc.iManager.Delete(ctx, id)
+// DeleteInstance implements @Controller.Delete
+func (c *controller) DeleteInstance(ctx context.Context, id int64) error {
+	return c.iManager.Delete(ctx, id)
 }
 
-// Update implements @Controller.Update
-func (cc *controller) UpdateInstance(ctx context.Context, instance *providerModels.Instance, properties ...string) error {
+// UpdateInstance implements @Controller.Update
+func (c *controller) UpdateInstance(ctx context.Context, instance *providerModels.Instance, properties ...string) error {
 	if len(properties) == 0 {
 		return errors.New("no properties provided to update")
 	}
 
-	return cc.iManager.Update(ctx, instance, properties...)
+	return c.iManager.Update(ctx, instance, properties...)
 }
 
-// Get implements @Controller.Get
-func (cc *controller) GetInstance(ctx context.Context, id int64) (*providerModels.Instance, error) {
-	return cc.iManager.Get(ctx, id)
+// GetInstance implements @Controller.Get
+func (c *controller) GetInstance(ctx context.Context, id int64) (*providerModels.Instance, error) {
+	return c.iManager.Get(ctx, id)
+}
+
+// CountPolicy returns the total count of the policy.
+func (c *controller) CountPolicy(ctx context.Context, query *q.Query) (int64, error) {
+	return c.pManager.Count(ctx, query)
+}
+
+// CreatePolicy creates the policy.
+func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Schema) (int64, error) {
+	return c.pManager.Create(ctx, schema)
+}
+
+// GetPolicy gets the policy by id.
+func (c *controller) GetPolicy(ctx context.Context, id int64) (*policyModels.Schema, error) {
+	return c.pManager.Get(ctx, id)
+}
+
+// UpdatePolicy updates the policy.
+func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Schema, props ...string) error {
+	return c.pManager.Update(ctx, schema, props...)
+}
+
+// DeletePolicy deletes the policy by id.
+func (c *controller) DeletePolicy(ctx context.Context, id int64) error {
+	return c.pManager.Delete(ctx, id)
+}
+
+// ListPolicies lists policies by query.
+func (c *controller) ListPolicies(ctx context.Context, query *q.Query) ([]*policyModels.Schema, error) {
+	return c.pManager.ListPolicies(ctx, query)
+}
+
+// ListPoliciesByProject lists policies by project.
+func (c *controller) ListPoliciesByProject(ctx context.Context, project int64, query *q.Query) ([]*policyModels.Schema, error) {
+	return c.pManager.ListPoliciesByProject(ctx, project, query)
 }
