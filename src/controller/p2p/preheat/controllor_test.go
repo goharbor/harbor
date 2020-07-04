@@ -181,6 +181,13 @@ func (s *preheatSuite) TestGetPolicy() {
 	s.Equal("test", p.Name)
 }
 
+func (s *preheatSuite) TestGetPolicyByName() {
+	s.fakePolicyMgr.On("GetByName", s.ctx, int64(1), "test").Return(&policy.Schema{Name: "test"}, nil)
+	p, err := s.controller.GetPolicyByName(s.ctx, 1, "test")
+	s.NoError(err)
+	s.Equal("test", p.Name)
+}
+
 func (s *preheatSuite) TestUpdatePolicy() {
 	s.fakePolicyMgr.On("Update", s.ctx, mock.Anything, mock.Anything).Return(nil)
 	err := s.controller.UpdateInstance(s.ctx, nil, "")

@@ -95,6 +95,8 @@ type Controller interface {
 	CreatePolicy(ctx context.Context, schema *policyModels.Schema) (int64, error)
 	// GetPolicy gets the policy by id.
 	GetPolicy(ctx context.Context, id int64) (*policyModels.Schema, error)
+	// GetPolicyByName gets the policy by name.
+	GetPolicyByName(ctx context.Context, projectID int64, name string) (*policyModels.Schema, error)
 	// UpdatePolicy updates the policy.
 	UpdatePolicy(ctx context.Context, schema *policyModels.Schema, props ...string) error
 	// DeletePolicy deletes the policy by id.
@@ -201,6 +203,11 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 // GetPolicy gets the policy by id.
 func (c *controller) GetPolicy(ctx context.Context, id int64) (*policyModels.Schema, error) {
 	return c.pManager.Get(ctx, id)
+}
+
+// GetPolicyByName gets the policy by name.
+func (c *controller) GetPolicyByName(ctx context.Context, projectID int64, name string) (*policyModels.Schema, error) {
+	return c.pManager.GetByName(ctx, projectID, name)
 }
 
 // UpdatePolicy updates the policy.

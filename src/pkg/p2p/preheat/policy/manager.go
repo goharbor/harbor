@@ -35,6 +35,8 @@ type Manager interface {
 	Update(ctx context.Context, schema *policy.Schema, props ...string) (err error)
 	// Get the policy schema by id
 	Get(ctx context.Context, id int64) (schema *policy.Schema, err error)
+	// GetByName the policy schema by id
+	GetByName(ctx context.Context, projectID int64, name string) (schema *policy.Schema, err error)
 	// Delete the policy schema by id
 	Delete(ctx context.Context, id int64) (err error)
 	// List policy schemas by query
@@ -72,6 +74,11 @@ func (m *manager) Update(ctx context.Context, schema *policy.Schema, props ...st
 // Get the policy schema by id
 func (m *manager) Get(ctx context.Context, id int64) (schema *policy.Schema, err error) {
 	return m.dao.Get(ctx, id)
+}
+
+// Get the policy schema by name
+func (m *manager) GetByName(ctx context.Context, projectID int64, name string) (schema *policy.Schema, err error) {
+	return m.dao.GetByName(ctx, projectID, name)
 }
 
 // Delete the policy schema by id
