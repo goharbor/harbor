@@ -107,6 +107,19 @@ func (d *daoTestSuite) TestGet() {
 	d.True(errors.IsErr(err, errors.NotFoundCode))
 }
 
+// GetByName tests get a policy schema by name.
+func (d *daoTestSuite) TestGetByName() {
+	policy, err := d.dao.GetByName(d.ctx, 1, "default-policy")
+	d.Require().Nil(err)
+	d.Require().NotNil(policy)
+	d.Equal(d.defaultPolicy.Name, policy.Name, "get a default policy")
+
+	// not found
+	_, err = d.dao.GetByName(d.ctx, 2, "default-policy")
+	d.Require().NotNil(err)
+	d.True(errors.IsErr(err, errors.NotFoundCode))
+}
+
 // Update tests update a policy schema.
 func (d *daoTestSuite) TestUpdate() {
 	newDesc := "test update"

@@ -34,6 +34,8 @@ type DAO interface {
 	Update(ctx context.Context, schema *policy.Schema, props ...string) (err error)
 	// Get the policy schema by id
 	Get(ctx context.Context, id int64) (schema *policy.Schema, err error)
+	// Get the policy schema by name
+	GetByName(ctx context.Context, projectID int64, name string) (schema *policy.Schema, err error)
 	// Delete the policy schema by id
 	Delete(ctx context.Context, id int64) (err error)
 	// List policy schemas by query
@@ -114,6 +116,25 @@ func (d *dao) Get(ctx context.Context, id int64) (schema *policy.Schema, err err
 	schema = &policy.Schema{ID: id}
 	if err = ormer.Read(schema); err != nil {
 		if e := orm.AsNotFoundError(err, "policy %d not found", id); e != nil {
+			err = e
+		}
+		return nil, err
+	}
+
+	return schema, nil
+}
+
+// GetByName gets a policy schema by name.
+func (d *dao) GetByName(ctx context.Context, projectID int64, name string) (schema *policy.Schema, err error) {
+	var ormer beego_orm.Ormer
+	ormer, err = orm.FromContext(ctx)
+	if err != nil {
+		return
+	}
+
+	schema = &policy.Schema{Name: name, ProjectID: projectID}
+	if err = ormer.Read(schema, "Name", "ProjectID"); err != nil {
+		if e := orm.AsNotFoundError(err, "policy %s not found", name); e != nil {
 			err = e
 		}
 		return nil, err
