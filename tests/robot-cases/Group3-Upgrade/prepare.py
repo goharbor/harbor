@@ -155,7 +155,7 @@ class HarborAPI:
         request(url+"projects/"+projectid+"", 'put', **body)
 
     @get_feature_branch
-    def add_sys_whitelist(self, cve_id_list, **kwargs):
+    def add_sys_allowlist(self, cve_id_list, **kwargs):
         cve_id_str = ""
         if kwargs["branch"] == 1:
             for index, cve_id in enumerate(cve_id_list["cve"]):
@@ -168,7 +168,7 @@ class HarborAPI:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
 
     @get_feature_branch
-    def update_project_setting_whitelist(self, project, reuse_sys_cve_whitelist, cve_id_list, **kwargs):
+    def update_project_setting_allowlist(self, project, reuse_sys_cve_whitelist, cve_id_list, **kwargs):
         r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
         cve_id_str = ""
@@ -475,7 +475,7 @@ def do_data_creation():
                                         project["configuration"]["auto_scan"])
 
     for project in data["projects"]:
-        harborAPI.update_project_setting_whitelist(project["name"],
+        harborAPI.update_project_setting_allowlist(project["name"],
                                     project["configuration"]["reuse_sys_cve_whitelist"],
                                     project["configuration"]["deployment_security"], version=args.version)
 
@@ -490,6 +490,6 @@ def do_data_creation():
                                    float(data["configuration"]["token"]),
                                    float(data["configuration"]["robot_token"])*60*24)
 
-    harborAPI.add_sys_whitelist(data["configuration"]["deployment_security"], version=args.version)
+    harborAPI.add_sys_allowlist(data["configuration"]["deployment_security"], version=args.version)
 
 do_data_creation()

@@ -177,7 +177,7 @@ class System(base.Base):
     def set_cve_whitelist(self, expires_at=None, expected_status_code=200, *cve_ids, **kwargs):
         client = self._get_client(**kwargs)
         cve_list = [swagger_client.CVEWhitelistItem(cve_id=c) for c in cve_ids]
-        whitelist = swagger_client.CVEWhitelist(expires_at=expires_at, items=cve_list)
+        whitelist  = swagger_client.CVEWhitelist(expires_at=expires_at, items=cve_list)
         try:
             r = client.system_cve_whitelist_put_with_http_info(whitelist=whitelist, _preload_content=False)
         except Exception as e:
