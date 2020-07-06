@@ -48,6 +48,14 @@ func (f *fakeDao) Get(ctx context.Context, id int64) (*policy.Schema, error) {
 	}
 	return schema, args.Error(1)
 }
+func (f *fakeDao) GetByName(ctx context.Context, projectID int64, name string) (*policy.Schema, error) {
+	args := f.Called()
+	var schema *policy.Schema
+	if args.Get(0) != nil {
+		schema = args.Get(0).(*policy.Schema)
+	}
+	return schema, args.Error(1)
+}
 func (f *fakeDao) Delete(ctx context.Context, id int64) error {
 	args := f.Called()
 	return args.Error(0)
@@ -108,6 +116,13 @@ func (m *managerTestSuite) TestUpdate() {
 // TestGet tests Get method.
 func (m *managerTestSuite) TestGet() {
 	m.dao.On("Get").Return(nil, nil)
+	_, err := m.mgr.Get(nil, 1)
+	m.Require().Nil(err)
+}
+
+// TestGetByName tests Get method.
+func (m *managerTestSuite) TestGetByName() {
+	m.dao.On("GetByName").Return(nil, nil)
 	_, err := m.mgr.Get(nil, 1)
 	m.Require().Nil(err)
 }

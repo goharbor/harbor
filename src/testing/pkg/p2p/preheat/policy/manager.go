@@ -95,6 +95,29 @@ func (_m *FakeManager) Get(ctx context.Context, id int64) (*modelspolicy.Schema,
 	return r0, r1
 }
 
+// GetByName provides a mock function with given fields: ctx, projectId, name
+func (_m *FakeManager) GetByName(ctx context.Context, projectId int64, name string) (*modelspolicy.Schema, error) {
+	ret := _m.Called(ctx, projectId, name)
+
+	var r0 *modelspolicy.Schema
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string) *modelspolicy.Schema); ok {
+		r0 = rf(ctx, projectId, name)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*modelspolicy.Schema)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int64, string) error); ok {
+		r1 = rf(ctx, projectId, name)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ListPolicies provides a mock function with given fields: ctx, query
 func (_m *FakeManager) ListPolicies(ctx context.Context, query *q.Query) ([]*modelspolicy.Schema, error) {
 	ret := _m.Called(ctx, query)

@@ -6,9 +6,11 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	providerModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
 	"github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/instance"
+	pmocks "github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/policy"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -16,24 +18,28 @@ import (
 
 type preheatSuite struct {
 	suite.Suite
-	ctx         context.Context
-	controller  Controller
-	fackManager *instance.FakeManager
+	ctx             context.Context
+	controller      Controller
+	fakeInstanceMgr *instance.FakeManager
+	fakePolicyMgr   *pmocks.FakeManager
 }
 
 func TestPreheatSuite(t *testing.T) {
 	t.Log("Start TestPreheatSuite")
-	fackManager := &instance.FakeManager{}
+	fakeInstanceMgr := &instance.FakeManager{}
+	fakePolicyMgr := &pmocks.FakeManager{}
 
 	var c = &controller{
-		iManager: fackManager,
+		iManager: fakeInstanceMgr,
+		pManager: fakePolicyMgr,
 	}
 	assert.NotNil(t, c)
 
 	suite.Run(t, &preheatSuite{
-		ctx:         context.Background(),
-		controller:  c,
-		fackManager: fackManager,
+		ctx:             context.Background(),
+		controller:      c,
+		fakeInstanceMgr: fakeInstanceMgr,
+		fakePolicyMgr:   fakePolicyMgr,
 	})
 }
 
@@ -45,7 +51,7 @@ func TestNewController(t *testing.T) {
 func (s *preheatSuite) SetupSuite() {
 	config.Init()
 
-	s.fackManager.On("List", mock.Anything, mock.Anything).Return([]*providerModel.Instance{
+	s.fakeInstanceMgr.On("List", mock.Anything, mock.Anything).Return([]*providerModel.Instance{
 		{
 			ID:       1,
 			Vendor:   "dragonfly",
@@ -54,16 +60,16 @@ func (s *preheatSuite) SetupSuite() {
 			Enabled:  true,
 		},
 	}, nil)
-	s.fackManager.On("Save", mock.Anything, mock.Anything).Return(int64(1), nil)
-	s.fackManager.On("Count", mock.Anything, &providerModel.Instance{Endpoint: "http://localhost"}).Return(int64(1), nil)
-	s.fackManager.On("Count", mock.Anything, mock.Anything).Return(int64(0), nil)
-	s.fackManager.On("Delete", mock.Anything, int64(1)).Return(nil)
-	s.fackManager.On("Delete", mock.Anything, int64(0)).Return(errors.New("not found"))
-	s.fackManager.On("Get", mock.Anything, int64(1)).Return(&providerModel.Instance{
+	s.fakeInstanceMgr.On("Save", mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.fakeInstanceMgr.On("Count", mock.Anything, &providerModel.Instance{Endpoint: "http://localhost"}).Return(int64(1), nil)
+	s.fakeInstanceMgr.On("Count", mock.Anything, mock.Anything).Return(int64(0), nil)
+	s.fakeInstanceMgr.On("Delete", mock.Anything, int64(1)).Return(nil)
+	s.fakeInstanceMgr.On("Delete", mock.Anything, int64(0)).Return(errors.New("not found"))
+	s.fakeInstanceMgr.On("Get", mock.Anything, int64(1)).Return(&providerModel.Instance{
 		ID:       1,
 		Endpoint: "http://localhost",
 	}, nil)
-	s.fackManager.On("Get", mock.Anything, int64(0)).Return(nil, errors.New("not found"))
+	s.fakeInstanceMgr.On("Get", mock.Anything, int64(0)).Return(nil, errors.New("not found"))
 }
 
 func (s *preheatSuite) TestGetAvailableProviders() {
@@ -136,14 +142,14 @@ func (s *preheatSuite) TestDeleteInstance() {
 
 func (s *preheatSuite) TestUpdateInstance() {
 	// TODO: test update more
-	s.fackManager.On("Update", s.ctx, nil).Return(errors.New("no properties provided to update"))
+	s.fakeInstanceMgr.On("Update", s.ctx, nil).Return(errors.New("no properties provided to update"))
 	err := s.controller.UpdateInstance(s.ctx, nil)
 	s.Error(err)
 
 	err = s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 0})
 	s.Error(err)
 
-	s.fackManager.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	s.fakeInstanceMgr.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	err = s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 1}, "enabled")
 	s.NoError(err)
 }
@@ -152,4 +158,58 @@ func (s *preheatSuite) TestGetInstance() {
 	inst, err := s.controller.GetInstance(s.ctx, 1)
 	s.NoError(err)
 	s.NotNil(inst)
+}
+
+func (s *preheatSuite) TestCountPolicy() {
+	s.fakePolicyMgr.On("Count", s.ctx, mock.Anything).Return(int64(1), nil)
+	id, err := s.controller.CountPolicy(s.ctx, nil)
+	s.NoError(err)
+	s.Equal(int64(1), id)
+}
+
+func (s *preheatSuite) TestCreatePolicy() {
+	s.fakePolicyMgr.On("Create", s.ctx, mock.Anything).Return(int64(1), nil)
+	id, err := s.controller.CreatePolicy(s.ctx, nil)
+	s.NoError(err)
+	s.Equal(int64(1), id)
+}
+
+func (s *preheatSuite) TestGetPolicy() {
+	s.fakePolicyMgr.On("Get", s.ctx, int64(1)).Return(&policy.Schema{Name: "test"}, nil)
+	p, err := s.controller.GetPolicy(s.ctx, 1)
+	s.NoError(err)
+	s.Equal("test", p.Name)
+}
+
+func (s *preheatSuite) TestGetPolicyByName() {
+	s.fakePolicyMgr.On("GetByName", s.ctx, int64(1), "test").Return(&policy.Schema{Name: "test"}, nil)
+	p, err := s.controller.GetPolicyByName(s.ctx, 1, "test")
+	s.NoError(err)
+	s.Equal("test", p.Name)
+}
+
+func (s *preheatSuite) TestUpdatePolicy() {
+	s.fakePolicyMgr.On("Update", s.ctx, mock.Anything, mock.Anything).Return(nil)
+	err := s.controller.UpdateInstance(s.ctx, nil, "")
+	s.NoError(err)
+}
+
+func (s *preheatSuite) TestDeletePolicy() {
+	s.fakePolicyMgr.On("Delete", s.ctx, int64(1)).Return(nil)
+	err := s.controller.DeletePolicy(s.ctx, 1)
+	s.NoError(err)
+}
+
+func (s *preheatSuite) TestListPolicies() {
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, mock.Anything).Return([]*policy.Schema{}, nil)
+	p, err := s.controller.ListPolicies(s.ctx, nil)
+	s.NoError(err)
+	s.NotNil(p)
+}
+
+func (s *preheatSuite) TestListPoliciesByProject() {
+	s.fakePolicyMgr.On("ListPoliciesByProject", s.ctx, int64(1), mock.Anything).Return([]*policy.Schema{}, nil)
+	p, err := s.controller.ListPoliciesByProject(s.ctx, 1, nil)
+	s.NoError(err)
+	s.NotNil(p)
 }
