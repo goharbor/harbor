@@ -100,6 +100,11 @@ type extURLGetter func(c *selector.Candidate) (string, error)
 // The purpose of defining such a func template is decoupling code
 type accessCredMaker func(c *selector.Candidate) (string, error)
 
+var (
+	// Enf default enforcer
+	Enf = NewEnforcer()
+)
+
 // defaultEnforcer is default implementation of Enforcer.
 type defaultEnforcer struct {
 	// for policy management
@@ -121,7 +126,7 @@ type defaultEnforcer struct {
 	credMaker accessCredMaker
 }
 
-// NewEnforcer creat a new enforcer
+// NewEnforcer create a new enforcer
 func NewEnforcer() Enforcer {
 	return &defaultEnforcer{
 		policyMgr:    policy.New(),
