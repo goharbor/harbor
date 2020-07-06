@@ -21,11 +21,12 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
-	"github.com/goharbor/harbor/src/pkg/project"
 )
 
 // Handler preprocess image event data
@@ -42,12 +43,13 @@ func (qp *Handler) Handle(value interface{}) error {
 		return fmt.Errorf("nil quota event")
 	}
 
-	project, err := project.Mgr.Get(quotaEvent.Project.Name)
+	prj, err := project.Ctl.GetByName(orm.Context(), quotaEvent.Project.Name, project.Metadata(true))
 	if err != nil {
 		log.Errorf("failed to get project:%s, error: %v", quotaEvent.Project.Name, err)
 		return err
 	}
-	policies, err := notification.PolicyMgr.GetRelatedPolices(project.ProjectID, quotaEvent.EventType)
+
+	policies, err := notification.PolicyMgr.GetRelatedPolices(prj.ProjectID, quotaEvent.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", quotaEvent.EventType, err)
 		return err
