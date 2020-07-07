@@ -50,6 +50,10 @@ type Manager interface {
 	//
 	Get(ctx context.Context, id int64) (*provider.Instance, error)
 
+	// GetByName gets the repository specified by name
+	// name string : the global unique name of the instance
+	GetByName(ctx context.Context, name string) (*provider.Instance, error)
+
 	// Count the instances by the param
 	//
 	// query *q.Query : the query params
@@ -98,6 +102,11 @@ func (dm *manager) Update(ctx context.Context, inst *provider.Instance, props ..
 // Get implements @Manager.Get
 func (dm *manager) Get(ctx context.Context, id int64) (*provider.Instance, error) {
 	return dm.dao.Get(ctx, id)
+}
+
+// Get implements @Manager.GetByName
+func (dm *manager) GetByName(ctx context.Context, name string) (*provider.Instance, error) {
+	return dm.dao.GetByName(ctx, name)
 }
 
 // Count implements @Manager.Count

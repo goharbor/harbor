@@ -62,6 +62,9 @@ type Controller interface {
 	//
 	GetInstance(ctx context.Context, id int64) (*providerModels.Instance, error)
 
+	// GetInstance the metadata of the specified instance
+	GetInstanceByName(ctx context.Context, name string) (*providerModels.Instance, error)
+
 	// Create a new instance for the specified provider.
 	//
 	// If succeed, the ID of the instance will be returned.
@@ -188,6 +191,10 @@ func (c *controller) UpdateInstance(ctx context.Context, instance *providerModel
 // GetInstance implements @Controller.Get
 func (c *controller) GetInstance(ctx context.Context, id int64) (*providerModels.Instance, error) {
 	return c.iManager.Get(ctx, id)
+}
+
+func (c *controller) GetInstanceByName(ctx context.Context, name string) (*providerModels.Instance, error) {
+	return c.iManager.GetByName(ctx, name)
 }
 
 // CountPolicy returns the total count of the policy.
