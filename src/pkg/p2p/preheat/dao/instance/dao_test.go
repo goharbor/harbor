@@ -6,6 +6,7 @@ import (
 
 	beego_orm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	models "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
@@ -63,6 +64,18 @@ func (is *instanceSuite) TestGet() {
 	assert.Nil(t, i)
 }
 
+// TestGetByName tests get a instance by name.
+func (is *instanceSuite) TestGetByName() {
+	instance, err := is.dao.GetByName(is.ctx, defaultInstance.Name)
+	is.Require().Nil(err)
+	is.Require().NotNil(instance)
+	is.Equal(defaultInstance.Name, instance.Name, "get a default instance")
+
+	// not found
+	_, err = is.dao.GetByName(is.ctx, "default-instance")
+	is.Require().NotNil(err)
+	is.True(errors.IsErr(err, errors.NotFoundCode))
+}
 func (is *instanceSuite) TestUpdate() {
 	t := is.T()
 	i, err := is.dao.Get(is.ctx, defaultInstance.ID)
