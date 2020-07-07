@@ -480,3 +480,12 @@ func QuotaSetting() (*models.QuotaSetting, error) {
 		StoragePerProject: cfgMgr.Get(common.StoragePerProject).GetInt64(),
 	}, nil
 }
+
+// GetPermittedRegistryTypesForProxyCache returns the permitted registry types for proxy cache
+func GetPermittedRegistryTypesForProxyCache() []string {
+	types := os.Getenv("PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE")
+	if len(types) == 0 {
+		return []string{}
+	}
+	return strings.Split(types, ",")
+}
