@@ -234,7 +234,7 @@ func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
 	defer func() {
 		if flushTrash {
 			gc.logger.Info("flush artifact trash")
-			if err := gc.artrashMgr.Flush(ctx.SystemContext()); err != nil {
+			if err := gc.artrashMgr.Flush(ctx.SystemContext(), 0); err != nil {
 				gc.logger.Errorf("failed to flush artifact trash: %v", err)
 			}
 		}
@@ -264,7 +264,7 @@ func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
 	}
 
 	// handle the trash
-	required, err := gc.artrashMgr.Filter(ctx.SystemContext())
+	required, err := gc.artrashMgr.Filter(ctx.SystemContext(), 0)
 	if err != nil {
 		return err
 	}
