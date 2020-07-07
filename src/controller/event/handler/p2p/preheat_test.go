@@ -83,6 +83,7 @@ func (fe *fakeEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Artif
 	return nil, nil
 }
 
+// TestPreheatHandler_Handle ...
 func TestPreheatHandler_Handle(t *testing.T) {
 	config.Init()
 
