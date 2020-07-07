@@ -50,7 +50,9 @@ The following table depicts the various user permission levels in a project.
 | Create/edit/delete project robots       |               |       |           |        | ✓             |
 | See configured CVE allowlist            | ✓             | ✓     | ✓         | ✓      | ✓             |
 | Create/edit/remove CVE allowlist        |               |       |           |        | ✓             |
-| Enable/disable webhooks                 |               |       | ✓         | ✓      | ✓             |
+| View webhook events                     |               |       |           | ✓      | ✓             |
+| Add new webhook events                  |               |       |           |        | ✓             |
+| Enable/disable webhooks                 |               |       |           |        | ✓             |
 | Create/delete tag retention rules       |               |       | ✓         | ✓      | ✓             |
 | Enable/disable tag retention rules      |               |       | ✓         | ✓      | ✓             |
 | Create/delete tag immutability rules    |               |       |           |        | ✓             |
