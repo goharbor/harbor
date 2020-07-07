@@ -832,9 +832,7 @@ paths:
             $ref: '#/definitions/PreheatPolicy'
       responses:
         '201':
-          description: Create policy success
-          schema:
-            $ref: '#/responses/201'
+          $ref: '#/responses/201'
         '400':
           $ref: '#/responses/400'
         '401':
