@@ -2,16 +2,16 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
-	"github.com/go-openapi/strfmt"
-
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
-
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	preheatCtl "github.com/goharbor/harbor/src/controller/p2p/preheat"
 	projectCtl "github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
+	instanceModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
@@ -38,24 +38,76 @@ func (api *preheatAPI) Prepare(ctx context.Context, operation string, params int
 }
 
 func (api *preheatAPI) CreateInstance(ctx context.Context, params operation.CreateInstanceParams) middleware.Responder {
-	var payload *models.InstanceCreatedResp
-	return operation.NewCreateInstanceCreated().WithPayload(payload)
+	instance, err := convertParamInstanceToModelInstance(params.Instance)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	_, err = api.preheatCtl.CreateInstance(ctx, instance)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+	return operation.NewCreateInstanceCreated()
 }
 
 func (api *preheatAPI) DeleteInstance(ctx context.Context, params operation.DeleteInstanceParams) middleware.Responder {
-	var payload *models.InstanceDeletedResp
-	return operation.NewDeleteInstanceOK().WithPayload(payload)
+	instance, err := api.preheatCtl.GetInstanceByName(ctx, params.PreheatInstanceName)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	err = api.preheatCtl.DeleteInstance(ctx, instance.ID)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	return operation.NewDeleteInstanceOK()
 }
 
 func (api *preheatAPI) GetInstance(ctx context.Context, params operation.GetInstanceParams) middleware.Responder {
 	var payload *models.Instance
+	instance, err := api.preheatCtl.GetInstanceByName(ctx, params.PreheatInstanceName)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	payload, err = convertInstanceToPayload(instance)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	return operation.NewGetInstanceOK().WithPayload(payload)
 }
 
 // ListInstances is List p2p instances
 func (api *preheatAPI) ListInstances(ctx context.Context, params operation.ListInstancesParams) middleware.Responder {
 	var payload []*models.Instance
-	return operation.NewListInstancesOK().WithPayload(payload)
+
+	query, err := api.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	total, err := api.preheatCtl.CountInstance(ctx, query)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	instances, err := api.preheatCtl.ListInstance(ctx, query)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	for _, instance := range instances {
+		ins, err := convertInstanceToPayload(instance)
+		if err != nil {
+			return api.SendError(ctx, err)
+		}
+		payload = append(payload, ins)
+	}
+	return operation.NewListInstancesOK().
+		WithPayload(payload).WithXTotalCount(total).
+		WithLink(api.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
 }
 
 func (api *preheatAPI) ListProviders(ctx context.Context, params operation.ListProvidersParams) middleware.Responder {
@@ -155,7 +207,7 @@ func (api *preheatAPI) DeletePolicy(ctx context.Context, params operation.Delete
 		return api.SendError(ctx, err)
 	}
 
-	return operation.NewDeleteInstanceOK()
+	return operation.NewDeletePolicyOK()
 }
 
 // ListPolicies is List preheat policies
@@ -233,5 +285,57 @@ func convertParamPolicyToModelPolicy(model *models.PreheatPolicy) (*policy.Schem
 		Enabled:     model.Enabled,
 		CreatedAt:   time.Time(model.CreationTime),
 		UpdatedTime: time.Time(model.UpdateTime),
+	}, nil
+}
+
+func convertInstanceToPayload(model *instanceModel.Instance) (*models.Instance, error) {
+	if model == nil {
+		return nil, errors.New("instance can not be nil")
+	}
+
+	var authInfo = map[string]string{}
+	var err = json.Unmarshal([]byte(model.AuthData), &authInfo)
+	if err != nil {
+		return nil, err
+	}
+	return &models.Instance{
+		AuthInfo:       authInfo,
+		AuthMode:       model.AuthMode,
+		Default:        model.Default,
+		Description:    model.Description,
+		Enabled:        model.Enabled,
+		Endpoint:       model.Endpoint,
+		ID:             model.ID,
+		Insecure:       model.Insecure,
+		Name:           model.Name,
+		SetupTimestamp: model.SetupTimestamp,
+		Status:         "Unknown",
+		Vendor:         model.Vendor,
+	}, nil
+}
+
+func convertParamInstanceToModelInstance(model *models.Instance) (*instanceModel.Instance, error) {
+	if model == nil {
+		return nil, errors.New("instance can not be nil")
+	}
+
+	var authData, err = json.Marshal(model.AuthInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return &instanceModel.Instance{
+		AuthData:       string(authData),
+		AuthMode:       model.AuthMode,
+		Default:        model.Default,
+		Description:    model.Description,
+		Enabled:        model.Enabled,
+		Endpoint:       model.Endpoint,
+		ID:             model.ID,
+		Insecure:       model.Insecure,
+		Name:           model.Name,
+		SetupTimestamp: model.SetupTimestamp,
+		Status:         model.Status,
+		Vendor:         model.Vendor,
 	}, nil
 }
