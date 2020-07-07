@@ -256,7 +256,7 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 				roleID = 2
 			case common.RoleGuest:
 				roleID = 3
-			case common.RoleMaster:
+			case common.RoleMaintainer:
 				roleID = 4
 			case common.RoleLimitedGuest:
 				roleID = 5
