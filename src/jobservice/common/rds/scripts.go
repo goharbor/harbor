@@ -75,6 +75,8 @@ if res then
   rev = tonumber(res[2]) or 0
   aRev = tonumber(ARGV[2]) or 0
 
+  -- print info
+  print()
   -- set same status repeatedly is allowed
   if rev < aRev or ( rev == aRev and (code < aCode or st == ARGV[1])) then
     redis.call('hmset', KEYS[1], 'status', ARGV[1], 'update_time', ARGV[3])
