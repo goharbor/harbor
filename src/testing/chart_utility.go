@@ -138,7 +138,7 @@ var chartVersionsOfHarbor = `
              }
          ],
          "engine": "gotpl",
-         "icon": "https://raw.githubusercontent.com/vmware/harbor/master/docs/img/harbor_logo.png",
+         "icon": "https://raw.githubusercontent.com/goharbor/website/master/docs/img/harbor_logo.png",
          "appVersion": "1.5.0",
          "urls": [
              "charts/harbor-0.2.1.tgz"
@@ -171,7 +171,7 @@ var chartVersionsOfHarbor = `
              }
          ],
          "engine": "gotpl",
-         "icon": "https://raw.githubusercontent.com/vmware/harbor/master/docs/img/harbor_logo.png",
+         "icon": "https://raw.githubusercontent.com/goharbor/website/master/docs/img/harbor_logo.png",
          "appVersion": "1.5.0",
          "urls": [
              "charts/harbor-0.2.0.tgz"
@@ -207,7 +207,7 @@ var harborChartV = `
          }
      ],
      "engine": "gotpl",
-     "icon": "https://github.com/goharbor/harbor/blob/master/docs/img/harbor_logo.png",
+     "icon": "https://raw.githubusercontent.com/goharbor/website/master/docs/img/harbor_logo.png",
      "appVersion": "1.5.0",
      "urls": [
          "charts/harbor-0.2.0.tgz"
@@ -226,7 +226,7 @@ var repo1IndexYaml = `
      digest: 758ae429f362200a7941c600c8112cc3122723b99ffa5713a0902902da9949ba
      engine: gotpl
      home: https://github.com/goharbor/harbor
-     icon: https://github.com/goharbor/harbor/blob/master/docs/img/harbor_logo.png
+     icon: https://raw.githubusercontent.com/goharbor/website/master/docs/img/harbor_logo.png
      keywords:
      - vmware
      - docker
@@ -285,7 +285,7 @@ var repo2IndexYaml = `
      digest: 758ae429f362200a7941c600c8112cc3122723b99ffa5713a0902902da9949ba
      engine: gotpl
      home: https://github.com/goharbor/harbor
-     icon: https://github.com/goharbor/harbor/blob/master/docs/img/harbor_logo.png
+     icon: https://raw.githubusercontent.com/goharbor/website/master/docs/img/harbor_logo.png
      keywords:
      - vmware
      - docker
