@@ -14,6 +14,7 @@ import (
 type DAO interface {
 	Create(ctx context.Context, instance *provider.Instance) (int64, error)
 	Get(ctx context.Context, id int64) (*provider.Instance, error)
+	GetByName(ctx context.Context, name string) (*provider.Instance, error)
 	Update(ctx context.Context, instance *provider.Instance, props ...string) error
 	Delete(ctx context.Context, id int64) error
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
@@ -58,6 +59,23 @@ func (d *dao) Get(ctx context.Context, id int64) (*provider.Instance, error) {
 		return nil, nil
 	}
 	return &di, err
+}
+
+// Get gets instance from db by name.
+func (d *dao) GetByName(ctx context.Context, name string) (instance *provider.Instance, err error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	instance = &provider.Instance{Name: name}
+	if err = o.Read(instance, "Name"); err != nil {
+		if e := orm.AsNotFoundError(err, "instance %s not found", name); e != nil {
+			err = e
+		}
+		return nil, err
+	}
+	return
 }
 
 // Update updates distribution instance.

@@ -19,6 +19,9 @@ type fakeDao struct {
 }
 
 var _ dao.DAO = (*fakeDao)(nil)
+var lists = []*providerModel.Instance{
+	{Name: "abc"},
+}
 
 func (d *fakeDao) Create(ctx context.Context, instance *provider.Instance) (int64, error) {
 	var args = d.Called()
@@ -26,6 +29,15 @@ func (d *fakeDao) Create(ctx context.Context, instance *provider.Instance) (int6
 }
 
 func (d *fakeDao) Get(ctx context.Context, id int64) (*provider.Instance, error) {
+	var args = d.Called()
+	var instance *provider.Instance
+	if args.Get(0) != nil {
+		instance = args.Get(0).(*provider.Instance)
+	}
+	return instance, args.Error(1)
+}
+
+func (d *fakeDao) GetByName(ctx context.Context, name string) (*provider.Instance, error) {
 	var args = d.Called()
 	var instance *provider.Instance
 	if args.Get(0) != nil {
@@ -69,6 +81,7 @@ type instanceManagerSuite struct {
 func (im *instanceManagerSuite) SetupSuite() {
 	im.dao = &fakeDao{}
 	im.manager = &manager{dao: im.dao}
+	im.dao.On("List").Return(lists, nil)
 }
 
 func (im *instanceManagerSuite) TestSave() {
@@ -98,6 +111,13 @@ func (im *instanceManagerSuite) TestGet() {
 	im.Require().Equal(ins, res)
 }
 
+func (im *instanceManagerSuite) TestGetByName() {
+	im.dao.On("GetByName").Return(lists[0], nil)
+	res, err := im.manager.GetByName(im.ctx, "abc")
+	im.Require().Nil(err)
+	im.Require().Equal(lists[0], res)
+}
+
 func (im *instanceManagerSuite) TestCount() {
 	im.dao.On("Count").Return(2, nil)
 	count, err := im.manager.Count(im.ctx, nil)
@@ -108,12 +128,11 @@ func (im *instanceManagerSuite) TestCount() {
 func (im *instanceManagerSuite) TestList() {
 	lists := []*providerModel.Instance{
 		{Name: "abc"},
-		{Name: "def"},
 	}
 	im.dao.On("List").Return(lists, nil)
 	res, err := im.manager.List(im.ctx, nil)
 	assert.Nil(im.T(), err)
-	assert.Len(im.T(), res, 2)
+	assert.Len(im.T(), res, 1)
 	assert.Equal(im.T(), lists, res)
 }
 

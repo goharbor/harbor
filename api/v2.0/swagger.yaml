@@ -734,7 +734,7 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
-  /p2p/preheat/instances/{instance_id}:
+  /p2p/preheat/instances/{preheat_instance_name}:
     get:
       summary: Get a P2P provider instance
       description: Get a P2P provider instance
@@ -743,7 +743,7 @@ paths:
       operationId: GetInstance
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/instanceId'
+        - $ref: '#/parameters/instanceName'
       responses:
         '200':
           description: Success
@@ -767,7 +767,7 @@ paths:
       operationId: DeleteInstance
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/instanceId'
+        - $ref: '#/parameters/instanceName'
       responses:
         '200':
           description: Instance ID deleted
@@ -789,7 +789,7 @@ paths:
       operationId: UpdateInstance
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/instanceId'
+        - $ref: '#/parameters/instanceName'
         - name: propertySet
           in: body
           description: The property set to update
@@ -1017,12 +1017,12 @@ parameters:
     required: false
     description: The size of per page
     default: 10
-  instanceId:
-    name: instance_id
+  instanceName:
+    name: preheat_instance_name
     in: path
-    description: Instance ID
+    description: Instance Name
     required: true
-    type: integer
+    type: string
   preheatPolicyName:
     name: preheat_policy_name
     in: path
