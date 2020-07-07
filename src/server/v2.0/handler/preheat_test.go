@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
+	instanceModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/stretchr/testify/assert"
@@ -146,6 +147,132 @@ func Test_convertParamPolicyToModelPolicy(t *testing.T) {
 				}
 			} else {
 				assert.NotNil(t, err)
+			}
+		})
+	}
+}
+
+func Test_convertInstanceToPayload(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   *instanceModel.Instance
+		want    *models.Instance
+		wantErr bool
+	}{
+		{
+			name:    "want err",
+			input:   nil,
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "invalid authData",
+			input:   nil,
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "want ok",
+			input: &instanceModel.Instance{
+				ID:             1,
+				Name:           "abc",
+				Description:    "something",
+				Vendor:         "kraken",
+				Enabled:        true,
+				Endpoint:       "https://example.com",
+				AuthMode:       "none",
+				AuthData:       `{"name":"harbor"}`,
+				Status:         "",
+				Default:        true,
+				Insecure:       true,
+				SetupTimestamp: 1234,
+			},
+			want: &models.Instance{
+				ID:             1,
+				Name:           "abc",
+				Description:    "something",
+				Vendor:         "kraken",
+				Enabled:        true,
+				Endpoint:       "https://example.com",
+				AuthMode:       "none",
+				AuthInfo:       map[string]string{"name": "harbor"},
+				Status:         "Unknown",
+				Default:        true,
+				Insecure:       true,
+				SetupTimestamp: 1234,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := convertInstanceToPayload(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("convertInstanceToPayload() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("convertInstanceToPayload() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_convertParamInstanceToModelInstance(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   *models.Instance
+		want    *instanceModel.Instance
+		wantErr bool
+	}{
+		{
+			name:    "want err",
+			input:   nil,
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "want ok",
+			input: &models.Instance{
+				ID:             1,
+				Name:           "abc",
+				Description:    "something",
+				Vendor:         "kraken",
+				Enabled:        true,
+				Endpoint:       "https://example.com",
+				AuthMode:       "none",
+				AuthInfo:       map[string]string{"name": "harbor"},
+				Status:         "Unknown",
+				Default:        true,
+				Insecure:       true,
+				SetupTimestamp: 1234,
+			},
+			want: &instanceModel.Instance{
+				ID:             1,
+				Name:           "abc",
+				Description:    "something",
+				Vendor:         "kraken",
+				Enabled:        true,
+				Endpoint:       "https://example.com",
+				AuthMode:       "none",
+				AuthData:       `{"name":"harbor"}`,
+				Status:         "Unknown",
+				Default:        true,
+				Insecure:       true,
+				SetupTimestamp: 1234,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := convertParamInstanceToModelInstance(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("convertParamInstanceToModelInstance() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("convertParamInstanceToModelInstance() = %v, want %v", got, tt.want)
 			}
 		})
 	}
