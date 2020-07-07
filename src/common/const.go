@@ -32,7 +32,7 @@ const (
 	RoleProjectAdmin = 1
 	RoleDeveloper    = 2
 	RoleGuest        = 3
-	RoleMaster       = 4
+	RoleMaintainer   = 4
 	RoleLimitedGuest = 5
 
 	LabelLevelSystem  = "s"
