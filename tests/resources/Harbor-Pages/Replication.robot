@@ -73,7 +73,7 @@ Create A New Endpoint
 
 Create A Rule With Existing Endpoint
     [Arguments]    ${name}    ${replication_mode}    ${project_name}    ${resource_type}    ${endpoint}    ${dest_namespace}
-    ...    ${mode}=Manual
+    ...    ${mode}=Manual  ${cron}="* */59 * * * *"
     #click new
     Retry Element Click    ${new_name_xpath}
     #input name
@@ -88,7 +88,7 @@ Create A Rule With Existing Endpoint
     Retry Text Input    ${dest_namespace_xpath}    ${dest_namespace}
     #set trigger
     Select Trigger  ${mode}
-    Run Keyword If    '${mode}' == 'Scheduled'    Log To Console    Scheduled
+    Run Keyword If    '${mode}' == 'Scheduled'  Retry Text Input  ${targetCron_id}  ${cron}
     #click save
     Retry Double Keywords When Error  Retry Element Click  ${rule_save_button}  Retry Wait Until Page Not Contains Element  ${rule_save_button}
     Sleep  2

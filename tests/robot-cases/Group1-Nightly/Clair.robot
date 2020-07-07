@@ -68,7 +68,7 @@ Test Case - View Scan Error
     ${d}=  get current date  result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user026  Test1@34
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  user026  Test1@34  project${d}  vmware/photon:1.0
     Go Into Project  project${d}
     Go Into Repo  project${d}/vmware/photon
@@ -94,7 +94,7 @@ Test Case - Project Level Image Serverity Policy
     #For internal CPE harbor registry
     ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
     ${image}=  Set Variable  redis
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
     Go Into Project  project${d}
     Go Into Repo  ${image}
@@ -102,7 +102,7 @@ Test Case - Project Level Image Serverity Policy
     Navigate To Projects
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  3
-    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}
+    Cannot Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}  err_msg=To continue with pull, please contact your project administrator to exempt matched vulnerabilities through configuring the CVE whitelist
     Close Browser
 
 #Important Note: All CVE IDs in CVE Whitelist cases must unique!

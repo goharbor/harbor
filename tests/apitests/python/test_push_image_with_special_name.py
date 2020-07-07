@@ -36,7 +36,7 @@ class TestProjects(unittest.TestCase):
         #3. Delete user(UA);
         self.user.delete_user(TestProjects.user_sign_image_id, **ADMIN_CLIENT)
 
-    def testSignImage(self):
+    def testPushImageWithSpecialName(self):
         """
         Test case:
             Push Image With Special Name
