@@ -626,7 +626,7 @@ func getProjectMemberSummary(ctx context.Context, projectID int64, summary *mode
 		count *int64
 	}{
 		{common.RoleProjectAdmin, &summary.ProjectAdminCount},
-		{common.RoleMaster, &summary.MasterCount},
+		{common.RoleMaintainer, &summary.MaintainerCount},
 		{common.RoleDeveloper, &summary.DeveloperCount},
 		{common.RoleGuest, &summary.GuestCount},
 		{common.RoleLimitedGuest, &summary.LimitedGuestCount},
@@ -657,7 +657,7 @@ func highestRole(roles []int) int {
 	}
 	rolePower := map[int]int{
 		common.RoleProjectAdmin: 50,
-		common.RoleMaster:       40,
+		common.RoleMaintainer:   40,
 		common.RoleDeveloper:    30,
 		common.RoleGuest:        20,
 		common.RoleLimitedGuest: 10,

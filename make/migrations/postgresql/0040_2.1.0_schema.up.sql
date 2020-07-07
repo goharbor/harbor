@@ -1,5 +1,6 @@
 ALTER TABLE project ADD COLUMN IF NOT EXISTS registry_id int;
 ALTER TABLE IF EXISTS cve_whitelist RENAME TO cve_allowlist;
+UPDATE role SET name='maintainer' WHERE name='master';
 
 CREATE TABLE IF NOT EXISTS execution (
     id SERIAL NOT NULL,

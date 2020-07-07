@@ -3858,9 +3858,9 @@ definitions:
       project_admin_count:
         type: integer
         description: The total number of project admin members.
-      master_count:
+      maintainer_count:
         type: integer
-        description: The total number of master members.
+        description: The total number of maintainer members.
       developer_count:
         type: integer
         description: The total number of developer members.
@@ -4592,7 +4592,7 @@ definitions:
     properties:
       role_id:
         type: integer
-        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for master'
+        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for maintainer'
       member_user:
         $ref: '#/definitions/UserEntity'
       member_group:
@@ -4602,7 +4602,7 @@ definitions:
     properties:
       role_id:
         type: integer
-        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for master'
+        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for maintainer'
   UserEntity:
     type: object
     properties:
