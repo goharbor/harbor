@@ -280,7 +280,7 @@
     "ROLE": "角色",
     "SYS_ADMIN": "系統管理員",
     "PROJECT_ADMIN": "項目管理員",
-    "PROJECT_MASTER": "維護人員",
+    "PROJECT_MAINTAINER": "維護人員",
     "DEVELOPER": "開發人員",
     "GUEST": "訪客",
     "LIMITED_GUEST": "受限訪客",
@@ -436,7 +436,7 @@
     "ROLE": "權限",
     "SYS_ADMIN": "系統管理員",
     "PROJECT_ADMIN": "項目管理員",
-    "PROJECT_MASTER": "維護人員",
+    "PROJECT_MAINTAINER": "維護人員",
     "DEVELOPER": "開發者",
     "GUEST": "訪客",
     "LIMITED_GUEST": "受限訪客"
@@ -775,7 +775,7 @@
     "ARTIFACT_COUNT":"工件數量",
     "STORAGE_CONSUMPTION": "存儲消耗",
     "ADMIN": "管理員",
-    "MASTER": "維護人員",
+    "MAINTAINER": "維護人員",
     "DEVELOPER": "開發者",
     "GUEST": "訪客",
     "LIMITED_GUEST": "受限訪客"

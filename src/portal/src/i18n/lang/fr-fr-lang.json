@@ -307,7 +307,7 @@
         "USER_TYPE": "Utilisateur",
         "SYS_ADMIN": "Administrateur Système",
         "PROJECT_ADMIN": "Administrateur de Projet",
-        "PROJECT_MASTER": "Préposé à la maintenance",
+        "PROJECT_MAINTAINER": "Préposé à la maintenance",
         "DEVELOPER": "Développeur",
         "GUEST": "Invité",
         "LIMITED_GUEST": "Invité avec droits limités",
@@ -443,7 +443,7 @@
         "ROLE": "Rôle",
         "SYS_ADMIN": "Administrateur Système",
         "PROJECT_ADMIN": "Administrateur de Projet",
-        "PROJECT_MASTER": "Propriétaire",
+        "PROJECT_MAINTAINER": "Propriétaire",
         "DEVELOPER": "Développeur",
         "GUEST": "Invité",
         "LIMITED_GUEST": "Invité avec droits limités",
@@ -776,10 +776,17 @@
         "ARTIFACT_COUNT": "Nombre d'Artefact",
         "STORAGE_CONSUMPTION": "Consommation de stockage",
         "ADMIN": "Admin(s)",
+<<<<<<< HEAD
         "MASTER": "Maître(s)",
         "DEVELOPER": "Développeur(s)",
         "GUEST": "Invité",
         "LIMITED_GUEST": "Invité(s) avec droits limités"
+=======
+        "MAINTAINER": "Maintainer(s)",
+        "DEVELOPER": "Developer(s)",
+        "GUEST": "Guest(s)",
+        "LIMITED_GUEST": "Limited guest(s)"
+>>>>>>> Rename project role
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Certaines modifications ne sont pas encore enregistrées. Voulez-vous annuler ?"
