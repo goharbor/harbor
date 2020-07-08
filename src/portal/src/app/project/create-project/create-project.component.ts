@@ -23,8 +23,8 @@ import {
     OnChanges,
     SimpleChanges, AfterViewInit, ElementRef
 } from "@angular/core";
-import { NgForm, Validators, AbstractControl } from "@angular/forms";
-import { fromEvent, Subject, Subscription } from "rxjs";
+import { NgForm, Validators } from "@angular/forms";
+import { fromEvent, Subscription } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
@@ -32,6 +32,7 @@ import { Project } from "../project";
 import { QuotaUnits, QuotaUnlimited } from "../../../lib/entities/shared.const";
 import { Endpoint, EndpointService, ProjectService, QuotaHardInterface } from '../../../lib/services';
 import { clone, getByte, GetIntegerAndUnit, validateLimit } from "../../../lib/utils/utils";
+import { HttpParams } from '@angular/common/http';
 
 
 @Component({
@@ -74,7 +75,7 @@ export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges
   checkNameSubscribe: Subscription;
 
   registries: Endpoint[] = [];
-  supportedRegistryType: string[] = ['docker-hub', 'harbor'];
+  supportedRegistryTypeQueryString: string = "type={docker-hub harbor}";
 
   constructor(private projectService: ProjectService,
               private translateService: TranslateService,
@@ -87,10 +88,10 @@ export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges
     }
 
     getRegistries() {
-      this.endpointService.getEndpoints()
+      this.endpointService.getEndpoints(null, new HttpParams().set('q', this.supportedRegistryTypeQueryString))
         .subscribe(targets => {
           if (targets && targets.length) {
-            this.registries = targets.filter(item => this.supportedRegistryType.indexOf(item.type) !== -1);
+            this.registries = targets;
           }
         }, error => {
           this.messageHandlerService.handleError(error);
