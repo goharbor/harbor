@@ -292,11 +292,6 @@ func (p *ProjectAPI) Delete() {
 		return
 	}
 
-	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
-		p.ParseAndHandleError(fmt.Sprintf("failed to delete project %d", p.project.ProjectID), err)
-		return
-	}
-
 	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(p.project.ProjectID, 10))
 	if err != nil {
 		p.SendInternalServerError(fmt.Errorf("failed to get quota manager: %v", err))
@@ -304,6 +299,11 @@ func (p *ProjectAPI) Delete() {
 	}
 	if err := quotaMgr.DeleteQuota(); err != nil {
 		p.SendInternalServerError(fmt.Errorf("failed to delete quota for project: %v", err))
+		return
+	}
+
+	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
+		p.ParseAndHandleError(fmt.Sprintf("failed to delete project %d", p.project.ProjectID), err)
 		return
 	}
 
