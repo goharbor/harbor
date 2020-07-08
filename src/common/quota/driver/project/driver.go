@@ -50,7 +50,7 @@ func getProjectsBatchFn(ctx context.Context, keys dataloader.Keys) []*dataloader
 		projectIDs = append(projectIDs, id)
 	}
 
-	projects, err := dao.GetProjects(&models.ProjectQueryParam{})
+	projects, err := dao.GetProjects(&models.ProjectQueryParam{ProjectIDs: projectIDs})
 	if err != nil {
 		return handleError(err)
 	}
@@ -154,7 +154,7 @@ func (d *driver) Validate(hardLimits types.ResourceList) error {
 func newDriver() dr.Driver {
 	cfg := config.NewDBCfgManager()
 
-	loader := dataloader.NewBatchedLoader(getProjectsBatchFn)
+	loader := dataloader.NewBatchedLoader(getProjectsBatchFn, dataloader.WithClearCacheOnBatch())
 
 	return &driver{cfg: cfg, loader: loader}
 }
