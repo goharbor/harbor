@@ -16,8 +16,11 @@ package models
 
 import (
 	"github.com/astaxie/beego/orm"
+	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/models"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"time"
 )
 
@@ -81,6 +84,12 @@ func (b *Blob) TableName() string {
 // IsForeignLayer returns true if the blob is foreign layer
 func (b *Blob) IsForeignLayer() bool {
 	return b.ContentType == schema2.MediaTypeForeignLayer
+}
+
+// IsManifest returns true if the blob is manifest layer
+func (b *Blob) IsManifest() bool {
+	return b.ContentType == schema2.MediaTypeManifest || b.ContentType == schema1.MediaTypeManifest ||
+		b.ContentType == v1.MediaTypeImageManifest || b.ContentType == v1.MediaTypeImageIndex || b.ContentType == manifestlist.MediaTypeManifestList
 }
 
 // ProjectBlob alias ProjectBlob model
