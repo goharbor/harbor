@@ -23,13 +23,13 @@ import (
 
 type fakeProcessor struct{}
 
-func (f *fakeProcessor) GetArtifactType() string {
+func (f *fakeProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
 	return ""
 }
-func (f *fakeProcessor) ListAdditionTypes() []string {
+func (f *fakeProcessor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
 	return nil
 }
-func (f *fakeProcessor) AbstractMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
+func (f *fakeProcessor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error {
 	return nil
 }
 func (f *fakeProcessor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, additionType string) (*Addition, error) {
