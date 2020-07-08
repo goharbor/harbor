@@ -10,6 +10,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	preheatCtl "github.com/goharbor/harbor/src/controller/p2p/preheat"
 	projectCtl "github.com/goharbor/harbor/src/controller/project"
+	liberrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	instanceModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
@@ -22,6 +23,7 @@ func newPreheatAPI() *preheatAPI {
 	return &preheatAPI{
 		preheatCtl: preheatCtl.Ctl,
 		projectCtl: projectCtl.Ctl,
+		enforcer:   preheatCtl.Enf,
 	}
 }
 
@@ -31,6 +33,7 @@ type preheatAPI struct {
 	BaseAPI
 	preheatCtl preheatCtl.Controller
 	projectCtl projectCtl.Controller
+	enforcer   preheatCtl.Enforcer
 }
 
 func (api *preheatAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
@@ -246,6 +249,62 @@ func (api *preheatAPI) ListPolicies(ctx context.Context, params operation.ListPo
 	}
 	return operation.NewListPoliciesOK().WithPayload(payload).WithXTotalCount(total).
 		WithLink(api.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
+}
+
+// ManualPreheat is manual preheat
+func (api *preheatAPI) ManualPreheat(ctx context.Context, params operation.ManualPreheatParams) middleware.Responder {
+	project, err := api.projectCtl.GetByName(ctx, params.ProjectName)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	policy, err := api.preheatCtl.GetPolicyByName(ctx, project.ProjectID, params.PreheatPolicyName)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	_, err = api.enforcer.EnforcePolicy(ctx, policy.ID)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	// TODO: build execution URL
+	var location = ""
+
+	return operation.NewManualPreheatCreated().WithLocation(location)
+}
+
+func (api *preheatAPI) PingInstances(ctx context.Context, params operation.PingInstancesParams) middleware.Responder {
+	var instance *instanceModel.Instance
+	var err error
+
+	if params.Instance.ID > 0 {
+		// by ID
+		instance, err = api.preheatCtl.GetInstance(ctx, params.Instance.ID)
+		if liberrors.IsNotFoundErr(err) {
+			return operation.NewPingInstancesNotFound()
+		}
+		if err != nil {
+			api.SendError(ctx, err)
+		}
+	} else {
+		// by endpoint URL
+		if params.Instance.Endpoint == "" {
+			return operation.NewPingInstancesBadRequest()
+		}
+
+		instance, err = convertParamInstanceToModelInstance(params.Instance)
+		if err != nil {
+			api.SendError(ctx, err)
+		}
+	}
+
+	err = api.preheatCtl.CheckHealth(ctx, instance)
+	if err != nil {
+		api.SendError(ctx, err)
+	}
+
+	return operation.NewPingInstancesOK()
 }
 
 // convertPolicyToPayload converts model policy to swagger model
