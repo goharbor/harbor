@@ -87,7 +87,7 @@ User Can Not Change Role
 #this keyworkd seems will not use any more, will delete in the future
 Non-admin View Member Account
     [arguments]  ${times}
-    Xpath Should Match X Times  //clr-dg-row-master  ${times}
+    Xpath Should Match X Times  //clr-dg-row-maintainer  ${times}
 
 User Can Not Add Member
     Retry Wait Until Page Contains Element  xpath=//button[@disabled='' and contains(.,'User')]
@@ -192,7 +192,7 @@ User Should Be Admin
     Logout Harbor
     Push Image With Tag  ${ip}  ${user}  ${password}  ${project}  hello-world  v2
 
-User Should Be Master
+User Should Be Maintainer
     [Arguments]  ${user}  ${pwd}  ${project}  ${is_oidc_mode}=${false}
     Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor   ${HARBOR_URL}  ${user}  ${pwd}
     ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${user}
@@ -202,7 +202,7 @@ User Should Be Master
     Go Into Project  ${project}
     Delete Repo  ${project}
     Switch To Member
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Master')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Maintainer')]
     Logout Harbor
     Push Image With Tag  ${ip}  ${user}  ${password}  ${project}  hello-world  v3
 
