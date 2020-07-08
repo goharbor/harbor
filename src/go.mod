@@ -10,7 +10,7 @@ require (
 	github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d // indirect
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
-	github.com/astaxie/beego v1.12.1
+	github.com/astaxie/beego v1.12.2
 	github.com/aws/aws-sdk-go v1.32.5
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bmatcuk/doublestar v1.1.1
@@ -43,7 +43,7 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/certificate-transparency-go v1.0.21 // indirect
 	github.com/google/uuid v1.1.1
-	github.com/gorilla/csrf v1.6.2
+	github.com/gorilla/csrf v1.7.0
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
@@ -59,7 +59,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/robfig/cron v1.0.0
-	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
 	github.com/spf13/viper v1.4.0 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/theupdateframework/notary v0.6.1

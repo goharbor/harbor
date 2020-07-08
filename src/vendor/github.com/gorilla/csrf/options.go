@@ -152,8 +152,9 @@ func parseOptions(h http.Handler, opts ...Option) *csrf {
 	cs.opts.Secure = true
 	cs.opts.HttpOnly = true
 
-	// Default to blank to maintain backwards compatibility
-	cs.opts.SameSite = SameSiteDefaultMode
+	// Set SameSite=Lax by default, allowing the CSRF cookie to only be sent on
+	// top-level navigations.
+	cs.opts.SameSite = SameSiteLaxMode
 
 	// Default; only override this if the package user explicitly calls MaxAge(0)
 	cs.opts.MaxAge = defaultAge
