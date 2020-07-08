@@ -3,7 +3,11 @@ package preheat
 import (
 	"context"
 	"errors"
+	"net/http"
+	"net/http/httptest"
 	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
@@ -18,10 +22,11 @@ import (
 
 type preheatSuite struct {
 	suite.Suite
-	ctx             context.Context
-	controller      Controller
-	fakeInstanceMgr *instance.FakeManager
-	fakePolicyMgr   *pmocks.FakeManager
+	ctx                context.Context
+	controller         Controller
+	fakeInstanceMgr    *instance.FakeManager
+	fakePolicyMgr      *pmocks.FakeManager
+	mockInstanceServer *httptest.Server
 }
 
 func TestPreheatSuite(t *testing.T) {
@@ -70,6 +75,25 @@ func (s *preheatSuite) SetupSuite() {
 		Endpoint: "http://localhost",
 	}, nil)
 	s.fakeInstanceMgr.On("Get", mock.Anything, int64(0)).Return(nil, errors.New("not found"))
+
+	// mock server for check health
+	s.mockInstanceServer = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.RequestURI {
+		case "/_ping":
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusNotImplemented)
+				return
+			}
+
+			w.WriteHeader(http.StatusOK)
+		}
+	}))
+	s.mockInstanceServer.Start()
+}
+
+// TearDownSuite clears the env.
+func (s *preheatSuite) TearDownSuite() {
+	s.mockInstanceServer.Close()
 }
 
 func (s *preheatSuite) TestGetAvailableProviders() {
@@ -212,4 +236,41 @@ func (s *preheatSuite) TestListPoliciesByProject() {
 	p, err := s.controller.ListPoliciesByProject(s.ctx, 1, nil)
 	s.NoError(err)
 	s.NotNil(p)
+}
+
+func (s *preheatSuite) TestCheckHealth() {
+	// if instance is nil
+	var instance *providerModel.Instance
+	err := s.controller.CheckHealth(s.ctx, instance)
+	s.Error(err)
+
+	// unknown vendor
+	instance = &providerModel.Instance{
+		ID:       1,
+		Name:     "test-instance",
+		Vendor:   "unknown",
+		Endpoint: "http://127.0.0.1",
+		AuthMode: auth.AuthModeNone,
+		Enabled:  true,
+		Default:  true,
+		Insecure: true,
+		Status:   "Unknown",
+	}
+	err = s.controller.CheckHealth(s.ctx, instance)
+	s.Error(err)
+
+	// health
+	instance = &providerModel.Instance{
+		ID:       1,
+		Name:     "test-instance",
+		Vendor:   provider.DriverDragonfly,
+		Endpoint: s.mockInstanceServer.URL,
+		AuthMode: auth.AuthModeNone,
+		Enabled:  true,
+		Default:  true,
+		Insecure: true,
+		Status:   "Unknown",
+	}
+	err = s.controller.CheckHealth(s.ctx, instance)
+	s.NoError(err)
 }
