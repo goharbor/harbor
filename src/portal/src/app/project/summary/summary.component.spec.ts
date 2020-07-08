@@ -59,7 +59,7 @@ describe('SummaryComponent', () => {
     repo_count: 0,
     chart_count: 0,
     project_admin_count: 1,
-    master_count: 0,
+    maintainer_count: 0,
     developer_count: 0
   };
 
