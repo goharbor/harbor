@@ -138,7 +138,7 @@ func (m *manifestTestSuite) TestAbstractMetadata() {
 	art := &artifact.Artifact{}
 
 	m.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
-	m.processor.AbstractMetadata(nil, []byte(manifest), art)
+	m.processor.AbstractMetadata(nil, art, []byte(manifest))
 	m.Len(art.ExtraAttrs, 9)
 
 	// reset the mock
@@ -148,7 +148,7 @@ func (m *manifestTestSuite) TestAbstractMetadata() {
 	m.processor.properties = []string{"os"}
 	art = &artifact.Artifact{}
 	m.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
-	m.processor.AbstractMetadata(nil, []byte(manifest), art)
+	m.processor.AbstractMetadata(nil, art, []byte(manifest))
 	m.Require().Len(art.ExtraAttrs, 1)
 	m.Equal("linux", art.ExtraAttrs["os"])
 }

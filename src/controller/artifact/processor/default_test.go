@@ -26,27 +26,27 @@ type defaultProcessorTestSuite struct {
 func (d *defaultProcessorTestSuite) TestGetArtifactType() {
 	mediaType := ""
 	processor := &defaultProcessor{mediaType: mediaType}
-	typee := processor.GetArtifactType()
+	typee := processor.GetArtifactType(nil, nil)
 	d.Equal(ArtifactTypeUnknown, typee)
 
 	mediaType = "unknown"
 	processor = &defaultProcessor{mediaType: mediaType}
-	typee = processor.GetArtifactType()
+	typee = processor.GetArtifactType(nil, nil)
 	d.Equal(ArtifactTypeUnknown, typee)
 
 	mediaType = "application/vnd.oci.image.config.v1+json"
 	processor = &defaultProcessor{mediaType: mediaType}
-	typee = processor.GetArtifactType()
+	typee = processor.GetArtifactType(nil, nil)
 	d.Equal("IMAGE", typee)
 
 	mediaType = "application/vnd.cncf.helm.chart.config.v1+json"
 	processor = &defaultProcessor{mediaType: mediaType}
-	typee = processor.GetArtifactType()
+	typee = processor.GetArtifactType(nil, nil)
 	d.Equal("HELM.CHART", typee)
 
 	mediaType = "application/vnd.sylabs.sif.config.v1+json"
 	processor = &defaultProcessor{mediaType: mediaType}
-	typee = processor.GetArtifactType()
+	typee = processor.GetArtifactType(nil, nil)
 	d.Equal("SIF", typee)
 }
 

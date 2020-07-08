@@ -128,11 +128,11 @@ func (p *processorTestSuite) TestAbstractAddition() {
 }
 
 func (p *processorTestSuite) TestGetArtifactType() {
-	p.Assert().Equal(ArtifactTypeChart, p.processor.GetArtifactType())
+	p.Assert().Equal(ArtifactTypeChart, p.processor.GetArtifactType(nil, nil))
 }
 
 func (p *processorTestSuite) TestListAdditionTypes() {
-	additions := p.processor.ListAdditionTypes()
+	additions := p.processor.ListAdditionTypes(nil, nil)
 	p.EqualValues([]string{AdditionTypeValues, AdditionTypeReadme, AdditionTypeDependencies}, additions)
 }
 

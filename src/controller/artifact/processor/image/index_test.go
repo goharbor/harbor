@@ -29,7 +29,7 @@ func (i *indexProcessTestSuite) SetupTest() {
 }
 
 func (i *indexProcessTestSuite) TestGetArtifactType() {
-	i.Assert().Equal(ArtifactTypeImage, i.processor.GetArtifactType())
+	i.Assert().Equal(ArtifactTypeImage, i.processor.GetArtifactType(nil, nil))
 }
 
 func TestIndexProcessTestSuite(t *testing.T) {

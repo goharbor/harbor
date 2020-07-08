@@ -35,7 +35,7 @@ type defaultProcessor struct {
 	mediaType string
 }
 
-func (d *defaultProcessor) GetArtifactType() string {
+func (d *defaultProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
 	// try to parse the type from the media type
 	strs := artifactTypeRegExp.FindStringSubmatch(d.mediaType)
 	if len(strs) == 2 {
@@ -44,10 +44,10 @@ func (d *defaultProcessor) GetArtifactType() string {
 	// can not get the artifact type from the media type, return unknown
 	return ArtifactTypeUnknown
 }
-func (d *defaultProcessor) ListAdditionTypes() []string {
+func (d *defaultProcessor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
 	return nil
 }
-func (d *defaultProcessor) AbstractMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
+func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error {
 	// do nothing currently
 	// we can extend this function to abstract the metadata in the future if needed
 	return nil
