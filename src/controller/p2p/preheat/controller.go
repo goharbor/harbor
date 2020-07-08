@@ -2,9 +2,9 @@ package preheat
 
 import (
 	"context"
-	"errors"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
 	policyModels "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
@@ -108,6 +108,8 @@ type Controller interface {
 	ListPolicies(ctx context.Context, query *q.Query) ([]*policyModels.Schema, error)
 	// ListPoliciesByProject lists policies by project.
 	ListPoliciesByProject(ctx context.Context, project int64, query *q.Query) ([]*policyModels.Schema, error)
+	// CheckHealth checks the instance health, for test connection
+	CheckHealth(ctx context.Context, instance *providerModels.Instance) error
 }
 
 var _ Controller = (*controller)(nil)
@@ -235,4 +237,34 @@ func (c *controller) ListPolicies(ctx context.Context, query *q.Query) ([]*polic
 // ListPoliciesByProject lists policies by project.
 func (c *controller) ListPoliciesByProject(ctx context.Context, project int64, query *q.Query) ([]*policyModels.Schema, error) {
 	return c.pManager.ListPoliciesByProject(ctx, project, query)
+}
+
+// CheckHealth checks the instance health, for test connection
+func (c *controller) CheckHealth(ctx context.Context, instance *providerModels.Instance) error {
+	if instance == nil {
+		return errors.New("instance can not be nil")
+	}
+
+	fac, ok := provider.GetProvider(instance.Vendor)
+	if !ok {
+		return errors.Errorf("no driver registered for provider %s", instance.Vendor)
+	}
+
+	// Construct driver
+	driver, err := fac(instance)
+	if err != nil {
+		return err
+	}
+
+	// Check health
+	h, err := driver.GetHealth()
+	if err != nil {
+		return err
+	}
+
+	if h.Status != provider.DriverStatusHealthy {
+		return errors.Errorf("preheat provider instance %s-%s:%s is not healthy", instance.Vendor, instance.Name, instance.Endpoint)
+	}
+
+	return nil
 }
