@@ -87,7 +87,17 @@ func (p *pgsql) Register(alias ...string) error {
 	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		p.host, p.port, p.usr, p.pwd, p.database, p.sslmode)
 
-	return orm.RegisterDataBase(an, "postgres", info, p.maxIdleConns, p.maxOpenConns)
+	if err := orm.RegisterDataBase(an, "postgres", info, p.maxIdleConns, p.maxOpenConns); err != nil {
+		return err
+	}
+
+	// Due to the issues of beego v1.12.1 and v1.12.2, we set the max open conns ourselves.
+	// See https://github.com/goharbor/harbor/issues/12403
+	// and https://github.com/astaxie/beego/issues/4059 for more info.
+	db, _ := orm.GetDB(an)
+	db.SetMaxOpenConns(p.maxOpenConns)
+
+	return nil
 }
 
 // UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.
