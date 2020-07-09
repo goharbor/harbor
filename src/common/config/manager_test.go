@@ -1,3 +1,17 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package config
 
 import (
@@ -76,14 +90,13 @@ func TestCfgManager_loadDefaultValues(t *testing.T) {
 }
 
 func TestCfgManger_loadSystemValues(t *testing.T) {
-	// os.Setenv("CLAIR_DB", "mysql")
 	configManager.loadDefault()
 	configManager.loadSystemConfigFromEnv()
 	configManager.UpdateConfig(map[string]interface{}{
-		"clair_db": "mysql",
+		"postgresql_host": "127.0.0.1",
 	})
-	if configManager.Get("clair_db").GetString() != "mysql" {
-		t.Errorf("Failed to set system value clair_db, expected %v, actual %v", "mysql", configManager.Get("clair_db").GetString())
+	if configManager.Get("postgresql_host").GetString() != "127.0.0.1" {
+		t.Errorf("Failed to set system value postgresql_host, expected %v, actual %v", "127.0.0.1", configManager.Get("postgresql_host").GetString())
 	}
 }
 func TestCfgManager_GetDatabaseCfg(t *testing.T) {
