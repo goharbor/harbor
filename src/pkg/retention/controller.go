@@ -16,6 +16,7 @@ package retention
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"time"
 
 	"github.com/goharbor/harbor/src/pkg/project"
@@ -67,7 +68,7 @@ type DefaultAPIController struct {
 
 const (
 	// SchedulerCallback ...
-	SchedulerCallback = "SchedulerCallback"
+	SchedulerCallback = "RetentionCallback"
 )
 
 // TriggerParam ...
@@ -86,7 +87,7 @@ func (r *DefaultAPIController) CreateRetention(p *policy.Metadata) (int64, error
 	if p.Trigger.Kind == policy.TriggerKindSchedule {
 		cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
 		if ok && len(cron.(string)) > 0 {
-			jobid, err := r.scheduler.Schedule(cron.(string), SchedulerCallback, TriggerParam{
+			jobid, err := r.scheduler.Schedule(orm.Context(), cron.(string), SchedulerCallback, TriggerParam{
 				PolicyID: p.ID,
 				Trigger:  ExecutionTriggerSchedule,
 			})
@@ -144,13 +145,13 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 		}
 	}
 	if needUn {
-		err = r.scheduler.UnSchedule(p0.Trigger.References[policy.TriggerReferencesJobid].(int64))
+		err = r.scheduler.UnSchedule(orm.Context(), p0.Trigger.References[policy.TriggerReferencesJobid].(int64))
 		if err != nil {
 			return err
 		}
 	}
 	if needSch {
-		jobid, err := r.scheduler.Schedule(p.Trigger.Settings[policy.TriggerSettingsCron].(string), SchedulerCallback, TriggerParam{
+		jobid, err := r.scheduler.Schedule(orm.Context(), p.Trigger.Settings[policy.TriggerSettingsCron].(string), SchedulerCallback, TriggerParam{
 			PolicyID: p.ID,
 			Trigger:  ExecutionTriggerSchedule,
 		})
@@ -170,7 +171,7 @@ func (r *DefaultAPIController) DeleteRetention(id int64) error {
 		return err
 	}
 	if p.Trigger.Kind == policy.TriggerKindSchedule && len(p.Trigger.Settings[policy.TriggerSettingsCron].(string)) > 0 {
-		err = r.scheduler.UnSchedule(p.Trigger.References[policy.TriggerReferencesJobid].(int64))
+		err = r.scheduler.UnSchedule(orm.Context(), p.Trigger.References[policy.TriggerReferencesJobid].(int64))
 		if err != nil {
 			return err
 		}

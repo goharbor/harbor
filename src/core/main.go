@@ -48,7 +48,6 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
-	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/server"
@@ -177,9 +176,6 @@ func main() {
 	if err := config.Load(); err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
-
-	// init the scheduler
-	scheduler.Init()
 
 	password, err := config.InitialAdminPassword()
 	if err != nil {

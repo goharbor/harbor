@@ -184,8 +184,6 @@ func Init() error {
 	// init project manager
 	initProjectManager()
 
-	initRetentionScheduler()
-
 	retentionMgr = retention.NewManager()
 
 	retentionLauncher = retention.NewLauncher(projectMgr, repository.Mgr, retentionMgr)
@@ -204,7 +202,7 @@ func Init() error {
 		_, err := RetentionController.TriggerRetentionExec(param.PolicyID, param.Trigger, false)
 		return err
 	}
-	err := scheduler.Register(retention.SchedulerCallback, callbackFun)
+	err := scheduler.RegisterCallbackFunc(retention.SchedulerCallback, callbackFun)
 
 	return err
 }
@@ -226,8 +224,4 @@ func initChartController() error {
 
 func initProjectManager() {
 	projectMgr = project.Mgr
-}
-
-func initRetentionScheduler() {
-	retentionScheduler = scheduler.GlobalScheduler
 }

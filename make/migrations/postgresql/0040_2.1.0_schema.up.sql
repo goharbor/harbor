@@ -67,3 +67,50 @@ CREATE TABLE IF NOT EXISTS p2p_preheat_policy (
     update_time timestamp,
     UNIQUE (name, project_id)
 );
+
+ALTER TABLE schedule ADD COLUMN IF NOT EXISTS cron varchar(64);
+ALTER TABLE schedule ADD COLUMN IF NOT EXISTS execution_id int;
+ALTER TABLE schedule ADD COLUMN IF NOT EXISTS callback_func_name varchar(128);
+ALTER TABLE schedule ADD COLUMN IF NOT EXISTS callback_func_param text;
+
+/*abstract the cron, callback function parameters from table retention_policy*/
+UPDATE schedule
+SET cron = retention.cron, callback_func_name = 'RetentionCallback',
+    callback_func_param=concat('{"PolicyID":', retention.id, ',"Trigger":"Schedule"}')
+FROM (
+    SELECT id, data::json->'trigger'->'references'->>'job_id' AS schedule_id,
+        data::json->'trigger'->'settings'->>'cron' AS cron
+        FROM retention_policy
+    ) AS retention
+WHERE schedule.id=retention.schedule_id::int;
+
+/*create new execution and task record for each schedule*/
+DO $$
+DECLARE
+    sched RECORD;
+    exec_id integer;
+    status_code integer;
+BEGIN
+    FOR sched IN SELECT * FROM schedule
+    LOOP
+      INSERT INTO execution (vendor_type, trigger) VALUES ('SCHEDULER', 'MANUAL') RETURNING id INTO exec_id;
+      IF sched.status = 'Pending' THEN
+        status_code = 0;
+      ELSIF sched.status = 'Scheduled' THEN
+        status_code = 1;
+      ELSIF sched.status = 'Running' THEN
+        status_code = 2;
+      ELSIF sched.status = 'Stopped' OR sched.status = 'Error' OR sched.status = 'Success' THEN
+        status_code = 3;
+      ELSE
+        status_code = 0;
+      END IF;
+      INSERT INTO task (execution_id, job_id, status, status_code, status_revision, run_count) VALUES (exec_id, sched.job_id, sched.status, status_code, 0, 0);
+      UPDATE schedule SET execution_id=exec_id WHERE id = sched.id;
+    END LOOP;
+END $$;
+
+ALTER TABLE schedule DROP COLUMN IF EXISTS job_id;
+ALTER TABLE schedule DROP COLUMN IF EXISTS status;
+
+ALTER TABLE schedule ADD CONSTRAINT schedule_execution FOREIGN KEY (execution_id) REFERENCES execution(id);
