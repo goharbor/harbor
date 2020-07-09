@@ -84,6 +84,22 @@ func (d *daoTestSuite) TestCreate() {
 	_, err := d.dao.Create(d.ctx, d.defaultPolicy)
 	d.Require().NotNil(err)
 	d.True(errors.IsErr(err, errors.ConflictCode))
+
+	// same name and project id should error
+	sameNamePolicy := *d.defaultPolicy
+	sameNamePolicy.ID = 1000
+	_, err = d.dao.Create(d.ctx, &sameNamePolicy)
+	d.Require().NotNil(err)
+	d.True(errors.IsErr(err, errors.ConflictCode))
+
+	// same name but different project id should not error
+	sameNamePolicyWithDiffProjectID := sameNamePolicy
+	sameNamePolicyWithDiffProjectID.ProjectID = 10
+	_, err = d.dao.Create(d.ctx, &sameNamePolicyWithDiffProjectID)
+	d.Require().Nil(err)
+	// clean
+	err = d.dao.Delete(d.ctx, sameNamePolicyWithDiffProjectID.ID)
+	d.Require().Nil(err)
 }
 
 // Delete tests delete a policy schema.

@@ -16,7 +16,9 @@ package policy
 
 import (
 	"context"
+	"encoding/json"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	dao "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/policy"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
@@ -73,12 +75,22 @@ func (m *manager) Update(ctx context.Context, schema *policy.Schema, props ...st
 
 // Get the policy schema by id
 func (m *manager) Get(ctx context.Context, id int64) (schema *policy.Schema, err error) {
-	return m.dao.Get(ctx, id)
+	schema, err = m.dao.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return parsePolicy(schema)
 }
 
 // Get the policy schema by name
 func (m *manager) GetByName(ctx context.Context, projectID int64, name string) (schema *policy.Schema, err error) {
-	return m.dao.GetByName(ctx, projectID, name)
+	schema, err = m.dao.GetByName(ctx, projectID, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return parsePolicy(schema)
 }
 
 // Delete the policy schema by id
@@ -88,7 +100,20 @@ func (m *manager) Delete(ctx context.Context, id int64) (err error) {
 
 // List policy schemas by query
 func (m *manager) ListPolicies(ctx context.Context, query *q.Query) (schemas []*policy.Schema, err error) {
-	return m.dao.List(ctx, query)
+	schemas, err = m.dao.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range schemas {
+		schema, err := parsePolicy(schemas[i])
+		if err != nil {
+			return nil, err
+		}
+		schemas[i] = schema
+	}
+
+	return schemas, nil
 }
 
 // list policy schema under project
@@ -103,5 +128,56 @@ func (m *manager) ListPoliciesByProject(ctx context.Context, project int64, quer
 	// set project filter
 	query.Keywords["project_id"] = project
 
-	return m.dao.List(ctx, query)
+	return m.ListPolicies(ctx, query)
+}
+
+// parsePolicy parse policy model.
+func parsePolicy(schema *policy.Schema) (*policy.Schema, error) {
+	if schema == nil {
+		return nil, errors.New("policy schema can not be nil")
+	}
+
+	// parse filters
+	filters, err := parseFilters(schema.FiltersStr)
+	if err != nil {
+		return nil, err
+	}
+	schema.Filters = filters
+
+	// parse trigger
+	trigger, err := parseTrigger(schema.TriggerStr)
+	if err != nil {
+		return nil, err
+	}
+	schema.Trigger = trigger
+
+	return schema, nil
+}
+
+// parseFilters parse filterStr to filter.
+func parseFilters(filterStr string) ([]*policy.Filter, error) {
+	if len(filterStr) == 0 {
+		return nil, nil
+	}
+
+	var filters []*policy.Filter
+	if err := json.Unmarshal([]byte(filterStr), &filters); err != nil {
+		return nil, err
+	}
+
+	return filters, nil
+}
+
+// parseTrigger parse triggerStr to trigger.
+func parseTrigger(triggerStr string) (*policy.Trigger, error) {
+	if len(triggerStr) == 0 {
+		return nil, nil
+	}
+
+	trigger := &policy.Trigger{}
+	if err := json.Unmarshal([]byte(triggerStr), trigger); err != nil {
+		return nil, err
+	}
+
+	return trigger, nil
 }
