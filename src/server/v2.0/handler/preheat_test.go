@@ -108,6 +108,12 @@ func Test_convertParamPolicyToModelPolicy(t *testing.T) {
 			shouldErr: true,
 		},
 		{
+			name:      "invalid name",
+			input:     &models.PreheatPolicy{Name: "abc/-.**"},
+			expect:    nil,
+			shouldErr: true,
+		},
+		{
 			name: "should success",
 			input: &models.PreheatPolicy{
 				CreationTime: strfmt.DateTime{},
@@ -228,6 +234,12 @@ func Test_convertParamInstanceToModelInstance(t *testing.T) {
 		{
 			name:    "want err",
 			input:   nil,
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "invalid name",
+			input:   &models.Instance{Name: "_aa/*b"},
 			want:    nil,
 			wantErr: true,
 		},

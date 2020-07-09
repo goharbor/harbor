@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -26,6 +28,9 @@ func newPreheatAPI() *preheatAPI {
 }
 
 var _ restapi.PreheatAPI = (*preheatAPI)(nil)
+
+// nameRegex is the regex for name validation.
+const nameRegex = "^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*$"
 
 type preheatAPI struct {
 	BaseAPI
@@ -274,6 +279,15 @@ func convertParamPolicyToModelPolicy(model *models.PreheatPolicy) (*policy.Schem
 		return nil, errors.New("policy can not be nil")
 	}
 
+	valid, err := regexp.MatchString(nameRegex, model.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if !valid {
+		return nil, fmt.Errorf("name %s is invalid", model.Name)
+	}
+
 	return &policy.Schema{
 		ID:          model.ID,
 		Name:        model.Name,
@@ -319,7 +333,16 @@ func convertParamInstanceToModelInstance(model *models.Instance) (*instanceModel
 		return nil, errors.New("instance can not be nil")
 	}
 
-	var authData, err = json.Marshal(model.AuthInfo)
+	valid, err := regexp.MatchString(nameRegex, model.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if !valid {
+		return nil, fmt.Errorf("name %s is invalid", model.Name)
+	}
+
+	authData, err := json.Marshal(model.AuthInfo)
 	if err != nil {
 		return nil, err
 	}
