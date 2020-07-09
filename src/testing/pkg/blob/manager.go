@@ -221,13 +221,13 @@ func (_m *Manager) UpdateBlobStatus(ctx context.Context, _a1 *models.Blob) (int6
 	return r0, r1
 }
 
-// UselessBlobs provides a mock function with given fields: ctx, timeWindow
-func (_m *Manager) UselessBlobs(ctx context.Context, timeWindow int64) ([]*models.Blob, error) {
-	ret := _m.Called(ctx, timeWindow)
+// UselessBlobs provides a mock function with given fields: ctx, timeWindowHours
+func (_m *Manager) UselessBlobs(ctx context.Context, timeWindowHours int64) ([]*models.Blob, error) {
+	ret := _m.Called(ctx, timeWindowHours)
 
 	var r0 []*models.Blob
 	if rf, ok := ret.Get(0).(func(context.Context, int64) []*models.Blob); ok {
-		r0 = rf(ctx, timeWindow)
+		r0 = rf(ctx, timeWindowHours)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Blob)
@@ -236,7 +236,7 @@ func (_m *Manager) UselessBlobs(ctx context.Context, timeWindow int64) ([]*model
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
-		r1 = rf(ctx, timeWindow)
+		r1 = rf(ctx, timeWindowHours)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -126,7 +126,7 @@ func (qa *QuotaAPI) List() {
 		return
 	}
 
-	quotas, err := quota.Ctl.List(ctx, query)
+	quotas, err := quota.Ctl.List(ctx, query, quota.WithReferenceObject())
 	if err != nil {
 		qa.SendInternalServerError(fmt.Errorf("failed to query database for quotas, error: %v", err))
 		return
