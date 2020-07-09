@@ -122,7 +122,7 @@ func (e *executionDAO) Delete(ctx context.Context, id int64) error {
 	})
 	if err != nil {
 		if e := orm.AsForeignKeyError(err,
-			"the execution %d is referenced by other tasks", id); e != nil {
+			"the execution %d is referenced by other resources", id); e != nil {
 			err = e
 		}
 		return err
