@@ -137,17 +137,8 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get database: %v", err)
 	}
 
-	clairDB, err := ClairDB()
-	if err != nil {
-		t.Fatalf("failed to get clair DB %v", err)
-	}
 	defaultConfig := test.GetDefaultConfigMap()
 	Upload(defaultConfig)
-	assert.Equal(defaultConfig[common.ClairDB], clairDB.Database)
-	assert.Equal(defaultConfig[common.ClairDBUsername], clairDB.Username)
-	assert.Equal(defaultConfig[common.ClairDBPassword], clairDB.Password)
-	assert.Equal(defaultConfig[common.ClairDBHost], clairDB.Host)
-	assert.Equal(defaultConfig[common.ClairDBPort], clairDB.Port)
 
 	if InternalNotaryEndpoint() != "http://notary-server:4443" {
 		t.Errorf("Unexpected notary endpoint: %s", InternalNotaryEndpoint())
