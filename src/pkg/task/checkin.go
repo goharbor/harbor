@@ -28,8 +28,8 @@ var (
 // CheckInProcessor is the processor to process the check in data which is sent by jobservice via webhook
 type CheckInProcessor func(ctx context.Context, task *Task, change *job.StatusChange) (err error)
 
-// Register check in processor for the specific vendor type
-func Register(vendorType string, processor CheckInProcessor) error {
+// RegisterCheckInProcessor registers check in processor for the specific vendor type
+func RegisterCheckInProcessor(vendorType string, processor CheckInProcessor) error {
 	if _, exist := registry[vendorType]; exist {
 		return fmt.Errorf("check in processor for %s already exists", vendorType)
 	}
