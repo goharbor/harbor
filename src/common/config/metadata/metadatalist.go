@@ -65,12 +65,6 @@ var (
 		{Name: common.AUTHMode, Scope: UserScope, Group: BasicGroup, EnvKey: "AUTH_MODE", DefaultValue: "db_auth", ItemType: &AuthModeType{}, Editable: false},
 		{Name: common.ChartRepoURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CHART_REPOSITORY_URL", DefaultValue: "http://chartmuseum:9999", ItemType: &StringType{}, Editable: false},
 
-		{Name: common.ClairDB, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_DB", DefaultValue: "postgres", ItemType: &StringType{}, Editable: false},
-		{Name: common.ClairDBHost, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_DB_HOST", DefaultValue: "postgresql", ItemType: &StringType{}, Editable: false},
-		{Name: common.ClairDBPassword, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_DB_PASSWORD", DefaultValue: "root123", ItemType: &PasswordType{}, Editable: false},
-		{Name: common.ClairDBPort, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_DB_PORT", DefaultValue: "5432", ItemType: &PortType{}, Editable: false},
-		{Name: common.ClairDBSSLMode, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_DB_SSLMODE", DefaultValue: "disable", ItemType: &StringType{}, Editable: false},
-		{Name: common.ClairDBUsername, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_DB_USERNAME", DefaultValue: "postgres", ItemType: &StringType{}, Editable: false},
 		{Name: common.ClairAdapterURL, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_ADAPTER_URL", DefaultValue: "http://clair-adapter:8080", ItemType: &StringType{}, Editable: false},
 		{Name: common.TrivyAdapterURL, Scope: SystemScope, Group: ClairGroup, EnvKey: "TRIVY_ADAPTER_URL", DefaultValue: "http://trivy-adapter:8080", ItemType: &StringType{}, Editable: false},
 
