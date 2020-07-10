@@ -630,3 +630,18 @@ export function dbEncodeURIComponent(url: string) {
     }
     return "";
 }
+
+/**
+ * delete empty key
+ * @param obj
+ */
+export function deleteEmptyKey(obj: Object): void {
+   if (isEmptyObject(obj)) {
+       return;
+   }
+    for ( let key in obj ) {
+        if ( !obj[key] ) {
+            delete obj[key];
+        }
+    }
+}
