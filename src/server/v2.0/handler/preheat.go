@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+	"github.com/goharbor/harbor/src/common/rbac"
 	preheatCtl "github.com/goharbor/harbor/src/controller/p2p/preheat"
 	projectCtl "github.com/goharbor/harbor/src/controller/project"
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
@@ -46,6 +47,10 @@ func (api *preheatAPI) Prepare(ctx context.Context, operation string, params int
 }
 
 func (api *preheatAPI) CreateInstance(ctx context.Context, params operation.CreateInstanceParams) middleware.Responder {
+	if err := api.RequireSysAdmin(ctx); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	instance, err := convertParamInstanceToModelInstance(params.Instance)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -59,6 +64,10 @@ func (api *preheatAPI) CreateInstance(ctx context.Context, params operation.Crea
 }
 
 func (api *preheatAPI) DeleteInstance(ctx context.Context, params operation.DeleteInstanceParams) middleware.Responder {
+	if err := api.RequireSysAdmin(ctx); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	instance, err := api.preheatCtl.GetInstanceByName(ctx, params.PreheatInstanceName)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -73,6 +82,10 @@ func (api *preheatAPI) DeleteInstance(ctx context.Context, params operation.Dele
 }
 
 func (api *preheatAPI) GetInstance(ctx context.Context, params operation.GetInstanceParams) middleware.Responder {
+	if err := api.RequireSysAdmin(ctx); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	var payload *models.Instance
 	instance, err := api.preheatCtl.GetInstanceByName(ctx, params.PreheatInstanceName)
 	if err != nil {
@@ -89,6 +102,10 @@ func (api *preheatAPI) GetInstance(ctx context.Context, params operation.GetInst
 
 // ListInstances is List p2p instances
 func (api *preheatAPI) ListInstances(ctx context.Context, params operation.ListInstancesParams) middleware.Responder {
+	if err := api.RequireSysAdmin(ctx); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	var payload []*models.Instance
 
 	query, err := api.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
@@ -119,6 +136,9 @@ func (api *preheatAPI) ListInstances(ctx context.Context, params operation.ListI
 }
 
 func (api *preheatAPI) ListProviders(ctx context.Context, params operation.ListProvidersParams) middleware.Responder {
+	if err := api.RequireSysAdmin(ctx); err != nil {
+		return api.SendError(ctx, err)
+	}
 
 	var providers, err = preheatCtl.Ctl.GetAvailableProviders()
 	if err != nil {
@@ -131,6 +151,10 @@ func (api *preheatAPI) ListProviders(ctx context.Context, params operation.ListP
 
 // UpdateInstance is Update instance
 func (api *preheatAPI) UpdateInstance(ctx context.Context, params operation.UpdateInstanceParams) middleware.Responder {
+	if err := api.RequireSysAdmin(ctx); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	var payload *models.InstanceUpdateResp
 	return operation.NewUpdateInstanceOK().WithPayload(payload)
 }
@@ -152,6 +176,10 @@ func convertProvidersToFrontend(backend []*provider.Metadata) (frontend []*model
 
 // GetPolicy is Get a preheat policy
 func (api *preheatAPI) GetPolicy(ctx context.Context, params operation.GetPolicyParams) middleware.Responder {
+	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourcePreatPolicy); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	project, err := api.projectCtl.GetByName(ctx, params.ProjectName)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -172,6 +200,10 @@ func (api *preheatAPI) GetPolicy(ctx context.Context, params operation.GetPolicy
 
 // CreatePolicy is Create a preheat policy under a project
 func (api *preheatAPI) CreatePolicy(ctx context.Context, params operation.CreatePolicyParams) middleware.Responder {
+	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourcePreatPolicy); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	policy, err := convertParamPolicyToModelPolicy(params.Policy)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -186,6 +218,10 @@ func (api *preheatAPI) CreatePolicy(ctx context.Context, params operation.Create
 
 // UpdatePolicy is Update preheat policy
 func (api *preheatAPI) UpdatePolicy(ctx context.Context, params operation.UpdatePolicyParams) middleware.Responder {
+	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionUpdate, rbac.ResourcePreatPolicy); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	policy, err := convertParamPolicyToModelPolicy(params.Policy)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -200,6 +236,10 @@ func (api *preheatAPI) UpdatePolicy(ctx context.Context, params operation.Update
 
 // DeletePolicy is Delete a preheat policy
 func (api *preheatAPI) DeletePolicy(ctx context.Context, params operation.DeletePolicyParams) middleware.Responder {
+	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionDelete, rbac.ResourcePreatPolicy); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	project, err := api.projectCtl.GetByName(ctx, params.ProjectName)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -220,6 +260,10 @@ func (api *preheatAPI) DeletePolicy(ctx context.Context, params operation.Delete
 
 // ListPolicies is List preheat policies
 func (api *preheatAPI) ListPolicies(ctx context.Context, params operation.ListPoliciesParams) middleware.Responder {
+	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourcePreatPolicy); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	project, err := api.projectCtl.GetByName(ctx, params.ProjectName)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -258,6 +302,10 @@ func (api *preheatAPI) ListPolicies(ctx context.Context, params operation.ListPo
 
 // ManualPreheat is manual preheat
 func (api *preheatAPI) ManualPreheat(ctx context.Context, params operation.ManualPreheatParams) middleware.Responder {
+	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourcePreatPolicy); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	project, err := api.projectCtl.GetByName(ctx, params.ProjectName)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -280,6 +328,10 @@ func (api *preheatAPI) ManualPreheat(ctx context.Context, params operation.Manua
 }
 
 func (api *preheatAPI) PingInstances(ctx context.Context, params operation.PingInstancesParams) middleware.Responder {
+	if err := api.RequireSysAdmin(ctx); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	var instance *instanceModel.Instance
 	var err error
 
