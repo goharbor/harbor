@@ -115,14 +115,14 @@ func (m *managerTestSuite) TestUpdate() {
 
 // TestGet tests Get method.
 func (m *managerTestSuite) TestGet() {
-	m.dao.On("Get").Return(nil, nil)
+	m.dao.On("Get").Return(&policy.Schema{}, nil)
 	_, err := m.mgr.Get(nil, 1)
 	m.Require().Nil(err)
 }
 
 // TestGetByName tests Get method.
 func (m *managerTestSuite) TestGetByName() {
-	m.dao.On("GetByName").Return(nil, nil)
+	m.dao.On("GetByName").Return(&policy.Schema{}, nil)
 	_, err := m.mgr.Get(nil, 1)
 	m.Require().Nil(err)
 }
@@ -136,14 +136,62 @@ func (m *managerTestSuite) TestDelete() {
 
 // TestListPolicies tests ListPolicies method.
 func (m *managerTestSuite) TestListPolicies() {
-	m.dao.On("List").Return(nil, nil)
+	m.dao.On("List").Return([]*policy.Schema{}, nil)
 	_, err := m.mgr.ListPolicies(nil, nil)
 	m.Require().Nil(err)
 }
 
 // TestListPoliciesByProject tests ListPoliciesByProject method.
 func (m *managerTestSuite) TestListPoliciesByProject() {
-	m.dao.On("List").Return(nil, nil)
+	m.dao.On("List").Return([]*policy.Schema{}, nil)
 	_, err := m.mgr.ListPoliciesByProject(nil, 1, nil)
 	m.Require().Nil(err)
+}
+
+// TestParsePolicy tests parsePolicy.
+func (m *managerTestSuite) TestParsePolicy() {
+	schema := &policy.Schema{FiltersStr: "invalid"}
+	_, err := parsePolicy(schema)
+	m.Require().Error(err)
+
+	schema = &policy.Schema{TriggerStr: "invalid"}
+	_, err = parsePolicy(schema)
+	m.Require().Error(err)
+
+	schema = &policy.Schema{
+		FiltersStr: `[
+    {
+        "type": "repository",
+        "value": "dev**"
+    },
+    {
+        "type": "tag",
+        "value": "v1*"
+    },
+    {
+        "type": "label",
+        "value": [
+            "lb1",
+            "lb2"
+        ]
+    },
+    {
+        "type": "signature",
+        "value": true
+    }
+]`,
+		TriggerStr: `{
+    "type": "scheduled",
+    "trigger_setting": {
+        "cron": "0 0 2 1 * ? *"
+    }
+}`,
+	}
+	schema, err = parsePolicy(schema)
+	m.Require().NoError(err)
+	m.Require().NotNil(schema.Trigger)
+	m.Require().Equal("0 0 2 1 * ? *", schema.Trigger.Settings.Cron)
+	m.Require().NotNil(schema.Filters)
+	m.Require().Len(schema.Filters, 4)
+	m.Require().True(schema.Filters[3].Value.(bool))
 }

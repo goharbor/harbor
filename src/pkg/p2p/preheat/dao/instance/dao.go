@@ -38,12 +38,21 @@ type dao struct{}
 var _ DAO = (*dao)(nil)
 
 // Create adds a new distribution instance.
-func (d *dao) Create(ctx context.Context, instance *provider.Instance) (int64, error) {
-	var o, err = orm.FromContext(ctx)
+func (d *dao) Create(ctx context.Context, instance *provider.Instance) (id int64, err error) {
+	var o beego_orm.Ormer
+	o, err = orm.FromContext(ctx)
 	if err != nil {
-		return 0, err
+		return
 	}
-	return o.Insert(instance)
+
+	id, err = o.Insert(instance)
+	if err != nil {
+		if e := orm.AsConflictError(err, "instance %s already exists", instance.Name); e != nil {
+			err = e
+		}
+		return
+	}
+	return
 }
 
 // Get gets instance from db by id.

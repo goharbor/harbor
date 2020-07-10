@@ -49,7 +49,8 @@ CREATE TABLE p2p_preheat_instance (
   enabled     boolean,
   is_default  boolean,
   insecure    boolean,
-  setup_timestamp int
+  setup_timestamp int,
+  UNIQUE (name)
 );
 
 CREATE TABLE IF NOT EXISTS p2p_preheat_policy (
@@ -62,5 +63,6 @@ CREATE TABLE IF NOT EXISTS p2p_preheat_policy (
     trigger varchar(16),
     enabled boolean,
     creation_time timestamp,
-    update_time timestamp
+    update_time timestamp,
+    UNIQUE (name, project_id)
 );

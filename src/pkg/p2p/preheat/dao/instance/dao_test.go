@@ -64,6 +64,15 @@ func (is *instanceSuite) TestGet() {
 	assert.Nil(t, i)
 }
 
+// TestCreate tests create instance.
+func (is *instanceSuite) TestCreate() {
+	// test create same name instance, should error
+	sameNameInstance := *defaultInstance
+	sameNameInstance.ID = 1000
+	_, err := is.dao.Create(is.ctx, &sameNameInstance)
+	is.True(errors.IsConflictErr(err))
+}
+
 // TestGetByName tests get a instance by name.
 func (is *instanceSuite) TestGetByName() {
 	instance, err := is.dao.GetByName(is.ctx, defaultInstance.Name)
