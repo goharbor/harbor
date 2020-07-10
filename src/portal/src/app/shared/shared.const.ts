@@ -44,7 +44,11 @@ export const enum ConfirmationTargets {
   HELM_CHART_VERSION,
   WEBHOOK,
   SCANNER,
-  INSTANCE
+  INSTANCE,
+  P2P_PROVIDER,
+  P2P_PROVIDER_EXECUTE,
+  P2P_PROVIDER_STOP,
+  P2P_PROVIDER_DELETE
 }
 
 export const enum ActionType {
@@ -96,6 +100,7 @@ export enum Roles {
   OTHER = 0,
 }
 export const DefaultHelmIcon = '/images/helm-gray.svg';
+
 export enum ResourceType {
   REPOSITORY = 1,
   CHART_VERSION = 2,

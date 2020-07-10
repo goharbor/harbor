@@ -1,17 +1,20 @@
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { NgForm, Validators } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { errorHandler } from '../../../lib/utils/shared/shared.utils';
-import { PreheatService } from "../../../../ng-swagger-gen/services/preheat.service";
-import { Instance } from "../../../../ng-swagger-gen/models/instance";
-import { AuthMode } from "../distribution-interface";
+import { PreheatService } from '../../../../ng-swagger-gen/services/preheat.service';
+import { Instance } from '../../../../ng-swagger-gen/models/instance';
+import { AuthMode, FrontInstance, HEALTHY } from '../distribution-interface';
 import { clone } from '../../../lib/utils/utils';
-import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
-import { ClrLoadingState } from "@clr/angular";
+import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
+import { ClrLoadingState } from '@clr/angular';
 import { Metadata } from '../../../../ng-swagger-gen/models/metadata';
 import { operateChanges, OperateInfo, OperationState } from '../../../lib/components/operation/operate';
 import { OperationService } from '../../../lib/components/operation/operation.service';
+import { finalize } from 'rxjs/operators';
+
+const DEFAULT_PROVIDER: string = 'dragonfly';
 
 @Component({
   selector: 'dist-setup-modal',
@@ -32,7 +35,8 @@ export class DistributionSetupModalComponent implements OnInit {
 
   @Output()
   refresh: EventEmitter<any> = new EventEmitter<any>();
-
+  checkBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  onTesting: boolean = false;
   constructor(
     private distributionService: PreheatService,
     private msgHandler: MessageHandlerService,
@@ -43,7 +47,6 @@ export class DistributionSetupModalComponent implements OnInit {
   ngOnInit() {
     this.reset();
   }
-
   public get isValid(): boolean {
     return this.instanceForm && this.instanceForm.valid;
   }
@@ -92,6 +95,7 @@ export class DistributionSetupModalComponent implements OnInit {
       name: '',
       endpoint: '',
       enabled: true,
+      insecure: true,
       vendor: '',
       auth_mode: AuthMode.NONE,
       auth_info: this.authData
@@ -118,7 +122,7 @@ export class DistributionSetupModalComponent implements OnInit {
       instance.description = this.model.description;
       instance.auth_mode = this.model.auth_mode;
       instance.auth_info = this.model.auth_info;
-      this.distributionService.UpdateInstance({preheatInstanceName: this.model.name, instance: instance
+      this.distributionService.UpdateInstance({preheatInstanceName: this.model.name, instance: this.handleInstance(instance)
         }).subscribe(
         response => {
           this.translate.get('DISTRIBUTION.UPDATE_SUCCESS').subscribe(msg => {
@@ -185,6 +189,14 @@ export class DistributionSetupModalComponent implements OnInit {
       this.model = clone(data);
       this.originModelForEdit = clone(data);
       this.authData = this.model.auth_info || {};
+    } else {
+      if (this.providers && this.providers.length) {
+        this.providers.forEach(item => {
+          if (item.id === DEFAULT_PROVIDER) {
+            this.model.vendor = item.id;
+          }
+        });
+      }
     }
   }
 
@@ -194,6 +206,14 @@ export class DistributionSetupModalComponent implements OnInit {
         return true;
       }
       if ( this.model.endpoint !== this.originModelForEdit.endpoint) {
+        return true;
+      }
+      // tslint:disable-next-line:triple-equals
+      if ( this.model.enabled != this.originModelForEdit.enabled) {
+        return true;
+      }
+      // tslint:disable-next-line:triple-equals
+      if ( this.model.insecure != this.originModelForEdit.insecure) {
         return true;
       }
       if (this.model.auth_mode !== this.originModelForEdit.auth_mode) {
@@ -216,5 +236,33 @@ export class DistributionSetupModalComponent implements OnInit {
       }
     }
     return true;
+  }
+
+  onTestEndpoint() {
+    this.onTesting = true;
+    this.checkBtnState = ClrLoadingState.LOADING;
+    const instance: Instance = clone(this.model);
+    instance.id = 0;
+    this.distributionService.PingInstances({
+      instance: this.handleInstance(instance)
+    }).pipe(finalize(() => this.onTesting = false))
+      .subscribe(res => {
+        this.checkBtnState = ClrLoadingState.SUCCESS;
+        this.inlineAlert.showInlineSuccess({
+          message: "SCANNER.TEST_PASS"
+        });
+      }, error => {
+        this.inlineAlert.showInlineError('P2P_PROVIDER.TEST_FAILED');
+        this.checkBtnState = ClrLoadingState.ERROR;
+      });
+  }
+  handleInstance(instance: FrontInstance): Instance {
+    if (instance) {
+      const copyOne: FrontInstance = clone(instance);
+      delete copyOne.hasCheckHealth;
+      delete copyOne.pingStatus;
+      return copyOne;
+    }
+    return instance;
   }
 }
