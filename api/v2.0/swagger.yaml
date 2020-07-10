@@ -667,6 +667,33 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /p2p/preheat/instances/ping:
+    post:
+      summary: Ping status of a instance.
+      description: |
+        This endpoint checks status of a instance, the instance can be given by ID or Endpoint URL (together with credential)
+      operationId: PingInstances
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: instance
+          in: body
+          description: The JSON object of instance.
+          required: true
+          schema:
+            $ref: '#/definitions/Instance'
+      tags:
+        - preheat
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          description: Instance not found (when instance is provided by ID).
+        '500':
+          $ref: '#/responses/500'
   /p2p/preheat/instances:
     get:
       summary: List P2P provider instances
@@ -932,6 +959,35 @@ paths:
           $ref: '#/responses/403'
         '409':
           $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Manual preheat
+      description: Manual preheat
+      tags:
+        - preheat
+      operationId: ManualPreheat
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - name: policy
+          in: body
+          description: The policy schema info
+          required: true
+          schema:
+            $ref: '#/definitions/PreheatPolicy'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
     delete:
