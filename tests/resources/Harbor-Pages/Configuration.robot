@@ -316,14 +316,14 @@ Switch To GC History
     Retry Element Click  xpath=${gc_log_xpath}
     Retry Wait Until Page Contains  Job
 
-Add Items To System CVE Whitelist
+Add Items To System CVE Allowlist
     [Arguments]    ${cve_id}
     Retry Element Click    ${configuration_system_wl_add_btn}
     Retry Text Input    ${configuration_system_wl_textarea}    ${cve_id}
     Retry Element Click    ${configuration_system_wl_add_confirm_btn}
     Retry Element Click    ${config_system_save_button_xpath}
 
-Delete Top Item In System CVE Whitelist
+Delete Top Item In System CVE Allowlist
     [Arguments]  ${count}=1
     :FOR  ${idx}  IN RANGE  1  ${count}
     \   Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}

@@ -77,9 +77,9 @@ class Project(base.Base):
         base._assert_status_code(200, status_code)
         return data
 
-    def update_project(self, project_id, expect_status_code=200, metadata=None, cve_whitelist=None, **kwargs):
+    def update_project(self, project_id, expect_status_code=200, metadata=None, cve_allowlist=None, **kwargs):
         client = self._get_client(**kwargs)
-        project = swagger_client.ProjectReq(metadata=metadata, cve_whitelist=cve_whitelist)
+        project = swagger_client.ProjectReq(metadata=metadata, cve_allowlist=cve_allowlist)
         try:
             _, sc, _ = client.projects_project_id_put_with_http_info(project_id, project)
         except ApiException as e:
@@ -183,7 +183,7 @@ class Project(base.Base):
         access_list = []
         resource_by_project_id = "/project/"+str(project_id)+"/repository"
         resource_helm_by_project_id = "/project/"+str(project_id)+"/helm-chart"
-        resource_helm__create_by_project_id = "/project/"+str(project_id)+"/helm-chart-version"
+        resource_helm_create_by_project_id = "/project/"+str(project_id)+"/helm-chart-version"
         action_pull = "pull"
         action_push = "push"
         action_read = "read"
@@ -198,7 +198,7 @@ class Project(base.Base):
             robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_helm_by_project_id, action = action_read)
             access_list.append(robotAccountAccess)
         if has_chart_create_right is True:
-            robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_helm__create_by_project_id, action = action_create)
+            robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_helm_create_by_project_id, action = action_create)
             access_list.append(robotAccountAccess)
 
         robotAccountCreate = swagger_client.RobotAccountCreate(robot_name, robot_desc, expires_at, access_list)

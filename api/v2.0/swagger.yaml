@@ -641,6 +641,378 @@ paths:
           $ref: '#/responses/401'
         '500':
           $ref: '#/responses/500'
+  /p2p/preheat/providers:
+    get:
+      summary: List P2P providers
+      description: List P2P providers
+      tags:
+        - preheat
+      operationId: ListProviders
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Metadata'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /p2p/preheat/instances/ping:
+    post:
+      summary: Ping status of a instance.
+      description: |
+        This endpoint checks status of a instance, the instance can be given by ID or Endpoint URL (together with credential)
+      operationId: PingInstances
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: instance
+          in: body
+          description: The JSON object of instance.
+          required: true
+          schema:
+            $ref: '#/definitions/Instance'
+      tags:
+        - preheat
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          description: Instance not found (when instance is provided by ID).
+        '500':
+          $ref: '#/responses/500'
+  /p2p/preheat/instances:
+    get:
+      summary: List P2P provider instances
+      description: List P2P provider instances
+      tags:
+        - preheat
+      operationId: ListInstances
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of preheating provider instances
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Instance'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create p2p provider instances
+      description: Create p2p provider instances
+      tags:
+        - preheat
+      operationId: CreateInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: instance
+          in: body
+          description: The JSON object of instance.
+          required: true
+          schema:
+            $ref: '#/definitions/Instance'
+      responses:
+        '201':
+          description: Response to insatnce created
+          schema:
+            $ref: '#/definitions/InstanceCreatedResp'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /p2p/preheat/instances/{preheat_instance_name}:
+    get:
+      summary: Get a P2P provider instance
+      description: Get a P2P provider instance
+      tags:
+        - preheat
+      operationId: GetInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/instanceName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Instance'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete the specified P2P provider instance
+      description: Delete the specified P2P provider instance
+      tags:
+        - preheat
+      operationId: DeleteInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/instanceName'
+      responses:
+        '200':
+          description: Instance ID deleted
+          schema:
+            $ref: '#/definitions/InstanceDeletedResp'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update the specified P2P provider instance
+      description: Update the specified P2P provider instance
+      tags:
+        - preheat
+      operationId: UpdateInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/instanceName'
+        - name: propertySet
+          in: body
+          description: The property set to update
+          required: true
+          schema:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/InstanceUpdateResp'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies:
+    post:
+      summary: Create a preheat policy under a project
+      description: Create a preheat policy under a project
+      tags:
+        - preheat
+      operationId: CreatePolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: policy
+          in: body
+          description: The policy schema info
+          required: true
+          schema:
+            $ref: '#/definitions/PreheatPolicy'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    get:
+      summary: List preheat policies
+      description: List preheat policies
+      tags:
+        - preheat
+      operationId: ListPolicies
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: List preheat policies success
+          headers:
+            X-Total-Count:
+              description: The total count of tags
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PreheatPolicy'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies/{preheat_policy_name}:
+    get:
+      summary: Get a preheat policy
+      description: Get a preheat policy
+      tags:
+        - preheat
+      operationId: GetPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+      responses:
+        '200':
+          description: Get a preheat policy success
+          schema:
+            $ref: '#/definitions/PreheatPolicy'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update preheat policy
+      description: Update preheat policy
+      tags:
+        - preheat
+      operationId: UpdatePolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - name: policy
+          in: body
+          description: The policy schema info
+          required: true
+          schema:
+            $ref: '#/definitions/PreheatPolicy'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Manual preheat
+      description: Manual preheat
+      tags:
+        - preheat
+      operationId: ManualPreheat
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - name: policy
+          in: body
+          description: The policy schema info
+          required: true
+          schema:
+            $ref: '#/definitions/PreheatPolicy'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a preheat policy
+      description: Delete a preheat policy
+      tags:
+        - preheat
+      operationId: DeletePolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   query:
     name: q
@@ -701,6 +1073,19 @@ parameters:
     required: false
     description: The size of per page
     default: 10
+  instanceName:
+    name: preheat_instance_name
+    in: path
+    description: Instance Name
+    required: true
+    type: string
+  preheatPolicyName:
+    name: preheat_policy_name
+    in: path
+    description: Preheat Policy Name
+    required: true
+    type: string
+
 responses:
   '200':
     description: Success
@@ -1098,3 +1483,121 @@ definitions:
       op_time:
         type: string
         description: The time when this operation is triggered.
+  Metadata:
+    type: object
+    properties:
+      id:
+        type: string
+        description: id
+      name:
+        type: string
+        description: name
+      icon:
+        type: string
+        description: icon
+      maintainers:
+        type: array
+        description: maintainers
+        items:
+          type: string
+      version:
+        type: string
+        description: version
+      source:
+        type: string
+        description: source
+  Instance:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique ID
+      name:
+        type: string
+        description: Instance name
+      description:
+        type: string
+        description: Description of instance
+      vendor:
+        type: string
+        description: Based on which driver, identified by ID
+      endpoint:
+        type: string
+        description: The service endpoint of this instance
+      auth_mode:
+        type: string
+        description: The authentication way supported
+      auth_info:
+        type: object
+        description: The auth credential data if exists
+        additionalProperties:
+          type: string
+      status:
+        type: string
+        description: The health status
+      enabled:
+        type: boolean
+        description: Whether the instance is activated or not
+      default:
+        type: boolean
+        description: Whether the instance is default or not
+      insecure:
+        type: boolean
+        description: Whether the instance endpoint is insecure or not
+      setup_timestamp:
+        type: integer
+        format: int64
+        description: The timestamp of instance setting up
+  InstanceUpdateResp:
+    type: object
+    properties:
+      updated:
+        type: integer
+        description: ID of instance updated
+  InstanceDeletedResp:
+    type: object
+    properties:
+      removed:
+        type: integer
+        description: ID of instance removed
+  InstanceCreatedResp:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: ID of instance created
+  PreheatPolicy:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of preheat policy
+      name:
+        type: string
+        description: The Name of preheat policy
+      description:
+        type: string
+        description: The Description of preheat policy
+      project_id:
+        type: integer
+        description: The ID of preheat policy project
+      provider_id:
+        type: integer
+        description: The ID of preheat policy provider
+      filters:
+        type: string
+        description: The Filters of preheat policy
+      trigger:
+        type: string
+        description: The Trigger of preheat policy
+      enabled:
+        type: boolean
+        description: Whether the preheat policy enabled
+      creation_time:
+        type: string
+        format: date-time
+        description: The Create Time of preheat policy
+      update_time:
+        type: string
+        format: date-time
+        description: The Update Time of preheat policy

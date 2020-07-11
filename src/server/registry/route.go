@@ -85,6 +85,11 @@ func RegisterRoutes() {
 		Middleware(quota.PutBlobUploadMiddleware()).
 		Middleware(blob.PutBlobUploadMiddleware()).
 		Handler(proxy)
+	root.NewRoute().
+		Method(http.MethodHead).
+		Path("/*/blobs/:digest").
+		Middleware(blob.HeadBlobMiddleware()).
+		Handler(proxy)
 	// others
 	root.NewRoute().Path("/*").Handler(proxy)
 }

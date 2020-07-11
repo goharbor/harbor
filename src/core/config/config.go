@@ -231,7 +231,7 @@ func RegistryURL() (string, error) {
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
-	return strings.TrimSuffix(cfgMgr.Get(common.JobServiceURL).GetString(), "/")
+	return os.Getenv("JOBSERVICE_URL")
 }
 
 // GetCoreURL returns the url of core from env
@@ -479,4 +479,13 @@ func QuotaSetting() (*models.QuotaSetting, error) {
 	return &models.QuotaSetting{
 		StoragePerProject: cfgMgr.Get(common.StoragePerProject).GetInt64(),
 	}, nil
+}
+
+// GetPermittedRegistryTypesForProxyCache returns the permitted registry types for proxy cache
+func GetPermittedRegistryTypesForProxyCache() []string {
+	types := os.Getenv("PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE")
+	if len(types) == 0 {
+		return []string{}
+	}
+	return strings.Split(types, ",")
 }

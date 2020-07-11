@@ -15,23 +15,20 @@
 package middlewares
 
 import (
-	"github.com/goharbor/harbor/src/server/middleware/csrf"
-	"github.com/goharbor/harbor/src/server/middleware/log"
-	"github.com/goharbor/harbor/src/server/middleware/requestid"
-	"net/http"
-	"path"
-	"regexp"
-	"strings"
-
 	"github.com/astaxie/beego"
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/csrf"
+	"github.com/goharbor/harbor/src/server/middleware/log"
 	"github.com/goharbor/harbor/src/server/middleware/notification"
 	"github.com/goharbor/harbor/src/server/middleware/orm"
 	"github.com/goharbor/harbor/src/server/middleware/readonly"
+	"github.com/goharbor/harbor/src/server/middleware/requestid"
 	"github.com/goharbor/harbor/src/server/middleware/security"
 	"github.com/goharbor/harbor/src/server/middleware/session"
 	"github.com/goharbor/harbor/src/server/middleware/transaction"
+	"net/http"
+	"regexp"
 )
 
 var (
@@ -61,18 +58,6 @@ var (
 	}
 )
 
-// legacyAPISkipper skip middleware for legacy APIs
-func legacyAPISkipper(r *http.Request) bool {
-	path := path.Clean(r.URL.EscapedPath())
-	for _, prefix := range []string{"/v2/", "/api/v2.0/"} {
-		if strings.HasPrefix(path, prefix) {
-			return false
-		}
-	}
-
-	return true
-}
-
 // MiddleWares returns global middlewares
 func MiddleWares() []beego.MiddleWare {
 	return []beego.MiddleWare{
@@ -82,9 +67,9 @@ func MiddleWares() []beego.MiddleWare {
 		csrf.Middleware(),
 		security.Middleware(),
 		readonly.Middleware(readonlySkippers...),
-		orm.Middleware(legacyAPISkipper),
+		orm.Middleware(),
 		// notification must ahead of transaction ensure the DB transaction execution complete
 		notification.Middleware(),
-		transaction.Middleware(legacyAPISkipper, fetchBlobAPISkipper),
+		transaction.Middleware(fetchBlobAPISkipper),
 	}
 }

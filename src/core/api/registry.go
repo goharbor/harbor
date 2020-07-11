@@ -11,6 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/event"
@@ -165,15 +166,24 @@ func hideAccessSecret(credential *model.Credential) {
 	credential.AccessSecret = "*****"
 }
 
-// List lists all registries that match a given registry name.
+// List lists all registries
 func (t *RegistryAPI) List() {
-	name := t.GetString("name")
-
-	_, registries, err := t.manager.List(&model.RegistryQuery{
-		Name: name,
-	})
+	queryStr := t.GetString("q")
+	// keep backward compatibility for the "name" query
+	if len(queryStr) == 0 {
+		name := t.GetString("name")
+		if len(name) > 0 {
+			queryStr = fmt.Sprintf("name=~%s", name)
+		}
+	}
+	query, err := q.Build(queryStr, 0, 0)
 	if err != nil {
-		log.Errorf("failed to list registries %s: %v", name, err)
+		t.SendError(err)
+		return
+	}
+
+	_, registries, err := t.manager.List(query)
+	if err != nil {
 		t.SendInternalServerError(err)
 		return
 	}

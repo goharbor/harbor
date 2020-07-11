@@ -23,6 +23,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
+
 	"github.com/goharbor/harbor/src/jobservice/api"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -262,6 +264,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),
 			job.WebhookJob:             (*notification.WebhookJob)(nil),
 			job.SlackJob:               (*notification.SlackJob)(nil),
+			job.P2PPreheat:             (*preheat.Job)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

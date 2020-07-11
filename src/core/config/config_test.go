@@ -58,6 +58,8 @@ func TestConfig(t *testing.T) {
 	}
 	defer os.Setenv("TOKEN_PRIVATE_KEY_PATH", oriKeyPath)
 
+	os.Setenv("JOBSERVICE_URL", "http://myjob:8888")
+
 	Init()
 
 	if err := Load(); err != nil {

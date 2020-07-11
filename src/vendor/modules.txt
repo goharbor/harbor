@@ -58,8 +58,9 @@ github.com/astaxie/beego/session/redis
 github.com/astaxie/beego/toolbox
 github.com/astaxie/beego/utils
 github.com/astaxie/beego/validation
-# github.com/aws/aws-sdk-go v1.19.47
+# github.com/aws/aws-sdk-go v1.32.5
 github.com/aws/aws-sdk-go/aws
+github.com/aws/aws-sdk-go/aws/arn
 github.com/aws/aws-sdk-go/aws/awserr
 github.com/aws/aws-sdk-go/aws/awsutil
 github.com/aws/aws-sdk-go/aws/client
@@ -77,12 +78,17 @@ github.com/aws/aws-sdk-go/aws/endpoints
 github.com/aws/aws-sdk-go/aws/request
 github.com/aws/aws-sdk-go/aws/session
 github.com/aws/aws-sdk-go/aws/signer/v4
+github.com/aws/aws-sdk-go/internal/context
 github.com/aws/aws-sdk-go/internal/ini
 github.com/aws/aws-sdk-go/internal/s3err
 github.com/aws/aws-sdk-go/internal/sdkio
+github.com/aws/aws-sdk-go/internal/sdkmath
 github.com/aws/aws-sdk-go/internal/sdkrand
 github.com/aws/aws-sdk-go/internal/sdkuri
 github.com/aws/aws-sdk-go/internal/shareddefaults
+github.com/aws/aws-sdk-go/internal/strings
+github.com/aws/aws-sdk-go/internal/sync/singleflight
+github.com/aws/aws-sdk-go/private/checksum
 github.com/aws/aws-sdk-go/private/protocol
 github.com/aws/aws-sdk-go/private/protocol/eventstream
 github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi
@@ -96,7 +102,9 @@ github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/cloudfront/sign
 github.com/aws/aws-sdk-go/service/ecr
 github.com/aws/aws-sdk-go/service/s3
+github.com/aws/aws-sdk-go/service/s3/internal/arn
 github.com/aws/aws-sdk-go/service/sts
+github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 github.com/beego/i18n
 # github.com/beorn7/perks v1.0.0
@@ -257,12 +265,10 @@ github.com/graph-gophers/dataloader
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.0
 github.com/hashicorp/go-multierror
-# github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+# github.com/jmespath/go-jmespath v0.3.0
 github.com/jmespath/go-jmespath
 # github.com/json-iterator/go v1.1.8
 github.com/json-iterator/go
-# github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
-github.com/justinas/alice
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/lib/pq v1.3.0
@@ -330,7 +336,7 @@ github.com/sirupsen/logrus
 github.com/spf13/pflag
 # github.com/stretchr/objx v0.2.0
 github.com/stretchr/objx
-# github.com/stretchr/testify v1.4.0
+# github.com/stretchr/testify v1.5.1
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 github.com/stretchr/testify/require

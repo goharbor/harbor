@@ -145,6 +145,7 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 	t.Equal(status, task.Status)
 	t.Equal(job.RunningStatus.Code(), task.StatusCode)
 	t.Equal(statusRevision, task.StatusRevision)
+	t.NotEqual(time.Time{}, task.UpdateTime)
 	t.Equal(time.Time{}, task.EndTime)
 
 	// update status to success

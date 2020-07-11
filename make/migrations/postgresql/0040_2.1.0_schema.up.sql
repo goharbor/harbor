@@ -1,4 +1,6 @@
 ALTER TABLE project ADD COLUMN IF NOT EXISTS registry_id int;
+ALTER TABLE IF EXISTS cve_whitelist RENAME TO cve_allowlist;
+UPDATE role SET name='maintainer' WHERE name='master';
 
 CREATE TABLE IF NOT EXISTS execution (
     id SERIAL NOT NULL,
@@ -28,4 +30,39 @@ CREATE TABLE IF NOT EXISTS task (
     update_time timestamp,
     end_time timestamp,
     FOREIGN KEY (execution_id) REFERENCES execution(id)
+);
+
+ALTER TABLE blob ADD COLUMN IF NOT EXISTS update_time timestamp default CURRENT_TIMESTAMP;
+ALTER TABLE blob ADD COLUMN IF NOT EXISTS status varchar(255);
+ALTER TABLE blob ADD COLUMN IF NOT EXISTS version BIGINT default 0;
+CREATE INDEX IF NOT EXISTS idx_status ON blob (status);
+CREATE INDEX IF NOT EXISTS idx_version ON blob (version);
+
+CREATE TABLE p2p_preheat_instance (
+  id          SERIAL PRIMARY KEY NOT NULL,
+  name        varchar(255) NOT NULL,
+  description varchar(255),
+  vendor	  varchar(255) NOT NULL,
+  endpoint    varchar(255) NOT NULL,
+  auth_mode   varchar(255),
+  auth_data   text,
+  enabled     boolean,
+  is_default  boolean,
+  insecure    boolean,
+  setup_timestamp int,
+  UNIQUE (name)
+);
+
+CREATE TABLE IF NOT EXISTS p2p_preheat_policy (
+    id SERIAL PRIMARY KEY NOT NULL,
+    name varchar(255) NOT NULL,
+    description varchar(1024),
+    project_id int NOT NULL,
+    provider_id int NOT NULL,
+    filters varchar(1024),
+    trigger varchar(16),
+    enabled boolean,
+    creation_time timestamp,
+    update_time timestamp,
+    UNIQUE (name, project_id)
 );

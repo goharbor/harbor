@@ -35,7 +35,6 @@ def helm_chart_push_to_harbor(chart_file, archive, harbor_server, project, repo_
     helm_save(archive, harbor_server, project, repo_name)
     return helm_push(harbor_server, project, repo_name, version)
 
-# helm repo add --ca-file /ca/server.crt --username=${user} --password=${pwd} ${helm_repo_name} ${harbor_url}/chartrepo/${project_name}
 def helm2_add_repo(helm_repo_name, harbor_url, project, username, password):
     command = ["helm2", "repo", "add", "--username=" + username, "--password=" + password, helm_repo_name, harbor_url + "/chartrepo/" + project]
     print "Command: ", command

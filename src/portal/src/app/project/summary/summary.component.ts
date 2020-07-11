@@ -1,10 +1,18 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AppConfigService } from "../../services/app-config.service";
 import { QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COEFFICIENT, QuotaUnits } from "../../../lib/entities/shared.const";
-import { ProjectService, UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
+import {
+  Endpoint,
+  EndpointService,
+  ProjectService,
+  UserPermissionService,
+  USERSTATICPERMISSION
+} from '../../../lib/services';
 import { ErrorHandler } from "../../../lib/utils/error-handler";
 import { clone, GetIntegerAndUnit, getSuitableUnit as getSuitableUnitFn } from "../../../lib/utils/utils";
+import { SessionService } from '../../shared/session.service';
+import { Project } from '../project';
 
 @Component({
   selector: 'summary',
@@ -19,20 +27,30 @@ export class SummaryComponent implements OnInit {
   summaryInformation: any;
   quotaDangerCoefficient: number = QUOTA_DANGER_COEFFICIENT;
   quotaWarningCoefficient: number = QUOTA_WARNING_COEFFICIENT;
+  endpoint: Endpoint;
   constructor(
     private projectService: ProjectService,
     private userPermissionService: UserPermissionService,
     private errorHandler: ErrorHandler,
     private appConfigService: AppConfigService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private session: SessionService,
+    private endpointService: EndpointService
   ) { }
 
   ngOnInit() {
     this.projectId = this.route.snapshot.parent.params['id'];
+    const resolverData = this.route.snapshot.parent.data;
+    if (resolverData) {
+      const pro: Project = <Project>resolverData['projectResolver'];
+      if (pro && pro.registry_id && this.isSystemAdmin) {
+        this.getRegistry(pro.registry_id);
+      }
+    }
 
     const permissions = [
-      { resource: USERSTATICPERMISSION.MEMBER.KEY, action: USERSTATICPERMISSION.MEMBER.VALUE.LIST },
-      { resource: USERSTATICPERMISSION.QUOTA.KEY, action: USERSTATICPERMISSION.QUOTA.VALUE.READ },
+      {resource: USERSTATICPERMISSION.MEMBER.KEY, action: USERSTATICPERMISSION.MEMBER.VALUE.LIST},
+      {resource: USERSTATICPERMISSION.QUOTA.KEY, action: USERSTATICPERMISSION.QUOTA.VALUE.READ},
     ];
 
     this.userPermissionService.hasProjectPermissions(this.projectId, permissions).subscribe((results: Array<boolean>) => {
@@ -42,6 +60,14 @@ export class SummaryComponent implements OnInit {
 
     this.projectService.getProjectSummary(this.projectId).subscribe(res => {
       this.summaryInformation = res;
+    }, error => {
+      this.errorHandler.error(error);
+    });
+  }
+
+  getRegistry(registryId: number) {
+    this.endpointService.getEndpoint(registryId).subscribe(res => {
+      this.endpoint = res;
     }, error => {
       this.errorHandler.error(error);
     });
@@ -58,6 +84,11 @@ export class SummaryComponent implements OnInit {
 
   public get withHelmChart(): boolean {
     return this.appConfigService.getConfig().with_chartmuseum;
+  }
+
+  public get isSystemAdmin(): boolean {
+    const account = this.session.getCurrentUser();
+    return account && account.has_admin_role;
   }
 
 }

@@ -526,11 +526,8 @@ Test Case - Tag CRUD
     Should Contain Tag   latest
     # add more than one tag
     Add A New Tag   123
-    Should Contain Tag   123
     Add A New Tag   456
-    Should Contain Tag   456
-    Delete A Tag   latest
-    Should Not Contain Tag   latest
+    Delete A Tag  latest
     Close Browser
 
 Test Case - Tag Retention

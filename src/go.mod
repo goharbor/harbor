@@ -11,7 +11,7 @@ require (
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
 	github.com/astaxie/beego v1.12.1
-	github.com/aws/aws-sdk-go v1.19.47
+	github.com/aws/aws-sdk-go v1.32.5
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bmatcuk/doublestar v1.1.1
 	github.com/bugsnag/bugsnag-go v1.5.2 // indirect
@@ -44,7 +44,6 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
 	github.com/jinzhu/gorm v1.9.8 // indirect
-	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
 	github.com/lib/pq v1.3.0
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/miekg/pkcs11 v0.0.0-20170220202408-7283ca79f35e // indirect
@@ -53,11 +52,12 @@ require (
 	github.com/opencontainers/go-digest v1.0.0-rc1
 	github.com/opencontainers/image-spec v1.0.1
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/robfig/cron v1.0.0
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
 	github.com/spf13/viper v1.4.0 // indirect
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	github.com/theupdateframework/notary v0.6.1
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2

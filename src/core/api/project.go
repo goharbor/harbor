@@ -143,6 +143,17 @@ func (p *ProjectAPI) Post() {
 			p.SendNotFoundError(fmt.Errorf("registry %d not found", pro.RegistryID))
 			return
 		}
+		permitted := false
+		for _, t := range config.GetPermittedRegistryTypesForProxyCache() {
+			if string(registry.Type) == t {
+				permitted = true
+				break
+			}
+		}
+		if !permitted {
+			p.SendBadRequestError(fmt.Errorf("unsupported registry type %s", string(registry.Type)))
+			return
+		}
 	}
 
 	var hardLimits types.ResourceList
@@ -513,7 +524,7 @@ func (p *ProjectAPI) Put() {
 	if err := p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
 			Metadata:     req.Metadata,
-			CVEWhitelist: req.CVEWhitelist,
+			CVEAllowlist: req.CVEAllowlist,
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",
 			p.project.ProjectID), err)
@@ -626,7 +637,7 @@ func getProjectMemberSummary(ctx context.Context, projectID int64, summary *mode
 		count *int64
 	}{
 		{common.RoleProjectAdmin, &summary.ProjectAdminCount},
-		{common.RoleMaster, &summary.MasterCount},
+		{common.RoleMaintainer, &summary.MaintainerCount},
 		{common.RoleDeveloper, &summary.DeveloperCount},
 		{common.RoleGuest, &summary.GuestCount},
 		{common.RoleLimitedGuest, &summary.LimitedGuestCount},
@@ -657,7 +668,7 @@ func highestRole(roles []int) int {
 	}
 	rolePower := map[int]int{
 		common.RoleProjectAdmin: 50,
-		common.RoleMaster:       40,
+		common.RoleMaintainer:   40,
 		common.RoleDeveloper:    30,
 		common.RoleGuest:        20,
 		common.RoleLimitedGuest: 10,

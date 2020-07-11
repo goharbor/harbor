@@ -15,10 +15,10 @@ type DAO interface {
 	Create(ctx context.Context, artifactrsh *model.ArtifactTrash) (id int64, err error)
 	// Delete the artifact trash specified by ID
 	Delete(ctx context.Context, id int64) (err error)
-	// Filter lists the artifact that needs to be cleaned
-	Filter(ctx context.Context) (arts []model.ArtifactTrash, err error)
-	// Flush clean the trash table
-	Flush(ctx context.Context) (err error)
+	// Filter lists the artifact that needs to be cleaned, which creation_time must be less than or equal to the cut-off.
+	Filter(ctx context.Context, cutOff time.Time) (arts []model.ArtifactTrash, err error)
+	// Flush cleans the trash table record, which creation_time must be less than or equal to the cut-off.
+	Flush(ctx context.Context, cutOff time.Time) (err error)
 }
 
 // New returns an instance of the default DAO
@@ -64,16 +64,16 @@ func (d *dao) Delete(ctx context.Context, id int64) (err error) {
 }
 
 // Filter the results are: all of records in artifact_trash excludes the records in artifact with same repo and digest.
-func (d *dao) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error) {
+func (d *dao) Filter(ctx context.Context, cutOff time.Time) (arts []model.ArtifactTrash, err error) {
 	var deletedAfs []model.ArtifactTrash
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return deletedAfs, err
 	}
 
-	sql := `SELECT aft.* FROM artifact_trash AS aft LEFT JOIN artifact af ON (aft.repository_name=af.repository_name AND aft.digest=af.digest) WHERE (af.digest IS NULL AND af.repository_name IS NULL)`
+	sql := `SELECT aft.* FROM artifact_trash AS aft LEFT JOIN artifact af ON (aft.repository_name=af.repository_name AND aft.digest=af.digest) WHERE (af.digest IS NULL AND af.repository_name IS NULL) AND aft.creation_time <= ?`
 
-	_, err = ormer.Raw(sql).QueryRows(&deletedAfs)
+	_, err = ormer.Raw(sql, cutOff).QueryRows(&deletedAfs)
 	if err != nil {
 		return deletedAfs, err
 	}
@@ -81,17 +81,17 @@ func (d *dao) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error
 	return deletedAfs, nil
 }
 
-// Flush ...
-func (d *dao) Flush(ctx context.Context) (err error) {
+// Flush delete all of items beside the one in the time window.
+func (d *dao) Flush(ctx context.Context, cutOff time.Time) (err error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
-	sql := `DELETE FROM artifact_trash`
+	sql := `DELETE FROM artifact_trash where creation_time <= ?`
 	if err != nil {
 		return err
 	}
-	_, err = ormer.Raw(sql).Exec()
+	_, err = ormer.Raw(sql, cutOff).Exec()
 	if err != nil {
 		return err
 	}
