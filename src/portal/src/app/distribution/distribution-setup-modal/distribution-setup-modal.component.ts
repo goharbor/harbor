@@ -119,7 +119,7 @@ export class DistributionSetupModalComponent implements OnInit {
       operMessageForEdit.data.name = this.model.name;
       this.operationService.publishInfo(operMessageForEdit);
       this.saveBtnState = ClrLoadingState.LOADING;
-      this.distributionService.UpdateInstance({instanceId: this.model.id, propertySet: data
+      this.distributionService.UpdateInstance({preheatInstanceName: this.model.name, propertySet: data
         }).subscribe(
         response => {
           this.translate.get('DISTRIBUTION.UPDATE_SUCCESS').subscribe(msg => {
