@@ -9,7 +9,7 @@ This functionality is implemented using the `internal_tls` parameter in the `har
 
 You can generate certs using the `prepare` tool.
 ```bash
-docker run -v /:/hostfs goharbor/prepare:v2.0 gencert -p /path/to/internal/tls/cert
+docker run -v /:/hostfs goharbor/prepare:v2.0.1 gencert -p /path/to/internal/tls/cert
 ```
 
 You can also provide your own CA to generate the other certs. To do this, put the certificate and key of the CA on internal tls cert directory, and name them `harbor_internal_ca.key` and `harbor_internal_ca.crt`.
