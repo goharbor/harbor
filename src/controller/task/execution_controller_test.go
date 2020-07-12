@@ -42,28 +42,6 @@ func (ec *executionControllerTestSuite) SetupTest() {
 	}
 }
 
-// TestCreate tests create.
-func (ec *executionControllerTestSuite) TestCreate() {
-	ec.mgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
-	id, err := ec.ctl.Create(nil, "", 1, "")
-	ec.NoError(err)
-	ec.Equal(int64(1), id)
-}
-
-// TestMarkDown tests mark down.
-func (ec *executionControllerTestSuite) TestMarkDone() {
-	ec.mgr.On("MarkDone", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	err := ec.ctl.MarkDone(nil, 1, "")
-	ec.NoError(err)
-}
-
-// TestMarkError tests mark error.
-func (ec *executionControllerTestSuite) TestMarkError() {
-	ec.mgr.On("MarkError", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	err := ec.ctl.MarkError(nil, 1, "")
-	ec.NoError(err)
-}
-
 // TestStop tests stop.
 func (ec *executionControllerTestSuite) TestStop() {
 	ec.mgr.On("Stop", mock.Anything, mock.Anything).Return(nil)

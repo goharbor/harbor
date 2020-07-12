@@ -1013,6 +1013,151 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions:
+    get:
+      summary: List executions for the given policy
+      description: List executions for the given policy
+      tags:
+        - preheat
+      operationId: ListExecutions
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: List executions success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Execution'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions/{execution_id}:
+    get:
+      summary: Get a execution detail by id
+      description: Get a execution detail by id
+      tags:
+        - preheat
+      operationId: GetExecution
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - $ref: '#/parameters/executionId'
+      responses:
+        '200':
+          description: Get execution success
+          schema:
+            $ref: '#/definitions/Execution'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    patch:
+      summary: Stop a execution
+      description: Stop a execution
+      tags:
+        - preheat
+      operationId: StopExecution
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - $ref: '#/parameters/executionId'
+        - name: execution
+          description: The data of execution
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Execution'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions/{execution_id}/tasks:
+    get:
+      summary: List all the related tasks for the given execution
+      description: List all the related tasks for the given execution
+      tags:
+        - preheat
+      operationId: ListTasks
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - $ref: '#/parameters/executionId'
+      responses:
+        '200':
+          description: List tasks success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Task'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions/{execution_id}/tasks/{task_id}/logs:
+    get:
+      summary: Get the log text stream of the specified task for the given execution
+      description: Get the log text stream of the specified task for the given execution
+      tags:
+        - preheat
+      operationId: GetLog
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - $ref: '#/parameters/executionId'
+        - $ref: '#/parameters/taskId'
+      responses:
+        '200':
+          description: Get log success
+          schema:
+            type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   query:
     name: q
@@ -1085,7 +1230,18 @@ parameters:
     description: Preheat Policy Name
     required: true
     type: string
-
+  executionId:
+    name: execution_id
+    in: path
+    description: Execution ID
+    required: true
+    type: integer
+  taskId:
+    name: task_id
+    in: path
+    description: Task ID
+    required: true
+    type: integer
 responses:
   '200':
     description: Success
@@ -1601,3 +1757,90 @@ definitions:
         type: string
         format: date-time
         description: The Update Time of preheat policy
+  Metrics:
+    type: object
+    properties:
+      task_count:
+        type: integer
+        description: The count of task
+      success_task_count:
+        type: integer
+        description: The count of success task
+      error_task_count:
+        type: integer
+        description: The count of error task
+      pending_task_count:
+        type: integer
+        description: The count of pending task
+      running_task_count:
+        type: integer
+        description: The count of running task
+      scheduled_task_count:
+        type: integer
+        description: The count of scheduled task
+      stopped_task_count:
+        type: integer
+        description: The count of stopped task
+  Execution:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of execution
+      vendor_type:
+        type: string
+        description: The vendor type of execution
+      vendor_id:
+        type: integer
+        description: The vendor id of execution
+      status:
+        type: string
+        description: The status of execution
+      status_message:
+        type: string
+        description: The status message of execution
+      metrics:
+        $ref: '#/definitions/Metrics'
+      trigger:
+        type: string
+        description: The trigger of execution
+      extra_attrs:
+        $ref: '#/definitions/ExtraAttrs'
+      start_time:
+        type: string
+        description: The start time of execution
+      end_time:
+        type: string
+        description: The end time of execution
+  Task:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of task
+      execution_id:
+        type: integer
+        description: The ID of task execution
+      status:
+        type: string
+        description: The status of task
+      status_message:
+        type: string
+        description: The status message of task
+      run_count:
+        type: integer
+        description: The count of task run
+      extra_attrs:
+        $ref: '#/definitions/ExtraAttrs'
+      creation_time:
+        type: string
+        description: The creation time of task
+      update_time:
+        type: string
+        description: The update time of task
+      start_time:
+        type: string
+        description: The start time of task
+      end_time:
+        type: string
+        description: The end time of task
