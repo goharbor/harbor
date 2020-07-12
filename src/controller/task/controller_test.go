@@ -40,14 +40,6 @@ func (c *controllerTestSuite) SetupTest() {
 	c.ctl = &controller{mgr: c.mgr}
 }
 
-// TestCreate tests create.
-func (c *controllerTestSuite) TestCreate() {
-	c.mgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
-	id, err := c.ctl.Create(nil, 1, nil)
-	c.NoError(err)
-	c.Equal(int64(1), id)
-}
-
 // TestStop tests stop.
 func (c *controllerTestSuite) TestStop() {
 	c.mgr.On("Stop", mock.Anything, mock.Anything).Return(nil)

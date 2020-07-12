@@ -21,23 +21,13 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
+var (
+	// ExecutionCtl is a global execution controller.
+	ExecutionCtl = NewExecutionController()
+)
+
 // ExecutionController manages the execution.
 type ExecutionController interface {
-	// Create an execution. The "vendorType" specifies the type of vendor (e.g. replication, scan, gc, retention, etc.),
-	// and the "vendorID" specifies the ID of vendor if needed(e.g. policy ID for replication and retention).
-	// The "extraAttrs" can be used to set the customized attributes.
-	Create(ctx context.Context, vendorType string, vendorID int64, trigger string,
-		extraAttrs ...map[string]interface{}) (id int64, err error)
-	// MarkDone marks the status of the specified execution as success.
-	// It must be called to update the execution status if the created execution contains no tasks.
-	// In other cases, the execution status can be calculated from the referenced tasks automatically
-	// and no need to update it explicitly.
-	MarkDone(ctx context.Context, id int64, message string) (err error)
-	// MarkError marks the status of the specified execution as error.
-	// It must be called to update the execution status when failed to create tasks.
-	// In other cases, the execution status can be calculated from the referenced tasks automatically
-	// and no need to update it explicitly.
-	MarkError(ctx context.Context, id int64, message string) (err error)
 	// Stop all linked tasks of the specified execution.
 	Stop(ctx context.Context, id int64) (err error)
 	// Delete the specified execution and its tasks.
@@ -53,35 +43,11 @@ type executionController struct {
 	mgr task.ExecutionManager
 }
 
-// NewController creates an instance of the default execution controller.
+// NewExecutionController creates an instance of the default execution controller.
 func NewExecutionController() ExecutionController {
 	return &executionController{
 		mgr: task.ExecMgr,
 	}
-}
-
-// Create an execution. The "vendorType" specifies the type of vendor (e.g. replication, scan, gc, retention, etc.),
-// and the "vendorID" specifies the ID of vendor if needed(e.g. policy ID for replication and retention).
-// The "extraAttrs" can be used to set the customized attributes.
-func (ec *executionController) Create(ctx context.Context, vendorType string, vendorID int64, trigger string,
-	extraAttrs ...map[string]interface{}) (id int64, err error) {
-	return ec.mgr.Create(ctx, vendorType, vendorID, trigger, extraAttrs...)
-}
-
-// MarkDone marks the status of the specified execution as success.
-// It must be called to update the execution status if the created execution contains no tasks.
-// In other cases, the execution status can be calculated from the referenced tasks automatically
-// and no need to update it explicitly.
-func (ec *executionController) MarkDone(ctx context.Context, id int64, message string) (err error) {
-	return ec.mgr.MarkDone(ctx, id, message)
-}
-
-// MarkError marks the status of the specified execution as error.
-// It must be called to update the execution status when failed to create tasks.
-// In other cases, the execution status can be calculated from the referenced tasks automatically
-// and no need to update it explicitly.
-func (ec *executionController) MarkError(ctx context.Context, id int64, message string) (err error) {
-	return ec.mgr.MarkError(ctx, id, message)
 }
 
 // Stop all linked tasks of the specified execution.
