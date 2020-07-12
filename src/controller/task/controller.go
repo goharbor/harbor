@@ -28,10 +28,6 @@ var (
 
 // Controller manages the task
 type Controller interface {
-	// Create submits the job to jobservice and creates a corresponding task record.
-	// An execution must be created first and the task will be linked to it.
-	// The "extraAttrs" can be used to set the customized attributes.
-	Create(ctx context.Context, executionID int64, job *task.Job, extraAttrs ...map[string]interface{}) (id int64, err error)
 	// Stop the specified task.
 	Stop(ctx context.Context, id int64) (err error)
 	// Get the specified task.
@@ -52,11 +48,6 @@ func NewController() Controller {
 // controller defines the default task controller.
 type controller struct {
 	mgr task.Manager
-}
-
-// Create submits the job to jobservice and creates a corresponding task record.
-func (c *controller) Create(ctx context.Context, executionID int64, job *task.Job, extraAttrs ...map[string]interface{}) (id int64, err error) {
-	return c.mgr.Create(ctx, executionID, job, extraAttrs...)
 }
 
 // Stop the specified task.
