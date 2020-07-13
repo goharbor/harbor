@@ -151,5 +151,10 @@ func NewMigrator(database *models.PostGreSQL) (*migrate.Migrate, error) {
 		path = defaultMigrationPath
 	}
 	srcURL := fmt.Sprintf("file://%s", path)
-	return migrate.New(srcURL, dbURL.String())
+	m, err := migrate.New(srcURL, dbURL.String())
+	if err != nil {
+		return nil, err
+	}
+	m.Log = newMigrateLogger()
+	return m, nil
 }
