@@ -169,7 +169,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
       this.operationService.publishInfo(operMessage);
       this.disService.UpdateInstance({
           propertySet: {default: true},
-          instanceId: this.selectedRow[0].id
+          preheatInstanceName: this.selectedRow[0].name
         })
         .subscribe(
         () => {
@@ -273,7 +273,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
     operMessage.data.name = instance.name;
     this.operationService.publishInfo(operMessage);
 
-    return this.disService.DeleteInstance({instanceId: instance.id}).pipe(
+    return this.disService.DeleteInstance({preheatInstanceName: instance.name}).pipe(
       map(() => {
         this.translate.get('DISTRIBUTION.DELETED_SUCCESS').subscribe(msg => {
           operateChanges(operMessage, OperationState.success);
@@ -305,7 +305,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
     return this.disService
       .UpdateInstance({
         propertySet: {enabled: true},
-        instanceId: instance.id
+        preheatInstanceName: instance.name
       })
       .pipe(
         map(() => {
@@ -339,7 +339,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
     return this.disService
       .UpdateInstance({
         propertySet: {enabled: false},
-        instanceId: instance.id
+        preheatInstanceName: instance.name
       })
       .pipe(
         map(() => {
