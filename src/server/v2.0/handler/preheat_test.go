@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/task"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	instanceModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
@@ -285,6 +287,116 @@ func Test_convertParamInstanceToModelInstance(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("convertParamInstanceToModelInstance() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_convertExecutionToPayload(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     *task.Execution
+		expect    *models.Execution
+		shouldErr bool
+	}{
+		{
+			name:      "nil model",
+			input:     nil,
+			expect:    nil,
+			shouldErr: true,
+		},
+		{
+			name: "should ok",
+			input: &task.Execution{
+				ID:            1,
+				VendorType:    "p2p",
+				VendorID:      1,
+				Status:        "",
+				StatusMessage: "",
+				Metrics:       nil,
+				Trigger:       "",
+				ExtraAttrs:    nil,
+				StartTime:     time.Time{},
+				EndTime:       time.Time{},
+			},
+			expect: &models.Execution{
+				EndTime:       "0001-01-01 00:00:00 +0000 UTC",
+				ExtraAttrs:    nil,
+				ID:            1,
+				Metrics:       nil,
+				StartTime:     "0001-01-01 00:00:00 +0000 UTC",
+				Status:        "",
+				StatusMessage: "",
+				Trigger:       "",
+				VendorID:      1,
+				VendorType:    "p2p",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := convertExecutionToPayload(tt.input)
+			if (err != nil) != tt.shouldErr {
+				t.Errorf("convertExecutionToPayload() error = %v, wantErr %v", err, tt.shouldErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.expect) {
+				t.Errorf("convertExecutionToPayload() = %v, want %v", got, tt.expect)
+			}
+		})
+	}
+}
+
+func Test_convertTaskToPayload(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     *task.Task
+		expect    *models.Task
+		shouldErr bool
+	}{
+		{
+			name:      "nil model",
+			input:     nil,
+			expect:    nil,
+			shouldErr: true,
+		},
+		{
+			name: "should ok",
+			input: &task.Task{
+				ID:            0,
+				ExecutionID:   0,
+				Status:        "",
+				StatusMessage: "",
+				RunCount:      0,
+				ExtraAttrs:    nil,
+				CreationTime:  time.Time{},
+				StartTime:     time.Time{},
+				UpdateTime:    time.Time{},
+				EndTime:       time.Time{},
+			},
+			expect: &models.Task{
+				CreationTime:  "0001-01-01 00:00:00 +0000 UTC",
+				EndTime:       "0001-01-01 00:00:00 +0000 UTC",
+				ExecutionID:   0,
+				ExtraAttrs:    nil,
+				ID:            0,
+				RunCount:      0,
+				StartTime:     "0001-01-01 00:00:00 +0000 UTC",
+				Status:        "",
+				StatusMessage: "",
+				UpdateTime:    "0001-01-01 00:00:00 +0000 UTC",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := convertTaskToPayload(tt.input)
+			if (err != nil) != tt.shouldErr {
+				t.Errorf("convertTaskToPayload() error = %v, wantErr %v", err, tt.shouldErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.expect) {
+				t.Errorf("convertTaskToPayload() = %v, want %v", got, tt.expect)
 			}
 		})
 	}
