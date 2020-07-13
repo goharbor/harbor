@@ -153,3 +153,24 @@ func Escape(str string) string {
 	str = strings.Replace(str, `_`, `\_`, -1)
 	return str
 }
+
+// implements github.com/golang-migrate/migrate/v4.Logger
+type mLogger struct {
+	logger *log.Logger
+}
+
+func newMigrateLogger() *mLogger {
+	return &mLogger{
+		logger: log.DefaultLogger().WithDepth(5),
+	}
+}
+
+// Verbose ...
+func (l *mLogger) Verbose() bool {
+	return l.logger.GetLevel() <= log.DebugLevel
+}
+
+// Printf ...
+func (l *mLogger) Printf(format string, v ...interface{}) {
+	l.logger.Infof(format, v...)
+}
