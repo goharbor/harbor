@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/contenttrust"
 	"github.com/goharbor/harbor/src/server/middleware/immutable"
 	"github.com/goharbor/harbor/src/server/middleware/quota"
+	"github.com/goharbor/harbor/src/server/middleware/repoproxy"
 	"github.com/goharbor/harbor/src/server/middleware/v2auth"
 	"github.com/goharbor/harbor/src/server/middleware/vulnerable"
 	"github.com/goharbor/harbor/src/server/router"
@@ -47,6 +48,7 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodGet).
 		Path("/*/manifests/:reference").
+		Middleware(repoproxy.ManifestGetMiddleware()).
 		Middleware(contenttrust.Middleware()).
 		Middleware(vulnerable.Middleware()).
 		HandlerFunc(getManifest)
@@ -66,6 +68,12 @@ func RegisterRoutes() {
 		Middleware(quota.PutManifestMiddleware()).
 		Middleware(blob.PutManifestMiddleware()).
 		HandlerFunc(putManifest)
+	// blob get
+	root.NewRoute().
+		Method(http.MethodGet).
+		Path("/*/blobs/:digest").
+		Middleware(repoproxy.BlobGetMiddleware()).
+		Handler(proxy)
 	// initiate blob upload
 	root.NewRoute().
 		Method(http.MethodPost).
