@@ -113,6 +113,12 @@ var (
 
 			{Resource: ResourceArtifactLabel, Action: ActionCreate},
 			{Resource: ResourceArtifactLabel, Action: ActionDelete},
+
+			{Resource: ResourcePreatPolicy, Action: ActionCreate},
+			{Resource: ResourcePreatPolicy, Action: ActionRead},
+			{Resource: ResourcePreatPolicy, Action: ActionUpdate},
+			{Resource: ResourcePreatPolicy, Action: ActionDelete},
+			{Resource: ResourcePreatPolicy, Action: ActionList},
 		},
 
 		"maintainer": {
