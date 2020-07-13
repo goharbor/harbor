@@ -8,22 +8,19 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/q"
-
-	"github.com/goharbor/harbor/src/jobservice/job"
-
-	"github.com/goharbor/harbor/src/pkg/task"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/common/rbac"
 	preheatCtl "github.com/goharbor/harbor/src/controller/p2p/preheat"
 	projectCtl "github.com/goharbor/harbor/src/controller/project"
 	taskCtl "github.com/goharbor/harbor/src/controller/task"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	instanceModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/preheat"
@@ -658,4 +655,26 @@ func (api *preheatAPI) GetLog(ctx context.Context, params operation.GetLogParams
 	}
 
 	return operation.NewGetLogOK().WithPayload(string(l))
+}
+
+// ListProvidersUnderProject is Get all providers at project level
+func (api *preheatAPI) ListProvidersUnderProject(ctx context.Context, params operation.ListProvidersUnderProjectParams) middleware.Responder {
+	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourcePreatPolicy); err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	instances, err := api.preheatCtl.ListInstance(ctx, &q.Query{})
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	var providers []*models.ProviderUnderProject
+	for _, instance := range instances {
+		providers = append(providers, &models.ProviderUnderProject{
+			ID:       instance.ID,
+			Provider: fmt.Sprintf("%s %s-%s", instance.Vendor, instance.Name, instance.Endpoint),
+		})
+	}
+
+	return operation.NewListProvidersUnderProjectOK().WithPayload(providers)
 }

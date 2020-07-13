@@ -1158,6 +1158,33 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/preheat/providers:
+    get:
+      summary: Get all providers at project level
+      description: Get all providers at project level
+      tags:
+        - preheat
+      operationId: ListProvidersUnderProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProviderUnderProject'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   query:
     name: q
@@ -1844,3 +1871,10 @@ definitions:
       end_time:
         type: string
         description: The end time of task
+  ProviderUnderProject:
+    type: object
+    properties:
+      id:
+        type: integer
+      provider:
+        type: string
