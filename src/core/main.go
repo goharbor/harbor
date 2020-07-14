@@ -197,14 +197,6 @@ func registerScanners() {
 	}
 
 	if config.WithClair() {
-		clairDB, err := config.ClairDB()
-		if err != nil {
-			log.Fatalf("failed to load clair database information: %v", err)
-		}
-		if err := dao.InitClairDB(clairDB); err != nil {
-			log.Fatalf("failed to initialize clair database: %v", err)
-		}
-
 		log.Info("Registering Clair scanner")
 		wantedScanners = append(wantedScanners, scanner.Registration{
 			Name:            clairScanner,
