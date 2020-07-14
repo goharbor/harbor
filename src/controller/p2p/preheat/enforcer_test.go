@@ -115,10 +115,16 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		context.TODO(),
 		(int64)(1),
 		mock.Anything,
+		mock.Anything,
 	).Return(&models.Project{
 		ProjectID:    1,
 		Name:         "library",
 		CVEAllowlist: models.CVEAllowlist{},
+		Metadata: map[string]string{
+			proMetaKeyContentTrust:  "true",
+			proMetaKeyVulnerability: "true",
+			proMetaKeySeverity:      "low",
+		},
 	}, nil)
 
 	fakeInstanceMgr := &instance.FakeManager{}
@@ -198,7 +204,7 @@ func mockPolicies() []*po.Schema {
 				},
 				{
 					Type:  po.FilterTypeSignature,
-					Value: true,
+					Value: false,
 				},
 				{
 					Type:  po.FilterTypeVulnerability,
