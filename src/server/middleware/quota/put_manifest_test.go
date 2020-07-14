@@ -29,7 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/quota"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/testing/mock"
 	distributiontesting "github.com/goharbor/harbor/src/testing/pkg/distribution"
 	"github.com/stretchr/testify/suite"
