@@ -169,20 +169,26 @@ func (suite *DaoTestSuite) TestUpdateBlobStatus() {
 	count, err := suite.dao.UpdateBlobStatus(ctx, blob)
 	suite.Nil(err)
 	suite.Equal(int64(0), count)
-	blob, err = suite.dao.GetBlobByDigest(ctx, digest)
-	if suite.Nil(err) {
-		suite.Equal(int64(0), blob.Version)
-		suite.Equal(models.StatusNone, blob.Status)
-	}
 
 	blob.Status = models.StatusDelete
 	count, err = suite.dao.UpdateBlobStatus(ctx, blob)
 	suite.Nil(err)
 	suite.Equal(int64(1), count)
+
+	blob.Status = models.StatusDeleting
+	count, err = suite.dao.UpdateBlobStatus(ctx, blob)
+	suite.Nil(err)
+	suite.Equal(int64(1), count)
+
+	blob.Status = models.StatusDeleteFailed
+	count, err = suite.dao.UpdateBlobStatus(ctx, blob)
+	suite.Nil(err)
+	suite.Equal(int64(1), count)
+
 	blob, err = suite.dao.GetBlobByDigest(ctx, digest)
 	if suite.Nil(err) {
-		suite.Equal(int64(1), blob.Version)
-		suite.Equal(models.StatusDelete, blob.Status)
+		suite.Equal(int64(3), blob.Version)
+		suite.Equal(models.StatusDeleteFailed, blob.Status)
 	}
 }
 
