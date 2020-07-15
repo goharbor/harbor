@@ -80,5 +80,4 @@ require (
 	k8s.io/api v0.17.3
 	k8s.io/apimachinery v0.17.3
 	k8s.io/client-go v0.17.3
-	k8s.io/helm v2.16.3+incompatible
 )
