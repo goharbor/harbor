@@ -9,9 +9,11 @@ import (
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	ctlModel "github.com/goharbor/harbor/src/controller/event/model"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/goharbor/harbor/src/replication"
@@ -118,7 +120,7 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 	}
 	hostname := strings.Split(extURL, ":")[0]
 
-	remoteRes := &ctlModel.ReplicationResource{
+	remoteRes := &model.ReplicationResource{
 		RegistryName: remoteRegistry.Name,
 		RegistryType: string(remoteRegistry.Type),
 		Endpoint:     remoteRegistry.URL,
@@ -188,16 +190,13 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 		payload.EventData.Replication.FailedArtifact = []*ctlModel.ArtifactInfo{failedArtifact}
 	}
 
-	project, err := config.GlobalProjectMgr.Get(prjName)
+	prj, err := project.Ctl.GetByName(orm.Context(), prjName, project.Metadata(true))
 	if err != nil {
 		log.Errorf("failed to get project %s, error: %v", prjName, err)
 		return nil, nil, err
 	}
-	if project == nil {
-		return nil, nil, fmt.Errorf("project %s not found of replication event", prjName)
-	}
 
-	return payload, project, nil
+	return payload, prj, nil
 }
 
 func getMetadataFromResource(resource string) (namespace, nameAndTag string) {
