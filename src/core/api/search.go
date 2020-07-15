@@ -16,9 +16,10 @@ package api
 
 import (
 	"fmt"
+	"strings"
+
 	pro "github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/security/local"
-	"strings"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -62,6 +63,12 @@ func (s *SearchAPI) Get() {
 		}
 		projects = result.Projects
 	} else {
+		cur := config.AllowAnonymous()
+		if !s.SecurityCtx.IsAuthenticated() && !cur {
+			// return empty if anonymous access is not allowed
+			return
+		}
+
 		projects, err = s.ProjectMgr.GetPublic()
 		if err != nil {
 			s.ParseAndHandleError("failed to get projects", err)

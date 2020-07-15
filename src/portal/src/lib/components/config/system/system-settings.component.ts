@@ -10,19 +10,19 @@ import {
     SimpleChanges,
     ElementRef
 } from '@angular/core';
-import {NgForm} from '@angular/forms';
-import {Configuration, StringValueItem} from '../config';
-import {SERVICE_CONFIG, IServiceConfig} from '../../../entities/service.config';
-import {clone, isEmpty, getChanges, compareValue} from '../../../utils/utils';
-import {ErrorHandler} from '../../../utils/error-handler';
-import {ConfirmationMessage} from '../../confirmation-dialog/confirmation-message';
-import {ConfirmationDialogComponent} from '../../confirmation-dialog/confirmation-dialog.component';
-import {ConfirmationState, ConfirmationTargets} from '../../../entities/shared.const';
-import {ConfirmationAcknowledgement} from '../../confirmation-dialog/confirmation-state-message';
+import { NgForm } from '@angular/forms';
+import { Configuration, StringValueItem } from '../config';
+import { SERVICE_CONFIG, IServiceConfig } from '../../../entities/service.config';
+import { clone, isEmpty, getChanges, compareValue } from '../../../utils/utils';
+import { ErrorHandler } from '../../../utils/error-handler';
+import { ConfirmationMessage } from '../../confirmation-dialog/confirmation-message';
+import { ConfirmationDialogComponent } from '../../confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationState, ConfirmationTargets } from '../../../entities/shared.const';
+import { ConfirmationAcknowledgement } from '../../confirmation-dialog/confirmation-state-message';
 import {
     ConfigurationService, SystemCVEAllowlist, SystemInfo, SystemInfoService, VulnerabilityItem
 } from '../../../services';
-import {forkJoin} from "rxjs";
+import { forkJoin } from "rxjs";
 
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 const ONE_HOUR_MINUTES: number = 60;
@@ -49,6 +49,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
     systemInfo: SystemInfo;
     @Output() configChange: EventEmitter<Configuration> = new EventEmitter<Configuration>();
     @Output() readOnlyChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+    @Output() allowAnonymousChange: EventEmitter<boolean> = new EventEmitter<boolean>();
     @Output() reloadSystemConfig: EventEmitter<any> = new EventEmitter<any>();
 
     @Input()
@@ -66,9 +67,9 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
     @Input() hasCAFile: boolean = false;
     @Input() withAdmiral = false;
 
-    @ViewChild("systemConfigFrom", {static: false}) systemSettingsForm: NgForm;
-    @ViewChild("cfgConfirmationDialog", {static: false}) confirmationDlg: ConfirmationDialogComponent;
-    @ViewChild('dateInput', {static: false}) dateInput: ElementRef;
+    @ViewChild("systemConfigFrom", { static: false }) systemSettingsForm: NgForm;
+    @ViewChild("cfgConfirmationDialog", { static: false }) confirmationDlg: ConfirmationDialogComponent;
+    @ViewChild('dateInput', { static: false }) dateInput: ElementRef;
 
     get editable(): boolean {
         return this.systemSettings &&
@@ -108,7 +109,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
         let changes = {};
         for (let prop in allChanges) {
             if (prop === 'token_expiration' || prop === 'read_only' || prop === 'project_creation_restriction'
-                || prop === 'robot_token_duration' || prop === 'notification_enable') {
+                || prop === 'robot_token_duration' || prop === 'notification_enable' || prop === 'allow_anonymous') {
                 changes[prop] = allChanges[prop];
             }
         }
@@ -117,6 +118,10 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
 
     setRepoReadOnlyValue($event: any) {
         this.systemSettings.read_only.value = $event;
+    }
+
+    setAllowAnonymousValue($event: any) {
+        this.systemSettings.allow_anonymous.value = $event;
     }
 
     setWebhookNotificationEnabledValue($event: any) {
@@ -159,6 +164,9 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
                     this.retrieveConfig();
                     if ('read_only' in changes) {
                         this.readOnlyChange.emit(changes['read_only']);
+                    }
+                    if ('allow_anonymous' in changes) {
+                        this.allowAnonymousChange.emit(changes['allow_anonymous']);
                     }
 
                     this.reloadSystemConfig.emit();
@@ -247,9 +255,9 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
     }
 
     constructor(@Inject(SERVICE_CONFIG) private configInfo: IServiceConfig,
-                private configService: ConfigurationService,
-                private errorHandler: ErrorHandler,
-                private systemInfoService: SystemInfoService) {
+        private configService: ConfigurationService,
+        private errorHandler: ErrorHandler,
+        private systemInfoService: SystemInfoService) {
         if (this.configInfo && this.configInfo.systemInfoEndpoint) {
             this.downloadLink = this.configInfo.systemInfoEndpoint + "/getcert";
         }
@@ -270,20 +278,20 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
         this.onGoing = true;
         this.systemInfoService.getSystemAllowlist()
             .subscribe((systemAllowlist) => {
-                    this.onGoing = false;
-                    if (!systemAllowlist.items) {
-                        systemAllowlist.items = [];
-                    }
-                    if (!systemAllowlist.expires_at) {
-                        systemAllowlist.expires_at = null;
-                    }
-                    this.systemAllowlist = systemAllowlist;
-                    this.systemAllowlistOrigin = clone(systemAllowlist);
-                }, error => {
-                    this.onGoing = false;
-                    console.error('An error occurred during getting systemAllowlist');
-                    // this.errorHandler.error(error);
+                this.onGoing = false;
+                if (!systemAllowlist.items) {
+                    systemAllowlist.items = [];
                 }
+                if (!systemAllowlist.expires_at) {
+                    systemAllowlist.expires_at = null;
+                }
+                this.systemAllowlist = systemAllowlist;
+                this.systemAllowlistOrigin = clone(systemAllowlist);
+            }, error => {
+                this.onGoing = false;
+                console.error('An error occurred during getting systemAllowlist');
+                // this.errorHandler.error(error);
+            }
             );
     }
 

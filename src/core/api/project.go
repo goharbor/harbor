@@ -17,12 +17,13 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/replication"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/goharbor/harbor/src/replication"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -415,6 +416,13 @@ func (p *ProjectAPI) List() {
 
 	var projects []*models.Project
 	if !p.SecurityCtx.IsAuthenticated() {
+		cur := config.AllowAnonymous()
+		if !cur {
+			// if anonymous access is not allowed, return unauthorized error
+			p.SendUnAuthorizedError(errors.New("Unauthorized"))
+			return
+		}
+
 		// not login, only get public projects
 		pros, err := p.ProjectMgr.GetPublic()
 		if err != nil {
