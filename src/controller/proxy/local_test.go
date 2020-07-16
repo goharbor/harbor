@@ -191,8 +191,9 @@ func (lh *localHelperTestSuite) TestManifestExist() {
 	var opt *artifact.Option
 	lh.artCtl.On("GetByReference", ctx, "library/hello-world", dig, opt).Return(ar, nil)
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
-	exist := lh.local.ManifestExist(ctx, art)
-	lh.Assert().True(exist)
+	a, err := lh.local.GetManifest(ctx, art)
+	lh.Assert().Nil(err)
+	lh.Assert().NotNil(a)
 }
 
 func TestLocalHelperTestSuite(t *testing.T) {

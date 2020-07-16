@@ -17,8 +17,8 @@ package proxy
 import (
 	"fmt"
 	"github.com/docker/distribution"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/registry"
 	"io"
 )
@@ -28,20 +28,22 @@ type remoteInterface interface {
 	// BlobReader create a reader for remote blob
 	BlobReader(repo, dig string) (int64, io.ReadCloser, error)
 	// Manifest get manifest by reference
-	Manifest(repo string, ref string) (distribution.Manifest, error)
+	Manifest(repo string, ref string) (distribution.Manifest, string, error)
 }
 
 // remoteHelper defines operations related to remote repository under proxy
 type remoteHelper struct {
-	regID    int64
-	registry adapter.ArtifactRegistry
+	regID       int64
+	registry    adapter.ArtifactRegistry
+	registryMgr registry.Manager
 }
 
 // newRemoteHelper create a remoteHelper interface
-func newRemoteHelper(regID int64) (remoteInterface, error) {
-	r := &remoteHelper{regID: regID}
+func newRemoteHelper(regID int64) (*remoteHelper, error) {
+	r := &remoteHelper{
+		regID:       regID,
+		registryMgr: registry.NewDefaultManager()}
 	if err := r.init(); err != nil {
-		log.Errorf("failed to create remoteHelper error %v", err)
 		return nil, err
 	}
 	return r, nil
@@ -52,12 +54,15 @@ func (r *remoteHelper) init() error {
 	if r.registry != nil {
 		return nil
 	}
-	reg, err := registry.NewDefaultManager().Get(r.regID)
+	reg, err := r.registryMgr.Get(r.regID)
 	if err != nil {
 		return err
 	}
 	if reg == nil {
 		return fmt.Errorf("failed to get registry, registryID: %v", r.regID)
+	}
+	if reg.Status != model.Healthy {
+		return fmt.Errorf("current registry is unhealthy, regID:%v, Name:%v, Status: %v", reg.ID, reg.Name, reg.Status)
 	}
 	factory, err := adapter.GetFactory(reg.Type)
 	if err != nil {
@@ -75,7 +80,6 @@ func (r *remoteHelper) BlobReader(repo, dig string) (int64, io.ReadCloser, error
 	return r.registry.PullBlob(repo, dig)
 }
 
-func (r *remoteHelper) Manifest(repo string, ref string) (distribution.Manifest, error) {
-	man, _, err := r.registry.PullManifest(repo, ref)
-	return man, err
+func (r *remoteHelper) Manifest(repo string, ref string) (distribution.Manifest, string, error) {
+	return r.registry.PullManifest(repo, ref)
 }
