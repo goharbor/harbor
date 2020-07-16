@@ -23,8 +23,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/goharbor/harbor/src/replication"
-
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	pro "github.com/goharbor/harbor/src/common/dao/project"
@@ -39,8 +37,9 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/replication"
 )
 
 type deletableResp struct {
