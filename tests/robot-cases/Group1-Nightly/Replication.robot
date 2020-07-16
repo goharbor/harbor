@@ -273,3 +273,28 @@ Test Case - Replication Of Pull Images from Google-GCR To Self
     Image Should Be Replicated To Project  project${d}  httpd
     Image Should Be Replicated To Project  project${d}  tomcat
     Close Browser
+
+Test Case - Replication Of Push Images to DockerHub
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
+    ${image}=  Set Variable  redis
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project${d}
+    ${image_with_tag}=  Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}  tag_suffix=${true}
+    Switch To Registries
+    Create A New Endpoint    docker-hub    e${d}    https://hub.docker.com/    dockerhubtesterforharbor    Aa12344321    Y
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    rule${d}    push    project${d}/*    image    e${d}    dockerhubtesterforharbor  mode=Event Based  del_remote=${true}
+    Filter Replicatin Rule  rule${d}
+    Select Rule And Replicate  rule${d}
+	Sleep  20
+	Docker Image Can Be Pulled  dockerhubtesterforharbor/${image_with_tag}   times=3
+	Go Into Project  project${d}
+	Delete Repo  project${d}
+	Switch To Replication Manage
+	Filter Replicatin Rule  rule${d}
+	Select Rule And Replicate  rule${d}
+	Sleep  30
+	Docker Image Can Not Be Pulled  dockerhubtesterforharbor/${image_with_tag}
