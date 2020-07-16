@@ -57,11 +57,14 @@ class Project(base.Base):
 
     def check_project_name_exist(self, name=None, **kwargs):
         client = self._get_client(**kwargs)
-        _, status_code, _ = client.projects_head_with_http_info(name)
+        try:
+            _, status_code, _ = client.projects_head_with_http_info(name)
+        except ApiException as e:
+            status_code = -1
         return {
             200: True,
             404: False,
-        }.get(status_code,'error')
+        }.get(status_code,False)
 
     def get_project(self, project_id, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
