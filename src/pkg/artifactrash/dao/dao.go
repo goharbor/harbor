@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -71,9 +72,9 @@ func (d *dao) Filter(ctx context.Context, cutOff time.Time) (arts []model.Artifa
 		return deletedAfs, err
 	}
 
-	sql := `SELECT aft.* FROM artifact_trash AS aft LEFT JOIN artifact af ON (aft.repository_name=af.repository_name AND aft.digest=af.digest) WHERE (af.digest IS NULL AND af.repository_name IS NULL) AND aft.creation_time <= ?`
+	sql := fmt.Sprintf(`SELECT aft.* FROM artifact_trash AS aft LEFT JOIN artifact af ON (aft.repository_name=af.repository_name AND aft.digest=af.digest) WHERE (af.digest IS NULL AND af.repository_name IS NULL) AND aft.creation_time <= TO_TIMESTAMP('%f')`, float64(cutOff.UnixNano())/float64((time.Second)))
 
-	_, err = ormer.Raw(sql, cutOff).QueryRows(&deletedAfs)
+	_, err = ormer.Raw(sql).QueryRows(&deletedAfs)
 	if err != nil {
 		return deletedAfs, err
 	}
@@ -87,11 +88,11 @@ func (d *dao) Flush(ctx context.Context, cutOff time.Time) (err error) {
 	if err != nil {
 		return err
 	}
-	sql := `DELETE FROM artifact_trash where creation_time <= ?`
+	sql := fmt.Sprintf(`DELETE FROM artifact_trash where creation_time <= TO_TIMESTAMP('%f')`, float64(cutOff.UnixNano())/float64((time.Second)))
 	if err != nil {
 		return err
 	}
-	_, err = ormer.Raw(sql, cutOff).Exec()
+	_, err = ormer.Raw(sql).Exec()
 	if err != nil {
 		return err
 	}
