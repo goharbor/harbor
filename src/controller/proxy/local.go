@@ -16,26 +16,30 @@ package proxy
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"io"
+	"time"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/proxy/secret"
 	"github.com/goharbor/harbor/src/pkg/registry"
-	"io"
-	"time"
+	"github.com/opencontainers/go-digest"
 )
 
 // localInterface defines operations related to local repo under proxy mode
 type localInterface interface {
 	// BlobExist check if the blob exist in local repo
 	BlobExist(ctx context.Context, art lib.ArtifactInfo) (bool, error)
-	// Manifest check if the manifest exist in local repo
-	ManifestExist(ctx context.Context, art lib.ArtifactInfo) bool
+	// GetManifest get the manifest info
+	GetManifest(ctx context.Context, art lib.ArtifactInfo) (*artifact.Artifact, error)
 	// PushBlob push blob to local repo
 	PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error
 	// PushManifest push manifest to local repo, ref can be digest or tag
@@ -48,13 +52,16 @@ type localInterface interface {
 	DeleteManifest(repo, ref string)
 }
 
-func (l *localHelper) ManifestExist(ctx context.Context, art lib.ArtifactInfo) bool {
-	a, err := l.artifactCtl.GetByReference(ctx, art.Repository, art.Digest, nil)
+func (l *localHelper) GetManifest(ctx context.Context, art lib.ArtifactInfo) (*artifact.Artifact, error) {
+	ref := getReference(art)
+	a, err := l.artifactCtl.GetByReference(ctx, art.Repository, ref, nil)
 	if err != nil {
-		log.Errorf("check manifest exist failed, error %v", err)
-		return false
+		if errors.IsNotFoundErr(err) {
+			return nil, nil
+		}
+		return nil, err
 	}
-	return a != nil
+	return a, nil
 }
 
 // localHelper defines operations related to local repo under proxy mode
@@ -134,7 +141,11 @@ func (l *localHelper) updateManifestList(ctx context.Context, repo string, manif
 		existMans := make([]manifestlist.ManifestDescriptor, 0)
 		for _, m := range v.Manifests {
 			art := lib.ArtifactInfo{Repository: repo, Digest: string(m.Digest)}
-			if l.ManifestExist(ctx, art) {
+			a, err := l.GetManifest(ctx, art)
+			if err != nil {
+				return nil, err
+			}
+			if a != nil {
 				existMans = append(existMans, m)
 			}
 		}
@@ -143,14 +154,14 @@ func (l *localHelper) updateManifestList(ctx context.Context, repo string, manif
 	return nil, fmt.Errorf("current manifest list type is unknown, manifest type[%T], content [%+v]", manifest, manifest)
 }
 
-func (l *localHelper) PushManifestList(ctx context.Context, repo string, ref string, man distribution.Manifest) error {
+func (l *localHelper) PushManifestList(ctx context.Context, repo string, tag string, man distribution.Manifest) error {
 	// For manifest list, it might include some different manifest
 	// it will wait and check for 30 mins, if all depend manifests exist then push it
 	// if time exceed, only push the new updated manifest list which contains existing manifest
 	var newMan distribution.Manifest
 	var err error
 	for n := 0; n < maxManifestListWait; n++ {
-		log.Debugf("waiting for the manifest ready, repo %v, ref:%v", repo, ref)
+		log.Debugf("waiting for the manifest ready, repo %v, tag:%v", repo, tag)
 		time.Sleep(sleepIntervalSec * time.Second)
 		newMan, err = l.updateManifestList(ctx, repo, man)
 		if err != nil {
@@ -160,7 +171,6 @@ func (l *localHelper) PushManifestList(ctx context.Context, repo string, ref str
 			break
 		}
 	}
-
 	if len(newMan.References()) == 0 {
 		return errors.New("manifest list doesn't contain any pushed manifest")
 	}
@@ -170,7 +180,17 @@ func (l *localHelper) PushManifestList(ctx context.Context, repo string, ref str
 		return err
 	}
 	log.Debugf("The manifest list payload: %v", string(pl))
-	return l.PushManifest(repo, ref, newMan)
+	dig := digest.FromBytes(pl)
+	// Because the manifest list maybe updated, need to recheck if it is exist in local
+	art := lib.ArtifactInfo{Repository: repo, Tag: tag}
+	a, err := l.GetManifest(ctx, art)
+	if err != nil {
+		return err
+	}
+	if a != nil && a.Digest == string(dig) {
+		return nil
+	}
+	return l.PushManifest(repo, tag, newMan)
 }
 
 func (l *localHelper) CheckDependencies(ctx context.Context, repo string, man distribution.Manifest) []distribution.Descriptor {
@@ -187,4 +207,14 @@ func (l *localHelper) CheckDependencies(ctx context.Context, repo string, man di
 	}
 	log.Debugf("Check dependency result %v", waitDesc)
 	return waitDesc
+}
+
+// SendPullEvent send a pull image event
+func SendPullEvent(ctx context.Context, a *artifact.Artifact, tag string) {
+	e := &metadata.PullArtifactEventMetadata{
+		Ctx:      ctx,
+		Artifact: &a.Artifact,
+		Tag:      tag,
+	}
+	event.BuildAndPublish(e)
 }

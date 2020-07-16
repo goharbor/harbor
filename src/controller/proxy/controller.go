@@ -30,8 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/replication/registry"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 const (
@@ -52,7 +51,7 @@ type Controller interface {
 	// UseLocalBlob check if the blob should use local copy
 	UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) bool
 	// UseLocalManifest check manifest should use local copy
-	UseLocalManifest(ctx context.Context, art lib.ArtifactInfo) bool
+	UseLocalManifest(ctx context.Context, art lib.ArtifactInfo) (bool, error)
 	// ProxyBlob proxy the blob request to the remote server, p is the proxy project
 	// art is the ArtifactInfo which includes the digest of the blob
 	ProxyBlob(ctx context.Context, p *models.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error)
@@ -62,7 +61,6 @@ type Controller interface {
 }
 type controller struct {
 	blobCtl     blob.Controller
-	registryMgr registry.Manager
 	artifactCtl artifact.Controller
 	local       localInterface
 }
@@ -74,7 +72,6 @@ func ControllerInstance() Controller {
 	once.Do(func() {
 		ctl = &controller{
 			blobCtl:     blob.Ctl,
-			registryMgr: registry.NewDefaultManager(),
 			artifactCtl: artifact.Ctl,
 			local:       newLocalHelper(),
 		}
@@ -94,22 +91,23 @@ func (c *controller) UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) boo
 	return exist
 }
 
-func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo) bool {
+func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo) (bool, error) {
 	if len(art.Digest) == 0 {
-		return false
+		return false, nil
 	}
-	return c.local.ManifestExist(ctx, art)
+	a, err := c.local.GetManifest(ctx, art)
+	return a != nil, err
 }
 
 func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art lib.ArtifactInfo) (distribution.Manifest, error) {
 	var man distribution.Manifest
 	remoteRepo := getRemoteRepo(art)
-	r, err := newRemoteHelper(p.RegistryID)
+	ref := getReference(art)
+	remote, err := newRemoteHelper(p.RegistryID)
 	if err != nil {
 		return man, err
 	}
-	ref := getReference(art)
-	man, err = r.Manifest(remoteRepo, ref)
+	man, dig, err := remote.Manifest(remoteRepo, ref)
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
 			go func() {
@@ -124,7 +122,26 @@ func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art l
 	}
 	// Push manifest in background
 	go func() {
-		c.waitAndPushManifest(ctx, remoteRepo, man, art, ct, r)
+		a, err := c.local.GetManifest(ctx, art)
+		if err != nil {
+			log.Errorf("failed to get manifest, error %v", err)
+		}
+		// Push manifest to local when pull with digest, or artifact not found, or digest mismatch
+		if len(art.Tag) == 0 || a == nil || a.Digest != dig {
+			// pull with digest
+			c.waitAndPushManifest(ctx, remoteRepo, man, art, ct, remote)
+		}
+
+		// Query artifact after push
+		if a == nil {
+			a, err = c.local.GetManifest(ctx, art)
+			if err != nil {
+				log.Errorf("failed to get manifest, error %v", err)
+			}
+		}
+		if a != nil {
+			SendPullEvent(ctx, a, art.Tag)
+		}
 	}()
 
 	return man, nil
@@ -184,7 +201,7 @@ func (c *controller) waitAndPushManifest(ctx context.Context, remoteRepo string,
 	}
 	if len(waitBlobs) > 0 {
 		// docker client will skip to pull layers exist in local
-		// these blobs is not exist in the proxy server
+		// these blobs are not exist in the proxy server
 		// it will cause the manifest dependency check always fail
 		// need to push these blobs before push manifest to avoid failure
 		log.Debug("Waiting blobs not empty, push it to local repo directly")
