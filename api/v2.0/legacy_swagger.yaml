@@ -3877,6 +3877,8 @@ definitions:
           used:
             $ref: "#/definitions/ResourceList"
             description: The used status of the quota
+      registry:
+          $ref: "#/definitions/Registry"
   User:
     type: object
     properties:
