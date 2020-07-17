@@ -26,7 +26,6 @@ var ErrorUnhealthy = errors.New("instance unhealthy")
 
 // Controller defines related top interfaces to handle the workflow of
 // the image distribution.
-// TODO: Add health check API
 type Controller interface {
 	// Get all the supported distribution providers
 	//
@@ -183,10 +182,6 @@ func (c *controller) DeleteInstance(ctx context.Context, id int64) error {
 
 // UpdateInstance implements @Controller.Update
 func (c *controller) UpdateInstance(ctx context.Context, instance *providerModels.Instance, properties ...string) error {
-	if len(properties) == 0 {
-		return errors.New("no properties provided to update")
-	}
-
 	return c.iManager.Update(ctx, instance, properties...)
 }
 
@@ -206,6 +201,11 @@ func (c *controller) CountPolicy(ctx context.Context, query *q.Query) (int64, er
 
 // CreatePolicy creates the policy.
 func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Schema) (int64, error) {
+	if schema != nil {
+		now := time.Now()
+		schema.CreatedAt = now
+		schema.UpdatedTime = now
+	}
 	return c.pManager.Create(ctx, schema)
 }
 
@@ -221,6 +221,9 @@ func (c *controller) GetPolicyByName(ctx context.Context, projectID int64, name 
 
 // UpdatePolicy updates the policy.
 func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Schema, props ...string) error {
+	if schema != nil {
+		schema.UpdatedTime = time.Now()
+	}
 	return c.pManager.Update(ctx, schema, props...)
 }
 

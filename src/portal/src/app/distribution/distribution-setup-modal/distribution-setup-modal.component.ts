@@ -105,13 +105,6 @@ export class DistributionSetupModalComponent implements OnInit {
 
   submit() {
     if (this.editingMode) {
-      const data: Instance = {
-        endpoint: this.model.endpoint,
-        enabled: this.model.enabled,
-        description: this.model.description,
-        auth_mode: this.model.auth_mode,
-        auth_info: this.model.auth_info
-      };
       const operMessageForEdit = new OperateInfo();
       operMessageForEdit.name = 'DISTRIBUTION.UPDATE_INSTANCE';
       operMessageForEdit.data.id = this.model.id;
@@ -119,7 +112,13 @@ export class DistributionSetupModalComponent implements OnInit {
       operMessageForEdit.data.name = this.model.name;
       this.operationService.publishInfo(operMessageForEdit);
       this.saveBtnState = ClrLoadingState.LOADING;
-      this.distributionService.UpdateInstance({preheatInstanceName: this.model.name, propertySet: data
+      const instance: Instance = clone(this.originModelForEdit);
+      instance.endpoint = this.model.endpoint;
+      instance.enabled = this.model.enabled;
+      instance.description = this.model.description;
+      instance.auth_mode = this.model.auth_mode;
+      instance.auth_info = this.model.auth_info;
+      this.distributionService.UpdateInstance({preheatInstanceName: this.model.name, instance: instance
         }).subscribe(
         response => {
           this.translate.get('DISTRIBUTION.UPDATE_SUCCESS').subscribe(msg => {

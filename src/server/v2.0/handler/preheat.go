@@ -163,8 +163,17 @@ func (api *preheatAPI) UpdateInstance(ctx context.Context, params operation.Upda
 		return api.SendError(ctx, err)
 	}
 
-	var payload *models.InstanceUpdateResp
-	return operation.NewUpdateInstanceOK().WithPayload(payload)
+	instance, err := convertParamInstanceToModelInstance(params.Instance)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	err = api.preheatCtl.UpdateInstance(ctx, instance)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	return operation.NewUpdateInstanceOK()
 }
 
 func convertProvidersToFrontend(backend []*provider.Metadata) (frontend []*models.Metadata) {
@@ -199,10 +208,18 @@ func (api *preheatAPI) GetPolicy(ctx context.Context, params operation.GetPolicy
 		return api.SendError(ctx, err)
 	}
 
+	// get provider
+	provider, err := api.preheatCtl.GetInstance(ctx, policy.ProviderID)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	payload, err = convertPolicyToPayload(policy)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
+	payload.ProviderName = provider.Name
+
 	return operation.NewGetPolicyOK().WithPayload(payload)
 }
 
@@ -298,10 +315,17 @@ func (api *preheatAPI) ListPolicies(ctx context.Context, params operation.ListPo
 
 	var payload []*models.PreheatPolicy
 	for _, policy := range policies {
+		// get provider
+		provider, err := api.preheatCtl.GetInstance(ctx, policy.ProviderID)
+		if err != nil {
+			return api.SendError(ctx, err)
+		}
+
 		p, err := convertPolicyToPayload(policy)
 		if err != nil {
 			return api.SendError(ctx, err)
 		}
+		p.ProviderName = provider.Name
 		payload = append(payload, p)
 	}
 	return operation.NewListPoliciesOK().WithPayload(payload).WithXTotalCount(total).
@@ -350,7 +374,7 @@ func (api *preheatAPI) PingInstances(ctx context.Context, params operation.PingI
 			return operation.NewPingInstancesNotFound()
 		}
 		if err != nil {
-			api.SendError(ctx, err)
+			return api.SendError(ctx, err)
 		}
 	} else {
 		// by endpoint URL
@@ -360,13 +384,13 @@ func (api *preheatAPI) PingInstances(ctx context.Context, params operation.PingI
 
 		instance, err = convertParamInstanceToModelInstance(params.Instance)
 		if err != nil {
-			api.SendError(ctx, err)
+			return api.SendError(ctx, err)
 		}
 	}
 
 	err = api.preheatCtl.CheckHealth(ctx, instance)
 	if err != nil {
-		api.SendError(ctx, err)
+		return api.SendError(ctx, err)
 	}
 
 	return operation.NewPingInstancesOK()
