@@ -228,6 +228,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '405':
+          $ref: '#/responses/405'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}:
@@ -1317,6 +1319,14 @@ responses:
       $ref: '#/definitions/Errors'
   '404':
     description: Not found
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '405':
+    description: Method not allowed
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
