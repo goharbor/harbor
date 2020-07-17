@@ -225,7 +225,7 @@ Delete Endpoint
 
 Select Rule And Replicate
     [Arguments]  ${rule_name}
-    Retry Double Keywords When Error  Retry Element Click  //hbr-list-replication-rule//clr-dg-cell[contains(.,'${rule_name}')]  Wait Until Element Is Visible And Enabled  ${replication_exec_id}
+    Select Rule  ${rule_name}
     Retry Element Click    ${replication_exec_id}
     Retry Double Keywords When Error    Retry Element Click    xpath=${dialog_replicate}    Retry Wait Until Page Not Contains Element    xpath=${dialog_replicate}
 
@@ -257,3 +257,12 @@ Image Should Be Replicated To Project
     \    Sleep  5
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+Executions Result Count Should Be
+    [Arguments]  ${expected_status}  ${expected_trigger_type}  ${expected_result_count}
+    Sleep  10
+    ${count}=  Get Element Count  xpath=//clr-dg-row[contains(.,'${expected_status}') and contains(.,'${expected_trigger_type}')]
+    Capture Page Screenshot
+    Should Be Equal As Integers  ${count}  ${expected_result_count}
+    Capture Page Screenshot
+
