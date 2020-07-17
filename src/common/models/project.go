@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/pkg/quota/types"
+	"github.com/goharbor/harbor/src/replication/model"
 )
 
 const (
@@ -211,5 +212,6 @@ type ProjectSummary struct {
 	GuestCount        int64 `json:"guest_count"`
 	LimitedGuestCount int64 `json:"limited_guest_count"`
 
-	Quota *QuotaSummary `json:"quota,omitempty"`
+	Quota    *QuotaSummary   `json:"quota,omitempty"`
+	Registry *model.Registry `json:"registry"`
 }
