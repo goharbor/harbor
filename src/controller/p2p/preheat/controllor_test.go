@@ -126,7 +126,7 @@ func (s *preheatSuite) TestCreateInstance() {
 	id, err = s.controller.CreateInstance(s.ctx, &providerModel.Instance{
 		Endpoint: "http://localhost",
 	})
-	s.Equal(ErrorUnhealthy, err)
+	s.Equal(ErrorConflict, err)
 	s.Empty(id)
 
 	// Case: instance with invalid provider, expect error.
