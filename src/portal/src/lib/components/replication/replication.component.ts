@@ -329,6 +329,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       if (rule) {
         forkJoin(this.replicationOperate(rule)).subscribe(item => {
           this.selectOneRule(rule);
+        }, error => {
+          this.errorHandler.error(error);
         });
       }
     }
@@ -356,7 +358,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         this.translateService.get(message).subscribe(res =>
           operateChanges(operMessage, OperationState.failure, res)
         );
-        return observableThrowError(message);
+        return observableThrowError(error);
       })
     );
   }
@@ -423,14 +425,16 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       let ExecutionsStop$ = targets.map(target => this.StopOperate(target));
       forkJoin(ExecutionsStop$)
         .pipe(
-          catchError(err => observableThrowError(err)),
           finalize(() => {
             this.refreshJobs();
             this.isStopOnGoing = false;
             this.selectedRow = [];
           })
         )
-        .subscribe(() => { });
+        .subscribe(() => { }
+        , error => {
+          this.errorHandler.error(error);
+        });
     }
   }
 
@@ -457,7 +461,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
           this.translateService.get(message).subscribe(res =>
             operateChanges(operMessage, OperationState.failure, res)
           );
-          return observableThrowError(message);
+          return observableThrowError(error);
         })
       );
   }

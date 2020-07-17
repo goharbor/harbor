@@ -217,9 +217,7 @@ export class ListProjectComponent implements OnDestroy {
                     this.statisticHandler.refresh();
                 }
             }, error => {
-                this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
-                    this.msgHandler.handleError(res);
-                });
+                this.msgHandler.handleError(error);
             });
         }
     }
@@ -242,7 +240,7 @@ export class ListProjectComponent implements OnDestroy {
                     this.translateService.get(message).subscribe(res =>
                         operateChanges(operMessage, OperationState.failure, res)
                     );
-                    return observableThrowError(message);
+                    return observableThrowError(error);
                 }));
     }
 
