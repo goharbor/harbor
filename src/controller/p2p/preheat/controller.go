@@ -165,10 +165,8 @@ func (c *controller) CreateInstance(ctx context.Context, instance *providerModel
 		return 0, ErrorConflict
 	}
 
-	// !WARN: Check healthy status at fronted.
-	if instance.Status != "healthy" {
-		return 0, ErrorUnhealthy
-	}
+	// !WARN: We don't check the health of the instance here.
+	// That is ok because the health of instance will be checked before enforcing the policy each time.
 
 	instance.SetupTimestamp = time.Now().Unix()
 
