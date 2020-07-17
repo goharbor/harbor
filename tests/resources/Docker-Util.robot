@@ -181,7 +181,7 @@ Docker Push Index
 Docker Image Can Not Be Pulled
     [Arguments]  ${image}
     :FOR  ${idx}  IN RANGE  0  30
-    \   ${out}  Run Keyword And Ignore Error  Command Should be Failed  docker pull ${image}
+    \   ${out}=  Run Keyword And Ignore Error  Command Should be Failed  docker pull ${image}
     \   Exit For Loop If  '${out[0]}'=='PASS'
     \   Sleep  3
     Log To Console  Cannot Pull Image From Docker - Pull Log: ${out[1]}
@@ -191,7 +191,7 @@ Docker Image Can Be Pulled
     [Arguments]  ${image}  ${period}=60  ${times}=10
     :For  ${n}  IN RANGE  1  ${times}
     \    Sleep  ${period}
-    \    ${out}  Run Keyword And Ignore Error  Docker Pull  ${image}
+    \    ${out}=  Run Keyword And Ignore Error  Docker Pull  ${image}
     \    Log To Console  Return value is ${out[0]}
     \    Exit For Loop If  '${out[0]}'=='PASS'
     \    Sleep  5
