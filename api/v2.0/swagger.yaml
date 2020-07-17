@@ -817,15 +817,12 @@ paths:
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/instanceName'
-        - name: propertySet
+        - name: instance
           in: body
-          description: The property set to update
+          description: The instance to update
           required: true
           schema:
-            type: object
-            additionalProperties:
-              type: object
-              additionalProperties: true
+            $ref: '#/definitions/Instance'
       responses:
         '200':
           description: Success
@@ -1767,6 +1764,9 @@ definitions:
       provider_id:
         type: integer
         description: The ID of preheat policy provider
+      provider_name:
+        type: string
+        description: The Name of preheat policy provider
       filters:
         type: string
         description: The Filters of preheat policy

@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS p2p_preheat_policy (
     project_id int NOT NULL,
     provider_id int NOT NULL,
     filters varchar(1024),
-    trigger varchar(16),
+    trigger varchar(255),
     enabled boolean,
     creation_time timestamp,
     update_time timestamp,
