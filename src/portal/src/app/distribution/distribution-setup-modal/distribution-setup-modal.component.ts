@@ -139,6 +139,7 @@ export class DistributionSetupModalComponent implements OnInit {
               this.saveBtnState = ClrLoadingState.ERROR;
             });
           });
+          this.msgHandler.handleErrorPopupUnauthorized(err);
         }
       );
     } else {
@@ -172,6 +173,7 @@ export class DistributionSetupModalComponent implements OnInit {
               this.saveBtnState = ClrLoadingState.ERROR;
             });
           });
+          this.msgHandler.handleErrorPopupUnauthorized(err);
         }
       );
     }
