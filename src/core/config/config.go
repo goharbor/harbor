@@ -20,6 +20,7 @@ package config
 import (
 	"errors"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
@@ -477,4 +478,16 @@ func GetPermittedRegistryTypesForProxyCache() []string {
 		return []string{}
 	}
 	return strings.Split(types, ",")
+}
+
+// GetGCBlobTimeWindow returns the reserve time window of blob.
+func GetGCBlobTimeWindow() int64 {
+	// the env is for testing/debugging. For production, Do NOT set it.
+	if env, exist := os.LookupEnv("_GC_BLOB_TIME_WINDOW"); exist {
+		timeWindow, err := strconv.ParseInt(env, 10, 64)
+		if err == nil {
+			return timeWindow
+		}
+	}
+	return int64(common.DefaultGCBlobTimeWindow)
 }

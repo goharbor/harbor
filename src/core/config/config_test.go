@@ -59,6 +59,7 @@ func TestConfig(t *testing.T) {
 	defer os.Setenv("TOKEN_PRIVATE_KEY_PATH", oriKeyPath)
 
 	os.Setenv("JOBSERVICE_URL", "http://myjob:8888")
+	os.Setenv("_GC_BLOB_TIME_WINDOW", "0")
 
 	Init()
 
@@ -188,6 +189,8 @@ func TestConfig(t *testing.T) {
 	assert.Equal("http://127.0.0.1:8080", localCoreURL)
 
 	assert.True(NotificationEnable())
+	assert.Equal(int64(0), GetGCBlobTimeWindow())
+
 }
 
 func currPath() string {

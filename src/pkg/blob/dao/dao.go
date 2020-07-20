@@ -391,7 +391,7 @@ func (d *dao) GetBlobsNotRefedByProjectBlob(ctx context.Context, timeWindowHours
 		return noneRefed, err
 	}
 
-	sql := fmt.Sprintf(`SELECT b.id, b.digest, b.content_type, b.status FROM blob AS b LEFT JOIN project_blob pb ON b.id = pb.blob_id WHERE pb.id IS NULL AND b.update_time <= now() - interval '%d hours';`, timeWindowHours)
+	sql := fmt.Sprintf(`SELECT b.id, b.digest, b.content_type, b.status, b.version, b.size FROM blob AS b LEFT JOIN project_blob pb ON b.id = pb.blob_id WHERE pb.id IS NULL AND b.update_time <= now() - interval '%d hours';`, timeWindowHours)
 	_, err = ormer.Raw(sql).QueryRows(&noneRefed)
 	if err != nil {
 		return noneRefed, err
