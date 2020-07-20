@@ -17,14 +17,15 @@ package blob
 import (
 	"context"
 	"fmt"
+
 	"github.com/docker/distribution"
-	"github.com/garyburd/redigo/redis"
-	util "github.com/goharbor/harbor/src/common/utils/redis"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
+	"github.com/gomodule/redigo/redis"
 )
 
 var (
@@ -77,6 +78,9 @@ type Controller interface {
 
 	// Touch updates the blob status to StatusNone and increase version every time.
 	Touch(ctx context.Context, blob *blob.Blob) error
+
+	// Fail updates the blob status to StatusDeleteFailed and increase version every time.
+	Fail(ctx context.Context, blob *blob.Blob) error
 
 	// Update updates the blob, it cannot handle blob status transitions.
 	Update(ctx context.Context, blob *blob.Blob) error
@@ -290,7 +294,7 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 }
 
 func (c *controller) SetAcceptedBlobSize(sessionID string, size int64) error {
-	conn := util.DefaultPool().Get()
+	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
 	key := fmt.Sprintf("upload:%s:size", sessionID)
@@ -307,7 +311,7 @@ func (c *controller) SetAcceptedBlobSize(sessionID string, size int64) error {
 }
 
 func (c *controller) GetAcceptedBlobSize(sessionID string) (int64, error) {
-	conn := util.DefaultPool().Get()
+	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
 	key := fmt.Sprintf("upload:%s:size", sessionID)
@@ -331,6 +335,18 @@ func (c *controller) Touch(ctx context.Context, blob *blob.Blob) error {
 	}
 	if count == 0 {
 		return errors.New(nil).WithMessage(fmt.Sprintf("no blob item is updated to StatusNone, id:%d, digest:%s", blob.ID, blob.Digest)).WithCode(errors.NotFoundCode)
+	}
+	return nil
+}
+
+func (c *controller) Fail(ctx context.Context, blob *blob.Blob) error {
+	blob.Status = blob_models.StatusDeleteFailed
+	count, err := c.blobMgr.UpdateBlobStatus(ctx, blob)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return errors.New(nil).WithMessage(fmt.Sprintf("no blob item is updated to StatusDeleteFailed, id:%d, digest:%s", blob.ID, blob.Digest)).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }

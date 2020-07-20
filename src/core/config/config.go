@@ -440,11 +440,13 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 		Name:         cfgMgr.Get(common.OIDCName).GetString(),
 		Endpoint:     cfgMgr.Get(common.OIDCEndpoint).GetString(),
 		VerifyCert:   cfgMgr.Get(common.OIDCVerifyCert).GetBool(),
+		AutoOnboard:  cfgMgr.Get(common.OIDCAutoOnboard).GetBool(),
 		ClientID:     cfgMgr.Get(common.OIDCCLientID).GetString(),
 		ClientSecret: cfgMgr.Get(common.OIDCClientSecret).GetString(),
 		GroupsClaim:  cfgMgr.Get(common.OIDCGroupsClaim).GetString(),
 		RedirectURL:  extEndpoint + common.OIDCCallbackPath,
 		Scope:        scope,
+		UserClaim:    cfgMgr.Get(common.OIDCUserClaim).GetString(),
 	}, nil
 }
 

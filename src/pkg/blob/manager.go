@@ -16,6 +16,7 @@ package blob
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/blob/dao"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 )
@@ -121,6 +122,10 @@ func (m *manager) Update(ctx context.Context, blob *Blob) error {
 }
 
 func (m *manager) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, error) {
+	_, exist := models.StatusMap[blob.Status]
+	if !exist {
+		return -1, errors.New(nil).WithMessage("cannot update blob status, as the status is unknown. digest: %s, status: %s", blob.Digest, blob.Status)
+	}
 	return m.dao.UpdateBlobStatus(ctx, blob)
 }
 

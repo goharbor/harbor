@@ -73,7 +73,11 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 }
 
 func preCheck(ctx context.Context) (art lib.ArtifactInfo, p *models.Project, ctl proxy.Controller, err error) {
+	none := lib.ArtifactInfo{}
 	art = lib.GetArtifactInfo(ctx)
+	if art == none {
+		return none, nil, nil, errors.New("artifactinfo is not found").WithCode(errors.NotFoundCode)
+	}
 	ctl = proxy.ControllerInstance()
 	p, err = project.Ctl.GetByName(ctx, art.ProjectName, project.Metadata(false))
 	return

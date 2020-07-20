@@ -79,7 +79,8 @@ func (m *manager) Create(ctx context.Context, executionID int64, jb *Job, extraA
 	jobID, err := m.submitJob(ctx, id, jb)
 	if err != nil {
 		// failed to submit job to jobservice, update the status of task to error
-		log.Errorf("failed to submit job to jobservice: %v", err)
+		err = fmt.Errorf("failed to submit job to jobservice: %v", err)
+		log.Error(err)
 		now := time.Now()
 		err = m.dao.Update(ctx, &dao.Task{
 			ID:            id,
@@ -155,12 +156,9 @@ func (m *manager) Stop(ctx context.Context, id int64) error {
 		return err
 	}
 
-	// if the task is already in final status, return directly
-	if job.Status(task.Status).Final() {
-		log.Debugf("the task %d is in final status %s, skip", task.ID, task.Status)
-		return nil
-	}
-
+	// when a task is in final status, if it's a periodic or retrying job it will
+	// run again in the near future, so we must operate the stop action to these final
+	// status jobs as well
 	if err = m.jsClient.PostAction(task.JobID, string(job.StopCommand)); err != nil {
 		// job not found, update it's status to stop directly
 		if err == cjob.ErrJobNotFound {
