@@ -1194,7 +1194,8 @@
     "MSG_SCHEDULE_RESET": "垃圾回收定時任務已被重置",
     "PARAMETERS": "參數",
     "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
-    "EXPLAIN": "GC is a compute intensive operation that may impact registry performance"
+    "EXPLAIN": "GC is a compute intensive operation that may impact registry performance",
+    "DRY_RUN_SUCCESS": "Triggered dry run successfully"
   },
   "RETAG":{
     "MSG_SUCCESS": "Artifact 拷貝成功",
