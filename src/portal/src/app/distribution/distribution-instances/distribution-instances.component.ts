@@ -186,6 +186,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
               this.translate.get(message).subscribe(errMsg => {
                 this.msgHandler.error(msg + ': ' + errMsg);
               });
+              this.msgHandler.handleErrorPopupUnauthorized(error);
             });
           }
         );
@@ -262,6 +263,8 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
       forkJoin(...observableLists).subscribe(item => {
         this.selectedRow = [];
         this.refresh();
+      }, error => {
+        this.msgHandler.handleErrorPopupUnauthorized(error);
       });
     }
   }
@@ -288,7 +291,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
             this.msgHandler.error(msg + ': ' + errMsg);
           });
         });
-        return observableThrowError(message);
+        return observableThrowError(error);
       })
     );
   }
