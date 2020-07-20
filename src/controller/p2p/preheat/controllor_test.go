@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/q"
+
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 
 	"github.com/goharbor/harbor/src/core/config"
@@ -66,7 +68,9 @@ func (s *preheatSuite) SetupSuite() {
 		},
 	}, nil)
 	s.fakeInstanceMgr.On("Save", mock.Anything, mock.Anything).Return(int64(1), nil)
-	s.fakeInstanceMgr.On("Count", mock.Anything, &providerModel.Instance{Endpoint: "http://localhost"}).Return(int64(1), nil)
+	s.fakeInstanceMgr.On("Count", mock.Anything, &q.Query{Keywords: map[string]interface{}{
+		"endpoint": "http://localhost",
+	}}).Return(int64(1), nil)
 	s.fakeInstanceMgr.On("Count", mock.Anything, mock.Anything).Return(int64(0), nil)
 	s.fakeInstanceMgr.On("Delete", mock.Anything, int64(1)).Return(nil)
 	s.fakeInstanceMgr.On("Delete", mock.Anything, int64(0)).Return(errors.New("not found"))
