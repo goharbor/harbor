@@ -12,19 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package task
+package scheduler
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
-
-func TestRegisterCheckInProcessor(t *testing.T) {
-	err := RegisterCheckInProcessor("test", nil)
-	assert.Nil(t, err)
-
-	// already exist
-	err = RegisterCheckInProcessor("test", nil)
-	assert.NotNil(t, err)
-}
+//go:generate mockery -name DAO -output . -outpkg scheduler -filename mock_dao_test.go -structname mockDAO -inpkg
