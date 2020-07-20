@@ -145,6 +145,20 @@ func (_m *Controller) Exist(ctx context.Context, digest string, options ...blob.
 	return r0, r1
 }
 
+// Fail provides a mock function with given fields: ctx, _a1
+func (_m *Controller) Fail(ctx context.Context, _a1 *models.Blob) error {
+	ret := _m.Called(ctx, _a1)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Blob) error); ok {
+		r0 = rf(ctx, _a1)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // FindMissingAssociationsForProject provides a mock function with given fields: ctx, projectID, blobs
 func (_m *Controller) FindMissingAssociationsForProject(ctx context.Context, projectID int64, blobs []*models.Blob) ([]*models.Blob, error) {
 	ret := _m.Called(ctx, projectID, blobs)
