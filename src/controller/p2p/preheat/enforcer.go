@@ -603,7 +603,7 @@ func overrideSecuritySettings(p *pol.Schema, pro *models.Project) [][]interface{
 		case pol.FilterTypeVulnerability:
 			if v, ok := pro.Metadata[proMetaKeyVulnerability]; ok && v == "true" {
 				if se, ok := pro.Metadata[proMetaKeySeverity]; ok && len(se) > 0 {
-					se = strings.ToTitle(se)
+					se = strings.Title(strings.ToLower(se))
 					code := vuln.Severity(se).Code()
 
 					if sev, ok := fl.Value.(int); !ok || (ok && sev < code) {
