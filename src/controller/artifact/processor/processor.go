@@ -17,6 +17,7 @@ package processor
 import (
 	"context"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
@@ -66,7 +67,7 @@ func Get(mediaType string) Processor {
 	// no registered processor found, use the default one
 	if processor == nil {
 		log.Debugf("the processor for media type %s not found, use the default one", mediaType)
-		processor = &defaultProcessor{mediaType: mediaType}
+		processor = DefaultProcessor
 	}
 	return processor
 }
