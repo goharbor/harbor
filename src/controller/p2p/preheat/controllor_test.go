@@ -157,20 +157,16 @@ func (s *preheatSuite) TestCreateInstance() {
 }
 
 func (s *preheatSuite) TestDeleteInstance() {
-	// err := s.controller.DeleteInstance(s.ctx, 0)
-	// s.Error(err)
+	err := s.controller.DeleteInstance(s.ctx, 0)
+	s.Error(err)
 
-	err := s.controller.DeleteInstance(s.ctx, int64(1))
+	err = s.controller.DeleteInstance(s.ctx, int64(1))
 	s.NoError(err)
 }
 
 func (s *preheatSuite) TestUpdateInstance() {
-	// TODO: test update more
-	s.fakeInstanceMgr.On("Update", s.ctx, nil).Return(errors.New("no properties provided to update"))
+	s.fakeInstanceMgr.On("Update", s.ctx, mock.Anything).Return(errors.New("no properties provided to update"))
 	err := s.controller.UpdateInstance(s.ctx, nil)
-	s.Error(err)
-
-	err = s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 0})
 	s.Error(err)
 
 	s.fakeInstanceMgr.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -192,10 +188,13 @@ func (s *preheatSuite) TestCountPolicy() {
 }
 
 func (s *preheatSuite) TestCreatePolicy() {
-	s.fakePolicyMgr.On("Create", s.ctx, mock.Anything).Return(int64(1), nil)
-	id, err := s.controller.CreatePolicy(s.ctx, nil)
+	policy := &policy.Schema{Name: "test"}
+	s.fakePolicyMgr.On("Create", s.ctx, policy).Return(int64(1), nil)
+	id, err := s.controller.CreatePolicy(s.ctx, policy)
 	s.NoError(err)
 	s.Equal(int64(1), id)
+	s.False(policy.CreatedAt.IsZero())
+	s.False(policy.UpdatedTime.IsZero())
 }
 
 func (s *preheatSuite) TestGetPolicy() {
@@ -213,9 +212,11 @@ func (s *preheatSuite) TestGetPolicyByName() {
 }
 
 func (s *preheatSuite) TestUpdatePolicy() {
-	s.fakePolicyMgr.On("Update", s.ctx, mock.Anything, mock.Anything).Return(nil)
-	err := s.controller.UpdateInstance(s.ctx, nil, "")
+	policy := &policy.Schema{Name: "test"}
+	s.fakePolicyMgr.On("Update", s.ctx, policy, mock.Anything).Return(nil)
+	err := s.controller.UpdatePolicy(s.ctx, policy, "")
 	s.NoError(err)
+	s.False(policy.UpdatedTime.IsZero())
 }
 
 func (s *preheatSuite) TestDeletePolicy() {
@@ -249,6 +250,22 @@ func (s *preheatSuite) TestCheckHealth() {
 		ID:       1,
 		Name:     "test-instance",
 		Vendor:   "unknown",
+		Endpoint: "http://127.0.0.1",
+		AuthMode: auth.AuthModeNone,
+		Enabled:  true,
+		Default:  true,
+		Insecure: true,
+		Status:   "Unknown",
+	}
+	err = s.controller.CheckHealth(s.ctx, instance)
+	s.Error(err)
+
+	// not health
+	// health
+	instance = &providerModel.Instance{
+		ID:       1,
+		Name:     "test-instance",
+		Vendor:   provider.DriverDragonfly,
 		Endpoint: "http://127.0.0.1",
 		AuthMode: auth.AuthModeNone,
 		Enabled:  true,
