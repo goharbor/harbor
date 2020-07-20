@@ -40,6 +40,7 @@ type Artifact struct {
 	PullTime          time.Time `orm:"column(pull_time)"`
 	ExtraAttrs        string    `orm:"column(extra_attrs)"`             // json string
 	Annotations       string    `orm:"column(annotations);type(jsonb)"` // json string
+	Icon              string    `orm:"column(icon)"`                    // icon layer digest
 }
 
 // TableName for artifact

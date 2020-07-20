@@ -113,5 +113,6 @@ END $$;
 ALTER TABLE schedule DROP COLUMN IF EXISTS job_id;
 ALTER TABLE schedule DROP COLUMN IF EXISTS status;
 
-/*replication quay.io update vendor type*/
 UPDATE registry SET type = 'quay' WHERE type = 'quay-io';
+
+ALTER TABLE artifact ADD COLUMN icon varchar(255);
