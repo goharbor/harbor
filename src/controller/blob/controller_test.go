@@ -292,6 +292,40 @@ func (suite *ControllerTestSuite) TestTouch() {
 	suite.Equal(blob.Status, models.StatusNone)
 }
 
+func (suite *ControllerTestSuite) TestFail() {
+	ctx := suite.Context()
+
+	err := Ctl.Fail(ctx, &blob.Blob{
+		Status: models.StatusNone,
+	})
+	suite.NotNil(err)
+	suite.True(errors.IsNotFoundErr(err))
+
+	digest := suite.prepareBlob()
+	blob, err := Ctl.Get(ctx, digest)
+	suite.Nil(err)
+
+	blob.Status = models.StatusDelete
+	_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), blob)
+	suite.Nil(err)
+
+	// StatusDelete cannot be marked as StatusDeleteFailed
+	err = Ctl.Fail(ctx, blob)
+	suite.NotNil(err)
+	suite.True(errors.IsNotFoundErr(err))
+
+	blob.Status = models.StatusDeleting
+	_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), blob)
+	suite.Nil(err)
+
+	err = Ctl.Fail(ctx, blob)
+	suite.Nil(err)
+
+	blobAfter, err := Ctl.Get(ctx, digest)
+	suite.Nil(err)
+	suite.Equal(models.StatusDeleteFailed, blobAfter.Status)
+}
+
 func (suite *ControllerTestSuite) TestDelete() {
 	ctx := suite.Context()
 

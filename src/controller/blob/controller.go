@@ -79,6 +79,9 @@ type Controller interface {
 	// Touch updates the blob status to StatusNone and increase version every time.
 	Touch(ctx context.Context, blob *blob.Blob) error
 
+	// Fail updates the blob status to StatusDeleteFailed and increase version every time.
+	Fail(ctx context.Context, blob *blob.Blob) error
+
 	// Update updates the blob, it cannot handle blob status transitions.
 	Update(ctx context.Context, blob *blob.Blob) error
 
@@ -332,6 +335,18 @@ func (c *controller) Touch(ctx context.Context, blob *blob.Blob) error {
 	}
 	if count == 0 {
 		return errors.New(nil).WithMessage(fmt.Sprintf("no blob item is updated to StatusNone, id:%d, digest:%s", blob.ID, blob.Digest)).WithCode(errors.NotFoundCode)
+	}
+	return nil
+}
+
+func (c *controller) Fail(ctx context.Context, blob *blob.Blob) error {
+	blob.Status = blob_models.StatusDeleteFailed
+	count, err := c.blobMgr.UpdateBlobStatus(ctx, blob)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return errors.New(nil).WithMessage(fmt.Sprintf("no blob item is updated to StatusDeleteFailed, id:%d, digest:%s", blob.ID, blob.Digest)).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }
