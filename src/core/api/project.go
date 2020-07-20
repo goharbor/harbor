@@ -17,6 +17,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -56,6 +57,7 @@ type ProjectAPI struct {
 const projectNameMaxLen int = 255
 const projectNameMinLen int = 1
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
+const defaultDaysToRetention = 7
 
 // Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
@@ -241,6 +243,14 @@ func (p *ProjectAPI) Post() {
 		}
 	}
 
+	// create a default retention policy for proxy project
+	if pro.RegistryID > 0 {
+		if err := p.addRetentionPolicyForProxy(projectID); err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to add tag retention policy for project: %v", err))
+			return
+		}
+	}
+
 	// fire event
 	evt.BuildAndPublish(&metadata.CreateProjectEventMetadata{
 		ProjectID: projectID,
@@ -249,6 +259,18 @@ func (p *ProjectAPI) Post() {
 	})
 
 	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
+}
+
+func (p *ProjectAPI) addRetentionPolicyForProxy(projID int64) error {
+	plc := policy.WithNDaysSinceLastPull(projID, defaultDaysToRetention)
+	retID, err := retentionController.CreateRetention(plc)
+	if err != nil {
+		return err
+	}
+	if err := p.ProjectMgr.GetMetadataManager().Add(projID, map[string]string{"retention_id": strconv.FormatInt(retID, 10)}); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Head ...
