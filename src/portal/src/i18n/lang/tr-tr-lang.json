@@ -1210,7 +1210,8 @@
         "MSG_SCHEDULE_RESET": "Çöp Toplama programı sıfırlandı",
         "PARAMETERS": "Parameters",
         "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
-        "EXPLAIN": "GC is a compute intensive operation that may impact registry performance"
+        "EXPLAIN": "GC is a compute intensive operation that may impact registry performance",
+        "DRY_RUN_SUCCESS": "Triggered dry run successfully"
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",
