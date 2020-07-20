@@ -1,9 +1,9 @@
+import logging
 import os
 import yaml
-import logging
-
-from models import InternalTLS
+from urllib.parse import urlencode
 from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
+from models import InternalTLS
 from utils.misc import generate_random_string, owner_can_read, other_can_read
 
 default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
@@ -72,17 +72,6 @@ def validate(conf: dict, **kwargs):
             raise Exception(err_msg)
         if uid != DEFAULT_UID and not other_can_read(st_mode):
             raise Exception(err_msg)
-
-    # Redis validate
-    redis_host = conf.get("redis_host")
-    if redis_host is None or len(redis_host) < 1:
-        raise Exception(
-            "Error: redis_host in harbor.yml needs to point to an endpoint of Redis server or cluster.")
-
-    redis_port = conf.get("redis_port")
-    if redis_host is None or (redis_port < 1 or redis_port > 65535):
-        raise Exception(
-            "Error: redis_port in harbor.yml needs to point to the port of Redis server or cluster.")
 
     # TODO:
     # If user enable trust cert dir, need check if the files in this dir is readable.
@@ -372,24 +361,38 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
 
 
 def get_redis_url(db, redis=None):
-    """Returns redis url with format `redis://[arbitrary_username:password@]ipaddress:port/database_index`
+    """Returns redis url with format `redis://[arbitrary_username:password@]ipaddress:port/database_index?idle_timeout_seconds=30`
 
     >>> get_redis_url(1)
     'redis://redis:6379/1'
-    >>> get_redis_url(1, {'host': 'localhost', 'password': 'password'})
+    >>> get_redis_url(1, {'host': 'localhost:6379', 'password': 'password'})
     'redis://anonymous:password@localhost:6379/1'
+    >>> get_redis_url(1, {'host':'host1:26379,host2:26379', 'sentinel_master_set':'mymaster', 'password':'password1'})
+    'redis+sentinel://anonymous:password@host1:26379,host2:26379/mymaster/1'
+    >>> get_redis_url(1, {'host':'host1:26379,host2:26379', 'sentinel_master_set':'mymaster', 'password':'password1','idle_timeout_seconds':30})
+    'redis+sentinel://anonymous:password@host1:26379,host2:26379/mymaster/1?idle_timeout_seconds=30'
+
     """
     kwargs = {
-        'host': 'redis',
-        'port': 6379,
+        'host': 'redis:6379',
         'password': '',
     }
     kwargs.update(redis or {})
-    kwargs['db'] = db
+    kwargs['scheme'] = kwargs.get('sentinel_master_set', None) and 'redis+sentinel' or 'redis'
+    kwargs['db_part'] = db and ("/%s" % db) or ""
+    kwargs['sentinel_part'] = kwargs.get('sentinel_master_set', None) and ("/" + kwargs['sentinel_master_set']) or ''
+    kwargs['password_part'] = kwargs.get('password', None) and (':%s@' % kwargs['password']) or ''
 
-    if kwargs['password']:
-        return "redis://anonymous:{password}@{host}:{port}/{db}".format(**kwargs)
-    return "redis://{host}:{port}/{db}".format(**kwargs)
+    return "{scheme}://{password_part}{host}{sentinel_part}{db_part}".format(**kwargs) + get_redis_url_param(kwargs)
+
+
+def get_redis_url_param(redis=None):
+    params = {}
+    if redis and 'idle_timeout_seconds' in redis:
+        params['idle_timeout_seconds'] = redis['idle_timeout_seconds']
+    if params:
+        return "?" + urlencode(params)
+    return ""
 
 
 def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
@@ -437,8 +440,7 @@ def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
 
     # internal redis config as the default
     redis = {
-        'host': 'redis',
-        'port': 6379,
+        'host': 'redis:6379',
         'password': '',
         'registry_db_index': 1,
         'jobservice_db_index': 2,
@@ -451,23 +453,15 @@ def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
     # overwriting existing keys by external_redis
     redis.update({key: value for (key, value) in external_redis.items() if value})
 
-    configs['redis_host'] = redis['host']
-    configs['redis_port'] = redis['port']
-    configs['redis_password'] = redis['password']
-    configs['redis_db_index_reg'] = redis['registry_db_index']
-    configs['redis_db_index_js'] = redis['jobservice_db_index']
-    configs['redis_db_index_chart'] = redis['chartmuseum_db_index']
-    configs['redis_idle_timeout_seconds'] = redis['idle_timeout_seconds']
-
-    configs['redis_url_js'] = get_redis_url(configs['redis_db_index_js'], redis)
-    configs['redis_url_reg'] = get_redis_url(configs['redis_db_index_reg'], redis)
+    configs['redis_url_core'] = get_redis_url(0, redis)
+    configs['redis_url_chart'] = get_redis_url(redis['chartmuseum_db_index'], redis)
+    configs['redis_url_js'] = get_redis_url(redis['jobservice_db_index'], redis)
+    configs['redis_url_reg'] = get_redis_url(redis['registry_db_index'], redis)
 
     if with_clair:
-        configs['redis_db_index_clair'] = redis['clair_db_index']
-        configs['redis_url_clair'] = get_redis_url(configs['redis_db_index_clair'], redis)
+        configs['redis_url_clair'] = get_redis_url(redis['clair_db_index'], redis)
 
     if with_trivy:
-        configs['redis_db_index_trivy'] = redis['trivy_db_index']
-        configs['trivy_redis_url'] = get_redis_url(configs['redis_db_index_trivy'], redis)
+        configs['trivy_redis_url'] = get_redis_url(redis['trivy_db_index'], redis)
 
     return configs

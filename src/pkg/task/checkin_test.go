@@ -20,11 +20,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRegister(t *testing.T) {
-	err := Register("test", nil)
+func TestRegisterCheckInProcessor(t *testing.T) {
+	err := RegisterCheckInProcessor("test", nil)
 	assert.Nil(t, err)
 
 	// already exist
-	err = Register("test", nil)
+	err = RegisterCheckInProcessor("test", nil)
 	assert.NotNil(t, err)
 }

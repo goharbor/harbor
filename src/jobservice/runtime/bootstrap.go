@@ -17,13 +17,12 @@ package runtime
 import (
 	"context"
 	"fmt"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
-
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
 
 	"github.com/goharbor/harbor/src/jobservice/api"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -44,6 +43,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	sc "github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/all"
@@ -53,8 +53,7 @@ import (
 
 const (
 	dialConnectionTimeout = 30 * time.Second
-	healthCheckPeriod     = time.Minute
-	dialReadTimeout       = healthCheckPeriod + 10*time.Second
+	dialReadTimeout       = 10 * time.Second
 	dialWriteTimeout      = 10 * time.Second
 )
 
@@ -279,25 +278,15 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 
 // Get a redis connection pool
 func (bs *Bootstrap) getRedisPool(redisPoolConfig *config.RedisPoolConfig) *redis.Pool {
-	return &redis.Pool{
-		MaxIdle:     6,
-		Wait:        true,
-		IdleTimeout: time.Duration(redisPoolConfig.IdleTimeoutSecond) * time.Second,
-		Dial: func() (redis.Conn, error) {
-			return redis.DialURL(
-				redisPoolConfig.RedisURL,
-				redis.DialConnectTimeout(dialConnectionTimeout),
-				redis.DialReadTimeout(dialReadTimeout),
-				redis.DialWriteTimeout(dialWriteTimeout),
-			)
-		},
-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
-			if time.Since(t) < time.Minute {
-				return nil
-			}
-
-			_, err := c.Do("PING")
-			return err
-		},
+	if pool, err := redislib.GetRedisPool("JobService", redisPoolConfig.RedisURL, &redislib.PoolParam{
+		PoolMaxIdle:           6,
+		PoolIdleTimeout:       time.Duration(redisPoolConfig.IdleTimeoutSecond) * time.Second,
+		DialConnectionTimeout: dialConnectionTimeout,
+		DialReadTimeout:       dialReadTimeout,
+		DialWriteTimeout:      dialWriteTimeout,
+	}); err != nil {
+		panic(err)
+	} else {
+		return pool
 	}
 }

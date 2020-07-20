@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 const (

@@ -156,7 +156,7 @@ Test Case - Replication Of Pull Images from DockerHub To Self
     Switch To Registries
     Create A New Endpoint    docker-hub    e${d}    https://hub.docker.com/    danfengliu    Aa123456    Y
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint    rule${d}    pull    danfengliu/*    image    e${d}    project${d}
+    Create A Rule With Existing Endpoint    rule${d}    pull    danfengliu/{cent*,mariadb}    image    e${d}    project${d}
     Select Rule And Replicate  rule${d}
     #In docker-hub, under repository danfengliu, there're only 2 images: centos,mariadb.
     Image Should Be Replicated To Project  project${d}  centos
@@ -273,3 +273,28 @@ Test Case - Replication Of Pull Images from Google-GCR To Self
     Image Should Be Replicated To Project  project${d}  httpd
     Image Should Be Replicated To Project  project${d}  tomcat
     Close Browser
+
+Test Case - Replication Of Push Images to DockerHub Triggered By Event
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
+    ${image}=  Set Variable  redis
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project${d}
+    Switch To Registries
+    Create A New Endpoint    docker-hub    e${d}    https://hub.docker.com/    danfengliu    Aa123456    Y
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    rule${d}    push    project${d}/*    image    e${d}    danfengliu  mode=Event Based  del_remote=${true}
+    ${image_with_tag}=  Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}  tag_suffix=${true}
+    Filter Replicatin Rule  rule${d}
+    Select Rule  rule${d}
+    Docker Image Can Be Pulled  danfengliu/${image_with_tag}   times=3
+    Executions Result Count Should Be  Succeeded  event_based  1
+    Go Into Project  project${d}
+    Delete Repo  project${d}
+    Docker Image Can Not Be Pulled  danfengliu/${image_with_tag}
+    Switch To Replication Manage
+    Filter Replicatin Rule  rule${d}
+    Select Rule  rule${d}
+    Executions Result Count Should Be  Succeeded  event_based  2

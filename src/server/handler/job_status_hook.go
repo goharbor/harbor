@@ -20,7 +20,9 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
 	libhttp "github.com/goharbor/harbor/src/lib/http"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/server/router"
 )
@@ -52,6 +54,11 @@ func (j *jobStatusHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = j.handler.Handle(r.Context(), taskID, sc); err != nil {
+		// ignore the not found error to avoid the jobservice re-sending the hook
+		if errors.IsNotFoundErr(err) {
+			log.Warningf("got the status change hook for a non existing task %d", taskID)
+			return
+		}
 		libhttp.SendError(w, err)
 		return
 	}
