@@ -154,7 +154,7 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 	if err = ldapSession.Open(); err != nil {
 		return nil, fmt.Errorf("Failed to load system ldap config, %v", err)
 	}
-
+	defer ldapSession.Close()
 	ldapUsers, err := ldapSession.SearchUser(username)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to search user in ldap")
