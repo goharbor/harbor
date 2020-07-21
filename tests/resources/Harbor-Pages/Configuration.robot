@@ -202,7 +202,7 @@ Config Email
     Input Text  xpath=//*[@id='emailUsername']  example@vmware.com
     Input Text  xpath=//*[@id='emailPassword']  example
     Input Text  xpath=//*[@id='emailFrom']  example<example@vmware.com>
-    Sleep  1    
+    Sleep  1
     Retry Element Click  xpath=//*[@id='emailSSL-wrapper']/label
     Sleep  1
     Retry Element Click  xpath=//*[@id='emailInsecure-wrapper']/label
@@ -341,3 +341,14 @@ Get Project Storage Quota Text From Project Quotas List
     Switch To Project Quotas
     ${storage_quota}=    Get Text    xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${project_name}')]//clr-dg-cell[3]//label
     [Return]  ${storage_quota}
+
+Check Automatic Onboarding And Save
+    Retry Element Click  ${cfg_auth_automatic_onboarding_checkbox}
+    Retry Element Click  xpath=${config_auth_save_button_xpath}
+    Capture Page Screenshot
+
+Set User Name Claim And Save
+    [Arguments]    ${type}
+    Retry Text Input  ${cfg_auth_user_name_claim_input}  ${type}
+    Retry Element Click  xpath=${config_auth_save_button_xpath}
+    Capture Page Screenshot

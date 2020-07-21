@@ -47,6 +47,14 @@ class Project(base.Base):
         base._assert_status_code(200, status_code)
         return data
 
+    def get_project_id(self, project_name, **kwargs):
+        project_data = self.get_projects(dict(), **kwargs)
+        actual_count = len(project_data)
+        if actual_count == 1 and str(project_data[0].project_name) != str(project_name):
+            return project_data[0].project_id
+        else:
+            return None
+
     def projects_should_exist(self, params, expected_count = None, expected_project_id = None, **kwargs):
         project_data = self.get_projects(params, **kwargs)
         actual_count = len(project_data)
