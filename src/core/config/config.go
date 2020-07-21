@@ -480,14 +480,14 @@ func GetPermittedRegistryTypesForProxyCache() []string {
 	return strings.Split(types, ",")
 }
 
-// GetGCBlobTimeWindow returns the reserve time window of blob.
-func GetGCBlobTimeWindow() int64 {
+// GetGCTimeWindow returns the reserve time window of blob.
+func GetGCTimeWindow() int64 {
 	// the env is for testing/debugging. For production, Do NOT set it.
-	if env, exist := os.LookupEnv("_GC_BLOB_TIME_WINDOW"); exist {
+	if env, exist := os.LookupEnv("GC_TIME_WINDOW_HOURS"); exist {
 		timeWindow, err := strconv.ParseInt(env, 10, 64)
 		if err == nil {
 			return timeWindow
 		}
 	}
-	return int64(common.DefaultGCBlobTimeWindow)
+	return common.DefaultGCTimeWindowHours
 }

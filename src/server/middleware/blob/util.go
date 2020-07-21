@@ -34,7 +34,7 @@ func probeBlob(r *http.Request, digest string) error {
 	case models.StatusDeleting:
 		now := time.Now().UTC()
 		// if the deleting exceed 2 hours, marks the blob as StatusDeleteFailed
-		if now.Sub(bb.UpdateTime) > time.Duration(config.GetGCBlobTimeWindow())*time.Hour {
+		if now.Sub(bb.UpdateTime) > time.Duration(config.GetGCTimeWindow())*time.Hour {
 			if err := blob.Ctl.Fail(r.Context(), bb); err != nil {
 				log.Errorf("failed to update blob: %s status to StatusDeleteFailed, error:%v", bb.Digest, err)
 				return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", r.Header.Get(requestid.HeaderXRequestID)))

@@ -154,6 +154,6 @@ const (
 	CountPerProject       = "count_per_project"
 	StoragePerProject     = "storage_per_project"
 
-	// DefaultGCBlobTimeWindow is the reserve blob time window used by GC, default is 2 hours
-	DefaultGCBlobTimeWindow = 2
+	// DefaultGCTimeWindowHours is the reserve blob time window used by GC, default is 2 hours
+	DefaultGCTimeWindowHours = int64(2)
 )

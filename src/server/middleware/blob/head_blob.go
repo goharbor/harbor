@@ -49,7 +49,7 @@ func handleHead(req *http.Request) error {
 	case blob_models.StatusDeleting:
 		now := time.Now().UTC()
 		// if the deleting exceed 2 hours, marks the blob as StatusDeleteFailed and gives a 404, so client can push it again
-		if now.Sub(bb.UpdateTime) > time.Duration(config.GetGCBlobTimeWindow())*time.Hour {
+		if now.Sub(bb.UpdateTime) > time.Duration(config.GetGCTimeWindow())*time.Hour {
 			if err := blob.Ctl.Fail(req.Context(), bb); err != nil {
 				log.Errorf("failed to update blob: %s status to StatusDeleteFailed, error:%v", blobInfo.Digest, err)
 				return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", req.Header.Get(requestid.HeaderXRequestID)))
