@@ -64,6 +64,7 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodPut).
 		Path("/*/manifests/:reference").
+		Middleware(repoproxy.DisableBlobAndManifestUploadMiddleware()).
 		Middleware(immutable.Middleware()).
 		Middleware(quota.PutManifestMiddleware()).
 		Middleware(blob.PutManifestMiddleware()).
@@ -85,11 +86,13 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodPatch).
 		Path("/*/blobs/uploads/:session_id").
+		Middleware(repoproxy.DisableBlobAndManifestUploadMiddleware()).
 		Middleware(blob.PatchBlobUploadMiddleware()).
 		Handler(proxy)
 	root.NewRoute().
 		Method(http.MethodPut).
 		Path("/*/blobs/uploads/:session_id").
+		Middleware(repoproxy.DisableBlobAndManifestUploadMiddleware()).
 		Middleware(quota.PutBlobUploadMiddleware()).
 		Middleware(blob.PutBlobUploadMiddleware()).
 		Handler(proxy)

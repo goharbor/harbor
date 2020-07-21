@@ -283,9 +283,22 @@ func (suite *ManagerTestSuite) TestUpdateStatus() {
 
 	blob, err := Mgr.Get(ctx, digest)
 	if suite.Nil(err) {
-		blob.Status = models.StatusDelete
-		_, err := Mgr.UpdateBlobStatus(ctx, blob)
+
+		blob.Status = "unknown"
+		count, err := Mgr.UpdateBlobStatus(ctx, blob)
+		suite.NotNil(err)
+		suite.Equal(int64(-1), count)
+
+		// StatusNone cannot be updated to StatusDeleting
+		blob.Status = models.StatusDeleting
+		count, err = Mgr.UpdateBlobStatus(ctx, blob)
 		suite.Nil(err)
+		suite.Equal(int64(0), count)
+
+		blob.Status = models.StatusDelete
+		count, err = Mgr.UpdateBlobStatus(ctx, blob)
+		suite.Nil(err)
+		suite.Equal(int64(1), count)
 
 		{
 			blob, err := Mgr.Get(ctx, digest)

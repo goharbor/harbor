@@ -335,19 +335,6 @@ func WithClair() bool {
 	return cfgMgr.Get(common.WithClair).GetBool()
 }
 
-// ClairDB return Clair db info
-func ClairDB() (*models.PostGreSQL, error) {
-	clairDB := &models.PostGreSQL{
-		Host:     cfgMgr.Get(common.ClairDBHost).GetString(),
-		Port:     cfgMgr.Get(common.ClairDBPort).GetInt(),
-		Username: cfgMgr.Get(common.ClairDBUsername).GetString(),
-		Password: cfgMgr.Get(common.ClairDBPassword).GetString(),
-		Database: cfgMgr.Get(common.ClairDB).GetString(),
-		SSLMode:  cfgMgr.Get(common.ClairDBSSLMode).GetString(),
-	}
-	return clairDB, nil
-}
-
 // ClairAdapterEndpoint returns the endpoint of clair adapter instance, by default it's the one deployed within Harbor.
 func ClairAdapterEndpoint() string {
 	return cfgMgr.Get(common.ClairAdapterURL).GetString()
@@ -453,11 +440,13 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 		Name:         cfgMgr.Get(common.OIDCName).GetString(),
 		Endpoint:     cfgMgr.Get(common.OIDCEndpoint).GetString(),
 		VerifyCert:   cfgMgr.Get(common.OIDCVerifyCert).GetBool(),
+		AutoOnboard:  cfgMgr.Get(common.OIDCAutoOnboard).GetBool(),
 		ClientID:     cfgMgr.Get(common.OIDCCLientID).GetString(),
 		ClientSecret: cfgMgr.Get(common.OIDCClientSecret).GetString(),
 		GroupsClaim:  cfgMgr.Get(common.OIDCGroupsClaim).GetString(),
 		RedirectURL:  extEndpoint + common.OIDCCallbackPath,
 		Scope:        scope,
+		UserClaim:    cfgMgr.Get(common.OIDCUserClaim).GetString(),
 	}, nil
 }
 

@@ -228,6 +228,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '405':
+          $ref: '#/responses/405'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}:
@@ -817,15 +819,12 @@ paths:
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/instanceName'
-        - name: propertySet
+        - name: instance
           in: body
-          description: The property set to update
+          description: The instance to update
           required: true
           schema:
-            type: object
-            additionalProperties:
-              type: object
-              additionalProperties: true
+            $ref: '#/definitions/Instance'
       responses:
         '200':
           description: Success
@@ -1158,6 +1157,33 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/preheat/providers:
+    get:
+      summary: Get all providers at project level
+      description: Get all providers at project level
+      tags:
+        - preheat
+      operationId: ListProvidersUnderProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProviderUnderProject'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   query:
     name: q
@@ -1290,6 +1316,14 @@ responses:
       $ref: '#/definitions/Errors'
   '404':
     description: Not found
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '405':
+    description: Method not allowed
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -1740,6 +1774,9 @@ definitions:
       provider_id:
         type: integer
         description: The ID of preheat policy provider
+      provider_name:
+        type: string
+        description: The Name of preheat policy provider
       filters:
         type: string
         description: The Filters of preheat policy
@@ -1844,3 +1881,10 @@ definitions:
       end_time:
         type: string
         description: The end time of task
+  ProviderUnderProject:
+    type: object
+    properties:
+      id:
+        type: integer
+      provider:
+        type: string

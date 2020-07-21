@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 // Quota quota model for manager

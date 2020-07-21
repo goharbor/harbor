@@ -1,11 +1,12 @@
 module github.com/goharbor/harbor/src
 
-go 1.13
+go 1.14
 
 require (
 	github.com/Azure/azure-sdk-for-go v37.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.9.3 // indirect
 	github.com/Azure/go-autorest/autorest/to v0.3.0 // indirect
+	github.com/FZambia/sentinel v1.1.0
 	github.com/Masterminds/semver v1.4.2
 	github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d // indirect
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
@@ -27,7 +28,6 @@ require (
 	github.com/docker/go v0.0.0-20160303222718-d30aec9fd63c // indirect
 	github.com/docker/go-metrics v0.0.0-20181218153428-b84716841b82 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
-	github.com/garyburd/redigo v1.6.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/runtime v0.19.5

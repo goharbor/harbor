@@ -184,13 +184,11 @@ func Init() error {
 	// init project manager
 	initProjectManager()
 
-	initRetentionScheduler()
-
 	retentionMgr = retention.NewManager()
 
 	retentionLauncher = retention.NewLauncher(projectMgr, repository.Mgr, retentionMgr)
 
-	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, retentionScheduler, retentionLauncher)
+	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, scheduler.Sched, retentionLauncher)
 
 	callbackFun := func(p interface{}) error {
 		str, ok := p.(string)
@@ -204,7 +202,7 @@ func Init() error {
 		_, err := retentionController.TriggerRetentionExec(param.PolicyID, param.Trigger, false)
 		return err
 	}
-	err := scheduler.Register(retention.SchedulerCallback, callbackFun)
+	err := scheduler.RegisterCallbackFunc(retention.SchedulerCallback, callbackFun)
 
 	return err
 }
@@ -226,8 +224,4 @@ func initChartController() error {
 
 func initProjectManager() {
 	projectMgr = project.Mgr
-}
-
-func initRetentionScheduler() {
-	retentionScheduler = scheduler.GlobalScheduler
 }

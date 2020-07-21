@@ -17,6 +17,8 @@ package repoproxy
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/lib/errors"
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -71,7 +73,11 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 }
 
 func preCheck(ctx context.Context) (art lib.ArtifactInfo, p *models.Project, ctl proxy.Controller, err error) {
+	none := lib.ArtifactInfo{}
 	art = lib.GetArtifactInfo(ctx)
+	if art == none {
+		return none, nil, nil, errors.New("artifactinfo is not found").WithCode(errors.NotFoundCode)
+	}
 	ctl = proxy.ControllerInstance()
 	p, err = project.Ctl.GetByName(ctx, art.ProjectName, project.Metadata(false))
 	return
@@ -135,4 +141,46 @@ func setHeaders(w http.ResponseWriter, size int64, mediaType string, dig string)
 	}
 	h.Set("Docker-Content-Digest", dig)
 	h.Set("Etag", dig)
+}
+
+// isProxyProject check the project is a proxy project
+func isProxyProject(p *models.Project) bool {
+	if p == nil {
+		return false
+	}
+	return p.RegistryID > 0
+}
+
+// isProxySession check if current security context is proxy session
+func isProxySession(ctx context.Context) bool {
+	sc, ok := security.FromContext(ctx)
+	if !ok {
+		log.Error("Failed to get security context")
+		return false
+	}
+	if sc.IsSolutionUser() && sc.GetUsername() == secret.ProxyserviceUser {
+		return true
+	}
+	return false
+}
+
+// DisableBlobAndManifestUploadMiddleware disable push artifact to a proxy project with a non-proxy session
+func DisableBlobAndManifestUploadMiddleware() func(http.Handler) http.Handler {
+	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		ctx := r.Context()
+		art := lib.GetArtifactInfo(ctx)
+		p, err := project.Ctl.GetByName(ctx, art.ProjectName)
+		if err != nil {
+			httpLib.SendError(w, err)
+			return
+		}
+		if isProxyProject(p) && !isProxySession(ctx) {
+			httpLib.SendError(w,
+				errors.MethodNotAllowedError(
+					errors.Errorf("can not push artifact to a proxy project: %v", p.Name)))
+			return
+		}
+		next.ServeHTTP(w, r)
+		return
+	})
 }

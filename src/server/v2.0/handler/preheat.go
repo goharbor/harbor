@@ -8,22 +8,19 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/q"
-
-	"github.com/goharbor/harbor/src/jobservice/job"
-
-	"github.com/goharbor/harbor/src/pkg/task"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/common/rbac"
 	preheatCtl "github.com/goharbor/harbor/src/controller/p2p/preheat"
 	projectCtl "github.com/goharbor/harbor/src/controller/project"
 	taskCtl "github.com/goharbor/harbor/src/controller/task"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	instanceModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/preheat"
@@ -166,8 +163,17 @@ func (api *preheatAPI) UpdateInstance(ctx context.Context, params operation.Upda
 		return api.SendError(ctx, err)
 	}
 
-	var payload *models.InstanceUpdateResp
-	return operation.NewUpdateInstanceOK().WithPayload(payload)
+	instance, err := convertParamInstanceToModelInstance(params.Instance)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	err = api.preheatCtl.UpdateInstance(ctx, instance)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	return operation.NewUpdateInstanceOK()
 }
 
 func convertProvidersToFrontend(backend []*provider.Metadata) (frontend []*models.Metadata) {
@@ -202,10 +208,18 @@ func (api *preheatAPI) GetPolicy(ctx context.Context, params operation.GetPolicy
 		return api.SendError(ctx, err)
 	}
 
+	// get provider
+	provider, err := api.preheatCtl.GetInstance(ctx, policy.ProviderID)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	payload, err = convertPolicyToPayload(policy)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
+	payload.ProviderName = provider.Name
+
 	return operation.NewGetPolicyOK().WithPayload(payload)
 }
 
@@ -301,10 +315,17 @@ func (api *preheatAPI) ListPolicies(ctx context.Context, params operation.ListPo
 
 	var payload []*models.PreheatPolicy
 	for _, policy := range policies {
+		// get provider
+		provider, err := api.preheatCtl.GetInstance(ctx, policy.ProviderID)
+		if err != nil {
+			return api.SendError(ctx, err)
+		}
+
 		p, err := convertPolicyToPayload(policy)
 		if err != nil {
 			return api.SendError(ctx, err)
 		}
+		p.ProviderName = provider.Name
 		payload = append(payload, p)
 	}
 	return operation.NewListPoliciesOK().WithPayload(payload).WithXTotalCount(total).
@@ -353,7 +374,7 @@ func (api *preheatAPI) PingInstances(ctx context.Context, params operation.PingI
 			return operation.NewPingInstancesNotFound()
 		}
 		if err != nil {
-			api.SendError(ctx, err)
+			return api.SendError(ctx, err)
 		}
 	} else {
 		// by endpoint URL
@@ -363,13 +384,13 @@ func (api *preheatAPI) PingInstances(ctx context.Context, params operation.PingI
 
 		instance, err = convertParamInstanceToModelInstance(params.Instance)
 		if err != nil {
-			api.SendError(ctx, err)
+			return api.SendError(ctx, err)
 		}
 	}
 
 	err = api.preheatCtl.CheckHealth(ctx, instance)
 	if err != nil {
-		api.SendError(ctx, err)
+		return api.SendError(ctx, err)
 	}
 
 	return operation.NewPingInstancesOK()
@@ -658,4 +679,26 @@ func (api *preheatAPI) GetLog(ctx context.Context, params operation.GetLogParams
 	}
 
 	return operation.NewGetLogOK().WithPayload(string(l))
+}
+
+// ListProvidersUnderProject is Get all providers at project level
+func (api *preheatAPI) ListProvidersUnderProject(ctx context.Context, params operation.ListProvidersUnderProjectParams) middleware.Responder {
+	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourcePreatPolicy); err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	instances, err := api.preheatCtl.ListInstance(ctx, &q.Query{})
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	var providers []*models.ProviderUnderProject
+	for _, instance := range instances {
+		providers = append(providers, &models.ProviderUnderProject{
+			ID:       instance.ID,
+			Provider: fmt.Sprintf("%s %s-%s", instance.Vendor, instance.Name, instance.Endpoint),
+		})
+	}
+
+	return operation.NewListProvidersUnderProjectOK().WithPayload(providers)
 }

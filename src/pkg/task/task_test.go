@@ -70,21 +70,7 @@ func (t *taskManagerTestSuite) TestCreate() {
 }
 
 func (t *taskManagerTestSuite) TestStop() {
-	// the task is in final status
-	t.dao.On("Get", mock.Anything, mock.Anything).Return(&dao.Task{
-		ID:          1,
-		ExecutionID: 1,
-		Status:      job.SuccessStatus.String(),
-	}, nil)
-
-	err := t.mgr.Stop(nil, 1)
-	t.Require().Nil(err)
-	t.dao.AssertExpectations(t.T())
-
-	// reset mock
-	t.SetupTest()
-
-	// the task isn't in final status, job not found
+	// job not found
 	t.dao.On("Get", mock.Anything, mock.Anything).Return(&dao.Task{
 		ID:          1,
 		ExecutionID: 1,
@@ -93,7 +79,7 @@ func (t *taskManagerTestSuite) TestStop() {
 	t.jsClient.On("PostAction", mock.Anything, mock.Anything).Return(cjob.ErrJobNotFound)
 	t.dao.On("Update", mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	err = t.mgr.Stop(nil, 1)
+	err := t.mgr.Stop(nil, 1)
 	t.Require().Nil(err)
 	t.dao.AssertExpectations(t.T())
 	t.jsClient.AssertExpectations(t.T())
@@ -101,7 +87,7 @@ func (t *taskManagerTestSuite) TestStop() {
 	// reset mock
 	t.SetupTest()
 
-	// the task isn't in final status
+	// pass
 	t.dao.On("Get", mock.Anything, mock.Anything).Return(&dao.Task{
 		ID:          1,
 		ExecutionID: 1,

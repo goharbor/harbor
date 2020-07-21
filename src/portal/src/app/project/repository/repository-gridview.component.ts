@@ -242,7 +242,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         this.translateService.get(message).subscribe(res =>
           operateChanges(operMessage, OperationState.failure, res)
         );
-        return observableThrowError(message);
+        return observableThrowError(error);
       }));
   }
 

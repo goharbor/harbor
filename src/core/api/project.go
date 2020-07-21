@@ -17,7 +17,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/replication"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -38,8 +37,9 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/replication"
 )
 
 type deletableResp struct {

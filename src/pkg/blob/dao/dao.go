@@ -22,7 +22,6 @@ import (
 	"strings"
 	"time"
 
-	beego_orm "github.com/astaxie/beego/orm"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -180,41 +179,29 @@ func (d *dao) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, e
 		return -1, err
 	}
 
-	// each update will auto increase version and update time
-	data := make(beego_orm.Params)
-	data["version"] = beego_orm.ColValue(beego_orm.ColAdd, 1)
-	data["update_time"] = time.Now()
-	data["status"] = blob.Status
-
-	qt := o.QueryTable(&models.Blob{})
-	cond := beego_orm.NewCondition()
-	var c *beego_orm.Condition
-
-	// In the multiple blob head scenario, if one request success mark the blob from StatusDelete to StatusNone, then version should increase one.
-	// in the meantime, the other requests tries to do the same thing, use 'where version >= blob.version' can handle it.
+	var sql string
 	if blob.Status == models.StatusNone {
-		c = cond.And("version__gte", blob.Version)
+		sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version >= ? AND status IN (%s) RETURNING version as new_vesrion`
 	} else {
-		c = cond.And("version", blob.Version)
+		sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version = ? AND status IN (%s) RETURNING version as new_vesrion`
 	}
 
-	/*
-		generated simple sql string.
-		UPDATE "blob" SET "version" = "version" + $1, "update_time" = $2, "status" = $3
-		WHERE "id" IN ( SELECT T0."id" FROM "blob" T0 WHERE T0."version" >= $4 AND T0."id" = $5 AND T0."status"  IN ('delete', 'deleting')  )
-	*/
+	var newVersion int64
+	params := []interface{}{time.Now(), blob.Status, blob.ID, blob.Version}
+	stats := models.StatusMap[blob.Status]
+	for _, stat := range stats {
+		params = append(params, stat)
+	}
+	if err := o.Raw(fmt.Sprintf(sql, orm.ParamPlaceholderForIn(len(models.StatusMap[blob.Status]))), params...).QueryRow(&newVersion); err != nil {
+		if e := orm.AsNotFoundError(err, "no blob is updated"); e != nil {
+			log.Warningf("no blob is updated according to query condition, id: %d, status_in, %v, err: %v", blob.ID, models.StatusMap[blob.Status], e)
+			return 0, nil
+		}
+		return -1, err
+	}
 
-	count, err := qt.SetCond(c).Filter("id", blob.ID).
-		Filter("status__in", models.StatusMap[blob.Status]).
-		Update(data)
-	if err != nil {
-		return count, err
-	}
-	if count == 0 {
-		log.Warningf("no blob is updated according to query condition, id: %d, status_in, %v", blob.ID, models.StatusMap[blob.Status])
-		return 0, nil
-	}
-	return count, nil
+	blob.Version = newVersion
+	return 1, nil
 }
 
 // UpdateBlob cannot handle the status change and version increase, for handling blob status change, please call

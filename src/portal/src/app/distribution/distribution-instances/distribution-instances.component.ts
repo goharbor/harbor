@@ -167,8 +167,10 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
       operMessage.state = OperationState.progressing;
       operMessage.data.name = this.selectedRow[0].name;
       this.operationService.publishInfo(operMessage);
+      const instance: Instance = clone(this.selectedRow[0]);
+      instance.default = true;
       this.disService.UpdateInstance({
-          propertySet: {default: true},
+          instance: instance,
           preheatInstanceName: this.selectedRow[0].name
         })
         .subscribe(
@@ -186,6 +188,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
               this.translate.get(message).subscribe(errMsg => {
                 this.msgHandler.error(msg + ': ' + errMsg);
               });
+              this.msgHandler.handleErrorPopupUnauthorized(error);
             });
           }
         );
@@ -262,6 +265,8 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
       forkJoin(...observableLists).subscribe(item => {
         this.selectedRow = [];
         this.refresh();
+      }, error => {
+        this.msgHandler.handleErrorPopupUnauthorized(error);
       });
     }
   }
@@ -288,7 +293,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
             this.msgHandler.error(msg + ': ' + errMsg);
           });
         });
-        return observableThrowError(message);
+        return observableThrowError(error);
       })
     );
   }
@@ -300,11 +305,11 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
     operMessage.state = OperationState.progressing;
     operMessage.data.name = instance.name;
     this.operationService.publishInfo(operMessage);
-
-    instance.enabled = true;
+    const copiedInstance: Instance = clone(instance);
+    copiedInstance.enabled = true;
     return this.disService
       .UpdateInstance({
-        propertySet: {enabled: true},
+        instance: copiedInstance,
         preheatInstanceName: instance.name
       })
       .pipe(
@@ -334,11 +339,11 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
     operMessage.state = OperationState.progressing;
     operMessage.data.name = instance.name;
     this.operationService.publishInfo(operMessage);
-
-    instance.enabled = false;
+    const copiedInstance: Instance = clone(instance);
+    copiedInstance.enabled = false;
     return this.disService
       .UpdateInstance({
-        propertySet: {enabled: false},
+        instance: copiedInstance,
         preheatInstanceName: instance.name
       })
       .pipe(
