@@ -15,8 +15,11 @@
 package middlewares
 
 import (
+	"net/http"
+	"regexp"
+
 	"github.com/astaxie/beego"
-	"github.com/docker/distribution/reference"
+	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/csrf"
 	"github.com/goharbor/harbor/src/server/middleware/log"
@@ -27,19 +30,22 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/security"
 	"github.com/goharbor/harbor/src/server/middleware/session"
 	"github.com/goharbor/harbor/src/server/middleware/transaction"
-	"net/http"
-	"regexp"
 )
 
 var (
 	match         = regexp.MustCompile
 	numericRegexp = match(`[0-9]+`)
 
-	blobURLRe = match("^/v2/(" + reference.NameRegexp.String() + ")/blobs/" + reference.DigestRegexp.String())
-
-	// fetchBlobAPISkipper skip transaction middleware for fetch blob API
-	// because transaction use the ResponseBuffer for the response which will degrade the performance for fetch blob
-	fetchBlobAPISkipper = middleware.MethodAndPathSkipper(http.MethodGet, blobURLRe)
+	// dbTxSkippers skip the transaction middleware for GET Blob, PATCH Blob Upload and PUT Blob Upload APIs
+	// because the APIs may take a long time to run, enable the transaction middleware in them will hold the database connections
+	// until the API finished, this behavior may eat all the database connections.
+	// There are no database writing operations in the GET Blob and PATCH Blob APIs, so skip the transaction middleware is all ok.
+	// For the PUT Blob Upload API, we will make a transaction manually to write blob info to the database when put blob upload successfully.
+	dbTxSkippers = []middleware.Skipper{
+		middleware.MethodAndPathSkipper(http.MethodGet, distribution.BlobURLRegexp),
+		middleware.MethodAndPathSkipper(http.MethodPatch, distribution.BlobUploadURLRegexp),
+		middleware.MethodAndPathSkipper(http.MethodPut, distribution.BlobUploadURLRegexp),
+	}
 
 	// readonlySkippers skip the post request when harbor sets to readonly.
 	readonlySkippers = []middleware.Skipper{
@@ -65,11 +71,10 @@ func MiddleWares() []beego.MiddleWare {
 		log.Middleware(),
 		session.Middleware(),
 		csrf.Middleware(),
+		orm.Middleware(),
+		notification.Middleware(), // notification must ahead of transaction ensure the DB transaction execution complete
+		transaction.Middleware(dbTxSkippers...),
 		security.Middleware(),
 		readonly.Middleware(readonlySkippers...),
-		orm.Middleware(),
-		// notification must ahead of transaction ensure the DB transaction execution complete
-		notification.Middleware(),
-		transaction.Middleware(fetchBlobAPISkipper),
 	}
 }
