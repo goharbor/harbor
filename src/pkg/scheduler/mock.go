@@ -14,4 +14,4 @@
 
 package scheduler
 
-//go:generate mockery -name DAO -output . -outpkg scheduler -filename mock_dao_test.go -structname mockDAO -inpkg
+//go:generate mockery --name DAO --output . --outpkg scheduler --filename mock_dao_test.go --structname mockDAO --inpackage

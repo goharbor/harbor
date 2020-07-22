@@ -40,11 +40,11 @@ type schedule struct {
 
 // DAO is the data access object interface for schedule
 type DAO interface {
-	Create(ctx context.Context, schedule *schedule) (id int64, err error)
+	Create(ctx context.Context, s *schedule) (id int64, err error)
 	List(ctx context.Context, query *q.Query) (schedules []*schedule, err error)
-	Get(ctx context.Context, id int64) (schedule *schedule, err error)
+	Get(ctx context.Context, id int64) (s *schedule, err error)
 	Delete(ctx context.Context, id int64) (err error)
-	Update(ctx context.Context, schedule *schedule, props ...string) (err error)
+	Update(ctx context.Context, s *schedule, props ...string) (err error)
 }
 
 type dao struct{}
