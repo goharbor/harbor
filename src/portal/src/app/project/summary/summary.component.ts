@@ -34,20 +34,10 @@ export class SummaryComponent implements OnInit {
     private errorHandler: ErrorHandler,
     private appConfigService: AppConfigService,
     private route: ActivatedRoute,
-    private session: SessionService,
-    private endpointService: EndpointService
   ) { }
 
   ngOnInit() {
     this.projectId = this.route.snapshot.parent.params['id'];
-    const resolverData = this.route.snapshot.parent.data;
-    if (resolverData) {
-      const pro: Project = <Project>resolverData['projectResolver'];
-      if (pro && pro.registry_id && this.isSystemAdmin) {
-        this.getRegistry(pro.registry_id);
-      }
-    }
-
     const permissions = [
       {resource: USERSTATICPERMISSION.MEMBER.KEY, action: USERSTATICPERMISSION.MEMBER.VALUE.LIST},
       {resource: USERSTATICPERMISSION.QUOTA.KEY, action: USERSTATICPERMISSION.QUOTA.VALUE.READ},
@@ -64,15 +54,6 @@ export class SummaryComponent implements OnInit {
       this.errorHandler.error(error);
     });
   }
-
-  getRegistry(registryId: number) {
-    this.endpointService.getEndpoint(registryId).subscribe(res => {
-      this.endpoint = res;
-    }, error => {
-      this.errorHandler.error(error);
-    });
-  }
-
   getSuitableUnit(value) {
     const QuotaUnitsCopy = clone(QuotaUnits);
     return getSuitableUnitFn(value, QuotaUnitsCopy);
@@ -85,10 +66,4 @@ export class SummaryComponent implements OnInit {
   public get withHelmChart(): boolean {
     return this.appConfigService.getConfig().with_chartmuseum;
   }
-
-  public get isSystemAdmin(): boolean {
-    const account = this.session.getCurrentUser();
-    return account && account.has_admin_role;
-  }
-
 }

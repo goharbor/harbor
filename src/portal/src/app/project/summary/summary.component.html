@@ -1,9 +1,9 @@
 <div class="summary summary-dark display-flex" *ngIf="summaryInformation">
   <div class="summary-left">
-    <div class="display-flex project-detail pt-05" *ngIf="isSystemAdmin && endpoint">
+    <div class="display-flex project-detail pt-05" *ngIf="summaryInformation?.registry">
       <h5 class="mt-0 width-7-5">{{'PROJECT.PROXY_CACHE_ENDPOINT' | translate}}</h5>
       <ul class="list-unstyled">
-        <li id="endpoint">{{endpoint?.name}}-{{endpoint?.url}}</li>
+        <li id="endpoint">{{summaryInformation?.registry?.name}}-{{summaryInformation?.registry?.url}}</li>
       </ul>
     </div>
     <div class="display-flex project-detail pt-05">
