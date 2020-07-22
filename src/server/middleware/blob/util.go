@@ -3,6 +3,7 @@ package blob
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/controller/blob"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
@@ -10,9 +11,6 @@ import (
 	"net/http"
 	"time"
 )
-
-// BlobDeleteingTimeWindow is the time window used in GC to reserve blobs
-const BlobDeleteingTimeWindow = 2
 
 // probeBlob handles config/layer and manifest status in the PUT Blob & Manifest middleware, and update the status before it passed into proxy(distribution).
 func probeBlob(r *http.Request, digest string) error {
@@ -36,7 +34,7 @@ func probeBlob(r *http.Request, digest string) error {
 	case models.StatusDeleting:
 		now := time.Now().UTC()
 		// if the deleting exceed 2 hours, marks the blob as StatusDeleteFailed
-		if now.Sub(bb.UpdateTime) > time.Duration(BlobDeleteingTimeWindow)*time.Hour {
+		if now.Sub(bb.UpdateTime) > time.Duration(config.GetGCTimeWindow())*time.Hour {
 			if err := blob.Ctl.Fail(r.Context(), bb); err != nil {
 				log.Errorf("failed to update blob: %s status to StatusDeleteFailed, error:%v", bb.Digest, err)
 				return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", r.Header.Get(requestid.HeaderXRequestID)))
