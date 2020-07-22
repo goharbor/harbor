@@ -1206,7 +1206,8 @@
         "MSG_SCHEDULE_RESET": "Agendamento de Garbage Collection foi redefinido",
         "PARAMETERS": "Parameters",
         "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
-        "EXPLAIN": "GC is a compute intensive operation that may impact registry performance"
+        "EXPLAIN": "GC is a compute intensive operation that may impact registry performance",
+        "DRY_RUN_SUCCESS": "Triggered dry run successfully"
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",

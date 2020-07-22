@@ -1207,7 +1207,8 @@
         "MSG_SCHEDULE_RESET": "垃圾回收定时任务已被重置",
         "PARAMETERS": "参数",
         "DELETE_UNTAGGED": "允许回收无 tag 的 artifacts",
-        "EXPLAIN": "垃圾回收是一个计算密集型操作，可能会影响仓库性能"
+        "EXPLAIN": "垃圾回收是一个计算密集型操作，可能会影响仓库性能",
+        "DRY_RUN_SUCCESS": "触发模拟运行成功"
     },
     "RETAG": {
         "MSG_SUCCESS": "Artifact 拷贝成功",
