@@ -93,7 +93,7 @@ class System(base.Base):
     def create_gc_schedule(self, schedule_type, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
 
-        gc_parameters = {'delete_untagged':True, 'time_window':'0'}
+        gc_parameters = {'delete_untagged':True}
 
         gc_schedule = swagger_client.AdminJobScheduleObj()
         gc_schedule.type = schedule_type
