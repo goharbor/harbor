@@ -16,7 +16,6 @@ package gc
 
 import (
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -118,6 +117,7 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 // parseParams set the parameters according to the GC API call.
 func (gc *GarbageCollector) parseParams(params job.Parameters) {
 	// redis url
+	gc.logger.Info(params)
 	gc.redisURL = params["redis_url_reg"].(string)
 
 	// delete untagged: default is to delete the untagged artifact
@@ -133,13 +133,8 @@ func (gc *GarbageCollector) parseParams(params job.Parameters) {
 	gc.timeWindowHours = 2
 	timeWindow, exist := params["time_window"]
 	if exist {
-		if timeWindowHours, ok := timeWindow.(string); ok {
-			str, err := strconv.ParseInt(timeWindowHours, 10, 64)
-			if err != nil {
-				gc.logger.Warningf("wrong type of time windows, set the default value. %v", err)
-			} else {
-				gc.timeWindowHours = str
-			}
+		if timeWindow, ok := timeWindow.(float64); ok {
+			gc.timeWindowHours = int64(timeWindow)
 		}
 	}
 
@@ -215,12 +210,17 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 	// update delete status for the candidates.
 	blobCt := 0
 	mfCt := 0
+	makeSize := int64(0)
 	for _, blob := range blobs {
 		if !gc.dryRun {
 			blob.Status = blob_models.StatusDelete
-			_, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
+			count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
 			if err != nil {
 				gc.logger.Warningf("failed to mark gc candidate, skip it.: %s, error: %v", blob.Digest, err)
+				continue
+			}
+			if count == 0 {
+				gc.logger.Warningf("no blob found to mark gc candidate, skip it. ID:%d, digest:%s", blob.ID, blob.Digest)
 				continue
 			}
 		}
@@ -232,19 +232,26 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 		} else {
 			blobCt++
 		}
+		makeSize = makeSize + blob.Size
 	}
 	gc.logger.Infof("%d blobs and %d manifests eligible for deletion", blobCt, mfCt)
+	gc.logger.Infof("The GC could free up %d MB space, the size is a rough estimate.", makeSize/1024/1024)
 	return nil
 }
 
 func (gc *GarbageCollector) sweep(ctx job.Context) error {
 	gc.logger = ctx.GetLogger()
+	sweepSize := int64(0)
 	for _, blob := range gc.deleteSet {
 		// set the status firstly, if the blob is updated by any HEAD/PUT request, it should be fail and skip.
 		blob.Status = blob_models.StatusDeleting
-		_, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
+		count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
 		if err != nil {
 			gc.logger.Errorf("failed to mark gc candidate deleting, skip: %s, %s", blob.Digest, blob.Status)
+			continue
+		}
+		if count == 0 {
+			gc.logger.Warningf("no blob found to mark gc candidate deleting, ID:%d, digest:%s", blob.ID, blob.Digest)
 			continue
 		}
 
@@ -256,7 +263,9 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 					repo, blob.ContentType, blob.Digest)
 				if err := v2DeleteManifest(repo, blob.Digest); err != nil {
 					gc.logger.Errorf("failed to delete manifest with v2 API, %s, %s, %v", repo, blob.Digest, err)
-					if err := gc.markDeleteFailed(ctx, blob); err != nil {
+					if err := ignoreNotFound(func() error {
+						return gc.markDeleteFailed(ctx, blob)
+					}); err != nil {
 						return err
 					}
 					return errors.Wrapf(err, "failed to delete manifest with v2 API: %s, %s", repo, blob.Digest)
@@ -266,7 +275,9 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 				if err := ignoreNotFound(func() error {
 					return gc.registryCtlClient.DeleteManifest(repo, blob.Digest)
 				}); err != nil {
-					if err := gc.markDeleteFailed(ctx, blob); err != nil {
+					if err := ignoreNotFound(func() error {
+						return gc.markDeleteFailed(ctx, blob)
+					}); err != nil {
 						return err
 					}
 					return errors.Wrapf(err, "failed to remove manifest from storage: %s, %s", repo, blob.Digest)
@@ -279,7 +290,9 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 		if err := ignoreNotFound(func() error {
 			return gc.registryCtlClient.DeleteBlob(blob.Digest)
 		}); err != nil {
-			if err := gc.markDeleteFailed(ctx, blob); err != nil {
+			if err := ignoreNotFound(func() error {
+				return gc.markDeleteFailed(ctx, blob)
+			}); err != nil {
 				return err
 			}
 			return errors.Wrapf(err, "failed to delete blob from storage: %s, %s", blob.Digest, blob.Status)
@@ -290,12 +303,16 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 		if err := ignoreNotFound(func() error {
 			return gc.blobMgr.Delete(ctx.SystemContext(), blob.ID)
 		}); err != nil {
-			if err := gc.markDeleteFailed(ctx, blob); err != nil {
+			if err := ignoreNotFound(func() error {
+				return gc.markDeleteFailed(ctx, blob)
+			}); err != nil {
 				return err
 			}
 			return errors.Wrapf(err, "failed to delete blob from database: %s, %s", blob.Digest, blob.Status)
 		}
+		sweepSize = sweepSize + blob.Size
 	}
+	gc.logger.Infof("The GC job actual frees up %d MB space.", sweepSize/1024/1024)
 	return nil
 }
 
@@ -458,10 +475,13 @@ func (gc *GarbageCollector) removeUntaggedBlobs(ctx job.Context) {
 // markDeleteFailed set the blob status to StatusDeleteFailed
 func (gc *GarbageCollector) markDeleteFailed(ctx job.Context, blob *blob_models.Blob) error {
 	blob.Status = blob_models.StatusDeleteFailed
-	_, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
+	count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
 	if err != nil {
 		gc.logger.Errorf("failed to mark gc candidate delete failed: %s, %s", blob.Digest, blob.Status)
 		return errors.Wrapf(err, "failed to mark gc candidate delete failed: %s, %s", blob.Digest, blob.Status)
+	}
+	if count == 0 {
+		return errors.New(nil).WithMessage("no blob found to mark gc candidate, ID:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }
