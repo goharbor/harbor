@@ -16,9 +16,9 @@ package retention
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"

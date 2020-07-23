@@ -96,7 +96,8 @@ type Trigger struct {
 	Type     TriggerType `json:"type"`
 	Settings struct {
 		// The cron string for scheduled trigger.
-		Cron string `json:"cron,omitempty"`
+		Cron  string `json:"cron,omitempty"`
+		JobID int64  `json:"job_id,omitempty"`
 	} `json:"trigger_setting,omitempty"`
 }
 
