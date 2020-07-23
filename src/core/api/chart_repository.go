@@ -377,8 +377,8 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 
 	versions := []string{}
 	for _, chartVersion := range chartVersions {
-		versions = append(versions, chartVersion.GetVersion())
-		if err := cra.removeLabelsFromChart(chartName, chartVersion.GetVersion()); err != nil {
+		versions = append(versions, chartVersion.Version)
+		if err := cra.removeLabelsFromChart(chartName, chartVersion.Version); err != nil {
 			cra.SendInternalServerError(err)
 			return
 		}

@@ -6,6 +6,7 @@ replace github.com/goharbor/harbor => ../
 
 require (
 	github.com/Masterminds/semver v1.4.2
+	github.com/Sirupsen/logrus v1.6.0 // indirect
 	github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d // indirect
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
@@ -52,7 +53,6 @@ require (
 	github.com/jinzhu/gorm v1.9.8 // indirect
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/lib/pq v1.1.0
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/miekg/pkcs11 v0.0.0-20170220202408-7283ca79f35e // indirect
@@ -80,5 +80,6 @@ require (
 	k8s.io/api v0.17.3
 	k8s.io/apimachinery v0.17.3
 	k8s.io/client-go v0.17.3
-	k8s.io/helm v2.16.3+incompatible
 )
+
+replace github.com/Sirupsen/logrus v1.6.0 => github.com/sirupsen/logrus v1.6.0
