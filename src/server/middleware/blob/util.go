@@ -13,13 +13,17 @@ import (
 )
 
 // probeBlob handles config/layer and manifest status in the PUT Blob & Manifest middleware, and update the status before it passed into proxy(distribution).
-func probeBlob(r *http.Request, digest string) error {
+func probeBlob(r *http.Request, digest string, notifyNotFound ...bool) error {
 	logger := log.G(r.Context())
 
 	// digest empty is handled by the blob controller GET method
+	// ignore the NotFoundError by default
 	bb, err := blobController.Get(r.Context(), digest)
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
+			if len(notifyNotFound) != 0 && notifyNotFound[0] {
+				return err
+			}
 			return nil
 		}
 		return err
@@ -42,7 +46,7 @@ func probeBlob(r *http.Request, digest string) error {
 			// StatusDeleteFailed => StatusNone, and then let the proxy to handle manifest upload
 			return probeBlob(r, digest)
 		}
-		return errors.New(nil).WithMessage(fmt.Sprintf("the asking blob is delete failed, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessage(fmt.Sprintf("the asking blob is in deleting, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)
 	default:
 		return nil
 	}

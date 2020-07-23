@@ -38,10 +38,17 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		}
 
 		contentType := r.Header.Get("Content-Type")
-		_, descriptor, err := distribution.UnmarshalManifest(contentType, body)
+		mf, descriptor, err := distribution.UnmarshalManifest(contentType, body)
 		if err != nil {
 			logger.Errorf("unmarshal manifest failed, error: %v", err)
 			return errors.Wrapf(err, "unmarshal manifest failed").WithCode(errors.MANIFESTINVALID)
+		}
+
+		// touch all of references, any of them doesn't exist or in deleting, the PUT manifest will fail by 400.
+		for _, ref := range mf.References() {
+			if err := probeBlob(r, ref.Digest.String(), true); err != nil {
+				return errors.Wrapf(err, "manifest references validation failed").WithCode(errors.MANIFESTINVALID)
+			}
 		}
 
 		return probeBlob(r, descriptor.Digest.String())

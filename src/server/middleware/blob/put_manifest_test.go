@@ -33,6 +33,7 @@ import (
 
 type PutManifestMiddlewareTestSuite struct {
 	htesting.Suite
+	blobID int64
 }
 
 func (suite *PutManifestMiddlewareTestSuite) SetupSuite() {
@@ -51,6 +52,7 @@ func (suite *PutManifestMiddlewareTestSuite) pushBlob(name string, digest string
 }
 
 func (suite *PutManifestMiddlewareTestSuite) prepare(name string) (distribution.Manifest, distribution.Descriptor, *http.Request) {
+	configDgst := suite.DigestString()
 	body := fmt.Sprintf(`
 	{
 		"schemaVersion": 2,
@@ -92,7 +94,7 @@ func (suite *PutManifestMiddlewareTestSuite) prepare(name string) (distribution.
 			"digest": "sha256:727f8da63ac248054cb7dda635ee16da76e553ec99be565a54180c83d04025a8"
 		}
 		]
-	}`, suite.DigestString())
+	}`, configDgst)
 
 	manifest, descriptor, err := distribution.UnmarshalManifest("application/vnd.docker.distribution.manifest.v2+json", []byte(body))
 	suite.Nil(err)
@@ -105,6 +107,23 @@ func (suite *PutManifestMiddlewareTestSuite) prepare(name string) (distribution.
 		Tag:        "latest",
 		Digest:     descriptor.Digest.String(),
 	}
+
+	id, err := blob.Ctl.Ensure(suite.Context(), "sha256:8ec398bc03560e0fa56440e96da307cdf0b1ad153f459b52bca53ae7ddb8236d", "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip", 27092274)
+	suite.Nil(err)
+	suite.blobID = id
+	_, err = blob.Ctl.Ensure(suite.Context(), "sha256:da01136793fac089b2ff13c2bf3c9d5d5550420fbd9981e08198fd251a0ab7b4", "application/vnd.docker.image.rootfs.diff.tar.gzip", 1730)
+	suite.Nil(err)
+	_, err = blob.Ctl.Ensure(suite.Context(), "sha256:cf1486a2c0b86ddb45238e86c6bf9666c20113f7878e4cd4fa175fd74ac5d5b7", "application/vnd.docker.image.rootfs.diff.tar.gzip", 1357602)
+	suite.Nil(err)
+	_, err = blob.Ctl.Ensure(suite.Context(), "sha256:a44f7da98d9e65b723ee913a9e6758db120a43fcce564b3dcf61cb9eb2823dad", "application/vnd.docker.image.rootfs.diff.tar.gzip", 7344202)
+	suite.Nil(err)
+	_, err = blob.Ctl.Ensure(suite.Context(), "sha256:c677fde73875fc4c1e38ccdc791fe06380be0468fac220358f38c910e336266e", "application/vnd.docker.image.rootfs.diff.tar.gzip", 97)
+	suite.Nil(err)
+	_, err = blob.Ctl.Ensure(suite.Context(), "sha256:727f8da63ac248054cb7dda635ee16da76e553ec99be565a54180c83d04025a8", "application/vnd.docker.image.rootfs.diff.tar.gzip", 409)
+	suite.Nil(err)
+	_, err = blob.Ctl.Ensure(suite.Context(), configDgst, "application/vnd.docker.container.image.v1+json", 6868)
+	suite.Nil(err)
+
 	return manifest, descriptor, req.WithContext(lib.WithArtifactInfo(req.Context(), info))
 }
 
@@ -177,7 +196,7 @@ func (suite *PutManifestMiddlewareTestSuite) TestMFInDelete() {
 		id, err := blob.Ctl.Ensure(suite.Context(), descriptor.Digest.String(), "application/vnd.docker.distribution.manifest.v2+json", 512)
 		suite.Nil(err)
 
-		// status-none -> status-delete -> status-deleting
+		// status-none -> status-delete
 		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), &blob_models.Blob{ID: id, Status: blob_models.StatusDelete})
 		suite.Nil(err)
 
@@ -198,6 +217,40 @@ func (suite *PutManifestMiddlewareTestSuite) TestMFInDelete() {
 				suite.Equal(blob_models.StatusNone, b.Status)
 			}
 		}
+	})
+}
+
+func (suite *PutManifestMiddlewareTestSuite) TestBlobDeleting() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		name := fmt.Sprintf("%s/photon", projectName)
+		_, descriptor, req := suite.prepare(name)
+		res := httptest.NewRecorder()
+
+		// status-none -> status-delete -> status-deleting
+		_, err := pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), &blob_models.Blob{ID: suite.blobID, Status: blob_models.StatusDelete})
+		suite.Nil(err)
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), &blob_models.Blob{ID: suite.blobID, Status: blob_models.StatusDeleting, Version: 1})
+		suite.Nil(err)
+
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
+		PutManifestMiddleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusBadRequest, res.Code)
+
+	})
+}
+
+func (suite *PutManifestMiddlewareTestSuite) TestBlobNotFound() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		name := fmt.Sprintf("%s/photon", projectName)
+		_, descriptor, req := suite.prepare(name)
+
+		err := pkg_blob.Mgr.Delete(suite.Context(), suite.blobID)
+		suite.Nil(err)
+		res := httptest.NewRecorder()
+
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
+		PutManifestMiddleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusBadRequest, res.Code)
 	})
 }
 
