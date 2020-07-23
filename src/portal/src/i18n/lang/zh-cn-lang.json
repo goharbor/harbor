@@ -101,6 +101,8 @@
         "OIDC_VERIFYCERT": "如果您的OIDC服务器是通过自签名证书托管的，请取消选中此框。",
         "OIDC_GROUP_CLAIM": "ID和token中的Claim名称，在组的名称列表中。",
         "OIDC_GROUP_CLAIM_WARNING": "它只能包含字母、数字、下划线,且输入长度不超过256字符。",
+        "OIDC_AUTOONBOARD": "跳过登录界面，这样用户就不能更改其用户名。用户名是从ID令牌中获取的",
+        "OIDC_USER_CLAIM": "指定从ID令牌中获取的名称。如果未指定，则默认为'name'",
         "NEW_SECRET": "Cli secret 必须超过8个字符，并至少包含1个大写字母，1个小写字母和1个数字。"
     },
     "PLACEHOLDER": {
@@ -911,6 +913,8 @@
             "CLIENTSECRET": "OIDC 客户端密码",
             "SCOPE": "OIDC Scope",
             "OIDC_VERIFYCERT": "验证证书",
+            "OIDC_AUTOONBOARD": "自动登录",
+            "USER_CLAIM": "用户名声明",
             "OIDC_SETNAME": "设置OIDC用户名",
             "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在Harbor中用于与项目、角色等关联。",
             "OIDC_USERNAME": "用户名",
