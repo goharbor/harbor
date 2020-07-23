@@ -7,16 +7,17 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/lib/q"
-
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
-
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	providerModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
+	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/instance"
 	pmocks "github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/policy"
+	smocks "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -28,6 +29,7 @@ type preheatSuite struct {
 	controller         Controller
 	fakeInstanceMgr    *instance.FakeManager
 	fakePolicyMgr      *pmocks.FakeManager
+	fakeScheduler      *smocks.Scheduler
 	mockInstanceServer *httptest.Server
 }
 
@@ -35,18 +37,22 @@ func TestPreheatSuite(t *testing.T) {
 	t.Log("Start TestPreheatSuite")
 	fakeInstanceMgr := &instance.FakeManager{}
 	fakePolicyMgr := &pmocks.FakeManager{}
+	fakeScheduler := &smocks.Scheduler{}
 
 	var c = &controller{
-		iManager: fakeInstanceMgr,
-		pManager: fakePolicyMgr,
+		iManager:  fakeInstanceMgr,
+		pManager:  fakePolicyMgr,
+		scheduler: fakeScheduler,
 	}
 	assert.NotNil(t, c)
 
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 	suite.Run(t, &preheatSuite{
-		ctx:             context.Background(),
+		ctx:             ctx,
 		controller:      c,
 		fakeInstanceMgr: fakeInstanceMgr,
 		fakePolicyMgr:   fakePolicyMgr,
+		fakeScheduler:   fakeScheduler,
 	})
 }
 
@@ -192,8 +198,12 @@ func (s *preheatSuite) TestCountPolicy() {
 }
 
 func (s *preheatSuite) TestCreatePolicy() {
-	policy := &policy.Schema{Name: "test"}
+	policy := &policy.Schema{Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeScheduled}}
+	policy.Trigger.Settings.Cron = "* * * * */1"
+	s.fakeScheduler.On("Schedule", s.ctx, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.fakePolicyMgr.On("Create", s.ctx, policy).Return(int64(1), nil)
+	s.fakePolicyMgr.On("Update", s.ctx, mock.Anything, mock.Anything).Return(nil)
+	s.fakeScheduler.On("UnSchedule", s.ctx, mock.Anything).Return(nil)
 	id, err := s.controller.CreatePolicy(s.ctx, policy)
 	s.NoError(err)
 	s.Equal(int64(1), id)
@@ -216,14 +226,31 @@ func (s *preheatSuite) TestGetPolicyByName() {
 }
 
 func (s *preheatSuite) TestUpdatePolicy() {
-	policy := &policy.Schema{Name: "test"}
-	s.fakePolicyMgr.On("Update", s.ctx, policy, mock.Anything).Return(nil)
-	err := s.controller.UpdatePolicy(s.ctx, policy, "")
+	var p0 = &policy.Schema{Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeScheduled}}
+	p0.Trigger.Settings.JobID = 1
+	p0.Trigger.Settings.Cron = "* * * * */1"
+	s.fakePolicyMgr.On("Get", s.ctx, int64(1)).Return(p0, nil)
+
+	// need change to schedule
+	p1 := &policy.Schema{ID: 1, Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeManual}}
+	s.fakePolicyMgr.On("Update", s.ctx, p1, mock.Anything).Return(nil)
+	err := s.controller.UpdatePolicy(s.ctx, p1, "")
 	s.NoError(err)
-	s.False(policy.UpdatedTime.IsZero())
+	s.False(p1.UpdatedTime.IsZero())
+
+	// need update schedule
+	p2 := &policy.Schema{ID: 1, Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeScheduled}}
+	p2.Trigger.Settings.Cron = "* * * * */2"
+	s.fakePolicyMgr.On("Update", s.ctx, p2, mock.Anything).Return(nil)
+	err = s.controller.UpdatePolicy(s.ctx, p2, "")
+	s.NoError(err)
+	s.False(p2.UpdatedTime.IsZero())
 }
 
 func (s *preheatSuite) TestDeletePolicy() {
+	var p0 = &policy.Schema{Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeScheduled}}
+	p0.Trigger.Settings.JobID = 1
+	s.fakePolicyMgr.On("Get", s.ctx, int64(1)).Return(p0, nil)
 	s.fakePolicyMgr.On("Delete", s.ctx, int64(1)).Return(nil)
 	err := s.controller.DeletePolicy(s.ctx, 1)
 	s.NoError(err)

@@ -348,13 +348,14 @@ func (api *preheatAPI) ManualPreheat(ctx context.Context, params operation.Manua
 		return api.SendError(ctx, err)
 	}
 
-	_, err = api.enforcer.EnforcePolicy(ctx, policy.ID)
+	executionID, err := api.enforcer.EnforcePolicy(ctx, policy.ID)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
 
 	// TODO: build execution URL
-	var location = ""
+	var location = fmt.Sprintf("/projects/%s/preheat/policies/%s/executions/%d",
+		params.ProjectName, params.PreheatPolicyName, executionID)
 
 	return operation.NewManualPreheatCreated().WithLocation(location)
 }
