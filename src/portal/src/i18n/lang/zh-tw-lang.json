@@ -101,6 +101,8 @@
     "OIDC_VERIFYCERT": "如果您的OIDC服務器是通過自簽名證書託管的,請取消選中此框。",
     "OIDC_GROUP_CLAIM": "ID和token中的Claim名稱,在組的名稱列表中。",
     "OIDC_GROUP_CLAIM_WARNING": "它只能包含字母、數字、下劃線,且輸入長度不超過256字符。",
+    "OIDC_AUTOONBOARD": "Skip the onboarding screen, so user cannot change its username. Username is provided from ID Token",
+    "OIDC_USER_CLAIM": "The name of the claim in the ID Token where the username is retrieved from. If not specified, it will default to 'name'",
     "NEW_SECRET": "Cli secret 必須超過8個字符,並至少包含1個大寫字母,1個小寫字母和1個數字。"
   },
   "PLACEHOLDER":{
@@ -906,6 +908,8 @@
       "CLIENTSECRET": "OIDC 客戶端密碼",
       "SCOPE":"OIDC範圍",
       "OIDC_VERIFYCERT": "驗證證書",
+      "OIDC_AUTOONBOARD": "Automatic onboarding",
+      "USER_CLAIM": "Username Claim",
       "OIDC_SETNAME": "設置OIDC用戶名",
       "OIDC_SETNAMECONTENT": "在通過第三方（OIDC）進行身份驗證時,您必須第一次創建一個Harbor用戶名。這將在端口中用於與項目、角色等關聯。",
       "OIDC_USERNAME": "用戶名",
