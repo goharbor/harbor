@@ -4,7 +4,6 @@ import (
 	"context"
 
 	beego_orm "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
@@ -89,40 +88,30 @@ func (d *dao) GetByName(ctx context.Context, name string) (instance *provider.In
 
 // Update updates distribution instance.
 func (d *dao) Update(ctx context.Context, instance *provider.Instance, props ...string) error {
-	var o, err = orm.FromContext(ctx)
-	if err != nil {
-		return err
-	}
-	err = o.Begin()
-	if err != nil {
-		return err
-	}
+	var trans = func(ctx context.Context) (err error) {
+		o, err := orm.FromContext(ctx)
+		if err != nil {
+			return
+		}
 
-	// check default instances first
-	for _, prop := range props {
-		if prop == "default" && instance.Default {
+		// check default instances first
+		for _, prop := range props {
+			if prop == "default" && instance.Default {
 
-			_, err = o.Raw("UPDATE ? SET default = false WHERE id != ?", instance.TableName(), instance.ID).Exec()
-			if err != nil {
-				if e := o.Rollback(); e != nil {
-					err = errors.Wrap(e, err.Error())
+				_, err = o.Raw("UPDATE ? SET default = false WHERE id != ?", instance.TableName(), instance.ID).Exec()
+				if err != nil {
+					return
 				}
-				return err
+
+				break
 			}
-
-			break
 		}
-	}
 
-	_, err = o.Update(instance, props...)
-	if err != nil {
-		if e := o.Rollback(); e != nil {
-			err = errors.Wrap(e, err.Error())
-		}
-	} else {
-		err = o.Commit()
+		_, err = o.Update(instance, props...)
+		return
 	}
-	return err
+	return orm.WithTransaction(trans)(ctx)
+
 }
 
 // Delete deletes one distribution instance by id.
