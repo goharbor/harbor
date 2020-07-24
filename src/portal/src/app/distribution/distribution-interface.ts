@@ -1,3 +1,5 @@
+import { Instance } from '../../../ng-swagger-gen/models/instance';
+
 export class AuthMode {
   static NONE = 'NONE';
   static BASIC = 'BASIC';
@@ -14,3 +16,11 @@ export enum PreheatingStatusEnum {
   SUCCESS = 'SUCCESS',
   FAIL = 'FAIL',
 }
+
+export  interface FrontInstance extends Instance {
+  hasCheckHealth?: boolean;
+  pingStatus?: string;
+}
+
+export const HEALTHY: string = 'Healthy';
+export const UNHEALTHY: string = 'Unhealthy';

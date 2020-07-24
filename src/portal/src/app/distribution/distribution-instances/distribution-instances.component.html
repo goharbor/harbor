@@ -18,7 +18,7 @@
                                 }}
                             </button>
                             <button id="set-default"
-                                    [disabled]="!(selectedRow && selectedRow.length === 1 && !selectedRow[0].default && !selectedRow[0].enabled)"
+                                    [disabled]="!(selectedRow && selectedRow.length === 1 && !selectedRow[0].default && selectedRow[0].enabled)"
                                     class="btn  btn-secondary"
                                     (click)="setAsDefault()">{{'SCANNER.SET_AS_DEFAULT' | translate}}</button>
                             <clr-dropdown
@@ -113,9 +113,14 @@
                         </clr-signpost-content>
                       </clr-signpost>
                     </clr-dg-cell>
-                    <clr-dg-cell [ngSwitch]="instance.status === 'Healthy'">
-                        <span *ngSwitchCase="true" class="label label-success">{{ instance.status }}</span>
-                        <span  *ngSwitchDefault class="label label-danger">{{ instance.status }}</span>
+                    <clr-dg-cell>
+                        <span *ngIf="!instance.hasCheckHealth;else elseBlockLoading" class="spinner spinner-inline ml-2"></span>
+                        <ng-template #elseBlockLoading>
+                            <span *ngIf="instance.pingStatus === 'Healthy';else elseBlock" class="label label-success">{{'SCANNER.HEALTHY' | translate}}</span>
+                            <ng-template #elseBlock>
+                                <span class="label label-danger">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                            </ng-template>
+                        </ng-template>
                     </clr-dg-cell>
                     <clr-dg-cell>{{ instance.enabled || false }}</clr-dg-cell>
                     <clr-dg-cell>{{ instance.auth_mode }}</clr-dg-cell>
@@ -124,7 +129,7 @@
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount" [(clrDgPage)]="currentPage">
-                        <span *ngIf="pagination.totalItems">{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }}{{ 'HELM_CHART.OF' | translate }}</span>
+                        <span *ngIf="pagination.totalItems">{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }} {{ 'HELM_CHART.OF' | translate }} </span>
                         <span>{{ pagination.totalItems }} {{ 'HELM_CHART.ITEMS' | translate }}</span>
                     </clr-dg-pagination>
                 </clr-dg-footer>

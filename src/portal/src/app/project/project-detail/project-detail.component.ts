@@ -47,6 +47,7 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
   hasTagRetentionPermission: boolean;
   hasWebhookListPermission: boolean;
   hasScannerReadPermission: boolean;
+  hasP2pProviderReadPermission: boolean;
   tabLinkNavList = [
     {
       linkName: "summary",
@@ -83,6 +84,12 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
       tabLinkInOverflow: false,
       showTabName: "SCANNER.SCANNER",
       permissions: () => this.hasScannerReadPermission
+    },
+    {
+      linkName: "p2p-provider",
+      tabLinkInOverflow: false,
+      showTabName: "P2P_PROVIDER.P2P_PROVIDER",
+      permissions: () => this.hasP2pProviderReadPermission
     },
     {
       linkName: "tag-strategy",
@@ -193,12 +200,14 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
       USERSTATICPERMISSION.WEBHOOK.KEY, USERSTATICPERMISSION.WEBHOOK.VALUE.LIST));
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.SCANNER.KEY, USERSTATICPERMISSION.SCANNER.VALUE.READ));
+    permissionsList.push(this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.P2P_PROVIDER.KEY, USERSTATICPERMISSION.P2P_PROVIDER.VALUE.READ));
 
     forkJoin(...permissionsList).subscribe(Rules => {
       [this.hasProjectReadPermission, this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission
         , this.hasLabelListPermission, this.hasRepositoryListPermission, this.hasHelmChartsListPermission, this.hasRobotListPermission
         , this.hasLabelCreatePermission, this.hasTagRetentionPermission, this.hasWebhookListPermission,
-      this.hasScannerReadPermission] = Rules;
+      this.hasScannerReadPermission, this.hasP2pProviderReadPermission] = Rules;
     }, error => this.errorHandler.error(error));
   }
 

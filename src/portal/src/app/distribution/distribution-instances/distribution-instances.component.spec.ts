@@ -90,6 +90,9 @@ describe('DistributionInstanceComponent', () => {
     },
     ListProviders() {
       return of(mockedProviders).pipe(delay(10));
+    },
+    PingInstances() {
+      return of(true);
     }
   };
 
