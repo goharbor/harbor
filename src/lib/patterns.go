@@ -1,4 +1,4 @@
-package middleware
+package lib
 
 import (
 	"fmt"
@@ -29,3 +29,33 @@ var (
 	// V2CatalogURLRe is the regular expression for mathing the request to v2 handler to list catalog
 	V2CatalogURLRe = regexp.MustCompile(`^/v2/_catalog$`)
 )
+
+// MatchManifestURLPattern checks whether the provided path matches the manifest URL pattern,
+// if does, returns the repository and reference as well
+func MatchManifestURLPattern(path string) (repository, reference string, match bool) {
+	strs := V2ManifestURLRe.FindStringSubmatch(path)
+	if len(strs) < 3 {
+		return "", "", false
+	}
+	return strs[1], strs[2], true
+}
+
+// MatchBlobURLPattern checks whether the provided path matches the blob URL pattern,
+// if does, returns the repository and reference as well
+func MatchBlobURLPattern(path string) (repository, digest string, match bool) {
+	strs := V2BlobURLRe.FindStringSubmatch(path)
+	if len(strs) < 3 {
+		return "", "", false
+	}
+	return strs[1], strs[2], true
+}
+
+// MatchBlobUploadURLPattern checks whether the provided path matches the blob upload URL pattern,
+// if does, returns the repository as well
+func MatchBlobUploadURLPattern(path string) (repository string, match bool) {
+	strs := V2BlobUploadURLRe.FindStringSubmatch(path)
+	if len(strs) < 2 {
+		return "", false
+	}
+	return strs[1], true
+}

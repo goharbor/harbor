@@ -17,8 +17,8 @@ package repoproxy
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	"github.com/goharbor/harbor/src/lib/errors"
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -158,7 +158,7 @@ func isProxySession(ctx context.Context) bool {
 		log.Error("Failed to get security context")
 		return false
 	}
-	if sc.IsSolutionUser() && sc.GetUsername() == secret.ProxyserviceUser {
+	if sc.GetUsername() == proxycachesecret.ProxyCacheService {
 		return true
 	}
 	return false
