@@ -21,6 +21,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/artifactinfo"
 	"github.com/goharbor/harbor/src/server/middleware/csrf"
 	"github.com/goharbor/harbor/src/server/middleware/log"
 	"github.com/goharbor/harbor/src/server/middleware/notification"
@@ -74,6 +75,7 @@ func MiddleWares() []beego.MiddleWare {
 		orm.Middleware(),
 		notification.Middleware(), // notification must ahead of transaction ensure the DB transaction execution complete
 		transaction.Middleware(dbTxSkippers...),
+		artifactinfo.Middleware(),
 		security.Middleware(),
 		readonly.Middleware(readonlySkippers...),
 	}
