@@ -15,9 +15,11 @@
 package policy
 
 import (
+	"reflect"
 	"sort"
 
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/label"
@@ -64,11 +66,15 @@ func (df *defaultFilter) Filter(candidates []*selector.Candidate) ([]*selector.C
 	)
 
 	// Do filters
-	for _, sl := range df.selectors {
+	for i, sl := range df.selectors {
+		log.Debugf("Preheat filter[%d] input: [%d] candidates", i, len(filtered))
+
 		filtered, err = sl.Select(filtered)
 		if err != nil {
 			return nil, errors.Wrap(err, "do filter error")
 		}
+
+		log.Debugf("Preheat filter[%d] output: [%d] candidates", i, len(filtered))
 
 		if len(filtered) == 0 {
 			// Return earlier
@@ -99,7 +105,9 @@ func (df *defaultFilter) BuildFrom(pl *policy.Schema) Filter {
 			df.selectors = make([]selector.Selector, 0)
 		}
 
-		for _, fl := range filters {
+		for i, fl := range filters {
+			log.Debugf("Build preheat filter[%d]: type=%s, value=%v", i, fl.Type, fl.Value)
+
 			sl, err := buildFilter(fl)
 			if err != nil {
 				df.error = errors.Wrap(err, "build filter error")
@@ -115,6 +123,7 @@ func (df *defaultFilter) BuildFrom(pl *policy.Schema) Filter {
 }
 
 // Assign the filter with different order weight and then do filters with fixed order.
+// Keep consistent with variable "orderedFilters".
 func filterOrder(t policy.FilterType) uint {
 	switch t {
 	case policy.FilterTypeRepository:
@@ -145,21 +154,24 @@ func buildFilter(f *policy.Filter) (selector.Selector, error) {
 		return nil, errors.Errorf("pattern value is missing for filter: %s", f.Type)
 	}
 
+	// Current value type
+	cvt := reflect.TypeOf(f.Value).Name()
+
 	// Check value type
 	switch f.Type {
 	case policy.FilterTypeRepository,
 		policy.FilterTypeTag,
 		policy.FilterTypeLabel:
 		if _, ok := f.Value.(string); !ok {
-			return nil, errors.Errorf("invalid string pattern format for filter: %s", f.Type)
+			return nil, errors.Errorf("invalid string pattern format(%s) for filter: %s", cvt, f.Type)
 		}
 	case policy.FilterTypeSignature:
 		if _, ok := f.Value.(bool); !ok {
-			return nil, errors.Errorf("invalid boolean pattern format for filter: %s", f.Type)
+			return nil, errors.Errorf("invalid boolean pattern format(%s) for filter: %s", cvt, f.Type)
 		}
 	case policy.FilterTypeVulnerability:
 		if _, ok := f.Value.(int); !ok {
-			return nil, errors.Errorf("invalid integer pattern format for filter: %s", f.Type)
+			return nil, errors.Errorf("invalid integer pattern format(%s) for filter: %s", cvt, f.Type)
 		}
 	}
 

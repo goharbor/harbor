@@ -187,3 +187,43 @@ func (suite *FilterTestSuite) TestFilters() {
 	require.Equal(suite.T(), 1, len(res), "number of matched candidates")
 	suite.Equal("sha256@fake", res[0].Digest, "digest of matched candidate")
 }
+
+// TestDefaultPatterns tests the case of using the default filter pattern.
+func (suite *FilterTestSuite) TestDefaultPatterns() {
+	p := &policy.Schema{
+		Filters: []*policy.Filter{
+			{
+				Type:  policy.FilterTypeRepository,
+				Value: "**",
+			},
+			{
+				Type:  policy.FilterTypeTag,
+				Value: "**",
+			},
+		},
+	}
+
+	res, err := NewFilter().BuildFrom(p).Filter(suite.candidates)
+	require.NoError(suite.T(), err, "do filters")
+	require.Equal(suite.T(), 7, len(res), "number of matched candidates")
+}
+
+// TestDefaultPatterns2 tests the case of using the default filter pattern.
+func (suite *FilterTestSuite) TestDefaultPatterns2() {
+	p := &policy.Schema{
+		Filters: []*policy.Filter{
+			{
+				Type:  policy.FilterTypeRepository,
+				Value: "**",
+			},
+			{
+				Type:  policy.FilterTypeTag,
+				Value: "*",
+			},
+		},
+	}
+
+	res, err := NewFilter().BuildFrom(p).Filter(suite.candidates)
+	require.NoError(suite.T(), err, "do filters")
+	require.Equal(suite.T(), 7, len(res), "number of matched candidates")
+}
