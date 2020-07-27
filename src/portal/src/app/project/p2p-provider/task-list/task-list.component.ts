@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { finalize } from 'rxjs/operators';
-import { CustomComparator, DEFAULT_PAGE_SIZE, isEmptyObject } from '../../../../lib/utils/utils';
+import { clone, CustomComparator, DEFAULT_PAGE_SIZE, isEmptyObject } from '../../../../lib/utils/utils';
 import { Task } from '../../../../../ng-swagger-gen/models/task';
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
 import { Project } from '../../project';
@@ -18,7 +18,7 @@ import { ClrLoadingState } from '@clr/angular';
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.scss']
 })
-export class TaskListComponent implements OnInit {
+export class TaskListComponent implements OnInit, OnDestroy {
   projectId: number;
   projectName: string;
   isOpenFilterTag: boolean;
@@ -35,6 +35,7 @@ export class TaskListComponent implements OnInit {
   execution: Execution;
   hasUpdatePermission: boolean = false;
   btnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  timeout: any;
   constructor(
     private translate: TranslateService,
     private router: Router,
@@ -58,6 +59,12 @@ export class TaskListComponent implements OnInit {
       this.getExecutionDetail(true);
     }
     this.getPermissions();
+  }
+  ngOnDestroy(): void {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = null;
+    }
   }
   getPermissions() {
     const permissionsList: Observable<boolean>[] = [];
@@ -85,9 +92,11 @@ export class TaskListComponent implements OnInit {
         .subscribe(res => {
           this.execution = res;
             if (!this.execution || this.p2pProviderService.willChangStatus(this.execution.status)) {
-              setTimeout(() => {
-                this.getExecutionDetail(false);
-              }, TIME_OUT);
+              if (!this.timeout) {
+                this.timeout = setTimeout(() => {
+                  this.getExecutionDetail(false);
+                }, TIME_OUT);
+              }
             }
         },
         error => {
@@ -109,41 +118,44 @@ export class TaskListComponent implements OnInit {
 
   successNum(): number {
     if (this.execution && this.execution.metrics) {
-      return this.execution.metrics.success_task_count;
+      return this.execution.metrics.success_task_count ? this.execution.metrics.success_task_count : 0;
     }
     return 0;
   }
 
   failedNum(): number {
     if (this.execution && this.execution.metrics) {
-      return this.execution.metrics.error_task_count;
+      return this.execution.metrics.error_task_count ? this.execution.metrics.error_task_count : 0;
     }
     return 0;
   }
 
   progressNum(): number {
     if (this.execution && this.execution.metrics) {
-      return (this.execution.metrics.pending_task_count ? this.execution.metrics.pending_task_count : 0)
+      const num: number = (this.execution.metrics.pending_task_count ? this.execution.metrics.pending_task_count : 0)
         + (this.execution.metrics.running_task_count ? this.execution.metrics.running_task_count : 0)
         + (this.execution.metrics.scheduled_task_count ? this.execution.metrics.scheduled_task_count : 0);
+      return num ? num : 0;
     }
     return 0;
   }
 
   stoppedNum(): number {
     if (this.execution && this.execution.metrics) {
-      return this.execution.metrics.stopped_task_count;
+      return this.execution.metrics.stopped_task_count ? this.execution.metrics.stopped_task_count : 0;
     }
     return 0;
   }
 
   stopJob() {
     this.stopOnGoing = true;
+    const execution: Execution = clone(this.execution);
+    execution.status = EXECUTION_STATUS.STOPPED;
     this.preheatService.StopExecution({
       projectName: this.projectName,
       preheatPolicyName: this.preheatPolicyName,
       executionId: +this.executionId,
-      execution: this.execution
+      execution: execution
     })
     .subscribe(response => {
       this.stopOnGoing = false;
@@ -198,12 +210,6 @@ export class TaskListComponent implements OnInit {
     this.currentPage = 1;
     this.totalCount = 0;
     this.clrLoadTasks(true);
-  }
-  toJsonString(obj: any) {
-    if (!isEmptyObject(obj)) {
-      return JSON.stringify(obj);
-    }
-    return '';
   }
   getDuration(t: Task): string {
     return this.p2pProviderService.getDuration(t.start_time, t.end_time);
