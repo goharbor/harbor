@@ -14,7 +14,7 @@
 
 *** Settings ***
 Documentation  Harbor BATs
-Library  ../../apitests/python/library/Harbor.py  ${SERVER_CONFIG}
+Library  ../../apitests/python/library/repository.py
 Resource  ../../resources/Util.robot
 Default Tags  Replication
 
@@ -115,7 +115,7 @@ Test Case - Replication Rule Edit
     Retry Text Input    ${rule_name_input}    ${rule_name_new}
     Select Source Registry  ${endpoint2}
     #Source Resource Filter
-    Retry Text Input  ${source_project}  project${d}
+    Retry Text Input  ${filter_name_id}  project${d}
     Select From List By Value  ${rule_resource_selector}  ${resource_type}
     Retry Text Input  ${dest_namespace_xpath}  ${dest_namespace}
     Select Trigger  ${mode}
@@ -125,7 +125,7 @@ Test Case - Replication Rule Edit
     Edit Replication Rule By Name    ${rule_name_new}
     Retry Textfield Value Should Be    ${rule_name_input}               ${rule_name_new}
     Retry List Selection Should Be     ${src_registry_dropdown_list}    ${endpoint2}-https://${ip}
-    Retry Textfield Value Should Be    ${source_project}                project${d}
+    Retry Textfield Value Should Be    ${filter_name_id}                project${d}
     Retry Textfield Value Should Be    ${dest_namespace_xpath}          ${dest_namespace}
     Retry List Selection Should Be     ${rule_resource_selector}        ${resource_type}
     Retry List Selection Should Be     ${rule_trigger_select}           ${mode}
@@ -268,7 +268,7 @@ Test Case - Replication Of Pull Images from Google-GCR To Self
     Create A New Endpoint    google-gcr    e${d}    asia.gcr.io    ${null}    ${gcr_ac_key}    Y
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    pull    eminent-nation-87317/*    image    e${d}    project${d}
-    Filter Replicatin Rule  rule${d}
+    Filter Replication Rule  rule${d}
     Select Rule And Replicate  rule${d}
     Image Should Be Replicated To Project  project${d}  httpd
     Image Should Be Replicated To Project  project${d}  tomcat
@@ -278,7 +278,9 @@ Test Case - Replication Of Push Images to DockerHub Triggered By Event
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
-    ${image}=  Set Variable  redis
+    ${image}=  Set Variable  test_push_repli
+    ${tag1}=  Set Variable  v1.1.0
+    @{tags}   Create List  ${tag1}
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project    project${d}
@@ -286,15 +288,15 @@ Test Case - Replication Of Push Images to DockerHub Triggered By Event
     Create A New Endpoint    docker-hub    e${d}    https://hub.docker.com/    danfengliu    Aa123456    Y
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    push    project${d}/*    image    e${d}    danfengliu  mode=Event Based  del_remote=${true}
-    ${image_with_tag}=  Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}  tag_suffix=${true}
-    Filter Replicatin Rule  rule${d}
+    Push Special Image To Project  project${d}  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${image}  tags=@{tags}  size=12
+    Filter Replication Rule  rule${d}
     Select Rule  rule${d}
-    Docker Image Can Be Pulled  danfengliu/${image_with_tag}   times=3
+    Docker Image Can Be Pulled  danfengliu/${image}:${tag1}   times=3
     Executions Result Count Should Be  Succeeded  event_based  1
     Go Into Project  project${d}
     Delete Repo  project${d}
-    Docker Image Can Not Be Pulled  danfengliu/${image_with_tag}
+    Docker Image Can Not Be Pulled  danfengliu/${image}:${tag1}
     Switch To Replication Manage
-    Filter Replicatin Rule  rule${d}
+    Filter Replication Rule  rule${d}
     Select Rule  rule${d}
     Executions Result Count Should Be  Succeeded  event_based  2
