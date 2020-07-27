@@ -1,19 +1,21 @@
 package artifact
 
 import (
+	"context"
+	"testing"
+	"time"
+
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication"
 	daoModels "github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"testing"
-	"time"
 )
 
 type fakedNotificationPolicyMgr struct {
@@ -28,7 +30,7 @@ type fakedReplicationMgr struct {
 type fakedReplicationRegistryMgr struct {
 }
 
-type fakedProjectMgr struct {
+type fakedProjectCtl struct {
 }
 
 func (f *fakedNotificationPolicyMgr) Create(*models.NotificationPolicy) (int64, error) {
@@ -193,63 +195,38 @@ func (f *fakedReplicationRegistryMgr) HealthCheck() error {
 	return nil
 }
 
-func (f *fakedProjectMgr) Get(projectIDOrName interface{}) (*models.Project, error) {
+func (f *fakedProjectCtl) Get(ctx context.Context, projectID int64, options ...project.Option) (*models.Project, error) {
 	return &models.Project{ProjectID: 1}, nil
 }
-func (f *fakedProjectMgr) Create(*models.Project) (int64, error) {
-	return 0, nil
+func (f *fakedProjectCtl) GetByName(ctx context.Context, projectName string, options ...project.Option) (*models.Project, error) {
+	return &models.Project{ProjectID: 1}, nil
 }
-func (f *fakedProjectMgr) Delete(projectIDOrName interface{}) error {
-	return nil
-}
-func (f *fakedProjectMgr) Update(projectIDOrName interface{}, project *models.Project) error {
-	return nil
-}
-func (f *fakedProjectMgr) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
+func (f *fakedProjectCtl) List(ctx context.Context, query *models.ProjectQueryParam, options ...project.Option) ([]*models.Project, error) {
 	return nil, nil
-}
-func (f *fakedProjectMgr) IsPublic(projectIDOrName interface{}) (bool, error) {
-	return true, nil
-}
-func (f *fakedProjectMgr) Exists(projectIDOrName interface{}) (bool, error) {
-	return false, nil
-}
-
-// get all public project
-func (f *fakedProjectMgr) GetPublic() ([]*models.Project, error) {
-	return nil, nil
-}
-
-func (f *fakedProjectMgr) GetAuthorized(user *models.User) ([]*models.Project, error) {
-	return nil, nil
-}
-
-// if the project manager uses a metadata manager, return it, otherwise return nil
-func (f *fakedProjectMgr) GetMetadataManager() metamgr.ProjectMetadataManager {
-	return nil
 }
 
 func TestReplicationHandler_Handle(t *testing.T) {
+	common_dao.PrepareTestForPostgresSQL()
 	config.Init()
 
 	PolicyMgr := notification.PolicyMgr
 	execution := replication.OperationCtl
 	rpPolicy := replication.PolicyCtl
 	rpRegistry := replication.RegistryMgr
-	project := config.GlobalProjectMgr
+	prj := project.Ctl
 
 	defer func() {
 		notification.PolicyMgr = PolicyMgr
 		replication.OperationCtl = execution
 		replication.PolicyCtl = rpPolicy
 		replication.RegistryMgr = rpRegistry
-		config.GlobalProjectMgr = project
+		project.Ctl = prj
 	}()
 	notification.PolicyMgr = &fakedNotificationPolicyMgr{}
 	replication.OperationCtl = &fakedReplicationMgr{}
 	replication.PolicyCtl = &fakedReplicationPolicyMgr{}
 	replication.RegistryMgr = &fakedReplicationRegistryMgr{}
-	config.GlobalProjectMgr = &fakedProjectMgr{}
+	project.Ctl = &fakedProjectCtl{}
 
 	handler := &ReplicationHandler{}
 
