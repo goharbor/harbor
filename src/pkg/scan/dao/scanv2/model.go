@@ -14,7 +14,9 @@
 
 package scanv2
 
-import "time"
+import (
+	"time"
+)
 
 // Report of the scan. This report model confirms to the new Common Vulnerability Schema Specification
 // Identified by the `digest`, `registration_uuid` and `mime_type`.
@@ -34,26 +36,29 @@ type Report struct {
 	EndTime          time.Time `orm:"column(end_time);type(datetime)"`
 }
 
-// VulnerabilityRecord identifies an  individual vulnerability item in the scan.
-// Identified by the `cve_id`.
+// VulnerabilityRecord of an individual vulnerability. Identifies an  individual vulnerability item in the scan.
+// Since multiple scanners could be registered with the projects, each scanner
+// would have it's own definition for the same CVE ID. Hence a CVE ID is qualified along
+// with the ID of the scanner that owns the CVE record definition.
+// The scanner ID would be the same as the RegistrationUUID field of Report.
+// Identified by the `cve_id` and `registration_uuid`.
 // Relates to the image using the `digest` and to the report using the `report UUID` field
 type VulnerabilityRecord struct {
-	ID               int64    `orm:"pk;auto;column(id)"`
-	CVEID            string   `orm:"unique;column(cve_id)"`
-	Digest           string   `orm:"column(digest)"`
-	Report           string   `orm:"column(report_uuid)"`
-	ScannerID        string   `orm:"column(registration_id)"`
-	Package          string   `orm:"column(package)"`
-	PackageType      string   `orm:"column(package_type)"`
-	Severity         string   `orm:"column(severity)"`
-	Fix              string   `orm:"column(fixed_version)"`
-	URL              []string `orm:"column(urls)"`
-	CVE3Score        string   `orm:"column(cve3_score)"`
-	CVE2Score        string   `orm:"column(cve2_score)"`
-	Description      string   `orm:"column(description)"`
-	VendorAttributes string   `orm:"column(vendoratribtes);type(json)"`
-	CVSS3Vector      string   `orm:"column(cvss3_vector);null"`
-	CVSS2Vector      string   `orm:"column(cvss3_vector);null"`
+	ID               int64  `orm:"pk;auto;column(id)"`
+	CVEID            string `orm:"column(cve_id)"`
+	ScannerID        string `orm:"unique;column(registration_uuid)"`
+	Digest           string `orm:"column(digest)"`
+	Report           string `orm:"column(report_uuid)"`
+	Package          string `orm:"column(package)"`
+	PackageVersion   string `orm:"column(package_version)"`
+	PackageType      string `orm:"column(package_type)"`
+	Severity         string `orm:"column(severity)"`
+	Fix              string `orm:"column(fixed_version);null"`
+	URL              string `orm:"column(urls);null"`
+	CVE3Score        string `orm:"column(cve3_score);null"`
+	CVE2Score        string `orm:"column(cve2_score);null"`
+	Description      string `orm:"column(description);null"`
+	VendorAttributes string `orm:"column(vendorattributes);type(json);null"`
 }
 
 //ReportVulnerability is relation table required to optimize data storage for both the
@@ -62,8 +67,9 @@ type VulnerabilityRecord struct {
 //Since each scan report has a separate UUID, the composite key
 //would ensure that the immutability of the historical scan reports is guaranteed
 type ReportVulnerability struct {
-	ID     int64  `orm:"pk;auto;column(id)"`
-	Report string `orm:"column(report_uuid);"`
+	ID           int64  `orm:"pk;auto;column(id)"`
+	Report       string `orm:"column(report_uuid);"`
+	VulnRecordID int64  `orm:"column(vuln_record_id);"`
 }
 
 //CVSS3Vector is table that would store the CVSS 3.x related attack vectors
