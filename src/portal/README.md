@@ -1,4 +1,4 @@
-![Harbor UI](../../docs/img/harbor_logo.png)
+![Harbor UI](https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/harbor_logo.png)
 
 Harbor UI
 ============
