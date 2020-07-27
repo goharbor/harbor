@@ -16,11 +16,10 @@ export class Robot {
 
   constructor () {
     this.access = <any>{};
-    // this.access[0].action = true;
     this.access.isPullImage = false;
     this.access.isPushOrPullImage = true;
-    this.access.isPushChart = false;
-    this.access.isPullChart = false;
+    this.access.isPushChart = true;
+    this.access.isPullChart = true;
   }
 }
 

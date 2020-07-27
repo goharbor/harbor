@@ -1164,7 +1164,7 @@
         "DAY_AGO": " day(s) ago",
         "HOUR_AGO": " hour(s) ago",
         "MINUTE_AGO": " minute(s) ago",
-        "SECOND_AGO": "less 1 minute",
+        "SECOND_AGO": "less than 1 minute",
         "EVENT_LOG": "EVENT LOG"
     },
     "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later.",
