@@ -29,6 +29,7 @@ import {
 } from '../../../../lib/services';
 import { ClrLoadingState } from '@clr/angular';
 import {
+  EXECUTION_STATUS,
   FILTER_TYPE,
   P2pProviderService,
   PROJECT_SEVERITY_LEVEL_TO_TEXT_MAP,
@@ -79,6 +80,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
   private _searchSubscription: Subscription;
   project: Project;
   severity_map: any = PROJECT_SEVERITY_LEVEL_TO_TEXT_MAP;
+  timeout: any;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -103,6 +105,10 @@ export class PolicyComponent implements OnInit, OnDestroy {
      if (this._searchSubscription) {
        this._searchSubscription.unsubscribe();
        this._searchSubscription = null;
+     }
+     if (this.timeout) {
+       clearTimeout(this.timeout);
+       this.timeout = null;
      }
   }
   getPermissions() {
@@ -171,11 +177,13 @@ export class PolicyComponent implements OnInit, OnDestroy {
     if (message &&  message.source === ConfirmationTargets.P2P_PROVIDER_STOP &&
       message.state === ConfirmationState.CONFIRMED) {
       this.stopLoading = true;
+      const execution: Execution = clone(this.selectedExecutionRow);
+      execution.status = EXECUTION_STATUS.STOPPED;
       this.preheatService.StopExecution({
         projectName: this.projectName,
         preheatPolicyName: this.selectedRow.name,
         executionId: this.selectedExecutionRow.id,
-        execution: this.selectedExecutionRow
+        execution: execution
       }).pipe(finalize(() => this.executing = false))
         .subscribe(response => {
           this.messageHandlerService.showSuccess('P2P_PROVIDER.STOP_SUCCESSFULLY');
@@ -364,9 +372,11 @@ export class PolicyComponent implements OnInit, OnDestroy {
           if (this.executionList && this.executionList.length) {
             for (let i = 0; i < this.executionList.length; i++) {
               if (this.p2pProviderService.willChangStatus(this.executionList[i].status)) {
-                setTimeout(() => {
-                  this.clrLoadJobs(null, false);
-                }, TIME_OUT);
+                if (!this.timeout) {
+                  this.timeout = setTimeout(() => {
+                    this.clrLoadJobs(null, false);
+                  }, TIME_OUT);
+                }
               }
             }
           }

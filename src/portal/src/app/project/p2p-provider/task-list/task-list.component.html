@@ -103,7 +103,11 @@
             </clr-tooltip-content>
           </clr-tooltip>
         </clr-dg-cell>
-        <clr-dg-cell>{{toJsonString(t.extra_attrs)}}</clr-dg-cell>
+        <clr-dg-cell>
+          <span>{{t.extra_attrs?.artifact}}</span>,&nbsp;
+          <span>{{t.extra_attrs?.digest}}</span>,&nbsp;
+          <span>{{t.extra_attrs?.kind}}</span>
+         </clr-dg-cell>
         <clr-dg-cell>{{t.start_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>{{getDuration(t)}}</clr-dg-cell>
         <clr-dg-cell>
