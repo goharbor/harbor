@@ -130,6 +130,8 @@ export class OperationComponent implements OnInit, OnDestroy {
     this.animationState = this.animationState === 'out' ? 'in' : 'out';
     if (this.animationState === 'in') {
       this.resetNewMessageCount();
+      // refresh when open
+      this.TabEvent();
     }
   }
 

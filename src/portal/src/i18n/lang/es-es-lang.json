@@ -102,6 +102,8 @@
         "OIDC_VERIFYCERT": "Desmarque esta casilla si tu OIDC servidor está alojado a través de certificado autofirmado.",
         "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
         "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters.",
+        "OIDC_AUTOONBOARD": "Skip the onboarding screen, so user cannot change its username. Username is provided from ID Token",
+        "OIDC_USER_CLAIM": "The name of the claim in the ID Token where the username is retrieved from. If not specified, it will default to 'name'",
         "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number."
     },
     "PLACEHOLDER": {
@@ -911,6 +913,8 @@
             "CLIENTSECRET": "OIDC Client Secret",
             "SCOPE": "OIDC Ámbito",
             "OIDC_VERIFYCERT": "Verificar certificado",
+            "OIDC_AUTOONBOARD": "Automatic onboarding",
+            "USER_CLAIM": "Username Claim",
             "OIDC_SETNAME": "Set OIDC nombre de usuario",
             "OIDC_SETNAMECONTENT": "Usted debe crear un Harbor nombre de usuario la primera vez cuando la autenticación a través de un tercero (OIDC). Esta será usada en Harbor para ser asociados con proyectos, funciones, etc.",
             "OIDC_USERNAME": "Usuario",
@@ -1158,7 +1162,7 @@
         "DAY_AGO": " day(s) ago",
         "HOUR_AGO": " hour(s) ago",
         "MINUTE_AGO": " minute(s) ago",
-        "SECOND_AGO": "less 1 minute",
+        "SECOND_AGO": "less than 1 minute",
         "EVENT_LOG": "EVENT LOG"
     },
     "UNKNOWN_ERROR": "Ha ocurrido un error desconocido. Por favor, inténtelo de nuevo más tarde.",
@@ -1530,7 +1534,7 @@
         "PROVIDER_TYPE": "Vendor",
         "ID": "Execution ID",
         "NO_PROVIDER": "Please add a provider first",
-        "EXTRA_ATTRS": "Extra Attrs",
+        "EXTRA_ATTRS": "Artifact, Digest and Kind",
         "TASKS": "Tasks",
         "TASKS_PLACEHOLDER": "We couldn't find any task",
         "SEVERITY_WARNING": "Vulnerability settings here conflicts with the relevant project configuration that will override the settings here",

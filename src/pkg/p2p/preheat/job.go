@@ -82,7 +82,7 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Print related info to log first
 	myLogger.Infof(
-		"Preheating image '%s:%s' to the target preheat provider: %s %s:%s",
+		"Preheating image '%s:%s' to the target preheat provider: %s %s:%s\n",
 		pi.ImageName,
 		pi.Tag,
 		p.Vendor,

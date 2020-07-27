@@ -10,7 +10,7 @@
 ![CONFORMANCE_TEST](https://github.com/goharbor/harbor/workflows/CONFORMANCE_TEST/badge.svg)
 </br>
 
-|![notification](docs/img/readme/bell-outline-badged.svg)Community Meeting|
+|![notification](https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/bell-outline-badged.svg)Community Meeting|
 |------------------|
 |The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
 
@@ -19,7 +19,7 @@
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
 Please use [releases](https://github.com/vmware/harbor/releases) instead of the `master` branch in order to get a stable set of binaries.
 
-<img alt="Harbor" src="docs/img/readme/harbor_logo.png">
+<img alt="Harbor" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/harbor_logo.png">
 
 Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
 
@@ -39,7 +39,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **Auditing**: All the operations to the repositories are tracked through logs.
 * **RESTful API**: RESTful APIs are provided to facilitate administrative operations, and are easy to use for integration with external systems. An embedded Swagger UI is available for exploring and testing the API.
-* **Easy deployment**: Harbor can be deployed via Docker compose as well Helm Chart. A Harbor Operator was added recently as well - https://goharbor.io/docs/1.10/build-customize-contribute/e2e_api_python_based_scripting_guide/
+* **Easy deployment**: Harbor can be deployed via Docker compose as well Helm Chart, and a Harbor Operator was added recently as well.
 
 ## Architecture
 
@@ -57,11 +57,11 @@ For learning the architecture design of Harbor, check the document [Architecture
 
 **On a Linux host:** docker 17.06.0-ce+ and docker-compose 1.18.0+ .
 
-Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](docs/install-config/_index.md)** to install Harbor.
+Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/2.0.0/install-config/)** to install Harbor.
 
 If you want to deploy Harbor on Kubernetes, please use the **[Harbor chart](https://github.com/goharbor/harbor-helm)**.
 
-Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
+Refer to the **[documentation](https://goharbor.io/docs/)** for more details on how to use Harbor.
 
 ## OCI Distribution Conformance Tests
 
@@ -69,11 +69,11 @@ Check the OCI distribution conformance tests [report](https://storage.googleapis
 
 ## Compatibility
 
-The [compatibility list](./docs/install-config/harbor-compatibility-list.md) document provides compatibility information for the Harbor components.
+The [compatibility list](https://goharbor.io/docs/2.0.0/install-config/harbor-compatibility-list/) document provides compatibility information for the Harbor components.
 
-* [Replication adapters](./docs/install-config/harbor-compatibility-list.md#Replication-Adapters)
-* [OIDC adapters](./docs/install-config/harbor-compatibility-list.md#OIDC-Adapters)
-* [Scanner adapters](./docs/install-config/harbor-compatibility-list.md#Scanner-Adapters)
+* [Replication adapters](https://goharbor.io/docs/2.0.0/install-config/harbor-compatibility-list/#replication-adapters)
+* [OIDC adapters](https://goharbor.io/docs/2.0.0/install-config/harbor-compatibility-list/#oidc-adapters)
+* [Scanner adapters](https://goharbor.io/docs/2.0.0/install-config/harbor-compatibility-list/#scanner-adapters)
 
 ## Community
 
@@ -84,7 +84,7 @@ The [compatibility list](./docs/install-config/harbor-compatibility-list.md) doc
 
 ## Demos
 
-* **[Live Demo](https://demo.goharbor.io)** - A demo environment with the latest Harbor stable build installed. For additional information please refer to [this page](docs/demo_server.md).
+* **[Live Demo](https://demo.goharbor.io)** - A demo environment with the latest Harbor stable build installed. For additional information please refer to [this page](https://goharbor.io/docs/2.0.0/install-config/demo-server/).
 * **[Video Demos](https://github.com/goharbor/harbor/wiki/Video-demos-for-Harbor)** - Demos for Harbor features and continuously updated.
 
 ## Partners and Users
@@ -95,7 +95,7 @@ For a list of users, please refer to [ADOPTERS.md](ADOPTERS.md).
 
 ### Security Audit
 
-A third party security audit was performed by Cure53 in October of 2019. You can see the full report [here](docs/security/Harbor_Security_Audit_Oct2019.pdf).
+A third party security audit was performed by Cure53 in October of 2019. You can see the full report [here](https://goharbor.io/docs/2.0.0/security/Harbor_Security_Audit_Oct2019.pdf).
 
 ### Reporting security vulnerabilities
 

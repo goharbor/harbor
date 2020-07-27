@@ -1164,7 +1164,7 @@
         "DAY_AGO": " day(s) ago",
         "HOUR_AGO": " hour(s) ago",
         "MINUTE_AGO": " minute(s) ago",
-        "SECOND_AGO": "less 1 minute",
+        "SECOND_AGO": "less than 1 minute",
         "EVENT_LOG": "EVENT LOG"
     },
     "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later.",
@@ -1536,7 +1536,7 @@
         "PROVIDER_TYPE": "Vendor",
         "ID": "Execution ID",
         "NO_PROVIDER": "Please add a provider first",
-        "EXTRA_ATTRS": "Extra Attrs",
+        "EXTRA_ATTRS": "Artifact, Digest and Kind",
         "TASKS": "Tasks",
         "TASKS_PLACEHOLDER": "We couldn't find any task",
         "SEVERITY_WARNING": "Vulnerability settings here conflicts with the relevant project configuration that will override the settings here",

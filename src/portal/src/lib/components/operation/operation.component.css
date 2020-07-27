@@ -13,7 +13,7 @@
 .infoArea{ margin-left: 10px; width: 270px;}
 .eventName{display: block; margin-bottom: -5px;font-size: 16px; }
 .eventErrorInf {display:block; font-size: 12px;color:red;line-height: .6rem;}
-.eventTarget{display: inline-flex; width: 172px; font-size: 12px; flex-shrink:1; overflow: hidden; text-overflow: ellipsis;white-space: nowrap;}
+.eventTarget{display: inline-flex; width: 160px; font-size: 12px; flex-shrink:1; overflow: hidden; text-overflow: ellipsis;white-space: nowrap;}
 .eventTime{ float: right; font-size: 12px;}
 :host >>> .nav{padding-left: 38px;}
 

@@ -30,13 +30,14 @@ Test Case - Garbage Collection
 
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  redis
     Sleep  2
     Go Into Project  project${d}
     Delete Repo  project${d}
     Sleep  2
     GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Retry GC Should Be Successful  1  0 blobs marked, 3 blobs and 0 manifests eligible for deletion
+    Retry GC Should Be Successful  1  7 blobs and 1 manifests eligible for deletion
+    Retry GC Should Be Successful  1  The GC job actual frees up 34 MB space
     Close Browser
 
 Test Case - GC Untagged Images

@@ -50,7 +50,7 @@ export class AddP2pPolicyComponent implements OnInit {
   repos: string;
   tags: string;
   onlySignedImages: boolean = false;
-  severity: number  = 0;
+  severity: number;
   labels: string;
   triggerType: string = TRIGGER.MANUAL;
   cron: string ;
@@ -96,7 +96,6 @@ export class AddP2pPolicyComponent implements OnInit {
 
   resetForAdd() {
     this.currentForm.reset({
-      severity: 0,
       triggerType: "manual"
     });
     this.inlineAlert.close();
@@ -104,7 +103,7 @@ export class AddP2pPolicyComponent implements OnInit {
     this.repos = null;
     this.tags = null;
     this.onlySignedImages = false;
-    this.severity = 0;
+    this.severity = null;
     this.labels = null;
     this.triggerType = "manual";
     this.cron = null;
@@ -173,7 +172,7 @@ export class AddP2pPolicyComponent implements OnInit {
       }
     }
     if (this.severity === 0 || this.severity > 0) {
-      filters.push({type: FILTER_TYPE.VULNERABILITY, value: this.severity});
+      filters.push({type: FILTER_TYPE.VULNERABILITY, value: +this.severity});
     }
     policy.filters = JSON.stringify(filters);
     const trigger: any = {
