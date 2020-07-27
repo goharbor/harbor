@@ -1,5 +1,13 @@
 package provider
 
+import (
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
+)
+
 const (
 	// DriverStatusHealthy represents the healthy status
 	DriverStatusHealthy = "Healthy"
@@ -57,4 +65,27 @@ type PreheatingStatus struct {
 	Error      string `json:"error,omitempty"`
 	StartTime  string `json:"start_time"`
 	FinishTime string `json:"finish_time"`
+}
+
+// String format of PreheatingStatus
+func (ps *PreheatingStatus) String() string {
+	t := fmt.Sprintf("Task [%s] is %s", ps.TaskID, strings.ToLower(ps.Status))
+	switch ps.Status {
+	case provider.PreheatingStatusFail:
+		t = fmt.Sprintf("%s with error: %s", t, ps.Error)
+	case provider.PreheatingStatusSuccess:
+		if len(ps.StartTime) > 0 && len(ps.FinishTime) > 0 {
+			if st, err := time.Parse(time.RFC3339, ps.StartTime); err == nil {
+				if ft, err := time.Parse(time.RFC3339, ps.FinishTime); err == nil {
+					d := ft.Sub(st)
+					t = fmt.Sprintf("%s with duration: %s", t, d)
+				}
+			}
+		}
+	default:
+		t = fmt.Sprintf("%s, start time=%s", t, ps.StartTime)
+
+	}
+
+	return t
 }
