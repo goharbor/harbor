@@ -103,6 +103,12 @@ type extURLGetter func(c *selector.Candidate) (string, error)
 // The purpose of defining such a func template is decoupling code
 type accessCredMaker func(c *selector.Candidate) (string, error)
 
+// matchedPolicy is a temporary intermediary struct for passing parameters
+type matchedPolicy struct {
+	policy   *pol.Schema
+	filtered []*selector.Candidate
+}
+
 var (
 	// Enf default enforcer
 	Enf = NewEnforcer()
@@ -254,8 +260,7 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 		return nil, enforceErrorExt(err, art)
 	}
 
-	matched := 0
-	ids := make([]int64, 0)
+	matched := make([]*matchedPolicy, 0)
 	for _, pl := range l {
 		// Skip disabled policies
 		if !pl.Enabled {
@@ -266,19 +271,6 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 		if pl.Trigger == nil ||
 			pl.Trigger.Type != pol.TriggerTypeEventBased {
 			// Skip
-			continue
-		}
-
-		// Get and check if the provider instance bound with the policy is healthy
-		inst, err := de.instMgr.Get(ctx, pl.ProviderID)
-		if err != nil {
-			log.Errorf("Failed to get the preheat provider instance bound with the policy %d:%s with error: %s", pl.ID, pl.Name, err.Error())
-			continue
-		}
-
-		// Skip unhealthy instance
-		if err := checkProviderHealthy(inst); err != nil {
-			log.Errorf("The preheat provider instance bound with the policy %d:%s is not healthy: %s", pl.ID, pl.Name, err.Error())
 			continue
 		}
 
@@ -295,25 +287,44 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 			continue
 		}
 
-		matched++
-
+		// The artifact candidate is matched with the policy
 		if len(filtered) > 0 {
-			// Matched
-			eid, err := de.launchExecutions(ctx, filtered, pl, inst)
-			if err != nil {
-				// Log error and continue
-				log.Errorf("Failed to launch execution for policy %d:%s with error: %s", pl.ID, pl.Name, err.Error())
-			} else {
-				// Success and then append the execution id to list
-				ids = append(ids, eid)
-			}
+			matched = append(matched, &matchedPolicy{pl, filtered})
 		}
 	}
 
-	if matched != len(ids) {
+	ids := make([]int64, 0)
+	// Launch preheat executions for all the matched policies.
+	// Check the health of the instance bound with the policy at this moment.
+	for _, mp := range matched {
+		// Get and check if the provider instance bound with the policy is healthy
+		inst, err := de.instMgr.Get(ctx, mp.policy.ProviderID)
+		if err != nil {
+			log.Errorf("Failed to get the preheat provider instance bound with the policy %d:%s with error: %s", mp.policy.ID, mp.policy.Name, err.Error())
+			continue
+		}
+
+		// Skip unhealthy instance
+		if err := checkProviderHealthy(inst); err != nil {
+			log.Errorf("The preheat provider instance bound with the policy %d:%s is not healthy: %s", mp.policy.ID, mp.policy.Name, err.Error())
+			continue
+		}
+
+		// Launch executions now
+		eid, err := de.launchExecutions(ctx, mp.filtered, mp.policy, inst)
+		if err != nil {
+			// Log error and continue
+			log.Errorf("Failed to launch execution for policy %d:%s with error: %s", mp.policy.ID, mp.policy.Name, err.Error())
+		} else {
+			// Success and then append the execution id to list
+			ids = append(ids, eid)
+		}
+	}
+
+	if len(matched) != len(ids) {
 		// Some policy enforcement are failed
 		// Treat it as an error case
-		return ids, enforceErrorExt(errors.Errorf("%d policies matched but only %d successfully enforced", matched, len(ids)), art)
+		return ids, enforceErrorExt(errors.Errorf("%d policies matched but only %d successfully enforced", len(matched), len(ids)), art)
 	}
 
 	return ids, nil
@@ -495,6 +506,7 @@ func (de *defaultEnforcer) toCandidates(ctx context.Context, p *models.Project, 
 		}
 
 		// If artifact has more than one tag, then split them into separate candidate for easy filtering.
+		// TODO: Do we need to support untagged artifacts here?
 		for _, t := range a.Tags {
 			candidates = append(candidates, &selector.Candidate{
 				NamespaceID: p.ProjectID,
