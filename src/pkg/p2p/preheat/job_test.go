@@ -65,6 +65,7 @@ func (suite *JobTestSuite) SetupSuite() {
 	ctx := &jobservice.MockJobContext{}
 	logger := &jobservice.MockJobLogger{}
 	ctx.On("GetLogger").Return(logger)
+	ctx.On("OPCommand").Return(job.StopCommand, false)
 	suite.context = ctx
 }
 
