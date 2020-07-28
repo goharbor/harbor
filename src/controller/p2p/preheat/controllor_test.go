@@ -204,10 +204,10 @@ func (s *preheatSuite) TestCreatePolicy() {
 		FiltersStr: `[{"type":"repository","value":"harbor*"},{"type":"tag","value":"2*"}]`,
 		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"* * * * */1"}}`, policy.TriggerTypeScheduled),
 	}
-	s.fakeScheduler.On("Schedule", s.ctx, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.fakeScheduler.On("Schedule", s.ctx, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.fakePolicyMgr.On("Create", s.ctx, policy).Return(int64(1), nil)
 	s.fakePolicyMgr.On("Update", s.ctx, mock.Anything, mock.Anything).Return(nil)
-	s.fakeScheduler.On("UnSchedule", s.ctx, mock.Anything).Return(nil)
+	s.fakeScheduler.On("UnScheduleByVendor", s.ctx, mock.Anything, mock.Anything).Return(nil)
 	id, err := s.controller.CreatePolicy(s.ctx, policy)
 	s.NoError(err)
 	s.Equal(int64(1), id)
@@ -231,7 +231,6 @@ func (s *preheatSuite) TestGetPolicyByName() {
 
 func (s *preheatSuite) TestUpdatePolicy() {
 	var p0 = &policy.Schema{Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeScheduled}}
-	p0.Trigger.Settings.JobID = 1
 	p0.Trigger.Settings.Cron = "* * * * */1"
 	p0.Filters = []*policy.Filter{
 		{
@@ -272,7 +271,6 @@ func (s *preheatSuite) TestUpdatePolicy() {
 
 func (s *preheatSuite) TestDeletePolicy() {
 	var p0 = &policy.Schema{Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeScheduled}}
-	p0.Trigger.Settings.JobID = 1
 	s.fakePolicyMgr.On("Get", s.ctx, int64(1)).Return(p0, nil)
 	s.fakePolicyMgr.On("Delete", s.ctx, int64(1)).Return(nil)
 	err := s.controller.DeletePolicy(s.ctx, 1)

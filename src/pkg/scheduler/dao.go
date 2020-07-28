@@ -30,8 +30,9 @@ func init() {
 
 type schedule struct {
 	ID                int64     `orm:"pk;auto;column(id)"`
+	VendorType        string    `orm:"column(vendor_type)"`
+	VendorID          int64     `orm:"column(vendor_id)"`
 	CRON              string    `orm:"column(cron)"`
-	ExecutionID       int64     `orm:"column(execution_id)"`
 	CallbackFuncName  string    `orm:"column(callback_func_name)"`
 	CallbackFuncParam string    `orm:"column(callback_func_param)"`
 	CreationTime      time.Time `orm:"column(creation_time)"`
@@ -56,10 +57,6 @@ func (d *dao) Create(ctx context.Context, schedule *schedule) (int64, error) {
 	}
 	id, err := ormer.Insert(schedule)
 	if err != nil {
-		if e := orm.AsForeignKeyError(err,
-			"the schedule tries to reference a non existing execution %d", schedule.ExecutionID); e != nil {
-			err = e
-		}
 		return 0, err
 	}
 	return id, nil

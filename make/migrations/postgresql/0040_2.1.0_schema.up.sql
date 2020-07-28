@@ -68,15 +68,16 @@ CREATE TABLE IF NOT EXISTS p2p_preheat_policy (
     UNIQUE (name, project_id)
 );
 
+ALTER TABLE schedule ADD COLUMN IF NOT EXISTS vendor_type varchar(16);
+ALTER TABLE schedule ADD COLUMN IF NOT EXISTS vendor_id int;
 ALTER TABLE schedule ADD COLUMN IF NOT EXISTS cron varchar(64);
-ALTER TABLE schedule ADD COLUMN IF NOT EXISTS execution_id int;
 ALTER TABLE schedule ADD COLUMN IF NOT EXISTS callback_func_name varchar(128);
 ALTER TABLE schedule ADD COLUMN IF NOT EXISTS callback_func_param text;
 
 /*abstract the cron, callback function parameters from table retention_policy*/
 UPDATE schedule
-SET cron = retention.cron, callback_func_name = 'RetentionCallback',
-    callback_func_param=concat('{"PolicyID":', retention.id, ',"Trigger":"Schedule"}')
+SET vendor_type= 'RETENTION', vendor_id=retention.id, cron = retention.cron,
+    callback_func_name = 'RETENTION', callback_func_param=concat('{"PolicyID":', retention.id, ',"Trigger":"Schedule"}')
 FROM (
     SELECT id, data::json->'trigger'->'references'->>'job_id' AS schedule_id,
         data::json->'trigger'->'settings'->>'cron' AS cron
@@ -93,7 +94,7 @@ DECLARE
 BEGIN
     FOR sched IN SELECT * FROM schedule
     LOOP
-      INSERT INTO execution (vendor_type, trigger) VALUES ('SCHEDULER', 'MANUAL') RETURNING id INTO exec_id;
+      INSERT INTO execution (vendor_type, vendor_id, trigger) VALUES ('SCHEDULER', sched.id, 'MANUAL') RETURNING id INTO exec_id;
       IF sched.status = 'Pending' THEN
         status_code = 0;
       ELSIF sched.status = 'Scheduled' THEN
@@ -106,11 +107,8 @@ BEGIN
         status_code = 0;
       END IF;
       INSERT INTO task (execution_id, job_id, status, status_code, status_revision, run_count) VALUES (exec_id, sched.job_id, sched.status, status_code, 0, 0);
-      UPDATE schedule SET execution_id=exec_id WHERE id = sched.id;
     END LOOP;
 END $$;
 
 ALTER TABLE schedule DROP COLUMN IF EXISTS job_id;
 ALTER TABLE schedule DROP COLUMN IF EXISTS status;
-
-ALTER TABLE schedule ADD CONSTRAINT schedule_execution FOREIGN KEY (execution_id) REFERENCES execution(id);

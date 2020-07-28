@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
@@ -238,8 +239,8 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 		schema.Trigger.Type == policyModels.TriggerTypeScheduled &&
 		len(schema.Trigger.Settings.Cron) > 0 {
 		// schedule and update policy
-		schema.Trigger.Settings.JobID, err = c.scheduler.Schedule(ctx, schema.Trigger.Settings.Cron, SchedulerCallback, TriggerParam{PolicyID: id})
-		if err != nil {
+		if _, err = c.scheduler.Schedule(ctx, job.P2PPreheat, id, schema.Trigger.Settings.Cron,
+			SchedulerCallback, TriggerParam{PolicyID: id}); err != nil {
 			return 0, err
 		}
 
@@ -248,7 +249,7 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 		}
 
 		if err != nil {
-			if e := c.scheduler.UnSchedule(ctx, schema.Trigger.Settings.JobID); e != nil {
+			if e := c.scheduler.UnScheduleByVendor(ctx, job.P2PPreheat, id); e != nil {
 				return 0, errors.Wrap(e, err.Error())
 			}
 
@@ -293,12 +294,12 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 	}
 
 	var cron = schema.Trigger.Settings.Cron
-	var oldJobID = s0.Trigger.Settings.JobID
+	var oldCron = s0.Trigger.Settings.Cron
 	var needUn bool
 	var needSch bool
 
 	if s0.Trigger.Type != schema.Trigger.Type {
-		if s0.Trigger.Type == policyModels.TriggerTypeScheduled && oldJobID > 0 {
+		if s0.Trigger.Type == policyModels.TriggerTypeScheduled && len(oldCron) > 0 {
 			needUn = true
 		}
 		if schema.Trigger.Type == policyModels.TriggerTypeScheduled && len(cron) > 0 {
@@ -309,7 +310,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 		if schema.Trigger.Type == policyModels.TriggerTypeScheduled &&
 			s0.Trigger.Settings.Cron != cron {
 			// unschedule old
-			if oldJobID > 0 {
+			if len(oldCron) > 0 {
 				needUn = true
 			}
 			// schedule new
@@ -323,7 +324,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 
 	// unschedule old
 	if needUn {
-		err = c.scheduler.UnSchedule(ctx, oldJobID)
+		err = c.scheduler.UnScheduleByVendor(ctx, job.P2PPreheat, schema.ID)
 		if err != nil {
 			return err
 		}
@@ -331,11 +332,10 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 
 	// schedule new
 	if needSch {
-		jobid, err := c.scheduler.Schedule(ctx, cron, SchedulerCallback, TriggerParam{PolicyID: schema.ID})
-		if err != nil {
+		if _, err := c.scheduler.Schedule(ctx, job.P2PPreheat, schema.ID, cron, SchedulerCallback,
+			TriggerParam{PolicyID: schema.ID}); err != nil {
 			return err
 		}
-		schema.Trigger.Settings.JobID = jobid
 		if err := schema.Encode(); err != nil {
 			// Possible
 			// TODO: Refactor
@@ -355,8 +355,8 @@ func (c *controller) DeletePolicy(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	if s.Trigger != nil && s.Trigger.Type == policyModels.TriggerTypeScheduled && s.Trigger.Settings.JobID > 0 {
-		err = c.scheduler.UnSchedule(ctx, s.Trigger.Settings.JobID)
+	if s.Trigger != nil && s.Trigger.Type == policyModels.TriggerTypeScheduled && len(s.Trigger.Settings.Cron) > 0 {
+		err = c.scheduler.UnScheduleByVendor(ctx, job.P2PPreheat, id)
 		if err != nil {
 			return err
 		}
