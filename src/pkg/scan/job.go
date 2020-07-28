@@ -231,6 +231,8 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 						return
 					}
 
+					myLogger.Infof("Transforming report with mime type :%s to version 2 of schema", m)
+
 					// Check in
 					cir := &CheckInReport{
 						Digest:           req.Artifact.Digest,
