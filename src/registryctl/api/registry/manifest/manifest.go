@@ -54,7 +54,7 @@ func (h *handler) delete(w http.ResponseWriter, r *http.Request) {
 	cleaner := storage.NewVacuum(r.Context(), h.storageDriver)
 	if err := cleaner.RemoveManifest(repoName, dgst, tags); err != nil {
 		log.Infof("failed to remove manifest: %s, with error:%v", ref, err)
-		api.HandleInternalServerError(w, err)
+		api.HandleError(w, err)
 		return
 	}
 }

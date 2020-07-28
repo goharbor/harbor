@@ -31,6 +31,7 @@ ${gc_config_page}  //clr-vertical-nav-group-children/a[contains(.,'Garbage')]
 ${gc_now_xpath}  //*[@id='gc']/gc-config//button[contains(.,'GC')]
 ${gc_log_details_xpath}  //*[@id='clr-dg-row26']/clr-dg-cell[6]/a
 ${configuration_system_tabsheet_id}  //*[@id='config-system']
+${configuration_authentication_tabsheet_id}  //*[@id="config-auth"]
 ${configuration_project_quotas_tabsheet_id}  //*[@id='config-quotas']
 ${configuration_system_wl_add_btn}    //*[@id='show-add-modal-button']
 ${configuration_system_wl_textarea}    //*[@id='allowlist-textarea']
@@ -38,3 +39,8 @@ ${configuration_system_wl_add_confirm_btn}    //*[@id='add-to-system']
 ${configuration_system_wl_delete_a_cve_id_icon}    //system-settings/form/section//ul/li[1]/a[2]/clr-icon
 ${configuration_sys_repo_readonly_chb_id}  //*[@id='repo_read_only_lbl']
 ${checkbox_delete_untagged_artifacts}  //gc-config//clr-toggle-wrapper/label[contains(@for,'delete_untagged')]
+${cfg_auth_automatic_onboarding_checkbox}  //clr-checkbox-wrapper//label[contains(@for,'oidcAutoOnboard')]
+${cfg_auth_user_name_claim_input}  //*[@id='oidcUserClaim']
+
+
+

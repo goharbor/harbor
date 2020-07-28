@@ -270,8 +270,8 @@ Verify Replicationrule
     \    ${endpoint0}=   Set Variable    @{endpoint}[0]
     \    Log To Console    -----endpoint0-----${endpoint0}------------
     \    @{endpoint_type}=    Get Value From Json    ${json}    $.endpoint[?(@.name=${endpoint0})].type
-    \    Retry Textfield Value Should Be    ${source_project}    @{name_filters}[0]
-    \    Retry Textfield Value Should Be    ${filter_tag}    @{tag_filters}[0]
+    \    Retry Textfield Value Should Be    ${filter_name_id}    @{name_filters}[0]
+    \    Retry Textfield Value Should Be    ${filter_tag_id}    @{tag_filters}[0]
     \    Retry Textfield Value Should Be    ${rule_name_input}    ${replicationrule}
     \    Retry Textfield Value Should Be    ${dest_namespace_xpath}    @{dest_namespace}[0]
     \    Log To Console    -----endpoint_type-----@{endpoint_type}[0]------------

@@ -326,8 +326,8 @@ func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p 
 	// Only get the image type at this moment.
 	arts, err := de.artCtl.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"project_id": ps.ProjectID,
-			"type":       pr.SupportedType,
+			"ProjectID": ps.ProjectID,
+			"Type":      strings.ToUpper(pr.SupportedType),
 		},
 	}, &artifact.Option{
 		WithLabel: true,
@@ -339,6 +339,8 @@ func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p 
 	if err != nil {
 		return nil, err
 	}
+
+	log.Debugf("Default enforcer: get [%d] candidates for preheat policy %s", len(arts), ps.Name)
 
 	return de.toCandidates(ctx, p, arts)
 }

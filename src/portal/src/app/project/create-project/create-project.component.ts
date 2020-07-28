@@ -84,7 +84,9 @@ export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges
   }
 
     ngOnInit(): void {
-       this.getRegistries();
+       if (this.isSystemAdmin) {
+         this.getRegistries();
+       }
     }
 
     getRegistries() {
