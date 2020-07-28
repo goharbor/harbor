@@ -110,7 +110,7 @@
                 <select id="severity" name="severity" class="clr-select"
                         #ngSeverity="ngModel"
                         [(ngModel)]="severity">
-                  <option class="display-none" value=""></option>
+                  <option>--</option>
                   <option [selected]="severity == s.severity" *ngFor='let s of severityOptions' value="{{s.severity}}">
                     {{ s.severityLevel | translate }}</option>
                 </select>
