@@ -318,6 +318,12 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 		LdapGroupNameAttribute: "cn",
 		LdapGroupSearchScope:   2,
 	}
+	ldapGroupConfig2 := models.LdapGroupConf{
+		LdapGroupBaseDN:        "ou=group,dc=example,dc=com",
+		LdapGroupFilter:        "objectclass=groupOfNames",
+		LdapGroupNameAttribute: "o",
+		LdapGroupSearchScope:   2,
+	}
 	type fields struct {
 		ldapConfig      models.LdapConf
 		ldapGroupConfig models.LdapGroupConf
@@ -345,6 +351,14 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
 			args{groupDN: "random string"},
 			nil, true},
+		{"search with gid = cn",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
+			args{groupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"},
+			[]models.LdapGroup{{GroupName: "harbor_group", GroupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"}}, false},
+		{"search with gid = o",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig2},
+			args{groupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"},
+			[]models.LdapGroup{{GroupName: "hgroup", GroupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
