@@ -68,7 +68,8 @@ type DefaultAPIController struct {
 
 const (
 	// SchedulerCallback ...
-	SchedulerCallback = "RetentionCallback"
+	SchedulerCallback   = "RETENTION"
+	schedulerVendorType = "RETENTION"
 )
 
 // TriggerParam ...
@@ -84,26 +85,23 @@ func (r *DefaultAPIController) GetRetention(id int64) (*policy.Metadata, error) 
 
 // CreateRetention Create Retention
 func (r *DefaultAPIController) CreateRetention(p *policy.Metadata) (int64, error) {
-	if p.Trigger.Kind == policy.TriggerKindSchedule {
-		cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
-		if ok && len(cron.(string)) > 0 {
-			jobid, err := r.scheduler.Schedule(orm.Context(), cron.(string), SchedulerCallback, TriggerParam{
-				PolicyID: p.ID,
-				Trigger:  ExecutionTriggerSchedule,
-			})
-			if err != nil {
-				return 0, err
-			}
-			if p.Trigger.References == nil {
-				p.Trigger.References = map[string]interface{}{}
-			}
-			p.Trigger.References[policy.TriggerReferencesJobid] = jobid
-		}
-	}
 	id, err := r.manager.CreatePolicy(p)
 	if err != nil {
 		return 0, err
 	}
+
+	if p.Trigger.Kind == policy.TriggerKindSchedule {
+		cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
+		if ok && len(cron.(string)) > 0 {
+			if _, err = r.scheduler.Schedule(orm.Context(), schedulerVendorType, id, cron.(string), SchedulerCallback, TriggerParam{
+				PolicyID: id,
+				Trigger:  ExecutionTriggerSchedule,
+			}); err != nil {
+				return 0, err
+			}
+		}
+	}
+
 	return id, nil
 }
 
@@ -144,24 +142,26 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 			return fmt.Errorf("not support Trigger %s", p.Trigger.Kind)
 		}
 	}
+	if err = r.manager.UpdatePolicy(p); err != nil {
+		return err
+	}
 	if needUn {
-		err = r.scheduler.UnSchedule(orm.Context(), p0.Trigger.References[policy.TriggerReferencesJobid].(int64))
+		err = r.scheduler.UnScheduleByVendor(orm.Context(), schedulerVendorType, p.ID)
 		if err != nil {
 			return err
 		}
 	}
 	if needSch {
-		jobid, err := r.scheduler.Schedule(orm.Context(), p.Trigger.Settings[policy.TriggerSettingsCron].(string), SchedulerCallback, TriggerParam{
+		_, err := r.scheduler.Schedule(orm.Context(), schedulerVendorType, p.ID, p.Trigger.Settings[policy.TriggerSettingsCron].(string), SchedulerCallback, TriggerParam{
 			PolicyID: p.ID,
 			Trigger:  ExecutionTriggerSchedule,
 		})
 		if err != nil {
 			return err
 		}
-		p.Trigger.References[policy.TriggerReferencesJobid] = jobid
 	}
 
-	return r.manager.UpdatePolicy(p)
+	return nil
 }
 
 // DeleteRetention Delete Retention
@@ -171,7 +171,7 @@ func (r *DefaultAPIController) DeleteRetention(id int64) error {
 		return err
 	}
 	if p.Trigger.Kind == policy.TriggerKindSchedule && len(p.Trigger.Settings[policy.TriggerSettingsCron].(string)) > 0 {
-		err = r.scheduler.UnSchedule(orm.Context(), p.Trigger.References[policy.TriggerReferencesJobid].(int64))
+		err = r.scheduler.UnScheduleByVendor(orm.Context(), schedulerVendorType, id)
 		if err != nil {
 			return err
 		}
