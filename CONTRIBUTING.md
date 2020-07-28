@@ -43,7 +43,7 @@ git fetch $USER
 ```
 **NOTES:** Note that GOPATH can be any directory, the example above uses $HOME/go. Change $USER above to your own GitHub username.
 
-To build the project, please refer the [build](docs/build-customize-contribute/compile-guide.md) guideline.
+To build the project, please refer the [build](https://goharbor.io/docs/2.0.0/build-customize-contribute/compile-guide/) guideline.
 
 ### Repository Structure
 
@@ -52,7 +52,6 @@ Here is the basic structure of the harbor code base. Some of the key folders / f
 .
 ...
 ├── contrib       # Contain documents, scripts, and other helpful things which are contributed by the community
-├── docs          # Keep documents here
 ├── make          # Resource for building and setting up Harbor environment
 ...
 ├── src           # Source code folder
@@ -170,8 +169,7 @@ cd $REPO_DIR/src/portal/lib
 npm install
 ```
 
-
-To run the code, please refer to the [build](docs/compile_guide.md) guideline.
+To run the code, please refer to the [build](https://goharbor.io/docs/2.0.0/build-customize-contribute/compile-guide/) guideline.
 
 ## Contribute Workflow
 
@@ -180,9 +178,6 @@ PR are always welcome, even if they only contain small fixes like typos or a few
 Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in an incremental fashion.
 
 Note: If you split your pull request to small changes, please make sure any of the changes goes to master will not break anything. Otherwise, it can not be merged until this feature complete. 
-
-The graphic shown below describes the overall workflow about how to contribute code to Harbor repository.
-![contribute workflow](docs/img/workflow.png)
 
 ### Fork and clone
 
@@ -252,7 +247,7 @@ Run UI library test cases:
 npm run test
 ```
 
-To build the code, please refer to [build](docs/build-customize-contribute/compile-guide.md) guideline.
+To build the code, please refer to [build](https://goharbor.io/docs/2.0.0/build-customize-contribute/compile-guide/) guideline.
 
 ###  Keep sync with upstream
 
@@ -336,9 +331,9 @@ Be sure to include the steps to reproduce the problem if applicable. It can help
 
 Update the documentation if you are creating or changing features. Good documentation is as important as the code itself.
 
-The main location for the document is the `docs/` folder. The images referred in documents can be placed in `docs/img`.
+The main location for the documentation is the [website repository](https://github.com/goharbor/website). The images referred to in documents can be placed in `docs/img` in that repo.
 
-Documents are written with Markdown text. See [Writing on GitHub](https://help.github.com/categories/writing-on-github/) for more details.
+Documents are written with Markdown. See [Writing on GitHub](https://help.github.com/categories/writing-on-github/) for more details.
 
 ## Design new features
 

@@ -1,0 +1,125 @@
+<div class="replication-tasks mt-1">
+  <section class="overview-section">
+    <div class="title-wrapper">
+      <div>
+        <div>
+          <a (click)="onBack()" class="onBack"><{{'P2P_PROVIDER.P2P_PROVIDER'|
+              translate}}</a>
+        </div>
+        <div class="title-block">
+          <div>
+            <h2 class="custom-h2 h2-style">{{'P2P_PROVIDER.EXECUTIONS'|
+              translate}}</h2>
+            <span class="id-divider"></span>
+            <h2 class="custom-h2 h2-style">{{executionId}}</h2>
+          </div>
+          <div class="margin-top-075">
+            <div class="status-progress" *ngIf="execution && isInProgress()">
+              <span class="spinner spinner-inline"></span>
+              <span>{{'REPLICATION.IN_PROGRESS'| translate}}</span>
+            </div>
+            <div class="status-success" *ngIf="execution && isSuccess()">
+              <clr-icon size="18" shape="success-standard" class="color-green"></clr-icon>
+              <span>{{'REPLICATION.SUCCESS'| translate}}</span>
+            </div>
+            <div class="status-failed" *ngIf="execution && isFailed()">
+              <clr-icon size="18" shape="error-standard" class="color-red"></clr-icon>
+              <span>{{'REPLICATION.FAILURE'| translate}}</span>
+            </div>
+          </div>
+          <div class="margin-top-075">
+            <button class="btn btn-primary " (click)="stopJob()"
+              [disabled]="!hasUpdatePermission ||stopOnGoing || !canStop()">{{'REPLICATION.STOPJOB' | translate}}</button>
+            <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="execution-block">
+      <div class="executions-detail">
+        <div>
+          <label>{{'REPLICATION.TRIGGER_MODE' | translate}} :</label>
+          <span>{{trigger()| translate}}</span>
+        </div>
+        <div>
+          <label>{{'REPLICATION.CREATION_TIME' | translate}} :</label>
+          <span>{{startTime() | date: 'short'}}</span>
+        </div>
+      </div>
+      <div class="flex-block">
+        <section class="execution-detail-label">
+          <section class="detail-row">
+            <div class="num-success common-style"></div>
+            <label class="detail-span">{{'REPLICATION.SUCCESS'| translate}}</label>
+            <div class="execution-details">{{successNum()}}</div>
+          </section>
+          <section class="detail-row">
+            <div class="num-failed common-style"></div>
+            <label class="detail-span">{{'REPLICATION.FAILURE'| translate}}</label>
+            <div class="execution-details">{{failedNum()}}</div>
+          </section>
+          <section class="detail-row">
+            <div class="num-progress common-style"></div>
+            <label class="detail-span">{{'REPLICATION.IN_PROGRESS'| translate}}</label>
+            <div class="execution-details">{{progressNum()}}</div>
+          </section>
+          <section class="detail-row">
+            <div class="num-stopped common-style"></div>
+            <label class="detail-span">{{'REPLICATION.STOPPED'| translate}}</label>
+            <div class="execution-details">{{stoppedNum()}}</div>
+          </section>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <div class="tasks-detail">
+    <h3 class="modal-title">{{'P2P_PROVIDER.TASKS' | translate}}</h3>
+    <div class="row flex-items-xs-between flex-items-xs-bottom">
+      <div class="action-select">
+        <span class="refresh-btn">
+          <clr-icon shape="refresh" (click)="refreshTasks()"></clr-icon>
+        </span>
+      </div>
+    </div>
+    <clr-datagrid (clrDgRefresh)="clrLoadTasks(true)" [clrDgLoading]="loading">
+      <clr-dg-column [clrDgField]="'id'">{{'REPLICATION.TASK_ID'| translate}}</clr-dg-column>
+      <clr-dg-column [clrDgField]="'execution_id'">{{'P2P_PROVIDER.ID' | translate}}</clr-dg-column>
+      <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'P2P_PROVIDER.EXTRA_ATTRS' | translate}}</clr-dg-column>
+      <clr-dg-column [clrDgSortBy]="startTimeComparator">{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'REPLICATION.DURATION' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
+      <clr-dg-placeholder>{{'P2P_PROVIDER.TASKS_PLACEHOLDER' | translate }}</clr-dg-placeholder>
+      <clr-dg-row *clrDgItems="let t of tasks">
+        <clr-dg-cell>{{t.id}}</clr-dg-cell>
+        <clr-dg-cell>{{t.execution_id}}</clr-dg-cell>
+        <clr-dg-cell>{{t.status}}
+          <clr-tooltip>
+            <clr-icon *ngIf="t.status_message" clrTooltipTrigger shape="info-circle" size="20"></clr-icon>
+            <clr-tooltip-content [clrPosition]="'left'" clrSize="md" *clrIfOpen>
+              <span>{{t.status_message}}</span>
+            </clr-tooltip-content>
+          </clr-tooltip>
+        </clr-dg-cell>
+        <clr-dg-cell>
+          <span>{{t.extra_attrs?.artifact}}</span>,&nbsp;
+          <span>{{t.extra_attrs?.digest}}</span>,&nbsp;
+          <span>{{t.extra_attrs?.kind}}</span>
+         </clr-dg-cell>
+        <clr-dg-cell>{{t.start_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{getDuration(t)}}</clr-dg-cell>
+        <clr-dg-cell>
+          <a target="_blank" [href]="viewLog(t.id)" *ngIf="t.status !== 'Initialized'">
+            <clr-icon shape="list"></clr-icon>
+          </a>
+        </clr-dg-cell>
+      </clr-dg-row>
+      <clr-dg-footer>
+        <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} </span>{{totalCount }} {{'REPLICATION.ITEMS' | translate}}
+        <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount" [clrDgPageSize]="pageSize"></clr-dg-pagination>
+      </clr-dg-footer>
+    </clr-datagrid>
+  </div>
+</div>

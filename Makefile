@@ -327,6 +327,29 @@ endef
 gen_apis: SWAGGER_IMAGENAME
 	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
 
+
+MOCKERY_IMAGENAME=goharbor/mockery
+MOCKERY_VERSION=v2.1.0
+MOCKERY=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH) ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
+MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) .
+
+MOCKERY_IMAGE:
+	@if [ "$(shell ${DOCKERIMAGES} -q ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) 2> /dev/null)" == "" ]; then \
+		${MOCKERY_IMAGE_BUILD_CMD} && echo "build mockery image successfully" || (echo "build mockery image failed" && exit 1) ; \
+	fi
+
+gen_mocks: MOCKERY_IMAGE
+	${MOCKERY} go generate ./...
+
+mocks_check: gen_mocks
+	@echo checking mocks...
+	@res=$$(git status -s src/ | awk '{ printf("%s\n", $$2) }' | egrep .*.go); \
+	if [ -n "$${res}" ]; then \
+		echo mocks of the interface are out of date... ; \
+		echo "$${res}"; \
+		exit 1; \
+	fi
+
 export VERSIONS_FOR_PREPARE
 versions_prepare:
 	@echo "$$VERSIONS_FOR_PREPARE" > $(MAKE_PREPARE_PATH)/$(PREPARE_VERSION_NAME)
@@ -435,7 +458,7 @@ gosec:
 		$(GOPATH)/bin/gosec -fmt=json -out=harbor_gas_output.json -quiet ./... | true ; \
 	fi
 
-go_check: gen_apis misspell gofmt commentfmt golint govet
+go_check: gen_apis mocks_check misspell gofmt commentfmt golint govet
 
 gofmt:
 	@echo checking gofmt...

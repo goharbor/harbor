@@ -12,7 +12,7 @@
         <label class="required">{{
           'DISTRIBUTION.PROVIDER' | translate
         }}</label>
-        <select
+        <select class="width-280"
           clrSelect
           name="provider"
           id="provider"
@@ -37,13 +37,12 @@
         <label class="required clr-control-label" for="name">{{
           'DISTRIBUTION.NAME' | translate
         }}</label>
-        <input
+        <input class="width-280"
           clrInput
           required
           type="text"
           id="name"
           autocomplete="off"
-          placeholder="{{ 'DISTRIBUTION.SETUP.NAME_PLACEHOLDER' | translate }}"
           [(ngModel)]="model.name"
           name="name"
           [disabled]="editingMode"
@@ -60,11 +59,8 @@
           clrTextarea
           type="text"
           id="description"
-          class="inputWidth"
+          class="width-280"
           row="3"
-          placeholder="{{
-            'DISTRIBUTION.SETUP.DESCRIPTION_PLACEHOLDER' | translate
-          }}"
           [(ngModel)]="model.description"
           [ngModelOptions]="{ standalone: true }"
         ></textarea>
@@ -75,15 +71,13 @@
         <label class="required clr-control-label" for="endpoint">{{
           'DISTRIBUTION.ENDPOINT' | translate
         }}</label>
-        <input
+        <input class="width-280"
           clrInput
           required
           pattern="^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(.*?)*$"
           type="text"
           id="endpoint"
-          placeholder="{{
-            'DISTRIBUTION.SETUP.ENDPOINT_PLACEHOLDER' | translate
-          }}"
+          placeholder="http(s)://192.168.1.1"
           [(ngModel)]="model.endpoint"
           name="endpoint"
           autocomplete="off"
@@ -92,23 +86,6 @@
           'TOOLTIP.ENDPOINT_FORMAT' | translate
         }}</clr-control-error>
       </clr-input-container>
-
-      <!-- 5. enabled -->
-      <clr-checkbox-container *ngIf="!editingMode">
-        <label for="enabled">
-          <span>{{ 'DISTRIBUTION.ENABLED' | translate }}</span>
-        </label>
-        <clr-checkbox-wrapper>
-          <input
-            clrCheckbox
-            id="enabled"
-            name="enabled"
-            type="checkbox"
-            [(ngModel)]="model.enabled"
-          />
-        </clr-checkbox-wrapper>
-      </clr-checkbox-container>
-
       <!-- auth mode -->
       <clr-radio-container clrInline>
         <label>{{ 'DISTRIBUTION.AUTH_MODE' | translate }}</label>
@@ -152,7 +129,6 @@
           <label for="token_mode">OAuth</label>
         </clr-radio-wrapper>
       </clr-radio-container>
-
       <!-- auth data -->
       <span *ngIf="model.auth_mode == 'BASIC'">
         <clr-input-container>
@@ -160,6 +136,7 @@
             'DISTRIBUTION.USERNAME' | translate
           }}</label>
           <input
+            class="width-280"
             clrInput
             required
             type="text"
@@ -180,6 +157,7 @@
             'DISTRIBUTION.PASSWORD' | translate
           }}</label>
           <input
+            class="width-280"
             clrInput
             required
             type="password"
@@ -202,6 +180,7 @@
             'DISTRIBUTION.TOKEN' | translate
           }}</label>
           <input
+            class="width-280"
             clrInput
             required
             type="text"
@@ -219,9 +198,41 @@
         </clr-input-container>
       </span>
       <span *ngIf="model.auth_mode == 'NONE'"></span>
+
+      <!-- 5. enabled -->
+      <div class="clr-form-control">
+        <label class="clr-control-label">{{"SCANNER.OPTIONS" | translate}}</label>
+        <div class="clr-control-container padding-top-3">
+          <clr-checkbox-wrapper>
+            <input
+                    clrCheckbox
+                    id="enabled"
+                    name="enabled"
+                    type="checkbox"
+                    [(ngModel)]="model.enabled"
+            />
+            <label for="enabled"><span>{{ 'DISTRIBUTION.ENABLED' | translate }}</span></label>
+          </clr-checkbox-wrapper>
+          <clr-checkbox-wrapper>
+            <input name="insecure" clrCheckbox
+                   type="checkbox" id="insecure"
+                   [(ngModel)]="model.insecure"
+            >
+            <label for="insecure">{{"SCANNER.SKIP" | translate}}
+              <clr-tooltip>
+                <clr-icon class="color-57"  clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                <clr-tooltip-content  clrPosition="top-left" clrSize="md" *clrIfOpen>
+                  {{'SCANNER.SKIP_CERT_VERIFY' | translate}}
+                </clr-tooltip-content>
+              </clr-tooltip>
+            </label>
+          </clr-checkbox-wrapper>
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
+    <button id="button-test" type="button" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="!isValid || onTesting">{{'SCANNER.TEST_CONNECTION' | translate}}</button>
     <button type="button" class="btn btn-outline" (click)="cancel()">
       {{ 'BUTTON.CANCEL' | translate }}
     </button>

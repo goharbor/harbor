@@ -60,7 +60,11 @@ describe('SummaryComponent', () => {
     chart_count: 0,
     project_admin_count: 1,
     maintainer_count: 0,
-    developer_count: 0
+    developer_count: 0,
+    registry: {
+      name: "test",
+      url: "https://test.com"
+    }
   };
 
   beforeEach(async(() => {

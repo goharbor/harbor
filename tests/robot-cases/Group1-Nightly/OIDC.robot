@@ -42,10 +42,6 @@ Test Case - OIDC User Sign In
     Sleep  2
     Sign In Harbor With OIDC User    ${HARBOR_URL}    test7
     Sleep  2
-    Sign In Harbor With OIDC User    ${HARBOR_URL}    test8
-    Sleep  2
-    Sign In Harbor With OIDC User    ${HARBOR_URL}    test9
-    Sleep  2
     Close Browser
 
 Test Case - Create An New Project
@@ -89,3 +85,18 @@ Test Case - Helm CLI Push
     Sign In Harbor With OIDC User  ${HARBOR_URL}
     ${secret}=  Get Secrete By API  ${HARBOR_URL}
     Helm CLI Push Without Sign In Harbor  ${OIDC_USERNAME}  ${secret}
+
+Test Case - Onboard OIDC User Sign In
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Configure
+    Check Automatic Onboarding And Save
+    Logout Harbor
+    Sign In Harbor With OIDC User  ${HARBOR_URL}  test8  is_onboard=${true}
+    Logout Harbor
+	Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Configure
+    Set User Name Claim And Save  email
+    Logout Harbor
+    Sign In Harbor With OIDC User  ${HARBOR_URL}  test9  is_onboard=${true}  username_claim=email
+    Sleep  2

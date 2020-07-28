@@ -27,6 +27,7 @@ import { clone, DEFAULT_PAGE_SIZE } from '../../../lib/utils/utils';
 import { Instance } from "../../../../ng-swagger-gen/models/instance";
 import { PreheatService } from "../../../../ng-swagger-gen/services/preheat.service";
 import { Metadata } from '../../../../ng-swagger-gen/models/metadata';
+import { FrontInstance, HEALTHY, UNHEALTHY } from '../distribution-interface';
 
 interface MultiOperateData {
   operation: string;
@@ -38,14 +39,15 @@ const KRAKEN_ICON: string = 'images/kraken-logo-color.svg';
 const ONE_THOUSAND: number = 1000;
 const KRAKEN: string = 'kraken';
 
+
 @Component({
   selector: 'dist-instances',
   templateUrl: './distribution-instances.component.html',
   styleUrls: ['./distribution-instances.component.scss']
 })
 export class DistributionInstancesComponent implements OnInit, OnDestroy {
-  instances: Instance[] = [];
-  selectedRow: Instance[] = [];
+  instances: FrontInstance[] = [];
+  selectedRow: FrontInstance[] = [];
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage: number = 1;
@@ -87,7 +89,6 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadData();
     this.getProviders();
   }
 
@@ -132,9 +133,23 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
           response.headers.get('x-total-count')
         );
         this.instances = response.body as Instance[];
+        this.pingInstances();
       },
       err => this.msgHandler.error(err)
     );
+  }
+  pingInstances() {
+    if (this.instances && this.instances.length) {
+      this.instances.forEach((item, index) => {
+        this.disService.PingInstances({instance: this.handleInstance(item)})
+          .pipe(finalize(() => this.instances[index].hasCheckHealth = true))
+          .subscribe(res => {
+            this.instances[index].pingStatus = HEALTHY;
+          }, error => {
+            this.instances[index].pingStatus = UNHEALTHY;
+          });
+      });
+    }
   }
 
   refresh() {
@@ -170,7 +185,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
       const instance: Instance = clone(this.selectedRow[0]);
       instance.default = true;
       this.disService.UpdateInstance({
-          instance: instance,
+          instance: this.handleInstance(instance),
           preheatInstanceName: this.selectedRow[0].name
         })
         .subscribe(
@@ -309,7 +324,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
     copiedInstance.enabled = true;
     return this.disService
       .UpdateInstance({
-        instance: copiedInstance,
+        instance: this.handleInstance(copiedInstance),
         preheatInstanceName: instance.name
       })
       .pipe(
@@ -327,7 +342,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
               this.msgHandler.error(msg + ': ' + errMsg);
             });
           });
-          return observableThrowError(message);
+          return observableThrowError(error);
         })
       );
   }
@@ -343,7 +358,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
     copiedInstance.enabled = false;
     return this.disService
       .UpdateInstance({
-        instance: copiedInstance,
+        instance: this.handleInstance(copiedInstance),
         preheatInstanceName: instance.name
       })
       .pipe(
@@ -361,7 +376,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
               this.msgHandler.error(msg + ': ' + errMsg);
             });
           });
-          return observableThrowError(message);
+          return observableThrowError(error);
         })
       );
   }
@@ -378,5 +393,14 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
         event.target.src = DEFAULT_ICON;
       }
     }
+  }
+  handleInstance(instance: FrontInstance): FrontInstance {
+    if (instance) {
+      const copyOne: FrontInstance = clone(instance);
+      delete copyOne.hasCheckHealth;
+      delete copyOne.pingStatus;
+      return copyOne;
+    }
+    return instance;
   }
 }

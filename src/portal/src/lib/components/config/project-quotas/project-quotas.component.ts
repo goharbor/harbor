@@ -220,7 +220,7 @@ export class ProjectQuotasComponent implements OnChanges {
   }
 
   goToLink(proId) {
-    let linkUrl = ["harbor", "projects", proId, "summary"];
+    let linkUrl = ["harbor", "projects", proId];
     this.router.navigate(linkUrl);
   }
   refresh() {

@@ -24,6 +24,7 @@ const SCHEDULE_TYPE = {
   styleUrls: ["./cron-schedule.component.scss"]
 })
 export class CronScheduleComponent implements OnChanges {
+  @Input() isInlineModel: boolean = false;
   @Input() originCron: OriginCron;
   @Input() labelEdit: string;
   @Input() labelCurrent: string;

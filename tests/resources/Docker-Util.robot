@@ -36,24 +36,25 @@ Pull image
     Should Not Contain  ${output}  No such image:
 
 Push image
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${sha256}=${null}  ${is_robot}=${false}  ${tag_suffix}=${false}
-    ${image_with_sha256}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}@sha256:${sha256}
-    ${image_with_tag}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}:${sha256}
-    Sleep  3
-    Log To Console  \nRunning docker push ${image}...
-    Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_with_sha256}
+    # If no tag provided in $(image_with_or_without_tag}, latest will be the tag pulled from docker-hub or read from local
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image_with_or_without_tag}  ${need_pull_first}=${true}  ${sha256}=${null}  ${is_robot}=${false}
     ${d}=    Get Current Date    result_format=%m%s
-    ${image_with_tag}=  Set Variable If  '${tag_suffix}'=='${true}'  ${image_with_tag}_${d}  ${image_with_tag}
+    ${image_in_use}=  Set Variable If  '${sha256}'=='${null}'  ${image_with_or_without_tag}  ${image_with_or_without_tag}@sha256:${sha256}
+    ${image_in_use_with_tag}=  Set Variable If  '${sha256}'=='${null}'  ${image_with_or_without_tag}  ${image_with_or_without_tag}:${sha256}
+    Sleep  3
+    Log To Console  \nRunning docker push ${image_with_or_without_tag}...
+    ${image_in_use}=   Set Variable If  ${need_pull_first}==${true}  ${image_in_use}  ${image_with_or_without_tag}
+    Run Keyword If  ${need_pull_first}==${true}   Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_in_use}
     Run Keyword If  ${is_robot}==${false}  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${user} -p ${pwd} ${ip}
-    Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_with_sha256} ${ip}/${project}/${image_with_tag}
-    Wait Unitl Command Success  docker push ${ip}/${project}/${image_with_tag}
+    Run Keyword If  ${need_pull_first}==${true}  Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_in_use} ${ip}/${project}/${image_in_use_with_tag}
+    ...  ELSE  Wait Unitl Command Success  docker tag ${image_in_use} ${ip}/${project}/${image_in_use_with_tag}
+    Wait Unitl Command Success  docker push ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker logout ${ip}
     Sleep  1
-    [Return]  ${image_with_tag}
 
 Push Image With Tag
-#tag1 is tag of image on docker hub,default latest,use a version existing if you do not want to use latest
+#tag1 is tag of image on docker hub,default latest,use a existed version if you do not want to use latest
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}  ${tag1}=latest
     Log To Console  \nRunning docker push ${image}...
     Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1}
