@@ -17,12 +17,19 @@ package migration
 import (
 	"context"
 	"fmt"
+
 	beegorm "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/golang-migrate/migrate/v4"
+)
+
+const (
+	schemaVersion_1_10_0 = 15
+	// data version for tracking the data integrity in the DB, it can be different from schema version
+	dataversion_2_0_0 = 30
 )
 
 // Migrate the database schema and data
@@ -40,8 +47,8 @@ func Migrate(database *models.Database) error {
 	}
 	log.Debugf("current database schema version: %v", schemaVersion)
 	// prior to 1.9, version = 0 means fresh install
-	if schemaVersion > 0 && schemaVersion < 10 {
-		return fmt.Errorf("please upgrade to version 1.9 first")
+	if schemaVersion > 0 && schemaVersion < schemaVersion_1_10_0 {
+		return fmt.Errorf("please upgrade to version 1.10.0 first")
 	}
 
 	// update database schema
@@ -56,7 +63,7 @@ func Migrate(database *models.Database) error {
 	}
 	log.Debugf("current data version: %v", dataVersion)
 	// the abstract logic already done before, skip
-	if dataVersion == 30 {
+	if dataVersion == dataversion_2_0_0 {
 		log.Debug("no change in data, skip")
 		return nil
 	}
