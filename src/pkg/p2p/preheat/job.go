@@ -70,6 +70,12 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	// Get logger
 	myLogger := ctx.GetLogger()
 
+	// preheatJobRunningError is an internal error format
+	preheatJobRunningError := func(err error) error {
+		myLogger.Error(err)
+		return errors.Wrap(err, "preheat job running error")
+	}
+
 	// Parse parameters, ignore errors as they have been validated already
 	p, _ := parseParamProvider(params)
 	pi, _ := parseParamImage(params)
@@ -88,14 +94,12 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	fac, ok := pr.GetProvider(p.Vendor)
 	if !ok {
 		err := errors.Errorf("No driver registered for provider %s", p.Vendor)
-		myLogger.Error(err)
 		return preheatJobRunningError(err)
 	}
 
 	// Construct driver
 	d, err := fac(p)
 	if err != nil {
-		myLogger.Error(err)
 		return preheatJobRunningError(err)
 	}
 
@@ -105,13 +109,11 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	// First, check the health of the provider
 	h, err := d.GetHealth()
 	if err != nil {
-		myLogger.Error(err)
 		return preheatJobRunningError(err)
 	}
 
 	if h.Status != pr.DriverStatusHealthy {
 		err = errors.Errorf("unhealthy target preheat provider: %s", p.Vendor)
-		myLogger.Error(err)
 		return preheatJobRunningError(err)
 	}
 
@@ -120,7 +122,6 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	// Then send the preheat requests to the target provider.
 	st, err := d.Preheat(pi)
 	if err != nil {
-		myLogger.Error(err)
 		return preheatJobRunningError(err)
 	}
 
@@ -134,7 +135,6 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 		return nil
 	case provider.PreheatingStatusFail:
 		err = errors.New("preheating is failed")
-		myLogger.Error(err)
 		return preheatJobRunningError(err)
 	case provider.PreheatingStatusPending,
 		provider.PreheatingStatusRunning:
@@ -142,11 +142,10 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	default:
 		// in case
 		err = errors.Errorf("unknown status '%s' returned by the preheat provider %s-%s:%s", st.Status, p.Vendor, p.Name, p.Endpoint)
-		myLogger.Error(err)
 		return preheatJobRunningError(err)
 	}
 
-	myLogger.Info("Start to loop check the preheating status until it's ready or timeout(30m)")
+	myLogger.Info("Start to loop check the preheating status until it's success or timeout(30m)")
 	// If process is not completed, loop check the status until it's ready.
 	tk := time.NewTicker(checkInterval)
 	defer tk.Stop()
@@ -159,26 +158,19 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 		case <-tk.C:
 			s, err := d.CheckProgress(st.TaskID)
 			if err != nil {
-				myLogger.Error(err)
 				return preheatJobRunningError(err)
 			}
 
-			myLogger.Infof("Check preheating progress: %#v", s)
+			myLogger.Infof("Check preheat progress: %s", s)
 
 			// Finished
 			if s.Status == provider.PreheatingStatusSuccess {
-				myLogger.Info("Preheating is completed")
 				return nil
 			}
 		case <-tm.C:
 			return preheatJobRunningError(errors.Errorf("status check timeout: %v", checkTimeout))
 		}
 	}
-}
-
-// preheatJobRunningError is an internal error format
-func preheatJobRunningError(err error) error {
-	return errors.Wrap(err, "preheat job running error")
 }
 
 // parseParamProvider parses the provider param.
