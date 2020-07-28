@@ -27,6 +27,14 @@ Filter Replication Rule
     Retry Wait Until Page Contains Element   ${rule_name_element}
     Capture Page Screenshot  filter_replic_${ruleName}.png
 
+Filter Registry
+    [Arguments]  ${registry_name}
+    ${registry_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${registry_name}')]
+    Retry Element Click  ${filter_registry_btn}
+    Retry Text Input  ${filter_registry_input}  ${ruleName}
+    Retry Wait Until Page Contains Element   ${registry_name_element}
+    Capture Page Screenshot  filter_repistry_${ruleName}.png
+
 Select Dest Registry
     [Arguments]    ${endpoint}
     Retry Element Click    ${dest_registry_dropdown_list}
@@ -68,7 +76,7 @@ Create A New Endpoint
     #cancel verify cert since we use a selfsigned cert
     Retry Element Click  ${destination_insecure_xpath}
     Run Keyword If  '${save}' == 'Y'  Run keyword  Retry Double Keywords When Error  Retry Element Click  ${replication_save_xpath}  Retry Wait Until Page Not Contains Element  ${replication_save_xpath}
-    Run Keyword If  '${save}' == 'Y'  Run keyword  Retry Wait Until Page Contains  ${name}
+    Run Keyword If  '${save}' == 'Y'  Run keyword  Filter Registry  ${name}
     Run Keyword If  '${save}' == 'N'  No Operation
 
 Create A Rule With Existing Endpoint
@@ -155,12 +163,6 @@ Delete Rule
     Mouse Up  ${dialog_delete}
     Sleep  2
 
-Filter Rule
-    [Arguments]  ${rule}
-    Retry Element Click  ${rule_filter_search}
-    Retry Text Input   ${rule_filter_input}  ${rule}
-    Sleep  1
-
 Select Rule
     [Arguments]  ${rule}
     Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
@@ -246,8 +248,8 @@ Delete Replication Rule
     Retry Element Click  ${dialog_delete}
 
 Image Should Be Replicated To Project
-    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=10
-    :For  ${n}  IN RANGE  1  ${times}
+    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=3
+    :For  ${n}  IN RANGE  0  ${times}
     \    Sleep  ${period}
     \    Go Into Project    ${project}
     \    Switch To Project Repo
