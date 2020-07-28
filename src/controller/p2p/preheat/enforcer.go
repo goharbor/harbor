@@ -434,6 +434,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 		},
 		ImageName: fmt.Sprintf("%s/%s", candidate.Namespace, candidate.Repository),
 		Tag:       candidate.Tags[0],
+		Digest:    candidate.Digest,
 	}
 
 	piData, err := pi.ToJSON()
