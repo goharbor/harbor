@@ -62,7 +62,7 @@ RUN apt-get update && apt install libnss3-tools && \
 
 RUN wget https://bootstrap.pypa.io/get-pip.py && \
     python ./get-pip.py  && \
-    pip install pyasn1 google-apitools==0.5.15 gsutil robotframework==3.0.4 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-selenium2library robotframework-pabot robotframework-JSONLibrary --upgrade
+    pip install pyasn1 google-apitools==0.5.15 gsutil robotframework==3.0.4 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-selenium2library==4.4.0 robotframework-pabot robotframework-JSONLibrary --upgrade
 
 # Install docker, docker compose
 RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-18.06.3-ce.tgz && \
