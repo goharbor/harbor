@@ -36,6 +36,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   hasUpdatePermission: boolean = false;
   btnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   timeout: any;
+  timeoutForTaskList: any;
   constructor(
     private translate: TranslateService,
     private router: Router,
@@ -64,6 +65,10 @@ export class TaskListComponent implements OnInit, OnDestroy {
     if (this.timeout) {
       clearTimeout(this.timeout);
       this.timeout = null;
+    }
+    if (this.timeoutForTaskList) {
+      clearTimeout(this.timeoutForTaskList);
+      this.timeoutForTaskList = null;
     }
   }
   getPermissions() {
@@ -191,9 +196,11 @@ export class TaskListComponent implements OnInit, OnDestroy {
               this.totalCount = this.tasks.length;
               for (let i = 0; i < this.tasks.length; i++) {
                 if (this.p2pProviderService.willChangStatus(this.tasks[i].status)) {
-                  setTimeout(() => {
-                    this.clrLoadTasks(false);
-                  }, TIME_OUT);
+                  if (!this.timeoutForTaskList) {
+                    this.timeoutForTaskList = setTimeout(() => {
+                      this.clrLoadTasks(false);
+                    }, TIME_OUT);
+                  }
                 }
               }
             }

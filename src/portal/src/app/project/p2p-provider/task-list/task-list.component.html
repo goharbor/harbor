@@ -87,7 +87,9 @@
       <clr-dg-column [clrDgField]="'id'">{{'REPLICATION.TASK_ID'| translate}}</clr-dg-column>
       <clr-dg-column [clrDgField]="'execution_id'">{{'P2P_PROVIDER.ID' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
-      <clr-dg-column>{{'P2P_PROVIDER.EXTRA_ATTRS' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'P2P_PROVIDER.ARTIFACT' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'P2P_PROVIDER.DIGEST' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'P2P_PROVIDER.TYPE' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgSortBy]="startTimeComparator">{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'REPLICATION.DURATION' | translate}}</clr-dg-column>
       <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
@@ -104,10 +106,15 @@
           </clr-tooltip>
         </clr-dg-cell>
         <clr-dg-cell>
-          <span>{{t.extra_attrs?.artifact}}</span>,&nbsp;
-          <span>{{t.extra_attrs?.digest}}</span>,&nbsp;
-          <span>{{t.extra_attrs?.kind}}</span>
+          <span>{{t.extra_attrs?.artifact}}</span>
          </clr-dg-cell>
+        <clr-dg-cell>
+          <span>{{t.extra_attrs?.digest}}</span>
+        </clr-dg-cell>
+        <clr-dg-cell>
+          <span>{{t.extra_attrs?.kind}}</span>
+        </clr-dg-cell>
+
         <clr-dg-cell>{{t.start_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>{{getDuration(t)}}</clr-dg-cell>
         <clr-dg-cell>
