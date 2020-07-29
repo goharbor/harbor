@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	clientTimeout         = 10 * time.Second
+	clientTimeout         = 30 * time.Second
 	maxIdleConnections    = 20
 	idleConnectionTimeout = 30 * time.Second
 	tlsHandshakeTimeout   = 30 * time.Second

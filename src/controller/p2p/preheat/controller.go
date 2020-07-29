@@ -2,6 +2,7 @@ package preheat
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -212,16 +213,27 @@ type TriggerParam struct {
 
 // CreatePolicy creates the policy.
 func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Schema) (id int64, err error) {
-	if schema != nil {
-		now := time.Now()
-		schema.CreatedAt = now
-		schema.UpdatedTime = now
+	if schema == nil {
+		return 0, errors.New("nil policy schema provided")
+	}
+
+	// Update timestamps
+	now := time.Now()
+	schema.CreatedAt = now
+	schema.UpdatedTime = now
+
+	// Get full model of policy schema
+	_, err = policy.ParsePolicy(schema)
+	if err != nil {
+		return 0, err
 	}
 
 	id, err = c.pManager.Create(ctx, schema)
 	if err != nil {
 		return
 	}
+
+	schema.ID = id
 
 	if schema.Trigger != nil &&
 		schema.Trigger.Type == policyModels.TriggerTypeScheduled &&
@@ -232,13 +244,15 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 			return 0, err
 		}
 
-		schema.ID = id
-		err = c.pManager.Update(ctx, schema, "trigger")
+		if err = decodeSchema(schema); err == nil {
+			err = c.pManager.Update(ctx, schema, "trigger")
+		}
+
 		if err != nil {
-			errUnsch := c.scheduler.UnSchedule(ctx, schema.Trigger.Settings.JobID)
-			if errUnsch != nil {
-				return 0, errUnsch
+			if e := c.scheduler.UnSchedule(ctx, schema.Trigger.Settings.JobID); e != nil {
+				return 0, errors.Wrap(e, err.Error())
 			}
+
 			return 0, err
 		}
 	}
@@ -258,13 +272,27 @@ func (c *controller) GetPolicyByName(ctx context.Context, projectID int64, name 
 
 // UpdatePolicy updates the policy.
 func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Schema, props ...string) error {
-	if schema != nil {
-		schema.UpdatedTime = time.Now()
+	if schema == nil {
+		return errors.New("nil policy schema provided")
 	}
+
+	// Get policy cache
 	s0, err := c.pManager.Get(ctx, schema.ID)
 	if err != nil {
 		return err
 	}
+
+	// Double check trigger
+	if s0.Trigger == nil {
+		return errors.Errorf("missing trigger settings in preheat policy %s", s0.Name)
+	}
+
+	// Get full model of updating policy
+	_, err = policy.ParsePolicy(schema)
+	if err != nil {
+		return err
+	}
+
 	var cron = schema.Trigger.Settings.Cron
 	var oldJobID = s0.Trigger.Settings.JobID
 	var needUn bool
@@ -309,7 +337,15 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 			return err
 		}
 		schema.Trigger.Settings.JobID = jobid
+		if err := decodeSchema(schema); err != nil {
+			// Possible
+			// TODO: Refactor
+			return err // whether update or not has been not important as the jon reference will be lost
+		}
 	}
+
+	// Update timestamp
+	schema.UpdatedTime = time.Now()
 
 	return c.pManager.Update(ctx, schema, props...)
 }
@@ -366,6 +402,23 @@ func (c *controller) CheckHealth(ctx context.Context, instance *providerModels.I
 	if h.Status != provider.DriverStatusHealthy {
 		return errors.Errorf("preheat provider instance %s-%s:%s is not healthy", instance.Vendor, instance.Name, instance.Endpoint)
 	}
+
+	return nil
+}
+
+// decodeSchema decodes the trigger object to JSON string
+func decodeSchema(schema *policyModels.Schema) error {
+	if schema.Trigger == nil {
+		// do nothing
+		return nil
+	}
+
+	b, err := json.Marshal(schema.Trigger)
+	if err != nil {
+		return err
+	}
+
+	schema.TriggerStr = string(b)
 
 	return nil
 }
