@@ -184,11 +184,9 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 		gc.logger.Errorf("failed to get deleted Artifacts in gc job, with error: %v", err)
 		return err
 	}
-	// no need to execute GC as there is no removed artifacts.
-	// Do this is to handle if user trigger GC job several times, only one job should do the following logic as artifact trash table is flushed.
+	// just log it, the job will continue to execute, the orphan blobs that created in the quota exceeding case can be removed.
 	if len(arts) == 0 {
-		gc.logger.Info("no need to execute GC as there is no removed artifacts.")
-		return nil
+		gc.logger.Warning("no removed artifacts.")
 	}
 	gc.trashedArts = arts
 
