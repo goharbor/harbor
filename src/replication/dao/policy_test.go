@@ -3,7 +3,6 @@ package dao
 import (
 	"testing"
 
-	common_models "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
@@ -106,10 +105,8 @@ func TestGetPolicies(t *testing.T) {
 				{
 					Name:      tt.args.name,
 					Namespace: tt.args.namespace,
-					Pagination: common_models.Pagination{
-						Page: tt.args.page,
-						Size: tt.args.pageSize,
-					},
+					Page:      tt.args.page,
+					Size:      tt.args.pageSize,
 				},
 			}...)
 			if tt.wantErr {

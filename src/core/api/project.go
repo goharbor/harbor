@@ -593,6 +593,18 @@ func (p *ProjectAPI) Summary() {
 	}
 	wg.Wait()
 
+	if p.project.RegistryID > 0 {
+		registry, err := replication.RegistryMgr.Get(p.project.RegistryID)
+		if err != nil {
+			log.Warningf("failed to get registry %d: %v", p.project.RegistryID, err)
+		} else {
+			if registry != nil {
+				registry.Credential = nil
+				summary.Registry = registry
+			}
+		}
+	}
+
 	p.Data["json"] = summary
 	p.ServeJSON()
 }
