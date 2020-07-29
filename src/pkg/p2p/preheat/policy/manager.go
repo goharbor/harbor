@@ -81,7 +81,7 @@ func (m *manager) Get(ctx context.Context, id int64) (schema *policy.Schema, err
 		return nil, err
 	}
 
-	return parsePolicy(schema)
+	return ParsePolicy(schema)
 }
 
 // Get the policy schema by name
@@ -91,7 +91,7 @@ func (m *manager) GetByName(ctx context.Context, projectID int64, name string) (
 		return nil, err
 	}
 
-	return parsePolicy(schema)
+	return ParsePolicy(schema)
 }
 
 // Delete the policy schema by id
@@ -107,7 +107,7 @@ func (m *manager) ListPolicies(ctx context.Context, query *q.Query) (schemas []*
 	}
 
 	for i := range schemas {
-		schema, err := parsePolicy(schemas[i])
+		schema, err := ParsePolicy(schemas[i])
 		if err != nil {
 			return nil, err
 		}
@@ -132,8 +132,8 @@ func (m *manager) ListPoliciesByProject(ctx context.Context, project int64, quer
 	return m.ListPolicies(ctx, query)
 }
 
-// parsePolicy parse policy model.
-func parsePolicy(schema *policy.Schema) (*policy.Schema, error) {
+// ParsePolicy parses persisting data to policy model.
+func ParsePolicy(schema *policy.Schema) (*policy.Schema, error) {
 	if schema == nil {
 		return nil, errors.New("policy schema can not be nil")
 	}
@@ -157,8 +157,9 @@ func parsePolicy(schema *policy.Schema) (*policy.Schema, error) {
 
 // parseFilters parse filterStr to filter.
 func parseFilters(filterStr string) ([]*policy.Filter, error) {
+	// Filters are required
 	if len(filterStr) == 0 {
-		return nil, nil
+		return nil, errors.New("missing filters in preheat policy schema")
 	}
 
 	var filters []*policy.Filter
@@ -188,8 +189,9 @@ func parseFilters(filterStr string) ([]*policy.Filter, error) {
 
 // parseTrigger parse triggerStr to trigger.
 func parseTrigger(triggerStr string) (*policy.Trigger, error) {
+	// trigger must be existing, at least is a "manual" trigger.
 	if len(triggerStr) == 0 {
-		return nil, nil
+		return nil, errors.New("missing trigger settings in preheat policy schema")
 	}
 
 	trigger := &policy.Trigger{}
