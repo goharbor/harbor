@@ -17,8 +17,10 @@ package dao
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -29,13 +31,17 @@ type executionDAOTestSuite struct {
 	suite.Suite
 	ctx          context.Context
 	executionDAO *executionDAO
+	taskDao      *taskDAO
 	executionID  int64
 }
 
 func (e *executionDAOTestSuite) SetupSuite() {
 	dao.PrepareTestForPostgresSQL()
 	e.ctx = orm.Context()
-	e.executionDAO = &executionDAO{}
+	e.taskDao = &taskDAO{}
+	e.executionDAO = &executionDAO{
+		taskDAO: e.taskDao,
+	}
 }
 
 func (e *executionDAOTestSuite) SetupTest() {
@@ -114,6 +120,163 @@ func (e *executionDAOTestSuite) TestDelete() {
 	e.True(errors.IsNotFoundErr(err))
 
 	// happy pass is covered by TearDownTest
+}
+
+func (e *executionDAOTestSuite) TestGetMetrics() {
+	taskID01, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.SuccessStatus.String(),
+		StatusCode:  job.SuccessStatus.Code(),
+		ExtraAttrs:  "{}",
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID01)
+
+	taskID02, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.StoppedStatus.String(),
+		StatusCode:  job.StoppedStatus.Code(),
+		ExtraAttrs:  "{}",
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID02)
+
+	taskID03, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.ErrorStatus.String(),
+		StatusCode:  job.ErrorStatus.Code(),
+		ExtraAttrs:  "{}",
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID03)
+
+	taskID04, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.PendingStatus.String(),
+		StatusCode:  job.PendingStatus.Code(),
+		ExtraAttrs:  "{}",
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID04)
+
+	taskID05, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.RunningStatus.String(),
+		StatusCode:  job.RunningStatus.Code(),
+		ExtraAttrs:  "{}",
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID05)
+
+	taskID06, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.ScheduledStatus.String(),
+		StatusCode:  job.ScheduledStatus.Code(),
+		ExtraAttrs:  "{}",
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID06)
+
+	metrics, err := e.executionDAO.GetMetrics(e.ctx, e.executionID)
+	e.Require().Nil(err)
+	e.Equal(int64(6), metrics.TaskCount)
+	e.Equal(int64(1), metrics.SuccessTaskCount)
+	e.Equal(int64(1), metrics.StoppedTaskCount)
+	e.Equal(int64(1), metrics.ErrorTaskCount)
+	e.Equal(int64(1), metrics.PendingTaskCount)
+	e.Equal(int64(1), metrics.RunningTaskCount)
+	e.Equal(int64(1), metrics.ScheduledTaskCount)
+}
+
+func (e *executionDAOTestSuite) TestRefreshStatus() {
+	// contains tasks with status: success
+	taskID01, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.SuccessStatus.String(),
+		StatusCode:  job.SuccessStatus.Code(),
+		ExtraAttrs:  "{}",
+		EndTime:     time.Now(),
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID01)
+
+	err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
+	e.Require().Nil(err)
+	execution, err := e.executionDAO.Get(e.ctx, e.executionID)
+	e.Require().Nil(err)
+	e.Equal(job.SuccessStatus.String(), execution.Status)
+	e.NotEmpty(execution.EndTime)
+
+	// contains tasks with status: stopped
+	taskID02, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.StoppedStatus.String(),
+		StatusCode:  job.StoppedStatus.Code(),
+		ExtraAttrs:  "{}",
+		EndTime:     time.Now(),
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID02)
+
+	err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
+	e.Require().Nil(err)
+	execution, err = e.executionDAO.Get(e.ctx, e.executionID)
+	e.Require().Nil(err)
+	e.Equal(job.StoppedStatus.String(), execution.Status)
+	e.NotEmpty(execution.EndTime)
+
+	// contains tasks with status: error
+	taskID03, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.ErrorStatus.String(),
+		StatusCode:  job.ErrorStatus.Code(),
+		ExtraAttrs:  "{}",
+		EndTime:     time.Now(),
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID03)
+
+	err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
+	e.Require().Nil(err)
+	execution, err = e.executionDAO.Get(e.ctx, e.executionID)
+	e.Require().Nil(err)
+	e.Equal(job.ErrorStatus.String(), execution.Status)
+	e.NotEmpty(execution.EndTime)
+
+	// contains tasks with status: pending, running, scheduled
+	taskID04, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.PendingStatus.String(),
+		StatusCode:  job.PendingStatus.Code(),
+		ExtraAttrs:  "{}",
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID04)
+
+	taskID05, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.RunningStatus.String(),
+		StatusCode:  job.RunningStatus.Code(),
+		ExtraAttrs:  "{}",
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID05)
+
+	taskID06, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.ScheduledStatus.String(),
+		StatusCode:  job.ScheduledStatus.Code(),
+		ExtraAttrs:  "{}",
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID06)
+
+	err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
+	e.Require().Nil(err)
+	execution, err = e.executionDAO.Get(e.ctx, e.executionID)
+	e.Require().Nil(err)
+	e.Equal(job.RunningStatus.String(), execution.Status)
+	e.Empty(execution.EndTime)
 }
 
 func TestExecutionDAOSuite(t *testing.T) {

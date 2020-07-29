@@ -56,7 +56,7 @@ func (j *jobStatusHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err = j.handler.Handle(r.Context(), taskID, sc); err != nil {
 		// ignore the not found error to avoid the jobservice re-sending the hook
 		if errors.IsNotFoundErr(err) {
-			log.Warningf("got the status change hook for a non existing task %d", taskID)
+			log.Warningf("task %d does not exist, ignore the not found error to avoid subsequent retrying webhooks from jobservice", taskID)
 			return
 		}
 		libhttp.SendError(w, err)

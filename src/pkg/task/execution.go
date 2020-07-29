@@ -203,88 +203,13 @@ func (e *executionManager) populateExecution(ctx context.Context, execution *dao
 		}
 	}
 
-	// if the status isn't null which means the status is set manually, return directly
-	if len(exec.Status) > 0 {
-		return exec
-	}
-
 	// populate task metrics
-	e.populateExecutionMetrics(ctx, exec)
-	// populate status
-	e.populateExecutionStatus(exec)
-	// populate the end time
-	e.populateExecutionEndTime(ctx, exec)
+	metrics, err := e.executionDAO.GetMetrics(ctx, execution.ID)
+	if err != nil {
+		log.Errorf("failed to get metrics of the execution %d: %v", execution.ID, err)
+	} else {
+		exec.Metrics = metrics
+	}
 
 	return exec
-}
-
-func (e *executionManager) populateExecutionMetrics(ctx context.Context, execution *Execution) {
-	scs, err := e.taskDAO.ListStatusCount(ctx, execution.ID)
-	if err != nil {
-		log.Errorf("failed to list status count of execution %d: %v", execution.ID, err)
-		return
-	}
-	if len(scs) == 0 {
-		return
-	}
-
-	metrics := &Metrics{}
-	for _, sc := range scs {
-		switch sc.Status {
-		case job.SuccessStatus.String():
-			metrics.SuccessTaskCount = sc.Count
-		case job.ErrorStatus.String():
-			metrics.ErrorTaskCount = sc.Count
-		case job.PendingStatus.String():
-			metrics.PendingTaskCount = sc.Count
-		case job.RunningStatus.String():
-			metrics.RunningTaskCount = sc.Count
-		case job.ScheduledStatus.String():
-			metrics.ScheduledTaskCount = sc.Count
-		case job.StoppedStatus.String():
-			metrics.StoppedTaskCount = sc.Count
-		default:
-			log.Errorf("unknown task status: %s", sc.Status)
-		}
-	}
-	metrics.TaskCount = metrics.SuccessTaskCount + metrics.ErrorTaskCount +
-		metrics.PendingTaskCount + metrics.RunningTaskCount +
-		metrics.ScheduledTaskCount + metrics.StoppedTaskCount
-	execution.Metrics = metrics
-}
-
-func (e *executionManager) populateExecutionStatus(execution *Execution) {
-	metrics := execution.Metrics
-	if metrics == nil {
-		execution.Status = job.RunningStatus.String()
-		return
-	}
-	if metrics.PendingTaskCount > 0 || metrics.RunningTaskCount > 0 || metrics.ScheduledTaskCount > 0 {
-		execution.Status = job.RunningStatus.String()
-		return
-	}
-	if metrics.ErrorTaskCount > 0 {
-		execution.Status = job.ErrorStatus.String()
-		return
-	}
-	if metrics.StoppedTaskCount > 0 {
-		execution.Status = job.StoppedStatus.String()
-		return
-	}
-	if metrics.SuccessTaskCount > 0 {
-		execution.Status = job.SuccessStatus.String()
-		return
-	}
-}
-
-func (e *executionManager) populateExecutionEndTime(ctx context.Context, execution *Execution) {
-	if !job.Status(execution.Status).Final() {
-		return
-	}
-	endTime, err := e.taskDAO.GetMaxEndTime(ctx, execution.ID)
-	if err != nil {
-		log.Errorf("failed to get the max end time of the execution %d: %v", execution.ID, err)
-		return
-	}
-	execution.EndTime = endTime
 }
