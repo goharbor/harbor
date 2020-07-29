@@ -224,7 +224,6 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 		}
 		gc.logger.Infof("blob eligible for deletion: %s", blob.Digest)
 		gc.deleteSet = append(gc.deleteSet, blob)
-		// as table blob has no repository name, here needs to use the ArtifactTrash to fill it in.
 		if blob.IsManifest() {
 			mfCt++
 		} else {
@@ -233,7 +232,7 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 		makeSize = makeSize + blob.Size
 	}
 	gc.logger.Infof("%d blobs and %d manifests eligible for deletion", blobCt, mfCt)
-	gc.logger.Infof("The GC could free up %d MB space, the size is a rough estimate.", makeSize/1024/1024)
+	gc.logger.Infof("The GC could free up %d MB space, the size is a rough estimation.", makeSize/1024/1024)
 	return nil
 }
 
@@ -294,7 +293,6 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 				return err
 			}
 			return errors.Wrapf(err, "failed to delete blob from storage: %s, %s", blob.Digest, blob.Status)
-
 		}
 
 		// remove the blob record
@@ -479,7 +477,7 @@ func (gc *GarbageCollector) markDeleteFailed(ctx job.Context, blob *blob_models.
 		return errors.Wrapf(err, "failed to mark gc candidate delete failed: %s, %s", blob.Digest, blob.Status)
 	}
 	if count == 0 {
-		return errors.New(nil).WithMessage("no blob found to mark gc candidate, ID:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessage("no blob found to mark delete failed, ID:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }
