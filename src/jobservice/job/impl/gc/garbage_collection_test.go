@@ -221,6 +221,28 @@ func (suite *gcTestSuite) TestRun() {
 
 	mock.OnAnything(suite.blobMgr, "CleanupAssociationsForProject").Return(nil)
 
+	mock.OnAnything(suite.blobMgr, "UselessBlobs").Return([]*pkg_blob.Blob{
+		{
+			ID:          1,
+			Digest:      suite.DigestString(),
+			ContentType: schema2.MediaTypeManifest,
+		},
+		{
+			ID:          2,
+			Digest:      suite.DigestString(),
+			ContentType: schema2.MediaTypeLayer,
+		},
+		{
+			ID:          3,
+			Digest:      suite.DigestString(),
+			ContentType: schema2.MediaTypeManifest,
+		},
+	}, nil)
+
+	mock.OnAnything(suite.blobMgr, "UpdateBlobStatus").Return(int64(1), nil)
+
+	mock.OnAnything(suite.blobMgr, "Delete").Return(nil)
+
 	gc := &GarbageCollector{
 		artCtl:            suite.artifactCtl,
 		artrashMgr:        suite.artrashMgr,
