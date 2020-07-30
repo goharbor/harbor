@@ -232,6 +232,7 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 					}
 
 					myLogger.Infof("Transforming report with mime type :%s to version 2 of schema", m)
+					myLogger.Infof("Raw report data : %s", rawReport)
 
 					// Check in
 					cir := &CheckInReport{
