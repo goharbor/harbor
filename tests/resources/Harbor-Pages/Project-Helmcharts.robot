@@ -43,8 +43,9 @@ Go Into Chart Detail
 Multi-delete Chart Files
     [Arguments]    @{obj}
     Switch To Project Charts
-    :For  ${obj}  in  @{obj}
-    \    Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//label
+    FOR  ${obj}  IN  @{obj}
+        Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//label
+    END
     #Retry Element Click  xpath=${version_checkbox}
     Capture Page Screenshot
     Retry Double Keywords When Error  Retry Element Click  xpath=${version_delete}  Retry Wait Until Page Contains Element  ${version_confirm_delete}

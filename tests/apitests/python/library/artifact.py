@@ -91,10 +91,6 @@ class Artifact(base.Base, object):
             if (timeout_count == 0):
                 break
             artifact = self.get_reference_info(project_name, repo_name, reference, **kwargs)
-            print "artifact", artifact
-            print "artifact[0]", artifact[0]
-            print "artifact[0].scan_overview", artifact[0].scan_overview
-            print "artifact[0].scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0']", artifact[0].scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0']
             scan_status = artifact[0].scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0']["scan_status"]
             if scan_status == expected_scan_status:
                 return

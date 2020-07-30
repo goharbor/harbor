@@ -17,7 +17,6 @@ class Chart(base.Base, object):
 
     def chart_should_exist(self, repository, chart_name, **kwargs):
         charts_data = self.get_charts(repository, **kwargs)
-        print "charts_data:", charts_data
         for chart in charts_data:
             if chart.name == chart_name:
                 return True

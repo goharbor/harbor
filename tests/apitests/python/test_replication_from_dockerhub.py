@@ -25,7 +25,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
@@ -80,7 +80,6 @@ class TestProjects(unittest.TestCase):
 
         #3. Create a new registry;
         TestProjects.registry_id, _ = self.registry.create_registry("https://hub.docker.com", registry_type="docker-hub", access_key = "", access_secret = "", insecure=False, **ADMIN_CLIENT)
-        print "TestProjects.registry_id:", TestProjects.registry_id
 
         #4. Create a pull-based rule for this registry;
         TestProjects.rule_id, rule_name = self.replication.create_replication_policy(src_registry=swagger_client.Registry(id=int(TestProjects.registry_id)),
@@ -99,8 +98,6 @@ class TestProjects(unittest.TestCase):
 
         #8. Check image is replicated into target project successfully.
         artifact = self.artifact.get_reference_info(TestProjects.project_name, self.image, self.tag, **ADMIN_CLIENT)
-        print artifact
-
 
 if __name__ == '__main__':
     unittest.main()

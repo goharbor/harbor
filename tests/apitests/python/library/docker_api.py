@@ -13,29 +13,29 @@ except ImportError:
 
 def docker_info_display():
     command = ["docker", "info", "-f", "'{{.OSType}}/{{.Architecture}}'"]
-    print "Docker Info: ", command
+    print("Docker Info: ", command)
     ret = base.run_command(command)
-    print "Command return: ", ret
+    print("Command return: ", ret)
 
 def docker_login_cmd(harbor_host, user, password, enable_manifest = True):
     command = ["sudo", "docker", "login", harbor_host, "-u", user, "-p", password]
-    print "Docker Login Command: ", command
+    print( "Docker Login Command: ", command)
     base.run_command(command)
     if enable_manifest == True:
         try:
             ret = subprocess.check_output(["./tests/apitests/python/update_docker_cfg.sh"], shell=False)
-        except subprocess.CalledProcessError, exc:
+        except subprocess.CalledProcessError as exc:
             raise Exception("Failed to update docker config, error is {} {}.".format(exc.returncode, exc.output))
 
 def docker_manifest_create(index, manifests):
     command = ["sudo", "docker","manifest","create",index]
     command.extend(manifests)
-    print "Docker Manifest Command: ", command
+    print( "Docker Manifest Command: ", command)
     base.run_command(command)
 
 def docker_manifest_push(index):
     command = ["sudo", "docker","manifest","push",index]
-    print "Docker Manifest Command: ", command
+    print( "Docker Manifest Command: ", command)
     ret = base.run_command(command)
     index_sha256=""
     manifest_list=[]
@@ -58,7 +58,7 @@ def list_repositories(harbor_host, user, password, n = None, last = None):
             command = ["curl", "-s", "-u", user+":"+password, "https://"+harbor_host+"/v2/_catalog"+"?n=%d"%n, "--insecure"]
     else:
         command = ["curl", "-s", "-u", user+":"+password, "https://"+harbor_host+"/v2/_catalog", "--insecure"]
-    print "List Repositories Command: ", command
+    print( "List Repositories Command: ", command)
     ret = base.run_command(command)
     repos = json.loads(ret).get("repositories","")
     return repos
@@ -70,7 +70,7 @@ def list_image_tags(harbor_host, repository, user, password, n = None, last = No
         command = ["curl", "-s", "-u", user+":"+password, "https://"+harbor_host+"/v2/"+repository+"/tags/list"+"?n=%d"%n, "--insecure"]
     else:
         command = ["curl", "-s", "-u", user+":"+password, "https://"+harbor_host+"/v2/"+repository+"/tags/list", "--insecure"]
-    print "List Image Tags Command: ", command
+    print( "List Image Tags Command: ", command)
     ret = base.run_command(command)
     tags = json.loads(ret).get("tags","")
     return tags
@@ -85,9 +85,9 @@ class DockerAPI(object):
             expected_error_message = None
         try:
             self.DCLIENT.login(registry = registry, username=username, password=password)
-        except docker.errors.APIError, err:
+        except docker.errors.APIError as err:
             if expected_error_message is not None:
-                print "docker login error:", str(err)
+                print( "docker login error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Docker login: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
@@ -105,10 +105,10 @@ class DockerAPI(object):
         try:
             ret = base._get_string_from_unicode(self.DCLIENT.pull(r'{}:{}'.format(image, _tag)))
             return ret
-        except Exception, err:
+        except Exception as err:
             caught_err = True
             if expected_error_message is not None:
-                print "docker image pull error:", str(err)
+                print( "docker image pull error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Pull image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
@@ -128,7 +128,7 @@ class DockerAPI(object):
         try:
             self.DCLIENT.tag(image, harbor_registry, _tag, force=True)
             return harbor_registry, _tag
-        except docker.errors.APIError, e:
+        except docker.errors.APIError as e:
             raise Exception(r" Docker tag image {} failed, error is [{}]".format (image, e.message))
 
     def docker_image_push(self, harbor_registry, tag, expected_error_message = None):
@@ -139,10 +139,10 @@ class DockerAPI(object):
         try:
             ret = base._get_string_from_unicode(self.DCLIENT.push(harbor_registry, tag, stream=True))
             return ret
-        except Exception, err:
+        except Exception as err:
             caught_err = True
             if expected_error_message is not None:
-                print "docker image push error:", str(err)
+                print( "docker image push error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Push image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
@@ -184,10 +184,10 @@ class DockerAPI(object):
             self.DCLIENT.pull(repo)
             image = self.DCLIENT2.images.get(repo)
             return repo, image.id
-        except Exception, err:
+        except Exception as err:
             caught_err = True
             if expected_error_message is not None:
-                print "docker image build error:", str(err)
+                print( "docker image build error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Push image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
