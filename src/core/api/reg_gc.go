@@ -61,6 +61,7 @@ func (gc *GCAPI) Prepare() {
 //  },
 //  "parameters": {
 //    "delete_untagged": true
+//    "read_only": true
 //  }
 //	}
 func (gc *GCAPI) Post() {
@@ -73,9 +74,17 @@ func (gc *GCAPI) Post() {
 		gc.SendBadRequestError(err)
 		return
 	}
-	ajr.Name = common_job.ImageGC
 	ajr.Parameters["redis_url_reg"] = os.Getenv("_REDIS_URL_REG")
+	// default is the non-blocking GC job.
+	ajr.Name = common_job.ImageGC
 	ajr.Parameters["time_window"] = config.GetGCTimeWindow()
+	// if specify read_only:true, API will submit the readonly GC job, otherwise default is non-blocking GC job.
+	readOnlyParam, exist := ajr.Parameters["read_only"]
+	if exist {
+		if readOnly, ok := readOnlyParam.(bool); ok && readOnly {
+			ajr.Name = common_job.ImageGCReadOnly
+		}
+	}
 	gc.submit(&ajr)
 	gc.Redirect(http.StatusCreated, strconv.FormatInt(ajr.ID, 10))
 }
