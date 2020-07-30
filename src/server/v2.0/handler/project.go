@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/pkg/audit"
@@ -54,7 +55,7 @@ func (a *projectAPI) GetLogs(ctx context.Context, params operation.GetLogsParams
 			ResourceType: log.ResourceType,
 			Username:     log.Username,
 			Operation:    log.Operation,
-			OpTime:       log.OpTime.String(),
+			OpTime:       strfmt.DateTime(log.OpTime),
 		})
 	}
 	return operation.NewGetLogsOK().
