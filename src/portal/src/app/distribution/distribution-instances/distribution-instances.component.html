@@ -78,12 +78,12 @@
                   'DISTRIBUTION.NOT_FOUND' | translate
                     }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let instance of instances" [clrDgItem]="instance">
-                    <clr-dg-cell>
+                    <clr-dg-cell class="no-wrapper">
                         <span>{{ instance.name }}</span>
                         <span *ngIf="instance.default" class="label label-info ml-1">{{'SCANNER.DEFAULT' | translate}}</span>
                     </clr-dg-cell>
                     <clr-dg-cell>{{ instance.endpoint }}</clr-dg-cell>
-                    <clr-dg-cell>
+                    <clr-dg-cell class="no-wrapper">
                       <span>{{ instance.vendor }}</span>
                       <clr-signpost *ngIf="providerMap[instance.vendor]">
                         <clr-signpost-content *clrIfOpen>

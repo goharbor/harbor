@@ -1356,7 +1356,7 @@
     },
     "SCANNER": {
         "DELETION_SUMMARY": "确定删除扫描器{{param}}？",
-        "SKIP_CERT_VERIFY": "当远程注册使用自签或不可信证书时可勾选此项以跳过证书认证。",
+        "SKIP_CERT_VERIFY": "当远端服务使用自签或不可信证书时可勾选此项以跳过证书认证。",
         "NAME": "名称",
         "NAME_EXISTS": "名称已存在",
         "NAME_REQUIRED": "名称为必填项",
@@ -1499,7 +1499,7 @@
         "CREATE_INSTANCE": "新建实例"
     },
     "P2P_PROVIDER": {
-        "P2P_PROVIDER": "预热",
+        "P2P_PROVIDER": "P2P 预热",
         "POLICIES": "策略",
         "NEW_POLICY": "新建策略",
         "NAME": "名称",
@@ -1562,6 +1562,8 @@
         "UPDATED_SUCCESSFULLY": "更新策略成功",
         "EXECUTIONS": "执行记录",
         "TAG_SEPARATOR": "使用逗号分割 tags,tag* 和 **",
-        "CONTENT_WARNING": "内容信任设置与项目设置冲突且将会被项目设置覆盖"
+        "CONTENT_WARNING": "内容信任设置与项目设置冲突且将会被项目设置覆盖",
+        "PREHEAT_EXPLAIN": "预热功能可加载镜像至 P2P 网络",
+        "CRITERIA_EXPLAIN": "由项目设置下的'部署安全'项所指定"
     }
 }
