@@ -3,6 +3,7 @@ package preheat
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -198,8 +199,11 @@ func (s *preheatSuite) TestCountPolicy() {
 }
 
 func (s *preheatSuite) TestCreatePolicy() {
-	policy := &policy.Schema{Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeScheduled}}
-	policy.Trigger.Settings.Cron = "* * * * */1"
+	policy := &policy.Schema{
+		Name:       "test",
+		FiltersStr: `[{"type":"repository","value":"harbor*"},{"type":"tag","value":"2*"}]`,
+		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"* * * * */1"}}`, policy.TriggerTypeScheduled),
+	}
 	s.fakeScheduler.On("Schedule", s.ctx, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.fakePolicyMgr.On("Create", s.ctx, policy).Return(int64(1), nil)
 	s.fakePolicyMgr.On("Update", s.ctx, mock.Anything, mock.Anything).Return(nil)
@@ -229,18 +233,37 @@ func (s *preheatSuite) TestUpdatePolicy() {
 	var p0 = &policy.Schema{Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeScheduled}}
 	p0.Trigger.Settings.JobID = 1
 	p0.Trigger.Settings.Cron = "* * * * */1"
+	p0.Filters = []*policy.Filter{
+		{
+			Type:  policy.FilterTypeRepository,
+			Value: "harbor*",
+		},
+		{
+			Type:  policy.FilterTypeTag,
+			Value: "2*",
+		},
+	}
 	s.fakePolicyMgr.On("Get", s.ctx, int64(1)).Return(p0, nil)
 
 	// need change to schedule
-	p1 := &policy.Schema{ID: 1, Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeManual}}
+	p1 := &policy.Schema{
+		ID:         1,
+		Name:       "test",
+		FiltersStr: `[{"type":"repository","value":"harbor*"},{"type":"tag","value":"2*"}]`,
+		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{}}`, policy.TriggerTypeManual),
+	}
 	s.fakePolicyMgr.On("Update", s.ctx, p1, mock.Anything).Return(nil)
 	err := s.controller.UpdatePolicy(s.ctx, p1, "")
 	s.NoError(err)
 	s.False(p1.UpdatedTime.IsZero())
 
 	// need update schedule
-	p2 := &policy.Schema{ID: 1, Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeScheduled}}
-	p2.Trigger.Settings.Cron = "* * * * */2"
+	p2 := &policy.Schema{
+		ID:         1,
+		Name:       "test",
+		FiltersStr: `[{"type":"repository","value":"harbor*"},{"type":"tag","value":"2*"}]`,
+		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"* * * * */2"}}`, policy.TriggerTypeScheduled),
+	}
 	s.fakePolicyMgr.On("Update", s.ctx, p2, mock.Anything).Return(nil)
 	err = s.controller.UpdatePolicy(s.ctx, p2, "")
 	s.NoError(err)

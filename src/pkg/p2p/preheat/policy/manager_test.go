@@ -16,6 +16,7 @@ package policy
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/goharbor/harbor/src/lib/q"
@@ -115,15 +116,26 @@ func (m *managerTestSuite) TestUpdate() {
 
 // TestGet tests Get method.
 func (m *managerTestSuite) TestGet() {
-	m.dao.On("Get").Return(&policy.Schema{}, nil)
+	m.dao.On("Get").Return(&policy.Schema{
+		ID:         1,
+		Name:       "mgr-policy",
+		FiltersStr: `[{"type":"repository","value":"harbor*"},{"type":"tag","value":"2*"}]`,
+		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"* * * * */1"}}`, policy.TriggerTypeScheduled),
+	}, nil)
 	_, err := m.mgr.Get(nil, 1)
 	m.Require().Nil(err)
 }
 
 // TestGetByName tests Get method.
 func (m *managerTestSuite) TestGetByName() {
-	m.dao.On("GetByName").Return(&policy.Schema{}, nil)
-	_, err := m.mgr.Get(nil, 1)
+	m.dao.On("GetByName").Return(&policy.Schema{
+		ID:         1,
+		ProjectID:  1,
+		Name:       "mgr-policy",
+		FiltersStr: `[{"type":"repository","value":"harbor*"},{"type":"tag","value":"2*"}]`,
+		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"* * * * */1"}}`, policy.TriggerTypeScheduled),
+	}, nil)
+	_, err := m.mgr.GetByName(nil, 1, "mgr-policy")
 	m.Require().Nil(err)
 }
 
@@ -151,11 +163,11 @@ func (m *managerTestSuite) TestListPoliciesByProject() {
 // TestParsePolicy tests parsePolicy.
 func (m *managerTestSuite) TestParsePolicy() {
 	schema := &policy.Schema{FiltersStr: "invalid"}
-	_, err := parsePolicy(schema)
+	_, err := ParsePolicy(schema)
 	m.Require().Error(err)
 
 	schema = &policy.Schema{TriggerStr: "invalid"}
-	_, err = parsePolicy(schema)
+	_, err = ParsePolicy(schema)
 	m.Require().Error(err)
 
 	schema = &policy.Schema{
@@ -187,7 +199,7 @@ func (m *managerTestSuite) TestParsePolicy() {
     }
 }`,
 	}
-	schema, err = parsePolicy(schema)
+	schema, err = ParsePolicy(schema)
 	m.Require().NoError(err)
 	m.Require().NotNil(schema.Trigger)
 	m.Require().Equal("0 0 2 1 * ? *", schema.Trigger.Settings.Cron)
