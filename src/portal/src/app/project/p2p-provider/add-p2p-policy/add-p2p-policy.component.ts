@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, ViewChild, } from '@ang
 import { PreheatPolicy } from '../../../../../ng-swagger-gen/models/preheat-policy';
 import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
 import { NgForm } from '@angular/forms';
-import { OriginCron } from '../../../../lib/services';
+import { OriginCron, ProjectService } from '../../../../lib/services';
 import { CronScheduleComponent } from '../../../../lib/components/cron-schedule';
 import { PreheatService } from '../../../../../ng-swagger-gen/services/preheat.service';
 import { finalize } from 'rxjs/operators';
@@ -77,7 +77,8 @@ export class AddP2pPolicyComponent implements OnInit {
   constructor(private preheatService: PreheatService,
               private session: SessionService,
               private route: ActivatedRoute,
-              private appConfigService: AppConfigService) {
+              private appConfigService: AppConfigService,
+              private projectService: ProjectService) {
   }
 
   ngOnInit() {
@@ -86,27 +87,34 @@ export class AddP2pPolicyComponent implements OnInit {
       const project = <Project>(resolverData["projectResolver"]);
       this.projectName = project.name;
       this.projectId = project.project_id;
-      if (project && project.metadata) {
-       this.preventVul = project.metadata.prevent_vul === TRUE;
-       this.projectSeverity = project.metadata.severity;
-       this.enableContentTrust = project.metadata.enable_content_trust === TRUE;
-      }
+      // get latest project info
+      this.getProject();
     }
+  }
+  getProject() {
+    this.projectService.getProject(this.projectId)
+      .subscribe(project => {
+        if (project && project.metadata) {
+          this.preventVul = project.metadata.prevent_vul === TRUE;
+          this.projectSeverity = project.metadata.severity;
+          this.enableContentTrust = project.metadata.enable_content_trust === TRUE;
+          this.severity = PROJECT_SEVERITY_LEVEL_MAP[this.projectSeverity];
+        }
+      });
   }
 
   resetForAdd() {
-    this.currentForm.reset({
-      triggerType: "manual"
-    });
     this.inlineAlert.close();
     this.policy = {};
     this.repos = null;
     this.tags = null;
-    this.onlySignedImages = false;
-    this.severity = null;
     this.labels = null;
-    this.triggerType = "manual";
     this.cron = null;
+    this.currentForm.reset({
+      triggerType: "manual",
+      severity: PROJECT_SEVERITY_LEVEL_MAP[this.projectSeverity],
+      onlySignedImages: this.enableContentTrust
+    });
   }
 
   setCron(event: any) {
@@ -161,18 +169,12 @@ export class AddP2pPolicyComponent implements OnInit {
         filters.push({type: FILTER_TYPE.TAG, value: this.tags});
       }
     }
-    if (this.onlySignedImages) {
-      filters.push({type: FILTER_TYPE.SIGNATURE, value: this.onlySignedImages});
-    }
     if (this.labels) {
       if (this.labels.indexOf(",") !== -1) {
         filters.push({type: FILTER_TYPE.LABEL, value: `{${this.labels}}`});
       } else {
         filters.push({type: FILTER_TYPE.LABEL, value: this.labels});
       }
-    }
-    if (this.severity === 0 || this.severity > 0) {
-      filters.push({type: FILTER_TYPE.VULNERABILITY, value: +this.severity});
     }
     policy.filters = JSON.stringify(filters);
     const trigger: any = {
@@ -220,6 +222,9 @@ export class AddP2pPolicyComponent implements OnInit {
   }
 
   valid(): boolean {
+    if (this.triggerType === TRIGGER.SCHEDULED && !this.cron) {
+      return false;
+    }
     return this.currentForm.valid;
   }
 
@@ -292,5 +297,8 @@ export class AddP2pPolicyComponent implements OnInit {
   }
   withNotary(): boolean {
     return this.appConfigService.getConfig().with_notary;
+  }
+  showExplainForEventBased(): boolean {
+    return this.triggerType === TRIGGER.EVENT_BASED;
   }
 }

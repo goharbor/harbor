@@ -1486,7 +1486,7 @@
     "CREATE_INSTANCE": "Create instance"
   },
   "P2P_PROVIDER": {
-    "P2P_PROVIDER": "Preheat",
+    "P2P_PROVIDER": "P2P Preheat",
     "POLICIES": "Policies",
     "NEW_POLICY": "NEW POLICY",
     "NAME": "Name",
@@ -1549,6 +1549,8 @@
     "UPDATED_SUCCESSFULLY": "Updated policy successfully",
     "EXECUTIONS": "Executions",
     "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
-    "CONTENT_WARNING": "Content trust settings here conflicts with the relevant project configuration that will override the settings here"
+    "CONTENT_WARNING": "Content trust settings here conflicts with the relevant project configuration that will override the settings here",
+    "PREHEAT_EXPLAIN": "Preheat will migrate the image to the p2p network",
+    "CRITERIA_EXPLAIN": "As specified in 'Deployment security' section under Configuration tab"
   }
 }

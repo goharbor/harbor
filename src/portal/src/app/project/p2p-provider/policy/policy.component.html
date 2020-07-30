@@ -1,5 +1,13 @@
 <div class="row">
-    <h4 class="mt-1">{{'P2P_PROVIDER.POLICIES' | translate}}</h4>
+    <h4 class="mt-1">
+        <span>{{'P2P_PROVIDER.POLICIES' | translate}}</span>
+        <clr-tooltip>
+            <clr-icon class="color-57" clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                {{'P2P_PROVIDER.PREHEAT_EXPLAIN' | translate}}
+            </clr-tooltip-content>
+        </clr-tooltip>
+    </h4>
     <clr-datagrid (clrDgSingleSelectedChange)="refreshJobs($event)" [clrDgLoading]="loading" [(clrDgSingleSelected)]="selectedRow">
         <clr-dg-action-bar>
             <div class="clr-row">
@@ -116,7 +124,7 @@
                     <span>&nbsp;{{'P2P_PROVIDER.EDN_TEXT' | translate}}</span>
                 </div>
             </clr-dg-cell>
-            <clr-dg-cell>
+            <clr-dg-cell  class="no-wrapper">
                 {{getTriggerTypeI18n(p.trigger) | translate}}
                 <clr-signpost *ngIf="isScheduled(p.trigger)">
                     <clr-signpost-content *clrIfOpen>
