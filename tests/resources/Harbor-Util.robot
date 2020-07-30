@@ -14,7 +14,7 @@
 
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
-Library  Selenium2Library
+Library  SeleniumLibrary
 Library  OperatingSystem
 
 *** Variables ***
@@ -148,14 +148,15 @@ Compile and Up Harbor With Source Code
 Wait for Harbor Ready
     [Arguments]  ${protocol}  ${HARBOR_IP}
     Log To Console  Waiting for Harbor to Come Up...
-    :FOR  ${i}  IN RANGE  20
-    \  ${out}=  Run  curl -k ${protocol}://${HARBOR_IP}
-    \  Log  ${out}
-    \  ${status}=  Run Keyword And Return Status  Should Not Contain  ${out}  502 Bad Gateway
-    \  ${status}=  Run Keyword If  ${status}  Run Keyword And Return Status  Should Not Contain  ${out}  Connection refused
-    \  ${status}=  Run Keyword If  ${status}  Run Keyword And Return Status  Should Contain  ${out}  <title>Harbor</title>
-    \  Return From Keyword If  ${status}  ${HARBOR_IP}
-    \  Sleep  30s
+    FOR  ${i}  IN RANGE  20
+        ${out}=  Run  curl -k ${protocol}://${HARBOR_IP}
+        Log  ${out}
+        ${status}=  Run Keyword And Return Status  Should Not Contain  ${out}  502 Bad Gateway
+        ${status}=  Run Keyword If  ${status}  Run Keyword And Return Status  Should Not Contain  ${out}  Connection refused
+        ${status}=  Run Keyword If  ${status}  Run Keyword And Return Status  Should Contain  ${out}  <title>Harbor</title>
+        Return From Keyword If  ${status}  ${HARBOR_IP}
+        Sleep  30s
+    END
     Fail Harbor failed to come up properly!
 
 Get Harbor Version

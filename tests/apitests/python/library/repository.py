@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import site
-reload(site)
 import time
 import base
 import swagger_client
@@ -121,7 +119,6 @@ class Repository(base.Base, object):
     def check_repository_exist(self, project_Name, repo_name, **kwargs):
         repositories = self.list_repositories(project_Name, **kwargs)
         for  repo in repositories:
-            print project_Name+"/"+repo_name
             if repo.name == project_Name+"/"+repo_name:
                 return True
         return False

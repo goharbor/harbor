@@ -53,7 +53,7 @@ class TestResult(object):
     def get_final_result(self):
         if self.num_errors > 0:
             for each_err_msg in self.error_message:
-                print "Error message:", each_err_msg
+                print("Error message:", each_err_msg)
             raise Exception(r"Test case failed with {} errors.".format(self.num_errors))
 
 from contextlib import contextmanager

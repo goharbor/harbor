@@ -25,7 +25,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
@@ -60,21 +60,17 @@ class TestProjects(unittest.TestCase):
 
         #3. ORAS CLI push artifacts;
         md5_list_push = library.oras.oras_push(harbor_server, user_name, user_001_password, TestProjects.project_name, self.repo_name, self.tag)
-        print "md5_list_push:",md5_list_push
 
         #4. Get repository from Harbor successfully, and verfiy repository name is repo pushed by ORAS CLI;
         repo_data = self.repo.get_repository(TestProjects.project_name, self.repo_name, **TestProjects.USER_CLIENT)
-        print "repo_data:", repo_data
         self.assertEqual(repo_data.name, TestProjects.project_name + "/" + self.repo_name)
 
         #5. Get and verify artifacts by tag;
         artifact = self.artifact.get_reference_info(TestProjects.project_name, self.repo_name, self.tag, **TestProjects.USER_CLIENT)
-        print "artifact:", artifact
         self.assertEqual(artifact[0].tags[0].name, self.tag)
 
         #6. ORAS CLI pull artifacts index by tag;
         md5_list_pull = library.oras.oras_pull(harbor_server, user_name, user_001_password, TestProjects.project_name, self.repo_name, self.tag)
-        print "md5_list_pull:",md5_list_pull
 
         #7. Verfiy MD5 between artifacts pushed by ORAS and artifacts pulled by ORAS;
         if set(md5_list_push) != set(md5_list_pull):
