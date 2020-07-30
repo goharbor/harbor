@@ -67,6 +67,7 @@ The certificate usually contains a `.crt` file and a `.key` file, for example, `
     DNS.1=yourdomain.com
     DNS.2=yourdomain
     DNS.3=hostname
+    IP=hostIP
     EOF
     ```
 
@@ -178,6 +179,12 @@ After setting up HTTPS for Harbor, you can verify the HTTPS connection by perfor
     ```sh
     docker login yourdomain.com:port
     ```
+   If you've used self-signed certificate do the following for Mac
+   
+   ```sh 
+    sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ca.crt
+	```
+   and you will need to restart Docker for mac for the change to take effect
    
 ## What to Do Next
 
