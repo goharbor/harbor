@@ -33,6 +33,7 @@ var (
 		&robot{},
 		&basicAuth{},
 		&session{},
+		&proxyCacheSecret{},
 		&unauthorized{},
 	}
 )

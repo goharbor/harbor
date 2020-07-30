@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
-	comHttpAuth "github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/proxy/secret"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"io"
 	"time"
@@ -85,8 +85,7 @@ func (l *localHelper) init() {
 	log.Debugf("core url:%s, local core url: %v", config.GetCoreURL(), config.LocalCoreURL())
 	// the traffic is internal only
 	registryURL := config.LocalCoreURL()
-	authorizer := comHttpAuth.NewSecretAuthorizer(config.ProxyServiceSecret)
-	l.registry = registry.NewClientWithAuthorizer(registryURL, authorizer, true)
+	l.registry = registry.NewClientWithAuthorizer(registryURL, secret.NewAuthorizer(), true)
 }
 
 func (l *localHelper) PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error {
