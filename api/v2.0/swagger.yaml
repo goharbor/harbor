@@ -1672,6 +1672,8 @@ definitions:
         description: The operation against the repository in this log entry.
       op_time:
         type: string
+        format: date-time
+        example: '2006-01-02T15:04:05'
         description: The time when this operation is triggered.
   Metadata:
     type: object
