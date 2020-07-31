@@ -1,22 +1,38 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package v2token
 
 import (
+	"context"
 	"testing"
 
 	"github.com/docker/distribution/registry/auth/token"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
+	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 )
 
 func TestAll(t *testing.T) {
-	mgr := &project.FakeManager{}
-	mgr.On("Get", int64(1)).Return(&models.Project{ProjectID: 1, Name: "library"}, nil)
-	mgr.On("Get", int64(2)).Return(&models.Project{ProjectID: 2, Name: "test"}, nil)
-	mgr.On("Get", int64(3)).Return(&models.Project{ProjectID: 3, Name: "development"}, nil)
+	ctx := context.TODO()
+
+	mgr := &project.Manager{}
+	mgr.On("Get", ctx, int64(1)).Return(&models.Project{ProjectID: 1, Name: "library"}, nil)
+	mgr.On("Get", ctx, int64(2)).Return(&models.Project{ProjectID: 2, Name: "test"}, nil)
+	mgr.On("Get", ctx, int64(3)).Return(&models.Project{ProjectID: 3, Name: "development"}, nil)
 
 	access := []*token.ResourceActions{
 		{
@@ -47,7 +63,9 @@ func TestAll(t *testing.T) {
 	}
 	sc := New(context.Background(), "jack", access)
 	tsc := sc.(*tokenSecurityCtx)
-	tsc.pm = mgr
+	tsc.getProject = func(id int64) (*models.Project, error) {
+		return mgr.Get(ctx, id)
+	}
 
 	cases := []struct {
 		resource types.Resource

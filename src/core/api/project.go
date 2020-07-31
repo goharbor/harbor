@@ -17,7 +17,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -33,12 +32,14 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
+	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/replication"
 )
@@ -331,12 +332,13 @@ func (p *ProjectAPI) Delete() {
 		return
 	}
 
-	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
+	ctx := p.Ctx.Request.Context()
+
+	if err := project.Ctl.Delete(ctx, p.project.ProjectID); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to delete project %d", p.project.ProjectID), err)
 		return
 	}
 
-	ctx := p.Ctx.Request.Context()
 	referenceID := quota.ReferenceID(p.project.ProjectID)
 	q, err := quota.Ctl.GetByRef(ctx, quota.ProjectReference, referenceID)
 	if err != nil {
