@@ -225,12 +225,15 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 						return
 					}
 
+					var rp interface{}
+
 					// Make sure the data is aligned with the v1 spec.
-					if _, err = report.ResolveData(m, []byte(rawReport)); err != nil {
+					if rp, err = report.ResolveData(m, []byte(rawReport)); err != nil {
 						errs[i] = errors.Wrap(err, "scan job: resolve report data")
 						return
 					}
 
+					report.GetNativeV1ReportFromResolvedData(ctx, rp)
 					myLogger.Infof("Transforming report with mime type :%s to version 2 of schema", m)
 					myLogger.Infof("Raw report data : %s", rawReport)
 

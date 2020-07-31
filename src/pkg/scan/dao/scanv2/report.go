@@ -27,7 +27,7 @@ import (
 )
 
 func init() {
-	orm.RegisterModel(new(Report), new(VulnerabilityRecord), new(ReportVulnerability), new(CVSS3Vector), new(CVSS2Vector), new(CVSSSource))
+	orm.RegisterModel(new(Report), new(VulnerabilityRecord), new(ReportVulnerabilityRecord), new(CVSS3Vector), new(CVSS2Vector), new(CVSSSource))
 }
 
 // CreateReport creates new report

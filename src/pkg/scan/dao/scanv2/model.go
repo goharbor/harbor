@@ -46,7 +46,7 @@ type Report struct {
 type VulnerabilityRecord struct {
 	ID               int64  `orm:"pk;auto;column(id)"`
 	CVEID            string `orm:"column(cve_id)"`
-	ScannerID        string `orm:"unique;column(registration_uuid)"`
+	RegistrationUUID string `orm:"unique;column(registration_uuid)"`
 	Digest           string `orm:"column(digest)"`
 	Report           string `orm:"column(report_uuid)"`
 	Package          string `orm:"column(package)"`
@@ -57,16 +57,20 @@ type VulnerabilityRecord struct {
 	URL              string `orm:"column(urls);null"`
 	CVE3Score        string `orm:"column(cve3_score);null"`
 	CVE2Score        string `orm:"column(cve2_score);null"`
+	CVSS3Vector      string `orm:"column(cvss3_vector);null"` //e.g. CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N
+	CVSS2Vector      string `orm:"column(cvss2_vector);null"` //e.g. AV:L/AC:M/Au:N/C:P/I:N/A:N
 	Description      string `orm:"column(description);null"`
 	VendorAttributes string `orm:"column(vendorattributes);type(json);null"`
 }
 
-//ReportVulnerability is relation table required to optimize data storage for both the
+//ReportVulnerabilityRecord is relation table required to optimize data storage for both the
 //vulnerability records and the scan report.
 //identified by composite key (ID, Report)
 //Since each scan report has a separate UUID, the composite key
-//would ensure that the immutability of the historical scan reports is guaranteed
-type ReportVulnerability struct {
+//would ensure that the immutability of the historical scan reports is guaranteed.
+//It is sufficient to store the int64 VulnerabilityRecord Id since the vulnerability records
+//are uniquely identified in the table based on the ScannerID and the CVEID
+type ReportVulnerabilityRecord struct {
 	ID           int64  `orm:"pk;auto;column(id)"`
 	Report       string `orm:"column(report_uuid);"`
 	VulnRecordID int64  `orm:"column(vuln_record_id);"`
@@ -141,7 +145,7 @@ type CVSSSource struct {
 
 // TableName for Report
 func (r *Report) TableName() string {
-	return "scan_report"
+	return "scan_report_v2"
 }
 
 // TableUnique for Report
@@ -149,5 +153,28 @@ func (r *Report) TableUnique() [][]string {
 	return [][]string{
 		{"uuid"},
 		{"digest", "registration_uuid", "mime_type"},
+	}
+}
+
+//TableName for VulnerabilityRecord
+func (vr *VulnerabilityRecord) TableName() string {
+	return "vulnerability_record_v2"
+}
+
+//TableUnique for VulnerabilityRecord
+func (vr *VulnerabilityRecord) TableUnique() [][]string {
+	return [][]string{
+		{"cve_id", "registration_uuid"},
+	}
+}
+
+func (rvr *ReportVulnerabilityRecord) TableName() string {
+	return "report_vulnerability_record_v2"
+}
+
+//TableUnique for VulnerabilityRecord
+func (vr *ReportVulnerabilityRecord) TableUnique() [][]string {
+	return [][]string{
+		{"report_uuid", "vuln_record_id"},
 	}
 }
