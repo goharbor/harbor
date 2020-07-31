@@ -1,4 +1,4 @@
-#!/usr/local/bin/expect
+#!/usr/bin/env expect
 
 set HOST [lindex $argv 0]
 set PROJECT [lindex $argv 1]
