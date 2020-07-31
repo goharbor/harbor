@@ -16,6 +16,7 @@ package migration
 
 import (
 	"context"
+
 	art "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -26,7 +27,7 @@ import (
 
 func upgradeData(ctx context.Context) error {
 	abstractor := art.NewAbstractor()
-	pros, err := project.Mgr.List()
+	pros, err := project.Mgr.List(ctx)
 	if err != nil {
 		return err
 	}

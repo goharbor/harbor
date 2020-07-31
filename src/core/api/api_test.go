@@ -220,7 +220,7 @@ func TestMain(m *testing.M) {
 		"delete from harbor_label",
 		"delete from robot",
 		"delete from user_group",
-		"delete from project_member",
+		"delete from project_member where id > 1",
 	})
 
 	ret := m.Run()

@@ -12,28 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package dao
 
 import (
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
-// keys of project metadata and severity values
-const (
-	ProMetaPublic               = "public"
-	ProMetaEnableContentTrust   = "enable_content_trust"
-	ProMetaPreventVul           = "prevent_vul" // prevent vulnerable images from being pulled
-	ProMetaSeverity             = "severity"
-	ProMetaAutoScan             = "auto_scan"
-	ProMetaReuseSysCVEAllowlist = "reuse_sys_cve_allowlist"
-)
+func init() {
+	orm.RegisterModel(
+		new(Member),
+	)
+}
 
-// ProjectMetadata holds the metadata of a project.
-type ProjectMetadata struct {
-	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+// Member holds the details of a member.
+type Member struct {
+	ID           int       `orm:"pk;auto;column(id)" json:"id"`
 	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
-	Name         string    `orm:"column(name)" json:"name"`
-	Value        string    `orm:"column(value)" json:"value"`
+	Role         int       `orm:"column(role)" json:"role_id"`
+	EntityID     int       `orm:"column(entity_id)" json:"entity_id"`
+	EntityType   string    `orm:"column(entity_type)" json:"entity_type"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+}
+
+// TableName ...
+func (*Member) TableName() string {
+	return "project_member"
 }

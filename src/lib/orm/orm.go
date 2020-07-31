@@ -22,6 +22,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
+// RegisterModel ...
+func RegisterModel(models ...interface{}) {
+	orm.RegisterModel(models...)
+}
+
 type ormKey struct{}
 
 // FromContext returns orm from context

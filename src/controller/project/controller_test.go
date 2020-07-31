@@ -19,9 +19,17 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/project/models"
+	usermodels "github.com/goharbor/harbor/src/pkg/user/models"
+	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
+	"github.com/goharbor/harbor/src/testing/pkg/project/metadata"
+	"github.com/goharbor/harbor/src/testing/pkg/scan/allowlist"
+	"github.com/goharbor/harbor/src/testing/pkg/user"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -29,33 +37,114 @@ type ControllerTestSuite struct {
 	suite.Suite
 }
 
-func (suite *ControllerTestSuite) TestGetByName() {
-	mgr := &project.FakeManager{}
-	mgr.On("Get", "library").Return(&models.Project{ProjectID: 1, Name: "library"}, nil)
-	mgr.On("Get", "test").Return(nil, nil)
-	mgr.On("Get", "oops").Return(nil, fmt.Errorf("oops"))
+func (suite *ControllerTestSuite) TestCreate() {
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	mgr := &project.Manager{}
 
-	c := controller{projectMgr: mgr}
+	allowlistMgr := &allowlist.Manager{}
+	allowlistMgr.On("CreateEmpty", mock.Anything).Return(nil)
+
+	metadataMgr := &metadata.Manager{}
+
+	c := controller{projectMgr: mgr, allowlistMgr: allowlistMgr, metaMgr: metadataMgr}
 
 	{
-		p, err := c.GetByName(context.TODO(), "library", Metadata(false))
+		metadataMgr.On("Add", ctx, mock.Anything, mock.Anything).Return(nil).Once()
+		mgr.On("Create", ctx, mock.Anything).Return(int64(2), nil).Once()
+		projectID, err := c.Create(ctx, &models.Project{OwnerID: 1, Metadata: map[string]string{"public": "true"}})
+		suite.Nil(err)
+		suite.Equal(int64(2), projectID)
+	}
+
+	{
+		metadataMgr.On("Add", ctx, mock.Anything, mock.Anything).Return(fmt.Errorf("oops")).Once()
+		mgr.On("Create", ctx, mock.Anything).Return(int64(2), nil).Once()
+		projectID, err := c.Create(ctx, &models.Project{OwnerID: 1, Metadata: map[string]string{"public": "true"}})
+		suite.Error(err)
+		suite.Equal(int64(0), projectID)
+	}
+}
+
+func (suite *ControllerTestSuite) TestGetByName() {
+	ctx := context.TODO()
+
+	mgr := &project.Manager{}
+	mgr.On("Get", ctx, "library").Return(&models.Project{ProjectID: 1, Name: "library"}, nil)
+	mgr.On("Get", ctx, "test").Return(nil, errors.NotFoundError(nil))
+	mgr.On("Get", ctx, "oops").Return(nil, fmt.Errorf("oops"))
+
+	allowlistMgr := &allowlist.Manager{}
+
+	metadataMgr := &metadata.Manager{}
+	metadataMgr.On("Get", ctx, mock.Anything).Return(map[string]string{"public": "true"}, nil)
+
+	c := controller{projectMgr: mgr, allowlistMgr: allowlistMgr, metaMgr: metadataMgr}
+
+	{
+		p, err := c.GetByName(ctx, "library")
 		suite.Nil(err)
 		suite.Equal("library", p.Name)
 		suite.Equal(int64(1), p.ProjectID)
 	}
 
 	{
-		p, err := c.GetByName(context.TODO(), "test", Metadata(false))
+		p, err := c.GetByName(ctx, "test")
 		suite.Error(err)
 		suite.True(errors.IsNotFoundErr(err))
 		suite.Nil(p)
 	}
 
 	{
-		p, err := c.GetByName(context.TODO(), "oops", Metadata(false))
+		p, err := c.GetByName(ctx, "oops")
 		suite.Error(err)
 		suite.False(errors.IsNotFoundErr(err))
 		suite.Nil(p)
+	}
+
+	{
+		allowlistMgr.On("GetSys").Return(&commonmodels.CVEAllowlist{}, nil)
+		p, err := c.GetByName(ctx, "library", CVEAllowlist(true))
+		suite.Nil(err)
+		suite.Equal("library", p.Name)
+		suite.Equal(p.ProjectID, p.CVEAllowlist.ProjectID)
+	}
+}
+
+func (suite *ControllerTestSuite) TestWithOwner() {
+	ctx := context.TODO()
+
+	mgr := &project.Manager{}
+	mgr.On("Get", ctx, int64(1)).Return(&models.Project{ProjectID: 1, OwnerID: 1, Name: "library"}, nil)
+	mgr.On("Get", ctx, "library").Return(&models.Project{ProjectID: 1, OwnerID: 1, Name: "library"}, nil)
+	mgr.On("List", ctx, mock.Anything).Return([]*models.Project{
+		{ProjectID: 1, OwnerID: 1, Name: "library"},
+	}, nil)
+
+	userMgr := &user.Manager{}
+	userMgr.On("List", ctx, mock.Anything).Return(usermodels.Users{
+		&usermodels.User{UserID: 1, Username: "admin"},
+	}, nil)
+
+	c := controller{projectMgr: mgr, userMgr: userMgr}
+
+	{
+		project, err := c.Get(ctx, int64(1), Metadata(false), WithOwner())
+		suite.Nil(err)
+		suite.Equal("admin", project.OwnerName)
+	}
+
+	{
+		project, err := c.GetByName(ctx, "library", Metadata(false), WithOwner())
+		suite.Nil(err)
+		suite.Equal("admin", project.OwnerName)
+	}
+
+	{
+		param := &models.ProjectQueryParam{ProjectIDs: []int64{1}}
+		projects, err := c.List(ctx, param, Metadata(false), WithOwner())
+		suite.Nil(err)
+		suite.Len(projects, 1)
+		suite.Equal("admin", projects[0].OwnerName)
 	}
 }
 

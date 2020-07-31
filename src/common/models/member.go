@@ -25,14 +25,6 @@ type Member struct {
 	EntityType string `orm:"column(entity_type)" json:"entity_type"`
 }
 
-// UserMember ...
-type UserMember struct {
-	ID       int    `orm:"pk;column(user_id)" json:"user_id"`
-	Username string `json:"username"`
-	Rolename string `json:"role_name"`
-	Role     int    `json:"role_id"`
-}
-
 // MemberReq -  Create Project Member Request
 type MemberReq struct {
 	ProjectID   int64     `json:"project_id"`

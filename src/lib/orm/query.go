@@ -18,15 +18,63 @@ import (
 	"context"
 	"reflect"
 	"strings"
+	"sync"
+	"unicode"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 )
 
-// QuerySetter generates the query setter according to the query. "ignoredCols" is used to set the
-// columns that will not be queried
+// Params ...
+type Params = orm.Params
+
+// QuerySeter ...
+type QuerySeter = orm.QuerySeter
+
+// Escape special characters
+func Escape(str string) string {
+	return dao.Escape(str)
+}
+
+// ParamPlaceholderForIn returns a string that contains placeholders for sql keyword "in"
+// e.g. n=3, returns "?,?,?"
+func ParamPlaceholderForIn(n int) string {
+	placeholders := []string{}
+	for i := 0; i < n; i++ {
+		placeholders = append(placeholders, "?")
+	}
+	return strings.Join(placeholders, ",")
+}
+
+// QuerySetter generates the query setter according to the query. "ignoredCols" is used to set the columns that will not be queried.
+// Currently, it supports two ways to generate the query setter, the first one is to generate by the fields of the model,
+// and the second one is to generate by the methods their name begins with `FilterBy` of the model.
+// e.g. for the following model the queriable fields are  :
+// "Field2", "customized_field2", "Field3", "field3", "Field4" (or "field4") and "Field5" (or "field5").
+// type Foo struct{
+//   Field1 string `orm:"-"`
+//   Field2 string `orm:"column(customized_field2)"`
+//   Field3 string
+// }
+//
+// func (f *Foo) FilterByField4(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+//   // The value is the raw value of key in q.Query
+//	 return qs
+// }
+//
+// func (f *Foo) FilterByField5(ctx context.Context, qs orm.QuerySeter, key, value string) orm.QuerySeter {
+//   // The value string is the value of key in q.Query which is escaped by `Escape`
+//	 return qs
+// }
 func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignoredCols ...string) (orm.QuerySeter, error) {
+	val := reflect.ValueOf(model)
+	if val.Kind() != reflect.Ptr {
+		return nil, errors.Errorf("<orm.QuerySetter> cannot use non-ptr model struct `%s`", getFullName(reflect.Indirect(val).Type()))
+	}
+
 	ormer, err := FromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -36,53 +84,26 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignored
 		return qs, nil
 	}
 
-	// the program will panic when querying the columns that doesn't exist
-	// list the supported columns first to avoid the panic
-	cols := listQueriableCols(model, ignoredCols...)
-	for k, v := range query.Keywords {
-		col := strings.SplitN(k, orm.ExprSep, 2)[0]
-		if _, exist := cols[col]; !exist {
-			continue
-		}
-
-		// fuzzy match
-		f, ok := v.(*q.FuzzyMatchValue)
-		if ok {
-			qs = qs.Filter(k+"__icontains", f.Value)
-			continue
-		}
-
-		// range
-		r, ok := v.(*q.Range)
-		if ok {
-			if r.Min != nil {
-				qs = qs.Filter(k+"__gte", r.Min)
-			}
-			if r.Max != nil {
-				qs = qs.Filter(k+"__lte", r.Max)
-			}
-			continue
-		}
-
-		// or list
-		ol, ok := v.(*q.OrList)
-		if ok {
-			if len(ol.Values) > 0 {
-				qs = qs.Filter(k+"__in", ol.Values...)
-			}
-			continue
-		}
-
-		// and list
-		_, ok = v.(*q.AndList)
-		if ok {
-			// do nothing as and list needs to be handled by the logic of DAO
-			continue
-		}
-
-		// exact match
-		qs = qs.Filter(k, v)
+	ignored := map[string]bool{}
+	for _, col := range ignoredCols {
+		ignored[col] = true
 	}
+
+	columns := queriableColumns(model)
+	methods := queriableMethods(model)
+	for k, v := range query.Keywords {
+		field := strings.SplitN(k, orm.ExprSep, 2)[0]
+		if ignored[field] {
+			continue
+		}
+
+		if columns[field] {
+			qs = queryByColumn(qs, k, v)
+		} else if method, ok := methods[snakeCase(field)]; ok {
+			qs = queryByMethod(ctx, qs, k, v, method, val)
+		}
+	}
+
 	if query.PageSize > 0 {
 		qs = qs.Limit(query.PageSize)
 		if query.PageNumber > 0 {
@@ -92,7 +113,88 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignored
 	return qs, nil
 }
 
-// list the columns that can be queried
+// get reflect.Type name with package path.
+func getFullName(typ reflect.Type) string {
+	return typ.PkgPath() + "." + typ.Name()
+}
+
+// convert string to snake case
+func snakeCase(str string) string {
+	delim := '_'
+
+	runes := []rune(str)
+
+	var out []rune
+	for i := 0; i < len(runes); i++ {
+		if i > 0 &&
+			(unicode.IsUpper(runes[i])) &&
+			((i+1 < len(runes) && unicode.IsLower(runes[i+1])) || unicode.IsLower(runes[i-1])) {
+			out = append(out, delim)
+		}
+		out = append(out, unicode.ToLower(runes[i]))
+	}
+
+	return string(out)
+}
+
+func queryByColumn(qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	// fuzzy match
+	if f, ok := value.(*q.FuzzyMatchValue); ok {
+		return qs.Filter(key+"__icontains", f.Value)
+	}
+
+	// range
+	if r, ok := value.(*q.Range); ok {
+		if r.Min != nil {
+			qs = qs.Filter(key+"__gte", r.Min)
+		}
+		if r.Max != nil {
+			qs = qs.Filter(key+"__lte", r.Max)
+		}
+		return qs
+	}
+
+	// or list
+	if ol, ok := value.(*q.OrList); ok {
+		if len(ol.Values) > 0 {
+			qs = qs.Filter(key+"__in", ol.Values...)
+		}
+		return qs
+	}
+
+	// and list
+	if _, ok := value.(*q.AndList); ok {
+		// do nothing as and list needs to be handled by the logic of DAO
+		return qs
+	}
+
+	// exact match
+	return qs.Filter(key, value)
+}
+
+func queryByMethod(ctx context.Context, qs orm.QuerySeter, key string, value interface{}, methodName string, reflectVal reflect.Value) orm.QuerySeter {
+	if mv := reflectVal.MethodByName(methodName); mv.IsValid() {
+		switch method := mv.Interface().(type) {
+		case func(context.Context, orm.QuerySeter, string, interface{}) orm.QuerySeter:
+			return method(ctx, qs, key, value)
+		case func(context.Context, orm.QuerySeter, string, string) orm.QuerySeter:
+			if str, ok := value.(string); ok {
+				return method(ctx, qs, key, Escape(str))
+			}
+			log.Warningf("expected string type for the value of method %s, but actual is %T", methodName, value)
+		default:
+			return qs
+		}
+	}
+
+	return qs
+}
+
+var (
+	cache = sync.Map{}
+)
+
+// get model fields which are columns in orm
 // e.g. for the following model the columns that can be queried are:
 // "Field2", "customized_field2", "Field3" and "field3"
 // type model struct{
@@ -100,20 +202,22 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignored
 //   Field2 string `orm:"column(customized_field2)"`
 //   Field3 string
 // }
-//
-// set "ignoredCols" to ignore the specified columns
-func listQueriableCols(model interface{}, ignoredCols ...string) map[string]struct{} {
-	if model == nil {
-		return nil
+func queriableColumns(model interface{}) map[string]bool {
+	typ := reflect.Indirect(reflect.ValueOf(model)).Type()
+
+	key := getFullName(typ) + "-columns"
+	value, ok := cache.Load(key)
+	if ok {
+		return value.(map[string]bool)
 	}
-	ignored := map[string]struct{}{}
-	for _, ig := range ignoredCols {
-		ignored[ig] = struct{}{}
-	}
-	cols := map[string]struct{}{}
-	t := reflect.Indirect(reflect.ValueOf(model)).Type()
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
+
+	cols := map[string]bool{}
+	defer func() {
+		cache.Store(key, cols)
+	}()
+
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
 		orm := field.Tag.Get("orm")
 		if orm == "-" {
 			continue
@@ -129,34 +233,46 @@ func listQueriableCols(model interface{}, ignoredCols ...string) map[string]stru
 				}
 			}
 		}
-		if len(colName) == 0 {
-			// TODO convert the field.Name to snake_case
+
+		if colName == "" {
+			colName = snakeCase(field.Name)
 		}
-		if _, exist := ignored[colName]; exist {
-			continue
-		}
-		if _, exist := ignored[field.Name]; exist {
-			continue
-		}
-		if len(colName) != 0 {
-			cols[colName] = struct{}{}
-		}
-		cols[field.Name] = struct{}{}
+
+		cols[colName] = true
+		cols[field.Name] = true
 	}
 	return cols
 }
 
-// ParamPlaceholderForIn returns a string that contains placeholders for sql keyword "in"
-// e.g. n=3, returns "?,?,?"
-func ParamPlaceholderForIn(n int) string {
-	placeholders := []string{}
-	for i := 0; i < n; i++ {
-		placeholders = append(placeholders, "?")
-	}
-	return strings.Join(placeholders, ",")
-}
+// get model methods which begin with `FilterBy`
+func queriableMethods(model interface{}) map[string]string {
+	val := reflect.ValueOf(model)
 
-// Escape special characters
-func Escape(str string) string {
-	return dao.Escape(str)
+	key := getFullName(reflect.Indirect(val).Type()) + "-methods"
+	value, ok := cache.Load(key)
+	if ok {
+		return value.(map[string]string)
+	}
+
+	methods := map[string]string{}
+	defer func() {
+		cache.Store(key, methods)
+	}()
+
+	prefix := "FilterBy"
+	typ := val.Type()
+	for i := 0; i < typ.NumMethod(); i++ {
+		name := typ.Method(i).Name
+
+		if !strings.HasPrefix(name, prefix) {
+			continue
+		}
+
+		field := snakeCase(strings.TrimPrefix(name, prefix))
+		if field != "" {
+			methods[field] = name
+		}
+	}
+
+	return methods
 }

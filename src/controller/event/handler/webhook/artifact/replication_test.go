@@ -1,7 +1,20 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package artifact
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -15,6 +28,8 @@ import (
 	"github.com/goharbor/harbor/src/replication"
 	daoModels "github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/model"
+	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -29,9 +44,6 @@ type fakedReplicationMgr struct {
 }
 
 type fakedReplicationRegistryMgr struct {
-}
-
-type fakedProjectCtl struct {
 }
 
 func (f *fakedNotificationPolicyMgr) Create(*models.NotificationPolicy) (int64, error) {
@@ -196,16 +208,6 @@ func (f *fakedReplicationRegistryMgr) HealthCheck() error {
 	return nil
 }
 
-func (f *fakedProjectCtl) Get(ctx context.Context, projectID int64, options ...project.Option) (*models.Project, error) {
-	return &models.Project{ProjectID: 1}, nil
-}
-func (f *fakedProjectCtl) GetByName(ctx context.Context, projectName string, options ...project.Option) (*models.Project, error) {
-	return &models.Project{ProjectID: 1}, nil
-}
-func (f *fakedProjectCtl) List(ctx context.Context, query *models.ProjectQueryParam, options ...project.Option) ([]*models.Project, error) {
-	return nil, nil
-}
-
 func TestReplicationHandler_Handle(t *testing.T) {
 	common_dao.PrepareTestForPostgresSQL()
 	config.Init()
@@ -227,7 +229,10 @@ func TestReplicationHandler_Handle(t *testing.T) {
 	replication.OperationCtl = &fakedReplicationMgr{}
 	replication.PolicyCtl = &fakedReplicationPolicyMgr{}
 	replication.RegistryMgr = &fakedReplicationRegistryMgr{}
-	project.Ctl = &fakedProjectCtl{}
+	projectCtl := &projecttesting.Controller{}
+	project.Ctl = projectCtl
+
+	mock.OnAnything(projectCtl, "GetByName").Return(&models.Project{ProjectID: 1}, nil)
 
 	handler := &ReplicationHandler{}
 

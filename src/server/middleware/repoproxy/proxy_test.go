@@ -16,12 +16,13 @@ package repoproxy
 
 import (
 	"context"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	securitySecret "github.com/goharbor/harbor/src/common/security/secret"
 	"github.com/goharbor/harbor/src/core/config"
-	"testing"
 )
 
 func TestIsProxyProject(t *testing.T) {
@@ -60,7 +61,7 @@ func TestIsProxySession(t *testing.T) {
 	sc1 := securitySecret.NewSecurityContext("123456789", config.SecretStore)
 	otherCtx := security.NewContext(context.Background(), sc1)
 
-	sc2 := proxycachesecret.NewSecurityContext("library/hello-world")
+	sc2 := proxycachesecret.NewSecurityContext(context.Background(), "library/hello-world")
 	proxyCtx := security.NewContext(context.Background(), sc2)
 	cases := []struct {
 		name string

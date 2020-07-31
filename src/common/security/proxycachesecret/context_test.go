@@ -15,6 +15,7 @@
 package proxycachesecret
 
 import (
+	"context"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
@@ -27,14 +28,16 @@ import (
 type proxyCacheSecretTestSuite struct {
 	suite.Suite
 	sc  *SecurityContext
-	mgr *project.FakeManager
+	mgr *project.Manager
 }
 
 func (p *proxyCacheSecretTestSuite) SetupTest() {
-	p.mgr = &project.FakeManager{}
+	p.mgr = &project.Manager{}
 	p.sc = &SecurityContext{
 		repository: "library/hello-world",
-		mgr:        p.mgr,
+		getProject: func(i interface{}) (*models.Project, error) {
+			return p.mgr.Get(context.TODO(), i)
+		},
 	}
 }
 
@@ -72,7 +75,7 @@ func (p *proxyCacheSecretTestSuite) TestCan() {
 	// the requested project not found
 	action = rbac.ActionPull
 	resource = rbac.NewProjectNamespace(2).Resource(rbac.ResourceRepository)
-	p.mgr.On("Get", mock.Anything).Return(nil, nil)
+	p.mgr.On("Get", mock.Anything, mock.Anything).Return(nil, nil)
 	p.False(p.sc.Can(action, resource))
 	p.mgr.AssertExpectations(p.T())
 
@@ -82,7 +85,7 @@ func (p *proxyCacheSecretTestSuite) TestCan() {
 	// pass for action pull
 	action = rbac.ActionPull
 	resource = rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository)
-	p.mgr.On("Get", mock.Anything).Return(&models.Project{
+	p.mgr.On("Get", mock.Anything, mock.Anything).Return(&models.Project{
 		ProjectID: 1,
 		Name:      "library",
 	}, nil)
@@ -95,7 +98,7 @@ func (p *proxyCacheSecretTestSuite) TestCan() {
 	// pass for action push
 	action = rbac.ActionPush
 	resource = rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository)
-	p.mgr.On("Get", mock.Anything).Return(&models.Project{
+	p.mgr.On("Get", mock.Anything, mock.Anything).Return(&models.Project{
 		ProjectID: 1,
 		Name:      "library",
 	}, nil)

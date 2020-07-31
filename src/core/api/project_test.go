@@ -15,15 +15,16 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"strconv"
-	"testing"
 )
 
 var addProject *apilib.ProjectReq

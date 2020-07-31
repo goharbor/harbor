@@ -21,6 +21,7 @@ type Option func(*Options)
 type Options struct {
 	CVEAllowlist bool // get project with cve allowlist
 	Metadata     bool // get project with metadata
+	WithOwner    bool
 }
 
 // CVEAllowlist set CVEAllowlist for the Options
@@ -34,6 +35,13 @@ func CVEAllowlist(allowlist bool) Option {
 func Metadata(metadata bool) Option {
 	return func(opts *Options) {
 		opts.Metadata = metadata
+	}
+}
+
+// WithOwner set WithOwner for the Options
+func WithOwner() Option {
+	return func(opts *Options) {
+		opts.WithOwner = true
 	}
 }
 

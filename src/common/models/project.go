@@ -15,9 +15,14 @@
 package models
 
 import (
+	"context"
+	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -121,9 +126,67 @@ func (p *Project) AutoScan() bool {
 	return isTrue(auto)
 }
 
-func isTrue(value string) bool {
-	return strings.ToLower(value) == "true" ||
-		strings.ToLower(value) == "1"
+// FilterByPublic returns orm.QuerySeter with public filter
+func (p *Project) FilterByPublic(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	subQuery := `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = '%s'`
+	if isTrue(value) {
+		subQuery = fmt.Sprintf(subQuery, "true")
+	} else {
+		subQuery = fmt.Sprintf(subQuery, "false")
+	}
+	return qs.FilterRaw("project_id", fmt.Sprintf("IN (%s)", subQuery))
+}
+
+// FilterByOwner returns orm.QuerySeter with owner filter
+func (p *Project) FilterByOwner(ctx context.Context, qs orm.QuerySeter, key string, value string) orm.QuerySeter {
+	return qs.FilterRaw("owner_id", fmt.Sprintf("IN (SELECT user_id FROM harbor_user WHERE username = '%s')", value))
+}
+
+// FilterByMember returns orm.QuerySeter with member filter
+func (p *Project) FilterByMember(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	query, ok := value.(*MemberQuery)
+	if !ok {
+		return qs
+	}
+	subQuery := `SELECT project_id FROM project_member pm, harbor_user u WHERE pm.entity_id = u.user_id AND pm.entity_type = 'u' AND u.username = '%s'`
+	subQuery = fmt.Sprintf(subQuery, escape(query.Name))
+	if query.Role > 0 {
+		subQuery = fmt.Sprintf("%s AND pm.role = %d", subQuery, query.Role)
+	}
+
+	if len(query.GroupIDs) > 0 {
+		var elems []string
+		for _, groupID := range query.GroupIDs {
+			elems = append(elems, strconv.Itoa(groupID))
+		}
+
+		tpl := "(%s) UNION (SELECT project_id FROM project_member pm, user_group ug WHERE pm.entity_id = ug.id AND pm.entity_type = 'g' AND ug.id IN (%s))"
+		subQuery = fmt.Sprintf(tpl, subQuery, strings.TrimSpace(strings.Join(elems, ", ")))
+	}
+
+	return qs.FilterRaw("project_id", fmt.Sprintf("IN (%s)", subQuery))
+}
+
+func isTrue(i interface{}) bool {
+	switch value := i.(type) {
+	case bool:
+		return value
+	case string:
+		v := strings.ToLower(value)
+		return v == "true" || v == "1"
+	default:
+		return false
+	}
+}
+
+func escape(str string) string {
+	// TODO: remove this function when resolve the cycle import between lib/orm, common/dao and common/models.
+	// We need to move the function to registry the database from common/dao to lib/database,
+	// then lib/orm no need to depend the PrepareTestForPostgresSQL method in the common/dao
+	str = strings.Replace(str, `\`, `\\`, -1)
+	str = strings.Replace(str, `%`, `\%`, -1)
+	str = strings.Replace(str, `_`, `\_`, -1)
+	return str
 }
 
 // ProjectQueryParam can be used to set query parameters when listing projects.
@@ -145,6 +208,36 @@ type ProjectQueryParam struct {
 	Member     *MemberQuery // the member of project
 	Pagination *Pagination  // pagination information
 	ProjectIDs []int64      // project ID list
+}
+
+// ToQuery returns q.Query from param
+func (param *ProjectQueryParam) ToQuery() *q.Query {
+	kw := q.KeyWords{}
+	if param.Name != "" {
+		kw["name"] = q.FuzzyMatchValue{Value: param.Name}
+	}
+	if param.Owner != "" {
+		kw["owner"] = param.Owner
+	}
+	if param.Public != nil {
+		kw["public"] = *param.Public
+	}
+	if param.RegistryID != 0 {
+		kw["registry_id"] = param.RegistryID
+	}
+	if len(param.ProjectIDs) > 0 {
+		kw["project_id__in"] = param.ProjectIDs
+	}
+	if param.Member != nil {
+		kw["member"] = param.Member
+	}
+
+	query := q.New(kw)
+	if param.Pagination != nil {
+		query.PageNumber = param.Pagination.Page
+		query.PageSize = param.Pagination.Size
+	}
+	return query
 }
 
 // MemberQuery filter by member's username and role

@@ -16,10 +16,11 @@ package retention
 
 import (
 	"fmt"
+	"time"
+
 	beegoorm "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/selector"
-	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
@@ -325,7 +326,7 @@ func launcherError(err error) error {
 }
 
 func getProjects(projectMgr project.Manager) ([]*selector.Candidate, error) {
-	projects, err := projectMgr.List()
+	projects, err := projectMgr.List(orm.Context())
 	if err != nil {
 		return nil, err
 	}
