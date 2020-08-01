@@ -104,6 +104,10 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 		return "", errors.Wrap(err, "create report: insert")
 	}
 
+	if _, err := ConvertV1ReportToV2Report(r); err != nil {
+		return "", errors.Wrap(err, "create v2 report: insert")
+	}
+
 	return r.UUID, nil
 }
 
