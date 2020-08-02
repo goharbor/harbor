@@ -129,3 +129,65 @@ func (p *PolicyTestSuite) TestValid() {
 	p.schema.Valid(v)
 	require.False(p.T(), v.HasErrors(), "should return nil error")
 }
+
+// TestDecode tests decode.
+func (p *PolicyTestSuite) TestDecode() {
+	s := &Schema{
+		ID:          100,
+		Name:        "test-for-decode",
+		Description: "",
+		ProjectID:   1,
+		ProviderID:  1,
+		Filters:     nil,
+		FiltersStr:  "[{\"type\":\"repository\",\"value\":\"**\"},{\"type\":\"tag\",\"value\":\"**\"},{\"type\":\"label\",\"value\":\"test\"}]",
+		Trigger:     nil,
+		TriggerStr:  "{\"type\":\"event_based\",\"trigger_setting\":{\"cron\":\"\"}}",
+		Enabled:     false,
+	}
+	p.NoError(s.Decode())
+	p.Len(s.Filters, 3)
+	p.NotNil(s.Trigger)
+
+	// invalid filter or trigger
+	s.FiltersStr = ""
+	s.TriggerStr = "invalid"
+	p.Error(s.Decode())
+
+	s.FiltersStr = "invalid"
+	s.TriggerStr = ""
+	p.Error(s.Decode())
+}
+
+// TestEncode tests encode.
+func (p *PolicyTestSuite) TestEncode() {
+	s := &Schema{
+		ID:          101,
+		Name:        "test-for-encode",
+		Description: "",
+		ProjectID:   2,
+		ProviderID:  2,
+		Filters: []*Filter{
+			{
+				Type:  FilterTypeRepository,
+				Value: "**",
+			},
+			{
+				Type:  FilterTypeTag,
+				Value: "**",
+			},
+			{
+				Type:  FilterTypeLabel,
+				Value: "test",
+			},
+		},
+		FiltersStr: "",
+		Trigger: &Trigger{
+			Type: "event_based",
+		},
+		TriggerStr: "",
+		Enabled:    false,
+	}
+	p.NoError(s.Encode())
+	p.Equal(`[{"type":"repository","value":"**"},{"type":"tag","value":"**"},{"type":"label","value":"test"}]`, s.FiltersStr)
+	p.Equal(`{"type":"event_based","trigger_setting":{}}`, s.TriggerStr)
+}

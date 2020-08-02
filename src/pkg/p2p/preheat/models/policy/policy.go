@@ -15,11 +15,14 @@
 package policy
 
 import (
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	beego_orm "github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/robfig/cron"
 )
 
@@ -158,4 +161,91 @@ func (s *Schema) Valid(v *validation.Validation) {
 			v.SetError("trigger", "invalid trigger type")
 		}
 	}
+}
+
+// Encode encodes policy schema.
+func (s *Schema) Encode() error {
+	if s.Filters != nil {
+		filterStr, err := json.Marshal(s.Filters)
+		if err != nil {
+			return err
+		}
+		s.FiltersStr = string(filterStr)
+	}
+
+	if s.Trigger != nil {
+		triggerStr, err := json.Marshal(s.Trigger)
+		if err != nil {
+			return err
+		}
+		s.TriggerStr = string(triggerStr)
+	}
+
+	return nil
+}
+
+// Decode decodes policy schema.
+func (s *Schema) Decode() error {
+	// parse filters
+	filters, err := decodeFilters(s.FiltersStr)
+	if err != nil {
+		return err
+	}
+	s.Filters = filters
+
+	// parse trigger
+	trigger, err := decodeTrigger(s.TriggerStr)
+	if err != nil {
+		return err
+	}
+	s.Trigger = trigger
+
+	return nil
+}
+
+// decodeFilters parse filterStr to filter.
+func decodeFilters(filterStr string) ([]*Filter, error) {
+	// Filters are required
+	if len(filterStr) == 0 {
+		return nil, errors.New("missing filters in preheat policy schema")
+	}
+
+	var filters []*Filter
+	if err := json.Unmarshal([]byte(filterStr), &filters); err != nil {
+		return nil, err
+	}
+
+	// Convert value type
+	// TODO: remove switch after UI bug #12579 fixed
+	for _, f := range filters {
+		if f.Type == FilterTypeVulnerability {
+			switch f.Value.(type) {
+			case string:
+				sev, err := strconv.ParseInt(f.Value.(string), 10, 32)
+				if err != nil {
+					return nil, errors.Wrapf(err, "parse filters")
+				}
+				f.Value = (int)(sev)
+			case float64:
+				f.Value = (int)(f.Value.(float64))
+			}
+		}
+	}
+
+	return filters, nil
+}
+
+// decodeTrigger parse triggerStr to trigger.
+func decodeTrigger(triggerStr string) (*Trigger, error) {
+	// trigger must be existing, at least is a "manual" trigger.
+	if len(triggerStr) == 0 {
+		return nil, errors.New("missing trigger settings in preheat policy schema")
+	}
+
+	trigger := &Trigger{}
+	if err := json.Unmarshal([]byte(triggerStr), trigger); err != nil {
+		return nil, err
+	}
+
+	return trigger, nil
 }

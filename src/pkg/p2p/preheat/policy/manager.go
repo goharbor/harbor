@@ -16,10 +16,7 @@ package policy
 
 import (
 	"context"
-	"encoding/json"
-	"strconv"
 
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	dao "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/policy"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
@@ -81,7 +78,10 @@ func (m *manager) Get(ctx context.Context, id int64) (schema *policy.Schema, err
 		return nil, err
 	}
 
-	return ParsePolicy(schema)
+	if err = schema.Decode(); err != nil {
+		return nil, err
+	}
+	return schema, nil
 }
 
 // Get the policy schema by name
@@ -91,7 +91,10 @@ func (m *manager) GetByName(ctx context.Context, projectID int64, name string) (
 		return nil, err
 	}
 
-	return ParsePolicy(schema)
+	if err = schema.Decode(); err != nil {
+		return nil, err
+	}
+	return schema, nil
 }
 
 // Delete the policy schema by id
@@ -107,11 +110,9 @@ func (m *manager) ListPolicies(ctx context.Context, query *q.Query) (schemas []*
 	}
 
 	for i := range schemas {
-		schema, err := ParsePolicy(schemas[i])
-		if err != nil {
+		if err = schemas[i].Decode(); err != nil {
 			return nil, err
 		}
-		schemas[i] = schema
 	}
 
 	return schemas, nil
@@ -130,74 +131,4 @@ func (m *manager) ListPoliciesByProject(ctx context.Context, project int64, quer
 	query.Keywords["project_id"] = project
 
 	return m.ListPolicies(ctx, query)
-}
-
-// ParsePolicy parses persisting data to policy model.
-func ParsePolicy(schema *policy.Schema) (*policy.Schema, error) {
-	if schema == nil {
-		return nil, errors.New("policy schema can not be nil")
-	}
-
-	// parse filters
-	filters, err := parseFilters(schema.FiltersStr)
-	if err != nil {
-		return nil, err
-	}
-	schema.Filters = filters
-
-	// parse trigger
-	trigger, err := parseTrigger(schema.TriggerStr)
-	if err != nil {
-		return nil, err
-	}
-	schema.Trigger = trigger
-
-	return schema, nil
-}
-
-// parseFilters parse filterStr to filter.
-func parseFilters(filterStr string) ([]*policy.Filter, error) {
-	// Filters are required
-	if len(filterStr) == 0 {
-		return nil, errors.New("missing filters in preheat policy schema")
-	}
-
-	var filters []*policy.Filter
-	if err := json.Unmarshal([]byte(filterStr), &filters); err != nil {
-		return nil, err
-	}
-
-	// Convert value type
-	// TODO: remove switch after UI bug #12579 fixed
-	for _, f := range filters {
-		if f.Type == policy.FilterTypeVulnerability {
-			switch f.Value.(type) {
-			case string:
-				sev, err := strconv.ParseInt(f.Value.(string), 10, 32)
-				if err != nil {
-					return nil, errors.Wrapf(err, "parse filters")
-				}
-				f.Value = (int)(sev)
-			case float64:
-				f.Value = (int)(f.Value.(float64))
-			}
-		}
-	}
-
-	return filters, nil
-}
-
-// parseTrigger parse triggerStr to trigger.
-func parseTrigger(triggerStr string) (*policy.Trigger, error) {
-	// trigger must be existing, at least is a "manual" trigger.
-	if len(triggerStr) == 0 {
-		return nil, errors.New("missing trigger settings in preheat policy schema")
-	}
-
-	trigger := &policy.Trigger{}
-	if err := json.Unmarshal([]byte(triggerStr), trigger); err != nil {
-		return nil, err
-	}
-
-	return trigger, nil
 }
