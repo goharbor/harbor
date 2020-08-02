@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"fmt"
 
 	beego_orm "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -95,15 +96,10 @@ func (d *dao) Update(ctx context.Context, instance *provider.Instance, props ...
 		}
 
 		// check default instances first
-		for _, prop := range props {
-			if prop == "default" && instance.Default {
-
-				_, err = o.Raw("UPDATE ? SET default = false WHERE id != ?", instance.TableName(), instance.ID).Exec()
-				if err != nil {
-					return
-				}
-
-				break
+		if instance.Default {
+			_, err = o.Raw(fmt.Sprintf("UPDATE %s SET is_default = false WHERE id != ?", instance.TableName()), instance.ID).Exec()
+			if err != nil {
+				return
 			}
 		}
 
