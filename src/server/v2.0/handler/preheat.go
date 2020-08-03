@@ -679,7 +679,7 @@ func (api *preheatAPI) GetLog(ctx context.Context, params operation.GetLogParams
 		return api.SendError(ctx, err)
 	}
 
-	return operation.NewGetLogOK().WithPayload(string(l))
+	return operation.NewGetLogOK().WithPayload(string(l)).WithContentType("text/plain")
 }
 
 // ListProvidersUnderProject is Get all providers at project level

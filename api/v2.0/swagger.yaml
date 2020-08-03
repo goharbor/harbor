@@ -10,6 +10,7 @@ schemes:
 basePath: /api/v2.0
 produces:
   - application/json
+  - text/plain
 consumes:
   - application/json
 securityDefinitions:
@@ -1145,6 +1146,10 @@ paths:
       responses:
         '200':
           description: Get log success
+          headers:
+            Content-Type:
+              description: Content type of response
+              type: string
           schema:
             type: string
         '400':
