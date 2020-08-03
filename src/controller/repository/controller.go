@@ -87,7 +87,7 @@ func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, erro
 
 	// the repository doesn't exist, create it first
 	projectName, _ := utils.ParseRepository(name)
-	project, err := c.proMgr.Get(projectName)
+	project, err := c.proMgr.Get(ctx, projectName)
 	if err != nil {
 		return false, 0, err
 	}

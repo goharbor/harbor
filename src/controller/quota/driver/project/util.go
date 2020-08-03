@@ -43,7 +43,7 @@ func getProjectsBatchFn(ctx context.Context, keys dataloader.Keys) []*dataloader
 		projectIDs = append(projectIDs, id)
 	}
 
-	projects, err := project.Mgr.List(&models.ProjectQueryParam{ProjectIDs: projectIDs})
+	projects, err := project.Mgr.List(ctx, &models.ProjectQueryParam{ProjectIDs: projectIDs})
 	if err != nil {
 		return handleError(err)
 	}

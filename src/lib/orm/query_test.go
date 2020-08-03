@@ -15,47 +15,95 @@
 package orm
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"reflect"
 	"testing"
 )
 
-func TestListQueriableCols(t *testing.T) {
-	type model struct {
-		Field1 string `orm:"column(field1)" json:"field1"`
-		Field2 string `orm:"column(customized_field2)"`
-		Field3 string
-		Field4 string `orm:"column(field4)"`
+func Test_snakeCase(t *testing.T) {
+	type args struct {
+		str string
 	}
-	// without ignoring columns
-	cols := listQueriableCols(&model{})
-	require.Len(t, cols, 7)
-	_, exist := cols["Field1"]
-	assert.True(t, exist)
-	_, exist = cols["field1"]
-	assert.True(t, exist)
-	_, exist = cols["Field2"]
-	assert.True(t, exist)
-	_, exist = cols["customized_field2"]
-	assert.True(t, exist)
-	_, exist = cols["Field3"]
-	assert.True(t, exist)
-	_, exist = cols["Field4"]
-	assert.True(t, exist)
-	_, exist = cols["field4"]
-	assert.True(t, exist)
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"ProjectID", args{"ProjectID"}, "project_id"},
+		{"project_id", args{"project_id"}, "project_id"},
+		{"RepositoryName", args{"RepositoryName"}, "repository_name"},
+		{"repository_name", args{"repository_name"}, "repository_name"},
+		{"ProfileURL", args{"ProfileURL"}, "profile_url"},
+		{"City", args{"City"}, "city"},
+		{"Address1", args{"Address1"}, "address1"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := snakeCase(tt.args.str); got != tt.want {
+				t.Errorf("snakeCase() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
-	// with ignoring columns
-	cols = listQueriableCols(&model{}, "Field4")
-	require.Len(t, cols, 5)
-	_, exist = cols["Field1"]
-	assert.True(t, exist)
-	_, exist = cols["field1"]
-	assert.True(t, exist)
-	_, exist = cols["Field2"]
-	assert.True(t, exist)
-	_, exist = cols["customized_field2"]
-	assert.True(t, exist)
-	_, exist = cols["Field3"]
-	assert.True(t, exist)
+type Bar struct {
+	Field1    string `orm:"-"`
+	Field2    string `orm:"column(customized_field2)"`
+	Field3    string
+	FirstName string
+}
+
+func (Bar) Foo() {}
+
+func (bar *Bar) FilterBy() {}
+
+func (bar *Bar) FilterByField4() {}
+
+func Test_queriableColumns(t *testing.T) {
+	toWant := func(fields ...string) map[string]bool {
+		want := map[string]bool{}
+
+		for _, field := range fields {
+			want[field] = true
+		}
+
+		return want
+	}
+
+	type args struct {
+		model interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]bool
+	}{
+		{"bar", args{&Bar{}}, toWant("Field2", "customized_field2", "Field3", "field3", "FirstName", "first_name")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := queriableColumns(tt.args.model); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("queriableColumns() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_queriableMethods(t *testing.T) {
+	type args struct {
+		model interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{"bar", args{&Bar{}}, map[string]string{"field4": "FilterByField4"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := queriableMethods(tt.args.model); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("queriableMethods() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

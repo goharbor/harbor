@@ -15,6 +15,9 @@
 package proxycachesecret
 
 import (
+	"context"
+
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -31,14 +34,16 @@ const (
 // SecurityContext is the security context for proxy cache secret
 type SecurityContext struct {
 	repository string
-	mgr        project.Manager
+	getProject func(interface{}) (*models.Project, error)
 }
 
 // NewSecurityContext returns an instance of the proxy cache secret security context
-func NewSecurityContext(repository string) *SecurityContext {
+func NewSecurityContext(ctx context.Context, repository string) *SecurityContext {
 	return &SecurityContext{
 		repository: repository,
-		mgr:        project.Mgr,
+		getProject: func(i interface{}) (*models.Project, error) {
+			return project.Mgr.Get(ctx, i)
+		},
 	}
 }
 
@@ -78,7 +83,7 @@ func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool
 		log.Debugf("got no namespace from the resource %s", resource)
 		return false
 	}
-	project, err := s.mgr.Get(namespace.Identity())
+	project, err := s.getProject(namespace.Identity())
 	if err != nil {
 		log.Errorf("failed to get project %v: %v", namespace.Identity(), err)
 		return false

@@ -39,6 +39,9 @@ func (s *ControllerTestSuite) TestImmutableRule() {
 		Name:    "TestImmutableRule",
 		OwnerID: 1,
 	})
+	if s.Nil(err) {
+		defer dao.DeleteProject(projectID)
+	}
 
 	rule := &model.Metadata{
 		ProjectID: projectID,
