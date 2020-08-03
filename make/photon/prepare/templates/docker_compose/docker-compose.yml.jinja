@@ -234,6 +234,18 @@ services:
       - SETGID
       - SETUID
       - NET_BIND_SERVICE
+    volumes:
+      - type: bind
+        source: ./common/config/portal/nginx.conf
+        target: /etc/nginx/nginx.conf
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.portal_crt_path}}
+        target: /etc/harbor/tls/portal.crt
+      - type: bind
+        source: {{internal_tls.portal_key_path}}
+        target: /etc/harbor/tls/portal.key
+{% endif %}
     networks:
       - harbor
     dns_search: .

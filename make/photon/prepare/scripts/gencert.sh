@@ -30,6 +30,14 @@ openssl req -new -newkey rsa:4096 -nodes -sha256 \
 # Sign proxy
 openssl x509 -req -days $DAYS -sha256 -in proxy.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out proxy.crt
 
+# generate portal key and csr
+openssl req -new -newkey rsa:4096 -nodes -sha256 \
+        -keyout portal.key \
+        -out portal.csr \
+        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=portal"
+
+# Sign portal
+openssl x509 -req -days $DAYS -sha256 -in portal.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out portal.crt
 
 # generate core key and csr
 openssl req -new \
