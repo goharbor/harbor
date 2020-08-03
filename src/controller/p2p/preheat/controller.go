@@ -2,7 +2,6 @@ package preheat
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -223,7 +222,7 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 	schema.UpdatedTime = now
 
 	// Get full model of policy schema
-	_, err = policy.ParsePolicy(schema)
+	err = schema.Decode()
 	if err != nil {
 		return 0, err
 	}
@@ -244,7 +243,7 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 			return 0, err
 		}
 
-		if err = decodeSchema(schema); err == nil {
+		if err = schema.Encode(); err == nil {
 			err = c.pManager.Update(ctx, schema, "trigger")
 		}
 
@@ -288,7 +287,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 	}
 
 	// Get full model of updating policy
-	_, err = policy.ParsePolicy(schema)
+	err = schema.Decode()
 	if err != nil {
 		return err
 	}
@@ -337,7 +336,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 			return err
 		}
 		schema.Trigger.Settings.JobID = jobid
-		if err := decodeSchema(schema); err != nil {
+		if err := schema.Encode(); err != nil {
 			// Possible
 			// TODO: Refactor
 			return err // whether update or not has been not important as the jon reference will be lost
@@ -402,23 +401,6 @@ func (c *controller) CheckHealth(ctx context.Context, instance *providerModels.I
 	if h.Status != provider.DriverStatusHealthy {
 		return errors.Errorf("preheat provider instance %s-%s:%s is not healthy", instance.Vendor, instance.Name, instance.Endpoint)
 	}
-
-	return nil
-}
-
-// decodeSchema decodes the trigger object to JSON string
-func decodeSchema(schema *policyModels.Schema) error {
-	if schema.Trigger == nil {
-		// do nothing
-		return nil
-	}
-
-	b, err := json.Marshal(schema.Trigger)
-	if err != nil {
-		return err
-	}
-
-	schema.TriggerStr = string(b)
 
 	return nil
 }
