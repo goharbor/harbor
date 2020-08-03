@@ -273,7 +273,6 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 
 	var rawResources = make([]*model.Resource, len(repositories))
 	runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
-	defer runner.Cancel()
 
 	for i, r := range repositories {
 		index := i
@@ -317,12 +316,9 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 			return nil
 		})
 	}
-	runner.Wait()
-
-	if runner.IsCancelled() {
-		return nil, fmt.Errorf("FetchArtifacts error when collect tags for repos")
+	if err = runner.Wait(); err != nil {
+		return nil, fmt.Errorf("failed to fetch artifacts: %v", err)
 	}
-
 	for _, r := range rawResources {
 		if r != nil {
 			resources = append(resources, r)
