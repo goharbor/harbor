@@ -17,9 +17,11 @@ package report
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanv2"
@@ -40,6 +42,8 @@ func GetNativeV1ReportFromResolvedData(ctx job.Context, rp interface{}) (*vuln.R
 //ConvertV1ReportToV2Report converts the Report instance compatble with V1 schema to a Report and VulnerabilityRecord instance
 //compatible with the V2 schema
 func ConvertV1ReportToV2Report(reportV1 *scan.Report) (string, error) {
+	o := dao.GetOrmer()
+
 	reportV2 := new(scanv2.Report)
 	reportV2.UUID = reportV1.UUID
 	reportV2.Digest = reportV1.Digest
@@ -54,11 +58,52 @@ func ConvertV1ReportToV2Report(reportV1 *scan.Report) (string, error) {
 	reportV2.RegistrationUUID = reportV1.RegistrationUUID
 	reportV2.Requester = reportV1.Requester
 
+	_, _, err := o.ReadOrCreate(reportV2, "UUID")
+
+	if err != nil {
+		return "", errors.Wrap(err, fmt.Sprintf("Error when inserting V2 version of vulnerability report"))
+	}
+
 	//parse the raw report with the V1 schema of the report to the normalized structures
 	var rawReport vuln.Report
-	if err := json.Unmarshal([]byte(reportV1.Report), &rawReport); err != nil {
+	if err = json.Unmarshal([]byte(reportV1.Report), &rawReport); err != nil {
 		return "", errors.Wrap(err, fmt.Sprintf("Error when convert V1 report to V2"))
 	}
 
+	if err = ConvertRawReportToVulnerabilityData(reportV1.UUID, reportV1.RegistrationUUID, reportV1.Report); err != nil {
+		return "", errors.Wrap(err, fmt.Sprintf("Error when converting vulnerabilty report"))
+	}
 	return reportV2.UUID, nil
+}
+
+//ConvertRawReportToVulnerabilityData converts a raw report to
+//version 2 of the schema
+func ConvertRawReportToVulnerabilityData(reportUUID string, registrationUUID string, rawReportData string) error {
+	o := dao.GetOrmer()
+	var vulnReport vuln.Report
+	err := json.Unmarshal([]byte(rawReportData), &vulnReport)
+	if err != nil {
+		return err
+	}
+	for _, vuln := range vulnReport.Vulnerabilities {
+		vulnV2 := new(scanv2.VulnerabilityRecord)
+		vulnV2.CVEID = vuln.ID
+		vulnV2.Package = vuln.Package
+		vulnV2.PackageVersion = "NotAvailable"
+		vulnV2.Digest = vuln.ArtifactDigest
+		vulnV2.PackageType = "Unknown"
+		vulnV2.Fix = vuln.FixVersion
+		vulnV2.URL = strings.Join(vuln.Links, ";")
+		vulnV2.RegistrationUUID = registrationUUID
+		vulnV2.Severity = vuln.Severity.String()
+		vulnV2.Report = reportUUID
+
+		_, _, err = o.ReadOrCreate(vulnV2, "CVEID", "RegistrationUUID")
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
