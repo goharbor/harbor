@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -56,6 +57,13 @@ func (d *dao) Create(ctx context.Context, project *models.Project) (int64, error
 		o, err := orm.FromContext(ctx)
 		if err != nil {
 			return err
+		}
+
+                pattern := "^[0-9]*$" 
+    		validName, _ := regexp.MatchString(pattern, project.Name)
+		if !validName {
+			err = errors.BadRequestError(nil).WithMessage("The project name %s cannot be a pure number, or the image cannot be uploaded to this project", project.Name)
+			return orm.WrapConflictError(err, "The project name %s is invalid", project.Name)
 		}
 
 		now := time.Now()
