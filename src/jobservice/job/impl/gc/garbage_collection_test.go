@@ -62,7 +62,6 @@ func (suite *gcTestSuite) TestDeletedArt() {
 	logger := &mockjobservice.MockJobLogger{}
 	ctx.On("GetLogger").Return(logger)
 
-	suite.artrashMgr.On("Flush").Return(nil)
 	suite.artifactCtl.On("List").Return([]*artifact.Artifact{
 		{
 			ID:           1,
@@ -194,7 +193,6 @@ func (suite *gcTestSuite) TestRun() {
 	ctx.On("OPCommand").Return(job.NilCommand, true)
 	mock.OnAnything(ctx, "Get").Return("core url", true)
 
-	suite.artrashMgr.On("Flush").Return(nil)
 	suite.artifactCtl.On("List").Return([]*artifact.Artifact{
 		{
 			ID:           1,
@@ -265,7 +263,6 @@ func (suite *gcTestSuite) TestMark() {
 	logger := &mockjobservice.MockJobLogger{}
 	ctx.On("GetLogger").Return(logger)
 
-	suite.artrashMgr.On("Flush").Return(nil)
 	suite.artifactCtl.On("List").Return([]*artifact.Artifact{
 		{
 			ID:           1,
