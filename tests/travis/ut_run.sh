@@ -1,7 +1,6 @@
 #!/bin/bash
 
-set -e
-
+set -ex
 export POSTGRESQL_HOST=$1
 export REGISTRY_URL=$1:5000
 export CHROME_BIN=chromium-browser
