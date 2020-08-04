@@ -18,6 +18,7 @@ const SCHEDULE_TYPE = {
   HOURLY: "Hourly",
   CUSTOM: "Custom"
 };
+const PREFIX: string = '0 ';
 @Component({
   selector: "cron-selection",
   templateUrl: "./cron-schedule.component.html",
@@ -58,16 +59,17 @@ export class CronScheduleComponent implements OnChanges {
     this.isEditMode = true;
     this.scheduleType = this.originScheduleType;
     if (this.scheduleType && this.scheduleType === SCHEDULE_TYPE.CUSTOM) {
-      this.cronString = this.oriCron;
+      this.cronString = this.oriCron || PREFIX;
       this.dateInvalid = !cronRegex(this.cronString);
     } else {
-      this.cronString = "";
+      this.cronString = PREFIX;
       this.dateInvalid = false;
     }
   }
 
-  inputInvalid() {
+  inputInvalid(e: any) {
     this.dateInvalid = !cronRegex(this.cronString);
+    this.setPrefix(e);
   }
 
   blurInvalid() {
@@ -106,5 +108,13 @@ export class CronScheduleComponent implements OnChanges {
     }
     scheduleTerm = scheduleTerm.replace(/\s+/g, " ").trim();
     this.inputvalue.emit(scheduleTerm);
+  }
+   // set prefix '0 ', so user can not set item of 'seconds'
+  setPrefix(e: any) {
+    if (e && e.target) {
+      if (!e.target.value || (e.target.value && e.target.value.indexOf(PREFIX)) !== 0) {
+        e.target.value = PREFIX;
+      }
+    }
   }
 }
