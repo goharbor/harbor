@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	clientTimeout         = 10 * time.Second
+	clientTimeout         = 30 * time.Second
 	maxIdleConnections    = 10
 	idleConnectionTimeout = 30 * time.Second
 )
