@@ -14,7 +14,7 @@ import { ErrorHandler } from "../../../../../lib/utils/error-handler";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../../lib/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../lib/components/operation/operate";
 import { errorHandler } from "../../../../../lib/utils/shared/shared.utils";
-import { ArtifactFront as Artifact } from "../artifact";
+import { ArtifactFront as Artifact, artifactImages, artifactPullCommands } from '../artifact';
 import { ArtifactService } from '../../../../../../ng-swagger-gen/services/artifact.service';
 import { Tag } from '../../../../../../ng-swagger-gen/models/tag';
 import {
@@ -326,5 +326,22 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   }
   public get registryUrl(): string {
     return this.systemInfo ? this.systemInfo.registry_url : '';
+  }
+  hasPullCommand(): boolean {
+    return this.artifactDetails
+      && (this.artifactDetails.type ===  artifactImages[0]
+        || this.artifactDetails.type ===  artifactImages[1]
+        || this.artifactDetails.type ===  artifactImages[2]);
+  }
+  getPullCommand(tag: Tag): string {
+    let pullCommand: string = '';
+    if (tag && tag.name && this.artifactDetails ) {
+      artifactPullCommands.forEach(artifactPullCommand => {
+        if (artifactPullCommand.type === this.artifactDetails.type) {
+          pullCommand = `${artifactPullCommand.pullCommand} ${this.registryUrl}/${this.projectName}/${this.repositoryName}:${tag.name}`;
+        }
+      });
+    }
+   return pullCommand;
   }
 }
