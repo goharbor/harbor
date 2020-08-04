@@ -255,6 +255,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
     if (this.selectedRow) {
       this.addP2pPolicyComponent.isOpen = true;
       this.addP2pPolicyComponent.isEdit = true;
+      this.addP2pPolicyComponent.inlineAlert.close();
       this.addP2pPolicyComponent.policy = clone(this.selectedRow);
       const filter: any[] = JSON.parse(this.selectedRow.filters);
       if (filter && filter.length) {
@@ -265,14 +266,8 @@ export class PolicyComponent implements OnInit, OnDestroy {
           if (item.type === FILTER_TYPE.TAG && item.value) {
             this.addP2pPolicyComponent.tags = item.value.replace(/[{}]/g, "");
           }
-          if (item.type === FILTER_TYPE.SIGNATURE) {
-            this.addP2pPolicyComponent.onlySignedImages = item.value;
-          }
           if (item.type === FILTER_TYPE.LABEL && item.value) {
             this.addP2pPolicyComponent.labels = item.value.replace(/[{}]/g, "");
-          }
-          if (item.type === FILTER_TYPE.VULNERABILITY) {
-            this.addP2pPolicyComponent.severity = item.value;
           }
         });
       }

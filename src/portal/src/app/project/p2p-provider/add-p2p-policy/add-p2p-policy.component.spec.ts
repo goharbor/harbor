@@ -16,6 +16,7 @@ import { AppConfigService } from '../../../services/app-config.service';
 import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
+import { ProjectService } from '../../../../lib/services';
 describe('AddP2pPolicyComponent', () => {
     let component: AddP2pPolicyComponent;
     let fixture: ComponentFixture<AddP2pPolicyComponent>;
@@ -60,6 +61,18 @@ describe('AddP2pPolicyComponent', () => {
             };
         }
     };
+    const mockedProjectService = {
+        getProject() {
+            return of({
+                name: 'library',
+                metadata: {
+                    prevent_vul: 'true',
+                    enable_content_trust: 'true',
+                    severity: 'none'
+                }
+            });
+        }
+    };
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             schemas: [
@@ -83,6 +96,7 @@ describe('AddP2pPolicyComponent', () => {
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
                 { provide: SessionService, useValue: mockedSessionService },
                 { provide: AppConfigService, useValue: mockedAppConfigService },
+                { provide: ProjectService, useValue: mockedProjectService },
             ]
         })
             .compileComponents();
