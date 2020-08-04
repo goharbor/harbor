@@ -24,7 +24,7 @@ var (
 		AuthMode:       "basic",
 		AuthData:       "{\"username\": \"admin\", \"password\": \"123456\"}",
 		Status:         "healthy",
-		Enabled:        true,
+		Enabled:        false,
 		SetupTimestamp: 1582721396,
 	}
 )
@@ -91,18 +91,17 @@ func (is *instanceSuite) TestUpdate() {
 	assert.Nil(t, err)
 	assert.NotNil(t, i)
 
-	i.Enabled = false
-	err = is.dao.Update(is.ctx, i, "enabled")
-	assert.Nil(t, err)
-
+	// test set default
 	i.Default = true
-	err = is.dao.Update(is.ctx, i, "default")
-	assert.NotNil(t, err)
+	i.Enabled = true
+	err = is.dao.Update(is.ctx, i)
+	assert.Nil(t, err)
 
 	i, err = is.dao.Get(is.ctx, defaultInstance.ID)
 	assert.Nil(t, err)
 	assert.NotNil(t, i)
-	assert.False(t, i.Enabled)
+	assert.True(t, i.Default)
+	assert.True(t, i.Enabled)
 }
 
 func (is *instanceSuite) TestList() {
