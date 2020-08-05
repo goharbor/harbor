@@ -19,6 +19,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -219,15 +220,21 @@ func (s *ControllerTestSuite) TestExecution() {
 type fakeRetentionScheduler struct {
 }
 
-func (f *fakeRetentionScheduler) Schedule(ctx context.Context, cron string, callbackFuncName string, params interface{}) (int64, error) {
+func (f *fakeRetentionScheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cron string, callbackFuncName string, params interface{}) (int64, error) {
 	return 111, nil
 }
 
-func (f *fakeRetentionScheduler) UnSchedule(ctx context.Context, id int64) error {
+func (f *fakeRetentionScheduler) UnScheduleByID(ctx context.Context, id int64) error {
+	return nil
+}
+func (f *fakeRetentionScheduler) UnScheduleByVendor(ctx context.Context, vendorType string, vendorID int64) error {
 	return nil
 }
 
 func (f *fakeRetentionScheduler) GetSchedule(ctx context.Context, id int64) (*scheduler.Schedule, error) {
+	return nil, nil
+}
+func (f *fakeRetentionScheduler) ListSchedules(ctx context.Context, q *q.Query) ([]*scheduler.Schedule, error) {
 	return nil, nil
 }
 
