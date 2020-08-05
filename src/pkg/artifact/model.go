@@ -38,12 +38,12 @@ type Artifact struct {
 	RepositoryName    string                 `json:"repository_name"`
 	Digest            string                 `json:"digest"`
 	Size              int64                  `json:"size"`
+	Icon              string                 `json:"icon"`
 	PushTime          time.Time              `json:"push_time"`
 	PullTime          time.Time              `json:"pull_time"`
 	ExtraAttrs        map[string]interface{} `json:"extra_attrs"` // only contains the simple attributes specific for the different artifact type, most of them should come from the config layer
 	Annotations       map[string]string      `json:"annotations"`
 	References        []*Reference           `json:"references"` // child artifacts referenced by the parent artifact if the artifact is an index
-	Icon              string                 `json:"icon"`       // icon layer digest
 }
 
 // IsImageIndex returns true when artifact is image index
@@ -63,6 +63,7 @@ func (a *Artifact) From(art *dao.Artifact) {
 	a.RepositoryName = art.RepositoryName
 	a.Digest = art.Digest
 	a.Size = art.Size
+	a.Icon = art.Icon
 	a.PushTime = art.PushTime
 	a.PullTime = art.PullTime
 	a.ExtraAttrs = map[string]interface{}{}
@@ -91,6 +92,7 @@ func (a *Artifact) To() *dao.Artifact {
 		RepositoryName:    a.RepositoryName,
 		Digest:            a.Digest,
 		Size:              a.Size,
+		Icon:              a.Icon,
 		PushTime:          a.PushTime,
 		PullTime:          a.PullTime,
 	}

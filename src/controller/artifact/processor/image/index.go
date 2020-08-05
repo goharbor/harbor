@@ -16,9 +16,11 @@ package image
 
 import (
 	"context"
+
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
+	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -40,6 +42,14 @@ func init() {
 // indexProcessor processes image with OCI index and docker manifest list
 type indexProcessor struct {
 	*base.IndexProcessor
+}
+
+func (i *indexProcessor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error {
+	if err := i.IndexProcessor.AbstractMetadata(ctx, artifact, manifest); err != nil {
+		return err
+	}
+	artifact.Icon = icon.DigestOfIconImage
+	return nil
 }
 
 func (i *indexProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {

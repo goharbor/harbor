@@ -15,16 +15,20 @@
 package image
 
 import (
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema2"
-	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/testing/pkg/registry"
-	"github.com/stretchr/testify/suite"
+	"bytes"
 	"io/ioutil"
 	"strings"
 	"testing"
+
+	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/schema2"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
+	"github.com/goharbor/harbor/src/controller/icon"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/testing/mock"
+	"github.com/goharbor/harbor/src/testing/pkg/registry"
+	"github.com/stretchr/testify/suite"
 )
 
 var (
@@ -133,6 +137,15 @@ func (m *manifestV2ProcessorTestSuite) SetupTest() {
 	m.regCli = &registry.FakeClient{}
 	m.processor = &manifestV2Processor{}
 	m.processor.ManifestProcessor = &base.ManifestProcessor{RegCli: m.regCli}
+}
+
+func (m *manifestV2ProcessorTestSuite) TestAbstractMetadata() {
+	artifact := &artifact.Artifact{}
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(0, ioutil.NopCloser(bytes.NewReader([]byte(config))), nil)
+	err := m.processor.AbstractMetadata(nil, artifact, []byte(manifest))
+	m.Require().Nil(err)
+	m.Equal(icon.DigestOfIconImage, artifact.Icon)
+	m.regCli.AssertExpectations(m.T())
 }
 
 func (m *manifestV2ProcessorTestSuite) TestAbstractAddition() {
