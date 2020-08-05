@@ -275,6 +275,27 @@ func (api *preheatAPI) DeletePolicy(ctx context.Context, params operation.Delete
 		return api.SendError(ctx, err)
 	}
 
+	detectRunningExecutions := func(executions []*task.Execution) error {
+		for _, exec := range executions {
+			if exec.Status == job.RunningStatus.String() {
+				return fmt.Errorf("execution %d under the policy %s is running, stop it and retry", exec.ID, policy.Name)
+			}
+		}
+		return nil
+	}
+	executions, err := api.executionCtl.List(ctx, &q.Query{Keywords: map[string]interface{}{
+		"vendor_type": job.P2PPreheat,
+		"vendor_id":   policy.ID,
+	}})
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	// Detecting running tasks under the policy
+	if err = detectRunningExecutions(executions); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	err = api.preheatCtl.DeletePolicy(ctx, policy.ID)
 	if err != nil {
 		return api.SendError(ctx, err)
