@@ -1895,3 +1895,7 @@ definitions:
         type: integer
       provider:
         type: string
+      enabled:
+        type: boolean
+      default:
+        type: boolean

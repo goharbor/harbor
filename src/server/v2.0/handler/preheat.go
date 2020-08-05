@@ -698,6 +698,8 @@ func (api *preheatAPI) ListProvidersUnderProject(ctx context.Context, params ope
 		providers = append(providers, &models.ProviderUnderProject{
 			ID:       instance.ID,
 			Provider: fmt.Sprintf("%s %s-%s", instance.Vendor, instance.Name, instance.Endpoint),
+			Default:  instance.Default,
+			Enabled:  instance.Enabled,
 		})
 	}
 
