@@ -30,7 +30,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
@@ -69,7 +69,6 @@ class TestProjects(unittest.TestCase):
 
         #3. Push an chart(CA) to Harbor by helm3 registry/chart CLI successfully;
         chart_cli_ret = library.helm.helm_chart_push_to_harbor(self.chart_file, self.archive,  harbor_server, TestProjects.project_push_chart_name, self.repo_name, self.verion, user_name, self.user_push_chart_password)
-        print "chart_cli_ret:", chart_cli_ret
 
         #4. List artifacts successfully;
         artifacts = self.artifact.list_artifacts(TestProjects.project_push_chart_name, self.repo_name, **TestProjects.USER_CLIENT)

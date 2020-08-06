@@ -48,6 +48,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
+RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list && apt-get clean
+RUN apt-get update -y && \
+	apt-get install -y zbar-tools libzbar-dev python-zbar
+RUN dpkg -L libzbar-dev; ls -l /usr/include/zbar.h
+RUN apt-get update -y
+RUN apt-get install -y python3.5
+RUN rm /usr/bin/python
+RUN ln -s /usr/bin/python3.5 /usr/bin/python
+RUN apt-get install -y python3-pip
+
 RUN wget -N http://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip && \
     unzip chromedriver_linux64.zip && \
     chmod +x chromedriver && \
@@ -62,7 +72,7 @@ RUN apt-get update && apt install libnss3-tools && \
 
 RUN wget https://bootstrap.pypa.io/get-pip.py && \
     python ./get-pip.py  && \
-    pip install pyasn1 google-apitools==0.5.15 gsutil robotframework==3.0.4 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-selenium2library==4.4.0 robotframework-pabot robotframework-JSONLibrary --upgrade
+    pip install pyasn1 google-apitools==0.5.15 gsutil robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot robotframework-JSONLibrary --upgrade
 
 # Install docker, docker compose
 RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-18.06.3-ce.tgz && \

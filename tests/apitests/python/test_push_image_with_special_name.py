@@ -22,7 +22,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
@@ -80,7 +80,6 @@ class TestProjects(unittest.TestCase):
         full_name = urllib.quote(profix+"/"+image,'utf-8')
         artifact = self.artifact.get_reference_info(TestProjects.project_sign_image_name, (str(full_name)).encode(), tag, **TestProjects.USER_sign_image_CLIENT)
 
-        print artifact
         self.assertEqual(artifact[0].type, 'IMAGE')
 
 if __name__ == '__main__':

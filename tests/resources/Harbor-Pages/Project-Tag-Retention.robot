@@ -81,10 +81,11 @@ Set Daily Schedule
 
 Execute Result Should Be
     [Arguments]  ${result}
-    :FOR  ${idx}  IN RANGE  0  20
-    \   ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(., '${result}')]
-    \   Exit For Loop If  '${out[0]}'=='PASS'
-    \   Sleep  6
+    FOR  ${idx}  IN RANGE  0  20
+        ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(., '${result}')]
+        Exit For Loop If  '${out[0]}'=='PASS'
+        Sleep  6
+    END
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
 Execute Dry Run

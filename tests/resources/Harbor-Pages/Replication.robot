@@ -30,10 +30,12 @@ Filter Replication Rule
 Filter Registry
     [Arguments]  ${registry_name}
     ${registry_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${registry_name}')]
+    Switch To Replication Manage
+    Switch To Registries
     Retry Element Click  ${filter_registry_btn}
-    Retry Text Input  ${filter_registry_input}  ${ruleName}
+    Retry Text Input  ${filter_registry_input}  ${registry_name}
     Retry Wait Until Page Contains Element   ${registry_name_element}
-    Capture Page Screenshot  filter_repistry_${ruleName}.png
+    Capture Page Screenshot  filter_repistry_${registry_name}.png
 
 Select Dest Registry
     [Arguments]    ${endpoint}
@@ -249,15 +251,16 @@ Delete Replication Rule
 
 Image Should Be Replicated To Project
     [Arguments]  ${project}  ${image}  ${period}=60  ${times}=3
-    :For  ${n}  IN RANGE  0  ${times}
-    \    Sleep  ${period}
-    \    Go Into Project    ${project}
-    \    Switch To Project Repo
-    \    #In AWS-ECR, under repository a, there're only several images: httpd,alpine,hello-world.
-    \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains  ${project}/${image}
-    \    Log To Console  Return value is ${out[0]}
-    \    Exit For Loop If  '${out[0]}'=='PASS'
-    \    Sleep  5
+    FOR  ${n}  IN RANGE  0  ${times}
+        Sleep  ${period}
+        Go Into Project    ${project}
+        Switch To Project Repo
+        #In AWS-ECR, under repository a, there're only several images: httpd,alpine,hello-world.
+        ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains  ${project}/${image}
+        Log To Console  Return value is ${out[0]}
+        Exit For Loop If  '${out[0]}'=='PASS'
+        Sleep  5
+    END
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
