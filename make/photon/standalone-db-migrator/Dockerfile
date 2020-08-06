@@ -12,5 +12,5 @@ RUN chown -R postgres:postgres /harbor/ \
     && chmod u+x /harbor/migrate
 USER postgres
 
-ENTRYPOINT ["/harbor/migrate"]
+ENTRYPOINT ["/harbor/entrypoint.sh"]
 
