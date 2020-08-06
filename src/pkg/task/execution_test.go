@@ -20,6 +20,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -42,6 +43,14 @@ func (e *executionManagerTestSuite) SetupTest() {
 		taskMgr:      e.taskMgr,
 		taskDAO:      e.taskDAO,
 	}
+}
+
+func (e *executionManagerTestSuite) TestCount() {
+	e.execDAO.On("Count", mock.Anything, mock.Anything).Return(int64(10), nil)
+	total, err := e.execMgr.Count(nil, &q.Query{})
+	e.Require().Nil(err)
+	e.Equal(int64(10), total)
+	e.execDAO.AssertExpectations(e.T())
 }
 
 func (e *executionManagerTestSuite) TestCreate() {
