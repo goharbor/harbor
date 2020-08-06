@@ -1,16 +1,16 @@
-FROM photon:2.0
+ARG harbor_base_image_version
+ARG harbor_base_namespace
+FROM ${harbor_base_namespace}/harbor-db-base:${harbor_base_image_version}
 
-RUN tdnf install -y shadow \
-    && groupadd -r -g 10000 harbor \
-    && useradd --no-log-init -r -m -g 10000 -u 10000 harbor \
-    && mkdir /harbor/
+RUN mkdir /harbor/
 COPY ./make/migrations /migrations
 COPY ./make/photon/standalone-db-migrator/migrate /harbor/
+COPY ./make/photon/standalone-db-migrator/entrypoint.sh /harbor/
 
-RUN chown -R harbor:harbor /harbor/ \
-    && chown -R harbor:harbor /migrations/ \
+RUN chown -R postgres:postgres
+    && chown -R postgres:postgres /migrations/ \
     && chmod u+x /harbor/migrate
-USER harbor
+USER postgres
 
 ENTRYPOINT ["/harbor/migrate"]
 
