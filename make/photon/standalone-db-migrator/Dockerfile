@@ -9,7 +9,7 @@ COPY ./make/photon/standalone-db-migrator/entrypoint.sh /harbor/
 
 RUN chown -R postgres:postgres /harbor/ \
     && chown -R postgres:postgres /migrations/ \
-    && chmod u+x /harbor/migrate
+    && chmod u+x /harbor/migrate /harbor/entrypoint.sh
 USER postgres
 
 ENTRYPOINT ["/harbor/entrypoint.sh"]
