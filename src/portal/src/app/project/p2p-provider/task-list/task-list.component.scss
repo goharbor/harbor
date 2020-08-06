@@ -103,7 +103,6 @@
             }
         }
         clr-datagrid {
-            margin-top: 20px;
             .resource-width {
                 width: 150px;
             }
@@ -112,4 +111,17 @@
 }
 .margin-top-075 {
     margin-top: 0.75rem;
+}
+.flex-end {
+    align-items: center;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 1.5rem;
+}
+.refresh-btn {
+    margin-top: 6px;
+    cursor: pointer;
+}
+.filter-tag {
+    margin-top: 7px;
 }

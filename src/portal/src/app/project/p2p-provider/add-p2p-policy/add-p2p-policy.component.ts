@@ -1,11 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild, } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, } from '@angular/core';
 import { PreheatPolicy } from '../../../../../ng-swagger-gen/models/preheat-policy';
 import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
 import { NgForm } from '@angular/forms';
 import { OriginCron, ProjectService } from '../../../../lib/services';
 import { CronScheduleComponent } from '../../../../lib/components/cron-schedule';
 import { PreheatService } from '../../../../../ng-swagger-gen/services/preheat.service';
-import { finalize } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, filter, finalize, switchMap } from 'rxjs/operators';
 import { deleteEmptyKey } from '../../../../lib/utils/utils';
 import { ClrLoadingState } from '@clr/angular';
 import { SessionService } from '../../../shared/session.service';
@@ -14,6 +14,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FILTER_TYPE, PROJECT_SEVERITY_LEVEL_MAP, TRIGGER, TRIGGER_I18N_MAP } from '../p2p-provider.service';
 import { ProviderUnderProject } from '../../../../../ng-swagger-gen/models/provider-under-project';
 import { AppConfigService } from '../../../services/app-config.service';
+import { Subject, Subscription } from 'rxjs';
 
 const SCHEDULE_TYPE = {
   NONE: "None",
@@ -28,7 +29,7 @@ const TRUE: string = 'true';
   templateUrl: './add-p2p-policy.component.html',
   styleUrls: ['./add-p2p-policy.component.scss']
 })
-export class AddP2pPolicyComponent implements OnInit {
+export class AddP2pPolicyComponent implements OnInit, OnDestroy {
   severityOptions = [
     {severity: 5, severityLevel: 'VULNERABILITY.SEVERITY.CRITICAL'},
     {severity: 4, severityLevel: 'VULNERABILITY.SEVERITY.HIGH'},
@@ -73,7 +74,10 @@ export class AddP2pPolicyComponent implements OnInit {
   projectSeverity: string;
   triggers: string[] = [TRIGGER.MANUAL, TRIGGER.SCHEDULED, TRIGGER.EVENT_BASED];
   enableContentTrust: boolean = false;
-
+  private _nameSubject: Subject<string> = new Subject<string>();
+  private _nameSubscription: Subscription;
+  isNameExisting: boolean = false;
+  checkNameOnGoing: boolean = false;
   constructor(private preheatService: PreheatService,
               private session: SessionService,
               private route: ActivatedRoute,
@@ -90,6 +94,43 @@ export class AddP2pPolicyComponent implements OnInit {
       // get latest project info
       this.getProject();
     }
+    this.subscribeName();
+  }
+  ngOnDestroy() {
+    if (this._nameSubscription) {
+      this._nameSubscription.unsubscribe();
+      this._nameSubscription = null;
+    }
+  }
+  subscribeName() {
+    if (!this._nameSubscription) {
+      this._nameSubscription = this._nameSubject
+        .pipe(
+          debounceTime(500),
+          distinctUntilChanged(),
+          filter(name => {
+            if (this.isEdit && this.originPolicyForEdit && this.originPolicyForEdit.name === name) {
+              return false;
+            }
+            return  name.length > 0;
+          }),
+          switchMap((name) => {
+            this.isNameExisting = false;
+            this.checkNameOnGoing = true;
+            return  this.preheatService.ListPolicies({
+              projectName: this.projectName,
+              q: encodeURIComponent(`name=${name}`)
+            }).pipe(finalize(() => this.checkNameOnGoing = false));
+          }))
+        .subscribe(res => {
+          if (res && res.length > 0) {
+            this.isNameExisting = true;
+          }
+        });
+    }
+  }
+  inputName() {
+    this._nameSubject.next(this.policy.name);
   }
   getProject() {
     this.projectService.getProject(this.projectId)
@@ -115,6 +156,13 @@ export class AddP2pPolicyComponent implements OnInit {
       severity: PROJECT_SEVERITY_LEVEL_MAP[this.projectSeverity],
       onlySignedImages: this.enableContentTrust
     });
+    if (this.providers && this.providers.length) {
+      this.providers.forEach(item => {
+        if (item.default) {
+          this.policy.provider_id = item.id;
+        }
+      });
+    }
   }
 
   setCron(event: any) {

@@ -1,18 +1,27 @@
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { NgForm, Validators } from '@angular/forms';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild
+} from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { errorHandler } from '../../../lib/utils/shared/shared.utils';
 import { PreheatService } from '../../../../ng-swagger-gen/services/preheat.service';
 import { Instance } from '../../../../ng-swagger-gen/models/instance';
-import { AuthMode, FrontInstance, HEALTHY } from '../distribution-interface';
+import { AuthMode, FrontInstance } from '../distribution-interface';
 import { clone } from '../../../lib/utils/utils';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 import { ClrLoadingState } from '@clr/angular';
 import { Metadata } from '../../../../ng-swagger-gen/models/metadata';
 import { operateChanges, OperateInfo, OperationState } from '../../../lib/components/operation/operate';
 import { OperationService } from '../../../lib/components/operation/operation.service';
-import { finalize } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, filter, finalize, switchMap } from 'rxjs/operators';
+import { Subject, Subscription } from 'rxjs';
 
 const DEFAULT_PROVIDER: string = 'dragonfly';
 
@@ -21,7 +30,7 @@ const DEFAULT_PROVIDER: string = 'dragonfly';
   templateUrl: './distribution-setup-modal.component.html',
   styleUrls: ['./distribution-setup-modal.component.scss']
 })
-export class DistributionSetupModalComponent implements OnInit {
+export class DistributionSetupModalComponent implements OnInit, OnDestroy {
   @Input()
   providers: Metadata[] = [];
   model: Instance;
@@ -37,6 +46,14 @@ export class DistributionSetupModalComponent implements OnInit {
   refresh: EventEmitter<any> = new EventEmitter<any>();
   checkBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   onTesting: boolean = false;
+  private _nameSubject: Subject<string> = new Subject<string>();
+  private _endpointSubject: Subject<string> = new Subject<string>();
+  private _nameSubscription: Subscription;
+  private _endpointSubscription: Subscription;
+  isNameExisting: boolean = false;
+  isEndpointExisting: boolean = false;
+  checkNameOnGoing: boolean = false;
+  checkEndpointOngoing: boolean = false;
   constructor(
     private distributionService: PreheatService,
     private msgHandler: MessageHandlerService,
@@ -45,7 +62,71 @@ export class DistributionSetupModalComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.subscribeName();
+    this.subscribeEndpoint();
     this.reset();
+  }
+  ngOnDestroy() {
+    if (this._nameSubscription) {
+      this._nameSubscription.unsubscribe();
+      this._nameSubscription = null;
+    }
+    if (this._endpointSubscription) {
+      this._endpointSubscription.unsubscribe();
+      this._endpointSubscription = null;
+    }
+  }
+  subscribeName() {
+     if (!this._nameSubscription) {
+       this._nameSubscription = this._nameSubject
+         .pipe(
+           debounceTime(500),
+           distinctUntilChanged(),
+           filter(name => {
+            return  name.length > 0;
+           }),
+           switchMap((name) => {
+             this.isNameExisting = false;
+             this.checkNameOnGoing = true;
+             return  this.distributionService.ListInstances({
+               q: encodeURIComponent(`name=${name}`)
+             }).pipe(finalize(() => this.checkNameOnGoing = false));
+           }))
+         .subscribe(res => {
+           if (res && res.length > 0) {
+             this.isNameExisting = true;
+           }
+       });
+     }
+  }
+  subscribeEndpoint() {
+    if (!this._endpointSubscription) {
+      this._endpointSubscription = this._endpointSubject
+        .pipe(
+          debounceTime(500),
+          distinctUntilChanged(),
+          filter(endpoint => {
+            return this.instanceForm.control.get('endpoint').valid;
+          }),
+          switchMap((endpoint) => {
+            this.isEndpointExisting = false;
+            this.checkEndpointOngoing = true;
+            return  this.distributionService.ListInstances({
+              q: encodeURIComponent(`endpoint=${endpoint}`)
+            }).pipe(finalize(() => this.checkEndpointOngoing = false));
+          }))
+        .subscribe(res => {
+          if (res && res.length > 0) {
+            this.isEndpointExisting = true;
+          }
+        });
+    }
+  }
+  inputName() {
+    this._nameSubject.next(this.model.name);
+  }
+  inputEndpoint() {
+    this._endpointSubject.next(this.model.endpoint);
   }
   public get isValid(): boolean {
     return this.instanceForm && this.instanceForm.valid;
@@ -100,7 +181,10 @@ export class DistributionSetupModalComponent implements OnInit {
       auth_mode: AuthMode.NONE,
       auth_info: this.authData
     };
-    this.instanceForm.reset();
+    this.instanceForm.reset({
+      enabled: true,
+      insecure: true,
+    });
   }
 
   cancel() {
@@ -190,6 +274,7 @@ export class DistributionSetupModalComponent implements OnInit {
       this.originModelForEdit = clone(data);
       this.authData = this.model.auth_info || {};
     } else {
+      this.reset();
       if (this.providers && this.providers.length) {
         this.providers.forEach(item => {
           if (item.id === DEFAULT_PROVIDER) {

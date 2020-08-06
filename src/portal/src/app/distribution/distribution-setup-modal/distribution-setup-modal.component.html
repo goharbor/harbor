@@ -33,24 +33,30 @@
       </clr-select-container>
 
       <!-- 2. name -->
-      <clr-input-container>
-        <label class="required clr-control-label" for="name">{{
-          'DISTRIBUTION.NAME' | translate
-        }}</label>
-        <input class="width-280"
-          clrInput
-          required
-          type="text"
-          id="name"
-          autocomplete="off"
-          [(ngModel)]="model.name"
-          name="name"
-          [disabled]="editingMode"
-        />
-        <clr-control-error>
-          {{ 'TOOLTIP.ITEM_REQUIRED' | translate }}
-        </clr-control-error>
-      </clr-input-container>
+      <div class="clr-form-control">
+        <label class="required clr-control-label" for="name">{{'DISTRIBUTION.NAME' | translate}}</label>
+        <div class="clr-control-container" [class.clr-error]="((nameNg.dirty || nameNg.touched) && nameNg.invalid) || isNameExisting">
+          <div class="clr-input-wrapper">
+            <input class="width-280 clr-input"
+                   required
+                   type="text"
+                   id="name"
+                   autocomplete="off"
+                   [(ngModel)]="model.name"
+                   name="name"
+                   #nameNg="ngModel"
+                   [disabled]="editingMode"
+                   (input)="inputName()"
+            />
+            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+            <span class="spinner spinner-inline" [hidden]="!checkNameOnGoing"></span>
+          </div>
+          <clr-control-error *ngIf="((nameNg.dirty || nameNg.touched) && nameNg.invalid) || isNameExisting">
+            <span *ngIf="!((nameNg.dirty || nameNg.touched) && nameNg.invalid) && isNameExisting">{{'SCANNER.NAME_EXISTS' | translate}}</span>
+            <span *ngIf="(nameNg.dirty || nameNg.touched) && nameNg.invalid">{{ 'TOOLTIP.ITEM_REQUIRED' | translate }}</span>
+          </clr-control-error>
+        </div>
+      </div>
 
       <!-- 3. description -->
       <clr-textarea-container>
@@ -65,27 +71,32 @@
           [ngModelOptions]="{ standalone: true }"
         ></textarea>
       </clr-textarea-container>
-
       <!-- 4. endpoint -->
-      <clr-input-container>
-        <label class="required clr-control-label" for="endpoint">{{
-          'DISTRIBUTION.ENDPOINT' | translate
-        }}</label>
-        <input class="width-280"
-          clrInput
-          required
-          pattern="^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(.*?)*$"
-          type="text"
-          id="endpoint"
-          placeholder="http(s)://192.168.1.1"
-          [(ngModel)]="model.endpoint"
-          name="endpoint"
-          autocomplete="off"
-        />
-        <clr-control-error>{{
-          'TOOLTIP.ENDPOINT_FORMAT' | translate
-        }}</clr-control-error>
-      </clr-input-container>
+      <div class="clr-form-control">
+        <label class="required clr-control-label" for="name">{{'DISTRIBUTION.ENDPOINT' | translate}}</label>
+        <div class="clr-control-container" [class.clr-error]="((endpointNg.dirty || endpointNg.touched) && endpointNg.invalid) || isEndpointExisting">
+          <div class="clr-input-wrapper">
+            <input class="width-280 clr-input"
+                   required
+                   pattern="^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(.*?)*$"
+                   type="text"
+                   id="endpoint"
+                   placeholder="http(s)://192.168.1.1"
+                   [(ngModel)]="model.endpoint"
+                   name="endpoint"
+                   #endpointNg="ngModel"
+                   autocomplete="off"
+                   (input)="inputEndpoint()"
+            />
+            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+            <span class="spinner spinner-inline" [hidden]="!checkEndpointOngoing"></span>
+          </div>
+          <clr-control-error *ngIf="((endpointNg.dirty || endpointNg.touched) && endpointNg.invalid) || isEndpointExisting">
+            <span *ngIf="!((endpointNg.dirty || endpointNg.touched) && endpointNg.invalid) && isEndpointExisting">{{'SCANNER.ENDPOINT_EXISTS' | translate}}</span>
+            <span *ngIf="(endpointNg.dirty || endpointNg.touched) && endpointNg.invalid">{{ 'TOOLTIP.ENDPOINT_FORMAT' | translate }}</span>
+          </clr-control-error>
+        </div>
+      </div>
       <!-- auth mode -->
       <clr-radio-container clrInline>
         <label>{{ 'DISTRIBUTION.AUTH_MODE' | translate }}</label>
@@ -232,7 +243,7 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button id="button-test" type="button" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="!isValid || onTesting">{{'SCANNER.TEST_CONNECTION' | translate}}</button>
+    <button id="button-test" type="button" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="!isValid || onTesting || checkNameOnGoing || checkEndpointOngoing || isEndpointExisting || isNameExisting">{{'SCANNER.TEST_CONNECTION' | translate}}</button>
     <button type="button" class="btn btn-outline" (click)="cancel()">
       {{ 'BUTTON.CANCEL' | translate }}
     </button>
@@ -241,7 +252,7 @@
       type="button"
       class="btn btn-primary"
       (click)="submit()"
-      [disabled]="!isValid || !hasChangesForEdit()"
+      [disabled]="!isValid || !hasChangesForEdit() || checkNameOnGoing || checkEndpointOngoing"
     >
       {{ 'BUTTON.OK' | translate }}
     </button>
