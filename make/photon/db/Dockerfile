@@ -15,5 +15,4 @@ RUN chown -R postgres:postgres /docker-entrypoint.sh /docker-healthcheck.sh /doc
 ENTRYPOINT ["/docker-entrypoint.sh"]
 HEALTHCHECK CMD ["/docker-healthcheck.sh"]
 
-EXPOSE 5432
 USER postgres

@@ -18,4 +18,3 @@ USER harbor
 ENTRYPOINT ["/home/harbor/entrypoint.sh"]
 
 VOLUME ["/storage"]
-EXPOSE 5000
