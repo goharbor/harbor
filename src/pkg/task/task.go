@@ -50,6 +50,8 @@ type Manager interface {
 	List(ctx context.Context, query *q.Query) (tasks []*Task, err error)
 	// Get the log of the specified task
 	GetLog(ctx context.Context, id int64) (log []byte, err error)
+	// Count counts total.
+	Count(ctx context.Context, query *q.Query) (int64, error)
 }
 
 // NewManager creates an instance of the default task manager
@@ -65,6 +67,10 @@ type manager struct {
 	dao      dao.TaskDAO
 	jsClient cjob.Client
 	coreURL  string
+}
+
+func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return m.dao.Count(ctx, query)
 }
 
 func (m *manager) Create(ctx context.Context, executionID int64, jb *Job, extraAttrs ...map[string]interface{}) (int64, error) {

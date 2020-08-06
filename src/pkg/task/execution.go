@@ -58,6 +58,8 @@ type ExecutionManager interface {
 	Get(ctx context.Context, id int64) (execution *Execution, err error)
 	// List executions according to the query
 	List(ctx context.Context, query *q.Query) (executions []*Execution, err error)
+	// Count counts total.
+	Count(ctx context.Context, query *q.Query) (int64, error)
 }
 
 // NewExecutionManager return an instance of the default execution manager
@@ -73,6 +75,10 @@ type executionManager struct {
 	executionDAO dao.ExecutionDAO
 	taskMgr      Manager
 	taskDAO      dao.TaskDAO
+}
+
+func (e *executionManager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return e.executionDAO.Count(ctx, query)
 }
 
 func (e *executionManager) Create(ctx context.Context, vendorType string, vendorID int64, trigger string,

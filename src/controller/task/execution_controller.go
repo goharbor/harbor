@@ -36,6 +36,8 @@ type ExecutionController interface {
 	Get(ctx context.Context, id int64) (execution *task.Execution, err error)
 	// List executions according to the query.
 	List(ctx context.Context, query *q.Query) (executions []*task.Execution, err error)
+	// Count counts total.
+	Count(ctx context.Context, query *q.Query) (int64, error)
 }
 
 // executionController defines the execution controller.
@@ -68,4 +70,9 @@ func (ec *executionController) Get(ctx context.Context, id int64) (execution *ta
 // List executions according to the query.
 func (ec *executionController) List(ctx context.Context, query *q.Query) (executions []*task.Execution, err error) {
 	return ec.mgr.List(ctx, query)
+}
+
+// Count counts total.
+func (ec *executionController) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return ec.mgr.Count(ctx, query)
 }

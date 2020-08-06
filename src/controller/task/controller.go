@@ -36,6 +36,8 @@ type Controller interface {
 	List(ctx context.Context, query *q.Query) (tasks []*task.Task, err error)
 	// Get the log of the specified task.
 	GetLog(ctx context.Context, id int64) (log []byte, err error)
+	// Count counts total.
+	Count(ctx context.Context, query *q.Query) (int64, error)
 }
 
 // NewController creates an instance of the default task controller.
@@ -48,6 +50,11 @@ func NewController() Controller {
 // controller defines the default task controller.
 type controller struct {
 	mgr task.Manager
+}
+
+// Count counts total.
+func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return c.mgr.Count(ctx, query)
 }
 
 // Stop the specified task.
