@@ -584,6 +584,11 @@ func (api *preheatAPI) ListExecutions(ctx context.Context, params operation.List
 		query.Keywords["vendor_id"] = policy.ID
 	}
 
+	total, err := api.executionCtl.Count(ctx, query)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	executions, err := api.executionCtl.List(ctx, query)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -598,7 +603,8 @@ func (api *preheatAPI) ListExecutions(ctx context.Context, params operation.List
 		payloads = append(payloads, p)
 	}
 
-	return operation.NewListExecutionsOK().WithPayload(payloads)
+	return operation.NewListExecutionsOK().WithPayload(payloads).WithXTotalCount(total).
+		WithLink(api.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
 }
 
 // StopExecution stops execution.
@@ -645,10 +651,18 @@ func (api *preheatAPI) ListTasks(ctx context.Context, params operation.ListTasks
 		return api.SendError(ctx, err)
 	}
 
-	query := &q.Query{
-		Keywords: map[string]interface{}{
-			"execution_id": params.ExecutionID,
-		},
+	query, err := api.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	if query != nil {
+		query.Keywords["execution_id"] = params.ExecutionID
+	}
+
+	total, err := api.taskCtl.Count(ctx, query)
+	if err != nil {
+		return api.SendError(ctx, err)
 	}
 
 	tasks, err := api.taskCtl.List(ctx, query)
@@ -665,7 +679,8 @@ func (api *preheatAPI) ListTasks(ctx context.Context, params operation.ListTasks
 		payloads = append(payloads, p)
 	}
 
-	return operation.NewListTasksOK().WithPayload(payloads)
+	return operation.NewListTasksOK().WithPayload(payloads).WithXTotalCount(total).
+		WithLink(api.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
 }
 
 // GetLog gets log.

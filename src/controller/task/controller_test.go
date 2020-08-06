@@ -17,6 +17,8 @@ package task
 import (
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/q"
+
 	model "github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/task"
@@ -38,6 +40,14 @@ func TestControllerTestSuite(t *testing.T) {
 func (c *controllerTestSuite) SetupTest() {
 	c.mgr = &task.FakeManager{}
 	c.ctl = &controller{mgr: c.mgr}
+}
+
+// TestCount tests count.
+func (c *controllerTestSuite) TestCount() {
+	c.mgr.On("Count", mock.Anything, mock.Anything).Return(int64(10), nil)
+	total, err := c.ctl.Count(nil, &q.Query{})
+	c.NoError(err)
+	c.Equal(int64(10), total)
 }
 
 // TestStop tests stop.

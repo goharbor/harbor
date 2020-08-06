@@ -17,6 +17,8 @@ package task
 import (
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/q"
+
 	model "github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/task"
@@ -40,6 +42,14 @@ func (ec *executionControllerTestSuite) SetupTest() {
 	ec.ctl = &executionController{
 		mgr: ec.mgr,
 	}
+}
+
+// TestCount tests count.
+func (ec *executionControllerTestSuite) TestCount() {
+	ec.mgr.On("Count", mock.Anything, mock.Anything).Return(int64(10), nil)
+	total, err := ec.ctl.Count(nil, &q.Query{})
+	ec.NoError(err)
+	ec.Equal(int64(10), total)
 }
 
 // TestStop tests stop.
