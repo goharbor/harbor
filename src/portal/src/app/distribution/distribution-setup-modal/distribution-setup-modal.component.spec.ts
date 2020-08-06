@@ -7,6 +7,8 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DistributionSetupModalComponent } from './distribution-setup-modal.component';
 import { PreheatService } from "../../../../ng-swagger-gen/services/preheat.service";
 import { Instance } from '../../../../ng-swagger-gen/models/instance';
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 describe('DistributionSetupModalComponent', () => {
   let component: DistributionSetupModalComponent;
@@ -24,6 +26,11 @@ describe('DistributionSetupModalComponent', () => {
     vendor: 'kraken',
     status: 'Healthy'
   };
+  const fakedPreheatService = {
+    ListInstances() {
+      return of([]).pipe(delay(0));
+    }
+  };
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -34,7 +41,7 @@ describe('DistributionSetupModalComponent', () => {
         HttpClientTestingModule
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      providers: [PreheatService],
+      providers: [ { provide: PreheatService, useValue: fakedPreheatService }],
       declarations: [DistributionSetupModalComponent]
     }).compileComponents();
   }));

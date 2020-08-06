@@ -34,14 +34,16 @@
           <!-- name -->
           <div class="clr-form-control">
             <label for="name" class="clr-control-label required width-6rem">{{'P2P_PROVIDER.NAME' | translate}}</label>
-            <div class="clr-control-container" [class.clr-error]="name.errors && name.errors.required && (name.dirty || name.touched)">
+            <div class="clr-control-container" [class.clr-error]="((name.dirty || name.touched) && name.invalid) || isNameExisting">
               <div class="clr-input-wrapper">
                 <input pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" [disabled]="loading" autocomplete="off"  class="clr-input width-380" type="text" id="name" [(ngModel)]="policy.name"
-                       size="30" name="name" #name="ngModel" required>
+                       size="30" name="name" #name="ngModel" required (input)="inputName()">
                 <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                <span class="spinner spinner-inline" [hidden]="!checkNameOnGoing"></span>
               </div>
-              <clr-control-error *ngIf="name.errors && name.errors.required && (name.dirty || name.touched)" class="tooltip-content">
-                {{'P2P_PROVIDER.NAME_REQUIRED' | translate}}
+              <clr-control-error *ngIf="((name.dirty || name.touched) && name.invalid) || isNameExisting">
+                <span *ngIf="!((name.dirty || name.touched) && name.invalid) && isNameExisting">{{'SCANNER.NAME_EXISTS' | translate}}</span>
+                <span *ngIf="(name.dirty || name.touched) && name.invalid">{{ 'PROJECT.NAME_TOOLTIP' | translate }}</span>
               </clr-control-error>
             </div>
           </div>
@@ -172,12 +174,12 @@
       </form>
       <div class="mt-1 bottom-btn" *ngIf="!isEdit">
         <button type="button" class="btn btn-outline" id="add-policy-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button type="button" id="new-policy" class="btn btn-primary" [clrLoading]="buttonStatus" [disabled]="loading || !valid()"  (click)="addOrSave(true)">{{'BUTTON.ADD' | translate}}</button>
+        <button type="button" id="new-policy" class="btn btn-primary" [clrLoading]="buttonStatus" [disabled]="isNameExisting ||checkNameOnGoing || loading || !valid()"  (click)="addOrSave(true)">{{'BUTTON.ADD' | translate}}</button>
       </div>
       <div class="mt-1 bottom-btn" *ngIf="isEdit">
         <button type="button" class="btn btn-outline" id="edit-policy-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
         <button type="button" class="btn btn-primary" id="edit-policy-save"
-                [clrLoading]="buttonStatus" [disabled]="loading || !valid() || !hasChange()" (click)="addOrSave(false)">{{'BUTTON.SAVE' | translate}}</button>
+                [clrLoading]="buttonStatus" [disabled]="isNameExisting || checkNameOnGoing || loading || !valid() || !hasChange()" (click)="addOrSave(false)">{{'BUTTON.SAVE' | translate}}</button>
       </div>
     </div>
   </div>

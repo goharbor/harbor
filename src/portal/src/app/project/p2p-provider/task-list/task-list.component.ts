@@ -1,16 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { finalize } from 'rxjs/operators';
-import { clone, CustomComparator, DEFAULT_PAGE_SIZE, isEmptyObject } from '../../../../lib/utils/utils';
+import { debounceTime, finalize, switchMap } from 'rxjs/operators';
+import { clone, DEFAULT_PAGE_SIZE } from '../../../../lib/utils/utils';
 import { Task } from '../../../../../ng-swagger-gen/models/task';
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
 import { Project } from '../../project';
-import { ClrDatagridComparatorInterface, UserPermissionService, USERSTATICPERMISSION } from '../../../../lib/services';
+import { UserPermissionService, USERSTATICPERMISSION } from '../../../../lib/services';
 import { Execution } from '../../../../../ng-swagger-gen/models/execution';
 import { PreheatService } from '../../../../../ng-swagger-gen/services/preheat.service';
 import { EXECUTION_STATUS, P2pProviderService, TIME_OUT } from '../p2p-provider.service';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { ClrLoadingState } from '@clr/angular';
 
 @Component({
@@ -31,12 +31,15 @@ export class TaskListComponent implements OnInit, OnDestroy {
   stopOnGoing: boolean;
   executionId: string;
   preheatPolicyName: string;
-  startTimeComparator: ClrDatagridComparatorInterface<Task> = new CustomComparator<Task>("start_time", "date");
   execution: Execution;
   hasUpdatePermission: boolean = false;
   btnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   timeout: any;
   timeoutForTaskList: any;
+  searchString: string;
+  private _searchSubject: Subject<string> = new Subject<string>();
+  private _searchSubscription: Subscription;
+  filterKey: string = 'id';
   constructor(
     private translate: TranslateService,
     private router: Router,
@@ -60,6 +63,37 @@ export class TaskListComponent implements OnInit, OnDestroy {
       this.getExecutionDetail(true);
     }
     this.getPermissions();
+    this.subscribeSearch();
+  }
+  subscribeSearch() {
+    if (!this._searchSubscription) {
+      this._searchSubscription = this._searchSubject.pipe(
+        debounceTime(500),
+        switchMap(searchString => {
+          this.loading = true;
+          let params: string;
+          if (this.searchString) {
+            params = encodeURIComponent(`${this.filterKey}=~${searchString}`);
+          }
+          return this.preheatService.ListTasksResponse({
+            projectName: this.projectName,
+            preheatPolicyName: this.preheatPolicyName,
+            executionId: +this.executionId,
+            page: this.currentPage,
+            pageSize: this.pageSize,
+            q: params
+          }).pipe(finalize(() => this.loading = false));
+        })).subscribe(res => {
+        if (res.headers) {
+          let xHeader: string = res.headers.get('x-total-count');
+          if (xHeader) {
+            this.totalCount = parseInt(xHeader, 0);
+          }
+        }
+        this.tasks = res.body;
+        this.setLoop();
+      });
+    }
   }
   ngOnDestroy(): void {
     if (this.timeout) {
@@ -69,6 +103,10 @@ export class TaskListComponent implements OnInit, OnDestroy {
     if (this.timeoutForTaskList) {
       clearTimeout(this.timeoutForTaskList);
       this.timeoutForTaskList = null;
+    }
+    if (this._searchSubscription) {
+      this._searchSubscription.unsubscribe();
+      this._searchSubscription = null;
     }
   }
   getPermissions() {
@@ -93,10 +131,14 @@ export class TaskListComponent implements OnInit, OnDestroy {
         projectName: this.projectName,
         preheatPolicyName: this.preheatPolicyName,
         executionId: +this.executionId
-      }).pipe(finalize(() => (this.inProgress = false)))
+      }).pipe(finalize(() => this.inProgress = false))
         .subscribe(res => {
           this.execution = res;
             if (!this.execution || this.p2pProviderService.willChangStatus(this.execution.status)) {
+              if (this.timeout) {
+                clearTimeout(this.timeout);
+                this.timeout = null;
+              }
               if (!this.timeout) {
                 this.timeout = setTimeout(() => {
                   this.getExecutionDetail(false);
@@ -182,28 +224,30 @@ export class TaskListComponent implements OnInit, OnDestroy {
       if (withLoading) {
         this.loading = true;
       }
-      this.preheatService.ListTasks({
+    let params: string;
+    if (this.searchString) {
+      params =  encodeURIComponent(`${this.filterKey}=~${this.searchString}`);
+    }
+      this.preheatService.ListTasksResponse({
         projectName: this.projectName,
         preheatPolicyName: this.preheatPolicyName,
-        executionId: +this.executionId
+        executionId: +this.executionId,
+        page: this.currentPage,
+        pageSize: this.pageSize,
+        q: params
       })
       .pipe(finalize(() => {
         this.loading = false;
       }))
         .subscribe(res => {
-            this.tasks = res;
-            if (this.tasks && this.tasks.length) {
-              this.totalCount = this.tasks.length;
-              for (let i = 0; i < this.tasks.length; i++) {
-                if (this.p2pProviderService.willChangStatus(this.tasks[i].status)) {
-                  if (!this.timeoutForTaskList) {
-                    this.timeoutForTaskList = setTimeout(() => {
-                      this.clrLoadTasks(false);
-                    }, TIME_OUT);
-                  }
-                }
+            if (res.headers) {
+              let xHeader: string = res.headers.get('x-total-count');
+              if (xHeader) {
+                this.totalCount = parseInt(xHeader, 0);
               }
             }
+            this.tasks = res.body;
+            this.setLoop();
           },
       error => {
         this.messageHandlerService.error(error);
@@ -232,5 +276,36 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
   canStop(): boolean {
     return this.execution && this.p2pProviderService.willChangStatus(this.execution.status);
+  }
+  setLoop() {
+    if (this.timeoutForTaskList) {
+      clearTimeout(this.timeoutForTaskList);
+      this.timeoutForTaskList = null;
+    }
+    if (this.tasks && this.tasks.length) {
+      for (let i = 0; i < this.tasks.length; i++) {
+        if (this.p2pProviderService.willChangStatus(this.tasks[i].status)) {
+          if (!this.timeoutForTaskList) {
+            this.timeoutForTaskList = setTimeout(() => {
+              this.clrLoadTasks(false);
+            }, TIME_OUT);
+          }
+        }
+      }
+    }
+  }
+  selectFilterKey($event: any): void {
+    this.filterKey = $event['target'].value;
+  }
+  doFilter(terms: string): void {
+    this.searchString = terms;
+    if (terms.trim()) {
+      this._searchSubject.next(terms.trim());
+    } else {
+      this.clrLoadTasks(true);
+    }
+  }
+  openFilter(isOpen: boolean): void {
+    this.isOpenFilterTag = isOpen;
   }
 }

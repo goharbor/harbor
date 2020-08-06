@@ -77,7 +77,7 @@
         </clr-dg-action-bar>
         <clr-dg-column [clrDgField]="'name'">{{'P2P_PROVIDER.NAME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'P2P_PROVIDER.ENABLED' | translate}}</clr-dg-column>
-        <clr-dg-column>{{'P2P_PROVIDER.PROVIDER' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'provider_name'">{{'P2P_PROVIDER.PROVIDER' | translate}}</clr-dg-column>
         <clr-dg-column>{{'P2P_PROVIDER.FILTERS' | translate}}</clr-dg-column>
         <clr-dg-column>{{'P2P_PROVIDER.TRIGGER' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'P2P_PROVIDER.CREATED' | translate}}</clr-dg-column>
@@ -164,20 +164,19 @@
                         <select id="selectKey" (change)="selectFilterKey($event)">
                             <option value="id">{{"P2P_PROVIDER.ID" | translate | lowercase}}</option>
                             <option value="status">{{"REPLICATION.STATUS" | translate | lowercase}}</option>
-                            <option value="vendor_type">{{"P2P_PROVIDER.PROVIDER_TYPE" | translate | lowercase}}</option>
                         </select>
                     </div>
                     <hbr-filter (filterEvt)="doFilter($event)" [currentValue]="searchString" id="filter-executions" [withDivider]="true"
                                 (openFlag)="openFilter($event)" filterPlaceholder='{{"REPLICATION.FILTER_EXECUTIONS_PLACEHOLDER" | translate}}'></hbr-filter>
                     <span class="refresh-btn">
-                                 <clr-icon shape="refresh" (click)="refresh()" [hidden]="loading"></clr-icon>
+                                 <clr-icon shape="refresh" (click)="refreshJobs()" [hidden]="loading"></clr-icon>
                             </span>
                 </div>
             </div>
         </clr-dg-action-bar>
         <clr-dg-column>{{'REPLICATION.ID' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
-        <clr-dg-column>{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'P2P_PROVIDER.TRIGGER' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.DURATION' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.SUCCESS_RATE' | translate}}</clr-dg-column>
@@ -196,7 +195,7 @@
                     </clr-tooltip-content>
                 </clr-tooltip>
             </clr-dg-cell>
-            <clr-dg-cell>{{execution.trigger}}</clr-dg-cell>
+            <clr-dg-cell>{{getTriggerTypeI18nForExecution(execution.trigger) | translate}}</clr-dg-cell>
             <clr-dg-cell>{{execution.start_time | date: 'short'}}</clr-dg-cell>
             <clr-dg-cell>{{getDuration(execution)}}</clr-dg-cell>
             <clr-dg-cell>{{getSuccessRate(execution.metrics)}}</clr-dg-cell>
@@ -206,7 +205,7 @@
             <span *ngIf="totalExecutionCount">{{pagination.firstItem + 1}}
                 - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}</span>
             {{totalExecutionCount}} {{'REPLICATION.ITEMS' | translate}}
-            <clr-dg-pagination #pagination [(clrDgPage)]="currentExecutionPage" [clrDgPageSize]="10"
+            <clr-dg-pagination #pagination [(clrDgPage)]="currentExecutionPage" [clrDgPageSize]="pageSize"
                                [clrDgTotalItems]="totalExecutionCount"></clr-dg-pagination>
         </clr-dg-footer>
     </clr-datagrid>
