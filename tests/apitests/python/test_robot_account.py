@@ -4,12 +4,12 @@ import unittest
 
 from testutils import ADMIN_CLIENT
 from testutils import TEARDOWN
+from testutils import harbor_server
 from library.user import User
 from library.project import Project
 from library.repository import Repository
 from library.repository import pull_harbor_image
 from library.repository import push_image_to_project
-from testutils import harbor_server
 from library.base import _assert_status_code
 
 class TestProjects(unittest.TestCase):

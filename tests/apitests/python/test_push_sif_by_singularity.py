@@ -2,11 +2,11 @@ from __future__ import absolute_import
 import unittest
 import urllib
 
-import library.singularity
-from library.sign import sign_image
 from testutils import ADMIN_CLIENT
 from testutils import harbor_server
 from testutils import TEARDOWN
+import library.singularity
+from library.sign import sign_image
 from library.user import User
 from library.project import Project
 from library.repository import Repository

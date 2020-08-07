@@ -165,7 +165,7 @@ Docker Pull
     [Arguments]  ${image}
     ${output}=  Retry Keyword N Times When Error  10  Wait Unitl Command Success  docker pull ${image}
     Log  ${output}
-    Log To Console  Docker Pull: \n ${output}
+    Log To Console  Docker Pull: ${output}
     [Return]  ${output}
 
 Docker Tag

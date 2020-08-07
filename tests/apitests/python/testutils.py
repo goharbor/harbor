@@ -3,6 +3,13 @@ import os
 import sys
 
 sys.path.insert(0, os.environ["SWAGGER_CLIENT_PATH"])
+path=os.getcwd() + "/library"
+sys.path.insert(0, path)
+
+
+path=os.getcwd() + "/tests/apitests/python/library"
+sys.path.insert(0, path)
+
 import v2_swagger_client
 from swagger_client.rest import ApiException
 import swagger_client.models

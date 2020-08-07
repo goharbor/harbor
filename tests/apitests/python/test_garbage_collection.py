@@ -5,12 +5,12 @@ import time
 
 from testutils import ADMIN_CLIENT
 from testutils import TEARDOWN
+from testutils import harbor_server
 from library.user import User
 from library.system import System
 from library.project import Project
 from library.repository import Repository
 from library.repository import push_image_to_project
-from testutils import harbor_server
 from library.base import _assert_status_code
 from library.repository import push_special_image_to_project
 from library.artifact import Artifact

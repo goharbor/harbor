@@ -103,7 +103,7 @@ class DockerAPI(object):
         caught_err = False
         ret = ""
         try:
-            ret = base._get_string_from_unicode(self.DCLIENT.pull(r'{}:{}'.format(image, _tag)))
+            self.DCLIENT.pull(r'{}:{}'.format(image, _tag))
             return ret
         except Exception as err:
             caught_err = True
@@ -137,7 +137,7 @@ class DockerAPI(object):
         if expected_error_message is "":
             expected_error_message = None
         try:
-            ret = base._get_string_from_unicode(self.DCLIENT.push(harbor_registry, tag, stream=True))
+            self.DCLIENT.push(harbor_registry, tag)
             return ret
         except Exception as err:
             caught_err = True
