@@ -8,7 +8,6 @@ from testutils import TEARDOWN
 from testutils import harbor_server
 from library.repository import push_special_image_to_project
 from library.docker_api import list_image_tags
-
 from library.retention import Retention
 from library.project import Project
 from library.repository import Repository

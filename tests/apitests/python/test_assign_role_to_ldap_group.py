@@ -22,6 +22,7 @@ import docker
 
 import swagger_client
 
+from testutils import ADMIN_CLIENT
 from swagger_client.models.project import Project
 from swagger_client.models.project_req import ProjectReq
 from swagger_client.models.project_metadata import ProjectMetadata
@@ -29,8 +30,8 @@ from swagger_client.models.project_member import ProjectMember
 from swagger_client.models.user_group import UserGroup
 from swagger_client.models.configurations import Configurations
 from library.projectV2 import ProjectV2
-from testutils import ADMIN_CLIENT
 from library.base import _assert_status_code
+from library.base import _random_name
 
 
 from v2_swagger_client.rest import ApiException
@@ -45,6 +46,7 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
     repository_api = testutils.GetRepositoryApi("admin", "Harbor12345")
     project_id = 0
     docker_client = docker.from_env()
+    _project_name = _random_name("test_private")
 
     def setUp(self):
         self.projectv2= ProjectV2()
@@ -55,13 +57,13 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
         cfgs = self.product_api.configurations_get()
         pprint(cfgs)
         req = ProjectReq()
-        req.project_name = "ldap_group_test_prj"
+        req.project_name = self._project_name
         req.metadata = ProjectMetadata(public="false")
         result = self.product_api.projects_post(req)
         pprint(result)
 
-        projs = self.product_api.projects_get(name="ldap_group_test_prj")
-        if projs.count>0 :
+        projs = self.product_api.projects_get(name = self._project_name)
+        if len(projs)>0 :
             project = projs[0]
             self.project_id = project.project_id
 
@@ -93,9 +95,9 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
 
     def tearDown(self):
         #delete images in project
-        result = self.repository_api.delete_repository("ldap_group_test_prj", "busybox")
+        result = self.repository_api.delete_repository(self._project_name, "busybox")
         pprint(result)
-        result = self.repository_api.delete_repository("ldap_group_test_prj", "busyboxdev")
+        result = self.repository_api.delete_repository(self._project_name, "busyboxdev")
         pprint(result)
         if self.project_id > 0 :
               self.product_api.projects_project_id_delete(self.project_id)
@@ -104,19 +106,19 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
     def testAssignRoleToLdapGroup(self):
         """Test AssignRoleToLdapGroup"""
         admin_product_api = testutils.GetProductApi(username="admin_user", password="zhu88jie")
-        projects = admin_product_api.projects_get(name="ldap_group_test_prj")
-        self.assertTrue(projects.count > 1)
+        projects = admin_product_api.projects_get(name=self._project_name)
+        self.assertTrue(len(projects) == 1)
         self.assertEqual(1, projects[0].current_user_role_id)
 
 
         dev_product_api = testutils.GetProductApi("dev_user", "zhu88jie")
-        projects = dev_product_api.projects_get(name="ldap_group_test_prj")
-        self.assertTrue(projects.count > 1)
+        projects = dev_product_api.projects_get(name=self._project_name)
+        self.assertTrue(len(projects) == 1)
         self.assertEqual(2, projects[0].current_user_role_id)
 
         guest_product_api = testutils.GetProductApi("guest_user", "zhu88jie")
-        projects = guest_product_api.projects_get(name="ldap_group_test_prj")
-        self.assertTrue(projects.count > 1)
+        projects = guest_product_api.projects_get(name=self._project_name)
+        self.assertTrue(len(projects) == 1)
         self.assertEqual(3, projects[0].current_user_role_id)
 
         self.dockerCmdLoginAdmin(username="admin_user", password="zhu88jie")
@@ -136,19 +138,19 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
         self.docker_client.login(username=username, password=password, registry=self.harbor_host)
         self.docker_client.images.pull("busybox:latest")
         image = self.docker_client.images.get("busybox:latest")
-        image.tag(repository=self.harbor_host+"/ldap_group_test_prj/busybox", tag="latest")
-        output = self.docker_client.images.push(repository=self.harbor_host+"/ldap_group_test_prj/busybox", tag="latest")
+        image.tag(repository=self.harbor_host+"/"+self._project_name+"/busybox", tag="latest")
+        output = self.docker_client.images.push(repository=self.harbor_host+"/"+self._project_name+"/busybox", tag="latest")
         if output.find("error")>0 :
             self.fail("Should not fail to push image for admin_user")
-        self.docker_client.images.pull(repository=self.harbor_host+"/ldap_group_test_prj/busybox", tag="latest")
+        self.docker_client.images.pull(repository=self.harbor_host+"/"+self._project_name+"/busybox", tag="latest")
         pass
     # dev user can push, pull images
     def dockerCmdLoginDev(self, username, password, harbor_server=harbor_host):
         self.docker_client.login(username=username, password=password, registry=self.harbor_host)
         self.docker_client.images.pull("busybox:latest")
         image = self.docker_client.images.get("busybox:latest")
-        image.tag(repository=self.harbor_host+"/ldap_group_test_prj/busyboxdev", tag="latest")
-        output = self.docker_client.images.push(repository=self.harbor_host+"/ldap_group_test_prj/busyboxdev", tag="latest")
+        image.tag(repository=self.harbor_host+"/"+self._project_name+"/busyboxdev", tag="latest")
+        output = self.docker_client.images.push(repository=self.harbor_host+"/"+self._project_name+"/busyboxdev", tag="latest")
         if output.find("error") >0 :
             self.fail("Should not fail to push images for dev_user")
         pass
@@ -157,17 +159,17 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
         self.docker_client.login(username=username, password=password, registry=self.harbor_host)
         self.docker_client.images.pull("busybox:latest")
         image = self.docker_client.images.get("busybox:latest")
-        image.tag(repository=self.harbor_host+"/ldap_group_test_prj/busyboxguest", tag="latest")
-        output = self.docker_client.images.push(repository=self.harbor_host+"1/ldap_group_test_prj/busyboxguest", tag="latest")
+        image.tag(repository=self.harbor_host+"/"+self._project_name+"/busyboxguest", tag="latest")
+        output = self.docker_client.images.push(repository=self.harbor_host+"1/"+self._project_name+"/busyboxguest", tag="latest")
         if output.find("error")<0 :
             self.fail("Should failed to push image for guest user")
-        self.docker_client.images.pull(repository=self.harbor_host+"/ldap_group_test_prj/busybox", tag="latest")
+        self.docker_client.images.pull(repository=self.harbor_host+"/"+self._project_name+"/busybox", tag="latest")
         pass
     # check can see his log in current project
     def queryUserLogs(self, username, password, status_code=200):
         client=dict(endpoint = ADMIN_CLIENT["endpoint"], username = username, password = password)
         try:
-            logs = self.projectv2.get_project_log("ldap_group_test_prj", status_code, **client)
+            logs = self.projectv2.get_project_log(self._project_name, status_code, **client)
             count = 0
             for log in list(logs):
                 count = count + 1

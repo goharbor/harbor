@@ -3,13 +3,11 @@ from __future__ import absolute_import
 
 import unittest
 
-import library.repository
-import library.cnab
-
 from testutils import ADMIN_CLIENT
 from testutils import harbor_server
-
 from testutils import TEARDOWN
+import library.repository
+import library.cnab
 from library.project import Project
 from library.user import User
 from library.repository import Repository
