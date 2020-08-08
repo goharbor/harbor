@@ -213,7 +213,7 @@ func (de *defaultEnforcer) EnforcePolicy(ctx context.Context, policyID int64) (i
 	// Override security settings if necessary
 	ov := overrideSecuritySettings(pl, pro)
 	for _, ss := range ov {
-		log.Infof("Policy %s.%s's criteria '%s' is override from value '%s' to '%s'", ss...)
+		log.Infof("Policy %s.%s's criteria '%s' uses value '%s' from project configurations", ss...)
 	}
 
 	// Do filters
@@ -277,7 +277,7 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 		// Override security settings if necessary
 		ov := overrideSecuritySettings(pl, p)
 		for _, ss := range ov {
-			log.Infof("Policy %s.%s's criteria '%s' is override from value '%s' to '%s'", ss...)
+			log.Infof("Policy %s.%s's criteria '%s' uses value '%s' from project configurations", ss...)
 		}
 
 		filtered, err := policy.NewFilter().BuildFrom(pl).Filter(candidates)
@@ -294,6 +294,14 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 	}
 
 	ids := make([]int64, 0)
+	// No policy matched
+	if len(matched) == 0 {
+		// Log it
+		log.Debugf("No preheat policy matched for the artifact %s@%s", art.RepositoryName, art.Digest)
+		// Do nothing
+		return ids, nil
+	}
+
 	// Launch preheat executions for all the matched policies.
 	// Check the health of the instance bound with the policy at this moment.
 	for _, mp := range matched {
@@ -588,52 +596,49 @@ func checkProviderHealthy(inst *provider.Instance) error {
 
 // Check the project security settings and override the related settings in the policy if necessary.
 // NOTES: if the security settings (relevant with signature and vulnerability) are set at the project configuration,
-// they will have the highest priority and override the related settings of the preheat policy.
-// e.g (use signature as an example, similar case to vulnerability severity part):
-//   if policy.signature = false and project.config.signature = true; then policy.signature = true
-//   if policy.signature = true and project.config.signature = true; then policy.signature = true
-//   if policy.signature = true and project.config.signature = false; then policy.signature = true
-//   if policy.signature = false and project.config.signature = false; then policy.signature = false
-//
-// If override happened, then return the override setting list
+// the corresponding filters of P2P preheat policy will be set using the relevant settings of project configurations.
 func overrideSecuritySettings(p *pol.Schema, pro *models.Project) [][]interface{} {
 	if p == nil || pro == nil {
 		return nil
 	}
 
 	override := make([][]interface{}, 0)
+	filters := make([]*pol.Filter, 0)
 	for _, fl := range p.Filters {
-		switch fl.Type {
-		case pol.FilterTypeSignature:
-			if ct, ok := pro.Metadata[proMetaKeyContentTrust]; ok && ct == "true" {
-				if sig, ok := fl.Value.(bool); !ok || (ok && !sig) {
-					// Record this is a override case
-					r1 := []interface{}{pro.Name, p.Name, fl.Type, fmt.Sprintf("%v", sig), ct}
-					override = append(override, r1)
-				}
-
-				// Override: must be set align with project configuration setting
-				fl.Value = true
-			}
-		case pol.FilterTypeVulnerability:
-			if v, ok := pro.Metadata[proMetaKeyVulnerability]; ok && v == "true" {
-				if se, ok := pro.Metadata[proMetaKeySeverity]; ok && len(se) > 0 {
-					se = strings.Title(strings.ToLower(se))
-					code := vuln.Severity(se).Code()
-
-					if sev, ok := fl.Value.(int); !ok || (ok && sev < code) {
-						// Record this is a override case
-						r2 := []interface{}{pro.Name, p.Name, fl.Type, fmt.Sprintf("%v:%d", fl.Value, sev), fmt.Sprintf("%s:%d", se, code)}
-						override = append(override, r2)
-
-						// Override: must be set align with project configuration setting
-						fl.Value = code
-					}
-				}
-			}
-		default:
+		if fl.Type != pol.FilterTypeSignature && fl.Type != pol.FilterTypeVulnerability {
+			filters = append(filters, fl)
 		}
 	}
+
+	// Append signature filter if content trust config is set at project configurations
+	if ct, ok := pro.Metadata[proMetaKeyContentTrust]; ok && ct == "true" {
+		filters = append(filters, &pol.Filter{
+			Type:  pol.FilterTypeSignature,
+			Value: true,
+		})
+
+		// Record this is a override case
+		r1 := []interface{}{pro.Name, p.Name, pol.FilterTypeSignature, fmt.Sprintf("%v", true)}
+		override = append(override, r1)
+	}
+	// Append vulnerability filter if vulnerability severity config is set at project configurations
+	if v, ok := pro.Metadata[proMetaKeyVulnerability]; ok && v == "true" {
+		if se, ok := pro.Metadata[proMetaKeySeverity]; ok && len(se) > 0 {
+			se = strings.Title(strings.ToLower(se))
+			code := vuln.Severity(se).Code()
+			filters = append(filters, &pol.Filter{
+				Type:  pol.FilterTypeVulnerability,
+				Value: code,
+			})
+
+			// Record this is a override case
+			r2 := []interface{}{pro.Name, p.Name, pol.FilterTypeVulnerability, fmt.Sprintf("%v:%d", se, code)}
+			override = append(override, r2)
+		}
+	}
+
+	// Override
+	p.Filters = filters
 
 	return override
 }

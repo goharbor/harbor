@@ -123,7 +123,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		Metadata: map[string]string{
 			proMetaKeyContentTrust:  "true",
 			proMetaKeyVulnerability: "true",
-			proMetaKeySeverity:      "low",
+			proMetaKeySeverity:      "high",
 		},
 	}, nil)
 
@@ -201,14 +201,6 @@ func mockPolicies() []*po.Schema {
 				{
 					Type:  po.FilterTypeLabel,
 					Value: "approved,ready",
-				},
-				{
-					Type:  po.FilterTypeSignature,
-					Value: false,
-				},
-				{
-					Type:  po.FilterTypeVulnerability,
-					Value: 3, // medium
 				},
 			},
 			Trigger: &po.Trigger{
@@ -297,7 +289,7 @@ func mockArtifacts() []*car.Artifact {
 					Tag: ta.Tag{
 						Name: "stage",
 					},
-					Signed: false,
+					Signed: true,
 				},
 			},
 			Labels: []*models.Label{
