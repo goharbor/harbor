@@ -887,7 +887,7 @@ paths:
           description: List preheat policies success
           headers:
             X-Total-Count:
-              description: The total count of tags
+              description: The total count of policies
               type: integer
             Link:
               description: Link refers to the previous page and next page
@@ -1032,7 +1032,7 @@ paths:
           description: List executions success
           headers:
             X-Total-Count:
-              description: The total count of tags
+              description: The total count of executions
               type: integer
             Link:
               description: Link refers to the previous page and next page
@@ -1128,7 +1128,7 @@ paths:
           description: List tasks success
           headers:
             X-Total-Count:
-              description: The total count of tags
+              description: The total count of tasks
               type: integer
             Link:
               description: Link refers to the previous page and next page
