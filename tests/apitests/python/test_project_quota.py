@@ -25,16 +25,8 @@ class TestProjects(unittest.TestCase):
         self.system = System()
 
     @classmethod
-    def tearDown(self):
-        print "Case completed"
-
-    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
-        #1. Delete project(PA);
-        self.project.delete_project(TestProjects.project_test_quota_id, **ADMIN_CLIENT)
-
-        #2. Delete user(UA);
-        self.user.delete_user(TestProjects.user_test_quota_id, **ADMIN_CLIENT)
+    def tearDown(cls):
+        print("Case completed")
 
     def testProjectQuota(self):
         """
