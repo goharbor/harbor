@@ -29,7 +29,7 @@ class TestProjects(unittest.TestCase):
     @classmethod
     def tearDown(self):
         self.test_result.get_final_result()
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):

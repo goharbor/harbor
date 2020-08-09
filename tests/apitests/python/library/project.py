@@ -57,11 +57,14 @@ class Project(base.Base):
 
     def check_project_name_exist(self, name=None, **kwargs):
         client = self._get_client(**kwargs)
-        _, status_code, _ = client.projects_head_with_http_info(name)
+        try:
+            _, status_code, _ = client.projects_head_with_http_info(name)
+        except ApiException as e:
+            status_code = -1
         return {
             200: True,
             404: False,
-        }.get(status_code,'error')
+        }.get(status_code,False)
 
     def get_project(self, project_id, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
@@ -94,10 +97,14 @@ class Project(base.Base):
 
     def get_project_log(self, project_id, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
-        body, status_code, _ = client.projects_project_id_logs_get_with_http_info(project_id)
-        base._assert_status_code(expect_status_code, status_code)
+        try:
+            body, status_code, _ = client.projects_project_id_logs_get_with_http_info(project_id)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+            body=[]
+        else:
+            base._assert_status_code(expect_status_code, status_code)
         return body
-
     def filter_project_logs(self, project_id, operator, repository, tag, operation_type, **kwargs):
         access_logs = self.get_project_log(project_id, **kwargs)
         count = 0
@@ -162,11 +169,18 @@ class Project(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
 
-    def add_project_members(self, project_id, user_id, member_role_id = None, expect_status_code = 201, **kwargs):
+    def add_project_members(self, project_id, user_id = None, member_role_id = None, _ldap_group_dn=None,expect_status_code = 201, **kwargs):
+        kwargs['api_type'] = 'products'
+        projectMember = swagger_client.ProjectMember()
+        if user_id is not None:
+           projectMember.member_user = {"user_id": int(user_id)}
         if member_role_id is None:
-            member_role_id = 1
-        _member_user = {"user_id": int(user_id)}
-        projectMember = swagger_client.ProjectMember(member_role_id, member_user = _member_user)
+            projectMember.role_id = 1
+        else:
+            projectMember.role_id = member_role_id
+        if _ldap_group_dn is not None:
+            projectMember.member_group = swagger_client.UserGroup(ldap_group_dn=_ldap_group_dn)
+
         client = self._get_client(**kwargs)
         data = []
         data, status_code, header = client.projects_project_id_members_post_with_http_info(project_id, project_member = projectMember)
@@ -215,3 +229,14 @@ class Project(base.Base):
         _, status_code, _ = client.projects_project_id_robots_robot_id_delete_with_http_info(project_id, robot_id)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
+
+    def query_user_logs(self, project_id, status_code=200, **kwargs):
+        try:
+            logs = self.get_project_log(project_id, expect_status_code=status_code, **kwargs)
+            count = 0
+            for log in list(logs):
+                count = count + 1
+            return count
+        except ApiException as e:
+            _assert_status_code(status_code, e.status)
+            return 0
