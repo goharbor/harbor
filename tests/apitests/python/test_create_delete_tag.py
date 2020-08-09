@@ -3,13 +3,12 @@ from __future__ import absolute_import
 
 import unittest
 
+from testutils import ADMIN_CLIENT
+from testutils import harbor_server
+from testutils import TEARDOWN
 import library.repository
 import library.docker_api
 from library.base import _assert_status_code
-from testutils import ADMIN_CLIENT
-from testutils import harbor_server
-
-from testutils import TEARDOWN
 from library.project import Project
 from library.user import User
 from library.repository import Repository
