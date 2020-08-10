@@ -184,11 +184,45 @@ func (c *controller) CreateInstance(ctx context.Context, instance *providerModel
 
 // DeleteInstance implements @Controller.Delete
 func (c *controller) DeleteInstance(ctx context.Context, id int64) error {
+	// delete instance should check the instance whether be used by policies
+	policies, err := c.ListPolicies(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"provider_id": id,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(policies) > 0 {
+		return errors.New(nil).
+			WithCode(errors.PreconditionCode).
+			WithMessage("Can't delete instance %d, %d preheat policies use it as provider", id, len(policies))
+	}
+
 	return c.iManager.Delete(ctx, id)
 }
 
 // UpdateInstance implements @Controller.Update
 func (c *controller) UpdateInstance(ctx context.Context, instance *providerModels.Instance, properties ...string) error {
+	if !instance.Enabled {
+		// update instance should check the instance whether be used by policies
+		policies, err := c.ListPolicies(ctx, &q.Query{
+			Keywords: map[string]interface{}{
+				"provider_id": instance.ID,
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		if len(policies) > 0 {
+			return errors.New(nil).
+				WithCode(errors.PreconditionCode).
+				WithMessage("Can't disable instance %d, %d preheat policies use it as provider", instance.ID, len(policies))
+		}
+	}
+
 	return c.iManager.Update(ctx, instance, properties...)
 }
 
