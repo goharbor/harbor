@@ -33,6 +33,9 @@ describe('AddP2pPolicyComponent', () => {
         },
         UpdatePolicy() {
             return of(true).pipe(delay(0));
+        },
+        ListPolicies() {
+            return of([]).pipe(delay(0));
         }
     };
     const mockActivatedRoute = {
@@ -135,7 +138,7 @@ describe('AddP2pPolicyComponent', () => {
         nameInput.dispatchEvent(new Event('input'));
         nameInput.blur();
         const errorEle: HTMLElement = fixture.nativeElement.querySelector("clr-control-error");
-        expect(errorEle.innerText).toEqual('P2P_PROVIDER.NAME_REQUIRED');
+        expect(errorEle.innerText).toEqual('PROJECT.NAME_TOOLTIP');
     });
     it("save button should work", async () => {
         fixture.autoDetectChanges(true);
