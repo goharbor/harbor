@@ -1,4 +1,4 @@
-package quayio
+package quay
 
 import (
 	"fmt"

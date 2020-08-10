@@ -1,4 +1,4 @@
-package quayio
+package quay
 
 import (
 	"testing"
@@ -9,9 +9,9 @@ import (
 )
 
 func getMockAdapter(t *testing.T) adp.Adapter {
-	factory, _ := adp.GetFactory(model.RegistryTypeQuayio)
+	factory, _ := adp.GetFactory(model.RegistryTypeQuay)
 	adapter, err := factory.Create(&model.Registry{
-		Type: model.RegistryTypeQuayio,
+		Type: model.RegistryTypeQuay,
 		URL:  "https://quay.io",
 	})
 	assert.Nil(t, err)
@@ -22,7 +22,7 @@ func TestAdapter_NewAdapter(t *testing.T) {
 	assert.Nil(t, factory)
 	assert.NotNil(t, err)
 
-	factory, err = adp.GetFactory(model.RegistryTypeQuayio)
+	factory, err = adp.GetFactory(model.RegistryTypeQuay)
 	assert.Nil(t, err)
 	assert.NotNil(t, factory)
 }
