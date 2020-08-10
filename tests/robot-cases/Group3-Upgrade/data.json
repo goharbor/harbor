@@ -216,6 +216,7 @@
                   "repository_patten":"*photon*",
                   "tag_decoration":"*v1.*",
                   "latestPushedK":666,
+                  "latestPushedK_verify":"666",
                   "cron":"0 0 0 1 8 0"
                },
                "tag_immutability_rule":{
@@ -347,6 +348,7 @@
                   "repository_patten":"*centos*",
                   "tag_decoration":"*latest",
                   "latestPushedK":999,
+                  "latestPushedK_verify":"999",
                   "cron":"0 0 0 1 6 0"
                },
                "tag_immutability_rule":{

@@ -114,16 +114,16 @@ Verify Webhook
         ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Project Webhooks
-        @{enabled}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.enabled
-        ${enable_count}  Get Matching Xpath Count  xpath=//span[contains(.,'Enabled')]
-        ${disable_count}  Get Matching Xpath Count  xpath=//span[contains(.,'Disabled')]
-        Log To Console  '@{enabled}[0]'
+        ${enabled}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.enabled
+        ${enable_count}  Get Element Count  xpath=//span[contains(.,'Enabled')]
+        ${disable_count}  Get Element Count  xpath=//span[contains(.,'Disabled')]
+        Log To Console  '${enabled}[0]'
         Log To Console  '${true}'
-        Run Keyword If  '@{enabled}[0]' == '${true}'  Page Should Contain  Enabled
+        Run Keyword If  '${enabled}[0]' == '${true}'  Page Should Contain  Enabled
         ...  ELSE  Page Should Contain  Disabled
-        @{address}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.address
-        Log To Console  '@{address}[0]'
-        Page Should Contain  @{address}[0]
+        ${address}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.address
+        Log To Console  '${address}[0]'
+        Page Should Contain  ${address}[0]
         Page Should Contain  policy
         Page Should Contain  http
         Navigate To Projects
@@ -137,20 +137,20 @@ Verify Tag Retention Rule
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
-        @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Tag Retention
         ${actions_count}=  Set Variable  8
-        @{repository_patten}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.repository_patten
-        @{tag_decoration}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.tag_decoration
-        @{latestPushedK}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.latestPushedK
-        @{cron}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.cron
-        Log To Console  '@{repository_patten}[0]'
-        Page Should Contain  @{repository_patten}[0]
-        Page Should Contain  @{tag_decoration}[0]
-        Page Should Contain  @{latestPushedK}[0]
-        Page Should Contain  @{cron}[0]
+        ${repository_patten}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.repository_patten
+        ${tag_decoration}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.tag_decoration
+        ${latestPushedK}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.latestPushedK_verify
+        ${cron}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.cron
+        Log To Console  '${repository_patten}[0]'
+        Page Should Contain  ${repository_patten}[0]
+        Page Should Contain  ${tag_decoration}[0]
+        Page Should Contain  ${latestPushedK}[0]
+        Page Should Contain  ${cron}[0]
         Navigate To Projects
     END
     Close Browser

@@ -329,6 +329,7 @@ Delete Top Item In System CVE Allowlist
         Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}
     END
     Retry Element Click    ${config_system_save_button_xpath}
+    Capture Page Screenshot
 
 Get Project Count Quota Text From Project Quotas List
     [Arguments]    ${project_name}
