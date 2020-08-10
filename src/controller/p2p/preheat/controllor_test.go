@@ -168,21 +168,40 @@ func (s *preheatSuite) TestCreateInstance() {
 }
 
 func (s *preheatSuite) TestDeleteInstance() {
-	err := s.controller.DeleteInstance(s.ctx, 0)
-	s.Error(err)
+	// instance be used should not be deleted
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(1)}}).Return([]*policy.Schema{
+		{
+			ProviderID: 1,
+		},
+	}, nil)
+	err := s.controller.DeleteInstance(s.ctx, int64(1))
+	s.Error(err, "instance should not be deleted")
 
-	err = s.controller.DeleteInstance(s.ctx, int64(1))
-	s.NoError(err)
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(2)}}).Return([]*policy.Schema{}, nil)
+	s.fakeInstanceMgr.On("Delete", s.ctx, int64(2)).Return(nil)
+	err = s.controller.DeleteInstance(s.ctx, int64(2))
+	s.NoError(err, "instance can be deleted")
 }
 
 func (s *preheatSuite) TestUpdateInstance() {
-	s.fakeInstanceMgr.On("Update", s.ctx, mock.Anything).Return(errors.New("no properties provided to update"))
-	err := s.controller.UpdateInstance(s.ctx, nil)
-	s.Error(err)
+	// normal update
+	s.fakeInstanceMgr.On("Update", s.ctx, &providerModel.Instance{ID: 1000, Enabled: true}).Return(nil)
+	err := s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 1000, Enabled: true})
+	s.NoError(err, "instance can be updated")
 
-	s.fakeInstanceMgr.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	err = s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 1}, "enabled")
-	s.NoError(err)
+	// disable instance should error due to with policy used
+	s.fakeInstanceMgr.On("Update", s.ctx, &providerModel.Instance{ID: 1001}).Return(nil)
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(1001)}}).Return([]*policy.Schema{
+		{ProviderID: 1001},
+	}, nil)
+	err = s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 1001})
+	s.Error(err, "instance should not be disabled")
+
+	// disable instance can be deleted if no policy used
+	s.fakeInstanceMgr.On("Update", s.ctx, &providerModel.Instance{ID: 1002}).Return(nil)
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(1002)}}).Return([]*policy.Schema{}, nil)
+	err = s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 1002})
+	s.NoError(err, "instance can be disabled")
 }
 
 func (s *preheatSuite) TestGetInstance() {
@@ -278,8 +297,8 @@ func (s *preheatSuite) TestDeletePolicy() {
 }
 
 func (s *preheatSuite) TestListPolicies() {
-	s.fakePolicyMgr.On("ListPolicies", s.ctx, mock.Anything).Return([]*policy.Schema{}, nil)
-	p, err := s.controller.ListPolicies(s.ctx, nil)
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{}).Return([]*policy.Schema{}, nil)
+	p, err := s.controller.ListPolicies(s.ctx, &q.Query{})
 	s.NoError(err)
 	s.NotNil(p)
 }

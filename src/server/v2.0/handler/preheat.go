@@ -81,22 +81,6 @@ func (api *preheatAPI) DeleteInstance(ctx context.Context, params operation.Dele
 		return api.SendError(ctx, err)
 	}
 
-	// delete instance should check the instance whether be used by policies
-	policies, err := api.preheatCtl.ListPolicies(ctx, &q.Query{
-		Keywords: map[string]interface{}{
-			"provider_id": instance.ID,
-		},
-	})
-	if err != nil {
-		return api.SendError(ctx, err)
-	}
-
-	if len(policies) > 0 {
-		return api.SendError(ctx, liberrors.New(nil).
-			WithCode(liberrors.PreconditionCode).
-			WithMessage("Can't delete instance %s, %d preheat policies use it as provider", instance.Name, len(policies)))
-	}
-
 	err = api.preheatCtl.DeleteInstance(ctx, instance.ID)
 	if err != nil {
 		return api.SendError(ctx, err)
