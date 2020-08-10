@@ -98,7 +98,15 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	if err != nil {
 		return err
 	}
-	if !canProxy(p) || proxyCtl.UseLocalManifest(ctx, art) {
+	if !canProxy(p) {
+		next.ServeHTTP(w, r)
+		return nil
+	}
+	useLocal, err := proxyCtl.UseLocalManifest(ctx, art)
+	if err != nil {
+		return err
+	}
+	if useLocal {
 		next.ServeHTTP(w, r)
 		return nil
 	}

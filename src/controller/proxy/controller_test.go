@@ -17,28 +17,58 @@ package proxy
 import (
 	"context"
 	"github.com/docker/distribution"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/replication/registry"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"io"
 	"testing"
 )
 
+type remoteInterfaceMock struct {
+	mock.Mock
+}
+
+func (r *remoteInterfaceMock) BlobReader(repo, dig string) (int64, io.ReadCloser, error) {
+	panic("implement me")
+}
+
+func (r *remoteInterfaceMock) Manifest(repo string, ref string) (distribution.Manifest, string, error) {
+	panic("implement me")
+}
+
+func (r *remoteInterfaceMock) ManifestExist(repo, ref string) (bool, string, error) {
+	args := r.Called(repo, ref)
+	return args.Bool(0), args.String(1), args.Error(2)
+}
+
 type localInterfaceMock struct {
 	mock.Mock
+}
+
+func (l *localInterfaceMock) SendPullEvent(ctx context.Context, repo, tag string) {
+	panic("implement me")
+}
+
+func (l *localInterfaceMock) GetManifest(ctx context.Context, art lib.ArtifactInfo) (*artifact.Artifact, error) {
+	args := l.Called(ctx, art)
+
+	var a *artifact.Artifact
+	if args.Get(0) != nil {
+		a = args.Get(0).(*artifact.Artifact)
+	}
+	return a, args.Error(1)
+}
+
+func (l *localInterfaceMock) SameArtifact(ctx context.Context, repo, tag, dig string) (bool, error) {
+	panic("implement me")
 }
 
 func (l *localInterfaceMock) BlobExist(ctx context.Context, art lib.ArtifactInfo) (bool, error) {
 	args := l.Called(ctx, art)
 	return args.Bool(0), args.Error(1)
-}
-
-func (l *localInterfaceMock) ManifestExist(ctx context.Context, art lib.ArtifactInfo) bool {
-	args := l.Called(ctx, art)
-	return args.Bool(0)
 }
 
 func (l *localInterfaceMock) PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error {
@@ -63,15 +93,18 @@ func (l *localInterfaceMock) DeleteManifest(repo, ref string) {
 
 type proxyControllerTestSuite struct {
 	suite.Suite
-	local *localInterfaceMock
-	ctr   Controller
+	local  *localInterfaceMock
+	remote *remoteInterfaceMock
+	ctr    Controller
+	proj   *models.Project
 }
 
 func (p *proxyControllerTestSuite) SetupTest() {
 	p.local = &localInterfaceMock{}
+	p.remote = &remoteInterfaceMock{}
+	p.proj = &models.Project{RegistryID: 1}
 	p.ctr = &controller{
 		blobCtl:     blob.Ctl,
-		registryMgr: registry.NewDefaultManager(),
 		artifactCtl: artifact.Ctl,
 		local:       p.local,
 	}
@@ -81,8 +114,10 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_True() {
 	ctx := context.Background()
 	dig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
-	p.local.On("ManifestExist", mock.Anything, mock.Anything).Return(true, nil)
-	result := p.ctr.UseLocalManifest(ctx, art)
+	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(&artifact.Artifact{}, nil)
+
+	result, err := p.ctr.UseLocalManifest(ctx, art)
+	p.Assert().Nil(err)
 	p.Assert().True(result)
 }
 
@@ -90,16 +125,18 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_False() {
 	ctx := context.Background()
 	dig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
-	p.local.On("ManifestExist", mock.Anything, mock.Anything).Return(false, nil)
-	result := p.ctr.UseLocalManifest(ctx, art)
+	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(nil, nil)
+	result, err := p.ctr.UseLocalManifest(ctx, art)
+	p.Assert().Nil(err)
 	p.Assert().False(result)
 }
 
 func (p *proxyControllerTestSuite) TestUseLocalManifestWithTag_False() {
 	ctx := context.Background()
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Tag: "latest"}
-	p.local.On("ManifestExist", mock.Anything, mock.Anything).Return(true, nil)
-	result := p.ctr.UseLocalManifest(ctx, art)
+	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(&artifact.Artifact{}, nil)
+	result, err := p.ctr.UseLocalManifest(ctx, art)
+	p.Assert().Nil(err)
 	p.Assert().False(result)
 }
 
