@@ -115,7 +115,7 @@ function uploader {
 
 function package_installer {
     echo "Package Harbor offline installer."
-    robot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+    pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
     harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
     harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
     upload_build=true
