@@ -86,10 +86,10 @@ func (m *manifestV2Processor) AbstractAddition(ctx context.Context, artifact *ar
 	}, nil
 }
 
-func (m *manifestV2Processor) GetArtifactType() string {
+func (m *manifestV2Processor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
 	return ArtifactTypeImage
 }
 
-func (m *manifestV2Processor) ListAdditionTypes() []string {
+func (m *manifestV2Processor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
 	return []string{AdditionTypeBuildHistory}
 }

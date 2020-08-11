@@ -15,16 +15,20 @@
 package artifact
 
 import (
+	"testing"
+
+	"github.com/goharbor/harbor/src/controller/artifact/processor"
+	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/testing/mock"
+	tart "github.com/goharbor/harbor/src/testing/pkg/artifact"
+	tpro "github.com/goharbor/harbor/src/testing/pkg/processor"
+	"github.com/goharbor/harbor/src/testing/pkg/registry"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/goharbor/harbor/src/controller/artifact/processor"
-	"github.com/goharbor/harbor/src/pkg/artifact"
-	tart "github.com/goharbor/harbor/src/testing/pkg/artifact"
-	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 var (
@@ -203,6 +207,7 @@ type abstractorTestSuite struct {
 	argMgr     *tart.FakeManager
 	regCli     *registry.FakeClient
 	abstractor *abstractor
+	processor  *tpro.Processor
 }
 
 func (a *abstractorTestSuite) SetupTest() {
@@ -212,8 +217,10 @@ func (a *abstractorTestSuite) SetupTest() {
 		artMgr: a.argMgr,
 		regCli: a.regCli,
 	}
+	a.processor = &tpro.Processor{}
 	// clear all registered processors
 	processor.Registry = map[string]processor.Processor{}
+	processor.Registry[schema2.MediaTypeImageConfig] = a.processor
 }
 
 // docker manifest v1
@@ -240,6 +247,7 @@ func (a *abstractorTestSuite) TestAbstractMetadataOfV2Manifest() {
 	artifact := &artifact.Artifact{
 		ID: 1,
 	}
+	a.processor.On("AbstractMetadata", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	err = a.abstractor.AbstractMetadata(nil, artifact)
 	a.Require().Nil(err)
 	a.Assert().Equal(int64(1), artifact.ID)

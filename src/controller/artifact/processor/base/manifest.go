@@ -40,7 +40,7 @@ type ManifestProcessor struct {
 }
 
 // AbstractMetadata abstracts metadata of artifact
-func (m *ManifestProcessor) AbstractMetadata(ctx context.Context, content []byte, artifact *artifact.Artifact) error {
+func (m *ManifestProcessor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, content []byte) error {
 	// get manifest
 	manifest := &v1.Manifest{}
 	if err := json.Unmarshal(content, manifest); err != nil {
@@ -79,11 +79,11 @@ func (m *ManifestProcessor) AbstractAddition(ctx context.Context, artifact *arti
 }
 
 // GetArtifactType returns the artifact type
-func (m *ManifestProcessor) GetArtifactType() string {
+func (m *ManifestProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
 	return ""
 }
 
 // ListAdditionTypes returns the supported addition types
-func (m *ManifestProcessor) ListAdditionTypes() []string {
+func (m *ManifestProcessor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
 	return nil
 }

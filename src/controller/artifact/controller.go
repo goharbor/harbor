@@ -185,7 +185,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 	}
 
 	// populate the artifact type
-	artifact.Type = processor.Get(artifact.MediaType).GetArtifactType()
+	artifact.Type = processor.Get(artifact.MediaType).GetArtifactType(ctx, artifact)
 
 	// create it
 	// use orm.WithTransaction here to avoid the issue:
@@ -600,7 +600,7 @@ func (c *controller) populateLabels(ctx context.Context, art *Artifact) {
 }
 
 func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifact) {
-	types := processor.Get(artifact.MediaType).ListAdditionTypes()
+	types := processor.Get(artifact.MediaType).ListAdditionTypes(ctx, &artifact.Artifact)
 	if len(types) > 0 {
 		version := lib.GetAPIVersion(ctx)
 		for _, t := range types {

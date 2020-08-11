@@ -153,11 +153,11 @@ func (m *manifestV2ProcessorTestSuite) TestAbstractAddition() {
 }
 
 func (m *manifestV2ProcessorTestSuite) TestGetArtifactType() {
-	m.Assert().Equal(ArtifactTypeImage, m.processor.GetArtifactType())
+	m.Assert().Equal(ArtifactTypeImage, m.processor.GetArtifactType(nil, nil))
 }
 
 func (m *manifestV2ProcessorTestSuite) TestListAdditionTypes() {
-	additions := m.processor.ListAdditionTypes()
+	additions := m.processor.ListAdditionTypes(nil, nil)
 	m.EqualValues([]string{AdditionTypeBuildHistory}, additions)
 }
 
