@@ -10,11 +10,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
-
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -47,7 +46,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 
 	var (
 		autoCreateNs                      bool
-		basicAuthorizer, apiKeyAuthorizer modifier.Modifier
+		tokenAuthorizer, apiKeyAuthorizer modifier.Modifier
 	)
 
 	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
@@ -56,14 +55,14 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		if err != nil {
 			return nil, err
 		}
-		basicAuthorizer = basic.NewAuthorizer(jsonCred.AccountName, jsonCred.DockerCliPassword)
+		tokenAuthorizer = auth.NewAuthorizer(jsonCred.AccountName, jsonCred.DockerCliPassword, registry.Insecure)
 		if len(jsonCred.OAuth2Token) != 0 {
 			autoCreateNs = true
 			apiKeyAuthorizer = NewAPIKeyAuthorizer("Authorization", fmt.Sprintf("Bearer %s", jsonCred.OAuth2Token), APIKeyInHeader)
 		}
 	}
 
-	nativeRegistryAdapter := native.NewAdapterWithAuthorizer(registry, basicAuthorizer)
+	nativeRegistryAdapter := native.NewAdapterWithAuthorizer(registry, tokenAuthorizer)
 
 	if apiKeyAuthorizer != nil {
 		modifiers = append(modifiers, apiKeyAuthorizer)
@@ -126,16 +125,6 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeScheduled,
 		},
 	}, nil
-}
-
-// HealthCheck checks health status of a registry
-func (a *adapter) HealthCheck() (model.HealthStatus, error) {
-	err := a.PingSimple()
-	if err != nil {
-		return model.Unhealthy, nil
-	}
-
-	return model.Healthy, nil
 }
 
 // PrepareForPush does the prepare work that needed for pushing/uploading the resource
