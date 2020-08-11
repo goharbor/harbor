@@ -233,9 +233,6 @@ jobs:
           IP=`hostname -I | awk '{print $1}'`
           echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
           echo "::set-env name=IP::$IP"
-          sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
-          sudo update-ca-certificates
-          sudo service docker restart
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
