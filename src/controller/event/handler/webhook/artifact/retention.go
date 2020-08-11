@@ -33,6 +33,10 @@ func (r *RetentionHandler) Handle(value interface{}) error {
 	if trEvent == nil {
 		return errors.New("nil tag retention event")
 	}
+	if len(trEvent.Deleted) == 0 {
+		log.Debugf("empty delete info of retention event")
+		return nil
+	}
 
 	payload, dryRun, project, err := constructRetentionPayload(trEvent)
 	if err != nil {
