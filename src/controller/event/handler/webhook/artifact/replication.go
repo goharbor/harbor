@@ -120,7 +120,7 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 	}
 	hostname := strings.Split(extURL, ":")[0]
 
-	remoteRes := &model.ReplicationResource{
+	remoteRes := &ctlModel.ReplicationResource{
 		RegistryName: remoteRegistry.Name,
 		RegistryType: string(remoteRegistry.Type),
 		Endpoint:     remoteRegistry.URL,
