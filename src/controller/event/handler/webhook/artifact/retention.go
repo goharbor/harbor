@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goharbor/harbor/src/core/api"
-
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
+	ctlModel "github.com/goharbor/harbor/src/controller/event/model"
+	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
@@ -112,30 +112,30 @@ func constructRetentionPayload(event *event.RetentionEvent) (*model.Payload, boo
 		OccurAt:  event.OccurAt.Unix(),
 		Operator: execution.Trigger,
 		EventData: &model.EventData{
-			Retention: &model.Retention{
+			Retention: &ctlModel.Retention{
 				Total:             task.Total,
 				Retained:          task.Retained,
 				HarborHostname:    hostname,
 				ProjectName:       event.Deleted[0].Target.Namespace,
 				RetentionPolicyID: execution.PolicyID,
 				Status:            event.Status,
-				RetentionRules:    []*model.RetentionRule{},
+				RetentionRules:    []*ctlModel.RetentionRule{},
 			},
 		},
 	}
 
 	for _, v := range event.Deleted {
 		target := v.Target
-		deletedArtifact := &model.ArtifactInfo{
+		deletedArtifact := &ctlModel.ArtifactInfo{
 			Type:       target.Kind,
 			Status:     event.Status,
 			NameAndTag: target.Repository + ":" + target.Tags[0],
 		}
-		payload.EventData.Retention.DeletedArtifact = []*model.ArtifactInfo{deletedArtifact}
+		payload.EventData.Retention.DeletedArtifact = []*ctlModel.ArtifactInfo{deletedArtifact}
 	}
 
 	for _, v := range md.Rules {
-		retentionRule := &model.RetentionRule{
+		retentionRule := &ctlModel.RetentionRule{
 			Template:       v.Template,
 			Parameters:     v.Parameters,
 			TagSelectors:   v.TagSelectors,
