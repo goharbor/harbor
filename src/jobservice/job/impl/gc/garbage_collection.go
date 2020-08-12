@@ -229,7 +229,10 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 		} else {
 			blobCt++
 		}
-		makeSize = makeSize + blob.Size
+		// do not count the foreign layer size as it's actually not in the storage.
+		if !blob.IsForeignLayer() {
+			makeSize = makeSize + blob.Size
+		}
 	}
 	gc.logger.Infof("%d blobs and %d manifests eligible for deletion", blobCt, mfCt)
 	gc.logger.Infof("The GC could free up %d MB space, the size is a rough estimation.", makeSize/1024/1024)
@@ -290,16 +293,20 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 		}
 
 		// delete all of blobs, which include config, layer and manifest
-		gc.logger.Infof("delete blob from storage: %s", blob.Digest)
-		if err := ignoreNotFound(func() error {
-			return gc.registryCtlClient.DeleteBlob(blob.Digest)
-		}); err != nil {
+		// for the foreign layer, as it's not stored in the storage, no need to call the delete api and count size, but still have to delete the DB record.
+		if !blob.IsForeignLayer() {
+			gc.logger.Infof("delete blob from storage: %s", blob.Digest)
 			if err := ignoreNotFound(func() error {
-				return gc.markDeleteFailed(ctx, blob)
+				return gc.registryCtlClient.DeleteBlob(blob.Digest)
 			}); err != nil {
-				return err
+				if err := ignoreNotFound(func() error {
+					return gc.markDeleteFailed(ctx, blob)
+				}); err != nil {
+					return err
+				}
+				return errors.Wrapf(err, "failed to delete blob from storage: %s, %s", blob.Digest, blob.Status)
 			}
-			return errors.Wrapf(err, "failed to delete blob from storage: %s, %s", blob.Digest, blob.Status)
+			sweepSize = sweepSize + blob.Size
 		}
 
 		gc.logger.Infof("delete blob record from database: %d, %s", blob.ID, blob.Digest)
@@ -313,7 +320,6 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 			}
 			return errors.Wrapf(err, "failed to delete blob from database: %s, %s", blob.Digest, blob.Status)
 		}
-		sweepSize = sweepSize + blob.Size
 	}
 	gc.logger.Infof("The GC job actual frees up %d MB space.", sweepSize/1024/1024)
 	return nil
