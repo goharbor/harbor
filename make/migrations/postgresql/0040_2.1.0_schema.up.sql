@@ -116,3 +116,15 @@ ALTER TABLE schedule DROP COLUMN IF EXISTS status;
 UPDATE registry SET type = 'quay' WHERE type = 'quay-io';
 
 ALTER TABLE artifact ADD COLUMN icon varchar(255);
+
+CREATE TABLE IF NOT EXISTS data_migrations (
+    version int
+);
+INSERT INTO data_migrations (version) VALUES (
+    CASE
+        /*if the "extra_attrs" isn't null, it means that the deployment upgrades from v2.0*/
+        WHEN (SELECT Count(*) FROM artifact WHERE extra_attrs!='')>0 THEN 30
+        ELSE 0
+    END
+);
+ALTER TABLE schema_migrations DROP COLUMN IF EXISTS data_version;
