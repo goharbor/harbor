@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     bc \
     time \
     gcc \
+    git \
     python-dev \
     libffi-dev \
     libssl-dev \
@@ -25,10 +26,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget curl \
 	parted \
     #ip tool
-    ethtool \
+    #ethtool \
     iproute2 \
-    bridge-utils \
-    iputils-ping \
+    #bridge-utils \
+    #iputils-ping \
     # Add docker in docker support
     btrfs-tools \
     e2fsprogs \
@@ -48,6 +49,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	# Cleanup
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && \
+    apt-get install golang -y
 
 RUN apt-get update -y && \
 	apt-get install -y zbar-tools libzbar-dev python-zbar

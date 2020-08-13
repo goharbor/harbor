@@ -55,6 +55,8 @@ pipeline:
       - npm_registry
       - harbor_sign_key
       - harbor_sign_key_id
+      - test_gs_key
+      - test_export_env
     commands:
       - export DOMAIN=${CI_DOMAIN}
       - export HOST_CONTAINER_ID=$(hostname)

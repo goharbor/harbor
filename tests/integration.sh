@@ -58,6 +58,13 @@ else
   harbor_target_bucket=$harbor_releases_bucket/$DRONE_BRANCH
 fi
 
+export GS_PRIVATE_KEY=$GS_PRIVATE_KEY
+export TEST_EXPORT_ENV=$TEST_EXPORT_ENV
+
+echo "1. ===========($TEST_GS_KEY)=========="
+echo "2. ===========($test_gs_key)=========="
+echo "3. ===========($TEST_EXPORT_ENV)=========="
+echo "4. ===========($test_export_env)=========="
 # GC credentials
 keyfile="/root/harbor-ci-logs.key"
 botofile="/root/.boto"
@@ -92,7 +99,6 @@ export Harbor_Assets_Version=$Harbor_Assets_Version
 #  the env is for online and offline package.
 export Harbor_Package_Version=$Harbor_Package_Version
 export NPM_REGISTRY=$NPM_REGISTRY
-
 # release branch must have their own base image with branch name, master and others will use the dev as base.
 if [[ $DRONE_BRANCH == "release-"* ]]; then
   Harbor_Build_Base_Tag=$target_release_version
@@ -222,4 +228,5 @@ fi
 if [ -f "$keyfile" ]; then
   rm -f $keyfile
 fi
+
 
