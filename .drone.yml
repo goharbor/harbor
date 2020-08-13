@@ -27,7 +27,7 @@ pipeline:
       status: success
 
   test-and-issue-build:
-    image: goharbor/harbor-e2e-engine:1.43
+    image: goharbor/harbor-drone-engine:2.0
     pull: true
     privileged: true
     environment:
