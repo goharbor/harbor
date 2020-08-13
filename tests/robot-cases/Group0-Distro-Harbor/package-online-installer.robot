@@ -14,38 +14,8 @@
 
 *** Settings ***
 Documentation  Harbor BATs
-Library  Selenium2Library
-Library  OperatingSystem
-Library  Process
+Resource  ../../resources/Util.robot
 Default Tags  Bundle
-
-*** Keywords ***
-Start Docker Daemon Locally
-    ${pid}=  Run  pidof dockerd
-    #${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/docker_config.sh
-    #Log  ${output}
-    #Should Be Equal As Integers  ${rc}  0
-    Return From Keyword If  '${pid}' != '${EMPTY}'
-    OperatingSystem.File Should Exist  /usr/local/bin/dockerd-entrypoint.sh
-    ${handle}=  Start Process  /usr/local/bin/dockerd-entrypoint.sh dockerd>./daemon-local.log 2>&1  shell=True
-    Process Should Be Running  ${handle}
-    :FOR  ${IDX}  IN RANGE  5
-    \   ${pid}=  Run  pidof dockerd
-    \   Exit For Loop If  '${pid}' != '${EMPTY}'
-    \   Sleep  2s
-    Sleep  2s
-    [Return]  ${handle}
-
-Package Harbor Online
-    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true  ${with_trivy}=true
-    Log To Console  \nStart Docker Daemon
-    Start Docker Daemon Locally
-    Log To Console  \nMake Online Package
-    Log To Console  \nmake package_online GOBUILDTAGS="include_oss include_gcs"  VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
-    ${rc}  ${output}=  Run And Return Rc And Output  make package_online GOBUILDTAGS="include_oss include_gcs" VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
-    Log  ${rc}
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
 
 *** Test Cases ***
 Distro Harbor Online

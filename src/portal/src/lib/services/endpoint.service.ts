@@ -23,8 +23,8 @@ const ADAPTERS_MAP = {
   "harbor": "Harbor",
   "helm-hub": "Helm Hub",
   "huawei-SWR": "Huawei SWR",
-  "jfrog-artifactory": "jFrog Artifactory",
-  "quay-io": "Quay.io"
+  "jfrog-artifactory": "JFrog Artifactory",
+  "quay": "Quay"
 };
 
 
