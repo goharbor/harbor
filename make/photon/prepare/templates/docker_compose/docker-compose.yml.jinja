@@ -554,12 +554,13 @@ services:
     cap_drop:
       - ALL
     dns_search: .
-    networks:
-      - harbor
-{% if external_redis == False %}
     depends_on:
+      - log
+{% if external_redis == False %}
       - redis
 {% endif %}
+    networks:
+      - harbor
     volumes:
       - type: bind
         source: {{data_volume}}/trivy-adapter/trivy
