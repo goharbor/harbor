@@ -12,10 +12,6 @@ if [ -z "$1" ]; then echo no ip specified; exit 1;fi
 sudo ./tests/generateCerts.sh $1
 sudo mkdir -p /etc/docker/certs.d/$1 && sudo cp ./tests/harbor_ca.crt /etc/docker/certs.d/$1/ && rm -rf ~/.docker/ &&  mkdir -p ~/.docker/tls/$1:4443/ && sudo cp ./tests/harbor_ca.crt ~/.docker/tls/$1:4443/
 
-sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
-sudo update-ca-certificates
-sudo service docker restart
-
 sudo ./tests/hostcfg.sh
 
 if [ "$2" = 'LDAP' ]; then
