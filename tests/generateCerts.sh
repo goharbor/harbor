@@ -18,9 +18,9 @@ if [[ -z ${OPENSSLCNF} ]]; then
 fi
 
 # Create CA certificate
-openssl req \
-    -newkey rsa:4096 -nodes -sha256 -keyout $CUR_DIR/harbor_ca.key \
-    -x509 -days 365 -out $CUR_DIR/harbor_ca.crt -subj '/C=CN/ST=PEK/L=Bei Jing/O=VMware/CN=HarborCA'
+# openssl req \
+#    -newkey rsa:4096 -nodes -sha256 -keyout $CUR_DIR/harbor_ca.key \
+#    -x509 -days 365 -out $CUR_DIR/harbor_ca.crt -subj '/C=CN/ST=PEK/L=Bei Jing/O=VMware/CN=HarborCA'
 
 # Generate a Certificate Signing Request
 if echo $IP|grep -E '^([0-9]+\.){3}[0-9]+$' ; then
