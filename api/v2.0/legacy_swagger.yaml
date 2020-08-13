@@ -5087,6 +5087,7 @@ definitions:
     type: object
     additionalProperties:
       type: integer
+      format: int64
   QuotaUpdateReq:
     type: object
     properties:
