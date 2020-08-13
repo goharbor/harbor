@@ -15,6 +15,7 @@
 package registry
 
 import (
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/repository"
@@ -54,9 +55,13 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 		req.UserAgent() == registry.UserAgent {
 		return
 	}
+	operator := ""
+	if secCtx, exist := security.FromContext(req.Context()); exist {
+		operator = secCtx.GetUsername()
+	}
 	e := &metadata.PullArtifactEventMetadata{
-		Ctx:      req.Context(),
 		Artifact: &art.Artifact,
+		Operator: operator,
 	}
 	// the reference is tag
 	if _, err = digest.Parse(reference); err != nil {
