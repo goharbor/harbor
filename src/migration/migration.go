@@ -86,7 +86,7 @@ func getDataVersion(ctx context.Context) (int, error) {
 		return 0, err
 	}
 	var version int
-	if err = ormer.Raw("select data_version from schema_migrations").QueryRow(&version); err != nil {
+	if err = ormer.Raw("select version from data_migrations").QueryRow(&version); err != nil {
 		return 0, err
 	}
 	return version, nil
@@ -97,6 +97,6 @@ func setDataVersion(ctx context.Context, version int) error {
 	if err != nil {
 		return err
 	}
-	_, err = ormer.Raw("update schema_migrations set data_version=?", version).Exec()
+	_, err = ormer.Raw("update data_migrations set version=?", version).Exec()
 	return err
 }
