@@ -58,17 +58,10 @@ else
   harbor_target_bucket=$harbor_releases_bucket/$DRONE_BRANCH
 fi
 
-export GS_PRIVATE_KEY=$GS_PRIVATE_KEY
-export TEST_EXPORT_ENV=$TEST_EXPORT_ENV
-
-echo "1. ===========($TEST_GS_KEY)=========="
-echo "2. ===========($test_gs_key)=========="
-echo "3. ===========($TEST_EXPORT_ENV)=========="
-echo "4. ===========($test_export_env)=========="
 # GC credentials
 keyfile="/root/harbor-ci-logs.key"
 botofile="/root/.boto"
-echo -en $GS_PRIVATE_KEY > $keyfile
+echo -n $GS_PRIVATE_KEY > $keyfile
 chmod 400 $keyfile
 echo "[Credentials]" >> $botofile
 echo "gs_service_key_file = $keyfile" >> $botofile
@@ -228,5 +221,4 @@ fi
 if [ -f "$keyfile" ]; then
   rm -f $keyfile
 fi
-
 
