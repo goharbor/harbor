@@ -1206,6 +1206,27 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /icons/{digest}:
+    get:
+      summary: Get artifact icon
+      description: Get the artifact icon with the specified digest. As the original icon image is resized and encoded before returning, the parameter "digest" in the path doesn't match the hash of the returned content
+      tags:
+        - icon
+      operationId: getIcon
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/digest'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Icon'
+        '400':
+          $ref: '#/responses/400'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   query:
     name: q
@@ -1242,6 +1263,12 @@ parameters:
     name: reference
     in: path
     description: The reference of the artifact, can be digest or tag
+    required: true
+    type: string
+  digest:
+    name: digest
+    in: path
+    description: The digest of the resource
     required: true
     type: string
   tagName:
@@ -1451,6 +1478,9 @@ definitions:
         type: integer
         format: int64
         description: The size of the artifact
+      icon:
+        type: string
+        description: The digest of the icon
       push_time:
         type: string
         format: date-time
@@ -1919,3 +1949,12 @@ definitions:
         type: boolean
       default:
         type: boolean
+  Icon:
+    type: object
+    properties:
+      content-type:
+        type: string
+        description: The content type of the icon
+      content:
+        type: string
+        description: The base64 encoded content of the icon

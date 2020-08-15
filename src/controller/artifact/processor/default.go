@@ -20,23 +20,20 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/docker/distribution/manifest/schema2"
+	"github.com/goharbor/harbor/src/controller/icon"
 	// annotation parsers will be registered
 	"github.com/goharbor/harbor/src/controller/artifact/annotation"
-
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/registry"
-
-	"github.com/docker/distribution/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 const (
 	// ArtifactTypeUnknown defines the type for the unknown artifacts
 	ArtifactTypeUnknown = "UNKNOWN"
-	// DefaultIconDigest defines default icon layer digest
-	DefaultIconDigest = "sha256:da834479c923584f4cbcdecc0dac61f32bef1d51e8aae598cf16bd154efab49f"
 )
 
 var (
@@ -126,11 +123,11 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 	}
 
 	if artifact.Icon == "" {
-		artifact.Icon = DefaultIconDigest
+		artifact.Icon = icon.DigestOfIconDefault
 	}
-
 	return nil
 }
+
 func (d *defaultProcessor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*Addition, error) {
 	// Addition not support for user-defined artifact yet.
 	// It will be support in the future.
