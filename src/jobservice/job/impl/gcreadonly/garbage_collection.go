@@ -16,22 +16,20 @@ package gcreadonly
 
 import (
 	"fmt"
-	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"os"
 	"time"
-
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/controller/artifact"
-	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/artifactrash"
-	"github.com/goharbor/harbor/src/pkg/blob"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/registryctl"
+	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/q"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
+	"github.com/goharbor/harbor/src/pkg/artifactrash"
+	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/registryctl/client"
 )
 
@@ -160,7 +158,6 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 		gc.artCtl = artifact.Ctl
 		gc.artrashMgr = artifactrash.NewManager()
 		gc.blobMgr = blob.NewManager()
-		gc.projectCtl = project.Ctl
 	}
 	if err := gc.registryCtlClient.Health(); err != nil {
 		gc.logger.Errorf("failed to start gc as registry controller is unreachable: %v", err)
@@ -285,49 +282,20 @@ func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
 
 // clean the untagged blobs in each project, these blobs are not referenced by any manifest and will be cleaned by GC
 func (gc *GarbageCollector) removeUntaggedBlobs(ctx job.Context) {
-	// get all projects
-	projects := func(chunkSize int) <-chan *models.Project {
-		ch := make(chan *models.Project, chunkSize)
-
-		go func() {
-			defer close(ch)
-
-			params := &models.ProjectQueryParam{
-				Pagination: &models.Pagination{Page: 1, Size: int64(chunkSize)},
-			}
-
-			for {
-				results, err := gc.projectCtl.List(ctx.SystemContext(), params, project.Metadata(false))
-				if err != nil {
-					gc.logger.Errorf("list projects failed, error: %v", err)
-					return
-				}
-
-				for _, p := range results {
-					ch <- p
-				}
-
-				if len(results) < chunkSize {
-					break
-				}
-
-				params.Pagination.Page++
-			}
-
-		}()
-
-		return ch
-	}(50)
-
-	for project := range projects {
+	for result := range project.ListAll(ctx.SystemContext(), 50, nil, project.Metadata(false)) {
+		if result.Error != nil {
+			gc.logger.Errorf("remove untagged blobs for all projects got error: %v", result.Error)
+			continue
+		}
+		p := result.Data
 		all, err := gc.blobMgr.List(ctx.SystemContext(), blob.ListParams{
-			ProjectID: project.ProjectID,
+			ProjectID: p.ProjectID,
 		})
 		if err != nil {
 			gc.logger.Errorf("failed to get blobs of project, %v", err)
 			continue
 		}
-		if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), project.ProjectID, all); err != nil {
+		if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), p.ProjectID, all); err != nil {
 			gc.logger.Errorf("failed to clean untagged blobs of project, %v", err)
 			continue
 		}

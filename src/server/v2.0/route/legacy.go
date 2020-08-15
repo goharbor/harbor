@@ -24,8 +24,6 @@ import (
 func registerLegacyRoutes() {
 	version := APIVersion
 	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &api.ProjectMemberAPI{})
-	beego.Router("/api/"+version+"/projects/", &api.ProjectAPI{}, "head:Head")
-	beego.Router("/api/"+version+"/projects/:id([0-9]+)", &api.ProjectAPI{})
 	beego.Router("/api/"+version+"/users/:id", &api.UserAPI{}, "get:Get;delete:Delete;put:Put")
 	beego.Router("/api/"+version+"/users", &api.UserAPI{}, "get:List;post:Post")
 	beego.Router("/api/"+version+"/users/search", &api.UserAPI{}, "get:Search")
@@ -42,9 +40,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/health", &api.HealthAPI{}, "get:CheckHealth")
 	beego.Router("/api/"+version+"/ping", &api.SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/"+version+"/search", &api.SearchAPI{})
-	beego.Router("/api/"+version+"/projects/", &api.ProjectAPI{}, "get:List;post:Post")
-	beego.Router("/api/"+version+"/projects/:id([0-9]+)/summary", &api.ProjectAPI{}, "get:Summary")
-	beego.Router("/api/"+version+"/projects/:id([0-9]+)/_deletable", &api.ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
 	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/robots", &api.RobotAPI{}, "post:Post;get:List")

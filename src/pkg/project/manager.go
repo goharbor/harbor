@@ -16,7 +16,9 @@ package project
 
 import (
 	"context"
+	"regexp"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project/dao"
@@ -43,13 +45,21 @@ type Manager interface {
 	Get(ctx context.Context, idOrName interface{}) (*models.Project, error)
 
 	// List projects according to the query
-	List(ctx context.Context, query ...*models.ProjectQueryParam) ([]*models.Project, error)
+	List(ctx context.Context, query *q.Query) ([]*models.Project, error)
 }
 
 // New returns a default implementation of Manager
 func New() Manager {
 	return &manager{dao: dao.New()}
 }
+
+const projectNameMaxLen int = 255
+const projectNameMinLen int = 1
+const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
+
+var (
+	validProjectName = regexp.MustCompile(`^` + restrictedNameChars + `$`)
+)
 
 type manager struct {
 	dao dao.DAO
@@ -60,6 +70,17 @@ func (m *manager) Create(ctx context.Context, project *models.Project) (int64, e
 	if project.OwnerID <= 0 {
 		return 0, errors.BadRequestError(nil).WithMessage("Owner is missing when creating project %s", project.Name)
 	}
+
+	if utils.IsIllegalLength(project.Name, projectNameMinLen, projectNameMaxLen) {
+		format := "Project name %s is illegal in length. (greater than %d or less than %d)"
+		return 0, errors.BadRequestError(nil).WithMessage(format, project.Name, projectNameMaxLen, projectNameMinLen)
+	}
+
+	legal := validProjectName.MatchString(project.Name)
+	if !legal {
+		return 0, errors.BadRequestError(nil).WithMessage("project name is not in lower case or contains illegal characters")
+	}
+
 	return m.dao.Create(ctx, project)
 }
 
@@ -87,14 +108,6 @@ func (m *manager) Get(ctx context.Context, idOrName interface{}) (*models.Projec
 }
 
 // List projects according to the query
-func (m *manager) List(ctx context.Context, query ...*models.ProjectQueryParam) ([]*models.Project, error) {
-	var param *models.ProjectQueryParam
-	if len(query) > 0 {
-		param = query[0]
-	}
-	if param == nil {
-		return m.dao.List(ctx, nil)
-	}
-
-	return m.dao.List(ctx, param.ToQuery())
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*models.Project, error) {
+	return m.dao.List(ctx, query)
 }

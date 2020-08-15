@@ -22,6 +22,7 @@ import (
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	usermodels "github.com/goharbor/harbor/src/pkg/user/models"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
@@ -102,8 +103,8 @@ func (suite *ControllerTestSuite) TestGetByName() {
 	}
 
 	{
-		allowlistMgr.On("GetSys").Return(&commonmodels.CVEAllowlist{}, nil)
-		p, err := c.GetByName(ctx, "library", CVEAllowlist(true))
+		allowlistMgr.On("Get", mock.Anything).Return(&commonmodels.CVEAllowlist{ProjectID: 1}, nil)
+		p, err := c.GetByName(ctx, "library", WithCVEAllowlist())
 		suite.Nil(err)
 		suite.Equal("library", p.Name)
 		suite.Equal(p.ProjectID, p.CVEAllowlist.ProjectID)
@@ -140,8 +141,7 @@ func (suite *ControllerTestSuite) TestWithOwner() {
 	}
 
 	{
-		param := &models.ProjectQueryParam{ProjectIDs: []int64{1}}
-		projects, err := c.List(ctx, param, Metadata(false), WithOwner())
+		projects, err := c.List(ctx, q.New(q.KeyWords{"project_id__in": []int64{1}}), Metadata(false), WithOwner())
 		suite.Nil(err)
 		suite.Len(projects, 1)
 		suite.Equal("admin", projects[0].OwnerName)

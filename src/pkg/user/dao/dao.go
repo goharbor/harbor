@@ -16,7 +16,6 @@ package dao
 
 import (
 	"context"
-	"strings"
 
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -39,34 +38,19 @@ type dao struct{}
 // List list users
 func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.User, error) {
 	query = q.MustClone(query)
-	if query.Sorting == "" {
-		query.Sorting = "username"
-	}
-
-	excludeAdmin := true
-	for key := range query.Keywords {
-		str := strings.ToLower(key)
-		if str == "user_id__in" {
-			excludeAdmin = false
-			break
-		} else if str == "user_id" {
-			excludeAdmin = false
-			break
-		}
-	}
-
-	if excludeAdmin {
-		// Exclude admin account when not filter by UserIDs, see https://github.com/goharbor/harbor/issues/2527
-		query.Keywords["user_id__gt"] = 1
-	}
+	query.Keywords["deleted"] = false
 
 	qs, err := orm.QuerySetter(ctx, &models.User{}, query)
 	if err != nil {
 		return nil, err
 	}
 
-	users := []*models.User{}
-	if _, err := qs.OrderBy(query.Sorting).All(&users); err != nil {
+	if query.Sorting != "" {
+		qs = qs.OrderBy(query.Sorting)
+	}
+
+	var users []*models.User
+	if _, err := qs.All(&users); err != nil {
 		return nil, err
 	}
 

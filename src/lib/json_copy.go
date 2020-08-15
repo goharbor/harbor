@@ -12,29 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package lib
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
+	"encoding/json"
 )
 
-// Project ...
-type Project = models.Project
-
-// Projects the connection for Project
-type Projects []*models.Project
-
-// OwnerIDs returns all the owner ids from the projects
-func (projects Projects) OwnerIDs() []int {
-	var ownerIDs []int
-	for _, project := range projects {
-		ownerIDs = append(ownerIDs, project.OwnerID)
+// JSONCopy copy from src to dst with json marshal and unmarshal.
+// NOTE: copy from one struct to another struct may miss some values depend on
+// the json tag in the fields, you should know what will happened when call this function.
+func JSONCopy(dst, src interface{}) error {
+	data, err := json.Marshal(src)
+	if err != nil {
+		return err
 	}
-	return ownerIDs
+
+	return json.Unmarshal(data, dst)
 }
-
-// Member ...
-type Member = models.Member
-
-// MemberQuery ...
-type MemberQuery = models.MemberQuery

@@ -17,6 +17,8 @@ package dao
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 )
@@ -24,6 +26,9 @@ import (
 // CreateCVEAllowlist creates the CVE allowlist
 func CreateCVEAllowlist(l models.CVEAllowlist) (int64, error) {
 	o := GetOrmer()
+	now := time.Now()
+	l.CreationTime = now
+	l.UpdateTime = now
 	itemsBytes, _ := json.Marshal(l.Items)
 	l.ItemsText = string(itemsBytes)
 	return o.Insert(&l)
@@ -32,6 +37,8 @@ func CreateCVEAllowlist(l models.CVEAllowlist) (int64, error) {
 // UpdateCVEAllowlist Updates the vulnerability white list to DB
 func UpdateCVEAllowlist(l models.CVEAllowlist) (int64, error) {
 	o := GetOrmer()
+	now := time.Now()
+	l.UpdateTime = now
 	itemsBytes, _ := json.Marshal(l.Items)
 	l.ItemsText = string(itemsBytes)
 	id, err := o.InsertOrUpdate(&l, "project_id")

@@ -17,10 +17,13 @@ package project
 import (
 	"context"
 
+	event "github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/project/models"
@@ -32,6 +35,12 @@ var (
 	// Ctl is a global project controller instance
 	Ctl = NewController()
 )
+
+// Project alias to models.Project
+type Project = models.Project
+
+// MemberQuery alias to models.MemberQuery
+type MemberQuery = models.MemberQuery
 
 // Controller defines the operations related with blobs
 type Controller interface {
@@ -46,7 +55,9 @@ type Controller interface {
 	// GetByName get the project by project name
 	GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error)
 	// List list projects
-	List(ctx context.Context, query *models.ProjectQueryParam, options ...Option) ([]*models.Project, error)
+	List(ctx context.Context, query *q.Query, options ...Option) ([]*models.Project, error)
+	// Update update the project
+	Update(ctx context.Context, project *models.Project) error
 }
 
 // NewController creates an instance of the default project controller
@@ -92,6 +103,14 @@ func (c *controller) Create(ctx context.Context, project *models.Project) (int64
 		return 0, err
 	}
 
+	// fire event
+	e := &event.CreateProjectEventMetadata{
+		ProjectID: projectID,
+		Project:   project.Name,
+		Operator:  operator.FromContext(ctx),
+	}
+	notification.AddEvent(ctx, e)
+
 	return projectID, nil
 }
 
@@ -100,7 +119,23 @@ func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
 }
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
-	return c.projectMgr.Delete(ctx, id)
+	proj, err := c.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := c.projectMgr.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	e := &event.DeleteProjectEventMetadata{
+		ProjectID: proj.ProjectID,
+		Project:   proj.Name,
+		Operator:  operator.FromContext(ctx),
+	}
+	notification.AddEvent(ctx, e)
+
+	return nil
 }
 
 func (c *controller) Get(ctx context.Context, projectID int64, options ...Option) (*models.Project, error) {
@@ -109,13 +144,11 @@ func (c *controller) Get(ctx context.Context, projectID int64, options ...Option
 		return nil, err
 	}
 
-	opts := newOptions(options...)
-	if opts.WithOwner {
-		if err := c.loadOwners(ctx, models.Projects{p}); err != nil {
-			return nil, err
-		}
+	if err := c.assembleProjects(ctx, models.Projects{p}, options...); err != nil {
+		return nil, err
 	}
-	return c.assembleProject(ctx, p, opts)
+
+	return p, nil
 }
 
 func (c *controller) GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error) {
@@ -128,38 +161,164 @@ func (c *controller) GetByName(ctx context.Context, projectName string, options 
 		return nil, err
 	}
 
-	opts := newOptions(options...)
-	if opts.WithOwner {
-		if err := c.loadOwners(ctx, models.Projects{p}); err != nil {
-			return nil, err
-		}
+	if err := c.assembleProjects(ctx, models.Projects{p}, options...); err != nil {
+		return nil, err
 	}
-	return c.assembleProject(ctx, p, newOptions(options...))
+
+	return p, nil
 }
 
-func (c *controller) List(ctx context.Context, query *models.ProjectQueryParam, options ...Option) ([]*models.Project, error) {
+func (c *controller) List(ctx context.Context, query *q.Query, options ...Option) ([]*models.Project, error) {
 	projects, err := c.projectMgr.List(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 
-	opts := newOptions(options...)
-	if opts.WithOwner {
-		if err := c.loadOwners(ctx, projects); err != nil {
-			return nil, err
-		}
+	if len(projects) == 0 {
+		return projects, nil
 	}
 
-	for _, p := range projects {
-		if _, err := c.assembleProject(ctx, p, opts); err != nil {
-			return nil, err
-		}
+	if err := c.assembleProjects(ctx, projects, options...); err != nil {
+		return nil, err
 	}
 
 	return projects, nil
 }
 
+func (c *controller) Update(ctx context.Context, p *models.Project) error {
+	// currently, allowlist manager not use the ormer from the context,
+	// the SQL executed in the allowlist manager will not be in the transaction with metadata manager,
+	// we will update the metadata of the project first so that we can be rollback the operations for the metadata
+	// when set allowlist for the project failed
+	if len(p.Metadata) > 0 {
+		meta, err := c.metaMgr.Get(ctx, p.ProjectID)
+		if err != nil {
+			return err
+		}
+		if meta == nil {
+			meta = map[string]string{}
+		}
+
+		metaNeedUpdated := map[string]string{}
+		metaNeedCreated := map[string]string{}
+		for key, value := range p.Metadata {
+			_, exist := meta[key]
+			if exist {
+				metaNeedUpdated[key] = value
+			} else {
+				metaNeedCreated[key] = value
+			}
+		}
+		if err = c.metaMgr.Add(ctx, p.ProjectID, metaNeedCreated); err != nil {
+			return err
+		}
+		if err = c.metaMgr.Update(ctx, p.ProjectID, metaNeedUpdated); err != nil {
+			return err
+		}
+	}
+
+	if p.CVEAllowlist.ProjectID == p.ProjectID {
+		if err := c.allowlistMgr.Set(p.ProjectID, p.CVEAllowlist); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *controller) assembleProjects(ctx context.Context, projects models.Projects, options ...Option) error {
+	opts := newOptions(options...)
+	if opts.WithMetadata {
+		if err := c.loadMetadatas(ctx, projects); err != nil {
+			return err
+		}
+	}
+
+	if opts.WithEffectCVEAllowlist {
+		if err := c.loadEffectCVEAllowlists(ctx, projects); err != nil {
+			return err
+		}
+	} else if opts.WithCVEAllowlist {
+		if err := c.loadCVEAllowlists(ctx, projects); err != nil {
+			return err
+		}
+	}
+
+	if opts.WithOwner {
+		if err := c.loadOwners(ctx, projects); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *controller) loadCVEAllowlists(ctx context.Context, projects models.Projects) error {
+	if len(projects) == 0 {
+		return nil
+	}
+
+	for _, p := range projects {
+		wl, err := c.allowlistMgr.Get(p.ProjectID)
+		if err != nil {
+			return err
+		}
+
+		p.CVEAllowlist = *wl
+	}
+
+	return nil
+}
+
+func (c *controller) loadEffectCVEAllowlists(ctx context.Context, projects models.Projects) error {
+	if len(projects) == 0 {
+		return nil
+	}
+
+	for _, p := range projects {
+		if p.ReuseSysCVEAllowlist() {
+			wl, err := c.allowlistMgr.GetSys()
+			if err != nil {
+				log.Errorf("get system CVE allowlist failed, error: %v", err)
+				return err
+			}
+
+			wl.ProjectID = p.ProjectID
+			p.CVEAllowlist = *wl
+		} else {
+			wl, err := c.allowlistMgr.Get(p.ProjectID)
+			if err != nil {
+				return err
+			}
+
+			p.CVEAllowlist = *wl
+		}
+	}
+
+	return nil
+}
+
+func (c *controller) loadMetadatas(ctx context.Context, projects models.Projects) error {
+	if len(projects) == 0 {
+		return nil
+	}
+
+	for _, p := range projects {
+		meta, err := c.metaMgr.Get(ctx, p.ProjectID)
+		if err != nil {
+			return err
+		}
+		p.Metadata = meta
+	}
+
+	return nil
+}
+
 func (c *controller) loadOwners(ctx context.Context, projects models.Projects) error {
+	if len(projects) == 0 {
+		return nil
+	}
+
 	owners, err := c.userMgr.List(ctx, q.New(q.KeyWords{"user_id__in": projects.OwnerIDs()}))
 	if err != nil {
 		return err
@@ -176,43 +335,4 @@ func (c *controller) loadOwners(ctx context.Context, projects models.Projects) e
 	}
 
 	return nil
-}
-
-func (c *controller) assembleProject(ctx context.Context, p *models.Project, opts *Options) (*models.Project, error) {
-	if opts.Metadata {
-		meta, err := c.metaMgr.Get(ctx, p.ProjectID)
-		if err != nil {
-			return nil, err
-		}
-		if len(p.Metadata) == 0 {
-			p.Metadata = make(map[string]string)
-		}
-
-		for k, v := range meta {
-			p.Metadata[k] = v
-		}
-	}
-
-	if opts.CVEAllowlist {
-		if p.ReuseSysCVEAllowlist() {
-			wl, err := c.allowlistMgr.GetSys()
-			if err != nil {
-				log.Errorf("get system CVE allowlist failed, error: %v", err)
-				return nil, err
-			}
-
-			wl.ProjectID = p.ProjectID
-			p.CVEAllowlist = *wl
-		} else {
-			wl, err := c.allowlistMgr.Get(p.ProjectID)
-			if err != nil {
-				return nil, err
-			}
-
-			p.CVEAllowlist = *wl
-		}
-
-	}
-
-	return p, nil
 }

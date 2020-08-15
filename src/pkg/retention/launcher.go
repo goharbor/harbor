@@ -326,7 +326,7 @@ func launcherError(err error) error {
 }
 
 func getProjects(projectMgr project.Manager) ([]*selector.Candidate, error) {
-	projects, err := projectMgr.List(orm.Context())
+	projects, err := projectMgr.List(orm.Context(), nil)
 	if err != nil {
 		return nil, err
 	}
