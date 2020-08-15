@@ -539,7 +539,7 @@ func (de *defaultEnforcer) toCandidates(ctx context.Context, p *models.Project, 
 // getProject gets the full metadata of the specified project
 func (de *defaultEnforcer) getProject(ctx context.Context, id int64) (*models.Project, error) {
 	// Get project info with CVE allow list and metadata
-	return de.proCtl.Get(ctx, id, project.CVEAllowlist(true), project.Metadata(true))
+	return de.proCtl.Get(ctx, id, project.WithEffectCVEAllowlist())
 }
 
 // enforceError is a wrap error

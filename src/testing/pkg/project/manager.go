@@ -96,19 +96,12 @@ func (_m *Manager) Get(ctx context.Context, idOrName interface{}) (*models.Proje
 }
 
 // List provides a mock function with given fields: ctx, query
-func (_m *Manager) List(ctx context.Context, query ...*models.ProjectQueryParam) ([]*models.Project, error) {
-	_va := make([]interface{}, len(query))
-	for _i := range query {
-		_va[_i] = query[_i]
-	}
-	var _ca []interface{}
-	_ca = append(_ca, ctx)
-	_ca = append(_ca, _va...)
-	ret := _m.Called(_ca...)
+func (_m *Manager) List(ctx context.Context, query *q.Query) ([]*models.Project, error) {
+	ret := _m.Called(ctx, query)
 
 	var r0 []*models.Project
-	if rf, ok := ret.Get(0).(func(context.Context, ...*models.ProjectQueryParam) []*models.Project); ok {
-		r0 = rf(ctx, query...)
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) []*models.Project); ok {
+		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Project)
@@ -116,8 +109,8 @@ func (_m *Manager) List(ctx context.Context, query ...*models.ProjectQueryParam)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, ...*models.ProjectQueryParam) error); ok {
-		r1 = rf(ctx, query...)
+	if rf, ok := ret.Get(1).(func(context.Context, *q.Query) error); ok {
+		r1 = rf(ctx, query)
 	} else {
 		r1 = ret.Error(1)
 	}

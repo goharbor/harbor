@@ -20,10 +20,10 @@ sys.path.append(os.environ["SWAGGER_CLIENT_PATH"])
 import unittest
 import testutils
 import swagger_client
+from testutils import TEARDOWN
 from library.base import _random_name
-from swagger_client.models.project_req import ProjectReq
+from library.project import Project
 from swagger_client.models.configurations import Configurations
-from swagger_client.rest import ApiException
 from pprint import pprint
 
 
@@ -32,26 +32,30 @@ from pprint import pprint
 class TestLdapAdminRole(unittest.TestCase):
     """AccessLog unit test stubs"""
     product_api = testutils.GetProductApi("admin", "Harbor12345")
-    mike_product_api = testutils.GetProductApi("mike", "zhu88jie")
     project_id = 0
+
     def setUp(self):
-        pass
+        self.project= Project()
+        self.mike_product_api = Project("mike", "zhu88jie")
 
     def tearDown(self):
+        print("Case completed")
+
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
+    def test_ClearData(self):
         if self.project_id > 0 :
-            self.mike_product_api.projects_project_id_delete(project_id=self.project_id)
-        pass
+            self.mike_product_api.delete_project(self.project_id)
 
     def testLdapAdminRole(self):
         """Test LdapAdminRole"""
-        _project_name = _random_name("test_private")
+        _project_name = _random_name("test-ldap-admin-role")
         result = self.product_api.configurations_put(configurations=Configurations(ldap_group_admin_dn="cn=harbor_users,ou=groups,dc=example,dc=com"))
 
         # Create a private project
-        result = self.product_api.projects_post(project=ProjectReq(project_name= _project_name))
+        result = self.project.create_project(_project_name)
 
         # query project with ldap user mike
-        projects = self.mike_product_api.projects_get(name=_project_name)
+        projects = self.mike_product_api.get_projects(dict(name=_project_name))
 
         print("=================", projects)
         self.assertTrue(len(projects) == 1)

@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
@@ -89,7 +90,7 @@ func (suite *RefreshForProjectsTestSuite) TestRefreshForProjects() {
 	}
 
 	page := 1
-	mock.OnAnything(suite.projectCtl, "List").Return(func(context.Context, *models.ProjectQueryParam, ...project.Option) []*models.Project {
+	mock.OnAnything(suite.projectCtl, "List").Return(func(context.Context, *q.Query, ...project.Option) []*models.Project {
 		defer func() {
 			page++
 		}()

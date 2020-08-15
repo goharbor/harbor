@@ -51,6 +51,11 @@ var (
 	retentionController retention.APIController
 )
 
+// GetRetentionController returns the retention API controller
+func GetRetentionController() retention.APIController {
+	return retentionController
+}
+
 // BaseController ...
 type BaseController struct {
 	api.BaseAPI

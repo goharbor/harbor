@@ -59,7 +59,7 @@ func Middleware() func(http.Handler) http.Handler {
 			return err
 		}
 
-		proj, err := projectController.Get(ctx, art.ProjectID, project.CVEAllowlist(true))
+		proj, err := projectController.Get(ctx, art.ProjectID, project.WithEffectCVEAllowlist())
 		if err != nil {
 			logger.Errorf("get the project %d failed, error: %v", art.ProjectID, err)
 			return err

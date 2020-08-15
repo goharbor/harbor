@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -154,6 +153,10 @@ func (p *Project) FilterByMember(ctx context.Context, qs orm.QuerySeter, key str
 		subQuery = fmt.Sprintf("%s AND pm.role = %d", subQuery, query.Role)
 	}
 
+	if query.WithPublic {
+		subQuery = fmt.Sprintf("(%s) UNION (SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'true')", subQuery)
+	}
+
 	if len(query.GroupIDs) > 0 {
 		var elems []string
 		for _, groupID := range query.GroupIDs {
@@ -210,41 +213,13 @@ type ProjectQueryParam struct {
 	ProjectIDs []int64      // project ID list
 }
 
-// ToQuery returns q.Query from param
-func (param *ProjectQueryParam) ToQuery() *q.Query {
-	kw := q.KeyWords{}
-	if param.Name != "" {
-		kw["name"] = q.FuzzyMatchValue{Value: param.Name}
-	}
-	if param.Owner != "" {
-		kw["owner"] = param.Owner
-	}
-	if param.Public != nil {
-		kw["public"] = *param.Public
-	}
-	if param.RegistryID != 0 {
-		kw["registry_id"] = param.RegistryID
-	}
-	if len(param.ProjectIDs) > 0 {
-		kw["project_id__in"] = param.ProjectIDs
-	}
-	if param.Member != nil {
-		kw["member"] = param.Member
-	}
-
-	query := q.New(kw)
-	if param.Pagination != nil {
-		query.PageNumber = param.Pagination.Page
-		query.PageSize = param.Pagination.Size
-	}
-	return query
-}
-
 // MemberQuery filter by member's username and role
 type MemberQuery struct {
 	Name     string // the username of member
 	Role     int    // the role of the member has to the project
 	GroupIDs []int  // the group ID of current user belongs to
+
+	WithPublic bool // include the public projects for the member
 }
 
 // Pagination ...

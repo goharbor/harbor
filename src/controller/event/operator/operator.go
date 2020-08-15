@@ -12,29 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package operator
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
+	"context"
+
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/user"
 )
 
-// Project ...
-type Project = models.Project
-
-// Projects the connection for Project
-type Projects []*models.Project
-
-// OwnerIDs returns all the owner ids from the projects
-func (projects Projects) OwnerIDs() []int {
-	var ownerIDs []int
-	for _, project := range projects {
-		ownerIDs = append(ownerIDs, project.OwnerID)
+// FromContext return the event operator from context
+func FromContext(ctx context.Context) string {
+	sc, ok := security.FromContext(ctx)
+	if !ok {
+		return ""
 	}
-	return ownerIDs
+
+	if sc.IsSolutionUser() {
+		user, err := user.Mgr.Get(ctx, 1)
+		if err == nil {
+			return user.Username
+		}
+		log.G(ctx).Errorf("failed to get operator for security %s, error: %v", sc.Name(), err)
+	}
+
+	return sc.GetUsername()
 }
-
-// Member ...
-type Member = models.Member
-
-// MemberQuery ...
-type MemberQuery = models.MemberQuery

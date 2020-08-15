@@ -27,7 +27,7 @@ import (
 
 func abstractArtData(ctx context.Context) error {
 	abstractor := art.NewAbstractor()
-	pros, err := project.Mgr.List(ctx)
+	pros, err := project.Mgr.List(ctx, nil)
 	if err != nil {
 		return err
 	}
