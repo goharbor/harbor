@@ -606,6 +606,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '405':
+          $ref: '#/responses/405'
         '409':
           $ref: '#/responses/409'
         '500':
