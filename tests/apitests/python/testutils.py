@@ -86,7 +86,7 @@ def created_project(name=None, metadata=None, user_id=None, member_role_id=None)
 
     project_id, project_name = api.create_project(name=None, metadata=None, **ADMIN_CLIENT)
     if user_id:
-        api.add_project_members(project_id, user_id, member_role_id=member_role_id, **ADMIN_CLIENT)
+        api.add_project_members(project_id, user_id=user_id, member_role_id=member_role_id, **ADMIN_CLIENT)
 
     try:
         yield (project_id, project_name)

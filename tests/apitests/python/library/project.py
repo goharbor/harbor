@@ -4,6 +4,7 @@ import base
 import swagger_client
 import v2_swagger_client
 from v2_swagger_client.rest import ApiException
+from library.base import _assert_status_code
 
 def is_member_exist_in_project(members, member_user_name, expected_member_role_id = None):
     result = False
@@ -188,12 +189,18 @@ class Project(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
 
-    def add_project_members(self, project_id, user_id, member_role_id = None, expect_status_code = 201, **kwargs):
+    def add_project_members(self, project_id, user_id = None, member_role_id = None, _ldap_group_dn=None,expect_status_code = 201, **kwargs):
         kwargs['api_type'] = 'products'
+        projectMember = swagger_client.ProjectMember()
+        if user_id is not None:
+           projectMember.member_user = {"user_id": int(user_id)}
         if member_role_id is None:
-            member_role_id = 1
-        _member_user = {"user_id": int(user_id)}
-        projectMember = swagger_client.ProjectMember(member_role_id, member_user = _member_user)
+            projectMember.role_id = 1
+        else:
+            projectMember.role_id = member_role_id
+        if _ldap_group_dn is not None:
+            projectMember.member_group = swagger_client.UserGroup(ldap_group_dn=_ldap_group_dn)
+
         client = self._get_client(**kwargs)
         data = []
         data, status_code, header = client.projects_project_id_members_post_with_http_info(project_id, project_member = projectMember)
@@ -257,3 +264,14 @@ class Project(base.Base):
         _, status_code, _ = client.projects_project_id_robots_robot_id_delete_with_http_info(project_id, robot_id)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
+
+    def query_user_logs(self, project_name, status_code=200, **kwargs):
+        try:
+            logs = self.get_project_log(project_name, expect_status_code=status_code, **kwargs)
+            count = 0
+            for log in list(logs):
+                count = count + 1
+            return count
+        except ApiException as e:
+            _assert_status_code(status_code, e.status)
+            return 0
