@@ -10,7 +10,6 @@ schemes:
 basePath: /api/v2.0
 produces:
   - application/json
-  - text/plain
 consumes:
   - application/json
 securityDefinitions:
@@ -1360,7 +1359,9 @@ paths:
       description: Get the log text stream of the specified task for the given execution
       tags:
         - preheat
-      operationId: GetLog
+      operationId: GetPreheatLog
+      produces:
+        - text/plain
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/projectName'

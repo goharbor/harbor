@@ -704,8 +704,8 @@ func (api *preheatAPI) ListTasks(ctx context.Context, params operation.ListTasks
 		WithLink(api.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
 }
 
-// GetLog gets log.
-func (api *preheatAPI) GetLog(ctx context.Context, params operation.GetLogParams) middleware.Responder {
+// GetPreheatLog gets log.
+func (api *preheatAPI) GetPreheatLog(ctx context.Context, params operation.GetPreheatLogParams) middleware.Responder {
 	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourcePreatPolicy); err != nil {
 		return api.SendError(ctx, err)
 	}
@@ -715,7 +715,7 @@ func (api *preheatAPI) GetLog(ctx context.Context, params operation.GetLogParams
 		return api.SendError(ctx, err)
 	}
 
-	return operation.NewGetLogOK().WithPayload(string(l)).WithContentType("text/plain")
+	return operation.NewGetPreheatLogOK().WithPayload(string(l))
 }
 
 // ListProvidersUnderProject is Get all providers at project level
