@@ -94,7 +94,9 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 		err = f.filter(ctx, pm, a)
 		log.Debugf("user: %s, access: %v", ctx.GetUsername(), a)
 		if err != nil {
-			return err
+			log.Errorf("Failed to handle the resource %s:%s, due to error %v, returning empty access for it.",
+				a.Type, a.Name, err)
+			a.Actions = []string{}
 		}
 	}
 	return nil
