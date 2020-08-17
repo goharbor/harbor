@@ -34,6 +34,7 @@ export interface Endpoint extends Base {
   name: string;
   type: string;
   url: string;
+  status?: string;
 }
 
 export interface PingEndpoint extends Base {

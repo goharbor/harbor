@@ -78,6 +78,8 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
   private _nameSubscription: Subscription;
   isNameExisting: boolean = false;
   checkNameOnGoing: boolean = false;
+  @Output()
+  hasInit: EventEmitter<boolean> = new EventEmitter<boolean>();
   constructor(private preheatService: PreheatService,
               private session: SessionService,
               private route: ActivatedRoute,
@@ -141,6 +143,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
           this.enableContentTrust = project.metadata.enable_content_trust === TRUE;
           this.severity = PROJECT_SEVERITY_LEVEL_MAP[this.projectSeverity];
         }
+        this.hasInit.emit(true);
       });
   }
 

@@ -17,7 +17,6 @@
           name="provider"
           id="provider"
           [(ngModel)]="model.vendor"
-          [disabled]="editingMode"
           required
         >
           <option class="display-none" value=""></option>
@@ -45,7 +44,6 @@
                    [(ngModel)]="model.name"
                    name="name"
                    #nameNg="ngModel"
-                   [disabled]="editingMode"
                    (input)="inputName()"
             />
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
@@ -194,7 +192,7 @@
             class="width-280"
             clrInput
             required
-            type="text"
+            type="password"
             id="auth_data_token"
             [(ngModel)]="authData['token']"
             placeholder="{{
@@ -233,7 +231,7 @@
               <clr-tooltip>
                 <clr-icon class="color-57"  clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                 <clr-tooltip-content  clrPosition="top-left" clrSize="md" *clrIfOpen>
-                  {{'SCANNER.SKIP_CERT_VERIFY' | translate}}
+                  {{'P2P_PROVIDER.SKIP_CERT_VERIFY' | translate}}
                 </clr-tooltip-content>
               </clr-tooltip>
             </label>
@@ -248,6 +246,7 @@
       {{ 'BUTTON.CANCEL' | translate }}
     </button>
     <button
+      id="instance-ok"
       [clrLoading]="saveBtnState"
       type="button"
       class="btn btn-primary"

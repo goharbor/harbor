@@ -21,12 +21,13 @@
               {{'P2P_PROVIDER.PROVIDER_REQUIRED' | translate}}
             </clr-control-error>
           </clr-select-container>
-          <div class="clr-form-control mt-0" *ngIf="isSystemAdmin() &&!(providers && providers.length)">
+          <div class="clr-form-control mt-0" *ngIf="!(providers && providers.length)">
             <label class="clr-control-label width-6rem"></label>
             <div class="clr-control-container width-380">
               <div class="space-between">
-                <span class="alert-label">{{"P2P_PROVIDER.NO_PROVIDER" | translate}}</span>
-                <a class="go-link" routerLink="/harbor/distribution/instances">{{'P2P_PROVIDER.PROVIDER' | translate}}</a>
+                <span class="alert-label" *ngIf="isSystemAdmin()">{{"P2P_PROVIDER.NO_PROVIDER" | translate}}</span>
+                <span class="alert-label" *ngIf="!isSystemAdmin()">{{"P2P_PROVIDER.NEED_HELP" | translate}}</span>
+                <a *ngIf="isSystemAdmin()" class="go-link" routerLink="/harbor/distribution/instances">{{'P2P_PROVIDER.PROVIDER' | translate}}</a>
               </div>
             </div>
           </div>
@@ -43,7 +44,7 @@
               </div>
               <clr-control-error *ngIf="((name.dirty || name.touched) && name.invalid) || isNameExisting">
                 <span *ngIf="!((name.dirty || name.touched) && name.invalid) && isNameExisting">{{'SCANNER.NAME_EXISTS' | translate}}</span>
-                <span *ngIf="(name.dirty || name.touched) && name.invalid">{{ 'PROJECT.NAME_TOOLTIP' | translate }}</span>
+                <span *ngIf="(name.dirty || name.touched) && name.invalid">{{ 'P2P_PROVIDER.NAME_TOOLTIP' | translate }}</span>
               </clr-control-error>
             </div>
           </div>
@@ -57,10 +58,10 @@
           </div>
           <!-- filters-repo -->
           <div class="clr-form-control">
-            <label for="repo" class="clr-control-label required width-6rem">{{'P2P_PROVIDER.FILTERS' | translate}}</label>
+            <label for="repo" class="clr-control-label width-6rem">{{'P2P_PROVIDER.FILTERS' | translate}}</label>
             <div class="clr-control-container" [class.clr-error]="repo.errors && repo.errors.required && (repo.dirty || repo.touched)">
               <div class="clr-input-wrapper">
-                <label class="sub-label">{{'P2P_PROVIDER.REPOS' | translate}}</label>
+                <label class="sub-label required">{{'P2P_PROVIDER.REPOS' | translate}}</label>
                 <input placeholder="**" [disabled]="loading" autocomplete="off"  class="clr-input width-290" type="text" id="repo" [(ngModel)]="repos"
                        size="30" name="repo" #repo="ngModel" required>
                 <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
@@ -76,7 +77,7 @@
             <label for="repo" class="width-6rem"></label>
             <div class="clr-control-container" [class.clr-error]="tag.errors && tag.errors.required && (tag.dirty || tag.touched)">
               <div class="clr-input-wrapper">
-                <label class="sub-label">{{'P2P_PROVIDER.TAGS' | translate}}</label>
+                <label class="sub-label required">{{'P2P_PROVIDER.TAGS' | translate}}</label>
                 <input placeholder="**" [disabled]="loading" autocomplete="off"  class="clr-input width-290" type="text" id="tag" [(ngModel)]="tags"
                        size="30" name="tag" #tag="ngModel" required>
                 <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
@@ -111,7 +112,7 @@
             <div class="clr-control-container opacity-054">
               <div class="clr-checkbox-wrapper">
                 <input class="clr-checkbox" disabled type="checkbox" id="onlySignedImages" [(ngModel)]="onlySignedImages" name="onlySignedImages">
-                <label for="onlySignedImages">{{'P2P_PROVIDER.ONLY_SIGNED' | translate}}</label>
+                <label class="font-size-12" for="onlySignedImages">{{'P2P_PROVIDER.ONLY_SIGNED' | translate}}</label>
               </div>
             </div>
           </div>

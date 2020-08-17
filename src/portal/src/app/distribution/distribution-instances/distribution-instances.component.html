@@ -17,10 +17,6 @@
                               'DISTRIBUTION.ADD_ACTION' | translate
                                 }}
                             </button>
-                            <button id="set-default"
-                                    [disabled]="!(selectedRow && selectedRow.length === 1 && !selectedRow[0].default && selectedRow[0].enabled)"
-                                    class="btn  btn-secondary"
-                                    (click)="setAsDefault()">{{'SCANNER.SET_AS_DEFAULT' | translate}}</button>
                             <clr-dropdown
                                     [clrCloseMenuOnItemClick]="false"
                                     class="btn  btn-link"
@@ -78,9 +74,8 @@
                   'DISTRIBUTION.NOT_FOUND' | translate
                     }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let instance of instances" [clrDgItem]="instance">
-                    <clr-dg-cell class="no-wrapper">
+                    <clr-dg-cell>
                         <span>{{ instance.name }}</span>
-                        <span *ngIf="instance.default" class="label label-info ml-1">{{'SCANNER.DEFAULT' | translate}}</span>
                     </clr-dg-cell>
                     <clr-dg-cell>{{ instance.endpoint }}</clr-dg-cell>
                     <clr-dg-cell class="no-wrapper">
@@ -122,7 +117,16 @@
                             </ng-template>
                         </ng-template>
                     </clr-dg-cell>
-                    <clr-dg-cell>{{ instance.enabled || false }}</clr-dg-cell>
+                    <clr-dg-cell>
+                        <div *ngIf="instance.enabled" class="icon-wrap">
+                            <clr-icon shape="check-circle" size="20" class="is-success enabled-icon"></clr-icon>
+                            <span class="margin-left-5px">{{'WEBHOOK.ENABLED' | translate}}</span>
+                        </div>
+                        <div *ngIf="!instance.enabled" class="icon-wrap">
+                            <clr-icon shape="exclamation-triangle" size="20" class="is-warning"></clr-icon>
+                            <span class="margin-left-5px">{{'WEBHOOK.DISABLED' | translate}}</span>
+                        </div>
+                    </clr-dg-cell>
                     <clr-dg-cell>{{ instance.auth_mode }}</clr-dg-cell>
                     <clr-dg-cell>{{fmtTime(instance.setup_timestamp) | date: 'short'}}</clr-dg-cell>
                     <clr-dg-cell>{{ instance.description }}</clr-dg-cell>

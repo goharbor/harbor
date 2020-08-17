@@ -62,8 +62,8 @@ export class ListProjectComponent implements OnDestroy {
     currentState: State;
     subscription: Subscription;
     projectTypeMap: any = {
-        0: "Project",
-        1: "Proxy Cache"
+        0: "PROJECT.PROJECT",
+        1: "PROJECT.PROXY_CACHE"
     };
 
     constructor(
