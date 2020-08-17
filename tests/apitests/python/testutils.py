@@ -84,7 +84,7 @@ def created_project(name=None, metadata=None, user_id=None, member_role_id=None)
 
     api = Project()
 
-    project_id, project_name = api.create_project(name=None, metadata=None, **ADMIN_CLIENT)
+    project_id, project_name = api.create_project(name=name, metadata=metadata, **ADMIN_CLIENT)
     if user_id:
         api.add_project_members(project_id, user_id, member_role_id=member_role_id, **ADMIN_CLIENT)
 

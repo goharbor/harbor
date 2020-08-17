@@ -44,6 +44,12 @@ def _create_client(server, credential, debug, api_type="products"):
     proxy = proxies.get('http', proxies.get('all', None))
     if proxy:
         cfg.proxy = proxy
+
+    if cfg.username is None and cfg.password is None:
+        # returns {} for auth_settings for anonymous access
+        import types
+        cfg.auth_settings = types.MethodType(lambda self: {}, cfg)
+
     return {
         "chart":   client.ChartRepositoryApi(client.ApiClient(cfg)),
         "products":   swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
@@ -108,6 +114,7 @@ class Base(object):
     def _get_client(self, **kwargs):
         if len(kwargs) == 0:
             return self.client
+
         server = self.server
         if "endpoint" in kwargs:
             server.endpoint = kwargs.get("endpoint")
@@ -116,11 +123,11 @@ class Base(object):
                 server.verify_ssl = kwargs.get("verify_ssl") == "True"
             else:
                 server.verify_ssl = kwargs.get("verify_ssl")
-        credential = self.credential
-        if "type" in kwargs:
-            credential.type = kwargs.get("type")
-        if "username" in kwargs:
-            credential.username = kwargs.get("username")
-        if "password" in kwargs:
-            credential.password = kwargs.get("password")
+
+        credential = Credential(
+            kwargs.get("type", self.credential.type),
+            kwargs.get("username", self.credential.username),
+            kwargs.get("password", self.credential.password),
+        )
+
         return _create_client(server, credential, self.debug, kwargs.get('api_type', self.api_type))
