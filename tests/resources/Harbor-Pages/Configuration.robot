@@ -159,6 +159,11 @@ Switch To Project Quotas
     Retry Element Click  xpath=//clr-main-container//clr-vertical-nav//a[contains(.,'Project Quotas')]
     Sleep  1
 
+Switch To Distribution
+    Sleep  1
+    Retry Element Click  xpath=//clr-main-container//clr-vertical-nav-group//span[contains(.,'Distributions')]
+    Sleep  1
+
 Modify Token Expiration
     [Arguments]  ${minutes}
     Input Text  xpath=//*[@id='tokenExpiration']  ${minutes}
@@ -354,3 +359,22 @@ Set User Name Claim And Save
     Retry Text Input  ${cfg_auth_user_name_claim_input}  ${type}
     Retry Element Click  xpath=${config_auth_save_button_xpath}
     Capture Page Screenshot
+
+Select Provider
+    [Arguments]    ${provider}
+    Retry Element Click    ${distribution_provider_select_id}
+    Retry Element Click    ${distribution_provider_select_id}//option[contains(.,'${provider}')]
+
+Distribution Exist
+    [Arguments]  ${provider}  ${name}  ${endpoint}
+    Retry Wait Until Page Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}')]
+
+Create An New Distribution
+    [Arguments]    ${provider}  ${name}  ${endpoint}
+    Switch To Distribution
+    Retry Element Click  ${distribution_add_btn_id}
+    Select Provider  ${provider}
+    Retry Text Input  ${distribution_name_input_id}  ${name}
+    Retry Text Input  ${distribution_endpoint_id}  ${endpoint}
+    Retry Double Keywords When Error  Retry Element Click  ${distribution_add_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${distribution_add_save_btn_id}
+    Distribution Exist  ${provider}  ${name}  ${endpoint}

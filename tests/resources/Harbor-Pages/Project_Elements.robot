@@ -75,3 +75,7 @@ ${project_config_save_btn}    xpath=//hbr-project-policy-config//button[contains
 ${project_add_count_quota_input_text_id}    xpath=//*[@id='create_project_count_limit']
 ${project_add_storage_quota_input_text_id}    xpath=//*[@id='create_project_storage_limit']
 ${project_add_storage_quota_unit_id}    xpath=//*[@id='create_project_storage_limit_unit']
+
+${project_proxy_cache_switcher_id}  xpath=//*[@id='proxy-cache']
+${project_registry_select_id}  xpath=//*[@id='registry']
+#//create-project//clr-toggle-wrapper/label[contains(@for,'proxy-cache')]
