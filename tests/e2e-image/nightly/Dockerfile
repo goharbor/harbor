@@ -1,4 +1,4 @@
-FROM golang:1.11.2
+FROM golang:1.11.13
 
 #docker build -f drone/Dockerfile -t goharbor/harbor-e2e-engine:2.4 .
 # V2.4.1: Upgrade docker engine
