@@ -476,7 +476,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 
 // getVulnerabilitySev gets the severity code value for the given artifact with allowlist option set
 func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *models.Project, art *artifact.Artifact) (uint, error) {
-	al := report.CVESet(p.CVEAllowlist.CVESet())
+	al := p.CVEAllowlist.CVESet()
 	r, err := de.scanCtl.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport}, report.WithCVEAllowlist(&al))
 	if err != nil {
 		if errors.IsNotFoundErr(err) {

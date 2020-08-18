@@ -17,6 +17,7 @@ package report
 import (
 	"reflect"
 
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
@@ -24,29 +25,19 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 )
 
-// CVESet defines the CVE allowlist with a hash set way for easy query.
-type CVESet map[string]struct{}
-
-// Contains checks whether the specified CVE is in the set or not.
-func (cs CVESet) Contains(cve string) bool {
-	_, ok := cs[cve]
-
-	return ok
-}
-
 // Options provides options for getting the report w/ summary.
 type Options struct {
 	// If it is set, the returned report will contains artifact digest for the vulnerabilities
 	ArtifactDigest string
 	// If it is set, the returned summary will not count the CVEs in the list in.
-	CVEAllowlist CVESet
+	CVEAllowlist models.CVESet
 }
 
 // Option for getting the report w/ summary with func template way.
 type Option func(options *Options)
 
 // WithCVEAllowlist is an option of setting CVE allowlist.
-func WithCVEAllowlist(set *CVESet) Option {
+func WithCVEAllowlist(set *models.CVESet) Option {
 	return func(options *Options) {
 		options.CVEAllowlist = *set
 	}
