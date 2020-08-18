@@ -104,14 +104,14 @@ RUN set -x \
 RUN curl -sSL https://github.com/vmware/govmomi/releases/download/v0.16.0/govc_linux_amd64.gz | gzip -d > /usr/local/bin/govc && \
     chmod +x /usr/local/bin/govc
 
-RUN wget https://get.helm.sh/helm-v2.14.1-linux-386.tar.gz && tar zxvf helm-v2.14.1-linux-386.tar.gz && \
-    cp linux-386/helm /usr/local/bin/helm && \
-    cp linux-386/helm /usr/local/bin/helm2 && \
+RUN wget https://get.helm.sh/helm-v2.16.12-linux-amd64.tar.gz && tar zxvf helm-v2.16.12-linux-amd64.tar.gz && \
+    cp linux-amd64/helm /usr/local/bin/helm && \
+    cp linux-amd64/helm /usr/local/bin/helm2 && \
     helm init --client-only && \
     helm plugin install https://github.com/chartmuseum/helm-push
 
-RUN wget https://get.helm.sh/helm-v3.0.0-linux-386.tar.gz && tar zxvf helm-v3.0.0-linux-386.tar.gz && \
-    mv linux-386/helm /usr/local/bin/helm3 && \
+RUN wget https://get.helm.sh/helm-v3.5.0-linux-amd64.tar.gz && tar zxvf helm-v3.5.0-linux-amd64.tar.gz && \
+    mv linux-amd64/helm /usr/local/bin/helm3 && \
     helm3 plugin install https://github.com/chartmuseum/helm-push
 
 RUN curl -LO https://github.com/deislabs/oras/releases/download/v0.8.1/oras_0.8.1_linux_amd64.tar.gz && \
