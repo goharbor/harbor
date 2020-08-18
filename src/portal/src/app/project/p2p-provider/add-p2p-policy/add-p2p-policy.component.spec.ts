@@ -138,7 +138,7 @@ describe('AddP2pPolicyComponent', () => {
         nameInput.dispatchEvent(new Event('input'));
         nameInput.blur();
         const errorEle: HTMLElement = fixture.nativeElement.querySelector("clr-control-error");
-        expect(errorEle.innerText).toEqual('PROJECT.NAME_TOOLTIP');
+        expect(errorEle.innerText).toEqual('P2P_PROVIDER.NAME_TOOLTIP');
     });
     it("save button should work", async () => {
         fixture.autoDetectChanges(true);

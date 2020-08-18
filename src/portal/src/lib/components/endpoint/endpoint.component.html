@@ -27,10 +27,11 @@
                 <clr-dg-placeholder>{{'DESTINATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *clrDgItems="let t of targets" [clrDgItem]='t'>
                     <clr-dg-cell class="flex-min-width">{{t.name}}</clr-dg-cell>
-                    <clr-dg-cell [ngSwitch]="t.status" class="flex-min-width">
-                        <div *ngSwitchCase="'unhealthy'"><clr-icon shape="exclamation-circle" class="is-error text-alignment" size="22"></clr-icon> Unhealthy</div>
-                        <div *ngSwitchCase="'healthy'"><clr-icon shape="success-standard" class="is-success text-alignment" size="18"></clr-icon> Healthy</div>
-                        <div *ngSwitchCase="'unknown' || ''"><clr-icon shape="exclamation-triangle" class="is-warning text-alignment" size="22"></clr-icon> Unknown</div>
+                    <clr-dg-cell class="flex-min-width">
+                        <span *ngIf="t.status === 'healthy';else elseBlock" class="label label-success">{{'SCANNER.HEALTHY' | translate}}</span>
+                        <ng-template #elseBlock>
+                            <span class="label label-danger">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                        </ng-template>
                     </clr-dg-cell>
                     <clr-dg-cell class="flex-min-width">{{t.url}}</clr-dg-cell>
                     <clr-dg-cell>{{getAdapterText(t.type)}}</clr-dg-cell>

@@ -81,6 +81,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
   project: Project;
   severity_map: any = PROJECT_SEVERITY_LEVEL_TO_TEXT_MAP;
   timeout: any;
+  hasAddModalInit: boolean = false;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -107,6 +108,9 @@ export class PolicyComponent implements OnInit, OnDestroy {
        this._searchSubscription = null;
      }
      this.clearLoop();
+  }
+  addModalInit() {
+     this.hasAddModalInit = true;
   }
   getPermissions() {
     const permissionsList: Observable<boolean>[] = [];
