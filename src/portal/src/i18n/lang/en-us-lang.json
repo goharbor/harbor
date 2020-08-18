@@ -1474,7 +1474,7 @@
         "UPDATE_FAILED": "Updating instance failed",
         "REQUEST_PREHEAT_SUCCESS": "Preheat request successfully",
         "REQUEST_PREHEAT_FAILED": "Preheat request failed",
-        "DESCRIPTION": "description",
+        "DESCRIPTION": "Description",
         "AUTH_MODE": "Auth Mode",
         "USERNAME": "Username",
         "PASSWORD": "Password",
@@ -1567,6 +1567,9 @@
         "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
         "CONTENT_WARNING": "Content trust settings here conflicts with the relevant project configuration that will override the settings here",
         "PREHEAT_EXPLAIN": "Preheat will migrate the image to the p2p network",
-        "CRITERIA_EXPLAIN": "As specified in 'Deployment security' section under Configuration tab"
+        "CRITERIA_EXPLAIN": "As specified in 'Deployment security' section under Configuration tab",
+        "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote provider uses a self-signed or untrusted certificate.",
+        "NAME_TOOLTIP": "Policy name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "NEED_HELP": "Please ask your system admin to add a provider first"
     }
 }

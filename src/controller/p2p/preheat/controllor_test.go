@@ -15,10 +15,12 @@ import (
 	providerModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
+	taskModel "github.com/goharbor/harbor/src/pkg/task"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/instance"
 	pmocks "github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/policy"
 	smocks "github.com/goharbor/harbor/src/testing/pkg/scheduler"
+	tmocks "github.com/goharbor/harbor/src/testing/pkg/task"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -32,6 +34,7 @@ type preheatSuite struct {
 	fakePolicyMgr      *pmocks.FakeManager
 	fakeScheduler      *smocks.Scheduler
 	mockInstanceServer *httptest.Server
+	fakeExecutionMgr   *tmocks.FakeExecutionManager
 }
 
 func TestPreheatSuite(t *testing.T) {
@@ -39,21 +42,24 @@ func TestPreheatSuite(t *testing.T) {
 	fakeInstanceMgr := &instance.FakeManager{}
 	fakePolicyMgr := &pmocks.FakeManager{}
 	fakeScheduler := &smocks.Scheduler{}
+	fakeExecutionMgr := &tmocks.FakeExecutionManager{}
 
 	var c = &controller{
-		iManager:  fakeInstanceMgr,
-		pManager:  fakePolicyMgr,
-		scheduler: fakeScheduler,
+		iManager:     fakeInstanceMgr,
+		pManager:     fakePolicyMgr,
+		scheduler:    fakeScheduler,
+		executionMgr: fakeExecutionMgr,
 	}
 	assert.NotNil(t, c)
 
 	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 	suite.Run(t, &preheatSuite{
-		ctx:             ctx,
-		controller:      c,
-		fakeInstanceMgr: fakeInstanceMgr,
-		fakePolicyMgr:   fakePolicyMgr,
-		fakeScheduler:   fakeScheduler,
+		ctx:              ctx,
+		controller:       c,
+		fakeInstanceMgr:  fakeInstanceMgr,
+		fakePolicyMgr:    fakePolicyMgr,
+		fakeScheduler:    fakeScheduler,
+		fakeExecutionMgr: fakeExecutionMgr,
 	})
 }
 
@@ -291,6 +297,13 @@ func (s *preheatSuite) TestUpdatePolicy() {
 func (s *preheatSuite) TestDeletePolicy() {
 	var p0 = &policy.Schema{Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeScheduled}}
 	s.fakePolicyMgr.On("Get", s.ctx, int64(1)).Return(p0, nil)
+	s.fakeExecutionMgr.On("List", s.ctx, mock.AnythingOfType("*q.Query")).Return(
+		[]*taskModel.Execution{
+			{ID: 1},
+			{ID: 2},
+		}, nil,
+	)
+	s.fakeExecutionMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	s.fakePolicyMgr.On("Delete", s.ctx, int64(1)).Return(nil)
 	err := s.controller.DeletePolicy(s.ctx, 1)
 	s.NoError(err)

@@ -54,11 +54,18 @@ import {
 } from "../../../../../../lib/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../../lib/components/operation/operate";
 import { errorHandler } from "../../../../../../lib/utils/shared/shared.utils";
-import { ArtifactFront as Artifact, mutipleFilter, artifactPullCommands } from "../../../artifact/artifact";
+import {
+  ArtifactFront as Artifact,
+  mutipleFilter,
+  artifactPullCommands,
+  artifactDefault
+} from '../../../artifact/artifact';
 import { Project } from "../../../../project";
 import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 import { ADDITIONS } from "../../../artifact/artifact-additions/models";
 import { Platform } from "../../../../../../../ng-swagger-gen/models/platform";
+import { IconService } from '../../../../../../../ng-swagger-gen/services/icon.service';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
@@ -161,7 +168,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
   scanFiinishArtifactLength: number = 0;
   onScanArtifactsLength: number = 0;
-
   constructor(
     private errorHandlerService: ErrorHandler,
     private userPermissionService: UserPermissionService,
@@ -374,6 +380,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 artifact.platform = clone(platFormAttr[index].platform);
               });
               this.getPullCommand(this.artifactList);
+              this.getIconsFromBackEnd();
             }, error => {
               this.errorHandlerService.error(error);
             });
@@ -403,6 +410,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             this.artifactList = doSorting<Artifact>(this.artifactList, state);
 
             this.getPullCommand(this.artifactList);
+            this.getIconsFromBackEnd();
           }, error => {
             // error
             this.errorHandlerService.error(error);
@@ -991,5 +999,18 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
       }
     }
+  }
+  getIconsFromBackEnd() {
+    if (this.artifactList && this.artifactList.length) {
+      this.artifactService.getIconsFromBackEnd(this.artifactList);
+    }
+  }
+  showDefaultIcon(event: any) {
+    if (event && event.target) {
+      event.target.src = artifactDefault;
+    }
+  }
+  getIcon(icon: string): SafeUrl {
+    return this.artifactService.getIcon(icon);
   }
 }

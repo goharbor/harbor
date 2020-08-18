@@ -282,8 +282,13 @@ describe("ArtifactListTabComponent (inline template)", () => {
         ).pipe(delay(0));
       }
     },
-    deleteArtifact: () => of (null)
-
+    deleteArtifact: () => of (null),
+    getIconsFromBackEnd() {
+      return undefined;
+    },
+    getIcon() {
+      return undefined;
+    }
   };
   beforeEach(async(() => {
     TestBed.configureTestingModule({

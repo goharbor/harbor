@@ -4,6 +4,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
+	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -11,7 +12,7 @@ import (
 )
 
 type robotAccountDaoTestSuite struct {
-	suite.Suite
+	htesting.Suite
 	require *require.Assertions
 	assert  *assert.Assertions
 	dao     RobotAccountDao
@@ -118,6 +119,38 @@ func (t *robotAccountDaoTestSuite) TestDeleteRobotAccount() {
 	// Get
 	robot, err = t.dao.GetRobotAccount(id)
 	t.require.Nil(err)
+}
+
+func (t *robotAccountDaoTestSuite) TestDeleteRobotAccountByPID() {
+	t.WithProject(func(projectID int64, projectName string) {
+		robot := &model.Robot{
+			Name:        t.RandString(5),
+			Description: "TestDeleteRobotAccountByPID description",
+			ProjectID:   projectID,
+		}
+		_, err := t.dao.CreateRobotAccount(robot)
+		t.require.Nil(err)
+		robot = &model.Robot{
+			Name:        t.RandString(5),
+			Description: "TestDeleteRobotAccountByPID description",
+			ProjectID:   projectID,
+		}
+		_, err = t.dao.CreateRobotAccount(robot)
+		t.require.Nil(err)
+
+		// Delete
+		err = t.dao.DeleteByProjectID(t.Context(), projectID)
+		t.require.Nil(err)
+
+		// Get
+		keywords := make(map[string]interface{})
+		keywords["ProjectID"] = projectID
+		robots, err := t.dao.ListRobotAccounts(&q.Query{
+			Keywords: keywords,
+		})
+		t.require.Nil(err)
+		t.require.Equal(0, len(robots))
+	})
 }
 
 // TearDownSuite clears env for test suite

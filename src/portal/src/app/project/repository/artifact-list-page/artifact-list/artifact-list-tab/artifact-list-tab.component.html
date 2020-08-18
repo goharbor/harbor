@@ -40,7 +40,7 @@
                     <div class="execution-select">
                         <div class="select filter-tag" [hidden]="!openSelectFilterPiece">
                             <clr-select-container>
-                                <select clrSelect [(ngModel)]="filterByType" (change)="selectFilterType($event)" >
+                                <select clrSelect [(ngModel)]="filterByType" (change)="selectFilterType()" >
                                     <option *ngFor="let filter of mutipleFilter" value="{{filter.filterBy}}">{{ filter.filterByShowText | translate}}</option>
                                 </select>
                             </clr-select-container>
@@ -161,25 +161,16 @@
             <clr-dg-row *ngFor="let artifact of artifactList" [clrDgItem]="artifact" >
                 <clr-dg-cell class="truncated flex-max-width">
                     <div class="cell white-normal">
-                        <img *ngIf="artifact?.type !== 'IMAGE';else elseBlock" class="artifact-icon" [title]="artifact.type"
-                            [src]="artifact.type | selectArtifactIcon" />
-                        <ng-template #elseBlock>
-                            <clr-tooltip>
-                                <div clrTooltipTrigger class="level-border">
-                                    <img class="artifact-icon" [title]="artifact.type"
-                                         [src]="artifact.type | selectArtifactIcon" />
-                                </div>
-                                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                                    <span>Docker and the Docker logo are trademarks or registered trademarks of Docker, Inc. in the United States and/or other countries.</span>
-                                </clr-tooltip-content>
-                            </clr-tooltip>
-                        </ng-template>
+                        <div class="artifact-icon clr-display-inline-block" *ngIf="artifact.icon">
+                            <img *ngIf="getIcon(artifact.icon)" class="artifact-icon" [title]="artifact.type"
+                                 [src]="getIcon(artifact.icon)" (error)="showDefaultIcon($event)" />
+                        </div>
                         <a href="javascript:void(0)" class="max-width-100 margin-left-5" (click)="goIntoArtifactSummaryPage(artifact)"
                             title="{{artifact.digest}}">
                             {{ artifact.digest  | slice:0:15}}</a>
                         <clr-tooltip *ngIf="artifact?.references && artifact?.references?.length">
                             <div clrTooltipTrigger class="level-border">
-                                <div class="inner truncated ">
+                                <div class="inner truncated">
                                     <a href="javascript:void(0)" (click)="goIntoIndexArtifact(artifact)">
                                         <clr-icon class="icon-folder" shape="folder"></clr-icon>
                                     </a>
@@ -256,7 +247,7 @@
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
-                        {{artifact.size?sizeTransform(artifact.size): ""}}
+                        {{artifact.size?sizeTransform(artifact.size+''): ""}}
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell>
