@@ -151,11 +151,6 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     this.tags = null;
     this.labels = null;
     this.cron = null;
-    this.currentForm.reset({
-      triggerType: "manual",
-      severity: PROJECT_SEVERITY_LEVEL_MAP[this.projectSeverity],
-      onlySignedImages: this.enableContentTrust
-    });
     if (this.providers && this.providers.length) {
       this.providers.forEach(item => {
         if (item.default) {
@@ -163,6 +158,12 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         }
       });
     }
+    this.currentForm.reset({
+      triggerType: "manual",
+      severity: PROJECT_SEVERITY_LEVEL_MAP[this.projectSeverity],
+      onlySignedImages: this.enableContentTrust,
+      provider: this.policy.provider_id
+    });
   }
 
   setCron(event: any) {
