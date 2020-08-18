@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/robot"
 	"strconv"
 	"strings"
 	"sync"
@@ -46,6 +47,7 @@ func newProjectAPI() *projectAPI {
 		repositoryCtl: repository.Ctl,
 		projectCtl:    project.Ctl,
 		quotaCtl:      quota.Ctl,
+		robotMgr:      robot.Mgr,
 	}
 }
 
@@ -57,6 +59,7 @@ type projectAPI struct {
 	repositoryCtl repository.Controller
 	projectCtl    project.Controller
 	quotaCtl      quota.Controller
+	robotMgr      robot.Manager
 }
 
 func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateProjectParams) middleware.Responder {
@@ -191,6 +194,11 @@ func (a *projectAPI) DeleteProject(ctx context.Context, params operation.DeleteP
 	}
 
 	if err := a.projectCtl.Delete(ctx, params.ProjectID); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	// remove the robot associated with the project
+	if err := a.robotMgr.DeleteByProjectID(ctx, params.ProjectID); err != nil {
 		return a.SendError(ctx, err)
 	}
 

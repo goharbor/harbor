@@ -26,3 +26,4 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/scan/scanner --all --output ./scan/scanner --outpkg scanner
 //go:generate mockery --case snake --dir ../../pkg/scheduler --name Scheduler --output ./scheduler --outpkg scheduler
 //go:generate mockery --case snake --dir ../../pkg/user --name Manager --output ./user --outpkg user
+//go:generate mockery --case snake --dir ../../pkg/robot/dao --name RobotAccountDao --output ./robot/dao --outpkg dao
