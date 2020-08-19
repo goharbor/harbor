@@ -15,10 +15,16 @@
 package googlegcr
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/opencontainers/go-digest"
+	"io/ioutil"
+	"net/http"
 )
 
 func init() {
@@ -130,4 +136,114 @@ func (a adapter) HealthCheck() (model.HealthStatus, error) {
 		return model.Unhealthy, nil
 	}
 	return model.Healthy, nil
+}
+
+/*
+{
+	"child": [],
+	"manifest": {
+		"sha256:400ee2ed939df769d4681023810d2e4fb9479b8401d97003c710d0e20f7c49c6": {
+			"imageSizeBytes": "763789",
+			"layerId": "",
+			"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+			"tag": ["another", "latest"],
+			"timeCreatedMs": "1595895577054",
+			"timeUploadedMs": "1597767277119"
+		}
+	},
+	"name": "eminent-nation-87317/testgcr/busybox",
+	"tags": ["another", "latest"]
+}
+*/
+func (a adapter) listGcrTagsByRef(repository, reference string) ([]string, string, error) {
+	u := buildTagListURL(a.registry.URL, repository)
+	req, err := http.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, "", err
+	}
+
+	resp, err := a.Client.Do(req)
+	if err != nil {
+		return nil, "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, "", err
+	}
+	tgs := struct {
+		Name     string   `json:"name"`
+		Tags     []string `json:"tags"`
+		Manifest map[string]struct {
+			Tag       []string `json:"tag"`
+			MediaType string   `json:"mediaType"`
+		} `json:"manifest"`
+	}{}
+	if err = json.Unmarshal(body, &tgs); err != nil {
+		return nil, "", err
+	}
+	_, err = digest.Parse(reference)
+	if err == nil {
+		// for sha256 as reference
+		if m, ok := tgs.Manifest[reference]; ok {
+			return m.Tag, reference, nil
+		}
+		return nil, reference, nil
+	}
+	// for tag as reference
+	for d, m := range tgs.Manifest {
+		for _, t := range m.Tag {
+			if t == reference {
+				return m.Tag, d, nil
+			}
+		}
+	}
+	return nil, "", nil
+}
+
+func (a adapter) DeleteManifest(repository, reference string) error {
+	tags, d, err := a.listGcrTagsByRef(repository, reference)
+	if err != nil {
+		return err
+	}
+
+	if d == "" {
+		return errors.New(nil).WithCode(errors.NotFoundCode).
+			WithMessage("%s:%s not found", repository, reference)
+	}
+	for _, t := range append(tags, d) {
+		req, err := http.NewRequest(http.MethodDelete, buildManifestURL(a.registry.URL, repository, t), nil)
+		if err != nil {
+			return err
+		}
+		resp, err := a.Client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+	}
+
+	return nil
+}
+
+func buildTagListURL(endpoint, repository string) string {
+	return fmt.Sprintf("%s/v2/%s/tags/list", endpoint, repository)
+}
+
+func buildManifestURL(endpoint, repository, reference string) string {
+	return fmt.Sprintf("%s/v2/%s/manifests/%s", endpoint, repository, reference)
+}
+
+func (a *adapter) DeleteTag(repository, tag string) error {
+	req, err := http.NewRequest(http.MethodDelete, buildManifestURL(a.registry.URL, repository, tag), nil)
+	if err != nil {
+		return err
+	}
+	resp, err := a.Client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
 }
