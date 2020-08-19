@@ -93,6 +93,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
   @ViewChild(FilterComponent, {static: true})
   filterComponent: FilterComponent;
   searchSub: Subscription;
+  isProxyCacheProject: boolean = false;
 
   constructor(@Inject(SERVICE_CONFIG) private configInfo: IServiceConfig,
               private errorHandlerService: ErrorHandler,
@@ -139,6 +140,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
       let pro: Project = <Project>resolverData['projectResolver'];
       this.hasProjectAdminRole = pro.has_project_admin_role;
       this.projectName = pro.name;
+      if (pro.registry_id) {
+        this.isProxyCacheProject = true;
+      }
     }
     this.hasSignedIn = this.session.getCurrentUser() !== null;
     // Get system info for tag views

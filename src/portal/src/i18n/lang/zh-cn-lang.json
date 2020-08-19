@@ -13,7 +13,8 @@
         "REMEMBER": "记住我",
         "INVALID_MSG": "用户名或者密码不正确。",
         "FORGOT_PWD": "忘记密码",
-        "HEADER_LINK": "登录"
+        "HEADER_LINK": "登录",
+        "CORE_SERVICE_NOT_AVAILABLE": "核心服务不可用。"
     },
     "SIGN_UP": {
         "TITLE": "注册"

@@ -66,7 +66,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         principal: "",
         password: ""
     };
-
+    isCoreServiceAvailable: boolean = true;
     constructor(
         private router: Router,
         private session: SessionService,
@@ -254,6 +254,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 } else {
                     this.router.navigateByUrl(this.redirectUrl);
                 }
+                this.isCoreServiceAvailable = true;
             }, error => {
                 // 403 oidc login no body;
                 if (this.isOidcLoginMode && error && error.status === 403) {
@@ -264,6 +265,10 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                         window.location.href = redirect_location;
                         return;
                     } catch (error) { }
+                }
+                // core service is not available for error code 5xx
+                if (error && /5[0-9][0-9]/.test(error.status)) {
+                    this.isCoreServiceAvailable = false;
                 }
                 this.handleError(error);
             });

@@ -13,7 +13,8 @@
         "REMEMBER": "Lembrar-se de mim",
         "INVALID_MSG": "Usuário ou senha inválidos",
         "FORGOT_PWD": "Esqueci a senha",
-        "HEADER_LINK": "Logar-se"
+        "HEADER_LINK": "Logar-se",
+        "CORE_SERVICE_NOT_AVAILABLE": "Core service is not available."
     },
     "SIGN_UP": {
         "TITLE": "Registrar-se"
@@ -245,7 +246,7 @@
         "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular namespace within a target registry. Harbor can only act a proxy for DockerHub and Harbor registries.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub and Harbor registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
     },
