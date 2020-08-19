@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -46,6 +47,7 @@ const (
 	TopicDeleteChart     = "DELETE_CHART"
 	TopicReplication     = "REPLICATION"
 	TopicArtifactLabeled = "ARTIFACT_LABELED"
+	TopicTagRetention    = "TAG_RETENTION"
 )
 
 // CreateProjectEvent is the creating project event
@@ -288,4 +290,13 @@ type ArtifactLabeledEvent struct {
 	LabelID    int64
 	OccurAt    time.Time
 	Operator   string
+}
+
+// RetentionEvent is tag retention related event data to publish
+type RetentionEvent struct {
+	TaskID    int64
+	EventType string
+	OccurAt   time.Time
+	Status    string
+	Deleted   []*selector.Result
 }

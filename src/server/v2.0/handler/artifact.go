@@ -155,13 +155,8 @@ func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArt
 		return a.SendError(ctx, err)
 	}
 
-	pro, err := a.proCtl.GetByName(ctx, params.ProjectName)
-	if err != nil {
+	if err := a.requireNonProxyCacheProject(ctx, params.ProjectName); err != nil {
 		return a.SendError(ctx, err)
-	}
-	if pro.RegistryID > 0 {
-		return a.SendError(ctx, errors.New(nil).WithCode(errors.MethodNotAllowedCode).
-			WithMessage("cannot copy the artifact to a proxy cache project"))
 	}
 
 	srcRepo, ref, err := parse(params.From)
@@ -212,6 +207,11 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceTag); err != nil {
 		return a.SendError(ctx, err)
 	}
+
+	if err := a.requireNonProxyCacheProject(ctx, params.ProjectName); err != nil {
+		return a.SendError(ctx, err)
+	}
+
 	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
 		params.Reference, &artifact.Option{
 			WithTag: true,
@@ -237,6 +237,18 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 
 	// as we provide no API for get the single tag, ignore setting the location header here
 	return operation.NewCreateTagCreated()
+}
+
+func (a *artifactAPI) requireNonProxyCacheProject(ctx context.Context, name string) error {
+	pro, err := a.proCtl.GetByName(ctx, name)
+	if err != nil {
+		return err
+	}
+	if pro.RegistryID > 0 {
+		return errors.New(nil).WithCode(errors.MethodNotAllowedCode).
+			WithMessage("the operation isn't supported for a proxy cache project")
+	}
+	return nil
 }
 
 func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagParams) middleware.Responder {

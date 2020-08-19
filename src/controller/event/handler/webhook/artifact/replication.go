@@ -8,6 +8,7 @@ import (
 	commonModels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
+	ctlModel "github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -15,7 +16,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
-	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/goharbor/harbor/src/replication"
 	rpModel "github.com/goharbor/harbor/src/replication/model"
 )
@@ -120,7 +120,7 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 	}
 	hostname := strings.Split(extURL, ":")[0]
 
-	remoteRes := &model.ReplicationResource{
+	remoteRes := &ctlModel.ReplicationResource{
 		RegistryName: remoteRegistry.Name,
 		RegistryType: string(remoteRegistry.Type),
 		Endpoint:     remoteRegistry.URL,
@@ -131,18 +131,18 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 	if err != nil {
 		log.Errorf("Error while reading external endpoint: %v", err)
 	}
-	localRes := &model.ReplicationResource{
+	localRes := &ctlModel.ReplicationResource{
 		RegistryType: string(rpModel.RegistryTypeHarbor),
 		Endpoint:     ext,
 		Namespace:    destNamespace,
 	}
 
-	payload := &notifyModel.Payload{
+	payload := &model.Payload{
 		Type:     event.EventType,
 		OccurAt:  event.OccurAt.Unix(),
 		Operator: string(execution.Trigger),
 		EventData: &model.EventData{
-			Replication: &model.Replication{
+			Replication: &ctlModel.Replication{
 				HarborHostname:     hostname,
 				JobStatus:          event.Status,
 				Description:        rpPolicy.Description,
@@ -174,20 +174,20 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 	}
 
 	if event.Status == string(job.SuccessStatus) {
-		succeedArtifact := &model.ArtifactInfo{
+		succeedArtifact := &ctlModel.ArtifactInfo{
 			Type:       task.ResourceType,
 			Status:     task.Status,
 			NameAndTag: nameAndTag,
 		}
-		payload.EventData.Replication.SuccessfulArtifact = []*model.ArtifactInfo{succeedArtifact}
+		payload.EventData.Replication.SuccessfulArtifact = []*ctlModel.ArtifactInfo{succeedArtifact}
 	}
 	if event.Status == string(job.ErrorStatus) {
-		failedArtifact := &model.ArtifactInfo{
+		failedArtifact := &ctlModel.ArtifactInfo{
 			Type:       task.ResourceType,
 			Status:     task.Status,
 			NameAndTag: nameAndTag,
 		}
-		payload.EventData.Replication.FailedArtifact = []*model.ArtifactInfo{failedArtifact}
+		payload.EventData.Replication.FailedArtifact = []*ctlModel.ArtifactInfo{failedArtifact}
 	}
 
 	prj, err := project.Ctl.GetByName(orm.Context(), prjName, project.Metadata(true))

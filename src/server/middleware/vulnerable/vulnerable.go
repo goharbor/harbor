@@ -91,7 +91,7 @@ func Middleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		allowlist := report.CVESet(proj.CVEAllowlist.CVESet())
+		allowlist := proj.CVEAllowlist.CVESet()
 		summaries, err := scanController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport}, report.WithCVEAllowlist(&allowlist))
 		if err != nil {
 			logger.Errorf("get vulnerability summary of the artifact %s@%s failed, error: %v", art.RepositoryName, art.Digest, err)
