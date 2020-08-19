@@ -32,7 +32,7 @@ func GetNotificationPolicyByName(name string, projectID int64) (*models.Notifica
 // GetNotificationPolicies returns all notification policy in project
 func GetNotificationPolicies(projectID int64) ([]*models.NotificationPolicy, error) {
 	var policies []*models.NotificationPolicy
-	qs := dao.GetOrmer().QueryTable(new(models.NotificationPolicy)).Filter("ProjectID", projectID)
+	qs := dao.GetOrmer().QueryTable(new(models.NotificationPolicy)).Filter("ProjectID", projectID).OrderBy("-CreationTime")
 
 	_, err := qs.All(&policies)
 	if err != nil {

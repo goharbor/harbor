@@ -97,7 +97,7 @@ func TestGetPolicies(t *testing.T) {
 	}{
 		{name: "GetTotalOfRepPolicies nil", args: args{name: "Test 0"}, wantPolicies: []*models.RepPolicy{}},
 		{name: "GetTotalOfRepPolicies 1", args: args{name: "Test 1"}, wantPolicies: []*models.RepPolicy{testPolic1}},
-		{name: "GetTotalOfRepPolicies 2", args: args{name: "Test", page: 1, pageSize: 2}, wantPolicies: []*models.RepPolicy{testPolic1, testPolic2}},
+		{name: "GetTotalOfRepPolicies 2", args: args{name: "Test", page: 1, pageSize: 2}, wantPolicies: []*models.RepPolicy{testPolic3, testPolic2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

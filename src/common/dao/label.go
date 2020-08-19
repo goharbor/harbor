@@ -60,7 +60,7 @@ func ListLabels(query *models.LabelQuery) ([]*models.Label, error) {
 			qs = qs.Offset((query.Page - 1) * query.Size)
 		}
 	}
-	qs = qs.OrderBy("Name")
+	qs = qs.OrderBy("-CreationTime")
 
 	labels := []*models.Label{}
 	_, err := qs.All(&labels)
