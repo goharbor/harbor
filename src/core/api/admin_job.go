@@ -261,7 +261,7 @@ func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
 			if jb.UpdateTime.Add(2 * time.Hour).After(time.Now()) {
 				if isOnGoing(jb.Status) {
 					err := errors.Errorf("reject job submitting: job %s with ID %d is %s", jb.Name, jb.ID, jb.Status)
-					aj.SendInternalServerError(errors.Wrap(err, "submit : AJAPI"))
+					aj.SendConflictError(errors.Wrap(err, "submit : AJAPI"))
 					return
 				}
 
