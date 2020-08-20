@@ -8,6 +8,7 @@ COPY ./make/photon/core/entrypoint.sh /harbor/
 COPY ./make/photon/core/harbor_core /harbor/
 COPY ./src/core/views /harbor/views
 COPY ./make/migrations /harbor/migrations
+COPY ./icons /harbor/icons
 
 RUN chown -R harbor:harbor /etc/pki/tls/certs \
     && chown harbor:harbor /harbor/entrypoint.sh && chmod u+x /harbor/entrypoint.sh \

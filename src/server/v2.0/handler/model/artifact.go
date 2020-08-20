@@ -40,6 +40,7 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 		RepositoryID:      a.RepositoryID,
 		Digest:            a.Digest,
 		Size:              a.Size,
+		Icon:              a.Icon,
 		PullTime:          strfmt.DateTime(a.PullTime),
 		PushTime:          strfmt.DateTime(a.PushTime),
 		ExtraAttrs:        a.ExtraAttrs,

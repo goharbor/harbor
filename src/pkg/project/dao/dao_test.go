@@ -196,9 +196,11 @@ func (suite *DaoTestSuite) TestList() {
 		}
 	}()
 
-	projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"project_id__in": projectIDs}))
-	suite.Nil(err)
-	suite.Len(projects, len(projectNames))
+	{
+		projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"project_id__in": projectIDs}))
+		suite.Nil(err)
+		suite.Len(projects, len(projectNames))
+	}
 }
 
 func (suite *DaoTestSuite) TestListByPublic() {
@@ -257,6 +259,13 @@ func (suite *DaoTestSuite) TestListByMember() {
 		projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"member": &models.MemberQuery{Name: "admin", Role: common.RoleGuest}}))
 		suite.Nil(err)
 		suite.Len(projects, 0)
+	}
+
+	{
+		// guest with public projects
+		projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"member": &models.MemberQuery{Name: "admin", Role: common.RoleGuest, WithPublic: true}}))
+		suite.Nil(err)
+		suite.Len(projects, 1)
 	}
 
 	{

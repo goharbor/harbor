@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS execution (
     extra_attrs JSON,
     start_time timestamp DEFAULT CURRENT_TIMESTAMP,
     end_time timestamp,
+    revision int,
     PRIMARY KEY (id)
 );
 
@@ -115,9 +116,38 @@ ALTER TABLE schedule DROP COLUMN IF EXISTS status;
 
 UPDATE registry SET type = 'quay' WHERE type = 'quay-io';
 
+
 ALTER TABLE artifact ADD COLUMN icon varchar(255);
 
 /*remove the constraint for name in table 'notification_policy'*/
 ALTER TABLE notification_policy DROP CONSTRAINT notification_policy_name_key;
 /*add union unique constraint for name and project_id in table 'notification_policy'*/
 ALTER TABLE notification_policy ADD UNIQUE(name,project_id);
+
+CREATE TABLE IF NOT EXISTS data_migrations (
+    version int
+);
+INSERT INTO data_migrations (version) VALUES (
+    CASE
+        /*if the "extra_attrs" isn't null, it means that the deployment upgrades from v2.0*/
+        WHEN (SELECT Count(*) FROM artifact WHERE extra_attrs!='')>0 THEN 30
+        ELSE 0
+    END
+);
+ALTER TABLE schema_migrations DROP COLUMN IF EXISTS data_version;
+
+ALTER TABLE artifact ADD COLUMN IF NOT EXISTS icon varchar(255);
+
+UPDATE artifact
+SET icon=(
+CASE
+    WHEN type='IMAGE' THEN
+        'sha256:0048162a053eef4d4ce3fe7518615bef084403614f8bca43b40ae2e762e11e06'
+    WHEN type='CHART' THEN
+        'sha256:61cf3a178ff0f75bf08a25d96b75cf7355dc197749a9f128ed3ef34b0df05518'
+    WHEN type='CNAB' THEN
+        'sha256:089bdda265c14d8686111402c8ad629e8177a1ceb7dcd0f7f39b6480f623b3bd'
+    ELSE
+        'sha256:da834479c923584f4cbcdecc0dac61f32bef1d51e8aae598cf16bd154efab49f'
+END);
+

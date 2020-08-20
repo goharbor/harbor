@@ -51,6 +51,11 @@ func Context() context.Context {
 	return NewContext(context.Background(), orm.NewOrm())
 }
 
+// Clone returns new context with orm for ctx
+func Clone(ctx context.Context) context.Context {
+	return NewContext(ctx, orm.NewOrm())
+}
+
 // WithTransaction a decorator which make f run in transaction
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {

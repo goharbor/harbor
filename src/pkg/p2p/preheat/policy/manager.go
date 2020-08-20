@@ -35,7 +35,7 @@ type Manager interface {
 	Update(ctx context.Context, schema *policy.Schema, props ...string) (err error)
 	// Get the policy schema by id
 	Get(ctx context.Context, id int64) (schema *policy.Schema, err error)
-	// GetByName the policy schema by id
+	// GetByName the policy schema by project ID and name
 	GetByName(ctx context.Context, projectID int64, name string) (schema *policy.Schema, err error)
 	// Delete the policy schema by id
 	Delete(ctx context.Context, id int64) (err error)

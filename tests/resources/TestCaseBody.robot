@@ -254,7 +254,7 @@ Body Of Verfiy System Level CVE Allowlist
     # Add Items To System CVE Allowlist    CVE-2019-18276
     Add Items To System CVE Allowlist    ${single_cve}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Delete Top Item In System CVE Allowlist  count=6
+    Delete Top Item In System CVE Allowlist  count=16
     Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
     Close Browser
 

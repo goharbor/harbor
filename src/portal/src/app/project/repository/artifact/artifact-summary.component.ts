@@ -1,14 +1,14 @@
 import { Component, Output, EventEmitter, OnInit } from "@angular/core";
 import { Artifact } from "../../../../../ng-swagger-gen/models/artifact";
-import { ArtifactService } from "../../../../../ng-swagger-gen/services/artifact.service";
 import { ErrorHandler } from "../../../../lib/utils/error-handler";
 import { Label } from "../../../../../ng-swagger-gen/models/label";
 import { ProjectService } from "../../../../lib/services";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AppConfigService } from "../../../services/app-config.service";
 import { Project } from "../../project";
-import { finalize } from "rxjs/operators";
-import { dbEncodeURIComponent } from "../../../../lib/utils/utils";
+import { artifactDefault } from './artifact';
+import { SafeUrl } from '@angular/platform-browser';
+import { ArtifactDefaultService } from './artifact.service';
 
 @Component({
   selector: "artifact-summary",
@@ -34,11 +34,11 @@ export class ArtifactSummaryComponent implements OnInit {
 
   constructor(
     private projectService: ProjectService,
-    private artifactService: ArtifactService,
     private errorHandler: ErrorHandler,
     private route: ActivatedRoute,
     private appConfigService: AppConfigService,
-    private router: Router
+    private router: Router,
+    private frontEndArtifactService: ArtifactDefaultService,
   ) {
   }
 
@@ -81,27 +81,24 @@ export class ArtifactSummaryComponent implements OnInit {
         const pro: Project = <Project>(resolverData['artifactResolver'][1]);
         this.projectName = pro.name;
         this.artifact = <Artifact>(resolverData['artifactResolver'][0]);
+        this.getIconFromBackEnd();
       }
     }
   }
-
-  getArtifactDetails(): void {
-    this.loading = true;
-    this.artifactService.getArtifact({
-      repositoryName: dbEncodeURIComponent(this.repositoryName),
-      reference: this.artifactDigest,
-      projectName: this.projectName,
-      withLabel: true,
-      withScanOverview: true
-    }).pipe(finalize(() => this.loading = false))
-      .subscribe(response => {
-      this.artifact = response;
-    }, error => {
-      this.errorHandler.error(error);
-    });
-  }
-
   onBack(): void {
     this.backEvt.emit(this.repositoryName);
+  }
+  showDefaultIcon(event: any) {
+    if (event && event.target) {
+      event.target.src = artifactDefault;
+    }
+  }
+  getIcon(icon: string): SafeUrl {
+    return this.frontEndArtifactService.getIcon(icon);
+  }
+  getIconFromBackEnd() {
+    if (this.artifact && this.artifact.icon) {
+     this.frontEndArtifactService.getIconsFromBackEnd([this.artifact]);
+    }
   }
 }

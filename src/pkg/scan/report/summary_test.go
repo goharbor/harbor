@@ -19,6 +19,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -108,7 +109,7 @@ func (suite *SummaryTestSuite) TestSummaryGenerateSummaryNoOptions() {
 
 // TestSummaryGenerateSummaryWithOptions ...
 func (suite *SummaryTestSuite) TestSummaryGenerateSummaryWithOptions() {
-	cveSet := make(CVESet)
+	cveSet := make(models.CVESet)
 	cveSet["2019-0980-0909"] = struct{}{}
 
 	summaries, err := GenerateSummary(suite.r, WithCVEAllowlist(&cveSet))

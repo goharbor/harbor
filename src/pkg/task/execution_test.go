@@ -16,7 +16,6 @@ package task
 
 import (
 	"testing"
-	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -127,10 +126,16 @@ func (e *executionManagerTestSuite) TestGet() {
 		ID:     1,
 		Status: job.SuccessStatus.String(),
 	}, nil)
+	e.execDAO.On("GetMetrics", mock.Anything, mock.Anything).Return(&dao.Metrics{
+		TaskCount:        1,
+		SuccessTaskCount: 1,
+	}, nil)
 	exec, err := e.execMgr.Get(nil, 1)
 	e.Require().Nil(err)
 	e.Equal(int64(1), exec.ID)
 	e.Equal(job.SuccessStatus.String(), exec.Status)
+	e.Equal(int64(1), exec.Metrics.TaskCount)
+	e.Equal(int64(1), exec.Metrics.SuccessTaskCount)
 	e.execDAO.AssertExpectations(e.T())
 }
 
@@ -141,134 +146,18 @@ func (e *executionManagerTestSuite) TestList() {
 			Status: job.SuccessStatus.String(),
 		},
 	}, nil)
+	e.execDAO.On("GetMetrics", mock.Anything, mock.Anything).Return(&dao.Metrics{
+		TaskCount:        1,
+		SuccessTaskCount: 1,
+	}, nil)
 	execs, err := e.execMgr.List(nil, nil)
 	e.Require().Nil(err)
 	e.Require().Len(execs, 1)
 	e.Equal(int64(1), execs[0].ID)
 	e.Equal(job.SuccessStatus.String(), execs[0].Status)
+	e.Equal(int64(1), execs[0].Metrics.TaskCount)
+	e.Equal(int64(1), execs[0].Metrics.SuccessTaskCount)
 	e.execDAO.AssertExpectations(e.T())
-}
-
-func (e *executionManagerTestSuite) TestPopulateExecutionMetrics() {
-	e.taskDAO.On("ListStatusCount", mock.Anything, mock.Anything).Return([]*dao.StatusCount{
-		{
-			Status: job.SuccessStatus.String(),
-			Count:  1,
-		},
-		{
-			Status: job.ErrorStatus.String(),
-			Count:  1,
-		},
-		{
-			Status: job.StoppedStatus.String(),
-			Count:  1,
-		},
-		{
-			Status: job.RunningStatus.String(),
-			Count:  1,
-		},
-		{
-			Status: job.PendingStatus.String(),
-			Count:  1,
-		},
-		{
-			Status: job.ScheduledStatus.String(),
-			Count:  1,
-		},
-	}, nil)
-	exec := &Execution{}
-	e.execMgr.populateExecutionMetrics(nil, exec)
-	e.Require().NotNil(exec.Metrics)
-	e.Equal(int64(6), exec.Metrics.TaskCount)
-	e.Equal(int64(1), exec.Metrics.SuccessTaskCount)
-	e.Equal(int64(1), exec.Metrics.ErrorTaskCount)
-	e.Equal(int64(1), exec.Metrics.StoppedTaskCount)
-	e.Equal(int64(1), exec.Metrics.PendingTaskCount)
-	e.Equal(int64(1), exec.Metrics.RunningTaskCount)
-	e.Equal(int64(1), exec.Metrics.ScheduledTaskCount)
-	e.taskDAO.AssertExpectations(e.T())
-}
-
-func (e *executionManagerTestSuite) TestPopulateExecutionStatus() {
-	// running
-	exec := &Execution{}
-	e.execMgr.populateExecutionStatus(exec)
-	e.Equal(job.RunningStatus.String(), exec.Status)
-
-	// running
-	exec = &Execution{
-		Metrics: &Metrics{
-			SuccessTaskCount:   1,
-			ErrorTaskCount:     1,
-			PendingTaskCount:   1,
-			RunningTaskCount:   1,
-			ScheduledTaskCount: 1,
-			StoppedTaskCount:   1,
-		},
-	}
-	e.execMgr.populateExecutionStatus(exec)
-	e.Equal(job.RunningStatus.String(), exec.Status)
-
-	// error
-	exec = &Execution{
-		Metrics: &Metrics{
-			SuccessTaskCount:   1,
-			ErrorTaskCount:     1,
-			PendingTaskCount:   0,
-			RunningTaskCount:   0,
-			ScheduledTaskCount: 0,
-			StoppedTaskCount:   1,
-		},
-	}
-	e.execMgr.populateExecutionStatus(exec)
-	e.Equal(job.ErrorStatus.String(), exec.Status)
-
-	// stopped
-	exec = &Execution{
-		Metrics: &Metrics{
-			SuccessTaskCount:   1,
-			ErrorTaskCount:     0,
-			PendingTaskCount:   0,
-			RunningTaskCount:   0,
-			ScheduledTaskCount: 0,
-			StoppedTaskCount:   1,
-		},
-	}
-	e.execMgr.populateExecutionStatus(exec)
-	e.Equal(job.StoppedStatus.String(), exec.Status)
-
-	// success
-	exec = &Execution{
-		Metrics: &Metrics{
-			SuccessTaskCount:   1,
-			ErrorTaskCount:     0,
-			PendingTaskCount:   0,
-			RunningTaskCount:   0,
-			ScheduledTaskCount: 0,
-			StoppedTaskCount:   0,
-		},
-	}
-	e.execMgr.populateExecutionStatus(exec)
-	e.Equal(job.SuccessStatus.String(), exec.Status)
-}
-
-func (e *executionManagerTestSuite) TestPopulateExecutionEndTime() {
-	// isn't final status
-	exec := &Execution{
-		Status: job.RunningStatus.String(),
-	}
-	e.execMgr.populateExecutionEndTime(nil, exec)
-	e.Equal(time.Time{}, exec.EndTime)
-
-	// final status
-	now := time.Now()
-	exec = &Execution{
-		Status: job.SuccessStatus.String(),
-	}
-	e.taskDAO.On("GetMaxEndTime", mock.Anything, mock.Anything).Return(now, nil)
-	e.execMgr.populateExecutionEndTime(nil, exec)
-	e.Equal(now, exec.EndTime)
-	e.taskDAO.AssertExpectations(e.T())
 }
 
 func TestExecutionManagerSuite(t *testing.T) {

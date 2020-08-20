@@ -16,6 +16,8 @@ package proxy
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/opencontainers/go-digest"
 	"io"
 	"strings"
@@ -120,9 +122,14 @@ func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art l
 	if err != nil {
 		return man, err
 	}
+	operator := ""
+	if secCtx, ok := security.FromContext(ctx); ok {
+		operator = secCtx.GetUsername()
+	}
 	// Push manifest in background
 	go func() {
-		a, err := c.local.GetManifest(ctx, art)
+		bCtx := orm.Context()
+		a, err := c.local.GetManifest(bCtx, art)
 		if err != nil {
 			log.Errorf("failed to get manifest, error %v", err)
 		}
@@ -140,7 +147,7 @@ func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art l
 			}
 		}
 		if a != nil {
-			SendPullEvent(ctx, a, art.Tag)
+			SendPullEvent(a, art.Tag, operator)
 		}
 	}()
 

@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
+	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -45,6 +46,7 @@ func (m *manifestV1Processor) AbstractMetadata(ctx context.Context, artifact *ar
 		artifact.ExtraAttrs = map[string]interface{}{}
 	}
 	artifact.ExtraAttrs["architecture"] = mani.Architecture
+	artifact.Icon = icon.DigestOfIconImage
 	return nil
 }
 

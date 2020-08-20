@@ -18,14 +18,15 @@ package handler
 
 import (
 	"context"
+	"net/http"
+	"net/url"
+	"strconv"
+
 	"github.com/go-openapi/runtime"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/q"
-	"net/http"
-	"net/url"
-	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -111,6 +112,18 @@ func (b *BaseAPI) RequireSysAdmin(ctx context.Context) error {
 	}
 	if !secCtx.IsSysAdmin() {
 		return errors.ForbiddenError(nil).WithMessage(secCtx.GetUsername())
+	}
+	return nil
+}
+
+// RequireAuthenticated checks it's authenticated according to the security context
+func (b *BaseAPI) RequireAuthenticated(ctx context.Context) error {
+	secCtx, ok := security.FromContext(ctx)
+	if !ok {
+		return errors.UnauthorizedError(errors.New("security context not found"))
+	}
+	if !secCtx.IsAuthenticated() {
+		return errors.UnauthorizedError(nil)
 	}
 	return nil
 }

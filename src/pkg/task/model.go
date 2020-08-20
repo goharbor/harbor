@@ -49,25 +49,14 @@ type Execution struct {
 	// 1. After creating the execution, there may be some errors before creating tasks, the
 	// "StatusMessage" can contain the error message
 	// 2. The execution may contain no tasks, "StatusMessage" can be used to explain the case
-	StatusMessage string   `json:"status_message"`
-	Metrics       *Metrics `json:"metrics"`
+	StatusMessage string       `json:"status_message"`
+	Metrics       *dao.Metrics `json:"metrics"`
 	// trigger type: manual/schedule/event
 	Trigger string `json:"trigger"`
 	// the customized attributes for different kinds of consumers
 	ExtraAttrs map[string]interface{} `json:"extra_attrs"`
 	StartTime  time.Time              `json:"start_time"`
 	EndTime    time.Time              `json:"end_time"`
-}
-
-// Metrics for tasks
-type Metrics struct {
-	TaskCount          int64 `json:"task_count"`
-	SuccessTaskCount   int64 `json:"success_task_count"`
-	ErrorTaskCount     int64 `json:"error_task_count"`
-	PendingTaskCount   int64 `json:"pending_task_count"`
-	RunningTaskCount   int64 `json:"running_task_count"`
-	ScheduledTaskCount int64 `json:"scheduled_task_count"`
-	StoppedTaskCount   int64 `json:"stopped_task_count"`
 }
 
 // Task is the unit for running. It stores the jobservice job records and related information

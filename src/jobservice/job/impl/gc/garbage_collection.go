@@ -18,20 +18,18 @@ import (
 	"os"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/errors"
-	redislib "github.com/goharbor/harbor/src/lib/redis"
-	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
-	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
-
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/registryctl"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
+	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	"github.com/goharbor/harbor/src/pkg/blob"
+	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/registryctl/client"
 )
 
@@ -45,7 +43,6 @@ const (
 	dialWriteTimeout      = 10 * time.Second
 	blobPrefix            = "blobs::*"
 	repoPrefix            = "repository::*"
-	uploadSizePattern     = "upload:*:size"
 )
 
 // GarbageCollector is the struct to run registry's garbage collection
@@ -53,7 +50,6 @@ type GarbageCollector struct {
 	artCtl            artifact.Controller
 	artrashMgr        artifactrash.Manager
 	blobMgr           blob.Manager
-	projectCtl        project.Controller
 	registryCtlClient client.Client
 	logger            logger.Interface
 	redisURL          string
@@ -104,7 +100,6 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 		gc.artCtl = artifact.Ctl
 		gc.artrashMgr = artifactrash.NewManager()
 		gc.blobMgr = blob.NewManager()
-		gc.projectCtl = project.Ctl
 	}
 	if err := gc.registryCtlClient.Health(); err != nil {
 		gc.logger.Errorf("failed to start gc as registry controller is unreachable: %v", err)
@@ -229,7 +224,10 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 		} else {
 			blobCt++
 		}
-		makeSize = makeSize + blob.Size
+		// do not count the foreign layer size as it's actually not in the storage.
+		if !blob.IsForeignLayer() {
+			makeSize = makeSize + blob.Size
+		}
 	}
 	gc.logger.Infof("%d blobs and %d manifests eligible for deletion", blobCt, mfCt)
 	gc.logger.Infof("The GC could free up %d MB space, the size is a rough estimation.", makeSize/1024/1024)
@@ -290,16 +288,20 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 		}
 
 		// delete all of blobs, which include config, layer and manifest
-		gc.logger.Infof("delete blob from storage: %s", blob.Digest)
-		if err := ignoreNotFound(func() error {
-			return gc.registryCtlClient.DeleteBlob(blob.Digest)
-		}); err != nil {
+		// for the foreign layer, as it's not stored in the storage, no need to call the delete api and count size, but still have to delete the DB record.
+		if !blob.IsForeignLayer() {
+			gc.logger.Infof("delete blob from storage: %s", blob.Digest)
 			if err := ignoreNotFound(func() error {
-				return gc.markDeleteFailed(ctx, blob)
+				return gc.registryCtlClient.DeleteBlob(blob.Digest)
 			}); err != nil {
-				return err
+				if err := ignoreNotFound(func() error {
+					return gc.markDeleteFailed(ctx, blob)
+				}); err != nil {
+					return err
+				}
+				return errors.Wrapf(err, "failed to delete blob from storage: %s, %s", blob.Digest, blob.Status)
 			}
-			return errors.Wrapf(err, "failed to delete blob from storage: %s, %s", blob.Digest, blob.Status)
+			sweepSize = sweepSize + blob.Size
 		}
 
 		gc.logger.Infof("delete blob record from database: %d, %s", blob.ID, blob.Digest)
@@ -313,7 +315,6 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 			}
 			return errors.Wrapf(err, "failed to delete blob from database: %s, %s", blob.Digest, blob.Status)
 		}
-		sweepSize = sweepSize + blob.Size
 	}
 	gc.logger.Infof("The GC job actual frees up %d MB space.", sweepSize/1024/1024)
 	return nil
@@ -342,8 +343,7 @@ func (gc *GarbageCollector) cleanCache() error {
 	// sample of keys in registry redis:
 	// 1) "blobs::sha256:1a6fd470b9ce10849be79e99529a88371dff60c60aab424c077007f6979b4812"
 	// 2) "repository::library/hello-world::blobs::sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f"
-	// 3) "upload:fbd2e0a3-262d-40bb-abe4-2f43aa6f9cda:size"
-	patterns := []string{blobPrefix, repoPrefix, uploadSizePattern}
+	patterns := []string{blobPrefix, repoPrefix}
 	for _, pattern := range patterns {
 		if err := delKeys(con, pattern); err != nil {
 			gc.logger.Errorf("failed to clean registry cache %v, pattern %s", err, pattern)
@@ -412,50 +412,21 @@ func (gc *GarbageCollector) deletedArt(ctx job.Context) (map[string][]model.Arti
 
 // clean the untagged blobs in each project, these blobs are not referenced by any manifest and will be cleaned by GC
 func (gc *GarbageCollector) removeUntaggedBlobs(ctx job.Context) {
-	// get all projects
-	projects := func(chunkSize int) <-chan *models.Project {
-		ch := make(chan *models.Project, chunkSize)
-
-		go func() {
-			defer close(ch)
-
-			params := &models.ProjectQueryParam{
-				Pagination: &models.Pagination{Page: 1, Size: int64(chunkSize)},
-			}
-
-			for {
-				results, err := gc.projectCtl.List(ctx.SystemContext(), params, project.Metadata(false))
-				if err != nil {
-					gc.logger.Errorf("list projects failed, error: %v", err)
-					return
-				}
-
-				for _, p := range results {
-					ch <- p
-				}
-
-				if len(results) < chunkSize {
-					break
-				}
-
-				params.Pagination.Page++
-			}
-
-		}()
-
-		return ch
-	}(50)
-
-	for project := range projects {
+	for result := range project.ListAll(ctx.SystemContext(), 50, nil, project.Metadata(false)) {
+		if result.Error != nil {
+			gc.logger.Errorf("remove untagged blobs for all projects got error: %v", result.Error)
+			continue
+		}
+		p := result.Data
 		all, err := gc.blobMgr.List(ctx.SystemContext(), blob.ListParams{
-			ProjectID:  project.ProjectID,
+			ProjectID:  p.ProjectID,
 			UpdateTime: time.Now().Add(-time.Duration(gc.timeWindowHours) * time.Hour),
 		})
 		if err != nil {
 			gc.logger.Errorf("failed to get blobs of project, %v", err)
 			continue
 		}
-		if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), project.ProjectID, all); err != nil {
+		if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), p.ProjectID, all); err != nil {
 			gc.logger.Errorf("failed to clean untagged blobs of project, %v", err)
 			continue
 		}

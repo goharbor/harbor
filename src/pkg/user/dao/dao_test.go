@@ -39,6 +39,12 @@ func (suite *DaoTestSuite) TestList() {
 		suite.Nil(err)
 		suite.Len(users, 1)
 	}
+
+	{
+		users, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"username": "admin"}))
+		suite.Nil(err)
+		suite.Len(users, 1)
+	}
 }
 
 func TestDaoTestSuite(t *testing.T) {

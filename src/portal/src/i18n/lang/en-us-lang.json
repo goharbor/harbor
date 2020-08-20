@@ -13,7 +13,8 @@
         "REMEMBER": "Remember me",
         "INVALID_MSG": "Invalid user name or password.",
         "FORGOT_PWD": "Forgot password",
-        "HEADER_LINK": "Sign In"
+        "HEADER_LINK": "Sign In",
+        "CORE_SERVICE_NOT_AVAILABLE": "Core service is not available."
     },
     "SIGN_UP": {
         "TITLE": "Sign Up"
@@ -247,7 +248,7 @@
         "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular namespace within a target registry. Harbor can only act a proxy for DockerHub and Harbor registries.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub and Harbor registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
     },
@@ -1474,7 +1475,7 @@
         "UPDATE_FAILED": "Updating instance failed",
         "REQUEST_PREHEAT_SUCCESS": "Preheat request successfully",
         "REQUEST_PREHEAT_FAILED": "Preheat request failed",
-        "DESCRIPTION": "description",
+        "DESCRIPTION": "Description",
         "AUTH_MODE": "Auth Mode",
         "USERNAME": "Username",
         "PASSWORD": "Password",
@@ -1567,6 +1568,9 @@
         "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
         "CONTENT_WARNING": "Content trust settings here conflicts with the relevant project configuration that will override the settings here",
         "PREHEAT_EXPLAIN": "Preheat will migrate the image to the p2p network",
-        "CRITERIA_EXPLAIN": "As specified in 'Deployment security' section under Configuration tab"
+        "CRITERIA_EXPLAIN": "As specified in 'Deployment security' section under Configuration tab",
+        "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote provider uses a self-signed or untrusted certificate.",
+        "NAME_TOOLTIP": "Policy name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "NEED_HELP": "Please ask your system admin to add a provider first"
     }
 }

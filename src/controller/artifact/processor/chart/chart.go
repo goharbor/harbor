@@ -21,6 +21,7 @@ import (
 
 	ps "github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
+	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -55,6 +56,14 @@ func init() {
 type processor struct {
 	*base.ManifestProcessor
 	chartOperator chart.Operator
+}
+
+func (p *processor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error {
+	if err := p.ManifestProcessor.AbstractMetadata(ctx, artifact, manifest); err != nil {
+		return err
+	}
+	artifact.Icon = icon.DigestOfIconChart
+	return nil
 }
 
 func (p *processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*ps.Addition, error) {

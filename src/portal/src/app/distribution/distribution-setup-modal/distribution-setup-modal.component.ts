@@ -83,6 +83,9 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
            debounceTime(500),
            distinctUntilChanged(),
            filter(name => {
+             if (this.editingMode && this.originModelForEdit && this.originModelForEdit.name === name) {
+               return false;
+             }
             return  name.length > 0;
            }),
            switchMap((name) => {
@@ -106,6 +109,9 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
           debounceTime(500),
           distinctUntilChanged(),
           filter(endpoint => {
+            if (this.editingMode && this.originModelForEdit && this.originModelForEdit.endpoint === endpoint) {
+              return false;
+            }
             return this.instanceForm.control.get('endpoint').valid;
           }),
           switchMap((endpoint) => {
@@ -176,14 +182,12 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
       name: '',
       endpoint: '',
       enabled: true,
-      insecure: true,
       vendor: '',
       auth_mode: AuthMode.NONE,
       auth_info: this.authData
     };
     this.instanceForm.reset({
       enabled: true,
-      insecure: true,
     });
   }
 
@@ -201,6 +205,8 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
       this.operationService.publishInfo(operMessageForEdit);
       this.saveBtnState = ClrLoadingState.LOADING;
       const instance: Instance = clone(this.originModelForEdit);
+      instance.vendor = this.model.vendor;
+      instance.name = this.model.name;
       instance.endpoint = this.model.endpoint;
       instance.enabled = this.model.enabled;
       instance.description = this.model.description;
@@ -287,6 +293,12 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
 
   hasChangesForEdit(): boolean {
     if ( this.editingMode) {
+      if ( this.model.vendor !== this.originModelForEdit.vendor) {
+        return true;
+      }
+      if ( this.model.name !== this.originModelForEdit.name) {
+        return true;
+      }
       if ( this.model.description !== this.originModelForEdit.description) {
         return true;
       }

@@ -64,7 +64,12 @@ func (h *hookHandlerTestSuite) TestHandle() {
 	h.SetupTest()
 
 	// handle status changing
+	h.taskDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Task{
+		ID:          1,
+		ExecutionID: 1,
+	}, nil)
 	h.taskDAO.On("UpdateStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	h.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(nil)
 	sc = &job.StatusChange{
 		Status: job.SuccessStatus.String(),
 		Metadata: &job.StatsInfo{

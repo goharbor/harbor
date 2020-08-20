@@ -61,7 +61,7 @@ func GetPolicies(queries ...*model.PolicyQuery) (int64, []*models.RepPolicy, err
 	if query.Page > 0 && query.Size > 0 {
 		qs = qs.Limit(query.Size, (query.Page-1)*query.Size)
 	}
-	_, err = qs.All(&policies)
+	_, err = qs.OrderBy("-CreationTime").All(&policies)
 	if err != nil {
 		return total, nil, err
 	}

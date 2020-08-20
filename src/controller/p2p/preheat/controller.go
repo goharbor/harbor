@@ -13,6 +13,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/policy"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
+	"github.com/goharbor/harbor/src/pkg/task"
 )
 
 const (
@@ -126,16 +127,18 @@ type controller struct {
 	// For instance
 	iManager instance.Manager
 	// For policy
-	pManager  policy.Manager
-	scheduler scheduler.Scheduler
+	pManager     policy.Manager
+	scheduler    scheduler.Scheduler
+	executionMgr task.ExecutionManager
 }
 
 // NewController is constructor of controller
 func NewController() Controller {
 	return &controller{
-		iManager:  instance.Mgr,
-		pManager:  policy.Mgr,
-		scheduler: scheduler.Sched,
+		iManager:     instance.Mgr,
+		pManager:     policy.Mgr,
+		scheduler:    scheduler.Sched,
+		executionMgr: task.NewExecutionManager(),
 	}
 }
 
@@ -341,8 +344,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 		}
 	} else {
 		// not change trigger type
-		if schema.Trigger.Type == policyModels.TriggerTypeScheduled &&
-			s0.Trigger.Settings.Cron != cron {
+		if schema.Trigger.Type == policyModels.TriggerTypeScheduled && oldCron != cron {
 			// unschedule old
 			if len(oldCron) > 0 {
 				needUn = true
@@ -370,11 +372,6 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 			TriggerParam{PolicyID: schema.ID}); err != nil {
 			return err
 		}
-		if err := schema.Encode(); err != nil {
-			// Possible
-			// TODO: Refactor
-			return err // whether update or not has been not important as the jon reference will be lost
-		}
 	}
 
 	// Update timestamp
@@ -396,7 +393,33 @@ func (c *controller) DeletePolicy(ctx context.Context, id int64) error {
 		}
 	}
 
+	if err = c.deleteExecs(ctx, id); err != nil {
+		return err
+	}
+
 	return c.pManager.Delete(ctx, id)
+}
+
+// deleteExecs delete executions
+func (c *controller) deleteExecs(ctx context.Context, vendorID int64) error {
+	executions, err := c.executionMgr.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"VendorType": job.P2PPreheat,
+			"VendorID":   vendorID,
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	for _, execution := range executions {
+		if err = c.executionMgr.Delete(ctx, execution.ID); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // ListPolicies lists policies by query.

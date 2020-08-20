@@ -17,6 +17,7 @@ package blob
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -92,12 +93,14 @@ type Controller interface {
 // NewController creates an instance of the default repository controller
 func NewController() Controller {
 	return &controller{
-		blobMgr: blob.Mgr,
+		blobMgr:            blob.Mgr,
+		blobSizeExpiration: time.Hour * 24, // keep the size of blob in redis with 24 hours
 	}
 }
 
 type controller struct {
-	blobMgr blob.Manager
+	blobMgr            blob.Manager
+	blobSizeExpiration time.Duration
 }
 
 func (c *controller) AssociateWithArtifact(ctx context.Context, blobDigests []string, artifactDigest string) error {
@@ -297,14 +300,17 @@ func (c *controller) SetAcceptedBlobSize(sessionID string, size int64) error {
 	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
-	key := fmt.Sprintf("upload:%s:size", sessionID)
-	reply, err := redis.String(conn.Do("SET", key, size))
+	key := blobSizeKey(sessionID)
+	reply, err := redis.String(conn.Do("SET", key, size, "EX", int64(c.blobSizeExpiration/time.Second)))
 	if err != nil {
+		log.Errorf("failed to set accepted blob size for session %s in redis, error: %v", sessionID, err)
 		return err
 	}
 
 	if reply != "OK" {
-		return fmt.Errorf("bad reply value")
+		err := fmt.Errorf("failed to set accepted blob size for session %s in redis, error: expected reply is 'OK' but actual it is '%s'", sessionID, reply)
+		log.Errorf("%s", err.Error())
+		return err
 	}
 
 	return nil
@@ -314,7 +320,7 @@ func (c *controller) GetAcceptedBlobSize(sessionID string) (int64, error) {
 	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
-	key := fmt.Sprintf("upload:%s:size", sessionID)
+	key := blobSizeKey(sessionID)
 	size, err := redis.Int64(conn.Do("GET", key))
 	if err != nil {
 		if err == redis.ErrNil {
@@ -357,4 +363,8 @@ func (c *controller) Update(ctx context.Context, blob *blob.Blob) error {
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
 	return c.blobMgr.Delete(ctx, id)
+}
+
+func blobSizeKey(sessionID string) string {
+	return fmt.Sprintf("upload:%s:size", sessionID)
 }

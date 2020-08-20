@@ -15,11 +15,14 @@
 package chart
 
 import (
+	"bytes"
 	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
+	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	chartserver "github.com/goharbor/harbor/src/pkg/chart"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/chart"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -28,6 +31,33 @@ import (
 	"io/ioutil"
 	"strings"
 	"testing"
+)
+
+var (
+	chartManifest = `{"schemaVersion":2,"config":{"mediaType":"application/vnd.cncf.helm.config.v1+json","digest":"sha256:76a59ebef39013bf7b57e411629b569a5175590024f31eeaaa577a0f8da9e523","size":528},"layers":[{"mediaType":"application/tar+gzip","digest":"sha256:0bd64cfb958b68c71b46597e22185a41e784dc96e04090bc7d2a480b704c3b65","size":12607}]}`
+	chartYaml     = `{
+  "name":"redis",
+  "home": "http://redis.io/",
+  "sources": [
+    "https://github.com/bitnami/bitnami-docker-redis"
+  ],
+  "version": "3.2.5",
+  "description": "Open source, advanced key-value store. It is often referred to as a data structure server since keys can contain strings, hashes, lists, sets and sorted sets.",
+  "keywords": [
+    "redis",
+    "keyvalue",
+    "database"
+  ],
+  "maintainers": [
+    {
+      "name": "bitnami-bot",
+      "email":"containers@bitnami.com"
+    }
+  ],
+  "icon": "https://bitnami.com/assets/stacks/redis/img/redis-stack-220x234.png",
+  "apiVersion": "v1",
+  "appVersion": "4.0.9"
+}`
 )
 
 type processorTestSuite struct {
@@ -46,40 +76,19 @@ func (p *processorTestSuite) SetupTest() {
 	p.processor.ManifestProcessor = &base.ManifestProcessor{RegCli: p.regCli}
 }
 
+func (p *processorTestSuite) TestAbstractMetadata() {
+	artifact := &artifact.Artifact{}
+	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(0, ioutil.NopCloser(bytes.NewReader([]byte(chartYaml))), nil)
+	err := p.processor.AbstractMetadata(nil, artifact, []byte(chartManifest))
+	p.Require().Nil(err)
+	p.Equal(icon.DigestOfIconChart, artifact.Icon)
+	p.regCli.AssertExpectations(p.T())
+}
+
 func (p *processorTestSuite) TestAbstractAddition() {
 	// unknown addition
 	_, err := p.processor.AbstractAddition(nil, nil, "unknown_addition")
 	p.True(errors.IsErr(err, errors.BadRequestCode))
-
-	chartManifest := `{"schemaVersion":2,"config":{"mediaType":"application/vnd.cncf.helm.config.v1+json","digest":"sha256:76a59ebef39013bf7b57e411629b569a5175590024f31eeaaa577a0f8da9e523","size":528},"layers":[{"mediaType":"application/tar+gzip","digest":"sha256:0bd64cfb958b68c71b46597e22185a41e784dc96e04090bc7d2a480b704c3b65","size":12607}]}`
-
-	chartYaml := `{
-   “name”:“redis”,
-   “home”:“http://redis.io/",
-   “sources”:[
-      “https://github.com/bitnami/bitnami-docker-redis"
-
-],
-   “version”:“3.2.5",
-   “description”:“Open source, advanced key-value store. It is often referred to as a data structure server since keys can contain strings, hashes, lists, sets and sorted sets.“,
-   “keywords”:[
-      “redis”,
-      “keyvalue”,
-      “database”
-
-],
-   “maintainers”:[
-      {
-         “name”:“bitnami-bot”,
-         “email”:“containers@bitnami.com"
-
-}
-
-],
-   “icon”:“https://bitnami.com/assets/stacks/redis/img/redis-stack-220x234.png",
-   “apiVersion”:“v1”,
-   “appVersion”:“4.0.9”
-}`
 
 	chartDetails := &chartserver.VersionDetails{
 		Dependencies: []*helm_chart.Dependency{

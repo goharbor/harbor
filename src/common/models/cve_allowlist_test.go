@@ -15,10 +15,10 @@
 package models
 
 import (
-	"github.com/stretchr/testify/assert"
-	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCVEAllowlist_All(t *testing.T) {
@@ -26,7 +26,7 @@ func TestCVEAllowlist_All(t *testing.T) {
 	now := time.Now().Unix()
 	cases := []struct {
 		input   CVEAllowlist
-		cveset  map[string]struct{}
+		cveset  CVESet
 		expired bool
 	}{
 		{
@@ -35,7 +35,7 @@ func TestCVEAllowlist_All(t *testing.T) {
 				ProjectID: 0,
 				Items:     []CVEAllowlistItem{},
 			},
-			cveset:  map[string]struct{}{},
+			cveset:  CVESet{},
 			expired: false,
 		},
 		{
@@ -45,7 +45,7 @@ func TestCVEAllowlist_All(t *testing.T) {
 				Items:     []CVEAllowlistItem{},
 				ExpiresAt: &now,
 			},
-			cveset:  map[string]struct{}{},
+			cveset:  CVESet{},
 			expired: true,
 		},
 		{
@@ -58,7 +58,7 @@ func TestCVEAllowlist_All(t *testing.T) {
 				},
 				ExpiresAt: &future,
 			},
-			cveset: map[string]struct{}{
+			cveset: CVESet{
 				"CVE-1999-0067":    {},
 				"CVE-2016-7654321": {},
 			},
@@ -67,6 +67,6 @@ func TestCVEAllowlist_All(t *testing.T) {
 	}
 	for _, c := range cases {
 		assert.Equal(t, c.expired, c.input.IsExpired())
-		assert.True(t, reflect.DeepEqual(c.cveset, c.input.CVESet()))
+		assert.Equal(t, c.cveset, c.input.CVESet())
 	}
 }

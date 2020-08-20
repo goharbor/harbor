@@ -27,7 +27,7 @@ import (
 
 func abstractArtData(ctx context.Context) error {
 	abstractor := art.NewAbstractor()
-	pros, err := project.Mgr.List(ctx)
+	pros, err := project.Mgr.List(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func abstractArtData(ctx context.Context) error {
 			continue
 		}
 		for _, repo := range repos {
-			log.Debugf("abstracting artifact metadata under repository %s ....", repo.Name)
+			log.Infof("abstracting artifact metadata under repository %s ....", repo.Name)
 			arts, err := artifact.Mgr.List(ctx, &q.Query{
 				Keywords: map[string]interface{}{
 					"RepositoryID": repo.RepositoryID,
@@ -62,7 +62,7 @@ func abstractArtData(ctx context.Context) error {
 					continue
 				}
 			}
-			log.Debugf("artifact metadata under repository %s abstracted", repo.Name)
+			log.Infof("artifact metadata under repository %s abstracted", repo.Name)
 		}
 	}
 

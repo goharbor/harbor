@@ -1,5 +1,7 @@
-FROM golang:1.11.2
+FROM golang:1.11.13
 
+#docker build -f drone/Dockerfile -t goharbor/harbor-e2e-engine:2.4 .
+# V2.4.1: Upgrade docker engine
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
 
@@ -75,8 +77,8 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
     pip install pyasn1 google-apitools==0.5.15 gsutil robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot robotframework-JSONLibrary --upgrade
 
 # Install docker, docker compose
-RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-18.06.3-ce.tgz && \
-    tar --strip-components=1 -xvzf docker-18.06.3-ce.tgz -C /usr/bin &&  \
+RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-19.03.12.tgz && \
+    tar --strip-components=1 -xvzf docker-19.03.12.tgz -C /usr/bin &&  \
     curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
 

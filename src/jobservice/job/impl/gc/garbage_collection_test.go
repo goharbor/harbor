@@ -1,9 +1,27 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package gc
 
 import (
+	"os"
+	"testing"
+
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/models"
 	commom_regctl "github.com/goharbor/harbor/src/common/registryctl"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
@@ -17,8 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/blob"
 	"github.com/goharbor/harbor/src/testing/registryctl"
 	"github.com/stretchr/testify/suite"
-	"os"
-	"testing"
 )
 
 type gcTestSuite struct {
@@ -28,6 +44,8 @@ type gcTestSuite struct {
 	registryCtlClient *registryctl.Mockclient
 	projectCtl        *projecttesting.Controller
 	blobMgr           *blob.Manager
+
+	originalProjectCtl project.Controller
 
 	regCtlInit func()
 }
@@ -39,7 +57,14 @@ func (suite *gcTestSuite) SetupTest() {
 	suite.blobMgr = &blob.Manager{}
 	suite.projectCtl = &projecttesting.Controller{}
 
+	suite.originalProjectCtl = project.Ctl
+	project.Ctl = suite.projectCtl
+
 	regCtlInit = func() { commom_regctl.RegistryCtlClient = suite.registryCtlClient }
+}
+
+func (suite *gcTestSuite) TearDownTest() {
+	project.Ctl = suite.originalProjectCtl
 }
 
 func (suite *gcTestSuite) TestMaxFails() {
@@ -110,8 +135,7 @@ func (suite *gcTestSuite) TestRemoveUntaggedBlobs() {
 	mock.OnAnything(suite.blobMgr, "CleanupAssociationsForProject").Return(nil)
 
 	gc := &GarbageCollector{
-		projectCtl: suite.projectCtl,
-		blobMgr:    suite.blobMgr,
+		blobMgr: suite.blobMgr,
 	}
 
 	suite.NotPanics(func() {
@@ -244,7 +268,6 @@ func (suite *gcTestSuite) TestRun() {
 	gc := &GarbageCollector{
 		artCtl:            suite.artifactCtl,
 		artrashMgr:        suite.artrashMgr,
-		projectCtl:        suite.projectCtl,
 		blobMgr:           suite.blobMgr,
 		registryCtlClient: suite.registryCtlClient,
 	}
@@ -318,7 +341,6 @@ func (suite *gcTestSuite) TestMark() {
 	gc := &GarbageCollector{
 		artCtl:     suite.artifactCtl,
 		artrashMgr: suite.artrashMgr,
-		projectCtl: suite.projectCtl,
 		blobMgr:    suite.blobMgr,
 	}
 
@@ -336,7 +358,6 @@ func (suite *gcTestSuite) TestSweep() {
 	gc := &GarbageCollector{
 		artCtl:            suite.artifactCtl,
 		artrashMgr:        suite.artrashMgr,
-		projectCtl:        suite.projectCtl,
 		blobMgr:           suite.blobMgr,
 		registryCtlClient: suite.registryCtlClient,
 		deleteSet: []*pkg_blob.Blob{

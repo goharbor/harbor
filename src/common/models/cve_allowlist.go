@@ -14,7 +14,9 @@
 
 package models
 
-import "time"
+import (
+	"time"
+)
 
 // CVEAllowlist defines the data model for a CVE allowlist
 type CVEAllowlist struct {
@@ -38,8 +40,8 @@ func (c *CVEAllowlist) TableName() string {
 }
 
 // CVESet returns the set of CVE id of the items in the allowlist to help filter the vulnerability list
-func (c *CVEAllowlist) CVESet() map[string]struct{} {
-	r := map[string]struct{}{}
+func (c *CVEAllowlist) CVESet() CVESet {
+	r := CVESet{}
 	for _, it := range c.Items {
 		r[it.CVEID] = struct{}{}
 	}
@@ -52,4 +54,14 @@ func (c *CVEAllowlist) IsExpired() bool {
 		return false
 	}
 	return time.Now().Unix() >= *c.ExpiresAt
+}
+
+// CVESet defines the CVE allowlist with a hash set way for easy query.
+type CVESet map[string]struct{}
+
+// Contains checks whether the specified CVE is in the set or not.
+func (cs CVESet) Contains(cve string) bool {
+	_, ok := cs[cve]
+
+	return ok
 }

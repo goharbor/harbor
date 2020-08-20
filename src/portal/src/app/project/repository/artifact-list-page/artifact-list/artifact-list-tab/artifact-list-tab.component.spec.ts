@@ -267,6 +267,11 @@ describe("ArtifactListTabComponent (inline template)", () => {
     }
   };
   const mockNewArtifactService = {
+    TriggerArtifactChan$: {
+      subscribe: (fn) => {
+
+      }
+    },
     listArtifactsResponse: () => {
       if (filtereName === 'sha256:3e33e3e3') {
         return of(
@@ -282,8 +287,13 @@ describe("ArtifactListTabComponent (inline template)", () => {
         ).pipe(delay(0));
       }
     },
-    deleteArtifact: () => of (null)
-
+    deleteArtifact: () => of (null),
+    getIconsFromBackEnd() {
+      return undefined;
+    },
+    getIcon() {
+      return undefined;
+    }
   };
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -309,7 +319,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
         ArtifactDefaultService,
         { provide: Router, useValue: mockRouter },
         { provide: SERVICE_CONFIG, useValue: config },
-        { provide: ArtifactService, useValue: mockArtifactService },
+        { provide: ArtifactService, useValue: mockNewArtifactService },
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         { provide: LabelService, useClass: LabelDefaultService },

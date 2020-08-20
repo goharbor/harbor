@@ -15,8 +15,11 @@
 package image
 
 import (
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/goharbor/harbor/src/controller/icon"
+	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/stretchr/testify/suite"
 )
 
 type indexProcessTestSuite struct {
@@ -26,6 +29,13 @@ type indexProcessTestSuite struct {
 
 func (i *indexProcessTestSuite) SetupTest() {
 	i.processor = &indexProcessor{}
+}
+
+func (i *indexProcessTestSuite) TestAbstractMetadata() {
+	artifact := &artifact.Artifact{}
+	err := i.processor.AbstractMetadata(nil, artifact, nil)
+	i.Require().Nil(err)
+	i.Equal(icon.DigestOfIconImage, artifact.Icon)
 }
 
 func (i *indexProcessTestSuite) TestGetArtifactType() {
