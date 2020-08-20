@@ -116,6 +116,14 @@ ALTER TABLE schedule DROP COLUMN IF EXISTS status;
 
 UPDATE registry SET type = 'quay' WHERE type = 'quay-io';
 
+
+ALTER TABLE artifact ADD COLUMN icon varchar(255);
+
+/*remove the constraint for name in table 'notification_policy'*/
+ALTER TABLE notification_policy DROP CONSTRAINT notification_policy_name_key;
+/*add union unique constraint for name and project_id in table 'notification_policy'*/
+ALTER TABLE notification_policy ADD UNIQUE(name,project_id);
+
 CREATE TABLE IF NOT EXISTS data_migrations (
     version int
 );
@@ -142,3 +150,4 @@ CASE
     ELSE
         'sha256:da834479c923584f4cbcdecc0dac61f32bef1d51e8aae598cf16bd154efab49f'
 END);
+

@@ -1,10 +1,13 @@
 package notification
 
 import (
+	"fmt"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_orm "github.com/goharbor/harbor/src/lib/orm"
 )
 
 // GetNotificationPolicy return notification policy by id
@@ -48,7 +51,16 @@ func AddNotificationPolicy(policy *models.NotificationPolicy) (int64, error) {
 		return 0, errors.New("nil policy")
 	}
 	o := dao.GetOrmer()
-	return o.Insert(policy)
+	id, err := o.Insert(policy)
+	if err != nil {
+		if e := lib_orm.AsConflictError(err, "notification policy named %s already exists", policy.Name); e != nil {
+			err = e
+			return id, err
+		}
+		err = fmt.Errorf("failed to create the notification policy: %v", err)
+		return id, err
+	}
+	return id, err
 }
 
 // UpdateNotificationPolicy update t specified notification policy
@@ -58,6 +70,13 @@ func UpdateNotificationPolicy(policy *models.NotificationPolicy) error {
 	}
 	o := dao.GetOrmer()
 	_, err := o.Update(policy)
+	if err != nil {
+		if e := lib_orm.AsConflictError(err, "notification policy named %s already exists", policy.Name); e != nil {
+			return e
+		}
+		err = fmt.Errorf("failed to update the notification policy: %v", err)
+		return err
+	}
 	return err
 }
 
