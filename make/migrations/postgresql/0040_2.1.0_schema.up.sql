@@ -117,7 +117,10 @@ ALTER TABLE schedule DROP COLUMN IF EXISTS status;
 UPDATE registry SET type = 'quay' WHERE type = 'quay-io';
 
 CREATE TABLE IF NOT EXISTS data_migrations (
-    version int
+    id SERIAL PRIMARY KEY NOT NULL,
+    version int,
+    creation_time timestamp default CURRENT_TIMESTAMP,
+    update_time timestamp default CURRENT_TIMESTAMP
 );
 INSERT INTO data_migrations (version) VALUES (
     CASE
