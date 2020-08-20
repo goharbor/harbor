@@ -183,7 +183,7 @@ class System(base.Base):
         except Exception as e:
             base._assert_status_code(expected_status_code, e.status)
         else:
-            base._assert_status_code(expected_status_code, r[1])
+            base._assert_status_code(expected_status_code, r.status)
 
     def get_cve_allowlist(self, **kwargs):
         client = self._get_client(**kwargs)

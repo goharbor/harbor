@@ -236,6 +236,14 @@ jobs:
           IP=`hostname -I | awk '{print $1}'`
           echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
           echo "::set-env name=IP::$IP"
+          python -V
+          sudo apt-get update -y && sudo apt-get install -y zbar-tools libzbar-dev python-zbar
+          sudo apt-get update -y
+          sudo apt-get install -y python3.6
+          sudo rm /usr/bin/python
+          sudo ln -s /usr/bin/python3.6 /usr/bin/python
+          sudo apt-get install -y python3-pip
+          python -V
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
