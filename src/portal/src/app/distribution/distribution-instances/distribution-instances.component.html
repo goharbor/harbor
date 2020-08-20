@@ -80,33 +80,6 @@
                     <clr-dg-cell>{{ instance.endpoint }}</clr-dg-cell>
                     <clr-dg-cell class="no-wrapper">
                       <span>{{ instance.vendor }}</span>
-                      <clr-signpost *ngIf="providerMap[instance.vendor]">
-                        <clr-signpost-content *clrIfOpen>
-                            <div>
-                                <span>
-                                    <img (error)="showDefaultIcon($event, instance.vendor)" class="height-24" [src]="providerMap[instance.vendor].icon">
-                                </span>
-                            </div>
-                            <div class="margin-top-5px">
-                                <span>{{'DISTRIBUTION.NAME' | translate}}:</span>
-                                <span class="ml-1">{{providerMap[instance.vendor].name}}</span>
-                            </div>
-                            <div class="margin-top-5px">
-                                <span class="no-wrapper">
-                                    <span>{{'DISTRIBUTION.MAINTAINER' | translate}}:</span>
-                                    <span class="ml-1">{{providerMap[instance.vendor].maintainers?.join(',')}}</span>
-                                </span>
-                            </div>
-                            <div class="margin-top-5px">
-                                <span>{{'DISTRIBUTION.SOURCE' | translate}}:</span>
-                                <a target="_blank" href="{{providerMap[instance.vendor].source}}" class="ml-1">{{providerMap[instance.vendor].source}}</a>
-                            </div>
-                            <div class="margin-top-5px">
-                                <span>{{'DISTRIBUTION.VERSION' | translate}}:</span>
-                                <span class="ml-1">{{providerMap[instance.vendor].version}}</span>
-                            </div>
-                        </clr-signpost-content>
-                      </clr-signpost>
                     </clr-dg-cell>
                     <clr-dg-cell>
                         <span *ngIf="!instance.hasCheckHealth;else elseBlockLoading" class="spinner spinner-inline ml-2"></span>

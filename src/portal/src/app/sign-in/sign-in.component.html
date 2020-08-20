@@ -29,7 +29,8 @@
                     </clr-checkbox-wrapper>
                 </div>
                 <div [class.visibility-hidden]="!isError" class="error active">
-                    {{ 'SIGN_IN.INVALID_MSG' | translate }}
+                    <span *ngIf="isCoreServiceAvailable">{{ 'SIGN_IN.INVALID_MSG' | translate }}</span>
+                    <span *ngIf="!isCoreServiceAvailable">{{ 'SIGN_IN.CORE_SERVICE_NOT_AVAILABLE' | translate }}</span>
                 </div>
                 <button [disabled]="isOnGoing || !isValid" type="submit" class="btn btn-primary" (click)="signIn()" id="log_in">{{ 'BUTTON.LOG_IN' | translate }}</button>
                 <a href="javascript:void(0)" class="signup" (click)="signUp()" *ngIf="selfSignUp">{{ 'BUTTON.SIGN_UP_LINK' | translate }}</a>

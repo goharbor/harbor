@@ -402,6 +402,7 @@
             <clr-checkbox-wrapper>
                 <input type="checkbox" clrCheckbox name="oidcAutoOnboard" id="oidcAutoOnboard"
                 [disabled]="disabled(currentConfig.oidc_auto_onboard)"
+                (change)="changeAutoOnBoard()"
                 [(ngModel)]="currentConfig.oidc_auto_onboard.value" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>         
@@ -414,9 +415,9 @@
                     </clr-tooltip-content>
                 </clr-tooltip>
             </label>
-            <input clrInput name="oidcUserClaim" type="text" #oidcUserClaimInput="ngModel"
+            <input autocomplete="off" clrInput name="oidcUserClaim" type="text" #oidcUserClaimInput="ngModel"
                 [(ngModel)]="currentConfig.oidc_user_claim.value" id="oidcUserClaim" size="40"
-                [disabled]="disabled(currentConfig.oidc_user_claim)" pattern="^[a-zA-Z0-9_-]*$">
+                [disabled]="!currentConfig.oidc_auto_onboard.value || disabled(currentConfig.oidc_user_claim)" pattern="^[a-zA-Z0-9_-]*$">
         </clr-input-container>
         <div class="oidc-tip">{{ 'CONFIG.OIDC.OIDC_REDIREC_URL' | translate}}
             <span>{{redirectUrl}}/c/oidc/callback</span>
