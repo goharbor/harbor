@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS execution (
     extra_attrs JSON,
     start_time timestamp DEFAULT CURRENT_TIMESTAMP,
     end_time timestamp,
+    revision int,
     PRIMARY KEY (id)
 );
 
