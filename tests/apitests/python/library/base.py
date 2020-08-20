@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import os
 import sys
 import time
 import subprocess
@@ -22,6 +22,10 @@ class Credential:
         self.username = username
         self.password = password
 
+def get_endpoint():
+    harbor_server = os.environ.get("HARBOR_HOST", "localhost:8080")
+    return os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api/v2.0"
+
 def _create_client(server, credential, debug, api_type="products"):
     cfg = None
     if api_type in ('projectv2', 'artifact', 'repository', 'scan'):
@@ -40,6 +44,12 @@ def _create_client(server, credential, debug, api_type="products"):
     proxy = proxies.get('http', proxies.get('all', None))
     if proxy:
         cfg.proxy = proxy
+
+    if cfg.username is None and cfg.password is None:
+        # returns {} for auth_settings for anonymous access
+        import types
+        cfg.auth_settings = types.MethodType(lambda self: {}, cfg)
+
     return {
         "chart":   client.ChartRepositoryApi(client.ApiClient(cfg)),
         "products":   swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
@@ -86,12 +96,15 @@ def run_command(command):
     return output
 
 class Base:
-    def __init__(self,
-        server = Server(endpoint="http://localhost:8080/api", verify_ssl=False),
-        credential = Credential(type="basic_auth", username="admin", password="Harbor12345"),
-        debug = True, api_type = "products"):
+    def __init__(self, server=None, credential=None, debug=True, api_type="products"):
+        if server is None:
+            server = Server(endpoint=get_endpoint(), verify_ssl=False)
         if not isinstance(server.verify_ssl, bool):
             server.verify_ssl = server.verify_ssl == "True"
+
+        if credential is None:
+            credential = Credential(type="basic_auth", username="admin", password="Harbor12345") # nosec
+
         self.server = server
         self.credential = credential
         self.debug = debug
@@ -111,11 +124,11 @@ class Base:
                 server.verify_ssl = kwargs.get("verify_ssl") == "True"
             else:
                 server.verify_ssl = kwargs.get("verify_ssl")
-        credential = self.credential
-        if "type" in kwargs:
-            credential.type = kwargs.get("type")
-        if "username" in kwargs:
-            credential.username = kwargs.get("username")
-        if "password" in kwargs:
-            credential.password = kwargs.get("password")
+
+        credential = Credential(
+            kwargs.get("type", self.credential.type),
+            kwargs.get("username", self.credential.username),
+            kwargs.get("password", self.credential.password),
+        )
+
         return _create_client(server, credential, self.debug, self.api_type)
