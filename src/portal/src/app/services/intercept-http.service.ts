@@ -3,6 +3,8 @@ import { HttpInterceptor, HttpRequest, HttpHandler, HttpResponse } from '@angula
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
+const SAFE_METHODS: string[] = ["GET", "HEAD", "OPTIONS", "TRACE"];
+
 @Injectable({
   providedIn: 'root'
 })
@@ -16,8 +18,8 @@ export class InterceptHttpService implements HttpInterceptor {
     if (token) {
       // Clone the request and replace the original headers with
       // cloned headers, updated with the csrf token.
-      // not for 'get' request
-      if (request.method && request.method.toLocaleLowerCase() !== 'get') {
+      // not for requests using safe methods
+      if (request.method && SAFE_METHODS.indexOf(request.method.toUpperCase()) !== -1) {
         request = request.clone({
           headers: request.headers.set('X-Harbor-CSRF-Token', token)
         });
