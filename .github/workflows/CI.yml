@@ -31,7 +31,7 @@ jobs:
       - name: Set up Go 1.13
         uses: actions/setup-go@v1
         with:
-           go-version: 1.13.8
+           go-version: 1.13.15
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -96,7 +96,7 @@ jobs:
       - name: Set up Go 1.13
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13.8
+          go-version: 1.13.15
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -191,7 +191,7 @@ jobs:
       - name: Set up Go 1.13
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13.8
+          go-version: 1.13.15
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -252,7 +252,7 @@ jobs:
       - name: Set up Go 1.13
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13.8
+          go-version: 1.13.15
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
