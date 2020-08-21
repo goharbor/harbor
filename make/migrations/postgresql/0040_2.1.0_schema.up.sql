@@ -125,7 +125,10 @@ ALTER TABLE notification_policy DROP CONSTRAINT notification_policy_name_key;
 ALTER TABLE notification_policy ADD UNIQUE(name,project_id);
 
 CREATE TABLE IF NOT EXISTS data_migrations (
-    version int
+    id SERIAL PRIMARY KEY NOT NULL,
+    version int,
+    creation_time timestamp default CURRENT_TIMESTAMP,
+    update_time timestamp default CURRENT_TIMESTAMP
 );
 INSERT INTO data_migrations (version) VALUES (
     CASE

@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/golang-migrate/migrate/v4"
+	"time"
 )
 
 const (
@@ -66,7 +67,11 @@ func AbstractArtifactData() error {
 		log.Info("No need to abstract artifact data. Skip")
 		return nil
 	}
-	return abstractArtData(ctx)
+	if err = abstractArtData(ctx); err != nil {
+		return err
+	}
+	log.Info("Abstract artifact data to DB done")
+	return nil
 }
 
 // Migrate the database schema and abstract artifact data
@@ -80,16 +85,30 @@ func Migrate(database *models.Database) error {
 	return nil
 }
 
+type dataVersion struct {
+	ID           int64
+	Version      int
+	CreationTime time.Time
+	UpdateTime   time.Time
+}
+
 func getDataVersion(ctx context.Context) (int, error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return 0, err
 	}
-	var version int
-	if err = ormer.Raw("select version from data_migrations").QueryRow(&version); err != nil {
+	versions := []*dataVersion{}
+	if _, err = ormer.Raw("select * from data_migrations order by id").QueryRows(&versions); err != nil {
 		return 0, err
 	}
-	return version, nil
+	n := len(versions)
+	if n == 0 {
+		return 0, nil
+	}
+	if n > 1 {
+		return 0, fmt.Errorf("there should be only one record in the table data_migrations, but found %d records", n)
+	}
+	return versions[0].Version, nil
 }
 
 func setDataVersion(ctx context.Context, version int) error {
@@ -97,6 +116,6 @@ func setDataVersion(ctx context.Context, version int) error {
 	if err != nil {
 		return err
 	}
-	_, err = ormer.Raw("update data_migrations set version=?", version).Exec()
+	_, err = ormer.Raw("update data_migrations set version=?, update_time=?", version, time.Now()).Exec()
 	return err
 }
