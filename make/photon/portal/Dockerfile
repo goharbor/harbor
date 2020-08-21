@@ -41,7 +41,7 @@ VOLUME /var/cache/nginx /var/log/nginx /run
 
 STOPSIGNAL SIGQUIT
 
-HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080 || curl --fail -s http://127.0.0.1:8443 || exit 1
+HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080 || curl -k --fail -s https://127.0.0.1:8443 || exit 1
 USER nginx
 CMD ["nginx", "-g", "daemon off;"]
 
