@@ -8,15 +8,16 @@ Once you have configured `harbor.yml` copied from `harbor.yml.tmpl` and optional
 
 You can install Harbor in different configurations:
 
-- Just Harbor, without Notary, Clair, or Chart Repository Service
+- Just Harbor, without Notary, Trivy, Clair, or Chart Repository Service
 - Harbor with Notary
+- Harbor with Trivy
 - Harbor with Clair
 - Harbor with Chart Repository Service
-- Harbor with two or all three of Notary, Clair, and Chart Repository Service
+- Harbor with two or all three of Notary, Trivy, Clair, and Chart Repository Service
 
-## Default installation without Notary, Clair, or Chart Repository Service
+## Default installation without Notary, Trivy, Clair, or Chart Repository Service
 
-The default Harbor installation does not include Notary or Clair service. Run the following command
+The default Harbor installation does not include Notary or Trivy or Clair service. Run the following command
 
 ```sh
 sudo ./install.sh
@@ -50,6 +51,16 @@ For installation with Notary, you must configure Harbor to use HTTPS.
 
 For more information about Notary and Docker Content Trust, see [Content Trust](https://docs.docker.com/engine/security/trust/content_trust/) in the Docker documentation.
 
+## Installation with Trivy
+To install Harbor with Trivy service, add the `--with-trivy` parameter when you run `install.sh`:
+
+```sh
+sudo ./install.sh --with-trivy
+```
+
+For more information about Trivy, see the [Trivy documentation](https://github.com/aquasecurity/trivy).
+
+
 ## Installation with Clair
 
 To install Harbor with Clair service, add the `--with-clair` parameter when you run `install.sh`:
@@ -70,12 +81,12 @@ To install Harbor with chart repository service, add the `--with-chartmuseum` pa
 sudo ./install.sh --with-chartmuseum
 ```
 
-## Installation with Notary, Clair, and Chart Repository Service
+## Installation with Notary, Trivy, Clair, and Chart Repository Service
 
 If you want to install all three of Notary, Clair and chart repository service, specify all of the parameters in the same command:
 
 ```
-sudo ./install.sh --with-notary --with-clair --with-chartmuseum
+sudo ./install.sh --with-notary --with-trivy --with-clair --with-chartmuseum
 ```
 
 ## Connecting to Harbor via HTTP {#connect-http}
