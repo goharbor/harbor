@@ -114,6 +114,10 @@ Test Case - Scan Image
     [Tags]  scan
     Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
 
+Test Case - Scan Image In Public Project
+    [Tags]  scan
+    Harbor API Test  ./tests/apitests/python/test_scan_image_artifact_in_public_project.py
+
 Test Case - Scan All Images
     [Tags]  scan_all
     Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py
