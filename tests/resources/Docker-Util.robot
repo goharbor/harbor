@@ -94,6 +94,7 @@ Cannot Push image
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image} ${ip}/${project}/${image}
     ${output}=  Command Should be Failed  docker push ${ip}/${project}/${image}
+    Log To Console  ${output}
     Run Keyword If  '${err_msg}' != '${null}'  Should Contain  ${output}  ${err_msg}
     Run Keyword If  '${err_msg_2}' != '${null}'  Should Contain  ${output}  ${err_msg_2}
     Wait Unitl Command Success  docker logout ${ip}
