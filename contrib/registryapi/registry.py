@@ -36,8 +36,8 @@ class RegistryApi(object):
         except urllib2.HTTPError as e:
             headers = e.hdrs.dict
         try:
-            (realm, service, _) = headers['www-authenticate'].split(',')
-            return (realm[14:-1:], service[9:-1])
+            auth = headers['www-authenticate'].split(',')
+            return auth[0][14:-1:], auth[1][9:-1]
         except Exception as e:
             return None
 
