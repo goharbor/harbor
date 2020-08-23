@@ -121,6 +121,7 @@ func (suite *DaoTestSuite) TestGetBlobByDigest() {
 	blob, err = suite.dao.GetBlobByDigest(ctx, digest)
 	if suite.Nil(err) {
 		suite.Equal(digest, blob.Digest)
+		suite.Equal(models.StatusNone, blob.Status)
 	}
 }
 
