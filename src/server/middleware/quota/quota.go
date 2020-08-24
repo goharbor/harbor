@@ -16,13 +16,13 @@ package quota
 
 import (
 	"fmt"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"strings"
 
 	cq "github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
@@ -134,7 +134,7 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 				}
 
 				if len(resources) == 0 {
-					logger.Warningf("not warning resources found")
+					logger.Debug("not warning resources found")
 					return
 				}
 
