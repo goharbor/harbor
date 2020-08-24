@@ -155,6 +155,8 @@ func (d *dao) CreateBlob(ctx context.Context, blob *models.Blob) (int64, error) 
 	}
 
 	blob.CreationTime = time.Now()
+	// the default status is none
+	blob.Status = models.StatusNone
 
 	return o.InsertOrUpdate(blob, "digest")
 }

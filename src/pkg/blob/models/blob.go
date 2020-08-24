@@ -46,20 +46,22 @@ StatusDelete -> StatusDeleting : Select the blob and call the API to delete asse
 StatusDeleting -> Trash : Delete success from the backend storage.
 StatusDelete -> StatusNone : Client asks the existence of blob, remove it from the candidate.
 StatusDelete -> StatusDeleteFailed : The storage driver returns fail when to delete the real data from the configurated file system.
+StatusDelete -> StatusDelete : Encounter failure in the GC sweep phase. When to rerun the GC job, all of blob candidates are marked as StatusDelete again.
 StatusDeleteFailed -> StatusNone : The delete failed blobs can be pushed again, and back to normal.
 StatusDeleteFailed -> StatusDelete : The delete failed blobs should be in the candidate.
 */
 const (
-	StatusNone         = ""
+	StatusNone         = "none"
 	StatusDelete       = "delete"
 	StatusDeleting     = "deleting"
 	StatusDeleteFailed = "deletefailed"
 )
 
-// StatusMap key is the target status, values are the accept source status. For example, only StatusNone and StatusDeleteFailed can be convert to StatusDelete.
+// StatusMap key is the target status, values are the accepted source status.
+// For example, only StatusDelete can be convert to StatusDeleting.
 var StatusMap = map[string][]string{
 	StatusNone:         {StatusNone, StatusDelete, StatusDeleteFailed},
-	StatusDelete:       {StatusNone, StatusDeleteFailed},
+	StatusDelete:       {StatusNone, StatusDelete, StatusDeleteFailed},
 	StatusDeleting:     {StatusDelete},
 	StatusDeleteFailed: {StatusDeleting},
 }
