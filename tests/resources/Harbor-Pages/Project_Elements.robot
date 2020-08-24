@@ -33,7 +33,7 @@ ${project_tag_immutability_switch}  //project-detail/app-tag-feature-integration
 
 ${create_project_CANCEL_button_xpath}  xpath=//button[contains(.,'CANCEL')]
 ${create_project_OK_button_xpath}  xpath=//button[contains(.,'OK')]
-${delete_confirm_btn}  xpath=//confirmation-dialog//button[contains(.,'DELETE')]
+${delete_confirm_btn}  xpath=//button[contains(.,'DELETE')]
 ${project_statistics_private_repository_icon}  xpath=//project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
 ${repo_delete_confirm_btn}  xpath=//clr-modal//button[2]
 ${repo_retag_confirm_dlg}  css=${modal-dialog}
@@ -78,4 +78,3 @@ ${project_add_storage_quota_unit_id}    xpath=//*[@id='create_project_storage_li
 
 ${project_proxy_cache_switcher_id}  xpath=//*[@id='proxy-cache']
 ${project_registry_select_id}  xpath=//*[@id='registry']
-#//create-project//clr-toggle-wrapper/label[contains(@for,'proxy-cache')]

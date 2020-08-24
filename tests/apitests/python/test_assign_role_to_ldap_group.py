@@ -29,7 +29,7 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
     def tearDown(self):
         print("Case completed")
 
-    def TestAssignRoleToLdapGroup(self):
+    def testAssignRoleToLdapGroup(self):
         """
         Test case:
             Assign Role To Ldap Group
