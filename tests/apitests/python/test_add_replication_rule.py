@@ -20,7 +20,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
@@ -69,7 +69,6 @@ class TestProjects(unittest.TestCase):
 
         #3. Create a new registry
         TestProjects.registry_id, _ = self.registry.create_registry("https://" + harbor_server,**ADMIN_CLIENT)
-        print "TestProjects.registry_id:", TestProjects.registry_id
 
         #4. Create a new rule for this registry;
         TestProjects.rule_id, rule_name = self.replication.create_replication_policy(dest_registry=swagger_client.Registry(id=int(TestProjects.registry_id)), **ADMIN_CLIENT)

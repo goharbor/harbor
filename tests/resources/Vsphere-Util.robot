@@ -61,22 +61,24 @@ Reset VM
 
 Wait Until VM Powers On
     [Arguments]  ${vm}  ${vc_host}  ${vc_user}  ${vc_password}
-    :FOR  ${idx}  IN RANGE  0  30
-    \   ${ret}=  Run  GOVC_URL=${vc_host} GOVC_USERNAME=${vc_user} GOVC_PASSWORD=${vc_password} GOVC_INSECURE=1 govc vm.info ${vm}
-    \   Set Test Variable  ${out}  ${ret}
-    \   ${status}=  Run Keyword And Return Status  Should Contain  ${out}  poweredOn
-    \   Return From Keyword If  ${status}
-    \   Sleep  1
+    FOR  ${idx}  IN RANGE  0  30
+        ${ret}=  Run  GOVC_URL=${vc_host} GOVC_USERNAME=${vc_user} GOVC_PASSWORD=${vc_password} GOVC_INSECURE=1 govc vm.info ${vm}
+        Set Test Variable  ${out}  ${ret}
+        ${status}=  Run Keyword And Return Status  Should Contain  ${out}  poweredOn
+        Return From Keyword If  ${status}
+        Sleep  1
+    END
     Fail  VM did not power on within 30 seconds
 
 Wait Until VM Powers Off
     [Arguments]  ${vm}  ${vc_host}  ${vc_user}  ${vc_password}
-    :FOR  ${idx}  IN RANGE  0  30
-    \   ${ret}=  Run  GOVC_URL=${vc_host} GOVC_USERNAME=${vc_user} GOVC_PASSWORD=${vc_password} GOVC_INSECURE=1 govc vm.info ${vm}
-    \   Set Test Variable  ${out}  ${ret}
-    \   ${status}=  Run Keyword And Return Status  Should Contain  ${out}  poweredOff
-    \   Return From Keyword If  ${status}
-    \   Sleep  1
+    FOR  ${idx}  IN RANGE  0  30
+        ${ret}=  Run  GOVC_URL=${vc_host} GOVC_USERNAME=${vc_user} GOVC_PASSWORD=${vc_password} GOVC_INSECURE=1 govc vm.info ${vm}
+        Set Test Variable  ${out}  ${ret}
+        ${status}=  Run Keyword And Return Status  Should Contain  ${out}  poweredOff
+        Return From Keyword If  ${status}
+        Sleep  1
+    END
     Fail  VM did not power off within 30 seconds
 
 Wait Until VM Is Destroyed

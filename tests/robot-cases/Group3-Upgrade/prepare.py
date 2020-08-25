@@ -14,7 +14,7 @@ args = parser.parse_args()
 
 url = "https://"+args.endpoint+"/api/"
 endpoint_url = "https://"+args.endpoint
-print url
+print(url)
 
 with open("feature_map.json") as f:
     feature_map = json.load(f)
@@ -108,7 +108,7 @@ class HarborAPI:
                 "url":""+endpointurl+""
             }
             body=dict(body=payload)
-            print  body
+            print(body)
             request(url+"/registries", 'post', **body)
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
@@ -131,8 +131,8 @@ class HarborAPI:
             else:
                 registry = r'"dest_registry": { "id": '+str(targetid)+r'},'
 
-            body=dict(body=json.loads(r'{"name":"'+replicationrule["rulename"].encode('utf-8')+r'","dest_namespace":"'+replicationrule["dest_namespace"].encode('utf-8')+r'","deletion": '+str(replicationrule["deletion"]).lower()+r',"enabled": '+str(replicationrule["enabled"]).lower()+r',"override": '+str(replicationrule["override"]).lower()+r',"description": "string",'+ registry + r'"trigger":{"type": "'+replicationrule["trigger_type"]+r'", "trigger_settings":{"cron":"'+replicationrule["cron"]+r'"}},"filters":[ {"type":"name","value":"'+replicationrule["name_filters"]+r'"},{"type":"tag","value":"'+replicationrule["tag_filters"]+r'"}]}'))
-            print body
+            body=dict(body=json.loads(r'{"name":"'+replicationrule["rulename"]+r'","dest_namespace":"'+replicationrule["dest_namespace"]+r'","deletion": '+str(replicationrule["deletion"]).lower()+r',"enabled": '+str(replicationrule["enabled"]).lower()+r',"override": '+str(replicationrule["override"]).lower()+r',"description": "string",'+ registry + r'"trigger":{"type": "'+replicationrule["trigger_type"]+r'", "trigger_settings":{"cron":"'+replicationrule["cron"]+r'"}},"filters":[ {"type":"name","value":"'+replicationrule["name_filters"]+r'"},{"type":"tag","value":"'+replicationrule["tag_filters"]+r'"}]}'))
+            print(body)
             request(url+"replication/policies", 'post', **body)
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
@@ -151,7 +151,7 @@ class HarborAPI:
             }
         }
         body=dict(body=payload)
-        print body
+        print(body)
         request(url+"projects/"+projectid+"", 'put', **body)
 
     @get_feature_branch
@@ -162,7 +162,7 @@ class HarborAPI:
                 cve_id_str = cve_id_str + '{"cve_id":"' +cve_id["id"] + '"}'
                 if index != len(cve_id_list["cve"]) - 1:
                     cve_id_str = cve_id_str + ","
-            body=dict(body=json.loads(r'{"items":['+cve_id_str.encode('utf-8')+r'],"expires_at":'+cve_id_list["expires_at"]+'}'))
+            body=dict(body=json.loads(r'{"items":['+cve_id_str+r'],"expires_at":'+cve_id_list["expires_at"]+'}'))
             request(url+"system/CVEWhitelist", 'put', **body)
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
@@ -177,12 +177,12 @@ class HarborAPI:
                 cve_id_str = cve_id_str + '{"cve_id":"' +cve_id["id"] + '"}'
                 if index != len(cve_id_list["cve"]) - 1:
                     cve_id_str = cve_id_str + ","
-            print cve_id_str
+            print(cve_id_str)
             if reuse_sys_cve_whitelist == "true":
                 payload = r'{"metadata":{"reuse_sys_cve_whitelist":"true"}}'
             else:
-                payload = r'{"metadata":{"reuse_sys_cve_whitelist":"false"},"cve_whitelist":{"project_id":'+projectid+',"items":['+cve_id_str.encode('utf-8')+r'],"expires_at":'+cve_id_list["expires_at"]+'}}'
-            print payload
+                payload = r'{"metadata":{"reuse_sys_cve_whitelist":"false"},"cve_whitelist":{"project_id":'+projectid+',"items":['+cve_id_str+r'],"expires_at":'+cve_id_list["expires_at"]+'}}'
+            print(payload)
             body=dict(body=json.loads(payload))
             request(url+"projects/"+projectid+"", 'put', **body)
         else:
@@ -191,7 +191,7 @@ class HarborAPI:
     @get_feature_branch
     def update_interrogation_services(self, cron, **kwargs):
         payload = {"schedule":{"type":"Custom","cron": cron}}
-        print payload
+        print(payload)
         body=dict(body=payload)
         request(url+"system/scanAll/schedule", 'post', **body)
 
@@ -217,7 +217,7 @@ class HarborAPI:
                 }
             }
         }
-        print payload
+        print(payload)
         body=dict(body=payload)
         request(url+"configurations", 'put', **body)
 
@@ -256,7 +256,7 @@ class HarborAPI:
                 raise Exception(r"Error: Robot account count {} is not legal!".format(len(robot_account["access"])))
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
-        print payload
+        print(payload)
         body=dict(body=payload)
         request(url+"projects/"+projectid+"/robots", 'post', **body)
 
@@ -306,7 +306,7 @@ class HarborAPI:
                     "ref":int(projectid)
                 }
             }
-            print payload
+            print(payload)
             body=dict(body=payload)
             request(url+"retentions", 'post', **body)
         else:
@@ -343,7 +343,7 @@ class HarborAPI:
                 "priority":0,
                 "template":"immutable_template"
             }
-            print payload
+            print(payload)
             body=dict(body=payload)
             request(url+"projects/"+projectid+"/immutabletagrules", 'post', **body)
         else:
@@ -375,7 +375,7 @@ class HarborAPI:
                 ],
                 "enabled":webhook["enabled"]
             }
-            print payload
+            print(payload)
             body=dict(body=payload)
             request(url+"projects/"+projectid+"/webhook/policies", 'post', **body)
         else:
@@ -383,7 +383,7 @@ class HarborAPI:
 
     def update_repoinfo(self, reponame):
         payload = {"description": "testdescription"}
-        print payload
+        print(payload)
         body=dict(body=payload)
         request(url+"repositories/"+reponame+"", 'put', **body)
 
@@ -398,10 +398,10 @@ class HarborAPI:
         if not os.path.exists(ca_path):
             try:
                 os.makedirs(ca_path)
-            except Exception, e:
-                print str(e)
+            except Exception as e:
+                print(str(e))
                 pass
-        open(target, 'wb').write(ca_content)
+        open(target, 'wb').write(ca_content.encode('utf-8'))
 
 
 def request(url, method, user = None, userp = None, **kwargs):
@@ -415,7 +415,7 @@ def request(url, method, user = None, userp = None, **kwargs):
         kwargs['headers']['Content-Type'] = 'application/json'
         kwargs['data'] = json.dumps(kwargs['body'])
         del kwargs['body']
-    print "url: ", url
+    print("url: ", url)
     resp = requests.request(method, url, verify=False, auth=(user, userp), **kwargs)
     if resp.status_code >= 400:
         raise Exception("[Exception Message] - {}".format(resp.text))
@@ -476,7 +476,7 @@ def do_data_creation():
 
     for project in data["projects"]:
         harborAPI.update_project_setting_allowlist(project["name"],
-                                    project["configuration"]["reuse_sys_cve_whitelist"],
+                                    project["configuration"]["reuse_sys_cve_allowlist"],
                                     project["configuration"]["deployment_security"], version=args.version)
 
     harborAPI.update_interrogation_services(data["interrogation_services"]["cron"], version=args.version)

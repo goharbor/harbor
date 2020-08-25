@@ -159,6 +159,11 @@ Switch To Project Quotas
     Retry Element Click  xpath=//clr-main-container//clr-vertical-nav//a[contains(.,'Project Quotas')]
     Sleep  1
 
+Switch To Distribution
+    Sleep  1
+    Retry Element Click  xpath=//clr-main-container//clr-vertical-nav-group//span[contains(.,'Distributions')]
+    Sleep  1
+
 Modify Token Expiration
     [Arguments]  ${minutes}
     Input Text  xpath=//*[@id='tokenExpiration']  ${minutes}
@@ -202,7 +207,7 @@ Config Email
     Input Text  xpath=//*[@id='emailUsername']  example@vmware.com
     Input Text  xpath=//*[@id='emailPassword']  example
     Input Text  xpath=//*[@id='emailFrom']  example<example@vmware.com>
-    Sleep  1    
+    Sleep  1
     Retry Element Click  xpath=//*[@id='emailSSL-wrapper']/label
     Sleep  1
     Retry Element Click  xpath=//*[@id='emailInsecure-wrapper']/label
@@ -316,18 +321,20 @@ Switch To GC History
     Retry Element Click  xpath=${gc_log_xpath}
     Retry Wait Until Page Contains  Job
 
-Add Items To System CVE Whitelist
+Add Items To System CVE Allowlist
     [Arguments]    ${cve_id}
     Retry Element Click    ${configuration_system_wl_add_btn}
     Retry Text Input    ${configuration_system_wl_textarea}    ${cve_id}
     Retry Element Click    ${configuration_system_wl_add_confirm_btn}
     Retry Element Click    ${config_system_save_button_xpath}
 
-Delete Top Item In System CVE Whitelist
+Delete Top Item In System CVE Allowlist
     [Arguments]  ${count}=1
-    :FOR  ${idx}  IN RANGE  1  ${count}
-    \   Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}
+    FOR  ${idx}  IN RANGE  1  ${count}
+        Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}
+    END
     Retry Element Click    ${config_system_save_button_xpath}
+    Capture Page Screenshot
 
 Get Project Count Quota Text From Project Quotas List
     [Arguments]    ${project_name}
@@ -341,3 +348,33 @@ Get Project Storage Quota Text From Project Quotas List
     Switch To Project Quotas
     ${storage_quota}=    Get Text    xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${project_name}')]//clr-dg-cell[3]//label
     [Return]  ${storage_quota}
+
+Check Automatic Onboarding And Save
+    Retry Element Click  ${cfg_auth_automatic_onboarding_checkbox}
+    Retry Element Click  xpath=${config_auth_save_button_xpath}
+    Capture Page Screenshot
+
+Set User Name Claim And Save
+    [Arguments]    ${type}
+    Retry Text Input  ${cfg_auth_user_name_claim_input}  ${type}
+    Retry Element Click  xpath=${config_auth_save_button_xpath}
+    Capture Page Screenshot
+
+Select Provider
+    [Arguments]    ${provider}
+    Retry Element Click    ${distribution_provider_select_id}
+    Retry Element Click    ${distribution_provider_select_id}//option[contains(.,'${provider}')]
+
+Distribution Exist
+    [Arguments]  ${provider}  ${name}  ${endpoint}
+    Retry Wait Until Page Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}')]
+
+Create An New Distribution
+    [Arguments]    ${provider}  ${name}  ${endpoint}
+    Switch To Distribution
+    Retry Element Click  ${distribution_add_btn_id}
+    Select Provider  ${provider}
+    Retry Text Input  ${distribution_name_input_id}  ${name}
+    Retry Text Input  ${distribution_endpoint_id}  ${endpoint}
+    Retry Double Keywords When Error  Retry Element Click  ${distribution_add_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${distribution_add_save_btn_id}
+    Distribution Exist  ${provider}  ${name}  ${endpoint}

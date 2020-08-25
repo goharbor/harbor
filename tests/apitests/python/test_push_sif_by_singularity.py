@@ -2,11 +2,11 @@ from __future__ import absolute_import
 import unittest
 import urllib
 
-import library.singularity
-from library.sign import sign_image
 from testutils import ADMIN_CLIENT
 from testutils import harbor_server
 from testutils import TEARDOWN
+import library.singularity
+from library.sign import sign_image
 from library.user import User
 from library.project import Project
 from library.repository import Repository
@@ -25,7 +25,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
@@ -63,12 +63,10 @@ class TestProjects(unittest.TestCase):
 
         #4. Get repository from Harbor successfully, and verfiy repository name is repo pushed by singularity CLI;
         repo_data = self.repo.get_repository(TestProjects.project_name, self.repo_name, **TestProjects.USER_CLIENT)
-        print "repo_data:", repo_data
         self.assertEqual(repo_data.name, TestProjects.project_name + "/" + self.repo_name)
 
         #5. Get and verify artifacts by tag;
         artifact = self.artifact.get_reference_info(TestProjects.project_name, self.repo_name, self.tag, **TestProjects.USER_CLIENT)
-        print "artifact:", artifact
         self.assertEqual(artifact[0].tags[0].name, self.tag)
 
         #6. Pull sif file from harbor by singularity;

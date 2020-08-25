@@ -14,7 +14,7 @@
 
 *** Settings ***
 Documentation  Harbor BATs
-Library  ../../apitests/python/library/Harbor.py  ${SERVER_CONFIG}
+Library  ../../apitests/python/library/repository.py
 Resource  ../../resources/Util.robot
 Default Tags  Replication
 
@@ -115,7 +115,7 @@ Test Case - Replication Rule Edit
     Retry Text Input    ${rule_name_input}    ${rule_name_new}
     Select Source Registry  ${endpoint2}
     #Source Resource Filter
-    Retry Text Input  ${source_project}  project${d}
+    Retry Text Input  ${filter_name_id}  project${d}
     Select From List By Value  ${rule_resource_selector}  ${resource_type}
     Retry Text Input  ${dest_namespace_xpath}  ${dest_namespace}
     Select Trigger  ${mode}
@@ -125,7 +125,7 @@ Test Case - Replication Rule Edit
     Edit Replication Rule By Name    ${rule_name_new}
     Retry Textfield Value Should Be    ${rule_name_input}               ${rule_name_new}
     Retry List Selection Should Be     ${src_registry_dropdown_list}    ${endpoint2}-https://${ip}
-    Retry Textfield Value Should Be    ${source_project}                project${d}
+    Retry Textfield Value Should Be    ${filter_name_id}                project${d}
     Retry Textfield Value Should Be    ${dest_namespace_xpath}          ${dest_namespace}
     Retry List Selection Should Be     ${rule_resource_selector}        ${resource_type}
     Retry List Selection Should Be     ${rule_trigger_select}           ${mode}
@@ -156,7 +156,7 @@ Test Case - Replication Of Pull Images from DockerHub To Self
     Switch To Registries
     Create A New Endpoint    docker-hub    e${d}    https://hub.docker.com/    danfengliu    Aa123456    Y
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint    rule${d}    pull    danfengliu/*    image    e${d}    project${d}
+    Create A Rule With Existing Endpoint    rule${d}    pull    danfengliu/{cent*,mariadb}    image    e${d}    project${d}
     Select Rule And Replicate  rule${d}
     #In docker-hub, under repository danfengliu, there're only 2 images: centos,mariadb.
     Image Should Be Replicated To Project  project${d}  centos
@@ -268,8 +268,18 @@ Test Case - Replication Of Pull Images from Google-GCR To Self
     Create A New Endpoint    google-gcr    e${d}    asia.gcr.io    ${null}    ${gcr_ac_key}    Y
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    pull    eminent-nation-87317/*    image    e${d}    project${d}
-    Filter Replicatin Rule  rule${d}
+    Filter Replication Rule  rule${d}
     Select Rule And Replicate  rule${d}
     Image Should Be Replicated To Project  project${d}  httpd
     Image Should Be Replicated To Project  project${d}  tomcat
     Close Browser
+
+Test Case - Replication Of Push Images to DockerHub Triggered By Event
+    Body Of Replication Of Push Images to Registry Triggered By Event  docker-hub  https://hub.docker.com/  danfengliu  Aa123456  danfengliu
+
+#Due to issue of delete event replication
+#Test Case - Replication Of Push Images to Google-GCR Triggered By Event
+    #Body Of Replication Of Push Images to Registry Triggered By Event  google-gcr  gcr.io  ${null}  ${gcr_ac_key}  eminent-nation-87317/harbor-nightly-replication
+
+Test Case - Replication Of Push Images to AWS-ECR Triggered By Event
+    Body Of Replication Of Push Images to Registry Triggered By Event  aws-ecr  us-east-2  ${ecr_ac_id}  ${ecr_ac_key}  harbor-nightly-replication
