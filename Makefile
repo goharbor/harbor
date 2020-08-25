@@ -513,14 +513,14 @@ down:
 
 swagger_client:
 	@echo "Generate swagger client"
-	wget -q https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
+	wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar -O openapi-generator-cli.jar
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_client
 	mkdir  -p harborclient/harbor_swagger_client
 	mkdir  -p harborclient/harbor_v2_swagger_client
-	java -jar swagger-codegen-cli.jar generate -i api/swagger.yaml -l python -o harborclient/harbor_client -DpackageName=client
-	java -jar swagger-codegen-cli.jar generate -i api/v2.0/legacy_swagger.yaml -l python -o harborclient/harbor_swagger_client -DpackageName=swagger_client
-	java -jar swagger-codegen-cli.jar generate -i api/v2.0/swagger.yaml -l python -o harborclient/harbor_v2_swagger_client -DpackageName=v2_swagger_client
+	java -jar openapi-generator-cli.jar generate -i api/swagger.yaml -g python -o harborclient/harbor_client --package-name client
+	java -jar openapi-generator-cli.jar generate -i api/v2.0/legacy_swagger.yaml -g python -o harborclient/harbor_swagger_client --package-name swagger_client
+	java -jar openapi-generator-cli.jar generate -i api/v2.0/swagger.yaml -g python -o harborclient/harbor_v2_swagger_client --package-name v2_swagger_client
 	cd harborclient/harbor_client; python ./setup.py install
 	cd harborclient/harbor_swagger_client; python ./setup.py install
 	cd harborclient/harbor_v2_swagger_client; python ./setup.py install

@@ -86,7 +86,7 @@ def _get_string_from_unicode(udata):
     return result
 
 def run_command(command):
-    print "Command: ", subprocess.list2cmdline(command)
+    print("Command: ", subprocess.list2cmdline(command))
     try:
         output = subprocess.check_output(command,
                                          stderr=subprocess.STDOUT,
@@ -95,7 +95,7 @@ def run_command(command):
         raise Exception('Error: Exited with error code: %s. Output:%s'% (e.returncode, e.output))
     return output
 
-class Base:
+class Base(object):
     def __init__(self, server=None, credential=None, debug=True, api_type="products"):
         if server is None:
             server = Server(endpoint=get_endpoint(), verify_ssl=False)
@@ -103,7 +103,7 @@ class Base:
             server.verify_ssl = server.verify_ssl == "True"
 
         if credential is None:
-            credential = Credential(type="basic_auth", username="admin", password="Harbor12345") # nosec
+            credential = Credential(type="basic_auth", username="admin", password="Harbor12345")
 
         self.server = server
         self.credential = credential
@@ -114,9 +114,8 @@ class Base:
     def _get_client(self, **kwargs):
         if len(kwargs) == 0:
             return self.client
+
         server = self.server
-        if "api_type" in kwargs:
-            server.api_type = kwargs.get("api_type")
         if "endpoint" in kwargs:
             server.endpoint = kwargs.get("endpoint")
         if "verify_ssl" in kwargs:
@@ -131,4 +130,4 @@ class Base:
             kwargs.get("password", self.credential.password),
         )
 
-        return _create_client(server, credential, self.debug, self.api_type)
+        return _create_client(server, credential, self.debug, kwargs.get('api_type', self.api_type))

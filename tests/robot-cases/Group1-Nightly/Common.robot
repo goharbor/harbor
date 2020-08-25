@@ -443,20 +443,20 @@ Test Case - Create An New Project With Quotas Set
 Test Case - Project Storage Quotas Dispaly And Control
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
-    ${storage_quota}=  Set Variable  330
+    ${storage_quota}=  Set Variable  350
     ${storage_quota_unit}=  Set Variable  MB
-    ${image_a}=  Set Variable  redis
-    ${image_b}=  Set Variable  logstash
-    ${image_a_size}=    Set Variable    34.15MB
-    ${image_b_size}=    Set Variable    321.03MB
-    ${image_a_ver}=  Set Variable  donotremove5.0
-    ${image_b_ver}=  Set Variable  do_not_remove_6.8.3
+    ${image_a}=  Set Variable  one_layer
+    ${image_b}=  Set Variable  redis
+    ${image_a_size}=    Set Variable   330.83MB
+    ${image_b_size}=    Set Variable   34.15MB
+    ${image_a_ver}=  Set Variable  1.0
+    ${image_b_ver}=  Set Variable  donotremove5.0
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
     Should Be Equal As Strings  ${storage_quota_ret}  ${image_b_size} of ${storage_quota}${storage_quota_unit}
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=adding 25.8 MiB of storage resource, which when updated to current usage of   err_msg_2=MiB will exceed the configured upper limit of 330.0 MiB
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=adding 330.1 MiB of storage resource, which when updated to current usage of   err_msg_2=MiB will exceed the configured upper limit of ${storage_quota}.0 MiB
     Go Into Project  project${d}
     Delete Repo  project${d}/${image_b}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}  tag=${image_a_ver}  tag1=${image_a_ver}

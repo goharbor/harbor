@@ -11,6 +11,16 @@ def set_configurations(client, expect_status_code = 200, expect_response_body = 
         conf.project_creation_restriction = config.get("project_creation_restriction")
     if "token_expiration" in config:
         conf.token_expiration = config.get("token_expiration")
+    if "ldap_filter" in config:
+        conf.ldap_filter = config.get("ldap_filter")
+    if "ldap_group_attribute_name" in config:
+        conf.ldap_group_attribute_name = config.get("ldap_group_attribute_name")
+    if "ldap_group_base_dn" in config:
+        conf.ldap_group_base_dn = config.get("ldap_group_base_dn")
+    if "ldap_group_search_filter" in config:
+        conf.ldap_group_search_filter = config.get("ldap_group_search_filter")
+    if "ldap_group_search_scope" in config:
+        conf.ldap_group_search_scope = config.get("ldap_group_search_scope")
 
     try:
         _, status_code, _ = client.configurations_put_with_http_info(conf)
@@ -56,3 +66,11 @@ class Configurations(base.Base):
 
         config=dict(token_expiration=token_expiration)
         set_configurations(client, expect_status_code = expect_status_code, **config)
+
+    def set_configurations_of_ldap(self, ldap_filter=None, ldap_group_attribute_name=None,
+            ldap_group_base_dn=None, ldap_group_search_filter=None, ldap_group_search_scope=None, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
+        config=dict(ldap_filter=ldap_filter, ldap_group_attribute_name=ldap_group_attribute_name,
+                           ldap_group_base_dn=ldap_group_base_dn, ldap_group_search_filter=ldap_group_search_filter, ldap_group_search_scope=ldap_group_search_scope)
+        set_configurations(client, expect_status_code = expect_status_code, **config)
+

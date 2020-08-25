@@ -46,7 +46,7 @@ class TestProjectCVEWhitelist(unittest.TestCase):
         self.user_ra_id = int(user_ra_id)
         p_id, _ = self.project.create_project(metadata = {"public": "false"}, **ADMIN_CLIENT)
         self.project_pa_id = int(p_id)
-        m_id = self.project.add_project_members(self.project_pa_id, self.user_ra_id, member_role_id=3, **ADMIN_CLIENT)
+        m_id = self.project.add_project_members(self.project_pa_id, user_id=self.user_ra_id, member_role_id=3, **ADMIN_CLIENT)
         self.member_id = int(m_id)
 
     def tearDown(self):

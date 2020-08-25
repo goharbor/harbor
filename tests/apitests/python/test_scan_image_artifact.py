@@ -23,7 +23,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == True, "Test data won't be erased.")
     def test_ClearData(self):
@@ -66,7 +66,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_scan_image_id, TestProjects.project_scan_image_name = self.project.create_project(metadata = {"public": "false"}, **ADMIN_CLIENT)
 
         #3. Add user(UA) as a member of project(PA) with project-admin role;
-        self.project.add_project_members(TestProjects.project_scan_image_id, TestProjects.user_scan_image_id, **ADMIN_CLIENT)
+        self.project.add_project_members(TestProjects.project_scan_image_id, user_id=TestProjects.user_scan_image_id, **ADMIN_CLIENT)
 
         #4. Get private project of user(UA), user(UA) can see only one private project which is project(PA);
         self.project.projects_should_exist(dict(public=False), expected_count = 1,

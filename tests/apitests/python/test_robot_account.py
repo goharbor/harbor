@@ -4,12 +4,12 @@ import unittest
 
 from testutils import ADMIN_CLIENT
 from testutils import TEARDOWN
+from testutils import harbor_server
 from library.user import User
 from library.project import Project
 from library.repository import Repository
 from library.repository import pull_harbor_image
 from library.repository import push_image_to_project
-from testutils import harbor_server
 from library.base import _assert_status_code
 
 class TestProjects(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
@@ -74,58 +74,56 @@ class TestProjects(unittest.TestCase):
         image_robot_account = "alpine"
         tag = "latest"
 
-        print "#1. Create user(UA);"
+        #1. Create user(UA);"
         TestProjects.user_ra_id, user_ra_name = self.user.create_user(user_password = user_ra_password, **ADMIN_CLIENT)
         TestProjects.USER_RA_CLIENT=dict(endpoint = url, username = user_ra_name, password = user_ra_password)
 
-        print "#2. Create private project(PA), private project(PB) and public project(PC) by user(UA);"
+        #2. Create private project(PA), private project(PB) and public project(PC) by user(UA);
         TestProjects.project_ra_id_a, TestProjects.project_ra_name_a = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_RA_CLIENT)
         TestProjects.project_ra_id_b, TestProjects.project_ra_name_b = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_RA_CLIENT)
         TestProjects.project_ra_id_c, TestProjects.project_ra_name_c = self.project.create_project(metadata = {"public": "true"}, **TestProjects.USER_RA_CLIENT)
 
-        print "#3. Push image(ImagePA) to project(PA), image(ImagePB) to project(PB) and image(ImagePC) to project(PC) by user(UA);"
+        #3. Push image(ImagePA) to project(PA), image(ImagePB) to project(PB) and image(ImagePC) to project(PC) by user(UA);
         TestProjects.repo_name_in_project_a, tag_a = push_image_to_project(TestProjects.project_ra_name_a, harbor_server, user_ra_name, user_ra_password, image_project_a, tag)
         TestProjects.repo_name_in_project_b, tag_b = push_image_to_project(TestProjects.project_ra_name_b, harbor_server, user_ra_name, user_ra_password, image_project_b, tag)
         TestProjects.repo_name_in_project_c, tag_c = push_image_to_project(TestProjects.project_ra_name_c, harbor_server, user_ra_name, user_ra_password, image_project_c, tag)
 
-        print "#4. Create a new robot account(RA) with pull and push privilige in project(PA) by user(UA);"
+        #4. Create a new robot account(RA) with pull and push privilige in project(PA) by user(UA);
         robot_id, robot_account = self.project.add_project_robot_account(TestProjects.project_ra_id_a, TestProjects.project_ra_name_a,
                                                                          2441000531 ,**TestProjects.USER_RA_CLIENT)
-        print robot_account.name
-        print robot_account.token
 
-        print "#5. Check robot account info, it should has both pull and push priviliges;"
+        #5. Check robot account info, it should has both pull and push priviliges;
         data = self.project.get_project_robot_account_by_id(TestProjects.project_ra_id_a, robot_id, **TestProjects.USER_RA_CLIENT)
         _assert_status_code(robot_account.name, data.name)
 
-        print "#6. Pull image(ImagePA) from project(PA) by robot account(RA), it must be successful;"
+        #6. Pull image(ImagePA) from project(PA) by robot account(RA), it must be successful;
         pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_a, tag_a)
 
-        print "#7. Push image(ImageRA) to project(PA) by robot account(RA), it must be successful;"
+        #7. Push image(ImageRA) to project(PA) by robot account(RA), it must be successful;
         TestProjects.repo_name_pa, _ = push_image_to_project(TestProjects.project_ra_name_a, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag)
 
-        print "#8. Push image(ImageRA) to project(PB) by robot account(RA), it must be not successful;"
+        #8. Push image(ImageRA) to project(PB) by robot account(RA), it must be not successful;
         push_image_to_project(TestProjects.project_ra_name_b, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_error_message = "unauthorized to access repository")
 
-        print "#9. Pull image(ImagePB) from project(PB) by robot account(RA), it must be not successful;"
+        #9. Pull image(ImagePB) from project(PB) by robot account(RA), it must be not successful;
         pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_b, tag_b, expected_error_message = "unauthorized to access repository")
 
-        print "#10. Pull image from project(PC), it must be successful;"
+        #10. Pull image from project(PC), it must be successful;
         pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_c, tag_c)
 
-        print "#11. Push image(ImageRA) to project(PC) by robot account(RA), it must be not successful;"
+        #11. Push image(ImageRA) to project(PC) by robot account(RA), it must be not successful;
         push_image_to_project(TestProjects.project_ra_name_c, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_error_message = "unauthorized to access repository")
 
-        print "#12. Update action property of robot account(RA);"
+        #12. Update action property of robot account(RA);"
         self.project.disable_project_robot_account(TestProjects.project_ra_id_a, robot_id, True, **TestProjects.USER_RA_CLIENT)
 
-        print "#13. Pull image(ImagePA) from project(PA) by robot account(RA), it must be not successful;"
+        #13. Pull image(ImagePA) from project(PA) by robot account(RA), it must be not successful;
         pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_a, tag_a, expected_login_error_message = "unauthorized: authentication required")
 
-        print "#14. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;"
+        #14. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;
         push_image_to_project(TestProjects.project_ra_name_a, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_login_error_message = "unauthorized: authentication required")
 
-        print "#15. Delete robot account(RA), it must be not successful."
+        #15. Delete robot account(RA), it must be not successful.
         self.project.delete_project_robot_account(TestProjects.project_ra_id_a, robot_id, **TestProjects.USER_RA_CLIENT)
 
 if __name__ == '__main__':

@@ -3,13 +3,11 @@ from __future__ import absolute_import
 
 import unittest
 
-import library.repository
-import library.cnab
-
 from testutils import ADMIN_CLIENT
 from testutils import harbor_server
-
 from testutils import TEARDOWN
+import library.repository
+import library.cnab
 from library.project import Project
 from library.user import User
 from library.repository import Repository
@@ -30,7 +28,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
@@ -80,7 +78,6 @@ class TestProjects(unittest.TestCase):
 
         #5. Get repository from Harbor successfully;
         index_data = self.repo.get_repository(TestProjects.project_push_bundle_name, self.cnab_repo_name, **TestProjects.USER_CLIENT)
-        print "index_data:", index_data
 
         #5.2 Cnab bundle can be pulled by ctr successfully;
         # This step might not successful since ctr does't support cnab fully, it might be uncomment sometime in future.

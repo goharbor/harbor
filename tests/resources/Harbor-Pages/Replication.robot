@@ -19,13 +19,23 @@ Resource  ../../resources/Util.robot
 *** Variables ***
 
 *** Keywords ***
-Filter Replicatin Rule
+Filter Replication Rule
     [Arguments]  ${ruleName}
     ${rule_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${ruleName}')]
     Retry Element Click  ${filter_rules_btn}
     Retry Text Input  ${filter_rules_input}  ${ruleName}
     Retry Wait Until Page Contains Element   ${rule_name_element}
     Capture Page Screenshot  filter_replic_${ruleName}.png
+
+Filter Registry
+    [Arguments]  ${registry_name}
+    ${registry_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${registry_name}')]
+    Switch To Replication Manage
+    Switch To Registries
+    Retry Element Click  ${filter_registry_btn}
+    Retry Text Input  ${filter_registry_input}  ${registry_name}
+    Retry Wait Until Page Contains Element   ${registry_name_element}
+    Capture Page Screenshot  filter_repistry_${registry_name}.png
 
 Select Dest Registry
     [Arguments]    ${endpoint}
@@ -68,27 +78,28 @@ Create A New Endpoint
     #cancel verify cert since we use a selfsigned cert
     Retry Element Click  ${destination_insecure_xpath}
     Run Keyword If  '${save}' == 'Y'  Run keyword  Retry Double Keywords When Error  Retry Element Click  ${replication_save_xpath}  Retry Wait Until Page Not Contains Element  ${replication_save_xpath}
-    Run Keyword If  '${save}' == 'Y'  Run keyword  Retry Wait Until Page Contains  ${name}
+    Run Keyword If  '${save}' == 'Y'  Run keyword  Filter Registry  ${name}
     Run Keyword If  '${save}' == 'N'  No Operation
 
 Create A Rule With Existing Endpoint
-    [Arguments]    ${name}    ${replication_mode}    ${project_name}    ${resource_type}    ${endpoint}    ${dest_namespace}
-    ...    ${mode}=Manual  ${cron}="* */59 * * * *"
+    [Arguments]    ${name}    ${replication_mode}    ${filter_project_name}    ${resource_type}    ${endpoint}    ${dest_namespace}
+    ...    ${mode}=Manual  ${cron}="* */59 * * * *"  ${del_remote}=${false}  ${filter_tag}=${false}
     #click new
     Retry Element Click    ${new_name_xpath}
     #input name
     Retry Text Input    ${rule_name}    ${name}
-    Run Keyword If    '${replication_mode}' == 'push'  Run Keywords  Retry Element Click  ${replication_mode_radio_push}
-    ...    AND  Select Dest Registry  ${endpoint}
-    ...    ELSE  Run Keywords  Retry Element Click  ${replication_mode_radio_pull}
-    ...    AND  Select Source Registry  ${endpoint}
+    Run Keyword If    '${replication_mode}' == 'push'  Run Keywords  Retry Element Click  ${replication_mode_radio_push}  AND  Select Dest Registry  ${endpoint}
+    ...    ELSE  Run Keywords  Retry Element Click  ${replication_mode_radio_pull}  AND  Select Source Registry  ${endpoint}
+
     #set filter
-    Retry Text Input    ${source_project}    ${project_name}
+    Retry Text Input    ${filter_name_id}    ${filter_project_name}
+    Run Keyword If  '${filter_tag}' != '${false}'  Retry Text Input    ${filter_tag_id}    ${filter_tag}
     Run Keyword And Ignore Error    Select From List By Value    ${rule_resource_selector}    ${resource_type}
     Retry Text Input    ${dest_namespace_xpath}    ${dest_namespace}
     #set trigger
     Select Trigger  ${mode}
-    Run Keyword If    '${mode}' == 'Scheduled'  Retry Text Input  ${targetCron_id}  ${cron}
+    Run Keyword If  '${mode}' == 'Scheduled'  Retry Text Input  ${targetCron_id}  ${cron}
+    Run Keyword If  '${mode}' == 'Event Based' and '${del_remote}' == '${true}'  Retry Element Click  ${del_remote_checkbox}
     #click save
     Retry Double Keywords When Error  Retry Element Click  ${rule_save_button}  Retry Wait Until Page Not Contains Element  ${rule_save_button}
     Sleep  2
@@ -225,7 +236,7 @@ Delete Endpoint
 
 Select Rule And Replicate
     [Arguments]  ${rule_name}
-    Retry Element Click    //hbr-list-replication-rule//clr-dg-cell[contains(.,'${rule_name}')]
+    Select Rule  ${rule_name}
     Retry Element Click    ${replication_exec_id}
     Retry Double Keywords When Error    Retry Element Click    xpath=${dialog_replicate}    Retry Wait Until Page Not Contains Element    xpath=${dialog_replicate}
 
@@ -245,15 +256,25 @@ Delete Replication Rule
     Retry Element Click  ${dialog_delete}
 
 Image Should Be Replicated To Project
-    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=10
-    :For  ${n}  IN RANGE  1  ${times}
-    \    Sleep  ${period}
-    \    Go Into Project    ${project}
-    \    Switch To Project Repo
-    \    #In AWS-ECR, under repository a, there're only several images: httpd,alpine,hello-world.
-    \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains  ${project}/${image}
-    \    Log To Console  Return value is ${out[0]}
-    \    Exit For Loop If  '${out[0]}'=='PASS'
-    \    Sleep  5
+    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=3
+    FOR  ${n}  IN RANGE  0  ${times}
+        Sleep  ${period}
+        Go Into Project    ${project}
+        Switch To Project Repo
+        #In AWS-ECR, under repository a, there're only several images: httpd,alpine,hello-world.
+        ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains  ${project}/${image}
+        Log To Console  Return value is ${out[0]}
+        Exit For Loop If  '${out[0]}'=='PASS'
+        Sleep  5
+    END
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+Executions Result Count Should Be
+    [Arguments]  ${expected_status}  ${expected_trigger_type}  ${expected_result_count}
+    Sleep  10
+    ${count}=  Get Element Count  xpath=//clr-dg-row[contains(.,'${expected_status}') and contains(.,'${expected_trigger_type}')]
+    Capture Page Screenshot
+    Should Be Equal As Integers  ${count}  ${expected_result_count}
+    Capture Page Screenshot
+
