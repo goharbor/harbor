@@ -187,6 +187,10 @@ func (c *controller) CreateInstance(ctx context.Context, instance *providerModel
 
 // DeleteInstance implements @Controller.Delete
 func (c *controller) DeleteInstance(ctx context.Context, id int64) error {
+	ins, err := c.GetInstance(ctx, id)
+	if err != nil {
+		return err
+	}
 	// delete instance should check the instance whether be used by policies
 	policies, err := c.ListPolicies(ctx, &q.Query{
 		Keywords: map[string]interface{}{
@@ -200,7 +204,7 @@ func (c *controller) DeleteInstance(ctx context.Context, id int64) error {
 	if len(policies) > 0 {
 		return errors.New(nil).
 			WithCode(errors.PreconditionCode).
-			WithMessage("Can't delete instance %d, %d preheat policies use it as provider", id, len(policies))
+			WithMessage("Provider [%s] cannot be deleted as some preheat policies are using it", ins.Name)
 	}
 
 	return c.iManager.Delete(ctx, id)
@@ -208,6 +212,11 @@ func (c *controller) DeleteInstance(ctx context.Context, id int64) error {
 
 // UpdateInstance implements @Controller.Update
 func (c *controller) UpdateInstance(ctx context.Context, instance *providerModels.Instance, properties ...string) error {
+	oldIns, err := c.GetInstance(ctx, instance.ID)
+	if err != nil {
+		return err
+	}
+
 	if !instance.Enabled {
 		// update instance should check the instance whether be used by policies
 		policies, err := c.ListPolicies(ctx, &q.Query{
@@ -222,8 +231,13 @@ func (c *controller) UpdateInstance(ctx context.Context, instance *providerModel
 		if len(policies) > 0 {
 			return errors.New(nil).
 				WithCode(errors.PreconditionCode).
-				WithMessage("Can't disable instance %d, %d preheat policies use it as provider", instance.ID, len(policies))
+				WithMessage("Provider [%s] cannot be disabled as some preheat policies are using it", oldIns.Name)
 		}
+	}
+
+	// vendor type does not support change
+	if oldIns.Vendor != instance.Vendor {
+		return errors.Errorf("provider [%s] vendor cannot be changed", oldIns.Name)
 	}
 
 	return c.iManager.Update(ctx, instance, properties...)
