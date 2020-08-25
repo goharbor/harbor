@@ -287,7 +287,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
         description: this.addP2pPolicyComponent.policy.description,
         repo: this.addP2pPolicyComponent.repos,
         tag: this.addP2pPolicyComponent.tags,
-        onlySignedImages: this.addP2pPolicyComponent.onlySignedImages,
+        onlySignedImages: this.addP2pPolicyComponent.enableContentTrust,
         severity: this.addP2pPolicyComponent.severity,
         label: this.addP2pPolicyComponent.labels,
         triggerType: this.addP2pPolicyComponent.triggerType
