@@ -288,3 +288,8 @@ func TestReplicationHandler_IsStateful(t *testing.T) {
 	handler := &ReplicationHandler{}
 	assert.False(t, handler.IsStateful())
 }
+
+func TestReplicationHandler_Name(t *testing.T) {
+	handler := &ReplicationHandler{}
+	assert.Equal(t, "ReplicationWebhook", handler.Name())
+}
