@@ -391,7 +391,12 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 	// Update timestamp
 	schema.UpdatedTime = time.Now()
 
-	return c.pManager.Update(ctx, schema, props...)
+	err = c.pManager.Update(ctx, schema, props...)
+	if (err != nil) && (needSch || needUn) {
+		return errors.Wrapf(err, "Update failed, but not rollback scheduler")
+	}
+
+	return err
 }
 
 // DeletePolicy deletes the policy by id.
