@@ -16,9 +16,6 @@ package proxy
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/opencontainers/go-digest"
 	"io"
 	"strings"
 	"sync"
@@ -29,10 +26,13 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
+	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/opencontainers/go-digest"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 const (
@@ -122,12 +122,9 @@ func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art l
 	if err != nil {
 		return man, err
 	}
-	operator := ""
-	if secCtx, ok := security.FromContext(ctx); ok {
-		operator = secCtx.GetUsername()
-	}
+
 	// Push manifest in background
-	go func() {
+	go func(operator string) {
 		bCtx := orm.Context()
 		a, err := c.local.GetManifest(bCtx, art)
 		if err != nil {
@@ -145,11 +142,10 @@ func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art l
 			if err != nil {
 				log.Errorf("failed to get manifest, error %v", err)
 			}
-		}
-		if a != nil {
+		} else {
 			SendPullEvent(a, art.Tag, operator)
 		}
-	}()
+	}(operator.FromContext(ctx))
 
 	return man, nil
 }
