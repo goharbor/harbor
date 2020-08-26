@@ -175,6 +175,7 @@ func (s *preheatSuite) TestCreateInstance() {
 
 func (s *preheatSuite) TestDeleteInstance() {
 	// instance be used should not be deleted
+	s.fakeInstanceMgr.On("Get", s.ctx, int64(1)).Return(&providerModel.Instance{ID: 1}, nil)
 	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(1)}}).Return([]*policy.Schema{
 		{
 			ProviderID: 1,
@@ -183,6 +184,7 @@ func (s *preheatSuite) TestDeleteInstance() {
 	err := s.controller.DeleteInstance(s.ctx, int64(1))
 	s.Error(err, "instance should not be deleted")
 
+	s.fakeInstanceMgr.On("Get", s.ctx, int64(2)).Return(&providerModel.Instance{ID: 2}, nil)
 	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(2)}}).Return([]*policy.Schema{}, nil)
 	s.fakeInstanceMgr.On("Delete", s.ctx, int64(2)).Return(nil)
 	err = s.controller.DeleteInstance(s.ctx, int64(2))
@@ -191,11 +193,13 @@ func (s *preheatSuite) TestDeleteInstance() {
 
 func (s *preheatSuite) TestUpdateInstance() {
 	// normal update
+	s.fakeInstanceMgr.On("Get", s.ctx, int64(1000)).Return(&providerModel.Instance{ID: 1000}, nil)
 	s.fakeInstanceMgr.On("Update", s.ctx, &providerModel.Instance{ID: 1000, Enabled: true}).Return(nil)
 	err := s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 1000, Enabled: true})
 	s.NoError(err, "instance can be updated")
 
 	// disable instance should error due to with policy used
+	s.fakeInstanceMgr.On("Get", s.ctx, int64(1001)).Return(&providerModel.Instance{ID: 1001}, nil)
 	s.fakeInstanceMgr.On("Update", s.ctx, &providerModel.Instance{ID: 1001}).Return(nil)
 	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(1001)}}).Return([]*policy.Schema{
 		{ProviderID: 1001},
@@ -204,10 +208,18 @@ func (s *preheatSuite) TestUpdateInstance() {
 	s.Error(err, "instance should not be disabled")
 
 	// disable instance can be deleted if no policy used
+	s.fakeInstanceMgr.On("Get", s.ctx, int64(1002)).Return(&providerModel.Instance{ID: 1002}, nil)
 	s.fakeInstanceMgr.On("Update", s.ctx, &providerModel.Instance{ID: 1002}).Return(nil)
 	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(1002)}}).Return([]*policy.Schema{}, nil)
 	err = s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 1002})
 	s.NoError(err, "instance can be disabled")
+
+	// not support change vendor type
+	s.fakeInstanceMgr.On("Get", s.ctx, int64(1003)).Return(&providerModel.Instance{ID: 1003, Vendor: "dragonfly"}, nil)
+	s.fakeInstanceMgr.On("Update", s.ctx, &providerModel.Instance{ID: 1003, Vendor: "kraken"}).Return(nil)
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(1003)}}).Return([]*policy.Schema{}, nil)
+	err = s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 1003, Vendor: "kraken"})
+	s.Error(err, "provider vendor cannot be changed")
 }
 
 func (s *preheatSuite) TestGetInstance() {
