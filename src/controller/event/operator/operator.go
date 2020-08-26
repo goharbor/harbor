@@ -18,8 +18,6 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/user"
 )
 
 // FromContext return the event operator from context
@@ -27,14 +25,6 @@ func FromContext(ctx context.Context) string {
 	sc, ok := security.FromContext(ctx)
 	if !ok {
 		return ""
-	}
-
-	if sc.IsSolutionUser() {
-		user, err := user.Mgr.Get(ctx, 1)
-		if err == nil {
-			return user.Username
-		}
-		log.G(ctx).Errorf("failed to get operator for security %s, error: %v", sc.Name(), err)
 	}
 
 	return sc.GetUsername()

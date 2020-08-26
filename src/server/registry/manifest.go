@@ -15,9 +15,12 @@
 package registry
 
 import (
-	"github.com/goharbor/harbor/src/common/security"
+	"net/http"
+	"strings"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -27,8 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/server/router"
 	"github.com/opencontainers/go-digest"
-	"net/http"
-	"strings"
 )
 
 // make sure the artifact exist before proxying the request to the backend registry
@@ -55,13 +56,10 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 		req.UserAgent() == registry.UserAgent {
 		return
 	}
-	operator := ""
-	if secCtx, exist := security.FromContext(req.Context()); exist {
-		operator = secCtx.GetUsername()
-	}
+
 	e := &metadata.PullArtifactEventMetadata{
 		Artifact: &art.Artifact,
-		Operator: operator,
+		Operator: operator.FromContext(req.Context()),
 	}
 	// the reference is tag
 	if _, err = digest.Parse(reference); err != nil {
