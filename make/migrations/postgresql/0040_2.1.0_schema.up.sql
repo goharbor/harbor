@@ -40,7 +40,7 @@ ALTER TABLE blob ADD COLUMN IF NOT EXISTS version BIGINT default 0;
 CREATE INDEX IF NOT EXISTS idx_status ON blob (status);
 CREATE INDEX IF NOT EXISTS idx_version ON blob (version);
 
-CREATE TABLE p2p_preheat_instance (
+CREATE TABLE IF NOT EXISTS p2p_preheat_instance (
   id          SERIAL PRIMARY KEY NOT NULL,
   name        varchar(255) NOT NULL,
   description varchar(255),
@@ -117,10 +117,10 @@ ALTER TABLE schedule DROP COLUMN IF EXISTS status;
 UPDATE registry SET type = 'quay' WHERE type = 'quay-io';
 
 
-ALTER TABLE artifact ADD COLUMN icon varchar(255);
+ALTER TABLE artifact ADD COLUMN IF NOT EXISTS icon varchar(255);
 
 /*remove the constraint for name in table 'notification_policy'*/
-ALTER TABLE notification_policy DROP CONSTRAINT notification_policy_name_key;
+ALTER TABLE notification_policy DROP CONSTRAINT IF EXISTS notification_policy_name_key;
 /*add union unique constraint for name and project_id in table 'notification_policy'*/
 ALTER TABLE notification_policy ADD UNIQUE(name,project_id);
 
@@ -130,13 +130,14 @@ CREATE TABLE IF NOT EXISTS data_migrations (
     creation_time timestamp default CURRENT_TIMESTAMP,
     update_time timestamp default CURRENT_TIMESTAMP
 );
-INSERT INTO data_migrations (version) VALUES (
+/* Only insert the record when the table is empty */
+INSERT INTO data_migrations (version) SELECT (
     CASE
         /*if the "extra_attrs" isn't null, it means that the deployment upgrades from v2.0*/
         WHEN (SELECT Count(*) FROM artifact WHERE extra_attrs!='')>0 THEN 30
         ELSE 0
     END
-);
+) WHERE NOT EXISTS (SELECT * FROM data_migrations);
 ALTER TABLE schema_migrations DROP COLUMN IF EXISTS data_version;
 
 ALTER TABLE artifact ADD COLUMN IF NOT EXISTS icon varchar(255);
