@@ -198,6 +198,14 @@ describe("CreateEditEndpointComponent (inline template)", () => {
           {
             "key": "sa-east-1",
             "value": "https://api.ecr.sa-east-1.amazonaws.com"
+          },
+          {
+            "key": "cn-north-1",
+            "value": "https://api.ecr.cn-north-1.amazonaws.com.cn"
+          },
+          {
+            "key": "cn-northwest-1",
+            "value": "https://api.ecr.cn-northwest-1.amazonaws.com.cn"
           }
         ]
       },

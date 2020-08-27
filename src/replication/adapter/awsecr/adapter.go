@@ -189,6 +189,14 @@ func getAdapterInfo() *model.AdapterPattern {
 					Key:   "sa-east-1",
 					Value: "https://api.ecr.sa-east-1.amazonaws.com",
 				},
+				{
+					Key:   "cn-north-1",
+					Value: "https://api.ecr.cn-north-1.amazonaws.com.cn",
+				},
+				{
+					Key:   "cn-northwest-1",
+					Value: "https://api.ecr.cn-northwest-1.amazonaws.com.cn",
+				},
 			},
 		},
 	}
