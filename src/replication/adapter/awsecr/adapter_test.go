@@ -55,6 +55,28 @@ func TestAdapter_NewAdapter(t *testing.T) {
 			AccessKey:    "xxx",
 			AccessSecret: "ppp",
 		},
+		URL: "https://api.ecr.test-china-region.amazonaws.com.cn",
+	})
+	assert.Nil(t, err)
+	assert.NotNil(t, adapter)
+
+	adapter, err = newAdapter(&model.Registry{
+		Type: model.RegistryTypeAwsEcr,
+		Credential: &model.Credential{
+			AccessKey:    "xxx",
+			AccessSecret: "ppp",
+		},
+		URL: "https://123456.dkr.ecr.test-china-region.amazonaws.com.cn",
+	})
+	assert.Nil(t, err)
+	assert.NotNil(t, adapter)
+
+	adapter, err = newAdapter(&model.Registry{
+		Type: model.RegistryTypeAwsEcr,
+		Credential: &model.Credential{
+			AccessKey:    "xxx",
+			AccessSecret: "ppp",
+		},
 	})
 	assert.Nil(t, adapter)
 	assert.NotNil(t, err)
