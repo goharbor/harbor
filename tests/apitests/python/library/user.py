@@ -26,11 +26,11 @@ class User(base.Base):
 
         return base._get_id_from_header(header), name
 
-    def get_users(self, username=None, email=None, page=None, page_size=None, **kwargs):
+    def get_users(self, user_name=None, email=None, page=None, page_size=None, **kwargs):
         client = self._get_client(**kwargs)
         params={}
-        if username is not None:
-            params["username"] = username
+        if user_name is not None:
+            params["username"] = user_name
         if email is not None:
             params["email"] = email
         if page is not None:
@@ -41,12 +41,18 @@ class User(base.Base):
         base._assert_status_code(200, status_code)
         return data
 
-    def get_user(self, user_id, **kwargs):
+    def get_user_by_id(self, user_id, **kwargs):
         client = self._get_client(**kwargs)
         data, status_code, _ = client.users_user_id_get_with_http_info(user_id)
         base._assert_status_code(200, status_code)
-        print "data in lib:", data
         return data
+
+    def get_user_by_name(self, name, **kwargs):
+        users = self.get_users(user_name=name, **kwargs)
+        for user in users:
+            if user.username == name:
+                return user
+        return None
 
 
     def get_user_current(self, **kwargs):
@@ -80,7 +86,6 @@ class User(base.Base):
     def update_user_role_as_sysadmin(self, user_id, IsAdmin, **kwargs):
         client = self._get_client(**kwargs)
         sysadmin_flag = swagger_client.SysAdminFlag(IsAdmin)
-        print "sysadmin_flag:", sysadmin_flag
         _, status_code, _ = client.users_user_id_sysadmin_put_with_http_info(user_id, sysadmin_flag)
         base._assert_status_code(200, status_code)
         return user_id

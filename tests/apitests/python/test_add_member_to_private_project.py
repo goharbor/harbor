@@ -47,7 +47,7 @@ class TestProjects(unittest.TestCase):
         self.assertEqual(project_001_data, None, msg="user-001 should has no any private project, but we got {}".format(project_001_data))
 
         #4. Add user-001 as a member of project-001
-        result = self.project.add_project_members(project_001_id, user_001_id, **ADMIN_CLIENT)
+        result = self.project.add_project_members(project_001_id, user_id=user_001_id, **ADMIN_CLIENT)
         self.assertNotEqual(result, False, msg="Failed to add member user_001 to project_001, result is {}".format(result))
 
 

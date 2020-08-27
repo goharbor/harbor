@@ -47,6 +47,14 @@ class Project(base.Base):
         base._assert_status_code(200, status_code)
         return data
 
+    def get_project_id(self, project_name, **kwargs):
+        project_data = self.get_projects(dict(), **kwargs)
+        actual_count = len(project_data)
+        if actual_count == 1 and str(project_data[0].project_name) != str(project_name):
+            return project_data[0].project_id
+        else:
+            return None
+
     def projects_should_exist(self, params, expected_count = None, expected_project_id = None, **kwargs):
         project_data = self.get_projects(params, **kwargs)
         actual_count = len(project_data)
@@ -162,11 +170,16 @@ class Project(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
 
-    def add_project_members(self, project_id, user_id, member_role_id = None, expect_status_code = 201, **kwargs):
+    def add_project_members(self, project_id, user_id = None, member_role_id = None, _ldap_group_dn=None,expect_status_code = 201, **kwargs):
+        projectMember = swagger_client.ProjectMember()
+        if user_id is not None:
+           projectMember.member_user = {"user_id": int(user_id)}
         if member_role_id is None:
-            member_role_id = 1
-        _member_user = {"user_id": int(user_id)}
-        projectMember = swagger_client.ProjectMember(member_role_id, member_user = _member_user)
+            projectMember.role_id = 1
+        else:
+            projectMember.role_id = member_role_id
+        if _ldap_group_dn is not None:
+            projectMember.member_group = swagger_client.UserGroup(ldap_group_dn=_ldap_group_dn)
         client = self._get_client(**kwargs)
         data = []
         data, status_code, header = client.projects_project_id_members_post_with_http_info(project_id, project_member = projectMember)

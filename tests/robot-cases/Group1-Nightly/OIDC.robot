@@ -75,7 +75,7 @@ Test Case - Generate User CLI Secret
     Sign In Harbor With OIDC User  ${HARBOR_URL}
     Create An New Project And Go Into Project  project${d}
     ${secret_old}=  Get Secrete By API  ${HARBOR_URL}
-    Push image  ip=${ip}  user=${OIDC_USERNAME}  pwd=${secret_old}  project=project${d}  image=${image}
+    Push image  ${ip}  ${OIDC_USERNAME}  ${secret_old}  project${d}  ${image}
     ${secret_new}=  Generate And Return Secret  ${HARBOR_URL}
     Log To Console  ${secret_old}
     Log To Console  ${secret_new}

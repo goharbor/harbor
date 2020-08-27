@@ -19,7 +19,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
@@ -80,7 +80,7 @@ class TestProjects(unittest.TestCase):
         self.project.check_project_member_not_exist(TestProjects.project_alice_id, user_bob_name, **USER_ALICE_CLIENT)
 
         #4.1 Alice Add Bob as a guest member of project(PA)
-        member_id_bob = self.project.add_project_members(TestProjects.project_alice_id, TestProjects.user_bob_id, member_role_id = 3, **USER_ALICE_CLIENT)
+        member_id_bob = self.project.add_project_members(TestProjects.project_alice_id, user_id=TestProjects.user_bob_id, member_role_id = 3, **USER_ALICE_CLIENT)
 
         #4.2 Check Bob is a guest member of project(PA)
         self.project.check_project_members_exist(TestProjects.project_alice_id, user_bob_name, expected_member_role_id = 3, user_name = user_bob_name, user_password = user_bob_password, **USER_ALICE_CLIENT)

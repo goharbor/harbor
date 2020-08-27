@@ -90,10 +90,10 @@ class System(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return data
 
-    def create_gc_schedule(self, schedule_type, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
+    def create_gc_schedule(self, schedule_type, is_delete_untagged, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
 
-        gc_parameters = {'delete_untagged':True}
+        gc_parameters = {'delete_untagged':is_delete_untagged}
 
         gc_schedule = swagger_client.AdminJobScheduleObj()
         gc_schedule.type = schedule_type
@@ -142,8 +142,8 @@ class System(base.Base):
         scan_all_id = self.create_scan_all_schedule('Manual', **kwargs)
         return scan_all_id
 
-    def gc_now(self, **kwargs):
-        gc_id = self.create_gc_schedule('Manual', **kwargs)
+    def gc_now(self, is_delete_untagged=False, **kwargs):
+        gc_id = self.create_gc_schedule('Manual', is_delete_untagged, **kwargs)
         return gc_id
 
     def validate_gc_job_status(self, gc_id, expected_gc_status, **kwargs):
@@ -177,13 +177,13 @@ class System(base.Base):
     def set_cve_whitelist(self, expires_at=None, expected_status_code=200, *cve_ids, **kwargs):
         client = self._get_client(**kwargs)
         cve_list = [swagger_client.CVEWhitelistItem(cve_id=c) for c in cve_ids]
-        whitelist  = swagger_client.CVEWhitelist(expires_at=expires_at, items=cve_list)
+        whitelist = swagger_client.CVEWhitelist(expires_at=expires_at, items=cve_list)
         try:
             r = client.system_cve_whitelist_put_with_http_info(whitelist=whitelist, _preload_content=False)
         except Exception as e:
             base._assert_status_code(expected_status_code, e.status)
         else:
-            base._assert_status_code(expected_status_code, r[1])
+            base._assert_status_code(expected_status_code, r.status)
 
     def get_cve_whitelist(self, **kwargs):
         client = self._get_client(**kwargs)

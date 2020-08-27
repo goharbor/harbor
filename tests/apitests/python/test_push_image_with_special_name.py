@@ -2,10 +2,10 @@ from __future__ import absolute_import
 import unittest
 import urllib
 
-from library.sign import sign_image
 from testutils import ADMIN_CLIENT
 from testutils import harbor_server
 from testutils import TEARDOWN
+from library.sign import sign_image
 from library.artifact import Artifact
 from library.project import Project
 from library.user import User
@@ -22,7 +22,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
@@ -63,7 +63,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_sign_image_id, TestProjects.project_sign_image_name = self.project.create_project(metadata = {"public": "false"}, **ADMIN_CLIENT)
 
         #3. Add user(UA) as a member of project(PA) with project-admin role;
-        self.project.add_project_members(TestProjects.project_sign_image_id, TestProjects.user_sign_image_id, **ADMIN_CLIENT)
+        self.project.add_project_members(TestProjects.project_sign_image_id, user_id=TestProjects.user_sign_image_id, **ADMIN_CLIENT)
 
         #4. Get private project of user(UA), user(UA) can see only one private project which is project(PA);
         self.project.projects_should_exist(dict(public=False), expected_count = 1,
@@ -77,10 +77,9 @@ class TestProjects(unittest.TestCase):
         TestProjects.repo_name, tag = push_image_to_project(TestProjects.project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, image, src_tag, profix_for_image=profix)
 
         #7. Get signature of image with tag(TA), it should be exist.
-        full_name = urllib.quote(profix+"/"+image,'utf-8')
-        artifact = self.artifact.get_reference_info(TestProjects.project_sign_image_name, (str(full_name)).encode(), tag, **TestProjects.USER_sign_image_CLIENT)
+        full_name = urllib.parse.quote(profix+"/"+image,'utf-8')
 
-        print artifact
+        artifact = self.artifact.get_reference_info(TestProjects.project_sign_image_name, full_name, tag, **TestProjects.USER_sign_image_CLIENT)
         self.assertEqual(artifact[0].type, 'IMAGE')
 
 if __name__ == '__main__':

@@ -13,7 +13,7 @@ class Artifact(base.Base, object):
         client = self._get_client(**kwargs)
         return client.list_artifacts(project_name, repo_name)
 
-    def get_reference_info(self, project_name, repo_name, reference, **kwargs):
+    def get_reference_info(self, project_name, repo_name, reference, ignore_not_found = False,**kwargs):
         client = self._get_client(**kwargs)
         params = {}
         if "with_signature" in kwargs:
@@ -22,7 +22,12 @@ class Artifact(base.Base, object):
             params["with_tag"] = kwargs["with_tag"]
         if "with_scan_overview" in kwargs:
             params["with_scan_overview"] = kwargs["with_scan_overview"]
-        return client.get_artifact_with_http_info(project_name, repo_name, reference, **params)
+
+        try:
+            return client.get_artifact_with_http_info(project_name, repo_name, reference, **params)
+        except ApiException as e:
+            if e.status == 404 and ignore_not_found == True:
+                return []
 
     def delete_artifact(self, project_name, repo_name, reference, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
@@ -62,10 +67,14 @@ class Artifact(base.Base, object):
         base._assert_status_code(201, status_code)
         return data
 
-    def create_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 201, **kwargs):
+    def create_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 201, ignore_conflict = False, **kwargs):
         client = self._get_client(**kwargs)
         tag = v2_swagger_client.Tag(name = tag_name)
-        _, status_code, _ = client.create_tag_with_http_info(project_name, repo_name, reference, tag)
+        try:
+            _, status_code, _ = client.create_tag_with_http_info(project_name, repo_name, reference, tag)
+        except ApiException as e:
+            if e.status == 409 and ignore_conflict == True:
+                return
         base._assert_status_code(expect_status_code, status_code)
 
     def delete_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 200, **kwargs):
@@ -82,11 +91,13 @@ class Artifact(base.Base, object):
             if (timeout_count == 0):
                 break
             artifact = self.get_reference_info(project_name, repo_name, reference, **kwargs)
-            print "artifact", artifact
-            print "artifact[0]", artifact[0]
-            print "artifact[0].scan_overview", artifact[0].scan_overview
-            print "artifact[0].scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0']", artifact[0].scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0']
-            scan_status = artifact[0].scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0']["scan_status"]
+            scan_status = artifact[0].scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'].scan_status
             if scan_status == expected_scan_status:
                 return
         raise Exception("Scan image result is {}, not as expected {}.".format(scan_status, expected_scan_status))
+
+    def check_reference_exist(self, project_name, repo_name, reference, ignore_not_found = False, **kwargs):
+        artifact = self.get_reference_info( project_name, repo_name, reference, ignore_not_found=ignore_not_found, **kwargs)
+        return {
+            0: False,
+        }.get(len(artifact), True)
