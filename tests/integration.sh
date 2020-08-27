@@ -61,7 +61,7 @@ fi
 # GC credentials
 keyfile="/root/harbor-ci-logs.key"
 botofile="/root/.boto"
-echo -en $GS_PRIVATE_KEY > $keyfile
+echo -n $GS_PRIVATE_KEY > $keyfile
 chmod 400 $keyfile
 echo "[Credentials]" >> $botofile
 echo "gs_service_key_file = $keyfile" >> $botofile
