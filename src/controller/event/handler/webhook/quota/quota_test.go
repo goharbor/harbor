@@ -93,6 +93,11 @@ func (suite *QuotaPreprocessHandlerSuite) TestHandle() {
 // MockHandler ...
 type MockHandler struct{}
 
+// Name ...
+func (m *MockHandler) Name() string {
+	return "Mock"
+}
+
 // Handle ...
 func (m *MockHandler) Handle(value interface{}) error {
 	return nil

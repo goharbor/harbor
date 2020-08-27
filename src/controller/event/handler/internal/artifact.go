@@ -31,6 +31,11 @@ type Handler struct {
 	Context func() context.Context
 }
 
+// Name ...
+func (a *Handler) Name() string {
+	return "InternalArtifact"
+}
+
 // Handle ...
 func (a *Handler) Handle(value interface{}) error {
 	switch v := value.(type) {

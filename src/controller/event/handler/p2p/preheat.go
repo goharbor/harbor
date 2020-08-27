@@ -32,6 +32,11 @@ type Handler struct {
 	Context func() context.Context
 }
 
+// Name ...
+func (p *Handler) Name() string {
+	return "P2PPreheat"
+}
+
 // Handle ...
 func (p *Handler) Handle(value interface{}) error {
 	switch value.(type) {

@@ -24,6 +24,11 @@ import (
 type ReplicationHandler struct {
 }
 
+// Name ...
+func (r *ReplicationHandler) Name() string {
+	return "ReplicationWebhook"
+}
+
 // Handle ...
 func (r *ReplicationHandler) Handle(value interface{}) error {
 	if !config.NotificationEnable() {

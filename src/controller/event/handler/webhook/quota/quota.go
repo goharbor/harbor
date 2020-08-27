@@ -33,6 +33,11 @@ import (
 type Handler struct {
 }
 
+// Name ...
+func (qp *Handler) Name() string {
+	return "QuotaWebhook"
+}
+
 // Handle ...
 func (qp *Handler) Handle(value interface{}) error {
 	quotaEvent, ok := value.(*event.QuotaEvent)

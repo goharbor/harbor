@@ -75,6 +75,10 @@ func (suite *PreheatTestSuite) TestIsStateful() {
 	suite.False(b, "handler is stateful")
 }
 
+func (suite *PreheatTestSuite) TestName() {
+	suite.Equal("P2PPreheat", suite.handler.Name())
+}
+
 // TestHandle ...
 func (suite *PreheatTestSuite) TestHandle() {
 	type args struct {

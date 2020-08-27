@@ -33,6 +33,11 @@ type AuditResolver interface {
 	ResolveToAuditLog() (*am.AuditLog, error)
 }
 
+// Name ...
+func (h *Handler) Name() string {
+	return "AuditLog"
+}
+
 // Handle ...
 func (h *Handler) Handle(value interface{}) error {
 	ctx := orm.NewContext(context.Background(), beegorm.NewOrm())

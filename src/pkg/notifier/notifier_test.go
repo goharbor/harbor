@@ -13,6 +13,10 @@ type fakeStatefulHandler struct {
 	number int
 }
 
+func (fsh *fakeStatefulHandler) Name() string {
+	return "fakeStateful"
+}
+
 func (fsh *fakeStatefulHandler) IsStateful() bool {
 	return true
 }
@@ -30,6 +34,10 @@ type fakeStatelessHandler struct{}
 
 func (fsh *fakeStatelessHandler) IsStateful() bool {
 	return false
+}
+
+func (fsh *fakeStatelessHandler) Name() string {
+	return "fakeStateless"
 }
 
 func (fsh *fakeStatelessHandler) Handle(v interface{}) error {

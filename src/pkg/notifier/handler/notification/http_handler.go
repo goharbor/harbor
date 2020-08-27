@@ -15,6 +15,11 @@ import (
 type HTTPHandler struct {
 }
 
+// Name ...
+func (h *HTTPHandler) Name() string {
+	return "HTTP"
+}
+
 // Handle handles http event
 func (h *HTTPHandler) Handle(value interface{}) error {
 	if value == nil {

@@ -29,6 +29,11 @@ func NewRetentionController() retention.APIController {
 	return api.GetRetentionController()
 }
 
+// Name ...
+func (r *RetentionHandler) Name() string {
+	return "RetentionWebhook"
+}
+
 // Handle ...
 func (r *RetentionHandler) Handle(value interface{}) error {
 	if !config.NotificationEnable() {

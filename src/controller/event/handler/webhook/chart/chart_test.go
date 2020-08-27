@@ -134,3 +134,8 @@ func TestChartPreprocessHandler_IsStateful(t *testing.T) {
 	handler := &Handler{}
 	assert.False(t, handler.IsStateful())
 }
+
+func TestChartPreprocessHandler_Name(t *testing.T) {
+	handler := &Handler{}
+	assert.Equal(t, "ChartWebhook", handler.Name())
+}
