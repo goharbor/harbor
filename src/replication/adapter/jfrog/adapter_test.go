@@ -1,3 +1,17 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package jfrog
 
 import (
@@ -50,6 +64,41 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 			Pattern: fmt.Sprintf("/artifactory/api/repositories/%s", fakeNamespace),
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
+			},
+		},
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
+			Pattern: fmt.Sprintf("/artifactory/api/docker/%s/v2/_catalog", "cyzhang"),
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{"repositories": []}`))
+			},
+		},
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
+			Pattern: fmt.Sprintf("/artifactory/api/docker/%s/v2/_catalog", fakeNamespace),
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{
+    "repositories": [
+        "nginx"
+    ]
+}`))
+			},
+		},
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
+			Pattern: fmt.Sprintf("/artifactory/api/docker/%s/v2/%s/tags/list", fakeNamespace, "nginx"),
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{
+    "name": "nginx",
+    "tags": [
+        "latest",
+        "v1",
+        "v2"
+    ]
+}`))
 			},
 		},
 		&test.RequestHandlerMapping{
@@ -129,4 +178,26 @@ func TestAdapter_PushBlob(t *testing.T) {
 	defer s.Close()
 	err := a.PushBlob(fakeRepository, fakeDigest, 20, bytes.NewReader([]byte("test")))
 	assert.Nil(t, err)
+}
+
+func TestAdapter_FetchArtifacts(t *testing.T) {
+	a, s := getMockAdapter(t, true, true)
+	defer s.Close()
+
+	filters := []*model.Filter{
+		{
+			Type:  model.FilterTypeName,
+			Value: "mydocker/**",
+		},
+		{
+			Type:  model.FilterTypeTag,
+			Value: "v1",
+		},
+	}
+	res, err := a.FetchArtifacts(filters)
+	assert.Nil(t, err)
+	assert.Len(t, res, 1)
+	assert.Equal(t, "mydocker/nginx", res[0].Metadata.Repository.Name)
+	assert.Len(t, res[0].Metadata.Artifacts, 1)
+	assert.Equal(t, "v1", res[0].Metadata.Artifacts[0].Tags[0])
 }
