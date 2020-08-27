@@ -20,7 +20,6 @@ import (
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
-	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -48,7 +47,6 @@ func (i *indexProcessor) AbstractMetadata(ctx context.Context, artifact *artifac
 	if err := i.IndexProcessor.AbstractMetadata(ctx, artifact, manifest); err != nil {
 		return err
 	}
-	artifact.Icon = icon.DigestOfIconImage
 	return nil
 }
 

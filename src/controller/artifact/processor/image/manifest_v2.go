@@ -21,7 +21,6 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
-	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -57,7 +56,6 @@ func (m *manifestV2Processor) AbstractMetadata(ctx context.Context, artifact *ar
 	if err := m.ManifestProcessor.AbstractMetadata(ctx, artifact, manifest); err != nil {
 		return err
 	}
-	artifact.Icon = icon.DigestOfIconImage
 	return nil
 }
 

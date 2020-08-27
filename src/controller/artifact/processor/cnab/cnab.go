@@ -19,7 +19,6 @@ import (
 
 	ps "github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
-	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
@@ -47,7 +46,6 @@ type processor struct {
 }
 
 func (p *processor) AbstractMetadata(ctx context.Context, art *artifact.Artifact, manifest []byte) error {
-	art.Icon = icon.DigestOfIconCNAB
 	cfgManiDgt := ""
 	// try to get the digest of the manifest that the config layer is referenced by
 	for _, reference := range art.References {

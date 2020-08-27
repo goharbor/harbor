@@ -30,7 +30,7 @@ import (
 
 var (
 	// base64 encoded png icon for testing
-	icon = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAb1BMVEUAAAAkJG0kJFuAgIeDg4MmJmIjI2MnIV4mIWKCgoKAgIQmImCCgoYnI2EkIWKAgIOBgYWBgYOAgoSAgoQnI2EmImAmI2IlImEmIWEmImEmImEmImGAgYQmImGAgYWAgYQmImGAgYQmImGAgYT////3jpbIAAAAInRSTlMABw4gISIkLi8zNDU7QkZGSWdodoSHmp2g1djg4OPj8fT1aPEwQAAAAAFiS0dEJLQG+ZkAAACMSURBVFjD7dfLDoIwEEbho6ioeENQvCP6/u/opiSQNMYBF6b+Zz35Nm0mLY+eIUBAC9jnhgoPMMVQEi4wv3nbApyurvgNsHh6ywDu9WAi4G+Aat0sAliuXMNPgLLjVf5tYDxxDToCtlMQICAQoNo0G2krCzABs4u3FOB4dsVhP/N6AcXO0EE/FgHfBV5wuoevcrdCfQAAAABJRU5ErkJggg=="
+	iconStr = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAb1BMVEUAAAAkJG0kJFuAgIeDg4MmJmIjI2MnIV4mIWKCgoKAgIQmImCCgoYnI2EkIWKAgIOBgYWBgYOAgoSAgoQnI2EmImAmI2IlImEmIWEmImEmImEmImGAgYQmImGAgYWAgYQmImGAgYQmImGAgYT////3jpbIAAAAInRSTlMABw4gISIkLi8zNDU7QkZGSWdodoSHmp2g1djg4OPj8fT1aPEwQAAAAAFiS0dEJLQG+ZkAAACMSURBVFjD7dfLDoIwEEbho6ioeENQvCP6/u/opiSQNMYBF6b+Zz35Nm0mLY+eIUBAC9jnhgoPMMVQEi4wv3nbApyurvgNsHh6ywDu9WAi4G+Aat0sAliuXMNPgLLjVf5tYDxxDToCtlMQICAQoNo0G2krCzABs4u3FOB4dsVhP/N6AcXO0EE/FgHfBV5wuoevcrdCfQAAAABJRU5ErkJggg=="
 )
 
 type controllerTestSuite struct {
@@ -66,7 +66,7 @@ func (c *controllerTestSuite) TestGet() {
 			RepositoryName: "library/hello-world",
 		},
 	}, nil)
-	blob := ioutil.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(icon)))
+	blob := ioutil.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(iconStr)))
 	c.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(0, blob, nil)
 	icon, err := c.controller.Get(nil, "sha256:364feec11702f7ee079ba81da723438373afb0921f3646e9e5015406ee150986")
 	c.Require().Nil(err)
