@@ -695,26 +695,61 @@ Test Case - Read Only Mode
 
 Test Case - Proxy Cache
     ${d}=  Get Current Date    result_format=%m%s
-	${registry}=  Set Variable  https://hub.docker.com/
-	${user_namespace}=  Set Variable  danfengliu
-	${image}=  Set Variable  for_proxy
-	${tag}=  Set Variable  1.0
+    ${registry}=  Set Variable  https://hub.docker.com/
+    ${user_namespace}=  Set Variable  danfengliu
+    ${image}=  Set Variable  for_proxy
+    ${tag}=  Set Variable  1.0
+    ${manifest_index}=  Set Variable  index081597864867
+    ${manifest_tag}=  Set Variable  index_tag081597864867
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-	Switch To Registries
-	Create A New Endpoint  docker-hub  e1${d}  ${registry}  ${user_namespace}    Aa123456
+    Switch To Registries
+    Create A New Endpoint  docker-hub  e1${d}  ${registry}  ${user_namespace}    Aa123456
     Create An New Project And Go Into Project  project${d}  proxy_cache=${true}  registry=e1${d}
-	Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
-	Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${user_namespace}/${image}  tag=${tag}
-	Sleep  180
-	Go Into Project  project${d}
-	Go Into Repo  project${d}/${user_namespace}/${image}
-	Close Browser
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
+    Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${user_namespace}/${image}  tag=${tag}
+    Log To Console  Start to Sleep 3 minitues......
+    Sleep  180
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/${user_namespace}/${image}
+    Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${user_namespace}/${manifest_index}  tag=${manifest_tag}
+    Log To Console  Start to Sleep 10 minitues......
+    Sleep  600
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/${user_namespace}/${manifest_index}
+    Go Into Index And Contain Artifacts  ${manifest_tag}  limit=1
+    Close Browser
 
 Test Case - Distribution CRUD
+    ${d}=    Get Current Date    result_format=%m%s
+    ${name}=  Set Variable  distribution${d}
+    ${endpoint}=  Set Variable  https://1.1.1.2
+    ${endpoint_new}=  Set Variable  https://10.65.65.42
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Distribution  Dragonfly  ${name}  ${endpoint}
+    Edit A Distribution  ${name}  ${endpoint}  new_endpoint=${endpoint_new}
+    Delete A Distribution  ${name}  ${endpoint_new}
+    Close Browser
+
+Test Case - P2P Peheat Policy CRUD
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New Distribution  Dragonfly  distribution${d}  https://1.1.1.2
+    ${pro_name}=  Set Variable  project_p2p${d}
+    ${dist_name}=  Set Variable  distribution${d}
+    ${endpoint}=  Set Variable  https://1.1.1.2
+    ${policy_name}=  Set Variable  policy${d}
+    ${repo}=  Set Variable  alpine
+    ${repo_new}=  Set Variable  redis*
+    ${tag}=  Set Variable  v1.0
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Distribution  Dragonfly  ${dist_name}  ${endpoint}
+    Create An New Project And Go Into Project  ${pro_name}
+    Create An New P2P Preheat Policy  ${policy_name}  ${dist_name}  ${repo}  ${tag}
+    Edit A P2P Preheat Policy  ${policy_name}  ${repo_new}
+    Delete A Distribution  ${dist_name}  ${endpoint}  deletable=${false}
+    Go Into Project  ${pro_name}  has_image=${false}
+    Delete A P2P Preheat Policy  ${policy_name}
+    Delete A Distribution  ${dist_name}  ${endpoint}
     Close Browser
 

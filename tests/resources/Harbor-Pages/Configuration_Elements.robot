@@ -53,6 +53,10 @@ ${distribution_auth_oauth_mode_ratio_id}  //*[@id='token_mode']
 ${distribution_enable_checkbox_id}  //*[@id='enabled']
 ${distribution_insecure_checkbox_id}  //*[@id='insecure']
 ${distribution_add_save_btn_id}  //*[@id='instance-ok']
-
+${distribution_action_btn_id}  //*[@id='member-action']
+${distribution_del_btn_id}  //*[@id='distribution-delete']
+${distribution_edit_btn_id}  //*[@id='distribution-edit']
+${filter_dist_btn}  //hbr-filter//clr-icon[contains(@class,'search-btn')]
+${filter_dist_input}  //hbr-filter//input
 
 

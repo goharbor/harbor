@@ -360,14 +360,29 @@ Set User Name Claim And Save
     Retry Element Click  xpath=${config_auth_save_button_xpath}
     Capture Page Screenshot
 
+Select Distribution
+    [Arguments]    ${name}
+    Retry Element Click    //div[@class='datagrid-scrolling-cells' and contains(.,'${name}')]//clr-checkbox-wrapper/label
+
+Distribution Exist
+    [Arguments]  ${name}  ${endpoint}
+    Retry Wait Until Page Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}')]
+
+Distribution Not Exist
+    [Arguments]  ${name}  ${endpoint}
+    Retry Wait Until Page Not Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}')]
+
+Filter Distribution List
+    [Arguments]  ${name}  ${endpoint}  ${exsit}=${true}
+    Retry Double Keywords When Error  Retry Element Click  ${filter_dist_btn}  Wait Until Element Is Visible And Enabled  ${filter_dist_input}
+    Retry Text Input  ${filter_dist_input}  ${name}
+    Run Keyword If  ${exsit}==${true}    Distribution Exist  ${name}  ${endpoint}
+    ...  ELSE  Distribution Not Exist  ${name}  ${endpoint}
+
 Select Provider
     [Arguments]    ${provider}
     Retry Element Click    ${distribution_provider_select_id}
     Retry Element Click    ${distribution_provider_select_id}//option[contains(.,'${provider}')]
-
-Distribution Exist
-    [Arguments]  ${provider}  ${name}  ${endpoint}
-    Retry Wait Until Page Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}')]
 
 Create An New Distribution
     [Arguments]    ${provider}  ${name}  ${endpoint}
@@ -377,4 +392,28 @@ Create An New Distribution
     Retry Text Input  ${distribution_name_input_id}  ${name}
     Retry Text Input  ${distribution_endpoint_id}  ${endpoint}
     Retry Double Keywords When Error  Retry Element Click  ${distribution_add_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${distribution_add_save_btn_id}
-    Distribution Exist  ${provider}  ${name}  ${endpoint}
+    Distribution Exist  ${name}  ${endpoint}
+
+Delete A Distribution
+    [Arguments]    ${name}  ${endpoint}  ${deletable}=${true}
+    ${is_exsit}    evaluate    not ${deletable}
+    Switch To Distribution
+    Filter Distribution List  ${name}  ${endpoint}
+    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid/clr-dg-footer//clr-checkbox-wrapper/label
+    Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_del_btn_id}
+    Retry Double Keywords When Error  Retry Element Click  ${distribution_del_btn_id}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
+    Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
+    Sleep  10
+    Filter Distribution List  ${name}  ${endpoint}  exsit=${is_exsit}
+
+Edit A Distribution
+    [Arguments]    ${name}  ${endpoint}  ${new_endpoint}=${null}
+    Switch To Distribution
+    Filter Distribution List  ${name}  ${endpoint}
+    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid/clr-dg-footer//clr-checkbox-wrapper/label
+    Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_edit_btn_id}
+    Retry Double Keywords When Error  Retry Element Click  ${distribution_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_name_input_id}
+    Retry Text Input  ${distribution_endpoint_id}  ${new_endpoint}
+    Retry Double Keywords When Error  Retry Element Click  ${distribution_add_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${distribution_add_save_btn_id}
+    Filter Distribution List  ${name}  ${new_endpoint}
+    Distribution Exist  ${name}  ${new_endpoint}
