@@ -185,9 +185,15 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 
 			myLogger.Infof("Check preheat progress: %s", s)
 
-			// Finished
-			if s.Status == provider.PreheatingStatusSuccess {
+			switch s.Status {
+			case provider.PreheatingStatusFail:
+				// Fail
+				return preheatJobRunningError(errors.Errorf("preheat failed: %s", s))
+			case provider.PreheatingStatusSuccess:
+				// Finished
 				return nil
+			default:
+				// do nothing, check again
 			}
 
 			if shouldStop() {
