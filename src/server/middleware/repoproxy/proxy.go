@@ -111,7 +111,19 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		return nil
 	}
 	log.Debugf("the tag is %v, digest is %v", art.Tag, art.Digest)
-	man, err := proxyCtl.ProxyManifest(ctx, p, art)
+	err = proxyManifest(ctx, w, r, next, proxyCtl, p, art)
+	if err != nil {
+		if errors.IsNotFoundErr(err) {
+			return err
+		}
+		log.Warningf("Proxy to remote failed, fallback to local repo, error: %v", err)
+		next.ServeHTTP(w, r)
+	}
+	return nil
+}
+
+func proxyManifest(ctx context.Context, w http.ResponseWriter, r *http.Request, next http.Handler, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo) error {
+	man, err := ctl.ProxyManifest(ctx, p, art)
 	if err != nil {
 		return err
 	}
