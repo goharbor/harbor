@@ -13,8 +13,6 @@ github.com/Masterminds/semver/v3
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/Sirupsen/logrus v1.6.0 => github.com/sirupsen/logrus v1.6.0
-github.com/Sirupsen/logrus
 # github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d
 github.com/Unknwon/goconfig
 # github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412
@@ -123,7 +121,7 @@ github.com/docker/distribution/registry/auth
 github.com/docker/distribution/registry/auth/token
 github.com/docker/distribution/registry/client/auth/challenge
 github.com/docker/distribution/uuid
-# github.com/docker/docker v1.13.1
+# github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
 github.com/docker/docker/pkg/term
 github.com/docker/docker/pkg/term/windows
 # github.com/docker/go v0.0.0-20160303222718-d30aec9fd63c
