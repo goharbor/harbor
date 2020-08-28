@@ -27,6 +27,7 @@ import { ProjectDefaultService, ProjectService, RetagDefaultService, RetagServic
 import { UserPermissionService, UserPermissionDefaultService } from "../service/permission.service";
 import { USERSTATICPERMISSION } from "../service/permission-static";
 import { of } from "rxjs";
+import { delay } from 'rxjs/operators';
 describe('RepositoryComponentGridview (inline template)', () => {
 
   let compRepo: RepositoryGridviewComponent;
@@ -92,21 +93,6 @@ describe('RepositoryComponentGridview (inline template)', () => {
   };
   let mockHasCreateRepositoryPermission: boolean = true;
   let mockHasDeleteRepositoryPermission: boolean = true;
-  // let mockTagData: Tag[] = [
-  //   {
-  //     "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
-  //     "name": "1.11.5",
-  //     "size": "2049",
-  //     "architecture": "amd64",
-  //     "os": "linux",
-  //     "docker_version": "1.12.3",
-  //     "author": "NGINX Docker Maintainers \"docker-maint@nginx.com\"",
-  //     "created": new Date("2016-11-08T22:41:15.912313785Z"),
-  //     "signature": null,
-  //     "labels": []
-  //   }
-  // ];
-
   let config: IServiceConfig = {
     repositoryBaseEndpoint: '/api/repository/testing',
     systemInfoEndpoint: '/api/systeminfo/testing',
@@ -159,9 +145,9 @@ describe('RepositoryComponentGridview (inline template)', () => {
     spyRepos = spyOn(repositoryService, 'getRepositories')
       .and.callFake(function (projectId: number, name: string) {
         if (name === 'nginx') {
-          return of(mockNginxRepo);
+          return of(mockNginxRepo).pipe(delay(0));
         }
-        return of(mockRepo);
+        return of(mockRepo).pipe(delay(0));
       });
     userPermissionService = fixtureRepo.debugElement.injector.get(UserPermissionService);
     spyOn(userPermissionService, "getPermission")
@@ -197,23 +183,16 @@ describe('RepositoryComponentGridview (inline template)', () => {
       expect(elRepo.textContent).toEqual('library/busybox');
     });
   }));
-  // Will fail after upgrade to angular 6. todo: need to fix it.
-  it('should filter data by keyword', async(() => {
-    fixtureRepo.whenStable().then(() => {
-      fixtureRepo.detectChanges();
-
-      compRepo.doSearchRepoNames('nginx');
-      fixtureRepo.whenStable().then(() => {
-
-        fixtureRepo.detectChanges();
-        let de: DebugElement[] = fixtureRepo.debugElement.queryAll(By.css('.datagrid-cell'));
-        expect(de).toBeTruthy();
-        expect(compRepo.repositories.length).toEqual(1);
-        expect(de.length).toEqual(1);
-        let el: HTMLElement = de[0].nativeElement;
-        expect(el).toBeTruthy();
-        expect(el.textContent).toEqual('library/nginx');
-      });
-    });
-  }));
+  it('should filter data by keyword', async () => {
+    fixtureRepo.autoDetectChanges();
+    await fixtureRepo.whenStable();
+    compRepo.doSearchRepoNames('nginx');
+    await fixtureRepo.whenStable();
+    let de: DebugElement[] = fixtureRepo.debugElement.queryAll(By.css('.datagrid-cell'));
+    expect(de).toBeTruthy();
+    expect(compRepo.repositories.length).toEqual(2);
+    expect(de.length).toEqual(8);
+    let el: HTMLElement = de[0].nativeElement;
+    expect(el).toBeTruthy();
+  });
 });
