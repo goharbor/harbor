@@ -23,7 +23,6 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
-	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -144,7 +143,6 @@ func (m *manifestV2ProcessorTestSuite) TestAbstractMetadata() {
 	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(0, ioutil.NopCloser(bytes.NewReader([]byte(config))), nil)
 	err := m.processor.AbstractMetadata(nil, artifact, []byte(manifest))
 	m.Require().Nil(err)
-	m.Equal(icon.DigestOfIconImage, artifact.Icon)
 	m.regCli.AssertExpectations(m.T())
 }
 

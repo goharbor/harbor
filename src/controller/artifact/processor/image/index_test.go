@@ -17,7 +17,6 @@ package image
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/stretchr/testify/suite"
 )
@@ -35,7 +34,6 @@ func (i *indexProcessTestSuite) TestAbstractMetadata() {
 	artifact := &artifact.Artifact{}
 	err := i.processor.AbstractMetadata(nil, artifact, nil)
 	i.Require().Nil(err)
-	i.Equal(icon.DigestOfIconImage, artifact.Icon)
 }
 
 func (i *indexProcessTestSuite) TestGetArtifactType() {

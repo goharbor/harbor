@@ -15,16 +15,16 @@
 package cnab
 
 import (
+	"io/ioutil"
+	"strings"
+	"testing"
+
 	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
-	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
-	"strings"
-	"testing"
 )
 
 type processorTestSuite struct {
@@ -99,7 +99,6 @@ func (p *processorTestSuite) TestAbstractMetadata() {
 	p.Len(art.ExtraAttrs, 7)
 	p.Equal("0.1.1", art.ExtraAttrs["version"].(string))
 	p.Equal("helloworld", art.ExtraAttrs["name"].(string))
-	p.Equal(icon.DigestOfIconCNAB, art.Icon)
 }
 
 func (p *processorTestSuite) TestGetArtifactType() {

@@ -16,13 +16,13 @@ package processor
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/controller/icon"
-	"github.com/goharbor/harbor/src/pkg/distribution"
-	"github.com/goharbor/harbor/src/testing/mock"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"io/ioutil"
 	"strings"
 	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/distribution"
+	"github.com/goharbor/harbor/src/testing/mock"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/pkg/parser"
@@ -184,7 +184,6 @@ func (d *defaultProcessorTestSuite) TestAbstractMetadata() {
 	d.parser.On("Parse", context.TODO(), mock.AnythingOfType("*artifact.Artifact"), mock.AnythingOfType("[]byte")).Return(nil)
 	err = d.processor.AbstractMetadata(nil, art, content)
 	d.Require().Nil(err)
-	d.Equal(icon.DigestOfIconDefault, art.Icon)
 }
 
 func TestDefaultProcessorTestSuite(t *testing.T) {

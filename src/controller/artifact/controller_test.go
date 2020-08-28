@@ -20,9 +20,13 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -124,9 +128,66 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 	artifact := c.ctl.assembleArtifact(ctx, art, option)
 	c.Require().NotNil(artifact)
 	c.Equal(art.ID, artifact.ID)
+	c.Equal(icon.DigestOfIconDefault, artifact.Icon)
 	c.Contains(artifact.Tags, tg)
 	c.Contains(artifact.Labels, lb)
 	// TODO check other fields of option
+}
+
+func (c *controllerTestSuite) TestPopulateIcon() {
+	cases := []struct {
+		art *artifact.Artifact
+		ico string
+	}{
+		{
+			art: &artifact.Artifact{
+				ID:     1,
+				Digest: "sha256:123",
+				Type:   image.ArtifactTypeImage,
+			},
+			ico: icon.DigestOfIconImage,
+		},
+		{
+			art: &artifact.Artifact{
+				ID:     2,
+				Digest: "sha256:456",
+				Type:   cnab.ArtifactTypeCNAB,
+			},
+			ico: icon.DigestOfIconCNAB,
+		},
+		{
+			art: &artifact.Artifact{
+				ID:     3,
+				Digest: "sha256:1234",
+				Type:   chart.ArtifactTypeChart,
+			},
+			ico: icon.DigestOfIconChart,
+		},
+		{
+			art: &artifact.Artifact{
+				ID:     4,
+				Digest: "sha256:1234",
+				Type:   "other",
+			},
+			ico: icon.DigestOfIconDefault,
+		},
+		{
+			art: &artifact.Artifact{
+				ID:     5,
+				Digest: "sha256:2345",
+				Type:   image.ArtifactTypeImage,
+				Icon:   "sha256:abcd",
+			},
+			ico: "sha256:abcd",
+		},
+	}
+	for _, cs := range cases {
+		a := &Artifact{
+			Artifact: *cs.art,
+		}
+		c.ctl.populateIcon(a)
+		c.Equal(cs.ico, a.Icon)
+	}
 }
 
 func (c *controllerTestSuite) TestEnsureArtifact() {

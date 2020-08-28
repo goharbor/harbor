@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/goharbor/harbor/src/controller/icon"
 	// annotation parsers will be registered
 	"github.com/goharbor/harbor/src/controller/artifact/annotation"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -122,9 +121,6 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 		log.Errorf("the annotation parser parse annotation for artifact error: %v", err)
 	}
 
-	if artifact.Icon == "" {
-		artifact.Icon = icon.DigestOfIconDefault
-	}
 	return nil
 }
 

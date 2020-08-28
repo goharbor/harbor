@@ -17,7 +17,6 @@ package image
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/stretchr/testify/suite"
@@ -83,7 +82,6 @@ func (m *manifestV1ProcessorTestSuite) TestAbstractMetadata() {
 	err := m.processor.AbstractMetadata(nil, artifact, []byte(manifest))
 	m.Require().Nil(err)
 	m.Assert().Equal("amd64", artifact.ExtraAttrs["architecture"].(string))
-	m.Equal(icon.DigestOfIconImage, artifact.Icon)
 }
 
 func (m *manifestV1ProcessorTestSuite) TestAbstractAddition() {

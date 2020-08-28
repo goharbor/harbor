@@ -16,9 +16,12 @@ package chart
 
 import (
 	"bytes"
+	"io/ioutil"
+	"strings"
+	"testing"
+
 	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
-	"github.com/goharbor/harbor/src/controller/icon"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	chartserver "github.com/goharbor/harbor/src/pkg/chart"
@@ -28,9 +31,6 @@ import (
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 	helm_chart "helm.sh/helm/v3/pkg/chart"
-	"io/ioutil"
-	"strings"
-	"testing"
 )
 
 var (
@@ -81,7 +81,6 @@ func (p *processorTestSuite) TestAbstractMetadata() {
 	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(0, ioutil.NopCloser(bytes.NewReader([]byte(chartYaml))), nil)
 	err := p.processor.AbstractMetadata(nil, artifact, []byte(chartManifest))
 	p.Require().Nil(err)
-	p.Equal(icon.DigestOfIconChart, artifact.Icon)
 	p.regCli.AssertExpectations(p.T())
 }
 
