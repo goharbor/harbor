@@ -403,7 +403,6 @@ class HarborAPI:
                 pass
         open(target, 'wb').write(ca_content.encode('utf-8'))
 
-
 def request(url, method, user = None, userp = None, **kwargs):
     if user is None:
         user = "admin"
@@ -493,3 +492,4 @@ def do_data_creation():
     harborAPI.add_sys_allowlist(data["configuration"]["deployment_security"], version=args.version)
 
 do_data_creation()
+
