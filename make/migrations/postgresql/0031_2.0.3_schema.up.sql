@@ -8,6 +8,13 @@ Fixes https://github.com/goharbor/harbor/issues/12827
     resolve it.
 */
 
+/* Delete the duplicate tags if user re-tag & re-push the missing images */
+DELETE FROM tag
+WHERE id NOT IN
+    (SELECT MAX(id) AS id
+    FROM (SELECT t.*, art.repository_name FROM artifact AS art JOIN tag AS t ON art.id = t.artifact_id) t1
+    GROUP BY t1.name, t1.repository_name);
+
 /* Insert the missing repository records */
 INSERT INTO repository (name, project_id)
     SELECT DISTINCT repository_name, project_id FROM artifact WHERE repository_id<0 AND
