@@ -117,6 +117,8 @@ type Controller interface {
 	ListPoliciesByProject(ctx context.Context, project int64, query *q.Query) ([]*policyModels.Schema, error)
 	// CheckHealth checks the instance health, for test connection
 	CheckHealth(ctx context.Context, instance *providerModels.Instance) error
+	// DeletePoliciesOfProject delete all policies under one project
+	DeletePoliciesOfProject(ctx context.Context, project int64) error
 }
 
 var _ Controller = (*controller)(nil)
@@ -417,6 +419,21 @@ func (c *controller) DeletePolicy(ctx context.Context, id int64) error {
 	}
 
 	return c.pManager.Delete(ctx, id)
+}
+
+// DeletePoliciesOfProject deletes all the policy under project.
+func (c *controller) DeletePoliciesOfProject(ctx context.Context, project int64) error {
+	policies, err := c.ListPoliciesByProject(ctx, project, nil)
+	if err != nil {
+		return err
+	}
+
+	for _, p := range policies {
+		if err = c.DeletePolicy(ctx, p.ID); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // deleteExecs delete executions
