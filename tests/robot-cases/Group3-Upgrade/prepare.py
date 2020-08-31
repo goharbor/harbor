@@ -403,9 +403,6 @@ class HarborAPI:
                 pass
         open(target, 'wb').write(ca_content.encode('utf-8'))
 
-    @get_feature_branch
-    def push_artifact(self, project, **kwargs):
-
 def request(url, method, user = None, userp = None, **kwargs):
     if user is None:
         user = "admin"
