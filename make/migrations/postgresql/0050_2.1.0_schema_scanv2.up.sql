@@ -31,7 +31,7 @@
     CREATE TABLE IF NOT EXISTS "vulnerability_record_v2" (
         "id" serial NOT NULL PRIMARY KEY,
         "cve_id" text NOT NULL DEFAULT '' ,
-        "registration_uuid" text NOT NULL DEFAULT ''  UNIQUE,
+        "registration_uuid" text NOT NULL DEFAULT '',
         "digest" text NOT NULL DEFAULT '' ,
         "report_uuid" text NOT NULL DEFAULT '' ,
         "package" text NOT NULL DEFAULT '' ,

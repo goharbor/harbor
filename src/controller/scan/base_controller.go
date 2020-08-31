@@ -552,6 +552,9 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 			return errors.Wrap(err, "scan controller: handle job hook")
 		}
 
+		//at this point the scan is complete and the JSON raw report data is available.
+		//convert it to the v2 report format and persist into the database.
+
 		return nil
 	}
 

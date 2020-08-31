@@ -46,7 +46,7 @@ type Report struct {
 type VulnerabilityRecord struct {
 	ID               int64  `orm:"pk;auto;column(id)"`
 	CVEID            string `orm:"column(cve_id)"`
-	RegistrationUUID string `orm:"unique;column(registration_uuid)"`
+	RegistrationUUID string `orm:"column(registration_uuid)"`
 	Digest           string `orm:"column(digest)"`
 	Report           string `orm:"column(report_uuid)"`
 	Package          string `orm:"column(package)"`
