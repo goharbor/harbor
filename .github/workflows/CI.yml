@@ -163,19 +163,10 @@ jobs:
           cryptsetup-bin
           export VERSION=3.5.3 && \
           wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz && \
-          tar -xzf singularity-${VERSION}.tar.gz && \
-          cd singularity
-          ./mconfig && \
-          make -C builddir && \
-          sudo make -C builddir install
-          python -V
-          sudo apt-get update -y && sudo apt-get install -y zbar-tools libzbar-dev python-zbar
-          sudo apt-get update -y
-          sudo apt-get install -y python3.6
-          sudo rm /usr/bin/python
-          sudo ln -s /usr/bin/python3.6 /usr/bin/python
-          sudo apt-get install -y python3-pip
-          python -V
+          tar -xzf singularity-${VERSION}.tar.gz && cd singularity
+          ./mconfig && make -C builddir && sudo make -C builddir install
+          sudo apt-get update -y ; sudo apt-get install -y zbar-tools libzbar-dev python-zbar python3.7
+          sudo rm /usr/bin/python ; sudo ln -s /usr/bin/python3.7 /usr/bin/python ; sudo apt-get install -y python3-pip
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
@@ -237,13 +228,8 @@ jobs:
           echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
           echo "::set-env name=IP::$IP"
           python -V
-          sudo apt-get update -y && sudo apt-get install -y zbar-tools libzbar-dev python-zbar
-          sudo apt-get update -y
-          sudo apt-get install -y python3.6
-          sudo rm /usr/bin/python
-          sudo ln -s /usr/bin/python3.6 /usr/bin/python
-          sudo apt-get install -y python3-pip
-          python -V
+          sudo apt-get update -y ; sudo apt-get install -y zbar-tools libzbar-dev python-zbar python3.7
+          sudo rm /usr/bin/python ; sudo ln -s /usr/bin/python3.7 /usr/bin/python ; sudo apt-get install -y python3-pip
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
