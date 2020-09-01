@@ -20,6 +20,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/log"
+	pkg_art "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
 
@@ -46,20 +47,21 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 		ExtraAttrs:        a.ExtraAttrs,
 		Annotations:       a.Annotations,
 	}
+
 	for _, reference := range a.References {
-		art.References = append(art.References, reference.ToSwagger())
+		art.References = append(art.References, NewReference(reference).ToSwagger())
 	}
 	for _, tag := range a.Tags {
-		art.Tags = append(art.Tags, tag.ToSwagger())
+		art.Tags = append(art.Tags, NewTag(tag).ToSwagger())
 	}
 	for addition, link := range a.AdditionLinks {
 		if art.AdditionLinks == nil {
 			art.AdditionLinks = make(map[string]models.AdditionLink)
 		}
-		art.AdditionLinks[addition] = link.ToSwagger()
+		art.AdditionLinks[addition] = NewAdditionLink(link).ToSwagger()
 	}
 	for _, label := range a.Labels {
-		art.Labels = append(art.Labels, label.ToSwagger())
+		art.Labels = append(art.Labels, NewLabel(label).ToSwagger())
 	}
 	if len(a.ScanOverview) > 0 {
 		art.ScanOverview = models.ScanOverview{}
@@ -79,4 +81,53 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 		}
 	}
 	return art
+}
+
+// AdditionLink is a link via that the addition can be fetched
+type AdditionLink struct {
+	*artifact.AdditionLink
+}
+
+// ToSwagger converts the addition link to the swagger model
+func (a *AdditionLink) ToSwagger() models.AdditionLink {
+	return models.AdditionLink{
+		Absolute: a.Absolute,
+		Href:     a.HREF,
+	}
+}
+
+// NewAdditionLink ...
+func NewAdditionLink(a *artifact.AdditionLink) *AdditionLink {
+	return &AdditionLink{AdditionLink: a}
+}
+
+// Reference records the child artifact referenced by parent artifact
+type Reference struct {
+	*pkg_art.Reference
+}
+
+// ToSwagger converts the reference to the swagger model
+func (r *Reference) ToSwagger() *models.Reference {
+	ref := &models.Reference{
+		ChildDigest: r.ChildDigest,
+		ChildID:     r.ChildID,
+		ParentID:    r.ParentID,
+		Annotations: r.Annotations,
+		Urls:        r.URLs,
+	}
+	if r.Platform != nil {
+		ref.Platform = &models.Platform{
+			Architecture: r.Platform.Architecture,
+			Os:           r.Platform.OS,
+			OsFeatures:   r.Platform.OSFeatures,
+			OsVersion:    r.Platform.OSVersion,
+			Variant:      r.Platform.Variant,
+		}
+	}
+	return ref
+}
+
+// NewReference ...
+func NewReference(r *pkg_art.Reference) *Reference {
+	return &Reference{Reference: r}
 }
