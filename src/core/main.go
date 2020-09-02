@@ -259,6 +259,10 @@ func registerScanners() {
 		uninstallScannerNames = append(uninstallScannerNames, clairScanner)
 	}
 
+	if err := scan.RemoveImmutableScanners(uninstallScannerNames); err != nil {
+		log.Warningf("failed to remove scanners: %v", err)
+	}
+
 	if err := scan.EnsureScanners(wantedScanners); err != nil {
 		log.Fatalf("failed to register scanners: %v", err)
 	}
@@ -269,11 +273,6 @@ func registerScanners() {
 			log.Fatalf("failed to set default scanner: %v", err)
 		}
 	}
-
-	if err := scan.RemoveImmutableScanners(uninstallScannerNames); err != nil {
-		log.Warningf("failed to remove scanners: %v", err)
-	}
-
 }
 
 func getDefaultScannerName() string {
