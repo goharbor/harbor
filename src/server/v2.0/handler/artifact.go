@@ -17,9 +17,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/event/metadata"
-	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/pkg/notification"
 	"net/http"
 	"strings"
 	"time"
@@ -31,10 +28,13 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -244,7 +244,7 @@ func (a *artifactAPI) requireNonProxyCacheProject(ctx context.Context, name stri
 	if err != nil {
 		return err
 	}
-	if pro.RegistryID > 0 {
+	if pro.IsProxy() {
 		return errors.New(nil).WithCode(errors.MethodNotAllowedCode).
 			WithMessage("the operation isn't supported for a proxy cache project")
 	}
