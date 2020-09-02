@@ -15,6 +15,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/astaxie/beego/orm"
 	"time"
 )
@@ -36,4 +37,9 @@ type ArtifactTrash struct {
 // TableName for artifact trash
 func (at *ArtifactTrash) TableName() string {
 	return "artifact_trash"
+}
+
+func (at *ArtifactTrash) String() string {
+	return fmt.Sprintf("ID-%d MediaType-%s ManifestMediaType-%s RepositoryName-%s Digest-%s CreationTime-%s",
+		at.ID, at.MediaType, at.ManifestMediaType, at.RepositoryName, at.Digest, at.CreationTime.Format("2006-01-02 15:04:05"))
 }
