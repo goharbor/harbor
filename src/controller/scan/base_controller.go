@@ -36,6 +36,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/postprocessors"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -554,6 +555,11 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 
 		//at this point the scan is complete and the JSON raw report data is available.
 		//convert it to the v2 report format and persist into the database.
+		rc := postprocessors.NewScanReportV1ToV2Converter()
+		_, err = rc.Convert(rpl[0])
+		if err != nil {
+			return errors.Wrapf(err, "Failed to convert vulnerability data to new schema for report UUID : %s", rpl[0].UUID)
+		}
 
 		return nil
 	}
