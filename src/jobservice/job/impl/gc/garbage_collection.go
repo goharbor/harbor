@@ -112,7 +112,6 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 // parseParams set the parameters according to the GC API call.
 func (gc *GarbageCollector) parseParams(params job.Parameters) {
 	// redis url
-	gc.logger.Info(params)
 	gc.redisURL = params["redis_url_reg"].(string)
 
 	// delete untagged: default is to delete the untagged artifact
@@ -141,6 +140,9 @@ func (gc *GarbageCollector) parseParams(params job.Parameters) {
 			gc.dryRun = dryRun
 		}
 	}
+
+	gc.logger.Infof("Garbage Collection parameters: [delete_untagged: %t, dry_run: %t, time_window: %d]",
+		gc.deleteUntagged, gc.dryRun, gc.timeWindowHours)
 }
 
 // Run implements the interface in job/Interface
@@ -395,18 +397,21 @@ func (gc *GarbageCollector) deletedArt(ctx job.Context) (map[string][]model.Arti
 	}
 
 	// group the deleted artifact by digest. The repositories of blob is needed when to delete as a manifest.
-	for _, art := range arts {
-		_, exist := artMap[art.Digest]
-		if !exist {
-			artMap[art.Digest] = []model.ArtifactTrash{art}
-		} else {
-			repos := artMap[art.Digest]
-			repos = append(repos, art)
-			artMap[art.Digest] = repos
+	if len(arts) > 0 {
+		gc.logger.Info("artifact trash candidates.")
+		for _, art := range arts {
+			gc.logger.Info(art.String())
+			_, exist := artMap[art.Digest]
+			if !exist {
+				artMap[art.Digest] = []model.ArtifactTrash{art}
+			} else {
+				repos := artMap[art.Digest]
+				repos = append(repos, art)
+				artMap[art.Digest] = repos
+			}
 		}
 	}
 
-	gc.logger.Info("required candidate: %+v", arts)
 	return artMap, nil
 }
 
