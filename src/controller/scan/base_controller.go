@@ -496,6 +496,7 @@ func (bc *basicController) GetScanLog(uuid string) ([]byte, error) {
 
 // HandleJobHooks ...
 func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChange) error {
+	log.Infof("Executing HandleJobHook for track ID : %s", trackID)
 	if len(trackID) == 0 {
 		return errors.New("empty track ID")
 	}
