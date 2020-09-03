@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goharbor/harbor/src/lib/errors"
-
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanv2"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -129,7 +129,7 @@ func (c *scanReportV1ToV2Converter) convertRawReportToVulnerabilityData(reportUU
 			return err
 		}
 	}
-
+	log.Infof("Converted %d vulnerability records to the new schema for report ID %s and scanner Id %s", len(vulnReport.Vulnerabilities), reportUUID, registrationUUID)
 	return nil
 }
 
