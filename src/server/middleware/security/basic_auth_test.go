@@ -15,18 +15,39 @@
 package security
 
 import (
+	"fmt"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"net/http"
 	"testing"
 )
 
 func TestBasicAuth(t *testing.T) {
+	c := map[string]interface{}{
+		common.AUTHMode: common.DBAuth,
+	}
+	config.InitWithSettings(c)
+
+	user := models.User{
+		Username: "tester",
+		Password: "Harbor12345",
+	}
+	uid, err := dao.Register(user)
+	defer func(id int64) {
+		sql := fmt.Sprintf("DELETE FROM harbor_user WHERE user_id=%d", id)
+		dao.ExecuteBatchSQL([]string{sql})
+	}(uid)
 	basicAuth := &basicAuth{}
 	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
 	require.Nil(t, err)
-	req.SetBasicAuth("admin", "Harbor12345")
+	req.SetBasicAuth("tester", "Harbor12345")
 	ctx := basicAuth.Generate(req)
 	assert.NotNil(t, ctx)
 }

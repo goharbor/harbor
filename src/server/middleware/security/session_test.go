@@ -15,11 +15,15 @@
 package security
 
 import (
+	"fmt"
+
 	"github.com/astaxie/beego"
 	beegosession "github.com/astaxie/beego/session"
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -41,20 +45,31 @@ func TestSession(t *testing.T) {
 	beego.GlobalSessions, err = beegosession.NewManager("memory", conf)
 	require.Nil(t, err)
 
-	user := models.User{
-		Username:     "admin",
-		UserID:       1,
-		Email:        "admin@example.com",
+	user := &models.User{
+		Username:     "session_test",
+		Email:        "session_test@example.com",
 		SysAdminFlag: true,
 	}
+	err = dao.OnBoardUser(user)
+	require.Nil(t, err)
+	defer func(id int) {
+		sql := fmt.Sprintf("DELETE FROM harbor_user WHERE user_id=%d", id)
+		dao.ExecuteBatchSQL([]string{sql})
+	}(user.UserID)
+
 	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
 	require.Nil(t, err)
 	store, err := beego.GlobalSessions.SessionStart(httptest.NewRecorder(), req)
 	require.Nil(t, err)
-	err = store.Set("user", user)
+	err = store.Set(UserIDSessionKey, 999)
 	require.Nil(t, err)
 
 	session := &session{}
 	ctx := session.Generate(req)
+	assert.Nil(t, ctx)
+	err = store.Set(UserIDSessionKey, user.UserID)
+	require.Nil(t, err)
+	ctx = session.Generate(req)
 	assert.NotNil(t, ctx)
+
 }
