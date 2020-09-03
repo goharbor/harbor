@@ -22,10 +22,29 @@ fi
 sudo curl -o $DIR/../../tests/apitests/python/mariadb-4.3.1.tgz https://storage.googleapis.com/harbor-builds/bin/charts/mariadb-4.3.1.tgz
 
 sudo wget https://bootstrap.pypa.io/get-pip.py && sudo python ./get-pip.py && sudo pip install --ignore-installed urllib3 chardet requests && sudo pip install robotframework==3.2.1 robotframework-httplibrary requests --upgrade
-sudo make swagger_client
-#TODO: Swagger python package used to installed into dist-packages, but it's changed into site-packages all in a sudden, we havn't found the root cause.
-#      so current workround is to copy swagger packages from site-packages to dist-packages.
-sudo cp -r /usr/lib/python3.7/site-packages/* /usr/local/lib/python3.7/dist-packages
+
+echo "Generate swagger client"
+wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar -O openapi-generator-cli.jar
+rm -rf harborclient
+mkdir  -p harborclient/harbor_client
+mkdir  -p harborclient/harbor_swagger_client
+mkdir  -p harborclient/harbor_v2_swagger_client
+java -jar openapi-generator-cli.jar generate -i api/swagger.yaml -g python -o harborclient/harbor_client --package-name client
+java -jar openapi-generator-cli.jar generate -i api/v2.0/legacy_swagger.yaml -g python -o harborclient/harbor_swagger_client --package-name swagger_client
+java -jar openapi-generator-cli.jar generate -i api/v2.0/swagger.yaml -g python -o harborclient/harbor_v2_swagger_client --package-name v2_swagger_client
+python ./harborclient/harbor_client/setup.py install --install-lib=$PYTHONPATH
+python ./harborclient/harbor_swagger_client/setup.py install --install-lib=$PYTHONPATH
+python ./harborclient/harbor_v2_swagger_client/setup.py install --install-lib=$PYTHONPATH
+pip install docker -q
+pip freeze
+echo $PYTHONPATH
+python -c 'import sys; print(sys.path)'
+python -c 'import client;print(client.__file__)'
+python -c 'import swagger_client;print(swagger_client.__file__)'
+python -c 'import v2_swagger_client;print(v2_swagger_client.__file__)'
+if [ -f $package_files ];then
+    sudo cp -r $package_files /usr/local/lib/python3.7/dist-packages
+fi
 
 if [ $GITHUB_TOKEN ];
 then
