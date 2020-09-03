@@ -21,6 +21,9 @@ var (
 		if err != nil {
 			return false, err
 		}
+		if len(art.Tag) > 0 {
+			return checker.IsTagSigned(art.Tag, art.Digest), nil
+		}
 		return checker.IsArtifactSigned(art.Digest), nil
 	}
 )
