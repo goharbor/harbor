@@ -335,6 +335,22 @@ func (s *preheatSuite) TestListPoliciesByProject() {
 	s.NotNil(p)
 }
 
+func (s *preheatSuite) TestDeletePoliciesOfProject() {
+	fakePolicies := []*policy.Schema{
+		{ID: 1000, Name: "1-should-delete", ProjectID: 10},
+		{ID: 1001, Name: "2-should-delete", ProjectID: 10},
+	}
+	s.fakePolicyMgr.On("ListPoliciesByProject", s.ctx, int64(10), mock.Anything).Return(fakePolicies, nil)
+	for _, p := range fakePolicies {
+		s.fakePolicyMgr.On("Get", s.ctx, p.ID).Return(p, nil)
+		s.fakePolicyMgr.On("Delete", s.ctx, p.ID).Return(nil)
+		s.fakeExecutionMgr.On("List", s.ctx, &q.Query{Keywords: map[string]interface{}{"VendorID": p.ID, "VendorType": "P2P_PREHEAT"}}).Return([]*taskModel.Execution{}, nil)
+	}
+
+	err := s.controller.DeletePoliciesOfProject(s.ctx, 10)
+	s.NoError(err)
+}
+
 func (s *preheatSuite) TestCheckHealth() {
 	// if instance is nil
 	var instance *providerModel.Instance
