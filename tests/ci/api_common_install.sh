@@ -25,7 +25,7 @@ sudo wget https://bootstrap.pypa.io/get-pip.py && sudo python ./get-pip.py && su
 sudo make swagger_client
 #TODO: Swagger python package used to installed into dist-packages, but it's changed into site-packages all in a sudden, we havn't found the root cause.
 #      so current workround is to copy swagger packages from site-packages to dist-packages.
-sudo cp -r /usr/lib/python3.7/site-packages/* /usr/local/lib/python3.7/dist-packages
+ls /usr/lib/python3.7/site-packages/ && sudo cp -r /usr/lib/python3.7/site-packages/* /usr/local/lib/python3.7/dist-packages
 
 if [ $GITHUB_TOKEN ];
 then
