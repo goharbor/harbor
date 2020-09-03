@@ -66,6 +66,7 @@ func (c *scanReportV1ToV2Converter) Convert(reportV1 *scan.Report) (string, erro
 		reportV2.Requester = reportV1.Requester
 	*/
 	if len(reportV1.Report) == 0 {
+		log.Infof("There is no vulnerability report to convert for report UUID : %s", reportV1.UUID)
 		return reportV1.UUID, nil
 	}
 
