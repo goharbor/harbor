@@ -556,9 +556,14 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 
 		//at this point the scan is complete and the JSON raw report data is available.
 		//convert it to the v2 report format and persist into the database.
+		//get the complete report definition and then convert to the new schema
+		report, err := bc.manager.Get(rpl[0].UUID)
+		if err != nil {
+			return errors.Wrapf(err, "scan controller: handle job hook report conversion failure for report %s", rpl[0].UUID)
+		}
 		log.Infof("Converting report ID %s to  the new V2 schema", rpl[0].UUID)
 		rc := postprocessors.NewScanReportV1ToV2Converter()
-		_, err = rc.Convert(rpl[0])
+		_, err = rc.Convert(report)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to convert vulnerability data to new schema for report UUID : %s", rpl[0].UUID)
 		}
