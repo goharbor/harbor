@@ -26,8 +26,8 @@ sudo make swagger_client
 #TODO: Swagger python package used to installed into dist-packages, but it's changed into site-packages all in a sudden, we havn't found the root cause.
 #      so current workround is to copy swagger packages from site-packages to dist-packages.
 package_dir=/usr/lib/python3.7/site-packages
-if [ $(find $package_dir -type f| wc -l) -gt 0 ];then
-    sudo cp -r ${package_dir}/* /usr/local/lib/python3.7/dist-packages
+if [ -d $package_dir ] && [  $(find $package_dir -type f -name "*client*.egg" | wc -l) -gt 0 ];then
+    sudo cp -rf ${package_dir}/* /usr/local/lib/python3.7/dist-packages
 fi
 
 if [ $GITHUB_TOKEN ];
