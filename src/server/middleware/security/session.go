@@ -19,12 +19,16 @@ import (
 	"net/http/httptest"
 
 	"github.com/astaxie/beego"
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
+
+// UserIDSessionKey is the key for storing user id in session
+const UserIDSessionKey = "user_id"
 
 type session struct{}
 
@@ -35,15 +39,24 @@ func (s *session) Generate(req *http.Request) security.Context {
 		log.Errorf("failed to get the session store for request: %v", err)
 		return nil
 	}
-	userInterface := store.Get("user")
+	userInterface := store.Get(UserIDSessionKey)
 	if userInterface == nil {
 		return nil
 	}
-	user, ok := userInterface.(models.User)
+	uid, ok := userInterface.(int)
 	if !ok {
-		log.Warning("can not convert the user in session to user model")
+		log.Warning("can not convert the data in session to user id")
+		return nil
+	}
+	user, err := dao.GetUser(models.User{UserID: uid})
+	if err != nil {
+		log.Errorf("failed to get user info, error: %v, skip generating security context via session", err)
+		return nil
+	}
+	if user == nil {
+		log.Errorf("the user id from session: %d, not exist in DB", uid)
 		return nil
 	}
 	log.Debugf("a session security context generated for request %s %s", req.Method, req.URL.Path)
-	return local.NewSecurityContext(&user, config.GlobalProjectMgr)
+	return local.NewSecurityContext(user, config.GlobalProjectMgr)
 }
