@@ -80,6 +80,11 @@ func (p *Project) IsPublic() bool {
 	return isTrue(public)
 }
 
+// IsProxy returns true when the project type is proxy cache
+func (p *Project) IsProxy() bool {
+	return p.RegistryID > 0
+}
+
 // ContentTrustEnabled ...
 func (p *Project) ContentTrustEnabled() bool {
 	enabled, exist := p.GetMetadata(ProMetaEnableContentTrust)
