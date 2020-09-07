@@ -54,7 +54,7 @@ require (
 	github.com/ncw/swift v1.0.49 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/olekukonko/tablewriter v0.0.1
-	github.com/opencontainers/go-digest v1.0.0-rc1
+	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.1
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pkg/errors v0.9.1
