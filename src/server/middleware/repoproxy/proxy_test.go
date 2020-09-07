@@ -18,43 +18,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	securitySecret "github.com/goharbor/harbor/src/common/security/secret"
 	"github.com/goharbor/harbor/src/core/config"
 )
-
-func TestIsProxyProject(t *testing.T) {
-	cases := []struct {
-		name string
-		in   *models.Project
-		want bool
-	}{
-		{
-			name: `no proxy`,
-			in:   &models.Project{RegistryID: 0},
-			want: false,
-		},
-		{
-			name: `normal proxy`,
-			in:   &models.Project{RegistryID: 1},
-			want: true,
-		},
-	}
-
-	for _, tt := range cases {
-		t.Run(tt.name, func(t *testing.T) {
-
-			got := isProxyProject(tt.in)
-
-			if got != tt.want {
-				t.Errorf(`(%v) = %v; want "%v"`, tt.in, got, tt.want)
-			}
-
-		})
-	}
-}
 
 func TestIsProxySession(t *testing.T) {
 	config.Init()

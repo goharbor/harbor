@@ -17,20 +17,20 @@ package repoproxy
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
-	"github.com/goharbor/harbor/src/lib/errors"
-	httpLib "github.com/goharbor/harbor/src/lib/http"
-	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/registry"
 	"io"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/proxy"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
+	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/replication/registry"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
@@ -163,14 +163,6 @@ func setHeaders(w http.ResponseWriter, size int64, mediaType string, dig string)
 	h.Set("Etag", dig)
 }
 
-// isProxyProject check the project is a proxy project
-func isProxyProject(p *models.Project) bool {
-	if p == nil {
-		return false
-	}
-	return p.RegistryID > 0
-}
-
 // isProxySession check if current security context is proxy session
 func isProxySession(ctx context.Context) bool {
 	sc, ok := security.FromContext(ctx)
@@ -194,7 +186,7 @@ func DisableBlobAndManifestUploadMiddleware() func(http.Handler) http.Handler {
 			httpLib.SendError(w, err)
 			return
 		}
-		if isProxyProject(p) && !isProxySession(ctx) {
+		if p.IsProxy() && !isProxySession(ctx) {
 			httpLib.SendError(w,
 				errors.DeniedError(
 					errors.Errorf("can not push artifact to a proxy project: %v", p.Name)))

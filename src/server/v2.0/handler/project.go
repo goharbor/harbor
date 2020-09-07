@@ -119,6 +119,12 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.Public = strconv.FormatBool(false)
 	}
 
+	// ignore enable_content_trust metadata for proxy cache project
+	// see https://github.com/goharbor/harbor/issues/12940 to get more info
+	if req.RegistryID != nil {
+		req.Metadata.EnableContentTrust = nil
+	}
+
 	// validate the RegistryID and StorageLimit in the body of the request
 	if err := a.validateProjectReq(ctx, req); err != nil {
 		return a.SendError(ctx, err)
@@ -314,7 +320,7 @@ func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.Get
 		fetchSummaries = append(fetchSummaries, getProjectMemberSummary)
 	}
 
-	if p.RegistryID > 0 {
+	if p.IsProxy() {
 		fetchSummaries = append(fetchSummaries, getProjectRegistrySummary)
 	}
 
@@ -458,6 +464,11 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		}
 	}
 
+	// ignore enable_content_trust metadata for proxy cache project
+	// see https://github.com/goharbor/harbor/issues/12940 to get more info
+	if params.Project.Metadata != nil && p.IsProxy() {
+		params.Project.Metadata.EnableContentTrust = nil
+	}
 	lib.JSONCopy(&p.Metadata, params.Project.Metadata)
 
 	if err := a.projectCtl.Update(ctx, p); err != nil {
