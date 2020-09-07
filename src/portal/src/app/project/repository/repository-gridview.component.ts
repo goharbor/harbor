@@ -9,11 +9,11 @@ import {
   SimpleChanges,
   Inject, OnDestroy
 } from "@angular/core";
-import { forkJoin, Subscription } from "rxjs";
+import {forkJoin, of, Subscription} from "rxjs";
 import { debounceTime, distinctUntilChanged, switchMap } from "rxjs/operators";
 import { TranslateService } from "@ngx-translate/core";
 import { map, catchError } from "rxjs/operators";
-import { Observable, throwError as observableThrowError } from "rxjs";
+import { Observable } from "rxjs";
 import { ClrDatagridStateInterface } from "@clr/angular";
 import {
   RepositoryService as NewRepositoryService
@@ -49,6 +49,7 @@ import { SessionService } from "../../shared/session.service";
 import { GridViewComponent } from "./gridview/grid-view.component";
 import { Repository as NewRepository } from "../../../../ng-swagger-gen/models/repository";
 import { StrictHttpResponse as __StrictHttpResponse } from '../../../../ng-swagger-gen/strict-http-response';
+import {HttpErrorResponse} from "@angular/common/http";
 
 
 @Component({
@@ -192,8 +193,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
   }
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
-    this.loading = true;
-    // forkJoin(...repArr).subscribe(() => {
     if (message &&
       message.source === ConfirmationTargets.REPOSITORY &&
       message.state === ConfirmationState.CONFIRMED) {
@@ -203,19 +202,29 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         repoLists.forEach(repo => {
           observableLists.push(this.delOperate(repo));
         });
-        forkJoin(observableLists).subscribe((item) => {
+        forkJoin(observableLists).subscribe(resArr => {
+          let error;
+          if (resArr && resArr.length) {
+            resArr.forEach(item => {
+              if (item instanceof HttpErrorResponse) {
+                error = errorHandler(item);
+              }
+            });
+          }
+          if (error) {
+            this.errorHandlerService.error(error);
+          } else {
+            this.translateService.get("BATCH.DELETED_SUCCESS").subscribe(res => {
+              this.errorHandlerService.info(res);
+            });
+          }
           this.selectedRow = [];
-          this.refresh();
           let st: ClrDatagridStateInterface = this.getStateAfterDeletion();
           if (!st) {
             this.refresh();
           } else {
             this.clrLoad(st);
           }
-        }, error => {
-          this.errorHandlerService.error(error);
-          this.loading = false;
-          this.refresh();
         });
       }
     }
@@ -243,10 +252,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
           });
         }), catchError(error => {
         const message = errorHandler(error);
-        this.translateService.get(message).subscribe(res =>
-          operateChanges(operMessage, OperationState.failure, res)
-        );
-        return observableThrowError(error);
+        this.translateService.get(message).subscribe(res => {
+              operateChanges(operMessage, OperationState.failure, res);
+        });
+        return of(error);
       }));
   }
 

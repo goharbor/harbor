@@ -1314,7 +1314,9 @@
     "COUNT_LARGE": "參數“個數”太大",
     "DAYS_LARGE": "參數“天數”太大",
     "EXECUTION_TYPE": "執行類型",
-    "ACTION": "操作"
+    "ACTION": "操作",
+    "YES": "Yes",
+    "NO": "No"
   },
   "IMMUTABLE_TAG": {
     "IMMUTABLE_RULES": "不可變的 Tag 規則",

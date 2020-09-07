@@ -2,7 +2,7 @@
 
 <clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="getCurrentArtifactTags($event)"  [(clrDgSelected)]="selectedRow">
     <clr-dg-action-bar>
-        <button id="new-tag" type="button" [disabled]="!hasCreateTagPermission" class="btn btn-secondary" (click)="addTag()">
+        <button *ngIf="!isProxyCacheProject" id="new-tag" type="button" [disabled]="!hasCreateTagPermission" class="btn btn-secondary" (click)="addTag()">
             <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'TAG.ADD_TAG' | translate}}
         </button>
         <button id="delete-tag" type="button" class="btn btn-secondary" [disabled]="!(selectedRow.length>=1&& !hasImmutableOnTag() && hasDeleteTagPermission)" (click)="removeTag()">

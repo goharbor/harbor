@@ -265,7 +265,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
     }
     changeAutoOnBoard() {
         if (!this.currentConfig.oidc_auto_onboard.value) {
-            this.currentConfig.oidc_user_claim.value = null;
+            this.currentConfig.oidc_user_claim.value = "";
         }
     }
 }

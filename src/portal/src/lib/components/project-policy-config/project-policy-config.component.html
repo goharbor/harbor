@@ -10,9 +10,9 @@
             <clr-control-helper class="config-subtext"> {{ 'PROJECT_CONFIG.PUBLIC_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        <clr-checkbox-container *ngIf="withNotary">
-            <label><span *ngIf="withNotary">{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
-            <clr-checkbox-wrapper *ngIf="withNotary">
+        <clr-checkbox-container *ngIf="withNotary && !isProxyCacheProject">
+            <label><span *ngIf="withNotary && !isProxyCacheProject">{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
+            <clr-checkbox-wrapper *ngIf="withNotary && !isProxyCacheProject">
                 <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.ContentTrust" name="content-trust"
                     [disabled]="!hasChangeConfigRole" />
                 <label>{{ 'PROJECT_CONFIG.CONTENT_TRUST_TOGGLE' | translate }}</label>
@@ -21,7 +21,7 @@
             </clr-control-helper>
         </clr-checkbox-container>
         <clr-checkbox-container id="prevent-vulenrability-image" class="margin-top-05">
-            <label><span *ngIf="!withNotary">{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
+            <label><span *ngIf="!(withNotary && !isProxyCacheProject)">{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
             <clr-checkbox-wrapper>
                 <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.PreventVulImg"
                     name="prevent-vulenrability-image-input" [disabled]="!hasChangeConfigRole" />
