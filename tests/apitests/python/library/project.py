@@ -189,7 +189,7 @@ class Project(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
 
-    def add_project_members(self, project_id, user_id = None, member_role_id = None, _ldap_group_dn=None,expect_status_code = 201, **kwargs):
+    def add_project_members(self, project_id, user_id = None, member_role_id = None, _ldap_group_dn=None, expect_status_code = 201, **kwargs):
         kwargs['api_type'] = 'products'
         projectMember = swagger_client.ProjectMember()
         if user_id is not None:
@@ -203,9 +203,13 @@ class Project(base.Base):
 
         client = self._get_client(**kwargs)
         data = []
-        data, status_code, header = client.projects_project_id_members_post_with_http_info(project_id, project_member = projectMember)
-        base._assert_status_code(expect_status_code, status_code)
-        return base._get_id_from_header(header)
+        try:
+            data, status_code, header = client.projects_project_id_members_post_with_http_info(project_id, project_member = projectMember)
+        except swagger_client.rest.ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            return base._get_id_from_header(header)
 
     def add_project_robot_account(self, project_id, project_name, expires_at, robot_name = None, robot_desc = None, has_pull_right = True,  has_push_right = True, has_chart_read_right = True,  has_chart_create_right = True, expect_status_code = 201, **kwargs):
         kwargs['api_type'] = 'products'

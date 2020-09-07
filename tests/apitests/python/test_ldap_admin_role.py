@@ -14,7 +14,7 @@ class TestLdapAdminRole(unittest.TestCase):
     def setUp(self):
         url = ADMIN_CLIENT["endpoint"]
         self.conf= Configurations()
-        self.uesr = User()
+        self.user = User()
         self.project = Project()
         self.USER_MIKE=dict(endpoint = url, username = "mike", password = "zhu88jie")
 
@@ -41,7 +41,7 @@ class TestLdapAdminRole(unittest.TestCase):
         TestLdapAdminRole.project_id, project_name = self.project.create_project(metadata = {"public": "false"}, **self.USER_MIKE)
         self.project.check_project_name_exist(name=project_name, **self.USER_MIKE)
 
-        _user = self.uesr.get_user_by_name(self.USER_MIKE["username"], **ADMIN_CLIENT)
+        _user = self.user.get_user_by_name(self.USER_MIKE["username"], **ADMIN_CLIENT)
         self.assertFalse(_user.sysadmin_flag)
 
 
