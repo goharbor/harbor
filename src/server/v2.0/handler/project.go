@@ -14,6 +14,7 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
+	"github.com/goharbor/harbor/src/controller/p2p/preheat"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/controller/repository"
@@ -48,6 +49,7 @@ func newProjectAPI() *projectAPI {
 		projectCtl:    project.Ctl,
 		quotaCtl:      quota.Ctl,
 		robotMgr:      robot.Mgr,
+		preheatCtl:    preheat.Ctl,
 	}
 }
 
@@ -60,6 +62,7 @@ type projectAPI struct {
 	projectCtl    project.Controller
 	quotaCtl      quota.Controller
 	robotMgr      robot.Manager
+	preheatCtl    preheat.Controller
 }
 
 func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateProjectParams) middleware.Responder {
@@ -216,6 +219,11 @@ func (a *projectAPI) DeleteProject(ctx context.Context, params operation.DeleteP
 		if err := a.quotaCtl.Delete(ctx, q.ID); err != nil {
 			return a.SendError(ctx, fmt.Errorf("failed to delete quota for project: %v", err))
 		}
+	}
+
+	// preheat policies under the project should be deleted after deleting the project
+	if err = a.preheatCtl.DeletePoliciesOfProject(ctx, params.ProjectID); err != nil {
+		return a.SendError(ctx, err)
 	}
 
 	return operation.NewDeleteProjectOK()
