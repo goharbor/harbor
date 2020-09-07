@@ -9,8 +9,8 @@ const JOB_STATUS = {
   PENDING: "pending",
   RUNNING: "running"
 };
-const YES: string = 'Yes';
-const NO: string = 'No';
+const YES: string = 'TAG_RETENTION.YES';
+const NO: string = 'TAG_RETENTION.NO';
 @Component({
   selector: 'gc-history',
   templateUrl: './gc-history.component.html',

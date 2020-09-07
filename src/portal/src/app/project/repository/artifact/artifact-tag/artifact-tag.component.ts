@@ -34,7 +34,7 @@ class InitTag {
   name = "";
 }
 const DeleteTagWithNotoryCommand1 = 'notary -s https://';
-const DeleteTagWithNotoryCommand2 = ':4443 -d ~/.docker/trust remove -p ';
+const DeleteTagWithNotoryCommand2 = ' -d ~/.docker/trust remove -p ';
 @Component({
   selector: 'artifact-tag',
   templateUrl: './artifact-tag.component.html',
@@ -43,6 +43,7 @@ const DeleteTagWithNotoryCommand2 = ':4443 -d ~/.docker/trust remove -p ';
 export class ArtifactTagComponent implements OnInit, OnDestroy {
   @Input() artifactDetails: Artifact;
   @Input() projectName: string;
+  @Input() isProxyCacheProject: boolean = false;
   @Input() projectId: number;
   @Input() repositoryName: string;
   newTagName = new InitTag();

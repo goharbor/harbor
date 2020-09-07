@@ -1327,7 +1327,9 @@
         "COUNT_LARGE": "参数“个数”太大",
         "DAYS_LARGE": "参数“天数”太大",
         "EXECUTION_TYPE": "执行类型",
-        "ACTION": "操作"
+        "ACTION": "操作",
+        "YES": "是",
+        "NO": "否"
     },
     "IMMUTABLE_TAG": {
         "IMMUTABLE_RULES": "不可变的 Tag 规则",
