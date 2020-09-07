@@ -57,7 +57,7 @@ func (suite *DaoTestSuite) WithUser(f func(int64, string), usernames ...string) 
 	suite.Nil(o.Raw(sql, username, username, email).QueryRow(&userID))
 
 	defer func() {
-		o.Raw("UPDATE harbor_user SET deleted=True WHERE user_id = ?", userID).Exec()
+		o.Raw("UPDATE harbor_user SET deleted=True, username=concat_ws('#', username, user_id), email=concat_ws('#', email, user_id) WHERE user_id = ?", userID).Exec()
 	}()
 
 	f(userID, username)
@@ -244,26 +244,62 @@ func (suite *DaoTestSuite) TestListByOwner() {
 		suite.Nil(err)
 		suite.Len(projects, 0)
 	}
+
+	{
+		// single quotes in owner
+		suite.WithUser(func(userID int64, username string) {
+			project := &models.Project{
+				Name:    "project-owner-name-include-single-quotes",
+				OwnerID: int(userID),
+			}
+			projectID, err := suite.dao.Create(orm.Context(), project)
+			suite.Nil(err)
+
+			defer suite.dao.Delete(orm.Context(), projectID)
+
+			projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"owner": username}))
+			suite.Nil(err)
+			suite.Len(projects, 1)
+		}, "owner include single quotes ' in it")
+	}
+
+	{
+		// sql inject
+		suite.WithUser(func(userID int64, username string) {
+			project := &models.Project{
+				Name:    "project-sql-inject",
+				OwnerID: int(userID),
+			}
+			projectID, err := suite.dao.Create(orm.Context(), project)
+			suite.Nil(err)
+
+			defer suite.dao.Delete(orm.Context(), projectID)
+
+			projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"owner": username}))
+			suite.Nil(err)
+			suite.Len(projects, 1)
+		}, "'owner' OR 1=1")
+	}
 }
 
 func (suite *DaoTestSuite) TestListByMember() {
 	{
 		// project admin
-		projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"member": &models.MemberQuery{Name: "admin", Role: common.RoleProjectAdmin}}))
+		projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"member": &models.MemberQuery{UserID: 1, Role: common.RoleProjectAdmin}}))
 		suite.Nil(err)
 		suite.Len(projects, 1)
 	}
 
 	{
 		// guest
-		projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"member": &models.MemberQuery{Name: "admin", Role: common.RoleGuest}}))
+		projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"member": &models.MemberQuery{UserID: 1, Role: common.RoleGuest}}))
 		suite.Nil(err)
 		suite.Len(projects, 0)
 	}
 
 	{
 		// guest with public projects
-		projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"member": &models.MemberQuery{Name: "admin", Role: common.RoleGuest, WithPublic: true}}))
+		projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"member": &models.MemberQuery{UserID: 1, Role: common.RoleGuest, WithPublic: true}}))
 		suite.Nil(err)
 		suite.Len(projects, 1)
 	}
@@ -291,7 +327,7 @@ func (suite *DaoTestSuite) TestListByMember() {
 				defer o.Raw("DELETE FROM project_member WHERE id = ?", pid)
 
 				memberQuery := &models.MemberQuery{
-					Name:     "admin",
+					UserID:   1,
 					Role:     common.RoleProjectAdmin,
 					GroupIDs: []int{int(groupID)},
 				}
