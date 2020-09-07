@@ -24,6 +24,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/lib/pq"
 )
 
 const (
@@ -142,8 +143,13 @@ func (p *Project) FilterByPublic(ctx context.Context, qs orm.QuerySeter, key str
 }
 
 // FilterByOwner returns orm.QuerySeter with owner filter
-func (p *Project) FilterByOwner(ctx context.Context, qs orm.QuerySeter, key string, value string) orm.QuerySeter {
-	return qs.FilterRaw("owner_id", fmt.Sprintf("IN (SELECT user_id FROM harbor_user WHERE username = '%s')", value))
+func (p *Project) FilterByOwner(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	username, ok := value.(string)
+	if !ok {
+		return qs
+	}
+
+	return qs.FilterRaw("owner_id", fmt.Sprintf("IN (SELECT user_id FROM harbor_user WHERE username = %s)", pq.QuoteLiteral(username)))
 }
 
 // FilterByMember returns orm.QuerySeter with member filter
@@ -152,10 +158,9 @@ func (p *Project) FilterByMember(ctx context.Context, qs orm.QuerySeter, key str
 	if !ok {
 		return qs
 	}
-	subQuery := `SELECT project_id FROM project_member pm, harbor_user u WHERE pm.entity_id = u.user_id AND pm.entity_type = 'u' AND u.username = '%s'`
-	subQuery = fmt.Sprintf(subQuery, escape(query.Name))
+	subQuery := fmt.Sprintf(`SELECT project_id FROM project_member WHERE entity_id = %d AND entity_type = 'u'`, query.UserID)
 	if query.Role > 0 {
-		subQuery = fmt.Sprintf("%s AND pm.role = %d", subQuery, query.Role)
+		subQuery = fmt.Sprintf("%s AND role = %d", subQuery, query.Role)
 	}
 
 	if query.WithPublic {
@@ -187,16 +192,6 @@ func isTrue(i interface{}) bool {
 	}
 }
 
-func escape(str string) string {
-	// TODO: remove this function when resolve the cycle import between lib/orm, common/dao and common/models.
-	// We need to move the function to registry the database from common/dao to lib/database,
-	// then lib/orm no need to depend the PrepareTestForPostgresSQL method in the common/dao
-	str = strings.Replace(str, `\`, `\\`, -1)
-	str = strings.Replace(str, `%`, `\%`, -1)
-	str = strings.Replace(str, `_`, `\_`, -1)
-	return str
-}
-
 // ProjectQueryParam can be used to set query parameters when listing projects.
 // The query condition will be set in the query if its corresponding field
 // is not nil. Leave it empty if you don't want to apply this condition.
@@ -220,6 +215,7 @@ type ProjectQueryParam struct {
 
 // MemberQuery filter by member's username and role
 type MemberQuery struct {
+	UserID   int    // the user id
 	Name     string // the username of member
 	Role     int    // the role of the member has to the project
 	GroupIDs []int  // the group ID of current user belongs to
