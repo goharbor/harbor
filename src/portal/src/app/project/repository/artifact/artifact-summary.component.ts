@@ -30,6 +30,7 @@ export class ArtifactSummaryComponent implements OnInit {
   @Output()
   backEvt: EventEmitter<any> = new EventEmitter<any>();
   projectName: string;
+  isProxyCacheProject: boolean = false;
   loading: boolean = false;
 
   constructor(
@@ -80,6 +81,9 @@ export class ArtifactSummaryComponent implements OnInit {
       if (resolverData) {
         const pro: Project = <Project>(resolverData['artifactResolver'][1]);
         this.projectName = pro.name;
+        if (pro.registry_id) {
+          this.isProxyCacheProject = true;
+        }
         this.artifact = <Artifact>(resolverData['artifactResolver'][0]);
         this.getIconFromBackEnd();
       }
