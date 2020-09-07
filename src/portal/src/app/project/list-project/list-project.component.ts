@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Subscription, forkJoin } from "rxjs";
+import {Subscription, forkJoin, of} from "rxjs";
 import {
     Component,
     Output,
@@ -35,6 +35,7 @@ import { calculatePage, CustomComparator, doFiltering, doSorting } from "../../.
 import { OperationService } from "../../../lib/components/operation/operation.service";
 import { operateChanges, OperateInfo, OperationState } from "../../../lib/components/operation/operate";
 import { errorHandler } from "../../../lib/utils/shared/shared.utils";
+import {HttpErrorResponse} from "@angular/common/http";
 
 @Component({
     selector: "list-project",
@@ -204,10 +205,22 @@ export class ListProjectComponent implements OnDestroy {
             projects.forEach(data => {
                 observableLists.push(this.delOperate(data));
             });
-            forkJoin(...observableLists).subscribe(item => {
-                this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
-                    this.msgHandler.showSuccess(res);
-                });
+            forkJoin(...observableLists).subscribe(resArr => {
+                let error;
+                if (resArr && resArr.length) {
+                    resArr.forEach(item => {
+                        if (item instanceof HttpErrorResponse) {
+                            error = errorHandler(item);
+                        }
+                    });
+                }
+                if (error) {
+                    this.msgHandler.handleError(error);
+                } else {
+                    this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
+                        this.msgHandler.showSuccess(res);
+                    });
+                }
                 let st: State = this.getStateAfterDeletion();
                 this.selectedRow = [];
                 if (!st) {
@@ -216,8 +229,6 @@ export class ListProjectComponent implements OnDestroy {
                     this.clrLoad(st);
                     this.statisticHandler.refresh();
                 }
-            }, error => {
-                this.msgHandler.handleError(error);
             });
         }
     }
@@ -237,10 +248,10 @@ export class ListProjectComponent implements OnDestroy {
                 }), catchError(
                 error => {
                     const message = errorHandler(error);
-                    this.translateService.get(message).subscribe(res =>
-                        operateChanges(operMessage, OperationState.failure, res)
-                    );
-                    return observableThrowError(error);
+                    this.translateService.get(message).subscribe(res => {
+                        operateChanges(operMessage, OperationState.failure, res);
+                    });
+                    return of(error);
                 }));
     }
 

@@ -57,6 +57,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
     onGoing = false;
     @Input() projectId: number;
     @Input() projectName = 'unknown';
+    @Input() isProxyCacheProject: boolean = false;
 
     @Input() hasSignedIn: boolean;
     @Input() hasProjectAdminRole: boolean;
