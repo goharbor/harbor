@@ -24,7 +24,6 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 )
 
@@ -53,7 +52,7 @@ func ParamPlaceholderForIn(n int) string {
 // Currently, it supports two ways to generate the query setter, the first one is to generate by the fields of the model,
 // and the second one is to generate by the methods their name begins with `FilterBy` of the model.
 // e.g. for the following model the queriable fields are  :
-// "Field2", "customized_field2", "Field3", "field3", "Field4" (or "field4") and "Field5" (or "field5").
+// "Field2", "customized_field2", "Field3", "field3" and "Field4" (or "field4").
 // type Foo struct{
 //   Field1 string `orm:"-"`
 //   Field2 string `orm:"column(customized_field2)"`
@@ -62,11 +61,6 @@ func ParamPlaceholderForIn(n int) string {
 //
 // func (f *Foo) FilterByField4(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
 //   // The value is the raw value of key in q.Query
-//	 return qs
-// }
-//
-// func (f *Foo) FilterByField5(ctx context.Context, qs orm.QuerySeter, key, value string) orm.QuerySeter {
-//   // The value string is the value of key in q.Query which is escaped by `Escape`
 //	 return qs
 // }
 func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignoredCols ...string) (orm.QuerySeter, error) {
@@ -177,11 +171,6 @@ func queryByMethod(ctx context.Context, qs orm.QuerySeter, key string, value int
 		switch method := mv.Interface().(type) {
 		case func(context.Context, orm.QuerySeter, string, interface{}) orm.QuerySeter:
 			return method(ctx, qs, key, value)
-		case func(context.Context, orm.QuerySeter, string, string) orm.QuerySeter:
-			if str, ok := value.(string); ok {
-				return method(ctx, qs, key, Escape(str))
-			}
-			log.Warningf("expected string type for the value of method %s, but actual is %T", methodName, value)
 		default:
 			return qs
 		}
