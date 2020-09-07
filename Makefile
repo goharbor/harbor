@@ -454,7 +454,7 @@ swagger_client:
 	wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar -O openapi-generator-cli.jar
 	rm -rf harborclient
 	mkdir harborclient
-	java -jar openapi-generator-cli.jar generate -i api/harbor/swagger.yaml -g python -o harborclient
+	java -jar openapi-generator-cli.jar generate -i api/harbor/swagger.yaml -g python -o harborclient --package-name swagger_client
 	cd harborclient; python ./setup.py install
 	pip install docker -q
 	pip freeze

@@ -110,7 +110,7 @@ class Repository(base.Base):
             _tag = self.get_tag(repo_name, tag, **kwargs)
             if _tag.name == tag and _tag.scan_overview != None:
                 for report in _tag.scan_overview.values():
-                    if report.get('scan_status') == expected_scan_status:
+                    if report.scan_status == expected_scan_status:
                         return
         raise Exception("Scan image result is not as expected {}.".format(expected_scan_status))
 
