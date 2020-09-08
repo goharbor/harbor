@@ -18,9 +18,6 @@ Library  OperatingSystem
 Library  Process
 
 *** Keywords ***
-Prepare Helm Cert
-    Wait Unitl Command Success  cp harbor_ca.crt /ca/server.crt
-
 Helm Repo Add
     [Arguments]  ${harbor_url}  ${user}  ${pwd}  ${project_name}=library  ${helm_repo_name}=myrepo
     ${rc}  ${output}=  Run And Return Rc And Output  helm repo remove ${project_name}

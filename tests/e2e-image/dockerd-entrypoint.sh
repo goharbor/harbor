@@ -38,6 +38,7 @@ if [ "$1" = 'dockerd' ]; then
 	set -- sh "$(which dind)" "$@" "--insecure-registry=0.0.0.0/0"
 fi
 
+containerd &
 
 echo "$@"
 exec "$@"
