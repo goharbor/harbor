@@ -375,7 +375,7 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 			if l, ok := secCtx.(*local.SecurityContext); ok {
 				currentUser := l.User()
 				member := &project.MemberQuery{
-					Name:     currentUser.Username,
+					UserID:   currentUser.UserID,
 					GroupIDs: currentUser.GroupIDs,
 				}
 
