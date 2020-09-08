@@ -76,7 +76,7 @@ func (c *scanReportV1ToV2Converter) Convert(reportV1 *scan.Report) (string, erro
 		return "", errors.Wrap(err, fmt.Sprintf("Error when convert V1 report to V2"))
 	}
 
-	if err := c.convertRawReportToVulnerabilityData(reportV1.UUID, reportV1.RegistrationUUID, reportV1.Report); err != nil {
+	if err := c.convertRawReportToVulnerabilityData(reportV1.UUID, reportV1.RegistrationUUID, reportV1.Digest, reportV1.Report); err != nil {
 		return "", errors.Wrap(err, fmt.Sprintf("Error when converting vulnerabilty report"))
 	}
 	return reportV1.UUID, nil
@@ -104,7 +104,7 @@ func (c *scanReportV1ToV2Converter) Convert(reportV1 *scan.Report) (string, erro
 
 //ConvertRawReportToVulnerabilityData converts a raw report to
 //version 2 of the schema
-func (c *scanReportV1ToV2Converter) convertRawReportToVulnerabilityData(reportUUID string, registrationUUID string, rawReportData string) error {
+func (c *scanReportV1ToV2Converter) convertRawReportToVulnerabilityData(reportUUID string, registrationUUID string, digest string, rawReportData string) error {
 
 	var vulnReport vuln.Report
 	err := json.Unmarshal([]byte(rawReportData), &vulnReport)
@@ -116,7 +116,7 @@ func (c *scanReportV1ToV2Converter) convertRawReportToVulnerabilityData(reportUU
 		vulnV2.CVEID = vuln.ID
 		vulnV2.Package = vuln.Package
 		vulnV2.PackageVersion = vuln.Version
-		vulnV2.Digest = vuln.ArtifactDigest
+		vulnV2.Digest = digest
 		vulnV2.PackageType = "Unknown"
 		vulnV2.Fix = vuln.FixVersion
 		vulnV2.URL = strings.Join(vuln.Links, ";")
