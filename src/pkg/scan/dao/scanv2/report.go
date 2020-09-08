@@ -194,7 +194,7 @@ func GetScanStats(requester string) (map[string]uint, error) {
 // CreateVulnerabilityRecord creates new vulnerability record.
 func CreateVulnerabilityRecord(vr *VulnerabilityRecord) (int64, error) {
 	o := dao.GetOrmer()
-	_, vrID, err := o.ReadOrCreate(vr, "CVEID", "RegistrationUUID", "Digest")
+	_, vrID, err := o.ReadOrCreate(vr, "CVEID", "RegistrationUUID", "Digest", "Package", "PackageVersion")
 
 	return vrID, err
 }

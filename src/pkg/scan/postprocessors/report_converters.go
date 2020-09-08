@@ -115,7 +115,7 @@ func (c *scanReportV1ToV2Converter) convertRawReportToVulnerabilityData(reportUU
 		vulnV2 := new(scanv2.VulnerabilityRecord)
 		vulnV2.CVEID = vuln.ID
 		vulnV2.Package = vuln.Package
-		vulnV2.PackageVersion = "NotAvailable"
+		vulnV2.PackageVersion = vuln.Version
 		vulnV2.Digest = vuln.ArtifactDigest
 		vulnV2.PackageType = "Unknown"
 		vulnV2.Fix = vuln.FixVersion
