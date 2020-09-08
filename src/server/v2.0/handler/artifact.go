@@ -327,7 +327,7 @@ func (a *artifactAPI) ListTags(ctx context.Context, params operation.ListTagsPar
 
 	var ts []*models.Tag
 	for _, tag := range tags {
-		ts = append(ts, tag.ToSwagger())
+		ts = append(ts, model.NewTag(tag).ToSwagger())
 	}
 	return operation.NewListTagsOK().
 		WithXTotalCount(total).
