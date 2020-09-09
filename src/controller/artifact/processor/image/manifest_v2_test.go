@@ -71,7 +71,9 @@ var (
     "WorkingDir": "",
     "Entrypoint": null,
     "OnBuild": null,
-    "Labels": null
+    "Labels": {
+		"maintainer": "tester@vmware.com"	
+	}
   },
   "container": "8e2caa5a514bb6d8b4f2a2553e9067498d261a0fd83a96aeaaf303943dff6ff9",
   "container_config": {
@@ -100,7 +102,6 @@ var (
     "Entrypoint": null,
     "OnBuild": null,
     "Labels": {
-
     }
   },
   "created": "2019-01-01T01:29:27.650294696Z",
@@ -143,6 +144,11 @@ func (m *manifestV2ProcessorTestSuite) TestAbstractMetadata() {
 	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(0, ioutil.NopCloser(bytes.NewReader([]byte(config))), nil)
 	err := m.processor.AbstractMetadata(nil, artifact, []byte(manifest))
 	m.Require().Nil(err)
+	m.NotNil(artifact.ExtraAttrs["created"])
+	m.Equal("amd64", artifact.ExtraAttrs["architecture"])
+	m.Equal("linux", artifact.ExtraAttrs["os"])
+	m.NotNil(artifact.ExtraAttrs["config"])
+	m.Equal("tester@vmware.com", artifact.ExtraAttrs["author"])
 	m.regCli.AssertExpectations(m.T())
 }
 

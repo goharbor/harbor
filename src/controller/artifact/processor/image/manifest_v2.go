@@ -36,7 +36,7 @@ const (
 
 func init() {
 	pc := &manifestV2Processor{}
-	pc.ManifestProcessor = base.NewManifestProcessor("created", "author", "architecture", "os")
+	pc.ManifestProcessor = base.NewManifestProcessor()
 	mediaTypes := []string{
 		v1.MediaTypeImageConfig,
 		schema2.MediaTypeImageConfig,
@@ -53,9 +53,24 @@ type manifestV2Processor struct {
 }
 
 func (m *manifestV2Processor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error {
-	if err := m.ManifestProcessor.AbstractMetadata(ctx, artifact, manifest); err != nil {
+	config := &v1.Image{}
+	if err := m.ManifestProcessor.UnmarshalConfig(ctx, artifact.RepositoryName, manifest, config); err != nil {
 		return err
 	}
+	if artifact.ExtraAttrs == nil {
+		artifact.ExtraAttrs = map[string]interface{}{}
+	}
+	artifact.ExtraAttrs["created"] = config.Created
+	artifact.ExtraAttrs["architecture"] = config.Architecture
+	artifact.ExtraAttrs["os"] = config.OS
+	artifact.ExtraAttrs["config"] = config.Config
+	// if the author is null, try to get it from labels:
+	// https://docs.docker.com/engine/reference/builder/#maintainer-deprecated
+	author := config.Author
+	if len(author) == 0 && len(config.Config.Labels) > 0 {
+		author = config.Config.Labels["maintainer"]
+	}
+	artifact.ExtraAttrs["author"] = author
 	return nil
 }
 
@@ -64,6 +79,7 @@ func (m *manifestV2Processor) AbstractAddition(ctx context.Context, artifact *ar
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessage("addition %s isn't supported for %s(manifest version 2)", addition, ArtifactTypeImage)
 	}
+
 	mani, _, err := m.RegCli.PullManifest(artifact.RepositoryName, artifact.Digest)
 	if err != nil {
 		return nil, err
@@ -72,19 +88,11 @@ func (m *manifestV2Processor) AbstractAddition(ctx context.Context, artifact *ar
 	if err != nil {
 		return nil, err
 	}
-	manifest := &v1.Manifest{}
-	if err := json.Unmarshal(content, manifest); err != nil {
+	config := &v1.Image{}
+	if err = m.ManifestProcessor.UnmarshalConfig(ctx, artifact.RepositoryName, content, config); err != nil {
 		return nil, err
 	}
-	_, blob, err := m.RegCli.PullBlob(artifact.RepositoryName, manifest.Config.Digest.String())
-	if err != nil {
-		return nil, err
-	}
-	image := &v1.Image{}
-	if err := json.NewDecoder(blob).Decode(image); err != nil {
-		return nil, err
-	}
-	content, err = json.Marshal(image.History)
+	content, err = json.Marshal(config.History)
 	if err != nil {
 		return nil, err
 	}
