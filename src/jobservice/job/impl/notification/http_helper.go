@@ -31,11 +31,3 @@ func init() {
 		Transport: commonhttp.GetHTTPTransport(commonhttp.InsecureTransport),
 	}
 }
-
-// GetHTTPInstance ...
-func GetHTTPInstance(insec bool) *http.Client {
-	if insec {
-		return httpHelper.clients[insecure]
-	}
-	return httpHelper.clients[secure]
-}
