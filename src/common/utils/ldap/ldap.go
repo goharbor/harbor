@@ -34,7 +34,10 @@ import (
 var ErrNotFound = errors.New("entity not found")
 
 // ErrDNSyntax ...
-var ErrDNSyntax = errors.New("Invalid DN syntax")
+var ErrDNSyntax = errors.New("invalid DN syntax")
+
+// ErrInvalidFilter ...
+var ErrInvalidFilter = errors.New("invalid filter syntax")
 
 // Session - define a LDAP session
 type Session struct {
@@ -186,9 +189,12 @@ func ConnectionTestWithAllConfig(ldapConfig models.LdapConf, ldapGroupConfig mod
 // SearchUser - search LDAP user by name
 func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 	var ldapUsers []models.LdapUser
-	ldapFilter := session.createUserFilter(username)
-	result, err := session.SearchLdap(ldapFilter)
+	ldapFilter, err := createUserSearchFilter(session.ldapConfig.LdapFilter, session.ldapConfig.LdapUID, username)
+	if err != nil {
+		return nil, err
+	}
 
+	result, err := session.SearchLdap(ldapFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -292,6 +298,10 @@ func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []
 	if !(strings.HasPrefix(filter, "(") || strings.HasSuffix(filter, ")")) {
 		filter = "(" + filter + ")"
 	}
+	if _, err := goldap.CompileFilter(filter); err != nil {
+		log.Errorf("Wrong filter format, filter:%v", filter)
+		return nil, ErrInvalidFilter
+	}
 	log.Debugf("Search ldap with filter:%v", filter)
 	searchRequest := goldap.NewSearchRequest(
 		baseDN,
@@ -321,28 +331,24 @@ func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []
 
 }
 
-// CreateUserFilter - create filter to search user with specified username
-func (session *Session) createUserFilter(username string) string {
+// createUserSearchFilter - create filter to search user with specified username
+func createUserSearchFilter(origFilter, ldapUID, username string) (string, error) {
+	oFilter, err := NewFilterBuilder(origFilter)
+	if err != nil {
+		return "", err
+	}
 	var filterTag string
-
-	if username == "" {
+	filterTag = goldap.EscapeFilter(username)
+	if len(filterTag) == 0 {
 		filterTag = "*"
-	} else {
-		filterTag = goldap.EscapeFilter(username)
 	}
-
-	ldapFilter := normalizeFilter(session.ldapConfig.LdapFilter)
-	ldapUID := session.ldapConfig.LdapUID
-
-	if ldapFilter == "" {
-		ldapFilter = "(" + ldapUID + "=" + filterTag + ")"
-	} else {
-		ldapFilter = "(&(" + ldapFilter + ")(" + ldapUID + "=" + filterTag + "))"
+	uFilterStr := fmt.Sprintf("(%v=%v)", ldapUID, filterTag)
+	uFilter, err := NewFilterBuilder(uFilterStr)
+	if err != nil {
+		return "", err
 	}
-
-	log.Debug("ldap filter :", ldapFilter)
-
-	return ldapFilter
+	filter := oFilter.And(uFilter)
+	return filter.String()
 }
 
 // Close - close current session
@@ -375,17 +381,31 @@ func (session *Session) SearchGroupByDN(groupDN string) ([]models.LdapGroup, err
 	return groupList, err
 }
 
-func (session *Session) searchGroup(baseDN, filter, groupName, groupNameAttribute string) ([]models.LdapGroup, error) {
+func (session *Session) groupBaseDN() string {
+	if len(session.ldapGroupConfig.LdapGroupBaseDN) == 0 {
+		return session.ldapConfig.LdapBaseDn
+	}
+	return session.ldapGroupConfig.LdapGroupBaseDN
+}
+
+func (session *Session) searchGroup(groupDN, filter, groupName, groupNameAttribute string) ([]models.LdapGroup, error) {
 	ldapGroups := make([]models.LdapGroup, 0)
-	log.Debugf("Groupname: %v, basedn: %v", groupName, baseDN)
-	ldapFilter := createGroupSearchFilter(filter, groupName, groupNameAttribute)
+	log.Debugf("Groupname: %v, groupDN: %v", groupName, groupDN)
+	ldapFilter, err := createGroupSearchFilter(filter, groupName, groupNameAttribute)
+	if err != nil {
+		log.Errorf("wrong filter format: filter:%v, groupName:%v, groupNameAttribute:%v", filter, groupName, groupNameAttribute)
+		return nil, err
+	}
 	attributes := []string{groupNameAttribute}
-	result, err := session.SearchLdapAttribute(baseDN, ldapFilter, attributes)
+	result, err := session.SearchLdapAttribute(session.groupBaseDN(), ldapFilter, attributes)
 	if err != nil {
 		return nil, err
 	}
 	for _, ldapEntry := range result.Entries {
 		var group models.LdapGroup
+		if groupDN != ldapEntry.DN {
+			continue
+		}
 		group.GroupDN = ldapEntry.DN
 		for _, attr := range ldapEntry.Attributes {
 			// OpenLdap sometimes contain leading space in username
@@ -401,40 +421,34 @@ func (session *Session) searchGroup(baseDN, filter, groupName, groupNameAttribut
 	return ldapGroups, nil
 }
 
-func createGroupSearchFilter(oldFilter, groupName, groupNameAttribute string) string {
-	filter := ""
+func createGroupSearchFilter(oldFilterStr, groupName, groupNameAttribute string) (string, error) {
+	origFilter, err := NewFilterBuilder(oldFilterStr)
+	if err != nil {
+		log.Errorf("failed to create group search filter:%v", oldFilterStr)
+		return "", err
+	}
 	groupName = goldap.EscapeFilter(groupName)
-	groupNameAttribute = goldap.EscapeFilter(groupNameAttribute)
-	oldFilter = normalizeFilter(oldFilter)
-	if len(oldFilter) == 0 {
-		if len(groupName) == 0 {
-			filter = groupNameAttribute + "=*"
-		} else {
-			filter = groupNameAttribute + "=*" + groupName + "*"
-		}
-	} else {
-		if len(groupName) == 0 {
-			filter = oldFilter
-		} else {
-			filter = "(&(" + oldFilter + ")(" + groupNameAttribute + "=*" + groupName + "*))"
-		}
+	gFilterStr := ""
+	if len(groupName) > 0 {
+		gFilterStr = fmt.Sprintf("(%v=%v)", goldap.EscapeFilter(groupNameAttribute), groupName)
 	}
-	return filter
+	gFilter, err := NewFilterBuilder(gFilterStr)
+	if err != nil {
+		log.Errorf("invalid ldap filter:%v", gFilterStr)
+		return "", err
+	}
+	fb := origFilter.And(gFilter)
+	return fb.String()
 }
 
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
-// normalizeFilter - remove '(' and ')' in ldap filter
+// normalizeFilter - add '(' and ')' in ldap filter if it doesn't exist
 func normalizeFilter(filter string) string {
 	norFilter := strings.TrimSpace(filter)
-	norFilter = strings.TrimPrefix(norFilter, "(")
-	norFilter = strings.TrimSuffix(norFilter, ")")
-	return norFilter
+	if len(norFilter) == 0 {
+		return norFilter
+	}
+	if strings.HasPrefix(norFilter, "(") && strings.HasSuffix(norFilter, ")") {
+		return norFilter
+	}
+	return "(" + norFilter + ")"
 }
