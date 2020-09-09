@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
@@ -278,21 +279,18 @@ func TestGetUser(t *testing.T) {
 
 func TestListUsers(t *testing.T) {
 	users, err := ListUsers(nil)
-	if err != nil {
-		t.Errorf("Error occurred in ListUsers: %v", err)
-	}
+	require.Nil(t, err)
+	assert.Greater(t, len(users), 0)
 	users2, err := ListUsers(&models.UserQuery{Username: username})
-	if len(users2) != 1 {
-		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
-	}
-	if users2[0].Username != username {
-		t.Errorf("The username in result list does not match, expected: %s, actual: %s", username, users2[0].Username)
-	}
-
+	require.Nil(t, err)
+	assert.Equal(t, 1, len(users2))
+	assert.Equal(t, username, users2[0].Username)
 	users3, err := ListUsers(&models.UserQuery{Username: username, Pagination: &models.Pagination{Page: 2, Size: 1}})
-	if len(users3) != 0 {
-		t.Errorf("Expect no user in list, but the acutal length is %d, the list: %+v", len(users3), users3)
-	}
+	require.Nil(t, err)
+	assert.Equal(t, 0, len(users3))
+	users4, err := ListUsers(&models.UserQuery{Username: "__"})
+	require.Nil(t, err)
+	assert.Equal(t, 0, len(users4))
 }
 
 func TestResetUserPassword(t *testing.T) {

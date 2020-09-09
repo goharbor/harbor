@@ -129,11 +129,11 @@ func userQueryConditions(query *models.UserQuery) orm.QuerySeter {
 	}
 
 	if len(query.Username) > 0 {
-		qs = qs.Filter("username__contains", query.Username)
+		qs = qs.Filter("username__contains", Escape(query.Username))
 	}
 
 	if len(query.Email) > 0 {
-		qs = qs.Filter("email__contains", query.Email)
+		qs = qs.Filter("email__contains", Escape(query.Email))
 	}
 
 	return qs
