@@ -14,21 +14,14 @@ from library.label import Label
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        repo = Repository()
-        self.repo= repo
-
-        label = Label()
-        self.label= label
+        self.project = Project()
+        self.user = User()
+        self.repo = Repository()
+        self.label = Label()
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):

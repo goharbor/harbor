@@ -19,9 +19,9 @@ class DockerAPI(object):
             expected_error_message = None
         try:
             self.DCLIENT.login(registry = registry, username=username, password=password)
-        except docker.errors.APIError, err:
+        except docker.errors.APIError as err:
             if expected_error_message is not None:
-                print "docker login error:", str(err)
+                print( "docker login error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Docker login: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
@@ -37,11 +37,12 @@ class DockerAPI(object):
         caught_err = False
         ret = ""
         try:
-            ret = base._get_string_from_unicode(self.DCLIENT.pull(r'{}:{}'.format(image, _tag)))
-        except Exception, err:
+            self.DCLIENT.pull(r'{}:{}'.format(image, _tag))
+            return ret
+        except Exception as err:
             caught_err = True
             if expected_error_message is not None:
-                print "docker image pull error:", str(err)
+                print( "docker image pull error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Pull image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
@@ -49,7 +50,7 @@ class DockerAPI(object):
         if caught_err == False:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
-                    raise Exception(r" Failed to catch error [{}] when pull image {}".format (expected_error_message, image))
+                    raise Exception(r" Failed to catch error [{}] when pull image {}, return message: {}".format (expected_error_message, image, str(ret)))
             else:
                 if str(ret).lower().find("error".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when pull image {}, return message is [{}]".format (image, ret))
@@ -61,7 +62,7 @@ class DockerAPI(object):
         try:
             self.DCLIENT.tag(image, harbor_registry, _tag, force=True)
             return harbor_registry, _tag
-        except docker.errors.APIError, e:
+        except docker.errors.APIError as e:
             raise Exception(r" Docker tag image {} failed, error is [{}]".format (image, e.message))
 
     def docker_image_push(self, harbor_registry, tag, expected_error_message = None):
@@ -70,11 +71,12 @@ class DockerAPI(object):
         if expected_error_message is "":
             expected_error_message = None
         try:
-            ret = base._get_string_from_unicode(self.DCLIENT.push(harbor_registry, tag, stream=True))
-        except Exception, err:
+            self.DCLIENT.push(harbor_registry, tag)
+            return ret
+        except Exception as err:
             caught_err = True
             if expected_error_message is not None:
-                print "docker image push error:", str(err)
+                print( "docker image push error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Push image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
@@ -82,10 +84,12 @@ class DockerAPI(object):
         if caught_err == False:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
-                    raise Exception(r" Failed to catch error [{}] when push image {}".format (expected_error_message, harbor_registry))
+                    raise Exception(r" Failed to catch error [{}] when push image {}, return message: {}".
+                                    format (expected_error_message, harbor_registry, str(ret)))
             else:
                 if str(ret).lower().find("errorDetail".lower()) >= 0:
-                    raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".format (harbor_registry, ret))
+                    raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".
+                                    format (harbor_registry, ret))
 
     def docker_image_build(self, harbor_registry, tags=None, size=1, expected_error_message = None):
         caught_err = False
@@ -111,10 +115,13 @@ class DockerAPI(object):
                 print("build image %s with size %d" % (repo, size))
                 self.DCLIENT.remove_image(repo)
             self.DCLIENT.remove_container(c)
-        except Exception, err:
+            self.DCLIENT.pull(repo)
+            image = self.DCLIENT2.images.get(repo)
+            return repo, image.id
+        except Exception as err:
             caught_err = True
             if expected_error_message is not None:
-                print "docker image build error:", str(err)
+                print( "docker image build error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Push image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
@@ -122,7 +129,8 @@ class DockerAPI(object):
         if caught_err == False:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
-                    raise Exception(r" Failed to catch error [{}] when push image {}".format (expected_error_message, harbor_registry))
+                    raise Exception(r" Failed to catch error [{}] when build image {}, return message: {}".
+                                    format (expected_error_message, harbor_registry, str(ret)))
             else:
                 if str(ret).lower().find("errorDetail".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".format (harbor_registry, ret))

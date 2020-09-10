@@ -13,18 +13,13 @@ from library.repository import Repository
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        repo = Repository()
-        self.repo= repo
+        self.project = Project()
+        self.user = User()
+        self.repo = Repository()
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
