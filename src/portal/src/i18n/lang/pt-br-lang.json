@@ -1523,7 +1523,7 @@
         "PROVIDER_REQUIRED": "Provider is required",
         "ADDED_SUCCESS": "Added policy successfully",
         "UPDATED_SUCCESS": "Updated policy successfully",
-        "EXECUTE": "Execute",
+        "EXECUTE": "EXECUTE",
         "EXECUTE_SUCCESSFULLY": "Executed successfully",
         "EXECUTE_TITLE": "Confirm Policy Execution",
         "EXECUTE_SUMMARY": "Do you want to execute the policy {{param}}?",
