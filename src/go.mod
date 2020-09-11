@@ -1,6 +1,6 @@
 module github.com/goharbor/harbor/src
 
-go 1.14
+go 1.15
 
 require (
 	github.com/Azure/azure-sdk-for-go v37.2.0+incompatible // indirect
