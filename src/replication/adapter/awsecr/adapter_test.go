@@ -3,6 +3,8 @@ package awsecr
 import (
 	"errors"
 	"fmt"
+	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/stretchr/testify/require"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -149,17 +151,23 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 		Type: model.RegistryTypeAwsEcr,
 		URL:  server.URL,
 	}
+
+	var svc *awsecrapi.ECR
 	if hasCred {
 		registry.Credential = &model.Credential{
 			AccessKey:    "xxx",
 			AccessSecret: "ppp",
 		}
+		svc, _ = getAwsSvc(
+			"test-region", registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, &server.URL)
+	} else {
+		svc, _ = getAwsSvc(
+			"test-region", "", "", registry.Insecure, &server.URL)
 	}
 	return &adapter{
-		registry:      registry,
-		Adapter:       native.NewAdapter(registry),
-		region:        "test-region",
-		forceEndpoint: &server.URL,
+		registry: registry,
+		Adapter:  native.NewAdapter(registry),
+		cacheSvc: svc,
 	}, server
 }
 
@@ -180,7 +188,7 @@ func TestAdapter_HealthCheck(t *testing.T) {
 	status, err := a.HealthCheck()
 	assert.Nil(t, err)
 	assert.NotNil(t, status)
-	assert.EqualValues(t, model.Unhealthy, status)
+	assert.EqualValues(t, model.Healthy, status)
 
 	a, s = getMockAdapter(t, true, false)
 	defer s.Close()
@@ -260,16 +268,18 @@ func TestAwsAuthCredential_Modify(t *testing.T) {
 		},
 	)
 	defer server.Close()
-	a, _ := NewAuth("test-region", "xxx", "ppp", true).(*awsAuthCredential)
-	a.forceEndpoint = &server.URL
+	svc, err := getAwsSvc(
+		"test-region", "xxx", "ppp", true, &server.URL)
+	require.Nil(t, err)
+	a, _ := NewAuth("xxx", svc).(*awsAuthCredential)
 	req := httptest.NewRequest(http.MethodGet, "https://1234.dkr.ecr.test-region.amazonaws.com/v2/", nil)
-	err := a.Modify(req)
-	assert.Nil(t, err)
 	err = a.Modify(req)
-	assert.Nil(t, err)
+	require.Nil(t, err)
+	err = a.Modify(req)
+	require.Nil(t, err)
 	time.Sleep(time.Second)
 	err = a.Modify(req)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }
 
 var urlForBenchmark = []string{
