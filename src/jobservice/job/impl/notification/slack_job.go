@@ -93,13 +93,12 @@ func (sj *SlackJob) Run(ctx job.Context, params job.Parameters) error {
 func (sj *SlackJob) init(ctx job.Context, params map[string]interface{}) error {
 	sj.logger = ctx.GetLogger()
 
-	// default use insecure transport
-	sj.client = GetHTTPInstance(true)
+	// default use secure transport
+	sj.client = httpHelper.clients[secure]
 	if v, ok := params["skip_cert_verify"]; ok {
-		if insecure, ok := v.(bool); ok {
-			if insecure {
-				sj.client = GetHTTPInstance(false)
-			}
+		if skipCertVerify, ok := v.(bool); ok && skipCertVerify {
+			// if skip cert verify is true, it means not verify remote cert, use insecure client
+			sj.client = httpHelper.clients[insecure]
 		}
 	}
 	return nil

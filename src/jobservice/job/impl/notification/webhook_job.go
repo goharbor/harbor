@@ -71,13 +71,12 @@ func (wj *WebhookJob) init(ctx job.Context, params map[string]interface{}) error
 	wj.logger = ctx.GetLogger()
 	wj.ctx = ctx
 
-	// default use insecure transport
-	wj.client = GetHTTPInstance(true)
+	// default use secure transport
+	wj.client = httpHelper.clients[secure]
 	if v, ok := params["skip_cert_verify"]; ok {
-		if insecure, ok := v.(bool); ok {
-			if insecure {
-				wj.client = GetHTTPInstance(false)
-			}
+		if skipCertVerify, ok := v.(bool); ok && skipCertVerify {
+			// if skip cert verify is true, it means not verify remote cert, use insecure client
+			wj.client = httpHelper.clients[insecure]
 		}
 	}
 	return nil
