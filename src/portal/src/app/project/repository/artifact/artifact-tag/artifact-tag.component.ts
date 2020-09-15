@@ -255,7 +255,12 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
       }
     }
   }
-
+  deletePort(url): string {
+    if (url && url.indexOf(':') !== -1) {
+      return url.split(':')[0];
+    }
+    return url;
+  }
   delOperate(tag: Tag): Observable<any> | null {
     // init operation info
     let operMessage = new OperateInfo();
@@ -267,10 +272,10 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     if (tag.signed) {
       forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
         this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
-          let wrongInfo: string = res[1] + DeleteTagWithNotoryCommand1 + this.registryUrl +
+          const wrongInfo: string = res[1] + DeleteTagWithNotoryCommand1 + this.deletePort(this.registryUrl) +
             DeleteTagWithNotoryCommand2 +
             this.registryUrl + "/" + this.repositoryName +
-            " " + name;
+            " " + tag.name;
           operateChanges(operMessage, OperationState.failure, wrongInfo);
         });
         return of(null);
