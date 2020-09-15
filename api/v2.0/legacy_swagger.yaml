@@ -3679,6 +3679,10 @@ responses:
     description: 'Success'
   Created:
     description: 'Created'
+    headers:
+      Location:
+        type: string
+        description: The URL of the created resource
   BadRequest:
     description: 'Bad Request'
   Unauthorized:
