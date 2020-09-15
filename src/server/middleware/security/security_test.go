@@ -15,20 +15,12 @@
 package security
 
 import (
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	"net/http"
-	"os"
 	"testing"
 )
-
-func TestMain(m *testing.M) {
-	dao.PrepareTestForPostgresSQL()
-	os.Exit(m.Run())
-}
 
 func TestSecurity(t *testing.T) {
 	var ctx security.Context
