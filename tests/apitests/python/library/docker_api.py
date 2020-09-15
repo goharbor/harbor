@@ -17,18 +17,18 @@ def docker_info_display():
     ret = base.run_command(command)
     print("Command return: ", ret)
 
-def docker_login_cmd(harbor_host, user, password, enable_manifest = True):
+def docker_login_cmd(harbor_host, user, password, cfg_file = "./tests/apitests/python/update_docker_cfg.sh",  enable_manifest = True):
     command = ["sudo", "docker", "login", harbor_host, "-u", user, "-p", password]
     print( "Docker Login Command: ", command)
     base.run_command(command)
     if enable_manifest == True:
         try:
-            ret = subprocess.check_output(["./tests/apitests/python/update_docker_cfg.sh"], shell=False)
+            ret = subprocess.check_output([cfg_file], shell=False)
         except subprocess.CalledProcessError as exc:
             raise Exception("Failed to update docker config, error is {} {}.".format(exc.returncode, exc.output))
 
 def docker_manifest_create(index, manifests):
-    command = ["sudo", "docker","manifest","create",index]
+    command = ["sudo", "docker","manifest","create", "--amend", index]
     command.extend(manifests)
     print( "Docker Manifest Command: ", command)
     base.run_command(command)
@@ -46,8 +46,8 @@ def docker_manifest_push(index):
             manifest_list.append(line[-71:])
     return index_sha256, manifest_list
 
-def docker_manifest_push_to_harbor(index, manifests, harbor_server, user, password):
-    docker_login_cmd(harbor_server, user, password)
+def docker_manifest_push_to_harbor(index, manifests, harbor_server, user, password, cfg_file = "./tests/apitests/python/update_docker_cfg.sh"):
+    docker_login_cmd(harbor_server, user, password, cfg_file=cfg_file)
     docker_manifest_create(index, manifests)
     return docker_manifest_push(index)
 
