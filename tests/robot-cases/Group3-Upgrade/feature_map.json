@@ -23,6 +23,18 @@
         {
             "branch":2,
             "version":"1.10"
+        },
+        {
+            "branch":2,
+            "version":"2.0"
+        },
+        {
+            "branch":2,
+            "version":"2.1"
+        },
+        {
+            "branch":2,
+            "version":"2.2"
         }
     ],
     "add_member":[
@@ -49,6 +61,18 @@
         {
             "branch":2,
             "version":"1.10"
+        },
+        {
+            "branch":2,
+            "version":"2.0"
+        },
+        {
+            "branch":2,
+            "version":"2.1"
+        },
+        {
+            "branch":2,
+            "version":"2.2"
         }
     ],
     "set_user_admin":[
@@ -75,6 +99,18 @@
         {
             "branch":2,
             "version":"1.10"
+        },
+        {
+            "branch":2,
+            "version":"2.0"
+        },
+        {
+            "branch":2,
+            "version":"2.1"
+        },
+        {
+            "branch":2,
+            "version":"2.2"
         }
     ],
     "add_endpoint":[
@@ -101,6 +137,18 @@
         {
             "branch":2,
             "version":"1.10"
+        },
+        {
+            "branch":2,
+            "version":"2.0"
+        },
+        {
+            "branch":2,
+            "version":"2.1"
+        },
+        {
+            "branch":2,
+            "version":"2.2"
         }
     ],
     "add_replication_rule":[
@@ -127,6 +175,18 @@
         {
             "branch":2,
             "version":"1.10"
+        },
+        {
+            "branch":2,
+            "version":"2.0"
+        },
+        {
+            "branch":2,
+            "version":"2.1"
+        },
+        {
+            "branch":2,
+            "version":"2.2"
         }
     ],
     "add_sys_allowlist":[
@@ -137,6 +197,18 @@
         {
             "branch":1,
             "version":"1.10"
+        },
+        {
+            "branch":1,
+            "version":"2.0"
+        },
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
         }
     ],
     "update_project_setting_allowlist":[
@@ -147,6 +219,18 @@
         {
             "branch":1,
             "version":"1.10"
+        },
+        {
+            "branch":1,
+            "version":"2.0"
+        },
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
         }
     ],
     "add_project_robot_account":[
@@ -161,6 +245,18 @@
         {
             "branch":1,
             "version":"1.10"
+        },
+        {
+            "branch":1,
+            "version":"2.0"
+        },
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
         }
     ],
     "add_tag_retention_rule":[
@@ -171,12 +267,36 @@
         {
             "branch":1,
             "version":"1.10"
+        },
+        {
+            "branch":1,
+            "version":"2.0"
+        },
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
         }
     ],
     "add_tag_immutability_rule":[
         {
             "branch":1,
             "version":"1.10"
+        },
+        {
+            "branch":1,
+            "version":"2.0"
+        },
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
         }
     ],
     "add_webhook":[
@@ -187,6 +307,18 @@
         {
             "branch":1,
             "version":"1.10"
+        },
+        {
+            "branch":1,
+            "version":"2.0"
+        },
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
         }
     ],
     "update_interrogation_services":[
@@ -197,6 +329,32 @@
         {
             "branch":1,
             "version":"1.10"
+        },
+        {
+            "branch":1,
+            "version":"2.0"
+        },
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
+        }
+    ],
+    "push_artifact":[
+        {
+            "branch":1,
+            "version":"2.0"
+        },
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
         }
     ]
  }
