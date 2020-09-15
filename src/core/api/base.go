@@ -35,11 +35,11 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
-	sec "github.com/goharbor/harbor/src/server/middleware/security"
 )
 
 const (
 	yamlFileContentType = "application/x-yaml"
+	userSessionKey      = "user"
 )
 
 // the managers/controllers used globally
@@ -176,7 +176,7 @@ func (b *BaseController) WriteYamlData(object interface{}) {
 // PopulateUserSession generates a new session ID and fill the user model in parm to the session
 func (b *BaseController) PopulateUserSession(u models.User) {
 	b.SessionRegenerateID()
-	b.SetSession(sec.UserIDSessionKey, u.UserID)
+	b.SetSession(userSessionKey, u)
 }
 
 // Init related objects/configurations for the API controllers
