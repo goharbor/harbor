@@ -29,11 +29,11 @@
             "version":"2.0"
         },
         {
-            "branch":2,
+            "branch":3,
             "version":"2.1"
         },
         {
-            "branch":2,
+            "branch":3,
             "version":"2.2"
         }
     ],
@@ -101,15 +101,15 @@
             "version":"1.10"
         },
         {
-            "branch":2,
+            "branch":3,
             "version":"2.0"
         },
         {
-            "branch":2,
+            "branch":3,
             "version":"2.1"
         },
         {
-            "branch":2,
+            "branch":3,
             "version":"2.2"
         }
     ],
@@ -203,11 +203,11 @@
             "version":"2.0"
         },
         {
-            "branch":1,
+            "branch":2,
             "version":"2.1"
         },
         {
-            "branch":1,
+            "branch":2,
             "version":"2.2"
         }
     ],
@@ -225,11 +225,11 @@
             "version":"2.0"
         },
         {
-            "branch":1,
+            "branch":2,
             "version":"2.1"
         },
         {
-            "branch":1,
+            "branch":2,
             "version":"2.2"
         }
     ],
@@ -309,15 +309,15 @@
             "version":"1.10"
         },
         {
-            "branch":1,
+            "branch":2,
             "version":"2.0"
         },
         {
-            "branch":1,
+            "branch":2,
             "version":"2.1"
         },
         {
-            "branch":1,
+            "branch":2,
             "version":"2.2"
         }
     ],
@@ -343,7 +343,7 @@
             "version":"2.2"
         }
     ],
-    "push_artifact":[
+    "push_artifact_index":[
         {
             "branch":1,
             "version":"2.0"
@@ -354,6 +354,102 @@
         },
         {
             "branch":1,
+            "version":"2.2"
+        }
+    ],
+    "add_distribution":[
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
+        }
+    ],
+    "add_p2p_preheat_policy":[
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
+        }
+    ],
+    "get_ca":[
+        {
+            "branch":1,
+            "version":"1.4"
+        },
+        {
+            "branch":1,
+            "version":"1.6"
+        },
+        {
+            "branch":1,
+            "version":"1.7"
+        },
+        {
+            "branch":1,
+            "version":"1.8"
+        },
+        {
+            "branch":1,
+            "version":"1.9"
+        },
+        {
+            "branch":1,
+            "version":"1.10"
+        },
+        {
+            "branch":2,
+            "version":"2.0"
+        },
+        {
+            "branch":2,
+            "version":"2.1"
+        },
+        {
+            "branch":2,
+            "version":"2.2"
+        }
+    ],
+    "set_url":[
+        {
+            "branch":1,
+            "version":"1.4"
+        },
+        {
+            "branch":1,
+            "version":"1.6"
+        },
+        {
+            "branch":1,
+            "version":"1.7"
+        },
+        {
+            "branch":1,
+            "version":"1.8"
+        },
+        {
+            "branch":1,
+            "version":"1.9"
+        },
+        {
+            "branch":1,
+            "version":"1.10"
+        },
+        {
+            "branch":2,
+            "version":"2.0"
+        },
+        {
+            "branch":2,
+            "version":"2.1"
+        },
+        {
+            "branch":2,
             "version":"2.2"
         }
     ]
