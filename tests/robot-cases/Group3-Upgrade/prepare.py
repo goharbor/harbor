@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import time
 import argparse
 import requests
 from functools import wraps
@@ -10,6 +11,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 parser = argparse.ArgumentParser(description='The script to generate data for harbor v1.4.0')
 parser.add_argument('--endpoint', '-e', dest='endpoint', required=True, help='The endpoint to harbor')
 parser.add_argument('--version', '-v', dest='version', required=False, help='The version to harbor')
+parser.add_argument('--libpath', '-l', dest='libpath', required=False, help='e2e library')
 args = parser.parse_args()
 
 url = "https://"+args.endpoint+"/api/"
@@ -69,6 +71,8 @@ class HarborAPI:
             body=dict(body={"has_admin_role": 1})
         elif kwargs["branch"] == 2:
             body=dict(body={"has_admin_role": True})
+        elif kwargs["branch"] == 3:
+            body=dict(body={"sysadmin_flag": True, "user_id":int(userid)})
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
         request(url+"users/"+userid+"/sysadmin", 'put', **body)
@@ -164,6 +168,13 @@ class HarborAPI:
                     cve_id_str = cve_id_str + ","
             body=dict(body=json.loads(r'{"items":['+cve_id_str+r'],"expires_at":'+cve_id_list["expires_at"]+'}'))
             request(url+"system/CVEWhitelist", 'put', **body)
+        elif kwargs["branch"] == 2:
+            for index, cve_id in enumerate(cve_id_list["cve"]):
+                cve_id_str = cve_id_str + '{"cve_id":"' +cve_id["id"] + '"}'
+                if index != len(cve_id_list["cve"]) - 1:
+                    cve_id_str = cve_id_str + ","
+            body=dict(body=json.loads(r'{"items":['+cve_id_str+r'],"expires_at":'+cve_id_list["expires_at"]+'}'))
+            request(url+"system/CVEAllowlist", 'put', **body)
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
 
@@ -357,7 +368,7 @@ class HarborAPI:
             payload = {
                 "targets":[
                     {
-                        "type":"http",
+                        "type":webhook["notify_type"],
                         "address":webhook["address"],
                         "skip_cert_verify":webhook["skip_cert_verify"],
                         "auth_header":webhook["auth_header"]
@@ -378,6 +389,35 @@ class HarborAPI:
             print(payload)
             body=dict(body=payload)
             request(url+"projects/"+projectid+"/webhook/policies", 'post', **body)
+        elif kwargs["branch"] == 2:
+            payload = {
+                "targets":[
+                    {
+                        "type":webhook["notify_type"],
+                        "address":webhook["address"],
+                        "skip_cert_verify":webhook["skip_cert_verify"],
+                        "auth_header":webhook["auth_header"]
+                    }
+                ],
+                "event_types":[
+                    "DELETE_ARTIFACT",
+                    "PULL_ARTIFACT",
+                    "PUSH_ARTIFACT",
+                    "DELETE_CHART",
+                    "DOWNLOAD_CHART",
+                    "UPLOAD_CHART",
+                    "QUOTA_EXCEED",
+                    "QUOTA_WARNING",
+					"REPLICATION",
+					"SCANNING_FAILED",
+					"SCANNING_COMPLETED"
+                ],
+                "enabled":webhook["enabled"],
+                "name":webhook["name"]
+            }
+            print(payload)
+            body=dict(body=payload)
+            request(url+"projects/"+projectid+"/webhook/policies", 'post', **body)
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, kwargs["branch"]))
 
@@ -387,8 +427,12 @@ class HarborAPI:
         body=dict(body=payload)
         request(url+"repositories/"+reponame+"", 'put', **body)
 
-    def get_ca(self, target='/harbor/ca/ca.crt'):
-        url = "https://" + args.endpoint + "/api/systeminfo/getcert"
+    @get_feature_branch
+    def get_ca(self, target='/harbor/ca/ca.crt', **kwargs):
+        if kwargs["branch"] == 1:
+            url = "https://" + args.endpoint + "/api/systeminfo/getcert"
+        elif kwargs["branch"] == 2:
+            url = "https://" + args.endpoint + "/api/v2.0/systeminfo/getcert"
         resp = request(url, 'get')
         try:
             ca_content = json.loads(resp.text)
@@ -404,7 +448,22 @@ class HarborAPI:
         open(target, 'wb').write(ca_content.encode('utf-8'))
 
     @get_feature_branch
-    def push_artifact(self, project, **kwargs):
+    def push_artifact_index(self, project, name, tag, **kwargs):
+        from os import path
+        sys.path.append(args.libpath)
+        sys.path.append(args.libpath + "/library")
+        from library.docker_api import docker_manifest_push_to_harbor
+        from library.repository import push_image_to_project
+        image_a = "alpine"
+        image_b = "busybox"
+        repo_name_a, tag_a = push_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_a, "latest")
+        repo_name_b, tag_b = push_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_b, "latest")
+
+        #4. Push an index(IA) to Harbor by docker manifest CLI successfully;
+        manifests = [args.endpoint+"/"+repo_name_a+":"+tag_a, args.endpoint+"/"+repo_name_b+":"+tag_b]
+        index = args.endpoint+"/"+project+"/"+name+":"+tag
+        docker_manifest_push_to_harbor(index, manifests, args.endpoint, 'admin', 'Harbor12345', cfg_file = args.libpath + "/update_docker_cfg.sh")
+
 
 def request(url, method, user = None, userp = None, **kwargs):
     if user is None:
@@ -438,9 +497,18 @@ def push_image(image, project):
 def push_signed_image(image, project, tag):
     os.system("./sign_image.sh" + " " + args.endpoint + " " + project + " " + image + " " + tag)
 
+@get_feature_branch
+def set_url(**kwargs):
+    global url
+    if kwargs["branch"] == 1:
+        url = "https://"+args.endpoint+"/api/"
+    elif kwargs["branch"] == 2:
+        url = "https://"+args.endpoint+"/api/v2.0/"
+
 def do_data_creation():
     harborAPI = HarborAPI()
-    harborAPI.get_ca()
+    set_url(version=args.version)
+    harborAPI.get_ca(version=args.version)
 
     for user in data["users"]:
         harborAPI.create_user(user["name"])
@@ -457,7 +525,9 @@ def do_data_creation():
         harborAPI.add_webhook(project["name"], project["webhook"], version=args.version)
         harborAPI.add_tag_retention_rule(project["name"], project["tag_retention_rule"], version=args.version)
         harborAPI.add_tag_immutability_rule(project["name"], project["tag_immutability_rule"], version=args.version)
+        time.sleep(30)
 
+    harborAPI.push_artifact_index(data["projects"][0]["name"], data["projects"][0]["artifact_index"]["name"], data["projects"][0]["artifact_index"]["tag"], version=args.version)
     pull_image("busybox", "redis", "haproxy", "alpine", "httpd:2")
     push_image("busybox", data["projects"][0]["name"])
     push_signed_image("alpine", data["projects"][0]["name"], "latest")

@@ -130,6 +130,37 @@ Verify Webhook
     END
     Close Browser
 
+Verify Webhook For 2.0
+    [Arguments]    ${json}
+    Log To Console  "Verify Webhook..."
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    FOR    ${project}    IN    @{project}
+        @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        Go Into Project  ${project}  has_image=${has_image}
+        Switch To Project Webhooks
+        ${enabled}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.enabled
+        ${enable_count}  Get Element Count  xpath=//span[contains(.,'Enabled')]
+        ${disable_count}  Get Element Count  xpath=//span[contains(.,'Disabled')]
+        Log To Console  '${enabled}[0]'
+        Log To Console  '${true}'
+        Run Keyword If  '${enabled}[0]' == '${true}'  Page Should Contain  Enabled
+        ...  ELSE  Page Should Contain  Disabled
+        ${address}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.address
+        ${name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.name
+        ${notify_type}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.notify_type
+        Log To Console  '${address}[0]'
+        Log To Console  '${name}[0]'
+        Log To Console  '${notify_type}[0]'
+        Page Should Contain  ${address}[0]
+        Page Should Contain  ${name}[0]
+        Page Should Contain  ${notify_type}[0]
+        Navigate To Projects
+    END
+    Close Browser
+
 Verify Tag Retention Rule
     [Arguments]    ${json}
     Log To Console  "Verify Tag Retention Rule..."
@@ -422,4 +453,21 @@ Verify Trivy Is Default Scanner
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Scanners Page
     Should Display The Default Trivy Scanner
+    Close Browser
+
+Verify Artifact Index
+    [Arguments]    ${json}
+    Log To Console  "Verify Artifact Index..."
+    @{project}=  Get Value From Json  ${json}  $.projects.[0].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    FOR    ${project}    IN    @{project}
+        ${name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].artifact_index.name
+        ${tag}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].artifact_index.tag
+        Go Into Project  ${project}  has_image=${true}
+        Go Into Repo  ${project}/${name}[0]
+        Go Into Index And Contain Artifacts  ${tag}[0]  limit=2
+        Pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project}  ${name}[0]:${tag}[0]
+        Navigate To Projects
+    END
     Close Browser
