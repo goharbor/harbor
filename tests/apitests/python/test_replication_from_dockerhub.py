@@ -94,7 +94,7 @@ class TestProjects(unittest.TestCase):
         self.replication.trigger_replication_executions(TestProjects.rule_id, **ADMIN_CLIENT)
 
         #7. Wait for completion of this replication job;
-        self.replication.wait_until_jobs_finish(TestProjects.rule_id, **ADMIN_CLIENT)
+        self.replication.wait_until_jobs_finish(TestProjects.rule_id,interval=30, **ADMIN_CLIENT)
 
         #8. Check image is replicated into target project successfully.
         artifact = self.artifact.get_reference_info(TestProjects.project_name, self.image, self.tag, **ADMIN_CLIENT)
