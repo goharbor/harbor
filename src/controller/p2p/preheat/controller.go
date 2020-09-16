@@ -292,7 +292,7 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 		schema.Trigger.Type == policyModels.TriggerTypeScheduled &&
 		len(schema.Trigger.Settings.Cron) > 0 {
 		// schedule and update policy
-		if _, err = c.scheduler.Schedule(ctx, job.P2PPreheat, id, schema.Trigger.Settings.Cron,
+		if _, err = c.scheduler.Schedule(ctx, job.P2PPreheat, id, "", schema.Trigger.Settings.Cron,
 			SchedulerCallback, TriggerParam{PolicyID: id}); err != nil {
 			return 0, err
 		}
@@ -384,7 +384,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 
 	// schedule new
 	if needSch {
-		if _, err := c.scheduler.Schedule(ctx, job.P2PPreheat, schema.ID, cron, SchedulerCallback,
+		if _, err := c.scheduler.Schedule(ctx, job.P2PPreheat, schema.ID, "", cron, SchedulerCallback,
 			TriggerParam{PolicyID: schema.ID}); err != nil {
 			return err
 		}

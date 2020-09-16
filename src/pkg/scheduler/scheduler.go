@@ -40,6 +40,7 @@ type Schedule struct {
 	ID           int64     `json:"id"`
 	VendorType   string    `json:"vendor_type"`
 	VendorID     int64     `json:"vendor_id"`
+	CRONType     string    `json:"cron_type"`
 	CRON         string    `json:"cron"`
 	Status       string    `json:"status"` // status of the underlying task(jobservice job)
 	CreationTime time.Time `json:"creation_time"`
@@ -57,8 +58,8 @@ type Scheduler interface {
 	// and the "vendorID" specifies the ID of vendor if needed(e.g. policy ID for replication and retention).
 	// The "params" is passed to the callback function as encoded json string, so the callback
 	// function must decode it before using
-	Schedule(ctx context.Context, vendorType string, vendorID int64, cron string,
-		callbackFuncName string, params interface{}) (int64, error)
+	Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
+		cron string, callbackFuncName string, params interface{}) (int64, error)
 	// UnScheduleByID the schedule specified by ID
 	UnScheduleByID(ctx context.Context, id int64) error
 	// UnScheduleByVendor the schedule specified by vendor
@@ -92,11 +93,11 @@ type scheduler struct {
 // The implementation of "Schedule" replaces the ormer with a new one in the context
 // to out of control from the global transaction, and uses a new transaction that only
 // covers the logic inside the function
-func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cron string,
-	callbackFuncName string, params interface{}) (int64, error) {
+func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
+	cron string, callbackFuncName string, params interface{}) (int64, error) {
 	var scheduleID int64
 	f := func(ctx context.Context) error {
-		id, err := s.schedule(ctx, vendorType, vendorID, cron, callbackFuncName, params)
+		id, err := s.schedule(ctx, vendorType, vendorID, cronType, cron, callbackFuncName, params)
 		if err != nil {
 			return err
 		}
@@ -111,8 +112,8 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 	return scheduleID, nil
 }
 
-func (s *scheduler) schedule(ctx context.Context, vendorType string, vendorID int64, cron string,
-	callbackFuncName string, params interface{}) (int64, error) {
+func (s *scheduler) schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
+	cron string, callbackFuncName string, params interface{}) (int64, error) {
 	if len(vendorType) == 0 {
 		return 0, fmt.Errorf("empty vendor type")
 	}
@@ -128,6 +129,7 @@ func (s *scheduler) schedule(ctx context.Context, vendorType string, vendorID in
 	sched := &schedule{
 		VendorType:       vendorType,
 		VendorID:         vendorID,
+		CRONType:         cronType,
 		CRON:             cron,
 		CallbackFuncName: callbackFuncName,
 		CreationTime:     now,
@@ -282,6 +284,7 @@ func (s *scheduler) convertSchedule(ctx context.Context, schedule *schedule) (*S
 		ID:           schedule.ID,
 		VendorType:   schedule.VendorType,
 		VendorID:     schedule.VendorID,
+		CRONType:     schedule.CRONType,
 		CRON:         schedule.CRON,
 		CreationTime: schedule.CreationTime,
 		UpdateTime:   schedule.UpdateTime,

@@ -32,6 +32,7 @@ type schedule struct {
 	ID                int64     `orm:"pk;auto;column(id)"`
 	VendorType        string    `orm:"column(vendor_type)"`
 	VendorID          int64     `orm:"column(vendor_id)"`
+	CRONType          string    `orm:"column(cron_type)"`
 	CRON              string    `orm:"column(cron)"`
 	CallbackFuncName  string    `orm:"column(callback_func_name)"`
 	CallbackFuncParam string    `orm:"column(callback_func_param)"`
