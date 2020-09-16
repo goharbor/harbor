@@ -22,6 +22,11 @@ Test Suites Setup
     Nightly Test Setup  ${ip}  ${HARBOR_PASSWORD}  ${ip1}
     Setup API Test
 
+Test Suites Setup For UI Test
+    [Tags] nightly-setup
+    Nightly Test Setup For Nightly  ${ip}  ${HARBOR_PASSWORD}  ${ip1}
+    Setup API Test
+
 Test Case - Get Harbor Version
 #Just get harbor version and log it
     Get Harbor Version
