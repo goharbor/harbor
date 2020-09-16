@@ -616,7 +616,15 @@
         "NAMESPACE_TOOLTIP": "İsim alanı ismi en az 2 karakter uzunluğunda, küçük harfli karakterler, sayılar ve ._- ile başlamalı ve karakter veya sayılarla başlamalıdır. Ad alanı adı en az 2 karakter uzunluğunda, küçük harf, rakam ve ._- ile başlamalı ve karakter veya rakamlarla başlamalıdır.",
         "TAG": "Etiketlemek",
         "LABEL": "Etiket",
-        "RESOURCE": "Kaynak"
+        "RESOURCE": "Kaynak",
+        "ENABLE_TITLE": "Enable rule",
+        "ENABLE_SUMMARY": "Do you want to enable rule {{param}}?",
+        "DISABLE_TITLE": "Disable rule",
+        "DISABLE_SUMMARY": "Do you want to disable rule {{param}}?",
+        "ENABLE_SUCCESS": "Enabled rule successfully",
+        "ENABLE_FAILED": "Enabling rule failed",
+        "DISABLE_SUCCESS": "Disabled rule successfully",
+        "DISABLE_FAILED": "Disabling rule failed"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Yeni Uç Nokta",

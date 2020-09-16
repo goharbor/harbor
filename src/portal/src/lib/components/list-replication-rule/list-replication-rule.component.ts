@@ -24,29 +24,28 @@ import {
     SimpleChange,
     SimpleChanges
 } from "@angular/core";
-import { Comparator } from "../../services/interface";
+import { Comparator } from "../../services";
 import { TranslateService } from "@ngx-translate/core";
 import { map, catchError } from "rxjs/operators";
-import { Observable, forkJoin, of, throwError as observableThrowError } from "rxjs";
-import { ReplicationService } from "../../services/replication.service";
+import { Observable, forkJoin, throwError as observableThrowError } from "rxjs";
+import { ReplicationService } from "../../services";
 import {
-    ReplicationJob,
-    ReplicationJobItem,
     ReplicationRule
-} from "../../services/interface";
-import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
-import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
-import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
+} from "../../services";
+import { ConfirmationDialogComponent } from "../confirmation-dialog";
+import { ConfirmationMessage } from "../confirmation-dialog";
+import { ConfirmationAcknowledgement } from "../confirmation-dialog";
 import {
     ConfirmationState,
     ConfirmationTargets,
     ConfirmationButtons
 } from "../../entities/shared.const";
-import { ErrorHandler } from "../../utils/error-handler/error-handler";
-import { CustomComparator } from "../../utils/utils";
+import { ErrorHandler } from "../../utils/error-handler";
+import { clone, CustomComparator } from "../../utils/utils";
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
-import { errorHandler as errorHandFn } from "../../utils/shared/shared.utils";
+import { errorHandler as errorHandFn} from "../../utils/shared/shared.utils";
+
 
 const jobstatus = "InProgress";
 
@@ -158,6 +157,35 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         ) {
             this.deleteOpe(message.data);
         }
+        if ( message &&
+            message.source === ConfirmationTargets.REPLICATION &&
+            message.state === ConfirmationState.CONFIRMED) {
+            const rule: ReplicationRule = clone(message.data);
+            rule.enabled = !message.data.enabled;
+            const opeMessage = new OperateInfo();
+            opeMessage.name = rule.enabled ? 'REPLICATION.ENABLE_TITLE' : 'REPLICATION.DISABLE_TITLE';
+            opeMessage.data.id = rule.id;
+            opeMessage.state = OperationState.progressing;
+            opeMessage.data.name = rule.name;
+            this.operationService.publishInfo(opeMessage);
+            this.replicationService.updateReplicationRule(rule.id, rule).subscribe(
+                res => {
+                    this.translateService.get(rule.enabled ? 'REPLICATION.ENABLE_SUCCESS' : 'REPLICATION.DISABLE_SUCCESS')
+                        .subscribe(msg => {
+                        operateChanges(opeMessage, OperationState.success);
+                        this.errorHandler.info(msg);
+                        this.retrieveRules('');
+                    });
+                }, error => {
+                    const errMessage = errorHandFn(error);
+                    this.translateService.get(rule.enabled ? 'REPLICATION.ENABLE_FAILED' : 'REPLICATION.DISABLE_FAILED')
+                        .subscribe(msg => {
+                        operateChanges(opeMessage, OperationState.failure, msg);
+                        this.errorHandler.error(errMessage);
+                    });
+                }
+            );
+        }
     }
 
     selectRule(rule: ReplicationRule): void {
@@ -231,5 +259,35 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                     );
                     return observableThrowError(error);
                 }));
+    }
+    operateRule(operation: string, rule: ReplicationRule): void {
+        let title: string;
+        let summary: string;
+        let buttons: ConfirmationButtons;
+        switch (operation) {
+            case 'enable':
+                title = 'REPLICATION.ENABLE_TITLE';
+                summary = 'REPLICATION.ENABLE_SUMMARY';
+                buttons = ConfirmationButtons.ENABLE_CANCEL;
+                break;
+            case 'disable':
+                title = 'REPLICATION.DISABLE_TITLE';
+                summary = 'REPLICATION.DISABLE_SUMMARY';
+                buttons = ConfirmationButtons.DISABLE_CANCEL;
+                break;
+
+            default:
+                return;
+        }
+        // Confirm
+        const msg: ConfirmationMessage = new ConfirmationMessage(
+            title,
+            summary,
+            rule.name,
+            rule,
+            ConfirmationTargets.REPLICATION,
+            buttons
+        );
+        this.deletionConfirmDialog.open(msg);
     }
 }
