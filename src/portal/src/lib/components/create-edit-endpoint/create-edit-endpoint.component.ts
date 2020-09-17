@@ -38,6 +38,7 @@ const FAKE_PASSWORD = "rjGcfuRu";
 const FAKE_JSON_KEY = "No Change";
 const METADATA_URL = CURRENT_BASE_HREF + "/replication/adapterinfos";
 const HELM_HUB = "helm-hub";
+const FIXED_PATTERN_TYPE: string = "EndpointPatternTypeFix";
 @Component({
   selector: "hbr-create-edit-endpoint",
   templateUrl: "./create-edit-endpoint.component.html",
@@ -270,6 +271,9 @@ export class CreateEditEndpointComponent
       this.endpointList = this.adapterInfo[selectValue].endpoint_pattern.endpoints;
       if (this.endpointList.length === 1) {
         this.target.url = this.endpointList[0].value;
+      }
+      if (this.adapterInfo[selectValue].endpoint_pattern.endpoint_type === FIXED_PATTERN_TYPE) {
+        this.urlDisabled = true;
       }
     } else {
       this.endpointList = [];
