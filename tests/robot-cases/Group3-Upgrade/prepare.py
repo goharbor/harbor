@@ -4,6 +4,7 @@ import json
 import time
 import argparse
 import requests
+import urllib
 from functools import wraps
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -13,6 +14,13 @@ parser.add_argument('--endpoint', '-e', dest='endpoint', required=True, help='Th
 parser.add_argument('--version', '-v', dest='version', required=False, help='The version to harbor')
 parser.add_argument('--libpath', '-l', dest='libpath', required=False, help='e2e library')
 args = parser.parse_args()
+
+from os import path
+sys.path.append(args.libpath)
+sys.path.append(args.libpath + "/library")
+from library.docker_api import docker_manifest_push_to_harbor
+from library.repository import push_image_to_project
+from library.repository import Repository
 
 url = "https://"+args.endpoint+"/api/"
 endpoint_url = "https://"+args.endpoint
@@ -50,9 +58,27 @@ class HarborAPI:
     @get_feature_branch
     def create_project(self, project, **kwargs):
         if kwargs["branch"] == 1:
-            body=dict(body={"project_name": ""+project["name"]+"", "metadata": {"public": "true"}})
+            body=dict(body={"project_name": project["name"], "metadata": {"public": "true"}})
         elif kwargs["branch"] == 2:
-            body=dict(body={"project_name": ""+project["name"]+"", "metadata": {"public": "true"},"count_limit":project["count_limit"],"storage_limit":project["storage_limit"]})
+            body=dict(body={"project_name": project["name"], "metadata": {"public": "true"},"count_limit":project["count_limit"],"storage_limit":project["storage_limit"]})
+        elif kwargs["branch"] == 3:
+            if project["registry_name"] is not None:
+                r = request(url+"registries?name="+project["registry_name"]+"", 'get')
+                registry_id = int(str(r.json()[0]['id']))
+            else:
+                registry_id=None
+            body=dict(body={"project_name": project["name"], "registry_id":registry_id, "metadata": {"public": "true"},"storage_limit":project["storage_limit"]})
+            request(url+"projects", 'post', **body)
+            if project["registry_name"] is not None:
+                USER_ADMIN=dict(endpoint = "https://"+args.endpoint+"/api/v2.0" , username = "admin", password = "Harbor12345")
+                repo = Repository()
+                for _repo in project["repo"]:
+                    pull_image(args.endpoint+"/"+ project["name"]+"/"+_repo["cache_image_namespace"]+"/"+_repo["cache_image"])
+                    time.sleep(180)
+                    repo_name = urllib.parse.quote(_repo["cache_image_namespace"]+"/"+_repo["cache_image"],'utf-8')
+                    repo_data = repo.get_repository(project["name"], repo_name, **USER_ADMIN)
+                    print("=========repo_data:",repo_data)
+            return
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
         request(url+"projects", 'post', **body)
@@ -92,6 +118,38 @@ class HarborAPI:
         request(url+"projects/"+projectid+"/members", 'post', **body)
 
     @get_feature_branch
+    def add_p2p_preheat_policy(self, project, **kwargs):
+        r = request(url+"projects?name="+project["name"]+"", 'get')
+        projectid = int(str(r.json()[0]['project_id']))
+        if kwargs["branch"] == 1:
+            if project["p2p_preheat_policy"] is not None:
+                instances = request(url+"p2p/preheat/instances", 'get')
+                if len(instances.json()) == 0:
+                    raise Exception(r"Please add p2p preheat instances first.")
+                for instance in instances.json():
+                    print("instance:", instance)
+                    for policy in project["p2p_preheat_policy"]:
+                        instance_str = [str(item) for item in instances]
+                        if policy["provider_name"] in ''.join(instance_str):
+                            print("policy:", policy)
+                            if instance['name'] == policy["provider_name"]:
+                                payload = {
+                                    "provider_id":int(instance['id']),
+                                    "name":policy["name"],
+                                    "filters":policy["filters"],
+                                    "trigger":policy["trigger"],
+                                    "project_id":projectid,
+                                    "enabled":policy["enabled"]
+                                }
+                                body=dict(body=payload)
+                                print(body)
+                                request(url+"projects/"+project["name"]+"/preheat/policies", 'post', **body)
+                        else:
+                            raise Exception(r"Please verify if distribution {} has beed created.".format(policy["provider_name"]))
+        else:
+            raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
+
+    @get_feature_branch
     def add_endpoint(self, endpointurl, endpointname, username, password, insecure, registry_type, **kwargs):
         if kwargs["branch"] == 1:
             payload = {"endpoint": ""+endpointurl+"", "name": ""+endpointname+"", "username": ""+username+"", "password": ""+password+"", "insecure": insecure}
@@ -113,7 +171,7 @@ class HarborAPI:
             }
             body=dict(body=payload)
             print(body)
-            request(url+"/registries", 'post', **body)
+            request(url+"registries", 'post', **body)
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
 
@@ -196,6 +254,19 @@ class HarborAPI:
             print(payload)
             body=dict(body=json.loads(payload))
             request(url+"projects/"+projectid+"", 'put', **body)
+        elif kwargs["branch"] == 2:
+            for index, cve_id in enumerate(cve_id_list["cve"]):
+                cve_id_str = cve_id_str + '{"cve_id":"' +cve_id["id"] + '"}'
+                if index != len(cve_id_list["cve"]) - 1:
+                    cve_id_str = cve_id_str + ","
+            print(cve_id_str)
+            if reuse_sys_cve_whitelist == "true":
+                payload = r'{"metadata":{"reuse_sys_cve_allowlist":"true"}}'
+            else:
+                payload = r'{"metadata":{"reuse_sys_cve_allowlist":"false"},"cve_whitelist":{"project_id":'+projectid+',"items":['+cve_id_str+r'],"expires_at":'+cve_id_list["expires_at"]+'}}'
+            print(payload)
+            body=dict(body=json.loads(payload))
+            request(url+"projects/"+projectid+"", 'put', **body)
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
 
@@ -273,6 +344,8 @@ class HarborAPI:
 
     @get_feature_branch
     def add_tag_retention_rule(self, project, tag_retention_rule, **kwargs):
+        if tag_retention_rule is None:
+            print(r"No tag retention rule to be populated for project {}.".format(project))
         r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
         if kwargs["branch"] == 1:
@@ -319,7 +392,8 @@ class HarborAPI:
             }
             print(payload)
             body=dict(body=payload)
-            request(url+"retentions", 'post', **body)
+            action = "post"
+            request(url+"retentions", action, **body)
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, kwargs["branch"]))
 
@@ -428,6 +502,23 @@ class HarborAPI:
         request(url+"repositories/"+reponame+"", 'put', **body)
 
     @get_feature_branch
+    def add_distribution(self, distribution, **kwargs):
+        if kwargs["branch"] == 1:
+            payload = {
+                "name":distribution["name"],
+                "endpoint":distribution["endpoint"],
+                "enabled":distribution["enabled"],
+                "vendor":distribution["vendor"],
+                "auth_mode":distribution["auth_mode"],
+                "insecure":distribution["insecure"]
+            }
+            print(payload)
+            body=dict(body=payload)
+            request(url+"p2p/preheat/instances", 'post', **body)
+        else:
+            raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, kwargs["branch"]))
+
+    @get_feature_branch
     def get_ca(self, target='/harbor/ca/ca.crt', **kwargs):
         if kwargs["branch"] == 1:
             url = "https://" + args.endpoint + "/api/systeminfo/getcert"
@@ -449,11 +540,6 @@ class HarborAPI:
 
     @get_feature_branch
     def push_artifact_index(self, project, name, tag, **kwargs):
-        from os import path
-        sys.path.append(args.libpath)
-        sys.path.append(args.libpath + "/library")
-        from library.docker_api import docker_manifest_push_to_harbor
-        from library.repository import push_image_to_project
         image_a = "alpine"
         image_b = "busybox"
         repo_name_a, tag_a = push_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_a, "latest")
@@ -487,12 +573,13 @@ with open("data.json") as f:
 
 def pull_image(*image):
     for i in image:
+        print("docker pulling image: ", i)
         os.system("docker pull "+i)
 
 def push_image(image, project):
     os.system("docker tag "+image+" "+args.endpoint+"/"+project+"/"+image)
     os.system("docker login "+args.endpoint+" -u admin"+" -p Harbor12345")
-    os.system("docker push "+args.endpoint+"/"+project+"/"+image)
+    os.system("docker push "+args.endpoint+"/"+project+"/library/"+image)
 
 def push_signed_image(image, project, tag):
     os.system("./sign_image.sh" + " " + args.endpoint + " " + project + " " + image + " " + tag)
@@ -516,14 +603,23 @@ def do_data_creation():
     for user in data["admin"]:
         harborAPI.set_user_admin(user["name"], version=args.version)
 
+    # Make sure to create endpoint first, it's for proxy cache project creation.
+    for endpoint in data["endpoint"]:
+        harborAPI.add_endpoint(endpoint["url"], endpoint["name"], endpoint["user"], endpoint["pass"], endpoint["insecure"], endpoint["type"], version=args.version)
+
+    for distribution in data["distributions"]:
+        harborAPI.add_distribution(distribution, version=args.version)
+
     for project in data["projects"]:
         harborAPI.create_project(project, version=args.version)
         for member in project["member"]:
             harborAPI.add_member(project["name"], member["name"], member["role"], version=args.version)
         for robot_account in project["robot_account"]:
             harborAPI.add_project_robot_account(project["name"], robot_account, version=args.version)
+        harborAPI.add_p2p_preheat_policy(project, version=args.version)
         harborAPI.add_webhook(project["name"], project["webhook"], version=args.version)
-        harborAPI.add_tag_retention_rule(project["name"], project["tag_retention_rule"], version=args.version)
+        if project["tag_retention_rule"] in not None:
+            harborAPI.add_tag_retention_rule(project["name"], project["tag_retention_rule"], version=args.version)
         harborAPI.add_tag_immutability_rule(project["name"], project["tag_immutability_rule"], version=args.version)
         time.sleep(30)
 
@@ -531,9 +627,6 @@ def do_data_creation():
     pull_image("busybox", "redis", "haproxy", "alpine", "httpd:2")
     push_image("busybox", data["projects"][0]["name"])
     push_signed_image("alpine", data["projects"][0]["name"], "latest")
-
-    for endpoint in data["endpoint"]:
-        harborAPI.add_endpoint(endpoint["url"], endpoint["name"], endpoint["user"], endpoint["pass"], endpoint["insecure"], endpoint["type"], version=args.version)
 
     for replicationrule in data["replicationrule"]:
         harborAPI.add_replication_rule(replicationrule, version=args.version)

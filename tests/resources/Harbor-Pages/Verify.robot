@@ -24,7 +24,7 @@ Verify User
     Close Browser
 
 Verify Project
-    [Arguments]    ${json}
+    [Arguments]    ${json}  ${check_content_trust}=${true}
     Log To Console  "Verify Project..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
@@ -32,7 +32,7 @@ Verify Project
     FOR    ${project}    IN    @{project}
         Retry Wait Until Page Contains    ${project}
     END
-    Verify Project Metadata  ${json}
+    Verify Project Metadata  ${json}  ${check_content_trust}
     Close Browser
 
 Verify Image Tag
@@ -43,7 +43,7 @@ Verify Image Tag
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         @{repo}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..repo..name
         Run Keyword If  ${has_image} == ${true}  Loop Image Repo  @{repo}
@@ -52,17 +52,17 @@ Verify Image Tag
     Close Browser
 
 Verify Project Metadata
-    [Arguments]    ${json}
+    [Arguments]    ${json}  ${check_content_trust}
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Project Configuration
         Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.public  ${project_config_public_checkbox}
-        Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.enable_content_trust  ${project_config_content_trust_checkbox}
+        Run Keyword If  '${check_content_trust}' == '${true}'  Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.enable_content_trust  ${project_config_content_trust_checkbox}
         Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.auto_scan  ${project_config_scan_images_on_push_checkbox}
         Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.prevent_vul  ${project_config_prevent_vulnerable_images_from_running_checkbox}
         ${ret}    Get Selected List Value    ${project_config_severity_select}
@@ -94,7 +94,7 @@ Verify Member Exist
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Member
         @{members}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].member..name
@@ -111,7 +111,7 @@ Verify Webhook
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Project Webhooks
         ${enabled}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.enabled
@@ -138,7 +138,7 @@ Verify Webhook For 2.0
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Project Webhooks
         ${enabled}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.enabled
@@ -168,6 +168,8 @@ Verify Tag Retention Rule
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
+        ${tag_retention_rule}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule
+        Run Keyword If  ${tag_retention_rule}[0] == ${null}  Continue For Loop
         ${out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
         ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
@@ -194,7 +196,7 @@ Verify Tag Immutability Rule
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Tag Immutability
         @{repo_decoration}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_immutability_rule.repo_decoration
@@ -224,7 +226,7 @@ Verify Robot Account Exist
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Project Robot Account
         @{robot_accounts}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].robot_account..name
@@ -272,7 +274,7 @@ Verify Project Label
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Project Label
         @{projectlabel}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..labels..name
@@ -335,31 +337,6 @@ Verify Replicationrule
     END
     Close Browser
 
-Verify Project Setting
-    [Arguments]    ${json}
-    Log To Console  "Verify Project Setting..."
-    @{projects}=  Get Value From Json  ${json}  $.projects.[*].name
-    FOR    ${project}    IN    @{Projects}
-        ${public}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].accesslevel
-        ${contenttrust}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..enable_content_trust
-        ${preventrunning}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..prevent_vulnerable_images_from_running
-        ${scanonpush}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..automatically_scan_images_on_push
-        Init Chrome Driver
-        Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-        @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
-        Go Into Project  ${project}  has_image=${has_image}
-        Goto Project Config
-        Run Keyword If  ${public} == "public"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='public']//label
-        Run Keyword If  ${contenttrust} == "true"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='content-trust']//label
-        Run Keyword If  ${contenttrust} == "false"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@name='content-trust']//label
-        Run Keyword If  ${preventrunning} == "true"  Checkbox Should Be Checked  //*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
-        Run Keyword If  ${preventrunning} == "false"  Checkbox Should Not Be Checked    //*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
-        Run Keyword If  ${scanonpush} == "true"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='scan-image-on-push-wrapper']//input
-        Run Keyword If  ${scanonpush} == "true"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='scan-image-on-push-wrapper']//input
-       Close Browser
-    END
-
 Verify Interrogation Services
     [Arguments]    ${json}
     Log To Console  "Verify Interrogation Services..."
@@ -411,7 +388,7 @@ Verify Project-level Allowlist
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Project Configuration
         @{is_reuse_sys_cve_allowlist}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.reuse_sys_cve_allowlist
@@ -458,6 +435,7 @@ Verify Trivy Is Default Scanner
 Verify Artifact Index
     [Arguments]    ${json}
     Log To Console  "Verify Artifact Index..."
+    # Only the 1st project has manifest image, so use index 0 of projects for verification.
     @{project}=  Get Value From Json  ${json}  $.projects.[0].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -471,3 +449,65 @@ Verify Artifact Index
         Navigate To Projects
     END
     Close Browser
+
+Loop Repo
+    [Arguments]  ${project}  @{repos}
+    FOR    ${repo}    IN    @{repos}
+        Navigate To Projects
+        Go Into Project  ${project}  has_image=${true}
+        Go Into Repo  ${project}/${repo}[0][cache_image_namespace]/${repo}[0][cache_image]
+        Pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project}  ${repo}[0][cache_image_namespace]/${repo}[0][cache_image]:${repo}[0][tag]
+    END
+
+Verify Proxy Cache Image Existence
+    [Arguments]    ${json}
+    Log To Console  "Verify Proxy Cache Image Existence..."
+    # Only the 3rd project has cached image, so use index 2 of projects for verification.
+    @{project}=  Get Value From Json  ${json}  $.projects.[2].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    FOR    ${project}    IN    @{project}
+        @{repo}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].repo
+        Loop Repo  ${project}  @{repo}
+    END
+    Close Browser
+
+Verify Distributions
+    [Arguments]    ${json}
+    Log To Console  "Verify Distributions..."
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    @{distribution_names}=  Get Value From Json  ${json}  $.distributions..name
+    Switch To Distribution
+    FOR    ${name}    IN    @{distribution_names}
+        ${endpoint}=  Get Value From Json  ${json}  $.distributions[?(@.name=${name})].endpoint
+        ${vendor}=  Get Value From Json  ${json}  $.distributions[?(@.name=${name})].vendor
+        ${auth_mode}=  Get Value From Json  ${json}  $.distributions[?(@.name=${name})].auth_mode
+        Retry Wait Until Page Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}[0]') and contains(.,'${vendor}[0]') and contains(.,'${auth_mode}[0]')]
+    END
+
+Verify P2P Preheat Policy
+    [Arguments]    ${json}
+    Log To Console  "P2P Preheat Policy..."
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Navigate To Projects
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
+    FOR    ${project}    IN    @{project}
+        @{p2p_preheat_policys}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].p2p_preheat_policy
+        @{policy_names}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].p2p_preheat_policy..name
+        @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
+        Run Keyword If  ${p2p_preheat_policys}[0] == ${null}  Continue For Loop
+        Go Into Project  ${project}  has_image=${has_image}
+        Switch To P2P Preheat
+        Loop P2P Preheat Policys  ${json}  ${project}  @{policy_names}
+    END
+    Close Browser
+
+Loop P2P Preheat Policys
+    [Arguments]  ${json}  ${project}  @{policy_names}
+    FOR    ${policy}    IN    @{policy_names}
+        ${provider_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].p2p_preheat_policy[?(@.name=${policy})].provider_name
+        Retry Wait Until Page Contains Element   //div[@class='datagrid-scrolling-cells' and contains(.,'${policy}') and contains(.,'${provider_name}[0]')]
+    END

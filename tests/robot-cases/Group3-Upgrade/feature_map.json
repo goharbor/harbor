@@ -29,11 +29,11 @@
             "version":"2.0"
         },
         {
-            "branch":2,
+            "branch":3,
             "version":"2.1"
         },
         {
-            "branch":2,
+            "branch":3,
             "version":"2.2"
         }
     ],
@@ -225,11 +225,11 @@
             "version":"2.0"
         },
         {
-            "branch":1,
+            "branch":2,
             "version":"2.1"
         },
         {
-            "branch":1,
+            "branch":2,
             "version":"2.2"
         }
     ],
@@ -348,6 +348,26 @@
             "branch":1,
             "version":"2.0"
         },
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
+        }
+    ],
+    "add_distribution":[
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
+        }
+    ],
+    "add_p2p_preheat_policy":[
         {
             "branch":1,
             "version":"2.1"

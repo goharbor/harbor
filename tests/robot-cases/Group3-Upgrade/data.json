@@ -37,7 +37,7 @@
       },
       {
          "url":"https://hub.docker.com",
-         "name":"endpoint2",
+         "name":"endpoint_for_proxy_cache",
          "user":"",
          "pass":"",
          "insecure":false,
@@ -62,7 +62,7 @@
       },
       {
          "project":"library",
-         "endpoint":"endpoint2",
+         "endpoint":"endpoint_for_proxy_cache",
          "trigger":"Manual",
          "rulename":"rulelibrary",
          "endpoint_type":"harbor",
@@ -141,9 +141,28 @@
          }
       ]
    },
+   "distributions":[
+      {
+         "name":"distribution124",
+         "endpoint":"http://6.3.3.6",
+         "enabled":true,
+         "vendor":"kraken",
+         "auth_mode":"NONE",
+         "insecure":null
+      },
+      {
+         "name":"distribution134",
+         "endpoint":"http://6.3.6.vio",
+         "enabled":true,
+         "vendor":"dragonfly",
+         "auth_mode":"NONE",
+         "insecure":true
+      }
+   ],
    "projects":[
       {
-         "name":"project118",
+         "name":"project1194",
+         "registry_name":null,
          "has_image":true,
          "accesslevel":"public",
          "repocounts":2,
@@ -160,8 +179,8 @@
             }
          ],
          "artifact_index":{
-         "name":"ci_test_index_232",
-         "tag":"test_tag_989"
+            "name":"ci_test_index_232",
+            "tag":"test_tag_989"
          },
          "member":[
             {
@@ -177,6 +196,7 @@
                "role":3
             }
          ],
+         "p2p_preheat_policy":null,
          "count_limit":1234,
          "storage_limit":53687091200,
          "storage_limit_for_verify":50,
@@ -241,7 +261,7 @@
             "public":"false",
             "enable_content_trust":"false",
             "auto_scan":"false",
-            "prevent_vul":"true",
+            "prevent_vul":"false",
             "severity":"medium",
             "reuse_sys_cve_allowlist":"true",
             "deployment_security":{
@@ -250,7 +270,8 @@
          }
       },
       {
-         "name":"project218",
+         "name":"project2194",
+         "registry_name":null,
          "has_image":false,
          "accesslevel":"public",
          "repocounts":2,
@@ -278,6 +299,24 @@
             {
                "name":"user3",
                "role":3
+            }
+         ],
+         "p2p_preheat_policy":[
+            {
+               "provider_name":"distribution124",
+               "name":"p2p_preheat_policy_1",
+               "filters":"[{\"type\":\"repository\",\"value\":\"cent*\"},{\"type\":\"tag\",\"value\":\"v1*\"}]",
+               "trigger":"{\"type\":\"manual\",\"trigger_setting\":{\"cron\":\"\"}}",
+               "project_id":36,
+               "enabled":true
+            },
+            {
+               "provider_name":"distribution134",
+               "name":"p2p_preheat_policy_2",
+               "filters":"[{\"type\":\"repository\",\"value\":\"re*\"},{\"type\":\"tag\",\"value\":\"v2*\"}]",
+               "trigger":"{\"type\":\"manual\",\"trigger_setting\":{\"cron\":\"\"}}",
+               "project_id":36,
+               "enabled":true
             }
          ],
          "count_limit":-1,
@@ -350,6 +389,127 @@
          },
          "webhook":{
             "address":"https://2.2.2.2",
+            "skip_cert_verify":false,
+            "auth_header":"bbb",
+            "enabled":true,
+            "notify_type":"slack",
+            "name":"webhook28"
+         },
+         "configuration":{
+            "public":"true",
+            "enable_content_trust":"true",
+            "auto_scan":"true",
+            "prevent_vul":"true",
+            "severity":"high",
+            "reuse_sys_cve_allowlist":"false",
+            "deployment_security":{
+               "cve":[
+                  {
+                     "id":"CVE-2019-111"
+                     },
+                  {
+                     "id":"CVE-2011-2222"
+                  },
+                  {
+                     "id":"CVE-2018-33333"
+                  },
+                  {
+                     "id":"CVE-2019-44444"
+                  }
+               ],
+               "never_expires":false,
+               "expires_at":"2572969600"
+            }
+         }
+      },
+      {
+         "name":"project_proxy_3194",
+         "registry_name":"endpoint_for_proxy_cache",
+         "p2p_preheat_policy":null,
+         "has_image":true,
+         "accesslevel":"public",
+         "repocounts":2,
+         "repo":[
+            {
+               "cache_image_namespace":"library",
+               "cache_image":"busybox",
+               "tag":"latest",
+               "signed":"false"
+            }
+         ],
+         "member":[
+            {
+               "name":"user1",
+               "role":1
+            },
+            {
+               "name":"user2",
+               "role":2
+            },
+            {
+               "name":"user3",
+               "role":3
+            }
+         ],
+         "count_limit":-1,
+         "storage_limit":32985348833280,
+         "storage_limit_for_verify":30,
+         "storage_unit_for_verify":"TB",
+         "labels":[
+            {
+               "name":"proj2label1"
+            },
+            {
+               "name":"proj2label2"
+            },
+            {
+               "name":"proj2label3"
+            }
+         ],
+         "logs":[
+            {
+               "name":"admin",
+               "operation":"create"
+            }
+         ],
+         "robot_account":[
+            {
+               "name":"robot1",
+               "access": [
+                  {
+                     "action": "pull"
+                  },
+                  {
+                     "action": "push"
+                  }
+                  ]
+            },
+            {
+               "name":"robot2",
+               "access": [
+                  {
+                     "action": "pull"
+                  }
+                  ]
+            },
+            {
+               "name":"robot3",
+               "access": [
+                  {
+                     "action": "push"
+                  }
+                  ]
+            }
+         ],
+         "tag_retention_rule":null,
+         "tag_immutability_rule":{
+            "repo_decoration":"repoExcludes",
+            "tag_decoration":"matches",
+            "repo_pattern":"*logstash*",
+            "tag_pattern":"*v2*"
+         },
+         "webhook":{
+            "address":"https://3.3.3.3",
             "skip_cert_verify":false,
             "auth_header":"bbb",
             "enabled":true,
