@@ -5407,6 +5407,7 @@ definitions:
       enabled:
         type: boolean
         description: The quota is enable or disable
+
   ImmutableTagRule:
     type: object
     properties:
@@ -5416,10 +5417,34 @@ definitions:
       project_id:
         type: integer
         format: int64
-      tag_filter:
-        type: string
-      enabled:
+      priority:
+        type: integer
+      disabled:
         type: boolean
+      action:
+        type: string
+      template:
+        type: string
+      tag_selectors:
+        type: array
+        items:
+          $ref: '#/definitions/ImmutableTagRuleSelector'
+      scope_selectors:
+        type: object
+        additionalProperties:
+          type: array
+          items:
+            $ref: '#/definitions/ImmutableTagRuleSelector'
+
+  ImmutableTagRuleSelector:
+    type: object
+    properties:
+      kind:
+        type: string
+      decoration:
+        type: string
+      pattern:
+        type: string
 
   ScannerRegistration:
     type: object
