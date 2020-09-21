@@ -16,10 +16,14 @@ package blob
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/blob/dao"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 )
+
+// deleteBatchSize is the maximum number of blobs to delete in each SQL statement
+const deleteBatchSize = 1000
 
 // Blob alias `models.Blob` to make it natural to use the Manager
 type Blob = models.Blob
@@ -95,22 +99,36 @@ func (m *manager) CleanupAssociationsForArtifact(ctx context.Context, artifactDi
 	return m.dao.DeleteArtifactAndBlobByArtifact(ctx, artifactDigest)
 }
 
-func (m *manager) CleanupAssociationsForProject(ctx context.Context, projectID int64, blobs []*Blob) error {
-	if len(blobs) == 0 {
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func (m *manager) CleanupAssociationsForProject(ctx context.Context, projectID int64, batches []*Blob) error {
+	if len(batches) == 0 {
 		return nil
 	}
+	for cursor := 0; cursor < len(batches); cursor += deleteBatchSize {
 
-	shouldUnassociatedBlobs, err := m.dao.FindBlobsShouldUnassociatedWithProject(ctx, projectID, blobs)
-	if err != nil {
-		return err
+		// create a batch of size deleteBatchSize or the remaining elements
+		blobs := batches[cursor:min(cursor+deleteBatchSize, len(batches))]
+		shouldUnassociatedBlobs, err := m.dao.FindBlobsShouldUnassociatedWithProject(ctx, projectID, blobs)
+		if err != nil {
+			return err
+		}
+
+		var blobIDs []int64
+		for _, blob := range shouldUnassociatedBlobs {
+			blobIDs = append(blobIDs, blob.ID)
+		}
+
+		if err := m.dao.DeleteProjectBlob(ctx, projectID, blobIDs...); err != nil {
+			return err
+		}
 	}
-
-	var blobIDs []int64
-	for _, blob := range shouldUnassociatedBlobs {
-		blobIDs = append(blobIDs, blob.ID)
-	}
-
-	return m.dao.DeleteProjectBlob(ctx, projectID, blobIDs...)
+	return nil
 }
 
 func (m *manager) Get(ctx context.Context, digest string) (*Blob, error) {
