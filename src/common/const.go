@@ -117,6 +117,7 @@ const (
 	UserMember                        = "u"
 	GroupMember                       = "g"
 	ReadOnly                          = "read_only"
+	AllowAnonymous                    = "allow_anonymous"
 	ClairAdapterURL                   = "clair_adapter_url"
 	TrivyAdapterURL                   = "trivy_adapter_url"
 	NotaryURL                         = "notary_url"

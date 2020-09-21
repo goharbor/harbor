@@ -16,6 +16,7 @@ package rbac
 
 import (
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -32,6 +33,12 @@ func (user *projectRBACUser) GetUserName() string {
 
 // GetPolicies returns policies of the visitor
 func (user *projectRBACUser) GetPolicies() []*types.Policy {
+	cur := config.AllowAnonymous()
+	// return nil if anonymous access is not allowed
+	if !cur {
+		return nil
+	}
+
 	if user.project.IsPublic() {
 		return getPoliciesForPublicProject(user.project.ProjectID)
 	}
