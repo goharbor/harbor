@@ -619,7 +619,7 @@ Test Case - Push CNAB Bundle and Display
     Create An New Project And Go Into Project  test${d}
 
     ${target}=  Set Variable  ${ip}/test${d}/cnab${d}:cnab_tag${d}
-    CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json
+    Retry Keyword N Times When Error  5  CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json
 
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/cnab${d}
