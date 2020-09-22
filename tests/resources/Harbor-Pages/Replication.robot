@@ -167,7 +167,7 @@ Delete Rule
 
 Select Rule
     [Arguments]  ${rule}
-    Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-cell[contains(.,'${rule}')]  Retry Wait Element  ${replication_exec_id}
 
 Stop Jobs
     Retry Element Click  ${stop_jobs_button}
