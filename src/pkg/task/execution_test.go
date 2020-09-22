@@ -16,6 +16,7 @@ package task
 
 import (
 	"testing"
+	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -76,6 +77,26 @@ func (e *executionManagerTestSuite) TestMarkError() {
 }
 
 func (e *executionManagerTestSuite) TestStop() {
+	// the execution contains no tasks and the status isn't final
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+	}, nil)
+	e.taskDAO.On("List", mock.Anything, mock.Anything).Return(nil, nil)
+	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err := e.execMgr.Stop(nil, 1)
+	e.Require().Nil(err)
+	e.taskDAO.AssertExpectations(e.T())
+	e.execDAO.AssertExpectations(e.T())
+
+	// reset the mocks
+	e.SetupTest()
+
+	// the execution contains tasks
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+	}, nil)
 	e.taskDAO.On("List", mock.Anything, mock.Anything).Return([]*dao.Task{
 		{
 			ID:          1,
@@ -83,9 +104,51 @@ func (e *executionManagerTestSuite) TestStop() {
 		},
 	}, nil)
 	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
-	err := e.execMgr.Stop(nil, 1)
+	err = e.execMgr.Stop(nil, 1)
 	e.Require().Nil(err)
 	e.taskDAO.AssertExpectations(e.T())
+	e.execDAO.AssertExpectations(e.T())
+	e.taskMgr.AssertExpectations(e.T())
+}
+
+func (e *executionManagerTestSuite) TestStopAndWait() {
+	// timeout
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+	}, nil)
+	e.taskDAO.On("List", mock.Anything, mock.Anything).Return([]*dao.Task{
+		{
+			ID:          1,
+			ExecutionID: 1,
+		},
+	}, nil)
+	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+	err := e.execMgr.StopAndWait(nil, 1, 1*time.Second)
+	e.Require().NotNil(err)
+	e.taskDAO.AssertExpectations(e.T())
+	e.execDAO.AssertExpectations(e.T())
+	e.taskMgr.AssertExpectations(e.T())
+
+	// reset mocks
+	e.SetupTest()
+
+	// pass
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.StoppedStatus.String(),
+	}, nil)
+	e.taskDAO.On("List", mock.Anything, mock.Anything).Return([]*dao.Task{
+		{
+			ID:          1,
+			ExecutionID: 1,
+		},
+	}, nil)
+	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+	err = e.execMgr.StopAndWait(nil, 1, 1*time.Second)
+	e.Require().Nil(err)
+	e.taskDAO.AssertExpectations(e.T())
+	e.execDAO.AssertExpectations(e.T())
 	e.taskMgr.AssertExpectations(e.T())
 }
 

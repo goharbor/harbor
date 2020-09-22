@@ -78,7 +78,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		mock.AnythingOfType("*q.Query"),
 	).Return(fakePolicies, nil)
 
-	fakeExecManager := &task.FakeExecutionManager{}
+	fakeExecManager := &task.ExecutionManager{}
 	fakeExecManager.On("Create",
 		context.TODO(),
 		mock.AnythingOfType("string"),
@@ -87,7 +87,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		mock.AnythingOfType("map[string]interface {}"),
 	).Return(time.Now().Unix(), nil)
 
-	fakeTaskManager := &task.FakeManager{}
+	fakeTaskManager := &task.Manager{}
 	fakeTaskManager.On("Create",
 		context.TODO(),
 		mock.AnythingOfType("int64"),

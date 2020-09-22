@@ -34,7 +34,7 @@ type preheatSuite struct {
 	fakePolicyMgr      *pmocks.FakeManager
 	fakeScheduler      *smocks.Scheduler
 	mockInstanceServer *httptest.Server
-	fakeExecutionMgr   *tmocks.FakeExecutionManager
+	fakeExecutionMgr   *tmocks.ExecutionManager
 }
 
 func TestPreheatSuite(t *testing.T) {
@@ -42,7 +42,7 @@ func TestPreheatSuite(t *testing.T) {
 	fakeInstanceMgr := &instance.FakeManager{}
 	fakePolicyMgr := &pmocks.FakeManager{}
 	fakeScheduler := &smocks.Scheduler{}
-	fakeExecutionMgr := &tmocks.FakeExecutionManager{}
+	fakeExecutionMgr := &tmocks.ExecutionManager{}
 
 	var c = &controller{
 		iManager:     fakeInstanceMgr,

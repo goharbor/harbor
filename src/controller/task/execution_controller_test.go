@@ -28,7 +28,7 @@ import (
 type executionControllerTestSuite struct {
 	suite.Suite
 	ctl *executionController
-	mgr *task.FakeExecutionManager
+	mgr *task.ExecutionManager
 }
 
 // TestExecutionControllerTestSuite tests controller.
@@ -38,7 +38,7 @@ func TestExecutionControllerTestSuite(t *testing.T) {
 
 // SetupTest setups the testing env.
 func (ec *executionControllerTestSuite) SetupTest() {
-	ec.mgr = &task.FakeExecutionManager{}
+	ec.mgr = &task.ExecutionManager{}
 	ec.ctl = &executionController{
 		mgr: ec.mgr,
 	}
