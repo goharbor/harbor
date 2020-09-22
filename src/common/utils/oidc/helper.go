@@ -241,6 +241,11 @@ func refreshToken(ctx context.Context, token *Token) (*Token, error) {
 // UserInfoFromToken tries to call the UserInfo endpoint of the OIDC provider, and consolidate with ID token
 // to generate a UserInfo object, if the ID token is not in the input token struct, some attributes will be empty
 func UserInfoFromToken(ctx context.Context, token *Token) (*UserInfo, error) {
+	// #10913: preload the configuration, in case it was not previously loaded by the UI
+	_, err := provider.get()
+	if err != nil {
+		return nil, err
+	}
 	setting := provider.setting.Load().(models.OIDCSetting)
 	local, err := userInfoFromIDToken(ctx, token, setting)
 	if err != nil {
