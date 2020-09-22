@@ -544,12 +544,9 @@ class HarborAPI:
         image_b = "busybox"
         repo_name_a, tag_a = push_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_a, "latest")
         repo_name_b, tag_b = push_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_b, "latest")
-
-        #4. Push an index(IA) to Harbor by docker manifest CLI successfully;
         manifests = [args.endpoint+"/"+repo_name_a+":"+tag_a, args.endpoint+"/"+repo_name_b+":"+tag_b]
         index = args.endpoint+"/"+project+"/"+name+":"+tag
-        docker_manifest_push_to_harbor(index, manifests, args.endpoint, 'admin', 'Harbor12345', cfg_file = args.libpath + "/update_docker_cfg.sh")
-
+        docker_manifest_push_to_harbor(index, manifests, args.endpoint, 'admin', 'Harbor12345', cfg_file = args.libpath + "/update_docker_cfg.sh"
 
 def request(url, method, user = None, userp = None, **kwargs):
     if user is None:
