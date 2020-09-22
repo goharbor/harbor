@@ -514,13 +514,13 @@
             "auth_header":"bbb",
             "enabled":true,
             "notify_type":"slack",
-            "name":"webhook28"
+            "name":"webhook3.3"
          },
          "configuration":{
             "public":"true",
-            "enable_content_trust":"true",
+            "enable_content_trust":"false",
             "auto_scan":"true",
-            "prevent_vul":"true",
+            "prevent_vul":"false",
             "severity":"high",
             "reuse_sys_cve_allowlist":"false",
             "deployment_security":{
