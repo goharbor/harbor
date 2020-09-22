@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LabelFilterComponent } from './label-filter.component';
 import { ClarityModule } from '@clr/angular';
@@ -9,7 +9,7 @@ describe('LabelFilterComponent', () => {
     let component: LabelFilterComponent;
     let fixture: ComponentFixture<LabelFilterComponent>;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA

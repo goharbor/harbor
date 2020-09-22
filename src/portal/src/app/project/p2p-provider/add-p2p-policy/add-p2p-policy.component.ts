@@ -45,7 +45,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
   projectId: number;
   @Output() notify = new EventEmitter<boolean>();
 
-  @ViewChild(InlineAlertComponent, { static: false } )
+  @ViewChild(InlineAlertComponent)
   inlineAlert: InlineAlertComponent;
   policy: PreheatPolicy = {};
   repos: string;
@@ -57,7 +57,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
   cron: string ;
   @ViewChild("policyForm", { static: true }) currentForm: NgForm;
   loading: boolean = false;
-  @ViewChild('cronScheduleComponent', {static: false})
+  @ViewChild('cronScheduleComponent')
   cronScheduleComponent: CronScheduleComponent;
   buttonStatus: ClrLoadingState = ClrLoadingState.DEFAULT;
   originPolicyForEdit: PreheatPolicy;

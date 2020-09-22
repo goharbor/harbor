@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProjectDetailComponent } from './project-detail.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -61,7 +61,7 @@ describe('ProjectDetailComponent', () => {
             }
         })
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA

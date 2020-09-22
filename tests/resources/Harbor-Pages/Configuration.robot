@@ -362,15 +362,15 @@ Set User Name Claim And Save
 
 Select Distribution
     [Arguments]    ${name}
-    Retry Element Click    //div[@class='datagrid-scrolling-cells' and contains(.,'${name}')]//clr-checkbox-wrapper/label
+    Retry Element Click    //clr-dg-row[contains(.,'${name}')]//clr-checkbox-wrapper/label
 
 Distribution Exist
     [Arguments]  ${name}  ${endpoint}
-    Retry Wait Until Page Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}')]
+    Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,'${name}') and contains(.,'${endpoint}')]
 
 Distribution Not Exist
     [Arguments]  ${name}  ${endpoint}
-    Retry Wait Until Page Not Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}')]
+    Retry Wait Until Page Not Contains Element  //clr-dg-row[contains(.,'${name}') and contains(.,'${endpoint}')]
 
 Filter Distribution List
     [Arguments]  ${name}  ${endpoint}  ${exsit}=${true}

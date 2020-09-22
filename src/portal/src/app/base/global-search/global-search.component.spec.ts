@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GlobalSearchComponent } from './global-search.component';
 import { SearchTriggerService } from './search-trigger.service';
@@ -6,7 +6,6 @@ import { FormsModule } from '@angular/forms';
 import { AppConfigService } from '../../services/app-config.service';
 import { SkinableConfig } from "../../services/skinable-config.service";
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
 
 describe('GlobalSearchComponent', () => {
     let component: GlobalSearchComponent;
@@ -33,7 +32,7 @@ describe('GlobalSearchComponent', () => {
         }
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),

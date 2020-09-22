@@ -46,9 +46,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     originalCopy: Configuration = new Configuration();
     confirmSub: Subscription;
 
-    @ViewChild(SystemSettingsComponent, {static: false}) systemSettingsConfig: SystemSettingsComponent;
-    @ViewChild(ConfigurationEmailComponent, {static: false}) mailConfig: ConfigurationEmailComponent;
-    @ViewChild(ConfigurationAuthComponent, {static: false}) authConfig: ConfigurationAuthComponent;
+    @ViewChild(SystemSettingsComponent) systemSettingsConfig: SystemSettingsComponent;
+    @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
+    @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
 
     constructor(
         private msgHandler: MessageHandlerService,

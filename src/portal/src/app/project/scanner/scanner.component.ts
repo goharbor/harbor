@@ -39,7 +39,7 @@ export class ScannerComponent implements OnInit {
     saveBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
     onSaving: boolean = false;
     hasCreatePermission: boolean = false;
-    @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
+    @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
     constructor( private configScannerService: ConfigScannerService,
                  private msgHandler: MessageHandlerService,
                  private errorHandler: ErrorHandler,

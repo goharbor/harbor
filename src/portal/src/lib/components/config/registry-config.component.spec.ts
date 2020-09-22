@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { SharedModule } from '../../utils/shared/shared.module';
 import { ErrorHandler } from '../../utils/error-handler/error-handler';
@@ -63,7 +63,7 @@ describe('RegistryConfigComponent (inline template)', () => {
     "items": [],
     "project_id": 0
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule
@@ -100,7 +100,7 @@ describe('RegistryConfigComponent (inline template)', () => {
     fixture.detectChanges();
   });
 
-  it('should render configurations to the view', async(() => {
+  it('should render configurations to the view', waitForAsync(() => {
     expect(spy.calls.count()).toEqual(1);
     expect(spySystemInfo.calls.count()).toEqual(1);
     fixture.detectChanges();

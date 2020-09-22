@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TagFeatureIntegrationComponent } from './tag-feature-integration.component';
 import { RouterModule } from '@angular/router';
@@ -9,7 +9,7 @@ describe('TagFeatureIntegrationComponent', () => {
   let component: TagFeatureIntegrationComponent;
   let fixture: ComponentFixture<TagFeatureIntegrationComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ TagFeatureIntegrationComponent ],
       imports: [ RouterModule, TranslateModule.forRoot(), RouterTestingModule ]

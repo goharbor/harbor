@@ -49,9 +49,9 @@ import { ProviderUnderProject } from '../../../../../ng-swagger-gen/models/provi
   styleUrls: ['./policy.component.scss']
 })
 export class PolicyComponent implements OnInit, OnDestroy {
-  @ViewChild(AddP2pPolicyComponent, { static: false } )
+  @ViewChild(AddP2pPolicyComponent)
   addP2pPolicyComponent: AddP2pPolicyComponent;
-  @ViewChild("confirmationDialogComponent", { static: false })
+  @ViewChild("confirmationDialogComponent")
   confirmationDialogComponent: ConfirmationDialogComponent;
   projectId: number;
   projectName: string;

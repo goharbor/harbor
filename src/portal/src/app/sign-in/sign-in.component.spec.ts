@@ -1,4 +1,4 @@
-import { async, ComponentFixture, getTestBed, inject, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, getTestBed, inject, TestBed } from '@angular/core/testing';
 import { SignInComponent } from './sign-in.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -22,7 +22,7 @@ describe('SignInComponent', () => {
             return of(true);
         }
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),

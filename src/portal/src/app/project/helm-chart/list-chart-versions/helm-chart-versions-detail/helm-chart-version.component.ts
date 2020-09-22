@@ -76,7 +76,7 @@ export class ChartVersionComponent implements OnInit {
 
   addLabelHeaders = 'HELM_CHART.ADD_LABEL_TO_CHART_VERSION';
 
-  @ViewChild("confirmationDialog", {static: false})
+  @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
   hasAddRemoveHelmChartVersionPermission: boolean;
   hasDownloadHelmChartVersionPermission: boolean;

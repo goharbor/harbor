@@ -40,7 +40,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   batchInfos = new Map();
   isLdapMode: boolean;
 
-  @ViewChild(AddGroupModalComponent, {static: false}) newGroupModal: AddGroupModalComponent;
+  @ViewChild(AddGroupModalComponent) newGroupModal: AddGroupModalComponent;
 
   constructor(
     private operationService: OperationService,

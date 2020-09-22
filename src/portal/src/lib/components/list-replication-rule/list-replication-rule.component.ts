@@ -84,10 +84,10 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
     selectedRow: ReplicationRule;
 
-    @ViewChild("toggleConfirmDialog", {static: false})
+    @ViewChild("toggleConfirmDialog")
     toggleConfirmDialog: ConfirmationDialogComponent;
 
-    @ViewChild("deletionConfirmDialog", {static: false})
+    @ViewChild("deletionConfirmDialog")
     deletionConfirmDialog: ConfirmationDialogComponent;
 
     startTimeComparator: Comparator<ReplicationRule> = new CustomComparator<ReplicationRule>("start_time", "date");

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync, fakeAsync, tick } from '@angular/core/testing';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { SharedModule } from "../../utils/shared/shared.module";
 import { ErrorHandler } from "../../utils/error-handler/error-handler";
@@ -56,7 +56,7 @@ describe("FilterLabelComponent", () => {
       return null;
     }
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule, NoopAnimationsModule, RouterTestingModule],
       declarations: [

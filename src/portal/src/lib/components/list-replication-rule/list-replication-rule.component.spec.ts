@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 
@@ -79,7 +79,7 @@ describe('ListReplicationRuleComponent (inline template)', () => {
         }
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 SharedModule,
@@ -107,7 +107,7 @@ describe('ListReplicationRuleComponent (inline template)', () => {
         fixture.detectChanges();
     });
 
-    it('Should load and render data', async(() => {
+    it('Should load and render data', waitForAsync(() => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, getTestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, getTestBed, waitForAsync } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DevCenterComponent } from './dev-center.component';
@@ -15,7 +15,7 @@ describe('DevCenterComponent', () => {
   let cookie = "fdsa|ds";
   let injector: TestBed;
   let httpMock: HttpTestingController;
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [DevCenterComponent],
       imports: [

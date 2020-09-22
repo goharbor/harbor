@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { AppConfigService } from '../../services/app-config.service';
 import { SkinableConfig } from "../../services/skinable-config.service";
@@ -23,7 +23,7 @@ describe('AboutDialogComponent', () => {
         }
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [AboutDialogComponent],
             imports: [

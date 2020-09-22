@@ -1,10 +1,10 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ChartDetailSummaryComponent } from './chart-detail-summary.component';
 import { ClarityModule } from '@clr/angular';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MarkedOptions, MarkdownModule, MarkdownService } from 'ngx-markdown';
+import { MarkedOptions, MarkdownModule } from 'ngx-markdown';
 import { HelmChartService } from '../../helm-chart.service';
 import { DefaultErrorHandler, ErrorHandler } from "../../../../../lib/utils/error-handler";
 describe('ChartDetailSummaryComponent', () => {
@@ -15,13 +15,13 @@ describe('ChartDetailSummaryComponent', () => {
         }
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),
                 ClarityModule,
                 FormsModule,
-                MarkdownModule,
+                MarkdownModule.forRoot({ sanitize: SecurityContext.HTML }),
             ],
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
@@ -29,7 +29,6 @@ describe('ChartDetailSummaryComponent', () => {
             declarations: [ChartDetailSummaryComponent],
             providers: [
                 TranslateService,
-                MarkdownService,
                 { provide: MarkedOptions, useValue: {} },
                 { provide: ErrorHandler, useValue: DefaultErrorHandler },
                 { provide: HelmChartService, useValue: mockHelmChartService },
@@ -39,7 +38,6 @@ describe('ChartDetailSummaryComponent', () => {
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ChartDetailSummaryComponent);
-        // markdownService = TestBed.get(MarkdownService);
         component = fixture.componentInstance;
         component.summary = {
             name: "string",

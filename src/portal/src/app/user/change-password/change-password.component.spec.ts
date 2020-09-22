@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ClarityModule } from '@clr/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -12,7 +12,7 @@ describe('ChangePasswordComponent', () => {
     let fixture: ComponentFixture<ChangePasswordComponent>;
     let fakeUserService = null;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [ChangePasswordComponent],
             schemas: [

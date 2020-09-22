@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CreateProjectComponent } from './create-project.component';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
@@ -38,7 +38,7 @@ describe('CreateProjectComponent', () => {
         systemInfoEndpoint: CURRENT_BASE_HREF + "/endpoints/testing"
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 HttpClientTestingModule,

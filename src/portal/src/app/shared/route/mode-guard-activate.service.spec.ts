@@ -1,4 +1,4 @@
-import { TestBed, async, inject } from '@angular/core/testing';
+import { TestBed, waitForAsync, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ModeGuard } from './mode-guard-activate.service';
 import { AppConfigService } from '../../services/app-config.service';

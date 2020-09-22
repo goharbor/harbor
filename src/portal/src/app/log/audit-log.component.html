@@ -44,7 +44,7 @@
                 <clr-dg-cell>{{l.op_time | date: 'short'}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
-                <span *ngIf="showPaginationIndex">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'AUDIT_LOG.OF' | translate}} </span> {{pagination.totalItems }} {{'AUDIT_LOG.ITEMS' | translate}}
+                <span *ngIf="showPaginationIndex">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'AUDIT_LOG.OF' | translate}} </span> {{totalRecordCount }} {{'AUDIT_LOG.ITEMS' | translate}}
                 <clr-dg-pagination #pagination [clrDgPageSize]="15" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalRecordCount"></clr-dg-pagination>
             </clr-dg-footer>
         </clr-datagrid>

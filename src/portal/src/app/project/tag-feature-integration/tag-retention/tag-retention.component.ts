@@ -91,9 +91,9 @@ export class TagRetentionComponent implements OnInit {
     totalLogCount: number = 0;
     logPageSize: number = 5;
     isDetailOpened: boolean = false;
-    @ViewChild('cronScheduleComponent', {static: false})
+    @ViewChild('cronScheduleComponent')
     cronScheduleComponent: CronScheduleComponent;
-    @ViewChild('addRule', {static: false}) addRuleComponent: AddRuleComponent;
+    @ViewChild('addRule') addRuleComponent: AddRuleComponent;
     constructor(
         private route: ActivatedRoute,
         private tagRetentionService: TagRetentionService,

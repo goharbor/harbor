@@ -30,7 +30,7 @@ export class ForgotPasswordComponent {
     isSuccess: boolean = false;
 
     @ViewChild("forgotPasswordFrom", {static: true}) forgotPwdForm: NgForm;
-    @ViewChild(InlineAlertComponent, {static: false})
+    @ViewChild(InlineAlertComponent)
     inlineAlert: InlineAlertComponent;
 
     constructor(private pwdService: PasswordSettingService) { }

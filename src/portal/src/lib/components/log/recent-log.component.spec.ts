@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { RecentLogComponent } from './recent-log.component';
 import { SERVICE_CONFIG, IServiceConfig } from '../../entities/service.config';
@@ -73,7 +73,7 @@ describe('RecentLogComponent (inline template)', () => {
       }
     }
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule
@@ -105,7 +105,7 @@ describe('RecentLogComponent (inline template)', () => {
     expect(serviceConfig.logBaseEndpoint).toEqual(CURRENT_BASE_HREF + "/logs/testing");
   });
 
-  it('should get data from AccessLogService', async(() => {
+  it('should get data from AccessLogService', waitForAsync(() => {
     expect(auditlogService).toBeTruthy();
     fixture.detectChanges();
     fixture.whenStable().then(() => { // wait for async getRecentLogs
@@ -115,7 +115,7 @@ describe('RecentLogComponent (inline template)', () => {
     });
   }));
 
-  it('should render data to view', async(() => {
+  it('should render data to view', waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -139,7 +139,7 @@ describe('RecentLogComponent (inline template)', () => {
     expect(component.recentLogs.length).toEqual(3);
   });
 
-  it('should support filtering list by keywords', async(() => {
+  it('should support filtering list by keywords', waitForAsync(() => {
     fixture.detectChanges();
     let el: HTMLElement = fixture.nativeElement.querySelector('.search-btn');
     expect(el).toBeTruthy("Not found search icon");
@@ -160,7 +160,7 @@ describe('RecentLogComponent (inline template)', () => {
     });
   }));
 
-  it('should support refreshing', async(() => {
+  it('should support refreshing', waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();

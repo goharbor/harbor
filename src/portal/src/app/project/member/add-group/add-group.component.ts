@@ -39,7 +39,7 @@ export class AddGroupComponent implements OnInit {
   @Input() memberList: Member[] = [];
   @Output() added = new EventEmitter<boolean>();
 
-  @ViewChild('groupForm', { static: false })
+  @ViewChild('groupForm')
   groupForm: NgForm;
 
   constructor(
