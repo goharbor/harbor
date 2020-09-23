@@ -61,6 +61,7 @@ def _create_client(server, credential, debug, api_type="products"):
         "scanner": swagger_client.ScannersApi(swagger_client.ApiClient(cfg)),
         "replication": v2_swagger_client.ReplicationApi(v2_swagger_client.ApiClient(cfg)),
         "robot": v2_swagger_client.RobotApi(v2_swagger_client.ApiClient(cfg)),
+        "gc":   v2_swagger_client.GcApi(v2_swagger_client.ApiClient(cfg)),
     }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code):

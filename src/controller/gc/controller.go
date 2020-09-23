@@ -2,43 +2,48 @@ package gc
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
 var (
-	// GCCtl is a global garbage collection controller instance
-	GCCtl = NewController()
+	// Ctl is a global garbage collection controller instance
+	Ctl = NewController()
 )
 
 const (
 	// SchedulerCallback ...
 	SchedulerCallback = "GARBAGE_COLLECTION"
-	// gcVendorType ...
-	gcVendorType = "GARBAGE_COLLECTION"
+	// GCVendorType ...
+	GCVendorType = "GARBAGE_COLLECTION"
 )
 
 // Controller manages the tags
 type Controller interface {
 	// Start start a manual gc job
-	Start(ctx context.Context, parameters map[string]interface{}) error
+	Start(ctx context.Context, policy Policy, trigger string) (int64, error)
 	// Stop stop a gc job
-	Stop(ctx context.Context, taskID int64) error
-	// GetLog get the gc log by id
-	GetLog(ctx context.Context, id int64) ([]byte, error)
-	// History list all of gc executions
-	History(ctx context.Context, query *q.Query) ([]*History, error)
-	// Count count the gc executions
-	Count(ctx context.Context, query *q.Query) (int64, error)
+	Stop(ctx context.Context, id int64) error
+
+	// ExecutionCount returns the total count of executions according to the query
+	ExecutionCount(ctx context.Context, query *q.Query) (count int64, err error)
+	// ListExecutions lists the executions according to the query
+	ListExecutions(ctx context.Context, query *q.Query) (executions []*Execution, err error)
+	// GetExecution gets the specific execution
+	GetExecution(ctx context.Context, executionID int64) (execution *Execution, err error)
+
+	// GetTask gets the specific task
+	GetTask(ctx context.Context, id int64) (*Task, error)
+	// GetTaskLog gets log of the specific task
+	GetTaskLog(ctx context.Context, id int64) ([]byte, error)
+
 	// GetSchedule get the current gc schedule
 	GetSchedule(ctx context.Context) (*scheduler.Schedule, error)
-	// CreateSchedule create the gc schedule with cron string
-	CreateSchedule(ctx context.Context, cron string, parameters map[string]interface{}) (int64, error)
+	// CreateSchedule create the gc schedule with cron type & string
+	CreateSchedule(ctx context.Context, cronType, cron string, policy Policy) (int64, error)
 	// DeleteSchedule remove the gc schedule
 	DeleteSchedule(ctx context.Context) error
 }
@@ -59,97 +64,105 @@ type controller struct {
 }
 
 // Start starts the manual GC
-func (c *controller) Start(ctx context.Context, parameters map[string]interface{}) error {
-	execID, err := c.exeMgr.Create(ctx, gcVendorType, -1, task.ExecutionTriggerManual, parameters)
+func (c *controller) Start(ctx context.Context, policy Policy, trigger string) (int64, error) {
+	para := make(map[string]interface{})
+	para["delete_untagged"] = policy.DeleteUntagged
+	para["dry_run"] = policy.DryRun
+	para["redis_url_reg"] = policy.ExtraAttrs["redis_url_reg"]
+	para["time_window"] = policy.ExtraAttrs["time_window"]
+
+	execID, err := c.exeMgr.Create(ctx, GCVendorType, -1, trigger, para)
 	if err != nil {
-		return err
+		return -1, err
 	}
-	taskID, err := c.taskMgr.Create(ctx, execID, &task.Job{
+	_, err = c.taskMgr.Create(ctx, execID, &task.Job{
 		Name: job.ImageGC,
 		Metadata: &job.Metadata{
 			JobKind: job.KindGeneric,
 		},
-		Parameters: parameters,
+		Parameters: para,
 	})
 	if err != nil {
-		return err
+		return -1, err
 	}
-	defer func() {
-		if err == nil {
-			return
-		}
-		if err := c.taskMgr.Stop(ctx, taskID); err != nil {
-			log.Errorf("failed to stop the task %d: %v", taskID, err)
-		}
-	}()
-	return nil
+	return execID, nil
 }
 
 // Stop ...
-func (c *controller) Stop(ctx context.Context, taskID int64) error {
-	return c.taskMgr.Stop(ctx, taskID)
+func (c *controller) Stop(ctx context.Context, id int64) error {
+	return c.exeMgr.Stop(ctx, id)
 }
 
-// GetLog ...
-func (c *controller) GetLog(ctx context.Context, executionID int64) ([]byte, error) {
-	tasks, err := c.taskMgr.List(ctx, q.New(q.KeyWords{"ExecutionID": executionID}))
+// ExecutionCount ...
+func (c *controller) ExecutionCount(ctx context.Context, query *q.Query) (int64, error) {
+	query.Keywords["VendorType"] = GCVendorType
+	return c.exeMgr.Count(ctx, query)
+}
+
+// ListExecutions ...
+func (c *controller) ListExecutions(ctx context.Context, query *q.Query) ([]*Execution, error) {
+	query = q.MustClone(query)
+	query.Keywords["VendorType"] = GCVendorType
+
+	execs, err := c.exeMgr.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var executions []*Execution
+	for _, exec := range execs {
+		executions = append(executions, convertExecution(exec))
+	}
+	return executions, nil
+}
+
+// GetExecution ...
+func (c *controller) GetExecution(ctx context.Context, id int64) (*Execution, error) {
+	execs, err := c.exeMgr.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"ID":         id,
+			"VendorType": GCVendorType,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(execs) == 0 {
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
+			WithMessage("garbage collection execution %d not found", id)
+	}
+	return convertExecution(execs[0]), nil
+}
+
+// GetTask ...
+func (c *controller) GetTask(ctx context.Context, id int64) (*Task, error) {
+	tasks, err := c.taskMgr.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"ID":         id,
+			"VendorType": GCVendorType,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
 	if len(tasks) == 0 {
-		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("no gc task is found")
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
+			WithMessage("garbage collection task %d not found", id)
 	}
-	return c.taskMgr.GetLog(ctx, tasks[0].ID)
+	return convertTask(tasks[0]), nil
 }
 
-// Count ...
-func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
-	query.Keywords["VendorType"] = gcVendorType
-	return c.exeMgr.Count(ctx, query)
-}
-
-// History ...
-func (c *controller) History(ctx context.Context, query *q.Query) ([]*History, error) {
-	var hs []*History
-
-	query.Keywords["VendorType"] = gcVendorType
-	exes, err := c.exeMgr.List(ctx, query)
+// GetTaskLog ...
+func (c *controller) GetTaskLog(ctx context.Context, id int64) ([]byte, error) {
+	_, err := c.GetTask(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	for _, exe := range exes {
-		tasks, err := c.taskMgr.List(ctx, q.New(q.KeyWords{"ExecutionID": exe.ID}))
-		if err != nil {
-			return nil, err
-		}
-		if len(tasks) == 0 {
-			continue
-		}
-
-		extraAttrsString, err := json.Marshal(exe.ExtraAttrs)
-		if err != nil {
-			return nil, err
-		}
-		hs = append(hs, &History{
-			ID:         exe.ID,
-			Name:       gcVendorType,
-			Kind:       exe.Trigger,
-			Parameters: string(extraAttrsString),
-			Deleted:    false,
-			Schedule: Schedule{Schedule: &ScheduleParam{
-				Type: exe.Trigger,
-			}},
-			Status:       tasks[0].Status,
-			CreationTime: tasks[0].CreationTime,
-			UpdateTime:   tasks[0].UpdateTime,
-		})
-	}
-	return hs, nil
+	return c.taskMgr.GetLog(ctx, id)
 }
 
 // GetSchedule ...
 func (c *controller) GetSchedule(ctx context.Context) (*scheduler.Schedule, error) {
-	sch, err := c.schedulerMgr.ListSchedules(ctx, q.New(q.KeyWords{"VendorType": gcVendorType}))
+	sch, err := c.schedulerMgr.ListSchedules(ctx, q.New(q.KeyWords{"VendorType": GCVendorType}))
 	if err != nil {
 		return nil, err
 	}
@@ -163,11 +176,40 @@ func (c *controller) GetSchedule(ctx context.Context) (*scheduler.Schedule, erro
 }
 
 // CreateSchedule ...
-func (c *controller) CreateSchedule(ctx context.Context, cron string, parameters map[string]interface{}) (int64, error) {
-	return c.schedulerMgr.Schedule(ctx, gcVendorType, -1, cron, SchedulerCallback, parameters)
+func (c *controller) CreateSchedule(ctx context.Context, cronType, cron string, policy Policy) (int64, error) {
+	return c.schedulerMgr.Schedule(ctx, GCVendorType, -1, cronType, cron, SchedulerCallback, policy)
 }
 
 // DeleteSchedule ...
 func (c *controller) DeleteSchedule(ctx context.Context) error {
-	return c.schedulerMgr.UnScheduleByVendor(ctx, gcVendorType, -1)
+	return c.schedulerMgr.UnScheduleByVendor(ctx, GCVendorType, -1)
+}
+
+func convertExecution(exec *task.Execution) *Execution {
+	return &Execution{
+		ID:            exec.ID,
+		Status:        exec.Status,
+		StatusMessage: exec.StatusMessage,
+		Trigger:       exec.Trigger,
+		ExtraAttrs:    exec.ExtraAttrs,
+		StartTime:     exec.StartTime,
+		EndTime:       exec.EndTime,
+	}
+}
+
+func convertTask(task *task.Task) *Task {
+	return &Task{
+		ID:             task.ID,
+		ExecutionID:    task.ExecutionID,
+		Status:         task.Status,
+		StatusMessage:  task.StatusMessage,
+		RunCount:       task.RunCount,
+		DeleteUntagged: task.GetBoolFromExtraAttrs("delete_untagged"),
+		DryRun:         task.GetBoolFromExtraAttrs("dry_run"),
+		JobID:          task.JobID,
+		CreationTime:   task.CreationTime,
+		StartTime:      task.StartTime,
+		UpdateTime:     task.UpdateTime,
+		EndTime:        task.EndTime,
+	}
 }

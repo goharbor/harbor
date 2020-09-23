@@ -4,29 +4,51 @@ import (
 	"time"
 )
 
-// Schedule ...
-type Schedule struct {
-	Schedule *ScheduleParam `json:"schedule"`
+// Policy ...
+type Policy struct {
+	Trigger        *Trigger               `json:"trigger"`
+	DeleteUntagged bool                   `json:"bool"`
+	DryRun         bool                   `json:"dryrun"`
+	ExtraAttrs     map[string]interface{} `json:"extra_attrs"`
 }
 
-// ScheduleParam defines the parameter of schedule trigger
-type ScheduleParam struct {
-	// Daily, Weekly, Custom, Manual, None
-	Type string `json:"type"`
-	// The cron string of scheduled job
+// TriggerType represents the type of trigger.
+type TriggerType string
+
+// Trigger holds info for a trigger
+type Trigger struct {
+	Type     TriggerType      `json:"type"`
+	Settings *TriggerSettings `json:"trigger_settings"`
+}
+
+// TriggerSettings is the setting about the trigger
+type TriggerSettings struct {
 	Cron string `json:"cron"`
 }
 
-// History gc execution history
-type History struct {
-	Schedule
-	ID           int64     `json:"id"`
-	Name         string    `json:"job_name"`
-	Kind         string    `json:"job_kind"`
-	Parameters   string    `json:"job_parameters"`
-	Status       string    `json:"job_status"`
-	UUID         string    `json:"-"`
-	Deleted      bool      `json:"deleted"`
-	CreationTime time.Time `json:"creation_time"`
-	UpdateTime   time.Time `json:"update_time"`
+// Execution model for replication
+type Execution struct {
+	ID            int64
+	Status        string
+	StatusMessage string
+	Trigger       string
+	ExtraAttrs    map[string]interface{}
+	StartTime     time.Time
+	EndTime       time.Time
+}
+
+// Task model for replication
+type Task struct {
+	ID             int64
+	ExecutionID    int64
+	Status         string
+	StatusMessage  string
+	RunCount       int32
+	DeleteUntagged bool
+	DryRun         bool
+	JobID          string
+	CreationTime   time.Time
+	StartTime      time.Time
+	UpdateTime     time.Time
+	EndTime        time.Time
 }

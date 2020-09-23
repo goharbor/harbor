@@ -2,29 +2,31 @@ package model
 
 import (
 	"github.com/go-openapi/strfmt"
-	"github.com/goharbor/harbor/src/controller/gc"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
+	"time"
 )
 
-const (
-	// ScheduleHourly : 'Hourly'
-	ScheduleHourly = "Hourly"
-	// ScheduleDaily : 'Daily'
-	ScheduleDaily = "Daily"
-	// ScheduleWeekly : 'Weekly'
-	ScheduleWeekly = "Weekly"
-	// ScheduleCustom : 'Custom'
-	ScheduleCustom = "Custom"
-	// ScheduleManual : 'Manual'
-	ScheduleManual = "Manual"
-	// ScheduleNone : 'None'
-	ScheduleNone = "None"
-)
+// ScheduleParam defines the parameter of schedule trigger
+type ScheduleParam struct {
+	// Daily, Weekly, Custom, Manual, None
+	Type string `json:"type"`
+	// The cron string of scheduled job
+	Cron string `json:"cron"`
+}
 
-// GCHistory ...
+// GCHistory gc execution history
 type GCHistory struct {
-	*gc.History
+	Schedule     *ScheduleParam `json:"schedule"`
+	ID           int64          `json:"id"`
+	Name         string         `json:"job_name"`
+	Kind         string         `json:"job_kind"`
+	Parameters   string         `json:"job_parameters"`
+	Status       string         `json:"job_status"`
+	UUID         string         `json:"-"`
+	Deleted      bool           `json:"deleted"`
+	CreationTime time.Time      `json:"creation_time"`
+	UpdateTime   time.Time      `json:"update_time"`
 }
 
 // ToSwagger converts the history to the swagger model
@@ -37,8 +39,8 @@ func (h *GCHistory) ToSwagger() *models.GCHistory {
 		Deleted:       h.Deleted,
 		JobStatus:     h.Status,
 		Schedule: &models.ScheduleObj{
-			Cron: h.Schedule.Schedule.Cron,
-			Type: h.Schedule.Schedule.Type,
+			Cron: h.Schedule.Cron,
+			Type: h.Schedule.Type,
 		},
 		CreationTime: strfmt.DateTime(h.CreationTime),
 		UpdateTime:   strfmt.DateTime(h.UpdateTime),

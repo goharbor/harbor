@@ -2079,6 +2079,8 @@ paths:
         - $ref: '#/parameters/gcId'
       tags:
         - gc
+      produces:
+        - text/plain
       responses:
         '200':
           description: Get successfully.
@@ -2098,7 +2100,7 @@ paths:
     get:
       summary: Get gc's schedule.
       description: This endpoint is for get schedule of gc job.
-      operationId: getSchedule
+      operationId: getGCSchedule
       tags:
         - gc
       responses:
@@ -2116,7 +2118,7 @@ paths:
       summary: Create a gc schedule.
       description: |
         This endpoint is for update gc schedule.
-      operationId: postSchedule
+      operationId: createGCSchedule
       parameters:
         - name: schedule
           in: body
@@ -2143,7 +2145,7 @@ paths:
       summary: Update gc's schedule.
       description: |
         This endpoint is for update gc schedule.
-      operationId: putSchedule
+      operationId: updateGCSchedule
       parameters:
         - name: schedule
           in: body

@@ -15,14 +15,14 @@ import (
 type gcCtrTestSuite struct {
 	suite.Suite
 	scheduler *schedulertesting.Scheduler
-	execMgr   *tasktesting.FakeExecutionManager
-	taskMgr   *tasktesting.FakeManager
+	execMgr   *tasktesting.ExecutionManager
+	taskMgr   *tasktesting.Manager
 	ctl       *controller
 }
 
 func (g *gcCtrTestSuite) SetupTest() {
-	g.execMgr = &tasktesting.FakeExecutionManager{}
-	g.taskMgr = &tasktesting.FakeManager{}
+	g.execMgr = &tasktesting.ExecutionManager{}
+	g.taskMgr = &tasktesting.Manager{}
 	g.scheduler = &schedulertesting.Scheduler{}
 	g.ctl = &controller{
 		taskMgr:      g.taskMgr,
@@ -37,15 +37,21 @@ func (g *gcCtrTestSuite) TestStart() {
 	g.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 
 	dataMap := make(map[string]interface{})
-	g.Nil(g.ctl.Start(nil, dataMap))
+	p := Policy{
+		DeleteUntagged: true,
+		ExtraAttrs:     dataMap,
+	}
+	id, err := g.ctl.Start(nil, p, task.ExecutionTriggerManual)
+	g.Nil(err)
+	g.Equal(int64(1), id)
 }
 
 func (g *gcCtrTestSuite) TestStop() {
-	g.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+	g.execMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 	g.Nil(g.ctl.Stop(nil, 1))
 }
 
-func (g *gcCtrTestSuite) TestLog() {
+func (g *gcCtrTestSuite) TestGetTaskLog() {
 	g.taskMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Task{
 		{
 			ID:          1,
@@ -55,19 +61,35 @@ func (g *gcCtrTestSuite) TestLog() {
 	}, nil)
 	g.taskMgr.On("GetLog", mock.Anything, mock.Anything).Return([]byte("hello world"), nil)
 
-	log, err := g.ctl.GetLog(nil, 1)
+	log, err := g.ctl.GetTaskLog(nil, 1)
 	g.Nil(err)
 	g.Equal([]byte("hello world"), log)
 }
 
-func (g *gcCtrTestSuite) TestCount() {
+func (g *gcCtrTestSuite) TestExecutionCount() {
 	g.execMgr.On("Count", mock.Anything, mock.Anything).Return(int64(1), nil)
-	count, err := g.ctl.Count(nil, q.New(q.KeyWords{"VendorType": "gc"}))
+	count, err := g.ctl.ExecutionCount(nil, q.New(q.KeyWords{"VendorType": "gc"}))
 	g.Nil(err)
 	g.Equal(int64(1), count)
 }
 
-func (g *gcCtrTestSuite) TestHistory() {
+func (g *gcCtrTestSuite) TestGetExecution() {
+	g.execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{
+		{
+			ID:            1,
+			Trigger:       "Manual",
+			VendorType:    GCVendorType,
+			StatusMessage: "Success",
+		},
+	}, nil)
+
+	hs, err := g.ctl.GetExecution(nil, int64(1))
+	g.Nil(err)
+
+	g.Equal("Manual", hs.Trigger)
+}
+
+func (g *gcCtrTestSuite) TestListExecutions() {
 	g.execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{
 		{
 			ID:      1,
@@ -83,10 +105,10 @@ func (g *gcCtrTestSuite) TestHistory() {
 		},
 	}, nil)
 
-	hs, err := g.ctl.History(nil, q.New(q.KeyWords{"VendorType": "gc"}))
+	hs, err := g.ctl.ListExecutions(nil, q.New(q.KeyWords{"VendorType": "gc"}))
 
 	g.Nil(err)
-	g.Equal("Manual", hs[0].Kind)
+	g.Equal("Manual", hs[0].Trigger)
 }
 
 func (g *gcCtrTestSuite) TestGetSchedule() {
@@ -103,11 +125,15 @@ func (g *gcCtrTestSuite) TestGetSchedule() {
 }
 
 func (g *gcCtrTestSuite) TestCreateSchedule() {
-	g.scheduler.On("Schedule", mock.Anything, mock.Anything, mock.Anything,
+	g.scheduler.On("Schedule", mock.Anything, mock.Anything, mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 
 	dataMap := make(map[string]interface{})
-	id, err := g.ctl.CreateSchedule(nil, "", dataMap)
+	p := Policy{
+		DeleteUntagged: true,
+		ExtraAttrs:     dataMap,
+	}
+	id, err := g.ctl.CreateSchedule(nil, "Daily", "* * * * * *", p)
 	g.Nil(err)
 	g.Equal(int64(1), id)
 }
