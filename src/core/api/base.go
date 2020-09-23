@@ -18,6 +18,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"net/http"
 
 	"github.com/ghodss/yaml"
@@ -26,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/gc"
 	"github.com/goharbor/harbor/src/controller/p2p/preheat"
 	projectcontroller "github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
@@ -49,6 +52,7 @@ var (
 	retentionMgr        retention.Manager
 	retentionLauncher   retention.Launcher
 	retentionController retention.APIController
+	gcController        gc.Controller
 )
 
 // GetRetentionController returns the retention API controller
@@ -194,6 +198,8 @@ func Init() error {
 
 	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, scheduler.Sched, retentionLauncher)
 
+	gcController = gc.NewController()
+
 	retentionCallbackFun := func(ctx context.Context, p string) error {
 		param := &retention.TriggerParam{}
 		if err := json.Unmarshal([]byte(p), param); err != nil {
@@ -216,6 +222,16 @@ func Init() error {
 		return err
 	}
 	err = scheduler.RegisterCallbackFunc(preheat.SchedulerCallback, p2pPreheatCallbackFun)
+
+	gcCallbackFun := func(ctx context.Context, p string) error {
+		param := &gc.Policy{}
+		if err := json.Unmarshal([]byte(p), param); err != nil {
+			return fmt.Errorf("failed to unmarshal the param: %v", err)
+		}
+		_, err := gcController.Start(orm.Context(), *param, task.ExecutionTriggerSchedule)
+		return err
+	}
+	err = scheduler.RegisterCallbackFunc(gc.SchedulerCallback, gcCallbackFun)
 
 	return err
 }

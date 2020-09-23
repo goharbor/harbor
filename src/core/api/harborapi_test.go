@@ -122,9 +122,6 @@ func init() {
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
 	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
-	beego.Router("/api/system/gc/:id", &GCAPI{}, "get:GetGC")
-	beego.Router("/api/system/gc/:id([0-9]+)/log", &GCAPI{}, "get:GetLog")
-	beego.Router("/api/system/gc/schedule", &GCAPI{}, "get:Get;put:Put;post:Post")
 	beego.Router("/api/system/scanAll/schedule", &ScanAllAPI{}, "get:Get;put:Put;post:Post")
 	beego.Router("/api/system/CVEAllowlist", &SysCVEAllowlistAPI{}, "get:Get;put:Put")
 	beego.Router("/api/system/oidc/ping", &OIDCAPI{}, "post:Ping")
@@ -862,36 +859,6 @@ func (a testapi) DeleteMeta(authInfor usrInfo, projectID int64, name string) (in
 
 	code, body, err := request(_sling, jsonAcceptHeader, authInfor)
 	return code, string(body), err
-}
-
-func (a testapi) AddGC(authInfor usrInfo, adminReq apilib.AdminJobReq) (int, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := "/api/system/gc/schedule"
-
-	_sling = _sling.Path(path)
-
-	// body params
-	_sling = _sling.BodyJSON(adminReq)
-	var httpStatusCode int
-	var err error
-
-	httpStatusCode, _, err = request(_sling, jsonAcceptHeader, authInfor)
-
-	return httpStatusCode, err
-}
-
-func (a testapi) GCScheduleGet(authInfo usrInfo) (int, api_models.AdminJobSchedule, error) {
-	_sling := sling.New().Get(a.basePath)
-	path := "/api/system/gc/schedule"
-	_sling = _sling.Path(path)
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	var successPayLoad api_models.AdminJobSchedule
-	if 200 == httpStatusCode && nil == err {
-		err = json.Unmarshal(body, &successPayLoad)
-	}
-
-	return httpStatusCode, successPayLoad, err
 }
 
 func (a testapi) AddScanAll(authInfor usrInfo, adminReq apilib.AdminJobReq) (int, error) {

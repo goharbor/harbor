@@ -42,6 +42,7 @@ type Schedule struct {
 	VendorID     int64     `json:"vendor_id"`
 	CRONType     string    `json:"cron_type"`
 	CRON         string    `json:"cron"`
+	Param        string    `json:"param"`
 	Status       string    `json:"status"` // status of the underlying task(jobservice job)
 	CreationTime time.Time `json:"creation_time"`
 	UpdateTime   time.Time `json:"update_time"`
@@ -269,6 +270,7 @@ func (s *scheduler) convertSchedule(ctx context.Context, schedule *schedule) (*S
 		VendorID:     schedule.VendorID,
 		CRONType:     schedule.CRONType,
 		CRON:         schedule.CRON,
+		Param:        schedule.CallbackFuncParam,
 		CreationTime: schedule.CreationTime,
 		UpdateTime:   schedule.UpdateTime,
 	}

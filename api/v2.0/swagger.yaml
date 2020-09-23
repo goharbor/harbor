@@ -2017,6 +2017,153 @@ paths:
           description: Not found the default root certificate.
         '500':
           $ref: '#/responses/500'
+  /system/gc:
+    get:
+      summary: Get gc results.
+      description: This endpoint let user get gc execution history.
+      tags:
+        - gc
+      operationId: getGCHistory
+      parameters:
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Get gc results successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of history
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GCHistory'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /system/gc/{gc_id}:
+    get:
+      summary: Get gc status.
+      description: This endpoint let user get gc status filtered by specific ID.
+      operationId: getGC
+      parameters:
+        - $ref: '#/parameters/gcId'
+      tags:
+        - gc
+      responses:
+        '200':
+          description: Get gc results successfully.
+          schema:
+            $ref: '#/definitions/GCHistory'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /system/gc/{gc_id}/log:
+    get:
+      summary: Get gc job log.
+      description: This endpoint let user get gc job logs filtered by specific ID.
+      operationId: getGCLog
+      parameters:
+        - $ref: '#/parameters/gcId'
+      tags:
+        - gc
+      responses:
+        '200':
+          description: Get successfully.
+          schema:
+            type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /system/gc/schedule:
+    get:
+      summary: Get gc's schedule.
+      description: This endpoint is for get schedule of gc job.
+      operationId: getSchedule
+      tags:
+        - gc
+      responses:
+        '200':
+          description: Get gc's schedule.
+          schema:
+            $ref: '#/definitions/GCHistory'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a gc schedule.
+      description: |
+        This endpoint is for update gc schedule.
+      operationId: postSchedule
+      parameters:
+        - name: schedule
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Schedule'
+          description: Updates of gc's schedule.
+      tags:
+        - gc
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update gc's schedule.
+      description: |
+        This endpoint is for update gc schedule.
+      operationId: putSchedule
+      parameters:
+        - name: schedule
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Schedule'
+          description: Updates of gc's schedule.
+      tags:
+        - gc
+      responses:
+        '200':
+          description: Updated gc's schedule successfully.
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /ping:
     get:
       summary: Ping Harbor to check if it's alive.
@@ -2134,6 +2281,13 @@ parameters:
     description: Robot ID
     required: true
     type: integer
+  gcId:
+    name: gc_id
+    in: path
+    description: The ID of the gc log
+    required: true
+    type: integer
+    format: int64
 responses:
   '200':
     description: Success
@@ -3351,3 +3505,55 @@ definitions:
         description: The storage of system.
         items:
           $ref: '#/definitions/Storage'
+  GCHistory:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: the id of gc job.
+      job_name:
+        type: string
+        description: the job name of gc job.
+      job_kind:
+        type: string
+        description: the job kind of gc job.
+      job_parameters:
+        type: string
+        description: the job parameters of gc job.
+      schedule:
+        $ref: '#/definitions/ScheduleObj'
+      job_status:
+        type: string
+        description: the status of gc job.
+      deleted:
+        type: boolean
+        description: if gc job was deleted.
+      creation_time:
+        type: string
+        format: date-time
+        description: the creation time of gc job.
+      update_time:
+        type: string
+        format: date-time
+        description: the update time of gc job.
+  Schedule:
+    type: object
+    properties:
+      schedule:
+        $ref: '#/definitions/ScheduleObj'
+      parameters:
+        type: object
+        description: The parameters of admin job
+        additionalProperties:
+          type: object
+  ScheduleObj:
+    type: object
+    properties:
+      type:
+        type: string
+        description: |
+          The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manually' and 'None'.
+          'Manually' means to trigger it right away and 'None' means to cancel the schedule.
+      cron:
+        type: string
+        description: A cron expression, a time-based job scheduler.
