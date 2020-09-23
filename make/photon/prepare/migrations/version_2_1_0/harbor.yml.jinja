@@ -33,12 +33,20 @@ https:
 #   private_key: /your/private/key/path
 {% endif %}
 
-# # Uncomment following will enable tls communication between all harbor components
+{% if internal_tls is defined %}
+# Uncomment following will enable tls communication between all harbor components
+internal_tls:
+  # set enabled to true means internal tls is enabled
+  enabled: {{ internal_tls.enabled | lower }}
+  # put your cert and key files on dir
+  dir: {{ internal_tls.dir }}
+{% else %}
 # internal_tls:
 #   # set enabled to true means internal tls is enabled
 #   enabled: true
 #   # put your cert and key files on dir
 #   dir: /etc/harbor/tls/internal
+{% endif %}
 
 # Uncomment external_url if you want to enable external proxy
 # And when it enabled the hostname will no longer used
@@ -144,7 +152,7 @@ clair:
 trivy:
   # ignoreUnfixed The flag to display only fixed vulnerabilities
   {% if trivy.ignore_unfixed is defined %}
-  ignore_unfixed: {{ trivy.ignore_unfixed }}
+  ignore_unfixed: {{ trivy.ignore_unfixed | lower }}
   {% else %}
   ignore_unfixed: false
   {% endif %}
@@ -154,14 +162,14 @@ trivy:
   # If the flag is enabled you have to manually download the `trivy.db` file and mount it in the
   # /home/scanner/.cache/trivy/db/trivy.db path.
   {% if trivy.skip_update is defined %}
-  skip_update: {{ trivy.skip_update }}
+  skip_update: {{ trivy.skip_update | lower }}
   {% else %}
   skip_update: false
   {% endif %}
   #
   # insecure The flag to skip verifying registry certificate
   {% if trivy.insecure is defined %}
-  insecure: {{ trivy.insecure }}
+  insecure: {{ trivy.insecure | lower }}
   {% else %}
   insecure: false
   {% endif %}
