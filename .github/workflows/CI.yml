@@ -15,7 +15,6 @@ env:
    UI_BUILDER_VERSION: 1.6.0
 
 on:
-  pull_request:
   push:
     paths-ignore:
     - 'docs/**'
