@@ -57,13 +57,6 @@ type processor struct {
 	chartOperator chart.Operator
 }
 
-func (p *processor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error {
-	if err := p.ManifestProcessor.AbstractMetadata(ctx, artifact, manifest); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (p *processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*ps.Addition, error) {
 	if addition != AdditionTypeValues && addition != AdditionTypeReadme && addition != AdditionTypeDependencies {
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).

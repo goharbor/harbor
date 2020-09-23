@@ -43,13 +43,6 @@ type indexProcessor struct {
 	*base.IndexProcessor
 }
 
-func (i *indexProcessor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error {
-	if err := i.IndexProcessor.AbstractMetadata(ctx, artifact, manifest); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (i *indexProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
 	return ArtifactTypeImage
 }
