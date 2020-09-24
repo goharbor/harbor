@@ -15,6 +15,7 @@
 package scheduler
 
 import (
+	"fmt"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -27,8 +28,8 @@ type schedulerTestSuite struct {
 	suite.Suite
 	scheduler *scheduler
 	dao       *mockDAO
-	execMgr   *tasktesting.FakeExecutionManager
-	taskMgr   *tasktesting.FakeManager
+	execMgr   *tasktesting.ExecutionManager
+	taskMgr   *tasktesting.Manager
 }
 
 func (s *schedulerTestSuite) SetupTest() {
@@ -37,8 +38,8 @@ func (s *schedulerTestSuite) SetupTest() {
 	s.Require().Nil(err)
 
 	s.dao = &mockDAO{}
-	s.execMgr = &tasktesting.FakeExecutionManager{}
-	s.taskMgr = &tasktesting.FakeManager{}
+	s.execMgr = &tasktesting.ExecutionManager{}
+	s.taskMgr = &tasktesting.Manager{}
 
 	s.scheduler = &scheduler{
 		dao:     s.dao,
@@ -97,17 +98,13 @@ func (s *schedulerTestSuite) TestSchedule() {
 }
 
 func (s *schedulerTestSuite) TestUnScheduleByID() {
-	// the underlying task isn't stopped
+	// the execution isn't stopped
 	s.execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{
 		{
 			ID: 1,
 		},
 	}, nil)
-	s.execMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
-	s.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
-		ID:     1,
-		Status: job.RunningStatus.String(),
-	}, nil)
+	s.execMgr.On("StopAndWait", mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("error"))
 	err := s.scheduler.UnScheduleByID(nil, 1)
 	s.NotNil(err)
 	s.dao.AssertExpectations(s.T())
@@ -122,11 +119,7 @@ func (s *schedulerTestSuite) TestUnScheduleByID() {
 			ID: 1,
 		},
 	}, nil)
-	s.execMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
-	s.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
-		ID:     1,
-		Status: job.StoppedStatus.String(),
-	}, nil)
+	s.execMgr.On("StopAndWait", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	s.dao.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	s.execMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	err = s.scheduler.UnScheduleByID(nil, 1)
@@ -146,11 +139,7 @@ func (s *schedulerTestSuite) TestUnScheduleByVendor() {
 			ID: 1,
 		},
 	}, nil)
-	s.execMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
-	s.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
-		ID:     1,
-		Status: job.StoppedStatus.String(),
-	}, nil)
+	s.execMgr.On("StopAndWait", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	s.dao.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	s.execMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	err := s.scheduler.UnScheduleByVendor(nil, "vendor", 1)

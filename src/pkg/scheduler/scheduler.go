@@ -201,26 +201,9 @@ func (s *scheduler) UnScheduleByID(ctx context.Context, id int64) error {
 	}
 	if len(executions) > 0 {
 		executionID := executions[0].ID
-		if err = s.execMgr.Stop(ctx, executionID); err != nil {
+		// stop the execution
+		if err = s.execMgr.StopAndWait(ctx, executionID, 10*time.Second); err != nil {
 			return err
-		}
-		final := false
-		// after the stop called, the execution cannot be stopped immediately, and the execution
-		// cannot be deleted if it's status isn't in final status, so use the for loop to make
-		// sure the execution be in final status before deleting it
-		for t := 100 * time.Microsecond; t < 5*time.Second; t = t * 2 {
-			exec, err := s.execMgr.Get(ctx, executionID)
-			if err != nil {
-				return err
-			}
-			if job.Status(exec.Status).Final() {
-				final = true
-				break
-			}
-			time.Sleep(t)
-		}
-		if !final {
-			return fmt.Errorf("failed to unschedule the schedule %d: the execution %d isn't in final status", id, executionID)
 		}
 		// delete execution
 		if err = s.execMgr.Delete(ctx, executionID); err != nil {

@@ -17,6 +17,8 @@ package task
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"sync"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -52,6 +54,9 @@ type ExecutionManager interface {
 	MarkError(ctx context.Context, id int64, message string) (err error)
 	// Stop all linked tasks of the specified execution
 	Stop(ctx context.Context, id int64) (err error)
+	// StopAndWait stops all linked tasks of the specified execution and waits until all tasks are stopped
+	// or get an error
+	StopAndWait(ctx context.Context, id int64, timeout time.Duration) (err error)
 	// Delete the specified execution and its tasks
 	Delete(ctx context.Context, id int64) (err error)
 	// Get the specified execution
@@ -121,6 +126,13 @@ func (e *executionManager) MarkError(ctx context.Context, id int64, message stri
 }
 
 func (e *executionManager) Stop(ctx context.Context, id int64) error {
+	execution, err := e.executionDAO.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// when an execution is in final status, if it contains task that is a periodic or retrying job it will
+	// run again in the near future, so we must operate the stop action
 	tasks, err := e.taskDAO.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"ExecutionID": id,
@@ -129,6 +141,15 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
+	// contains no task and the status isn't final, update the status to stop directly
+	if len(tasks) == 0 && !job.Status(execution.Status).Final() {
+		return e.executionDAO.Update(ctx, &dao.Execution{
+			ID:      id,
+			Status:  job.StoppedStatus.String(),
+			EndTime: time.Now(),
+		}, "Status", "EndTime")
+	}
+
 	for _, task := range tasks {
 		if err = e.taskMgr.Stop(ctx, task.ID); err != nil {
 			log.Errorf("failed to stop task %d: %v", task.ID, err)
@@ -136,6 +157,53 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 		}
 	}
 	return nil
+}
+
+func (e *executionManager) StopAndWait(ctx context.Context, id int64, timeout time.Duration) error {
+	var (
+		overtime bool
+		errChan  = make(chan error)
+		lock     = sync.RWMutex{}
+	)
+	go func() {
+		// stop the execution
+		if err := e.Stop(ctx, id); err != nil {
+			errChan <- err
+			return
+		}
+		// check the status of the execution
+		interval := 100 * time.Millisecond
+		stop := false
+		for !stop {
+			execution, err := e.executionDAO.Get(ctx, id)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			// if the status is final, return
+			if job.Status(execution.Status).Final() {
+				errChan <- nil
+				return
+			}
+			time.Sleep(interval)
+			if interval < 1*time.Second {
+				interval = interval * 2
+			}
+			lock.RLock()
+			stop = overtime
+			lock.RUnlock()
+		}
+	}()
+
+	select {
+	case <-time.After(timeout):
+		lock.Lock()
+		overtime = true
+		lock.Unlock()
+		return fmt.Errorf("stopping the execution %d timeout", id)
+	case err := <-errChan:
+		return err
+	}
 }
 
 func (e *executionManager) Delete(ctx context.Context, id int64) error {
