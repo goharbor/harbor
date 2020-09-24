@@ -237,6 +237,7 @@ Select Rule And Replicate
 Select Rule And Click Edit Button
     [Arguments]  ${rule_name}
     Retry Element Click  //clr-dg-row[contains(.,'${rule_name}')]//clr-radio-wrapper/label
+    Retry Element Click  ${replication_action}
     Retry Element Click  ${edit_replication_rule_id}
 
 Delete Replication Rule

@@ -617,7 +617,15 @@
         "NAMESPACE_TOOLTIP": "Namespace名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
         "TAG": "Tag",
         "LABEL": "标签",
-        "RESOURCE": "资源"
+        "RESOURCE": "资源",
+        "ENABLE_TITLE": "启用规则",
+        "ENABLE_SUMMARY": "确定启用规则 {{param}}?",
+        "DISABLE_TITLE": "禁用规则",
+        "DISABLE_SUMMARY": "确认禁用规则 {{param}}?",
+        "ENABLE_SUCCESS": "启用规则成功",
+        "ENABLE_FAILED": "启用规则失败",
+        "DISABLE_SUCCESS": "禁用规则成功",
+        "DISABLE_FAILED": "禁用规则失败"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
