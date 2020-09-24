@@ -20,12 +20,13 @@ import {
   NavigationExtras
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { CommonRoutes, AdmiralQueryParamKey } from '../../shared/shared.const';
-import { AppConfigService } from '../../app-config.service';
+import { AdmiralQueryParamKey } from '../../shared/shared.const';
+import { AppConfigService } from '../../services/app-config.service';
 import { maintainUrlQueryParmas } from '../../shared/shared.utils';
 import { MessageHandlerService } from '../message-handler/message-handler.service';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-
+import { Observable } from "rxjs";
+import { CommonRoutes } from "../../../lib/entities/shared.const";
 @Injectable()
 export class AuthCheckGuard implements CanActivate, CanActivateChild {
   constructor(
@@ -45,7 +46,7 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
     return false;
   }
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
     // When routing change, clear
     this.msgHandler.clear();
     if (this.appConfigService.getConfig().read_only.toString() === 'true') {
@@ -53,8 +54,7 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
     }
 
     this.searchTrigger.closeSearch(true);
-    return new Promise((resolve, reject) => {
-      // Before activating, we firstly need to confirm whether the route is coming from peer part - admiral
+    return new Observable(observer => {
       let queryParams = route.queryParams;
       if (queryParams) {
         if (queryParams[AdmiralQueryParamKey]) {
@@ -66,39 +66,40 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
           }
 
           this.router.navigateByUrl(keyRemovedUrl);
-          return resolve(false);
+          return observer.next(false);
         }
       }
-
       let user = this.authService.getCurrentUser();
       if (!user) {
         this.authService.retrieveUser()
-          .then(() => resolve(true))
-          .catch(error => {
-            // If is guest, skip it
-            if (this.isGuest(route, state)) {
-              return resolve(true);
-            }
-            // Session retrieving failed then redirect to sign-in
-            // no matter what status code is.
-            // Please pay attention that route 'HARBOR_ROOT' and 'EMBEDDED_SIGN_IN' support anonymous user
-            if (state.url !== CommonRoutes.HARBOR_ROOT && !state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
-              let navigatorExtra: NavigationExtras = {
-                queryParams: { "redirect_url": state.url }
-              };
-              this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
-              return resolve(false);
-            } else {
-              return resolve(true);
-            }
-          });
+          .subscribe(() => {
+            return observer.next(true);
+          }
+            , error => {
+              // If is guest, skip it
+              if (this.isGuest(route, state)) {
+                return observer.next(true);
+              }
+              // Session retrieving failed then redirect to sign-in
+              // no matter what status code is.
+              // Please pay attention that route 'HARBOR_ROOT' and 'EMBEDDED_SIGN_IN' support anonymous user
+              if (!state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
+                let navigatorExtra: NavigationExtras = {
+                  queryParams: { "redirect_url": state.url }
+                };
+                this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
+                return observer.next(false);
+              } else {
+                return observer.next(true);
+              }
+            });
       } else {
-        return resolve(true);
+        return observer.next(true);
       }
     });
   }
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
     return this.canActivate(route, state);
   }
 }

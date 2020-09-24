@@ -12,23 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http, URLSearchParams } from '@angular/http';
-
-
-import { SessionUser } from './session-user';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
+import { SessionUser, SessionUserBackend } from './session-user';
 import { Member } from '../project/member/member';
-
 import { SignInCredential } from './sign-in-credential';
-import { enLang } from '../shared/shared.const';
-import {HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "./shared.utils";
+import { enLang } from './shared.const';
+import { SessionViewmodelFactory } from './session.viewmodel.factory';
+import {
+    HTTP_FORM_OPTIONS,
+    HTTP_GET_OPTIONS,
+    HTTP_JSON_OPTIONS,
+    clone,
+    CURRENT_BASE_HREF
+} from "../../lib/utils/utils";
+import { FlushAll } from "../../lib/utils/cache-util";
 
 const signInUrl = '/c/login';
-const currentUserEndpoint = "/api/users/current";
+const currentUserEndpoint = CURRENT_BASE_HREF + "/users/current";
 const signOffEndpoint = "/c/log_out";
-const accountEndpoint = "/api/users/:id";
+const accountEndpoint = CURRENT_BASE_HREF + "/users/:id";
 const langEndpoint = "/language";
 const userExistsEndpoint = "/c/userExists";
-const renameAdminEndpoint = '/api/internal/renameadmin';
+const renameAdminEndpoint = CURRENT_BASE_HREF + '/internal/renameadmin';
 const langMap = {
     "zh": "zh-CN",
     "en": "en-US"
@@ -50,45 +57,44 @@ export class SessionService {
         "Content-Type": 'application/x-www-form-urlencoded'
     });*/
 
-    constructor(private http: Http) { }
+    constructor(private http: HttpClient, public sessionViewmodel: SessionViewmodelFactory) { }
 
     // Handle the related exceptions
-    handleError(error: any): Promise<any> {
-        return Promise.reject(error.message || error);
+    handleError(error: any): Observable<any> {
+        return observableThrowError(error.error || error);
     }
 
     // Clear session
     clear(): void {
         this.currentUser = null;
         this.projectMembers = [];
+        FlushAll();
     }
 
     // Submit signin form to backend (NOT restful service)
-    signIn(signInCredential: SignInCredential): Promise<any> {
+    signIn(signInCredential: SignInCredential): Observable<any> {
         // Build the form package
         let queryParam: string = 'principal=' + encodeURIComponent(signInCredential.principal) +
-        '&password=' + encodeURIComponent(signInCredential.password);
+            '&password=' + encodeURIComponent(signInCredential.password);
 
-        // Trigger Http
+        // Trigger HttpClient
         return this.http.post(signInUrl, queryParam, HTTP_FORM_OPTIONS)
-            .toPromise()
-            .then(() => null)
-            .catch(error => this.handleError(error));
+            .pipe(map(() => null)
+            , catchError(error => observableThrowError(error)));
     }
 
     /**
      * Get the related information of current signed in user from backend
      *
-     * returns {Promise<SessionUser>}
+     * returns {Observable<SessionUser>}
      *
      * @memberOf SessionService
      */
-    retrieveUser(): Promise<SessionUser> {
-        return this.http.get(currentUserEndpoint, HTTP_GET_OPTIONS).toPromise()
-            .then(response => this.currentUser = response.json() as SessionUser)
-            .catch(error => this.handleError(error));
+    retrieveUser(): Observable<SessionUserBackend> {
+        return this.http.get(currentUserEndpoint, HTTP_GET_OPTIONS)
+            .pipe(map((response: SessionUserBackend) => this.currentUser = this.sessionViewmodel.getCurrentUser(response) as SessionUser)
+            , catchError(error => this.handleError(error)));
     }
-
     /**
      * For getting info
      */
@@ -99,13 +105,13 @@ export class SessionService {
     /**
      * Log out the system
      */
-    signOff(): Promise<any> {
-        return this.http.get(signOffEndpoint, HTTP_GET_OPTIONS).toPromise()
-            .then(() => {
+    signOff(): Observable<any> {
+        return this.http.get(signOffEndpoint, HTTP_GET_OPTIONS)
+            .pipe(map(() => {
                 // Destroy current session cache
                 // this.currentUser = null;
             })  // Nothing returned
-            .catch(error => this.handleError(error));
+            , catchError(error => this.handleError(error)));
     }
 
     /**
@@ -113,21 +119,21 @@ export class SessionService {
      * Update accpunt settings
      *
      *  ** deprecated param {SessionUser} account
-     * returns {Promise<any>}
+     * returns {Observable<any>}
      *
      * @memberOf SessionService
      */
-    updateAccountSettings(account: SessionUser): Promise<any> {
+    updateAccountSettings(account: SessionUser): Observable<any> {
         if (!account) {
-            return Promise.reject("Invalid account settings");
+            return observableThrowError("Invalid account settings");
         }
         let putUrl = accountEndpoint.replace(":id", account.user_id + "");
-        return this.http.put(putUrl, JSON.stringify(account), HTTP_JSON_OPTIONS).toPromise()
-            .then(() => {
+        return this.http.put(putUrl, JSON.stringify(account), HTTP_JSON_OPTIONS)
+            .pipe(map(() => {
                 // Retrieve current session user
                 return this.retrieveUser();
             })
-            .catch(error => this.handleError(error));
+            , catchError(error => this.handleError(error)));
     }
 
     /**
@@ -135,26 +141,25 @@ export class SessionService {
      * Update accpunt settings
      *
      *  ** deprecated param {SessionUser} account
-     * returns {Promise<any>}
+     * returns {Observable<any>}
      *
      * @memberOf SessionService
      */
-    renameAdmin(account: SessionUser): Promise<any> {
+    renameAdmin(account: SessionUser): Observable<any> {
         if (!account) {
-            return Promise.reject("Invalid account settings");
+            return observableThrowError("Invalid account settings");
         }
         return this.http.post(renameAdminEndpoint, JSON.stringify({}), HTTP_JSON_OPTIONS)
-        .toPromise()
-        .then(() => null)
-        .catch(error => this.handleError(error));
+            .pipe(map(() => null)
+            , catchError(error => this.handleError(error)));
     }
 
     /**
      * Switch the backend language profile
      */
-    switchLanguage(lang: string): Promise<any> {
+    switchLanguage(lang: string): Observable<any> {
         if (!lang) {
-            return Promise.reject("Invalid language");
+            return observableThrowError("Invalid language");
         }
 
         let backendLang = langMap[lang];
@@ -163,24 +168,20 @@ export class SessionService {
         }
 
         let getUrl = langEndpoint + "?lang=" + backendLang;
-        return this.http.get(getUrl, HTTP_GET_OPTIONS).toPromise()
-            .then(() => null)
-            .catch(error => this.handleError(error));
+        return this.http.get(getUrl, HTTP_GET_OPTIONS)
+            .pipe(map(() => null)
+            , catchError(error => this.handleError(error)));
     }
 
-    checkUserExisting(target: string, value: string): Promise<boolean> {
+    checkUserExisting(target: string, value: string): Observable<boolean> {
         // Build the form package
-        const body = new URLSearchParams();
-        body.set('target', target);
-        body.set('value', value);
+        let body = new HttpParams();
+        body = body.set('target', target);
+        body = body.set('value', value);
 
-        // Trigger Http
+        // Trigger HttpClient
         return this.http.post(userExistsEndpoint, body.toString(), HTTP_FORM_OPTIONS)
-            .toPromise()
-            .then(response => {
-                return response.json();
-            })
-            .catch(error => this.handleError(error));
+            .pipe(catchError(error => this.handleError(error)));
     }
 
     setProjectMembers(projectMembers: Member[]): void {

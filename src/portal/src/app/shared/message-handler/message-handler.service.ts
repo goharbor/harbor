@@ -13,12 +13,12 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { ErrorHandler } from '@harbor/ui';
-
+import { AlertType } from '../../shared/shared.const';
 import { MessageService } from '../../global-message/message.service';
-import { AlertType, httpStatusCode } from '../../shared/shared.const';
-import { errorHandler } from '../../shared/shared.utils';
 import { SessionService } from '../../shared/session.service';
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { errorHandler } from "../../../lib/utils/shared/shared.utils";
+import { httpStatusCode } from "../../../lib/entities/shared.const";
 
 
 @Injectable()
@@ -49,6 +49,19 @@ export class MessageHandlerService implements ErrorHandler {
             } else {
                 this.msgService.announceMessage(code, msg, AlertType.DANGER);
             }
+        }
+    }
+    public handleErrorPopupUnauthorized(error: any | string): void {
+
+        if (!(error.statusCode || error.status)) {
+            return;
+        }
+        let msg = errorHandler(error);
+        let code = error.statusCode || error.status;
+        if (code === httpStatusCode.Unauthorized) {
+            this.msgService.announceAppLevelMessage(code, msg, AlertType.DANGER);
+            // Session is invalid now, clare session cache
+            this.session.clear();
         }
     }
 

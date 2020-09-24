@@ -1,6 +1,6 @@
 <div class="row flex-items-xs-between flex-items-xs-middle">
     <div></div>
-    <div id="right_statistic_panel" style="margin-right: 18px; margin-top: 8px;">
+    <div id="right_statistic_panel">
         <div class="statistic-block">
             <div class="statistic-column-block">
                 <div>
@@ -10,7 +10,7 @@
                     <span class="statistic-column-title statistic-column-title-repo">{{'STATISTICS.REPO_ITEM' | translate }}</span>
                 </div>
             </div>
-            <div class="statistic-column-block" style="margin-left: 16px;">
+            <div class="statistic-column-block">
                 <div>
                     <statistics [data]='originalCopy.private_project_count' [label]='"STATISTICS.INDEX_PRIVATE" | translate'></statistics>
                 </div>
@@ -18,7 +18,7 @@
                     <statistics [data]='originalCopy.private_repo_count' [label]='"STATISTICS.INDEX_PRIVATE" | translate'></statistics>
                 </div>
             </div>
-            <div class="statistic-column-block" style="margin-left: 28px;">
+            <div class="statistic-column-block">
                 <div>
                     <statistics [data]='originalCopy.public_project_count' [label]='"STATISTICS.INDEX_PUB" | translate'></statistics>
                 </div>
@@ -26,7 +26,7 @@
                     <statistics [data]='originalCopy.public_repo_count' [label]='"STATISTICS.INDEX_PUB" | translate'></statistics>
                 </div>
             </div>
-            <div class="statistic-column-block" style="margin-left: 28px;">
+            <div class="statistic-column-block">
                 <div>
                     <statistics [data]='originalCopy.total_project_count' [label]='"STATISTICS.INDEX_TOTAL" | translate' *ngIf="isValidSession"></statistics>
                 </div>

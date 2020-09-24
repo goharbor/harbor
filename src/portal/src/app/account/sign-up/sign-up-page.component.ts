@@ -22,7 +22,8 @@ import { MessageService } from '../../global-message/message.service';
 
 @Component({
     selector: 'sign-up-page',
-    templateUrl: "sign-up-page.component.html"
+    templateUrl: "sign-up-page.component.html",
+    styleUrls: ['../../common.scss']
 })
 export class SignUpPageComponent implements OnInit {
     error: any;
@@ -34,7 +35,7 @@ export class SignUpPageComponent implements OnInit {
         private msgService: MessageService,
         private router: Router) { }
 
-    @ViewChild(NewUserFormComponent)
+    @ViewChild(NewUserFormComponent, {static: false})
     newUserForm: NewUserFormComponent;
 
     getNewUser(): User {
@@ -91,13 +92,12 @@ export class SignUpPageComponent implements OnInit {
         this.onGoing = true;
 
         this.userService.addUser(u)
-            .then(() => {
+            .subscribe(() => {
                 this.onGoing = false;
                 this.msgService.announceMessage(200, "", AlertType.SUCCESS);
                 // Navigate to embeded sign-in
                 this.router.navigate(['harbor', 'sign-in']);
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.error = error;
                 this.msgService.announceMessage(error.status || 500, "", AlertType.WARNING);

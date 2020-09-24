@@ -1,22 +1,26 @@
-
-import {of,  Subscription, forkJoin } from "rxjs";
+import { of, Subscription, forkJoin } from "rxjs";
 import { flatMap, catchError } from "rxjs/operators";
 import { SessionService } from "./../shared/session.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
-
 import {
   ConfirmationTargets,
   ConfirmationState,
   ConfirmationButtons
 } from "../shared/shared.const";
+
 import { ConfirmationMessage } from "../shared/confirmation-dialog/confirmation-message";
 import { ConfirmationDialogService } from "./../shared/confirmation-dialog/confirmation-dialog.service";
 import { AddGroupModalComponent } from "./add-group-modal/add-group-modal.component";
 import { UserGroup } from "./group";
 import { GroupService } from "./group.service";
 import { MessageHandlerService } from "../shared/message-handler/message-handler.service";
+import { throwError as observableThrowError } from "rxjs";
+import { AppConfigService } from '../services/app-config.service';
+import { OperationService } from "../../lib/components/operation/operation.service";
+import { operateChanges, OperateInfo, OperationState } from "../../lib/components/operation/operate";
+import { errorHandler } from "../../lib/utils/shared/shared.utils";
+import { GroupType } from "../../lib/entities/shared.const";
 
 @Component({
   selector: "app-group",
@@ -34,8 +38,9 @@ export class GroupComponent implements OnInit, OnDestroy {
   delSub: Subscription;
   batchOps = 'idle';
   batchInfos = new Map();
+  isLdapMode: boolean;
 
-  @ViewChild(AddGroupModalComponent) newGroupModal: AddGroupModalComponent;
+  @ViewChild(AddGroupModalComponent, {static: false}) newGroupModal: AddGroupModalComponent;
 
   constructor(
     private operationService: OperationService,
@@ -43,11 +48,16 @@ export class GroupComponent implements OnInit, OnDestroy {
     private operateDialogService: ConfirmationDialogService,
     private groupService: GroupService,
     private msgHandler: MessageHandlerService,
-    private session: SessionService
-  ) {}
+    private session: SessionService,
+    private translateService: TranslateService,
+    private appConfigService: AppConfigService
+  ) { }
 
   ngOnInit() {
     this.loadData();
+    if (this.appConfigService.isLdapMode()) {
+      this.isLdapMode = true;
+    }
     this.delSub = this.operateDialogService.confirmationConfirm$.subscribe(
       message => {
         if (
@@ -74,9 +84,9 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.groupService.getUserGroups().subscribe(groups => {
       this.groups = groups.filter(group => {
-        if (!group.group_name) {group.group_name = ''; }
+        if (!group.group_name) { group.group_name = ''; }
         return group.group_name.includes(this.searchTerm);
-        }
+      }
       );
       this.loading = false;
     });
@@ -100,8 +110,8 @@ export class GroupComponent implements OnInit, OnDestroy {
       });
       // batchInfo.id = group.id;
       let deletionMessage = new ConfirmationMessage(
-        "MEMBER.DELETION_TITLE",
-        "MEMBER.DELETION_SUMMARY",
+        "GROUP.DELETION_TITLE",
+        "GROUP.DELETION_SUMMARY",
         nameArr.join(","),
         this.selectedGroups,
         ConfirmationTargets.PROJECT_MEMBER,
@@ -128,11 +138,12 @@ export class GroupComponent implements OnInit, OnDestroy {
             return of(res);
           }));
         }))
-        .pipe(catchError(err => {
-          return this.translate.get("BATCH.DELETED_FAILURE").pipe(flatMap(res => {
-            operateChanges(operMessage, OperationState.failure, res);
-            return of(res);
-          }));
+        .pipe(catchError(error => {
+          const message = errorHandler(error);
+          this.translateService.get(message).subscribe(res =>
+            operateChanges(operMessage, OperationState.failure, res)
+          );
+          return observableThrowError(error);
         }));
     });
 
@@ -147,7 +158,15 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   groupToSring(type: number) {
-    if (type === 1) {return 'GROUP.LDAP_TYPE'; } else {return 'UNKNOWN'; }
+    if (type === GroupType.LDAP_TYPE) {
+      return 'GROUP.LDAP_TYPE';
+    } else if (type === GroupType.HTTP_TYPE) {
+      return 'GROUP.HTTP_TYPE';
+    } else if (type === GroupType.OIDC_TYPE) {
+      return 'GROUP.OIDC_TYPE';
+    } else {
+      return 'UNKNOWN';
+    }
   }
 
   doFilter(groupName: string): void {
@@ -161,6 +180,12 @@ export class GroupComponent implements OnInit, OnDestroy {
   get canEditGroup(): boolean {
     return (
       this.selectedGroups.length === 1 &&
+      this.session.currentUser.has_admin_role && this.isLdapMode
+    );
+  }
+  get canDeleteGroup(): boolean {
+    return (
+      this.selectedGroups.length >= 1 &&
       this.session.currentUser.has_admin_role
     );
   }

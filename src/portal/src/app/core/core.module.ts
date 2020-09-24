@@ -14,7 +14,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpModule } from '@angular/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from '@clr/angular';
 import { CookieModule } from 'ngx-cookie';
@@ -24,8 +23,7 @@ import { MarkdownModule } from 'ngx-markdown';
     imports: [
         BrowserModule,
         FormsModule,
-        HttpModule,
-        ClarityModule.forRoot(),
+        ClarityModule,
         CookieModule.forRoot(),
         MarkdownModule.forRoot(),
         BrowserAnimationsModule
@@ -33,7 +31,6 @@ import { MarkdownModule } from 'ngx-markdown';
     exports: [
         BrowserModule,
         FormsModule,
-        HttpModule,
         ClarityModule,
         BrowserAnimationsModule,
         MarkdownModule

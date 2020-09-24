@@ -26,8 +26,8 @@ import (
 func AddProjectMetadata(meta *models.ProjectMetadata) error {
 	now := time.Now()
 	sql := `insert into project_metadata
-				(project_id, name, value, creation_time, update_time, deleted)
-				 values (?, ?, ?, ?, ?, false)`
+				(project_id, name, value, creation_time, update_time)
+				 values (?, ?, ?, ?, ?)`
 	_, err := GetOrmer().Raw(sql, meta.ProjectID, meta.Name, meta.Value,
 		now, now).Exec()
 	return err
@@ -38,13 +38,12 @@ func AddProjectMetadata(meta *models.ProjectMetadata) error {
 // by name will be deleted
 func DeleteProjectMetadata(projectID int64, name ...string) error {
 	params := make([]interface{}, 1)
-	sql := `update project_metadata 
-			set deleted = true 
+	sql := `delete from project_metadata 
 			where project_id = ?`
 	params = append(params, projectID)
 
 	if len(name) > 0 {
-		sql += fmt.Sprintf(` and name in ( %s )`, paramPlaceholder(len(name)))
+		sql += fmt.Sprintf(` and name in ( %s )`, ParamPlaceholderForIn(len(name)))
 		params = append(params, name)
 	}
 
@@ -56,7 +55,7 @@ func DeleteProjectMetadata(projectID int64, name ...string) error {
 func UpdateProjectMetadata(meta *models.ProjectMetadata) error {
 	sql := `update project_metadata 
 				set value = ?, update_time = ? 
-				where project_id = ? and name = ? and deleted = false`
+				where project_id = ? and name = ?`
 	_, err := GetOrmer().Raw(sql, meta.Value, time.Now(), meta.ProjectID,
 		meta.Name).Exec()
 	return err
@@ -70,11 +69,11 @@ func GetProjectMetadata(projectID int64, name ...string) ([]*models.ProjectMetad
 	params := make([]interface{}, 1)
 
 	sql := `select * from project_metadata 
-				where project_id = ? and deleted = false`
+				where project_id = ? `
 	params = append(params, projectID)
 
 	if len(name) > 0 {
-		sql += fmt.Sprintf(` and name in ( %s )`, paramPlaceholder(len(name)))
+		sql += fmt.Sprintf(` and name in ( %s )`, ParamPlaceholderForIn(len(name)))
 		params = append(params, name)
 	}
 
@@ -82,7 +81,9 @@ func GetProjectMetadata(projectID int64, name ...string) ([]*models.ProjectMetad
 	return proMetas, err
 }
 
-func paramPlaceholder(n int) string {
+// ParamPlaceholderForIn returns a string that contains placeholders for sql keyword "in"
+// e.g. n=3, returns "?,?,?"
+func ParamPlaceholderForIn(n int) string {
 	placeholders := []string{}
 	for i := 0; i < n; i++ {
 		placeholders = append(placeholders, "?")
@@ -93,7 +94,7 @@ func paramPlaceholder(n int) string {
 // ListProjectMetadata ...
 func ListProjectMetadata(name, value string) ([]*models.ProjectMetadata, error) {
 	sql := `select * from project_metadata 
-				where name = ? and value = ? and deleted = false`
+				where name = ? and value = ? `
 	metadatas := []*models.ProjectMetadata{}
 	_, err := GetOrmer().Raw(sql, name, value).QueryRows(&metadatas)
 	return metadatas, err

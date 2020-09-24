@@ -164,11 +164,13 @@ export class GaugeComponent implements AfterViewInit {
       }
 
       ngAfterViewInit() {
-            this.determineColors();
+            setTimeout(() => {
+                  this.determineColors();
+            }, 0);
       }
 
-      @ViewChild('barOne') private barOne: ElementRef;
-      @ViewChild('barTwo') private barTwo: ElementRef;
+      @ViewChild('barOne', {static: true}) private barOne: ElementRef;
+      @ViewChild('barTwo', {static: true}) private barTwo: ElementRef;
 
       determineColors() {
             let percent: number = 0;

@@ -22,7 +22,7 @@ import { Volumes } from "./volumes";
 
 import { MessageHandlerService } from "../message-handler/message-handler.service";
 import { StatisticHandler } from "./statistic-handler.service";
-import { AppConfigService } from "./../../app-config.service";
+import { AppConfigService } from "../../services/app-config.service";
 
 
 @Component({
@@ -78,18 +78,18 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
 
     public getStatistics(): void {
         this.statistics.getStatistics()
-            .then(statistics => this.originalCopy = statistics)
-            .catch(error => {
-                this.msgHandler.handleError(error);
-            });
+            .subscribe(statistics => this.originalCopy = statistics
+                , error => {
+                    this.msgHandler.handleError(error);
+                });
     }
 
     public getVolumes(): void {
         this.statistics.getVolumes()
-            .then(volumes => this.volumesInfo = volumes)
-            .catch(error => {
-                this.msgHandler.handleError(error);
-            });
+            .subscribe(volumes => this.volumesInfo = volumes
+                , error => {
+                    this.msgHandler.handleError(error);
+                });
     }
 
     public get isValidSession(): boolean {
@@ -99,7 +99,7 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
 
     public get isValidStorage(): boolean {
         return this.volumesInfo.storage.total !== 0 &&
-        this.appConfigService.getConfig().registry_storage_provider_name === "filesystem";
+            this.appConfigService.getConfig().registry_storage_provider_name === "filesystem";
     }
 
     getGBFromBytes(bytes: number): number {

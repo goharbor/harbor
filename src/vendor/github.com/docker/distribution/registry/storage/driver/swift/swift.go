@@ -18,6 +18,7 @@ package swift
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/sha1"
 	"crypto/tls"
@@ -34,7 +35,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/ncw/swift"
 
-	"github.com/docker/distribution/context"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/distribution/registry/storage/driver/base"
 	"github.com/docker/distribution/registry/storage/driver/factory"
@@ -140,6 +140,19 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 	params := Parameters{
 		ChunkSize:          defaultChunkSize,
 		InsecureSkipVerify: false,
+	}
+
+	// Sanitize some entries before trying to decode parameters with mapstructure
+	// TenantID and Tenant when integers only and passed as ENV variables
+	// are considered as integer and not string. The parser fails in this
+	// case.
+	_, ok := parameters["tenant"]
+	if ok {
+		parameters["tenant"] = fmt.Sprint(parameters["tenant"])
+	}
+	_, ok = parameters["tenantid"]
+	if ok {
+		parameters["tenantid"] = fmt.Sprint(parameters["tenantid"])
 	}
 
 	if err := mapstructure.Decode(parameters, &params); err != nil {
@@ -642,6 +655,12 @@ func (d *driver) URLFor(ctx context.Context, path string, options map[string]int
 	}
 
 	return tempURL, nil
+}
+
+// Walk traverses a filesystem defined within driver, starting
+// from the given path, calling f on each file
+func (d *driver) Walk(ctx context.Context, path string, f storagedriver.WalkFn) error {
+	return storagedriver.WalkFallback(ctx, d, path, f)
 }
 
 func (d *driver) swiftPath(path string) string {

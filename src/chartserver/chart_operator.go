@@ -12,9 +12,11 @@ import (
 	"github.com/Masterminds/semver"
 
 	"github.com/goharbor/harbor/src/common/models"
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
-	"k8s.io/helm/pkg/chartutil"
-	helm_repo "k8s.io/helm/pkg/repo"
+	hlog "github.com/goharbor/harbor/src/lib/log"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/chartutil"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
 )
 
 const (
@@ -34,7 +36,7 @@ type ChartVersions []*ChartVersion
 // ChartVersionDetails keeps the detailed data info of the chart version
 type ChartVersionDetails struct {
 	Metadata     *helm_repo.ChartVersion `json:"metadata"`
-	Dependencies []*chartutil.Dependency `json:"dependencies"`
+	Dependencies []*chart.Dependency     `json:"dependencies"`
 	Values       map[string]interface{}  `json:"values"`
 	Files        map[string]string       `json:"files"`
 	Security     *SecurityReport         `json:"security"`
@@ -55,14 +57,14 @@ type DigitalSignature struct {
 
 // ChartInfo keeps the information of the chart
 type ChartInfo struct {
-	Name          string
-	TotalVersions uint32 `json:"total_versions"`
-	LatestVersion string `json:"latest_version"`
-	Created       time.Time
-	Updated       time.Time
-	Icon          string
-	Home          string
-	Deprecated    bool
+	Name          string    `json:"name"`
+	TotalVersions uint32    `json:"total_versions"`
+	LatestVersion string    `json:"latest_version"`
+	Created       time.Time `json:"created"`
+	Updated       time.Time `json:"updated"`
+	Icon          string    `json:"icon"`
+	Home          string    `json:"home"`
+	Deprecated    bool      `json:"deprecated"`
 }
 
 // ChartOperator is designed to process the contents of
@@ -71,51 +73,41 @@ type ChartOperator struct{}
 
 // GetChartDetails parse the details from the provided content bytes
 func (cho *ChartOperator) GetChartDetails(content []byte) (*ChartVersionDetails, error) {
-	if content == nil || len(content) == 0 {
-		return nil, errors.New("zero content")
-	}
-
-	// Load chart from in-memory content
-	reader := bytes.NewReader(content)
-	chartData, err := chartutil.LoadArchive(reader)
+	chartData, err := cho.GetChartData(content)
 	if err != nil {
 		return nil, err
 	}
-
-	// Parse the requirements of chart
-	requirements, err := chartutil.LoadRequirements(chartData)
-	if err != nil {
-		// If no requirements.yaml, return empty dependency list
-		if _, ok := err.(chartutil.ErrNoRequirementsFile); ok {
-			requirements = &chartutil.Requirements{
-				Dependencies: make([]*chartutil.Dependency, 0),
-			}
-		} else {
-			return nil, err
-		}
-	}
-
+	dependencies := chartData.Metadata.Dependencies
 	var values map[string]interface{}
+	var buf bytes.Buffer
 	files := make(map[string]string)
 	// Parse values
 	if chartData.Values != nil {
-		values = parseRawValues([]byte(chartData.Values.GetRaw()))
-		if len(values) > 0 {
+		// values = parseRawValues([]byte(chartData.Values.GetRaw()))
+		if len(chartData.Values) > 0 {
+			c := chartutil.Values(chartData.Values)
+			ValYaml, err := c.YAML()
+
+			if err != nil {
+				return nil, err
+			}
+			c.Encode(&buf)
+			values = parseRawValues(buf.Bytes())
 			// Append values.yaml file
-			files[valuesFileName] = chartData.Values.Raw
+			files[valuesFileName] = ValYaml
 		}
 	}
 
 	// Append other files like 'README.md'
-	for _, v := range chartData.GetFiles() {
-		if v.TypeUrl == readmeFileName {
-			files[readmeFileName] = string(v.GetValue())
+	for _, v := range chartData.Files {
+		if v.Name == readmeFileName {
+			files[readmeFileName] = string(v.Data)
 			break
 		}
 	}
 
 	theChart := &ChartVersionDetails{
-		Dependencies: requirements.Dependencies,
+		Dependencies: dependencies,
 		Values:       values,
 		Files:        files,
 	}
@@ -146,7 +138,7 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 			chartInfo.Home = lVersion.Home
 			chartInfo.Icon = lVersion.Icon
 			chartInfo.Deprecated = lVersion.Deprecated
-			chartInfo.LatestVersion = lVersion.GetVersion()
+			chartInfo.LatestVersion = lVersion.Version
 			chartList = append(chartList, chartInfo)
 		}
 	}
@@ -162,6 +154,21 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 	})
 
 	return chartList, nil
+}
+
+// GetChartData returns raw data of chart
+func (cho *ChartOperator) GetChartData(content []byte) (*chart.Chart, error) {
+	if content == nil || len(content) == 0 {
+		return nil, errors.New("zero content")
+	}
+
+	reader := bytes.NewReader(content)
+	chartData, err := loader.LoadArchive(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	return chartData, nil
 }
 
 // GetChartVersions returns the chart versions
@@ -226,7 +233,6 @@ func parseRawValues(rawValue []byte) map[string]interface{} {
 	if len(rawValue) == 0 {
 		return valueMap
 	}
-
 	values, err := chartutil.ReadValues(rawValue)
 	if err != nil || len(values) == 0 {
 		return valueMap

@@ -21,8 +21,8 @@ import (
 	"net/http"
 	"time"
 
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/jobservice/config"
-	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 )
 
@@ -38,7 +38,7 @@ type Server struct {
 	config ServerConfig
 
 	// The context
-	context *env.Context
+	context context.Context
 }
 
 // ServerConfig contains the configurations of Server.
@@ -57,7 +57,7 @@ type ServerConfig struct {
 }
 
 // NewServer is constructor of Server.
-func NewServer(ctx *env.Context, router Router, cfg ServerConfig) *Server {
+func NewServer(ctx context.Context, router Router, cfg ServerConfig) *Server {
 	apiServer := &Server{
 		router:  router,
 		config:  cfg,
@@ -70,24 +70,13 @@ func NewServer(ctx *env.Context, router Router, cfg ServerConfig) *Server {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  60 * time.Second,
+		TLSConfig:    commonhttp.NewServerTLSConfig(),
 	}
 
 	// Initialize TLS/SSL config if protocol is https
-	if cfg.Protocol == config.JobServiceProtocolHTTPS {
-		tlsCfg := &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-			PreferServerCipherSuites: true,
-			CipherSuites: []uint16{
-				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-			},
-		}
-
-		srv.TLSConfig = tlsCfg
-		srv.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
+	if cfg.Protocol == config.JobServiceProtocolHTTPS && commonhttp.InternalEnableVerifyClientCert() {
+		logger.Infof("mTLS enabled ...")
+		srv.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 	}
 
 	apiServer.httpServer = srv
@@ -96,39 +85,23 @@ func NewServer(ctx *env.Context, router Router, cfg ServerConfig) *Server {
 }
 
 // Start the server to serve requests.
-func (s *Server) Start() {
-	s.context.WG.Add(1)
-
-	go func() {
-		var err error
-		defer func() {
-			s.context.WG.Done()
-			logger.Infof("API server is gracefully shutdown")
-		}()
-
-		if s.config.Protocol == config.JobServiceProtocolHTTPS {
-			err = s.httpServer.ListenAndServeTLS(s.config.Cert, s.config.Key)
-		} else {
-			err = s.httpServer.ListenAndServe()
-		}
-
-		if err != nil {
-			s.context.ErrorChan <- err
-		}
+// Blocking call
+func (s *Server) Start() error {
+	defer func() {
+		logger.Info("API server is stopped")
 	}()
+
+	if s.config.Protocol == config.JobServiceProtocolHTTPS {
+		return s.httpServer.ListenAndServeTLS(s.config.Cert, s.config.Key)
+	}
+
+	return s.httpServer.ListenAndServe()
 }
 
 // Stop server gracefully.
-func (s *Server) Stop() {
-	go func() {
-		defer func() {
-			logger.Info("Stop API server done!")
-		}()
-		shutDownCtx, cancel := context.WithTimeout(s.context.SystemContext, 10*time.Second)
-		defer cancel()
+func (s *Server) Stop() error {
+	shutDownCtx, cancel := context.WithTimeout(s.context, 15*time.Second)
+	defer cancel()
 
-		if err := s.httpServer.Shutdown(shutDownCtx); err != nil {
-			logger.Errorf("Shutdown API server failed with error: %s\n", err)
-		}
-	}()
+	return s.httpServer.Shutdown(shutDownCtx)
 }

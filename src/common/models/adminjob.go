@@ -15,6 +15,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -28,9 +29,12 @@ type AdminJob struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	Name         string    `orm:"column(job_name)"  json:"job_name"`
 	Kind         string    `orm:"column(job_kind)"  json:"job_kind"`
+	Parameters   string    `orm:"column(job_parameters)"  json:"job_parameters"`
 	Cron         string    `orm:"column(cron_str)"  json:"cron_str"`
 	Status       string    `orm:"column(status)"  json:"job_status"`
 	UUID         string    `orm:"column(job_uuid)" json:"-"`
+	Revision     int64     `orm:"column(revision)" json:"-"`
+	StatusCode   uint16    `orm:"column(status_code)" json:"-"`
 	Deleted      bool      `orm:"column(deleted)" json:"deleted"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
@@ -50,4 +54,28 @@ type AdminJobQuery struct {
 	UUID    string
 	Deleted bool
 	Pagination
+}
+
+// ScheduleParam ...
+type ScheduleParam struct {
+	Type    string `json:"type"`
+	Weekday int8   `json:"weekday"`
+	Offtime int64  `json:"offtime"`
+}
+
+// ParseScheduleParamToCron ...
+func ParseScheduleParamToCron(param *ScheduleParam) string {
+	if param == nil {
+		return ""
+	}
+	offtime := param.Offtime
+	offtime = offtime % (3600 * 24)
+	hour := int(offtime / 3600)
+	offtime = offtime % 3600
+	minute := int(offtime / 60)
+	second := int(offtime % 60)
+	if param.Type == "Weekly" {
+		return fmt.Sprintf("%d %d %d * * %d", second, minute, hour, param.Weekday%7)
+	}
+	return fmt.Sprintf("%d %d %d * * *", second, minute, hour)
 }

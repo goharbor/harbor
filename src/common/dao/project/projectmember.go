@@ -16,10 +16,9 @@ package project
 
 import (
 	"fmt"
-
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // GetProjectMember gets all members of the project.
@@ -30,13 +29,13 @@ func GetProjectMember(queryMember models.Member) ([]*models.Member, error) {
 	}
 
 	o := dao.GetOrmer()
-	sql := ` select a.* from (select pm.id as id, pm.project_id as project_id, ug.id as entity_id, ug.group_name as entity_name, ug.creation_time, ug.update_time, r.name as rolename, 
-		r.role_id as role, pm.entity_type as entity_type from user_group ug join project_member pm 
+	sql := ` select a.* from (select pm.id as id, pm.project_id as project_id, ug.id as entity_id, ug.group_name as entity_name, ug.creation_time, ug.update_time, r.name as rolename,
+		r.role_id as role, pm.entity_type as entity_type from user_group ug join project_member pm
 		on pm.project_id = ? and ug.id = pm.entity_id join role r on pm.role = r.role_id where  pm.entity_type = 'g'
 		union
-		select pm.id as id, pm.project_id as project_id, u.user_id as entity_id, u.username as entity_name, u.creation_time, u.update_time, r.name as rolename, 
-		r.role_id as role, pm.entity_type as entity_type from harbor_user u join project_member pm 
-		on pm.project_id = ? and u.user_id = pm.entity_id 
+		select pm.id as id, pm.project_id as project_id, u.user_id as entity_id, u.username as entity_name, u.creation_time, u.update_time, r.name as rolename,
+		r.role_id as role, pm.entity_type as entity_type from harbor_user u join project_member pm
+		on pm.project_id = ? and u.user_id = pm.entity_id
 		join role r on pm.role = r.role_id where u.deleted = false and pm.entity_type = 'u') as a where a.project_id = ? `
 
 	queryParam := make([]interface{}, 1)
@@ -68,6 +67,27 @@ func GetProjectMember(queryMember models.Member) ([]*models.Member, error) {
 	_, err := o.Raw(sql, queryParam).QueryRows(&members)
 
 	return members, err
+}
+
+// GetTotalOfProjectMembers returns total of project members
+func GetTotalOfProjectMembers(projectID int64, roles ...int) (int64, error) {
+	log.Debugf("Query condition %+v", projectID)
+	if projectID == 0 {
+		return 0, fmt.Errorf("failed to get total of project members, project id required %v", projectID)
+	}
+
+	sql := "SELECT COUNT(1) FROM project_member WHERE project_id = ?"
+
+	queryParam := []interface{}{projectID}
+
+	if len(roles) > 0 {
+		sql += " AND role = ?"
+		queryParam = append(queryParam, roles[0])
+	}
+
+	var count int64
+	err := dao.GetOrmer().Raw(sql, queryParam).QueryRow(&count)
+	return count, err
 }
 
 // AddProjectMember inserts a record to table project_member
@@ -120,23 +140,23 @@ func DeleteProjectMemberByID(pmid int) error {
 // SearchMemberByName search members of the project by entity_name
 func SearchMemberByName(projectID int64, entityName string) ([]*models.Member, error) {
 	o := dao.GetOrmer()
-	sql := `select pm.id, pm.project_id, 
-	               u.username as entity_name, 
+	sql := `select pm.id, pm.project_id,
+	               u.username as entity_name,
 	               r.name as rolename,
-			       pm.role, pm.entity_id, pm.entity_type 
+			       pm.role, pm.entity_id, pm.entity_type
 			  from project_member pm
          left join harbor_user u on pm.entity_id = u.user_id and pm.entity_type = 'u'
 		 left join role r on pm.role = r.role_id
-			 where u.deleted = false and pm.project_id = ? and u.username like ? 
+			 where u.deleted = false and pm.project_id = ? and u.username like ?
 			union
-		   select pm.id, pm.project_id, 
-			       ug.group_name as entity_name, 
+		   select pm.id, pm.project_id,
+			       ug.group_name as entity_name,
 				   r.name as rolename,
-				   pm.role, pm.entity_id, pm.entity_type 
+				   pm.role, pm.entity_id, pm.entity_type
 		      from project_member pm
 	     left join user_group ug on pm.entity_id = ug.id and pm.entity_type = 'g'
 	     left join role r on pm.role = r.role_id
-			 where pm.project_id = ? and ug.group_name like ? 
+			 where pm.project_id = ? and ug.group_name like ?
 			 order by entity_name  `
 	queryParam := make([]interface{}, 4)
 	queryParam = append(queryParam, projectID)
@@ -149,15 +169,29 @@ func SearchMemberByName(projectID int64, entityName string) ([]*models.Member, e
 	return members, err
 }
 
-// GetRolesByGroup -- Query group roles
-func GetRolesByGroup(projectID int64, groupDNCondition string) []int {
-	var roles []int
-	o := dao.GetOrmer()
-	sql := `select role from project_member pm 
-	left join user_group ug on pm.project_id = ?
-	where ug.group_type = 1 and ug.ldap_group_dn in (` + groupDNCondition + `)`
-	if _, err := o.Raw(sql, projectID).QueryRows(&roles); err != nil {
-		return roles
+// ListRoles lists the roles of user for the specific project
+func ListRoles(user *models.User, projectID int64) ([]int, error) {
+	if user == nil {
+		return nil, nil
 	}
-	return roles
+	var params []interface{}
+	sql := `
+		select role
+			from project_member
+			where entity_type = 'u' and entity_id = ? and project_id = ? `
+	params = append(params, user.UserID, projectID)
+	if len(user.GroupIDs) > 0 {
+		sql += fmt.Sprintf(`union
+			select role
+			from project_member
+			where entity_type = 'g' and entity_id in ( %s ) and project_id = ? `, dao.ParamPlaceholderForIn(len(user.GroupIDs)))
+		params = append(params, user.GroupIDs)
+		params = append(params, projectID)
+	}
+	roles := []int{}
+	_, err := dao.GetOrmer().Raw(sql, params).QueryRows(&roles)
+	if err != nil {
+		return nil, err
+	}
+	return roles, nil
 }

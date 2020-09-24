@@ -1,0 +1,13 @@
+<div class="filterLabelPanel" [hidden]="!openFilterLabelPanel">
+    <a class="filterClose" (click)="closeFilter()">&times;</a>
+    <label class="filterLabelHeader">{{'REPOSITORY.FILTER_BY_LABEL' | translate}}</label>
+    <div><input class="filterInput" type="text" placeholder="Filter labels" [(ngModel)]= "filterLabelName" (keyup)="handleInputFilter()"></div>
+    <div [hidden]='labelLists.length' class="no-labels">{{'LABEL.NO_LABELS' | translate }}</div>
+
+    <div [hidden]='!labelLists.length' class="label-list">
+        <button type="button" class="labelBtn" *ngFor='let label of labelLists' [hidden]='!label.show' (click)="selectLabel(label)">
+            <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
+            <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="118"></hbr-label-piece></div>
+        </button>
+    </div>
+</div>

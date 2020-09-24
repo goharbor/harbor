@@ -40,8 +40,8 @@ export class PasswordSettingComponent implements AfterViewChecked {
     };
 
     pwdFormRef: NgForm;
-    @ViewChild("changepwdForm") pwdForm: NgForm;
-    @ViewChild(InlineAlertComponent)
+    @ViewChild("changepwdForm", {static: true}) pwdForm: NgForm;
+    @ViewChild(InlineAlertComponent, {static: true})
     inlineAlert: InlineAlertComponent;
 
     constructor(
@@ -166,12 +166,11 @@ export class PasswordSettingComponent implements AfterViewChecked {
                 new_password: this.pwdForm.value.newPassword,
                 old_password: this.pwdForm.value.oldPassword
             })
-            .then(() => {
+            .subscribe(() => {
                 this.onCalling = false;
                 this.opened = false;
                 this.msgHandler.showSuccess("CHANGE_PWD.SAVE_SUCCESS");
-            })
-            .catch(error => {
+            }, error => {
                 this.onCalling = false;
                 this.error = error;
                 if (this.msgHandler.isAppLevel(error)) {
@@ -179,7 +178,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
                     this.msgHandler.handleError(error);
                 } else {
                     // Special case for 400
-                    let msg = '' + error._body;
+                    let msg = '' + error.error;
                     if (msg && msg.includes('old_password_is_not_correct')) {
                         this.inlineAlert.showInlineError("INCONRRECT_OLD_PWD");
                     } else {

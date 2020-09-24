@@ -21,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
-	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/common/utils/uaa"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
@@ -29,29 +28,13 @@ import (
 
 func TestMain(m *testing.M) {
 	test.InitDatabaseFromEnv()
-	server, err := utilstest.NewAdminserver(nil)
-	if err != nil {
-		panic(err)
-	}
-	defer server.Close()
+	config.Init()
 
-	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
-		panic(err)
-	}
-	err = config.Init()
-	if err != nil {
-		panic(err)
-	}
-
-	err = dao.ClearTable("project_member")
+	err := dao.ClearTable("project_member")
 	if err != nil {
 		panic(err)
 	}
 	err = dao.ClearTable("project_metadata")
-	if err != nil {
-		panic(err)
-	}
-	err = dao.ClearTable("access_log")
 	if err != nil {
 		panic(err)
 	}
@@ -120,7 +103,7 @@ func TestOnBoardUser(t *testing.T) {
 	user, _ := dao.GetUser(models.User{Username: "test"})
 	assert.Equal("test", user.Realname)
 	assert.Equal("test", user.Username)
-	assert.Equal("test@uaa.placeholder", user.Email)
+	assert.Equal("", user.Email)
 	err3 := dao.ClearTable(models.UserTable)
 	assert.Nil(err3)
 }
@@ -138,7 +121,7 @@ func TestPostAuthenticate(t *testing.T) {
 	}
 	assert.Nil(err)
 	user, _ := dao.GetUser(models.User{Username: "test"})
-	assert.Equal("test@uaa.placeholder", user.Email)
+	assert.Equal("", user.Email)
 	um2.Email = "newEmail@new.com"
 	um2.Realname = "newName"
 	err2 := auth.PostAuthenticate(um2)
@@ -155,7 +138,7 @@ func TestPostAuthenticate(t *testing.T) {
 	assert.Nil(err3)
 	user3, _ := dao.GetUser(models.User{Username: "test"})
 	assert.Equal(user3.UserID, um3.UserID)
-	assert.Equal("test@uaa.placeholder", user3.Email)
+	assert.Equal("", user3.Email)
 	assert.Equal("test", user3.Realname)
 	err4 := dao.ClearTable(models.UserTable)
 	assert.Nil(err4)

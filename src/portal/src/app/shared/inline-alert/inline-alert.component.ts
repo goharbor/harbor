@@ -13,9 +13,10 @@
 // limitations under the License.
 import { Component, Output, EventEmitter } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-
-import { errorHandler } from '../shared.utils';
 import { Subscription } from "rxjs";
+import { errorHandler } from "../../../lib/utils/shared/shared.utils";
+import { MessageHandlerService } from '../message-handler/message-handler.service';
+import { ErrorHandler } from '../../../lib/utils/error-handler';
 
 @Component({
     selector: 'inline-alert',
@@ -23,7 +24,7 @@ import { Subscription } from "rxjs";
     styleUrls: ['inline-alert.component.scss']
 })
 export class InlineAlertComponent {
-    inlineAlertType: string = 'alert-danger';
+    inlineAlertType: string = 'danger';
     inlineAlertClosable: boolean = false;
     alertClose: boolean = true;
     displayedText: string = "";
@@ -36,7 +37,9 @@ export class InlineAlertComponent {
     @Output() confirmEvt = new EventEmitter<boolean>();
     @Output() closeEvt = new EventEmitter<boolean>();
 
-    constructor(private translate: TranslateService) { }
+    constructor(private translate: TranslateService,
+        private errHandler: ErrorHandler,
+        ) { }
 
     public get errorMessage(): string {
         return this.displayedText;
@@ -48,8 +51,8 @@ export class InlineAlertComponent {
         if (this.displayedText) {
             this.translate.get(this.displayedText).subscribe((res: string) => this.displayedText = res);
         }
-
-        this.inlineAlertType = 'alert-danger';
+        this.errHandler.handleErrorPopupUnauthorized(error);
+        this.inlineAlertType = 'danger';
         this.showCancelAction = false;
         this.inlineAlertClosable = true;
         this.alertClose = false;
@@ -62,7 +65,7 @@ export class InlineAlertComponent {
         if (warning && warning.message) {
             this.translate.get(warning.message).subscribe((res: string) => this.displayedText = res);
         }
-        this.inlineAlertType = 'alert-warning';
+        this.inlineAlertType = 'warning';
         this.showCancelAction = true;
         this.inlineAlertClosable = false;
         this.alertClose = false;
@@ -75,7 +78,7 @@ export class InlineAlertComponent {
         if (warning && warning.message) {
             this.translate.get(warning.message).subscribe((res: string) => this.displayedText = res);
         }
-        this.inlineAlertType = 'alert-warning';
+        this.inlineAlertType = 'warning';
         this.showCancelAction = false;
         this.inlineAlertClosable = true;
         this.alertClose = false;
@@ -88,7 +91,7 @@ export class InlineAlertComponent {
         if (info && info.message) {
             this.translate.get(info.message).subscribe((res: string) => this.displayedText = res);
         }
-        this.inlineAlertType = 'alert-success';
+        this.inlineAlertType = 'success';
         this.showCancelAction = false;
         this.inlineAlertClosable = true;
         this.alertClose = false;

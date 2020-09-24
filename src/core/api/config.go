@@ -15,33 +15,48 @@
 package api
 
 import (
+	"errors"
 	"fmt"
-	"net/http"
-	"reflect"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/common/config/metadata"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/core/api/models"
+	corecfg "github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // ConfigAPI ...
 type ConfigAPI struct {
 	BaseController
+	cfgManager *config.CfgManager
 }
 
 // Prepare validates the user
 func (c *ConfigAPI) Prepare() {
 	c.BaseController.Prepare()
+	c.cfgManager = corecfg.GetCfgManager()
 	if !c.SecurityCtx.IsAuthenticated() {
-		c.HandleUnauthorized()
+		c.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
+
+	// Only internal container can access /api/internal/configurations
+	if strings.EqualFold(c.Ctx.Request.RequestURI, "/api/internal/configurations") {
+		if s, ok := security.FromContext(c.Ctx.Request.Context()); !ok || s.Name() != "secret" {
+			c.SendUnAuthorizedError(errors.New("UnAuthorized"))
+			return
+		}
+	}
+
 	if !c.SecurityCtx.IsSysAdmin() && !c.SecurityCtx.IsSolutionUser() {
-		c.HandleForbidden(c.SecurityCtx.GetUsername())
+		c.SendForbiddenError(errors.New(c.SecurityCtx.GetUsername()))
 		return
 	}
+
 }
 
 type value struct {
@@ -51,23 +66,12 @@ type value struct {
 
 // Get returns configurations
 func (c *ConfigAPI) Get() {
-	configs, err := config.GetSystemCfg()
-	if err != nil {
-		log.Errorf("failed to get configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	cfgs := map[string]interface{}{}
-	for _, k := range common.HarborValidKeys {
-		if v, ok := configs[k]; ok {
-			cfgs[k] = v
-		}
-	}
-
-	m, err := convertForGet(cfgs)
+	configs := c.cfgManager.GetUserCfgs()
+	m, err := convertForGet(configs)
 	if err != nil {
 		log.Errorf("failed to convert configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		c.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	c.Data["json"] = m
@@ -76,11 +80,8 @@ func (c *ConfigAPI) Get() {
 
 // GetInternalConfig returns internal configurations
 func (c *ConfigAPI) GetInternalConfig() {
-	configs, err := config.GetSystemCfg()
-	if err != nil {
-		log.Errorf("failed to get configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
+
+	configs := c.cfgManager.GetAll()
 	c.Data["json"] = configs
 	c.ServeJSON()
 }
@@ -88,182 +89,81 @@ func (c *ConfigAPI) GetInternalConfig() {
 // Put updates configurations
 func (c *ConfigAPI) Put() {
 	m := map[string]interface{}{}
-	c.DecodeJSONReq(&m)
-
-	cfg := map[string]interface{}{}
-	for _, k := range common.HarborValidKeys {
-		if v, ok := m[k]; ok {
-			cfg[k] = v
-		}
+	if err := c.DecodeJSONReq(&m); err != nil {
+		c.SendBadRequestError(err)
+		return
 	}
-
-	isSysErr, err := validateCfg(cfg)
-
+	err := c.cfgManager.Load()
+	if err != nil {
+		log.Errorf("failed to get configurations: %v", err)
+		c.SendInternalServerError(errors.New(""))
+		return
+	}
+	isSysErr, err := c.validateCfg(m)
 	if err != nil {
 		if isSysErr {
 			log.Errorf("failed to validate configurations: %v", err)
-			c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			c.SendInternalServerError(errors.New(""))
+			return
 		}
 
-		c.CustomAbort(http.StatusBadRequest, err.Error())
+		c.SendBadRequestError(err)
+		return
+
 	}
 
-	if err := config.Upload(cfg); err != nil {
+	if err := c.cfgManager.UpdateConfig(m); err != nil {
 		log.Errorf("failed to upload configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	if err := config.Load(); err != nil {
-		log.Errorf("failed to load configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	// Everything is ok, detect the configurations to confirm if the option we are caring is changed.
-	if err := watchConfigChanges(cfg); err != nil {
-		log.Errorf("Failed to watch configuration change with error: %s\n", err)
+		c.SendInternalServerError(errors.New(""))
+		return
 	}
 }
 
-// Reset system configurations
-func (c *ConfigAPI) Reset() {
-	if err := config.Reset(); err != nil {
-		log.Errorf("failed to reset configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-}
-
-func validateCfg(c map[string]interface{}) (bool, error) {
-	strMap := map[string]string{}
-	for k := range common.HarborStringKeysMap {
-		if _, ok := c[k]; !ok {
-			continue
-		}
-		if _, ok := c[k].(string); !ok {
-			return false, fmt.Errorf("Invalid value type, expected string, key: %s, value: %v, type: %v", k, c[k], reflect.TypeOf(c[k]))
-		}
-		strMap[k] = c[k].(string)
-	}
-	numMap := map[string]int{}
-	for k := range common.HarborNumKeysMap {
-		if _, ok := c[k]; !ok {
-			continue
-		}
-		if _, ok := c[k].(float64); !ok {
-			return false, fmt.Errorf("Invalid value type, expected float64, key: %s, value: %v, type: %v", k, c[k], reflect.TypeOf(c[k]))
-		}
-		numMap[k] = int(c[k].(float64))
-	}
-	boolMap := map[string]bool{}
-	for k := range common.HarborBoolKeysMap {
-		if _, ok := c[k]; !ok {
-			continue
-		}
-		if _, ok := c[k].(bool); !ok {
-			return false, fmt.Errorf("Invalid value type, expected bool, key: %s, value: %v, type: %v", k, c[k], reflect.TypeOf(c[k]))
-		}
-		boolMap[k] = c[k].(bool)
-	}
-
-	mode, err := config.AuthMode()
+func (c *ConfigAPI) validateCfg(cfgs map[string]interface{}) (bool, error) {
+	flag, err := authModeCanBeModified()
 	if err != nil {
 		return true, err
 	}
-
-	if value, ok := strMap[common.AUTHMode]; ok {
-		if value != common.DBAuth && value != common.LDAPAuth && value != common.UAAAuth {
-			return false, fmt.Errorf("invalid %s, shoud be one of %s, %s, %s", common.AUTHMode, common.DBAuth, common.LDAPAuth, common.UAAAuth)
+	if !flag {
+		if failedKeys := checkUnmodifiable(c.cfgManager, cfgs, common.AUTHMode); len(failedKeys) > 0 {
+			return false, fmt.Errorf("the keys %v can not be modified as new users have been inserted into database", failedKeys)
 		}
-		flag, err := authModeCanBeModified()
-		if err != nil {
-			return true, err
-		}
-		if mode != value && !flag {
-			return false, fmt.Errorf("%s can not be modified as new users have been inserted into database", common.AUTHMode)
-		}
-		mode = value
 	}
+	err = c.cfgManager.ValidateCfg(cfgs)
+	return false, err
+}
 
-	if mode == common.LDAPAuth {
-		ldapConf, err := config.LDAPConf()
-		if err != nil {
-			return true, err
-		}
-
-		if len(ldapConf.LdapURL) == 0 {
-			if _, ok := strMap[common.LDAPURL]; !ok {
-				return false, fmt.Errorf("%s is missing", common.LDAPURL)
-			}
-		}
-
-		if len(ldapConf.LdapBaseDn) == 0 {
-			if _, ok := strMap[common.LDAPBaseDN]; !ok {
-				return false, fmt.Errorf("%s is missing", common.LDAPBaseDN)
-			}
-		}
-		if len(ldapConf.LdapUID) == 0 {
-			if _, ok := strMap[common.LDAPUID]; !ok {
-				return false, fmt.Errorf("%s is missing", common.LDAPUID)
-			}
-		}
-		if ldapConf.LdapScope == 0 {
-			if _, ok := numMap[common.LDAPScope]; !ok {
-				return false, fmt.Errorf("%s is missing", common.LDAPScope)
+func checkUnmodifiable(mgr *config.CfgManager, cfgs map[string]interface{}, keys ...string) (failed []string) {
+	if mgr == nil || cfgs == nil || keys == nil {
+		return
+	}
+	for _, k := range keys {
+		v := mgr.Get(k).GetString()
+		if nv, ok := cfgs[k]; ok {
+			if v != fmt.Sprintf("%v", nv) {
+				failed = append(failed, k)
 			}
 		}
 	}
-
-	if ldapURL, ok := strMap[common.LDAPURL]; ok && len(ldapURL) == 0 {
-		return false, fmt.Errorf("%s is empty", common.LDAPURL)
-	}
-	if baseDN, ok := strMap[common.LDAPBaseDN]; ok && len(baseDN) == 0 {
-		return false, fmt.Errorf("%s is empty", common.LDAPBaseDN)
-	}
-	if uID, ok := strMap[common.LDAPUID]; ok && len(uID) == 0 {
-		return false, fmt.Errorf("%s is empty", common.LDAPUID)
-	}
-	if scope, ok := numMap[common.LDAPScope]; ok &&
-		scope != common.LDAPScopeBase &&
-		scope != common.LDAPScopeOnelevel &&
-		scope != common.LDAPScopeSubtree {
-		return false, fmt.Errorf("invalid %s, should be %d, %d or %d",
-			common.LDAPScope,
-			common.LDAPScopeBase,
-			common.LDAPScopeOnelevel,
-			common.LDAPScopeSubtree)
-	}
-	for k, n := range numMap {
-		if n < 0 {
-			return false, fmt.Errorf("invalid %s: %d", k, n)
-		}
-		if (k == common.EmailPort ||
-			k == common.PostGreSQLPort) && n > 65535 {
-			return false, fmt.Errorf("invalid %s: %d", k, n)
-		}
-	}
-
-	if crt, ok := strMap[common.ProjectCreationRestriction]; ok &&
-		crt != common.ProCrtRestrEveryone &&
-		crt != common.ProCrtRestrAdmOnly {
-		return false, fmt.Errorf("invalid %s, should be %s or %s",
-			common.ProjectCreationRestriction,
-			common.ProCrtRestrAdmOnly,
-			common.ProCrtRestrEveryone)
-	}
-	return false, nil
+	return
 }
 
 // delete sensitive attrs and add editable field to every attr
 func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
 	result := map[string]*value{}
 
-	for _, k := range common.HarborPasswordKeys {
-		if _, ok := cfg[k]; ok {
-			delete(cfg, k)
+	mList := metadata.Instance().GetAll()
+
+	for _, item := range mList {
+		if _, ok := item.ItemType.(*metadata.PasswordType); ok {
+			delete(cfg, item.Name)
 		}
 	}
 
 	if _, ok := cfg[common.ScanAllPolicy]; !ok {
-		cfg[common.ScanAllPolicy] = models.DefaultScanAllPolicy
+		cfg[common.ScanAllPolicy] = models.ScanAllPolicy{
+			Type: "none", // For legacy compatible
+		}
 	}
 	for k, v := range cfg {
 		result[k] = &value{

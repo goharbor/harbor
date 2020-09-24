@@ -13,3 +13,30 @@
 .row-right {
     padding-right: 60px;
 }
+
+.log-top {
+    top: 12px;
+}
+
+.check-span {
+    display: inline-block;
+    width: 16px;
+}
+
+.display-f{
+    display: flex;
+}
+.reverse-row {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: baseline;
+}
+.flex-items-xs-right {
+    display: flex;
+    align-items: baseline;
+    ::ng-deep {
+        clr-date-container{
+            margin-top: 0;
+        }
+    }
+}

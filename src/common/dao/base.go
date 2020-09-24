@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -22,15 +23,16 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
 	// NonExistUserID : if a user does not exist, the ID of the user will be 0.
 	NonExistUserID = 0
-	// ClairDBAlias ...
-	ClairDBAlias = "clair-db"
 )
+
+// ErrDupRows is returned by DAO when inserting failed with error "duplicate key value violates unique constraint"
+var ErrDupRows = errors.New("sql: duplicate row in DB")
 
 // Database is an interface of different databases
 type Database interface {
@@ -42,23 +44,6 @@ type Database interface {
 	Register(alias ...string) error
 	// UpgradeSchema upgrades the DB schema to the latest version
 	UpgradeSchema() error
-}
-
-// InitClairDB ...
-func InitClairDB(clairDB *models.PostGreSQL) error {
-	p := &pgsql{
-		host:     clairDB.Host,
-		port:     strconv.Itoa(clairDB.Port),
-		usr:      clairDB.Username,
-		pwd:      clairDB.Password,
-		database: clairDB.Database,
-		sslmode:  clairDB.SSLMode,
-	}
-	if err := p.Register(ClairDBAlias); err != nil {
-		return err
-	}
-	log.Info("initialized clair database")
-	return nil
 }
 
 // UpgradeSchema will call the internal migrator to upgrade schema based on the setting of database.
@@ -86,29 +71,20 @@ func InitDatabase(database *models.Database) error {
 	return nil
 }
 
-// CheckSchemaVersion checks that whether the schema version matches with the expected one
-func CheckSchemaVersion() error {
-	version, err := GetSchemaVersion()
-	if err != nil {
-		return err
-	}
-	if version.Version != SchemaVersion {
-		return fmt.Errorf("unexpected database schema version, expected %s, got %s",
-			SchemaVersion, version.Version)
-	}
-	return nil
-}
-
 func getDatabase(database *models.Database) (db Database, err error) {
 
 	switch database.Type {
 	case "", "postgresql":
-		db = NewPGSQL(database.PostGreSQL.Host,
+		db = NewPGSQL(
+			database.PostGreSQL.Host,
 			strconv.Itoa(database.PostGreSQL.Port),
 			database.PostGreSQL.Username,
 			database.PostGreSQL.Password,
 			database.PostGreSQL.Database,
-			database.PostGreSQL.SSLMode)
+			database.PostGreSQL.SSLMode,
+			database.PostGreSQL.MaxIdleConns,
+			database.PostGreSQL.MaxOpenConns,
+		)
 	default:
 		err = fmt.Errorf("invalid database: %s", database.Type)
 	}
@@ -121,14 +97,16 @@ var once sync.Once
 // GetOrmer :set ormer singleton
 func GetOrmer() orm.Ormer {
 	once.Do(func() {
+		// override the default value(1000) to return all records when setting no limit
+		orm.DefaultRowsLimit = -1
 		globalOrm = orm.NewOrm()
 	})
 	return globalOrm
 }
 
-// isDupRecErr checks if the error is due to a duplication of record, currently this
+// IsDupRecErr checks if the error is due to a duplication of record, currently this
 // works only for pgSQL
-func isDupRecErr(e error) bool {
+func IsDupRecErr(e error) bool {
 	return strings.Contains(e.Error(), "duplicate key value violates unique constraint")
 }
 
@@ -142,6 +120,9 @@ func ClearTable(table string) error {
 	if table == models.UserTable {
 		sql = fmt.Sprintf("delete from %s where user_id > 2", table)
 	}
+	if table == "project_member" { // make sure admin in library
+		sql = fmt.Sprintf("delete from %s where id > 1", table)
+	}
 	if table == "project_metadata" { // make sure library is public
 		sql = fmt.Sprintf("delete from %s where id > 1", table)
 	}
@@ -149,11 +130,13 @@ func ClearTable(table string) error {
 	return err
 }
 
-func paginateForRawSQL(sql string, limit, offset int64) string {
+// PaginateForRawSQL ...
+func PaginateForRawSQL(sql string, limit, offset int64) string {
 	return fmt.Sprintf("%s limit %d offset %d", sql, limit, offset)
 }
 
-func paginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter {
+// PaginateForQuerySetter ...
+func PaginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter {
 	if size > 0 {
 		qs = qs.Limit(size)
 		if page > 0 {
@@ -165,7 +148,29 @@ func paginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter 
 
 // Escape ..
 func Escape(str string) string {
+	str = strings.Replace(str, `\`, `\\`, -1)
 	str = strings.Replace(str, `%`, `\%`, -1)
 	str = strings.Replace(str, `_`, `\_`, -1)
 	return str
+}
+
+// implements github.com/golang-migrate/migrate/v4.Logger
+type mLogger struct {
+	logger *log.Logger
+}
+
+func newMigrateLogger() *mLogger {
+	return &mLogger{
+		logger: log.DefaultLogger().WithDepth(5),
+	}
+}
+
+// Verbose ...
+func (l *mLogger) Verbose() bool {
+	return l.logger.GetLevel() <= log.DebugLevel
+}
+
+// Printf ...
+func (l *mLogger) Printf(format string, v ...interface{}) {
+	l.logger.Infof(format, v...)
 }

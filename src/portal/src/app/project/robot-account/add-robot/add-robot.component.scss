@@ -1,0 +1,55 @@
+.rule-width {
+  width: 100%;
+}
+
+.input-width {
+  width: 300px;
+}
+
+.copy-token {
+  .success-icon {
+    color: #318700;
+  }
+  .show-info {
+    .robot-name {
+      margin: 30px 0;
+
+      label {
+        margin-right: 30px;
+      }
+    }
+    .robot-token {
+      margin-bottom: 20px;
+      label {
+        margin-right: 24px;
+      }
+      .copy-input {
+        display: inline-block;
+      }
+    }
+  }
+}
+.padding-left-0 {
+  padding-left: 0;
+}
+.no-margin {
+  margin: 0;
+}
+
+.permission{
+  padding-top: 0.1rem;
+  color: #000000;
+}
+
+.padding-left-120{
+  padding-left: 126px;
+}
+.w-90{
+  width: 90%;
+}
+.date {
+  margin-top: -0.9rem;
+}
+.input-width-date {
+  width: 265px;
+}

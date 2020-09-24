@@ -1,7 +1,3 @@
-
-import {throwError as observableThrowError,  Observable } from "rxjs";
-
-import {map, catchError} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,25 +12,22 @@ import {map, catchError} from 'rxjs/operators';
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
-
-
-
-
-import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
+import { HttpClient } from '@angular/common/http';
 import { User } from '../../user/user';
 import { Member } from './member';
-
+import {throwError as observableThrowError,  Observable } from "rxjs";
+import {map, catchError} from 'rxjs/operators';
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../../lib/utils/utils";
 
 @Injectable()
 export class MemberService {
 
-  constructor(private http: Http) {}
+  constructor(private http: HttpClient) {}
 
   listMembers(projectId: number, entity_name: string): Observable<Member[]> {
     return this.http
-               .get(`/api/projects/${projectId}/members?entityname=${entity_name}`, HTTP_GET_OPTIONS).pipe(
-               map(response => response.json() as Member[]),
+               .get(`${ CURRENT_BASE_HREF }/projects/${projectId}/members?entityname=${entity_name}`, HTTP_GET_OPTIONS).pipe(
+               map(response => response as Member[]),
                catchError(error => observableThrowError(error)), );
   }
 
@@ -48,36 +41,32 @@ export class MemberService {
       return;
     }
     return this.http.post(
-      `/api/projects/${projectId}/members`,
+      `${ CURRENT_BASE_HREF }/projects/${projectId}/members`,
       {
         role_id: roleId,
         member_user: member_user
       },
       HTTP_JSON_OPTIONS).pipe(
-      map(response => response.status),
       catchError(error => observableThrowError(error)), );
   }
 
   addGroupMember(projectId: number, group: any, roleId: number): Observable<any> {
     return this.http
-               .post(`/api/projects/${projectId}/members`,
+               .post(`${ CURRENT_BASE_HREF }/projects/${projectId}/members`,
                { role_id: roleId, member_group: group},
                HTTP_JSON_OPTIONS).pipe(
-               map(response => response.status),
                catchError(error => observableThrowError(error)), );
   }
 
-  changeMemberRole(projectId: number, userId: number, roleId: number): Promise<any> {
+  changeMemberRole(projectId: number, userId: number, roleId: number): Observable<any> {
     return this.http
-               .put(`/api/projects/${projectId}/members/${userId}`, { role_id: roleId }, HTTP_JSON_OPTIONS).toPromise()
-               .then(response => response.status)
-               .catch(error => Promise.reject(error));
+               .put(`${ CURRENT_BASE_HREF }/projects/${projectId}/members/${userId}`, { role_id: roleId }, HTTP_JSON_OPTIONS)
+               .pipe(catchError(error => observableThrowError(error)));
   }
 
-  deleteMember(projectId: number, memberId: number): Promise<any> {
+  deleteMember(projectId: number, memberId: number): Observable<any> {
     return this.http
-               .delete(`/api/projects/${projectId}/members/${memberId}`).toPromise()
-               .then(response => response.status)
-               .catch(error => Promise.reject(error));
+               .delete(`${ CURRENT_BASE_HREF }/projects/${projectId}/members/${memberId}`)
+               .pipe(catchError(error => observableThrowError(error)));
   }
 }

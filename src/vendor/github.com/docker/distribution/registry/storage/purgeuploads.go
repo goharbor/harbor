@@ -1,14 +1,14 @@
 package storage
 
 import (
+	"context"
 	"path"
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/docker/distribution/context"
 	storageDriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/distribution/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // uploadData stored the location of temporary files created during a layer upload
@@ -22,7 +22,7 @@ func newUploadData() uploadData {
 	return uploadData{
 		containingDir: "",
 		// default to far in future to protect against missing startedat
-		startedAt: time.Now().Add(time.Duration(10000 * time.Hour)),
+		startedAt: time.Now().Add(10000 * time.Hour),
 	}
 }
 
@@ -30,13 +30,13 @@ func newUploadData() uploadData {
 // created before olderThan.  The list of files deleted and errors
 // encountered are returned
 func PurgeUploads(ctx context.Context, driver storageDriver.StorageDriver, olderThan time.Time, actuallyDelete bool) ([]string, []error) {
-	log.Infof("PurgeUploads starting: olderThan=%s, actuallyDelete=%t", olderThan, actuallyDelete)
+	logrus.Infof("PurgeUploads starting: olderThan=%s, actuallyDelete=%t", olderThan, actuallyDelete)
 	uploadData, errors := getOutstandingUploads(ctx, driver)
 	var deleted []string
 	for _, uploadData := range uploadData {
 		if uploadData.startedAt.Before(olderThan) {
 			var err error
-			log.Infof("Upload files in %s have older date (%s) than purge date (%s).  Removing upload directory.",
+			logrus.Infof("Upload files in %s have older date (%s) than purge date (%s).  Removing upload directory.",
 				uploadData.containingDir, uploadData.startedAt, olderThan)
 			if actuallyDelete {
 				err = driver.Delete(ctx, uploadData.containingDir)
@@ -49,7 +49,7 @@ func PurgeUploads(ctx context.Context, driver storageDriver.StorageDriver, older
 		}
 	}
 
-	log.Infof("Purge uploads finished.  Num deleted=%d, num errors=%d", len(deleted), len(errors))
+	logrus.Infof("Purge uploads finished.  Num deleted=%d, num errors=%d", len(deleted), len(errors))
 	return deleted, errors
 }
 
@@ -67,7 +67,7 @@ func getOutstandingUploads(ctx context.Context, driver storageDriver.StorageDriv
 		return uploads, append(errors, err)
 	}
 
-	err = Walk(ctx, driver, root, func(fileInfo storageDriver.FileInfo) error {
+	err = driver.Walk(ctx, root, func(fileInfo storageDriver.FileInfo) error {
 		filePath := fileInfo.Path()
 		_, file := path.Split(filePath)
 		if file[0] == '_' {
@@ -75,12 +75,12 @@ func getOutstandingUploads(ctx context.Context, driver storageDriver.StorageDriv
 			inUploadDir = (file == "_uploads")
 
 			if fileInfo.IsDir() && !inUploadDir {
-				return ErrSkipDir
+				return storageDriver.ErrSkipDir
 			}
 
 		}
 
-		uuid, isContainingDir := uUIDFromPath(filePath)
+		uuid, isContainingDir := uuidFromPath(filePath)
 		if uuid == "" {
 			// Cannot reliably delete
 			return nil
@@ -111,10 +111,10 @@ func getOutstandingUploads(ctx context.Context, driver storageDriver.StorageDriv
 	return uploads, errors
 }
 
-// uUIDFromPath extracts the upload UUID from a given path
+// uuidFromPath extracts the upload UUID from a given path
 // If the UUID is the last path component, this is the containing
 // directory for all upload files
-func uUIDFromPath(path string) (string, bool) {
+func uuidFromPath(path string) (string, bool) {
 	components := strings.Split(path, "/")
 	for i := len(components) - 1; i >= 0; i-- {
 		if u, err := uuid.Parse(components[i]); err == nil {

@@ -16,7 +16,6 @@ package token
 
 import (
 	"crypto"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -27,13 +26,15 @@ import (
 	"github.com/docker/libtrust"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
-	issuer = "harbor-token-issuer"
+	// Issuer is the issuer of the internal token service in Harbor for registry
+	Issuer = "harbor-token-issuer"
 )
 
 var privateKey string
@@ -93,7 +94,9 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 		err = f.filter(ctx, pm, a)
 		log.Debugf("user: %s, access: %v", ctx.GetUsername(), a)
 		if err != nil {
-			return err
+			log.Errorf("Failed to handle the resource %s:%s, due to error %v, returning empty access for it.",
+				a.Type, a.Name, err)
+			a.Actions = []string{}
 		}
 	}
 	return nil
@@ -110,7 +113,7 @@ func MakeToken(username, service string, access []*token.ResourceActions) (*mode
 		return nil, err
 	}
 
-	tk, expiresIn, issuedAt, err := makeTokenCore(issuer, username, service, expiration, access, pk)
+	tk, expiresIn, issuedAt, err := makeTokenCore(Issuer, username, service, expiration, access, pk)
 	if err != nil {
 		return nil, err
 	}
@@ -133,6 +136,9 @@ func permToActions(p string) []string {
 	if strings.Contains(p, "R") {
 		res = append(res, "pull")
 	}
+	if strings.Contains(p, "S") {
+		res = append(res, "scanner-pull")
+	}
 	return res
 }
 
@@ -146,10 +152,7 @@ func makeTokenCore(issuer, subject, audience string, expiration int,
 		KeyID:      signingKey.KeyID(),
 	}
 
-	jwtID, err := randString(16)
-	if err != nil {
-		return nil, 0, nil, fmt.Errorf("Error to generate jwt id: %s", err)
-	}
+	jwtID := utils.GenerateRandomStringWithLen(16)
 
 	now := time.Now().UTC()
 	issuedAt = &now
@@ -188,19 +191,6 @@ func makeTokenCore(issuer, subject, audience string, expiration int,
 	tokenString := fmt.Sprintf("%s.%s", payload, signature)
 	t, err = token.NewToken(tokenString)
 	return
-}
-
-func randString(length int) (string, error) {
-	const alphanum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	rb := make([]byte, length)
-	_, err := rand.Read(rb)
-	if err != nil {
-		return "", err
-	}
-	for i, b := range rb {
-		rb[i] = alphanum[int(b)%len(alphanum)]
-	}
-	return string(rb), nil
 }
 
 func base64UrlEncode(b []byte) string {

@@ -3,17 +3,15 @@ package api
 import (
 	"testing"
 
-	common_models "github.com/goharbor/harbor/src/common/models"
-	api_modes "github.com/goharbor/harbor/src/core/api/models"
-	"github.com/goharbor/harbor/tests/apitests/apilib"
+	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 	"github.com/stretchr/testify/assert"
 )
 
-var adminJob001 apilib.GCReq
-var adminJob001schdeule apilib.ScheduleParam
+func TestGCPost(t *testing.T) {
 
-func TestAdminJobPost(t *testing.T) {
-
+	adminJob001 := apilib.AdminJobReq{
+		Parameters: map[string]interface{}{"delete_untagged": false},
+	}
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
@@ -23,11 +21,11 @@ func TestAdminJobPost(t *testing.T) {
 		t.Error("Error occurred while add a admin job", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(200, code, "Add adminjob status should be 200")
+		assert.Equal(201, code, "Add adminjob status should be 201")
 	}
 }
 
-func TestAdminJobGet(t *testing.T) {
+func TestGCGet(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
@@ -37,44 +35,5 @@ func TestAdminJobGet(t *testing.T) {
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Get adminjob status should be 200")
-	}
-}
-
-func TestConvertToGCRep(t *testing.T) {
-	cases := []struct {
-		input    *common_models.AdminJob
-		expected api_modes.GCRep
-	}{
-		{
-			input:    nil,
-			expected: api_modes.GCRep{},
-		},
-		{
-			input: &common_models.AdminJob{
-				ID:      1,
-				Name:    "IMAGE_GC",
-				Kind:    "Generic",
-				Cron:    "{\"Type\":\"Manual\",\"Weekday\":0,\"Offtime\":0}",
-				Status:  "pending",
-				Deleted: false,
-			},
-			expected: api_modes.GCRep{
-				ID:   1,
-				Name: "IMAGE_GC",
-				Kind: "Generic",
-				Schedule: &api_modes.ScheduleParam{
-					Type:    "Manual",
-					Weekday: 0,
-					Offtime: 0,
-				},
-				Status:  "pending",
-				Deleted: false,
-			},
-		},
-	}
-
-	for _, c := range cases {
-		actual, _ := convertToGCRep(c.input)
-		assert.EqualValues(t, c.expected, actual)
 	}
 }

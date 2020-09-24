@@ -1,4 +1,13 @@
 <h2 class="custom-h2">{{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}</h2>
-<div style="margin-top: 4px;">
-    <hbr-replication [withReplicationJob]='true' [isSystemAdmin]="isSystemAdmin" [withAdmiral]="withAdmiral" (goToRegistry)="goRegistry()" (redirect)="customRedirect($event)"></hbr-replication>
+<div class="content-top">
+    <hbr-replication
+    [withReplicationJob]='true'
+    [isSystemAdmin]="isSystemAdmin"
+    [withAdmiral]="withAdmiral"
+    (goToRegistry)="goRegistry()"
+    (redirect)="customRedirect($event)"
+    [hasCreateReplicationPermission]="true"
+    [hasUpdateReplicationPermission]="true"
+    [hasDeleteReplicationPermission]="true"
+    [hasExecuteReplicationPermission]="true"></hbr-replication>
 </div>

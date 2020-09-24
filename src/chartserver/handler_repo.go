@@ -3,13 +3,14 @@ package chartserver
 import (
 	"fmt"
 	"path"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/ghodss/yaml"
-	helm_repo "k8s.io/helm/pkg/repo"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
 
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	hlog "github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
@@ -65,7 +66,7 @@ func (c *Controller) getIndexYaml(namespaces []string) (*helm_repo.IndexFile, er
 	// Retrieve index.yaml for repositories
 	workerPool := make(chan struct{}, initialItemCount)
 
-	// Add initial tokens to the pool
+	// Add initial tokens to the worker
 	for i := 0; i < initialItemCount; i++ {
 		workerPool <- struct{}{}
 	}
@@ -103,7 +104,7 @@ LOOP:
 		go func(ns string) {
 			defer func() {
 				waitGroup.Done() // done
-				// Return the worker back to the pool
+				// Return the worker back to the worker
 				workerPool <- struct{}{}
 			}()
 
@@ -190,7 +191,9 @@ func (c *Controller) mergeIndexFile(namespace string,
 			version.Name = nameWithNS
 			// Currently there is only one url
 			for index, url := range version.URLs {
-				version.URLs[index] = path.Join(namespace, url)
+				if !strings.HasPrefix(url, "http") {
+					version.URLs[index] = path.Join(namespace, url)
+				}
 			}
 		}
 

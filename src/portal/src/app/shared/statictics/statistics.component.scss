@@ -8,15 +8,16 @@
 }
 
 .statistic-data {
-    font-size: 16px;
+    font-size: 24px;
     font-weight: 600;
     font-family: Metropolis, "Avenir Next", "Helvetica Neue", Arial, sans-serif;
-    line-height: 16px;
+    line-height: 24px;
+    margin-right: 10px;
 }
 
 .statistic-text {
-    font-size: 10px;
-    line-height: 10px;
+    font-size: 14px;
+    line-height: 14px;
     text-transform: uppercase;
     font-family: Metropolis, "Avenir Next", "Helvetica Neue", Arial, sans-serif;
 }
@@ -55,4 +56,20 @@
 
 .statistic-block {
     display: inline-block;
+}
+
+#right_statistic_panel {
+    margin-right: 18px;
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-end;
+    div:nth-of-type(2)  {
+        margin-left: 16px;
+    }
+    div:nth-of-type(3)  {
+        margin-left: 28px;
+    }
+    div:nth-of-type(4)  {
+        margin-left: 28px;
+    }
 }

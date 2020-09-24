@@ -19,7 +19,7 @@ import (
 	"net/http"
 
 	"github.com/astaxie/beego"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // Handler handles request on /service/token, which is the auth provider for registry.
@@ -29,7 +29,7 @@ type Handler struct {
 
 // Get handles GET request, it checks the http header for user credentials
 // and parse service and scope based on docker registry v2 standard,
-// checkes the permission against local DB and generates jwt token.
+// checks the permission against local DB and generates jwt token.
 func (h *Handler) Get() {
 	request := h.Ctx.Request
 	log.Debugf("URL for token request: %s", request.URL.String())

@@ -17,27 +17,40 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"net/url"
 	"os"
+	"os/signal"
 	"strconv"
+	"strings"
+	"syscall"
+	"time"
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
-
+	_ "github.com/astaxie/beego/session/redis_sentinel"
 	"github.com/goharbor/harbor/src/common/dao"
+	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	_ "github.com/goharbor/harbor/src/controller/event/handler"
 	"github.com/goharbor/harbor/src/core/api"
+	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
+	_ "github.com/goharbor/harbor/src/core/auth/oidc"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/src/core/notifier"
-	"github.com/goharbor/harbor/src/core/proxy"
+	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
-	"github.com/goharbor/harbor/src/replication/core"
-	_ "github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/migration"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
+	"github.com/goharbor/harbor/src/pkg/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	"github.com/goharbor/harbor/src/pkg/version"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/server"
 )
 
 const (
@@ -63,28 +76,91 @@ func updateInitPassword(userID int, password string) error {
 			return fmt.Errorf("Failed to update user encrypted password, userID: %d, err: %v", userID, err)
 		}
 
-		log.Infof("User id: %d updated its encypted password successfully.", userID)
+		log.Infof("User id: %d updated its encrypted password successfully.", userID)
 	} else {
 		log.Infof("User id: %d already has its encrypted password.", userID)
 	}
 	return nil
 }
 
+func gracefulShutdown(closing, done chan struct{}) {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	log.Infof("capture system signal %s, to close \"closing\" channel", <-signals)
+	close(closing)
+	select {
+	case <-done:
+		log.Infof("Goroutines exited normally")
+	case <-time.After(time.Second * 3):
+		log.Infof("Timeout waiting goroutines to exit")
+	}
+	os.Exit(0)
+}
+
 func main() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
-	// TODO
-	redisURL := os.Getenv("_REDIS_URL")
+	beego.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
+
+	redisURL := os.Getenv("_REDIS_URL_CORE")
 	if len(redisURL) > 0 {
+		u, err := url.Parse(redisURL)
+		if err != nil {
+			panic("bad _REDIS_URL:" + redisURL)
+		}
 		gob.Register(models.User{})
-		beego.BConfig.WebConfig.Session.SessionProvider = "redis"
-		beego.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
+		if u.Scheme == "redis+sentinel" {
+			ps := strings.Split(u.Path, "/")
+			if len(ps) < 2 {
+				panic("bad redis sentinel url: no master name")
+			}
+			ss := make([]string, 5)
+			ss[0] = strings.Join(strings.Split(u.Host, ","), ";") // host
+			ss[1] = "100"                                         // pool
+			if u.User != nil {
+				password, isSet := u.User.Password()
+				if isSet {
+					ss[2] = password
+				}
+			}
+			if len(ps) > 2 {
+				db, err := strconv.Atoi(ps[2])
+				if err != nil {
+					panic("bad redis sentinel url: bad db")
+				}
+				if db != 0 {
+					ss[3] = ps[2]
+				}
+			}
+			ss[4] = ps[1] // monitor name
+
+			beego.BConfig.WebConfig.Session.SessionProvider = "redis_sentinel"
+			beego.BConfig.WebConfig.Session.SessionProviderConfig = strings.Join(ss, ",")
+		} else {
+			ss := make([]string, 5)
+			ss[0] = u.Host // host
+			ss[1] = "100"  // pool
+			if u.User != nil {
+				password, isSet := u.User.Password()
+				if isSet {
+					ss[2] = password
+				}
+			}
+			if len(u.Path) > 1 {
+				if _, err := strconv.Atoi(u.Path[1:]); err != nil {
+					panic("bad redis url: bad db")
+				}
+				ss[3] = u.Path[1:]
+			}
+			ss[4] = u.Query().Get("idle_timeout_seconds")
+
+			beego.BConfig.WebConfig.Session.SessionProvider = "redis"
+			beego.BConfig.WebConfig.Session.SessionProviderConfig = strings.Join(ss, ",")
+		}
 	}
 	beego.AddTemplateExt("htm")
 
 	log.Info("initializing configurations...")
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
+	config.Init()
 	log.Info("configurations initialization completed")
 	token.InitCreators()
 	database, err := config.Database()
@@ -94,10 +170,16 @@ func main() {
 	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
+	if err = migration.Migrate(database); err != nil {
+		log.Fatalf("failed to migrate: %v", err)
+	}
+	if err := config.Load(); err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
 
 	password, err := config.InitialAdminPassword()
 	if err != nil {
-		log.Fatalf("failed to get admin's initia password: %v", err)
+		log.Fatalf("failed to get admin's initial password: %v", err)
 	}
 	if err := updateInitPassword(adminUserID, password); err != nil {
 		log.Error(err)
@@ -108,49 +190,97 @@ func main() {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
 	}
 
-	// Subscribe the policy change topic.
-	if err = notifier.Subscribe(notifier.ScanAllPolicyTopic, &notifier.ScanPolicyNotificationHandler{}); err != nil {
-		log.Errorf("failed to subscribe scan all policy change topic: %v", err)
+	registerScanners()
+
+	closing := make(chan struct{})
+	done := make(chan struct{})
+	go gracefulShutdown(closing, done)
+	if err := replication.Init(closing, done); err != nil {
+		log.Fatalf("failed to init for replication: %v", err)
+	}
+
+	log.Info("initializing notification...")
+	notification.Init()
+
+	server.RegisterRoutes()
+
+	if common_http.InternalTLSEnabled() {
+		log.Info("internal TLS enabled, Init TLS ...")
+		iTLSKeyPath := os.Getenv("INTERNAL_TLS_KEY_PATH")
+		iTLSCertPath := os.Getenv("INTERNAL_TLS_CERT_PATH")
+
+		log.Infof("load client key: %s client cert: %s", iTLSKeyPath, iTLSCertPath)
+		beego.BConfig.Listen.EnableHTTP = false
+		beego.BConfig.Listen.EnableHTTPS = true
+		beego.BConfig.Listen.HTTPSPort = 8443
+		beego.BConfig.Listen.HTTPSKeyFile = iTLSKeyPath
+		beego.BConfig.Listen.HTTPSCertFile = iTLSCertPath
+		beego.BeeApp.Server.TLSConfig = common_http.NewServerTLSConfig()
+	}
+
+	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
+	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
+}
+
+const (
+	clairScanner = "Clair"
+	trivyScanner = "Trivy"
+)
+
+func registerScanners() {
+	wantedScanners := make([]scanner.Registration, 0)
+	uninstallScannerNames := make([]string, 0)
+
+	if config.WithTrivy() {
+		log.Info("Registering Trivy scanner")
+		wantedScanners = append(wantedScanners, scanner.Registration{
+			Name:            trivyScanner,
+			Description:     "The Trivy scanner adapter",
+			URL:             config.TrivyAdapterURL(),
+			UseInternalAddr: true,
+			Immutable:       true,
+		})
+	} else {
+		log.Info("Removing Trivy scanner")
+		uninstallScannerNames = append(uninstallScannerNames, trivyScanner)
 	}
 
 	if config.WithClair() {
-		clairDB, err := config.ClairDB()
-		if err != nil {
-			log.Fatalf("failed to load clair database information: %v", err)
-		}
-		if err := dao.InitClairDB(clairDB); err != nil {
-			log.Fatalf("failed to initialize clair database: %v", err)
-		}
-	}
-
-	if err := core.Init(); err != nil {
-		log.Errorf("failed to initialize the replication controller: %v", err)
-	}
-
-	filter.Init()
-	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
-	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
-	beego.InsertFilter("/api/*", beego.BeforeRouter, filter.MediaTypeFilter("application/json", "multipart/form-data", "application/octet-stream"))
-
-	initRouters()
-
-	syncRegistry := os.Getenv("SYNC_REGISTRY")
-	sync, err := strconv.ParseBool(syncRegistry)
-	if err != nil {
-		log.Errorf("Failed to parse SYNC_REGISTRY: %v", err)
-		// if err set it default to false
-		sync = false
-	}
-	if sync {
-		if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {
-			log.Error(err)
-		}
+		log.Info("Registering Clair scanner")
+		wantedScanners = append(wantedScanners, scanner.Registration{
+			Name:            clairScanner,
+			Description:     "The Clair scanner adapter",
+			URL:             config.ClairAdapterEndpoint(),
+			UseInternalAddr: true,
+			Immutable:       true,
+		})
 	} else {
-		log.Infof("Because SYNC_REGISTRY set false , no need to sync registry \n")
+		log.Info("Removing Clair scanner")
+		uninstallScannerNames = append(uninstallScannerNames, clairScanner)
 	}
 
-	log.Info("Init proxy")
-	proxy.Init()
-	// go proxy.StartProxy()
-	beego.Run()
+	if err := scan.RemoveImmutableScanners(uninstallScannerNames); err != nil {
+		log.Warningf("failed to remove scanners: %v", err)
+	}
+
+	if err := scan.EnsureScanners(wantedScanners); err != nil {
+		log.Fatalf("failed to register scanners: %v", err)
+	}
+
+	if defaultScannerName := getDefaultScannerName(); defaultScannerName != "" {
+		log.Infof("Setting %s as default scanner", defaultScannerName)
+		if err := scan.EnsureDefaultScanner(defaultScannerName); err != nil {
+			log.Fatalf("failed to set default scanner: %v", err)
+		}
+	}
+}
+
+func getDefaultScannerName() string {
+	if config.WithTrivy() {
+		return trivyScanner
+	}
+	if config.WithClair() {
+		return clairScanner
+	}
+	return ""
 }

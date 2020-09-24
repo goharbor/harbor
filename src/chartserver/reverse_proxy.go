@@ -12,6 +12,15 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/goharbor/harbor/src/common"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
+	hlog "github.com/goharbor/harbor/src/lib/log"
+	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/replication"
+	rep_event "github.com/goharbor/harbor/src/replication/event"
 )
 
 const (
@@ -31,20 +40,32 @@ type ProxyEngine struct {
 	backend *url.URL
 
 	// Use go reverse proxy as engine
-	engine *httputil.ReverseProxy
+	engine http.Handler
 }
 
 // NewProxyEngine is constructor of NewProxyEngine
-func NewProxyEngine(target *url.URL, cred *Credential) *ProxyEngine {
+func NewProxyEngine(target *url.URL, cred *Credential, middlewares ...func(http.Handler) http.Handler) *ProxyEngine {
+	var engine http.Handler
+
+	engine = &httputil.ReverseProxy{
+		ErrorLog: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
+		Director: func(req *http.Request) {
+			director(target, cred, req)
+		},
+		ModifyResponse: modifyResponse,
+		Transport:      commonhttp.GetHTTPTransport(commonhttp.SecureTransport),
+	}
+
+	if len(middlewares) > 0 {
+		hlog.Info("New chart server traffic proxy with middlewares")
+		for i := len(middlewares) - 1; i >= 0; i-- {
+			engine = middlewares[i](engine)
+		}
+	}
+
 	return &ProxyEngine{
 		backend: target,
-		engine: &httputil.ReverseProxy{
-			ErrorLog: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
-			Director: func(req *http.Request) {
-				director(target, cred, req)
-			},
-			ModifyResponse: modifyResponse,
-		},
+		engine:  engine,
 	}
 }
 
@@ -80,6 +101,63 @@ func director(target *url.URL, cred *Credential, req *http.Request) {
 
 // Modify the http response
 func modifyResponse(res *http.Response) error {
+	// Upload chart success, then to the notification to replication handler
+	if res.StatusCode == http.StatusCreated {
+		// 201 and has chart_upload_event context
+		// means this response is for uploading chart success.
+		chartUploadEvent := res.Request.Context().Value(common.ChartUploadCtxKey)
+		e, ok := chartUploadEvent.(*rep_event.Event)
+		if !ok {
+			hlog.Error("failed to convert chart upload context into replication event.")
+		} else {
+			// Todo: it used as the replacement of webhook, will be removed when webhook to be introduced.
+			go func() {
+				if err := replication.EventHandler.Handle(e); err != nil {
+					hlog.Errorf("failed to handle event: %v", err)
+				}
+			}()
+
+			// Trigger harbor webhook
+			if e != nil && e.Resource != nil && e.Resource.Metadata != nil && len(e.Resource.Metadata.Artifacts) > 0 &&
+				len(e.Resource.ExtendedInfo) > 0 {
+				event := &n_event.Event{}
+				metaData := &metadata.ChartUploadMetaData{
+					ChartMetaData: metadata.ChartMetaData{
+						ProjectName: e.Resource.ExtendedInfo["projectName"].(string),
+						ChartName:   e.Resource.ExtendedInfo["chartName"].(string),
+						Versions:    e.Resource.Metadata.Artifacts[0].Tags,
+						OccurAt:     time.Now(),
+						Operator:    e.Resource.ExtendedInfo["operator"].(string),
+					},
+				}
+				if err := event.Build(metaData); err == nil {
+					if err := event.Publish(); err != nil {
+						hlog.Errorf("failed to publish chart upload event: %v", err)
+					}
+				} else {
+					hlog.Errorf("failed to build chart upload event metadata: %v", err)
+				}
+			}
+		}
+	}
+
+	// Process downloading chart success webhook event
+	if res.StatusCode == http.StatusOK {
+		chartDownloadEvent := res.Request.Context().Value(common.ChartDownloadCtxKey)
+		eventMetaData, ok := chartDownloadEvent.(*metadata.ChartDownloadMetaData)
+		if ok && eventMetaData != nil {
+			// Trigger harbor webhook
+			event := &n_event.Event{}
+			if err := event.Build(eventMetaData); err == nil {
+				if err := event.Publish(); err != nil {
+					hlog.Errorf("failed to publish chart download event: %v", err)
+				}
+			} else {
+				hlog.Errorf("failed to build chart download event metadata: %v", err)
+			}
+		}
+	}
+
 	// Accept cases
 	// Success or redirect
 	if res.StatusCode >= http.StatusOK && res.StatusCode <= http.StatusTemporaryRedirect {

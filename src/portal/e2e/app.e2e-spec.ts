@@ -25,6 +25,8 @@ fdescribe('harbor-portal app', function () {
 
   it('should display: ' + expectedMsg, () => {
     page.navigateTo();
-    expect(page.getParagraphText()).toEqual(expectedMsg)
+    page.getParagraphText().then(res => {
+      expect(res).toEqual(expectedMsg);
+    });
   });
 });

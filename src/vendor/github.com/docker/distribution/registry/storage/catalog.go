@@ -1,23 +1,21 @@
 package storage
 
 import (
+	"context"
 	"errors"
 	"io"
 	"path"
 	"strings"
 
-	"github.com/docker/distribution/context"
+	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/registry/storage/driver"
 )
-
-// errFinishedWalk signals an early exit to the walk when the current query
-// is satisfied.
-var errFinishedWalk = errors.New("finished walk")
 
 // Returns a list, or partial list, of repositories in the registry.
 // Because it's a quite expensive operation, it should only be used when building up
 // an initial set of repositories.
 func (reg *registry) Repositories(ctx context.Context, repos []string, last string) (n int, err error) {
+	var finishedWalk bool
 	var foundRepos []string
 
 	if len(repos) == 0 {
@@ -29,7 +27,7 @@ func (reg *registry) Repositories(ctx context.Context, repos []string, last stri
 		return 0, err
 	}
 
-	err = Walk(ctx, reg.blobStore.driver, root, func(fileInfo driver.FileInfo) error {
+	err = reg.blobStore.driver.Walk(ctx, root, func(fileInfo driver.FileInfo) error {
 		err := handleRepository(fileInfo, root, last, func(repoPath string) error {
 			foundRepos = append(foundRepos, repoPath)
 			return nil
@@ -40,7 +38,8 @@ func (reg *registry) Repositories(ctx context.Context, repos []string, last stri
 
 		// if we've filled our array, no need to walk any further
 		if len(foundRepos) == len(repos) {
-			return errFinishedWalk
+			finishedWalk = true
+			return driver.ErrSkipDir
 		}
 
 		return nil
@@ -48,14 +47,11 @@ func (reg *registry) Repositories(ctx context.Context, repos []string, last stri
 
 	n = copy(repos, foundRepos)
 
-	switch err {
-	case nil:
-		// nil means that we completed walk and didn't fill buffer. No more
-		// records are available.
-		err = io.EOF
-	case errFinishedWalk:
-		// more records are available.
-		err = nil
+	if err != nil {
+		return n, err
+	} else if !finishedWalk {
+		// We didn't fill buffer. No more records are available.
+		return n, io.EOF
 	}
 
 	return n, err
@@ -68,11 +64,21 @@ func (reg *registry) Enumerate(ctx context.Context, ingester func(string) error)
 		return err
 	}
 
-	err = Walk(ctx, reg.blobStore.driver, root, func(fileInfo driver.FileInfo) error {
+	err = reg.blobStore.driver.Walk(ctx, root, func(fileInfo driver.FileInfo) error {
 		return handleRepository(fileInfo, root, "", ingester)
 	})
 
 	return err
+}
+
+// Remove removes a repository from storage
+func (reg *registry) Remove(ctx context.Context, name reference.Named) error {
+	root, err := pathFor(repositoriesRootPathSpec{})
+	if err != nil {
+		return err
+	}
+	repoDir := path.Join(root, name.Name())
+	return reg.driver.Delete(ctx, repoDir)
 }
 
 // lessPath returns true if one path a is less than path b.
@@ -144,9 +150,9 @@ func handleRepository(fileInfo driver.FileInfo, root, last string, fn func(repoP
 				return err
 			}
 		}
-		return ErrSkipDir
+		return driver.ErrSkipDir
 	} else if strings.HasPrefix(file, "_") {
-		return ErrSkipDir
+		return driver.ErrSkipDir
 	}
 
 	return nil

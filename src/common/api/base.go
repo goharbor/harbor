@@ -16,20 +16,24 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"strconv"
 
-	"github.com/astaxie/beego/validation"
-	http_error "github.com/goharbor/harbor/src/common/utils/error"
-	"github.com/goharbor/harbor/src/common/utils/log"
-
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/validation"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
 	defaultPageSize int64 = 500
 	maxPageSize     int64 = 500
+
+	// APIVersion is the current core api version
+	APIVersion = "v2.0"
 )
 
 // BaseAPI wraps common methods for controllers to host API
@@ -48,66 +52,9 @@ func (b *BaseAPI) GetInt64FromPath(key string) (int64, error) {
 	return strconv.ParseInt(value, 10, 64)
 }
 
-// HandleNotFound ...
-func (b *BaseAPI) HandleNotFound(text string) {
-	log.Info(text)
-	b.RenderError(http.StatusNotFound, text)
-}
-
-// HandleUnauthorized ...
-func (b *BaseAPI) HandleUnauthorized() {
-	log.Info("unauthorized")
-	b.RenderError(http.StatusUnauthorized, "")
-}
-
-// HandleForbidden ...
-func (b *BaseAPI) HandleForbidden(username string) {
-	log.Infof("forbidden: %s", username)
-	b.RenderError(http.StatusForbidden, "")
-}
-
-// HandleBadRequest ...
-func (b *BaseAPI) HandleBadRequest(text string) {
-	log.Info(text)
-	b.RenderError(http.StatusBadRequest, text)
-}
-
-// HandleStatusPreconditionFailed ...
-func (b *BaseAPI) HandleStatusPreconditionFailed(text string) {
-	log.Info(text)
-	b.RenderError(http.StatusPreconditionFailed, text)
-}
-
-// HandleConflict ...
-func (b *BaseAPI) HandleConflict(text ...string) {
-	msg := ""
-	if len(text) > 0 {
-		msg = text[0]
-	}
-	log.Infof("conflict: %s", msg)
-
-	b.RenderError(http.StatusConflict, msg)
-}
-
-// HandleInternalServerError ...
-func (b *BaseAPI) HandleInternalServerError(text string) {
-	log.Error(text)
-	b.RenderError(http.StatusInternalServerError, "")
-}
-
-// ParseAndHandleError : if the err is an instance of utils/error.Error,
-// return the status code and the detail message contained in err, otherwise
-// return 500
-func (b *BaseAPI) ParseAndHandleError(text string, err error) {
-	if err == nil {
-		return
-	}
-	log.Errorf("%s: %v", text, err)
-	if e, ok := err.(*http_error.HTTPError); ok {
-		b.RenderError(e.StatusCode, e.Detail)
-		return
-	}
-	b.RenderError(http.StatusInternalServerError, "")
+// ParamExistsInPath returns true when param exists in the path
+func (b *BaseAPI) ParamExistsInPath(key string) bool {
+	return b.GetStringFromPath(key) != ""
 }
 
 // Render returns nil as it won't render template
@@ -117,26 +64,30 @@ func (b *BaseAPI) Render() error {
 
 // RenderError provides shortcut to render http error
 func (b *BaseAPI) RenderError(code int, text string) {
-	http.Error(b.Ctx.ResponseWriter, text, code)
+	lib_http.SendError(b.Ctx.ResponseWriter, &commonhttp.Error{
+		Code:    code,
+		Message: text,
+	})
 }
 
 // DecodeJSONReq decodes a json request
-func (b *BaseAPI) DecodeJSONReq(v interface{}) {
+func (b *BaseAPI) DecodeJSONReq(v interface{}) error {
 	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<32), v)
 	if err != nil {
 		log.Errorf("Error while decoding the json request, error: %v, %v",
 			err, string(b.Ctx.Input.CopyBody(1 << 32)[:]))
-		b.CustomAbort(http.StatusBadRequest, "Invalid json request")
+		return errors.New("Invalid json request")
 	}
+	return nil
 }
 
 // Validate validates v if it implements interface validation.ValidFormer
-func (b *BaseAPI) Validate(v interface{}) {
+func (b *BaseAPI) Validate(v interface{}) (bool, error) {
 	validator := validation.Validation{}
 	isValid, err := validator.Valid(v)
 	if err != nil {
 		log.Errorf("failed to validate: %v", err)
-		b.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return false, err
 	}
 
 	if !isValid {
@@ -144,14 +95,17 @@ func (b *BaseAPI) Validate(v interface{}) {
 		for _, e := range validator.Errors {
 			message += fmt.Sprintf("%s %s \n", e.Field, e.Message)
 		}
-		b.CustomAbort(http.StatusBadRequest, message)
+		return false, errors.New(message)
 	}
+	return true, nil
 }
 
 // DecodeJSONReqAndValidate does both decoding and validation
-func (b *BaseAPI) DecodeJSONReqAndValidate(v interface{}) {
-	b.DecodeJSONReq(v)
-	b.Validate(v)
+func (b *BaseAPI) DecodeJSONReqAndValidate(v interface{}) (bool, error) {
+	if err := b.DecodeJSONReq(v); err != nil {
+		return false, err
+	}
+	return b.Validate(v)
 }
 
 // Redirect does redirection to resource URI with http header status code.
@@ -163,18 +117,18 @@ func (b *BaseAPI) Redirect(statusCode int, resouceID string) {
 }
 
 // GetIDFromURL checks the ID in request URL
-func (b *BaseAPI) GetIDFromURL() int64 {
+func (b *BaseAPI) GetIDFromURL() (int64, error) {
 	idStr := b.Ctx.Input.Param(":id")
 	if len(idStr) == 0 {
-		b.CustomAbort(http.StatusBadRequest, "invalid ID in URL")
+		return 0, errors.New("invalid ID in URL")
 	}
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil || id <= 0 {
-		b.CustomAbort(http.StatusBadRequest, "invalid ID in URL")
+		return 0, errors.New("invalid ID in URL")
 	}
 
-	return id
+	return id, nil
 }
 
 // SetPaginationHeader set"Link" and "X-Total-Count" header for pagination request
@@ -213,15 +167,15 @@ func (b *BaseAPI) SetPaginationHeader(total, page, pageSize int64) {
 }
 
 // GetPaginationParams ...
-func (b *BaseAPI) GetPaginationParams() (page, pageSize int64) {
-	page, err := b.GetInt64("page", 1)
+func (b *BaseAPI) GetPaginationParams() (page, pageSize int64, err error) {
+	page, err = b.GetInt64("page", 1)
 	if err != nil || page <= 0 {
-		b.CustomAbort(http.StatusBadRequest, "invalid page")
+		return 0, 0, errors.New("invalid page")
 	}
 
 	pageSize, err = b.GetInt64("page_size", defaultPageSize)
 	if err != nil || pageSize <= 0 {
-		b.CustomAbort(http.StatusBadRequest, "invalid page_size")
+		return 0, 0, errors.New("invalid page_size")
 	}
 
 	if pageSize > maxPageSize {
@@ -229,5 +183,77 @@ func (b *BaseAPI) GetPaginationParams() (page, pageSize int64) {
 		log.Debugf("the parameter page_size %d exceeds the max %d, set it to max", pageSize, maxPageSize)
 	}
 
-	return page, pageSize
+	return page, pageSize, nil
+}
+
+// ParseAndHandleError : if the err is an instance of utils/error.Error,
+// return the status code and the detail message contained in err, otherwise
+// return 500
+func (b *BaseAPI) ParseAndHandleError(text string, err error) {
+	if err == nil {
+		return
+	}
+	if e, ok := err.(*commonhttp.Error); ok {
+		b.RenderError(e.Code, fmt.Sprintf("%s: %s", text, e.Message))
+		return
+	}
+	b.SendInternalServerError(fmt.Errorf("%s: %v", text, err))
+}
+
+// SendUnAuthorizedError sends unauthorized error to the client.
+func (b *BaseAPI) SendUnAuthorizedError(err error) {
+	b.RenderError(http.StatusUnauthorized, err.Error())
+}
+
+// SendConflictError sends conflict error to the client.
+func (b *BaseAPI) SendConflictError(err error) {
+	b.RenderError(http.StatusConflict, err.Error())
+}
+
+// SendNotFoundError sends not found error to the client.
+func (b *BaseAPI) SendNotFoundError(err error) {
+	b.RenderError(http.StatusNotFound, err.Error())
+}
+
+// SendBadRequestError sends bad request error to the client.
+func (b *BaseAPI) SendBadRequestError(err error) {
+	b.RenderError(http.StatusBadRequest, err.Error())
+}
+
+// SendInternalServerError sends internal server error to the client.
+// Note the detail info of err will not include in the response body.
+// When you send an internal server error  to the client, you expect user to check the log
+// to find out the root cause.
+func (b *BaseAPI) SendInternalServerError(err error) {
+	b.RenderError(http.StatusInternalServerError, err.Error())
+}
+
+// SendForbiddenError sends forbidden error to the client.
+func (b *BaseAPI) SendForbiddenError(err error) {
+	b.RenderError(http.StatusForbidden, err.Error())
+}
+
+// SendPreconditionFailedError sends conflict error to the client.
+func (b *BaseAPI) SendPreconditionFailedError(err error) {
+	b.RenderError(http.StatusPreconditionFailed, err.Error())
+}
+
+// SendStatusServiceUnavailableError sends service unavailable error to the client.
+func (b *BaseAPI) SendStatusServiceUnavailableError(err error) {
+	b.RenderError(http.StatusServiceUnavailable, err.Error())
+}
+
+// SendError return the error defined in OCI spec: https://github.com/opencontainers/distribution-spec/blob/master/spec.md#errors
+// {
+//	"errors:" [{
+//			"code": <error identifier>,
+//			"message": <message describing condition>,
+//			// optional
+//			"detail": <unstructured>
+//		},
+//		...
+//	]
+// }
+func (b *BaseAPI) SendError(err error) {
+	lib_http.SendError(b.Ctx.ResponseWriter, err)
 }

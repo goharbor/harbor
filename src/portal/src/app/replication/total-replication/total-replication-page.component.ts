@@ -12,16 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component } from '@angular/core';
-
 import {Router, ActivatedRoute} from "@angular/router";
-import {ReplicationRule} from "@harbor/ui";
-
 import {SessionService} from "../../shared/session.service";
-import {AppConfigService} from "../../app-config.service";
+import {AppConfigService} from "../../services/app-config.service";
+import { ReplicationRule } from "../../../lib/services";
 
 @Component({
   selector: 'total-replication',
-  templateUrl: 'total-replication-page.component.html'
+  templateUrl: 'total-replication-page.component.html',
+  styleUrls: [ './total-replication.component.scss' ]
 })
 export class TotalReplicationPageComponent {
 

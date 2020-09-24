@@ -20,13 +20,14 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
-	"k8s.io/helm/cmd/helm/search"
+	"github.com/goharbor/harbor/src/core/config"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	member "github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	helm_repo "k8s.io/helm/pkg/repo"
+	"helm.sh/helm/v3/cmd/helm/search"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
 )
 
 func TestSearch(t *testing.T) {
@@ -61,7 +62,7 @@ func TestSearch(t *testing.T) {
 		ProjectID:  projectID1,
 		EntityID:   int(nonSysAdminID),
 		EntityType: common.UserMember,
-		Role:       models.GUEST,
+		Role:       common.RoleGuest,
 	})
 	require.Nil(t, err)
 	defer member.DeleteProjectMemberByID(memberID1)
@@ -79,7 +80,7 @@ func TestSearch(t *testing.T) {
 		ProjectID:  projectID2,
 		EntityID:   int(nonSysAdminID),
 		EntityType: common.UserMember,
-		Role:       models.GUEST,
+		Role:       common.RoleGuest,
 	})
 	require.Nil(t, err)
 	defer member.DeleteProjectMemberByID(memberID2)
@@ -178,6 +179,15 @@ func TestSearch(t *testing.T) {
 	_, exist = repositories["search-2/hello-world"]
 	assert.True(t, exist)
 
+	chartSettings := map[string]interface{}{
+		common.WithChartMuseum: true,
+	}
+	config.InitWithSettings(chartSettings)
+	defer func() {
+		// reset config
+		config.Init()
+	}()
+
 	// Search chart
 	err = handleAndParse(&testingRequest{
 		method: http.MethodGet,
@@ -190,8 +200,8 @@ func TestSearch(t *testing.T) {
 		credential: sysAdmin,
 	}, result)
 	require.Nil(t, err)
-	require.Equal(t, 1, len(result.Chart))
-	require.Equal(t, "library/harbor", result.Chart[0].Name)
+	require.Equal(t, 1, len(*(result.Chart)))
+	require.Equal(t, "library/harbor", (*result.Chart)[0].Name)
 
 	// Restore chart search handler
 	searchHandler = nil

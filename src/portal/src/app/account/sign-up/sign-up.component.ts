@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, Output, ViewChild, EventEmitter } from '@angular/core';
-import { Modal } from '@clr/angular';
+import { Modal } from '../../../lib/services/interface';
 
 import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
 import { User } from '../../user/user';
@@ -23,7 +23,8 @@ import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.com
 
 @Component({
     selector: 'sign-up',
-    templateUrl: "sign-up.component.html"
+    templateUrl: "sign-up.component.html",
+    styleUrls: ['../../common.scss']
 })
 export class SignUpComponent {
     opened: boolean = false;
@@ -38,13 +39,13 @@ export class SignUpComponent {
         private session: SessionService,
         private userService: UserService) { }
 
-    @ViewChild(NewUserFormComponent)
+    @ViewChild(NewUserFormComponent, {static: true})
     newUserForm: NewUserFormComponent;
 
-    @ViewChild(InlineAlertComponent)
-    inlienAlert: InlineAlertComponent;
+    @ViewChild(InlineAlertComponent, {static: false})
+    inlineAlert: InlineAlertComponent;
 
-    @ViewChild(Modal)
+    @ViewChild(Modal, {static: false})
     modal: Modal;
 
     getNewUser(): User {
@@ -66,7 +67,7 @@ export class SignUpComponent {
         if (this.error != null) {
             this.error = null; // clear error
         }
-        this.inlienAlert.close(); // Close alert if being shown
+        this.inlineAlert.close(); // Close alert if being shown
     }
 
     open(): void {
@@ -75,7 +76,7 @@ export class SignUpComponent {
         this.formValueChanged = false;
         this.error = null;
         this.onGoing = false;
-        this.inlienAlert.close();
+        this.inlineAlert.close();
 
         this.modal.open();
     }
@@ -86,7 +87,7 @@ export class SignUpComponent {
                 this.opened = false;
             } else {
                 // Need user confirmation
-                this.inlienAlert.showInlineConfirmation({
+                this.inlineAlert.showInlineConfirmation({
                     message: "ALERT.FORM_CHANGE_CONFIRMATION"
                 });
             }
@@ -118,16 +119,15 @@ export class SignUpComponent {
         this.onGoing = true;
 
         this.userService.addUser(u)
-            .then(() => {
+            .subscribe(() => {
                 this.onGoing = false;
                 this.opened = false;
                 this.modal.close();
                 this.userCreation.emit(u);
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.error = error;
-                this.inlienAlert.showInlineError(error);
+                this.inlineAlert.showInlineError(error);
             });
     }
 }

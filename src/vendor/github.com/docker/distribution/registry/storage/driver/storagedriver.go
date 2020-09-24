@@ -1,13 +1,12 @@
 package driver
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/docker/distribution/context"
 )
 
 // Version is a string representing the storage driver version, of the form
@@ -84,6 +83,13 @@ type StorageDriver interface {
 	// May return an ErrUnsupportedMethod in certain StorageDriver
 	// implementations.
 	URLFor(ctx context.Context, path string, options map[string]interface{}) (string, error)
+
+	// Walk traverses a filesystem defined within driver, starting
+	// from the given path, calling f on each file.
+	// If the returned error from the WalkFn is ErrSkipDir and fileInfo refers
+	// to a directory, the directory will not be entered and Walk
+	// will continue the traversal.  If fileInfo refers to a normal file, processing stops
+	Walk(ctx context.Context, path string, f WalkFn) error
 }
 
 // FileWriter provides an abstraction for an opened writable file-like object in

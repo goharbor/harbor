@@ -27,7 +27,7 @@ pipeline:
       status: success
 
   test-and-issue-build:
-    image: vmware/harbor-e2e-engine:1.41
+    image: goharbor/harbor-drone-engine:2.0
     pull: true
     privileged: true
     environment:
@@ -52,6 +52,11 @@ pipeline:
       - npm_username
       - docker_hub_username
       - docker_hub_password
+      - npm_registry
+      - harbor_sign_key
+      - harbor_sign_key_id
+      - test_gs_key
+      - test_export_env
     commands:
       - export DOMAIN=${CI_DOMAIN}
       - export HOST_CONTAINER_ID=$(hostname)

@@ -3,9 +3,8 @@
   "headerLogo": "",
   "loginBgImg": "",
   "appTitle": "",
-  "project": {
-    "companyName": "",
-    "projectName": "",
+  "product": {
+    "name": "",
     "introduction": {
       "zh-cn": "",
       "es-es": "",

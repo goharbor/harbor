@@ -3,16 +3,14 @@ package filesystem
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
-	"reflect"
-	"strconv"
 	"time"
 
-	"github.com/docker/distribution/context"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/distribution/registry/storage/driver/base"
 	"github.com/docker/distribution/registry/storage/driver/factory"
@@ -85,33 +83,9 @@ func fromParametersImpl(parameters map[string]interface{}) (*DriverParameters, e
 			rootDirectory = fmt.Sprint(rootDir)
 		}
 
-		// Get maximum number of threads for blocking filesystem operations,
-		// if specified
-		threads := parameters["maxthreads"]
-		switch v := threads.(type) {
-		case string:
-			if maxThreads, err = strconv.ParseUint(v, 0, 64); err != nil {
-				return nil, fmt.Errorf("maxthreads parameter must be an integer, %v invalid", threads)
-			}
-		case uint64:
-			maxThreads = v
-		case int, int32, int64:
-			val := reflect.ValueOf(v).Convert(reflect.TypeOf(threads)).Int()
-			// If threads is negative casting to uint64 will wrap around and
-			// give you the hugest thread limit ever. Let's be sensible, here
-			if val > 0 {
-				maxThreads = uint64(val)
-			}
-		case uint, uint32:
-			maxThreads = reflect.ValueOf(v).Convert(reflect.TypeOf(threads)).Uint()
-		case nil:
-			// do nothing
-		default:
-			return nil, fmt.Errorf("invalid value for maxthreads: %#v", threads)
-		}
-
-		if maxThreads < minThreads {
-			maxThreads = minThreads
+		maxThreads, err = base.GetLimitFromParameter(parameters["maxthreads"], minThreads, defaultMaxThreads)
+		if err != nil {
+			return nil, fmt.Errorf("maxthreads config error: %s", err.Error())
 		}
 	}
 
@@ -184,11 +158,11 @@ func (d *driver) Reader(ctx context.Context, path string, offset int64) (io.Read
 		return nil, err
 	}
 
-	seekPos, err := file.Seek(int64(offset), os.SEEK_SET)
+	seekPos, err := file.Seek(offset, io.SeekStart)
 	if err != nil {
 		file.Close()
 		return nil, err
-	} else if seekPos < int64(offset) {
+	} else if seekPos < offset {
 		file.Close()
 		return nil, storagedriver.InvalidOffsetError{Path: path, Offset: offset}
 	}
@@ -217,12 +191,12 @@ func (d *driver) Writer(ctx context.Context, subPath string, append bool) (stora
 			return nil, err
 		}
 	} else {
-		n, err := fp.Seek(0, os.SEEK_END)
+		n, err := fp.Seek(0, io.SeekEnd)
 		if err != nil {
 			fp.Close()
 			return nil, err
 		}
-		offset = int64(n)
+		offset = n
 	}
 
 	return newFileWriter(fp, offset), nil
@@ -313,6 +287,12 @@ func (d *driver) Delete(ctx context.Context, subPath string) error {
 // May return an UnsupportedMethodErr in certain StorageDriver implementations.
 func (d *driver) URLFor(ctx context.Context, path string, options map[string]interface{}) (string, error) {
 	return "", storagedriver.ErrUnsupportedMethod{}
+}
+
+// Walk traverses a filesystem defined within driver, starting
+// from the given path, calling f on each file
+func (d *driver) Walk(ctx context.Context, path string, f storagedriver.WalkFn) error {
+	return storagedriver.WalkFallback(ctx, d, path, f)
 }
 
 // fullPath returns the absolute path of a key within the Driver's storage.

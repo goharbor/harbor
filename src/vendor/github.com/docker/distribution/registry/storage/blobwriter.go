@@ -1,21 +1,27 @@
 package storage
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"path"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
+	dcontext "github.com/docker/distribution/context"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
+	"github.com/opencontainers/go-digest"
+	"github.com/sirupsen/logrus"
 )
 
 var (
 	errResumableDigestNotAvailable = errors.New("resumable digest not available")
+)
+
+const (
+	// digestSha256Empty is the canonical sha256 digest of empty data
+	digestSha256Empty = "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 )
 
 // blobWriter is used to control the various aspects of resumable
@@ -27,7 +33,7 @@ type blobWriter struct {
 	id        string
 	startedAt time.Time
 	digester  digest.Digester
-	written   int64 // track the contiguous write
+	written   int64 // track the write to digester
 
 	fileWriter storagedriver.FileWriter
 	driver     storagedriver.StorageDriver
@@ -51,7 +57,7 @@ func (bw *blobWriter) StartedAt() time.Time {
 // Commit marks the upload as completed, returning a valid descriptor. The
 // final size and digest are checked against the first descriptor provided.
 func (bw *blobWriter) Commit(ctx context.Context, desc distribution.Descriptor) (distribution.Descriptor, error) {
-	context.GetLogger(ctx).Debug("(*blobWriter).Commit")
+	dcontext.GetLogger(ctx).Debug("(*blobWriter).Commit")
 
 	if err := bw.fileWriter.Commit(); err != nil {
 		return distribution.Descriptor{}, err
@@ -89,20 +95,16 @@ func (bw *blobWriter) Commit(ctx context.Context, desc distribution.Descriptor) 
 // Cancel the blob upload process, releasing any resources associated with
 // the writer and canceling the operation.
 func (bw *blobWriter) Cancel(ctx context.Context) error {
-	context.GetLogger(ctx).Debug("(*blobWriter).Cancel")
+	dcontext.GetLogger(ctx).Debug("(*blobWriter).Cancel")
 	if err := bw.fileWriter.Cancel(); err != nil {
 		return err
 	}
 
 	if err := bw.Close(); err != nil {
-		context.GetLogger(ctx).Errorf("error closing blobwriter: %s", err)
+		dcontext.GetLogger(ctx).Errorf("error closing blobwriter: %s", err)
 	}
 
-	if err := bw.removeResources(ctx); err != nil {
-		return err
-	}
-
-	return nil
+	return bw.removeResources(ctx)
 }
 
 func (bw *blobWriter) Size() int64 {
@@ -117,7 +119,12 @@ func (bw *blobWriter) Write(p []byte) (int, error) {
 		return 0, err
 	}
 
-	n, err := io.MultiWriter(bw.fileWriter, bw.digester.Hash()).Write(p)
+	_, err := bw.fileWriter.Write(p)
+	if err != nil {
+		return 0, err
+	}
+
+	n, err := bw.digester.Hash().Write(p)
 	bw.written += int64(n)
 
 	return n, err
@@ -131,7 +138,11 @@ func (bw *blobWriter) ReadFrom(r io.Reader) (n int64, err error) {
 		return 0, err
 	}
 
-	nn, err := io.Copy(io.MultiWriter(bw.fileWriter, bw.digester.Hash()), r)
+	// Using a TeeReader instead of MultiWriter ensures Copy returns
+	// the amount written to the digester as well as ensuring that we
+	// write to the fileWriter first
+	tee := io.TeeReader(r, bw.fileWriter)
+	nn, err := io.Copy(bw.digester.Hash(), tee)
 	bw.written += nn
 
 	return nn, err
@@ -234,12 +245,8 @@ func (bw *blobWriter) validateBlob(ctx context.Context, desc distribution.Descri
 		// paths. We may be able to make the size-based check a stronger
 		// guarantee, so this may be defensive.
 		if !verified {
-			digester := digest.Canonical.New()
-
-			digestVerifier, err := digest.NewDigestVerifier(desc.Digest)
-			if err != nil {
-				return distribution.Descriptor{}, err
-			}
+			digester := digest.Canonical.Digester()
+			verifier := desc.Digest.Verifier()
 
 			// Read the file from the backend driver and validate it.
 			fr, err := newFileReader(ctx, bw.driver, bw.path, desc.Size)
@@ -250,17 +257,17 @@ func (bw *blobWriter) validateBlob(ctx context.Context, desc distribution.Descri
 
 			tr := io.TeeReader(fr, digester.Hash())
 
-			if _, err := io.Copy(digestVerifier, tr); err != nil {
+			if _, err := io.Copy(verifier, tr); err != nil {
 				return distribution.Descriptor{}, err
 			}
 
 			canonical = digester.Digest()
-			verified = digestVerifier.Verified()
+			verified = verifier.Verified()
 		}
 	}
 
 	if !verified {
-		context.GetLoggerWithFields(ctx,
+		dcontext.GetLoggerWithFields(ctx,
 			map[interface{}]interface{}{
 				"canonical": canonical,
 				"provided":  desc.Digest,
@@ -313,7 +320,7 @@ func (bw *blobWriter) moveBlob(ctx context.Context, desc distribution.Descriptor
 	// If no data was received, we may not actually have a file on disk. Check
 	// the size here and write a zero-length file to blobPath if this is the
 	// case. For the most part, this should only ever happen with zero-length
-	// tars.
+	// blobs.
 	if _, err := bw.blobStore.driver.Stat(ctx, bw.path); err != nil {
 		switch err := err.(type) {
 		case storagedriver.PathNotFoundError:
@@ -321,8 +328,8 @@ func (bw *blobWriter) moveBlob(ctx context.Context, desc distribution.Descriptor
 			// get a hash, then the underlying file is deleted, we risk moving
 			// a zero-length blob into a nonzero-length blob location. To
 			// prevent this horrid thing, we employ the hack of only allowing
-			// to this happen for the digest of an empty tar.
-			if desc.Digest == digest.DigestSha256EmptyTar {
+			// to this happen for the digest of an empty blob.
+			if desc.Digest == digestSha256Empty {
 				return bw.blobStore.driver.PutContent(ctx, blobPath, []byte{})
 			}
 
@@ -364,7 +371,7 @@ func (bw *blobWriter) removeResources(ctx context.Context) error {
 			// This should be uncommon enough such that returning an error
 			// should be okay. At this point, the upload should be mostly
 			// complete, but perhaps the backend became unaccessible.
-			context.GetLogger(ctx).Errorf("unable to delete layer upload resources %q: %v", dirPath, err)
+			dcontext.GetLogger(ctx).Errorf("unable to delete layer upload resources %q: %v", dirPath, err)
 			return err
 		}
 	}
@@ -382,7 +389,7 @@ func (bw *blobWriter) Reader() (io.ReadCloser, error) {
 		}
 		switch err.(type) {
 		case storagedriver.PathNotFoundError:
-			context.GetLogger(bw.ctx).Debugf("Nothing found on try %d, sleeping...", try)
+			dcontext.GetLogger(bw.ctx).Debugf("Nothing found on try %d, sleeping...", try)
 			time.Sleep(1 * time.Second)
 			try++
 		default:

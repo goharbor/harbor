@@ -22,11 +22,12 @@ import (
 	"net"
 	"net/url"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // ParseEndpoint parses endpoint to a URL
@@ -63,10 +64,9 @@ func ParseRepository(repository string) (project, rest string) {
 	return
 }
 
-// GenerateRandomString generates a random string
-func GenerateRandomString() string {
-	length := 32
-	const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+// GenerateRandomStringWithLen generates a random string with length
+func GenerateRandomStringWithLen(length int) string {
+	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	l := len(chars)
 	result := make([]byte, length)
 	_, err := rand.Read(result)
@@ -77,6 +77,11 @@ func GenerateRandomString() string {
 		result[i] = chars[int(result[i])%l]
 	}
 	return string(result)
+}
+
+// GenerateRandomString generate a random string with 32 byte length
+func GenerateRandomString() string {
+	return GenerateRandomStringWithLen(32)
 }
 
 // TestTCPConn tests TCP connection
@@ -217,4 +222,76 @@ func ParseOfftime(offtime int64) (hour, minite, second int) {
 // TrimLower ...
 func TrimLower(str string) string {
 	return strings.TrimSpace(strings.ToLower(str))
+}
+
+// GetStrValueOfAnyType return string format of any value, for map, need to convert to json
+func GetStrValueOfAnyType(value interface{}) string {
+	var strVal string
+	if _, ok := value.(map[string]interface{}); ok {
+		b, err := json.Marshal(value)
+		if err != nil {
+			log.Errorf("can not marshal json object, error %v", err)
+			return ""
+		}
+		strVal = string(b)
+	} else {
+		switch val := value.(type) {
+		case float64:
+			strVal = strconv.FormatFloat(val, 'f', -1, 64)
+		case float32:
+			strVal = strconv.FormatFloat(float64(val), 'f', -1, 32)
+		default:
+			strVal = fmt.Sprintf("%v", value)
+		}
+	}
+	return strVal
+}
+
+// IsIllegalLength ...
+func IsIllegalLength(s string, min int, max int) bool {
+	if min == -1 {
+		return (len(s) > max)
+	}
+	if max == -1 {
+		return (len(s) <= min)
+	}
+	return (len(s) < min || len(s) > max)
+}
+
+// IsContainIllegalChar ...
+func IsContainIllegalChar(s string, illegalChar []string) bool {
+	for _, c := range illegalChar {
+		if strings.Index(s, c) >= 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// IsDigest A sha256 is a string with 64 characters.
+func IsDigest(ref string) bool {
+	return strings.HasPrefix(ref, "sha256:") && len(ref) == 71
+}
+
+// ParseJSONInt ...
+func ParseJSONInt(value interface{}) (int, bool) {
+	switch value.(type) {
+	case float64:
+		return int(value.(float64)), true
+	case int:
+		return value.(int), true
+	default:
+		return 0, false
+	}
+}
+
+// FindNamedMatches returns named matches of the regexp groups
+func FindNamedMatches(regex *regexp.Regexp, str string) map[string]string {
+	match := regex.FindStringSubmatch(str)
+
+	results := map[string]string{}
+	for i, name := range match {
+		results[regex.SubexpNames()[i]] = name
+	}
+	return results
 }

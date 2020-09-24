@@ -1,0 +1,2420 @@
+swagger: '2.0'
+info:
+  title: Harbor API
+  description: These APIs provide services for manipulating Harbor project.
+  version: '2.0'
+host: localhost
+schemes:
+  - http
+  - https
+basePath: /api/v2.0
+produces:
+  - application/json
+consumes:
+  - application/json
+securityDefinitions:
+  basic:
+    type: basic
+security:
+  - basic: []
+  - {}
+paths:
+  /projects:
+    get:
+      summary: List projects
+      description: This endpoint returns projects created by Harbor.
+      tags:
+        - project
+      operationId: listProjects
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: name
+          in: query
+          description: The name of project.
+          required: false
+          type: string
+        - name: public
+          in: query
+          description: The project is public or private.
+          required: false
+          type: boolean
+          format: int32
+        - name: owner
+          in: query
+          description: The name of project owner.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Return all matched projects.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Project'
+          headers:
+            X-Total-Count:
+              description: The total count of projects
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+    head:
+      summary: Check if the project name user provided already exists.
+      description: This endpoint is used to check if the project name provided already exist.
+      tags:
+        - project
+      operationId: headProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: project_name
+          in: query
+          description: Project name for checking exists.
+          required: true
+          type: string
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a new project.
+      description: This endpoint is for user to create a new project.
+      tags:
+        - project
+      operationId: createProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: project
+          in: body
+          description: New created project.
+          required: true
+          schema:
+            $ref: '#/definitions/ProjectReq'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  '/projects/{project_id}':
+    get:
+      summary: Return specific project detail information
+      description: This endpoint returns specific project information by project ID.
+      tags:
+        - project
+      operationId: getProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectId'
+      responses:
+        '200':
+          description: Return matched project information.
+          schema:
+            $ref: '#/definitions/Project'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update properties for a selected project.
+      description: This endpoint is aimed to update the properties of a project.
+      tags:
+        - project
+      operationId: updateProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectId'
+        - name: project
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProjectReq'
+          description: Updates of project.
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete project by projectID
+      description: This endpoint is aimed to delete project by project ID.
+      tags:
+        - project
+      operationId: deleteProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '412':
+          $ref: '#/responses/412'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_id}/_deletable:
+    get:
+      summary: Get the deletable status of the project
+      description: Get the deletable status of the project
+      tags:
+        - project
+      operationId: getProjectDeletable
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectId'
+      responses:
+        '200':
+          description: Return deletable status of the project.
+          schema:
+            $ref: '#/definitions/ProjectDeletable'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  '/projects/{project_id}/summary':
+    get:
+      summary: Get summary of the project.
+      description: Get summary of the project.
+      tags:
+        - project
+      operationId: getProjectSummary
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectId'
+      responses:
+        '200':
+          description: Get summary of the project successfully.
+          schema:
+            $ref: '#/definitions/ProjectSummary'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories:
+    get:
+      summary: List repositories
+      description: List repositories of the specified project
+      tags:
+        - repository
+      operationId: listRepositories
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of repositories
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Repository'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}:
+    get:
+      summary: Get repository
+      description: Get the repository specified by name
+      tags:
+        - repository
+      operationId: getRepository
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Repository'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update repository
+      description: Update the repository specified by name
+      tags:
+        - repository
+      operationId: updateRepository
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - name: repository
+          in: body
+          description: The JSON object of repository.
+          required: true
+          schema:
+            $ref: '#/definitions/Repository'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete repository
+      description: Delete the repository specified by name
+      tags:
+        - repository
+      operationId: deleteRepository
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts:
+    get:
+      summary: List artifacts
+      description: List artifacts under the specific project and repository. Except the basic properties, the other supported queries in "q" includes "tags=*" to list only tagged artifacts, "tags=nil" to list only untagged artifacts, "tags=~v" to list artifacts whose tag fuzzy matches "v", "tags=v" to list artifact whose tag exactly matches "v", "labels=(id1, id2)" to list artifacts that both labels with id1 and id2 are added to
+      tags:
+        - artifact
+      operationId: listArtifacts
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: with_tag
+          in: query
+          description: Specify whether the tags are included inside the returning artifacts
+          type: boolean
+          required: false
+          default: true
+        - name: with_label
+          in: query
+          description: Specify whether the labels are included inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_scan_overview
+          in: query
+          description: Specify whether the scan overview is included inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_signature
+          in: query
+          description: Specify whether the signature is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          type: boolean
+          required: false
+          default: false
+        - name: with_immutable_status
+          in: query
+          description: Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          type: boolean
+          required: false
+          default: false
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of artifacts
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Artifact'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Copy artifact
+      description: Copy the artifact specified in the "from" parameter to the repository.
+      tags:
+        - artifact
+      operationId: CopyArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - name: from
+          in: query
+          description: The artifact from which the new artifact is copied from, the format should be "project/repository:tag" or "project/repository@digest".
+          type: string
+          required: true
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '405':
+          $ref: '#/responses/405'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}:
+    get:
+      summary: Get the specific artifact
+      description: Get the artifact specified by the reference under the project and repository. The reference can be digest or tag.
+      tags:
+        - artifact
+      operationId: getArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: with_tag
+          in: query
+          description: Specify whether the tags are inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: true
+        - name: with_label
+          in: query
+          description: Specify whether the labels are inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_scan_overview
+          in: query
+          description: Specify whether the scan overview is inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        # should be in tag level
+        - name: with_signature
+          in: query
+          description: Specify whether the signature is inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_immutable_status
+          in: query
+          description: Specify whether the immutable status is inclued inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          type: boolean
+          required: false
+          default: false
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Artifact'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete the specific artifact
+      description: Delete the artifact specified by the reference under the project and repository. The reference can be digest or tag
+      tags:
+        - artifact
+      operationId: deleteArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan:
+    post:
+      summary: Scan the artifact
+      description: Scan the specified artifact
+      tags:
+        - scan
+      operationId: scanArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
+    get:
+      summary: Get the log of the scan report
+      description: Get the log of the scan report
+      tags:
+        - scan
+      operationId: getReportLog
+      produces:
+        - text/plain
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: report_id
+          type: string
+          in: path
+          required: true
+          description: The report id to get the log
+      responses:
+        '200':
+          description: Successfully get scan log file
+          schema:
+            type: string
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags:
+    post:
+      summary: Create tag
+      description: Create a tag for the specified artifact
+      tags:
+        - artifact
+      operationId: createTag
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: tag
+          in: body
+          description: The JSON object of tag.
+          required: true
+          schema:
+            $ref: '#/definitions/Tag'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '405':
+          $ref: '#/responses/405'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    get:
+      summary: List tags
+      description: List tags of the specific artifact
+      tags:
+        - artifact
+      operationId: listTags
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: with_signature
+          in: query
+          description: Specify whether the signature is included inside the returning tags
+          type: boolean
+          required: false
+          default: false
+        - name: with_immutable_status
+          in: query
+          description: Specify whether the immutable status is included inside the returning tags
+          type: boolean
+          required: false
+          default: false
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of tags
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Tag'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags/{tag_name}:
+    delete:
+      summary: Delete tag
+      description: Delete the tag of the specified artifact
+      tags:
+        - artifact
+      operationId: deleteTag
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - $ref: '#/parameters/tagName'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/{addition}:
+    get:
+      summary: Get the addition of the specific artifact
+      description: Get the addition of the artifact specified by the reference under the project and repository.
+      tags:
+        - artifact
+      operationId: getAddition
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: addition
+          in: path
+          description: The type of addition.
+          type: string
+          enum: [build_history, values.yaml, readme.md, dependencies, vulnerabilities]
+          required: true
+      responses:
+        '200':
+          description: Success
+          headers:
+            Content-Type:
+              description: The content type of the addition
+              type: string
+          schema:
+            type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels:
+    post:
+      summary: Add label to artifact
+      description: Add label to the specified artiact.
+      tags:
+        - artifact
+      operationId: addLabel
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: label
+          in: body
+          description: The label that added to the artifact. Only the ID property is needed.
+          required: true
+          schema:
+            $ref: '#/definitions/Label'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels/{label_id}:
+    delete:
+      summary: Remove label from artifact
+      description: Remove the label from the specified artiact.
+      tags:
+        - artifact
+      operationId: removeLabel
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: label_id
+          in: path
+          description: The ID of the label that removed from the artifact.
+          type: integer
+          format: int64
+          required: true
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /audit-logs:
+    get:
+      summary: Get recent logs of the projects which the user is a member of
+      description: |
+        This endpoint let user see the recent operation logs of the projects which he is member of
+      tags:
+        - auditlog
+      operationId: listAuditLogs
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of auditlogs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AuditLog'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/logs:
+    get:
+      summary: Get recent logs of the projects
+      description: Get recent logs of the projects
+      tags:
+        - project
+      operationId: getLogs
+      parameters:
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of auditlogs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AuditLog'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+  /p2p/preheat/providers:
+    get:
+      summary: List P2P providers
+      description: List P2P providers
+      tags:
+        - preheat
+      operationId: ListProviders
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Metadata'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /p2p/preheat/instances/ping:
+    post:
+      summary: Ping status of a instance.
+      description: |
+        This endpoint checks status of a instance, the instance can be given by ID or Endpoint URL (together with credential)
+      operationId: PingInstances
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: instance
+          in: body
+          description: The JSON object of instance.
+          required: true
+          schema:
+            $ref: '#/definitions/Instance'
+      tags:
+        - preheat
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          description: Instance not found (when instance is provided by ID).
+        '500':
+          $ref: '#/responses/500'
+  /p2p/preheat/instances:
+    get:
+      summary: List P2P provider instances
+      description: List P2P provider instances
+      tags:
+        - preheat
+      operationId: ListInstances
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of preheating provider instances
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Instance'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create p2p provider instances
+      description: Create p2p provider instances
+      tags:
+        - preheat
+      operationId: CreateInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: instance
+          in: body
+          description: The JSON object of instance.
+          required: true
+          schema:
+            $ref: '#/definitions/Instance'
+      responses:
+        '201':
+          description: Response to insatnce created
+          schema:
+            $ref: '#/definitions/InstanceCreatedResp'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /p2p/preheat/instances/{preheat_instance_name}:
+    get:
+      summary: Get a P2P provider instance
+      description: Get a P2P provider instance
+      tags:
+        - preheat
+      operationId: GetInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/instanceName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Instance'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete the specified P2P provider instance
+      description: Delete the specified P2P provider instance
+      tags:
+        - preheat
+      operationId: DeleteInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/instanceName'
+      responses:
+        '200':
+          description: Instance ID deleted
+          schema:
+            $ref: '#/definitions/InstanceDeletedResp'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update the specified P2P provider instance
+      description: Update the specified P2P provider instance
+      tags:
+        - preheat
+      operationId: UpdateInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/instanceName'
+        - name: instance
+          in: body
+          description: The instance to update
+          required: true
+          schema:
+            $ref: '#/definitions/Instance'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/InstanceUpdateResp'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies:
+    post:
+      summary: Create a preheat policy under a project
+      description: Create a preheat policy under a project
+      tags:
+        - preheat
+      operationId: CreatePolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: policy
+          in: body
+          description: The policy schema info
+          required: true
+          schema:
+            $ref: '#/definitions/PreheatPolicy'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    get:
+      summary: List preheat policies
+      description: List preheat policies
+      tags:
+        - preheat
+      operationId: ListPolicies
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: List preheat policies success
+          headers:
+            X-Total-Count:
+              description: The total count of policies
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PreheatPolicy'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies/{preheat_policy_name}:
+    get:
+      summary: Get a preheat policy
+      description: Get a preheat policy
+      tags:
+        - preheat
+      operationId: GetPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+      responses:
+        '200':
+          description: Get a preheat policy success
+          schema:
+            $ref: '#/definitions/PreheatPolicy'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update preheat policy
+      description: Update preheat policy
+      tags:
+        - preheat
+      operationId: UpdatePolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - name: policy
+          in: body
+          description: The policy schema info
+          required: true
+          schema:
+            $ref: '#/definitions/PreheatPolicy'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Manual preheat
+      description: Manual preheat
+      tags:
+        - preheat
+      operationId: ManualPreheat
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - name: policy
+          in: body
+          description: The policy schema info
+          required: true
+          schema:
+            $ref: '#/definitions/PreheatPolicy'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a preheat policy
+      description: Delete a preheat policy
+      tags:
+        - preheat
+      operationId: DeletePolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions:
+    get:
+      summary: List executions for the given policy
+      description: List executions for the given policy
+      tags:
+        - preheat
+      operationId: ListExecutions
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: List executions success
+          headers:
+            X-Total-Count:
+              description: The total count of executions
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Execution'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions/{execution_id}:
+    get:
+      summary: Get a execution detail by id
+      description: Get a execution detail by id
+      tags:
+        - preheat
+      operationId: GetExecution
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - $ref: '#/parameters/executionId'
+      responses:
+        '200':
+          description: Get execution success
+          schema:
+            $ref: '#/definitions/Execution'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    patch:
+      summary: Stop a execution
+      description: Stop a execution
+      tags:
+        - preheat
+      operationId: StopExecution
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - $ref: '#/parameters/executionId'
+        - name: execution
+          description: The data of execution
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Execution'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions/{execution_id}/tasks:
+    get:
+      summary: List all the related tasks for the given execution
+      description: List all the related tasks for the given execution
+      tags:
+        - preheat
+      operationId: ListTasks
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - $ref: '#/parameters/executionId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: List tasks success
+          headers:
+            X-Total-Count:
+              description: The total count of tasks
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Task'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions/{execution_id}/tasks/{task_id}/logs:
+    get:
+      summary: Get the log text stream of the specified task for the given execution
+      description: Get the log text stream of the specified task for the given execution
+      tags:
+        - preheat
+      operationId: GetPreheatLog
+      produces:
+        - text/plain
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/preheatPolicyName'
+        - $ref: '#/parameters/executionId'
+        - $ref: '#/parameters/taskId'
+      responses:
+        '200':
+          description: Get log success
+          headers:
+            Content-Type:
+              description: Content type of response
+              type: string
+          schema:
+            type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/preheat/providers:
+    get:
+      summary: Get all providers at project level
+      description: Get all providers at project level
+      tags:
+        - preheat
+      operationId: ListProvidersUnderProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProviderUnderProject'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /icons/{digest}:
+    get:
+      summary: Get artifact icon
+      description: Get the artifact icon with the specified digest. As the original icon image is resized and encoded before returning, the parameter "digest" in the path doesn't match the hash of the returned content
+      tags:
+        - icon
+      operationId: getIcon
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/digest'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Icon'
+        '400':
+          $ref: '#/responses/400'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+parameters:
+  query:
+    name: q
+    description: Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max]
+    in: query
+    type: string
+    required: false
+  requestId:
+    name: X-Request-Id
+    description: An unique ID for the request
+    in: header
+    type: string
+    required: false
+    minLength: 1
+  projectName:
+    name: project_name
+    in: path
+    description: The name of the project
+    required: true
+    type: string
+  projectId:
+    name: project_id
+    in: path
+    description: The ID of the project
+    required: true
+    type: integer
+    format: int64
+  repositoryName:
+    name: repository_name
+    in: path
+    description: The name of the repository. If it contains slash, encode it with URL encoding. e.g. a/b -> a%252Fb
+    required: true
+    type: string
+  reference:
+    name: reference
+    in: path
+    description: The reference of the artifact, can be digest or tag
+    required: true
+    type: string
+  digest:
+    name: digest
+    in: path
+    description: The digest of the resource
+    required: true
+    type: string
+  tagName:
+    name: tag_name
+    in: path
+    description: The name of the tag
+    required: true
+    type: string
+  page:
+    name: page
+    in: query
+    type: integer
+    format: int64
+    required: false
+    description: The page number
+    default: 1
+  pageSize:
+    name: page_size
+    in: query
+    type: integer
+    format: int64
+    required: false
+    description: The size of per page
+    default: 10
+    maximum: 100
+  instanceName:
+    name: preheat_instance_name
+    in: path
+    description: Instance Name
+    required: true
+    type: string
+  preheatPolicyName:
+    name: preheat_policy_name
+    in: path
+    description: Preheat Policy Name
+    required: true
+    type: string
+  executionId:
+    name: execution_id
+    in: path
+    description: Execution ID
+    required: true
+    type: integer
+  taskId:
+    name: task_id
+    in: path
+    description: Task ID
+    required: true
+    type: integer
+responses:
+  '200':
+    description: Success
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+  '201':
+    description: Created
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+      Location:
+        description: The location of the resource
+        type: string
+  '202':
+    description: Accepted
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+  '400':
+    description: Bad request
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '401':
+    description: Unauthorized
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '403':
+    description: Forbidden
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '404':
+    description: Not found
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '405':
+    description: Method not allowed
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '409':
+    description: Conflict
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '412':
+    description: Precondition failed
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '500':
+    description: Internal server error
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+definitions:
+  Errors:
+    description: The error array that describe the errors got during the handling of request
+    type: object
+    properties:
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/Error'
+  Error:
+    description: a model for all the error response coming from harbor
+    type: object
+    properties:
+      code:
+        type: string
+        description: The error code
+      message:
+        type: string
+        description: The error message
+  Repository:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the repository
+      project_id:
+        type: integer
+        format: int64
+        description: The ID of the project that the repository belongs to
+      name:
+        type: string
+        description: The name of the repository
+      description:
+        type: string
+        description: The description of the repository
+      artifact_count:
+        type: integer
+        format: int64
+        description: The count of the artifacts inside the repository
+      pull_count:
+        type: integer
+        format: int64
+        description: The count that the artifact inside the repository pulled
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the repository
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the repository
+  Artifact:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the artifact
+      type:
+        type: string
+        description: The type of the artifact, e.g. image, chart, etc
+      media_type:
+        type: string
+        description: The media type of the artifact
+      manifest_media_type:
+        type: string
+        description: The manifest media type of the artifact
+      project_id:
+        type: integer
+        format: int64
+        description: The ID of the project that the artifact belongs to
+      repository_id:
+        type: integer
+        format: int64
+        description: The ID of the repository that the artifact belongs to
+      digest:
+        type: string
+        description: The digest of the artifact
+      size:
+        type: integer
+        format: int64
+        description: The size of the artifact
+      icon:
+        type: string
+        description: The digest of the icon
+      push_time:
+        type: string
+        format: date-time
+        description: The push time of the artifact
+      pull_time:
+        type: string
+        format: date-time
+        description: The latest pull time of the artifact
+      extra_attrs:
+        $ref: '#/definitions/ExtraAttrs'
+      annotations:
+        $ref: '#/definitions/Annotations'
+      references:
+        type: array
+        items:
+          $ref: '#/definitions/Reference'
+      tags:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+      addition_links:
+        $ref: '#/definitions/AdditionLinks'
+      labels:
+        type: array
+        items:
+          $ref: '#/definitions/Label'
+      scan_overview:
+        $ref: '#/definitions/ScanOverview'
+        description: The overview of the scan result.
+  Tag:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the tag
+      repository_id:
+        type: integer
+        format: int64
+        description: The ID of the repository that the tag belongs to
+      artifact_id:
+        type: integer
+        format: int64
+        description: The ID of the artifact that the tag attached to
+      name:
+        type: string
+        description: The name of the tag
+      push_time:
+        type: string
+        format: date-time
+        description: The push time of the tag
+      pull_time:
+        type: string
+        format: date-time
+        description: The latest pull time of the tag
+      immutable:
+        type: boolean
+        x-omitempty: false
+        description: The immutable status of the tag
+      signed:
+        type: boolean
+        x-omitempty: false
+        description: The attribute indicates whether the tag is signed or not
+  ExtraAttrs:
+    type: object
+    additionalProperties:
+      type: object
+  Annotations:
+    type: object
+    additionalProperties:
+      type: string
+  AdditionLinks:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/AdditionLink'
+  AdditionLink:
+    type: object
+    properties:
+      href:
+        type: string
+        description: The link of the addition
+      absolute:
+        type: boolean
+        x-omitempty: false
+        description: Determine whether the link is an absolute URL or not
+  Reference:
+    type: object
+    properties:
+      parent_id:
+        type: integer
+        format: int64
+        description: The parent ID of the reference
+      child_id:
+        type: integer
+        format: int64
+        description: The child ID of the reference
+      child_digest:
+        type: string
+        description: The digest of the child artifact
+      platform:
+        $ref: '#/definitions/Platform'
+      annotations:
+        $ref: '#/definitions/Annotations'
+      urls:
+        type: array
+        description: The download URLs
+        items:
+          type: string
+  Platform:
+    type: object
+    properties:
+      architecture:
+        type: string
+        description: The architecture that the artifact applys to
+      os:
+        type: string
+        description: The OS that the artifact applys to
+      '''os.version''':
+        type: string
+        description: The version of the OS that the artifact applys to
+      '''os.features''':
+        type: array
+        description: The features of the OS that the artifact applys to
+        items:
+          type: string
+      variant:
+        type: string
+        description: The variant of the CPU
+  Label:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the label
+      name:
+        type: string
+        description: The name the label
+      description:
+        type: string
+        description: The description the label
+      color:
+        type: string
+        description: The color the label
+      scope:
+        type: string
+        description: The scope the label
+      project_id:
+        type: integer
+        format: int64
+        description: The ID of project that the label belongs to
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time the label
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the label
+  ScanOverview:
+    type: object
+    description: 'The scan overview attached in the metadata of tag'
+    additionalProperties:
+      $ref: '#/definitions/NativeReportSummary'
+  NativeReportSummary:
+    type: object
+    description: 'The summary for the native report'
+    properties:
+      report_id:
+        type: string
+        description: 'id of the native scan report'
+        example: '5f62c830-f996-11e9-957f-0242c0a89008'
+      scan_status:
+        type: string
+        description: 'The status of the report generating process'
+        example: 'Success'
+      severity:
+        type: string
+        description: 'The overall severity'
+        example: 'High'
+      duration:
+        type: integer
+        format: int64
+        description: 'The seconds spent for generating the report'
+        example: 300
+      summary:
+        $ref: '#/definitions/VulnerabilitySummary'
+      start_time:
+        type: string
+        format: date-time
+        description: 'The start time of the scan process that generating report'
+        example: '2006-01-02T14:04:05'
+      end_time:
+        type: string
+        format: date-time
+        description: 'The end time of the scan process that generating report'
+        example: '2006-01-02T15:04:05'
+      complete_percent:
+        type: integer
+        description: 'The complete percent of the scanning which value is between 0 and 100'
+        example: 100
+  VulnerabilitySummary:
+    type: object
+    description: |
+      VulnerabilitySummary contains the total number of the foun d vulnerabilities number and numbers of each severity level.
+    properties:
+      total:
+        type: integer
+        format: int
+        description: 'The total number of the found vulnerabilities'
+        example: 500
+      fixable:
+        type: integer
+        format: int
+        description: 'The number of the fixable vulnerabilities'
+        example: 100
+      summary:
+        type: object
+        description: 'Numbers of the vulnerabilities with different severity'
+        additionalProperties:
+          type: integer
+          format: int
+          example: 10
+        example:
+          'Critical': 5
+          'High': 5
+  AuditLog:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of the audit log entry.
+      username:
+        type: string
+        description: Username of the user in this log entry.
+      resource:
+        type: string
+        description: Name of the repository in this log entry.
+      resource_type:
+        type: string
+        description: Tag of the repository in this log entry.
+      operation:
+        type: string
+        description: The operation against the repository in this log entry.
+      op_time:
+        type: string
+        format: date-time
+        example: '2006-01-02T15:04:05'
+        description: The time when this operation is triggered.
+  Metadata:
+    type: object
+    properties:
+      id:
+        type: string
+        description: id
+      name:
+        type: string
+        description: name
+      icon:
+        type: string
+        description: icon
+      maintainers:
+        type: array
+        description: maintainers
+        items:
+          type: string
+      version:
+        type: string
+        description: version
+      source:
+        type: string
+        description: source
+  Instance:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique ID
+      name:
+        type: string
+        description: Instance name
+      description:
+        type: string
+        description: Description of instance
+      vendor:
+        type: string
+        description: Based on which driver, identified by ID
+      endpoint:
+        type: string
+        description: The service endpoint of this instance
+      auth_mode:
+        type: string
+        description: The authentication way supported
+      auth_info:
+        type: object
+        description: The auth credential data if exists
+        additionalProperties:
+          type: string
+      status:
+        type: string
+        description: The health status
+      enabled:
+        type: boolean
+        description: Whether the instance is activated or not
+      default:
+        type: boolean
+        description: Whether the instance is default or not
+      insecure:
+        type: boolean
+        description: Whether the instance endpoint is insecure or not
+      setup_timestamp:
+        type: integer
+        format: int64
+        description: The timestamp of instance setting up
+  InstanceUpdateResp:
+    type: object
+    properties:
+      updated:
+        type: integer
+        description: ID of instance updated
+  InstanceDeletedResp:
+    type: object
+    properties:
+      removed:
+        type: integer
+        description: ID of instance removed
+  InstanceCreatedResp:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: ID of instance created
+  PreheatPolicy:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of preheat policy
+      name:
+        type: string
+        description: The Name of preheat policy
+      description:
+        type: string
+        description: The Description of preheat policy
+      project_id:
+        type: integer
+        description: The ID of preheat policy project
+      provider_id:
+        type: integer
+        description: The ID of preheat policy provider
+      provider_name:
+        type: string
+        description: The Name of preheat policy provider
+      filters:
+        type: string
+        description: The Filters of preheat policy
+      trigger:
+        type: string
+        description: The Trigger of preheat policy
+      enabled:
+        type: boolean
+        description: Whether the preheat policy enabled
+      creation_time:
+        type: string
+        format: date-time
+        description: The Create Time of preheat policy
+      update_time:
+        type: string
+        format: date-time
+        description: The Update Time of preheat policy
+  Metrics:
+    type: object
+    properties:
+      task_count:
+        type: integer
+        description: The count of task
+      success_task_count:
+        type: integer
+        description: The count of success task
+      error_task_count:
+        type: integer
+        description: The count of error task
+      pending_task_count:
+        type: integer
+        description: The count of pending task
+      running_task_count:
+        type: integer
+        description: The count of running task
+      scheduled_task_count:
+        type: integer
+        description: The count of scheduled task
+      stopped_task_count:
+        type: integer
+        description: The count of stopped task
+  Execution:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of execution
+      vendor_type:
+        type: string
+        description: The vendor type of execution
+      vendor_id:
+        type: integer
+        description: The vendor id of execution
+      status:
+        type: string
+        description: The status of execution
+      status_message:
+        type: string
+        description: The status message of execution
+      metrics:
+        $ref: '#/definitions/Metrics'
+      trigger:
+        type: string
+        description: The trigger of execution
+      extra_attrs:
+        $ref: '#/definitions/ExtraAttrs'
+      start_time:
+        type: string
+        description: The start time of execution
+      end_time:
+        type: string
+        description: The end time of execution
+  Task:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of task
+      execution_id:
+        type: integer
+        description: The ID of task execution
+      status:
+        type: string
+        description: The status of task
+      status_message:
+        type: string
+        description: The status message of task
+      run_count:
+        type: integer
+        description: The count of task run
+      extra_attrs:
+        $ref: '#/definitions/ExtraAttrs'
+      creation_time:
+        type: string
+        description: The creation time of task
+      update_time:
+        type: string
+        description: The update time of task
+      start_time:
+        type: string
+        description: The start time of task
+      end_time:
+        type: string
+        description: The end time of task
+  ProviderUnderProject:
+    type: object
+    properties:
+      id:
+        type: integer
+      provider:
+        type: string
+      enabled:
+        type: boolean
+      default:
+        type: boolean
+  Icon:
+    type: object
+    properties:
+      content-type:
+        type: string
+        description: The content type of the icon
+      content:
+        type: string
+        description: The base64 encoded content of the icon
+  ProjectReq:
+    type: object
+    properties:
+      project_name:
+        type: string
+        description: The name of the project.
+      public:
+        type: boolean
+        description: deprecated, reserved for project creation in replication
+        x-nullable: true
+      metadata:
+        description: The metadata of the project.
+        $ref: '#/definitions/ProjectMetadata'
+      cve_allowlist:
+        description: The CVE allowlist of the project.
+        $ref: '#/definitions/CVEAllowlist'
+      storage_limit:
+        type: integer
+        format: int64
+        description: The storage quota of the project.
+        x-nullable: true
+      registry_id:
+        type: integer
+        format: int64
+        description: The ID of referenced registry when creating the proxy cache project
+        x-nullable: true
+  Project:
+    type: object
+    properties:
+      project_id:
+        type: integer
+        format: int32
+        description: Project ID
+      owner_id:
+        type: integer
+        format: int32
+        description: The owner ID of the project always means the creator of the project.
+      name:
+        type: string
+        description: The name of the project.
+      registry_id:
+        type: integer
+        format: int64
+        description: The ID of referenced registry when the project is a proxy cache project.
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the project.
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the project.
+      deleted:
+        type: boolean
+        description: A deletion mark of the project.
+      owner_name:
+        type: string
+        description: The owner name of the project.
+      togglable:
+        type: boolean
+        description: Correspond to the UI about whether the project's publicity is  updatable (for UI)
+      current_user_role_id:
+        type: integer
+        description: The role ID with highest permission of the current user who triggered the API (for UI).  This attribute is deprecated and will be removed in future versions.
+      current_user_role_ids:
+        type: array
+        items:
+          type: integer
+          format: int32
+        description: The list of role ID of the current user who triggered the API (for UI)
+      repo_count:
+        type: integer
+        description: The number of the repositories under this project.
+      chart_count:
+        type: integer
+        description: The total number of charts under this project.
+      metadata:
+        description: The metadata of the project.
+        $ref: '#/definitions/ProjectMetadata'
+      cve_allowlist:
+        description: The CVE allowlist of this project.
+        $ref: '#/definitions/CVEAllowlist'
+  ProjectDeletable:
+    type: object
+    properties:
+      deletable:
+        type: boolean
+        description: Whether the project can be deleted.
+      message:
+        type: string
+        description: The detail message when the project can not be deleted.
+  ProjectMetadata:
+    type: object
+    properties:
+      public:
+        type: string
+        description: 'The public status of the project. The valid values are "true", "false".'
+      enable_content_trust:
+        type: string
+        description: 'Whether content trust is enabled or not. If it is enabled, user can''t pull unsigned images from this project. The valid values are "true", "false".'
+        x-nullable: true
+      prevent_vul:
+        type: string
+        description: 'Whether prevent the vulnerable images from running. The valid values are "true", "false".'
+        x-nullable: true
+      severity:
+        type: string
+        description: 'If the vulnerability is high than severity defined here, the images can''t be pulled. The valid values are "none", "low", "medium", "high", "critical".'
+        x-nullable: true
+      auto_scan:
+        type: string
+        description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'
+        x-nullable: true
+      reuse_sys_cve_allowlist:
+        type: string
+        description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".
+        If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.'
+        x-nullable: true
+      retention_id:
+        type: string
+        description: 'The ID of the tag retention policy for the project'
+        x-nullable: true
+  ProjectSummary:
+    type: object
+    properties:
+      repo_count:
+        type: integer
+        description: The number of the repositories under this project.
+      chart_count:
+        type: integer
+        description: The total number of charts under this project.
+      project_admin_count:
+        type: integer
+        description: The total number of project admin members.
+      maintainer_count:
+        type: integer
+        description: The total number of maintainer members.
+      developer_count:
+        type: integer
+        description: The total number of developer members.
+      guest_count:
+        type: integer
+        description: The total number of guest members.
+      limited_guest_count:
+        type: integer
+        description: The total number of limited guest members.
+      quota:
+        type: object
+        properties:
+          hard:
+            $ref: "#/definitions/ResourceList"
+            description: The hard limits of the quota
+          used:
+            $ref: "#/definitions/ResourceList"
+            description: The used status of the quota
+      registry:
+          $ref: "#/definitions/Registry"
+  CVEAllowlist:
+    type: object
+    description: The CVE Allowlist for system or project
+    properties:
+      id:
+        type: integer
+        description: ID of the allowlist
+      project_id:
+        type: integer
+        description: ID of the project which the allowlist belongs to.  For system level allowlist this attribute is zero.
+      expires_at:
+        type: integer
+        description: the time for expiration of the allowlist, in the form of seconds since epoch.  This is an optional attribute, if it's not set the CVE allowlist does not expire.
+        x-nullable: true
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/CVEAllowlistItem"
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the allowlist.
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the allowlist.
+  CVEAllowlistItem:
+    type: object
+    description: The item in CVE allowlist
+    properties:
+      cve_id:
+        type: string
+        description: The ID of the CVE, such as "CVE-2019-10164"
+  RegistryCredential:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Credential type, such as 'basic', 'oauth'.
+      access_key:
+        type: string
+        description: Access key, e.g. user name when credential type is 'basic'.
+      access_secret:
+        type: string
+        description: Access secret, e.g. password when credential type is 'basic'.
+  Registry:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The registry ID.
+      url:
+        type: string
+        description: The registry URL string.
+      name:
+        type: string
+        description: The registry name.
+      credential:
+        $ref: '#/definitions/RegistryCredential'
+      type:
+        type: string
+        description: Type of the registry, e.g. 'harbor'.
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
+      description:
+        type: string
+        description: Description of the registry.
+      status:
+        type: string
+        description: Health status of the registry.
+      creation_time:
+        type: string
+        description: The create time of the policy.
+      update_time:
+        type: string
+        description: The update time of the policy.
+  ResourceList:
+    type: object
+    additionalProperties:
+      type: integer
+      format: int64

@@ -1,13 +1,13 @@
 package inmemory
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"sync"
 	"time"
 
-	"github.com/docker/distribution/context"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/distribution/registry/storage/driver/base"
 	"github.com/docker/distribution/registry/storage/driver/factory"
@@ -73,7 +73,7 @@ func (d *driver) GetContent(ctx context.Context, path string) ([]byte, error) {
 	d.mutex.RLock()
 	defer d.mutex.RUnlock()
 
-	rc, err := d.Reader(ctx, path, 0)
+	rc, err := d.reader(ctx, path, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +108,10 @@ func (d *driver) Reader(ctx context.Context, path string, offset int64) (io.Read
 	d.mutex.RLock()
 	defer d.mutex.RUnlock()
 
+	return d.reader(ctx, path, offset)
+}
+
+func (d *driver) reader(ctx context.Context, path string, offset int64) (io.ReadCloser, error) {
 	if offset < 0 {
 		return nil, storagedriver.InvalidOffsetError{Path: path, Offset: offset}
 	}
@@ -238,6 +242,12 @@ func (d *driver) Delete(ctx context.Context, path string) error {
 // May return an UnsupportedMethodErr in certain StorageDriver implementations.
 func (d *driver) URLFor(ctx context.Context, path string, options map[string]interface{}) (string, error) {
 	return "", storagedriver.ErrUnsupportedMethod{}
+}
+
+// Walk traverses a filesystem defined within driver, starting
+// from the given path, calling f on each file
+func (d *driver) Walk(ctx context.Context, path string, f storagedriver.WalkFn) error {
+	return storagedriver.WalkFallback(ctx, d, path, f)
 }
 
 type writer struct {

@@ -24,14 +24,35 @@ Nightly Test Setup
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${ip1}==${EMPTY}
     Run Keyword If  '${ip1}' != '${EMPTY}'  CA setup  ${ip1}  ${HARBOR_PASSWORD}  /ca/ca1.crt
     Run Keyword If  '${ip1}' != '${EMPTY}'  Run  rm -rf ./harbor_ca.crt
+    Log To Console  CA setup ...
     Run Keyword  CA setup  ${ip}  ${HARBOR_PASSWORD}
+    Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
+    Log To Console  wget mariadb ...
+    Run  wget ${prometheus_chart_file_url}
 
 CA Setup
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt
-    Run  mv ${cert} harbor_ca.crt
+    Log To Console  cp /ca/harbor_ca.crt harbor_ca.crt ...
+    Run  cp /ca/harbor_ca.crt harbor_ca.crt
+    Log To Console  Generate Certificate Authority For Chrome ...
     Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}
-    Prepare Docker Cert  ${ip}	
+    Log To Console  Prepare Docker Cert ...
+    Prepare Docker Cert  ${ip}
+
+Nightly Test Setup For Nightly
+    [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${ip1}==${EMPTY}
+    Run Keyword If  '${ip1}' != '${EMPTY}'  CA setup For Nightly  ${ip1}  ${HARBOR_PASSWORD}  /ca/ca1.crt
+    Run Keyword If  '${ip1}' != '${EMPTY}'  Run  rm -rf ./harbor_ca.crt
+    Run Keyword  CA setup For Nightly  ${ip}  ${HARBOR_PASSWORD}
+    Run Keyword  Start Docker Daemon Locally
+
+CA Setup For Nightly
+    [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt
+    Run  cp ${cert} harbor_ca.crt
+    Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}
+    Prepare Docker Cert  ${ip}
+    Prepare Helm Cert
 
 Collect Nightly Logs
     [Arguments]  ${ip}  ${SSH_PWD}  ${ip1}==${EMPTY}
@@ -45,11 +66,13 @@ Collect Logs
     SSHLibrary.Get File  /var/log/harbor/ui.log
     SSHLibrary.Get File  /var/log/harbor/registry.log
     SSHLibrary.Get File  /var/log/harbor/proxy.log
-    SSHLibrary.Get File  /var/log/harbor/adminserver.log  
-    SSHLibrary.Get File  /var/log/harbor/clair.log  
-    SSHLibrary.Get File  /var/log/harbor/jobservice.log  
+    SSHLibrary.Get File  /var/log/harbor/adminserver.log
+    SSHLibrary.Get File  /var/log/harbor/clair.log
+    SSHLibrary.Get File  /var/log/harbor/jobservice.log
     SSHLibrary.Get File  /var/log/harbor/postgresql.log
     SSHLibrary.Get File  /var/log/harbor/notary-server.log
     SSHLibrary.Get File  /var/log/harbor/notary-signer.log
+    SSHLibrary.Get File  /var/log/harbor/chartmuseum.log
+    SSHLibrary.Get File  /var/log/harbor/registryctl.log
     Run  rename 's/^/${ip}/' *.log
     Close All Connections

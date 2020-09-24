@@ -15,9 +15,8 @@ import {filter} from 'rxjs/operators';
 // limitations under the License.
 import { Component, Input, Output, OnDestroy, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { State } from '@clr/angular';
-import { Repository } from '@harbor/ui';
-
+import { State } from '../../../lib/services/interface';
+import { Repository } from '../../../../ng-swagger-gen/models/repository';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 import {Subscription} from "rxjs";
@@ -69,8 +68,9 @@ export class ListRepositoryROComponent implements OnInit, OnDestroy {
 
   public gotoLink(projectId: number, repoName: string): void {
     this.searchTrigger.closeSearch(true);
-
-    let linkUrl = ['harbor', 'tags', projectId, repoName];
+    let projectName = repoName.split('/')[0];
+    let repositorieName = projectName ? repoName.substr(projectName.length + 1) : repoName;
+    let linkUrl = ['harbor', 'projects', projectId, 'repositories', repositorieName ];
     this.router.navigate(linkUrl);
   }
 

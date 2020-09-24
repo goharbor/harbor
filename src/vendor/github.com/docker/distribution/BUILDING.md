@@ -71,9 +71,7 @@ commands, such as `go test`, should work per package (please see
 A `Makefile` has been provided as a convenience to support repeatable builds.
 Please install the following into `GOPATH` for it to work:
 
-    go get github.com/tools/godep github.com/golang/lint/golint
-
-**TODO(stevvooe):** Add a `make setup` command to Makefile to run this. Have to think about how to interact with Godeps properly.
+    go get github.com/golang/lint/golint
 
 Once these commands are available in the `GOPATH`, run `make` to get a full
 build:
@@ -85,7 +83,7 @@ build:
     + lint
     + build
     github.com/docker/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar
-    github.com/Sirupsen/logrus
+    github.com/sirupsen/logrus
     github.com/docker/libtrust
     ...
     github.com/yvasiyarov/gorelic
@@ -105,12 +103,12 @@ build:
     + /Users/sday/go/src/github.com/docker/distribution/bin/registry-api-descriptor-template
     + binaries
 
-The above provides a repeatable build using the contents of the vendored
-Godeps directory. This includes formatting, vetting, linting, building,
+The above provides a repeatable build using the contents of the vendor
+directory. This includes formatting, vetting, linting, building,
 testing and generating tagged binaries. We can verify this worked by running
 the registry binary generated in the "./bin" directory:
 
-    $ ./bin/registry -version
+    $ ./bin/registry --version
     ./bin/registry github.com/docker/distribution v2.0.0-alpha.2-80-g16d8b2c.m
 
 ### Optional build tags

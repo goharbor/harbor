@@ -15,11 +15,10 @@ import { Component, Input, OnInit, OnDestroy, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from "rxjs";
 import { TranslateService } from '@ngx-translate/core';
-
 import { Message } from './message';
 import { MessageService } from './message.service';
+import { CommonRoutes, dismissInterval, httpStatusCode } from "../../lib/entities/shared.const";
 
-import { dismissInterval, httpStatusCode, CommonRoutes } from '../shared/shared.const';
 
 @Component({
   selector: 'global-message',
@@ -127,7 +126,7 @@ export class MessageComponent implements OnInit, OnDestroy {
   }
 
   signIn(): void {
-    this.router.navigateByUrl(CommonRoutes.EMBEDDED_SIGN_IN);
+    this.router.navigate([ CommonRoutes.EMBEDDED_SIGN_IN ], {queryParams: {redirect_url: this.router.url}});
   }
 
   onClose() {

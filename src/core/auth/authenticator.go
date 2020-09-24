@@ -22,8 +22,8 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // 1.5 seconds
@@ -123,7 +123,7 @@ func Register(name string, h AuthenticateHelper) {
 		return
 	}
 	registry[name] = h
-	log.Debugf("Registered authencation helper for auth mode: %s", name)
+	log.Debugf("Registered authentication helper for auth mode: %s", name)
 }
 
 // Login authenticates user credentials based on setting.
@@ -212,17 +212,15 @@ func SearchGroup(groupKey string) (*models.UserGroup, error) {
 // SearchAndOnBoardUser ... Search user and OnBoard user, if user exist, return the ID of current user.
 func SearchAndOnBoardUser(username string) (int, error) {
 	user, err := SearchUser(username)
-	if user == nil {
-		return 0, ErrorUserNotExist
-	}
 	if err != nil {
 		return 0, err
 	}
-	if user != nil {
-		err = OnBoardUser(user)
-		if err != nil {
-			return 0, err
-		}
+	if user == nil {
+		return 0, ErrorUserNotExist
+	}
+	err = OnBoardUser(user)
+	if err != nil {
+		return 0, err
 	}
 	return user.UserID, nil
 }
@@ -230,11 +228,11 @@ func SearchAndOnBoardUser(username string) (int, error) {
 // SearchAndOnBoardGroup ... if altGroupName is not empty, take the altGroupName as groupName in harbor DB
 func SearchAndOnBoardGroup(groupKey, altGroupName string) (int, error) {
 	userGroup, err := SearchGroup(groupKey)
-	if userGroup == nil {
-		return 0, ErrorGroupNotExist
-	}
 	if err != nil {
 		return 0, err
+	}
+	if userGroup == nil {
+		return 0, ErrorGroupNotExist
 	}
 	if userGroup != nil {
 		err = OnBoardGroup(userGroup, altGroupName)

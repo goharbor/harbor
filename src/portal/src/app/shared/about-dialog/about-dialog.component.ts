@@ -11,11 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {Component, OnInit} from '@angular/core';
-import {TranslateService} from "@ngx-translate/core";
+import { Component, OnInit } from '@angular/core';
+import { TranslateService } from "@ngx-translate/core";
 
-import { AppConfigService } from '../../app-config.service';
-import {SkinableConfig} from "../../skinable-config.service";
+import { AppConfigService } from '../../services/app-config.service';
+import { SkinableConfig } from "../../services/skinable-config.service";
 
 @Component({
     selector: 'about-dialog',
@@ -26,11 +26,11 @@ export class AboutDialogComponent implements OnInit {
     opened: boolean = false;
     build: string = "4276418";
     customIntroduction: string;
-    customName: {[key: string]: any };
+    customName: { [key: string]: any };
 
     constructor(private appConfigService: AppConfigService,
-                private translate: TranslateService,
-                private skinableConfig: SkinableConfig) {
+        private translate: TranslateService,
+        private skinableConfig: SkinableConfig) {
     }
 
     ngOnInit(): void {
@@ -47,7 +47,7 @@ export class AboutDialogComponent implements OnInit {
 
     public get version(): string {
         let appConfig = this.appConfigService.getConfig();
-        return appConfig ? appConfig.harbor_version : "n/a";
+        return appConfig.harbor_version;
     }
 
     public open(): void {

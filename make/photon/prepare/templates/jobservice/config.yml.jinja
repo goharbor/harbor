@@ -1,0 +1,46 @@
+---
+#Protocol used to serve
+{% if internal_tls.enabled %}
+protocol: "https"
+
+https_config:
+  cert: "/etc/harbor/ssl/job_service.crt"
+  key: "/etc/harbor/ssl/job_service.key"
+
+#Server listening port
+port: 8443
+{% else %}
+protocol: "http"
+
+#Server listening port
+port: 8080
+{% endif %}
+
+#Worker pool
+worker_pool:
+  #Worker concurrency
+  workers: {{max_job_workers}}
+  backend: "redis"
+  #Additional config if use 'redis' backend
+  redis_pool:
+    #redis://[arbitrary_username:password@]ipaddress:port/database_index
+    redis_url: {{redis_url}}
+    namespace: "harbor_job_service_namespace"
+    idle_timeout_second: 3600
+#Loggers for the running job
+job_loggers:
+  - name: "STD_OUTPUT" # logger backend name, only support "FILE" and "STD_OUTPUT"
+    level: "{{level}}" # INFO/DEBUG/WARNING/ERROR/FATAL
+  - name: "FILE"
+    level: "{{level}}"
+    settings: # Customized settings of logger
+      base_dir: "/var/log/jobs"
+    sweeper:
+      duration: 1 #days
+      settings: # Customized settings of sweeper
+        work_dir: "/var/log/jobs"
+
+#Loggers for the job service
+loggers:
+  - name: "STD_OUTPUT" # Same with above
+    level: "{{level}}"

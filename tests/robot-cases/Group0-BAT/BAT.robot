@@ -26,13 +26,13 @@ ${HARBOR_URL}  https://${ip}
 Test Case - Registry Basic Verfication
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-				
+
     Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
     Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
-    Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest   
+    Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Go Into Project  project${d}
     Delete Repo  project${d}
-	
+
     Close Browser
 
 Test Case - Clair Basic Verfication
@@ -52,7 +52,7 @@ Test Case - Notary Basic Verfication
 
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
     Log  ${output}
-		
+
     Push image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  library  hello-world:latest
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${notaryServerEndpoint}
     Log  ${output}

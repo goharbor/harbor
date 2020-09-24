@@ -1,7 +1,8 @@
 package storage
 
 import (
-	"github.com/docker/distribution/context"
+	"context"
+
 	"github.com/docker/distribution/registry/storage/driver"
 )
 

@@ -1,9 +1,11 @@
 package storage
 
 import (
+	"context"
 	"expvar"
 	"sync/atomic"
 
+	dcontext "github.com/docker/distribution/context"
 	"github.com/docker/distribution/registry/storage/cache"
 )
 
@@ -23,6 +25,10 @@ func (bsc *blobStatCollector) Miss() {
 
 func (bsc *blobStatCollector) Metrics() cache.Metrics {
 	return bsc.metrics
+}
+
+func (bsc *blobStatCollector) Logger(ctx context.Context) cache.Logger {
+	return dcontext.GetLogger(ctx)
 }
 
 // blobStatterCacheMetrics keeps track of cache metrics for blob descriptor

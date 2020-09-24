@@ -17,12 +17,12 @@ package api
 import (
 	"net/http"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // Health ...
 func Health(w http.ResponseWriter, r *http.Request) {
-	if err := writeJSON(w, "healthy"); err != nil {
+	if err := WriteJSON(w, "healthy"); err != nil {
 		log.Errorf("Failed to write response: %v", err)
 		return
 	}

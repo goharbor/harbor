@@ -1,15 +1,21 @@
-FROM photon:2.0
+ARG harbor_base_image_version
+ARG harbor_base_namespace
+FROM ${harbor_base_namespace}/harbor-core-base:${harbor_base_image_version}
 
-RUN tdnf install sudo -y >> /dev/null\
-    && tdnf clean all \
-    && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor \
-    && mkdir /harbor/
-
-HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/ping || exit 1
-COPY ./make/photon/core/harbor_core ./make/photon/core/start.sh ./UIVERSION /harbor/
+HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/v2.0/ping || curl -k --fail -s https://127.0.0.1:8443/api/v2.0/ping || exit 1
+COPY ./make/photon/common/install_cert.sh /harbor/
+COPY ./make/photon/core/entrypoint.sh /harbor/
+COPY ./make/photon/core/harbor_core /harbor/
 COPY ./src/core/views /harbor/views
+COPY ./make/migrations /harbor/migrations
+COPY ./icons /harbor/icons
 
-RUN chmod u+x /harbor/start.sh /harbor/harbor_core
+RUN chown -R harbor:harbor /etc/pki/tls/certs \
+    && chown harbor:harbor /harbor/entrypoint.sh && chmod u+x /harbor/entrypoint.sh \
+    && chown harbor:harbor /harbor/install_cert.sh && chmod u+x /harbor/install_cert.sh \
+    && chown harbor:harbor /harbor/harbor_core && chmod u+x /harbor/harbor_core
+
 WORKDIR /harbor/
-	
-ENTRYPOINT ["/harbor/start.sh"]
+USER harbor
+ENTRYPOINT ["/harbor/entrypoint.sh"]
+COPY make/photon/prepare/versions /harbor/

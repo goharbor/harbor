@@ -17,13 +17,12 @@ Documentation  This resource provides any keywords related to the Harbor private
 Resource  ../../resources/Util.robot
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 
 Ldap User Should Not See Change Password
-    Click Element  //clr-header//clr-dropdown[2]//button
-    Sleep  1
+    Retry Element Click  //clr-header//clr-dropdown[2]//button
+    Sleep  2
     Page Should Not Contain  Password
 
 

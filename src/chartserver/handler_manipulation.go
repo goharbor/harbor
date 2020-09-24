@@ -2,12 +2,20 @@ package chartserver
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"strings"
 
 	"github.com/ghodss/yaml"
-	helm_repo "k8s.io/helm/pkg/repo"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/replication"
+	rep_event "github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
 )
 
 // ListCharts gets the chart list under the namespace
@@ -61,9 +69,51 @@ func (c *Controller) DeleteChartVersion(namespace, chartName, version string) er
 		return errors.New("invalid chart for deleting")
 	}
 
-	url := fmt.Sprintf("%s/%s/%s", c.APIPrefix(namespace), chartName, version)
+	url := fmt.Sprintf("/api/chartrepo/%s/charts/%s/%s", namespace, chartName, version)
+	req, _ := http.NewRequest(http.MethodDelete, url, nil)
+	w := httptest.NewRecorder()
 
-	return c.apiClient.DeleteContent(url)
+	c.trafficProxy.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		text, err := extractError(w.Body.Bytes())
+		if err != nil {
+			return err
+		}
+		return &commonhttp.Error{
+			Code:    w.Code,
+			Message: text,
+		}
+	}
+
+	// send notification to replication handler
+	// Todo: it used as the replacement of webhook, will be removed when webhook to be introduced.
+	if os.Getenv("UTTEST") != "true" {
+		go func() {
+			e := &rep_event.Event{
+				Type: rep_event.EventTypeChartDelete,
+				Resource: &model.Resource{
+					Type:    model.ResourceTypeChart,
+					Deleted: true,
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{
+							Name: fmt.Sprintf("%s/%s", namespace, chartName),
+						},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{version},
+							},
+						},
+					},
+				},
+			}
+			if err := replication.EventHandler.Handle(e); err != nil {
+				log.Errorf("failed to handle event: %v", err)
+			}
+		}()
+	}
+
+	return nil
 }
 
 // GetChartVersion returns the summary of the specified chart version.

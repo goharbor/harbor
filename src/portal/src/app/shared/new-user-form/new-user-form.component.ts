@@ -38,7 +38,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
     @Input() isSelfRegistration = false;
     // Notify the form value changes
     @Output() valueChange = new EventEmitter<boolean>();
-    @ViewChild("newUserFrom") newUserForm: NgForm;
+    @ViewChild("newUserFrom", {static: true}) newUserForm: NgForm;
     newUser: User = new User();
     newUserFormRef: NgForm;
     confirmedPwd: string;
@@ -119,7 +119,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
 
                         this.checkOnGoing[key] = true;
                         this.session.checkUserExisting("username", this.newUser.username)
-                            .then((res: boolean) => {
+                            .subscribe((res: boolean) => {
                                 this.checkOnGoing[key] = false;
                                 this.validationStateMap[key] = !res;
                                 if (res) {
@@ -129,8 +129,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
                                     result: res
                                 }; // Tag it checked
                                 this.forceRefreshView(2000);
-                            })
-                            .catch(error => {
+                            }, error => {
                                 this.checkOnGoing[key] = false;
                                 this.validationStateMap[key] = false; // Not valid @ backend
                                 this.forceRefreshView(2000);
@@ -152,7 +151,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
                         // Mail changed
                         this.checkOnGoing[key] = true;
                         this.session.checkUserExisting("email", this.newUser.email)
-                            .then((res: boolean) => {
+                            .subscribe((res: boolean) => {
                                 this.checkOnGoing[key] = false;
                                 this.validationStateMap[key] = !res;
                                 if (res) {
@@ -162,8 +161,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
                                     result: res
                                 }; // Tag it checked
                                 this.forceRefreshView(2000);
-                            })
-                            .catch(error => {
+                            }, error => {
                                 this.checkOnGoing[key] = false;
                                 this.validationStateMap[key] = false; // Not valid @ backend
                                 this.forceRefreshView(2000);

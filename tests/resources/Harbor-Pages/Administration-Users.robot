@@ -17,33 +17,44 @@ Documentation  This resource provides any keywords related to the Harbor private
 Resource  ../../resources/Util.robot
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Assign User Admin
     [Arguments]  ${user}
-    Click Element  xpath=//harbor-user//hbr-filter//clr-icon
+    Retry Element Click  xpath=//harbor-user//hbr-filter//clr-icon
     Input Text  xpath=//harbor-user//hbr-filter//input  ${user}
     Sleep  2
     #select checkbox
-    Click Element  //clr-dg-row[contains(.,"${user}")]//label
+    Retry Element Click  //clr-dg-row[contains(.,'${user}')]//label
     #click assign admin
-    Click Element  //*[@id="set-admin"]
+    Retry Element Click  //*[@id='set-admin']
     Sleep  1
 
 Switch to User Tag
-    Click Element  xpath=${administration_user_tag_xpath}
+    Retry Element Click  xpath=${administration_user_tag_xpath}
     Sleep  1
 
 Administration Tag Should Display
-    Page Should Contain Element  xpath=${administration_tag_xpath}
+    Retry Wait Until Page Contains Element  xpath=${administration_tag_xpath}
 
 User Email Should Exist
     [Arguments]  ${email}
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Switch to User Tag
-    Page Should Contain Element  xpath=//clr-dg-cell[contains(., '${email}')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(., '${email}')]
 
 Add User Button Should Be Disabled
     Sleep  1
-    Page Should Contain Element  //button[contains(.,'New') and @disabled='']
+    Retry Wait Until Page Contains Element  //button[contains(.,'New') and @disabled='']
+
+Add A New User
+    [Arguments]   ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
+    Retry Element Click  xpath=${add_new_user_button}
+    Retry Text Input  xpath=${username_xpath}  ${username}
+    Retry Text Input  xpath=${email_xpath}  ${email}
+    Retry Text Input  xpath=${realname_xpath}  ${realname}
+    Retry Text Input  xpath=${newPassword_xpath}  ${newPassword}
+    Retry Text Input  xpath=${confirmPassword_xpath}  ${newPassword}
+    Retry Text Input  xpath=${comment_xpath}  ${comment}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${save_new_user_button}  Retry Wait Until Page Not Contains Element  xpath=${save_new_user_button}
+    Retry Wait Until Page Contains Element  xpath=//harbor-user//clr-dg-row//clr-dg-cell[contains(., '${username}')]

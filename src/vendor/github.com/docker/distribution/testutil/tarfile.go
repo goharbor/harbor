@@ -10,7 +10,7 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
+	"github.com/opencontainers/go-digest"
 )
 
 // CreateRandomTarFile creates a random tarfile, returning it as an
@@ -88,8 +88,7 @@ func CreateRandomLayers(n int) (map[digest.Digest]io.ReadSeeker, error) {
 			return nil, fmt.Errorf("unexpected error generating test layer file: %v", err)
 		}
 
-		dgst := digest.Digest(ds)
-		digestMap[dgst] = rs
+		digestMap[ds] = rs
 	}
 	return digestMap, nil
 }

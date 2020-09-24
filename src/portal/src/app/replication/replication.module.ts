@@ -13,12 +13,10 @@
 // limitations under the License.
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-
 import { ReplicationManagementComponent } from './replication-management/replication-management.component';
 import { ReplicationPageComponent } from './replication-page.component';
 import { TotalReplicationPageComponent } from './total-replication/total-replication-page.component';
 import { DestinationPageComponent } from './destination/destination-page.component';
-
 import { SharedModule } from '../shared/shared.module';
 import {ReactiveFormsModule} from "@angular/forms";
 

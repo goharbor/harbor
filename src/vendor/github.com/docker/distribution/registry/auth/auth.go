@@ -21,7 +21,7 @@
 // 			if ctx, err := accessController.Authorized(ctx, access); err != nil {
 //				if challenge, ok := err.(auth.Challenge) {
 //					// Let the challenge write the response.
-//					challenge.SetHeaders(w)
+//					challenge.SetHeaders(r, w)
 //					w.WriteHeader(http.StatusUnauthorized)
 //					return
 //				} else {
@@ -33,11 +33,10 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
-
-	"github.com/docker/distribution/context"
 )
 
 const (
@@ -88,7 +87,7 @@ type Challenge interface {
 	// adding the an HTTP challenge header on the response message. Callers
 	// are expected to set the appropriate HTTP status code (e.g. 401)
 	// themselves.
-	SetHeaders(w http.ResponseWriter)
+	SetHeaders(r *http.Request, w http.ResponseWriter)
 }
 
 // AccessController controls access to registry resources based on a request

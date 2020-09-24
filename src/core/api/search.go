@@ -16,23 +16,28 @@ package api
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
+
+	"helm.sh/helm/v3/cmd/helm/search"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	pro "github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	coreutils "github.com/goharbor/harbor/src/core/utils"
-	"k8s.io/helm/cmd/helm/search"
+	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 )
 
 type chartSearchHandler func(string, []string) ([]*search.Result, error)
 
 var searchHandler chartSearchHandler
 
-// SearchAPI handles requesst to /api/search
+// SearchAPI handles request to /api/search
 type SearchAPI struct {
 	BaseController
 }
@@ -40,13 +45,12 @@ type SearchAPI struct {
 type searchResult struct {
 	Project    []*models.Project        `json:"project"`
 	Repository []map[string]interface{} `json:"repository"`
-	Chart      []*search.Result
+	Chart      *[]*search.Result        `json:"chart,omitempty"`
 }
 
 // Get ...
 func (s *SearchAPI) Get() {
 	keyword := s.GetString("q")
-	isAuthenticated := s.SecurityCtx.IsAuthenticated()
 	isSysAdmin := s.SecurityCtx.IsSysAdmin()
 
 	var projects []*models.Project
@@ -65,11 +69,11 @@ func (s *SearchAPI) Get() {
 			s.ParseAndHandleError("failed to get projects", err)
 			return
 		}
-		if isAuthenticated {
-			mys, err := s.SecurityCtx.GetMyProjects()
+		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok {
+			mys, err := s.ProjectMgr.GetAuthorized(sc.User())
 			if err != nil {
-				s.HandleInternalServerError(fmt.Sprintf(
-					"failed to get projects: %v", err))
+				s.SendInternalServerError(fmt.Errorf(
+					"failed to get authorized projects: %v", err))
 				return
 			}
 			exist := map[int64]bool{}
@@ -94,15 +98,13 @@ func (s *SearchAPI) Get() {
 			continue
 		}
 
-		if isAuthenticated {
-			roles := s.SecurityCtx.GetProjectRoles(p.ProjectID)
-			if len(roles) != 0 {
-				p.Role = roles[0]
+		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok {
+			roles, err := pro.ListRoles(sc.User(), p.ProjectID)
+			if err != nil {
+				s.SendInternalServerError(fmt.Errorf("failed to list roles: %v", err))
+				return
 			}
-
-			if p.Role == common.RoleProjectAdmin || isSysAdmin {
-				p.Togglable = true
-			}
+			p.Role = highestRole(roles)
 		}
 
 		total, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
@@ -110,7 +112,8 @@ func (s *SearchAPI) Get() {
 		})
 		if err != nil {
 			log.Errorf("failed to get total of repositories of project %d: %v", p.ProjectID, err)
-			s.CustomAbort(http.StatusInternalServerError, "")
+			s.SendInternalServerError(fmt.Errorf("failed to get total of repositories of project %d: %v", p.ProjectID, err))
+			return
 		}
 
 		p.RepoCount = total
@@ -121,24 +124,32 @@ func (s *SearchAPI) Get() {
 	repositoryResult, err := filterRepositories(projects, keyword)
 	if err != nil {
 		log.Errorf("failed to filter repositories: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, "")
-	}
-
-	if searchHandler == nil {
-		searchHandler = chartController.SearchChart
-	}
-
-	chartResults, err := searchHandler(keyword, proNames)
-	if err != nil {
-		log.Errorf("failed to filter charts: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, err.Error())
+		s.SendInternalServerError(fmt.Errorf("failed to filter repositories: %v", err))
+		return
 	}
 
 	result := &searchResult{
 		Project:    projectResult,
 		Repository: repositoryResult,
-		Chart:      chartResults,
 	}
+
+	// If enable chart repository
+	if config.WithChartMuseum() {
+		if searchHandler == nil {
+			searchHandler = chartController.SearchChart
+		}
+
+		chartResults, err := searchHandler(keyword, proNames)
+		if err != nil {
+			log.Errorf("failed to filter charts: %v", err)
+			s.SendInternalServerError(err)
+			return
+
+		}
+		result.Chart = &chartResults
+
+	}
+
 	s.Data["json"] = result
 	s.ServeJSON()
 }
@@ -165,6 +176,7 @@ func filterRepositories(projects []*models.Project, keyword string) (
 		projectMap[project.Name] = project
 	}
 
+	ctx := orm.NewContext(nil, dao.GetOrmer())
 	for _, repository := range repositories {
 		projectName, _ := utils.ParseRepository(repository.Name)
 		project, exist := projectMap[projectName]
@@ -178,27 +190,43 @@ func filterRepositories(projects []*models.Project, keyword string) (
 		entry["project_public"] = project.IsPublic()
 		entry["pull_count"] = repository.PullCount
 
-		tags, err := getTags(repository.Name)
+		count, err := artifact.Ctl.Count(ctx, &q.Query{
+			Keywords: map[string]interface{}{
+				"RepositoryID": repository.RepositoryID,
+			},
+		})
 		if err != nil {
-			return nil, err
+			log.Errorf("failed to get the count of artifacts under the repository %s: %v",
+				repository.Name, err)
+		} else {
+			entry["artifact_count"] = count
 		}
-		entry["tags_count"] = len(tags)
 
 		result = append(result, entry)
 	}
 	return result, nil
 }
 
-func getTags(repository string) ([]string, error) {
-	client, err := coreutils.NewRepositoryClientForUI("harbor-core", repository)
-	if err != nil {
-		return nil, err
+// Returns the highest role in the role list.
+// This func should be removed once we deprecate the "current_user_role_id" in project API
+// A user can have multiple roles and they may not have a strict ranking relationship
+func highestRole(roles []int) int {
+	if roles == nil {
+		return 0
 	}
-
-	tags, err := client.ListTag()
-	if err != nil {
-		return nil, err
+	rolePower := map[int]int{
+		common.RoleProjectAdmin: 50,
+		common.RoleMaintainer:   40,
+		common.RoleDeveloper:    30,
+		common.RoleGuest:        20,
+		common.RoleLimitedGuest: 10,
 	}
-
-	return tags, nil
+	var highest, highestPower int
+	for _, role := range roles {
+		if p, ok := rolePower[role]; ok && p > highestPower {
+			highest = role
+			highestPower = p
+		}
+	}
+	return highest
 }

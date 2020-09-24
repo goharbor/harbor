@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
-
-
+import { HttpClient } from '@angular/common/http';
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 import { SearchResults } from './search-results';
-import { HTTP_GET_OPTIONS } from "../../shared/shared.utils";
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from "../../../lib/utils/utils";
 
-const searchEndpoint = "/api/search";
+const searchEndpoint = CURRENT_BASE_HREF + "/search";
 /**
  * Declare service to handle the global search
  *
@@ -29,21 +29,21 @@ const searchEndpoint = "/api/search";
 @Injectable()
 export class GlobalSearchService {
 
-    constructor(private http: Http) { }
+    constructor(private http: HttpClient) { }
 
     /**
      * Search related artifacts with the provided keyword
      *
      *  ** deprecated param {string} keyword
-     * returns {Promise<SearchResults>}
+     * returns {Observable<SearchResults>}
      *
      * @memberOf GlobalSearchService
      */
-    doSearch(term: string): Promise<SearchResults> {
+    doSearch(term: string): Observable<SearchResults> {
         let searchUrl = searchEndpoint + "?q=" + term;
 
-        return this.http.get(searchUrl, HTTP_GET_OPTIONS).toPromise()
-            .then(response => response.json() as SearchResults)
-            .catch(error => Promise.reject(error));
+        return this.http.get(searchUrl, HTTP_GET_OPTIONS)
+            .pipe(map(response => response as SearchResults)
+            , catchError(error => observableThrowError(error)));
     }
 }

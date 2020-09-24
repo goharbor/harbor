@@ -15,8 +15,6 @@
 package secret
 
 const (
-	// AdminserverUser is the name of adminserver user
-	AdminserverUser = "harbor-adminserver"
 	// JobserviceUser is the name of jobservice user
 	JobserviceUser = "harbor-jobservice"
 	// CoreUser is the name of ui user

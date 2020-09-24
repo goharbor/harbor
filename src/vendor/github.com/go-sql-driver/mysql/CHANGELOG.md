@@ -1,3 +1,90 @@
+## Version 1.5 (2020-01-07)
+
+Changes:
+
+  - Dropped support Go 1.9 and lower (#823, #829, #886, #1016, #1017)
+  - Improve buffer handling (#890)
+  - Document potentially insecure TLS configs (#901)
+  - Use a double-buffering scheme to prevent data races (#943)
+  - Pass uint64 values without converting them to string (#838, #955)
+  - Update collations and make utf8mb4 default (#877, #1054)
+  - Make NullTime compatible with sql.NullTime in Go 1.13+ (#995)
+  - Removed CloudSQL support (#993, #1007)
+  - Add Go Module support (#1003)
+
+New Features:
+
+  - Implement support of optional TLS (#900)
+  - Check connection liveness (#934, #964, #997, #1048, #1051, #1052)
+  - Implement Connector Interface (#941, #958, #1020, #1035)
+
+Bugfixes:
+
+  - Mark connections as bad on error during ping (#875)
+  - Mark connections as bad on error during dial (#867)
+  - Fix connection leak caused by rapid context cancellation (#1024)
+  - Mark connections as bad on error during Conn.Prepare (#1030)
+
+
+## Version 1.4.1 (2018-11-14)
+
+Bugfixes:
+
+ - Fix TIME format for binary columns (#818)
+ - Fix handling of empty auth plugin names (#835)
+ - Fix caching_sha2_password with empty password (#826)
+ - Fix canceled context broke mysqlConn (#862)
+ - Fix OldAuthSwitchRequest support (#870)
+ - Fix Auth Response packet for cleartext password (#887)
+
+## Version 1.4 (2018-06-03)
+
+Changes:
+
+ - Documentation fixes (#530, #535, #567)
+ - Refactoring (#575, #579, #580, #581, #603, #615, #704)
+ - Cache column names (#444)
+ - Sort the DSN parameters in DSNs generated from a config (#637)
+ - Allow native password authentication by default (#644)
+ - Use the default port if it is missing in the DSN (#668)
+ - Removed the `strict` mode (#676)
+ - Do not query `max_allowed_packet` by default (#680)
+ - Dropped support Go 1.6 and lower (#696)
+ - Updated `ConvertValue()` to match the database/sql/driver implementation (#760)
+ - Document the usage of `0000-00-00T00:00:00` as the time.Time zero value (#783)
+ - Improved the compatibility of the authentication system (#807)
+
+New Features:
+
+ - Multi-Results support (#537)
+ - `rejectReadOnly` DSN option (#604)
+ - `context.Context` support (#608, #612, #627, #761)
+ - Transaction isolation level support (#619, #744)
+ - Read-Only transactions support (#618, #634)
+ - `NewConfig` function which initializes a config with default values (#679)
+ - Implemented the `ColumnType` interfaces (#667, #724)
+ - Support for custom string types in `ConvertValue` (#623)
+ - Implemented `NamedValueChecker`, improving support for uint64 with high bit set (#690, #709, #710)
+ - `caching_sha2_password` authentication plugin support (#794, #800, #801, #802)
+ - Implemented `driver.SessionResetter` (#779)
+ - `sha256_password` authentication plugin support (#808)
+
+Bugfixes:
+
+ - Use the DSN hostname as TLS default ServerName if `tls=true` (#564, #718)
+ - Fixed LOAD LOCAL DATA INFILE for empty files (#590)
+ - Removed columns definition cache since it sometimes cached invalid data (#592)
+ - Don't mutate registered TLS configs (#600)
+ - Make RegisterTLSConfig concurrency-safe (#613)
+ - Handle missing auth data in the handshake packet correctly (#646)
+ - Do not retry queries when data was written to avoid data corruption (#302, #736)
+ - Cache the connection pointer for error handling before invalidating it (#678)
+ - Fixed imports for appengine/cloudsql (#700)
+ - Fix sending STMT_LONG_DATA for 0 byte data (#734)
+ - Set correct capacity for []bytes read from length-encoded strings (#766)
+ - Make RegisterDial concurrency-safe (#773)
+
+
 ## Version 1.3 (2016-12-01)
 
 Changes:

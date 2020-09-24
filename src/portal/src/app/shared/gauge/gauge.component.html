@@ -3,7 +3,7 @@
         <div class="esxc-gauge-circle-bg"></div>
         <div #barOne [style.transform]="'rotate(' + posOne + 'deg)'" [style.background-color]="_colorOne" [style.transition]="transition" class="esxc-gauge-circle-fill esxc-gauge-bar-one"></div>
         <div #barTwo [style.transform]="'rotate(' + posTwo + 'deg)'" [style.background-color]="_colorTwo" [style.transition]="transition" class="esxc-gauge-circle-fill esxc-gauge-bar-two"></div>
-        <div class="esxc-gauge-circle-inner" [ngStyle]="{'background-color': backgroundColor}">
+        <div class="esxc-gauge-circle-inner esxc-gauge-circle-bgc-dark" [ngStyle]="{'background-color': backgroundColor}">
             <div class="esxc-gauge-circle-caption">
                 <span class="esxc-value">{{used}}</span>
             </div>

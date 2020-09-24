@@ -1,11 +1,12 @@
 version: '2'
 services:
   registry:
-    image: goharbor/registry-photon:__reg_version__
+    image: goharbor/registry-photon:__version__
     restart: always
     volumes:
       - /data/registry:/storage
       - ./common/config/registry/:/etc/registry/
+      - /etc/core/ca/ca.crt:/etc/registry/root.crt
     ports:
       - 5000:5000
     command:
@@ -19,21 +20,10 @@ services:
       - ./common/config/db/env
     ports:
       - 5432:5432
-  adminserver:
-    image: goharbor/harbor-adminserver:__version__
-    env_file:
-      - ./common/config/adminserver/env
-    restart: always
-    volumes:
-      - /data/config/:/etc/adminserver/config/
-      - /data/secretkey:/etc/adminserver/key
-      - /data/:/data/
-    ports:
-      - 8888:8080
   redis:
-    image: goharbor/redis-photon:4.0
+    image: goharbor/redis-photon:__version__
     restart: always
     volumes:
-      - /data/redis:/data
+      - /data/redis:/var/lib/redis
     ports:
       - 6379:6379

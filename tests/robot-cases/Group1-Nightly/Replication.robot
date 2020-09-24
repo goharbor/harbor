@@ -14,7 +14,7 @@
 
 *** Settings ***
 Documentation  Harbor BATs
-Library  ../../apitests/python/library/Harbor.py  ${SERVER_CONFIG}
+Library  ../../apitests/python/library/repository.py
 Resource  ../../resources/Util.robot
 Default Tags  Replication
 
@@ -37,42 +37,53 @@ Test Case - Get Harbor Version
 
 Test Case - Pro Replication Rules Add
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Registries
+    Capture Page Screenshot
     Switch To Replication Manage
     Check New Rule UI Without Endpoint
     Close Browser
 
-Test Case - Endpoint Verification
-#This case need vailid info and selfsign cert
+Test Case - Harbor Endpoint Verification
+    #This case need vailid info and selfsign cert
     Init Chrome Driver
-    ${d}=  Get Current Date  result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Registries
-    Create A New Endpoint  edp1${d}  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  N
+    Create A New Endpoint    harbor    edp1${d}    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    N
     Endpoint Is Pingable
     Enable Certificate Verification
     Endpoint Is Unpingable
     Close Browser
 
-Test Case - Endpoint Add
+Test Case - DockerHub Endpoint Add
+    #This case need vailid info and selfsign cert
     Init Chrome Driver
-    ${d}=  Get Current Date  result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Registries
-    Create A New Endpoint  testabc  https://${d}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Wait Until Page Contains  testabc
+    Create A New Endpoint    docker-hub    edp1${d}    https://hub.docker.com/    danfengliu    Aa123456    Y
     Close Browser
 
-Test Case - Endpoint Edit
+Test Case - Harbor Endpoint Add
+    #This case need vailid info and selfsign cert
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Registries
+    Create A New Endpoint    harbor    testabc    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    Y
+    Close Browser
+
+Test Case - Harbor Endpoint Edit
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Registries
     Rename Endpoint  testabc  deletea
-    Wait Until Page Contains  deletea
+    Retry Wait Until Page Contains  deletea
     Close Browser
 
-Test Case - Endpoint Delete  
+Test Case - Harbor Endpoint Delete
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -80,145 +91,195 @@ Test Case - Endpoint Delete
     Delete Endpoint  deletea
     Delete Success  deletea
     Close Browser
-   
-Test Case - Rule Edit
+
+Test Case - Replication Rule Edit
     Init Chrome Driver
-    ${d}=    Get Current Date  result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${d}
+    ${d}=    Get Current Date    result_format=%m%s
+    ${endpoint1}=    Set Variable    e1${d}
+    ${endpoint2}=    Set Variable    e2${d}
+    ${rule_name_old}=    Set Variable    rule_testabc${d}
+    ${rule_name_new}=    Set Variable    rule_abctest${d}
+    ${resource_type}=    Set Variable    chart
+    ${dest_namespace}=    Set Variable    dest_namespace${d}
+    ${mode}=    Set Variable    Scheduled
+    ${cron_str}=    Set Variable    10 10 10 * * *
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Registries
-    Create A New Endpoint  e${d}  https://ip  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create A New Endpoint    docker-hub    ${endpoint1}    https://hub.docker.com/    danfengliu    Aa123456    Y
+    Create A New Endpoint    harbor    ${endpoint2}    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    Y
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint  rule${d}  project${d}  e${d}  Immediate
-    Rename Rule  rule${d}  newname
-    Wait Until Page Contains  newname
+    Create A Rule With Existing Endpoint    ${rule_name_old}    pull    danfengliu/*    image    ${endpoint1}    project${d}
+    Edit Replication Rule By Name  ${rule_name_old}
+    #  Change rule-name, source-registry, filter, trigger-mode for edition verification
+    Clear Field Of Characters    ${rule_name_input}    30
+    Retry Text Input    ${rule_name_input}    ${rule_name_new}
+    Select Source Registry  ${endpoint2}
+    #Source Resource Filter
+    Retry Text Input  ${filter_name_id}  project${d}
+    Select From List By Value  ${rule_resource_selector}  ${resource_type}
+    Retry Text Input  ${dest_namespace_xpath}  ${dest_namespace}
+    Select Trigger  ${mode}
+    Retry Text Input  ${targetCron_id}  ${cron_str}
+    Retry Double Keywords When Error    Retry Element Click    ${rule_save_button}    Retry Wait Until Page Not Contains Element    ${rule_save_button}
+    #  verify all items were changed as expected
+    Edit Replication Rule By Name    ${rule_name_new}
+    Retry Textfield Value Should Be    ${rule_name_input}               ${rule_name_new}
+    Retry List Selection Should Be     ${src_registry_dropdown_list}    ${endpoint2}-https://${ip}
+    Retry Textfield Value Should Be    ${filter_name_id}                project${d}
+    Retry Textfield Value Should Be    ${dest_namespace_xpath}          ${dest_namespace}
+    Retry List Selection Should Be     ${rule_resource_selector}        ${resource_type}
+    Retry List Selection Should Be     ${rule_trigger_select}           ${mode}
+    Retry Textfield Value Should Be    ${targetCron_id}                 ${cron_str}
+    Retry Element Click  ${rule_cancel_btn}
+    Ensure Delete Replication Rule By Name  ${rule_name_new}
     Close Browser
 
-Test Case - Rule Delete
+Test Case - Replication Rule Delete
     Init Chrome Driver
-    ${d}=    Get Current Date  result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Replication Manage
-    Delete Rule  newname
-    Delete Success  newname
-    Close Browser
-
-
-Test Case - Trigger Immediate
-    Init Chrome Driver
-    ${d}=    Get Current Date  result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${d}
+    ${d}=    Get Current Date    result_format=%m%s
+    ${endpoint1}=    Set Variable    e1${d}
+    ${rule_name}=    Set Variable    rule_testabc${d}
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Registries
-    Create A New Endpoint  edp${d}  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create A New Endpoint    docker-hub    ${endpoint1}    https://hub.docker.com/    danfengliu    Aa123456    Y
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint  rule${d}  project${d}  edp${d}  Immediate
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world
-    Logout Harbor
-    #logout and login target
-    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  project${d}
-    Page Should Contain  hello-world
-    Go Into Repo  hello-world
-    Page Should Contain  latest
+    Create A Rule With Existing Endpoint    ${rule_name}    pull    danfengliu/*    image    ${endpoint1}    project${d}
+    Ensure Delete Replication Rule By Name  ${rule_name}
     Close Browser
 
-Test Case - Trigger Manual
+Test Case - Replication Of Pull Images from DockerHub To Self
     Init Chrome Driver
-    ${d}=    Get Current Date  result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${d}
-    #using existing endpoint added before for only one replication endpoint
-    Switch To Replication Manage
-    Create A Rule With Existing Endpoint  rule${d}  project${d}  edp  Manual
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world
-    Trigger Replication Manual  rule${d}
-    Logout Harbor
-    #logout and login target
-    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  project${d}
-    Page Should Contain  hello-world
-    Go Into Repo  hello-world
-    Page Should Contain  latest
-    Close Browser
-
-Test Case - Large Image Replicate
-    Init Chrome Driver
-    ${d}=    Get Current Date  result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${d}
-    Push Image with tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ubuntu  16.04  16.04
-    Switch To Replication Manage
-    Create A Rule With Existing Endpoint  rule${d}  project${d}  edp  Immediate
-    Logout Harbor
-    #logout and login target
-    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  project${d}
-    Page Should Contain  ubuntu
-    Go Into Repo  ubuntu
-    Page Should Contain  16.04
-    Close Browser
-
-Test Case - Proj Replication Jobs Log View
-    Init Chrome Driver
-    ${d}=    Get Current Date  result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox
+    ${d}=    Get Current Date    result_format=%m%s
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
     Switch To Registries
-    Create A New Endpoint  edp${d}  aaa  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create A New Endpoint    docker-hub    e${d}    https://hub.docker.com/    danfengliu    Aa123456    Y
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint  rule${d}  project${d}  edp${d}  Immediate
-    Filter Rule  rule${d}
-    Select Rule  rule${d}
-    Wait Until Page Contains  transfer 
-    Wait Until Page Contains  error
-    View Job Log  busybox
+    Create A Rule With Existing Endpoint    rule${d}    pull    danfengliu/{cent*,mariadb}    image    e${d}    project${d}
+    Select Rule And Replicate  rule${d}
+    #In docker-hub, under repository danfengliu, there're only 2 images: centos,mariadb.
+    Image Should Be Replicated To Project  project${d}  centos
+    Image Should Be Replicated To Project  project${d}  mariadb
     Close Browser
 
-Test Case - Project LeveL Replication Operation
+Test Case - Replication Of Push Images from Self To Harbor
     Init Chrome Driver
-    ${d} =  Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  proj${d}
-    Go Into Project  proj${d}
-    Switch To Replication
-    Project Create A Rule With Existing Endpoint  rule${d}  proj${d}  edp  Manual
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj${d}  hello-world
-    Trigger Replication Manual  rule${d}
+    ${d}=    Get Current Date    result_format=%m%s
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project${d}
+    Push Image    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    hello-world
+    Push Image    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    busybox:latest
+    Push Image With Tag    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    hello-world    v1
+    Switch To Registries
+    Create A New Endpoint    harbor    e${d}    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    rule${d}    push    project${d}/*    image    e${d}    project_dest${d}
+    #logout and login target
     Logout Harbor
-    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  proj${d}
-    Page Should Contain  hello-world
-    Go Into Repo  hello-world
-    Page Should Contain  latest
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project_dest${d}
+    #logout and login source
+    Logout Harbor
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule${d}
+    Sleep  20
+    Logout Harbor
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Image Should Be Replicated To Project  project_dest${d}  hello-world
+    Image Should Be Replicated To Project  project_dest${d}  busybox
     Close Browser
 
-Test Case - Replicate based on label
-    ${project_id}  ${project_name} =  Create Project
-    
-    Docker Pull  hello-world:latest
-    Docker Login  ${SERVER}  admin  Harbor12345
-    Docker Tag  hello-world:latest  ${SERVER}/${project_name}/hello-world:1.0
-    Docker Push  ${SERVER}/${project_name}/hello-world:1.0
-    Docker Tag  hello-world:latest  ${SERVER}/${project_name}/hello-world:2.0
-    Docker Push  ${SERVER}/${project_name}/hello-world:2.0
+Test Case - Replication Of Push Chart from Self To Harbor
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project${d}
+    Switch To Project Charts
+    Upload Chart files
+    Switch To Registries
+    Create A New Endpoint    harbor    e${d}    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    rule${d}    push    project${d}/*    chart    e${d}    project_dest${d}
+    #logout and login target
+    Logout Harbor
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project_dest${d}
+    #logout and login source
+    Logout Harbor
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate    rule${d}
+    Sleep    20
+    Logout Harbor
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Go Into Project    project_dest${d}    has_image=${false}
+    Switch To Project Charts
+    Go Into Chart Version    ${harbor_chart_name}
+    Retry Wait Until Page Contains    ${harbor_chart_version}
+    Go Into Chart Detail    ${harbor_chart_version}
+    Close Browser
 
-    ${label_id}  ${label_name} =  Create Label
-    Add Label To Image  ${label_id}  ${project_name}/hello-world  1.0
-    
-    ${registry_id} =  Get Registry Id By Endpoint  ${REMOTE_SERVER_URL}
-    
-    ${projects} =  Create List  ${project_id}
-    ${registries} =  Create List  ${registry_id}
-    ${label_filter} =  Create Dictionary  kind=label  value=${label_id}
-    ${filters} =  Create List  ${label_filter}
-    ${rule_id}  ${rule_name} =  Create Replication Rule  ${projects}  ${registries}  filters=${filters}
-    
-    Start Replication  ${rule_id}
-    Wait Until Jobs Finish  ${rule_id}
+Test Case - Replication Of Push Images from Self To Harbor By Push Event
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project${d}
+    Switch To Registries
+    Create A New Endpoint    harbor    e${d}    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    rule${d}    push    project${d}/*    image    e${d}    project_dest${d}
+    ...    Event Based
+    #logout and login target
+    Logout Harbor
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project_dest${d}
+    Push Image    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    centos
+    Image Should Be Replicated To Project  project_dest${d}  centos
+    Close Browser
 
-    Image Should Exist  ${project_name}/hello-world  1.0  endpoint=${REMOTE_SERVER_API_ENDPOINT}  verify_ssl=False
-    Image Should Not Exist  ${project_name}/hello-world  2.0  endpoint=${REMOTE_SERVER_API_ENDPOINT}  verify_ssl=False
+Test Case - Replication Of Pull Images from AWS-ECR To Self
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project${d}
+    Switch To Registries
+    Create A New Endpoint    aws-ecr    e${d}    us-east-2    ${ecr_ac_id}    ${ecr_ac_key}    Y
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    rule${d}    pull    a/*    image    e${d}    project${d}
+    Select Rule And Replicate  rule${d}
+    Image Should Be Replicated To Project  project${d}  httpd
+    Image Should Be Replicated To Project  project${d}  alpine
+    Image Should Be Replicated To Project  project${d}  hello-world
+    Close Browser
 
+Test Case - Replication Of Pull Images from Google-GCR To Self
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project${d}
+    Switch To Registries
+    Create A New Endpoint    google-gcr    e${d}    asia.gcr.io    ${null}    ${gcr_ac_key}    Y
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    rule${d}    pull    eminent-nation-87317/*    image    e${d}    project${d}
+    Filter Replication Rule  rule${d}
+    Select Rule And Replicate  rule${d}
+    Image Should Be Replicated To Project  project${d}  httpd
+    Image Should Be Replicated To Project  project${d}  tomcat
+    Close Browser
+
+Test Case - Replication Of Push Images to DockerHub Triggered By Event
+    Body Of Replication Of Push Images to Registry Triggered By Event  docker-hub  https://hub.docker.com/  danfengliu  Aa123456  danfengliu
+
+#Due to issue of delete event replication
+#Test Case - Replication Of Push Images to Google-GCR Triggered By Event
+    #Body Of Replication Of Push Images to Registry Triggered By Event  google-gcr  gcr.io  ${null}  ${gcr_ac_key}  eminent-nation-87317/harbor-nightly-replication
+
+Test Case - Replication Of Push Images to AWS-ECR Triggered By Event
+    Body Of Replication Of Push Images to Registry Triggered By Event  aws-ecr  us-east-2  ${ecr_ac_id}  ${ecr_ac_key}  harbor-nightly-replication

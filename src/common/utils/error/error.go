@@ -16,19 +16,7 @@ package error
 
 import (
 	"errors"
-	"fmt"
 )
 
 // ErrDupProject is the error returned when creating a duplicate project
 var ErrDupProject = errors.New("duplicate project")
-
-// HTTPError : if response is returned but the status code is not 200, an Error instance will be returned
-type HTTPError struct {
-	StatusCode int
-	Detail     string
-}
-
-// Error returns the details as string
-func (e *HTTPError) Error() string {
-	return fmt.Sprintf("%d %s", e.StatusCode, e.Detail)
-}

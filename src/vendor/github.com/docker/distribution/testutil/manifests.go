@@ -5,12 +5,12 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/docker/libtrust"
+	"github.com/opencontainers/go-digest"
 )
 
 // MakeManifestList constructs a manifest list out of a list of manifest digests
@@ -73,7 +73,7 @@ func MakeSchema1Manifest(digests []digest.Digest) (distribution.Manifest, error)
 func MakeSchema2Manifest(repository distribution.Repository, digests []digest.Digest) (distribution.Manifest, error) {
 	ctx := context.Background()
 	blobStore := repository.Blobs(ctx)
-	builder := schema2.NewManifestBuilder(blobStore, []byte{})
+	builder := schema2.NewManifestBuilder(blobStore, schema2.MediaTypeImageConfig, []byte{})
 	for _, digest := range digests {
 		builder.AppendReference(distribution.Descriptor{Digest: digest})
 	}

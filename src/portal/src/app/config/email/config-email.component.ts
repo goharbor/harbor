@@ -11,13 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, ViewChild, SimpleChanges, OnChanges } from '@angular/core';
+import { Component, Input, ViewChild, SimpleChanges, OnChanges, Output, EventEmitter } from '@angular/core';
 import { NgForm } from '@angular/forms';
-
-import { Configuration, clone, isEmpty, getChanges, StringValueItem} from '@harbor/ui';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { confirmUnsavedChanges} from '../config.msg.utils';
+import { ConfirmMessageHandler } from '../config.msg.utils';
 import { ConfigurationService } from '../config.service';
+import { Configuration } from "../../../lib/components/config/config";
+import { isEmpty, getChanges as getChangesFunc, clone } from "../../../lib/utils/utils";
+import { errorHandler } from "../../../lib/utils/shared/shared.utils";
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 @Component({
     selector: 'config-email',
@@ -27,14 +28,16 @@ const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 export class ConfigurationEmailComponent implements OnChanges {
     // tslint:disable-next-line:no-input-rename
     @Input("mailConfig") currentConfig: Configuration = new Configuration();
+    @Output() refreshAllconfig = new EventEmitter<any>();
     private originalConfig: Configuration;
     testingMailOnGoing = false;
     onGoing = false;
-    @ViewChild("mailConfigFrom") mailForm: NgForm;
+    @ViewChild("mailConfigFrom", {static: true}) mailForm: NgForm;
 
     constructor(
         private msgHandler: MessageHandlerService,
-        private configService: ConfigurationService) {
+        private configService: ConfigurationService,
+        private confirmMessageHandler: ConfirmMessageHandler) {
     }
 
     disabled(prop: any): boolean {
@@ -54,7 +57,7 @@ export class ConfigurationEmailComponent implements OnChanges {
     }
 
     public getChanges() {
-        let allChanges = getChanges(this.originalConfig, this.currentConfig);
+        let allChanges = getChangesFunc(this.originalConfig, this.currentConfig);
         let changes = {};
         for (let prop in allChanges) {
             if (prop.startsWith('email_')) {
@@ -99,13 +102,12 @@ export class ConfigurationEmailComponent implements OnChanges {
 
         this.testingMailOnGoing = true;
         this.configService.testMailServer(mailSettings)
-            .then(response => {
+            .subscribe(response => {
                 this.testingMailOnGoing = false;
                 this.msgHandler.showSuccess('CONFIG.TEST_MAIL_SUCCESS');
-            })
-            .catch(error => {
+            }, error => {
                 this.testingMailOnGoing = false;
-                let err = error._body;
+                let err =  errorHandler(error);
                 if (!err) {
                     err = 'UNKNOWN';
                 }
@@ -133,12 +135,12 @@ export class ConfigurationEmailComponent implements OnChanges {
         if (!isEmpty(changes)) {
             this.onGoing = true;
             this.configService.saveConfiguration(changes)
-                .then(response => {
+                .subscribe(response => {
                     this.onGoing = false;
-                    this.retrieveConfig();
+                    // refresh allConfig
+                    this.refreshAllconfig.emit();
                     this.msgHandler.showSuccess('CONFIG.SAVE_SUCCESS');
-                })
-                .catch(error => {
+                }, error => {
                     this.onGoing = false;
                     this.msgHandler.handleError(error);
                 });
@@ -146,24 +148,6 @@ export class ConfigurationEmailComponent implements OnChanges {
             // Inprop situation, should not come here
             console.error('Save abort because nothing changed');
         }
-    }
-
-    retrieveConfig(): void {
-        this.onGoing = true;
-        this.configService.getConfiguration()
-            .then((configurations: Configuration) => {
-                this.onGoing = false;
-
-                // Add two password fields
-                configurations.email_password = new StringValueItem(fakePass, true);
-                this.currentConfig = configurations;
-                // Keep the original copy of the data
-                this.originalConfig = clone(configurations);
-            })
-            .catch(error => {
-                this.onGoing = false;
-                this.msgHandler.handleError(error);
-            });
     }
 
     /**
@@ -175,7 +159,7 @@ export class ConfigurationEmailComponent implements OnChanges {
     public cancel(): void {
         let changes = this.getChanges();
         if (!isEmpty(changes)) {
-            confirmUnsavedChanges(changes);
+            this.confirmMessageHandler.confirmUnsavedChanges(changes);
         } else {
             // Invalid situation, should not come here
             console.error('Nothing changed');

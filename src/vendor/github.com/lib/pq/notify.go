@@ -725,6 +725,9 @@ func (l *Listener) Close() error {
 	}
 	l.isClosed = true
 
+	// Unblock calls to Listen()
+	l.reconnectCond.Broadcast()
+
 	return nil
 }
 
@@ -784,7 +787,7 @@ func (l *Listener) listenerConnLoop() {
 		}
 		l.emitEvent(ListenerEventDisconnected, err)
 
-		time.Sleep(nextReconnect.Sub(time.Now()))
+		time.Sleep(time.Until(nextReconnect))
 	}
 }
 

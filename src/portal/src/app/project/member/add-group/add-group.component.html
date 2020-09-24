@@ -2,60 +2,63 @@
     <h3 class="modal-title">{{'MEMBER.IMPORT_GROUP' | translate}}</h3>
     <div class="modal-body">
         <label>{{ 'MEMBER.NEW_GROUP_INFO' | translate}}</label>
-
-        <div class="form-group modeSelectradios">
-            <div class="radio">
-                <input type="radio" name="modeRadios" [value]="false" id="select_group" [(ngModel)]="createGroupMode">
+        <div class="modeSelectradios">
+            <clr-radio-wrapper>
+                <input clrRadio type="radio" name="modeRadios" [value]="false" id="select_group" [(ngModel)]="createGroupMode">
                 <label for="select_group">{{'MEMBER.ADD_GROUP_SELECT' | translate}}</label>
-            </div>
-            <div class="radio">
-                <input type="radio" name="modeRadios" [value]="true" id="create_group" [(ngModel)]="createGroupMode">
+            </clr-radio-wrapper>
+            <clr-radio-wrapper>
+                <input clrRadio type="radio" name="modeRadios" [value]="true" id="create_group" [(ngModel)]="createGroupMode">
                 <label for="create_group">{{'MEMBER.CREATE_GROUP_SELECT' | translate}}</label>
-            </div>
+            </clr-radio-wrapper>
         </div>
         <div *ngIf="createGroupMode">
-            <form #groupForm="ngForm">
-                <section class="form-block">
-                    <div class="form-group">
-                        <label for="ldap_group_dn" class="required">{{ 'MEMBER.LDAP_SEARCH_DN' | translate}}</label>
-                        <label for="ldap_group_dn"
-                        aria-haspopup="true"
-                        role="tooltip"
-                        class="tooltip tooltip-validation tooltip-md tooltip-right" 
-                        [class.invalid]="isDNInvalid">
-                            <input type="text" name="ldap_group_dn" size="45" 
-                            required
-                            [(ngModel)]="group.ldap_group_dn"
-                            #groupDN="ngModel">
-                            <span class="tooltip-content">
-                                {{dnTooltip | translate}}
-                            </span>
-                        </label>
+            <form #groupForm="ngForm" class="clr-form clr-form-horizontal">
+                <div class="clr-form-control">
+                    <label class="required clr-control-label">{{ 'MEMBER.LDAP_SEARCH_DN' | translate}}</label>
+                    <div class="clr-control-container" [class.clr-error]="isDNInvalid">
+                        <div class="clr-input-wrapper">
+                            <input class="clr-input" type="text" name="ldap_group_dn" size="45"
+                                   required
+                                   [(ngModel)]="group.ldap_group_dn"
+                                   #groupDN="ngModel">
+                            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                        </div>
+                        <clr-control-error *ngIf="isDNInvalid" class="tooltip-content">
+                            {{dnTooltip | translate}}
+                        </clr-control-error>
                     </div>
-                    <div class="form-group">
-                        <label for="name">{{'MEMBER.LDAP_SEARCH_NAME' | translate}}</label>
-                        <input type="text" name="ldap_group_name" size="35" [(ngModel)]="group.group_name">
-                    </div>
-                    <div class="form-group">
-                        <label for="member_role1">{{ 'MEMBER.ROLE' | translate}}</label>
-                        <div class="select">
-                            <select id="member_role1" name="member_role" [(ngModel)]="selectedRole">
-                                <option *ngFor="let role of roles" [ngValue]="role.id"> {{role.value | translate}}</option>
-                            </select>
+                </div>
+                <div class="clr-form-control">
+                    <label class="clr-control-label">{{'MEMBER.LDAP_SEARCH_NAME' | translate}}</label>
+                    <div class="clr-control-container">
+                        <div class="clr-input-wrapper">
+                            <input class="clr-input" type="text" name="ldap_group_name" size="35" [(ngModel)]="group.group_name">
                         </div>
                     </div>
-                </section>
+                </div>
+                <div class="clr-form-control">
+                    <label class="clr-control-label" for="member_role1">{{ 'MEMBER.ROLE' | translate}}</label>
+                    <div class="clr-select-wrapper">
+                        <select class="clr-select" id="member_role1" name="member_role" [(ngModel)]="selectedRole">
+                            <option *ngFor="let role of roles" [ngValue]="role.id"> {{role.value | translate}}</option>
+                        </select>
+                    </div>
+                </div>
             </form>
         </div>
         <div *ngIf="!createGroupMode">
-            <div class='row flex-items-xs-between'>
-                <div></div>
-                <div class="filterTool">
-                    <hbr-filter [withDivider]="true" filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doFilter($event)"
-                        [currentValue]="currentTerm"></hbr-filter>
-                    <span class="refresh-btn" (click)="loadGroups()">
-                        <clr-icon shape="refresh"></clr-icon>
-                    </span>
+            <div>
+                <div class="row flex-items-xs-between">
+                    <div class="left">
+                    </div>
+                    <div class="right">
+                        <hbr-filter [withDivider]="true" filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doFilter($event)"
+                                    [currentValue]="currentTerm"></hbr-filter>
+                        <span class="refresh-btn" (click)="loadGroups()">
+                            <clr-icon shape="refresh"></clr-icon>
+                        </span>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -85,13 +88,11 @@
                     </clr-datagrid>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-lg-1 col-md-1 col-sm-1 col-xs-1">
-                    <label>{{ 'MEMBER.ROLE' | translate}}</label>
-                </div>
-                <div class="class=col-lg-4 col-md-4 col-sm-2 col-xs-1">
-                    <div class="select">
-                        <select id="member_role2" [(ngModel)]="selectedRole">
+            <div class="clr-form clr-form-horizontal">
+                <div class="clr-form-control">
+                    <label class="clr-control-label" for="member_role1">{{ 'MEMBER.ROLE' | translate}}</label>
+                    <div class="clr-select-wrapper">
+                        <select class="clr-select" id="member_role2" [(ngModel)]="selectedRole">
                             <option *ngFor="let role of roles" [ngValue]="role.id"> {{role.value | translate}}</option>
                         </select>
                     </div>

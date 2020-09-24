@@ -14,18 +14,19 @@
 import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router, NavigationExtras } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-
+// import {  map } from 'rxjs/operators';
+import { PlatformLocation } from '@angular/common';
 import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
-
 import { SessionService } from '../../shared/session.service';
 import { CookieService, CookieOptions } from 'ngx-cookie';
-
-import { supportedLangs, enLang, languageNames, CommonRoutes } from '../../shared/shared.const';
-import { AppConfigService } from '../../app-config.service';
+import { supportedLangs, enLang, languageNames } from '../../shared/shared.const';
+import { AppConfigService } from '../../services/app-config.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import {SkinableConfig} from "../../skinable-config.service";
+import { SkinableConfig } from "../../services/skinable-config.service";
+import { CommonRoutes } from "../../../lib/entities/shared.const";
+
 
 @Component({
     selector: 'navigator',
@@ -36,16 +37,16 @@ import {SkinableConfig} from "../../skinable-config.service";
 export class NavigatorComponent implements OnInit {
     // constructor(private router: Router){}
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
-    @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
+    @Output() showDialogModalAction = new EventEmitter<ModalEvent>();
 
     selectedLang: string = enLang;
     appTitle: string = 'APP_TITLE.HARBOR';
-    customStyle: {[key: string]: any};
-    customProjectName: {[key: string]: any};
-
+    customStyle: { [key: string]: any };
+    customProjectName: { [key: string]: any };
     constructor(
         private session: SessionService,
         private router: Router,
+        private location: PlatformLocation,
         private translate: TranslateService,
         private cookie: CookieService,
         private appConfigService: AppConfigService,
@@ -58,17 +59,17 @@ export class NavigatorComponent implements OnInit {
         // custom skin
         let customSkinObj = this.skinableConfig.getSkinConfig();
         if (customSkinObj) {
-            if (customSkinObj.projects) {
-                this.customProjectName = customSkinObj.projects;
+            if (customSkinObj.product) {
+                this.customProjectName = customSkinObj.product;
             }
             this.customStyle = customSkinObj;
         }
 
         this.selectedLang = this.translate.currentLang;
-        this.translate.onLangChange.subscribe((langChange: {lang: string}) => {
+        this.translate.onLangChange.subscribe((langChange: { lang: string }) => {
             this.selectedLang = langChange.lang;
             // Keep in cookie for next use
-            let opt: CookieOptions = {path: '/', expires: new Date(Date.now() + 3600 * 1000 * 24 * 31)};
+            let opt: CookieOptions = { path: '/', expires: new Date(Date.now() + 3600 * 1000 * 24 * 31) };
             this.cookie.put("harbor-lang", langChange.lang, opt);
         });
         if (this.appConfigService.isIntegrationMode()) {
@@ -111,8 +112,8 @@ export class NavigatorComponent implements OnInit {
         let user = this.session.getCurrentUser();
         let config = this.appConfigService.getConfig();
 
-        return user && ((config && !(config.auth_mode === "ldap_auth" || config.auth_mode === "uaa_auth")) ||
-        (user.user_id === 1 && user.username === "admin"));
+        return user && ((config && !(config.auth_mode === "ldap_auth" || config.auth_mode === "uaa_auth"
+        || config.auth_mode === "oidc_auth")) || (user.user_id === 1 && user.username === "admin"));
     }
 
     matchLang(lang: string): boolean {
@@ -129,7 +130,7 @@ export class NavigatorComponent implements OnInit {
 
     // Open change password dialog
     openChangePwdModal(): void {
-        this.showPwdChangeModal.emit({
+        this.showDialogModalAction.emit({
             modalName: modalEvents.CHANGE_PWD,
             modalFlag: true
         });
@@ -137,7 +138,7 @@ export class NavigatorComponent implements OnInit {
 
     // Open about dialog
     openAboutDialog(): void {
-        this.showPwdChangeModal.emit({
+        this.showDialogModalAction.emit({
             modalName: modalEvents.ABOUT,
             modalFlag: true
         });
@@ -147,8 +148,10 @@ export class NavigatorComponent implements OnInit {
     logOut(): void {
         // Naviagte to the sign in route
         // Appending 'signout' means destroy session cache
+        let signout = true;
+        let redirect_url = this.location.pathname;
         let navigatorExtra: NavigationExtras = {
-            queryParams: { "signout": true }
+            queryParams: {signout, redirect_url}
         };
         this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
         // Confirm search result panel is close

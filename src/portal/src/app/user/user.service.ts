@@ -12,15 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
-
-
-import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../shared/shared.utils";
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 import { User, LDAPUser } from './user';
 import LDAPUsertoUser from './user';
+import {
+    buildHttpRequestOptionsWithObserveResponse,
+    CURRENT_BASE_HREF,
+    HTTP_GET_OPTIONS,
+    HTTP_JSON_OPTIONS
+} from "../../lib/utils/utils";
 
-const userMgmtEndpoint = '/api/users';
-const ldapUserEndpoint = '/api/ldap/users';
+
+const userMgmtEndpoint = CURRENT_BASE_HREF + '/users';
+const userListSearch = CURRENT_BASE_HREF + '/users/search?';
+const ldapUserEndpoint = CURRENT_BASE_HREF + '/ldap/users';
 
 /**
  * Define related methods to handle account and session corresponding things
@@ -31,55 +38,70 @@ const ldapUserEndpoint = '/api/ldap/users';
 @Injectable()
 export class UserService {
 
-    constructor(private http: Http) { }
-
+    constructor(private http: HttpClient) { }
+    // Get paging user list
+    getUserListByPaging(page: number, pageSize: number, username?: string) {
+        let params = new HttpParams();
+        if (page && pageSize) {
+            params = params.set('page', page + '').set('page_size', pageSize + '');
+        }
+        if (username) {
+            params = params.set('username', username);
+        }
+        return this.http
+            .get<HttpResponse<User[]>>(userMgmtEndpoint, buildHttpRequestOptionsWithObserveResponse(params)).pipe(
+                catchError(error => observableThrowError(error)), );
+    }
     // Handle the related exceptions
-    handleError(error: any): Promise<any> {
-        return Promise.reject(error.message || error);
+    handleError(error: any): Observable<any> {
+        return observableThrowError(error);
     }
 
     // Get the user list
-    getUsers(): Promise<User[]> {
-        return this.http.get(userMgmtEndpoint, HTTP_GET_OPTIONS).toPromise()
-            .then(response => response.json() as User[])
-            .catch(error => this.handleError(error));
+    getUsersNameList(name: string, page_size: number): Observable<User[]> {
+        return this.http.get(`${userListSearch}page_size=${page_size}&username=${name}`, HTTP_GET_OPTIONS)
+            .pipe(map(response => response as User[])
+            , catchError(error => this.handleError(error)));
+    }
+    getUsers(): Observable<User[]> {
+        return this.http.get(userMgmtEndpoint)
+            .pipe(map(((response: any) => {
+                return response as User[];
+            }), catchError(error => this.handleError(error))));
     }
 
     // Add new user
-    addUser(user: User): Promise<any> {
-        return this.http.post(userMgmtEndpoint, JSON.stringify(user), HTTP_JSON_OPTIONS).toPromise()
-            .then(() => null)
-            .catch(error => this.handleError(error));
+    addUser(user: User): Observable<any> {
+        return this.http.post(userMgmtEndpoint, JSON.stringify(user), HTTP_JSON_OPTIONS)
+            .pipe(map(() => null)
+            , catchError(error => this.handleError(error)));
     }
 
     // Delete the specified user
-    deleteUser(userId: number): Promise<any> {
+    deleteUser(userId: number): Observable<any> {
         return this.http.delete(userMgmtEndpoint + "/" + userId, HTTP_JSON_OPTIONS)
-            .toPromise()
-            .then(() => null)
-            .catch(error => this.handleError(error));
+            .pipe(map(() => null)
+            , catchError(error => this.handleError(error)));
     }
 
     // Update user to enable/disable the admin role
-    updateUser(user: User): Promise<any> {
+    updateUser(user: User): Observable<any> {
         return this.http.put(userMgmtEndpoint + "/" + user.user_id, JSON.stringify(user), HTTP_JSON_OPTIONS)
-            .toPromise()
-            .then(() => null)
-            .catch(error => this.handleError(error));
+            .pipe(map(() => null)
+            , catchError(error => this.handleError(error)));
     }
 
     // Set user admin role
-    updateUserRole(user: User): Promise<any> {
+    updateUserRole(user: User): Observable<any> {
         return this.http.put(userMgmtEndpoint + "/" + user.user_id + "/sysadmin", JSON.stringify(user), HTTP_JSON_OPTIONS)
-            .toPromise()
-            .then(() => null)
-            .catch(error => this.handleError(error));
+            .pipe(map(() => null)
+            , catchError(error => this.handleError(error)));
     }
 
     // admin change normal user pwd
-    changePassword(uid: number, newPassword: string, confirmPwd: string): Promise<any> {
+    changePassword(uid: number, newPassword: string, confirmPwd: string): Observable<any> {
         if (!uid || !newPassword) {
-            return Promise.reject("Invalid change uid or password");
+            return observableThrowError("Invalid change uid or password");
         }
 
         return this.http.put(userMgmtEndpoint + '/' + uid + '/password',
@@ -88,28 +110,25 @@ export class UserService {
                 'new_password': confirmPwd
             },
             HTTP_JSON_OPTIONS)
-            .toPromise()
-            .then(response => response)
-            .catch(error => {
-                return Promise.reject(error);
-            });
+            .pipe(map(response => response)
+            , catchError(error => {
+                return observableThrowError(error);
+            }));
     }
 
     // Get User from LDAP
-    getLDAPUsers(username: string): Promise<User[]> {
+    getLDAPUsers(username: string): Observable<User[]> {
         return this.http.get(`${ldapUserEndpoint}/search?username=${username}`, HTTP_GET_OPTIONS)
-        .toPromise()
-        .then(response => {
-            let ldapUser = response.json() as LDAPUser[] || [];
+        .pipe(map(response => {
+            let ldapUser = response as LDAPUser[] || [];
             return ldapUser.map(u => LDAPUsertoUser(u));
         })
-        .catch( error => this.handleError(error));
+        , catchError( error => this.handleError(error)));
     }
 
-    importLDAPUsers(usernames: string[]): Promise<any> {
+    importLDAPUsers(usernames: string[]): Observable<any> {
         return this.http.post(`${ldapUserEndpoint}/import`, JSON.stringify({ldap_uid_list: usernames}), HTTP_JSON_OPTIONS)
-        .toPromise()
-        .then(() => null )
-        .catch(err => this.handleError(err));
+        .pipe(map(() => null )
+        , catchError(err => this.handleError(err)));
     }
 }

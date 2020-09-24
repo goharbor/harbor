@@ -19,9 +19,20 @@ import (
 	"flag"
 	"net/http"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/registryctl/config"
 	"github.com/goharbor/harbor/src/registryctl/handlers"
+
+	_ "github.com/docker/distribution/registry/storage/driver/azure"
+	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
+	_ "github.com/docker/distribution/registry/storage/driver/gcs"
+	_ "github.com/docker/distribution/registry/storage/driver/inmemory"
+	_ "github.com/docker/distribution/registry/storage/driver/middleware/cloudfront"
+	_ "github.com/docker/distribution/registry/storage/driver/middleware/redirect"
+	_ "github.com/docker/distribution/registry/storage/driver/oss"
+	_ "github.com/docker/distribution/registry/storage/driver/s3-aws"
+	_ "github.com/docker/distribution/registry/storage/driver/swift"
 )
 
 // RegistryCtl for registry controller
@@ -33,29 +44,16 @@ type RegistryCtl struct {
 // Start the registry controller
 func (s *RegistryCtl) Start() {
 	regCtl := &http.Server{
-		Addr:    ":" + s.ServerConf.Port,
-		Handler: s.Handler,
-	}
-
-	if s.ServerConf.Protocol == "HTTPS" {
-		tlsCfg := &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-			PreferServerCipherSuites: true,
-			CipherSuites: []uint16{
-				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-			},
-		}
-
-		regCtl.TLSConfig = tlsCfg
-		regCtl.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
+		Addr:      ":" + s.ServerConf.Port,
+		Handler:   s.Handler,
+		TLSConfig: common_http.NewServerTLSConfig(),
 	}
 
 	var err error
-	if s.ServerConf.Protocol == "HTTPS" {
+	if s.ServerConf.Protocol == "https" {
+		if common_http.InternalEnableVerifyClientCert() {
+			regCtl.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
+		}
 		err = regCtl.ListenAndServeTLS(s.ServerConf.HTTPSConfig.Cert, s.ServerConf.HTTPSConfig.Key)
 	} else {
 		err = regCtl.ListenAndServe()
@@ -69,23 +67,20 @@ func (s *RegistryCtl) Start() {
 }
 
 func main() {
-
-	configPath := flag.String("c", "", "Specify the yaml config file path")
+	configPath := flag.String("c", "", "Specify registryCtl configuration file path")
 	flag.Parse()
 
 	if configPath == nil || len(*configPath) == 0 {
 		flag.Usage()
 		log.Fatal("Config file should be specified")
 	}
-
 	if err := config.DefaultConfig.Load(*configPath, true); err != nil {
 		log.Fatalf("Failed to load configurations with error: %s\n", err)
 	}
 
 	regCtl := &RegistryCtl{
 		ServerConf: *config.DefaultConfig,
-		Handler:    handlers.NewHandlerChain(),
+		Handler:    handlers.NewHandlerChain(*config.DefaultConfig),
 	}
-
 	regCtl.Start()
 }

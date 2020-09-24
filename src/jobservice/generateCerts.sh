@@ -3,6 +3,7 @@
 # These certs file is only for Harbor testing.
 IP='10.4.142.42'
 OPENSSLCNF=
+DATA_VOL='/data'
 
 for path in /etc/openssl/openssl.cnf /etc/ssl/openssl.cnf /usr/local/etc/openssl/openssl.cnf; do
     if [[ -e ${path} ]]; then
@@ -30,6 +31,6 @@ openssl x509 -req -days 365 -in $IP.csr -CA harbor_ca.crt \
 	-CAkey harbor_ca.key -CAcreateserial -extfile extfile.cnf -out $IP.crt	
 	
 # Copy to harbor default location
-mkdir -p /data/cert
-cp $IP.crt /data/cert/server.crt
-cp $IP.key /data/cert/server.key
+mkdir -p $DATA_VOL/cert
+cp $IP.crt $DATA_VOL/cert/server.crt
+cp $IP.key $DATA_VOL/cert/server.key

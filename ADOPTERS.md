@@ -1,4 +1,5 @@
 # Harbor Adopters
+
 Below is a list of adopters of Harbor in **production environments** that have
 publicly shared the details of their usage as well as the benefits provided by
 Harbor that their business relies on. There are some unreferenceable users that
@@ -8,33 +9,36 @@ publicly at this time.
 There are many additional adopters of Harbor in the evaluating phase that will
 be added to this list as they transition to production deployments.
 
-<a href="https://www.jd.com" border="0" target="_blank"><img alt="JD.com" src="docs/img/jd.png" height="50"></a>&nbsp; &nbsp; &nbsp;
-<a href="https://www.trendmicro.com" border="0" target="_blank"><img alt="trendmicro" src="docs/img/trendmicro.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="https://www.onstar.com.cn" border="0" target="_blank"><img alt="OnStar" src="docs/img/onstar.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="https://www.datayes.com" border="0" target="_blank"><img alt="DataYes" src="docs/img/datayes.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="https://www.axatp.com" border="0" target="_blank"><img alt="axatp" src="docs/img/axatp.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; <br/><br/>
-<a href="https://www.360totalsecurity.com/en/" target="_blank" border="0"><img alt="360 Total Security" src="docs/img/360.png" height="50"></a>&nbsp; &nbsp; &nbsp;
-<a href="https://www.talkingdata.com" border="0" target="_blank"><img alt="talkingdata" src="docs/img/talkingdata.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="http://www.boericasa.com/index.html" border="0" target="_blank"><img alt="BoerSmart" src="docs/img/boer.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="http://www.open.com.cn" border="0" target="_blank"><img alt="OpenEdutainment" src="docs/img/openedutainment.png" height="70"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="http://www.ifre.com.cn" border="0" target="_blank"><img alt="iFRE" src="docs/img/ifre.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; <br/><br/>
-<a href="http://www.boco.com.cn:8080/bocoit/" border="0" target="_blank"><img alt="BOCOIT" src="docs/img/bocoit.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="http://www.wise2c.com/" border="0" target="_blank"><img alt="wise2c" src="docs/img/wise2c.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="http://www.hydsoft.com/" border="0" target="_blank"><img alt="HYDSoft" src="docs/img/hydsoft.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="http://www.cloud-star.com.cn/" border="0" target="_blank"><img alt="CloudStar" src="docs/img/cloudstar.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="http://www.beyondsoft.com/" border="0" target="_blank"><img alt="BeyondSoft" src="docs/img/beyondsoft.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="http://www.chinamobileltd.com/" border="0" target="_blank"><img alt="ChinaMobile" src="docs/img/china-mobile.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="https://www.caicloud.io" target="_blank" border="0"><img alt="CaiCloud" src="docs/img/caicloud.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="https://rancher.com/" target="_blank" border="0"><img alt="Rancher" src="docs/img/rancher.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="https://www.tenxcloud.com/" target="_blank" border="0"><img alt="TenxCloud" src="docs/img/tenxcloud.png" height="70"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="http://www.bingocc.com/" target="_blank" border="0"><img alt="BingoCloud" src="docs/img/bingocloud.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://www.jd.com" border="0" target="_blank"><img alt="JD.com" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/jd.png" height="50"></a>&nbsp; &nbsp; &nbsp;
+<a href="https://www.trendmicro.com" border="0" target="_blank"><img alt="trendmicro" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/trendmicro.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://www.datayes.com" border="0" target="_blank"><img alt="DataYes" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/datayes.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://www.axatp.com" border="0" target="_blank"><img alt="axatp" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/axatp.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; <br/><br/>
+<a href="https://www.360totalsecurity.com/en/" target="_blank" border="0"><img alt="360 Total Security" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/360.png" height="50"></a>&nbsp; &nbsp; &nbsp;
+<a href="https://www.talkingdata.com" border="0" target="_blank"><img alt="talkingdata" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/talkingdata.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.boericasa.com/index.html" border="0" target="_blank"><img alt="BoerSmart" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/boer.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.open.com.cn" border="0" target="_blank"><img alt="OpenEdutainment" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/openedutainment.png" height="70"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.ifre.com.cn" border="0" target="_blank"><img alt="iFRE" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/ifre.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; <br/><br/>
+<a href="http://www.boco.com.cn:8080/bocoit/" border="0" target="_blank"><img alt="BOCOIT" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/bocoit.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.wise2c.com/" border="0" target="_blank"><img alt="wise2c" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/wise2c.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.hydsoft.com/" border="0" target="_blank"><img alt="HYDSoft" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/hydsoft.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.cloud-star.com.cn/" border="0" target="_blank"><img alt="CloudStar" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/cloudstar.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.beyondsoft.com/" border="0" target="_blank"><img alt="BeyondSoft" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/beyondsoft.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.chinamobileltd.com/" border="0" target="_blank"><img alt="ChinaMobile" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/china-mobile.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://www.caicloud.io" target="_blank" border="0"><img alt="CaiCloud" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/caicloud.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://rancher.com/" target="_blank" border="0"><img alt="Rancher" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/rancher.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://www.tenxcloud.com/" target="_blank" border="0"><img alt="TenxCloud" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/tenxcloud.png" height="70"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.bingocc.com/" target="_blank" border="0"><img alt="BingoCloud" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/bingocloud.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <br/><br/>
-<a href="http://www.slamtec.com" target="_blank" border="0"><img alt="SlamTec" src="docs/img/slamtec.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="http://www.cloudchef.io/" target="_blank" border="0"><img alt="CloudChef" src="docs/img/cloudchef.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="https://pivotal.io/" target="_blank" border="0"><img alt="Pivotal" src="docs/img/pivotal.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.slamtec.com" target="_blank" border="0"><img alt="SlamTec" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/slamtec.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.cloudchef.io/" target="_blank" border="0"><img alt="CloudChef" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/cloudchef.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://pivotal.io/" target="_blank" border="0"><img alt="Pivotal" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/pivotal.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://www.163yun.com" target="_blank" border="0"><img alt="Netease Cloud" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/wangyi.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.yanrongyun.com" target="_blank" border="0"><img alt="Yanrongyun" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/Yanrong.jpg" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://anchore.com" target="_blank" border="0"><img alt="Anchore" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/adopters/anchore_logo.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 
 ## Success Stories
-**JD:** Harbor is the registry service of JD.com’s JDOS
+
+**JD.com:** Harbor is the registry service of JD.com’s JDOS
 platform. Harbor has been used for over 2 years in production with tens of
 thousands of nodes and managing millions of container images.
 
@@ -79,3 +83,7 @@ feature within Harbor before deploying images into production.
 **Allegis:** Harbor is used at Allegis as a secure private registry to store
 and scan customized container images for different business applications, like
 ELK stack, as part of their CI/CD pipeline.
+
+## Adding your logo
+
+If you would like to add your logo here and to the `Users and Partners of Harbor` section of the website, add a PNG or SVG version of your logo to the [adopters](https://github.com/goharbor/website/tree/master/docs/img/adopters) directory of the [website](https://github.com/goharbor/website) and submit a pull request with your change. Name the image file something that reflects your company (e.g., if your company is called Acme, name the image acme.png). We will follow up and make the change in the goharbor.io website as well.

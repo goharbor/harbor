@@ -29,8 +29,8 @@ export class ForgotPasswordComponent {
     validationState: boolean = true;
     isSuccess: boolean = false;
 
-    @ViewChild("forgotPasswordFrom") forgotPwdForm: NgForm;
-    @ViewChild(InlineAlertComponent)
+    @ViewChild("forgotPasswordFrom", {static: true}) forgotPwdForm: NgForm;
+    @ViewChild(InlineAlertComponent, {static: false})
     inlineAlert: InlineAlertComponent;
 
     constructor(private pwdService: PasswordSettingService) { }
@@ -79,14 +79,13 @@ export class ForgotPasswordComponent {
 
         this.onGoing = true;
         this.pwdService.sendResetPasswordMail(this.email)
-            .then(response => {
+            .subscribe(response => {
                 this.onGoing = false;
                 this.isSuccess = true;
                 this.inlineAlert.showInlineSuccess({
                     message: "RESET_PWD.SUCCESS"
                 });
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.inlineAlert.showInlineError(error);
             });

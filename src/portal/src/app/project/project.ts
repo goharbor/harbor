@@ -11,24 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-/*
-  [
-    {
-        "project_id": 1,
-        "owner_id": 1,
-        "name": "library",
-        "creation_time": "2017-02-10T07:57:56Z",
-        "creation_time_str": "",
-        "deleted": 0,
-        "owner_name": "",
-        "public": 1,
-        "togglable": true,
-        "update_time": "2017-02-10T07:57:56Z",
-        "current_user_role_id": 1,
-        "repo_count": 0
-    }
-  ]
-*/
 export class Project {
     project_id: number;
     owner_id: number;
@@ -41,15 +23,18 @@ export class Project {
     update_time: Date;
     current_user_role_id: number;
     repo_count: number;
+    chart_count: number;
     has_project_admin_role: boolean;
     is_member: boolean;
     role_name: string;
+    registry_id: number;
     metadata: {
       public: string | boolean;
       enable_content_trust: string | boolean;
       prevent_vul: string | boolean;
       severity: string;
       auto_scan: string | boolean;
+      retention_id: number;
     };
     constructor () {
       this.metadata = <any>{};

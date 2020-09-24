@@ -15,7 +15,8 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'destination-page',
-  templateUrl: 'destination-page.component.html'
+  templateUrl: 'destination-page.component.html',
+  styleUrls: [ '../total-replication/total-replication.component.scss' ]
 })
 export class DestinationPageComponent {
 }

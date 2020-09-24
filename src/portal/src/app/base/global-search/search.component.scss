@@ -19,12 +19,6 @@
     position: relative;
 }
 
-.search-title {
-    font-size: 28px;
-    letter-spacing: normal;
-    color: #000;
-}
-
 .search-close {
     position: absolute;
     right: 24px;
@@ -39,6 +33,7 @@
     top: 50%;
     left: 50%;
     position: absolute;
+    z-index: 1;
 }
 
 .grid-header-wrapper {
@@ -56,7 +51,6 @@
 }
 
 .search::before {
-    position: absolute;
     content: '';
     display: inline-block;
     background: #fafafa;
@@ -68,5 +62,9 @@
 
 #results {
     overflow-y: auto;
-    max-height: 99%;
+    max-height: 85%;
+}
+
+#placeholder1 {
+    height: 24px;
 }

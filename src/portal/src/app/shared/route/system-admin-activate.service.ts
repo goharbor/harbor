@@ -20,8 +20,9 @@ import {
   NavigationExtras
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { CommonRoutes } from '../../shared/shared.const';
-import { AppConfigService } from '../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
+import { Observable } from 'rxjs';
+import { CommonRoutes } from "../../../lib/entities/shared.const";
 
 @Injectable()
 export class SystemAdminGuard implements CanActivate, CanActivateChild {
@@ -30,23 +31,22 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
     private router: Router,
     private appConfigService: AppConfigService) { }
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
-    return new Promise((resolve, reject) => {
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
+    return new Observable((observer) => {
       let user = this.authService.getCurrentUser();
       if (!user) {
         this.authService.retrieveUser()
-          .then(() => {
+          .subscribe(() => {
             // updated user
             user = this.authService.getCurrentUser();
             if (user.has_admin_role) {
-              return resolve(true);
+              return observer.next(true);
             } else {
               this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-              return resolve(false);
+              return observer.next(false);
             }
-          })
-          .catch(error => {
-            // Session retrieving failed then redirect to sign-in
+          }, error => {
+            // Session retrieving failed.pipe(map redirect to sign-in
             // no matter what status code is.
             // Please pay attention that route 'harborRootRoute' support anonymous user
             if (state.url !== CommonRoutes.HARBOR_ROOT && !state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
@@ -54,23 +54,23 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
                 queryParams: { "redirect_url": state.url }
               };
               this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
-              return resolve(false);
+              return observer.next(false);
             } else {
-              return resolve(true);
+              return observer.next(true);
             }
           });
       } else {
         if (user.has_admin_role) {
-          return resolve(true);
+          return observer.next(true);
         } else {
           this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          return resolve(false);
+          return observer.next(false);
         }
       }
     });
   }
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
     return this.canActivate(route, state);
   }
 }

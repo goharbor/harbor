@@ -371,7 +371,7 @@ func (ts *timeSeries) ComputeRange(start, finish time.Time, num int) []Observabl
 		}
 	}
 
-	// Failed to find a level that covers the desired range.  So just
+	// Failed to find a level that covers the desired range. So just
 	// extract from the last level, even if it doesn't cover the entire
 	// desired range.
 	ts.extract(ts.levels[len(ts.levels)-1], start, finish, num, results)
@@ -403,9 +403,9 @@ func (ts *timeSeries) extract(l *tsLevel, start, finish time.Time, num int, resu
 
 	// Where should scanning start?
 	if dstStart.After(srcStart) {
-		advance := dstStart.Sub(srcStart) / srcInterval
-		srcIndex += int(advance)
-		srcStart = srcStart.Add(advance * srcInterval)
+		advance := int(dstStart.Sub(srcStart) / srcInterval)
+		srcIndex += advance
+		srcStart = srcStart.Add(time.Duration(advance) * srcInterval)
 	}
 
 	// The i'th value is computed as show below.

@@ -23,24 +23,23 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/goharbor/harbor/src/jobservice/utils"
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/lib/log"
 	yaml "gopkg.in/yaml.v2"
 )
 
 const (
-	jobServiceProtocol            = "JOB_SERVICE_PROTOCOL"
-	jobServicePort                = "JOB_SERVICE_PORT"
-	jobServiceHTTPCert            = "JOB_SERVICE_HTTPS_CERT"
-	jobServiceHTTPKey             = "JOB_SERVICE_HTTPS_KEY"
-	jobServiceWorkerPoolBackend   = "JOB_SERVICE_POOL_BACKEND"
-	jobServiceWorkers             = "JOB_SERVICE_POOL_WORKERS"
-	jobServiceRedisURL            = "JOB_SERVICE_POOL_REDIS_URL"
-	jobServiceRedisNamespace      = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
-	jobServiceLoggerBasePath      = "JOB_SERVICE_LOGGER_BASE_PATH"
-	jobServiceLoggerLevel         = "JOB_SERVICE_LOGGER_LEVEL"
-	jobServiceLoggerArchivePeriod = "JOB_SERVICE_LOGGER_ARCHIVE_PERIOD"
-	jobServiceCoreServerEndpoint  = "CORE_URL"
-	jobServiceAuthSecret          = "JOBSERVICE_SECRET"
+	jobServiceProtocol                   = "JOB_SERVICE_PROTOCOL"
+	jobServicePort                       = "JOB_SERVICE_PORT"
+	jobServiceHTTPCert                   = "JOB_SERVICE_HTTPS_CERT"
+	jobServiceHTTPKey                    = "JOB_SERVICE_HTTPS_KEY"
+	jobServiceWorkerPoolBackend          = "JOB_SERVICE_POOL_BACKEND"
+	jobServiceWorkers                    = "JOB_SERVICE_POOL_WORKERS"
+	jobServiceRedisURL                   = "JOB_SERVICE_POOL_REDIS_URL"
+	jobServiceRedisNamespace             = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
+	jobServiceRedisIdleConnTimeoutSecond = "JOB_SERVICE_POOL_REDIS_CONN_IDLE_TIMEOUT_SECOND"
+	jobServiceAuthSecret                 = "JOBSERVICE_SECRET"
+	coreURL                              = "CORE_URL"
 
 	// JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -68,16 +67,17 @@ type Configuration struct {
 	// Server listening port
 	Port uint `yaml:"port"`
 
-	AdminServer string `yaml:"admin_server"`
-
 	// Additional config when using https
 	HTTPSConfig *HTTPSConfig `yaml:"https_config,omitempty"`
 
-	// Configurations of worker pool
+	// Configurations of worker worker
 	PoolConfig *PoolConfig `yaml:"worker_pool,omitempty"`
 
+	// Job logger configurations
+	JobLoggerConfigs []*LoggerConfig `yaml:"job_loggers,omitempty"`
+
 	// Logger configurations
-	LoggerConfig *LoggerConfig `yaml:"logger,omitempty"`
+	LoggerConfigs []*LoggerConfig `yaml:"loggers,omitempty"`
 }
 
 // HTTPSConfig keeps additional configurations when using https protocol
@@ -86,13 +86,17 @@ type HTTPSConfig struct {
 	Key  string `yaml:"key"`
 }
 
-// RedisPoolConfig keeps redis pool info.
+// RedisPoolConfig keeps redis worker info.
 type RedisPoolConfig struct {
 	RedisURL  string `yaml:"redis_url"`
 	Namespace string `yaml:"namespace"`
+	// IdleTimeoutSecond closes connections after remaining idle for this duration. If the value
+	// is zero, then idle connections are not closed. Applications should set
+	// the timeout to a value less than the server's timeout.
+	IdleTimeoutSecond int64 `yaml:"idle_timeout_second"`
 }
 
-// PoolConfig keeps worker pool configurations.
+// PoolConfig keeps worker worker configurations.
 type PoolConfig struct {
 	// Worker concurrency
 	WorkerCount  uint             `yaml:"workers"`
@@ -100,11 +104,21 @@ type PoolConfig struct {
 	RedisPoolCfg *RedisPoolConfig `yaml:"redis_pool,omitempty"`
 }
 
-// LoggerConfig keeps logger configurations.
+// CustomizedSettings keeps the customized settings of logger
+type CustomizedSettings map[string]interface{}
+
+// LogSweeperConfig keeps settings of log sweeper
+type LogSweeperConfig struct {
+	Duration int                `yaml:"duration"`
+	Settings CustomizedSettings `yaml:"settings"`
+}
+
+// LoggerConfig keeps logger basic configurations.
 type LoggerConfig struct {
-	BasePath      string `yaml:"path"`
-	LogLevel      string `yaml:"level"`
-	ArchivePeriod uint   `yaml:"archive_period"`
+	Name     string             `yaml:"name"`
+	Level    string             `yaml:"level"`
+	Settings CustomizedSettings `yaml:"settings"`
+	Sweeper  *LogSweeperConfig  `yaml:"sweeper"`
 }
 
 // Load the configuration options from the specified yaml file.
@@ -136,13 +150,10 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 		redisAddress := c.PoolConfig.RedisPoolCfg.RedisURL
 		if !utils.IsEmptyStr(redisAddress) {
 			if _, err := url.Parse(redisAddress); err != nil {
-				if redisURL, ok := utils.TranslateRedisAddress(redisAddress); ok {
-					c.PoolConfig.RedisPoolCfg.RedisURL = redisURL
-				}
-			} else {
-				if !strings.HasPrefix(redisAddress, redisSchema) {
-					c.PoolConfig.RedisPoolCfg.RedisURL = fmt.Sprintf("%s%s", redisSchema, redisAddress)
-				}
+				return fmt.Errorf("bad redis url for jobservice, %s", redisAddress)
+			}
+			if !strings.Contains(redisAddress, "://") {
+				c.PoolConfig.RedisPoolCfg.RedisURL = fmt.Sprintf("%s%s", redisSchema, redisAddress)
 			}
 		}
 	}
@@ -151,46 +162,19 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	return c.validate()
 }
 
-// GetLogBasePath returns the log base path config
-func GetLogBasePath() string {
-	if DefaultConfig.LoggerConfig != nil {
-		return DefaultConfig.LoggerConfig.BasePath
-	}
-
-	return ""
-}
-
-// GetLogLevel returns the log level
-func GetLogLevel() string {
-	if DefaultConfig.LoggerConfig != nil {
-		return DefaultConfig.LoggerConfig.LogLevel
-	}
-
-	return ""
-}
-
-// GetLogArchivePeriod returns the archive period
-func GetLogArchivePeriod() uint {
-	if DefaultConfig.LoggerConfig != nil {
-		return DefaultConfig.LoggerConfig.ArchivePeriod
-	}
-
-	return 1 // return default
-}
-
 // GetAuthSecret get the auth secret from the env
 func GetAuthSecret() string {
 	return utils.ReadEnv(jobServiceAuthSecret)
 }
 
+// GetCoreURL get the core url from the env
+func GetCoreURL() string {
+	return utils.ReadEnv(coreURL)
+}
+
 // GetUIAuthSecret get the auth secret of UI side
 func GetUIAuthSecret() string {
 	return utils.ReadEnv(uiAuthSecret)
-}
-
-// GetAdminServerEndpoint return the admin server endpoint
-func GetAdminServerEndpoint() string {
-	return DefaultConfig.AdminServer
 }
 
 // Load env variables
@@ -266,36 +250,19 @@ func (c *Configuration) loadEnvs() {
 			}
 			c.PoolConfig.RedisPoolCfg.Namespace = rn
 		}
-	}
 
-	// logger
-	loggerPath := utils.ReadEnv(jobServiceLoggerBasePath)
-	if !utils.IsEmptyStr(loggerPath) {
-		if c.LoggerConfig == nil {
-			c.LoggerConfig = &LoggerConfig{}
-		}
-		c.LoggerConfig.BasePath = loggerPath
-	}
-	loggerLevel := utils.ReadEnv(jobServiceLoggerLevel)
-	if !utils.IsEmptyStr(loggerLevel) {
-		if c.LoggerConfig == nil {
-			c.LoggerConfig = &LoggerConfig{}
-		}
-		c.LoggerConfig.LogLevel = loggerLevel
-	}
-	archivePeriod := utils.ReadEnv(jobServiceLoggerArchivePeriod)
-	if !utils.IsEmptyStr(archivePeriod) {
-		if period, err := strconv.Atoi(archivePeriod); err == nil {
-			if c.LoggerConfig == nil {
-				c.LoggerConfig = &LoggerConfig{}
+		it := utils.ReadEnv(jobServiceRedisIdleConnTimeoutSecond)
+		if !utils.IsEmptyStr(it) {
+			if c.PoolConfig.RedisPoolCfg == nil {
+				c.PoolConfig.RedisPoolCfg = &RedisPoolConfig{}
 			}
-			c.LoggerConfig.ArchivePeriod = uint(period)
+			v, err := strconv.Atoi(it)
+			if err != nil {
+				log.Warningf("Invalid idle timeout second: %s, will use 0 instead", it)
+			} else {
+				c.PoolConfig.RedisPoolCfg.IdleTimeoutSecond = int64(v)
+			}
 		}
-	}
-
-	// admin server
-	if coreServer := utils.ReadEnv(jobServiceCoreServerEndpoint); !utils.IsEmptyStr(coreServer) {
-		c.AdminServer = coreServer
 	}
 
 }
@@ -328,54 +295,42 @@ func (c *Configuration) validate() error {
 	}
 
 	if c.PoolConfig == nil {
-		return errors.New("no worker pool is configured")
+		return errors.New("no worker worker is configured")
 	}
 
 	if c.PoolConfig.Backend != JobServicePoolBackendRedis {
-		return fmt.Errorf("worker pool backend %s does not support", c.PoolConfig.Backend)
+		return fmt.Errorf("worker worker backend %s does not support", c.PoolConfig.Backend)
 	}
 
 	// When backend is redis
 	if c.PoolConfig.Backend == JobServicePoolBackendRedis {
 		if c.PoolConfig.RedisPoolCfg == nil {
-			return fmt.Errorf("redis pool must be configured when backend is set to '%s'", c.PoolConfig.Backend)
+			return fmt.Errorf("redis worker must be configured when backend is set to '%s'", c.PoolConfig.Backend)
 		}
 		if utils.IsEmptyStr(c.PoolConfig.RedisPoolCfg.RedisURL) {
-			return errors.New("URL of redis pool is empty")
+			return errors.New("URL of redis worker is empty")
 		}
-
-		if !strings.HasPrefix(c.PoolConfig.RedisPoolCfg.RedisURL, redisSchema) {
-			return errors.New("Invalid redis URL")
+		if !strings.Contains(c.PoolConfig.RedisPoolCfg.RedisURL, "://") {
+			return errors.New("invalid redis URL")
 		}
 
 		if _, err := url.Parse(c.PoolConfig.RedisPoolCfg.RedisURL); err != nil {
-			return fmt.Errorf("Invalid redis URL: %s", err.Error())
+			return fmt.Errorf("invalid redis URL: %s", err.Error())
 		}
 
 		if utils.IsEmptyStr(c.PoolConfig.RedisPoolCfg.Namespace) {
-			return errors.New("namespace of redis pool is required")
+			return errors.New("namespace of redis worker is required")
 		}
 	}
 
-	if c.LoggerConfig == nil {
-		return errors.New("missing logger config")
+	// Job service loggers
+	if len(c.LoggerConfigs) == 0 {
+		return errors.New("missing logger config of job service")
 	}
 
-	if !utils.DirExists(c.LoggerConfig.BasePath) {
-		return errors.New("logger path should be an existing dir")
-	}
-
-	validLevels := "DEBUG,INFO,WARNING,ERROR,FATAL"
-	if !strings.Contains(validLevels, c.LoggerConfig.LogLevel) {
-		return fmt.Errorf("logger level can only be one of: %s", validLevels)
-	}
-
-	if c.LoggerConfig.ArchivePeriod == 0 {
-		return fmt.Errorf("logger archive period should be greater than 0")
-	}
-
-	if _, err := url.Parse(c.AdminServer); err != nil {
-		return fmt.Errorf("invalid admin server endpoint: %s", err)
+	// Job loggers
+	if len(c.JobLoggerConfigs) == 0 {
+		return errors.New("missing logger config of job")
 	}
 
 	return nil // valid

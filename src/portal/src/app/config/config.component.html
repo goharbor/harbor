@@ -1,56 +1,25 @@
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-        <h2 style="display: inline-block;" class="custom-h2">{{'CONFIG.TITLE' | translate }}</h2>
-        <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
-        <ul id="configTabs" class="nav" role="tablist">
-            <li role="presentation" class="nav-item">
-                <button id="config-auth" class="btn btn-link nav-link active" aria-controls="authentication" [class.active]='isCurrentTabLink("config-auth")'
-                    type="button" (click)='tabLinkClick("config-auth")'>{{'CONFIG.AUTH' | translate }}</button>
-            </li>
-            <li role="presentation" class="nav-item">
-                <button id="config-email" class="btn btn-link nav-link" aria-controls="email" [class.active]='isCurrentTabLink("config-email")'
-                    type="button" (click)='tabLinkClick("config-email")'>{{'CONFIG.EMAIL' | translate }}</button>
-            </li>
-            <li role="presentation" class="nav-item">
-                <button id="config-system" class="btn btn-link nav-link" aria-controls="system_settings" [class.active]='isCurrentTabLink("config-system")'
-                    type="button" (click)='tabLinkClick("config-system")'>{{'CONFIG.SYSTEM' | translate }}</button>
-            </li>
-            <li role="presentation" class="nav-item" *ngIf="!withAdmiral">
-                <button id="config-label" class="btn btn-link nav-link" aria-controls="system_label" [class.active]='isCurrentTabLink("config-label")'
-                    type="button" (click)='tabLinkClick("config-label")'>{{'CONFIG.LABEL' | translate }}</button>
-            </li>
-            <li role="presentation" class="nav-item" *ngIf="withClair">
-                <button id="config-vulnerability" class="btn btn-link nav-link" aria-controls="vulnerability" [class.active]='isCurrentTabLink("config-vulnerability")'
-                    type="button" (click)='tabLinkClick("config-vulnerability")'>{{'CONFIG.VULNERABILITY' | translate}}</button>
-            </li>
-            <li role="presentation" class="nav-item" *ngIf="hasAdminRole">
-                <button id="config-gc" class="btn btn-link nav-link" aria-controls="gc" [class.active]='isCurrentTabLink("config-gc")' type="button"
-                    (click)='tabLinkClick("config-gc")'>{{'CONFIG.GC' | translate}}</button>
-            </li>
-        </ul>
-        <section id="authentication" role="tabpanel" aria-labelledby="config-auth" [hidden]='!isCurrentTabContent("authentication")'>
-            <config-auth [allConfig]="allConfig"></config-auth>
-        </section>
-        <section id="email" role="tabpanel" aria-labelledby="config-email" [hidden]='!isCurrentTabContent("email")'>
-            <config-email [mailConfig]="allConfig"></config-email>
-        </section>
-        <section id="system_settings" role="tabpanel" aria-labelledby="config-system" [hidden]='!isCurrentTabContent("system_settings")'>
-            <system-settings [(systemSettings)]="allConfig" [hasAdminRole]="hasAdminRole" [hasCAFile]="hasCAFile"></system-settings>
-        </section>
-        <section id="system_label" role="tabpanel" aria-labelledby="config-label" *ngIf="!withAdmiral" [hidden]='!isCurrentTabContent("system_label")'
-            style="padding-top: 16px;">
-            <hbr-label [scope]="'g'"></hbr-label>
-        </section>
-        <section id="vulnerability" *ngIf="withClair" role="tabpanel" aria-labelledby="config-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
-            <vulnerability-config [(vulnerabilityConfig)]="allConfig"></vulnerability-config>
-        </section>
-        <section id="gc" *ngIf="hasAdminRole" role="tabpanel" aria-labelledby="config-gc" [hidden]='!isCurrentTabContent("gc")'>
-            <gc-config></gc-config>
-        </section>
+        <h2 class="custom-h2 config-title">{{'CONFIG.TITLE' | translate }}<span class="spinner spinner-inline ml-1 v-mid" [hidden]="inProgress === false"></span></h2>
+        <clr-tabs>
+                <clr-tab>
+                    <button id="config-auth" clrTabLink>{{'CONFIG.AUTH' | translate}}</button>
+                    <clr-tab-content id="authentication" *clrIfActive>
+                        <config-auth [allConfig]="allConfig"  (refreshAllconfig)="refreshAllconfig()"></config-auth>
+                    </clr-tab-content>
+                </clr-tab>
+                <clr-tab>
+                    <button id="config-email" clrTabLink>{{'CONFIG.EMAIL' | translate }}</button>
+                    <clr-tab-content id="email" *clrIfActive>
+                        <config-email [mailConfig]="allConfig" (refreshAllconfig)="refreshAllconfig()"></config-email>
+                    </clr-tab-content>
+                </clr-tab>
+                <clr-tab>
+                    <button id="config-system" clrTabLink>{{'CONFIG.SYSTEM' | translate }}</button>
+                    <clr-tab-content id="system_settings" *clrIfActive>
+                        <system-settings [(systemSettings)]="allConfig" [hasAdminRole]="hasAdminRole" (reloadSystemConfig)="handleAppConfig($event)" (readOnlyChange)="handleReadyOnlyChange($event)" [hasCAFile]="hasCAFile"></system-settings>
+                    </clr-tab-content>
+                </clr-tab>
+        </clr-tabs>
     </div>
-</div>
-<div>
-    <button type="button" id="config_system_save" class="btn btn-primary" (click)="save()" [hidden]="hideBtn" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
-    <button type="button" class="btn btn-outline" (click)="cancel()" [hidden]="hideBtn" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL' | translate}}</button>
-
 </div>

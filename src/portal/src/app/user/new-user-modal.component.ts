@@ -23,7 +23,8 @@ import { MessageHandlerService } from '../shared/message-handler/message-handler
 
 @Component({
     selector: "new-user-modal",
-    templateUrl: "new-user-modal.component.html"
+    templateUrl: "new-user-modal.component.html",
+    styleUrls: ['../common.scss', "./new-user-madal.component.scss"]
 })
 
 export class NewUserModalComponent {
@@ -38,9 +39,9 @@ export class NewUserModalComponent {
         private userService: UserService,
         private msgHandler: MessageHandlerService) { }
 
-    @ViewChild(NewUserFormComponent)
+    @ViewChild(NewUserFormComponent, {static: true})
     newUserForm: NewUserFormComponent;
-    @ViewChild(InlineAlertComponent)
+    @ViewChild(InlineAlertComponent, {static: false})
     inlineAlert: InlineAlertComponent;
 
     getNewUser(): User {
@@ -117,7 +118,7 @@ export class NewUserModalComponent {
         this.onGoing = true;
 
         this.userService.addUser(u)
-            .then(() => {
+            .subscribe(() => {
                 this.onGoing = false;
                 // TODO:
                 // As no response data returned, can not add it to list directly
@@ -125,8 +126,7 @@ export class NewUserModalComponent {
                 this.addNew.emit(u);
                 this.opened = false;
                 this.msgHandler.showSuccess("USER.SAVE_SUCCESS");
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.error = error;
                 if (this.msgHandler.isAppLevel(error)) {

@@ -18,7 +18,7 @@ import (
 	"fmt"
 
 	"github.com/astaxie/beego/orm"
-	_ "github.com/mattn/go-sqlite3" // register sqlite driver
+	// _ "github.com/mattn/go-sqlite3" // register sqlite driver
 )
 
 type sqlite struct {

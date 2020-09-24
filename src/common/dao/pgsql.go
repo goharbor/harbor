@@ -16,27 +16,31 @@ package dao
 
 import (
 	"fmt"
+	"net/url"
 	"os"
+	"strconv"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/golang-migrate/migrate"
-	_ "github.com/golang-migrate/migrate/database/postgres" // import pgsql driver for migrator
-	_ "github.com/golang-migrate/migrate/source/file"       // import local file driver for migrator
-
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	_ "github.com/lib/pq" // register pgsql driver
+	"github.com/goharbor/harbor/src/lib/log"
+	migrate "github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres" // import pgsql driver for migrator
+	_ "github.com/golang-migrate/migrate/v4/source/file"       // import local file driver for migrator
+	_ "github.com/lib/pq"                                      // register pgsql driver
 )
 
 const defaultMigrationPath = "migrations/postgresql/"
 
 type pgsql struct {
-	host     string
-	port     string
-	usr      string
-	pwd      string
-	database string
-	sslmode  string
+	host         string
+	port         string
+	usr          string
+	pwd          string
+	database     string
+	sslmode      string
+	maxIdleConns int
+	maxOpenConns int
 }
 
 // Name returns the name of PostgreSQL
@@ -46,22 +50,24 @@ func (p *pgsql) Name() string {
 
 // String ...
 func (p *pgsql) String() string {
-	return fmt.Sprintf("type-%s host-%s port-%s databse-%s sslmode-%q",
+	return fmt.Sprintf("type-%s host-%s port-%s database-%s sslmode-%q",
 		p.Name(), p.host, p.port, p.database, p.sslmode)
 }
 
 // NewPGSQL returns an instance of postgres
-func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode string) Database {
+func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode string, maxIdleConns int, maxOpenConns int) Database {
 	if len(sslmode) == 0 {
 		sslmode = "disable"
 	}
 	return &pgsql{
-		host:     host,
-		port:     port,
-		usr:      usr,
-		pwd:      pwd,
-		database: database,
-		sslmode:  sslmode,
+		host:         host,
+		port:         port,
+		usr:          usr,
+		pwd:          pwd,
+		database:     database,
+		sslmode:      sslmode,
+		maxIdleConns: maxIdleConns,
+		maxOpenConns: maxOpenConns,
 	}
 }
 
@@ -82,19 +88,33 @@ func (p *pgsql) Register(alias ...string) error {
 	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		p.host, p.port, p.usr, p.pwd, p.database, p.sslmode)
 
-	return orm.RegisterDataBase(an, "postgres", info)
+	if err := orm.RegisterDataBase(an, "postgres", info, p.maxIdleConns, p.maxOpenConns); err != nil {
+		return err
+	}
+
+	// Due to the issues of beego v1.12.1 and v1.12.2, we set the max open conns ourselves.
+	// See https://github.com/goharbor/harbor/issues/12403
+	// and https://github.com/astaxie/beego/issues/4059 for more info.
+	db, _ := orm.GetDB(an)
+	db.SetMaxOpenConns(p.maxOpenConns)
+
+	return nil
 }
 
 // UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.
 func (p *pgsql) UpgradeSchema() error {
-	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", p.usr, p.pwd, p.host, p.port, p.database, p.sslmode)
-	// For UT
-	path := os.Getenv("POSTGRES_MIGRATION_SCRIPTS_PATH")
-	if len(path) == 0 {
-		path = defaultMigrationPath
+	port, err := strconv.ParseInt(p.port, 10, 64)
+	if err != nil {
+		return err
 	}
-	srcURL := fmt.Sprintf("file://%s", path)
-	m, err := migrate.New(srcURL, dbURL)
+	m, err := NewMigrator(&models.PostGreSQL{
+		Host:     p.host,
+		Port:     int(port),
+		Username: p.usr,
+		Password: p.pwd,
+		Database: p.database,
+		SSLMode:  p.sslmode,
+	})
 	if err != nil {
 		return err
 	}
@@ -113,4 +133,28 @@ func (p *pgsql) UpgradeSchema() error {
 		return err
 	}
 	return nil
+}
+
+// NewMigrator creates a migrator base on the information
+func NewMigrator(database *models.PostGreSQL) (*migrate.Migrate, error) {
+	dbURL := url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(database.Username, database.Password),
+		Host:     fmt.Sprintf("%s:%d", database.Host, database.Port),
+		Path:     database.Database,
+		RawQuery: fmt.Sprintf("sslmode=%s", database.SSLMode),
+	}
+
+	// For UT
+	path := os.Getenv("POSTGRES_MIGRATION_SCRIPTS_PATH")
+	if len(path) == 0 {
+		path = defaultMigrationPath
+	}
+	srcURL := fmt.Sprintf("file://%s", path)
+	m, err := migrate.New(srcURL, dbURL.String())
+	if err != nil {
+		return nil, err
+	}
+	m.Log = newMigrateLogger()
+	return m, nil
 }

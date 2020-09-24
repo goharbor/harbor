@@ -67,7 +67,7 @@ a.underline, .underline{
 		        <span class="status-text">Page Not Found</span>
 		    </div>
 		    <div class="status-subtitle">
-		        <p> <a href="/harbor" class="underline">Home</p>
+		        <p><a href="/harbor" class="underline">Home</a></p>
 		    </div>
         </div>
     </div>

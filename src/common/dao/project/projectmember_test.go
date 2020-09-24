@@ -19,13 +19,17 @@ import (
 	"os"
 	"testing"
 
+	"github.com/goharbor/harbor/src/common/dao/group"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	cfg "github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 func TestMain(m *testing.M) {
@@ -51,13 +55,20 @@ func TestMain(m *testing.M) {
 			"update project set owner_id = (select user_id from harbor_user where username = 'member_test_01') where name = 'member_test_01'",
 			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select user_id from harbor_user where username = 'member_test_01'), 'u', 1)",
 			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_group_01'), 'g', 1)",
+
+			"insert into harbor_user (username, email, password, realname)  values ('member_test_02', 'member_test_02@example.com', '123456', 'member_test_02')",
+			"insert into project (name, owner_id) values ('member_test_02', 1)",
+			"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_group_02', 1, 'CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com')",
+			"update project set owner_id = (select user_id from harbor_user where username = 'member_test_02') where name = 'member_test_02'",
+			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_02') , (select user_id from harbor_user where username = 'member_test_02'), 'u', 1)",
+			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_02') , (select id from user_group where group_name = 'test_group_02'), 'g', 1)",
 		}
 
 		clearSqls := []string{
-			"delete from project where name='member_test_01'",
-			"delete from harbor_user where username='member_test_01' or username='pm_sample'",
+			"delete from project where name='member_test_01' or name='member_test_02'",
+			"delete from harbor_user where username='member_test_01' or username='member_test_02' or username='pm_sample'",
 			"delete from user_group",
-			"delete from project_member",
+			"delete from project_member where id > 1",
 		}
 		dao.PrepareTestData(clearSqls, initSqls)
 		cfg.Init()
@@ -82,7 +93,7 @@ func TestDeleteProjectMemberByID(t *testing.T) {
 		ProjectID:  currentProject.ProjectID,
 		EntityID:   1,
 		EntityType: common.UserMember,
-		Role:       models.DEVELOPER,
+		Role:       common.RoleDeveloper,
 	}
 
 	pmid, err := AddProjectMember(addMember)
@@ -122,7 +133,7 @@ func TestAddProjectMember(t *testing.T) {
 		ProjectID:  currentProject.ProjectID,
 		EntityID:   1,
 		EntityType: common.UserMember,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 	}
 
 	log.Debugf("Current project id %v", currentProject.ProjectID)
@@ -152,7 +163,7 @@ func TestAddProjectMember(t *testing.T) {
 		ProjectID:  -1,
 		EntityID:   1,
 		EntityType: common.UserMember,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 	})
 	if err == nil {
 		t.Fatal("Should failed with negative projectID")
@@ -161,7 +172,7 @@ func TestAddProjectMember(t *testing.T) {
 		ProjectID:  1,
 		EntityID:   -1,
 		EntityType: common.UserMember,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 	})
 	if err == nil {
 		t.Fatal("Should failed with negative entityID")
@@ -184,7 +195,7 @@ func TestUpdateProjectMemberRole(t *testing.T) {
 		ProjectID:  currentProject.ProjectID,
 		EntityID:   int(userID),
 		EntityType: common.UserMember,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 	}
 
 	pmid, err := AddProjectMember(member)
@@ -192,7 +203,7 @@ func TestUpdateProjectMemberRole(t *testing.T) {
 		t.Errorf("Error occurred in UpdateProjectMember: %v", err)
 	}
 
-	UpdateProjectMemberRole(pmid, models.DEVELOPER)
+	UpdateProjectMemberRole(pmid, common.RoleDeveloper)
 
 	queryMember := models.Member{
 		ProjectID:  currentProject.ProjectID,
@@ -208,7 +219,7 @@ func TestUpdateProjectMemberRole(t *testing.T) {
 		t.Errorf("Error occurred in Failed,  size: %d, condition:%+v", len(memberList), queryMember)
 	}
 	memberItem := memberList[0]
-	if memberItem.Role != models.DEVELOPER || memberItem.Entityname != user.Username {
+	if memberItem.Role != common.RoleDeveloper || memberItem.Entityname != user.Username {
 		t.Errorf("member doesn't match!")
 	}
 
@@ -285,6 +296,88 @@ func TestGetProjectMember(t *testing.T) {
 	}
 
 }
+
+func TestGetTotalOfProjectMembers(t *testing.T) {
+	currentProject, _ := dao.GetProjectByName("member_test_02")
+
+	type args struct {
+		projectID int64
+		roles     []int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr bool
+	}{
+		{"Get total of project admin", args{currentProject.ProjectID, []int{common.RoleProjectAdmin}}, 2, false},
+		{"Get total of maintainer", args{currentProject.ProjectID, []int{common.RoleMaintainer}}, 0, false},
+		{"Get total of developer", args{currentProject.ProjectID, []int{common.RoleDeveloper}}, 0, false},
+		{"Get total of guest", args{currentProject.ProjectID, []int{common.RoleGuest}}, 0, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetTotalOfProjectMembers(tt.args.projectID, tt.args.roles...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetTotalOfProjectMembers() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetTotalOfProjectMembers() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestListRoles(t *testing.T) {
+	// nil user
+	roles, err := ListRoles(nil, 1)
+	require.Nil(t, err)
+	assert.Len(t, roles, 0)
+
+	user, err := dao.GetUser(models.User{Username: "member_test_01"})
+	require.Nil(t, err)
+	project, err := dao.GetProjectByName("member_test_01")
+	require.Nil(t, err)
+
+	// user with empty groups
+	roles, err = ListRoles(user, project.ProjectID)
+	require.Nil(t, err)
+	assert.Len(t, roles, 1)
+
+	// user with a group whose ID doesn't exist
+	user.GroupIDs = []int{9999}
+	roles, err = ListRoles(user, project.ProjectID)
+	require.Nil(t, err)
+	require.Len(t, roles, 1)
+	assert.Equal(t, common.RoleProjectAdmin, roles[0])
+
+	// user with a valid group
+	groupID, err := group.AddUserGroup(models.UserGroup{
+		GroupName:   "group_for_list_role",
+		GroupType:   1,
+		LdapGroupDN: "CN=list_role_users,OU=sample,OU=vmware,DC=harbor,DC=com",
+	})
+	require.Nil(t, err)
+	defer group.DeleteUserGroup(groupID)
+
+	memberID, err := AddProjectMember(models.Member{
+		ProjectID:  project.ProjectID,
+		Role:       common.RoleDeveloper,
+		EntityID:   groupID,
+		EntityType: "g",
+	})
+	require.Nil(t, err)
+	defer DeleteProjectMemberByID(memberID)
+
+	user.GroupIDs = []int{groupID}
+	roles, err = ListRoles(user, project.ProjectID)
+	require.Nil(t, err)
+	require.Len(t, roles, 2)
+	assert.Equal(t, common.RoleProjectAdmin, roles[0])
+	assert.Equal(t, common.RoleDeveloper, roles[1])
+}
+
 func PrepareGroupTest() {
 	initSqls := []string{
 		`insert into user_group (group_name, group_type, ldap_group_dn) values ('harbor_group_01', 1, 'cn=harbor_user,dc=example,dc=com')`,
@@ -304,31 +397,4 @@ func PrepareGroupTest() {
 		`delete from harbor_user where username = 'sample01'`,
 	}
 	dao.PrepareTestData(clearSqls, initSqls)
-}
-func TestGetRolesByGroup(t *testing.T) {
-	PrepareGroupTest()
-
-	project, err := dao.GetProjectByName("group_project")
-	if err != nil {
-		t.Errorf("Error occurred when GetProjectByName : %v", err)
-	}
-	type args struct {
-		projectID        int64
-		groupDNCondition string
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
-	}{
-		{"Query group with role", args{project.ProjectID, "'cn=harbor_user,dc=example,dc=com'"}, []int{2}},
-		{"Query group no role", args{project.ProjectID, "'cn=another_user,dc=example,dc=com'"}, []int{}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetRolesByGroup(tt.args.projectID, tt.args.groupDNCondition); !dao.ArrayEqual(got, tt.want) {
-				t.Errorf("GetRolesByGroup() = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }

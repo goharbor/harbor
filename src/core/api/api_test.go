@@ -28,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 
-	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
@@ -40,8 +39,8 @@ import (
 )
 
 var (
-	nonSysAdminID, projAdminID, projDeveloperID, projGuestID int64
-	projAdminPMID, projDeveloperPMID, projGuestPMID          int
+	nonSysAdminID, projAdminID, projDeveloperID, projGuestID, projLimitedGuestID, projAdminRobotID int64
+	projAdminPMID, projDeveloperPMID, projGuestPMID, projLimitedGuestPMID, projAdminRobotPMID      int
 	// The following users/credentials are registered and assigned roles at the beginning of
 	// running testing and cleaned up at the end.
 	// Do not try to change the system and project roles that the users have during
@@ -65,6 +64,14 @@ var (
 	}
 	projGuest = &usrInfo{
 		Name:   "proj_guest",
+		Passwd: "Harbor12345",
+	}
+	projLimitedGuest = &usrInfo{
+		Name:   "proj_limited_guest",
+		Passwd: "Harbor12345",
+	}
+	projAdmin4Robot = &usrInfo{
+		Name:   "proj_admin_robot",
 		Passwd: "Harbor12345",
 	}
 )
@@ -135,7 +142,7 @@ func handle(r *testingRequest) (*httptest.ResponseRecorder, error) {
 	}
 
 	resp := httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(resp, req)
+	handler.ServeHTTP(resp, req)
 	return resp, nil
 }
 
@@ -170,12 +177,13 @@ func runCodeCheckingCases(t *testing.T, cases ...*codeCheckingCase) {
 			if resp.Body.Len() > 0 {
 				t.Log(resp.Body.String())
 			}
-			continue
+			t.FailNow()
 		}
 
 		if c.postFunc != nil {
 			if err := c.postFunc(resp); err != nil {
 				t.Logf("error in running post function: %v", err)
+				t.Error(err)
 			}
 		}
 	}
@@ -203,6 +211,17 @@ func TestMain(m *testing.M) {
 	if err := prepare(); err != nil {
 		panic(err)
 	}
+	dao.ExecuteBatchSQL([]string{
+		"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_group_01_api', 1, 'cn=harbor_users,ou=sample,ou=vmware,dc=harbor,dc=com')",
+		"insert into user_group (group_name, group_type, ldap_group_dn) values ('vsphere.local\\administrators', 2, '')",
+	})
+
+	defer dao.ExecuteBatchSQL([]string{
+		"delete from harbor_label",
+		"delete from robot",
+		"delete from user_group",
+		"delete from project_member where id > 1",
+	})
 
 	ret := m.Run()
 	clean()
@@ -233,8 +252,27 @@ func prepare() error {
 
 	if projAdminPMID, err = project.AddProjectMember(models.Member{
 		ProjectID:  1,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 		EntityID:   int(projAdminID),
+		EntityType: common.UserMember,
+	}); err != nil {
+		return err
+	}
+
+	// register projAdminRobots and assign project admin role
+	projAdminRobotID, err = dao.Register(models.User{
+		Username: projAdmin4Robot.Name,
+		Password: projAdmin4Robot.Passwd,
+		Email:    projAdmin4Robot.Name + "@test.com",
+	})
+	if err != nil {
+		return err
+	}
+
+	if projAdminRobotPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  1,
+		Role:       common.RoleProjectAdmin,
+		EntityID:   int(projAdminRobotID),
 		EntityType: common.UserMember,
 	}); err != nil {
 		return err
@@ -252,7 +290,7 @@ func prepare() error {
 
 	if projDeveloperPMID, err = project.AddProjectMember(models.Member{
 		ProjectID:  1,
-		Role:       models.DEVELOPER,
+		Role:       common.RoleDeveloper,
 		EntityID:   int(projDeveloperID),
 		EntityType: common.UserMember,
 	}); err != nil {
@@ -271,8 +309,26 @@ func prepare() error {
 
 	if projGuestPMID, err = project.AddProjectMember(models.Member{
 		ProjectID:  1,
-		Role:       models.GUEST,
+		Role:       common.RoleGuest,
 		EntityID:   int(projGuestID),
+		EntityType: common.UserMember,
+	}); err != nil {
+		return err
+	}
+
+	// register projLimitedGuest and assign project limit guest role
+	projLimitedGuestID, err = dao.Register(models.User{
+		Username: projLimitedGuest.Name,
+		Password: projLimitedGuest.Passwd,
+		Email:    projLimitedGuest.Name + "@test.com",
+	})
+	if err != nil {
+		return err
+	}
+	if projLimitedGuestPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  1,
+		Role:       common.RoleLimitedGuest,
+		EntityID:   int(projLimitedGuestID),
 		EntityType: common.UserMember,
 	}); err != nil {
 		return err

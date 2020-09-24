@@ -1,10 +1,10 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
-	"github.com/docker/distribution/context"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	storagemiddleware "github.com/docker/distribution/registry/storage/driver/middleware"
 )

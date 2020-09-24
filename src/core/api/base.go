@@ -15,21 +15,46 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 
-	yaml "github.com/ghodss/yaml"
+	"github.com/ghodss/yaml"
 	"github.com/goharbor/harbor/src/common/api"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/p2p/preheat"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
-	"github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/pkg/retention"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
+	sec "github.com/goharbor/harbor/src/server/middleware/security"
 )
 
 const (
 	yamlFileContentType = "application/x-yaml"
 )
+
+// the managers/controllers used globally
+var (
+	projectMgr          project.Manager
+	retentionScheduler  scheduler.Scheduler
+	retentionMgr        retention.Manager
+	retentionLauncher   retention.Launcher
+	retentionController retention.APIController
+)
+
+// GetRetentionController returns the retention API controller
+func GetRetentionController() retention.APIController {
+	return retentionController
+}
 
 // BaseController ...
 type BaseController struct {
@@ -41,66 +66,91 @@ type BaseController struct {
 	ProjectMgr promgr.ProjectManager
 }
 
-const (
-	// ReplicationJobType ...
-	ReplicationJobType = "replication"
-	// ScanJobType ...
-	ScanJobType = "scan"
-)
-
 // Prepare inits security context and project manager from request
 // context
 func (b *BaseController) Prepare() {
-	ctx, err := filter.GetSecurityContext(b.Ctx.Request)
-	if err != nil {
-		log.Errorf("failed to get security context: %v", err)
-		b.CustomAbort(http.StatusInternalServerError, "")
+	ctx, ok := security.FromContext(b.Ctx.Request.Context())
+	if !ok {
+		log.Errorf("failed to get security context")
+		b.SendInternalServerError(errors.New(""))
+		return
 	}
 	b.SecurityCtx = ctx
+	b.ProjectMgr = config.GlobalProjectMgr
+}
 
-	pm, err := filter.GetProjectManager(b.Ctx.Request)
-	if err != nil {
-		log.Errorf("failed to get project manager: %v", err)
-		b.CustomAbort(http.StatusInternalServerError, "")
+// RequireAuthenticated returns true when the request is authenticated
+// otherwise send Unauthorized response and returns false
+func (b *BaseController) RequireAuthenticated() bool {
+	if !b.SecurityCtx.IsAuthenticated() {
+		b.SendError(errors.UnauthorizedError(errors.New("Unauthorized")))
+		return false
 	}
-	b.ProjectMgr = pm
+	return true
 }
 
-// RenderFormatedError renders errors with well formted style `{"error": "This is an error"}`
-func (b *BaseController) RenderFormatedError(code int, err error) {
-	formatedErr := utils.WrapError(err)
-	log.Errorf("%s %s failed with error: %s", b.Ctx.Request.Method, b.Ctx.Request.URL.String(), formatedErr.Error())
-	b.RenderError(code, formatedErr.Error())
+// HasProjectPermission returns true when the request has action permission on project subresource
+func (b *BaseController) HasProjectPermission(projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) (bool, error) {
+	_, _, err := utils.ParseProjectIDOrName(projectIDOrName)
+	if err != nil {
+		return false, err
+	}
+
+	project, err := b.ProjectMgr.Get(projectIDOrName)
+	if err != nil {
+		return false, err
+	}
+	if project == nil {
+		return false, errors.NotFoundError(fmt.Errorf("project %v not found", projectIDOrName))
+	}
+
+	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(subresource...)
+	if !b.SecurityCtx.Can(action, resource) {
+		return false, nil
+	}
+
+	return true, nil
 }
 
-// SendUnAuthorizedError sends unauthorized error to the client.
-func (b *BaseController) SendUnAuthorizedError(err error) {
-	b.RenderFormatedError(http.StatusUnauthorized, err)
+// RequireProjectAccess returns true when the request has action access on project subresource
+// otherwise send UnAuthorized or Forbidden response and returns false
+func (b *BaseController) RequireProjectAccess(projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) bool {
+	hasPermission, err := b.HasProjectPermission(projectIDOrName, action, subresource...)
+	if err != nil {
+		if errors.IsNotFoundErr(err) {
+			b.handleProjectNotFound(projectIDOrName)
+		} else {
+			b.SendError(err)
+		}
+		return false
+	}
+
+	if !hasPermission {
+		b.SendPermissionError()
+		return false
+	}
+
+	return true
 }
 
-// SendConflictError sends conflict error to the client.
-func (b *BaseController) SendConflictError(err error) {
-	b.RenderFormatedError(http.StatusConflict, err)
+// This should be called when a project is not found, if the caller is a system admin it returns 404.
+// If it's regular user, it will render permission error
+func (b *BaseController) handleProjectNotFound(projectIDOrName interface{}) {
+	if b.SecurityCtx.IsSysAdmin() {
+		b.SendNotFoundError(fmt.Errorf("project %v not found", projectIDOrName))
+	} else {
+		b.SendPermissionError()
+	}
 }
 
-// SendNotFoundError sends not found error to the client.
-func (b *BaseController) SendNotFoundError(err error) {
-	b.RenderFormatedError(http.StatusNotFound, err)
-}
+// SendPermissionError is a shortcut for sending different http error based on authentication status.
+func (b *BaseController) SendPermissionError() {
+	if !b.SecurityCtx.IsAuthenticated() {
+		b.SendUnAuthorizedError(errors.New("UnAuthorized"))
+	} else {
+		b.SendForbiddenError(errors.New(b.SecurityCtx.GetUsername()))
+	}
 
-// SendBadRequestError sends bad request error to the client.
-func (b *BaseController) SendBadRequestError(err error) {
-	b.RenderFormatedError(http.StatusBadRequest, err)
-}
-
-// SendInternalServerError sends internal server error to the client.
-func (b *BaseController) SendInternalServerError(err error) {
-	b.RenderFormatedError(http.StatusInternalServerError, err)
-}
-
-// SendForbiddenError sends forbidden error to the client.
-func (b *BaseController) SendForbiddenError(err error) {
-	b.RenderFormatedError(http.StatusForbidden, err)
 }
 
 // WriteJSONData writes the JSON data to the client.
@@ -120,11 +170,68 @@ func (b *BaseController) WriteYamlData(object interface{}) {
 	w := b.Ctx.ResponseWriter
 	w.Header().Set("Content-Type", yamlFileContentType)
 	w.WriteHeader(http.StatusOK)
-	w.Write(yData)
+	_, _ = w.Write(yData)
+}
+
+// PopulateUserSession generates a new session ID and fill the user model in parm to the session
+func (b *BaseController) PopulateUserSession(u models.User) {
+	b.SessionRegenerateID()
+	b.SetSession(sec.UserIDSessionKey, u.UserID)
 }
 
 // Init related objects/configurations for the API controllers
 func Init() error {
+	registerHealthCheckers()
+
+	// init chart controller
+	if err := initChartController(); err != nil {
+		return err
+	}
+
+	// init project manager
+	initProjectManager()
+
+	retentionMgr = retention.NewManager()
+
+	retentionLauncher = retention.NewLauncher(projectMgr, repository.Mgr, retentionMgr)
+
+	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, scheduler.Sched, retentionLauncher)
+
+	retentionCallbackFun := func(p interface{}) error {
+		str, ok := p.(string)
+		if !ok {
+			return fmt.Errorf("the type of param %v isn't string", p)
+		}
+		param := &retention.TriggerParam{}
+		if err := json.Unmarshal([]byte(str), param); err != nil {
+			return fmt.Errorf("failed to unmarshal the param: %v", err)
+		}
+		_, err := retentionController.TriggerRetentionExec(param.PolicyID, param.Trigger, false)
+		return err
+	}
+	err := scheduler.RegisterCallbackFunc(retention.SchedulerCallback, retentionCallbackFun)
+	if err != nil {
+		return err
+	}
+
+	p2pPreheatCallbackFun := func(p interface{}) error {
+		str, ok := p.(string)
+		if !ok {
+			return fmt.Errorf("the type of param %v isn't string", p)
+		}
+		param := &preheat.TriggerParam{}
+		if err := json.Unmarshal([]byte(str), param); err != nil {
+			return fmt.Errorf("failed to unmarshal the param: %v", err)
+		}
+		_, err := preheat.Enf.EnforcePolicy(orm.Context(), param.PolicyID)
+		return err
+	}
+	err = scheduler.RegisterCallbackFunc(preheat.SchedulerCallback, p2pPreheatCallbackFun)
+
+	return err
+}
+
+func initChartController() error {
 	// If chart repository is not enabled then directly return
 	if !config.WithChartMuseum() {
 		return nil
@@ -136,6 +243,9 @@ func Init() error {
 	}
 
 	chartController = chartCtl
-
 	return nil
+}
+
+func initProjectManager() {
+	projectMgr = project.Mgr
 }

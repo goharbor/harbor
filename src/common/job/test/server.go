@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	job_models "github.com/goharbor/harbor/src/jobservice/job"
 )
 
 const (
@@ -27,7 +29,7 @@ func currPath() string {
 	return path.Dir(f)
 }
 
-// NewJobServiceServer
+// NewJobServiceServer ...
 func NewJobServiceServer() *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc(fmt.Sprintf("%s/%s/log", jobsPrefix, jobUUID),
@@ -44,6 +46,29 @@ func NewJobServiceServer() *httptest.Server {
 			if err != nil {
 				panic(err)
 			}
+		})
+	mux.HandleFunc(fmt.Sprintf("%s/%s/executions", jobsPrefix, jobUUID),
+		func(rw http.ResponseWriter, req *http.Request) {
+			if req.Method != http.MethodGet {
+				rw.WriteHeader(http.StatusMethodNotAllowed)
+				return
+			}
+			var stats []job.Stats
+			stat := job_models.Stats{
+				Info: &job_models.StatsInfo{
+					JobID:    jobUUID + "@123123",
+					Status:   "Pending",
+					RunAt:    time.Now().Unix(),
+					IsUnique: false,
+				},
+			}
+			stats = append(stats, stat)
+			b, _ := json.Marshal(stats)
+			if _, err := rw.Write(b); err != nil {
+				panic(err)
+			}
+			rw.WriteHeader(http.StatusOK)
+			return
 		})
 	mux.HandleFunc(fmt.Sprintf("%s/%s", jobsPrefix, jobUUID),
 		func(rw http.ResponseWriter, req *http.Request) {
@@ -77,7 +102,7 @@ func NewJobServiceServer() *httptest.Server {
 				json.Unmarshal(data, &jobReq)
 				if jobReq.Job.Name == "replication" {
 					respData := models.JobStats{
-						Stats: &models.JobStatData{
+						Stats: &models.StatsInfo{
 							JobID:    jobUUID,
 							Status:   "Pending",
 							RunAt:    time.Now().Unix(),

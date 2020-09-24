@@ -1,0 +1,10 @@
+appname = Harbor
+runmode = prod
+enablegzip = true
+
+[prod]
+{% if internal_tls.enabled %}
+httpport = {{8443}}
+{% else %}
+httpport = {{8080}}
+{% endif %}

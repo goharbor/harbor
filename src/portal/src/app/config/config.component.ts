@@ -13,21 +13,17 @@
 // limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from "rxjs";
-import { Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent,
-    isEmpty, clone, getChanges } from '@harbor/ui';
-
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { SessionService } from '../shared/session.service';
-import { confirmUnsavedChanges} from './config.msg.utils';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-
-import { AppConfigService } from '../app-config.service';
+import { AppConfigService } from '../services/app-config.service';
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
-import { GcComponent } from './gc/gc.component';
 import { ConfigurationService } from './config.service';
-
+import { Configuration, StringValueItem } from "../../lib/components/config/config";
+import { SystemSettingsComponent } from "../../lib/components/config/system/system-settings.component";
+import { clone, isEmpty } from "../../lib/utils/utils";
 
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 const TabLinkContentMap = {
@@ -35,8 +31,6 @@ const TabLinkContentMap = {
     'config-replication': 'replication',
     'config-email': 'email',
     'config-system': 'system_settings',
-    'config-vulnerability': 'vulnerability',
-    'config-gc': 'gc',
     'config-label': 'system_label',
 };
 
@@ -46,17 +40,15 @@ const TabLinkContentMap = {
     styleUrls: ['config.component.scss']
 })
 export class ConfigurationComponent implements OnInit, OnDestroy {
-    onGoing = false;
     allConfig: Configuration = new Configuration();
+    onGoing = false;
     currentTabId = 'config-auth'; // default tab
     originalCopy: Configuration = new Configuration();
     confirmSub: Subscription;
 
-    @ViewChild(SystemSettingsComponent) systemSettingsConfig: SystemSettingsComponent;
-    @ViewChild(VulnerabilityConfigComponent) vulnerabilityConfig: VulnerabilityConfigComponent;
-    @ViewChild(GcComponent) gcConfig: GcComponent;
-    @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
-    @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
+    @ViewChild(SystemSettingsComponent, {static: false}) systemSettingsConfig: SystemSettingsComponent;
+    @ViewChild(ConfigurationEmailComponent, {static: false}) mailConfig: ConfigurationEmailComponent;
+    @ViewChild(ConfigurationAuthComponent, {static: false}) authConfig: ConfigurationAuthComponent;
 
     constructor(
         private msgHandler: MessageHandlerService,
@@ -74,22 +66,13 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return this.appConfigService.getConfig().has_ca_root;
     }
 
-    public get withClair(): boolean {
-        return this.appConfigService.getConfig().with_clair;
-    }
-
     public get withAdmiral(): boolean {
         return this.appConfigService.getConfig().with_admiral;
     }
 
-    isCurrentTabLink(tabId: string): boolean {
-        return this.currentTabId === tabId;
+    refreshAllconfig() {
+        this.retrieveConfig();
     }
-
-    isCurrentTabContent(contentId: string): boolean {
-        return TabLinkContentMap[this.currentTabId] === contentId;
-    }
-
     ngOnInit(): void {
         // First load
         // Double confirm the current use has admin role
@@ -121,105 +104,34 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return this.onGoing;
     }
 
-    public isValid(): boolean {
-        return this.systemSettingsConfig.isValid;
-    }
-
-    public hasChanges(): boolean {
-        return !isEmpty(this.getSystemChanges());
-    }
-
-
-    public tabLinkClick(tabLink: string) {
-        this.currentTabId = tabLink;
-    }
-
-    public getSystemChanges() {
-        let allChanges = getChanges(this.originalCopy, this.allConfig);
-        if (allChanges) {
-            return this.systemSettingsConfig.getSystemChanges(allChanges);
-        }
-        return null;
-    }
-
-    /**
-     *
-     * Save the changed values
-     *
-     * @memberOf ConfigurationComponent
-     */
-    public save(): void {
-        let changes = this.getSystemChanges();
-        if (!isEmpty(changes)) {
-            this.onGoing = true;
-            this.configService.saveConfiguration(changes)
-                .then(response => {
-                    this.onGoing = false;
-                    // API should return the updated configurations here
-                    // Unfortunately API does not do that
-                    // To refresh the view, we can clone the original data copy
-                    // or force refresh by calling service.
-                    // HERE we choose force way
-                    this.retrieveConfig();
-
-                    if (changes['read_only']) {
-                        this.msgHandler.handleReadOnly();
-                    }
-
-                    if (changes && changes['read_only'] === false) {
-                        this.msgHandler.clear();
-                    }
-
-                    // Reload bootstrap option
-                    this.appConfigService.load().catch(error => console.error('Failed to reload bootstrap option with error: ', error));
-
-                    this.msgHandler.showSuccess('CONFIG.SAVE_SUCCESS');
-                })
-                .catch(error => {
-                    this.onGoing = false;
-                    this.msgHandler.handleError(error);
-                });
-        } else {
-            // Inprop situation, should not come here
-            console.error('Save abort because nothing changed');
+    handleReadyOnlyChange(event) {
+        this.msgHandler.handleReadOnly();
+        if (!event) {
+            this.msgHandler.clear();
         }
     }
 
-    /**
-     *
-     * Discard current changes if have and reset
-     *
-     * @memberOf ConfigurationComponent
-     */
-    public cancel(): void {
-        let changes = this.getSystemChanges();
-        if (!isEmpty(changes)) {
-            confirmUnsavedChanges(changes);
-        } else {
-            // Invalid situation, should not come here
-            console.error('Nothing changed');
-        }
-    }
-
-    public get hideBtn(): boolean {
-        return this.currentTabId !== 'config-system';
+    handleAppConfig(event) {
+        // Reload bootstrap option
+        this.appConfigService.load().subscribe(() => {}
+        , error => console.error('Failed to reload bootstrap option with error: ', error));
     }
 
     retrieveConfig(): void {
         this.onGoing = true;
         this.configService.getConfiguration()
-            .then((configurations: Configuration) => {
+            .subscribe((configurations: Configuration) => {
                 this.onGoing = false;
 
                 // Add two password fields
                 configurations.email_password = new StringValueItem(fakePass, true);
                 configurations.ldap_search_password = new StringValueItem(fakePass, true);
                 configurations.uaa_client_secret = new StringValueItem(fakePass, true);
+                configurations.oidc_client_secret = new StringValueItem(fakePass, true);
                 this.allConfig = configurations;
                 // Keep the original copy of the data
                 this.originalCopy = clone(configurations);
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.msgHandler.handleError(error);
             });

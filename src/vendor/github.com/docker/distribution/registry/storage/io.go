@@ -1,11 +1,11 @@
 package storage
 
 import (
+	"context"
 	"errors"
 	"io"
 	"io/ioutil"
 
-	"github.com/docker/distribution/context"
 	"github.com/docker/distribution/registry/storage/driver"
 )
 

@@ -28,16 +28,12 @@ ${HARBOR_ADMIN}  admin
 Test Case - Get Harbor Version
 #Just get harbor version and log it
     Get Harbor Version
-
-Test Case - Vulnerability Data Not Ready
-#This case must run before vulnerability db ready
+Test Case - Clair Is Default Scanner And It Is immutable
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
-    Vulnerability Not Ready Project Hint
-    Switch To Configure
-    Go To Vulnerability Config
-    Vulnerability Not Ready Config Hint
+    Switch To Scanners Page
+    Should Display The Default Clair Scanner
+    Clair Is Immutable Scanner
 
 Test Case - Read Only Mode
     Init Chrome Driver
@@ -58,7 +54,7 @@ Test Case - Repo Size
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  alpine  2.6  2.6
     Go Into Project  library
     Go Into Repo  alpine
-    Page Should Contain  1.92MB 
+    Page Should Contain  1.92MB
     Close Browser
 
 Test Case - Staticsinfo
@@ -199,7 +195,7 @@ Test Case - Manage project publicity
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
     Project Should Not Display  project${d}
-    Cannot Pull image  ${ip}  userb${d}  Test1@34  project${d}  hello-world:latest
+    Cannot Pull Image  ${ip}  userb${d}  Test1@34  project${d}  hello-world:latest
 
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  usera${d}  Test1@34
@@ -215,7 +211,7 @@ Test Case - Project Level Policy Public
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Goto Project Config
     Click Project Public
     Save Project Config
@@ -348,7 +344,7 @@ TestCase - Project Admin Operate Labels
     ${d}=   Get Current Date    result_format=%m%s
     Create An New Project With New User  url=${HARBOR_URL}  username=test${d}  email=test${d}@vmware.com  realname=test${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
 
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Sleep  2
     # Add labels
     Switch To Project Label
@@ -391,13 +387,13 @@ TestCase - Developer Operate Labels
     Create An New User  url=${HARBOR_URL}  username=bob${d}  email=bob${d}@vmware.com  realname=bob${d}  newPassword=Test1@34  comment=habor
     Logout Harbor
 
-    Manage Project Member  test${d}  Test1@34  project${d}  bob${d}  Add
+    Manage Project Member  test${d}  Test1@34  project${d}  bob${d}  Add  has_image=${false}
     Change User Role In Project  test${d}  Test1@34  project${d}  bob${d}  Developer
 
     Sign In Harbor  ${HARBOR_URL}  bob${d}  Test1@34
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Sleep  3
-    Page Should Not Contain Element  xpath=//a[contains(.,'Labels')]
+    Retry Wait Until Page Not Contains Element  xpath=//a[contains(.,'Labels')]
     Close Browser
 
 Test Case - Scan A Tag In The Repo
@@ -432,19 +428,17 @@ Test Case - Scan Image With Empty Vul
     Go Into Repo  hello-world
     Scan Repo  latest  Succeed
     Move To Summary Chart
-    Wait Until Page Contains  Unknow
+    Wait Until Page Contains  No vulnerability
     Close Browser
 ###
 Test Case - Disable Scan Schedule
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
-    Go To Vulnerability Config
+    Switch To Vulnerability Page
     Disable Scan Schedule
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
-    Go To Vulnerability Config
+    Switch To Vulnerability Page
     Page Should Contain  None
     Close Browser
 ###
@@ -452,10 +446,9 @@ Test Case - Manual Scan All
     Init Chrome Driver
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
-    Go To Vulnerability Config
-    Trigger Scan Now
-    Back To Projects
+    Switch To Vulnerability Page
+    Trigger Scan Now And Wait Until The Result Appears
+    Navigate To Projects
     Go Into Project  library
     Go Into Repo  redis
     Summary Chart Should Display  latest
@@ -468,7 +461,7 @@ Test Case - Project Level Image Serverity Policy
     Go Into Project  library
     Go Into Repo  haproxy
     Scan Repo  latest  Succeed
-    Back To Projects
+    Navigate To Projects
     Go Into Project  library
     Set Vulnerabilty Serverity  0
     Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  haproxy
@@ -524,7 +517,7 @@ Test Case - Delete A Project
     Project Should Not Be Deleted  project${d}
     Go Into Project  project${d}
     Delete Repo  project${d}
-    Back To projects
+    Navigate To Projects
     Project Should Be Deleted  project${d}
     Close Browser
 
@@ -536,7 +529,8 @@ Test Case - Delete Multi Project
     Create An New Project  projectb${d}
     Push Image  ${ip}  test${d}  Test1@34  projecta${d}  hello-world
     Filter Object  project
-    Multi-delete Object  projecta  projectb
+    @{project_list}  Create List  projecta  projectb
+    Multi-delete Object  ${project_delete_btn}  @{project_list}
     # Verify delete project with image should not be deleted directly
     Delete Fail  projecta${d}
     Delete Success  projectb${d}
@@ -554,7 +548,8 @@ Test Case - Delete Multi User
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
     Switch To User Tag
     Filter Object  delete
-    Multi-delete Object  deletea  deleteb  deletec
+    @{user_list}  Create List  deletea  deleteb  deletec
+    Multi-delete Object  ${user_delete_btn}  @{user_list}
     # Assert delete
     Delete Success  deletea  deleteb  deletec
     Sleep  1
@@ -569,7 +564,8 @@ Test Case - Delete Multi Repo
     Push Image  ${ip}  test${d}  Test1@34  project${d}  busybox
     Sleep  2
     Go Into Project  project${d}
-    Multi-delete Object  hello-world  busybox
+    @{repo_list}  Create List  hello-world  busybox
+    Multi-delete Object  ${repo_delete_btn}  @{repo_list}
     # Verify
     Delete Success  hello-world  busybox
     Close Browser
@@ -584,7 +580,8 @@ Test Case - Delete Multi Tag
     Sleep  2
     Go Into Project  project${d}
     Go Into Repo  redis
-    Multi-delete object  3.2.10-alpine  4.0.7-alpine
+    @{tag_list}  Create List  3.2.10-alpine  4.0.7-alpine
+    Multi-delete object  ${tag_delete_btn}  @{tag_list}
     # Verify
     Delete Success  3.2.10-alpine  4.0.7-alpine
     Close Browser
@@ -613,7 +610,7 @@ Test Case - Delete Multi Member
     Logout Harbor
     Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
     Create An New Project  project${d}
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Switch To Member
     Add Guest Member to project  testa${d}
     Add Guest Member to project  testb${d}
@@ -680,7 +677,7 @@ Test Case - Scan Image On Push
     Goto Project Config
     Enable Scan On Push
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
-    Back To Projects
+    Navigate To Projects
     Go Into Project  library
     Go Into Repo  memcached
     Summary Chart Should Display  latest

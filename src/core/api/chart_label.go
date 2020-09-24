@@ -6,6 +6,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 )
 
 const (
@@ -13,7 +14,7 @@ const (
 	idParam      = ":id"
 )
 
-// ChartLabelAPI handles the requests of marking/removing lables to/from charts.
+// ChartLabelAPI handles the requests of marking/removing labels to/from charts.
 type ChartLabelAPI struct {
 	LabelResourceAPI
 	project       *models.Project
@@ -45,12 +46,6 @@ func (cla *ChartLabelAPI) Prepare() {
 	}
 	cla.project = existingProject
 
-	// Check permission
-	if !cla.checkPermissions(project) {
-		cla.SendForbiddenError(errors.New(cla.SecurityCtx.GetUsername()))
-		return
-	}
-
 	// Check the existence of target chart
 	chartName := cla.GetStringFromPath(nameParam)
 	version := cla.GetStringFromPath(versionParam)
@@ -62,10 +57,21 @@ func (cla *ChartLabelAPI) Prepare() {
 	cla.chartFullName = fmt.Sprintf("%s/%s:%s", project, chartName, version)
 }
 
+func (cla *ChartLabelAPI) requireAccess(action rbac.Action) bool {
+	return cla.RequireProjectAccess(cla.project.ProjectID, action, rbac.ResourceHelmChartVersionLabel)
+}
+
 // MarkLabel handles the request of marking label to chart.
 func (cla *ChartLabelAPI) MarkLabel() {
+	if !cla.requireAccess(rbac.ActionCreate) {
+		return
+	}
+
 	l := &models.Label{}
-	cla.DecodeJSONReq(l)
+	if err := cla.DecodeJSONReq(l); err != nil {
+		cla.SendBadRequestError(err)
+		return
+	}
 
 	label, ok := cla.validate(l.ID, cla.project.ProjectID)
 	if !ok {
@@ -83,6 +89,10 @@ func (cla *ChartLabelAPI) MarkLabel() {
 
 // RemoveLabel handles the request of removing label from chart.
 func (cla *ChartLabelAPI) RemoveLabel() {
+	if !cla.requireAccess(rbac.ActionDelete) {
+		return
+	}
+
 	lID, err := cla.GetInt64FromPath(idParam)
 	if err != nil {
 		cla.SendInternalServerError(err)

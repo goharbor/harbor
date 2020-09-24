@@ -1,10 +1,10 @@
 package storage
 
 import (
+	"context"
 	"regexp"
 
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/context"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/registry/storage/cache"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
@@ -19,10 +19,12 @@ type registry struct {
 	statter                      *blobStatter // global statter service.
 	blobDescriptorCacheProvider  cache.BlobDescriptorCacheProvider
 	deleteEnabled                bool
+	schema1Enabled               bool
 	resumableDigestEnabled       bool
 	schema1SigningKey            libtrust.PrivateKey
 	blobDescriptorServiceFactory distribution.BlobDescriptorServiceFactory
 	manifestURLs                 manifestURLs
+	driver                       storagedriver.StorageDriver
 }
 
 // manifestURLs holds regular expressions for controlling manifest URL whitelisting
@@ -45,6 +47,13 @@ func EnableRedirect(registry *registry) error {
 // the registry.
 func EnableDelete(registry *registry) error {
 	registry.deleteEnabled = true
+	return nil
+}
+
+// EnableSchema1 is a functional option for NewRegistry. It enables pushing of
+// schema1 manifests.
+func EnableSchema1(registry *registry) error {
+	registry.schema1Enabled = true
 	return nil
 }
 
@@ -133,6 +142,7 @@ func NewRegistry(ctx context.Context, driver storagedriver.StorageDriver, option
 		},
 		statter:                statter,
 		resumableDigestEnabled: true,
+		driver:                 driver,
 	}
 
 	for _, option := range options {
@@ -237,16 +247,30 @@ func (repo *repository) Manifests(ctx context.Context, options ...distribution.M
 		linkDirectoryPathSpec: manifestDirectoryPathSpec,
 	}
 
-	ms := &manifestStore{
-		ctx:        ctx,
-		repository: repo,
-		blobStore:  blobStore,
-		schema1Handler: &signedManifestHandler{
+	var v1Handler ManifestHandler
+	if repo.schema1Enabled {
+		v1Handler = &signedManifestHandler{
 			ctx:               ctx,
 			schema1SigningKey: repo.schema1SigningKey,
 			repository:        repo,
 			blobStore:         blobStore,
-		},
+		}
+	} else {
+		v1Handler = &v1UnsupportedHandler{
+			innerHandler: &signedManifestHandler{
+				ctx:               ctx,
+				schema1SigningKey: repo.schema1SigningKey,
+				repository:        repo,
+				blobStore:         blobStore,
+			},
+		}
+	}
+
+	ms := &manifestStore{
+		ctx:            ctx,
+		repository:     repo,
+		blobStore:      blobStore,
+		schema1Handler: v1Handler,
 		schema2Handler: &schema2ManifestHandler{
 			ctx:          ctx,
 			repository:   repo,
@@ -257,6 +281,12 @@ func (repo *repository) Manifests(ctx context.Context, options ...distribution.M
 			ctx:        ctx,
 			repository: repo,
 			blobStore:  blobStore,
+		},
+		ocischemaHandler: &ocischemaManifestHandler{
+			ctx:          ctx,
+			repository:   repo,
+			blobStore:    blobStore,
+			manifestURLs: repo.registry.manifestURLs,
 		},
 	}
 

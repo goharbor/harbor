@@ -19,8 +19,10 @@ import {
   CanActivateChild
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { ProjectService } from '../../project/project.service';
-import { CommonRoutes } from '../../shared/shared.const';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { ProjectService } from "../../../lib/services";
+import { CommonRoutes } from "../../../lib/entities/shared.const";
 
 @Injectable()
 export class MemberGuard implements CanActivate, CanActivateChild {
@@ -29,49 +31,40 @@ export class MemberGuard implements CanActivate, CanActivateChild {
     private projectService: ProjectService,
     private router: Router) {}
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
-    let projectId = route.params['id'];
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
+    const projectId = route.params['id'];
     this.sessionService.setProjectMembers([]);
-    return new Promise((resolve, reject) => {
-      let user = this.sessionService.getCurrentUser();
-      if (user === null) {
-        this.sessionService.retrieveUser()
-        .then(() => resolve(this.checkMemberStatus(state.url, projectId)))
-        .catch(() => {
-          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          resolve(false);
-        });
-      } else {
-        return resolve(this.checkMemberStatus(state.url, projectId));
-      }
-    });
-  }
 
-  checkMemberStatus(url: string, projectId: number): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      this.projectService.checkProjectMember(projectId)
-      .subscribe(res => {
-        this.sessionService.setProjectMembers(res);
-        return resolve(true);
-      },
+    const user = this.sessionService.getCurrentUser();
+    if (user !== null) {
+      return this.hasProjectPerm(state.url, projectId);
+    }
+
+    return this.sessionService.retrieveUser().pipe(
       () => {
-        // Add exception for repository in project detail router activation.
-        this.projectService.getProject(projectId).subscribe(project => {
-          if (project.public === 1) {
-            return resolve(true);
-          }
-          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          return resolve(false);
-        },
-        () => {
-          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          return resolve(false);
-        });
-      });
-    });
+        return this.hasProjectPerm(state.url, projectId);
+      },
+      catchError(err => {
+        this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+        return of(false);
+      })
+    );
   }
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
     return this.canActivate(route, state);
+  }
+
+  hasProjectPerm(url: string, projectId: number): Observable<boolean> {
+    // Note: current user will have the permission to visit the project when the user can get response from GET /projects/:id API.
+    return this.projectService.getProject(projectId).pipe(
+      map(() => {
+        return true;
+      }),
+      catchError(err => {
+        this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+        return of(false);
+      })
+    );
   }
 }

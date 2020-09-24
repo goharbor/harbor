@@ -2,43 +2,30 @@
 
 set +e
 
-if [ -z $1 ]; then
-  error "Please set the 'version' variable"
+if [ -z $2 ]; then
+  error "Please set the notary and migrate version"
   exit 1
 fi
 
-VERSION="$1"
-
+echo "Building notary and golang-migrate from source, notary version: $1, golang-migrate version: $2"
 set -e
 
 # the temp folder to store binary file...
 mkdir -p binary
-rm -rf binary/notary-server || true
-rm -rf binary/notary-signer || true
+rm -rf binary/* || true
 
 cd `dirname $0`
-cur=$PWD
+docker build --build-arg NOTARY_VERSION=$1 --build-arg MIGRATE_VERSION=$2 -f ./binary.Dockerfile -t notary-binary .
 
-# the temp folder to store notary source code...
-TEMP=`mktemp -d /$TMPDIR/notary.XXXXXX`
-git clone -b $VERSION https://github.com/theupdateframework/notary.git $TEMP
+echo 'copy the binary files to local...'
+ID=$(docker create notary-binary)
+docker cp $ID:/go/bin/notary-server binary/
+docker cp $ID:/go/bin/notary-signer binary/
+docker cp $ID:/go/bin/migrate binary/
+docker cp $ID:/migrations binary/
 
-echo 'build the notary binary bases on the golang:1.9.4...'
-cp binary.Dockerfile $TEMP 
-cd $TEMP
-docker build -f binary.Dockerfile -t notary-golang $TEMP
-cp -r $TEMP/migrations binary
-
-echo 'copy the notary binary to local...'
-ID=$(docker create notary-golang)
-echo $ID
-cd $cur
-docker cp $ID:/go/bin/notary-server binary
-docker cp $ID:/go/bin/notary-signer binary
+sed -i 's/waiting for $DB_URL/waiting for database/g' binary/migrations/migrate.sh
 
 docker rm -f $ID
-docker rmi -f notary-golang
-
-rm -rf $TEMP
-
+docker rmi -f notary-binary
 

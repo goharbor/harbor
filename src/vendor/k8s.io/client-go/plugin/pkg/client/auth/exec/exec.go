@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -30,30 +31,33 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/davecgh/go-spew/spew"
 	"golang.org/x/crypto/ssh/terminal"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/pkg/apis/clientauthentication"
 	"k8s.io/client-go/pkg/apis/clientauthentication/v1alpha1"
 	"k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/transport"
 	"k8s.io/client-go/util/connrotation"
+	"k8s.io/klog"
 )
 
 const execInfoEnv = "KUBERNETES_EXEC_INFO"
+const onRotateListWarningLength = 1000
 
 var scheme = runtime.NewScheme()
 var codecs = serializer.NewCodecFactory(scheme)
 
 func init() {
 	v1.AddToGroupVersion(scheme, schema.GroupVersion{Version: "v1"})
-	v1alpha1.AddToScheme(scheme)
-	v1beta1.AddToScheme(scheme)
-	clientauthentication.AddToScheme(scheme)
+	utilruntime.Must(v1alpha1.AddToScheme(scheme))
+	utilruntime.Must(v1beta1.AddToScheme(scheme))
+	utilruntime.Must(clientauthentication.AddToScheme(scheme))
 }
 
 var (
@@ -71,8 +75,10 @@ func newCache() *cache {
 	return &cache{m: make(map[string]*Authenticator)}
 }
 
+var spewConfig = &spew.ConfigState{DisableMethods: true, Indent: " "}
+
 func cacheKey(c *api.ExecConfig) string {
-	return fmt.Sprintf("%#v", c)
+	return spewConfig.Sprint(c)
 }
 
 type cache struct {
@@ -159,7 +165,7 @@ type Authenticator struct {
 	cachedCreds *credentials
 	exp         time.Time
 
-	onRotate func()
+	onRotateList []func()
 }
 
 type credentials struct {
@@ -170,29 +176,14 @@ type credentials struct {
 // UpdateTransportConfig updates the transport.Config to use credentials
 // returned by the plugin.
 func (a *Authenticator) UpdateTransportConfig(c *transport.Config) error {
-	wt := c.WrapTransport
-	c.WrapTransport = func(rt http.RoundTripper) http.RoundTripper {
-		if wt != nil {
-			rt = wt(rt)
-		}
+	c.Wrap(func(rt http.RoundTripper) http.RoundTripper {
 		return &roundTripper{a, rt}
-	}
+	})
 
-	getCert := c.TLS.GetCert
-	c.TLS.GetCert = func() (*tls.Certificate, error) {
-		// If previous GetCert is present and returns a valid non-nil
-		// certificate, use that. Otherwise use cert from exec plugin.
-		if getCert != nil {
-			cert, err := getCert()
-			if err != nil {
-				return nil, err
-			}
-			if cert != nil {
-				return cert, nil
-			}
-		}
-		return a.cert()
+	if c.TLS.GetCert != nil {
+		return errors.New("can't add TLS certificate callback: transport.Config.TLS.GetCert already set")
 	}
+	c.TLS.GetCert = a.cert
 
 	var dial func(ctx context.Context, network, addr string) (net.Conn, error)
 	if c.Dial != nil {
@@ -201,7 +192,15 @@ func (a *Authenticator) UpdateTransportConfig(c *transport.Config) error {
 		dial = (&net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}).DialContext
 	}
 	d := connrotation.NewDialer(dial)
-	a.onRotate = d.CloseAll
+
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.onRotateList = append(a.onRotateList, d.CloseAll)
+	onRotateListLength := len(a.onRotateList)
+	if onRotateListLength > onRotateListWarningLength {
+		klog.Warningf("constructing many client instances from the same exec auth config can cause performance problems during cert rotation and can exhaust available network connections; %d clients constructed calling %q", onRotateListLength, a.cmd)
+	}
+
 	c.Dial = d.DialContext
 
 	return nil
@@ -237,7 +236,7 @@ func (r *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 			Code:   int32(res.StatusCode),
 		}
 		if err := r.a.maybeRefreshCreds(creds, resp); err != nil {
-			glog.Errorf("refreshing credentials: %v", err)
+			klog.Errorf("refreshing credentials: %v", err)
 		}
 	}
 	return res, nil
@@ -363,8 +362,10 @@ func (a *Authenticator) refreshCredsLocked(r *clientauthentication.Response) err
 	a.cachedCreds = newCreds
 	// Only close all connections when TLS cert rotates. Token rotation doesn't
 	// need the extra noise.
-	if a.onRotate != nil && oldCreds != nil && !reflect.DeepEqual(oldCreds.cert, a.cachedCreds.cert) {
-		a.onRotate()
+	if len(a.onRotateList) > 0 && oldCreds != nil && !reflect.DeepEqual(oldCreds.cert, a.cachedCreds.cert) {
+		for _, onRotate := range a.onRotateList {
+			onRotate()
+		}
 	}
 	return nil
 }

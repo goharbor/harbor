@@ -1,16 +1,13 @@
-
-.info-tips-icon {
-    color: grey;
+.config-title {
+    display: inline-block;
 }
 
-.info-tips-icon:hover {
-    color: #007CBB;
+.tooltip-position {
+    top: -7px;
 }
-
-clr-icon {
-    color: grey;
-    margin-top: -3px;
+.clr-form-control-disabled {
+    opacity: 1;
 }
-clr-icon:hover {
-    color: #007CBB;
+.v-mid {
+    vertical-align: middle;
 }

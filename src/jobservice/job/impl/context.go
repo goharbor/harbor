@@ -19,19 +19,17 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"reflect"
+	"sync"
 	"time"
 
-	"github.com/goharbor/harbor/src/adminserver/client"
-	"github.com/goharbor/harbor/src/common"
+	o "github.com/astaxie/beego/orm"
+	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/config"
-	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	jlogger "github.com/goharbor/harbor/src/jobservice/job/impl/logger"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	jmodel "github.com/goharbor/harbor/src/jobservice/models"
+	"github.com/goharbor/harbor/src/jobservice/logger/sweeper"
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 const (
@@ -42,32 +40,24 @@ const (
 type Context struct {
 	// System context
 	sysContext context.Context
-
 	// Logger for job
 	logger logger.Interface
-
-	// op command func
-	opCommandFunc job.CheckOPCmdFunc
-
-	// checkin func
-	checkInFunc job.CheckInFunc
-
-	// launch job
-	launchJobFunc job.LaunchJobFunc
-
 	// other required information
 	properties map[string]interface{}
-
 	// admin server client
-	adminClient client.Client
+	cfgMgr comcfg.CfgManager
+	// job life cycle tracker
+	tracker job.Tracker
+	// job logger configs settings map lock
+	lock sync.Mutex
 }
 
 // NewContext ...
-func NewContext(sysCtx context.Context, adminClient client.Client) *Context {
+func NewContext(sysCtx context.Context, cfgMgr *comcfg.CfgManager) *Context {
 	return &Context{
-		sysContext:  sysCtx,
-		adminClient: adminClient,
-		properties:  make(map[string]interface{}),
+		sysContext: comcfg.NewContext(sysCtx, cfgMgr),
+		cfgMgr:     *cfgMgr,
+		properties: make(map[string]interface{}),
 	}
 }
 
@@ -76,12 +66,11 @@ func (c *Context) Init() error {
 	var (
 		counter = 0
 		err     error
-		configs map[string]interface{}
 	)
 
 	for counter == 0 || err != nil {
 		counter++
-		configs, err = c.adminClient.GetCfgs()
+		err = c.cfgMgr.Load()
 		if err != nil {
 			logger.Errorf("Job context initialization error: %s\n", err.Error())
 			if counter < maxRetryTimes {
@@ -94,18 +83,30 @@ func (c *Context) Init() error {
 		}
 	}
 
-	db := getDBFromConfig(configs)
+	db := c.cfgMgr.GetDatabaseCfg()
 
-	return dao.InitDatabase(db)
+	err = dao.InitDatabase(db)
+	if err != nil {
+		return err
+	}
+
+	// Initialize DB finished
+	initDBCompleted()
+	return nil
 }
 
 // Build implements the same method in env.JobContext interface
 // This func will build the job execution context before running
-func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
+func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
+	if tracker == nil || tracker.Job() == nil {
+		return nil, errors.New("nil job tracker")
+	}
+
 	jContext := &Context{
-		sysContext:  c.sysContext,
-		adminClient: c.adminClient,
-		properties:  make(map[string]interface{}),
+		sysContext: orm.NewContext(c.sysContext, o.NewOrm()),
+		cfgMgr:     c.cfgMgr,
+		properties: make(map[string]interface{}),
+		tracker:    tracker,
 	}
 
 	// Copy properties
@@ -115,56 +116,25 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 		}
 	}
 
-	// Refresh admin server properties
-	props, err := c.adminClient.GetCfgs()
+	// Refresh config properties
+	err := c.cfgMgr.Load()
 	if err != nil {
 		return nil, err
 	}
+
+	props := c.cfgMgr.GetAll()
 	for k, v := range props {
 		jContext.properties[k] = v
 	}
 
-	// Init logger here
-	logPath := fmt.Sprintf("%s/%s.log", config.GetLogBasePath(), dep.ID)
-	jContext.logger = jlogger.New(logPath, config.GetLogLevel())
-	if jContext.logger == nil {
-		return nil, errors.New("failed to initialize job logger")
+	// Set loggers for job
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	lg, err := createLoggers(tracker.Job().Info.JobID)
+	if err != nil {
+		return nil, err
 	}
-
-	if opCommandFunc, ok := dep.ExtraData["opCommandFunc"]; ok {
-		if reflect.TypeOf(opCommandFunc).Kind() == reflect.Func {
-			if funcRef, ok := opCommandFunc.(job.CheckOPCmdFunc); ok {
-				jContext.opCommandFunc = funcRef
-			}
-		}
-	}
-	if jContext.opCommandFunc == nil {
-		return nil, errors.New("failed to inject opCommandFunc")
-	}
-
-	if checkInFunc, ok := dep.ExtraData["checkInFunc"]; ok {
-		if reflect.TypeOf(checkInFunc).Kind() == reflect.Func {
-			if funcRef, ok := checkInFunc.(job.CheckInFunc); ok {
-				jContext.checkInFunc = funcRef
-			}
-		}
-	}
-
-	if jContext.checkInFunc == nil {
-		return nil, errors.New("failed to inject checkInFunc")
-	}
-
-	if launchJobFunc, ok := dep.ExtraData["launchJobFunc"]; ok {
-		if reflect.TypeOf(launchJobFunc).Kind() == reflect.Func {
-			if funcRef, ok := launchJobFunc.(job.LaunchJobFunc); ok {
-				jContext.launchJobFunc = funcRef
-			}
-		}
-	}
-
-	if jContext.launchJobFunc == nil {
-		return nil, errors.New("failed to inject launchJobFunc")
-	}
+	jContext.logger = lg
 
 	return jContext, nil
 }
@@ -182,22 +152,21 @@ func (c *Context) SystemContext() context.Context {
 
 // Checkin is bridge func for reporting detailed status
 func (c *Context) Checkin(status string) error {
-	if c.checkInFunc != nil {
-		c.checkInFunc(status)
-	} else {
-		return errors.New("nil check in function")
-	}
-
-	return nil
+	return c.tracker.CheckIn(status)
 }
 
 // OPCommand return the control operational command like stop/cancel if have
-func (c *Context) OPCommand() (string, bool) {
-	if c.opCommandFunc != nil {
-		return c.opCommandFunc()
+func (c *Context) OPCommand() (job.OPCommand, bool) {
+	latest, err := c.tracker.Status()
+	if err != nil {
+		return job.NilCommand, false
 	}
 
-	return "", false
+	if job.StoppedStatus == latest {
+		return job.StopCommand, true
+	}
+
+	return job.NilCommand, false
 }
 
 // GetLogger returns the logger
@@ -205,25 +174,48 @@ func (c *Context) GetLogger() logger.Interface {
 	return c.logger
 }
 
-// LaunchJob launches sub jobs
-func (c *Context) LaunchJob(req jmodel.JobRequest) (jmodel.JobStats, error) {
-	if c.launchJobFunc == nil {
-		return jmodel.JobStats{}, errors.New("nil launch job function")
-	}
-
-	return c.launchJobFunc(req)
+// Tracker returns the job tracker attached with the context
+func (c *Context) Tracker() job.Tracker {
+	return c.tracker
 }
 
-func getDBFromConfig(cfg map[string]interface{}) *models.Database {
-	database := &models.Database{}
-	database.Type = cfg[common.DatabaseType].(string)
-	postgresql := &models.PostGreSQL{}
-	postgresql.Host = cfg[common.PostGreSQLHOST].(string)
-	postgresql.Port = int(cfg[common.PostGreSQLPort].(float64))
-	postgresql.Username = cfg[common.PostGreSQLUsername].(string)
-	postgresql.Password = cfg[common.PostGreSQLPassword].(string)
-	postgresql.Database = cfg[common.PostGreSQLDatabase].(string)
-	database.PostGreSQL = postgresql
+// create loggers based on the configurations.
+func createLoggers(jobID string) (logger.Interface, error) {
+	// Init job loggers here
+	lOptions := make([]logger.Option, 0)
+	for _, lc := range config.DefaultConfig.JobLoggerConfigs {
+		// For running job, the depth should be 5
+		if lc.Name == logger.NameFile || lc.Name == logger.NameStdOutput || lc.Name == logger.NameDB {
+			if lc.Settings == nil {
+				lc.Settings = map[string]interface{}{}
+			}
+			lc.Settings["depth"] = 5
+		}
+		if lc.Name == logger.NameFile || lc.Name == logger.NameDB {
+			// Need extra param
+			fSettings := map[string]interface{}{}
+			for k, v := range lc.Settings {
+				// Copy settings
+				fSettings[k] = v
+			}
+			if lc.Name == logger.NameFile {
+				// Append file name param
+				fSettings["filename"] = fmt.Sprintf("%s.log", jobID)
+				lOptions = append(lOptions, logger.BackendOption(lc.Name, lc.Level, fSettings))
+			} else { // DB Logger
+				// Append DB key
+				fSettings["key"] = jobID
+				lOptions = append(lOptions, logger.BackendOption(lc.Name, lc.Level, fSettings))
+			}
+		} else {
+			lOptions = append(lOptions, logger.BackendOption(lc.Name, lc.Level, lc.Settings))
+		}
+	}
+	// Get logger for the job
+	return logger.GetLogger(lOptions...)
+}
 
-	return database
+func initDBCompleted() error {
+	sweeper.PrepareDBSweep()
+	return nil
 }

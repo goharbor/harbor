@@ -1,5 +1,3 @@
-
-import {finalize} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,26 +11,31 @@ import {finalize} from 'rxjs/operators';
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import { finalize } from 'rxjs/operators';
 import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { Subscription } from "rxjs";
-import {TranslateService} from "@ngx-translate/core";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
-
+import { Subscription, forkJoin, Observable } from "rxjs";
+import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
 import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
 import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
 import { SessionService } from "../../shared/session.service";
 import { RoleInfo } from "../../shared/shared.const";
-import { Project } from "../../project/project";
 import { Member } from "./member";
 import { SessionUser } from "../../shared/session-user";
 import { AddGroupComponent } from './add-group/add-group.component';
+import { AddHttpAuthGroupComponent } from './add-http-auth-group/add-http-auth-group.component';
 import { MemberService } from "./member.service";
 import { AddMemberComponent } from "./add-member/add-member.component";
-import {AppConfigService} from "../../app-config.service";
-
+import { AppConfigService } from "../../services/app-config.service";
+import { map, catchError } from "rxjs/operators";
+import { throwError as observableThrowError } from "rxjs";
+import { OperationService } from "../../../lib/components/operation/operation.service";
+import { UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { operateChanges, OperateInfo, OperationState } from "../../../lib/components/operation/operate";
+import { errorHandler as errorHandlerFn } from "../../../lib/utils/shared/shared.utils";
 @Component({
   templateUrl: "member.component.html",
   styleUrls: ["./member.component.scss"],
@@ -46,7 +49,6 @@ export class MemberComponent implements OnInit, OnDestroy {
   delSub: Subscription;
 
   currentUser: SessionUser;
-  hasProjectAdminRole: boolean;
 
   batchOps = 'delete';
   searchMember: string;
@@ -55,17 +57,22 @@ export class MemberComponent implements OnInit, OnDestroy {
   isDelete = false;
   isChangeRole = false;
   loading = false;
-  isLdapMode: boolean = false;
 
   isChangingRole = false;
   batchChangeRoleInfos = {};
-
-  @ViewChild(AddMemberComponent)
+  isLdapMode: boolean;
+  isHttpAuthMode: boolean;
+  isOidcMode: boolean;
+  @ViewChild(AddMemberComponent, {static: false})
   addMemberComponent: AddMemberComponent;
 
-  @ViewChild(AddGroupComponent)
+  @ViewChild(AddGroupComponent, {static: false})
   addGroupComponent: AddGroupComponent;
-
+  @ViewChild(AddHttpAuthGroupComponent, {static: false})
+  addHttpAuthGroupComponent: AddHttpAuthGroupComponent;
+  hasCreateMemberPermission: boolean;
+  hasUpdateMemberPermission: boolean;
+  hasDeleteMemberPermission: boolean;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -76,6 +83,8 @@ export class MemberComponent implements OnInit, OnDestroy {
     private session: SessionService,
     private operationService: OperationService,
     private appConfigService: AppConfigService,
+    private userPermissionService: UserPermissionService,
+    private errorHandler: ErrorHandler,
     private ref: ChangeDetectorRef) {
 
     this.delSub = OperateDialogService.confirmationConfirm$.subscribe(message => {
@@ -102,16 +111,19 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.projectId = +this.route.snapshot.parent.params["id"];
     // Get current user from registered resolver.
     this.currentUser = this.session.getCurrentUser();
-    let resolverData = this.route.snapshot.parent.data;
-    if (resolverData) {
-      this.hasProjectAdminRole = (<Project>resolverData["projectResolver"]).has_project_admin_role;
-    }
     this.retrieve(this.projectId, "");
+    // get member permission rule
+    this.getMemberPermissionRule(this.projectId);
     if (this.appConfigService.isLdapMode()) {
       this.isLdapMode = true;
     }
+    if (this.appConfigService.isHttpAuthMode()) {
+      this.isHttpAuthMode = true;
+    }
+    if (this.appConfigService.isOidcMode()) {
+      this.isOidcMode = true;
+    }
   }
-
   doSearch(searchMember: string) {
     this.searchMember = searchMember;
     this.retrieve(this.projectId, this.searchMember);
@@ -126,23 +138,24 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.selectedRow = [];
     this.memberService
       .listMembers(projectId, username).pipe(
-      finalize(() => this.loading = false))
+        finalize(() => {
+          this.loading = false;
+          let hnd = setInterval(() => this.ref.markForCheck(), 100);
+          setTimeout(() => clearInterval(hnd), 1000);
+        }))
       .subscribe(
-      response => {
-        this.members = response;
-        let hnd = setInterval(() => this.ref.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 1000);
-      },
-      error => {
-        this.router.navigate(["/harbor", "projects"]);
-        this.messageHandlerService.handleError(error);
-      });
+        response => {
+          this.members = response;
+        },
+        error => {
+          this.messageHandlerService.handleError(error);
+        });
   }
 
   get onlySelf(): boolean {
     if (this.selectedRow.length === 1 &&
       this.selectedRow[0].entity_type === 'u' &&
-       this.selectedRow[0].entity_id === this.currentUser.user_id) {
+      this.selectedRow[0].entity_id === this.currentUser.user_id) {
       return true;
     }
     return false;
@@ -168,12 +181,16 @@ export class MemberComponent implements OnInit, OnDestroy {
 
   // Add group
   openAddGroupModal() {
-    this.addGroupComponent.open();
+    if (this.isLdapMode) {
+      this.addGroupComponent.open();
+    } else {
+      this.addHttpAuthGroupComponent.openAddMemberModal();
+    }
   }
   addedGroup(result: boolean) {
     this.searchMember = "";
     this.retrieve(this.projectId, "");
-   }
+  }
 
   changeMembersRole(members: Member[], roleId: number) {
     if (!members) {
@@ -182,23 +199,26 @@ export class MemberComponent implements OnInit, OnDestroy {
 
     let changeOperate = (projectId: number, member: Member, ) => {
       return this.memberService
-          .changeMemberRole(projectId, member.id, roleId)
-          .then( () => this.batchChangeRoleInfos[member.id] = 'done')
-          .catch(error => this.messageHandlerService.handleError(error + ": " + member.entity_name));
+        .changeMemberRole(projectId, member.id, roleId)
+        .pipe(map(() => this.batchChangeRoleInfos[member.id] = 'done')
+          , catchError(error => {
+            this.messageHandlerService.handleError(error);
+            return observableThrowError(error);
+          }));
     };
 
     // Preparation for members role change
     this.batchChangeRoleInfos = {};
-    let RoleChangePromises: Promise<any>[] = [];
+    let RoleChangeObservables: Observable<any>[] = [];
     members.forEach(member => {
       if (member.entity_type === 'u' && member.entity_id === this.currentUser.user_id) {
         return;
       }
       this.batchChangeRoleInfos[member.id] = 'pending';
-      RoleChangePromises.push(changeOperate(this.projectId, member));
+      RoleChangeObservables.push(changeOperate(this.projectId, member));
     });
 
-    Promise.all(RoleChangePromises).then(() => {
+    forkJoin(...RoleChangeObservables).subscribe(() => {
       this.retrieve(this.projectId, "");
     });
   }
@@ -223,18 +243,18 @@ export class MemberComponent implements OnInit, OnDestroy {
         ConfirmationTargets.PROJECT_MEMBER,
         ConfirmationButtons.DELETE_CANCEL
       );
-       this.OperateDialogService.openComfirmDialog(deletionMessage);
+      this.OperateDialogService.openComfirmDialog(deletionMessage);
     }
   }
 
   deleteMembers(members: Member[]) {
     if (!members) { return; }
-    let memberDeletingPromises: Promise<any>[] = [];
+    let memberDeletingObservables: Observable<any>[] = [];
 
     // Function to delete specific member
     let deleteMember = (projectId: number, member: Member) => {
       let operMessage = new OperateInfo();
-      operMessage.name = 'OPERATION.DELETE_MEMBER';
+      operMessage.name = member.entity_type === 'u' ? 'OPERATION.DELETE_MEMBER' : 'OPERATION.DELETE_GROUP';
       operMessage.data.id = member.id;
       operMessage.state = OperationState.progressing;
       operMessage.data.name = member.entity_name;
@@ -249,25 +269,41 @@ export class MemberComponent implements OnInit, OnDestroy {
 
       return this.memberService
         .deleteMember(projectId, member.id)
-        .then(response => {
-              this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
-                operateChanges(operMessage, OperationState.success);
-              });
-            })
-        .catch(error => {
-            this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
-              operateChanges(operMessage, OperationState.failure, res);
-            });
+        .pipe(map(response => {
+          this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
+            operateChanges(operMessage, OperationState.success);
           });
+        }), catchError(error => {
+          const message = errorHandlerFn(error);
+          this.translate.get(message).subscribe(res =>
+            operateChanges(operMessage, OperationState.failure, res)
+          );
+          return observableThrowError(error);
+        }));
     };
 
     // Deleting member then wating for results
-    members.forEach(member => memberDeletingPromises.push(deleteMember(this.projectId, member)));
+    members.forEach(member => memberDeletingObservables.push(deleteMember(this.projectId, member)));
 
-    Promise.all(memberDeletingPromises).then(() => {
+    forkJoin(...memberDeletingObservables).subscribe(() => {
       this.selectedRow = [];
       this.batchOps = 'idle';
       this.retrieve(this.projectId, "");
+    }, error => {
+      this.errorHandler.error(error);
     });
+  }
+  getMemberPermissionRule(projectId: number): void {
+    let hasCreateMemberPermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.MEMBER.KEY, USERSTATICPERMISSION.MEMBER.VALUE.CREATE);
+    let hasUpdateMemberPermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.MEMBER.KEY, USERSTATICPERMISSION.MEMBER.VALUE.UPDATE);
+    let hasDeleteMemberPermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.MEMBER.KEY, USERSTATICPERMISSION.MEMBER.VALUE.DELETE);
+    forkJoin(hasCreateMemberPermission, hasUpdateMemberPermission, hasDeleteMemberPermission).subscribe(MemberRule => {
+      this.hasCreateMemberPermission = MemberRule[0] as boolean;
+      this.hasUpdateMemberPermission = MemberRule[1] as boolean;
+      this.hasDeleteMemberPermission = MemberRule[2] as boolean;
+    }, error => this.errorHandler.error(error));
   }
 }

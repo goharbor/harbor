@@ -1,0 +1,20 @@
+<form #replicationConfigFrom="ngForm" class="compact">
+  <section class="form-block replication-config">
+    <label class="replication-text" *ngIf="showSubTitle">{{'CONFIG.REPLICATION' | translate}}</label>
+    <div class="form-group">
+      <div class="clr-form-control">
+        <label for="verifyRemoteCert">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</label>
+        <clr-checkbox-wrapper>
+          <input type="checkbox" clrCheckbox id="verifyRemoteCert" name="verifyRemoteCert" [(ngModel)]="replicationConfig.verify_remote_cert.value"
+            [disabled]="!editable" />
+          <label>
+            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right top-7">
+              <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+              <span class="tooltip-content">{{'CONFIG.TOOLTIP.VERIFY_REMOTE_CERT' | translate }}</span>
+            </a>
+          </label>
+        </clr-checkbox-wrapper>
+      </div>
+    </div>
+  </section>
+</form>

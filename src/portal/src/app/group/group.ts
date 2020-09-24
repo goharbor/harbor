@@ -4,9 +4,9 @@ export class UserGroup {
   group_type: number;
   ldap_group_dn?: string;
 
-  constructor() {
+  constructor(groupType) {
     {
-      this.group_type = 1;
+      this.group_type = groupType;
     }
   }
 }

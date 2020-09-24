@@ -19,17 +19,20 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	ldapUtils "github.com/goharbor/harbor/src/common/utils/ldap"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/auth"
+	"github.com/goharbor/harbor/src/lib/log"
 
+	"errors"
+	"strings"
+
+	"github.com/goharbor/harbor/src/core/config"
 	goldap "gopkg.in/ldap.v2"
 )
 
 // LdapAPI handles requesst to /api/ldap/ping /api/ldap/user/search /api/ldap/user/import
 type LdapAPI struct {
 	BaseController
-	ldapConfig    *ldapUtils.Session
-	useTestConfig bool // Only used for unit test
+	ldapConfig *ldapUtils.Session
 }
 
 const (
@@ -44,29 +47,42 @@ const (
 func (l *LdapAPI) Prepare() {
 	l.BaseController.Prepare()
 	if !l.SecurityCtx.IsAuthenticated() {
-		l.HandleUnauthorized()
+		l.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
 	if !l.SecurityCtx.IsSysAdmin() {
-		l.HandleForbidden(l.SecurityCtx.GetUsername())
+		l.SendForbiddenError(errors.New(l.SecurityCtx.GetUsername()))
 		return
 	}
-	if l.useTestConfig {
-		ldapCfg, err := ldapUtils.LoadSystemLdapConfig()
-		if err != nil {
-			l.HandleInternalServerError(fmt.Sprintf("Can't load system configuration, error: %v", err))
-			return
-		}
-		l.ldapConfig = ldapCfg
+
+	// check the auth_mode except ping
+	if strings.EqualFold(l.Ctx.Request.RequestURI, "/api/ldap/ping") {
+		return
 	}
+	authMode, err := config.AuthMode()
+	if err != nil {
+		l.SendInternalServerError(fmt.Errorf("Can't load system configuration, error: %v", err))
+		return
+	}
+	if authMode != "ldap_auth" {
+		l.SendInternalServerError(errors.New("system auth_mode isn't ldap_auth, please check configuration"))
+		return
+	}
+	ldapCfg, err := ldapUtils.LoadSystemLdapConfig()
+	if err != nil {
+		l.SendInternalServerError(fmt.Errorf("Can't load system configuration, error: %v", err))
+		return
+	}
+	l.ldapConfig = ldapCfg
+
 }
 
 // Ping ...
 func (l *LdapAPI) Ping() {
+	var err error
 	var ldapConfs = models.LdapConf{
 		LdapConnectionTimeout: 5,
 	}
-	var err error
 
 	l.Ctx.Input.CopyBody(1 << 32)
 
@@ -74,12 +90,17 @@ func (l *LdapAPI) Ping() {
 		ldapSession := *l.ldapConfig
 		err = ldapSession.ConnectionTest()
 	} else {
-		l.DecodeJSONReqAndValidate(&ldapConfs)
+		var isValid bool
+		isValid, err = l.DecodeJSONReqAndValidate(&ldapConfs)
+		if !isValid {
+			l.SendBadRequestError(err)
+			return
+		}
 		err = ldapUtils.ConnectionTestWithConfig(ldapConfs)
 	}
 
 	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("LDAP connect fail, error: %v", err))
+		l.SendInternalServerError(fmt.Errorf("LDAP connect fail, error: %v", err))
 		return
 	}
 }
@@ -90,7 +111,7 @@ func (l *LdapAPI) Search() {
 	var ldapUsers []models.LdapUser
 	ldapSession := *l.ldapConfig
 	if err = ldapSession.Open(); err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("Can't Open LDAP session, error: %v", err))
+		l.SendInternalServerError(fmt.Errorf("can't Open LDAP session, error: %v", err))
 		return
 	}
 	defer ldapSession.Close()
@@ -100,7 +121,7 @@ func (l *LdapAPI) Search() {
 	ldapUsers, err = ldapSession.SearchUser(searchName)
 
 	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("LDAP search fail, error: %v", err))
+		l.SendInternalServerError(fmt.Errorf("LDAP search fail, error: %v", err))
 		return
 	}
 
@@ -114,18 +135,22 @@ func (l *LdapAPI) ImportUser() {
 	var ldapImportUsers models.LdapImportUser
 	var ldapFailedImportUsers []models.LdapFailedImportUser
 
-	l.DecodeJSONReqAndValidate(&ldapImportUsers)
+	isValid, err := l.DecodeJSONReqAndValidate(&ldapImportUsers)
+	if !isValid {
+		l.SendBadRequestError(err)
+		return
+	}
 
-	ldapFailedImportUsers, err := importUsers(ldapImportUsers.LdapUIDList, l.ldapConfig)
+	ldapFailedImportUsers, err = importUsers(ldapImportUsers.LdapUIDList, l.ldapConfig)
 
 	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("LDAP import user fail, error: %v", err))
+		l.SendInternalServerError(fmt.Errorf("LDAP import user fail, error: %v", err))
 		return
 	}
 
 	if len(ldapFailedImportUsers) > 0 {
 		// Some user require json format response.
-		l.HandleNotFound("")
+		l.SendNotFoundError(errors.New("ldap user is not found"))
 		l.Data["json"] = ldapFailedImportUsers
 		l.ServeJSON()
 		return
@@ -207,23 +232,23 @@ func (l *LdapAPI) SearchGroup() {
 	if len(searchName) > 0 {
 		ldapGroups, err = ldapSession.SearchGroupByName(searchName)
 		if err != nil {
-			l.HandleInternalServerError(fmt.Sprintf("Can't search LDAP group by name, error: %v", err))
+			l.SendInternalServerError(fmt.Errorf("can't search LDAP group by name, error: %v", err))
 			return
 		}
 	} else if len(groupDN) > 0 {
 		if _, err := goldap.ParseDN(groupDN); err != nil {
-			l.HandleBadRequest(fmt.Sprintf("Invalid DN: %v", err))
+			l.SendBadRequestError(fmt.Errorf("invalid DN: %v", err))
 			return
 		}
 		ldapGroups, err = ldapSession.SearchGroupByDN(groupDN)
 		if err != nil {
 			// OpenLDAP usually return an error if DN is not found
-			l.HandleNotFound(fmt.Sprintf("Search LDAP group fail, error: %v", err))
+			l.SendNotFoundError(fmt.Errorf("search LDAP group fail, error: %v", err))
 			return
 		}
 	}
 	if len(ldapGroups) == 0 {
-		l.HandleNotFound("No ldap group found")
+		l.SendNotFoundError(errors.New("No ldap group found"))
 		return
 	}
 	l.Data["json"] = ldapGroups

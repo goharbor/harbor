@@ -11,33 +11,42 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { NgModule } from '@angular/core';
-import { CoreModule } from '../core/core.module';
-import { SharedModule } from '../shared/shared.module';
 
-import { ConfigurationComponent } from './config.component';
-import { ConfigurationService } from './config.service';
-import { ConfigurationAuthComponent } from './auth/config-auth.component';
-import { ConfigurationEmailComponent } from './email/config-email.component';
-import { GcComponent } from './gc/gc.component';
-import { GcRepoService } from './gc/gc.service';
-import { GcApiRepository } from './gc/gc.api.repository';
-import { GcViewModelFactory } from './gc/gc.viewmodel.factory';
-import { GcUtility } from './gc/gc.utility';
+import { NgModule } from "@angular/core";
+import { CoreModule } from "../core/core.module";
+import { SharedModule } from "../shared/shared.module";
+
+import { ConfigurationComponent } from "./config.component";
+import { ConfigurationService } from "./config.service";
+import { ConfirmMessageHandler } from "./config.msg.utils";
+import { ConfigurationAuthComponent } from "./auth/config-auth.component";
+import { ConfigurationEmailComponent } from "./email/config-email.component";
+import { RobotApiRepository } from "../project/robot-account/robot.api.repository";
+import { ConfigurationScannerComponent } from "./scanner/config-scanner.component";
+import { NewScannerModalComponent } from "./scanner/new-scanner-modal/new-scanner-modal.component";
+import { NewScannerFormComponent } from "./scanner/new-scanner-form/new-scanner-form.component";
+import { ConfigScannerService } from "./scanner/config-scanner.service";
+import { ScannerMetadataComponent } from "./scanner/scanner-metadata/scanner-metadata.component";
 
 
 @NgModule({
-  imports: [
-    CoreModule,
-    SharedModule
-  ],
-  declarations: [
-    ConfigurationComponent,
-    ConfigurationAuthComponent,
-    ConfigurationEmailComponent,
-    GcComponent
-  ],
-  exports: [ConfigurationComponent],
-  providers: [ConfigurationService, GcRepoService, GcApiRepository, GcViewModelFactory, GcUtility ]
+    imports: [CoreModule, SharedModule],
+    declarations: [
+        ConfigurationComponent,
+        ConfigurationAuthComponent,
+        ConfigurationEmailComponent,
+        ConfigurationScannerComponent,
+        NewScannerModalComponent,
+        NewScannerFormComponent,
+        ScannerMetadataComponent
+    ],
+    exports: [ConfigurationComponent],
+    providers: [
+        ConfigurationService,
+        ConfirmMessageHandler,
+        RobotApiRepository,
+        ConfigScannerService,
+    ]
 })
-export class ConfigurationModule { }
+export class ConfigurationModule {
+}

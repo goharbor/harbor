@@ -1,30 +1,24 @@
-<a *ngIf="hasSignedIn" (click)="backToProject()" class="backStyle">&lt; {{'PROJECT_DETAIL.PROJECTS' | translate}}</a>
-<a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']">&lt; {{'SEARCH.BACK' | translate}}</a>
+<a *ngIf="hasSignedIn" (click)="backToProject()" class="backStyle"> {{'PROJECT_DETAIL.PROJECTS' | translate}}</a>
+<a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']"> {{'SEARCH.BACK' | translate}}</a>
 
-<h1 class="custom-h2" sub-header-title>{{currentProject.name}} <span class="role-label" *ngIf="isMember">{{roleName | translate}}</span></h1>
-<nav class="subnav sub-nav-bg-color">
-    <ul class="nav">
-        <li class="nav-item">
-            <a class="nav-link" routerLink="repositories" routerLinkActive="active">{{'PROJECT_DETAIL.REPOSITORIES' | translate}}</a>
-        </li>
-        <li *ngIf="withHelmChart" class="nav-item">
-            <a class="nav-link" routerLink="helm-charts" routerLinkActive="active">{{'PROJECT_DETAIL.HELMCHART' | translate}}</a>
-        </li>
-        <li class="nav-item" *ngIf="isSystemAdmin || isMember">
-            <a class="nav-link" routerLink="members" routerLinkActive="active">{{'PROJECT_DETAIL.USERS' | translate}}</a>
-        </li>
-        <li class="nav-item" *ngIf="isSProjectAdmin || isSystemAdmin">
-            <a class="nav-link" routerLink="replications" routerLinkActive="active">{{'PROJECT_DETAIL.REPLICATION' | translate}}</a>
-        </li>
-        <li class="nav-item" *ngIf="(isSProjectAdmin || isSystemAdmin) && !withAdmiral">
-            <a class="nav-link" routerLink="labels" routerLinkActive="active">{{'PROJECT_DETAIL.LABELS' | translate}}</a>
-        </li>
-        <li class="nav-item" *ngIf="isSystemAdmin || isMember">
-            <a class="nav-link" routerLink="logs" routerLinkActive="active">{{'PROJECT_DETAIL.LOGS' | translate}}</a>
-        </li>
-        <li class="nav-item" *ngIf="isSessionValid && (isSystemAdmin || isMember)">
-            <a class="nav-link" routerLink="configs" routerLinkActive="active">{{'PROJECT_DETAIL.CONFIG' | translate}}</a>
-        </li>
-    </ul>
-</nav>
+<h1 class="custom-h2" sub-header-title>
+    <clr-icon *ngIf="isProxyCacheProject" shape="cloud-traffic" size="30"></clr-icon>
+    <span class="ml-05">{{currentProject.name}}</span>
+    <span class="ml-05 role-label" *ngIf="isMember">{{roleName | translate}}</span>
+</h1>
+<div class="clr-row mt-0 line-height-10" *ngIf="isProxyCacheProject">
+    <span class="proxy-cache">{{ 'PROJECT.PROXY_CACHE' | translate }}</span>
+</div>
+<clr-tabs id="project-tabs" class="tabs" [class.in-overflow]="isTabLinkInOverFlow()">
+    <ng-container *ngFor="let tab of tabLinkNavList;let i=index">
+        <ng-container *ngIf="tab.permissions()">
+            <clr-tab>
+                <button [class.clear-default-active]="isDefaultTab(tab, i)" [clrTabLinkInOverflow]="tab.tabLinkInOverflow" id="{{'project-'+tab.linkName}}" clrTabLink
+                    routerLink="{{tab.linkName}}" routerLinkActive="active" type="button">
+                    <a class="nav-link">{{tab.showTabName | translate}}</a></button>
+            </clr-tab>
+        </ng-container>
+    </ng-container>
+</clr-tabs>
+
 <router-outlet></router-outlet>

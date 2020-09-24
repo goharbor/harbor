@@ -17,7 +17,7 @@ package dao
 import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 
 	"fmt"
 	"time"
@@ -27,11 +27,11 @@ import (
 func AddProject(project models.Project) (int64, error) {
 	o := GetOrmer()
 
-	sql := "insert into project (owner_id, name, creation_time, update_time, deleted) values (?, ?, ?, ?, ?) RETURNING project_id"
+	sql := "insert into project (owner_id, name, registry_id, creation_time, update_time, deleted) values (?, ?, ?, ?, ?, ?) RETURNING project_id"
 	var projectID int64
 	now := time.Now()
 
-	err := o.Raw(sql, project.OwnerID, project.Name, now, now, project.Deleted).QueryRow(&projectID)
+	err := o.Raw(sql, project.OwnerID, project.Name, project.RegistryID, now, now, project.Deleted).QueryRow(&projectID)
 	if err != nil {
 		return 0, err
 	}
@@ -39,7 +39,7 @@ func AddProject(project models.Project) (int64, error) {
 	pmID, err := addProjectMember(models.Member{
 		ProjectID:  projectID,
 		EntityID:   project.OwnerID,
-		Role:       models.PROJECTADMIN,
+		Role:       common.RoleProjectAdmin,
 		EntityType: common.UserMember,
 	})
 	if err != nil {
@@ -78,7 +78,7 @@ func addProjectMember(member models.Member) (int, error) {
 func GetProjectByID(id int64) (*models.Project, error) {
 	o := GetOrmer()
 
-	sql := `select p.project_id, p.name, u.username as owner_name, p.owner_id, p.creation_time, p.update_time  
+	sql := `select p.project_id, p.name, p.registry_id, u.username as owner_name, p.owner_id, p.creation_time, p.update_time
 		from project p left join harbor_user u on p.owner_id = u.user_id where p.deleted = false and p.project_id = ?`
 	queryParam := make([]interface{}, 1)
 	queryParam = append(queryParam, id)
@@ -142,11 +142,10 @@ func GetTotalOfProjects(query *models.ProjectQueryParam) (int64, error) {
 // GetProjects returns a project list according to the query conditions
 func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
 	sqlStr, queryParam := projectQueryConditions(query)
-	sqlStr = `select distinct p.project_id, p.name, p.owner_id, 
+	sqlStr = `select distinct p.project_id, p.name, p.registry_id, p.owner_id,
 		p.creation_time, p.update_time ` + sqlStr + ` order by p.name`
 	sqlStr, queryParam = CreatePagination(query, sqlStr, queryParam)
 
-	log.Debugf("sql:=%+v, param= %+v", sqlStr, queryParam)
 	var projects []*models.Project
 	_, err := GetOrmer().Raw(sqlStr, queryParam).QueryRows(&projects)
 
@@ -156,19 +155,21 @@ func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
 
 // GetGroupProjects - Get user's all projects, including user is the user member of this project
 // and the user is in the group which is a group member of this project.
-func GetGroupProjects(groupDNCondition string, query *models.ProjectQueryParam) ([]*models.Project, error) {
+func GetGroupProjects(groupIDs []int, query *models.ProjectQueryParam) ([]*models.Project, error) {
 	sql, params := projectQueryConditions(query)
-	sql = `select distinct p.project_id, p.name, p.owner_id, 
+	sql = `select distinct p.project_id, p.name, p.registry_id, p.owner_id,
 				p.creation_time, p.update_time ` + sql
-	if len(groupDNCondition) > 0 {
+	groupIDCondition := JoinNumberConditions(groupIDs)
+	if len(groupIDs) > 0 {
 		sql = fmt.Sprintf(
-			`%s union select distinct p.project_id, p.name, p.owner_id, p.creation_time, p.update_time  
-		     from project p 
+			`%s union select distinct p.project_id, p.name, p.registry_id, p.owner_id, p.creation_time, p.update_time
+		     from project p
 		     left join project_member pm on p.project_id = pm.project_id
-		     left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g' and ug.group_type = 1
-			 where ug.ldap_group_dn in ( %s ) order by name`,
-			sql, groupDNCondition)
+		     left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g'
+			 where p.deleted=false and ug.id in ( %s )`,
+			sql, groupIDCondition)
 	}
+	sql = sql + ` order by name`
 	sqlStr, queryParams := CreatePagination(query, sql, params)
 	log.Debugf("query sql:%v", sql)
 	var projects []*models.Project
@@ -178,20 +179,21 @@ func GetGroupProjects(groupDNCondition string, query *models.ProjectQueryParam) 
 
 // GetTotalGroupProjects - Get the total count of projects, including  user is the member of this project and the
 // user is in the group, which is the group member of this project.
-func GetTotalGroupProjects(groupDNCondition string, query *models.ProjectQueryParam) (int, error) {
+func GetTotalGroupProjects(groupIDs []int, query *models.ProjectQueryParam) (int, error) {
 	var sql string
 	sqlCondition, params := projectQueryConditions(query)
-	if len(groupDNCondition) == 0 {
+	groupIDCondition := JoinNumberConditions(groupIDs)
+	if len(groupIDs) == 0 {
 		sql = `select count(1) ` + sqlCondition
 	} else {
 		sql = fmt.Sprintf(
-			`select count(1) 
-			   from ( select  p.project_id %s  union select  p.project_id  
-			   from project p 
+			`select count(1)
+			   from ( select  p.project_id %s  union select  p.project_id
+			   from project p
 			   left join project_member pm on p.project_id = pm.project_id
-			   left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g' and ug.group_type = 1
-			   where ug.ldap_group_dn in ( %s )) t`,
-			sqlCondition, groupDNCondition)
+			   left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g'
+			   where p.deleted=false and ug.id in ( %s )) t`,
+			sqlCondition, groupIDCondition)
 	}
 	log.Debugf("query sql:%v", sql)
 	var count int
@@ -235,6 +237,11 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 		params = append(params, "%"+Escape(query.Name)+"%")
 	}
 
+	if query.RegistryID > 0 {
+		sql += ` and p.registry_id = ?`
+		params = append(params, query.RegistryID)
+	}
+
 	if query.Member != nil && len(query.Member.Name) != 0 {
 		sql += ` and u2.username=?`
 		params = append(params, query.Member.Name)
@@ -249,14 +256,17 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 				roleID = 2
 			case common.RoleGuest:
 				roleID = 3
-
+			case common.RoleMaintainer:
+				roleID = 4
+			case common.RoleLimitedGuest:
+				roleID = 5
 			}
 			params = append(params, roleID)
 		}
 	}
 	if len(query.ProjectIDs) > 0 {
 		sql += fmt.Sprintf(` and p.project_id in ( %s )`,
-			paramPlaceholder(len(query.ProjectIDs)))
+			ParamPlaceholderForIn(len(query.ProjectIDs)))
 		params = append(params, query.ProjectIDs)
 	}
 	return sql, params
@@ -283,36 +293,9 @@ func DeleteProject(id int64) error {
 		return err
 	}
 	name := fmt.Sprintf("%s#%d", project.Name, project.ProjectID)
-	sql := `update project 
-		set deleted = true, name = ? 
+	sql := `update project
+		set deleted = true, name = ?
 		where project_id = ?`
 	_, err = GetOrmer().Raw(sql, name, id).Exec()
 	return err
-}
-
-// GetRolesByLDAPGroup - Get Project roles of the
-// specified group DN is a member of current project
-func GetRolesByLDAPGroup(projectID int64, groupDNCondition string) ([]int, error) {
-	var roles []int
-	if len(groupDNCondition) == 0 {
-		return roles, nil
-	}
-	o := GetOrmer()
-	// Because an LDAP user can be memberof multiple groups,
-	// the role is in descent order (1-admin, 2-developer, 3-guest), use min to select the max privilege role.
-	sql := fmt.Sprintf(
-		`select min(pm.role) from project_member pm 
-		left join user_group ug on pm.entity_type = 'g' and pm.entity_id = ug.id 
-		where ug.ldap_group_dn in ( %s ) and pm.project_id = ? `,
-		groupDNCondition)
-	log.Debugf("sql:%v", sql)
-	if _, err := o.Raw(sql, projectID).QueryRows(&roles); err != nil {
-		log.Warningf("Error in GetRolesByLDAPGroup, error: %v", err)
-		return nil, err
-	}
-	// If there is no row selected, the min returns an empty row, to avoid return 0 as role
-	if len(roles) == 1 && roles[0] == 0 {
-		return []int{}, nil
-	}
-	return roles, nil
 }

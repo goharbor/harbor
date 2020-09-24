@@ -1,0 +1,2 @@
+<h2 class="custom-h2" sub-header-title>{{'CONFIG.PROJECT_QUOTAS' | translate }}<span class="spinner spinner-inline ml-1 v-mid" [hidden]="!loading"></span></h2>
+<project-quotas *ngIf="!loading" [allConfig]="allConfig" (refreshAllconfig)="refreshAllconfig()"></project-quotas>

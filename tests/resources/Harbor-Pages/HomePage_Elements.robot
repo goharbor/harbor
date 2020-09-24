@@ -16,13 +16,18 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${sign_up_for_an_account_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/div/form/div[1]/a
-${sign_up_button_xpath}  //a[@class="signup"]
-${username_xpath}  //*[@id="username"]
-${email_xpath}  //*[@id="email"]
-${realname_xpath}  //*[@id="realname"]
-${newPassword_xpath}  //*[@id="newPassword"]
-${confirmPassword_xpath}  //*[@id="confirmPassword"]
-${comment_xpath}  //*[@id="comment"]
-${signup_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/sign-up/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
+${sign_up_for_an_account_xpath}  /html/body/harbor-app/sign-in/clr-main-container/div/form/div[1]/a
+${sign_up_button_xpath}  //a[@class='signup']
+${username_xpath}  //*[@id='username']
+${email_xpath}  //*[@id='email']
+${realname_xpath}  //*[@id='realname']
+${newPassword_xpath}  //*[@id='newPassword']
+${confirmPassword_xpath}  //*[@id='confirmPassword']
+${comment_xpath}  //*[@id='comment']
+${signup_xpath}  //*[@id='sign-up']
+${search_input}  //*[@id='search_input']
+${login_btn}  //*[@id='log_in']
+${harbor_span_title}  //span[contains(., 'Harbor')]
+${login_name}  //*[@id='login_username']
+${login_pwd}  //*[@id='login_password']
 

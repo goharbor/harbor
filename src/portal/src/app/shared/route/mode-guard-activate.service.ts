@@ -18,8 +18,9 @@ import {
   RouterStateSnapshot,
   CanActivateChild
 } from '@angular/router';
-import { CommonRoutes } from '../../shared/shared.const';
-import { AppConfigService } from '../../app-config.service';
+import { AppConfigService } from '../../services/app-config.service';
+import { Observable } from 'rxjs';
+import { CommonRoutes } from "../../../lib/entities/shared.const";
 
 @Injectable()
 export class ModeGuard implements CanActivate, CanActivateChild {
@@ -27,28 +28,28 @@ export class ModeGuard implements CanActivate, CanActivateChild {
     private router: Router,
     private appConfigService: AppConfigService) { }
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
     // Show the right sign-in page for different modes
-    return new Promise((resolve, reject) => {
+    return new Observable((observer) => {
       if (this.appConfigService.isIntegrationMode()) {
         if (state.url.startsWith(CommonRoutes.SIGN_IN)) {
           this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], route.queryParams);
-          resolve(false);
+          observer.next(false);
         } else {
-          resolve(true);
+          observer.next(true);
         }
       } else {
         if (state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
           this.router.navigate([CommonRoutes.SIGN_IN], route.queryParams);
-          resolve(false);
+          observer.next(false);
         } else {
-          resolve(true);
+          observer.next(true);
         }
       }
     });
   }
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
     return this.canActivate(route, state);
   }
 }

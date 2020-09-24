@@ -24,8 +24,8 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/log"
 
 	goldap "gopkg.in/ldap.v2"
 )
@@ -34,7 +34,10 @@ import (
 var ErrNotFound = errors.New("entity not found")
 
 // ErrDNSyntax ...
-var ErrDNSyntax = errors.New("Invalid DN syntax")
+var ErrDNSyntax = errors.New("invalid DN syntax")
+
+// ErrInvalidFilter ...
+var ErrInvalidFilter = errors.New("invalid filter syntax")
 
 // Session - define a LDAP session
 type Session struct {
@@ -43,18 +46,8 @@ type Session struct {
 	ldapConn        *goldap.Conn
 }
 
-// LoadSystemLdapConfig - load LDAP configure from adminserver
+// LoadSystemLdapConfig - load LDAP configure
 func LoadSystemLdapConfig() (*Session, error) {
-
-	authMode, err := config.AuthMode()
-	if err != nil {
-		log.Errorf("can't load auth mode from system, error: %v", err)
-		return nil, err
-	}
-
-	if authMode != "ldap_auth" {
-		return nil, fmt.Errorf("system auth_mode isn't ldap_auth, please check configuration")
-	}
 
 	ldapConf, err := config.LDAPConf()
 
@@ -117,8 +110,8 @@ func formatURL(ldapURL string) (string, error) {
 
 	if strings.Contains(hostport, ":") {
 		splitHostPort := strings.Split(hostport, ":")
-		port, error := strconv.Atoi(splitHostPort[1])
-		if error != nil {
+		port, err := strconv.Atoi(splitHostPort[1])
+		if err != nil {
 			return "", fmt.Errorf("illegal url port")
 		}
 		if port == 636 {
@@ -158,14 +151,8 @@ func ConnectionTestWithConfig(ldapConfig models.LdapConf) error {
 // ConnectionTestWithAllConfig - test ldap session connection, out of the scope of normal session create/close
 func ConnectionTestWithAllConfig(ldapConfig models.LdapConf, ldapGroupConfig models.LdapGroupConf) error {
 
-	authMode, err := config.AuthMode()
-	if err != nil {
-		log.Errorf("Connection test failed %v", err)
-		return err
-	}
-
 	// If no password present, use the system default password
-	if ldapConfig.LdapSearchPassword == "" && authMode == "ldap_auth" {
+	if ldapConfig.LdapSearchPassword == "" {
 
 		session, err := LoadSystemLdapConfig()
 
@@ -202,9 +189,12 @@ func ConnectionTestWithAllConfig(ldapConfig models.LdapConf, ldapGroupConfig mod
 // SearchUser - search LDAP user by name
 func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 	var ldapUsers []models.LdapUser
-	ldapFilter := session.createUserFilter(username)
-	result, err := session.SearchLdap(ldapFilter)
+	ldapFilter, err := createUserSearchFilter(session.ldapConfig.LdapFilter, session.ldapConfig.LdapUID, username)
+	if err != nil {
+		return nil, err
+	}
 
+	result, err := session.SearchLdap(ldapFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -212,6 +202,7 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 	for _, ldapEntry := range result.Entries {
 		var u models.LdapUser
 		groupDNList := []string{}
+		groupAttr := strings.ToLower(session.ldapGroupConfig.LdapGroupMembershipAttribute)
 		for _, attr := range ldapEntry.Attributes {
 			// OpenLdap sometimes contain leading space in useranme
 			val := strings.TrimSpace(attr.Values[0])
@@ -227,7 +218,7 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 				u.Email = val
 			case "email":
 				u.Email = val
-			case "memberof":
+			case groupAttr:
 				for _, dnItem := range attr.Values {
 					groupDNList = append(groupDNList, strings.TrimSpace(dnItem))
 					log.Debugf("Found memberof %v", dnItem)
@@ -235,6 +226,7 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 			}
 			u.GroupDNList = groupDNList
 		}
+
 		u.DN = ldapEntry.DN
 		ldapUsers = append(ldapUsers, u)
 
@@ -249,7 +241,7 @@ func (session *Session) Bind(dn string, password string) error {
 	return session.ldapConn.Bind(dn, password)
 }
 
-// Open - open Session
+// Open - open Session, should invoke Close for each Open call
 func (session *Session) Open() error {
 
 	splitLdapURL := strings.Split(session.ldapConfig.LdapURL, "://")
@@ -281,12 +273,18 @@ func (session *Session) Open() error {
 
 // SearchLdap to search ldap with the provide filter
 func (session *Session) SearchLdap(filter string) (*goldap.SearchResult, error) {
-	attributes := []string{"uid", "cn", "mail", "email", "memberof"}
+	attributes := []string{"uid", "cn", "mail", "email"}
 	lowerUID := strings.ToLower(session.ldapConfig.LdapUID)
 
 	if lowerUID != "uid" && lowerUID != "cn" && lowerUID != "mail" && lowerUID != "email" {
 		attributes = append(attributes, session.ldapConfig.LdapUID)
 	}
+
+	// Add the Group membership attribute
+	groupAttr := strings.TrimSpace(session.ldapGroupConfig.LdapGroupMembershipAttribute)
+	log.Debugf("Membership attribute: %s\n", groupAttr)
+	attributes = append(attributes, groupAttr)
+
 	return session.SearchLdapAttribute(session.ldapConfig.LdapBaseDn, filter, attributes)
 }
 
@@ -299,6 +297,10 @@ func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []
 	filter = strings.TrimSpace(filter)
 	if !(strings.HasPrefix(filter, "(") || strings.HasSuffix(filter, ")")) {
 		filter = "(" + filter + ")"
+	}
+	if _, err := goldap.CompileFilter(filter); err != nil {
+		log.Errorf("Wrong filter format, filter:%v", filter)
+		return nil, ErrInvalidFilter
 	}
 	log.Debugf("Search ldap with filter:%v", filter)
 	searchRequest := goldap.NewSearchRequest(
@@ -329,28 +331,24 @@ func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []
 
 }
 
-// CreateUserFilter - create filter to search user with specified username
-func (session *Session) createUserFilter(username string) string {
+// createUserSearchFilter - create filter to search user with specified username
+func createUserSearchFilter(origFilter, ldapUID, username string) (string, error) {
+	oFilter, err := NewFilterBuilder(origFilter)
+	if err != nil {
+		return "", err
+	}
 	var filterTag string
-
-	if username == "" {
+	filterTag = goldap.EscapeFilter(username)
+	if len(filterTag) == 0 {
 		filterTag = "*"
-	} else {
-		filterTag = goldap.EscapeFilter(username)
 	}
-
-	ldapFilter := session.ldapConfig.LdapFilter
-	ldapUID := session.ldapConfig.LdapUID
-
-	if ldapFilter == "" {
-		ldapFilter = "(" + ldapUID + "=" + filterTag + ")"
-	} else {
-		ldapFilter = "(&" + ldapFilter + "(" + ldapUID + "=" + filterTag + "))"
+	uFilterStr := fmt.Sprintf("(%v=%v)", ldapUID, filterTag)
+	uFilter, err := NewFilterBuilder(uFilterStr)
+	if err != nil {
+		return "", err
 	}
-
-	log.Debug("ldap filter :", ldapFilter)
-
-	return ldapFilter
+	filter := oFilter.And(uFilter)
+	return filter.String()
 }
 
 // Close - close current session
@@ -383,20 +381,34 @@ func (session *Session) SearchGroupByDN(groupDN string) ([]models.LdapGroup, err
 	return groupList, err
 }
 
-func (session *Session) searchGroup(baseDN, filter, groupName, groupNameAttribute string) ([]models.LdapGroup, error) {
+func (session *Session) groupBaseDN() string {
+	if len(session.ldapGroupConfig.LdapGroupBaseDN) == 0 {
+		return session.ldapConfig.LdapBaseDn
+	}
+	return session.ldapGroupConfig.LdapGroupBaseDN
+}
+
+func (session *Session) searchGroup(groupDN, filter, groupName, groupNameAttribute string) ([]models.LdapGroup, error) {
 	ldapGroups := make([]models.LdapGroup, 0)
-	log.Debugf("Groupname: %v, basedn: %v", groupName, baseDN)
-	ldapFilter := createGroupSearchFilter(filter, groupName, groupNameAttribute)
+	log.Debugf("Groupname: %v, groupDN: %v", groupName, groupDN)
+	ldapFilter, err := createGroupSearchFilter(filter, groupName, groupNameAttribute)
+	if err != nil {
+		log.Errorf("wrong filter format: filter:%v, groupName:%v, groupNameAttribute:%v", filter, groupName, groupNameAttribute)
+		return nil, err
+	}
 	attributes := []string{groupNameAttribute}
-	result, err := session.SearchLdapAttribute(baseDN, ldapFilter, attributes)
+	result, err := session.SearchLdapAttribute(session.groupBaseDN(), ldapFilter, attributes)
 	if err != nil {
 		return nil, err
 	}
 	for _, ldapEntry := range result.Entries {
 		var group models.LdapGroup
+		if groupDN != ldapEntry.DN {
+			continue
+		}
 		group.GroupDN = ldapEntry.DN
 		for _, attr := range ldapEntry.Attributes {
-			// OpenLdap sometimes contain leading space in useranme
+			// OpenLdap sometimes contain leading space in username
 			val := strings.TrimSpace(attr.Values[0])
 			log.Debugf("Current ldap entry attr name: %s\n", attr.Name)
 			switch strings.ToLower(attr.Name) {
@@ -409,22 +421,34 @@ func (session *Session) searchGroup(baseDN, filter, groupName, groupNameAttribut
 	return ldapGroups, nil
 }
 
-func createGroupSearchFilter(oldFilter, groupName, groupNameAttribute string) string {
-	filter := ""
-	groupName = goldap.EscapeFilter(groupName)
-	groupNameAttribute = goldap.EscapeFilter(groupNameAttribute)
-	if len(oldFilter) == 0 {
-		if len(groupName) == 0 {
-			filter = groupNameAttribute + "=*"
-		} else {
-			filter = groupNameAttribute + "=*" + groupName + "*"
-		}
-	} else {
-		if len(groupName) == 0 {
-			filter = oldFilter
-		} else {
-			filter = "(&(" + oldFilter + ")(" + groupNameAttribute + "=*" + groupName + "*))"
-		}
+func createGroupSearchFilter(oldFilterStr, groupName, groupNameAttribute string) (string, error) {
+	origFilter, err := NewFilterBuilder(oldFilterStr)
+	if err != nil {
+		log.Errorf("failed to create group search filter:%v", oldFilterStr)
+		return "", err
 	}
-	return filter
+	groupName = goldap.EscapeFilter(groupName)
+	gFilterStr := ""
+	if len(groupName) > 0 {
+		gFilterStr = fmt.Sprintf("(%v=%v)", goldap.EscapeFilter(groupNameAttribute), groupName)
+	}
+	gFilter, err := NewFilterBuilder(gFilterStr)
+	if err != nil {
+		log.Errorf("invalid ldap filter:%v", gFilterStr)
+		return "", err
+	}
+	fb := origFilter.And(gFilter)
+	return fb.String()
+}
+
+// normalizeFilter - add '(' and ')' in ldap filter if it doesn't exist
+func normalizeFilter(filter string) string {
+	norFilter := strings.TrimSpace(filter)
+	if len(norFilter) == 0 {
+		return norFilter
+	}
+	if strings.HasPrefix(norFilter, "(") && strings.HasSuffix(norFilter, ")") {
+		return norFilter
+	}
+	return "(" + norFilter + ")"
 }

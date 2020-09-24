@@ -31,6 +31,40 @@
 }
 
 .nav-about-link {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    padding-left: 1.6rem !important;
+    padding-right: 1rem !important;
+    min-width: 125px;
+    text-align: left !important;
+}
+
+.harbor-logo {
+    width: 40px;
+    margin-right: 15px;
+}
+
+.nav-icon-width {
+    width: auto !important;
+    padding-left: 18px !important;
+    .icon-left {
+        left: -8px;
+    }
+    .currentLang {
+        padding-right: 30px;
+    }
+}
+
+.user-icon {
+    left: -2px;
+}
+
+.headerLogo {
+    width: 36px;
+    height: 36px;
+    object-fit: fill;
+}
+.dropdown-item {
+    outline: none;
+}
+.dropdown-lang {
+    padding-right: 1.3rem;
 }

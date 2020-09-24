@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -9,19 +10,29 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"path"
+	"strconv"
 	"strings"
+	"time"
 
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/label"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 
 	"github.com/goharbor/harbor/src/chartserver"
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/label"
+	hlog "github.com/goharbor/harbor/src/lib/log"
+	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
+	rep_event "github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/server/middleware/orm"
 )
 
 const (
 	namespaceParam          = ":repo"
 	nameParam               = ":name"
+	filenameParam           = ":filename"
 	defaultRepo             = "library"
 	rootUploadingEndpoint   = "/api/chartrepo/charts"
 	rootIndexEndpoint       = "/chartrepo/index.yaml"
@@ -37,10 +48,17 @@ const (
 	formFiledNameForProv  = "prov"
 	headerContentType     = "Content-Type"
 	contentTypeMultipart  = "multipart/form-data"
+	// chartPackageFileExtension is the file extension used for chart packages
+	chartPackageFileExtension = "tgz"
 )
 
 // chartController is a singleton instance
 var chartController *chartserver.Controller
+
+// GetChartController returns the chart controller
+func GetChartController() *chartserver.Controller {
+	return chartController
+}
 
 // ChartRepositoryAPI provides related API handlers for the chart repository APIs
 type ChartRepositoryAPI struct {
@@ -84,10 +102,24 @@ func (cra *ChartRepositoryAPI) Prepare() {
 	cra.labelManager = &label.BaseManager{}
 }
 
+func (cra *ChartRepositoryAPI) requireAccess(action rbac.Action, subresource ...rbac.Resource) bool {
+	if len(subresource) == 0 {
+		subresource = append(subresource, rbac.ResourceHelmChart)
+	}
+
+	return cra.RequireProjectAccess(cra.namespace, action, subresource...)
+}
+
 // GetHealthStatus handles GET /api/chartrepo/health
 func (cra *ChartRepositoryAPI) GetHealthStatus() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelSystem) {
+	if !cra.SecurityCtx.IsAuthenticated() {
+		cra.SendUnAuthorizedError(errors.New("Unauthorized"))
+		return
+	}
+
+	if !cra.SecurityCtx.IsSysAdmin() {
+		cra.SendForbiddenError(errors.New(cra.SecurityCtx.GetUsername()))
 		return
 	}
 
@@ -98,7 +130,7 @@ func (cra *ChartRepositoryAPI) GetHealthStatus() {
 // GetIndexByRepo handles GET /:repo/index.yaml
 func (cra *ChartRepositoryAPI) GetIndexByRepo() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelRead) {
+	if !cra.requireAccess(rbac.ActionRead) {
 		return
 	}
 
@@ -109,7 +141,13 @@ func (cra *ChartRepositoryAPI) GetIndexByRepo() {
 // GetIndex handles GET /index.yaml
 func (cra *ChartRepositoryAPI) GetIndex() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelSystem) {
+	if !cra.SecurityCtx.IsAuthenticated() {
+		cra.SendUnAuthorizedError(errors.New("Unauthorized"))
+		return
+	}
+
+	if !cra.SecurityCtx.IsSysAdmin() {
+		cra.SendForbiddenError(errors.New(cra.SecurityCtx.GetUsername()))
 		return
 	}
 
@@ -136,9 +174,14 @@ func (cra *ChartRepositoryAPI) GetIndex() {
 // DownloadChart handles GET /:repo/charts/:filename
 func (cra *ChartRepositoryAPI) DownloadChart() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelRead) {
+	if !cra.requireAccess(rbac.ActionRead) {
 		return
 	}
+
+	namespace := cra.GetStringFromPath(namespaceParam)
+	fileName := cra.GetStringFromPath(filenameParam)
+	// Add hook event to request context
+	cra.addDownloadChartEventContext(fileName, namespace, cra.Ctx.Request)
 
 	// Directly proxy to the backend
 	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
@@ -147,13 +190,13 @@ func (cra *ChartRepositoryAPI) DownloadChart() {
 // ListCharts handles GET /api/:repo/charts
 func (cra *ChartRepositoryAPI) ListCharts() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelRead) {
+	if !cra.requireAccess(rbac.ActionList) {
 		return
 	}
 
 	charts, err := chartController.ListCharts(cra.namespace)
 	if err != nil {
-		cra.SendInternalServerError(err)
+		cra.ParseAndHandleError("fail to list charts", err)
 		return
 	}
 
@@ -163,7 +206,7 @@ func (cra *ChartRepositoryAPI) ListCharts() {
 // ListChartVersions GET /api/:repo/charts/:name
 func (cra *ChartRepositoryAPI) ListChartVersions() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelRead) {
+	if !cra.requireAccess(rbac.ActionList, rbac.ResourceHelmChartVersion) {
 		return
 	}
 
@@ -171,7 +214,7 @@ func (cra *ChartRepositoryAPI) ListChartVersions() {
 
 	versions, err := chartController.GetChart(cra.namespace, chartName)
 	if err != nil {
-		cra.SendInternalServerError(err)
+		cra.ParseAndHandleError("fail to get chart", err)
 		return
 	}
 
@@ -191,7 +234,7 @@ func (cra *ChartRepositoryAPI) ListChartVersions() {
 // GetChartVersion handles GET /api/:repo/charts/:name/:version
 func (cra *ChartRepositoryAPI) GetChartVersion() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelRead) {
+	if !cra.requireAccess(rbac.ActionRead, rbac.ResourceHelmChartVersion) {
 		return
 	}
 
@@ -201,7 +244,7 @@ func (cra *ChartRepositoryAPI) GetChartVersion() {
 
 	chartVersion, err := chartController.GetChartVersionDetails(cra.namespace, chartName, version)
 	if err != nil {
-		cra.SendInternalServerError(err)
+		cra.ParseAndHandleError("fail to get chart version", err)
 		return
 	}
 
@@ -219,7 +262,7 @@ func (cra *ChartRepositoryAPI) GetChartVersion() {
 // DeleteChartVersion handles DELETE /api/:repo/charts/:name/:version
 func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelAll) {
+	if !cra.requireAccess(rbac.ActionDelete, rbac.ResourceHelmChartVersion) {
 		return
 	}
 
@@ -227,15 +270,33 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 	chartName := cra.GetStringFromPath(nameParam)
 	version := cra.GetStringFromPath(versionParam)
 
-	// Try to remove labels from deleting chart if exitsing
+	// Try to remove labels from deleting chart if existing
 	if err := cra.removeLabelsFromChart(chartName, version); err != nil {
 		cra.SendInternalServerError(err)
 		return
 	}
 
 	if err := chartController.DeleteChartVersion(cra.namespace, chartName, version); err != nil {
-		cra.SendInternalServerError(err)
+		cra.ParseAndHandleError("fail to delete chart version", err)
 		return
+	}
+
+	event := &n_event.Event{}
+	metaData := &metadata.ChartDeleteMetaData{
+		ChartMetaData: metadata.ChartMetaData{
+			ProjectName: cra.namespace,
+			ChartName:   chartName,
+			Versions:    []string{version},
+			OccurAt:     time.Now(),
+			Operator:    cra.SecurityCtx.GetUsername(),
+		},
+	}
+	if err := event.Build(metaData); err == nil {
+		if err := event.Publish(); err != nil {
+			hlog.Errorf("failed to publish chart delete event: %v", err)
+		}
+	} else {
+		hlog.Errorf("failed to build chart delete event metadata: %v", err)
 	}
 }
 
@@ -244,7 +305,7 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 	hlog.Debugf("Header of request of uploading chart: %#v, content-len=%d", cra.Ctx.Request.Header, cra.Ctx.Request.ContentLength)
 
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
+	if !cra.requireAccess(rbac.ActionCreate, rbac.ResourceHelmChartVersion) {
 		return
 	}
 
@@ -263,6 +324,9 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 			cra.SendInternalServerError(err)
 			return
 		}
+		if err := cra.addEventContext(formFiles, cra.Ctx.Request); err != nil {
+			hlog.Errorf("Failed to add chart upload context, %v", err)
+		}
 	}
 
 	// Directly proxy to the backend
@@ -272,7 +336,7 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 // UploadChartProvFile handles POST /api/:repo/prov
 func (cra *ChartRepositoryAPI) UploadChartProvFile() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
+	if !cra.requireAccess(rbac.ActionCreate) {
 		return
 	}
 
@@ -297,7 +361,7 @@ func (cra *ChartRepositoryAPI) UploadChartProvFile() {
 // DeleteChart deletes all the chart versions of the specified chart.
 func (cra *ChartRepositoryAPI) DeleteChart() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
+	if !cra.requireAccess(rbac.ActionDelete) {
 		return
 	}
 
@@ -307,12 +371,14 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 	// Remove labels from all the deleting chart versions under the chart
 	chartVersions, err := chartController.GetChart(cra.namespace, chartName)
 	if err != nil {
-		cra.SendInternalServerError(err)
+		cra.ParseAndHandleError("fail to get chart", err)
 		return
 	}
 
+	versions := []string{}
 	for _, chartVersion := range chartVersions {
-		if err := cra.removeLabelsFromChart(chartName, chartVersion.GetVersion()); err != nil {
+		versions = append(versions, chartVersion.Version)
+		if err := cra.removeLabelsFromChart(chartName, chartVersion.Version); err != nil {
 			cra.SendInternalServerError(err)
 			return
 		}
@@ -322,10 +388,28 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 		cra.SendInternalServerError(err)
 		return
 	}
+
+	event := &n_event.Event{}
+	metaData := &metadata.ChartDeleteMetaData{
+		ChartMetaData: metadata.ChartMetaData{
+			ProjectName: cra.namespace,
+			ChartName:   chartName,
+			Versions:    versions,
+			OccurAt:     time.Now(),
+			Operator:    cra.SecurityCtx.GetUsername(),
+		},
+	}
+	if err := event.Build(metaData); err == nil {
+		if err := event.Publish(); err != nil {
+			hlog.Errorf("failed to publish chart delete event: %v", err)
+		}
+	} else {
+		hlog.Errorf("failed to build chart delete event metadata: %v", err)
+	}
 }
 
 func (cra *ChartRepositoryAPI) removeLabelsFromChart(chartName, version string) error {
-	// Try to remove labels from deleting chart if exitsing
+	// Try to remove labels from deleting chart if existing
 	resourceID := chartFullName(cra.namespace, chartName, version)
 	labels, err := cra.labelManager.GetLabelsOfResource(common.ResourceTypeChart, resourceID)
 	if err == nil && len(labels) > 0 {
@@ -349,7 +433,7 @@ func (cra *ChartRepositoryAPI) requireNamespace(namespace string) bool {
 		return false
 	}
 
-	existsing, err := cra.ProjectMgr.Exists(namespace)
+	existing, err := cra.ProjectMgr.Exists(namespace)
 	if err != nil {
 		// Check failed with error
 		cra.SendInternalServerError(fmt.Errorf("failed to check existence of namespace %s with error: %s", namespace, err.Error()))
@@ -357,64 +441,8 @@ func (cra *ChartRepositoryAPI) requireNamespace(namespace string) bool {
 	}
 
 	// Not existing
-	if !existsing {
-		cra.SendBadRequestError(fmt.Errorf("namespace %s is not existing", namespace))
-		return false
-	}
-
-	return true
-}
-
-// Check if the related access match the expected requirement
-// If with right access, return true
-// If without right access, return false
-func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint) bool {
-	if accessLevel == accessLevelPublic {
-		return true // do nothing
-	}
-
-	theLevel := accessLevel
-	// If repo is empty, system admin role must be required
-	if len(namespace) == 0 {
-		theLevel = accessLevelSystem
-	}
-
-	var err error
-
-	switch theLevel {
-	// Should be system admin role
-	case accessLevelSystem:
-		if !cra.SecurityCtx.IsSysAdmin() {
-			err = errors.New("permission denied: system admin role is required")
-		}
-	case accessLevelAll:
-		if !cra.SecurityCtx.HasAllPerm(namespace) {
-			err = errors.New("permission denied: project admin or higher role is required")
-		}
-	case accessLevelWrite:
-		if !cra.SecurityCtx.HasWritePerm(namespace) {
-			err = errors.New("permission denied: developer or higher role is required")
-		}
-	case accessLevelRead:
-		if !cra.SecurityCtx.HasReadPerm(namespace) {
-			err = errors.New("permission denied: guest or higher role is required")
-		}
-	default:
-		// access rejected for invalid scope
-		cra.SendForbiddenError(errors.New("unrecognized access scope"))
-		return false
-	}
-
-	// Access is not granted, check if user has authenticated
-	if err != nil {
-		// Unauthenticated, return 401
-		if !cra.SecurityCtx.IsAuthenticated() {
-			cra.SendUnAuthorizedError(errors.New("Unauthorized"))
-			return false
-		}
-
-		// Authenticated, return 403
-		cra.SendForbiddenError(err)
+	if !existing {
+		cra.handleProjectNotFound(namespace)
 		return false
 	}
 
@@ -429,6 +457,85 @@ type formFile struct {
 	// flag to indicate if the file identified by the 'formField'
 	// must exist
 	mustHave bool
+}
+
+// The func is for event based chart replication policy.
+// It will add a context for uploading request with key chart_upload, and consumed by upload response.
+func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.Request) error {
+	if len(files) == 0 {
+		return nil
+	}
+
+	for _, f := range files {
+		if f.formField == formFieldNameForChart {
+			mFile, _, err := cra.GetFile(f.formField)
+			if err != nil {
+				hlog.Errorf("failed to read file content for upload event, %v", err)
+				return err
+			}
+			var Buf bytes.Buffer
+			_, err = io.Copy(&Buf, mFile)
+			if err != nil {
+				hlog.Errorf("failed to copy file content for upload event, %v", err)
+				return err
+			}
+			chartOpr := chartserver.ChartOperator{}
+			chartDetails, err := chartOpr.GetChartData(Buf.Bytes())
+			if err != nil {
+				hlog.Errorf("failed to get chart content for upload event, %v", err)
+				return err
+			}
+
+			extInfo := make(map[string]interface{})
+			extInfo["operator"] = cra.SecurityCtx.GetUsername()
+			extInfo["projectName"] = cra.namespace
+			extInfo["chartName"] = chartDetails.Metadata.Name
+
+			public, err := cra.ProjectMgr.IsPublic(cra.namespace)
+			if err != nil {
+				hlog.Errorf("failed to check the public of project %s: %v", cra.namespace, err)
+				public = false
+			}
+			e := &rep_event.Event{
+				Type: rep_event.EventTypeChartUpload,
+				Resource: &model.Resource{
+					Type: model.ResourceTypeChart,
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{
+							Name: fmt.Sprintf("%s/%s", cra.namespace, chartDetails.Metadata.Name),
+							Metadata: map[string]interface{}{
+								"public": strconv.FormatBool(public),
+							},
+						},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{chartDetails.Metadata.Version},
+							},
+						},
+					},
+					ExtendedInfo: extInfo,
+				},
+			}
+			*request = *(request.WithContext(context.WithValue(request.Context(), common.ChartUploadCtxKey, e)))
+			break
+		}
+	}
+
+	return nil
+}
+
+func (cra *ChartRepositoryAPI) addDownloadChartEventContext(fileName, namespace string, request *http.Request) {
+	chartName, version := parseChartVersionFromFilename(fileName)
+	event := &metadata.ChartDownloadMetaData{
+		ChartMetaData: metadata.ChartMetaData{
+			ProjectName: namespace,
+			ChartName:   chartName,
+			Versions:    []string{version},
+			OccurAt:     time.Now(),
+			Operator:    cra.SecurityCtx.GetUsername(),
+		},
+	}
+	*request = *(request.WithContext(context.WithValue(request.Context(), common.ChartDownloadCtxKey, event)))
 }
 
 // If the files are uploaded with multipart/form-data mimetype, beego will extract the data
@@ -452,6 +559,7 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 	// Process files by key one by one
 	for _, f := range files {
 		mFile, mHeader, err := cra.GetFile(f.formField)
+
 		// Handle error case by case
 		if err != nil {
 			formatedErr := fmt.Errorf("Get file content with multipart header from key '%s' failed with error: %s", f.formField, err.Error())
@@ -473,6 +581,7 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 		if err != nil {
 			return fmt.Errorf("Copy file stream in multipart form data failed with error: %s", err.Error())
 		}
+
 	}
 
 	request.Header.Set(headerContentType, w.FormDataContentType())
@@ -495,7 +604,7 @@ func initializeChartController() (*chartserver.Controller, error) {
 		return nil, errors.New("Endpoint URL of chart storage server is malformed")
 	}
 
-	controller, err := chartserver.NewController(url)
+	controller, err := chartserver.NewController(url, orm.Middleware())
 	if err != nil {
 		return nil, errors.New("Failed to initialize chart API controller")
 	}
@@ -513,5 +622,29 @@ func isMultipartFormData(req *http.Request) bool {
 
 // Return the chart full name
 func chartFullName(namespace, chartName, version string) string {
+	if strings.HasPrefix(chartName, "http") {
+		return fmt.Sprintf("%s:%s", chartName, version)
+	}
 	return fmt.Sprintf("%s/%s:%s", namespace, chartName, version)
+}
+
+// parseChartVersionFromFilename parse chart and version from file name
+func parseChartVersionFromFilename(filename string) (string, string) {
+	noExt := strings.TrimSuffix(path.Base(filename), fmt.Sprintf(".%s", chartPackageFileExtension))
+	parts := strings.Split(noExt, "-")
+	name := parts[0]
+	version := ""
+	for idx, part := range parts[1:] {
+		if _, err := strconv.Atoi(string(part[0])); err == nil { // see if this part looks like a version (starts w int)
+			version = strings.Join(parts[idx+1:], "-")
+			break
+		}
+		name = fmt.Sprintf("%s-%s", name, part)
+	}
+	if version == "" { // no parts looked like a real version, just take everything after last hyphen
+		lastIndex := len(parts) - 1
+		name = strings.Join(parts[:lastIndex], "-")
+		version = parts[lastIndex]
+	}
+	return name, version
 }

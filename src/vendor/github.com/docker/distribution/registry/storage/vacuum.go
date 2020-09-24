@@ -1,11 +1,12 @@
 package storage
 
 import (
+	"context"
 	"path"
 
-	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
+	dcontext "github.com/docker/distribution/context"
 	"github.com/docker/distribution/registry/storage/driver"
+	"github.com/opencontainers/go-digest"
 )
 
 // vacuum contains functions for cleaning up repositories and blobs
@@ -29,7 +30,7 @@ type Vacuum struct {
 
 // RemoveBlob removes a blob from the filesystem
 func (v Vacuum) RemoveBlob(dgst string) error {
-	d, err := digest.ParseDigest(dgst)
+	d, err := digest.Parse(dgst)
 	if err != nil {
 		return err
 	}
@@ -39,7 +40,7 @@ func (v Vacuum) RemoveBlob(dgst string) error {
 		return err
 	}
 
-	context.GetLogger(v.ctx).Infof("Deleting blob: %s", blobPath)
+	dcontext.GetLogger(v.ctx).Infof("Deleting blob: %s", blobPath)
 
 	err = v.driver.Delete(v.ctx, blobPath)
 	if err != nil {
@@ -47,6 +48,40 @@ func (v Vacuum) RemoveBlob(dgst string) error {
 	}
 
 	return nil
+}
+
+// RemoveManifest removes a manifest from the filesystem
+func (v Vacuum) RemoveManifest(name string, dgst digest.Digest, tags []string) error {
+	// remove a tag manifest reference, in case of not found continue to next one
+	for _, tag := range tags {
+
+		tagsPath, err := pathFor(manifestTagIndexEntryPathSpec{name: name, revision: dgst, tag: tag})
+		if err != nil {
+			return err
+		}
+
+		_, err = v.driver.Stat(v.ctx, tagsPath)
+		if err != nil {
+			switch err := err.(type) {
+			case driver.PathNotFoundError:
+				continue
+			default:
+				return err
+			}
+		}
+		dcontext.GetLogger(v.ctx).Infof("deleting manifest tag reference: %s", tagsPath)
+		err = v.driver.Delete(v.ctx, tagsPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	manifestPath, err := pathFor(manifestRevisionPathSpec{name: name, revision: dgst})
+	if err != nil {
+		return err
+	}
+	dcontext.GetLogger(v.ctx).Infof("deleting manifest: %s", manifestPath)
+	return v.driver.Delete(v.ctx, manifestPath)
 }
 
 // RemoveRepository removes a repository directory from the
@@ -57,7 +92,7 @@ func (v Vacuum) RemoveRepository(repoName string) error {
 		return err
 	}
 	repoDir := path.Join(rootForRepository, repoName)
-	context.GetLogger(v.ctx).Infof("Deleting repo: %s", repoDir)
+	dcontext.GetLogger(v.ctx).Infof("Deleting repo: %s", repoDir)
 	err = v.driver.Delete(v.ctx, repoDir)
 	if err != nil {
 		return err

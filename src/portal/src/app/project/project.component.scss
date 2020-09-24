@@ -1,13 +1,16 @@
+@import "../../lib/mixin";
 .header-title {
-    margin-top: 0;
+    margin-top: 34px;
+    margin-bottom: -34px;
 }
 
 .option-left {
     padding-left: 16px;
 }
 
-.option-right {
-    padding-right: 16px;
+.display-flex{
+    display: flex;
+    align-items: baseline;
 }
 
 .refresh-btn {
@@ -18,5 +21,14 @@
     color: #007CBB;
 }
 .rightPos {
-    position: absolute; right: 20px; margin-top: 5px; height:32px; z-index: 100;
+    @include grid-right-top-pos;
+    margin-top: 28px;
+}
+
+.projectPos {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+.position-r{
+    position: relative;
 }

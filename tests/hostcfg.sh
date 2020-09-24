@@ -1,16 +1,17 @@
 #!/bin/bash
-IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
-PROTOCOL='https'
+IP=$(hostname -I | awk '{print $1}')
 
 #echo $IP
-sudo sed "s/reg.mydomain.com/$IP/" -i make/harbor.cfg
-sudo sed "s/^ui_url_protocol = .*/ui_url_protocol = $PROTOCOL/g" -i make/harbor.cfg
+sudo sed "s/reg.mydomain.com/$IP/" make/harbor.yml.tmpl |sudo tee make/harbor.yml
 
-if [ "$1" = 'LDAP' ]; then
-    sudo sed "s/db_auth/ldap_auth/" -i make/harbor.cfg
-    sudo sed "s/ldaps:\/\/ldap.mydomain.com/ldap:\/\/$IP/g" -i make/harbor.cfg
-    sudo sed "s/#ldap_searchdn = uid=searchuser,ou=people,dc=mydomain,dc=com/ldap_searchdn = cn=admin,dc=example,dc=com/" -i make/harbor.cfg
-    sudo sed "s/#ldap_search_pwd = password/ldap_search_pwd = admin/" -i make/harbor.cfg
-    sudo sed "s/ldap_basedn = ou=people,dc=mydomain,dc=com/ldap_basedn = dc=example,dc=com/" -i make/harbor.cfg
-    sudo sed "s/ldap_uid = uid/ldap_uid = cn/" -i make/harbor.cfg
-fi
+# enable internal tls
+echo "internal_tls:" >> make/harbor.yml
+echo "  enabled: true" >> make/harbor.yml
+echo "  dir: /etc/harbor/tls/internal" >> make/harbor.yml
+
+# TODO: remove it when scanner adapter support internal access of harbor
+echo "storage_service:" >> make/harbor.yml
+echo "  ca_bundle: /data/cert/server.crt" >> make/harbor.yml
+
+sed "s|/your/certificate/path|/data/cert/server.crt|g" -i make/harbor.yml
+sed "s|/your/private/key/path|/data/cert/server.key|g" -i make/harbor.yml

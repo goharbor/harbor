@@ -23,7 +23,8 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/stretchr/testify/assert"
 )
 
 var createdUserGroupID int
@@ -46,20 +47,31 @@ func TestMain(m *testing.M) {
 		// Extract to test utils
 		initSqls := []string{
 			"insert into harbor_user (username, email, password, realname)  values ('member_test_01', 'member_test_01@example.com', '123456', 'member_test_01')",
+			"insert into harbor_user (username, email, password, realname)  values ('grouptestu09', 'grouptestu09@example.com', '123456', 'grouptestu09')",
 			"insert into project (name, owner_id) values ('member_test_01', 1)",
+			`insert into project (name, owner_id) values ('group_project2', 1)`,
+			`insert into project (name, owner_id) values ('group_project_private', 1)`,
 			"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_group_01', 1, 'cn=harbor_users,ou=sample,ou=vmware,dc=harbor,dc=com')",
+			"insert into user_group (group_name, group_type, ldap_group_dn) values ('sync_user_group4', 1, 'cn=sync_user_group4,dc=example,dc=com')",
+			"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_http_group', 2, '')",
+			"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_myhttp_group', 2, '')",
 			"update project set owner_id = (select user_id from harbor_user where username = 'member_test_01') where name = 'member_test_01'",
 			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select user_id from harbor_user where username = 'member_test_01'), 'u', 1)",
 			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_group_01'), 'g', 1)",
+			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_http_group'), 'g', 4)",
+			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_myhttp_group'), 'g', 4)",
 		}
 
 		clearSqls := []string{
 			"delete from project where name='member_test_01'",
-			"delete from harbor_user where username='member_test_01' or username='pm_sample'",
+			"delete from project where name='group_project2'",
+			"delete from project where name='group_project_private'",
+			"delete from harbor_user where username='member_test_01' or username='pm_sample' or username='grouptestu09'",
 			"delete from user_group",
-			"delete from project_member",
+			"delete from project_member where id > 1",
 		}
-		dao.PrepareTestData(clearSqls, initSqls)
+		dao.ExecuteBatchSQL(initSqls)
+		defer dao.ExecuteBatchSQL(clearSqls)
 
 		result = m.Run()
 
@@ -80,7 +92,7 @@ func TestAddUserGroup(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		{"Insert an ldap user group", args{userGroup: models.UserGroup{GroupName: "sample_group", GroupType: common.LdapGroupType, LdapGroupDN: "sample_ldap_dn_string"}}, 0, false},
+		{"Insert an ldap user group", args{userGroup: models.UserGroup{GroupName: "sample_group", GroupType: common.LDAPGroupType, LdapGroupDN: "sample_ldap_dn_string"}}, 0, false},
 		{"Insert other user group", args{userGroup: models.UserGroup{GroupName: "other_group", GroupType: 3, LdapGroupDN: "other information"}}, 0, false},
 	}
 	for _, tt := range tests {
@@ -108,8 +120,8 @@ func TestQueryUserGroup(t *testing.T) {
 		wantErr bool
 	}{
 		{"Query all user group", args{query: models.UserGroup{GroupName: "test_group_01"}}, 1, false},
-		{"Query all ldap group", args{query: models.UserGroup{GroupType: common.LdapGroupType}}, 2, false},
-		{"Query ldap group with group property", args{query: models.UserGroup{GroupType: common.LdapGroupType, LdapGroupDN: "CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com"}}, 1, false},
+		{"Query all ldap group", args{query: models.UserGroup{GroupType: common.LDAPGroupType}}, 3, false},
+		{"Query ldap group with group property", args{query: models.UserGroup{GroupType: common.LDAPGroupType, LdapGroupDN: "CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com"}}, 1, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -126,7 +138,7 @@ func TestQueryUserGroup(t *testing.T) {
 }
 
 func TestGetUserGroup(t *testing.T) {
-	userGroup := models.UserGroup{GroupName: "insert_group", GroupType: common.LdapGroupType, LdapGroupDN: "ldap_dn_string"}
+	userGroup := models.UserGroup{GroupName: "insert_group", GroupType: common.LDAPGroupType, LdapGroupDN: "ldap_dn_string"}
 	result, err := AddUserGroup(userGroup)
 	if err != nil {
 		t.Errorf("Error occurred when AddUserGroup: %v", err)
@@ -175,7 +187,7 @@ func TestUpdateUserGroup(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fmt.Printf("id=%v", createdUserGroupID)
+			fmt.Printf("id=%v\n", createdUserGroupID)
 			if err := UpdateUserGroupName(tt.args.id, tt.args.groupName); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateUserGroup() error = %v, wantErr %v", err, tt.wantErr)
 				userGroup, err := GetUserGroup(tt.args.id)
@@ -231,65 +243,30 @@ func TestOnBoardUserGroup(t *testing.T) {
 			args{g: &models.UserGroup{
 				GroupName:   "harbor_example",
 				LdapGroupDN: "cn=harbor_example,ou=groups,dc=example,dc=com",
-				GroupType:   common.LdapGroupType}},
+				GroupType:   common.LDAPGroupType}},
 			false},
 		{"OnBoardUserGroup second time",
 			args{g: &models.UserGroup{
 				GroupName:   "harbor_example",
 				LdapGroupDN: "cn=harbor_example,ou=groups,dc=example,dc=com",
-				GroupType:   common.LdapGroupType}},
+				GroupType:   common.LDAPGroupType}},
+			false},
+		{"OnBoardUserGroup HTTP user group",
+			args{g: &models.UserGroup{
+				GroupName: "test_myhttp_group",
+				GroupType: common.HTTPGroupType}},
 			false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := OnBoardUserGroup(tt.args.g, "LdapGroupDN", "GroupType"); (err != nil) != tt.wantErr {
+			if err := OnBoardUserGroup(tt.args.g); (err != nil) != tt.wantErr {
 				t.Errorf("OnBoardUserGroup() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestGetGroupDNQueryCondition(t *testing.T) {
-	userGroupList := []*models.UserGroup{
-		{
-			GroupName:   "sample1",
-			GroupType:   1,
-			LdapGroupDN: "cn=sample1_users,ou=groups,dc=example,dc=com",
-		},
-		{
-			GroupName:   "sample2",
-			GroupType:   1,
-			LdapGroupDN: "cn=sample2_users,ou=groups,dc=example,dc=com",
-		},
-		{
-			GroupName:   "sample3",
-			GroupType:   0,
-			LdapGroupDN: "cn=sample3_users,ou=groups,dc=example,dc=com",
-		},
-	}
-
-	groupQueryConditions := GetGroupDNQueryCondition(userGroupList)
-	expectedConditions := `'cn=sample1_users,ou=groups,dc=example,dc=com','cn=sample2_users,ou=groups,dc=example,dc=com'`
-	if groupQueryConditions != expectedConditions {
-		t.Errorf("Failed to GetGroupDNQueryCondition, expected %v, actual %v", expectedConditions, groupQueryConditions)
-	}
-	var userGroupList2 []*models.UserGroup
-	groupQueryCondition2 := GetGroupDNQueryCondition(userGroupList2)
-	if len(groupQueryCondition2) > 0 {
-		t.Errorf("Failed to GetGroupDNQueryCondition, expected %v, actual %v", "", groupQueryCondition2)
-	}
-	groupQueryCondition3 := GetGroupDNQueryCondition(nil)
-	if len(groupQueryCondition3) > 0 {
-		t.Errorf("Failed to GetGroupDNQueryCondition, expected %v, actual %v", "", groupQueryCondition3)
-	}
-}
 func TestGetGroupProjects(t *testing.T) {
-	userID, err := dao.Register(models.User{
-		Username: "grouptestu09",
-		Email:    "grouptest09@example.com",
-		Password: "Harbor123456",
-	})
-	defer dao.DeleteUser(int(userID))
 	projectID1, err := dao.AddProject(models.Project{
 		Name:    "grouptest01",
 		OwnerID: 1,
@@ -305,9 +282,8 @@ func TestGetGroupProjects(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when AddProject: %v", err)
 	}
-	defer dao.DeleteProject(projectID2)
 	groupID, err := AddUserGroup(models.UserGroup{
-		GroupName:   "test_group_01",
+		GroupName:   "test_group_03",
 		GroupType:   1,
 		LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
 	})
@@ -321,9 +297,18 @@ func TestGetGroupProjects(t *testing.T) {
 		EntityType: "g",
 	})
 	defer project.DeleteProjectMemberByID(pmid)
+	pmid2, err := project.AddProjectMember(models.Member{
+		ProjectID:  projectID2,
+		EntityID:   groupID,
+		EntityType: "g",
+	})
+	defer project.DeleteProjectMemberByID(pmid2)
+	if err := dao.DeleteProject(projectID2); err != nil {
+		t.Errorf("Error occurred when DeleteProject: %v", err)
+	}
 	type args struct {
-		groupDNCondition string
-		query            *models.ProjectQueryParam
+		query    *models.ProjectQueryParam
+		groupIDs []int
 	}
 	member := &models.MemberQuery{
 		Name: "grouptestu09",
@@ -335,24 +320,30 @@ func TestGetGroupProjects(t *testing.T) {
 		wantErr  bool
 	}{
 		{"Query with group DN",
-			args{"'cn=harbor_users,ou=groups,dc=example,dc=com'",
-				&models.ProjectQueryParam{
+			args{
+				query: &models.ProjectQueryParam{
 					Member: member,
-				}},
+				},
+				groupIDs: []int{groupID},
+			},
 			1, false},
 		{"Query without group DN",
-			args{"",
-				&models.ProjectQueryParam{}},
-			1, false},
+			args{
+				query: &models.ProjectQueryParam{
+					Member: member,
+				},
+				groupIDs: []int{},
+			},
+			0, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := dao.GetGroupProjects(tt.args.groupDNCondition, tt.args.query)
+			got, err := dao.GetGroupProjects(tt.args.groupIDs, tt.args.query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetGroupProjects() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if len(got) < tt.wantSize {
+			if len(got) != tt.wantSize {
 				t.Errorf("GetGroupProjects() size: %v, want %v", len(got), tt.wantSize)
 			}
 		})
@@ -375,9 +366,9 @@ func TestGetTotalGroupProjects(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when AddProject: %v", err)
 	}
-	defer dao.DeleteProject(projectID2)
+
 	groupID, err := AddUserGroup(models.UserGroup{
-		GroupName:   "test_group_01",
+		GroupName:   "test_group_05",
 		GroupType:   1,
 		LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
 	})
@@ -391,9 +382,18 @@ func TestGetTotalGroupProjects(t *testing.T) {
 		EntityType: "g",
 	})
 	defer project.DeleteProjectMemberByID(pmid)
+	pmid2, err := project.AddProjectMember(models.Member{
+		ProjectID:  projectID2,
+		EntityID:   groupID,
+		EntityType: "g",
+	})
+	defer project.DeleteProjectMemberByID(pmid2)
+	if err := dao.DeleteProject(projectID2); err != nil { // deleted project should not be counted
+		t.Errorf("Error occurred when delete project: %v", err)
+	}
 	type args struct {
-		groupDNCondition string
-		query            *models.ProjectQueryParam
+		query    *models.ProjectQueryParam
+		groupIDs []int
 	}
 	tests := []struct {
 		name     string
@@ -401,25 +401,95 @@ func TestGetTotalGroupProjects(t *testing.T) {
 		wantSize int
 		wantErr  bool
 	}{
-		{"Query with group DN",
-			args{"'cn=harbor_users,ou=groups,dc=example,dc=com'",
-				&models.ProjectQueryParam{}},
-			1, false},
-		{"Query without group DN",
-			args{"",
-				&models.ProjectQueryParam{}},
+		{"Query with group ID",
+			args{
+				query: &models.ProjectQueryParam{
+					Member: &models.MemberQuery{
+						Name: "member_test_01",
+					},
+				},
+				groupIDs: []int{groupID},
+			},
+			2, false},
+		{"Query without group ID",
+			args{
+				query: &models.ProjectQueryParam{
+					Member: &models.MemberQuery{
+						Name: "member_test_01",
+					},
+				},
+				groupIDs: []int{}},
 			1, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := dao.GetTotalGroupProjects(tt.args.groupDNCondition, tt.args.query)
+			got, err := dao.GetTotalGroupProjects(tt.args.groupIDs, tt.args.query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetGroupProjects() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got < tt.wantSize {
+			if got != tt.wantSize {
 				t.Errorf("GetGroupProjects() size: %v, want %v", got, tt.wantSize)
 			}
+		})
+	}
+}
+
+func TestSyncGroupByGroupKey(t *testing.T) {
+	type args []models.UserGroup
+	type result struct {
+		wantError bool
+	}
+	cases := []struct {
+		name string
+		in   args
+		want result
+	}{
+		{
+			name: `normal test http group`,
+			in: args{
+				models.UserGroup{GroupName: "orange", GroupType: common.HTTPGroupType},
+				models.UserGroup{GroupName: "apple", GroupType: common.HTTPGroupType},
+				models.UserGroup{GroupName: "pearl", GroupType: common.HTTPGroupType}},
+			want: result{false},
+		},
+		{
+			name: `normal test oidc group`,
+			in: args{
+				models.UserGroup{GroupName: "dog", GroupType: common.OIDCGroupType},
+				models.UserGroup{GroupName: "cat", GroupType: common.OIDCGroupType},
+				models.UserGroup{GroupName: "bee", GroupType: common.OIDCGroupType},
+			},
+			want: result{false},
+		},
+		{
+			name: `normal test oidc group`,
+			in: args{
+				models.UserGroup{GroupName: "cn=sync_user_group1,dc=example,dc=com", LdapGroupDN: "cn=sync_user_group1,dc=example,dc=com", GroupType: common.LDAPGroupType},
+				models.UserGroup{GroupName: "cn=sync_user_group2,dc=example,dc=com", LdapGroupDN: "cn=sync_user_group2,dc=example,dc=com", GroupType: common.LDAPGroupType},
+				models.UserGroup{GroupName: "cn=sync_user_group3,dc=example,dc=com", LdapGroupDN: "cn=sync_user_group3,dc=example,dc=com", GroupType: common.LDAPGroupType},
+				models.UserGroup{GroupName: "cn=sync_user_group4,dc=example,dc=com", LdapGroupDN: "cn=sync_user_group4,dc=example,dc=com", GroupType: common.LDAPGroupType},
+			},
+			want: result{false},
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+
+			got, err := PopulateGroup(tt.in)
+
+			if err != nil && !tt.want.wantError {
+				t.Errorf("error %v", err)
+			}
+			if !assert.Equal(t, len(tt.in), len(got)) {
+				t.Errorf(`(%v) != %v; want "%v"`, len(tt.in), len(got), len(tt.in))
+			}
+
+			for _, id := range got {
+				DeleteUserGroup(id)
+			}
+
 		})
 	}
 }

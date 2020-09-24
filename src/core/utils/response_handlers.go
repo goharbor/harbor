@@ -21,7 +21,7 @@ import (
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/api"
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // ResponseHandler provides utility to handle http response.

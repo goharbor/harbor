@@ -13,12 +13,8 @@
 // limitations under the License.
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-
 import { CoreModule } from '../core/core.module';
 import { SharedModule } from '../shared/shared.module';
-import { RepositoryModule } from '../repository/repository.module';
-
-import { SignInComponent } from './sign-in/sign-in.component';
 import { PasswordSettingComponent } from './password-setting/password-setting.component';
 import { AccountSettingsModalComponent } from './account-settings/account-settings-modal.component';
 import { SignUpComponent } from './sign-up/sign-up.component';
@@ -26,6 +22,7 @@ import { ForgotPasswordComponent } from './password-setting/forgot-password/forg
 import { ResetPasswordComponent } from './password-setting/reset-password/reset-password.component';
 import { SignUpPageComponent } from './sign-up/sign-up-page.component';
 import { PasswordSettingService } from './password-setting/password-setting.service';
+import { AccountSettingsModalService } from './account-settings/account-settings-modal-service.service';
 
 
 @NgModule({
@@ -33,10 +30,8 @@ import { PasswordSettingService } from './password-setting/password-setting.serv
     CoreModule,
     RouterModule,
     SharedModule,
-    RepositoryModule
   ],
   declarations: [
-    SignInComponent,
     PasswordSettingComponent,
     AccountSettingsModalComponent,
     SignUpComponent,
@@ -44,12 +39,13 @@ import { PasswordSettingService } from './password-setting/password-setting.serv
     ResetPasswordComponent,
     SignUpPageComponent],
   exports: [
-    SignInComponent,
     PasswordSettingComponent,
     AccountSettingsModalComponent,
+    ForgotPasswordComponent,
     ResetPasswordComponent,
+    SignUpComponent,
     SignUpPageComponent],
 
-  providers: [PasswordSettingService]
+  providers: [PasswordSettingService, AccountSettingsModalService]
 })
 export class AccountModule { }
