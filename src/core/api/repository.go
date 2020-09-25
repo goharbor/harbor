@@ -649,6 +649,7 @@ func assembleTagsInParallel(client *registry.Repository, projectID int64, reposi
 		}
 	}
 
+	limit := make(chan bool, 100)
 	c := make(chan *models.TagResp)
 	for _, tag := range tags {
 		go assembleTag(
@@ -659,6 +660,7 @@ func assembleTagsInParallel(client *registry.Repository, projectID int64, reposi
 			tag,
 			config.WithNotary(),
 			signatures,
+			limit,
 		)
 	}
 	result := []*models.TagResp{}
@@ -675,7 +677,9 @@ func assembleTagsInParallel(client *registry.Repository, projectID int64, reposi
 
 func assembleTag(c chan *models.TagResp, client *registry.Repository, projectID int64,
 	repository, tag string, notaryEnabled bool,
-	signatures map[string][]notarymodel.Target) {
+	signatures map[string][]notarymodel.Target, limit chan bool) {
+	limit <- true
+	defer func() { <-limit }()
 	item := &models.TagResp{}
 	// labels
 	image := fmt.Sprintf("%s:%s", repository, tag)
