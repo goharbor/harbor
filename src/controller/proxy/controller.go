@@ -16,6 +16,7 @@ package proxy
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"strings"
 	"sync"
@@ -53,13 +54,13 @@ type Controller interface {
 	// UseLocalBlob check if the blob should use local copy
 	UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) bool
 	// UseLocalManifest check manifest should use local copy
-	UseLocalManifest(ctx context.Context, art lib.ArtifactInfo) (bool, error)
+	UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, error)
 	// ProxyBlob proxy the blob request to the remote server, p is the proxy project
 	// art is the ArtifactInfo which includes the digest of the blob
 	ProxyBlob(ctx context.Context, p *models.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error)
 	// ProxyManifest proxy the manifest request to the remote server, p is the proxy project,
 	// art is the ArtifactInfo which includes the tag or digest of the manifest
-	ProxyManifest(ctx context.Context, p *models.Project, art lib.ArtifactInfo) (distribution.Manifest, error)
+	ProxyManifest(ctx context.Context, p *models.Project, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error)
 }
 type controller struct {
 	blobCtl     blob.Controller
@@ -93,22 +94,37 @@ func (c *controller) UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) boo
 	return exist
 }
 
-func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo) (bool, error) {
-	if len(art.Digest) == 0 {
+func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, error) {
+	a, err := c.local.GetManifest(ctx, art)
+	if err != nil {
+		return false, err
+	}
+	if a == nil {
 		return false, nil
 	}
-	a, err := c.local.GetManifest(ctx, art)
-	return a != nil, err
+	// Pull by digest
+	if len(art.Digest) > 0 {
+		return true, nil
+	}
+	// Pull by tag
+	remoteRepo := getRemoteRepo(art)
+	exist, dig, err := remote.ManifestExist(remoteRepo, art.Tag) // HEAD
+	if err != nil {
+		return false, err
+	}
+	if !exist {
+		go func() {
+			c.local.DeleteManifest(remoteRepo, art.Tag)
+		}()
+		return false, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
+	}
+	return dig == a.Digest, nil // digest matches
 }
 
-func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art lib.ArtifactInfo) (distribution.Manifest, error) {
+func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
 	var man distribution.Manifest
 	remoteRepo := getRemoteRepo(art)
 	ref := getReference(art)
-	remote, err := newRemoteHelper(p.RegistryID)
-	if err != nil {
-		return man, err
-	}
 	man, dig, err := remote.Manifest(remoteRepo, ref)
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
@@ -153,7 +169,7 @@ func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art l
 func (c *controller) ProxyBlob(ctx context.Context, p *models.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error) {
 	remoteRepo := getRemoteRepo(art)
 	log.Debugf("The blob doesn't exist, proxy the request to the target server, url:%v", remoteRepo)
-	rHelper, err := newRemoteHelper(p.RegistryID)
+	rHelper, err := NewRemoteHelper(p.RegistryID)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -173,7 +189,7 @@ func (c *controller) ProxyBlob(ctx context.Context, p *models.Project, art lib.A
 	return size, bReader, nil
 }
 
-func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r remoteInterface) error {
+func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
 	log.Debugf("Put blob to local registry!, sourceRepo:%v, localRepo:%v, digest: %v", remoteRepo, localRepo, desc.Digest)
 	_, bReader, err := r.BlobReader(remoteRepo, string(desc.Digest))
 	if err != nil {
@@ -185,7 +201,7 @@ func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc di
 	return err
 }
 
-func (c *controller) waitAndPushManifest(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, contType string, r remoteInterface) {
+func (c *controller) waitAndPushManifest(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, contType string, r RemoteInterface) {
 	if contType == manifestlist.MediaTypeManifestList || contType == v1.MediaTypeImageIndex {
 		err := c.local.PushManifestList(ctx, art.Repository, getReference(art), man)
 		if err != nil {
