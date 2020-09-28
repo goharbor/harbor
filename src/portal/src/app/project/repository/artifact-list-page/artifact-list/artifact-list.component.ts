@@ -61,7 +61,7 @@ export class ArtifactListComponent implements OnInit {
 
   timerHandler: any;
   projectName: string = '';
-  @ViewChild('confirmationDialog', { static: false })
+  @ViewChild('confirmationDialog')
   confirmationDlg: ConfirmationDialogComponent;
   showCurrentTitle: string;
   artifactDigest: string;

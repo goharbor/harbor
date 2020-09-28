@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from "@angular/core";
 import { AdditionsService } from "../additions.service";
 import { of } from "rxjs";
@@ -163,7 +163,7 @@ describe('SummaryComponent', () => {
   const config: IServiceConfig = {
     repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories/testing"
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
        ProjectModule

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { of } from 'rxjs';
@@ -30,7 +30,7 @@ describe('RobotAccountComponent', () => {
     error: function () { }
   };
   let mockMessageHandlerService = null;
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA

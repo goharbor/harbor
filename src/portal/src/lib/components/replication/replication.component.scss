@@ -76,9 +76,6 @@
 }
 
 clr-datagrid {
-  ::ng-deep .datagrid {
-    min-height: 115px;
-  }
   ::ng-deep .datagrid-table {
     position: static;
   }

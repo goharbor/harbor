@@ -71,7 +71,7 @@ export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges
   @Input() isSystemAdmin: boolean;
   @ViewChild(InlineAlertComponent, {static: true})
   inlineAlert: InlineAlertComponent;
-  @ViewChild('projectName', {static: false}) projectNameInput: ElementRef;
+  @ViewChild('projectName') projectNameInput: ElementRef;
   checkNameSubscribe: Subscription;
 
   registries: Endpoint[] = [];

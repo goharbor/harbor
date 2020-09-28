@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TopRepoComponent } from './top-repo.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -21,7 +21,7 @@ describe('TopRepoComponent', () => {
     const mockTopRepoService = {
         getTopRepos: () => of([])
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA

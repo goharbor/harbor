@@ -1,9 +1,9 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
-import { MarkdownModule, MarkdownService, MarkedOptions } from 'ngx-markdown';
+import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { BrowserModule } from '@angular/platform-browser';
 import { ValuesComponent } from "./values.component";
 import { AdditionsService } from "../additions.service";
@@ -30,11 +30,11 @@ describe('ValuesComponent', () => {
     absolute: false,
     href: '/test'
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot(),
-        MarkdownModule,
+        MarkdownModule.forRoot({ sanitize: SecurityContext.HTML }),
         ClarityModule,
         FormsModule,
         BrowserModule
@@ -45,7 +45,6 @@ describe('ValuesComponent', () => {
       ],
       providers: [
         TranslateService,
-        MarkdownService,
         ErrorHandler,
         {provide: AdditionsService, useValue: fakedAdditionsService},
         {provide: MarkedOptions, useValue: {}},

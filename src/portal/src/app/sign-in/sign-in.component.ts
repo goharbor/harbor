@@ -54,9 +54,9 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     // Form reference
     signInForm: NgForm;
     @ViewChild('signInForm', {static: true}) currentForm: NgForm;
-    @ViewChild('signupDialog', {static: false}) signUpDialog: SignUpComponent;
-    @ViewChild('forgotPwdDialog', {static: false}) forgotPwdDialog: ForgotPasswordComponent;
-    @ViewChild(AboutDialogComponent, {static: false}) aboutDialog: AboutDialogComponent;
+    @ViewChild('signupDialog') signUpDialog: SignUpComponent;
+    @ViewChild('forgotPwdDialog') forgotPwdDialog: ForgotPasswordComponent;
+    @ViewChild(AboutDialogComponent) aboutDialog: AboutDialogComponent;
 
     // Status flag
     signInStatus: number = signInStatusNormal;

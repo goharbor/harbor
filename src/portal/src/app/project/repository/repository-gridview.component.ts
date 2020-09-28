@@ -85,10 +85,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
   totalCount = 0;
   currentState: ClrDatagridStateInterface;
 
-  @ViewChild("confirmationDialog", {static: false})
+  @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
 
-  @ViewChild("gridView", {static: false}) gridView: GridViewComponent;
+  @ViewChild("gridView") gridView: GridViewComponent;
   hasCreateRepositoryPermission: boolean;
   hasDeleteRepositoryPermission: boolean;
   @ViewChild(FilterComponent, {static: true})

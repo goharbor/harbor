@@ -27,7 +27,7 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     isAdd: boolean = true;
     editRuleOrigin: ImmutableRetentionRule;
     onGoing: boolean = false;
-    @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
+    @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
     constructor(private immutableTagService: ImmutableTagService) {
 
     }

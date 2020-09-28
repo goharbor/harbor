@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
 
 import { ImmutableTagComponent } from './immutable-tag.component';
@@ -204,7 +204,7 @@ describe('ImmutableTagComponent', () => {
     cloneRuleNoId.id = null;
     let cloneDisableRule = clone(mockRules[0]);
     cloneDisableRule.disabled = true;
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ImmutableTagComponent, AddRuleComponent, InlineAlertComponent],
       schemas: [
@@ -294,7 +294,7 @@ describe('ImmutableTagComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it("should show some rules in page", async(() => {
+  it("should show some rules in page", waitForAsync(() => {
     fixture.detectChanges();
 
     fixture.whenStable().then(() => {
@@ -305,7 +305,7 @@ describe('ImmutableTagComponent', () => {
       expect(elRep.length).toEqual(4);
     });
   }));
-  it("should show error in list rule", async(() => {
+  it("should show error in list rule", waitForAsync(() => {
     fixture.detectChanges();
     component.projectId = 0;
     component.getRules();
@@ -314,7 +314,7 @@ describe('ImmutableTagComponent', () => {
       component.projectId = 1;
     });
   }));
-  it("should  toggle disable and enable", async(() => {
+  it("should  toggle disable and enable", waitForAsync(() => {
     fixture.detectChanges();
     let elRep: HTMLButtonElement = fixture.nativeElement.querySelector("#action0");
     elRep.dispatchEvent(new Event('click'));
@@ -331,7 +331,7 @@ describe('ImmutableTagComponent', () => {
       expect(elRepDisableIcon).toBeTruthy();
     });
   }));
-  it("should be deleted", async(() => {
+  it("should be deleted", waitForAsync(() => {
     fixture.detectChanges();
     let elRep: HTMLButtonElement = fixture.nativeElement.querySelector("#action0");
     elRep.dispatchEvent(new Event('click'));
@@ -350,7 +350,7 @@ describe('ImmutableTagComponent', () => {
     });
   }));
 
-  it("should be add rule", async(() => {
+  it("should be add rule", waitForAsync(() => {
     fixture.detectChanges();
     component.clickAdd(cloneRuleNoId);
     mockRules.push(cloneRuleNoId);
@@ -362,7 +362,7 @@ describe('ImmutableTagComponent', () => {
     });
 
   }));
-  it("should be add rule error", async(() => {
+  it("should be add rule error", waitForAsync(() => {
     fixture.detectChanges();
     component.projectId = 0;
     component.clickAdd(cloneRuleNoId);
@@ -376,7 +376,7 @@ describe('ImmutableTagComponent', () => {
     });
 
   }));
-  it("should be edit rule ", async(() => {
+  it("should be edit rule ", waitForAsync(() => {
     fixture.detectChanges();
     component.clickAdd(cloneRule);
     mockRules[0].tag_selectors[0].pattern = 'rep';
@@ -388,7 +388,7 @@ describe('ImmutableTagComponent', () => {
     });
 
   }));
-  it("should be edit rule with no add", async(() => {
+  it("should be edit rule with no add", waitForAsync(() => {
     fixture.detectChanges();
     component.addRuleComponent.isAdd = false;
     component.clickAdd(cloneRule);

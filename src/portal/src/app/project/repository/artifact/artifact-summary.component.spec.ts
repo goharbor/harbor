@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactSummaryComponent } from "./artifact-summary.component";
 import { of } from "rxjs";
 import { ClarityModule } from "@clr/angular";
@@ -67,7 +67,7 @@ describe('ArtifactSummaryComponent', () => {
   const mockRouter = {
     navigate: () => { }
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         ClarityModule,

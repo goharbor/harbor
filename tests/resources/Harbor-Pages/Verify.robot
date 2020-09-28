@@ -483,7 +483,7 @@ Verify Distributions
         ${endpoint}=  Get Value From Json  ${json}  $.distributions[?(@.name=${name})].endpoint
         ${vendor}=  Get Value From Json  ${json}  $.distributions[?(@.name=${name})].vendor
         ${auth_mode}=  Get Value From Json  ${json}  $.distributions[?(@.name=${name})].auth_mode
-        Retry Wait Until Page Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}[0]') and contains(.,'${vendor}[0]') and contains(.,'${auth_mode}[0]')]
+        Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,'${name}') and contains(.,'${endpoint}[0]') and contains(.,'${vendor}[0]') and contains(.,'${auth_mode}[0]')]
     END
 
 Verify P2P Preheat Policy
@@ -509,5 +509,5 @@ Loop P2P Preheat Policys
     [Arguments]  ${json}  ${project}  @{policy_names}
     FOR    ${policy}    IN    @{policy_names}
         ${provider_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].p2p_preheat_policy[?(@.name=${policy})].provider_name
-        Retry Wait Until Page Contains Element   //div[@class='datagrid-scrolling-cells' and contains(.,'${policy}') and contains(.,'${provider_name}[0]')]
+        Retry Wait Until Page Contains Element   //clr-dg-row[contains(.,'${policy}') and contains(.,'${provider_name}[0]')]
     END

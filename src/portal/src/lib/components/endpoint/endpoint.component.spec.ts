@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async } from "@angular/core/testing";
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { DebugElement } from "@angular/core";
@@ -337,7 +337,7 @@ describe("EndpointComponent (inline template)", () => {
   let spyAdapter: jasmine.Spy;
   let spyOnRules: jasmine.Spy;
   let spyOne: jasmine.Spy;
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule, NoopAnimationsModule, HttpClientTestingModule],
       declarations: [
@@ -390,7 +390,7 @@ describe("EndpointComponent (inline template)", () => {
     expect(config.systemInfoEndpoint).toEqual(CURRENT_BASE_HREF + "/endpoints/testing");
   });
 
-  it("should open create endpoint modal", async(() => {
+  it("should open create endpoint modal", waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -400,7 +400,7 @@ describe("EndpointComponent (inline template)", () => {
     });
   }));
 
-  it("should filter endpoints by keyword", async(() => {
+  it("should filter endpoints by keyword", waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -410,7 +410,7 @@ describe("EndpointComponent (inline template)", () => {
     });
   }));
 
-  it("should render data", async(() => {
+  it("should render data", waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -423,7 +423,7 @@ describe("EndpointComponent (inline template)", () => {
     });
   }));
 
-  it("should open creation endpoint", async(() => {
+  it("should open creation endpoint", waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       let de: DebugElement = fixture.debugElement.query(By.css("btn-link"));
@@ -436,7 +436,7 @@ describe("EndpointComponent (inline template)", () => {
     });
   }));
 
-  it("should open to edit existing endpoint", async(() => {
+  it("should open to edit existing endpoint", waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       let de: DebugElement = fixture.debugElement.query(

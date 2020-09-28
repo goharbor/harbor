@@ -55,7 +55,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   loading = true;
   openTag = false;
   availableTime = AVAILABLE_TIME;
-  @ViewChild("confirmationDialog", { static: false })
+  @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
   hasDeleteTagPermission: boolean;
   hasCreateTagPermission: boolean;

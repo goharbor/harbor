@@ -1,5 +1,5 @@
-import { ComponentFixture, TestBed, async } from "@angular/core/testing";
-import { CUSTOM_ELEMENTS_SCHEMA, DebugElement } from "@angular/core";
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
+import { CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
 import { ArtifactListTabComponent } from "./artifact-list-tab.component";
 import { of } from "rxjs";
 import { delay } from "rxjs/operators";
@@ -30,7 +30,6 @@ import { CopyInputComponent } from "../../../../../../lib/components/push-image/
 import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
 import { ChannelService } from "../../../../../../lib/services/channel.service";
 import { OperationService } from "../../../../../../lib/components/operation/operation.service";
-import { By } from "@angular/platform-browser";
 import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 import { AllPipesModule } from "../../../../../all-pipes/all-pipes.module";
 
@@ -295,7 +294,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
       return undefined;
     }
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
@@ -359,17 +358,16 @@ describe("ArtifactListTabComponent (inline template)", () => {
     fixture.detectChanges();
   });
 
-  it("should load and render data", () => {
+  it("should load and render data", async () => {
     fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      let de: DebugElement = fixture.debugElement.query(del => del.classes["datagrid-cell"]);
-      fixture.detectChanges();
-      expect(de).toBeTruthy();
-      let el: HTMLElement = de.nativeElement;
-      expect(el).toBeTruthy();
-      expect(el.textContent.trim()).toEqual("sha256:4875cda3");
-    });
+    await fixture.whenStable();
+    comp.artifactList = mockArtifacts;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('a.max-width-100');
+    expect(el).toBeTruthy();
+    expect(el.textContent).toBeTruthy();
+    expect(el.textContent.trim()).toEqual("sha256:4875cda3");
   });
   it('should filter data by keyword', async () => {
     fixture.detectChanges();
@@ -379,11 +377,9 @@ describe("ArtifactListTabComponent (inline template)", () => {
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    let de: DebugElement = fixture.debugElement.query(del => del.classes["datagrid-cell"]);
-    expect(de).toBeTruthy();
-    let el: HTMLElement = de.nativeElement;
+    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('a.max-width-100');
     expect(el).toBeTruthy();
-    filtereName = '';
+    expect(el.textContent).toBeTruthy();
     expect(el.textContent.trim()).toEqual('sha256:3e33e3e3');
   });
   it('should delete artifact', async () => {
@@ -395,11 +391,9 @@ describe("ArtifactListTabComponent (inline template)", () => {
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    let de: DebugElement = fixture.debugElement.query(del => del.classes["datagrid-cell"]);
-    expect(de).toBeTruthy();
-    let el: HTMLElement = de.nativeElement;
+    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('a.max-width-100');
     expect(el).toBeTruthy();
-    filtereName = '';
+    expect(el.textContent).toBeTruthy();
     expect(el.textContent.trim()).toEqual('sha256:3e33e3e3');
   });
 });

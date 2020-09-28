@@ -39,7 +39,7 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
   editingMode: boolean = false;
   authData: {[key: string]: any} = {};
   @ViewChild('instanceForm', { static: true }) instanceForm: NgForm;
-  @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
+  @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
   saveBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
 
   @Output()

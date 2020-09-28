@@ -43,16 +43,16 @@ const HAS_STYLE_MODE: string = 'styleModeLocal';
 
 export class HarborShellComponent implements OnInit, OnDestroy {
 
-    @ViewChild(AccountSettingsModalComponent, { static: false })
+    @ViewChild(AccountSettingsModalComponent)
     accountSettingsModal: AccountSettingsModalComponent;
 
-    @ViewChild(PasswordSettingComponent, { static: false })
+    @ViewChild(PasswordSettingComponent)
     pwdSetting: PasswordSettingComponent;
 
-    @ViewChild(NavigatorComponent, { static: false })
+    @ViewChild(NavigatorComponent)
     navigator: NavigatorComponent;
 
-    @ViewChild(AboutDialogComponent, { static: false })
+    @ViewChild(AboutDialogComponent)
     aboutDialog: AboutDialogComponent;
 
     // To indicator whwther or not the search results page is displayed

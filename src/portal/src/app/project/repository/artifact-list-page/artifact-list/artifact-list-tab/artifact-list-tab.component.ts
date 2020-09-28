@@ -132,14 +132,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   };
   filterOneLabel: Label = this.initFilter;
 
-  @ViewChild("confirmationDialog", { static: false })
+  @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
 
-  @ViewChild("imageNameInput", { static: false })
+  @ViewChild("imageNameInput")
   imageNameInput: ImageNameInputComponent;
 
-  @ViewChild("digestTarget", { static: false }) textInput: ElementRef;
-  @ViewChild("copyInput", { static: false }) copyInput: CopyInputComponent;
+  @ViewChild("digestTarget") textInput: ElementRef;
+  @ViewChild("copyInput") copyInput: CopyInputComponent;
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { GcComponent } from './gc.component';
 import { SERVICE_CONFIG, IServiceConfig } from '../../../entities/service.config';
 import { GcApiRepository, GcApiDefaultRepository} from './gc.api.repository';
@@ -45,7 +45,7 @@ describe('GcComponent', () => {
   let spySchedule: jasmine.Spy;
   let spyJobs: jasmine.Spy;
   let spyGcNow: jasmine.Spy;
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { InterrogationServicesComponent } from './interrogation-services.component';
 import { SharedModule } from "../shared/shared.module";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
@@ -9,7 +9,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
 describe('InterrogationServicesComponent', () => {
   let component: InterrogationServicesComponent;
   let fixture: ComponentFixture<InterrogationServicesComponent>;
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,

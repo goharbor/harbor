@@ -26,7 +26,7 @@ import { ErrorHandler } from "../../lib/utils/error-handler";
 })
 export class ReplicationPageComponent implements OnInit, AfterViewInit {
   projectIdentify: string | number;
-  @ViewChild("replicationView", {static: false}) replicationView: ReplicationComponent;
+  @ViewChild("replicationView") replicationView: ReplicationComponent;
   projectName: string;
   hasCreateReplicationPermission: boolean;
   hasUpdateReplicationPermission: boolean;

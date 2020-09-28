@@ -110,8 +110,8 @@
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount" [(clrDgPage)]="currentPage">
-                        <span *ngIf="pagination.totalItems">{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }} {{ 'HELM_CHART.OF' | translate }} </span>
-                        <span>{{ pagination.totalItems }} {{ 'HELM_CHART.ITEMS' | translate }}</span>
+                        <span *ngIf="totalCount">{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }} {{ 'HELM_CHART.OF' | translate }} </span>
+                        <span>{{ totalCount }} {{ 'HELM_CHART.ITEMS' | translate }}</span>
                     </clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClarityModule } from "@clr/angular";
 import { SignUpComponent } from './sign-up.component';
 import { SessionService } from '../../shared/session.service';
@@ -36,7 +36,7 @@ describe('SignUpComponent', () => {
         creation_time: 'string',
         update_time: 'string',
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [SignUpComponent, NewUserFormComponent, InlineAlertComponent],
             imports: [

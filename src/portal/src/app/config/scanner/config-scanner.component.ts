@@ -19,7 +19,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
     scanners: Scanner[] = [];
     selectedRow: Scanner;
     onGoing: boolean = false;
-    @ViewChild(NewScannerModalComponent, {static: false})
+    @ViewChild(NewScannerModalComponent)
     newScannerDialog: NewScannerModalComponent;
     deletionSubscription: any;
     scannerDocUrl: string = SCANNERS_DOC;

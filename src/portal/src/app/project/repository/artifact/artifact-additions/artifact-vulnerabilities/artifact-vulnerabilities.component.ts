@@ -49,7 +49,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   hasScanningPermission: boolean = false;
   onSendingScanCommand: boolean = false;
   hasShowLoading: boolean = false;
-  @ViewChild(ResultBarChartComponent, {static: false})
+  @ViewChild(ResultBarChartComponent)
   resultBarChartComponent: ResultBarChartComponent;
   sub: Subscription;
   hasViewInitWithDelay: boolean = false;

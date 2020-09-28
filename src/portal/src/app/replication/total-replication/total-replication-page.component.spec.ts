@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TotalReplicationPageComponent } from './total-replication-page.component';
 import {Router, ActivatedRoute} from "@angular/router";
@@ -29,7 +29,7 @@ describe('TotalReplicationPageComponent', () => {
         navigate: () => { }
     };
     const mockActivatedRoute = null;
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA

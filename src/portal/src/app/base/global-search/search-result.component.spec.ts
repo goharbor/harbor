@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { GlobalSearchService } from './global-search.service';
 import { SearchResults } from './search-results';
 import { SearchTriggerService } from './search-trigger.service';
@@ -59,7 +59,7 @@ describe('SearchResultComponent', () => {
         searchCloseChan$: of(null),
         clear: () => null
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),

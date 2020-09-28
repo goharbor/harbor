@@ -59,7 +59,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
   private loading: boolean = true;
   private operationSubscription: Subscription;
 
-  @ViewChild('setupModal', { static: false })
+  @ViewChild('setupModal')
   setupModal: DistributionSetupModalComponent;
   providerMap: {[key: string]: Metadata} = {};
   providers: Metadata[] = [];

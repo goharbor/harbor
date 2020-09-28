@@ -60,8 +60,8 @@ export class GridViewComponent implements AfterViewInit {
   @Output() loadNextPageEvent = new EventEmitter<any>();
 
   @ViewChildren("cardItem") cards: any;
-  @ViewChild("itemsHolder", {static: false}) itemsHolder: any;
-  @ContentChild(TemplateRef, {static: false}) gridItemTmpl: any;
+  @ViewChild("itemsHolder") itemsHolder: any;
+  @ContentChild(TemplateRef) gridItemTmpl: any;
 
   _items: any[] = [];
 

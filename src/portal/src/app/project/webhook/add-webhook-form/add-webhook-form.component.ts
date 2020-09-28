@@ -32,7 +32,7 @@ export class AddWebhookFormComponent implements OnInit {
   @Input() isOpen: boolean;
   @Output() close = new EventEmitter<boolean>();
   @ViewChild("webhookForm", { static: true }) currentForm: NgForm;
-  @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
+  @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
   @Input()
   metadata: any;
   @Output() notify = new EventEmitter<Webhook>();

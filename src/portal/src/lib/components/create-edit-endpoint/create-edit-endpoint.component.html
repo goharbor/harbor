@@ -1,7 +1,7 @@
 <clr-modal [(clrModalOpen)]="createEditDestinationOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{modalTitle}}</h3>
-  <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
   <div class="modal-body overflow-visible">
+    <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
     <div class="alert alert-warning" *ngIf="!editable">
       <div class="alert-item static">
         <span class="alert-text">

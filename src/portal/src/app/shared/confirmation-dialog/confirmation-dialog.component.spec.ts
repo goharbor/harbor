@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ConfirmationDialogComponent } from './confirmation-dialog.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -22,7 +22,7 @@ describe('ConfirmationDialogComponent', () => {
         cancel: () => { },
         confirm: () => { },
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
