@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpResponse } from '@angular/common/http';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
@@ -44,6 +44,14 @@ export class InterceptHttpService implements HttpInterceptor {
        }))
       .pipe(
        catchError(error => {
+         // handle 504 error in document format from backend
+         if (error && error.status === 504) {
+           // throw 504 error in json format
+           return throwError(new HttpErrorResponse({
+             error: '504 gateway timeout',
+             status: 504
+           }));
+         }
          if (error.status === 403) {
            const csrfToken = localStorage.getItem("__csrf");
            if (csrfToken) {
