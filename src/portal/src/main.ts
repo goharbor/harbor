@@ -16,10 +16,18 @@ import './polyfills.ts';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { enableProdMode } from '@angular/core';
 import { environment } from './environments/environment';
+import * as Sentry from "@sentry/angular";
 import { AppModule } from './app/';
 
 if (environment.production) {
   enableProdMode();
 }
+
+Sentry.init({
+  dsn: environment.sentryDSN,
+  enabled: environment.sentryDSN != "",
+  environment: environment.production?"production":"development",
+  debug: !environment.production,
+});
 
 platformBrowserDynamic().bootstrapModule(AppModule);

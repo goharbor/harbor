@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule, APP_INITIALIZER, LOCALE_ID, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule, ErrorHandler, APP_INITIALIZER, LOCALE_ID, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AppComponent } from './app.component';
 import { InterceptHttpService } from './services/intercept-http.service';
 
@@ -24,6 +24,7 @@ import { SignInModule } from './sign-in/sign-in.module';
 import { ConfigurationModule } from './config/config.module';
 import { DeveloperCenterModule } from './dev-center/dev-center.module';
 import { registerLocaleData } from '@angular/common';
+import * as Sentry from "@sentry/angular";
 
 import { TranslateService } from "@ngx-translate/core";
 import { AppConfigService } from './services/app-config.service';
@@ -98,11 +99,16 @@ export function getCurrentLanguage(translateService: TranslateService) {
             provide: APP_INITIALIZER,
             useFactory: initConfig,
             deps: [AppConfigService, SkinableConfig],
-            multi: true
+            multi: true,
         },
         { provide: LOCALE_ID, useValue: "en-US" },
-        { provide: HTTP_INTERCEPTORS, useClass: InterceptHttpService, multi: true }
-
+        { provide: HTTP_INTERCEPTORS, useClass: InterceptHttpService, multi: true },
+        {
+            provide: ErrorHandler,
+            useValue: Sentry.createErrorHandler({
+                showDialog: false,
+            }),
+        },
     ],
     schemas: [
         CUSTOM_ELEMENTS_SCHEMA

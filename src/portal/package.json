@@ -41,6 +41,7 @@
     "@ng-bootstrap/ng-bootstrap": "^7.0.0",
     "@ngx-translate/core": "^10.0.2",
     "@ngx-translate/http-loader": "^3.0.1",
+    "@sentry/angular": "^5.23.0",
     "@types/jquery": "^2.0.41",
     "@webcomponents/custom-elements": "^1.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
