@@ -24,39 +24,29 @@ Verify User
     Close Browser
 
 Verify Project
-    [Arguments]    ${json}  ${check_content_trust}=${true}
+    [Arguments]    ${json}  ${verify_registry_name}=${false}
     Log To Console  "Verify Project..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
+        @{registry_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].registry_name
+        Run Keyword If  '${registry_name}[0]' != '${null}' and '${verify_registry_name}' == '${false}'   Continue For Loop
         Retry Wait Until Page Contains    ${project}
     END
-    Verify Project Metadata  ${json}  ${check_content_trust}
     Close Browser
 
-Verify Image Tag
-    [Arguments]    ${json}
-    Log To Console  "Verify Image Tag..."
-    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    FOR    ${project}    IN    @{project}
-        @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
-        Go Into Project  ${project}  has_image=${has_image}
-        @{repo}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..repo..name
-        Run Keyword If  ${has_image} == ${true}  Loop Image Repo  @{repo}
-        Navigate To Projects
-    END
-    Close Browser
 
 Verify Project Metadata
-    [Arguments]    ${json}  ${check_content_trust}
+    # check_content_trust has been removed from Harbor since v2.0
+    # verify_registry_name is for proxy cache project, this feature developed since 2.1
+    [Arguments]    ${json}  ${check_content_trust}=${true}  ${verify_registry_name}=${false}
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
+        @{registry_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].registry_name
+        Run Keyword If  '${registry_name}[0]' != '${null}' and '${verify_registry_name}' == '${false}'   Continue For Loop
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
         ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
@@ -68,6 +58,25 @@ Verify Project Metadata
         ${ret}    Get Selected List Value    ${project_config_severity_select}
         @{severity}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.severity
         Should Contain    ${ret}    @{severity}[0]
+        Navigate To Projects
+    END
+    Close Browser
+
+Verify Image Tag
+    [Arguments]    ${json}  ${verify_registry_name}=${false}
+    Log To Console  "Verify Image Tag..."
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    FOR    ${project}    IN    @{project}
+        @{registry_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].registry_name
+        Run Keyword If  '${registry_name}[0]' != '${null}' and '${verify_registry_name}' == '${false}'   Continue For Loop
+
+        @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
+        Go Into Project  ${project}  has_image=${has_image}
+        @{repo}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..repo..name
+        Run Keyword If  ${has_image} == ${true}  Loop Image Repo  @{repo}
         Navigate To Projects
     END
     Close Browser
@@ -87,12 +96,15 @@ Loop Image Repo
     END
 
 Verify Member Exist
-    [Arguments]    ${json}
+    [Arguments]    ${json}  ${verify_registry_name}=${false}
     Log To Console  "Verify Member Exist..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
+        @{registry_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].registry_name
+        Run Keyword If  '${registry_name}[0]' != '${null}' and '${verify_registry_name}' == '${false}'   Continue For Loop
+
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
         ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
@@ -104,12 +116,15 @@ Verify Member Exist
     Close Browser
 
 Verify Webhook
-    [Arguments]    ${json}
+    [Arguments]    ${json}  ${verify_registry_name}=${false}
     Log To Console  "Verify Webhook..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
+        @{registry_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].registry_name
+        Run Keyword If  '${registry_name}[0]' != '${null}' and '${verify_registry_name}' == '${false}'   Continue For Loop
+
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
         ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
@@ -131,12 +146,15 @@ Verify Webhook
     Close Browser
 
 Verify Webhook For 2.0
-    [Arguments]    ${json}
+    [Arguments]    ${json}  ${verify_registry_name}=${false}
     Log To Console  "Verify Webhook..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
+        @{registry_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].registry_name
+        Run Keyword If  '${registry_name}[0]' != '${null}' and '${verify_registry_name}' == '${false}'   Continue For Loop
+
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
         ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
@@ -162,12 +180,15 @@ Verify Webhook For 2.0
     Close Browser
 
 Verify Tag Retention Rule
-    [Arguments]    ${json}
+    [Arguments]    ${json}  ${verify_registry_name}=${false}
     Log To Console  "Verify Tag Retention Rule..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
+        @{registry_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].registry_name
+        Run Keyword If  '${registry_name}[0]' != '${null}' and '${verify_registry_name}' == '${false}'   Continue For Loop
+
         ${tag_retention_rule}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule
         Run Keyword If  ${tag_retention_rule}[0] == ${null}  Continue For Loop
         ${out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
@@ -189,12 +210,15 @@ Verify Tag Retention Rule
     Close Browser
 
 Verify Tag Immutability Rule
-    [Arguments]    ${json}
+    [Arguments]    ${json}  ${verify_registry_name}=${false}
     Log To Console  "Verify Tag Immutability Rule..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
+        @{registry_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].registry_name
+        Run Keyword If  '${registry_name}[0]' != '${null}' and '${verify_registry_name}' == '${false}'   Continue For Loop
+
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
         ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
@@ -219,12 +243,15 @@ Loop Member
     END
 
 Verify Robot Account Exist
-    [Arguments]    ${json}
+    [Arguments]    ${json}  ${verify_registry_name}=${false}
     Log To Console  "Verify Robot Account Exist..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
+        @{registry_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].registry_name
+        Run Keyword If  '${registry_name}[0]' != '${null}' and '${verify_registry_name}' == '${false}'   Continue For Loop
+
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
         ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
@@ -267,12 +294,15 @@ Verify System Label
     Close Browser
 
 Verify Project Label
-    [Arguments]    ${json}
+    [Arguments]    ${json}  ${verify_registry_name}=${false}
     Log To Console  "Verify Project Label..."
-    @{project}= Get Value From Json  ${json}  $.peoject.[*].name
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
+        @{registry_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].registry_name
+        Run Keyword If  '${registry_name}[0]' != '${null}' and '${verify_registry_name}' == '${false}'   Continue For Loop
+
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
         ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
@@ -381,12 +411,15 @@ Verify System Setting
     Close Browser
 
 Verify Project-level Allowlist
-    [Arguments]    ${json}
+    [Arguments]    ${json}  ${verify_registry_name}=${false}
     Log To Console  "Verify Project-level Allowlist..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
+        @{registry_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].registry_name
+        Run Keyword If  '${registry_name}[0]' != '${null}' and '${verify_registry_name}' == '${false}'   Continue For Loop
+
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
         ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
