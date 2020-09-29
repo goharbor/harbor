@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,19 +16,91 @@ package http
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
+	"net/url"
+	"reflect"
+	"time"
 
-	"github.com/vmware/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/lib"
 )
+
+const (
+	// InsecureTransport used to get the insecure http Transport
+	InsecureTransport = iota
+	// SecureTransport used to get the external secure http Transport
+	SecureTransport
+)
+
+var (
+	secureHTTPTransport   *http.Transport
+	insecureHTTPTransport *http.Transport
+)
+
+func init() {
+	secureHTTPTransport = newDefaultTransport()
+	insecureHTTPTransport = newDefaultTransport()
+	insecureHTTPTransport.TLSClientConfig.InsecureSkipVerify = true
+
+	if InternalTLSEnabled() {
+		tlsConfig, err := GetInternalTLSConfig()
+		if err != nil {
+			panic(err)
+		}
+		secureHTTPTransport.TLSClientConfig = tlsConfig
+	}
+}
+
+// Use this instead of Default Transport in library because it sets ForceAttemptHTTP2 to true
+// And that options introduced in go 1.13 will cause the https requests hang forever in replication environment
+func newDefaultTransport() *http.Transport {
+	return &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		TLSClientConfig:       &tls.Config{},
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+}
 
 // Client is a util for common HTTP operations, such Get, Head, Post, Put and Delete.
 // Use Do instead if  those methods can not meet your requirement
 type Client struct {
 	modifiers []modifier.Modifier
 	client    *http.Client
+}
+
+// GetHTTPTransport returns HttpTransport based on insecure configuration
+func GetHTTPTransport(clientType uint) *http.Transport {
+	switch clientType {
+	case SecureTransport:
+		return secureHTTPTransport
+	case InsecureTransport:
+		return insecureHTTPTransport
+	default:
+		// default Transport is secure one
+		return secureHTTPTransport
+	}
+}
+
+// GetHTTPTransportByInsecure returns a insecure HttpTransport if insecure is true or it returns secure one
+func GetHTTPTransportByInsecure(insecure bool) *http.Transport {
+	if insecure {
+		return insecureHTTPTransport
+	}
+	return secureHTTPTransport
 }
 
 // NewClient creates an instance of Client.
@@ -39,7 +111,9 @@ func NewClient(c *http.Client, modifiers ...modifier.Modifier) *Client {
 		client: c,
 	}
 	if client.client == nil {
-		client.client = &http.Client{}
+		client.client = &http.Client{
+			Transport: GetHTTPTransport(SecureTransport),
+		}
 	}
 	if len(modifiers) > 0 {
 		client.modifiers = modifiers
@@ -91,12 +165,16 @@ func (c *Client) Head(url string) error {
 func (c *Client) Post(url string, v ...interface{}) error {
 	var reader io.Reader
 	if len(v) > 0 {
-		data, err := json.Marshal(v[0])
-		if err != nil {
-			return err
-		}
+		if r, ok := v[0].(io.Reader); ok {
+			reader = r
+		} else {
+			data, err := json.Marshal(v[0])
+			if err != nil {
+				return err
+			}
 
-		reader = bytes.NewReader(data)
+			reader = bytes.NewReader(data)
+		}
 	}
 
 	req, err := http.NewRequest(http.MethodPost, url, reader)
@@ -159,4 +237,62 @@ func (c *Client) do(req *http.Request) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+// GetAndIteratePagination iterates the pagination header and returns all resources
+// The parameter "v" must be a pointer to a slice
+func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
+	url, err := url.Parse(endpoint)
+	if err != nil {
+		return err
+	}
+
+	rv := reflect.ValueOf(v)
+	if rv.Kind() != reflect.Ptr {
+		return errors.New("v should be a pointer to a slice")
+	}
+	elemType := rv.Elem().Type()
+	if elemType.Kind() != reflect.Slice {
+		return errors.New("v should be a pointer to a slice")
+	}
+
+	resources := reflect.Indirect(reflect.New(elemType))
+	for len(endpoint) > 0 {
+		req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+		if err != nil {
+			return err
+		}
+		resp, err := c.Do(req)
+		if err != nil {
+			return err
+		}
+		data, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return &Error{
+				Code:    resp.StatusCode,
+				Message: string(data),
+			}
+		}
+
+		res := reflect.New(elemType)
+		if err = json.Unmarshal(data, res.Interface()); err != nil {
+			return err
+		}
+		resources = reflect.AppendSlice(resources, reflect.Indirect(res))
+
+		endpoint = ""
+		links := lib.ParseLinks(resp.Header.Get("Link"))
+		for _, link := range links {
+			if link.Rel == "next" {
+				endpoint = url.Scheme + "://" + url.Host + link.URL
+				break
+			}
+		}
+	}
+	rv.Elem().Set(resources)
+	return nil
 }

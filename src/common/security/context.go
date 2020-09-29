@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,11 +15,15 @@
 package security
 
 import (
-	"github.com/vmware/harbor/src/common/models"
+	"context"
+
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 // Context abstracts the operations related with authN and authZ
 type Context interface {
+	// Name returns the name of the security context
+	Name() string
 	// IsAuthenticated returns whether the context has been authenticated or not
 	IsAuthenticated() bool
 	// GetUsername returns the username of user related to the context
@@ -28,12 +32,19 @@ type Context interface {
 	IsSysAdmin() bool
 	// IsSolutionUser returns whether the user is solution user
 	IsSolutionUser() bool
-	// HasReadPerm returns whether the user has read permission to the project
-	HasReadPerm(projectIDOrName interface{}) bool
-	// HasWritePerm returns whether the user has write permission to the project
-	HasWritePerm(projectIDOrName interface{}) bool
-	// HasAllPerm returns whether the user has all permissions to the project
-	HasAllPerm(projectIDOrName interface{}) bool
-	GetMyProjects() ([]*models.Project, error)
-	GetProjectRoles(projectIDOrName interface{}) []int
+	// Can returns whether the user can do action on resource
+	Can(action types.Action, resource types.Resource) bool
+}
+
+type securityKey struct{}
+
+// NewContext returns context with security context
+func NewContext(ctx context.Context, security Context) context.Context {
+	return context.WithValue(ctx, securityKey{}, security)
+}
+
+// FromContext returns security context from the context
+func FromContext(ctx context.Context) (Context, bool) {
+	c, ok := ctx.Value(securityKey{}).(Context)
+	return c, ok
 }

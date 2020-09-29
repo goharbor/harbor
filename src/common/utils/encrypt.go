@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,24 +19,36 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"hash"
 	"io"
 	"strings"
 
 	"golang.org/x/crypto/pbkdf2"
 )
 
-// Encrypt encrypts the content with salt
-func Encrypt(content string, salt string) string {
-	return fmt.Sprintf("%x", pbkdf2.Key([]byte(content), []byte(salt), 4096, 16, sha1.New))
-}
-
 const (
 	// EncryptHeaderV1 ...
 	EncryptHeaderV1 = "<enc-v1>"
+	// SHA1 is the name of sha1 hash alg
+	SHA1 = "sha1"
+	// SHA256 is the name of sha256 hash alg
+	SHA256 = "sha256"
 )
+
+// HashAlg used to get correct alg for hash
+var HashAlg = map[string]func() hash.Hash{
+	SHA1:   sha1.New,
+	SHA256: sha256.New,
+}
+
+// Encrypt encrypts the content with salt
+func Encrypt(content string, salt string, encrptAlg string) string {
+	return fmt.Sprintf("%x", pbkdf2.Key([]byte(content), []byte(salt), 4096, 16, HashAlg[encrptAlg]))
+}
 
 // ReversibleEncrypt encrypts the str with aes/base64
 func ReversibleEncrypt(str, key string) (string, error) {
@@ -65,7 +77,7 @@ func ReversibleDecrypt(str, key string) (string, error) {
 		str = str[len(EncryptHeaderV1):]
 		return decryptAES(str, key)
 	}
-	//fallback to base64
+	// fallback to base64
 	return decodeB64(str)
 }
 

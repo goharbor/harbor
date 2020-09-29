@@ -13,6 +13,7 @@ package oss
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -22,13 +23,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/distribution/context"
-
-	"github.com/Sirupsen/logrus"
 	"github.com/denverdino/aliyungo/oss"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/distribution/registry/storage/driver/base"
 	"github.com/docker/distribution/registry/storage/driver/factory"
+	"github.com/sirupsen/logrus"
 )
 
 const driverName = "oss"
@@ -351,7 +350,8 @@ func (d *driver) List(ctx context.Context, opath string) ([]string, error) {
 		prefix = "/"
 	}
 
-	listResponse, err := d.Bucket.List(d.ossPath(path), "/", "", listMax)
+	ossPath := d.ossPath(path)
+	listResponse, err := d.Bucket.List(ossPath, "/", "", listMax)
 	if err != nil {
 		return nil, parseError(opath, err)
 	}
@@ -369,13 +369,18 @@ func (d *driver) List(ctx context.Context, opath string) ([]string, error) {
 		}
 
 		if listResponse.IsTruncated {
-			listResponse, err = d.Bucket.List(d.ossPath(path), "/", listResponse.NextMarker, listMax)
+			listResponse, err = d.Bucket.List(ossPath, "/", listResponse.NextMarker, listMax)
 			if err != nil {
 				return nil, err
 			}
 		} else {
 			break
 		}
+	}
+
+	// This is to cover for the cases when the first key equal to ossPath.
+	if len(files) > 0 && files[0] == strings.Replace(ossPath, d.ossPath(""), prefix, 1) {
+		files = files[1:]
 	}
 
 	if opath != "/" {
@@ -472,6 +477,12 @@ func (d *driver) URLFor(ctx context.Context, path string, options map[string]int
 	signedURL := d.Bucket.SignedURLWithMethod(methodString, d.ossPath(path), expiresTime, nil, nil)
 	logrus.Infof("signed URL: %s", signedURL)
 	return signedURL, nil
+}
+
+// Walk traverses a filesystem defined within driver, starting
+// from the given path, calling f on each file
+func (d *driver) Walk(ctx context.Context, path string, f storagedriver.WalkFn) error {
+	return storagedriver.WalkFallback(ctx, d, path, f)
 }
 
 func (d *driver) ossPath(path string) string {

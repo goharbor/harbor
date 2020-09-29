@@ -1,6 +1,7 @@
 package context
 
 import (
+	"context"
 	"errors"
 	"net"
 	"net/http"
@@ -8,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/distribution/uuid"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 // Common errors used with this package.
@@ -68,7 +69,7 @@ func RemoteIP(r *http.Request) string {
 // is available at "http.request". Other common attributes are available under
 // the prefix "http.request.". If a request is already present on the context,
 // this method will panic.
-func WithRequest(ctx Context, r *http.Request) Context {
+func WithRequest(ctx context.Context, r *http.Request) context.Context {
 	if ctx.Value("http.request") != nil {
 		// NOTE(stevvooe): This needs to be considered a programming error. It
 		// is unlikely that we'd want to have more than one request in
@@ -87,7 +88,7 @@ func WithRequest(ctx Context, r *http.Request) Context {
 // GetRequest returns the http request in the given context. Returns
 // ErrNoRequestContext if the context does not have an http request associated
 // with it.
-func GetRequest(ctx Context) (*http.Request, error) {
+func GetRequest(ctx context.Context) (*http.Request, error) {
 	if r, ok := ctx.Value("http.request").(*http.Request); r != nil && ok {
 		return r, nil
 	}
@@ -96,25 +97,13 @@ func GetRequest(ctx Context) (*http.Request, error) {
 
 // GetRequestID attempts to resolve the current request id, if possible. An
 // error is return if it is not available on the context.
-func GetRequestID(ctx Context) string {
+func GetRequestID(ctx context.Context) string {
 	return GetStringValue(ctx, "http.request.id")
 }
 
 // WithResponseWriter returns a new context and response writer that makes
 // interesting response statistics available within the context.
-func WithResponseWriter(ctx Context, w http.ResponseWriter) (Context, http.ResponseWriter) {
-	if closeNotifier, ok := w.(http.CloseNotifier); ok {
-		irwCN := &instrumentedResponseWriterCN{
-			instrumentedResponseWriter: instrumentedResponseWriter{
-				ResponseWriter: w,
-				Context:        ctx,
-			},
-			CloseNotifier: closeNotifier,
-		}
-
-		return irwCN, irwCN
-	}
-
+func WithResponseWriter(ctx context.Context, w http.ResponseWriter) (context.Context, http.ResponseWriter) {
 	irw := instrumentedResponseWriter{
 		ResponseWriter: w,
 		Context:        ctx,
@@ -125,7 +114,7 @@ func WithResponseWriter(ctx Context, w http.ResponseWriter) (Context, http.Respo
 // GetResponseWriter returns the http.ResponseWriter from the provided
 // context. If not present, ErrNoResponseWriterContext is returned. The
 // returned instance provides instrumentation in the context.
-func GetResponseWriter(ctx Context) (http.ResponseWriter, error) {
+func GetResponseWriter(ctx context.Context) (http.ResponseWriter, error) {
 	v := ctx.Value("http.response")
 
 	rw, ok := v.(http.ResponseWriter)
@@ -145,7 +134,7 @@ var getVarsFromRequest = mux.Vars
 // example, if looking for the variable "name", it can be accessed as
 // "vars.name". Implementations that are accessing values need not know that
 // the underlying context is implemented with gorilla/mux vars.
-func WithVars(ctx Context, r *http.Request) Context {
+func WithVars(ctx context.Context, r *http.Request) context.Context {
 	return &muxVarsContext{
 		Context: ctx,
 		vars:    getVarsFromRequest(r),
@@ -155,7 +144,7 @@ func WithVars(ctx Context, r *http.Request) Context {
 // GetRequestLogger returns a logger that contains fields from the request in
 // the current context. If the request is not available in the context, no
 // fields will display. Request loggers can safely be pushed onto the context.
-func GetRequestLogger(ctx Context) Logger {
+func GetRequestLogger(ctx context.Context) Logger {
 	return GetLogger(ctx,
 		"http.request.id",
 		"http.request.method",
@@ -171,7 +160,7 @@ func GetRequestLogger(ctx Context) Logger {
 // Because the values are read at call time, pushing a logger returned from
 // this function on the context will lead to missing or invalid data. Only
 // call this at the end of a request, after the response has been written.
-func GetResponseLogger(ctx Context) Logger {
+func GetResponseLogger(ctx context.Context) Logger {
 	l := getLogrusLogger(ctx,
 		"http.response.written",
 		"http.response.status",
@@ -188,7 +177,7 @@ func GetResponseLogger(ctx Context) Logger {
 
 // httpRequestContext makes information about a request available to context.
 type httpRequestContext struct {
-	Context
+	context.Context
 
 	startedAt time.Time
 	id        string
@@ -247,7 +236,7 @@ fallback:
 }
 
 type muxVarsContext struct {
-	Context
+	context.Context
 	vars map[string]string
 }
 
@@ -269,20 +258,12 @@ func (ctx *muxVarsContext) Value(key interface{}) interface{} {
 	return ctx.Context.Value(key)
 }
 
-// instrumentedResponseWriterCN provides response writer information in a
-// context. It implements http.CloseNotifier so that users can detect
-// early disconnects.
-type instrumentedResponseWriterCN struct {
-	instrumentedResponseWriter
-	http.CloseNotifier
-}
-
 // instrumentedResponseWriter provides response writer information in a
 // context. This variant is only used in the case where CloseNotifier is not
 // implemented by the parent ResponseWriter.
 type instrumentedResponseWriter struct {
 	http.ResponseWriter
-	Context
+	context.Context
 
 	mu      sync.Mutex
 	status  int
@@ -353,14 +334,4 @@ func (irw *instrumentedResponseWriter) Value(key interface{}) interface{} {
 
 fallback:
 	return irw.Context.Value(key)
-}
-
-func (irw *instrumentedResponseWriterCN) Value(key interface{}) interface{} {
-	if keyStr, ok := key.(string); ok {
-		if keyStr == "http.response" {
-			return irw
-		}
-	}
-
-	return irw.instrumentedResponseWriter.Value(key)
 }

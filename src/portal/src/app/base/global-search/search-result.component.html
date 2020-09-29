@@ -1,0 +1,22 @@
+<div class="search-overlay" *ngIf="state">
+    <div id="placeholder1"></div>
+    <div class="search-header">
+        <a href="javascript:void(0)" (click)="close()">&lt;&nbsp;{{'SEARCH.BACK' | translate}}</a>
+    </div>
+    <!-- spinner -->
+    <div class="spinner spinner-lg search-spinner" [hidden]="done">{{'SEARCH.IN_PROGRESS' | translate}}</div>
+    <div id="results">
+        <div id="project-results">
+            <h2>{{'PROJECT.PROJECTS' | translate}}</h2>
+            <list-project-ro [projects]="searchResults.project"></list-project-ro>
+        </div>
+        <div id="repo-results">
+            <h2>{{'PROJECT_DETAIL.REPOSITORIES' | translate}}</h2>
+            <list-repository-ro [repositories]="searchResults.repository"></list-repository-ro>
+        </div>
+        <div *ngIf="withHelmChart" id="chart-results">
+            <h2>{{'HELM_CHART.HELMCHARTS' | translate}}</h2>
+            <list-chart-version-ro [charts]="searchResults.chart"></list-chart-version-ro>
+        </div>
+    </div>
+</div>

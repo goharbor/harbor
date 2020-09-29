@@ -3,8 +3,11 @@
 set +e
 set -o noglob
 
+if [ "$1" == "" ];then
 echo "This shell will push specific image to registry server."
-echo "Usage: #./pushimage [imgae tag] [registry username] [registry password]  [registry server]"
+echo "Usage: #./pushimage [image tag] [registry username] [registry password]  [registry server]"
+exit 1
+fi
 
 #
 # Set Colors

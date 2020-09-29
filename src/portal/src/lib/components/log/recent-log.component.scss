@@ -1,0 +1,58 @@
+.h2-log-override {
+    margin-top: 0px !important;
+}
+
+.action-head-pos {
+    padding-right: 18px;
+    height: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.refresh-btn {
+    cursor: pointer;
+    margin-top: 7px;
+}
+
+.refresh-btn:hover {
+    color: #007CBB;
+}
+
+.custom-lines-button {
+    padding: 0px !important;
+    min-width: 25px !important;
+}
+
+.lines-button-toggole {
+    font-size: 16px;
+    text-decoration: underline;
+}
+
+.log-select {
+    width: 130px;
+    display: inline-block;
+    top: 1px;
+}
+
+.item-divider {
+    height: 24px;
+    display: inline-block;
+    width: 1px;
+    background-color: #ccc;
+    opacity: 0.55;
+    margin-left: 12px;
+    top: 8px;
+    position: relative;
+}
+
+.rightPos {
+    position: absolute;
+    z-index: 100;
+    right: 35px;
+    margin-top: 4px;
+}
+
+.filter-tag {
+    float: left;
+    margin-top: 8px;
+}

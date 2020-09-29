@@ -19,4 +19,8 @@ var Package = "$(go list)"
 // build, it will be replaced by the actual version. The value here will be
 // used if the registry is run after a go get based install.
 var Version = "$(git describe --match 'v[0-9]*' --dirty='.m' --always)+unknown"
+
+// Revision is filled with the VCS (e.g. git) revision being used to build
+// the program at linking time.
+var Revision = ""
 EOF

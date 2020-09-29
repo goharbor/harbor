@@ -1,0 +1,78 @@
+.color-97 {
+  color: #979797;
+}
+
+.rule {
+  height: 24px;
+  line-height: 24px;
+}
+
+.rule-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: .541667rem;
+}
+
+.ml-5 {
+  margin-left: 5px;
+}
+
+.width-60 {
+  width: 60px;
+}
+
+.hand {
+  cursor: pointer;
+}
+
+.datagrid-container {
+  padding: 0;
+}
+
+.color-79b {
+  color: #0079b8;
+}
+
+.backdrop-transparent {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  opacity: 0;
+  z-index: 999;
+}
+.cron-selection {
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.v-center {
+  height: 48px;
+  line-height: 48px;
+}
+.font-size-54 {
+  font-size: .541667rem;
+}
+.flex-150 {
+  flex: 0 0 150px;
+  max-width: 150px;
+}
+.padding-left-0 {
+  padding-left: 0;
+}
+.flex-8p {
+  flex: 0 0 8.3%;
+  padding-left: 0.5rem;
+}
+:host::ng-deep {
+  .datagrid-row-flex {
+    .datagrid-row-detail {
+      .datagrid-cell {
+        padding: 11px 12px;
+      }
+    }
+  }
+}

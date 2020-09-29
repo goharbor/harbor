@@ -1,0 +1,48 @@
+clr-modal {
+    ::ng-deep div.modal-dialog {
+        width: unset;
+    }
+    .rename-tool {
+        .btn {
+            margin-right: 6px;
+            margin-left: 5px;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
+    position: relative;
+    bottom: 9px;
+    }
+    .label-inner-text{
+        margin: 0;
+    }
+    .cli-secret {
+        align-items: center;
+        .reset-cli {
+            height: 30px;
+        }
+        .btn-padding-less {
+            padding-left: 5px;
+            padding-right: 5px;
+            margin-left: 5px;
+        }
+        .input-cli {
+            width: 9.5rem;
+        }
+    }
+    .hidden-generate-cli {
+        font-size: 30px;
+        color: grey;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        line-height: 30px;
+    }
+}
+.reset-cli-form {
+    width: 19.5rem;
+}
+.display-flex {
+    display: flex;
+}
+.set-btns {
+    display: flex;
+}

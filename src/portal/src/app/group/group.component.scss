@@ -1,0 +1,45 @@
+.custom-add-button {
+    font-size: 12px;
+    margin-left: -12px;
+}
+
+.filter-icon {
+    position: relative;
+    right: -12px;
+}
+
+.filter-pos {
+    float: right;
+    margin-right: 24px;
+    position: relative;
+    top: 10px;
+}
+
+.action-panel-pos {
+    position: relative;
+    padding-left: 12px;
+    margin-top: 12px;
+}
+
+.refresh-btn {
+    position: absolute;
+    right: 6px;
+    top: 17px;
+    cursor: pointer;
+}
+
+.refresh-btn:hover {
+    color: #007CBB;
+}
+
+.hide-create {
+    visibility: hidden !important;
+}
+
+.rightPos {
+    position: absolute;
+    right: 20px;
+    margin-top: -7px;
+    height: 32px;
+    z-index: 100;
+}

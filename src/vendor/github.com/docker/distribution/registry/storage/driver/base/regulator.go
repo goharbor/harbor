@@ -1,10 +1,13 @@
 package base
 
 import (
+	"context"
+	"fmt"
 	"io"
+	"reflect"
+	"strconv"
 	"sync"
 
-	"github.com/docker/distribution/context"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
 )
 
@@ -13,6 +16,46 @@ type regulator struct {
 	*sync.Cond
 
 	available uint64
+}
+
+// GetLimitFromParameter takes an interface type as decoded from the YAML
+// configuration and returns a uint64 representing the maximum number of
+// concurrent calls given a minimum limit and default.
+//
+// If the parameter supplied is of an invalid type this returns an error.
+func GetLimitFromParameter(param interface{}, min, def uint64) (uint64, error) {
+	limit := def
+
+	switch v := param.(type) {
+	case string:
+		var err error
+		if limit, err = strconv.ParseUint(v, 0, 64); err != nil {
+			return limit, fmt.Errorf("parameter must be an integer, '%v' invalid", param)
+		}
+	case uint64:
+		limit = v
+	case int, int32, int64:
+		val := reflect.ValueOf(v).Convert(reflect.TypeOf(param)).Int()
+		// if param is negative casting to uint64 will wrap around and
+		// give you the hugest thread limit ever. Let's be sensible, here
+		if val > 0 {
+			limit = uint64(val)
+		} else {
+			limit = min
+		}
+	case uint, uint32:
+		limit = reflect.ValueOf(v).Convert(reflect.TypeOf(param)).Uint()
+	case nil:
+		// use the default
+	default:
+		return 0, fmt.Errorf("invalid value '%#v'", param)
+	}
+
+	if limit < min {
+		return min, nil
+	}
+
+	return limit, nil
 }
 
 // NewRegulator wraps the given driver and is used to regulate concurrent calls
@@ -38,11 +81,7 @@ func (r *regulator) enter() {
 
 func (r *regulator) exit() {
 	r.L.Lock()
-	// We only need to signal to a waiting FS operation if we're already at the
-	// limit of threads used
-	if r.available == 0 {
-		r.Signal()
-	}
+	r.Signal()
 	r.available++
 	r.L.Unlock()
 }

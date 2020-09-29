@@ -1,0 +1,187 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
+  <h3 *ngIf="isEdit" class="modal-title">{{'P2P_PROVIDER.EDIT_POLICY' | translate}}</h3>
+  <h3 *ngIf="!isEdit" class="modal-title">{{'P2P_PROVIDER.ADD_POLICY' | translate}}</h3>
+  <div class="modal-body">
+    <div class="align-center">
+      <inline-alert class="modal-title"></inline-alert>
+      <form #policyForm="ngForm" class="clr-form clr-form-horizontal">
+        <section class="form-block">
+          <!-- provider -->
+          <clr-select-container>
+            <label class="clr-control-label required width-6rem">{{'P2P_PROVIDER.PROVIDER' | translate}}</label>
+            <select class="width-380" [disabled]="loading" [class.clr-error]="provider.errors && provider.errors.required && (provider.dirty || provider.touched)"
+                    #provider="ngModel" clrSelect
+                    name="provider" id="provider"
+                    [(ngModel)]="policy.provider_id"
+                    required>
+              <option class="display-none" value=""></option>
+              <option [selected]="policy.provider_id == provider.id" *ngFor="let provider of providers" value="{{provider.id}}">{{provider.provider}}</option>
+            </select>
+            <clr-control-error *ngIf="provider.errors && provider.errors.required && (provider.dirty || provider.touched)">
+              {{'P2P_PROVIDER.PROVIDER_REQUIRED' | translate}}
+            </clr-control-error>
+          </clr-select-container>
+          <div class="clr-form-control mt-0" *ngIf="!(providers && providers.length)">
+            <label class="clr-control-label width-6rem"></label>
+            <div class="clr-control-container width-380">
+              <div class="space-between">
+                <span class="alert-label" *ngIf="isSystemAdmin()">{{"P2P_PROVIDER.NO_PROVIDER" | translate}}</span>
+                <span class="alert-label" *ngIf="!isSystemAdmin()">{{"P2P_PROVIDER.NEED_HELP" | translate}}</span>
+                <a *ngIf="isSystemAdmin()" class="go-link" routerLink="/harbor/distribution/instances">{{'P2P_PROVIDER.PROVIDER' | translate}}</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- name -->
+          <div class="clr-form-control">
+            <label for="name" class="clr-control-label required width-6rem">{{'P2P_PROVIDER.NAME' | translate}}</label>
+            <div class="clr-control-container" [class.clr-error]="((name.dirty || name.touched) && name.invalid) || isNameExisting">
+              <div class="clr-input-wrapper">
+                <input pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" [disabled]="loading" autocomplete="off"  class="clr-input width-380" type="text" id="name" [(ngModel)]="policy.name"
+                       size="30" name="name" #name="ngModel" required (input)="inputName()">
+                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                <span class="spinner spinner-inline" [hidden]="!checkNameOnGoing"></span>
+              </div>
+              <clr-control-error *ngIf="((name.dirty || name.touched) && name.invalid) || isNameExisting">
+                <span *ngIf="!((name.dirty || name.touched) && name.invalid) && isNameExisting">{{'SCANNER.NAME_EXISTS' | translate}}</span>
+                <span *ngIf="(name.dirty || name.touched) && name.invalid">{{ 'P2P_PROVIDER.NAME_TOOLTIP' | translate }}</span>
+              </clr-control-error>
+            </div>
+          </div>
+          <!-- description -->
+          <div class="clr-form-control">
+            <label for="description" class="clr-control-label width-6rem">{{'P2P_PROVIDER.DESCRIPTION' | translate}}</label>
+            <div class="clr-control-container">
+          <textarea autocomplete="off" class="clr-textarea width-380" type="text" id="description" #description="ngModel" [disabled]="loading" [(ngModel)]="policy.description"
+                    name="description"></textarea>
+            </div>
+          </div>
+          <!-- filters-repo -->
+          <div class="clr-form-control">
+            <label for="repo" class="clr-control-label width-6rem">{{'P2P_PROVIDER.FILTERS' | translate}}</label>
+            <div class="clr-control-container" [class.clr-error]="repo.errors && repo.errors.required && (repo.dirty || repo.touched)">
+              <div class="clr-input-wrapper">
+                <label class="sub-label required">{{'P2P_PROVIDER.REPOS' | translate}}</label>
+                <input placeholder="**" [disabled]="loading" autocomplete="off"  class="clr-input width-290" type="text" id="repo" [(ngModel)]="repos"
+                       size="30" name="repo" #repo="ngModel" required>
+                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+              </div>
+              <clr-control-helper class="margin-left-90px opacity-08">{{'TAG_RETENTION.REP_SEPARATOR' | translate}}</clr-control-helper>
+              <clr-control-error class="margin-left-90px" *ngIf="repo.errors && repo.errors.required && (repo.dirty || repo.touched)">
+                {{'P2P_PROVIDER.REPO_REQUIRED' | translate}}
+              </clr-control-error>
+            </div>
+          </div>
+          <!-- filters-tag -->
+          <div class="clr-form-control margin-top-06">
+            <label for="repo" class="width-6rem"></label>
+            <div class="clr-control-container" [class.clr-error]="tag.errors && tag.errors.required && (tag.dirty || tag.touched)">
+              <div class="clr-input-wrapper">
+                <label class="sub-label required">{{'P2P_PROVIDER.TAGS' | translate}}</label>
+                <input placeholder="**" [disabled]="loading" autocomplete="off"  class="clr-input width-290" type="text" id="tag" [(ngModel)]="tags"
+                       size="30" name="tag" #tag="ngModel" required>
+                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+              </div>
+              <clr-control-helper class="margin-left-90px opacity-08">{{'P2P_PROVIDER.TAG_SEPARATOR' | translate}}</clr-control-helper>
+              <clr-control-error class="margin-left-90px" *ngIf="tag.errors && tag.errors.required && (tag.dirty || tag.touched)">
+                {{'P2P_PROVIDER.TAG_REQUIRED' | translate}}
+              </clr-control-error>
+            </div>
+          </div>
+          <div class="clr-form-control margin-top-06">
+            <label for="repo" class="clr-control-label width-6rem"></label>
+            <div class="clr-control-container">
+              <div class="clr-input-wrapper">
+                <label class="sub-label">{{'P2P_PROVIDER.LABELS' | translate}}</label>
+                <input [disabled]="loading" autocomplete="off"  class="clr-input width-290" type="text" id="labels" [(ngModel)]="labels"
+                       size="30" name="label">
+                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+              </div>
+            </div>
+          </div>
+          <div class="clr-form-control margin-top-06" *ngIf="withNotary() && enableContentTrust">
+            <label class="clr-control-label width-6rem">
+              <span>{{'P2P_PROVIDER.CRITERIA' | translate}}</span>
+              <clr-tooltip>
+                <clr-icon class="cri-tooltip" clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                <clr-tooltip-content clrPosition="top-left" clrSize="lg" *clrIfOpen>
+                  {{'P2P_PROVIDER.CRITERIA_EXPLAIN' | translate}}
+                </clr-tooltip-content>
+              </clr-tooltip>
+            </label>
+            <div class="clr-control-container opacity-054">
+              <div class="clr-checkbox-wrapper">
+                <input class="clr-checkbox" disabled type="checkbox" id="onlySignedImages" [(ngModel)]="onlySignedImages" name="onlySignedImages">
+                <label class="font-size-12" for="onlySignedImages">{{'P2P_PROVIDER.ONLY_SIGNED' | translate}}</label>
+              </div>
+            </div>
+          </div>
+          <div class="clr-form-control margin-top-06" *ngIf="preventVul" [ngClass]="{'mt-1': !withNotary()}">
+            <label for="repo" class="clr-control-label width-6rem">
+              <ng-container *ngIf="!(withNotary() && enableContentTrust)">
+                <span>{{'P2P_PROVIDER.CRITERIA' | translate}}</span>
+                <clr-tooltip>
+                  <clr-icon class="tooltip" clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                  <clr-tooltip-content clrPosition="top-left" clrSize="lg" *clrIfOpen>
+                    {{'P2P_PROVIDER.CRITERIA_EXPLAIN' | translate}}
+                  </clr-tooltip-content>
+                </clr-tooltip>
+              </ng-container>
+            </label>
+            <div class="clr-control-container flex">
+              <label class="sub-text opacity-054">{{'P2P_PROVIDER.START_TEXT' | translate}}&nbsp;</label>
+              <div class="clr-select-wrapper ">
+                <select disabled id="severity" name="severity" class="clr-select"
+                        #ngSeverity="ngModel"
+                        [(ngModel)]="severity">
+                  <option>--</option>
+                  <option [selected]="severity == s.severity" *ngFor='let s of severityOptions' value="{{s.severity}}">
+                    {{ s.severityLevel | translate }}</option>
+                </select>
+              </div>
+              <label class="sub-text opacity-054">&nbsp;{{'P2P_PROVIDER.EDN_TEXT' | translate}}</label>
+            </div>
+          </div>
+          <div class="flex baseline">
+            <clr-select-container>
+              <label class="clr-control-label width-6rem">{{'P2P_PROVIDER.TRIGGER' | translate}}</label>
+              <select class="width-380" [disabled]="loading"
+                      clrSelect
+                      name="triggerType" id="trigger-type"
+                      #ngTriggerType="ngModel"
+                      [(ngModel)]="triggerType"
+              >
+                <option class="display-none" value=""></option>
+                <option [selected]="triggerType == item" *ngFor="let item of triggers" value="{{item}}">{{getTriggerTypeI18n(item)| translate}}</option>
+              </select>
+            </clr-select-container>
+            <clr-tooltip *ngIf="showExplainForEventBased()">
+              <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+              <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                <div>{{'P2P_PROVIDER.EVENT_BASED_EXPLAIN_LINE1' | translate}}</div>
+                <div>{{'P2P_PROVIDER.EVENT_BASED_EXPLAIN_LINE2' | translate}}</div>
+                <div>{{'P2P_PROVIDER.EVENT_BASED_EXPLAIN_LINE3' | translate}}</div>
+                <div>{{'P2P_PROVIDER.EVENT_BASED_EXPLAIN_LINE4' | translate}}</div>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </div>
+          <div class="clr-form-control margin-top-06" *ngIf="showCron()">
+            <label for="repo" class="clr-control-label width-6rem"></label>
+            <div class="clr-control-container">
+              <cron-selection #cronScheduleComponent [isInlineModel]="true" [originCron]='getCron()' (inputvalue)="setCron($event)"></cron-selection>
+            </div>
+          </div>
+        </section>
+      </form>
+      <div class="mt-1 bottom-btn" *ngIf="!isEdit">
+        <button type="button" class="btn btn-outline" id="add-policy-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button type="button" id="new-policy" class="btn btn-primary" [clrLoading]="buttonStatus" [disabled]="isNameExisting ||checkNameOnGoing || loading || !valid()"  (click)="addOrSave(true)">{{'BUTTON.ADD' | translate}}</button>
+      </div>
+      <div class="mt-1 bottom-btn" *ngIf="isEdit">
+        <button type="button" class="btn btn-outline" id="edit-policy-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button type="button" class="btn btn-primary" id="edit-policy-save"
+                [clrLoading]="buttonStatus" [disabled]="isNameExisting || checkNameOnGoing || loading || !valid() || !hasChange()" (click)="addOrSave(false)">{{'BUTTON.SAVE' | translate}}</button>
+      </div>
+    </div>
+  </div>
+</clr-modal>

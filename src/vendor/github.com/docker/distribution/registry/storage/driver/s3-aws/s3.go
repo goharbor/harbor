@@ -13,6 +13,8 @@ package s3
 
 import (
 	"bytes"
+	"context"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -29,11 +31,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 
-	"github.com/docker/distribution/context"
+	dcontext "github.com/docker/distribution/context"
 	"github.com/docker/distribution/registry/client/transport"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/distribution/registry/storage/driver/base"
@@ -89,6 +92,7 @@ type DriverParameters struct {
 	Encrypt                     bool
 	KeyID                       string
 	Secure                      bool
+	SkipVerify                  bool
 	V4Auth                      bool
 	ChunkSize                   int64
 	MultipartCopyChunkSize      int64
@@ -98,25 +102,15 @@ type DriverParameters struct {
 	StorageClass                string
 	UserAgent                   string
 	ObjectACL                   string
+	SessionToken                string
 }
 
 func init() {
-	for _, region := range []string{
-		"us-east-1",
-		"us-east-2",
-		"us-west-1",
-		"us-west-2",
-		"eu-west-1",
-		"eu-central-1",
-		"ap-southeast-1",
-		"ap-southeast-2",
-		"ap-northeast-1",
-		"ap-northeast-2",
-		"sa-east-1",
-		"cn-north-1",
-		"us-gov-west-1",
-	} {
-		validRegions[region] = struct{}{}
+	partitions := endpoints.DefaultPartitions()
+	for _, p := range partitions {
+		for region := range p.Regions() {
+			validRegions[region] = struct{}{}
+		}
 	}
 
 	for _, objectACL := range []string{
@@ -192,14 +186,14 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 		regionEndpoint = ""
 	}
 
-	regionName, ok := parameters["region"]
+	regionName := parameters["region"]
 	if regionName == nil || fmt.Sprint(regionName) == "" {
 		return nil, fmt.Errorf("No region parameter provided")
 	}
 	region := fmt.Sprint(regionName)
 	// Don't check the region value if a custom endpoint is provided.
 	if regionEndpoint == "" {
-		if _, ok = validRegions[region]; !ok {
+		if _, ok := validRegions[region]; !ok {
 			return nil, fmt.Errorf("Invalid region provided: %v", region)
 		}
 	}
@@ -241,6 +235,23 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 		// do nothing
 	default:
 		return nil, fmt.Errorf("The secure parameter should be a boolean")
+	}
+
+	skipVerifyBool := false
+	skipVerify := parameters["skipverify"]
+	switch skipVerify := skipVerify.(type) {
+	case string:
+		b, err := strconv.ParseBool(skipVerify)
+		if err != nil {
+			return nil, fmt.Errorf("The skipVerify parameter should be a boolean")
+		}
+		skipVerifyBool = b
+	case bool:
+		skipVerifyBool = skipVerify
+	case nil:
+		// do nothing
+	default:
+		return nil, fmt.Errorf("The skipVerify parameter should be a boolean")
 	}
 
 	v4Bool := true
@@ -328,6 +339,8 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 		objectACL = objectACLString
 	}
 
+	sessionToken := ""
+
 	params := DriverParameters{
 		fmt.Sprint(accessKey),
 		fmt.Sprint(secretKey),
@@ -337,6 +350,7 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 		encryptBool,
 		fmt.Sprint(keyID),
 		secureBool,
+		skipVerifyBool,
 		v4Bool,
 		chunkSize,
 		multipartCopyChunkSize,
@@ -346,6 +360,7 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 		storageClass,
 		fmt.Sprint(userAgent),
 		objectACL,
+		fmt.Sprint(sessionToken),
 	}
 
 	return New(params)
@@ -390,16 +405,21 @@ func New(params DriverParameters) (*Driver, error) {
 	}
 
 	awsConfig := aws.NewConfig()
+	sess, err := session.NewSession()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create new session: %v", err)
+	}
 	creds := credentials.NewChainCredentials([]credentials.Provider{
 		&credentials.StaticProvider{
 			Value: credentials.Value{
 				AccessKeyID:     params.AccessKey,
 				SecretAccessKey: params.SecretKey,
+				SessionToken:    params.SessionToken,
 			},
 		},
 		&credentials.EnvProvider{},
 		&credentials.SharedCredentialsProvider{},
-		&ec2rolecreds.EC2RoleProvider{Client: ec2metadata.New(session.New())},
+		&ec2rolecreds.EC2RoleProvider{Client: ec2metadata.New(sess)},
 	})
 
 	if params.RegionEndpoint != "" {
@@ -411,13 +431,29 @@ func New(params DriverParameters) (*Driver, error) {
 	awsConfig.WithRegion(params.Region)
 	awsConfig.WithDisableSSL(!params.Secure)
 
-	if params.UserAgent != "" {
-		awsConfig.WithHTTPClient(&http.Client{
-			Transport: transport.NewTransport(http.DefaultTransport, transport.NewHeaderRequestModifier(http.Header{http.CanonicalHeaderKey("User-Agent"): []string{params.UserAgent}})),
-		})
+	if params.UserAgent != "" || params.SkipVerify {
+		httpTransport := http.DefaultTransport
+		if params.SkipVerify {
+			httpTransport = &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
+		}
+		if params.UserAgent != "" {
+			awsConfig.WithHTTPClient(&http.Client{
+				Transport: transport.NewTransport(httpTransport, transport.NewHeaderRequestModifier(http.Header{http.CanonicalHeaderKey("User-Agent"): []string{params.UserAgent}})),
+			})
+		} else {
+			awsConfig.WithHTTPClient(&http.Client{
+				Transport: transport.NewTransport(httpTransport),
+			})
+		}
 	}
 
-	s3obj := s3.New(session.New(awsConfig))
+	sess, err = session.NewSession(awsConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create new session with aws config: %v", err)
+	}
+	s3obj := s3.New(sess)
 
 	// enable S3 compatible signature v2 signing instead
 	if !params.V4Auth {
@@ -440,11 +476,11 @@ func New(params DriverParameters) (*Driver, error) {
 	// }
 
 	d := &driver{
-		S3:        s3obj,
-		Bucket:    params.Bucket,
-		ChunkSize: params.ChunkSize,
-		Encrypt:   params.Encrypt,
-		KeyID:     params.KeyID,
+		S3:                          s3obj,
+		Bucket:                      params.Bucket,
+		ChunkSize:                   params.ChunkSize,
+		Encrypt:                     params.Encrypt,
+		KeyID:                       params.KeyID,
 		MultipartCopyChunkSize:      params.MultipartCopyChunkSize,
 		MultipartCopyMaxConcurrency: params.MultipartCopyMaxConcurrency,
 		MultipartCopyThresholdSize:  params.MultipartCopyThresholdSize,
@@ -698,15 +734,11 @@ func (d *driver) copy(ctx context.Context, sourcePath string, destPath string) e
 		return nil
 	}
 
-	// Even in the worst case, a multipart copy should take no more
-	// than a few minutes, so 30 minutes is very conservative.
-	expires := time.Now().Add(time.Duration(30) * time.Minute)
 	createResp, err := d.S3.CreateMultipartUpload(&s3.CreateMultipartUploadInput{
 		Bucket:               aws.String(d.Bucket),
 		Key:                  aws.String(d.s3Path(destPath)),
 		ContentType:          d.getContentType(),
 		ACL:                  d.getACL(),
-		Expires:              aws.Time(expires),
 		SSEKMSKeyId:          d.getSSEKMSKeyID(),
 		ServerSideEncryption: d.getEncryptionMode(),
 		StorageClass:         d.getStorageClass(),
@@ -870,6 +902,136 @@ func (d *driver) URLFor(ctx context.Context, path string, options map[string]int
 	return req.Presign(expiresIn)
 }
 
+// Walk traverses a filesystem defined within driver, starting
+// from the given path, calling f on each file
+func (d *driver) Walk(ctx context.Context, from string, f storagedriver.WalkFn) error {
+	path := from
+	if !strings.HasSuffix(path, "/") {
+		path = path + "/"
+	}
+
+	prefix := ""
+	if d.s3Path("") == "" {
+		prefix = "/"
+	}
+
+	var objectCount int64
+	if err := d.doWalk(ctx, &objectCount, d.s3Path(path), prefix, f); err != nil {
+		return err
+	}
+
+	// S3 doesn't have the concept of empty directories, so it'll return path not found if there are no objects
+	if objectCount == 0 {
+		return storagedriver.PathNotFoundError{Path: from}
+	}
+
+	return nil
+}
+
+type walkInfoContainer struct {
+	storagedriver.FileInfoFields
+	prefix *string
+}
+
+// Path provides the full path of the target of this file info.
+func (wi walkInfoContainer) Path() string {
+	return wi.FileInfoFields.Path
+}
+
+// Size returns current length in bytes of the file. The return value can
+// be used to write to the end of the file at path. The value is
+// meaningless if IsDir returns true.
+func (wi walkInfoContainer) Size() int64 {
+	return wi.FileInfoFields.Size
+}
+
+// ModTime returns the modification time for the file. For backends that
+// don't have a modification time, the creation time should be returned.
+func (wi walkInfoContainer) ModTime() time.Time {
+	return wi.FileInfoFields.ModTime
+}
+
+// IsDir returns true if the path is a directory.
+func (wi walkInfoContainer) IsDir() bool {
+	return wi.FileInfoFields.IsDir
+}
+
+func (d *driver) doWalk(parentCtx context.Context, objectCount *int64, path, prefix string, f storagedriver.WalkFn) error {
+	var retError error
+
+	listObjectsInput := &s3.ListObjectsV2Input{
+		Bucket:    aws.String(d.Bucket),
+		Prefix:    aws.String(path),
+		Delimiter: aws.String("/"),
+		MaxKeys:   aws.Int64(listMax),
+	}
+
+	ctx, done := dcontext.WithTrace(parentCtx)
+	defer done("s3aws.ListObjectsV2Pages(%s)", path)
+	listObjectErr := d.S3.ListObjectsV2PagesWithContext(ctx, listObjectsInput, func(objects *s3.ListObjectsV2Output, lastPage bool) bool {
+
+		*objectCount += *objects.KeyCount
+		walkInfos := make([]walkInfoContainer, 0, *objects.KeyCount)
+
+		for _, dir := range objects.CommonPrefixes {
+			commonPrefix := *dir.Prefix
+			walkInfos = append(walkInfos, walkInfoContainer{
+				prefix: dir.Prefix,
+				FileInfoFields: storagedriver.FileInfoFields{
+					IsDir: true,
+					Path:  strings.Replace(commonPrefix[:len(commonPrefix)-1], d.s3Path(""), prefix, 1),
+				},
+			})
+		}
+
+		for _, file := range objects.Contents {
+			walkInfos = append(walkInfos, walkInfoContainer{
+				FileInfoFields: storagedriver.FileInfoFields{
+					IsDir:   false,
+					Size:    *file.Size,
+					ModTime: *file.LastModified,
+					Path:    strings.Replace(*file.Key, d.s3Path(""), prefix, 1),
+				},
+			})
+		}
+
+		sort.SliceStable(walkInfos, func(i, j int) bool { return walkInfos[i].FileInfoFields.Path < walkInfos[j].FileInfoFields.Path })
+
+		for _, walkInfo := range walkInfos {
+			err := f(walkInfo)
+
+			if err == storagedriver.ErrSkipDir {
+				if walkInfo.IsDir() {
+					continue
+				} else {
+					break
+				}
+			} else if err != nil {
+				retError = err
+				return false
+			}
+
+			if walkInfo.IsDir() {
+				if err := d.doWalk(ctx, objectCount, *walkInfo.prefix, prefix, f); err != nil {
+					retError = err
+					return false
+				}
+			}
+		}
+		return true
+	})
+
+	if retError != nil {
+		return retError
+	}
+
+	if listObjectErr != nil {
+		return listObjectErr
+	}
+
+	return nil
+}
+
 func (d *driver) s3Path(path string) string {
 	return strings.TrimLeft(strings.TrimRight(d.RootDirectory, "/")+path, "/")
 }
@@ -1015,10 +1177,10 @@ func (w *writer) Write(p []byte) (int, error) {
 				Bucket: aws.String(w.driver.Bucket),
 				Key:    aws.String(w.key),
 			})
-			defer resp.Body.Close()
 			if err != nil {
 				return 0, err
 			}
+			defer resp.Body.Close()
 			w.parts = nil
 			w.readyPart, err = ioutil.ReadAll(resp.Body)
 			if err != nil {

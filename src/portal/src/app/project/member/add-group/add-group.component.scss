@@ -1,0 +1,23 @@
+clr-datagrid {
+    ::ng-deep .datagrid {
+        margin-top: 0;
+    }
+}
+
+.row {
+    margin-top: 12px;
+}
+.flex-items-xs-between{
+    display: flex;
+}
+.modeSelectradios {
+    margin-top: 21px;
+}
+.left {
+    flex: 1;
+}
+.right {
+    position: relative;
+    z-index: 100;
+    right: 15px;
+}

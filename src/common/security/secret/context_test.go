@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package secret
 import (
 	"testing"
 
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/secret"
 )
 
 func TestIsAuthenticated(t *testing.T) {
@@ -28,7 +28,7 @@ func TestIsAuthenticated(t *testing.T) {
 	isAuthenticated := context.IsAuthenticated()
 	assert.False(t, isAuthenticated)
 
-	//invalid secret
+	// invalid secret
 	context = NewSecurityContext("invalid_secret",
 		secret.NewStore(map[string]string{
 			"secret": "username",
@@ -36,7 +36,7 @@ func TestIsAuthenticated(t *testing.T) {
 	isAuthenticated = context.IsAuthenticated()
 	assert.False(t, isAuthenticated)
 
-	//valid secret
+	// valid secret
 	context = NewSecurityContext("secret",
 		secret.NewStore(map[string]string{
 			"secret": "username",
@@ -51,7 +51,7 @@ func TestGetUsername(t *testing.T) {
 	username := context.GetUsername()
 	assert.Equal(t, "", username)
 
-	//invalid secret
+	// invalid secret
 	context = NewSecurityContext("invalid_secret",
 		secret.NewStore(map[string]string{
 			"secret": "username",
@@ -59,7 +59,7 @@ func TestGetUsername(t *testing.T) {
 	username = context.GetUsername()
 	assert.Equal(t, "", username)
 
-	//valid secret
+	// valid secret
 	context = NewSecurityContext("secret",
 		secret.NewStore(map[string]string{
 			"secret": "username",
@@ -95,90 +95,61 @@ func TestIsSolutionUser(t *testing.T) {
 	assert.True(t, isSolutionUser)
 }
 
-func TestHasReadPerm(t *testing.T) {
+func TestHasPullPerm(t *testing.T) {
+	resource := rbac.Resource("/project/project_name/repository")
 	// secret store is null
 	context := NewSecurityContext("", nil)
-	hasReadPerm := context.HasReadPerm("project_name")
+	hasReadPerm := context.Can(rbac.ActionPull, resource)
 	assert.False(t, hasReadPerm)
 
-	//invalid secret
+	// invalid secret
 	context = NewSecurityContext("invalid_secret",
 		secret.NewStore(map[string]string{
 			"jobservice_secret": secret.JobserviceUser,
 		}))
-	hasReadPerm = context.HasReadPerm("project_name")
+	hasReadPerm = context.Can(rbac.ActionPull, resource)
 	assert.False(t, hasReadPerm)
 
-	//valid secret, project name
+	// valid secret, project name
 	context = NewSecurityContext("jobservice_secret",
 		secret.NewStore(map[string]string{
 			"jobservice_secret": secret.JobserviceUser,
 		}))
-	hasReadPerm = context.HasReadPerm("project_name")
+	hasReadPerm = context.Can(rbac.ActionPull, resource)
 	assert.True(t, hasReadPerm)
 
-	//valid secret, project ID
-	hasReadPerm = context.HasReadPerm(1)
+	// valid secret, project ID
+	resource = rbac.Resource("/project/1/repository")
+	hasReadPerm = context.Can(rbac.ActionPull, resource)
 	assert.True(t, hasReadPerm)
 }
 
-func TestHasWritePerm(t *testing.T) {
+func TestHasPushPerm(t *testing.T) {
 	context := NewSecurityContext("secret",
 		secret.NewStore(map[string]string{
 			"secret": "username",
 		}))
 
 	// project name
-	hasWritePerm := context.HasWritePerm("project_name")
-	assert.False(t, hasWritePerm)
+	resource := rbac.Resource("/project/project_name/repository")
+	assert.False(t, context.Can(rbac.ActionPush, resource))
 
 	// project ID
-	hasWritePerm = context.HasWritePerm(1)
-	assert.False(t, hasWritePerm)
+	resource = rbac.Resource("/project/1/repository")
+	assert.False(t, context.Can(rbac.ActionPush, resource))
 }
 
-func TestHasAllPerm(t *testing.T) {
+func TestHasPushPullPerm(t *testing.T) {
 	context := NewSecurityContext("secret",
 		secret.NewStore(map[string]string{
 			"secret": "username",
 		}))
 
 	// project name
-	hasAllPerm := context.HasAllPerm("project_name")
-	assert.False(t, hasAllPerm)
+	resource := rbac.Resource("/project/project_name/repository")
+	assert.False(t, context.Can(rbac.ActionPush, resource) && context.Can(rbac.ActionPull, resource))
 
 	// project ID
-	hasAllPerm = context.HasAllPerm(1)
-	assert.False(t, hasAllPerm)
-}
-
-func TestGetMyProjects(t *testing.T) {
-	context := NewSecurityContext("secret",
-		secret.NewStore(map[string]string{
-			"secret": "username",
-		}))
-
-	_, err := context.GetMyProjects()
-	assert.NotNil(t, err)
-}
-
-func TestGetProjectRoles(t *testing.T) {
-	//invalid secret
-	context := NewSecurityContext("invalid_secret",
-		secret.NewStore(map[string]string{
-			"jobservice_secret": secret.JobserviceUser,
-		}))
-
-	roles := context.GetProjectRoles("any_project")
-	assert.Equal(t, 0, len(roles))
-
-	// valid secret
-	context = NewSecurityContext("jobservice_secret",
-		secret.NewStore(map[string]string{
-			"jobservice_secret": secret.JobserviceUser,
-		}))
-
-	roles = context.GetProjectRoles("any_project")
-	assert.Equal(t, 1, len(roles))
-	assert.Equal(t, common.RoleGuest, roles[0])
+	resource = rbac.Resource("/project/1/repository")
+	assert.False(t, context.Can(rbac.ActionPush, resource) && context.Can(rbac.ActionPull, resource))
 }

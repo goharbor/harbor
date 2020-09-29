@@ -1,0 +1,532 @@
+swagger: '2.0'
+info:
+  title: Harbor API
+  description: These APIs provide services for manipulating Harbor project.
+  version: ''
+host: localhost
+schemes:
+  - http
+  - https
+basePath: /api/
+produces:
+  - application/json
+consumes:
+  - application/json
+securityDefinitions:
+  basicAuth:
+    type: basic
+security:
+  - basicAuth: []
+paths:
+  /version:
+    get:
+      summary: Get API version
+      description: Get the version of API that supported by the Harbor instance.
+      tags:
+        - Version
+      responses:
+        '200':
+          description: The supported API version
+          schema:
+            type: object
+            properties:
+              version:
+                type: string
+
+  /chartrepo/health:
+    get:
+      summary: Check the health of chart repository service.
+      description: Check the health of chart repository service.
+      tags:
+        - Chart Repository
+      responses:
+        '200':
+          description: Health status of chart repository service is returned.
+          schema:
+            type: object
+            properties:
+              healthy:
+                type: boolean
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+  /chartrepo/{repo}/charts:
+    get:
+      summary: Get all the charts under the specified project
+      description: Get all the charts under the specified project
+      tags:
+        - Chart Repository
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+      responses:
+        '200':
+          description: Searched for charts of project in Harbor successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ChartInfoEntry'
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+    post:
+      summary: Upload a chart file to the specified project.
+      description: 'Upload a chart file to the specified project. With this API, the corresponding provance file can be uploaded together with chart file at once.'
+      tags:
+        - Chart Repository
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: chart
+          in: formData
+          type: file
+          required: true
+          description: The chart file
+        - name: prov
+          in: formData
+          type: file
+          required: false
+          description: The provance file
+      responses:
+        '201':
+          description: The specified chart is successfully uploaded.
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '507':
+          $ref: '#/definitions/InsufficientStorageChartAPIError'
+  /chartrepo/{repo}/charts/{name}:
+    get:
+      summary: Get all the versions of the specified chart
+      description: Get all the versions of the specified chart
+      tags:
+        - Chart Repository
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+      responses:
+        '200':
+          description: Retrieved all versions of the specified chart
+          schema:
+            $ref: '#/definitions/ChartVersions'
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '404':
+          $ref: '#/definitions/NotFoundChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+    delete:
+      summary: Delete all the versions of the specified chart
+      description: Delete all the versions of the specified chart
+      tags:
+        - Chart Repository
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+      responses:
+        '200':
+          description: The specified chart entry is successfully deleted.
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+  /chartrepo/{repo}/charts/{name}/{version}:
+    get:
+      summary: Get the specified chart version
+      description: Get the specified chart version
+      tags:
+        - Chart Repository
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+        - name: version
+          in: path
+          type: string
+          required: true
+          description: The chart version
+      responses:
+        '200':
+          description: Successfully retrieved the chart version
+          schema:
+            $ref: '#/definitions/ChartVersionDetails'
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '404':
+          $ref: '#/definitions/NotFoundChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+    delete:
+      summary: Delete the specified chart version
+      description: Delete the specified chart version
+      tags:
+        - Chart Repository
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+        - name: version
+          in: path
+          type: string
+          required: true
+          description: The chart version
+      responses:
+        '200':
+          description: The specified chart entry is successfully deleted.
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '404':
+          $ref: '#/definitions/NotFoundChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+  /chartrepo/{repo}/prov:
+    post:
+      summary: Upload a provance file to the specified project.
+      description: Upload a provance file to the specified project. The provance file should be targeted for an existing chart file.
+      tags:
+        - Chart Repository
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: prov
+          in: formData
+          type: file
+          required: true
+          description: The provance file
+      responses:
+        '201':
+          description: The provance file is successfully uploaded.
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '507':
+          $ref: '#/definitions/InsufficientStorageChartAPIError'
+  /chartrepo/charts:
+    post:
+      summary: Upload a chart file to the defult 'library' project.
+      description: Upload a chart file to the default 'library' project. Uploading together with the prov file at the same time is also supported.
+      tags:
+        - Chart Repository
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: chart
+          in: formData
+          type: file
+          required: true
+          description: The chart file
+        - name: prov
+          in: formData
+          type: file
+          required: false
+          description: The provance file
+      responses:
+        '201':
+          description: The specified chart is successfully uploaded.
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '507':
+          $ref: '#/definitions/InsufficientStorageChartAPIError'
+definitions:
+  ChartAPIError:
+    description: The error object returned by chart repository API
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: string
+        description: The error message returned by the chart API
+  UnauthorizedChartAPIError:
+    description: Unauthorized
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
+  ForbiddenChartAPIError:
+    description: Operation is forbidden or quota exceeded
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
+  InternalChartAPIError:
+    description: Internal server error occurred
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
+  NotFoundChartAPIError:
+    description: Not found
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
+  InsufficientStorageChartAPIError:
+    description: Insufficient storage
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
+  ChartInfoEntry:
+    type: object
+    description: The object contains basic chart information
+    required:
+      - name
+      - total_versions
+      - created
+    properties:
+      name:
+        type: string
+        description: Name of chart
+      total_versions:
+        type: integer
+        description: Total count of chart versions
+      latest_version:
+        type: string
+        description: latest version of chart
+      created:
+        type: string
+        description: The created time of chart
+      updated:
+        type: string
+        description: The created time of chart
+      icon:
+        type: string
+        description: The icon path of chart
+      home:
+        type: string
+        description: The home website of chart
+      deprecated:
+        type: boolean
+        description: Flag to indicate if the chart is deprecated
+  ChartInfoList:
+    type: array
+    description: The chart list under the project
+    items:
+      $ref: '#/definitions/ChartInfoEntry'
+  ChartVersion:
+    type: object
+    description: A specified chart entry
+    allOf:
+      - $ref: '#/definitions/ChartMetadata'
+      - type: object
+        properties:
+          created:
+            type: string
+            description: The created time of the chart entry
+          removed:
+            type: boolean
+            description: A flag to indicate if the chart entry is removed
+          digest:
+            type: string
+            description: The digest value of the chart entry
+          urls:
+            type: array
+            description: The urls of the chart entry
+            items:
+              type: string
+    properties:
+      labels:
+        $ref: '#/definitions/Labels'
+  ChartVersions:
+    type: array
+    description: A list of chart entry
+    items:
+      $ref: '#/definitions/ChartVersion'
+  ChartVersionDetails:
+    type: object
+    description: The detailed information of the chart entry
+    properties:
+      metadata:
+        $ref: '#/definitions/ChartVersion'
+      security:
+        $ref: '#/definitions/SecurityReport'
+      dependencies:
+        type: array
+        items:
+          $ref: '#/definitions/Dependency'
+      values:
+        type: object
+        additionalProperties:
+          type: object
+      files:
+        type: object
+        additionalProperties:
+          type: string
+      labels:
+        $ref: '#/definitions/Labels'
+  ChartMetadata:
+    type: object
+    description: The metadata of chart version
+    required:
+      - name
+      - version
+      - engine
+      - icon
+      - apiVersion
+      - appVersion
+    properties:
+      name:
+        type: string
+        description: The name of the chart
+      home:
+        type: string
+        description: The URL to the relevant project page
+      sources:
+        type: array
+        description: The URL to the source code of chart
+        items:
+          type: string
+      version:
+        type: string
+        description: A SemVer 2 version of chart
+      description:
+        type: string
+        description: A one-sentence description of chart
+      keywords:
+        type: array
+        description: A list of string keywords
+        items:
+          type: string
+      engine:
+        type: string
+        description: The name of template engine
+      icon:
+        type: string
+        description: The URL to an icon file
+      apiVersion:
+        type: string
+        description: The API version of this chart
+      appVersion:
+        type: string
+        description: The version of the application enclosed in the chart
+      deprecated:
+        type: boolean
+        description: Whether or not this chart is deprecated
+  Labels:
+    type: array
+    description: A list of label
+    items:
+      $ref: '#/definitions/Label'
+  Label:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of label.
+      name:
+        type: string
+        description: The name of label.
+      description:
+        type: string
+        description: The description of label.
+      color:
+        type: string
+        description: The color of label.
+      scope:
+        type: string
+        description: 'The scope of label, g for global labels and p for project labels.'
+      project_id:
+        type: integer
+        description: The project ID if the label is a project label.
+      creation_time:
+        type: string
+        description: The creation time of label.
+      update_time:
+        type: string
+        description: The update time of label.
+      deleted:
+        type: boolean
+        description: The label is deleted or not.
+  SecurityReport:
+    type: object
+    description: The security information of the chart
+    properties:
+      signature:
+        $ref: '#/definitions/DigitalSignature'
+  Dependency:
+    type: object
+    description: Another chart the chart depends on
+    required:
+      - name
+      - version
+    properties:
+      name:
+        type: string
+        description: The name of the chart denpendency
+      version:
+        type: string
+        description: The version of the chart dependency
+      repository:
+        type: string
+        description: The URL to the repository
+  DigitalSignature:
+    type: object
+    description: The signature of the chart
+    properties:
+      signed:
+        type: boolean
+        description: A flag to indicate if the chart is signed
+      prov_file:
+        type: string
+        description: The URL of the provance file

@@ -1,0 +1,106 @@
+<clr-modal [(clrModalOpen)]="createProjectOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
+    <h3 class="modal-title">{{'PROJECT.NEW_PROJECT' | translate}}</h3>
+    <div class="modal-body modal-height">
+        <inline-alert></inline-alert>
+        <form #projectForm="ngForm" class="clr-form clr-form-horizontal">
+            <div class="clr-form-control">
+                <label class="required clr-control-label">{{'PROJECT.NAME' | translate}}</label>
+                <div class="clr-control-container" [class.clr-error]="!isNameValid">
+                    <div class="clr-input-wrapper">
+                        <input type="text" id="create_project_name" [(ngModel)]="project.name" name="create_project_name" class="clr-input input-width"
+                               required pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" #projectName autocomplete="off">
+                        <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                        <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
+                    </div>
+                    <clr-control-error *ngIf="!isNameValid" class="tooltip-content">
+                        <span id="name-error">{{ nameTooltipText | translate }}</span>
+                    </clr-control-error>
+                </div>
+            </div>
+            <clr-checkbox-container>
+                <label class="form-group-label-override">{{'PROJECT.ACCESS_LEVEL' | translate}}
+                    <clr-tooltip>
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        <clr-tooltip-content clrPosition="bottom-left" clrSize="lg" *clrIfOpen>
+                            <span>{{'PROJECT.INLINE_HELP_PUBLIC' | translate }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <clr-checkbox-wrapper>
+                    <input clrCheckbox type="checkbox" id="create_project_public" [(ngModel)]="project.metadata.public" name="public">
+                    <label>{{ 'PROJECT.PUBLIC' | translate}}</label>
+                </clr-checkbox-wrapper>
+            </clr-checkbox-container>
+            <div class="clr-form-control" *ngIf="isSystemAdmin">
+                <label for="create_project_storage_limit" class="required clr-control-label">{{'PROJECT.STORAGE_QUOTA' | translate}}
+                    <clr-tooltip>
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        <clr-tooltip-content clrPosition="bottom-left" clrSize="lg" *clrIfOpen>
+                            <span>{{'PROJECT.QUOTA_UNLIMIT_TIP' | translate }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <div class="clr-control-container" [class.clr-error]="(projectStorageLimit.invalid && (projectStorageLimit.dirty || projectStorageLimit.touched))||projectStorageLimit.errors">
+                    <input type="text" id="create_project_storage_limit" [(ngModel)]="storageLimit" name="create_project_storage_limit" class="mr-10 clr-input width-182"
+                        #projectStorageLimit="ngModel" autocomplete="off">
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <div class="clr-select-wrapper">
+                        <select id="create_project_storage_limit_unit" name="create_project_storage_limit_unit" [(ngModel)]="storageLimitUnit">
+                            <ng-template ngFor let-quotaUnit [ngForOf]="quotaUnits" let-i="index">
+                                <option *ngIf="i>1" [value]="quotaUnit.UNIT">{{ quotaUnit.UNIT }}</option>
+                            </ng-template>
+                        </select>
+
+                    </div>
+                    <clr-control-error *ngIf="(projectStorageLimit.invalid && (projectStorageLimit.dirty || projectStorageLimit.touched))||projectStorageLimit.errors"
+                        class="tooltip-content">
+                        {{ 'PROJECT.STORAGE_QUOTA_TIP' | translate }}
+                    </clr-control-error>
+                </div>
+            </div>
+            <div class="clr-form-control" *ngIf="isSystemAdmin">
+                <label for="create_project_storage_limit" class="clr-control-label">{{ 'PROJECT.PROXY_CACHE' | translate }}
+                    <clr-tooltip>
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        <clr-tooltip-content clrPosition="bottom-left" clrSize="lg" *clrIfOpen>
+                            <span>{{ 'PROJECT.PROXY_CACHE_TOOLTIP' | translate }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <clr-toggle-wrapper class="mt-02">
+                        <input type="checkbox" clrToggle name="proxy-cache" id="proxy-cache"
+                               [(ngModel)]="enableProxyCache"/>
+                </clr-toggle-wrapper>
+                <div *ngIf="enableProxyCache" class="clr-select-wrapper ml-1">
+                    <select class="width-164" id="registry" name="registry" [(ngModel)]="project.registry_id">
+                        <option class="display-none" value=""></option>
+                        <option *ngFor="let r of registries" [value]="r.id">{{r.name}}-{{r.url}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="clr-form-control mt-0" [style.visibility]="(isSystemAdmin && enableProxyCache) ? 'visible' : 'hidden'">
+                <label for="create_project_storage_limit" class="clr-control-label"></label>
+                <div class="clr-control-container input-width">
+                    <div class="space-between" *ngIf=" enableProxyCache && !registries.length" >
+                        <span class="alert-label">{{"REPLICATION.NO_ENDPOINT_INFO" | translate}}</span>
+                        <a class="alert-label go-link" routerLink="/harbor/registries">{{'REPLICATION.ENDPOINTS' | translate}}</a>
+                    </div>
+                </div>
+            </div>
+            <div class="clr-form-control mt-05" [style.visibility]="(isSystemAdmin && enableProxyCache) ? 'visible' : 'hidden'">
+                <label for="create_project_storage_limit" class="clr-control-label"></label>
+                <div class="clr-control-container">
+                    <div class="clr-input-wrapper">
+                        <label class="clr-control-label endpoint required">{{ 'PROJECT.ENDPOINT' | translate }}</label>
+                        <input placeholder="http(s)://192.168.1.1" [value]="getEndpoint()" readonly class="clr-input" type="text" id="endpoint"
+                               autocomplete="off">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button id="new-project-cancel" type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button id="new-project-ok" type="button" class="btn btn-primary" [disabled]="!isValid || (enableProxyCache && !project.registry_id)" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+    </div>
+</clr-modal>

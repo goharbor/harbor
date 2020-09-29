@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,12 +15,9 @@
 package secret
 
 import (
-	"fmt"
-
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/secret"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 // SecurityContext implements security.Context interface based on secret store
@@ -35,6 +32,11 @@ func NewSecurityContext(secret string, store *secret.Store) *SecurityContext {
 		secret: secret,
 		store:  store,
 	}
+}
+
+// Name returns the name of the security context
+func (s *SecurityContext) Name() string {
+	return "secret"
 }
 
 // IsAuthenticated returns true if the secret is valid
@@ -70,35 +72,13 @@ func (s *SecurityContext) IsSolutionUser() bool {
 	return s.IsAuthenticated()
 }
 
-// HasReadPerm returns true if the corresponding user of the secret
-// is jobservice, otherwise returns false
-func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
+// Can returns whether the user can do action on resource
+// returns true if the corresponding user of the secret
+// is jobservice or core service, otherwise returns false
+func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool {
 	if s.store == nil {
 		return false
 	}
-	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.UIUser
-}
-
-// HasWritePerm always returns false
-func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
-	return false
-}
-
-// HasAllPerm always returns false
-func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
-	return false
-}
-
-// GetMyProjects ...
-func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
-	return nil, fmt.Errorf("GetMyProjects is unsupported")
-}
-
-// GetProjectRoles return guest role if has read permission, otherwise return nil
-func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
-	roles := []int{}
-	if s.HasReadPerm(projectIDOrName) {
-		roles = append(roles, common.RoleGuest)
-	}
-	return roles
+	return s.store.GetUsername(s.secret) == secret.JobserviceUser ||
+		s.store.GetUsername(s.secret) == secret.CoreUser
 }

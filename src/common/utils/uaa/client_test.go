@@ -2,8 +2,8 @@ package uaa
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common/utils/uaa/test"
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common/utils/uaa/test"
 	"io/ioutil"
 	"net/http/httptest"
 	"os"
@@ -99,7 +99,7 @@ func TestNewClientWithCACert(t *testing.T) {
 	}
 	_, err := NewDefaultClient(cfg)
 	assert.Nil(err)
-	//Skip if it's malformed.
+	// Skip if it's malformed.
 	cfg.CARootPath = path.Join(currPath(), "test", "non-ca.pem")
 	_, err = NewDefaultClient(cfg)
 	assert.Nil(err)

@@ -1,27 +1,22 @@
-FROM vmware/photon:1.0
+ARG harbor_base_image_version
+ARG harbor_base_namespace
+FROM ${harbor_base_namespace}/harbor-clair-base:${harbor_base_image_version}
 
-
-RUN tdnf distro-sync -y \
-    && tdnf erase vim -y \
-    && tdnf install -y git shadow sudo bzr rpm xz python-xml >>/dev/null\
-    && tdnf clean all \
-    && mkdir /clair2.0.1/ \
-    && groupadd -r -g 10000 clair \
-    && useradd --no-log-init -m -r -g 10000 -u 10000 clair
-COPY ./binary/clair /clair2.0.1/
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-COPY dumb-init /dumb-init 
+COPY ./make/photon/clair/binary/clair /home/clair/
+COPY ./make/photon/clair/docker-entrypoint.sh /home/clair/
+COPY ./make/photon/clair/dumb-init /home/clair/
+COPY ./make/photon/common/install_cert.sh /home/clair/
 
 VOLUME /config
 
-EXPOSE 6060 6061
-
-RUN chown -R 10000:10000 /clair2.0.1 \
-    && chmod u+x /clair2.0.1/clair \
-    && chmod u+x /docker-entrypoint.sh \
-    && chmod +x /dumb-init
-
+RUN chown -R clair:clair /etc/pki/tls/certs && chown -R clair:clair /home/clair \
+    && chmod u+x /home/clair/clair \
+    && chmod u+x /home/clair/docker-entrypoint.sh \
+    && chmod u+x /home/clair/install_cert.sh \
+    && chmod +x /home/clair/dumb-init
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1:6061/health || exit 1
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+WORKDIR /home/clair
+USER clair
+ENTRYPOINT ["./docker-entrypoint.sh"]

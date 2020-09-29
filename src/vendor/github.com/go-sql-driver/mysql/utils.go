@@ -9,32 +9,31 @@
 package mysql
 
 import (
-	"crypto/sha1"
 	"crypto/tls"
+	"database/sql"
 	"database/sql/driver"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
-	"net/url"
+	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
+// Registry for custom tls.Configs
 var (
-	tlsConfigRegister map[string]*tls.Config // Register for custom tls.Configs
-
-	errInvalidDSNUnescaped = errors.New("Invalid DSN: Did you forget to escape a param value?")
-	errInvalidDSNAddr      = errors.New("Invalid DSN: Network Address not terminated (missing closing brace)")
-	errInvalidDSNNoSlash   = errors.New("Invalid DSN: Missing the slash separating the database name")
+	tlsConfigLock     sync.RWMutex
+	tlsConfigRegistry map[string]*tls.Config
 )
-
-func init() {
-	tlsConfigRegister = make(map[string]*tls.Config)
-}
 
 // RegisterTLSConfig registers a custom tls.Config to be used with sql.Open.
 // Use the key as a value in the DSN where tls=value.
+//
+// Note: The provided tls.Config is exclusively owned by the driver after
+// registering it.
 //
 //  rootCertPool := x509.NewCertPool()
 //  pem, err := ioutil.ReadFile("/path/ca-cert.pem")
@@ -57,211 +56,35 @@ func init() {
 //  db, err := sql.Open("mysql", "user@tcp(localhost:3306)/test?tls=custom")
 //
 func RegisterTLSConfig(key string, config *tls.Config) error {
-	if _, isBool := readBool(key); isBool || strings.ToLower(key) == "skip-verify" {
-		return fmt.Errorf("Key '%s' is reserved", key)
+	if _, isBool := readBool(key); isBool || strings.ToLower(key) == "skip-verify" || strings.ToLower(key) == "preferred" {
+		return fmt.Errorf("key '%s' is reserved", key)
 	}
 
-	tlsConfigRegister[key] = config
+	tlsConfigLock.Lock()
+	if tlsConfigRegistry == nil {
+		tlsConfigRegistry = make(map[string]*tls.Config)
+	}
+
+	tlsConfigRegistry[key] = config
+	tlsConfigLock.Unlock()
 	return nil
 }
 
 // DeregisterTLSConfig removes the tls.Config associated with key.
 func DeregisterTLSConfig(key string) {
-	delete(tlsConfigRegister, key)
+	tlsConfigLock.Lock()
+	if tlsConfigRegistry != nil {
+		delete(tlsConfigRegistry, key)
+	}
+	tlsConfigLock.Unlock()
 }
 
-// parseDSN parses the DSN string to a config
-func parseDSN(dsn string) (cfg *config, err error) {
-	// New config with some default values
-	cfg = &config{
-		loc:       time.UTC,
-		collation: defaultCollation,
+func getTLSConfigClone(key string) (config *tls.Config) {
+	tlsConfigLock.RLock()
+	if v, ok := tlsConfigRegistry[key]; ok {
+		config = v.Clone()
 	}
-
-	// TODO: use strings.IndexByte when we can depend on Go 1.2
-
-	// [user[:password]@][net[(addr)]]/dbname[?param1=value1&paramN=valueN]
-	// Find the last '/' (since the password or the net addr might contain a '/')
-	foundSlash := false
-	for i := len(dsn) - 1; i >= 0; i-- {
-		if dsn[i] == '/' {
-			foundSlash = true
-			var j, k int
-
-			// left part is empty if i <= 0
-			if i > 0 {
-				// [username[:password]@][protocol[(address)]]
-				// Find the last '@' in dsn[:i]
-				for j = i; j >= 0; j-- {
-					if dsn[j] == '@' {
-						// username[:password]
-						// Find the first ':' in dsn[:j]
-						for k = 0; k < j; k++ {
-							if dsn[k] == ':' {
-								cfg.passwd = dsn[k+1 : j]
-								break
-							}
-						}
-						cfg.user = dsn[:k]
-
-						break
-					}
-				}
-
-				// [protocol[(address)]]
-				// Find the first '(' in dsn[j+1:i]
-				for k = j + 1; k < i; k++ {
-					if dsn[k] == '(' {
-						// dsn[i-1] must be == ')' if an address is specified
-						if dsn[i-1] != ')' {
-							if strings.ContainsRune(dsn[k+1:i], ')') {
-								return nil, errInvalidDSNUnescaped
-							}
-							return nil, errInvalidDSNAddr
-						}
-						cfg.addr = dsn[k+1 : i-1]
-						break
-					}
-				}
-				cfg.net = dsn[j+1 : k]
-			}
-
-			// dbname[?param1=value1&...&paramN=valueN]
-			// Find the first '?' in dsn[i+1:]
-			for j = i + 1; j < len(dsn); j++ {
-				if dsn[j] == '?' {
-					if err = parseDSNParams(cfg, dsn[j+1:]); err != nil {
-						return
-					}
-					break
-				}
-			}
-			cfg.dbname = dsn[i+1 : j]
-
-			break
-		}
-	}
-
-	if !foundSlash && len(dsn) > 0 {
-		return nil, errInvalidDSNNoSlash
-	}
-
-	// Set default network if empty
-	if cfg.net == "" {
-		cfg.net = "tcp"
-	}
-
-	// Set default address if empty
-	if cfg.addr == "" {
-		switch cfg.net {
-		case "tcp":
-			cfg.addr = "127.0.0.1:3306"
-		case "unix":
-			cfg.addr = "/tmp/mysql.sock"
-		default:
-			return nil, errors.New("Default addr for network '" + cfg.net + "' unknown")
-		}
-
-	}
-
-	return
-}
-
-// parseDSNParams parses the DSN "query string"
-// Values must be url.QueryEscape'ed
-func parseDSNParams(cfg *config, params string) (err error) {
-	for _, v := range strings.Split(params, "&") {
-		param := strings.SplitN(v, "=", 2)
-		if len(param) != 2 {
-			continue
-		}
-
-		// cfg params
-		switch value := param[1]; param[0] {
-
-		// Disable INFILE whitelist / enable all files
-		case "allowAllFiles":
-			var isBool bool
-			cfg.allowAllFiles, isBool = readBool(value)
-			if !isBool {
-				return fmt.Errorf("Invalid Bool value: %s", value)
-			}
-
-		// Use old authentication mode (pre MySQL 4.1)
-		case "allowOldPasswords":
-			var isBool bool
-			cfg.allowOldPasswords, isBool = readBool(value)
-			if !isBool {
-				return fmt.Errorf("Invalid Bool value: %s", value)
-			}
-
-		// Switch "rowsAffected" mode
-		case "clientFoundRows":
-			var isBool bool
-			cfg.clientFoundRows, isBool = readBool(value)
-			if !isBool {
-				return fmt.Errorf("Invalid Bool value: %s", value)
-			}
-
-		// Collation
-		case "collation":
-			collation, ok := collations[value]
-			if !ok {
-				// Note possibility for false negatives:
-				// could be triggered  although the collation is valid if the
-				// collations map does not contain entries the server supports.
-				err = errors.New("unknown collation")
-				return
-			}
-			cfg.collation = collation
-			break
-
-		// Time Location
-		case "loc":
-			if value, err = url.QueryUnescape(value); err != nil {
-				return
-			}
-			cfg.loc, err = time.LoadLocation(value)
-			if err != nil {
-				return
-			}
-
-		// Dial Timeout
-		case "timeout":
-			cfg.timeout, err = time.ParseDuration(value)
-			if err != nil {
-				return
-			}
-
-		// TLS-Encryption
-		case "tls":
-			boolValue, isBool := readBool(value)
-			if isBool {
-				if boolValue {
-					cfg.tls = &tls.Config{}
-				}
-			} else {
-				if strings.ToLower(value) == "skip-verify" {
-					cfg.tls = &tls.Config{InsecureSkipVerify: true}
-				} else if tlsConfig, ok := tlsConfigRegister[value]; ok {
-					cfg.tls = tlsConfig
-				} else {
-					return fmt.Errorf("Invalid value / unknown config name: %s", value)
-				}
-			}
-
-		default:
-			// lazy init
-			if cfg.params == nil {
-				cfg.params = make(map[string]string)
-			}
-
-			if cfg.params[param[0]], err = url.QueryUnescape(value); err != nil {
-				return
-			}
-		}
-	}
-
+	tlsConfigLock.RUnlock()
 	return
 }
 
@@ -280,190 +103,19 @@ func readBool(input string) (value bool, valid bool) {
 }
 
 /******************************************************************************
-*                             Authentication                                  *
-******************************************************************************/
-
-// Encrypt password using 4.1+ method
-func scramblePassword(scramble, password []byte) []byte {
-	if len(password) == 0 {
-		return nil
-	}
-
-	// stage1Hash = SHA1(password)
-	crypt := sha1.New()
-	crypt.Write(password)
-	stage1 := crypt.Sum(nil)
-
-	// scrambleHash = SHA1(scramble + SHA1(stage1Hash))
-	// inner Hash
-	crypt.Reset()
-	crypt.Write(stage1)
-	hash := crypt.Sum(nil)
-
-	// outer Hash
-	crypt.Reset()
-	crypt.Write(scramble)
-	crypt.Write(hash)
-	scramble = crypt.Sum(nil)
-
-	// token = scrambleHash XOR stage1Hash
-	for i := range scramble {
-		scramble[i] ^= stage1[i]
-	}
-	return scramble
-}
-
-// Encrypt password using pre 4.1 (old password) method
-// https://github.com/atcurtis/mariadb/blob/master/mysys/my_rnd.c
-type myRnd struct {
-	seed1, seed2 uint32
-}
-
-const myRndMaxVal = 0x3FFFFFFF
-
-// Pseudo random number generator
-func newMyRnd(seed1, seed2 uint32) *myRnd {
-	return &myRnd{
-		seed1: seed1 % myRndMaxVal,
-		seed2: seed2 % myRndMaxVal,
-	}
-}
-
-// Tested to be equivalent to MariaDB's floating point variant
-// http://play.golang.org/p/QHvhd4qved
-// http://play.golang.org/p/RG0q4ElWDx
-func (r *myRnd) NextByte() byte {
-	r.seed1 = (r.seed1*3 + r.seed2) % myRndMaxVal
-	r.seed2 = (r.seed1 + r.seed2 + 33) % myRndMaxVal
-
-	return byte(uint64(r.seed1) * 31 / myRndMaxVal)
-}
-
-// Generate binary hash from byte string using insecure pre 4.1 method
-func pwHash(password []byte) (result [2]uint32) {
-	var add uint32 = 7
-	var tmp uint32
-
-	result[0] = 1345345333
-	result[1] = 0x12345671
-
-	for _, c := range password {
-		// skip spaces and tabs in password
-		if c == ' ' || c == '\t' {
-			continue
-		}
-
-		tmp = uint32(c)
-		result[0] ^= (((result[0] & 63) + add) * tmp) + (result[0] << 8)
-		result[1] += (result[1] << 8) ^ result[0]
-		add += tmp
-	}
-
-	// Remove sign bit (1<<31)-1)
-	result[0] &= 0x7FFFFFFF
-	result[1] &= 0x7FFFFFFF
-
-	return
-}
-
-// Encrypt password using insecure pre 4.1 method
-func scrambleOldPassword(scramble, password []byte) []byte {
-	if len(password) == 0 {
-		return nil
-	}
-
-	scramble = scramble[:8]
-
-	hashPw := pwHash(password)
-	hashSc := pwHash(scramble)
-
-	r := newMyRnd(hashPw[0]^hashSc[0], hashPw[1]^hashSc[1])
-
-	var out [8]byte
-	for i := range out {
-		out[i] = r.NextByte() + 64
-	}
-
-	mask := r.NextByte()
-	for i := range out {
-		out[i] ^= mask
-	}
-
-	return out[:]
-}
-
-/******************************************************************************
 *                           Time related utils                                *
 ******************************************************************************/
 
-// NullTime represents a time.Time that may be NULL.
-// NullTime implements the Scanner interface so
-// it can be used as a scan destination:
-//
-//  var nt NullTime
-//  err := db.QueryRow("SELECT time FROM foo WHERE id=?", id).Scan(&nt)
-//  ...
-//  if nt.Valid {
-//     // use nt.Time
-//  } else {
-//     // NULL value
-//  }
-//
-// This NullTime implementation is not driver-specific
-type NullTime struct {
-	Time  time.Time
-	Valid bool // Valid is true if Time is not NULL
-}
-
-// Scan implements the Scanner interface.
-// The value type must be time.Time or string / []byte (formatted time-string),
-// otherwise Scan fails.
-func (nt *NullTime) Scan(value interface{}) (err error) {
-	if value == nil {
-		nt.Time, nt.Valid = time.Time{}, false
-		return
-	}
-
-	switch v := value.(type) {
-	case time.Time:
-		nt.Time, nt.Valid = v, true
-		return
-	case []byte:
-		nt.Time, err = parseDateTime(string(v), time.UTC)
-		nt.Valid = (err == nil)
-		return
-	case string:
-		nt.Time, err = parseDateTime(v, time.UTC)
-		nt.Valid = (err == nil)
-		return
-	}
-
-	nt.Valid = false
-	return fmt.Errorf("Can't convert %T to time.Time", value)
-}
-
-// Value implements the driver Valuer interface.
-func (nt NullTime) Value() (driver.Value, error) {
-	if !nt.Valid {
-		return nil, nil
-	}
-	return nt.Time, nil
-}
-
 func parseDateTime(str string, loc *time.Location) (t time.Time, err error) {
+	base := "0000-00-00 00:00:00.0000000"
 	switch len(str) {
-	case 10: // YYYY-MM-DD
-		if str == "0000-00-00" {
+	case 10, 19, 21, 22, 23, 24, 25, 26: // up to "YYYY-MM-DD HH:MM:SS.MMMMMM"
+		if str == base[:len(str)] {
 			return
 		}
-		t, err = time.Parse(timeFormat[:10], str)
-	case 19: // YYYY-MM-DD HH:MM:SS
-		if str == "0000-00-00 00:00:00" {
-			return
-		}
-		t, err = time.Parse(timeFormat, str)
+		t, err = time.Parse(timeFormat[:len(str)], str)
 	default:
-		err = fmt.Errorf("Invalid Time-String: %s", str)
+		err = fmt.Errorf("invalid time string: %s", str)
 		return
 	}
 
@@ -512,87 +164,166 @@ func parseBinaryDateTime(num uint64, data []byte, loc *time.Location) (driver.Va
 			loc,
 		), nil
 	}
-	return nil, fmt.Errorf("Invalid DATETIME-packet length %d", num)
+	return nil, fmt.Errorf("invalid DATETIME packet length %d", num)
 }
 
 // zeroDateTime is used in formatBinaryDateTime to avoid an allocation
 // if the DATE or DATETIME has the zero value.
 // It must never be changed.
 // The current behavior depends on database/sql copying the result.
-var zeroDateTime = []byte("0000-00-00 00:00:00")
+var zeroDateTime = []byte("0000-00-00 00:00:00.000000")
 
-func formatBinaryDateTime(src []byte, withTime bool) (driver.Value, error) {
-	if len(src) == 0 {
-		if withTime {
-			return zeroDateTime, nil
-		}
-		return zeroDateTime[:10], nil
+const digits01 = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+const digits10 = "0000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999"
+
+func appendMicrosecs(dst, src []byte, decimals int) []byte {
+	if decimals <= 0 {
+		return dst
 	}
-	var dst []byte
-	if withTime {
-		if len(src) == 11 {
-			dst = []byte("0000-00-00 00:00:00.000000")
-		} else {
-			dst = []byte("0000-00-00 00:00:00")
+	if len(src) == 0 {
+		return append(dst, ".000000"[:decimals+1]...)
+	}
+
+	microsecs := binary.LittleEndian.Uint32(src[:4])
+	p1 := byte(microsecs / 10000)
+	microsecs -= 10000 * uint32(p1)
+	p2 := byte(microsecs / 100)
+	microsecs -= 100 * uint32(p2)
+	p3 := byte(microsecs)
+
+	switch decimals {
+	default:
+		return append(dst, '.',
+			digits10[p1], digits01[p1],
+			digits10[p2], digits01[p2],
+			digits10[p3], digits01[p3],
+		)
+	case 1:
+		return append(dst, '.',
+			digits10[p1],
+		)
+	case 2:
+		return append(dst, '.',
+			digits10[p1], digits01[p1],
+		)
+	case 3:
+		return append(dst, '.',
+			digits10[p1], digits01[p1],
+			digits10[p2],
+		)
+	case 4:
+		return append(dst, '.',
+			digits10[p1], digits01[p1],
+			digits10[p2], digits01[p2],
+		)
+	case 5:
+		return append(dst, '.',
+			digits10[p1], digits01[p1],
+			digits10[p2], digits01[p2],
+			digits10[p3],
+		)
+	}
+}
+
+func formatBinaryDateTime(src []byte, length uint8) (driver.Value, error) {
+	// length expects the deterministic length of the zero value,
+	// negative time and 100+ hours are automatically added if needed
+	if len(src) == 0 {
+		return zeroDateTime[:length], nil
+	}
+	var dst []byte      // return value
+	var p1, p2, p3 byte // current digit pair
+
+	switch length {
+	case 10, 19, 21, 22, 23, 24, 25, 26:
+	default:
+		t := "DATE"
+		if length > 10 {
+			t += "TIME"
 		}
-	} else {
-		dst = []byte("0000-00-00")
+		return nil, fmt.Errorf("illegal %s length %d", t, length)
 	}
 	switch len(src) {
-	case 11:
-		microsecs := binary.LittleEndian.Uint32(src[7:11])
-		tmp32 := microsecs / 10
-		dst[25] += byte(microsecs - 10*tmp32)
-		tmp32, microsecs = tmp32/10, tmp32
-		dst[24] += byte(microsecs - 10*tmp32)
-		tmp32, microsecs = tmp32/10, tmp32
-		dst[23] += byte(microsecs - 10*tmp32)
-		tmp32, microsecs = tmp32/10, tmp32
-		dst[22] += byte(microsecs - 10*tmp32)
-		tmp32, microsecs = tmp32/10, tmp32
-		dst[21] += byte(microsecs - 10*tmp32)
-		dst[20] += byte(microsecs / 10)
-		fallthrough
-	case 7:
-		second := src[6]
-		tmp := second / 10
-		dst[18] += second - 10*tmp
-		dst[17] += tmp
-		minute := src[5]
-		tmp = minute / 10
-		dst[15] += minute - 10*tmp
-		dst[14] += tmp
-		hour := src[4]
-		tmp = hour / 10
-		dst[12] += hour - 10*tmp
-		dst[11] += tmp
-		fallthrough
-	case 4:
-		day := src[3]
-		tmp := day / 10
-		dst[9] += day - 10*tmp
-		dst[8] += tmp
-		month := src[2]
-		tmp = month / 10
-		dst[6] += month - 10*tmp
-		dst[5] += tmp
-		year := binary.LittleEndian.Uint16(src[:2])
-		tmp16 := year / 10
-		dst[3] += byte(year - 10*tmp16)
-		tmp16, year = tmp16/10, tmp16
-		dst[2] += byte(year - 10*tmp16)
-		tmp16, year = tmp16/10, tmp16
-		dst[1] += byte(year - 10*tmp16)
-		dst[0] += byte(tmp16)
+	case 4, 7, 11:
+	default:
+		t := "DATE"
+		if length > 10 {
+			t += "TIME"
+		}
+		return nil, fmt.Errorf("illegal %s packet length %d", t, len(src))
+	}
+	dst = make([]byte, 0, length)
+	// start with the date
+	year := binary.LittleEndian.Uint16(src[:2])
+	pt := year / 100
+	p1 = byte(year - 100*uint16(pt))
+	p2, p3 = src[2], src[3]
+	dst = append(dst,
+		digits10[pt], digits01[pt],
+		digits10[p1], digits01[p1], '-',
+		digits10[p2], digits01[p2], '-',
+		digits10[p3], digits01[p3],
+	)
+	if length == 10 {
 		return dst, nil
 	}
-	var t string
-	if withTime {
-		t = "DATETIME"
-	} else {
-		t = "DATE"
+	if len(src) == 4 {
+		return append(dst, zeroDateTime[10:length]...), nil
 	}
-	return nil, fmt.Errorf("invalid %s-packet length %d", t, len(src))
+	dst = append(dst, ' ')
+	p1 = src[4] // hour
+	src = src[5:]
+
+	// p1 is 2-digit hour, src is after hour
+	p2, p3 = src[0], src[1]
+	dst = append(dst,
+		digits10[p1], digits01[p1], ':',
+		digits10[p2], digits01[p2], ':',
+		digits10[p3], digits01[p3],
+	)
+	return appendMicrosecs(dst, src[2:], int(length)-20), nil
+}
+
+func formatBinaryTime(src []byte, length uint8) (driver.Value, error) {
+	// length expects the deterministic length of the zero value,
+	// negative time and 100+ hours are automatically added if needed
+	if len(src) == 0 {
+		return zeroDateTime[11 : 11+length], nil
+	}
+	var dst []byte // return value
+
+	switch length {
+	case
+		8,                      // time (can be up to 10 when negative and 100+ hours)
+		10, 11, 12, 13, 14, 15: // time with fractional seconds
+	default:
+		return nil, fmt.Errorf("illegal TIME length %d", length)
+	}
+	switch len(src) {
+	case 8, 12:
+	default:
+		return nil, fmt.Errorf("invalid TIME packet length %d", len(src))
+	}
+	// +2 to enable negative time and 100+ hours
+	dst = make([]byte, 0, length+2)
+	if src[0] == 1 {
+		dst = append(dst, '-')
+	}
+	days := binary.LittleEndian.Uint32(src[1:5])
+	hours := int64(days)*24 + int64(src[5])
+
+	if hours >= 100 {
+		dst = strconv.AppendInt(dst, hours, 10)
+	} else {
+		dst = append(dst, digits10[hours], digits01[hours])
+	}
+
+	min, sec := src[6], src[7]
+	dst = append(dst, ':',
+		digits10[min], digits01[min], ':',
+		digits10[sec], digits01[sec],
+	)
+	return appendMicrosecs(dst, src[8:], int(length)-9), nil
 }
 
 /******************************************************************************
@@ -658,7 +389,7 @@ func readLengthEncodedString(b []byte) ([]byte, bool, int, error) {
 
 	// Check data length
 	if len(b) >= n {
-		return b[n-int(num) : n], false, n, nil
+		return b[n-int(num) : n : n], false, n, nil
 	}
 	return nil, false, n, io.EOF
 }
@@ -683,8 +414,12 @@ func skipLengthEncodedString(b []byte) (int, error) {
 
 // returns the number read, whether the value is NULL and the number of bytes read
 func readLengthEncodedInteger(b []byte) (uint64, bool, int) {
-	switch b[0] {
+	// See issue #349
+	if len(b) == 0 {
+		return 0, true, 1
+	}
 
+	switch b[0] {
 	// 251: NULL
 	case 0xfb:
 		return 0, true, 1
@@ -723,4 +458,244 @@ func appendLengthEncodedInteger(b []byte, n uint64) []byte {
 	}
 	return append(b, 0xfe, byte(n), byte(n>>8), byte(n>>16), byte(n>>24),
 		byte(n>>32), byte(n>>40), byte(n>>48), byte(n>>56))
+}
+
+// reserveBuffer checks cap(buf) and expand buffer to len(buf) + appendSize.
+// If cap(buf) is not enough, reallocate new buffer.
+func reserveBuffer(buf []byte, appendSize int) []byte {
+	newSize := len(buf) + appendSize
+	if cap(buf) < newSize {
+		// Grow buffer exponentially
+		newBuf := make([]byte, len(buf)*2+appendSize)
+		copy(newBuf, buf)
+		buf = newBuf
+	}
+	return buf[:newSize]
+}
+
+// escapeBytesBackslash escapes []byte with backslashes (\)
+// This escapes the contents of a string (provided as []byte) by adding backslashes before special
+// characters, and turning others into specific escape sequences, such as
+// turning newlines into \n and null bytes into \0.
+// https://github.com/mysql/mysql-server/blob/mysql-5.7.5/mysys/charset.c#L823-L932
+func escapeBytesBackslash(buf, v []byte) []byte {
+	pos := len(buf)
+	buf = reserveBuffer(buf, len(v)*2)
+
+	for _, c := range v {
+		switch c {
+		case '\x00':
+			buf[pos] = '\\'
+			buf[pos+1] = '0'
+			pos += 2
+		case '\n':
+			buf[pos] = '\\'
+			buf[pos+1] = 'n'
+			pos += 2
+		case '\r':
+			buf[pos] = '\\'
+			buf[pos+1] = 'r'
+			pos += 2
+		case '\x1a':
+			buf[pos] = '\\'
+			buf[pos+1] = 'Z'
+			pos += 2
+		case '\'':
+			buf[pos] = '\\'
+			buf[pos+1] = '\''
+			pos += 2
+		case '"':
+			buf[pos] = '\\'
+			buf[pos+1] = '"'
+			pos += 2
+		case '\\':
+			buf[pos] = '\\'
+			buf[pos+1] = '\\'
+			pos += 2
+		default:
+			buf[pos] = c
+			pos++
+		}
+	}
+
+	return buf[:pos]
+}
+
+// escapeStringBackslash is similar to escapeBytesBackslash but for string.
+func escapeStringBackslash(buf []byte, v string) []byte {
+	pos := len(buf)
+	buf = reserveBuffer(buf, len(v)*2)
+
+	for i := 0; i < len(v); i++ {
+		c := v[i]
+		switch c {
+		case '\x00':
+			buf[pos] = '\\'
+			buf[pos+1] = '0'
+			pos += 2
+		case '\n':
+			buf[pos] = '\\'
+			buf[pos+1] = 'n'
+			pos += 2
+		case '\r':
+			buf[pos] = '\\'
+			buf[pos+1] = 'r'
+			pos += 2
+		case '\x1a':
+			buf[pos] = '\\'
+			buf[pos+1] = 'Z'
+			pos += 2
+		case '\'':
+			buf[pos] = '\\'
+			buf[pos+1] = '\''
+			pos += 2
+		case '"':
+			buf[pos] = '\\'
+			buf[pos+1] = '"'
+			pos += 2
+		case '\\':
+			buf[pos] = '\\'
+			buf[pos+1] = '\\'
+			pos += 2
+		default:
+			buf[pos] = c
+			pos++
+		}
+	}
+
+	return buf[:pos]
+}
+
+// escapeBytesQuotes escapes apostrophes in []byte by doubling them up.
+// This escapes the contents of a string by doubling up any apostrophes that
+// it contains. This is used when the NO_BACKSLASH_ESCAPES SQL_MODE is in
+// effect on the server.
+// https://github.com/mysql/mysql-server/blob/mysql-5.7.5/mysys/charset.c#L963-L1038
+func escapeBytesQuotes(buf, v []byte) []byte {
+	pos := len(buf)
+	buf = reserveBuffer(buf, len(v)*2)
+
+	for _, c := range v {
+		if c == '\'' {
+			buf[pos] = '\''
+			buf[pos+1] = '\''
+			pos += 2
+		} else {
+			buf[pos] = c
+			pos++
+		}
+	}
+
+	return buf[:pos]
+}
+
+// escapeStringQuotes is similar to escapeBytesQuotes but for string.
+func escapeStringQuotes(buf []byte, v string) []byte {
+	pos := len(buf)
+	buf = reserveBuffer(buf, len(v)*2)
+
+	for i := 0; i < len(v); i++ {
+		c := v[i]
+		if c == '\'' {
+			buf[pos] = '\''
+			buf[pos+1] = '\''
+			pos += 2
+		} else {
+			buf[pos] = c
+			pos++
+		}
+	}
+
+	return buf[:pos]
+}
+
+/******************************************************************************
+*                               Sync utils                                    *
+******************************************************************************/
+
+// noCopy may be embedded into structs which must not be copied
+// after the first use.
+//
+// See https://github.com/golang/go/issues/8005#issuecomment-190753527
+// for details.
+type noCopy struct{}
+
+// Lock is a no-op used by -copylocks checker from `go vet`.
+func (*noCopy) Lock() {}
+
+// atomicBool is a wrapper around uint32 for usage as a boolean value with
+// atomic access.
+type atomicBool struct {
+	_noCopy noCopy
+	value   uint32
+}
+
+// IsSet returns whether the current boolean value is true
+func (ab *atomicBool) IsSet() bool {
+	return atomic.LoadUint32(&ab.value) > 0
+}
+
+// Set sets the value of the bool regardless of the previous value
+func (ab *atomicBool) Set(value bool) {
+	if value {
+		atomic.StoreUint32(&ab.value, 1)
+	} else {
+		atomic.StoreUint32(&ab.value, 0)
+	}
+}
+
+// TrySet sets the value of the bool and returns whether the value changed
+func (ab *atomicBool) TrySet(value bool) bool {
+	if value {
+		return atomic.SwapUint32(&ab.value, 1) == 0
+	}
+	return atomic.SwapUint32(&ab.value, 0) > 0
+}
+
+// atomicError is a wrapper for atomically accessed error values
+type atomicError struct {
+	_noCopy noCopy
+	value   atomic.Value
+}
+
+// Set sets the error value regardless of the previous value.
+// The value must not be nil
+func (ae *atomicError) Set(value error) {
+	ae.value.Store(value)
+}
+
+// Value returns the current error value
+func (ae *atomicError) Value() error {
+	if v := ae.value.Load(); v != nil {
+		// this will panic if the value doesn't implement the error interface
+		return v.(error)
+	}
+	return nil
+}
+
+func namedValueToValue(named []driver.NamedValue) ([]driver.Value, error) {
+	dargs := make([]driver.Value, len(named))
+	for n, param := range named {
+		if len(param.Name) > 0 {
+			// TODO: support the use of Named Parameters #561
+			return nil, errors.New("mysql: driver does not support the use of Named Parameters")
+		}
+		dargs[n] = param.Value
+	}
+	return dargs, nil
+}
+
+func mapIsolationLevel(level driver.IsolationLevel) (string, error) {
+	switch sql.IsolationLevel(level) {
+	case sql.LevelRepeatableRead:
+		return "REPEATABLE READ", nil
+	case sql.LevelReadCommitted:
+		return "READ COMMITTED", nil
+	case sql.LevelReadUncommitted:
+		return "READ UNCOMMITTED", nil
+	case sql.LevelSerializable:
+		return "SERIALIZABLE", nil
+	default:
+		return "", fmt.Errorf("mysql: unsupported isolation level: %v", level)
+	}
 }

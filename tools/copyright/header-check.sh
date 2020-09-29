@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2016-2017 VMware, Inc. All Rights Reserved.
+# Copyright Project Harbor Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,13 +29,13 @@
 set -e -o pipefail
 
 # These header variables MUST match the first two lines of the
-# VMware-copyright file in the scripts directory.
+# copyright file in the scripts directory.
 #
 # These will be evaluated as a regex against the target file
 HEADER_OLD[1]="^\/\*$"
-HEADER_OLD[2]="^\s*Copyright \(c\) [0-9]{4} VMware, Inc\. All Rights Reserved\.$"
+HEADER_OLD[2]="^\s*Copyright \(c\) [0-9]{4} The Harbor Authors$"
 
-HEADER_NEW[1]="^\/\/ Copyright \(c\) [0-9]{4} VMware, Inc\. All Rights Reserved\.$"
+HEADER_NEW[1]="^\/\/ Copyright \(c\) [0-9]{4} The Harbor Authors$"
 HEADER_NEW[2]="^\/\/$"
 
 # Initialize vars

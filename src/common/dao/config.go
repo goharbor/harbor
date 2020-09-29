@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@
 package dao
 
 import (
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // AuthModeCanBeModified determines whether auth mode can be
@@ -51,12 +54,16 @@ func GetConfigEntries() ([]*models.ConfigEntry, error) {
 func SaveConfigEntries(entries []models.ConfigEntry) error {
 	o := GetOrmer()
 	for _, entry := range entries {
+		if entry.Key == common.LDAPGroupAdminDn {
+			entry.Value = utils.TrimLower(entry.Value)
+		}
 		tempEntry := models.ConfigEntry{}
 		tempEntry.Key = entry.Key
 		tempEntry.Value = entry.Value
-		created, _, error := o.ReadOrCreate(&tempEntry, "k")
-		if error != nil {
-			return error
+		created, _, err := o.ReadOrCreate(&tempEntry, "k")
+		if err != nil && !IsDupRecErr(err) {
+			log.Errorf("Error create configuration entry: %v", err)
+			return err
 		}
 		if !created {
 			entry.ID = tempEntry.ID

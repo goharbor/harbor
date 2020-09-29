@@ -1,14 +1,23 @@
-FROM vmware/photon:1.0
+ARG harbor_base_image_version
+ARG harbor_base_namespace
+FROM ${harbor_base_namespace}/harbor-jobservice-base:${harbor_base_image_version}
 
-RUN mkdir /harbor/ \
-    && tdnf distro-sync -y || echo \
-    && tdnf install sudo -y >> /dev/null\
-    && tdnf clean all \
-    && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor 
-HEALTHCHECK CMD curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/api/jobs/replication/1/log|grep 401
+COPY ./make/photon/common/install_cert.sh /harbor/
+COPY ./make/photon/jobservice/entrypoint.sh /harbor/
+COPY ./make/photon/jobservice/harbor_jobservice /harbor/
 
-COPY ./make/photon/jobservice/start.sh ./make/dev/jobservice/harbor_jobservice /harbor/
 
-RUN chmod u+x /harbor/harbor_jobservice /harbor/start.sh
+RUN chown -R harbor:harbor /etc/pki/tls/certs \
+    && chown harbor:harbor /harbor/entrypoint.sh && chmod u+x /harbor/entrypoint.sh \
+    && chown harbor:harbor /harbor/install_cert.sh && chmod u+x /harbor/install_cert.sh \
+    && chown harbor:harbor /harbor/harbor_jobservice && chmod u+x /harbor/harbor_jobservice
+
 WORKDIR /harbor/
-ENTRYPOINT ["/harbor/start.sh"]
+
+USER harbor
+
+VOLUME ["/var/log/jobs/"]
+
+HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/v1/stats || curl -sk --fail --key /etc/harbor/ssl/job_service.key --cert /etc/harbor/ssl/job_service.crt https://127.0.0.1:8443/api/v1/stats || exit 1
+
+ENTRYPOINT ["/harbor/entrypoint.sh"]

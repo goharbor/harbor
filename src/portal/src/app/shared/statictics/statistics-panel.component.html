@@ -1,0 +1,44 @@
+<div class="row flex-items-xs-between flex-items-xs-middle">
+    <div></div>
+    <div id="right_statistic_panel">
+        <div class="statistic-block">
+            <div class="statistic-column-block">
+                <div>
+                    <span class="statistic-column-title statistic-column-title-pro">{{'STATISTICS.PRO_ITEM' | translate }}</span>
+                </div>
+                <div>
+                    <span class="statistic-column-title statistic-column-title-repo">{{'STATISTICS.REPO_ITEM' | translate }}</span>
+                </div>
+            </div>
+            <div class="statistic-column-block">
+                <div>
+                    <statistics [data]='originalCopy.private_project_count' [label]='"STATISTICS.INDEX_PRIVATE" | translate'></statistics>
+                </div>
+                <div>
+                    <statistics [data]='originalCopy.private_repo_count' [label]='"STATISTICS.INDEX_PRIVATE" | translate'></statistics>
+                </div>
+            </div>
+            <div class="statistic-column-block">
+                <div>
+                    <statistics [data]='originalCopy.public_project_count' [label]='"STATISTICS.INDEX_PUB" | translate'></statistics>
+                </div>
+                <div>
+                    <statistics [data]='originalCopy.public_repo_count' [label]='"STATISTICS.INDEX_PUB" | translate'></statistics>
+                </div>
+            </div>
+            <div class="statistic-column-block">
+                <div>
+                    <statistics [data]='originalCopy.total_project_count' [label]='"STATISTICS.INDEX_TOTAL" | translate' *ngIf="isValidSession"></statistics>
+                </div>
+                <div>
+                    <statistics [data]='originalCopy.total_repo_count' [label]='"STATISTICS.INDEX_TOTAL" | translate' *ngIf="isValidSession"></statistics>
+                </div>
+            </div>
+        </div>
+        <div class="statistic-item-divider" [hidden]="!isValidSession || !isValidStorage"></div>
+        <div class="statistic-block" [hidden]="!isValidSession || !isValidStorage">
+            <esxc-gauge [free]="freeStorage" [threasHold]="totalStorage" [size]="small" [title]='"STATISTICS.STORAGE"' [animate]="true">
+            </esxc-gauge>
+        </div>
+    </div>
+</div>

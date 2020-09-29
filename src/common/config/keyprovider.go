@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -45,4 +45,14 @@ func (f *FileKeyProvider) Get(params map[string]interface{}) (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+
+// PresetKeyProvider returns the preset key disregarding the parm, this is for testing only
+type PresetKeyProvider struct {
+	Key string
+}
+
+// Get ...
+func (p *PresetKeyProvider) Get(params map[string]interface{}) (string, error) {
+	return p.Key, nil
 }

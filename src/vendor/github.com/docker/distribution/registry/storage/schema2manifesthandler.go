@@ -1,16 +1,16 @@
 package storage
 
 import (
-	"encoding/json"
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
 
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
+	dcontext "github.com/docker/distribution/context"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/opencontainers/go-digest"
 )
 
 var (
@@ -30,18 +30,18 @@ type schema2ManifestHandler struct {
 var _ ManifestHandler = &schema2ManifestHandler{}
 
 func (ms *schema2ManifestHandler) Unmarshal(ctx context.Context, dgst digest.Digest, content []byte) (distribution.Manifest, error) {
-	context.GetLogger(ms.ctx).Debug("(*schema2ManifestHandler).Unmarshal")
+	dcontext.GetLogger(ms.ctx).Debug("(*schema2ManifestHandler).Unmarshal")
 
-	var m schema2.DeserializedManifest
-	if err := json.Unmarshal(content, &m); err != nil {
+	m := &schema2.DeserializedManifest{}
+	if err := m.UnmarshalJSON(content); err != nil {
 		return nil, err
 	}
 
-	return &m, nil
+	return m, nil
 }
 
 func (ms *schema2ManifestHandler) Put(ctx context.Context, manifest distribution.Manifest, skipDependencyVerification bool) (digest.Digest, error) {
-	context.GetLogger(ms.ctx).Debug("(*schema2ManifestHandler).Put")
+	dcontext.GetLogger(ms.ctx).Debug("(*schema2ManifestHandler).Put")
 
 	m, ok := manifest.(*schema2.DeserializedManifest)
 	if !ok {
@@ -59,7 +59,7 @@ func (ms *schema2ManifestHandler) Put(ctx context.Context, manifest distribution
 
 	revision, err := ms.blobStore.Put(ctx, mt, payload)
 	if err != nil {
-		context.GetLogger(ctx).Errorf("error putting payload into blobstore: %v", err)
+		dcontext.GetLogger(ctx).Errorf("error putting payload into blobstore: %v", err)
 		return "", err
 	}
 
@@ -71,6 +71,10 @@ func (ms *schema2ManifestHandler) Put(ctx context.Context, manifest distribution
 // valid content, leaving trust policies of that content up to consumers.
 func (ms *schema2ManifestHandler) verifyManifest(ctx context.Context, mnfst schema2.DeserializedManifest, skipDependencyVerification bool) error {
 	var errs distribution.ErrManifestVerification
+
+	if mnfst.Manifest.SchemaVersion != 2 {
+		return fmt.Errorf("unrecognized manifest schema version %d", mnfst.Manifest.SchemaVersion)
+	}
 
 	if skipDependencyVerification {
 		return nil

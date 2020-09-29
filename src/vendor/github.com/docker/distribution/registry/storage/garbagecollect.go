@@ -1,21 +1,34 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/registry/storage/driver"
+	"github.com/opencontainers/go-digest"
 )
 
 func emit(format string, a ...interface{}) {
 	fmt.Printf(format+"\n", a...)
 }
 
+// GCOpts contains options for garbage collector
+type GCOpts struct {
+	DryRun         bool
+	RemoveUntagged bool
+}
+
+// ManifestDel contains manifest structure which will be deleted
+type ManifestDel struct {
+	Name   string
+	Digest digest.Digest
+	Tags   []string
+}
+
 // MarkAndSweep performs a mark and sweep of registry data
-func MarkAndSweep(ctx context.Context, storageDriver driver.StorageDriver, registry distribution.Namespace, dryRun bool) error {
+func MarkAndSweep(ctx context.Context, storageDriver driver.StorageDriver, registry distribution.Namespace, opts GCOpts) error {
 	repositoryEnumerator, ok := registry.(distribution.RepositoryEnumerator)
 	if !ok {
 		return fmt.Errorf("unable to convert Namespace to RepositoryEnumerator")
@@ -23,11 +36,12 @@ func MarkAndSweep(ctx context.Context, storageDriver driver.StorageDriver, regis
 
 	// mark
 	markSet := make(map[digest.Digest]struct{})
+	manifestArr := make([]ManifestDel, 0)
 	err := repositoryEnumerator.Enumerate(ctx, func(repoName string) error {
 		emit(repoName)
 
 		var err error
-		named, err := reference.ParseNamed(repoName)
+		named, err := reference.WithName(repoName)
 		if err != nil {
 			return fmt.Errorf("failed to parse repo name %s: %v", repoName, err)
 		}
@@ -47,6 +61,25 @@ func MarkAndSweep(ctx context.Context, storageDriver driver.StorageDriver, regis
 		}
 
 		err = manifestEnumerator.Enumerate(ctx, func(dgst digest.Digest) error {
+			if opts.RemoveUntagged {
+				// fetch all tags where this manifest is the latest one
+				tags, err := repository.Tags(ctx).Lookup(ctx, distribution.Descriptor{Digest: dgst})
+				if err != nil {
+					return fmt.Errorf("failed to retrieve tags for digest %v: %v", dgst, err)
+				}
+				if len(tags) == 0 {
+					emit("manifest eligible for deletion: %s", dgst)
+					// fetch all tags from repository
+					// all of these tags could contain manifest in history
+					// which means that we need check (and delete) those references when deleting manifest
+					allTags, err := repository.Tags(ctx).All(ctx)
+					if err != nil {
+						return fmt.Errorf("failed to retrieve tags %v", err)
+					}
+					manifestArr = append(manifestArr, ManifestDel{Name: repoName, Digest: dgst, Tags: allTags})
+					return nil
+				}
+			}
 			// Mark the manifest's blob
 			emit("%s: marking manifest %s ", repoName, dgst)
 			markSet[dgst] = struct{}{}
@@ -84,6 +117,15 @@ func MarkAndSweep(ctx context.Context, storageDriver driver.StorageDriver, regis
 	}
 
 	// sweep
+	vacuum := NewVacuum(ctx, storageDriver)
+	if !opts.DryRun {
+		for _, obj := range manifestArr {
+			err = vacuum.RemoveManifest(obj.Name, obj.Digest, obj.Tags)
+			if err != nil {
+				return fmt.Errorf("failed to delete manifest %s: %v", obj.Digest, err)
+			}
+		}
+	}
 	blobService := registry.Blobs()
 	deleteSet := make(map[digest.Digest]struct{})
 	err = blobService.Enumerate(ctx, func(dgst digest.Digest) error {
@@ -96,12 +138,10 @@ func MarkAndSweep(ctx context.Context, storageDriver driver.StorageDriver, regis
 	if err != nil {
 		return fmt.Errorf("error enumerating blobs: %v", err)
 	}
-	emit("\n%d blobs marked, %d blobs eligible for deletion", len(markSet), len(deleteSet))
-	// Construct vacuum
-	vacuum := NewVacuum(ctx, storageDriver)
+	emit("\n%d blobs marked, %d blobs and %d manifests eligible for deletion", len(markSet), len(deleteSet), len(manifestArr))
 	for dgst := range deleteSet {
 		emit("blob eligible for deletion: %s", dgst)
-		if dryRun {
+		if opts.DryRun {
 			continue
 		}
 		err = vacuum.RemoveBlob(string(dgst))

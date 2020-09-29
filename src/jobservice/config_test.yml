@@ -1,0 +1,41 @@
+---
+#Protocol used to serve
+protocol: "https"
+
+#Config certification if use 'https' protocol
+https_config:
+  cert: "../server.crt"
+  key: "../server.key"
+
+#Server listening port
+port: 9444
+
+#Worker worker
+worker_pool:
+  #Worker concurrency
+  workers: 10
+  backend: "redis"
+  #Additional config if use 'redis' backend
+  redis_pool:
+    #redis://[arbitrary_username:password@]ipaddress:port/database_index
+    #or ipaddress:port[|weight|password|database_index]
+    redis_url: "localhost:6379"
+    namespace: "testing_job_service_v2"
+
+#Loggers for the running job
+job_loggers:
+  - name: "STD_OUTPUT" # logger backend name, only support "FILE" and "STD_OUTPUT"
+    level: "DEBUG" # INFO/DEBUG/WARNING/ERROR/FATAL
+  - name: "FILE"
+    level: "INFO"
+    settings: # Customized settings of logger
+      base_dir: "/tmp/job_logs"
+    sweeper:
+      duration: 5 #days
+      settings: # Customized settings of sweeper
+        work_dir: "/tmp/job_logs"
+
+#Loggers for the job service
+loggers:
+  - name: "STD_OUTPUT" # Same with above
+    level: "DEBUG"

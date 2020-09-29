@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,11 +38,11 @@ func TestSend(t *testing.T) {
 	err := Send(addr, identity, username, password,
 		timeout, tls, insecure, from, to,
 		subject, message)
-	//bypass the check due to securty policy change on gmail
-	//TODO
-	//assert.Nil(t, err)
+	// bypass the check due to securty policy change on gmail
+	// TODO
+	// assert.Nil(t, err)
 
-	/*not work on travis
+	/*not work on ci
 	// non-tls connection
 	addr = "smtp.gmail.com:25"
 	tls = false
@@ -52,7 +52,7 @@ func TestSend(t *testing.T) {
 	assert.Nil(t, err)
 	*/
 
-	//invalid username/password
+	// invalid username/password
 	username = "invalid_username"
 	err = Send(addr, identity, username, password,
 		timeout, tls, insecure, from, to,
@@ -78,11 +78,11 @@ func TestPing(t *testing.T) {
 	// tls connection
 	err := Ping(addr, identity, username, password,
 		timeout, tls, insecure)
-	//bypass the check due to securty policy change on gmail
-	//TODO
-	//assert.Nil(t, err)
+	// bypass the check due to securty policy change on gmail
+	// TODO
+	// assert.Nil(t, err)
 
-	/*not work on travis
+	/*not work on ci
 	// non-tls connection
 	addr = "smtp.gmail.com:25"
 	tls = false
@@ -91,7 +91,7 @@ func TestPing(t *testing.T) {
 	assert.Nil(t, err)
 	*/
 
-	//invalid username/password
+	// invalid username/password
 	username = "invalid_username"
 	err = Ping(addr, identity, username, password,
 		timeout, tls, insecure)

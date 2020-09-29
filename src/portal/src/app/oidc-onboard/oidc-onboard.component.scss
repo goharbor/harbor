@@ -1,0 +1,25 @@
+.modal {
+    background-color: rgb(80, 80, 80);
+    .body-message {
+        margin-top: 10px;
+    }
+    .modal-header {
+        .close {
+            margin-right: 0.2rem
+        }
+    }
+    .username-div {
+        display: flex;
+        justify-content: space-between;
+        width: 80%;
+    }
+    input {
+        width: 300px;
+    }
+}
+.oidc-header-text{
+    color:rgb(94, 94, 94);
+}
+.close-error {
+    padding-right:0;
+}

@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@ package dao
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/astaxie/beego/orm"
-	_ "github.com/go-sql-driver/mysql" //register mysql driver
-	"github.com/vmware/harbor/src/common/utils"
+	_ "github.com/go-sql-driver/mysql" // register mysql driver
+	"github.com/goharbor/harbor/src/common/utils"
 )
 
 type mysql struct {
@@ -58,12 +59,22 @@ func (m *mysql) Register(alias ...string) error {
 	}
 	conn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", m.usr,
 		m.pwd, m.host, m.port, m.database)
-	return orm.RegisterDataBase(an, "mysql", conn)
+	if err := orm.RegisterDataBase(an, "mysql", conn); err != nil {
+		return err
+	}
+	db, _ := orm.GetDB(an)
+	db.SetConnMaxLifetime(5 * time.Minute)
+	return nil
 }
 
 // Name returns the name of MySQL
 func (m *mysql) Name() string {
 	return "MySQL"
+}
+
+// UpgradeSchema is not supported for MySQL, it assumes the schema is initialized and up to date in the DB instance.
+func (m *mysql) UpgradeSchema() error {
+	return nil
 }
 
 // String returns the details of database

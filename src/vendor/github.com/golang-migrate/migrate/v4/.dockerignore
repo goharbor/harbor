@@ -1,0 +1,13 @@
+# Project
+FAQ.md
+README.md
+LICENSE
+Makefile
+.gitignore
+.travis.yml
+CONTRIBUTING.md
+MIGRATIONS.md
+docker-deploy.sh
+
+# Golang
+testing

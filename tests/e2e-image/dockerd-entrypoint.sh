@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright 2017 VMware, Inc. All Rights Reserved.
+# Copyright Project Harbor Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 set -e
 
 # Only give socker support by default, use bash arguments to add dockerd parameters
-# Use unix:///var/run/docker-local.sock to avoid collison with /var/run/docker.sock
+# Use unix:///var/run/docker-local.sock to avoid collision with /var/run/docker.sock
 
 # no arguments passed
 # or first arg is `-f` or `--some-option`
@@ -35,9 +35,10 @@ fi
 if [ "$1" = 'dockerd' ]; then
 	# if we're running Docker, let's pipe through dind
 	# (and we'll run dind explicitly with "sh" since its shebang is /bin/bash)
-	set -- sh "$(which dind)" "$@" "--insecure-registry=$IP"
+	set -- sh "$(which dind)" "$@" "--insecure-registry=0.0.0.0/0"
 fi
 
+containerd &
 
 echo "$@"
 exec "$@"

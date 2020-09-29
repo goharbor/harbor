@@ -1,0 +1,12 @@
+<div>
+    <hbr-replication #replicationView
+    [projectId]="projectIdentify"
+    [projectName]="projectName"
+    [isSystemAdmin]="isSystemAdmin"
+    [withReplicationJob]='true'
+    (goToRegistry)="goRegistry()"
+    [hasCreateReplicationPermission]="hasCreateReplicationPermission"
+    [hasUpdateReplicationPermission]="hasUpdateReplicationPermission"
+    [hasDeleteReplicationPermission]="hasDeleteReplicationPermission"
+    [hasExecuteReplicationPermission]="hasExecuteReplicationPermission"></hbr-replication>
+</div>

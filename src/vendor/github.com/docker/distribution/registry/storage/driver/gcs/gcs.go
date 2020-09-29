@@ -16,6 +16,8 @@ package gcs
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -29,20 +31,16 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/net/context"
+	storagedriver "github.com/docker/distribution/registry/storage/driver"
+	"github.com/docker/distribution/registry/storage/driver/base"
+	"github.com/docker/distribution/registry/storage/driver/factory"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/jwt"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/cloud"
 	"google.golang.org/cloud/storage"
-
-	"github.com/Sirupsen/logrus"
-
-	ctx "github.com/docker/distribution/context"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	"github.com/docker/distribution/registry/storage/driver/base"
-	"github.com/docker/distribution/registry/storage/driver/factory"
 )
 
 const (
@@ -52,6 +50,8 @@ const (
 	uploadSessionContentType = "application/x-docker-upload-session"
 	minChunkSize             = 256 * 1024
 	defaultChunkSize         = 20 * minChunkSize
+	defaultMaxConcurrency    = 50
+	minConcurrency           = 25
 
 	maxTries = 5
 )
@@ -67,6 +67,12 @@ type driverParameters struct {
 	client        *http.Client
 	rootDirectory string
 	chunkSize     int
+
+	// maxConcurrency limits the number of concurrent driver operations
+	// to GCS, which ultimately increases reliability of many simultaneous
+	// pushes by ensuring we aren't DoSing our own server with many
+	// connections.
+	maxConcurrency uint64
 }
 
 func init() {
@@ -90,6 +96,16 @@ type driver struct {
 	privateKey    []byte
 	rootDirectory string
 	chunkSize     int
+}
+
+// Wrapper wraps `driver` with a throttler, ensuring that no more than N
+// GCS actions can occur concurrently. The default limit is 75.
+type Wrapper struct {
+	baseEmbed
+}
+
+type baseEmbed struct {
+	base.Base
 }
 
 // FromParameters constructs a new Driver with a given parameters map
@@ -143,6 +159,31 @@ func FromParameters(parameters map[string]interface{}) (storagedriver.StorageDri
 			return nil, err
 		}
 		ts = jwtConf.TokenSource(context.Background())
+	} else if credentials, ok := parameters["credentials"]; ok {
+		credentialMap, ok := credentials.(map[interface{}]interface{})
+		if !ok {
+			return nil, fmt.Errorf("The credentials were not specified in the correct format")
+		}
+
+		stringMap := map[string]interface{}{}
+		for k, v := range credentialMap {
+			key, ok := k.(string)
+			if !ok {
+				return nil, fmt.Errorf("One of the credential keys was not a string: %s", fmt.Sprint(k))
+			}
+			stringMap[key] = v
+		}
+
+		data, err := json.Marshal(stringMap)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to marshal gcs credentials to json")
+		}
+
+		jwtConf, err = google.JWTConfigFromJSON(data, storage.ScopeFullControl)
+		if err != nil {
+			return nil, err
+		}
+		ts = jwtConf.TokenSource(context.Background())
 	} else {
 		var err error
 		ts, err = google.DefaultTokenSource(context.Background(), storage.ScopeFullControl)
@@ -151,13 +192,19 @@ func FromParameters(parameters map[string]interface{}) (storagedriver.StorageDri
 		}
 	}
 
+	maxConcurrency, err := base.GetLimitFromParameter(parameters["maxconcurrency"], minConcurrency, defaultMaxConcurrency)
+	if err != nil {
+		return nil, fmt.Errorf("maxconcurrency config error: %s", err)
+	}
+
 	params := driverParameters{
-		bucket:        fmt.Sprint(bucket),
-		rootDirectory: fmt.Sprint(rootDirectory),
-		email:         jwtConf.Email,
-		privateKey:    jwtConf.PrivateKey,
-		client:        oauth2.NewClient(context.Background(), ts),
-		chunkSize:     chunkSize,
+		bucket:         fmt.Sprint(bucket),
+		rootDirectory:  fmt.Sprint(rootDirectory),
+		email:          jwtConf.Email,
+		privateKey:     jwtConf.PrivateKey,
+		client:         oauth2.NewClient(context.Background(), ts),
+		chunkSize:      chunkSize,
+		maxConcurrency: maxConcurrency,
 	}
 
 	return New(params)
@@ -181,8 +228,12 @@ func New(params driverParameters) (storagedriver.StorageDriver, error) {
 		chunkSize:     params.chunkSize,
 	}
 
-	return &base.Base{
-		StorageDriver: d,
+	return &Wrapper{
+		baseEmbed: baseEmbed{
+			Base: base.Base{
+				StorageDriver: base.NewRegulator(d, params.maxConcurrency),
+			},
+		},
 	}, nil
 }
 
@@ -194,7 +245,7 @@ func (d *driver) Name() string {
 
 // GetContent retrieves the content stored at "path" as a []byte.
 // This should primarily be used for small objects.
-func (d *driver) GetContent(context ctx.Context, path string) ([]byte, error) {
+func (d *driver) GetContent(context context.Context, path string) ([]byte, error) {
 	gcsContext := d.context(context)
 	name := d.pathToKey(path)
 	var rc io.ReadCloser
@@ -220,7 +271,7 @@ func (d *driver) GetContent(context ctx.Context, path string) ([]byte, error) {
 
 // PutContent stores the []byte content at a location designated by "path".
 // This should primarily be used for small objects.
-func (d *driver) PutContent(context ctx.Context, path string, contents []byte) error {
+func (d *driver) PutContent(context context.Context, path string, contents []byte) error {
 	return retry(func() error {
 		wc := storage.NewWriter(d.context(context), d.bucket, d.pathToKey(path))
 		wc.ContentType = "application/octet-stream"
@@ -231,7 +282,7 @@ func (d *driver) PutContent(context ctx.Context, path string, contents []byte) e
 // Reader retrieves an io.ReadCloser for the content stored at "path"
 // with a given byte offset.
 // May be used to resume reading a stream by providing a nonzero offset.
-func (d *driver) Reader(context ctx.Context, path string, offset int64) (io.ReadCloser, error) {
+func (d *driver) Reader(context context.Context, path string, offset int64) (io.ReadCloser, error) {
 	res, err := getObject(d.client, d.bucket, d.pathToKey(path), offset)
 	if err != nil {
 		if res != nil {
@@ -290,7 +341,7 @@ func getObject(client *http.Client, bucket string, name string, offset int64) (*
 
 // Writer returns a FileWriter which will store the content written to it
 // at the location designated by "path" after the call to Commit.
-func (d *driver) Writer(context ctx.Context, path string, append bool) (storagedriver.FileWriter, error) {
+func (d *driver) Writer(context context.Context, path string, append bool) (storagedriver.FileWriter, error) {
 	writer := &writer{
 		client: d.client,
 		bucket: d.bucket,
@@ -542,7 +593,7 @@ func retry(req request) error {
 
 // Stat retrieves the FileInfo for the given path, including the current
 // size in bytes and the creation time.
-func (d *driver) Stat(context ctx.Context, path string) (storagedriver.FileInfo, error) {
+func (d *driver) Stat(context context.Context, path string) (storagedriver.FileInfo, error) {
 	var fi storagedriver.FileInfoFields
 	//try to get as file
 	gcsContext := d.context(context)
@@ -588,7 +639,7 @@ func (d *driver) Stat(context ctx.Context, path string) (storagedriver.FileInfo,
 
 // List returns a list of the objects that are direct descendants of the
 //given path.
-func (d *driver) List(context ctx.Context, path string) ([]string, error) {
+func (d *driver) List(context context.Context, path string) ([]string, error) {
 	var query *storage.Query
 	query = &storage.Query{}
 	query.Delimiter = "/"
@@ -626,7 +677,7 @@ func (d *driver) List(context ctx.Context, path string) ([]string, error) {
 
 // Move moves an object stored at sourcePath to destPath, removing the
 // original object.
-func (d *driver) Move(context ctx.Context, sourcePath string, destPath string) error {
+func (d *driver) Move(context context.Context, sourcePath string, destPath string) error {
 	gcsContext := d.context(context)
 	_, err := storageCopyObject(gcsContext, d.bucket, d.pathToKey(sourcePath), d.bucket, d.pathToKey(destPath), nil)
 	if err != nil {
@@ -674,7 +725,7 @@ func (d *driver) listAll(context context.Context, prefix string) ([]string, erro
 }
 
 // Delete recursively deletes all objects stored at "path" and its subpaths.
-func (d *driver) Delete(context ctx.Context, path string) error {
+func (d *driver) Delete(context context.Context, path string) error {
 	prefix := d.pathToDirKey(path)
 	gcsContext := d.context(context)
 	keys, err := d.listAll(gcsContext, prefix)
@@ -749,7 +800,7 @@ func storageCopyObject(context context.Context, srcBucket, srcName string, destB
 // URLFor returns a URL which may be used to retrieve the content stored at
 // the given path, possibly using the given options.
 // Returns ErrUnsupportedMethod if this driver has no privateKey
-func (d *driver) URLFor(context ctx.Context, path string, options map[string]interface{}) (string, error) {
+func (d *driver) URLFor(context context.Context, path string, options map[string]interface{}) (string, error) {
 	if d.privateKey == nil {
 		return "", storagedriver.ErrUnsupportedMethod{}
 	}
@@ -780,6 +831,12 @@ func (d *driver) URLFor(context ctx.Context, path string, options map[string]int
 		Expires:        expiresTime,
 	}
 	return storage.SignedURL(d.bucket, name, opts)
+}
+
+// Walk traverses a filesystem defined within driver, starting
+// from the given path, calling f on each file
+func (d *driver) Walk(ctx context.Context, path string, f storagedriver.WalkFn) error {
+	return storagedriver.WalkFallback(ctx, d, path, f)
 }
 
 func startSession(client *http.Client, bucket string, name string) (uri string, err error) {
@@ -856,12 +913,12 @@ func putChunk(client *http.Client, sessionURI string, chunk []byte, from int64, 
 	return bytesPut, err
 }
 
-func (d *driver) context(context ctx.Context) context.Context {
+func (d *driver) context(context context.Context) context.Context {
 	return cloud.WithContext(context, dummyProjectID, d.client)
 }
 
 func (d *driver) pathToKey(path string) string {
-	return strings.TrimRight(d.rootDirectory+strings.TrimLeft(path, "/"), "/")
+	return strings.TrimSpace(strings.TrimRight(d.rootDirectory+strings.TrimLeft(path, "/"), "/"))
 }
 
 func (d *driver) pathToDirKey(path string) string {

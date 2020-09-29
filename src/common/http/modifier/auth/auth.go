@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,11 +18,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/vmware/harbor/src/common/http/modifier"
-)
-
-const (
-	secretCookieName = "secret"
+	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/common/secret"
 )
 
 // Authorizer is a kind of Modifier used to authorize the requests
@@ -45,10 +42,6 @@ func (s *SecretAuthorizer) Modify(req *http.Request) error {
 	if req == nil {
 		return errors.New("the request is null")
 	}
-
-	req.AddCookie(&http.Cookie{
-		Name:  secretCookieName,
-		Value: s.secret,
-	})
-	return nil
+	err := secret.AddToRequest(req, s.secret)
+	return err
 }

@@ -1,0 +1,296 @@
+.esxc-gauge-container {
+    position: relative;
+    overflow: hidden;
+}
+
+/*
+ * Gauge track color
+ *
+ * TODO: we should make this configurable in the directive
+ */
+
+.esxc-gauge-circle-bg {
+    background-color: #EEE;
+}
+
+/*
+ * Gauge bar
+ */
+
+.esxc-gauge-circle-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    transform: rotate(0deg);
+}
+
+/*
+ * Gauge center area
+ */
+
+.esxc-gauge-circle-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/*
+ * Gauge caption
+ */
+
+.esxc-gauge-circle-caption {
+    text-align: center;
+}
+
+.esxc-gauge-bar-one {
+    opacity: 0.5;
+}
+
+/*
+ * Small size gauge sizing
+ */
+
+.esxc-gauge-small  {
+    .esxc-gauge-container {
+        width: 60px;
+        height: 30px;
+        top: -8px;
+        left: 4px;
+    }
+
+    .esxc-gauge-circle-fill {
+        height: 60px;
+        border-radius: 30px;
+        clip: rect(30px, 60px, 60px, 0);
+    }
+
+    .esxc-gauge-circle-bg {
+        height: 60px;
+        border-radius: 30px;
+    }
+    
+    .esxc-gauge-circle-inner {
+        width: 50px;
+        height: 50px;
+        border-radius: 25px;
+        margin: 5px;
+    }
+    
+    .esxc-gauge-circle-caption {
+        margin-top: 6px;
+    }
+
+    /*Small size*/
+
+    .esxc-gauge-circle-caption .esxc-value {
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .esxc-gauge-circle-caption .esxc-unit {
+        font-size: 10px;
+    }
+
+    .esxc-gauge-circle-caption .esxc-loading {
+        font-size: 10px;
+    }
+
+    .esxc-title {
+        font-size: 10px;
+        text-align: center;
+        margin-top: 3px;
+        position: relative;
+        bottom: 12px;
+    }
+
+    .esxc-title .esxc-bar-title {
+        float: left;
+        text-align: right;
+        width: 70px;
+        margin-top: 0;
+    }
+
+    .esxc-limit {
+        text-align: center;
+        position: relative;
+        top: -8px;
+        width: 70px;
+    }
+
+    .esxc-limit .esxc-value {
+        font-size: 8px;
+    }
+
+    .esxc-limit .esxc-unit {
+        font-size: 8px;
+    }
+
+    .esxc-limit .esxc-label {
+        font-size: 8px;
+    }
+
+    .esxc-limit .esxc-bar-limit {
+        text-align: right;
+    }
+}
+
+
+/*
+ * Medium size gauge sizing
+ */
+ .esxc-gauge-medium {
+    .esxc-gauge-container {
+        width: 130px;
+        height: 65px;
+    }
+    
+     .esxc-gauge-circle-fill {
+        height: 130px;
+        border-radius: 130px;
+        clip: rect(65px, 130px, 130px, 0);
+    }
+    
+     .esxc-gauge-circle-bg {
+        height: 130px;
+        border-radius: 65px;
+    }
+    
+    .esxc-gauge-circle-inner {
+        height: 120px;
+        width: 120px;
+        border-radius: 60px;
+        margin: 5px;
+    }
+
+    /*medium size*/
+
+    .esxc-gauge-circle-caption {
+        margin-top: 40px;
+        color: #000;
+    }
+
+    .esxc-gauge-circle-caption .esxc-value {
+        font-size: 22px;
+    }
+
+    .esxc-gauge-circle-caption .esxc-unit {
+        font-size: 14px;
+    }
+
+    .esxc-gauge-circle-caption .esxc-loading {
+        font-size: 25px;
+    }
+
+    .esxc-limit {
+        text-align: center;
+        color: #565656;
+    }
+
+    .esxc-limit .esxc-value {
+        font-size: 12px;
+    }
+
+    .esxc-limit .esxc-unit {
+        font-size: 12px;
+    }
+
+    .esxc-limit .esxc-label {
+        font-size: 12px;
+    }
+
+    .esxc-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #565656;
+        text-align: center;
+        margin-top: -8px;
+    }
+ }
+
+
+/*
+ * Large size gauge sizing
+ */
+
+ .esxc-gauge-large {
+    .esxc-gauge-container {
+        width: 260px;
+        height: 130px;
+    }
+    
+    .esxc-gauge-circle-fill {
+        height: 260px;
+        border-radius: 130px;
+        clip: rect(130px, 260px, 260px, 0);
+    }
+    
+    .esxc-gauge-circle-bg {
+        height: 260px;
+        border-radius: 130px;
+    }
+    
+    .esxc-gauge-circle-inner {
+        width: 240px;
+        height: 240px;
+        border-radius: 120px;
+        margin: 10px;
+    }
+    
+     .esxc-gauge-circle-caption {
+        margin-top: 95px;
+    }
+
+    /*large size*/
+
+    .esxc-gauge-circle-caption .esxc-value {
+        font-size: 40px;
+    }
+
+    .esxc-gauge-circle-caption .esxc-unit {
+        font-size: 18px;
+    }
+
+    .esxc-gauge-circle-caption .esxc-loading {
+        font-size: 30px;
+    }
+
+    .esxc-limit {
+        text-align: center;
+        margin-top: 4px;
+    }
+
+    .esxc-limit .esxc-value {
+        font-size: 14px;
+        color: #565656;
+        line-height: 18px;
+    }
+
+    .esxc-limit .esxc-unit {
+        font-size: 14px;
+    }
+
+    .esxc-limit .esxc-label {
+        font-size: 14px;
+    }
+
+    .esxc-limit .esxc-bar-limit {
+        text-align: right;
+    }
+
+    .esxc-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #565656;
+        line-height: 18px;
+        text-align: center;
+        margin-top: -2px;
+        .esxc-bar-title {
+            float: left;
+            text-align: right;
+            width: 70px;
+            margin-top: 0;
+        }
+    }
+ }

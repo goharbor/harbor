@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common/models"
 )
 
 func TestDeleteUser(t *testing.T) {
@@ -50,13 +50,13 @@ func TestDeleteUser(t *testing.T) {
 	}
 
 	user := &models.User{}
-	sql := "select * from user where user_id = ?"
+	sql := "select * from harbor_user where user_id = ?"
 	if err = GetOrmer().Raw(sql, id).
 		QueryRow(user); err != nil {
 		t.Fatalf("failed to query user: %v", err)
 	}
 
-	if user.Deleted != 1 {
+	if user.Deleted != true {
 		t.Error("user is not deleted")
 	}
 
@@ -88,5 +88,25 @@ func TestOnBoardUser(t *testing.T) {
 	err = OnBoardUser(u)
 	assert.Nil(err)
 	assert.True(u.UserID == id)
+	CleanUser(int64(id))
+}
+func TestOnBoardUser_EmptyEmail(t *testing.T) {
+	assert := assert.New(t)
+	u := &models.User{
+		Username: "empty_email",
+		Password: "password1",
+		Realname: "empty_email",
+	}
+	err := OnBoardUser(u)
+	assert.Nil(err)
+	id := u.UserID
+	assert.True(id > 0)
+	err = OnBoardUser(u)
+	assert.Nil(err)
+	assert.True(u.UserID == id)
+	assert.Equal("", u.Email)
+
+	user, err := GetUser(models.User{Username: "empty_email"})
+	assert.Equal("", user.Email)
 	CleanUser(int64(id))
 }

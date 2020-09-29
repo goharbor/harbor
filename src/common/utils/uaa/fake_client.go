@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ func (fc *FakeClient) SearchUser(name string) ([]*SearchUserEntry, error) {
 		ExtID:    "some-external-id-1",
 		ID:       "u-0001",
 		UserName: "one",
-		Emails: []SearchUserEmailEntry{SearchUserEmailEntry{
+		Emails: []SearchUserEmailEntry{{
 			Primary: false,
 			Value:   "one@email.com",
 		}},
@@ -68,7 +68,7 @@ func (fc *FakeClient) SearchUser(name string) ([]*SearchUserEntry, error) {
 		ExtID:    "some-external-id-2-a",
 		ID:       "u-0002a",
 		UserName: "two",
-		Emails: []SearchUserEmailEntry{SearchUserEmailEntry{
+		Emails: []SearchUserEmailEntry{{
 			Primary: false,
 			Value:   "two@email.com",
 		}},

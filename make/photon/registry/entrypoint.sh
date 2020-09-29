@@ -2,18 +2,12 @@
 
 set -e
 
-if [ -d /etc/registry ]; then
-    chown 10000:10000 -R /etc/registry
-fi
-if [ -d /var/lib/registry ]; then
-    chown 10000:10000 -R /var/lib/registry
-fi  
-if [ -d /storage ]; then
-    chown 10000:10000 -R /storage
-fi  
-case "$1" in
-    *.yaml|*.yml) set -- registry serve "$@" ;;
-    serve|garbage-collect|help|-*) set -- registry "$@" ;;
-esac
+# The directory /var/lib/registry is within the container, and used to store image in CI testing.
+# So for now we need to chown to it to avoid failure in CI.
+# if [ -d /var/lib/registry ]; then
+#     chown 10000:10000 -R /var/lib/registry
+# fi
 
-sudo -E -u \#10000 "$@"
+/home/harbor/install_cert.sh
+
+/usr/bin/registry_DO_NOT_USE_GC serve /etc/registry/config.yml

@@ -1,0 +1,24 @@
+<a *ngIf="hasSignedIn" (click)="backToProject()" class="backStyle"> {{'PROJECT_DETAIL.PROJECTS' | translate}}</a>
+<a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']"> {{'SEARCH.BACK' | translate}}</a>
+
+<h1 class="custom-h2" sub-header-title>
+    <clr-icon *ngIf="isProxyCacheProject" shape="cloud-traffic" size="30"></clr-icon>
+    <span class="ml-05">{{currentProject.name}}</span>
+    <span class="ml-05 role-label" *ngIf="isMember">{{roleName | translate}}</span>
+</h1>
+<div class="clr-row mt-0 line-height-10" *ngIf="isProxyCacheProject">
+    <span class="proxy-cache">{{ 'PROJECT.PROXY_CACHE' | translate }}</span>
+</div>
+<clr-tabs id="project-tabs" class="tabs" [class.in-overflow]="isTabLinkInOverFlow()">
+    <ng-container *ngFor="let tab of tabLinkNavList;let i=index">
+        <ng-container *ngIf="tab.permissions()">
+            <clr-tab>
+                <button [class.clear-default-active]="isDefaultTab(tab, i)" [clrTabLinkInOverflow]="tab.tabLinkInOverflow" id="{{'project-'+tab.linkName}}" clrTabLink
+                    routerLink="{{tab.linkName}}" routerLinkActive="active" type="button">
+                    <a class="nav-link">{{tab.showTabName | translate}}</a></button>
+            </clr-tab>
+        </ng-container>
+    </ng-container>
+</clr-tabs>
+
+<router-outlet></router-outlet>

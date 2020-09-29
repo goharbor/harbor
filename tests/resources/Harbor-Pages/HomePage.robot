@@ -1,4 +1,4 @@
-# Copyright 2016-2017 VMware, Inc. All Rights Reserved.
+# Copyright Project Harbor Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,59 +17,41 @@ Documentation  This resource provides any keywords related to the Harbor private
 Resource  ../../resources/Util.robot
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Sign In Harbor
     [Arguments]  ${url}  ${user}  ${pw}
     Go To    ${url}
-    Sleep  5
-    ${title}=  Get Title
-    Log To Console  ${title}
-    Should Be Equal  ${title}  Harbor
-    Sleep  2
-    Input Text  login_username  ${user}
-    Input Text  login_password  ${pw}
-    Sleep  2
-    Click button  css=.btn
-    sleep  5
+    Retry Wait Element  ${harbor_span_title}
+    Retry Wait Element  ${login_name}
+    Retry Wait Element  ${login_pwd}
+    Input Text  ${login_name}  ${user}
+    Input Text  ${login_pwd}  ${pw}
+    Retry Wait Element  ${login_btn}
+    Retry Button Click  ${login_btn}
     Log To Console  ${user}
-    Wait Until Page Contains  ${user}
+    Retry Wait Element  xpath=//span[contains(., '${user}')]
+
+Capture Screenshot And Source
+    Capture Page Screenshot
+    Log Source
 
 Sign Up Should Not Display
-    Page Should Not Contain Element  xpath=${sign_up_button_xpath}
+    Retry Wait Until Page Not Contains Element  xpath=${sign_up_button_xpath}
 
 Create An New User
     [Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
     Go To    ${url}
-    sleep  5
-    ${title}=  Get Title
-    Log To Console  ${title}
-    Should Be Equal  ${title}  Harbor
-    ${d}=    Get Current Date    result_format=%m%s
-    Sleep  5
-    Click Element  xpath=${sign_up_for_an_account_xpath}
-    sleep  3
-    Input Text  xpath=${username_xpath}  ${username}
-    sleep  1
-    Input Text  xpath=${email_xpath}  ${email}
-    sleep  1
-    Input Text  xpath=${realname_xpath}  ${realname}
-    sleep  1
-    Input Text  xpath=${newPassword_xpath}  ${newPassword}
-    sleep  1
-    Input Text  xpath=${confirmPassword_xpath}  ${newPassword}
-    sleep  1
-    Input Text  xpath=${comment_xpath}  ${comment}
-    sleep  2
-    Click button  xpath=${signup_xpath}
-    sleep  5
-    Input Text  login_username  ${username}
-    Input Text  login_password  ${newPassword}
-    sleep  2
-    Click button  css=.btn
-    sleep  5
-    Wait Until Page Contains  ${username}
-    Sleep  3
-
-
+    Retry Wait Element  ${harbor_span_title}
+    Retry Element Click  xpath=${sign_up_for_an_account_xpath}
+    Retry Text Input  xpath=${username_xpath}  ${username}
+    Retry Text Input  xpath=${email_xpath}  ${email}
+    Retry Text Input  xpath=${realname_xpath}  ${realname}
+    Retry Text Input  xpath=${newPassword_xpath}  ${newPassword}
+    Retry Text Input  xpath=${confirmPassword_xpath}  ${newPassword}
+    Retry Text Input  xpath=${comment_xpath}  ${comment}
+    Retry Double Keywords When Error  Retry Element Click  ${signup_xpath}  Retry Wait Until Page Not Contains Element  ${signup_xpath}
+    Retry Text Input  ${login_name}  ${username}
+    Retry Text Input  ${login_pwd}  ${newPassword}
+    Retry Double Keywords When Error  Retry Element Click  ${login_btn}  Retry Wait Until Page Not Contains Element  ${login_btn}
+    Retry Wait Element  xpath=//span[contains(., '${username}')]

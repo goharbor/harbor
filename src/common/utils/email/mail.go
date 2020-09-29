@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // Send ...
@@ -120,7 +120,7 @@ func newClient(addr, identity, username, password string,
 		return nil, err
 	}
 
-	//try to swith to SSL/TLS
+	// try to swith to SSL/TLS
 	if !tls {
 		if ok, _ := client.Extension("STARTTLS"); ok {
 			log.Debugf("switching the connection with %s to SSL/TLS ...", addr)
@@ -130,6 +130,7 @@ func newClient(addr, identity, username, password string,
 			}); err != nil {
 				return nil, err
 			}
+			tls = true
 		} else {
 			log.Debugf("the email server %s does not support STARTTLS", addr)
 		}
@@ -137,9 +138,13 @@ func newClient(addr, identity, username, password string,
 
 	if ok, _ := client.Extension("AUTH"); ok {
 		log.Debug("authenticating the client...")
-		// only support plain auth
-		if err = client.Auth(smtp.PlainAuth(identity,
-			username, password, host)); err != nil {
+		var auth smtp.Auth
+		if tls {
+			auth = smtp.PlainAuth(identity, username, password, host)
+		} else {
+			auth = smtp.CRAMMD5Auth(username, password)
+		}
+		if err = client.Auth(auth); err != nil {
 			return nil, err
 		}
 	} else {

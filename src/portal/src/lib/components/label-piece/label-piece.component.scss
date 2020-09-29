@@ -1,0 +1,19 @@
+.label {
+    border: none;
+    color: #222;
+    display: inline-block;
+    justify-content: flex-start;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: .875rem;
+    cursor: inherit;
+}
+
+.label clr-icon {
+    margin-right: 3px;
+}
+
+.btn-group .dropdown-menu clr-icon {
+    display: block;
+}

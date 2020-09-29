@@ -1,0 +1,14 @@
+.tooltip {
+    &.tooltip-validation.invalid {
+        &::before{
+        top: 0.7em;
+        right: 3em;
+        }
+    }
+    >.tooltip-content{
+        opacity: 1;
+        visibility: visible;
+        left: 75%;
+        background-color: #c92100;
+    }
+}

@@ -1,15 +1,16 @@
 package storage
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
+	dcontext "github.com/docker/distribution/context"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/libtrust"
+	"github.com/opencontainers/go-digest"
 )
 
 // signedManifestHandler is a ManifestHandler that covers schema1 manifests. It
@@ -24,7 +25,7 @@ type signedManifestHandler struct {
 var _ ManifestHandler = &signedManifestHandler{}
 
 func (ms *signedManifestHandler) Unmarshal(ctx context.Context, dgst digest.Digest, content []byte) (distribution.Manifest, error) {
-	context.GetLogger(ms.ctx).Debug("(*signedManifestHandler).Unmarshal")
+	dcontext.GetLogger(ms.ctx).Debug("(*signedManifestHandler).Unmarshal")
 
 	var (
 		signatures [][]byte
@@ -56,7 +57,7 @@ func (ms *signedManifestHandler) Unmarshal(ctx context.Context, dgst digest.Dige
 }
 
 func (ms *signedManifestHandler) Put(ctx context.Context, manifest distribution.Manifest, skipDependencyVerification bool) (digest.Digest, error) {
-	context.GetLogger(ms.ctx).Debug("(*signedManifestHandler).Put")
+	dcontext.GetLogger(ms.ctx).Debug("(*signedManifestHandler).Put")
 
 	sm, ok := manifest.(*schema1.SignedManifest)
 	if !ok {
@@ -72,7 +73,7 @@ func (ms *signedManifestHandler) Put(ctx context.Context, manifest distribution.
 
 	revision, err := ms.blobStore.Put(ctx, mt, payload)
 	if err != nil {
-		context.GetLogger(ctx).Errorf("error putting payload into blobstore: %v", err)
+		dcontext.GetLogger(ctx).Errorf("error putting payload into blobstore: %v", err)
 		return "", err
 	}
 

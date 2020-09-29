@@ -1,4 +1,4 @@
-# Copyright 2016-2017 VMware, Inc. All Rights Reserved.
+# Copyright Project Harbor Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,19 +18,18 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 View Repo Scan Details
-    Click Element  xpath=${first_repo_xpath}
-    Sleep  2
-    Capture Page Screenshot  viewcve1.png
-    Wait Until Page Contains  unknown
-    Wait Until Page Contains  high
-    Wait Until Page Contains  medium
-    Page Should Contain  CVE
+    [Arguments]  @{vulnerabilities_level}
+    Retry Element Click  xpath=${first_repo_xpath}
+    Capture Page Screenshot
+    FOR  ${item}  IN  @{vulnerabilities_level}
+        Retry Wait Until Page Contains Element  //hbr-artifact-vulnerabilities//clr-dg-row[contains(.,'${item}')]
+    END
+    Retry Element Click  xpath=${build_history_btn}
+    Retry Wait Until Page Contains Element  xpath=${build_history_data}
 
 View Scan Error Log
-    Page Should Contain  View Log
-    Click Element  xpath=${view_log_xpath}
-    Sleep  1
+    Retry Wait Until Page Contains  View Log
+    Retry Element Click  xpath=${view_log_xpath}
     Capture Page Screenshot  viewlog.png
-    Wait Until Page Contains  Entered scan initializer
-    Wait Until Page Contains  ERROR
-    Wait Until Page Contains  View Scanning Job Log
+
+

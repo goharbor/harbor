@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: harbor-mysql-config
-data:
-  MYSQL_ROOT_PASSWORD: "{{db_password}}"

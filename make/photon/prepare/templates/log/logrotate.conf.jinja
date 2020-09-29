@@ -1,0 +1,8 @@
+/var/log/docker/*.log {
+        rotate {{log_rotate_count}}
+        size {{log_rotate_size}}
+        copytruncate
+        compress
+        missingok
+        nodateext
+}

@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,33 +25,33 @@ import (
 	"os"
 	"strings"
 
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/lib/log"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )
 
 const (
-	//TokenURLSuffix ...
+	// TokenURLSuffix ...
 	TokenURLSuffix = "/oauth/token"
-	//AuthURLSuffix ...
+	// AuthURLSuffix ...
 	AuthURLSuffix = "/oauth/authorize"
-	//UserInfoURLSuffix ...
+	// UserInfoURLSuffix ...
 	UserInfoURLSuffix = "/userinfo"
-	//UsersURLSuffix ...
+	// UsersURLSuffix ...
 	UsersURLSuffix = "/Users"
 )
 
-var uaaTransport = &http.Transport{}
+var uaaTransport = &http.Transport{Proxy: http.ProxyFromEnvironment}
 
 // Client provides funcs to interact with UAA.
 type Client interface {
-	//PasswordAuth accepts username and password, return a token if it's valid.
+	// PasswordAuth accepts username and password, return a token if it's valid.
 	PasswordAuth(username, password string) (*oauth2.Token, error)
-	//GetUserInfoByToken send the token to OIDC endpoint to get user info, currently it's also used to validate the token.
+	// GetUserInfoByToken send the token to OIDC endpoint to get user info, currently it's also used to validate the token.
 	GetUserInfo(token string) (*UserInfo, error)
-	//SearchUser searches a user based on user name.
+	// SearchUser searches a user based on user name.
 	SearchUser(name string) ([]*SearchUserEntry, error)
-	//UpdateConfig updates the config of the current client
+	// UpdateConfig updates the config of the current client
 	UpdateConfig(cfg *ClientConfig) error
 }
 
@@ -61,7 +61,7 @@ type ClientConfig struct {
 	ClientSecret  string
 	Endpoint      string
 	SkipTLSVerify bool
-	//Absolut path for CA root used to communicate with UAA, only effective when skipTLSVerify set to false.
+	// Absolut path for CA root used to communicate with UAA, only effective when skipTLSVerify set to false.
 	CARootPath string
 }
 
@@ -76,13 +76,13 @@ type UserInfo struct {
 	Email    string `json:"email"`
 }
 
-//SearchUserEmailEntry ...
+// SearchUserEmailEntry ...
 type SearchUserEmailEntry struct {
 	Value   string `json:"value"`
 	Primary bool   `json:"primary"`
 }
 
-//SearchUserEntry is the struct of an entry of user within search result.
+// SearchUserEntry is the struct of an entry of user within search result.
 type SearchUserEntry struct {
 	ID       string                 `json:"id"`
 	ExtID    string                 `json:"externalId"`
@@ -91,20 +91,20 @@ type SearchUserEntry struct {
 	Groups   []interface{}
 }
 
-//SearchUserRes is the struct to parse the result of search user API of UAA
+// SearchUserRes is the struct to parse the result of search user API of UAA
 type SearchUserRes struct {
 	Resources    []*SearchUserEntry `json:"resources"`
 	TotalResults int                `json:"totalResults"`
 	Schemas      []string           `json:"schemas"`
 }
 
-// DefaultClient leverages oauth2 pacakge for oauth features
+// DefaultClient leverages oauth2 package for oauth features
 type defaultClient struct {
 	httpClient *http.Client
 	oauth2Cfg  *oauth2.Config
 	twoLegCfg  *clientcredentials.Config
 	endpoint   string
-	//TODO: add public key, etc...
+	// TODO: add public key, etc...
 }
 
 func (dc *defaultClient) PasswordAuth(username, password string) (*oauth2.Token, error) {
@@ -190,9 +190,9 @@ func (dc *defaultClient) UpdateConfig(cfg *ClientConfig) error {
 				return err
 			}
 			pool := x509.NewCertPool()
-			//Do not throw error if the certificate is malformed, so we can put a place holder.
+			// Do not throw error if the certificate is malformed, so we can put a place holder.
 			if ok := pool.AppendCertsFromPEM(content); !ok {
-				log.Warningf("Failed to append certificate to cert pool, cert path: %s", cfg.CARootPath)
+				log.Warningf("Failed to append certificate to cert worker, cert path: %s", cfg.CARootPath)
 			} else {
 				tc.RootCAs = pool
 			}
@@ -202,7 +202,7 @@ func (dc *defaultClient) UpdateConfig(cfg *ClientConfig) error {
 	}
 	uaaTransport.TLSClientConfig = tc
 	dc.httpClient.Transport = uaaTransport
-	//dc.httpClient.Transport = transport.
+	// dc.httpClient.Transport = transport.
 
 	oc := &oauth2.Config{
 		ClientID:     cfg.ClientID,

@@ -1,0 +1,56 @@
+.sub-header-title {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.sub-nav-bg-color {
+  background-color: #fafafa;
+}
+
+.subnav .nav {
+  padding-left: 0;
+}
+
+.role-label {
+  color: #cccccc;
+  font-size: 14px;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+.backStyle {
+  color: #007cbb;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 2px;
+}
+
+button {
+  outline: none;
+}
+#project-tabs {
+  .clear-default-active {
+    box-shadow: none;
+    &:hover {
+      box-shadow: 0 -3px 0 #0077b8 inset;
+    }
+  }
+}
+
+.tabs {
+  .nav-link {
+    padding: 0;
+  }
+}
+.ml-05 {
+  margin-left: 0.5rem;
+}
+.proxy-cache {
+  margin-left: 2.5rem;
+  font-size: 10px;
+  font-weight: 300;
+  opacity: 0.8;
+}
+.line-height-10 {
+  line-height: 10px;
+}

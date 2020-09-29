@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,12 +15,10 @@
 package secret
 
 const (
-	// AdminserverUser is the name of adminserver user
-	AdminserverUser = "harbor-adminserver"
 	// JobserviceUser is the name of jobservice user
 	JobserviceUser = "harbor-jobservice"
-	// UIUser is the name of ui user
-	UIUser = "harbor-ui"
+	// CoreUser is the name of ui user
+	CoreUser = "harbor-core"
 )
 
 // Store the secrets and provides methods to validate secrets

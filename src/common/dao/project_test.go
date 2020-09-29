@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/models"
 )
 
 func TestDeleteProject(t *testing.T) {
@@ -49,8 +49,8 @@ func TestDeleteProject(t *testing.T) {
 		t.Fatalf("failed to get project: %v", err)
 	}
 
-	if p.Deleted != 1 {
-		t.Errorf("unexpeced deleted column: %d != %d", p.Deleted, 1)
+	if !p.Deleted {
+		t.Errorf("unexpeced deleted column: %t != %t", p.Deleted, true)
 	}
 
 	deletedName := fmt.Sprintf("%s#%d", name, id)
@@ -61,14 +61,7 @@ func TestDeleteProject(t *testing.T) {
 }
 
 func delProjPermanent(id int64) error {
-	_, err := GetOrmer().QueryTable("access_log").
-		Filter("ProjectID", id).
-		Delete()
-	if err != nil {
-		return err
-	}
-
-	_, err = GetOrmer().Raw(`delete from project_member 
+	_, err := GetOrmer().Raw(`delete from project_member 
 		where project_id = ?`, id).Exec()
 	if err != nil {
 		return err
@@ -96,16 +89,16 @@ func Test_projectQueryConditions(t *testing.T) {
 			[]interface{}{}},
 		{"Query with valid projectID",
 			args{query: &models.ProjectQueryParam{ProjectIDs: []int64{2, 3}, Owner: "admin"}},
-			` from project as p join user u1
-					on p.owner_id = u1.user_id where p.deleted=0 and u1.username=? and p.project_id in ( ?,? ) order by p.name`,
+			` from project as p join harbor_user u1
+					on p.owner_id = u1.user_id where p.deleted=false and u1.username=? and p.project_id in ( ?,? )`,
 			[]interface{}{2, 3}},
 		{"Query with valid page and member",
 			args{query: &models.ProjectQueryParam{ProjectIDs: []int64{2, 3}, Owner: "admin", Name: "sample", Member: &models.MemberQuery{Name: "name", Role: 1}, Pagination: &models.Pagination{Page: 1, Size: 20}}},
-			` from project as p join user u1
+			` from project as p join harbor_user u1
 					on p.owner_id = u1.user_id join project_member pm
-					on p.project_id = pm.project_id
-					join user u2
-					on pm.entity_id=u2.user_id where p.deleted=0 and u1.username=? and p.name like ? and u2.username=? and pm.role = ? and p.project_id in ( ?,? ) order by p.name limit ? offset ?`,
+					on p.project_id = pm.project_id and pm.entity_type = 'u'
+					join harbor_user u2
+					on pm.entity_id=u2.user_id where p.deleted=false and u1.username=? and p.name like ? and u2.username=? and pm.role = ? and p.project_id in ( ?,? )`,
 			[]interface{}{1, []int64{2, 3}, 20, 0}},
 	}
 	for _, tt := range tests {
@@ -115,5 +108,32 @@ func Test_projectQueryConditions(t *testing.T) {
 				t.Errorf("projectQueryConditions() got = %v\n, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestProjetExistsByName(t *testing.T) {
+	name := "project_exist_by_name_test"
+	exist := ProjectExistsByName(name)
+	if exist {
+		t.Errorf("project %s expected to be not exist", name)
+	}
+
+	project := models.Project{
+		OwnerID: currentUser.UserID,
+		Name:    name,
+	}
+	id, err := AddProject(project)
+	if err != nil {
+		t.Fatalf("failed to add project: %v", err)
+	}
+	defer func() {
+		if err := delProjPermanent(id); err != nil {
+			t.Errorf("failed to clear up project %d: %v", id, err)
+		}
+	}()
+
+	exist = ProjectExistsByName(name)
+	if !exist {
+		t.Errorf("project %s expected to be exist", name)
 	}
 }

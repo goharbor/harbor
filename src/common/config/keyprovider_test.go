@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package config
 
 import (
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -41,4 +42,13 @@ func TestGetOfFileKeyProvider(t *testing.T) {
 		t.Errorf("unexpected key: %s != %s", k, key)
 		return
 	}
+}
+
+func TestPresetKeyProvider(t *testing.T) {
+	kp := &PresetKeyProvider{
+		Key: "mykey",
+	}
+	k, err := kp.Get(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, "mykey", k)
 }

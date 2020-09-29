@@ -1,4 +1,4 @@
-# Copyright 2016-2017 VMware, Inc. All Rights Reserved.
+# Copyright Project Harbor Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +14,10 @@
 
 *** Settings ***
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
-Library  Selenium2Library
+Library  SeleniumLibrary
 Library  OperatingSystem
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
-${CLAIR_BUILDER}  1.2.7
-${GOLANG_VERSION}  1.9.2
 
 *** Keywords ***
 Install Harbor to Test Server
@@ -29,7 +26,7 @@ Install Harbor to Test Server
     Sleep  5s
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
-    Log To Console  \n${output}
+    Log To Console  ${output}
     Log To Console  \nconfig harbor cfg
     Config Harbor cfg  http_proxy=https
     Prepare Cert
@@ -37,40 +34,43 @@ Install Harbor to Test Server
     Compile and Up Harbor With Source Code
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
-    Log To Console  \n${output}
+    Log To Console  ${output}
     Generate Certificate Authority For Chrome
 
 Up Harbor
-    [Arguments]  ${with_notary}=true  ${with_clair}=true
-    ${rc}  ${output}=  Run And Return Rc And Output  make start -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
+    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  make start -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum}
     Log  ${rc}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
 Down Harbor
-    [Arguments]  ${with_notary}=true  ${with_clair}=true
-    ${rc}  ${output}=  Run And Return Rc And Output  echo "Y" | make down -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
+    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  echo "Y" | make down -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum}
     Log  ${rc}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Offline
-    [Arguments]  ${golang_image}=golang:${GOLANG_VERSION}  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true
+    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true  ${with_trivy}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
-    ${rc}  ${output}=  Run And Return Rc And Output  make package_offline VERSIONTAG=%{HARBOR_BUILD_NUMBER} GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} HTTPPROXY=
+    Log To Console  make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    Log To Console  ${rc}
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+
+Package Harbor Online
+    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true  ${with_trivy}=true
+    Log To Console  \nStart Docker Daemon
+    Start Docker Daemon Locally
+    Log To Console  \nmake package_online GOBUILDTAGS="include_oss include_gcs"  VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_online GOBUILDTAGS="include_oss include_gcs" VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
     Log  ${rc}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
-Package Harbor Online
-    [Arguments]  ${golang_image}=golang:${GOLANG_VERSION}  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true
-    Log To Console  \nStart Docker Daemon
-    Start Docker Daemon Locally
-    ${rc}  ${output}=  Run And Return Rc And Output  make package_online VERSIONTAG=%{HARBOR_BUILD_NUMBER} GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} HTTPPROXY=
-    Log  ${rc}
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    
 Switch To LDAP
     Down Harbor
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf /data
@@ -80,41 +80,33 @@ Switch To LDAP
     Config Harbor cfg  auth=ldap_auth  http_proxy=https
     Prepare
     Up Harbor
-    ${rc}=  Run And Return Rc  docker pull osixia/openldap:1.1.7
-    Log  ${rc}
-    Should Be Equal As Integers  ${rc}  0
+    Docker Pull  osixia/openldap:1.1.7
     ${rc}  ${output}=  Run And Return Rc And Output  cd tests && ./ldapprepare.sh
     Log  ${rc}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Log  ${output}
-    Should Be Equal As Integers  ${rc}  0	
+    Should Be Equal As Integers  ${rc}  0
     Generate Certificate Authority For Chrome
-	
+
 Enable Notary Client
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
     Log  ${rc}
-    Should Be Equal As Integers  ${rc}  0
-    Log  ${ip}
-    ${rc}=  Run And Return Rc  mkdir -p /etc/docker/certs.d/${ip}/
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${ip}:4443/
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt /etc/docker/certs.d/${ip}/
+    ${rc}  ${output}=  Run And Return Rc and Output  curl -o /notary_ca.crt -s -k -X GET --header 'Accept: application/json' -u 'admin:Harbor12345' 'https://${ip}/api/v2.0/systeminfo/getcert'
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${ip}:4443/
+
+Remove Notary Signature
+    [Arguments]  ${ip}  ${image}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-remove-image-signature.expect ${ip} library ${image} ${notaryServerEndpoint}
+    Log To Console  ${output}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  ls -la /etc/docker/certs.d/${ip}/
-    Log  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${ip}:4443/
-    Log  ${output}
 
 Prepare
-    [Arguments]  ${with_notary}=true  ${with_clair}=true
-    ${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
+    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum}
     Log  ${rc}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
@@ -133,7 +125,7 @@ Config Harbor cfg
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
     ${out}=  Run  cat ./make/harbor.cfg
-    Log  ${out}		
+    Log  ${out}
 
 Prepare Cert
     # Will change the IP and Protocol in the harbor.cfg
@@ -142,32 +134,31 @@ Prepare Cert
     ${rc}=  Run And Return Rc  sed "s/^IP=.*/IP=${ip}/g" -i ./tests/generateCerts.sh
     Log  ${rc}
     ${out}=  Run  cat ./tests/generateCerts.sh
-    Log  ${out}	
+    Log  ${out}
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/generateCerts.sh
     Should Be Equal As Integers  ${rc}  0
 
 Compile and Up Harbor With Source Code
-    [Arguments]  ${golang_image}=golang:${GOLANG_VERSION}  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${clarity_image}
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${golang_image}
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} HTTPPROXY=
+    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  make install swagger_client NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     Sleep  20
-	
+
 Wait for Harbor Ready
     [Arguments]  ${protocol}  ${HARBOR_IP}
     Log To Console  Waiting for Harbor to Come Up...
-    :FOR  ${i}  IN RANGE  20
-    \  ${out}=  Run  curl -k ${protocol}://${HARBOR_IP}
-    \  Log  ${out}
-    \  ${status}=  Run Keyword And Return Status  Should Not Contain  ${out}  502 Bad Gateway
-    \  ${status}=  Run Keyword If  ${status}  Run Keyword And Return Status  Should Not Contain  ${out}  Connection refused
-    \  ${status}=  Run Keyword If  ${status}  Run Keyword And Return Status  Should Contain  ${out}  <title>Harbor</title>
-    \  Return From Keyword If  ${status}  ${HARBOR_IP}
-    \  Sleep  30s
+    FOR  ${i}  IN RANGE  20
+        ${out}=  Run  curl -k ${protocol}://${HARBOR_IP}
+        Log  ${out}
+        ${status}=  Run Keyword And Return Status  Should Not Contain  ${out}  502 Bad Gateway
+        ${status}=  Run Keyword If  ${status}  Run Keyword And Return Status  Should Not Contain  ${out}  Connection refused
+        ${status}=  Run Keyword If  ${status}  Run Keyword And Return Status  Should Contain  ${out}  <title>Harbor</title>
+        Return From Keyword If  ${status}  ${HARBOR_IP}
+        Sleep  30s
+    END
     Fail Harbor failed to come up properly!
+
+Get Harbor Version
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -k -X GET --header 'Accept: application/json' 'https://${ip}/api/v2.0/systeminfo'|grep -i harbor_version
+    Log To Console  ${output}

@@ -1,0 +1,32 @@
+.normal-wrapper-box {
+  display: flex;
+  align-items: center;
+}
+
+.font-style {
+  display: inline-block;
+  color: #000;
+  font-size: .541667rem;
+}
+
+span.required {
+  &:after {
+    content: '*';
+    font-size: .58479532rem;
+    line-height: .5rem;
+    color: #c92100;
+    margin-left: .25rem;
+  }
+}
+.height-1rem {
+  height: 1rem;
+}
+.margin-left-minus-075{
+  margin-left: -0.75rem;
+}
+.mt-05 {
+  margin-top: 0.5rem;
+}
+.mb-05 {
+  margin-bottom: 0.5rem;
+}

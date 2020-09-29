@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import (
 	"fmt"
 
 	"github.com/astaxie/beego/orm"
-	_ "github.com/mattn/go-sqlite3" //register sqlite driver
+	// _ "github.com/mattn/go-sqlite3" // register sqlite driver
 )
 
 type sqlite struct {
@@ -53,4 +53,9 @@ func (s *sqlite) Name() string {
 // String returns the details of database
 func (s *sqlite) String() string {
 	return fmt.Sprintf("type-%s file:%s", s.Name(), s.file)
+}
+
+// UpgradeSchema is not supported for SQLite, it assumes the schema is initialized and up to date in the DB instance.
+func (s *sqlite) UpgradeSchema() error {
+	return nil
 }

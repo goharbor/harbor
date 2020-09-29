@@ -1,0 +1,5 @@
+<label class="label" [ngStyle]="{'background-color': labelColor?.color, 'color': labelColor?.textColor, 'border': labelColor?.color == '#FFFFFF'? '1px solid #A1A1A1': 'none'}" [style.max-width.px]="labelWidth">
+    <clr-icon *ngIf="label.scope=='p'" shape="organization"></clr-icon>
+    <clr-icon *ngIf="label.scope=='g'" shape="administrator"></clr-icon>
+     {{label.name}}
+</label>

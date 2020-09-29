@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,75 +15,68 @@
 package main
 
 import (
-	"os"
+	"context"
+	"errors"
+	"flag"
+	"fmt"
 
-	"github.com/astaxie/beego"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/jobservice/config"
-	"github.com/vmware/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/common"
+	comcfg "github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/config"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/job/impl"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/runtime"
 )
 
 func main() {
-	log.Info("initializing configurations...")
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
-	log.Info("configurations initialization completed")
+	// Get parameters
+	configPath := flag.String("c", "", "Specify the yaml config file path")
+	flag.Parse()
 
-	database, err := config.Database()
-	if err != nil {
-		log.Fatalf("failed to get database configurations: %v", err)
-	}
-
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
+	// Missing config file
+	if configPath == nil || utils.IsEmptyStr(*configPath) {
+		flag.Usage()
+		panic("no config file is specified")
 	}
 
-	initRouters()
-	if err := job.InitWorkerPools(); err != nil {
-		log.Fatalf("Failed to initialize worker pools, error: %v", err)
+	// Load configurations
+	if err := config.DefaultConfig.Load(*configPath, true); err != nil {
+		panic(fmt.Sprintf("load configurations error: %s\n", err))
 	}
-	go job.Dispatch()
-	resumeJobs()
-	beego.Run()
-}
 
-func resumeJobs() {
-	log.Debugf("Trying to resume halted jobs...")
-	err := dao.ResetRunningJobs()
-	if err != nil {
-		log.Warningf("Failed to reset all running jobs to pending, error: %v", err)
+	// Append node ID
+	vCtx := context.WithValue(context.Background(), utils.NodeID, utils.GenerateNodeID())
+	// Create the root context
+	ctx, cancel := context.WithCancel(vCtx)
+	defer cancel()
+
+	// Initialize logger
+	if err := logger.Init(ctx); err != nil {
+		panic(err)
 	}
-	rjobs, err := dao.GetRepJobByStatus(models.JobPending, models.JobRetrying, models.JobRunning)
-	if err == nil {
-		for _, j := range rjobs {
-			rj := job.NewRepJob(j.ID)
-			log.Debugf("Resuming replication job: %v", rj)
-			job.Schedule(rj)
+
+	// Set job context initializer
+	runtime.JobService.SetJobContextInitializer(func(ctx context.Context) (job.Context, error) {
+		secret := config.GetAuthSecret()
+		if utils.IsEmptyStr(secret) {
+			return nil, errors.New("empty auth secret")
 		}
-	} else {
-		log.Warningf("Failed to resume replication jobs, error: %v", err)
-	}
-	sjobs, err := dao.GetScanJobsByStatus(models.JobPending, models.JobRetrying, models.JobRunning)
-	if err == nil {
-		for _, j := range sjobs {
-			sj := job.NewScanJob(j.ID)
-			log.Debugf("Resuming scan job: %v", sj)
-			job.Schedule(sj)
-		}
-	} else {
-		log.Warningf("Failed to resume scan jobs, error: %v", err)
-	}
-}
+		coreURL := config.GetCoreURL()
+		configURL := coreURL + common.CoreConfigPath
+		cfgMgr := comcfg.NewRESTCfgManager(configURL, secret)
+		jobCtx := impl.NewContext(ctx, cfgMgr)
 
-func init() {
-	configPath := os.Getenv("CONFIG_PATH")
-	if len(configPath) != 0 {
-		log.Infof("Config path: %s", configPath)
-		if err := beego.LoadAppConfig("ini", configPath); err != nil {
-			log.Fatalf("Failed to load config file: %s, error: %v", configPath, err)
+		if err := jobCtx.Init(); err != nil {
+			return nil, err
 		}
+
+		return jobCtx, nil
+	})
+
+	// Start
+	if err := runtime.JobService.LoadAndRun(ctx, cancel); err != nil {
+		logger.Fatal(err)
 	}
 }
