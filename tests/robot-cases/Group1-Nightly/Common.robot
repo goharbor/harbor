@@ -723,7 +723,7 @@ Test Case - Proxy Cache
 Test Case - Distribution CRUD
     ${d}=    Get Current Date    result_format=%m%s
     ${name}=  Set Variable  distribution${d}
-    ${endpoint}=  Set Variable  https://1.1.1.2
+    ${endpoint}=  Set Variable  https://32.1.1.2
     ${endpoint_new}=  Set Variable  https://10.65.65.42
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -732,11 +732,11 @@ Test Case - Distribution CRUD
     Delete A Distribution  ${name}  ${endpoint_new}
     Close Browser
 
-Test Case - P2P Peheat Policy CRUD
+Test Case - P2P Preheat Policy CRUD
     ${d}=    Get Current Date    result_format=%m%s
     ${pro_name}=  Set Variable  project_p2p${d}
     ${dist_name}=  Set Variable  distribution${d}
-    ${endpoint}=  Set Variable  https://1.1.1.2
+    ${endpoint}=  Set Variable  https://20.76.1.2
     ${policy_name}=  Set Variable  policy${d}
     ${repo}=  Set Variable  alpine
     ${repo_new}=  Set Variable  redis*

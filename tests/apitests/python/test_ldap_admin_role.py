@@ -31,7 +31,7 @@ class TestLdapAdminRole(unittest.TestCase):
             1. Set LDAP Auth configurations;
             2. Create a new public project(PA) by LDAP user mike;
             3. Check project is created successfully;
-            4. Check mike is not admin;
+            4. Check mike's SysAdminFlag is false, but AdminRoleInAuth should be true
             5. Delete project(PA);
         """
 
@@ -41,8 +41,10 @@ class TestLdapAdminRole(unittest.TestCase):
         TestLdapAdminRole.project_id, project_name = self.project.create_project(metadata = {"public": "false"}, **self.USER_MIKE)
         self.project.check_project_name_exist(name=project_name, **self.USER_MIKE)
 
-        _user = self.user.get_user_by_name(self.USER_MIKE["username"], **ADMIN_CLIENT)
+        _user = self.user.get_user_current(**self.USER_MIKE)
+        print( _user)
         self.assertFalse(_user.sysadmin_flag)
+        self.assertTrue(_user.admin_role_in_auth)
 
 
 if __name__ == '__main__':
