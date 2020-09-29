@@ -111,6 +111,13 @@ Test Case - Ldap User Push An Image
 Test Case - Ldap User Can Not login
     Docker Login Fail  ${ip}  testerDeesExist  123456
 
+Test Case - Ldap Group Admin DN Setting
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Set LDAP Group Admin DN  cn=user012,ou=people,dc=example,dc=com
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
+
 Test Case - Run LDAP Group Related API Test
     Harbor API Test  ./tests/apitests/python/test_ldap_admin_role.py
     Harbor API Test  ./tests/apitests/python/test_user_group.py
