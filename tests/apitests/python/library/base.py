@@ -28,7 +28,7 @@ def get_endpoint():
 
 def _create_client(server, credential, debug, api_type="products"):
     cfg = None
-    if api_type in ('projectv2', 'artifact', 'repository', 'scan', 'preheat'):
+    if api_type in ('projectv2', 'artifact', 'repository', 'scan', 'preheat', 'replication'):
         cfg = v2_swagger_client.Configuration()
     else:
         cfg = swagger_client.Configuration()
@@ -59,6 +59,7 @@ def _create_client(server, credential, debug, api_type="products"):
         "repository": v2_swagger_client.RepositoryApi(v2_swagger_client.ApiClient(cfg)),
         "scan": v2_swagger_client.ScanApi(v2_swagger_client.ApiClient(cfg)),
         "scanner": swagger_client.ScannersApi(swagger_client.ApiClient(cfg)),
+        "replication": v2_swagger_client.ReplicationApi(v2_swagger_client.ApiClient(cfg)),
     }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code):

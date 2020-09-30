@@ -29,13 +29,14 @@ import (
 // New returns http handler for API V2.0
 func New() http.Handler {
 	h, api, err := restapi.HandlerAPI(restapi.Config{
-		ArtifactAPI:   newArtifactAPI(),
-		RepositoryAPI: newRepositoryAPI(),
-		AuditlogAPI:   newAuditLogAPI(),
-		ScanAPI:       newScanAPI(),
-		ProjectAPI:    newProjectAPI(),
-		PreheatAPI:    newPreheatAPI(),
-		IconAPI:       newIconAPI(),
+		ArtifactAPI:    newArtifactAPI(),
+		RepositoryAPI:  newRepositoryAPI(),
+		AuditlogAPI:    newAuditLogAPI(),
+		ScanAPI:        newScanAPI(),
+		ProjectAPI:     newProjectAPI(),
+		PreheatAPI:     newPreheatAPI(),
+		IconAPI:        newIconAPI(),
+		ReplicationAPI: newReplicationAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

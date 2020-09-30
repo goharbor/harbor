@@ -17,11 +17,15 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"net/http"
 	"strconv"
 
+	replica "github.com/goharbor/harbor/src/controller/replication"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/replication"
-	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/registry"
@@ -219,37 +223,34 @@ func (r *ReplicationPolicyAPI) Delete() {
 		return
 	}
 
-	isRunning, err := hasRunningExecutions(id)
+	ctx := orm.Context()
+	executions, err := replica.Ctl.ListExecutions(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"PolicyID": id,
+		},
+	})
 	if err != nil {
-		r.SendInternalServerError(fmt.Errorf("failed to check the execution status of policy %d: %v", id, err))
+		r.SendInternalServerError(err)
 		return
 	}
-
-	if isRunning {
+	for _, execution := range executions {
+		if execution.Status != job.RunningStatus.String() {
+			continue
+		}
 		r.SendPreconditionFailedError(fmt.Errorf("the policy %d has running executions, can not be deleted", id))
 		return
+	}
+	for _, execution := range executions {
+		if err = task.ExecMgr.Delete(ctx, execution.ID); err != nil {
+			r.SendInternalServerError(err)
+			return
+		}
 	}
 
 	if err := replication.PolicyCtl.Remove(id); err != nil {
 		r.SendInternalServerError(fmt.Errorf("failed to delete the policy %d: %v", id, err))
 		return
 	}
-}
-
-func hasRunningExecutions(policyID int64) (bool, error) {
-	_, executions, err := replication.OperationCtl.ListExecutions(&models.ExecutionQuery{
-		PolicyID: policyID,
-	})
-	if err != nil {
-		return false, err
-	}
-	for _, execution := range executions {
-		if execution.Status != models.ExecutionStatusInProgress {
-			continue
-		}
-		return true, nil
-	}
-	return false, nil
 }
 
 // ignore the credential for the registries

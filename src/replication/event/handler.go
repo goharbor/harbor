@@ -17,12 +17,14 @@ package event
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/task"
 
 	commonthttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/controller/replication"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/operation"
 	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/registry"
 	"github.com/goharbor/harbor/src/replication/util"
@@ -34,18 +36,18 @@ type Handler interface {
 }
 
 // NewHandler ...
-func NewHandler(policyCtl policy.Controller, registryMgr registry.Manager, opCtl operation.Controller) Handler {
+func NewHandler(policyCtl policy.Controller, registryMgr registry.Manager) Handler {
 	return &handler{
 		policyCtl:   policyCtl,
 		registryMgr: registryMgr,
-		opCtl:       opCtl,
+		ctl:         replication.Ctl,
 	}
 }
 
 type handler struct {
 	policyCtl   policy.Controller
 	registryMgr registry.Manager
-	opCtl       operation.Controller
+	ctl         replication.Controller
 }
 
 func (h *handler) Handle(event *Event) error {
@@ -76,7 +78,7 @@ func (h *handler) Handle(event *Event) error {
 		if err := PopulateRegistries(h.registryMgr, policy); err != nil {
 			return err
 		}
-		id, err := h.opCtl.StartReplication(policy, event.Resource, model.TriggerTypeEventBased)
+		id, err := h.ctl.Start(orm.Context(), policy, event.Resource, task.ExecutionTriggerEvent)
 		if err != nil {
 			return err
 		}

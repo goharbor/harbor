@@ -663,7 +663,7 @@ func convertTaskToPayload(model *task.Task) (*models.Task, error) {
 		ExecutionID:   model.ExecutionID,
 		ExtraAttrs:    model.ExtraAttrs,
 		ID:            model.ID,
-		RunCount:      int64(model.RunCount),
+		RunCount:      model.RunCount,
 		StartTime:     model.StartTime.String(),
 		Status:        model.Status,
 		StatusMessage: model.StatusMessage,

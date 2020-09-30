@@ -22,13 +22,14 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/project"
+	rep "github.com/goharbor/harbor/src/controller/replication"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication"
-	daoModels "github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
+	replicationtesting "github.com/goharbor/harbor/src/testing/controller/replication"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -38,9 +39,6 @@ type fakedNotificationPolicyMgr struct {
 }
 
 type fakedReplicationPolicyMgr struct {
-}
-
-type fakedReplicationMgr struct {
 }
 
 type fakedReplicationRegistryMgr struct {
@@ -87,46 +85,6 @@ func (f *fakedNotificationPolicyMgr) GetRelatedPolices(int64, string) ([]*models
 			ID: 0,
 		},
 	}, nil
-}
-
-func (f *fakedReplicationMgr) StartReplication(policy *model.Policy, resource *model.Resource, trigger model.TriggerType) (int64, error) {
-	return 0, nil
-}
-func (f *fakedReplicationMgr) StopReplication(int64) error {
-	return nil
-}
-func (f *fakedReplicationMgr) ListExecutions(...*daoModels.ExecutionQuery) (int64, []*daoModels.Execution, error) {
-	return 0, nil, nil
-}
-func (f *fakedReplicationMgr) GetExecution(int64) (*daoModels.Execution, error) {
-	return &daoModels.Execution{
-		PolicyID: 1,
-		Trigger:  "manual",
-	}, nil
-}
-func (f *fakedReplicationMgr) ListTasks(...*daoModels.TaskQuery) (int64, []*daoModels.Task, error) {
-	return 0, nil, nil
-}
-func (f *fakedReplicationMgr) GetTask(id int64) (*daoModels.Task, error) {
-	if id == 1 {
-		return &daoModels.Task{
-			ExecutionID: 1,
-			// project info not included when replicating with docker registry
-			SrcResource: "alpine:[v1]",
-			DstResource: "gxt/alpine:[v1] ",
-		}, nil
-	}
-	return &daoModels.Task{
-		ExecutionID: 1,
-		SrcResource: "library/alpine:[v1]",
-		DstResource: "gxt/alpine:[v1] ",
-	}, nil
-}
-func (f *fakedReplicationMgr) UpdateTaskStatus(id int64, status string, statusRevision int64, statusCondition ...string) error {
-	return nil
-}
-func (f *fakedReplicationMgr) GetTaskLog(int64) ([]byte, error) {
-	return nil, nil
 }
 
 // Create new policy
@@ -213,24 +171,27 @@ func TestReplicationHandler_Handle(t *testing.T) {
 	config.Init()
 
 	PolicyMgr := notification.PolicyMgr
-	execution := replication.OperationCtl
 	rpPolicy := replication.PolicyCtl
 	rpRegistry := replication.RegistryMgr
 	prj := project.Ctl
+	repCtl := rep.Ctl
 
 	defer func() {
 		notification.PolicyMgr = PolicyMgr
-		replication.OperationCtl = execution
 		replication.PolicyCtl = rpPolicy
 		replication.RegistryMgr = rpRegistry
 		project.Ctl = prj
+		rep.Ctl = repCtl
 	}()
 	notification.PolicyMgr = &fakedNotificationPolicyMgr{}
-	replication.OperationCtl = &fakedReplicationMgr{}
 	replication.PolicyCtl = &fakedReplicationPolicyMgr{}
 	replication.RegistryMgr = &fakedReplicationRegistryMgr{}
 	projectCtl := &projecttesting.Controller{}
 	project.Ctl = projectCtl
+	mockRepCtl := &replicationtesting.Controller{}
+	rep.Ctl = mockRepCtl
+	mockRepCtl.On("GetTask", mock.Anything, mock.Anything).Return(&rep.Task{}, nil)
+	mockRepCtl.On("GetExecution", mock.Anything, mock.Anything).Return(&rep.Execution{}, nil)
 
 	mock.OnAnything(projectCtl, "GetByName").Return(&models.Project{ProjectID: 1}, nil)
 

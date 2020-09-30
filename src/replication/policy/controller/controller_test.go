@@ -17,7 +17,10 @@ package controller
 import (
 	"testing"
 
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/testing/mock"
+	"github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -42,20 +45,6 @@ func (f *fakedPolicyController) Update(*model.Policy) error {
 	return nil
 }
 func (f *fakedPolicyController) Remove(int64) error {
-	return nil
-}
-
-type fakedScheduler struct {
-	scheduled   bool
-	unscheduled bool
-}
-
-func (f *fakedScheduler) Schedule(policyID int64, cron string) error {
-	f.scheduled = true
-	return nil
-}
-func (f *fakedScheduler) Unschedule(policyID int64) error {
-	f.unscheduled = true
 	return nil
 }
 
@@ -224,7 +213,8 @@ func TestIsScheduleTriggerChanged(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	scheduler := &fakedScheduler{}
+	dao.PrepareTestForPostgresSQL()
+	scheduler := &scheduler.Scheduler{}
 	ctl := &controller{
 		scheduler: scheduler,
 	}
@@ -233,9 +223,10 @@ func TestCreate(t *testing.T) {
 	// not scheduled trigger
 	_, err := ctl.Create(&model.Policy{})
 	require.Nil(t, err)
-	assert.False(t, scheduler.scheduled)
 
 	// scheduled trigger
+	scheduler.On("Schedule", mock.Anything, mock.Anything,
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	_, err = ctl.Create(&model.Policy{
 		Enabled: true,
 		Trigger: &model.Trigger{
@@ -246,11 +237,11 @@ func TestCreate(t *testing.T) {
 		},
 	})
 	require.Nil(t, err)
-	assert.True(t, scheduler.scheduled)
+	scheduler.AssertExpectations(t)
 }
 
 func TestUpdate(t *testing.T) {
-	scheduler := &fakedScheduler{}
+	scheduler := &scheduler.Scheduler{}
 	c := &fakedPolicyController{}
 	ctl := &controller{
 		scheduler: scheduler,
@@ -275,10 +266,13 @@ func TestUpdate(t *testing.T) {
 	current = origin
 	err = ctl.Update(current)
 	require.Nil(t, err)
-	assert.False(t, scheduler.scheduled)
-	assert.False(t, scheduler.unscheduled)
 
 	// the trigger changed
+	scheduler.On("Schedule", mock.Anything, mock.Anything,
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	scheduler.On("UnScheduleByVendor", mock.Anything, mock.Anything,
+		mock.Anything).Return(nil)
+
 	origin = &model.Policy{
 		ID:      1,
 		Enabled: true,
@@ -301,12 +295,11 @@ func TestUpdate(t *testing.T) {
 	}
 	err = ctl.Update(current)
 	require.Nil(t, err)
-	assert.True(t, scheduler.unscheduled)
-	assert.True(t, scheduler.scheduled)
+	scheduler.AssertExpectations(t)
 }
 
 func TestRemove(t *testing.T) {
-	scheduler := &fakedScheduler{}
+	scheduler := &scheduler.Scheduler{}
 	c := &fakedPolicyController{}
 	ctl := &controller{
 		scheduler: scheduler,
@@ -328,9 +321,10 @@ func TestRemove(t *testing.T) {
 	c.policy = policy
 	err = ctl.Remove(1)
 	require.Nil(t, err)
-	assert.False(t, scheduler.unscheduled)
 
 	// the trigger type is scheduled
+	scheduler.On("UnScheduleByVendor", mock.Anything, mock.Anything,
+		mock.Anything).Return(nil)
 	policy = &model.Policy{
 		ID:      1,
 		Enabled: true,
@@ -344,5 +338,5 @@ func TestRemove(t *testing.T) {
 	c.policy = policy
 	err = ctl.Remove(1)
 	require.Nil(t, err)
-	assert.True(t, scheduler.unscheduled)
+	scheduler.AssertExpectations(t)
 }

@@ -104,6 +104,7 @@ func (e *executionManagerTestSuite) TestStop() {
 		},
 	}, nil)
 	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+	e.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(false, "", nil)
 	err = e.execMgr.Stop(nil, 1)
 	e.Require().Nil(err)
 	e.taskDAO.AssertExpectations(e.T())
@@ -124,6 +125,7 @@ func (e *executionManagerTestSuite) TestStopAndWait() {
 		},
 	}, nil)
 	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+	e.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(false, "", nil)
 	err := e.execMgr.StopAndWait(nil, 1, 1*time.Second)
 	e.Require().NotNil(err)
 	e.taskDAO.AssertExpectations(e.T())
@@ -145,6 +147,7 @@ func (e *executionManagerTestSuite) TestStopAndWait() {
 		},
 	}, nil)
 	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+	e.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(false, "", nil)
 	err = e.execMgr.StopAndWait(nil, 1, 1*time.Second)
 	e.Require().Nil(err)
 	e.taskDAO.AssertExpectations(e.T())

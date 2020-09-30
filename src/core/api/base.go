@@ -15,6 +15,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -30,7 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -194,13 +194,9 @@ func Init() error {
 
 	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, scheduler.Sched, retentionLauncher)
 
-	retentionCallbackFun := func(p interface{}) error {
-		str, ok := p.(string)
-		if !ok {
-			return fmt.Errorf("the type of param %v isn't string", p)
-		}
+	retentionCallbackFun := func(ctx context.Context, p string) error {
 		param := &retention.TriggerParam{}
-		if err := json.Unmarshal([]byte(str), param); err != nil {
+		if err := json.Unmarshal([]byte(p), param); err != nil {
 			return fmt.Errorf("failed to unmarshal the param: %v", err)
 		}
 		_, err := retentionController.TriggerRetentionExec(param.PolicyID, param.Trigger, false)
@@ -211,16 +207,12 @@ func Init() error {
 		return err
 	}
 
-	p2pPreheatCallbackFun := func(p interface{}) error {
-		str, ok := p.(string)
-		if !ok {
-			return fmt.Errorf("the type of param %v isn't string", p)
-		}
+	p2pPreheatCallbackFun := func(ctx context.Context, p string) error {
 		param := &preheat.TriggerParam{}
-		if err := json.Unmarshal([]byte(str), param); err != nil {
+		if err := json.Unmarshal([]byte(p), param); err != nil {
 			return fmt.Errorf("failed to unmarshal the param: %v", err)
 		}
-		_, err := preheat.Enf.EnforcePolicy(orm.Context(), param.PolicyID)
+		_, err := preheat.Enf.EnforcePolicy(ctx, param.PolicyID)
 		return err
 	}
 	err = scheduler.RegisterCallbackFunc(preheat.SchedulerCallback, p2pPreheatCallbackFun)

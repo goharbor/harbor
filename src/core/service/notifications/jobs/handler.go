@@ -31,9 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	sc "github.com/goharbor/harbor/src/pkg/scan"
-	"github.com/goharbor/harbor/src/replication"
-	"github.com/goharbor/harbor/src/replication/operation/hook"
-	"github.com/goharbor/harbor/src/replication/policy/scheduler"
 )
 
 var statusMap = map[string]string{
@@ -138,44 +135,6 @@ func (h *Handler) HandleScan() {
 		h.SendInternalServerError(err)
 
 		return
-	}
-}
-
-// HandleReplicationScheduleJob handles the webhook of replication schedule job
-func (h *Handler) HandleReplicationScheduleJob() {
-	log.Debugf("received replication schedule job status update event: schedule-job-%d, status-%s", h.id, h.status)
-	if err := scheduler.UpdateStatus(h.id, h.status); err != nil {
-		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
-		h.SendInternalServerError(err)
-		return
-	}
-}
-
-// HandleReplicationTask handles the webhook of replication task
-func (h *Handler) HandleReplicationTask() {
-	log.Debugf("received replication task status update event: task-%d, status-%s", h.id, h.status)
-
-	if err := hook.UpdateTask(replication.OperationCtl, h.id, h.rawStatus, h.revision); err != nil {
-		log.Errorf("failed to update the status of the replication task %d: %v", h.id, err)
-		h.SendInternalServerError(err)
-		return
-	}
-
-	// Trigger artifict webhook event only for JobFinished and JobError status
-	if h.status == models.JobFinished || h.status == models.JobError || h.status == models.JobStopped {
-		e := &event.Event{}
-		metaData := &metadata.ReplicationMetaData{
-			ReplicationTaskID: h.id,
-			Status:            h.rawStatus,
-		}
-
-		if err := e.Build(metaData); err == nil {
-			if err := e.Publish(); err != nil {
-				log.Error(errors.Wrap(err, "replication job hook handler: event publish"))
-			}
-		} else {
-			log.Error(errors.Wrap(err, "replication job hook handler: event publish"))
-		}
 	}
 }
 

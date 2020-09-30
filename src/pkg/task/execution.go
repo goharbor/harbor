@@ -62,8 +62,10 @@ type ExecutionManager interface {
 	// Get the specified execution
 	Get(ctx context.Context, id int64) (execution *Execution, err error)
 	// List executions according to the query
+	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	List(ctx context.Context, query *q.Query) (executions []*Execution, err error)
-	// Count counts total.
+	// Count counts total of executions according to the query.
+	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	Count(ctx context.Context, query *q.Query) (int64, error)
 }
 
@@ -100,6 +102,7 @@ func (e *executionManager) Create(ctx context.Context, vendorType string, vendor
 	execution := &dao.Execution{
 		VendorType: vendorType,
 		VendorID:   vendorID,
+		Status:     job.RunningStatus.String(),
 		Trigger:    trigger,
 		ExtraAttrs: string(data),
 		StartTime:  time.Now(),
@@ -156,7 +159,11 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 			continue
 		}
 	}
-	return nil
+
+	// refresh the status explicitly in case that the execution status
+	// isn't refreshed by task status change hook
+	_, _, err = e.executionDAO.RefreshStatus(ctx, id)
+	return err
 }
 
 func (e *executionManager) StopAndWait(ctx context.Context, id int64, timeout time.Duration) error {
