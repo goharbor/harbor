@@ -49,6 +49,7 @@ func MustCommit(r *http.Request) error {
 // Middleware middleware which add transaction for the http request with default config
 func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		log := log.GetLogger(r.Context())
 		log.Debug("[13155-debug]entering transaction middleware")
 		res, ok := w.(*lib.ResponseBuffer)
 		if !ok {

@@ -59,6 +59,7 @@ func Clone(ctx context.Context) context.Context {
 // WithTransaction a decorator which make f run in transaction
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
+		log := log.GetLogger(ctx)
 		o, err := FromContext(ctx)
 		if err != nil {
 			return err
