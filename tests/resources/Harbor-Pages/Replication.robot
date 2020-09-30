@@ -149,6 +149,7 @@ Rename Rule
     Retry Element Click  ${rule_filter_search}
     Retry Text Input  ${rule_filter_input}  ${rule}
     Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
+    Retry Element Click  ${replication_action}
     Retry Element Click  ${action_bar_edit}
     Retry Text Input  ${rule_name}  ${newname}
     Retry Element Click  ${rule_save_button}
@@ -158,6 +159,7 @@ Delete Rule
     Retry Element Click  ${rule_filter_search}
     Retry Text Input   ${rule_filter_input}  ${rule}
     Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
+    Retry Element Click  ${replication_action}
     Retry Element Click  ${action_bar_delete}
     Retry Wait Until Page Contains Element  ${dialog_delete}
     #change from click to mouse down and up
@@ -184,10 +186,18 @@ Find Item And Click Edit Button
     Retry Select Object    ${name}
     Retry Element Click    ${action_bar_edit}
 
+Find Rule And Click Edit Button
+    [Arguments]    ${name}
+    Filter Object    ${name}
+    Retry Select Object    ${name}
+    Retry Element Click    ${replication_action}
+    Retry Element Click    ${action_bar_edit}
+
 Find Item And Click Delete Button
     [Arguments]    ${name}
     Filter Object    ${name}
     Retry Select Object    ${name}
+    Retry Element Click    ${replication_action}
     Retry Element Click    ${action_bar_delete}
 
 Switch To Replication Manage Page
@@ -197,7 +207,7 @@ Switch To Replication Manage Page
 
 Edit Replication Rule By Name
     [Arguments]    ${name}
-    Retry Double Keywords When Error  Switch To Replication Manage Page  "NULL"  Find Item And Click Edit Button  ${name}
+    Retry Double Keywords When Error  Switch To Replication Manage Page  "NULL"  Find Rule And Click Edit Button  ${name}
 
 Delete Replication Rule By Name
     [Arguments]    ${name}
@@ -246,6 +256,7 @@ Delete Replication Rule
     Retry Text Input   ${endpoint_filter_input}  ${name}
     #click checkbox before target endpoint
     Retry Element Click  //clr-dg-row[contains(.,'${name}')]//label
+    Retry Element Click  ${replication_action}
     Retry Element Click  ${action_bar_delete}
     Wait Until Page Contains Element  ${dialog_delete}
     Retry Element Click  ${dialog_delete}
