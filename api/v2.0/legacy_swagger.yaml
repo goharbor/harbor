@@ -3323,7 +3323,7 @@ definitions:
         description: The name of the OIDC provider.
       oidc_scope:
         type: string
-        description: The scope sent to OIDC server during authentication, should be separated by comma. It has to contain “openid”, and “offline_access”. If you are using google, please remove “offline_access” from this field.
+        description: The scope sent to OIDC server during authentication, should be separated by comma. It has to contain "openid", and "offline_access". If you are using google, please remove "offline_access" from this field.
       oidc_verify_cert:
         type: boolean
         description: Whether verify your OIDC server certificate, disable it if your OIDC server is hosted via self-hosted certificate.
@@ -3438,7 +3438,7 @@ definitions:
         description: The name of the OIDC provider.
       oidc_scope:
         $ref: '#/definitions/StringConfigItem'
-        description: The scope sent to OIDC server during authentication, should be separated by comma. It has to contain “openid”, and “offline_access”. If you are using google, please remove “offline_access” from this field.
+        description: The scope sent to OIDC server during authentication, should be separated by comma. It has to contain "openid", and "offline_access". If you are using google, please remove "offline_access" from this field.
       oidc_verify_cert:
         $ref: '#/definitions/BoolConfigItem'
         description: Whether verify your OIDC server certificate, disable it if your OIDC server is hosted via self-hosted certificate.
