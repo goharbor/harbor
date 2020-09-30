@@ -15,6 +15,7 @@
 package orm
 
 import (
+	"github.com/goharbor/harbor/src/lib/log"
 	"net/http"
 
 	o "github.com/astaxie/beego/orm"
@@ -49,6 +50,7 @@ func MiddlewareWithConfig(config Config, skippers ...middleware.Skipper) func(ht
 	}
 
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		log.Debug("[13155-debug]entering orm middleware")
 		ctx := orm.NewContext(r.Context(), config.Creator())
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}, skippers...)

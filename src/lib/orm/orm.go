@@ -65,13 +65,19 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 		}
 
 		tx := ormerTx{Ormer: o}
-		if err := tx.Begin(); err != nil {
+		log.Debug("[13155-debug][lib-orm]before tx.Begin")
+		err = tx.Begin()
+		log.Debug("[13155-debug][lib-orm]after tx.Begin")
+		if err != nil {
 			log.Errorf("begin transaction failed: %v", err)
 			return err
 		}
 
 		if err := f(ctx); err != nil {
-			if e := tx.Rollback(); e != nil {
+			log.Debug("[13155-debug][lib-orm]before tx.Rollback")
+			e := tx.Rollback()
+			log.Debug("[13155-debug][lib-orm]after tx.Rollback")
+			if e != nil {
 				log.Errorf("rollback transaction failed: %v", e)
 				return e
 			}
@@ -79,7 +85,10 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			return err
 		}
 
-		if err := tx.Commit(); err != nil {
+		log.Debug("[13155-debug][lib-orm]before tx.Commit")
+		err = tx.Commit()
+		log.Debug("[13155-debug][lib-orm]after tx.Commit")
+		if err != nil {
 			log.Errorf("commit transaction failed: %v", err)
 			return err
 		}
