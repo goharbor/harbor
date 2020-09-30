@@ -17,23 +17,25 @@ package security
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"testing"
-
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/test"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"k8s.io/api/authentication/v1beta1"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"testing"
 )
 
 func TestAuthProxy(t *testing.T) {
+	config.Init()
+	test.InitDatabaseFromEnv()
 	authProxy := &authProxy{}
 
 	server, err := newAuthProxyTestServer()
@@ -47,7 +49,7 @@ func TestAuthProxy(t *testing.T) {
 		common.HTTPAuthProxyTokenReviewEndpoint: server.URL,
 		common.AUTHMode:                         common.HTTPAuth,
 	}
-	config.InitWithSettings(c)
+	config.Upload(c)
 	v, e := config.HTTPAuthProxySetting()
 	require.Nil(t, e)
 	assert.Equal(t, *v, models.HTTPAuthProxy{
