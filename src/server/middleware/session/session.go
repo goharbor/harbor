@@ -17,6 +17,7 @@ package session
 import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/log"
 	"net/http"
 )
 
@@ -25,6 +26,7 @@ import (
 func Middleware() func(http.Handler) http.Handler {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log.GetLogger(r.Context()).Debug("[13155-debug]entering session middleware")
 			// We can check the cookie directly b/c the filter and controllerRegistry is executed after middleware, so no session
 			// cookie is added by beego.
 			_, err := r.Cookie(config.SessionCookieName)

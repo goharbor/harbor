@@ -17,6 +17,7 @@ package orm
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/log"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/google/uuid"
@@ -51,10 +52,15 @@ func (o *ormerTx) rollbackToSavepoint() error {
 }
 
 func (o *ormerTx) Begin() error {
+	log.Debug("[13155-debug][lib-tx]before o.Ormer.Begin")
 	err := o.Ormer.Begin()
+	log.Debug("[13155-debug][lib-tx]after o.Ormer.Begin")
 	if err == orm.ErrTxHasBegan {
 		// transaction has began for the ormer, so begin nested transaction by savepoint
-		return o.createSavepoint()
+		log.Debug("[13155-debug][lib-tx]before o.createSavepoint")
+		e := o.createSavepoint()
+		log.Debug("[13155-debug][lib-tx]after o.createSavepoint")
+		return e
 	}
 
 	return err
@@ -62,16 +68,28 @@ func (o *ormerTx) Begin() error {
 
 func (o *ormerTx) Commit() error {
 	if o.savepointMode() {
-		return o.releaseSavepoint()
+		log.Debug("[13155-debug][lib-tx]before o.releaseSavepoint")
+		err := o.releaseSavepoint()
+		log.Debug("[13155-debug][lib-tx]after o.releaseSavepoint")
+		return err
 	}
 
-	return o.Ormer.Commit()
+	log.Debug("[13155-debug][lib-tx]before o.Ormer.Commit")
+	err := o.Ormer.Commit()
+	log.Debug("[13155-debug][lib-tx]after o.Ormer.Commit")
+	return err
 }
 
 func (o *ormerTx) Rollback() error {
 	if o.savepointMode() {
-		return o.rollbackToSavepoint()
+		log.Debug("[13155-debug][lib-tx]before o.rollbackToSavepoint")
+		err := o.rollbackToSavepoint()
+		log.Debug("[13155-debug][lib-tx]after o.rollbackToSavepoint")
+		return err
 	}
 
-	return o.Ormer.Rollback()
+	log.Debug("[13155-debug][lib-tx]before o.Ormer.Rollback")
+	err := o.Ormer.Rollback()
+	log.Debug("[13155-debug][lib-tx]after o.Ormer.Rollback")
+	return err
 }
