@@ -17,6 +17,8 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"net/url"
 	"os"
 	"os/signal"
@@ -98,6 +100,9 @@ func gracefulShutdown(closing, done chan struct{}) {
 }
 
 func main() {
+	go func() {
+		fmt.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
 
