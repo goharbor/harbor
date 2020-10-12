@@ -336,8 +336,7 @@ Verify Replicationrule
         Init Chrome Driver
         Log To Console    -----replicationrule-----"${replicationrule}"------------
         Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-        Switch To Replication Manage
-        Select Rule And Click Edit Button    ${replicationrule}
+        Edit Replication Rule By Name    ${replicationrule}
         @{is_src_registry}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].is_src_registry
         @{trigger_type}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].trigger_type
         @{name_filters}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].name_filters
