@@ -6,9 +6,9 @@ import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
+import { SessionService } from "../session.service";
 
 describe('ListRepositoryRoComponent', () => {
     let component: ListRepositoryROComponent;
@@ -33,6 +33,7 @@ describe('ListRepositoryRoComponent', () => {
             declarations: [ListRepositoryROComponent],
             providers: [
                 TranslateService,
+                SessionService,
                 { provide: SearchTriggerService, useValue: mockSearchTriggerService }
 
             ]

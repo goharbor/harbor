@@ -20,7 +20,8 @@ import { Repository } from '../../../../ng-swagger-gen/models/repository';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 import {Subscription} from "rxjs";
-
+import { SessionService } from "../session.service";
+const YES: string = 'yes';
 @Component({
   selector: 'list-repository-ro',
   templateUrl: 'list-repository-ro.component.html',
@@ -38,7 +39,8 @@ export class ListRepositoryROComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private searchTrigger: SearchTriggerService,
-    private ref: ChangeDetectorRef) {
+    private ref: ChangeDetectorRef,
+    private sessionService: SessionService) {
     this.router.routeReuseStrategy.shouldReuseRoute = function() {
         return false;
     };
@@ -71,7 +73,11 @@ export class ListRepositoryROComponent implements OnInit, OnDestroy {
     let projectName = repoName.split('/')[0];
     let repositorieName = projectName ? repoName.substr(projectName.length + 1) : repoName;
     let linkUrl = ['harbor', 'projects', projectId, 'repositories', repositorieName ];
-    this.router.navigate(linkUrl);
+    if (this.sessionService.getCurrentUser()) {
+      this.router.navigate(linkUrl);
+    } else {// if not logged in and it's a public project, add param 'publicAndNotLogged'
+      this.router.navigate(linkUrl, {queryParams: {publicAndNotLogged: YES}});
+    }
   }
 
 }
