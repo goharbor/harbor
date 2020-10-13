@@ -83,8 +83,8 @@ func preCheck(ctx context.Context) (art lib.ArtifactInfo, p *models.Project, ctl
 	return
 }
 
-// ManifestGetMiddleware middleware handle request for get manifest
-func ManifestGetMiddleware() func(http.Handler) http.Handler {
+// ManifestMiddleware middleware handle request for get or head manifest
+func ManifestMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		if err := handleManifest(w, r, next); err != nil {
 			httpLib.SendError(w, err)
@@ -115,7 +115,11 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		return nil
 	}
 	log.Debugf("the tag is %v, digest is %v", art.Tag, art.Digest)
-	err = proxyManifest(ctx, w, proxyCtl, p, art, remote)
+	if r.Method == http.MethodHead {
+		err = proxyManifestHead(ctx, w, proxyCtl, p, art, remote)
+	} else if r.Method == http.MethodGet {
+		err = proxyManifestGet(ctx, w, proxyCtl, p, art, remote)
+	}
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
 			return err
@@ -126,8 +130,8 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	return nil
 }
 
-func proxyManifest(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
-	man, err := ctl.ProxyManifest(ctx, p, art, remote)
+func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+	man, err := ctl.ProxyManifest(ctx, art, remote)
 	if err != nil {
 		return err
 	}
@@ -199,4 +203,17 @@ func DisableBlobAndManifestUploadMiddleware() func(http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 		return
 	})
+}
+
+func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+	exist, dig, err := ctl.HeadManifest(ctx, art, remote)
+	if err != nil {
+		return err
+	}
+	if !exist {
+		return errors.NotFoundError(fmt.Errorf("The tag %v:%v is not found", art.Repository, art.Tag))
+	}
+	w.Header().Set("Docker-Content-Digest", dig)
+	w.Header().Set("Etag", dig)
+	return nil
 }
