@@ -142,7 +142,8 @@ func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art l
 			if err != nil {
 				log.Errorf("failed to get manifest, error %v", err)
 			}
-		} else {
+		}
+		if a != nil {
 			SendPullEvent(a, art.Tag, operator)
 		}
 	}(operator.FromContext(ctx))
