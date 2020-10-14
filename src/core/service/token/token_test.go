@@ -136,14 +136,13 @@ func TestMakeToken(t *testing.T) {
 		t.Errorf("Error while making token: %v", err)
 	}
 	tokenString := tokenJSON.Token
-	// t.Logf("privatekey: %s, crt: %s", tokenString, crt)
 	pubKey, err := getPublicKey(crt)
 	if err != nil {
 		t.Errorf("Error while getting public key from cert: %s", crt)
 	}
 	tok, err := jwt.ParseWithClaims(tokenString, &harborClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", t.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
 		return pubKey, nil
 	})
@@ -162,7 +161,7 @@ func TestPermToActions(t *testing.T) {
 	perm3 := ""
 	expect1 := []string{"push", "*", "pull"}
 	expect2 := []string{"*", "pull"}
-	expect3 := []string{}
+	expect3 := make([]string, 0)
 	res1 := permToActions(perm1)
 	res2 := permToActions(perm2)
 	res3 := permToActions(perm3)
