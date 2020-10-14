@@ -2,7 +2,13 @@
 
 set -eo pipefail
 
-if ping="$(redis-cli -h "127.0.0.1" ping)" && [ "$ping" = 'PONG' ]; then
+REDIS_PARAMETER=''
+
+if [ -n "${REDIS_PASSWORD}" ]; then
+	REDIS_PARAMETER="${REDIS_PARAMETER} -a "${REDIS_PASSWORD}"
+fi
+
+if ping="$(redis-cli ${REDIS_PARAMETER} -h "127.0.0.1" ping)" && [ "$ping" = 'PONG' ]; then
 	exit 0
 fi
 

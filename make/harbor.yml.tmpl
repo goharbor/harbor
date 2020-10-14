@@ -43,6 +43,11 @@ database:
   # Note: the default number of connections is 1024 for postgres of harbor.
   max_open_conns: 1000
 
+# Harbor redis configuration
+redis:
+  # The password for the default user of Harbor redis. Change this before any production use.
+  password: redis123
+
 # The default data volume
 data_volume: /data
 
