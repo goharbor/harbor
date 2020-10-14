@@ -368,7 +368,7 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 		{"search non-exist group",
 			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
 			args{groupDN: "cn=harbor_non_users,ou=groups,dc=example,dc=com"},
-			[]models.LdapGroup{}, false},
+			nil, true},
 		{"search invalid group dn",
 			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
 			args{groupDN: "random string"},
@@ -471,6 +471,62 @@ func TestNormalizeFilter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := normalizeFilter(tt.args.filter); got != tt.want {
 				t.Errorf("normalizeFilter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUnderBaseDN(t *testing.T) {
+	type args struct {
+		baseDN  string
+		childDN string
+	}
+	cases := []struct {
+		name      string
+		in        args
+		wantError bool
+		want      bool
+	}{
+		{
+			name:      `normal`,
+			in:        args{"dc=example,dc=com", "cn=admin,dc=example,dc=com"},
+			wantError: false,
+			want:      true,
+		},
+		{
+			name:      `false`,
+			in:        args{"dc=vmware,dc=com", "cn=admin,dc=example,dc=com"},
+			wantError: false,
+			want:      false,
+		},
+		{
+			name:      `same dn`,
+			in:        args{"cn=admin,dc=example,dc=com", "cn=admin,dc=example,dc=com"},
+			wantError: false,
+			want:      true,
+		},
+		{
+			name:      `error format in base`,
+			in:        args{"abc", "cn=admin,dc=example,dc=com"},
+			wantError: true,
+			want:      false,
+		},
+		{
+			name:      `error format in child`,
+			in:        args{"dc=vmware,dc=com", "wrong format"},
+			wantError: true,
+			want:      false,
+		},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := UnderBaseDN(tt.in.baseDN, tt.in.childDN)
+			if (err != nil) != tt.wantError {
+				t.Errorf("UnderBaseDN error = %v, wantErr %v", err, tt.wantError)
+				return
+			}
+			if got != tt.want {
+				t.Errorf(`(%v) = %v; want "%v"`, tt.in, got, tt.want)
 			}
 		})
 	}
