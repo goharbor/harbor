@@ -341,3 +341,23 @@ Body Of Replication Of Push Images to Registry Triggered By Event
     Filter Replication Rule  rule${d}
     Select Rule  rule${d}
     Executions Result Count Should Be  Succeeded  event_based  2
+
+Body Of Replication Of Pull Images from Registry To Self
+    [Arguments]  ${provider}  ${endpoint}  ${username}  ${pwd}  ${project_name}  @{target_images}
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Switch To Registries
+    Create A New Endpoint    ${provider}    e${d}    ${endpoint}    ${username}    ${pwd}    Y
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    rule${d}    pull    ${project_name}    image    e${d}    project${d}
+    Select Rule And Replicate  rule${d}
+    #In docker-hub, under repository danfengliu, there're only 2 images: centos,mariadb.
+    Image Should Be Replicated To Project  project${d}  centos
+    Image Should Be Replicated To Project  project${d}  mariadb
+    FOR    ${item}    IN    @{target_images}
+        Log To Console  Check image replicated to Project project${d} ${item}
+        Image Should Be Replicated To Project  project${d}   ${item}  times=2
+    Close Browser

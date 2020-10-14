@@ -149,20 +149,8 @@ Test Case - Replication Rule Delete
     Close Browser
 
 Test Case - Replication Of Pull Images from DockerHub To Self
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    #login source
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project  project${d}
-    Switch To Registries
-    Create A New Endpoint    docker-hub    e${d}    https://hub.docker.com/    ${DOCKER_USER}    ${DOCKER_PWD}    Y
-    Switch To Replication Manage
-    Create A Rule With Existing Endpoint    rule${d}    pull    ${DOCKER_USER}/{cent*,mariadb}    image    e${d}    project${d}
-    Select Rule And Replicate  rule${d}
-    #In docker-hub, under repository ${DOCKER_USER}, there're only 2 images: centos,mariadb.
-    Image Should Be Replicated To Project  project${d}  centos
-    Image Should Be Replicated To Project  project${d}  mariadb
-    Close Browser
+    @{target_images}=  Create List  mariadb  centos
+    Body Of Replication Of Pull Images from Registry To Self   docker-hub  https://hub.docker.com/  ${DOCKER_USER}    ${DOCKER_PWD}  ${DOCKER_USER}/{cent*,mariadb}  @{target_images}
 
 Test Case - Replication Of Push Images from Self To Harbor
     Init Chrome Driver
@@ -284,3 +272,10 @@ Test Case - Replication Of Push Images to DockerHub Triggered By Event
 
 Test Case - Replication Of Push Images to AWS-ECR Triggered By Event
     Body Of Replication Of Push Images to Registry Triggered By Event  aws-ecr  us-east-2  ${ecr_ac_id}  ${ecr_ac_key}  harbor-nightly-replication
+
+Test Case - Replication Of Pull Images from Gitlab To Self
+    @{target_images}=  Create List  photon  alpine
+    Body Of Replication Of Pull Images from Registry To Self   gitlab   https://registry.gitlab.com    ${gitlab_id}    ${gitlab_key}    dannylunsa/test_replication/{photon,alpine}    @{target_images}
+
+Test Case - Replication Of Push Images to Gitlab Triggered By Event
+    Body Of Replication Of Push Images to Registry Triggered By Event    gitlab   https://registry.gitlab.com    ${gitlab_id}    ${gitlab_key}    bitsf/testci/replication-ci
