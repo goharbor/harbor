@@ -332,11 +332,13 @@ Body Of Replication Of Push Images to Registry Triggered By Event
     Push Special Image To Project  project${d}  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${image}  tags=@{tags}  size=12
     Filter Replication Rule  rule${d}
     Select Rule  rule${d}
-    Run Keyword If  '${provider}'=='docker-hub'  Docker Image Can Be Pulled  ${dest_namespace}/${image}:${tag1}   times=3
+    ${endpoint_body}=  Fetch From Right  ${endpoint}  //
+    ${dest_namespace}=  Set Variable If  '${provider}'=='gitlab'  ${endpoint_body}/${dest_namespace}  ${dest_namespace}
+    Run Keyword If  '${provider}'=='docker-hub' or '${provider}'=='gitlab'  Docker Image Can Be Pulled  ${dest_namespace}/${image}:${tag1}   times=3
     Executions Result Count Should Be  Succeeded  event_based  1
     Go Into Project  project${d}
     Delete Repo  project${d}
-    Run Keyword If  '${provider}'=='docker-hub'  Docker Image Can Not Be Pulled  ${dest_namespace}/${image}:${tag1}
+    Run Keyword If  '${provider}'=='docker-hub' or '${provider}'=='gitlab'  Docker Image Can Not Be Pulled  ${dest_namespace}/${image}:${tag1}
     Switch To Replication Manage
     Filter Replication Rule  rule${d}
     Select Rule  rule${d}
@@ -354,10 +356,8 @@ Body Of Replication Of Pull Images from Registry To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    pull    ${project_name}    image    e${d}    project${d}
     Select Rule And Replicate  rule${d}
-    #In docker-hub, under repository danfengliu, there're only 2 images: centos,mariadb.
-    Image Should Be Replicated To Project  project${d}  centos
-    Image Should Be Replicated To Project  project${d}  mariadb
     FOR    ${item}    IN    @{target_images}
         Log To Console  Check image replicated to Project project${d} ${item}
         Image Should Be Replicated To Project  project${d}   ${item}  times=2
+    END
     Close Browser

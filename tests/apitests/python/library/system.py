@@ -128,7 +128,7 @@ class System(base.Base):
                 break
             stats = client.scans_all_metrics_get()
             print("Scan all status:", stats)
-            if stats.ongoing:
+            if stats.ongoing is False:
                 return
         raise Exception("Error: Scan all job is timeout.")
 
