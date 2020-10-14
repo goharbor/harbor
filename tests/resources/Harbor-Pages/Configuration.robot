@@ -410,7 +410,7 @@ Edit A Distribution
     [Arguments]    ${name}  ${endpoint}  ${new_endpoint}=${null}
     Switch To Distribution
     Filter Distribution List  ${name}  ${endpoint}
-    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid//clr-dg-footer//clr-checkbox-wrapper/label
+    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid//clr-dg-footer//clr-checkbox-wrapper/label  times=9
     Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_edit_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${distribution_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_name_input_id}
     Retry Text Input  ${distribution_endpoint_id}  ${new_endpoint}
