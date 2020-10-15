@@ -113,6 +113,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           go env
+          echo "::set-env name=CI_REGISTRY::${{ secrets.CI_REGISTRY }}"
           echo "::set-env name=GITHUB_TOKEN::${{ secrets.GITHUB_TOKEN }}"
           echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
           echo "::add-path::$(go env GOPATH)/bin"
@@ -173,6 +174,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           go env
+          echo "::set-env name=CI_REGISTRY::${{ secrets.CI_REGISTRY }}"
           echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
           echo "::add-path::$(go env GOPATH)/bin"
           echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem"

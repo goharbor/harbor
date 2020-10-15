@@ -27,10 +27,18 @@ function uploader {
 
 set +e
 
+REGISTRY_URL="goharbor"
+if [ $CI_REGISTRY ];then
+    if [ ! -z $CI_REGISTRY ];then
+        REGISTRY_URL=$CI_REGISTRY
+    fi
+fi
+E2E_IMAGE=${REGISTRY_URL}/harbor-e2e-engine:2.5
+
 docker ps
 # run db auth api cases
 if [ "$1" = 'DB' ]; then
-    docker run -i --privileged -v $DIR/../../:/drone -v $DIR/../:/ca -w /drone goharbor/harbor-e2e-engine:2.5 robot -v ip:$2  -v ip1: -v HARBOR_PASSWORD:Harbor12345 /drone/tests/robot-cases/Group1-Nightly/Setup.robot /drone/tests/robot-cases/Group0-BAT/API_DB.robot
+    docker run -i --privileged -v $DIR/../../:/drone -v $DIR/../:/ca -w /drone $E2E_IMAGE robot -v ip:$2  -v ip1: -v HARBOR_PASSWORD:Harbor12345 /drone/tests/robot-cases/Group1-Nightly/Setup.robot /drone/tests/robot-cases/Group0-BAT/API_DB.robot
 elif [ "$1" = 'LDAP' ]; then
     # run ldap api cases
     python $DIR/../../tests/configharbor.py -H $IP -u $HARBOR_ADMIN -p $HARBOR_ADMIN_PASSWD -c auth_mode=ldap_auth \
@@ -39,7 +47,7 @@ elif [ "$1" = 'LDAP' ]; then
                                   ldap_search_password=admin \
                                   ldap_base_dn=dc=example,dc=com \
                                   ldap_uid=cn
-    docker run -i --privileged -v $DIR/../../:/drone -v $DIR/../:/ca -w /drone goharbor/harbor-e2e-engine:2.5 robot -v ip:$2  -v ip1: -v HARBOR_PASSWORD:Harbor12345 /drone/tests/robot-cases/Group1-Nightly/Setup.robot /drone/tests/robot-cases/Group0-BAT/API_LDAP.robot
+    docker run -i --privileged -v $DIR/../../:/drone -v $DIR/../:/ca -w /drone $E2E_IMAGE robot -v ip:$2  -v ip1: -v HARBOR_PASSWORD:Harbor12345 /drone/tests/robot-cases/Group1-Nightly/Setup.robot /drone/tests/robot-cases/Group0-BAT/API_LDAP.robot
 else
     rc=999
 fi
