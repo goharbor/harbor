@@ -21,6 +21,9 @@ parsers:
       method: no
       macro: no
 
+fixes:
+  - "src/github.com/goharbor/harbor/src/::src/"
+
 comment:
   layout: "reach,diff,flags,tree"
   behavior: default
@@ -29,5 +32,5 @@ comment:
 ignore:
   - "src/vendor"
   - "src/testing"
-  - "src/github.com/goharbor/harbor/src/server/v2.0/restapi/**/*"
-  - "src/github.com/goharbor/harbor/src/server/v2.0/models"
+  - "src/server/v2.0/restapi/**/*"
+  - "src/server/v2.0/models"
