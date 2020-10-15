@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -315,7 +316,7 @@ func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []
 		nil,
 	)
 
-	result, err := session.ldapConn.Search(searchRequest)
+	result, err := session.ldapConn.SearchWithPaging(searchRequest, common.DefaultLDAPPageSize)
 	if result != nil {
 		log.Debugf("Found entries:%v\n", len(result.Entries))
 	} else {

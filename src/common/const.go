@@ -156,4 +156,7 @@ const (
 
 	// DefaultGCTimeWindowHours is the reserve blob time window used by GC, default is 2 hours
 	DefaultGCTimeWindowHours = int64(2)
+
+	// DefaultLDAPPage Size is the default page size used for LDAP queries, default is 500
+	DefaultLDAPPageSize = uint32(500)
 )
