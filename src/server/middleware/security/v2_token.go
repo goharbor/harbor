@@ -5,29 +5,26 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
 	registry_token "github.com/docker/distribution/registry/auth/token"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/v2token"
 	svc_token "github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/token"
+	v2 "github.com/goharbor/harbor/src/pkg/token/claims/v2"
 )
 
 type v2TokenClaims struct {
-	jwt.StandardClaims
+	v2.Claims
 	Access []*registry_token.ResourceActions `json:"access"`
 }
 
 func (vtc *v2TokenClaims) Valid() error {
-	if err := vtc.StandardClaims.Valid(); err != nil {
+	if err := vtc.Claims.Valid(); err != nil {
 		return err
 	}
 	if !vtc.VerifyAudience(svc_token.Registry, true) {
 		return fmt.Errorf("invalid token audience: %s", vtc.Audience)
-	}
-	if !vtc.VerifyIssuer(svc_token.Issuer, true) {
-		return fmt.Errorf("invalid token issuer: %s", vtc.Issuer)
 	}
 	return nil
 }
