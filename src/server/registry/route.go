@@ -46,13 +46,14 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodGet).
 		Path("/*/manifests/:reference").
-		Middleware(repoproxy.ManifestGetMiddleware()).
+		Middleware(repoproxy.ManifestMiddleware()).
 		Middleware(contenttrust.Middleware()).
 		Middleware(vulnerable.Middleware()).
 		HandlerFunc(getManifest)
 	root.NewRoute().
 		Method(http.MethodHead).
 		Path("/*/manifests/:reference").
+		Middleware(repoproxy.ManifestMiddleware()).
 		HandlerFunc(getManifest)
 	root.NewRoute().
 		Method(http.MethodDelete).
