@@ -9,6 +9,7 @@ import { ReplicationJob, ReplicationTasks, Comparator, ReplicationJobItem, State
 import { CustomComparator, DEFAULT_PAGE_SIZE } from "../../../utils/utils";
 import { RequestQueryParams } from "../../../services/RequestQueryParams";
 import { REFRESH_TIME_DIFFERENCE } from '../../../entities/shared.const';
+import { ClrDatagridStateInterface } from '@clr/angular';
 
 const executionStatus = 'InProgress';
 const STATUS_MAP = {
@@ -28,7 +29,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   loading = true;
   searchTask: string;
   defaultFilter = "resource_type";
-  tasks: ReplicationTasks;
+  tasks: ReplicationTasks[];
   taskItem: ReplicationTasks[] = [];
   tasksCopy: ReplicationTasks[] = [];
   stopOnGoing: boolean;
@@ -149,11 +150,11 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     }
   }
 
-  clrLoadTasks(state: State): void {
+  clrLoadTasks(state: ClrDatagridStateInterface): void {
       if (!state || !state.page || !this.executionId) {
         return;
       }
-
+      this.pageSize = state.page.size;
       let params: RequestQueryParams = new RequestQueryParams();
       params = params.set('page_size', this.pageSize + '').set('page', this.currentPage + '');
       if (this.searchTask && this.searchTask !== "") {

@@ -1,5 +1,5 @@
 <div  class="list-rule">
-<clr-datagrid [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" (clrDgSingleSelectedChange)="selectRule($event)" [clrDgRowSelection]="true">
+<clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" (clrDgSingleSelectedChange)="selectRule($event)" [clrDgRowSelection]="true">
     <clr-dg-action-bar>
         <button type="button" id="new_replication_rule_id" class="btn  btn-secondary" *ngIf="hasCreateReplicationPermission" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
         <button type="button" id="replication_exe_id" class="btn  btn-secondary" *ngIf="hasExecuteReplicationPermission" [disabled]="!selectedRow" (click)="replicateRule(selectedRow)"><clr-icon shape="export" size="16"></clr-icon>&nbsp;{{'REPLICATION.REPLICATE' | translate}}</button>
@@ -49,7 +49,7 @@
     <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-    <clr-dg-row *clrDgItems="let p of changedRules; let i=index" [clrDgItem]="p" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
+    <clr-dg-row *ngFor="let p of rules; let i=index" [clrDgItem]="p">
         <clr-dg-cell>{{p.name}}</clr-dg-cell>
         <clr-dg-cell class="status-width">
             <div [ngSwitch]="p.enabled">
@@ -83,8 +83,10 @@
         </clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
-      <span *ngIf="changedRules?.length">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} </span>{{changedRules?.length }} {{'REPLICATION.ITEMS' | translate}}
-      <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
+      <clr-dg-pagination #pagination [(clrDgPage)]="page" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount">
+          <clr-dg-page-size [clrPageSizeOptions]="[5,15,30]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+           <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} </span>{{totalCount }} {{'REPLICATION.ITEMS' | translate}}
+      </clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>
 <confirmation-dialog #deletionConfirmDialog (confirmAction)="deletionConfirm($event)"></confirmation-dialog>

@@ -100,6 +100,7 @@
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount">
+                        <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
                         <span *ngIf="totalCount">
                             {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'HELM_CHART.OF' | translate}}
                         </span>

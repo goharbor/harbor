@@ -21,7 +21,7 @@
     </div>
     <div class="row">
         <div *ngIf="!isCardView" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <clr-datagrid (clrDgRefresh)="refresh()" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRows">
+            <clr-datagrid [clrDgLoading]="loading" [(clrDgSelected)]="selectedRows">
                 <clr-dg-action-bar>
                     <button type="button" id="helm-chart-upload" class="btn  btn-secondary"
                         [disabled]="!hasUploadHelmChartsPermission" (click)="onChartUpload()">
@@ -41,7 +41,7 @@
                 <clr-dg-column>{{'HELM_CHART.CHARTVERSIONS' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.CREATED' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'HELM_CHART.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-                <clr-dg-row *ngFor="let chart of charts" [clrDgItem]="chart">
+                <clr-dg-row *clrDgItems="let chart of charts" [clrDgItem]="chart">
                     <clr-dg-cell>
                         <span class="list-img">
                             <img class="size-24 margin-right-12" [src]="chart.icon ?chart.icon:chartDefaultIcon" (error)="getDefaultIcon(chart);" />
@@ -54,6 +54,7 @@
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount">
+                        <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
                         <span *ngIf="totalCount">
                             {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'HELM_CHART.OF' | translate}}
                         </span>

@@ -82,7 +82,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     private endpointService: EndpointService,
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
-    private ref: ChangeDetectorRef
   ) {
     this.createForm();
   }

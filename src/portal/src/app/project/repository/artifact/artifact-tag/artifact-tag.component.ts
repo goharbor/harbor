@@ -121,6 +121,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     if (!state || !state.page) {
       return ;
     }
+    this.pageSize = state.page.size;
     let pageNumber: number = calculatePage(state);
       if (pageNumber <= 0) { pageNumber = 1; }
     let params: ArtifactService.ListTagsParams = {

@@ -46,9 +46,11 @@
                 </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
-                <span *ngIf="members?.length">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'MEMBER.OF' | translate}} </span>
-                {{members?.length }} {{'MEMBER.ITEMS' | translate}}
-                <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
+                <clr-dg-pagination #pagination [clrDgPageSize]="15">
+                    <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+                    <span *ngIf="members?.length">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'MEMBER.OF' | translate}} </span>
+                    {{members?.length }} {{'MEMBER.ITEMS' | translate}}
+                </clr-dg-pagination>
             </clr-dg-footer>
         </clr-datagrid>
     </div>

@@ -11,9 +11,8 @@
     </div>
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-    <hbr-list-replication-rule #listReplicationRule [projectId]="projectId" (replicateManual)=replicateManualRule($event)
-      (selectOne)="selectOneRule($event)" (hideJobs)="hideJobs()" (openNewRule)="openModal()" (editOne)="openEditRule($event)"
-      (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"
+    <hbr-list-replication-rule #listReplicationRule (replicateManual)=replicateManualRule($event)
+      (selectOne)="selectOneRule($event)" (hideJobs)="hideJobs()" (openNewRule)="openModal()" (editOne)="openEditRule($event)" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"
       [hasCreateReplicationPermission]="hasCreateReplicationPermission"
       [hasUpdateReplicationPermission]="hasUpdateReplicationPermission"
       [hasDeleteReplicationPermission]="hasDeleteReplicationPermission"
@@ -82,9 +81,11 @@
           <clr-dg-cell>{{j.total}}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
-          <span *ngIf="showPaginationIndex">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}</span>
+          <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount">
+            <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+            <span *ngIf="showPaginationIndex">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}</span>
           {{totalCount}} {{'REPLICATION.ITEMS' | translate}}
-          <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
+          </clr-dg-pagination>
         </clr-dg-footer>
       </clr-datagrid>
     </div>

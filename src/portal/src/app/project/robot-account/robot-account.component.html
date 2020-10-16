@@ -57,12 +57,14 @@
         <clr-dg-cell>{{r.expires_at === -1?("ROBOT_ACCOUNT.NEVER_EXPIRED" | translate):(r.expires_at * 1000 | date: 'short')}}</clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
-        <span *ngIf="robots?.length">{{pagination.firstItem + 1}}
-          -
-          {{pagination.lastItem +1 }} {{'ROBOT_ACCOUNT.OF' |
-          translate}} </span>
-        {{robots?.length}} {{'ROBOT_ACCOUNT.ITEMS' | translate}}
-        <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
+        <clr-dg-pagination #pagination [clrDgPageSize]="15">
+          <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+          <span *ngIf="robots?.length">{{pagination.firstItem + 1}}
+            -
+            {{pagination.lastItem +1 }} {{'ROBOT_ACCOUNT.OF' |
+                    translate}} </span>
+          {{robots?.length}} {{'ROBOT_ACCOUNT.ITEMS' | translate}}
+        </clr-dg-pagination>
       </clr-dg-footer>
     </clr-datagrid>
   </div>

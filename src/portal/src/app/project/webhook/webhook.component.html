@@ -101,8 +101,10 @@
             </clr-dg-row-detail>
         </clr-dg-row>
         <clr-dg-footer>
-            <span *ngIf="webhookList?.length > 0">1 - {{webhookList?.length}} {{'WEBHOOK.OF' | translate}} </span> {{webhookList?.length}} {{'WEBHOOK.ITEMS' | translate}}
-            <clr-dg-pagination [clrDgPageSize]="10"></clr-dg-pagination>
+            <clr-dg-pagination [clrDgPageSize]="15">
+                <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+                <span *ngIf="webhookList?.length > 0">1 - {{webhookList?.length}} {{'WEBHOOK.OF' | translate}} </span> {{webhookList?.length}} {{'WEBHOOK.ITEMS' | translate}}
+            </clr-dg-pagination>
         </clr-dg-footer>
     </clr-datagrid>
 </div>

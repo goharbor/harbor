@@ -20,14 +20,14 @@ import { Project } from '../../project';
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from '../../../shared/shared.const';
 import { ConfirmationMessage } from '../../../shared/confirmation-dialog/confirmation-message';
 import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog/confirmation-dialog.component';
-import { clone, CustomComparator } from '../../../../lib/utils/utils';
+import {clone, CustomComparator, DEFAULT_PAGE_SIZE} from '../../../../lib/utils/utils';
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import {
   ClrDatagridComparatorInterface,
   UserPermissionService,
   USERSTATICPERMISSION
 } from '../../../../lib/services';
-import { ClrLoadingState } from '@clr/angular';
+import {ClrDatagridStateInterface, ClrLoadingState} from '@clr/angular';
 import {
   EXECUTION_STATUS,
   FILTER_TYPE,
@@ -72,7 +72,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
   creationTimeComparator: ClrDatagridComparatorInterface<Execution> = new CustomComparator<Execution>("creation_time", "date");
   executionList: Execution[] = [];
   currentExecutionPage: number = 1;
-  pageSize: number = 10;
+  pageSize: number = DEFAULT_PAGE_SIZE;
   totalExecutionCount: number = 0;
   filterKey: string = 'id';
   searchString: string;
@@ -342,8 +342,11 @@ export class PolicyComponent implements OnInit, OnDestroy {
     this.messageHandlerService.showSuccess(message);
     this.refresh();
   }
-  clrLoadJobs(chosenPolicy: PreheatPolicy, withLoading: boolean) {
+  clrLoadJobs(chosenPolicy: PreheatPolicy, withLoading: boolean, state?: ClrDatagridStateInterface) {
     if (this.selectedRow) {
+      if (state && state.page) {
+          this.pageSize = state.page.size;
+      }
       if (withLoading) {
         // if datagrid is under control of *ngIf, should add timeout in case of ng changes checking error
         setTimeout(() => {

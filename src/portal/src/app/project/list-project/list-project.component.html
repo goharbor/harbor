@@ -25,8 +25,10 @@
         <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
+        <clr-dg-pagination #pagination  [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount">
+             <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
         <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'PROJECT.OF' | translate}} </span> {{totalCount
         }} {{'PROJECT.ITEMS' | translate}}
-        <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
+        </clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>
