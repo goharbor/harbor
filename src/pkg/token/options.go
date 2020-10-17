@@ -3,15 +3,14 @@ package token
 import (
 	"crypto/rsa"
 	"fmt"
+	"io/ioutil"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	"io/ioutil"
-	"time"
 )
 
 const (
-	defaultTTL          = 60 * time.Minute
 	defaultIssuer       = "harbor-token-defaultIssuer"
 	defaultSignedMethod = "RS256"
 )
@@ -21,7 +20,6 @@ type Options struct {
 	SignMethod jwt.SigningMethod
 	PublicKey  []byte
 	PrivateKey []byte
-	TTL        time.Duration
 	Issuer     string
 }
 
@@ -62,17 +60,20 @@ func (o *Options) GetKey() (interface{}, error) {
 
 // DefaultTokenOptions ...
 func DefaultTokenOptions() *Options {
-	privateKeyFile := config.TokenPrivateKeyPath()
-	privateKey, err := ioutil.ReadFile(privateKeyFile)
+	opt, _ := NewOptions(defaultSignedMethod, defaultIssuer, config.TokenPrivateKeyPath())
+	return opt
+}
+
+// NewOptions create Options based on input parms
+func NewOptions(sm, iss, keyPath string) (*Options, error) {
+	pk, err := ioutil.ReadFile(keyPath)
 	if err != nil {
 		log.Errorf(fmt.Sprintf("failed to read private key %v", err))
-		return nil
+		return nil, err
 	}
-	opt := &Options{
-		SignMethod: jwt.GetSigningMethod(defaultSignedMethod),
-		PrivateKey: privateKey,
-		Issuer:     defaultIssuer,
-		TTL:        defaultTTL,
-	}
-	return opt
+	return &Options{
+		PrivateKey: pk,
+		SignMethod: jwt.GetSigningMethod(sm),
+		Issuer:     iss,
+	}, nil
 }

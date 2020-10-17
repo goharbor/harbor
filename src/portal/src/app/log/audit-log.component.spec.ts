@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuditLogComponent } from './audit-log.component';
 import { ClarityModule } from '@clr/angular';
@@ -76,7 +76,7 @@ describe('AuditLogComponent', () => {
         }
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
@@ -111,7 +111,7 @@ describe('AuditLogComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should get data from AccessLogService', async(() => {
+    it('should get data from AccessLogService', waitForAsync(() => {
         fixture.detectChanges();
         fixture.whenStable().then(() => { // wait for async getRecentLogs
             fixture.detectChanges();
@@ -120,7 +120,7 @@ describe('AuditLogComponent', () => {
         });
     }));
 
-    it('should render data to view', async(() => {
+    it('should render data to view', waitForAsync(() => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
@@ -144,7 +144,7 @@ describe('AuditLogComponent', () => {
         expect(component.auditLogs.length).toEqual(3);
     });
 
-    it('should support filtering list by keywords', async(() => {
+    it('should support filtering list by keywords', waitForAsync(() => {
         fixture.detectChanges();
         let el: HTMLElement = fixture.nativeElement.querySelector('.search-btn');
         expect(el).toBeTruthy("Not found search icon");

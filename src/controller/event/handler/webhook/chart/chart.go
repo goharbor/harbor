@@ -34,6 +34,11 @@ import (
 type Handler struct {
 }
 
+// Name ...
+func (cph *Handler) Name() string {
+	return "ChartWebhook"
+}
+
 // Handle preprocess chart event data and then publish hook event
 func (cph *Handler) Handle(value interface{}) error {
 	chartEvent, ok := value.(*event.ChartEvent)

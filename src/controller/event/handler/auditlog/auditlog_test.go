@@ -91,6 +91,10 @@ func (suite *AuditLogHandlerTestSuite) TestSubscribeTagEvent() {
 
 }
 
+func (suite *AuditLogHandlerTestSuite) TestName() {
+	suite.Equal("AuditLog", suite.auditLogHandler.Name())
+}
+
 func TestAuditLogHandlerTestSuite(t *testing.T) {
 	suite.Run(t, &AuditLogHandlerTestSuite{})
 }

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -16,6 +16,7 @@ import { AppConfigService } from '../../../services/app-config.service';
 import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
+import { ProjectService } from '../../../../lib/services';
 describe('AddP2pPolicyComponent', () => {
     let component: AddP2pPolicyComponent;
     let fixture: ComponentFixture<AddP2pPolicyComponent>;
@@ -32,6 +33,9 @@ describe('AddP2pPolicyComponent', () => {
         },
         UpdatePolicy() {
             return of(true).pipe(delay(0));
+        },
+        ListPolicies() {
+            return of([]).pipe(delay(0));
         }
     };
     const mockActivatedRoute = {
@@ -60,7 +64,19 @@ describe('AddP2pPolicyComponent', () => {
             };
         }
     };
-    beforeEach(async(() => {
+    const mockedProjectService = {
+        getProject() {
+            return of({
+                name: 'library',
+                metadata: {
+                    prevent_vul: 'true',
+                    enable_content_trust: 'true',
+                    severity: 'none'
+                }
+            });
+        }
+    };
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA,
@@ -83,6 +99,7 @@ describe('AddP2pPolicyComponent', () => {
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
                 { provide: SessionService, useValue: mockedSessionService },
                 { provide: AppConfigService, useValue: mockedAppConfigService },
+                { provide: ProjectService, useValue: mockedProjectService },
             ]
         })
             .compileComponents();
@@ -121,7 +138,7 @@ describe('AddP2pPolicyComponent', () => {
         nameInput.dispatchEvent(new Event('input'));
         nameInput.blur();
         const errorEle: HTMLElement = fixture.nativeElement.querySelector("clr-control-error");
-        expect(errorEle.innerText).toEqual('P2P_PROVIDER.NAME_REQUIRED');
+        expect(errorEle.innerText).toEqual('P2P_PROVIDER.NAME_TOOLTIP');
     });
     it("save button should work", async () => {
         fixture.autoDetectChanges(true);

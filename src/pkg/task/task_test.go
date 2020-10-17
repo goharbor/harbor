@@ -16,8 +16,10 @@ package task
 
 import (
 	"errors"
-	cjob "github.com/goharbor/harbor/src/common/job"
 	"testing"
+
+	cjob "github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/lib/q"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
@@ -39,6 +41,14 @@ func (t *taskManagerTestSuite) SetupTest() {
 		dao:      t.dao,
 		jsClient: t.jsClient,
 	}
+}
+
+func (t *taskManagerTestSuite) TestCount() {
+	t.dao.On("Count", mock.Anything, mock.Anything).Return(int64(10), nil)
+	total, err := t.mgr.Count(nil, &q.Query{})
+	t.Require().Nil(err)
+	t.Equal(int64(10), total)
+	t.dao.AssertExpectations(t.T())
 }
 
 func (t *taskManagerTestSuite) TestCreate() {

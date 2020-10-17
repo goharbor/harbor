@@ -95,3 +95,8 @@ func TestHTTPHandler_IsStateful(t *testing.T) {
 	handler := &HTTPHandler{}
 	assert.False(t, handler.IsStateful())
 }
+
+func TestHTTPHandler_Name(t *testing.T) {
+	handler := &HTTPHandler{}
+	assert.Equal(t, "HTTP", handler.Name())
+}

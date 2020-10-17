@@ -21,7 +21,6 @@ import (
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
-	"github.com/goharbor/harbor/src/server/v2.0/models"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -38,6 +37,7 @@ type Artifact struct {
 	RepositoryName    string                 `json:"repository_name"`
 	Digest            string                 `json:"digest"`
 	Size              int64                  `json:"size"`
+	Icon              string                 `json:"icon"`
 	PushTime          time.Time              `json:"push_time"`
 	PullTime          time.Time              `json:"pull_time"`
 	ExtraAttrs        map[string]interface{} `json:"extra_attrs"` // only contains the simple attributes specific for the different artifact type, most of them should come from the config layer
@@ -62,6 +62,7 @@ func (a *Artifact) From(art *dao.Artifact) {
 	a.RepositoryName = art.RepositoryName
 	a.Digest = art.Digest
 	a.Size = art.Size
+	a.Icon = art.Icon
 	a.PushTime = art.PushTime
 	a.PullTime = art.PullTime
 	a.ExtraAttrs = map[string]interface{}{}
@@ -90,6 +91,7 @@ func (a *Artifact) To() *dao.Artifact {
 		RepositoryName:    a.RepositoryName,
 		Digest:            a.Digest,
 		Size:              a.Size,
+		Icon:              a.Icon,
 		PushTime:          a.PushTime,
 		PullTime:          a.PullTime,
 	}
@@ -175,27 +177,6 @@ func (r *Reference) To() *dao.ArtifactReference {
 			log.Errorf("failed to marshal the annotations of reference: %v", err)
 		}
 		ref.Annotations = string(annotations)
-	}
-	return ref
-}
-
-// ToSwagger converts the reference to the swagger model
-func (r *Reference) ToSwagger() *models.Reference {
-	ref := &models.Reference{
-		ChildDigest: r.ChildDigest,
-		ChildID:     r.ChildID,
-		ParentID:    r.ParentID,
-		Annotations: r.Annotations,
-		Urls:        r.URLs,
-	}
-	if r.Platform != nil {
-		ref.Platform = &models.Platform{
-			Architecture: r.Platform.Architecture,
-			Os:           r.Platform.OS,
-			OsFeatures:   r.Platform.OSFeatures,
-			OsVersion:    r.Platform.OSVersion,
-			Variant:      r.Platform.Variant,
-		}
 	}
 	return ref
 }

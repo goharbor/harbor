@@ -78,7 +78,7 @@
                     </select>
                 </div>
             </div>
-            <div class="clr-form-control mt-0" *ngIf="isSystemAdmin && enableProxyCache">
+            <div class="clr-form-control mt-0" [style.visibility]="(isSystemAdmin && enableProxyCache) ? 'visible' : 'hidden'">
                 <label for="create_project_storage_limit" class="clr-control-label"></label>
                 <div class="clr-control-container input-width">
                     <div class="space-between" *ngIf=" enableProxyCache && !registries.length" >
@@ -87,11 +87,11 @@
                     </div>
                 </div>
             </div>
-            <div class="clr-form-control mt-05" *ngIf="isSystemAdmin && enableProxyCache">
+            <div class="clr-form-control mt-05" [style.visibility]="(isSystemAdmin && enableProxyCache) ? 'visible' : 'hidden'">
                 <label for="create_project_storage_limit" class="clr-control-label"></label>
                 <div class="clr-control-container">
                     <div class="clr-input-wrapper">
-                        <label class="clr-control-label endpoint">{{ 'PROJECT.ENDPOINT' | translate }}</label>
+                        <label class="clr-control-label endpoint required">{{ 'PROJECT.ENDPOINT' | translate }}</label>
                         <input placeholder="http(s)://192.168.1.1" [value]="getEndpoint()" readonly class="clr-input" type="text" id="endpoint"
                                autocomplete="off">
                     </div>
@@ -101,6 +101,6 @@
     </div>
     <div class="modal-footer">
         <button id="new-project-cancel" type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button id="new-project-ok" type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+        <button id="new-project-ok" type="button" class="btn btn-primary" [disabled]="!isValid || (enableProxyCache && !project.registry_id)" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>

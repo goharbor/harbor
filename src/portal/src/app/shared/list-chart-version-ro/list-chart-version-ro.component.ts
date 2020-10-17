@@ -12,7 +12,7 @@ import { ProjectService } from "../../../lib/services";
 export class ListChartVersionRoComponent implements OnInit {
 
   @Input() projectId: number;
-  @Input() charts: HelmChartSearchResultItem;
+  @Input() charts: HelmChartSearchResultItem[];
 
   constructor(
     private searchTrigger: SearchTriggerService,

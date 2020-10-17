@@ -2,7 +2,7 @@
 
 ## Welcome
 
-Harbor is developed in the open, and is constantly being improved by our **users, contributors, and maintainers**.  
+Harbor is developed in the open, and is constantly being improved by our **users, contributors, and maintainers**.
 It is because of you that we can bring great software to the community.
 
 This guide provides information on filing issues and guidelines for open source contributors. **Please leave comments / suggestions if you find something is missing or incorrect.**
@@ -63,8 +63,8 @@ Here is the basic structure of the harbor code base. Some of the key folders / f
 The folder graph below shows the structure of the source code folder `harbor/src`, which will be your primary working directory. The key folders are also commented.
 ```
 .
-├── chartserver          # Source code contains the main logic to handle chart. 
-├── cmd                  # Source code contains migrate script to handle DB upgrade.
+├── chartserver         # Source code contains the main logic to handle chart.
+├── cmd                 # Source code contains migrate script to handle DB upgrade.
 ├── common              # Source code for some general components like dao etc.
 │   ├── api
 │   ├── config
@@ -77,7 +77,21 @@ The folder graph below shows the structure of the source code folder `harbor/src
 │   ├── secret
 │   ├── security
 │   └── utils
-├── core          # Source code for the main busines logic. Contains rest apis and all service infomation. 
+├── controller          # Source code for the controllers used by the API handlers.
+│   ├── artifact
+│   ├── blob
+│   ├── event
+│   ├── icon
+│   ├── p2p
+│   ├── project
+│   ├── proxy
+│   ├── quota
+│   ├── repository
+│   ├── scan
+│   ├── scanner
+│   ├── tag
+│   ├── task
+├── core                # Source code for the main busines logic. Contains rest apis and all service infomation.
 │   ├── api
 │   ├── auth
 │   ├── config
@@ -106,13 +120,19 @@ The folder graph below shows the structure of the source code folder `harbor/src
 │   ├── runtime
 │   ├── tests
 │   └── utils
-├── portal               # The code of harbor web UI
+├── portal              # The code of harbor web UI
 │   ├── e2e
 │   ├── lib             # Source code of @harbor/ui npm library which includes the main UI components of web UI
 │   └── src             # General web page UI code of Harbor
-├── registryctl          # Source code contains the main logic to handle registry. 
-├── replication          # Source code contains the main logic of replication. 
-├── testing              # Some utilities to handle testing. 
+├── registryctl         # Source code contains the main logic to handle registry.
+├── replication         # Source code contains the main logic of replication.
+├── server              # Source code for the APIs.
+│   ├── handler
+│   ├── middleware
+│   ├── registry
+│   ├── router
+│   ├── v2.0
+├── testing             # Some utilities to handle testing.
 └── vendor              # Go code dependencies
     ├── github.com
     ├── golang.org
@@ -137,11 +157,12 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   1.8    |    1.11.2     |
 |   1.9    |    1.12.12    |
 |   1.10   |    1.12.12    |
-|   1.11   |    1.14.5     |
+|   2.0    |    1.13.15    |
+|   2.1    |    1.14.7     |
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
-**Dependency Management:** Harbor uses [dep](https://github.com/golang/dep) for dependency management of go code.  The official maintainers will take the responsibility for managing the code in `vendor` directory.  Please don't try to submit a PR to update the dependency code, open an issue instead.  If your PR requires a change in the vendor code please make sure you discuss it with the maintainers in advance.
+**Dependency Management:** Harbor uses [Go modules](https://github.com/golang/go/wiki/Modules) for dependency management of go code.  The official maintainers will take the responsibility for managing the code in `vendor` directory.  Please don't try to submit a PR to update the dependency code, open an issue instead.  If your PR requires a change in the vendor code please make sure you discuss it with the maintainers in advance.
 
 #### Web
 
@@ -177,7 +198,7 @@ PR are always welcome, even if they only contain small fixes like typos or a few
 
 Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in an incremental fashion.
 
-Note: If you split your pull request to small changes, please make sure any of the changes goes to master will not break anything. Otherwise, it can not be merged until this feature complete. 
+Note: If you split your pull request to small changes, please make sure any of the changes goes to master will not break anything. Otherwise, it can not be merged until this feature complete.
 
 ### Fork and clone
 
@@ -219,7 +240,7 @@ Write code on the new branch in your fork. The coding style used in Harbor is su
 
 Try to limit column width to 120 characters for both code and markdown documents such as this one.
 
-As we are enforcing standards set by [golint](https://github.com/golang/lint), please always run golint on source code before committing your changes. If it reports an issue, in general, the preferred action is to fix the code to comply with the linter's recommendation 
+As we are enforcing standards set by [golint](https://github.com/golang/lint), please always run golint on source code before committing your changes. If it reports an issue, in general, the preferred action is to fix the code to comply with the linter's recommendation
 because golint gives suggestions according to the stylistic conventions listed in [Effective Go](https://golang.org/doc/effective_go.html) and the [CodeReviewComments](https://github.com/golang/go/wiki/CodeReviewComments).
 ```
 #Install fgt and golint
@@ -248,6 +269,10 @@ npm run test
 ```
 
 To build the code, please refer to [build](https://goharbor.io/docs/2.0.0/build-customize-contribute/compile-guide/) guideline.
+
+**Note**: from v2.0, Harbor uses [go-swagger](https://github.com/go-swagger/go-swagger) to generate API server from Swagger 2.0 (aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md)). To add or change the APIs, first update the `api/v2.0/swagger.yaml` file, then run `make gen_apis` to generate the API server, finally, implement or update the API handlers in `src/server/v2.0/handler` package.
+
+As now Harbor uses `controller/manager/dao` programming model, we suggest to use [testify mock](github.com/stretchr/testify/mock) to test `controller` and `manager`. Harbor integrates [mockery](https://github.com/vektra/mockery) to generate mocks for golang interfaces using the testify mock package. To generate mocks for the interface, first add `//go:generate mockery xxx` comment with mockery command in the subpackages of `src/testing`, then run `make gen_mocks` to generate mocks.
 
 ###  Keep sync with upstream
 

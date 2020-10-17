@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/repository"
 )
@@ -81,7 +82,7 @@ func (r *repositoryAPI) ListRepositories(ctx context.Context, params operation.L
 	}
 	var repos []*models.Repository
 	for _, repository := range repositories {
-		repos = append(repos, r.assembleRepository(ctx, repository))
+		repos = append(repos, r.assembleRepository(ctx, model.NewRepoRecord(repository)))
 	}
 	return operation.NewListRepositoriesOK().
 		WithXTotalCount(total).
@@ -97,10 +98,10 @@ func (r *repositoryAPI) GetRepository(ctx context.Context, params operation.GetR
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
-	return operation.NewGetRepositoryOK().WithPayload(r.assembleRepository(ctx, repository))
+	return operation.NewGetRepositoryOK().WithPayload(r.assembleRepository(ctx, model.NewRepoRecord(repository)))
 }
 
-func (r *repositoryAPI) assembleRepository(ctx context.Context, repository *cmodels.RepoRecord) *models.Repository {
+func (r *repositoryAPI) assembleRepository(ctx context.Context, repository *model.RepoRecord) *models.Repository {
 	repo := repository.ToSwagger()
 	total, err := r.artCtl.Count(ctx, &q.Query{
 		Keywords: map[string]interface{}{

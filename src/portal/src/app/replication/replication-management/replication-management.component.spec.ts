@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ReplicationManagementComponent } from './replication-management.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -11,7 +11,7 @@ describe('ReplicationManagementComponent', () => {
     let component: ReplicationManagementComponent;
     let fixture: ComponentFixture<ReplicationManagementComponent>;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA

@@ -1,0 +1,1 @@
+**Note**: The `harbor_logo.png` is referenced by the Harbor helm charts which are already released, don't remove it

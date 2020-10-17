@@ -27,7 +27,7 @@ if [[ -d /harbor_cust_cert && -n "$(ls -A /harbor_cust_cert)" ]]; then
         case ${z} in
             *.crt | *.ca | *.ca-bundle | *.pem)
                 if [ -d "$z" ]; then
-                    echo "$z is dirictory, skip it ..."
+                    echo "$z is directory, skip it ..."
                 else
                     cat $z >> /etc/pki/tls/certs/ca-bundle.crt
                     echo " $z Appended ..."

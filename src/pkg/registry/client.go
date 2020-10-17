@@ -93,6 +93,8 @@ type Client interface {
 	// is used to specify whether the destination artifact will be overridden if
 	// its name is same with source but digest isn't
 	Copy(srcRepository, srcReference, dstRepository, dstReference string, override bool) (err error)
+	// Do send generic HTTP requests to the target registry service
+	Do(req *http.Request) (*http.Response, error)
 }
 
 // NewClient creates a registry client with the default authorizer which determines the auth scheme
@@ -504,6 +506,10 @@ func (c *client) Copy(srcRepo, srcRef, dstRepo, dstRef string, override bool) er
 	}
 
 	return nil
+}
+
+func (c *client) Do(req *http.Request) (*http.Response, error) {
+	return c.do(req)
 }
 
 func (c *client) do(req *http.Request) (*http.Response, error) {

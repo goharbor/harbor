@@ -1,6 +1,7 @@
 package robot
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/robot/dao"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
@@ -21,6 +22,9 @@ type Manager interface {
 
 	// DeleteRobotAccount ...
 	DeleteRobotAccount(id int64) error
+
+	// DeleteByProjectID ...
+	DeleteByProjectID(ctx context.Context, projectID int64) error
 
 	// UpdateRobotAccount ...
 	UpdateRobotAccount(m *model.Robot) error
@@ -53,6 +57,11 @@ func (drm *defaultRobotManager) CreateRobotAccount(r *model.Robot) (int64, error
 // DeleteRobotAccount ...
 func (drm *defaultRobotManager) DeleteRobotAccount(id int64) error {
 	return drm.dao.DeleteRobotAccount(id)
+}
+
+// DeleteByProjectID ...
+func (drm *defaultRobotManager) DeleteByProjectID(ctx context.Context, projectID int64) error {
+	return drm.dao.DeleteByProjectID(ctx, projectID)
 }
 
 // UpdateRobotAccount ...

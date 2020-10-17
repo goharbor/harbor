@@ -120,6 +120,9 @@ func ClearTable(table string) error {
 	if table == models.UserTable {
 		sql = fmt.Sprintf("delete from %s where user_id > 2", table)
 	}
+	if table == "project_member" { // make sure admin in library
+		sql = fmt.Sprintf("delete from %s where id > 1", table)
+	}
 	if table == "project_metadata" { // make sure library is public
 		sql = fmt.Sprintf("delete from %s where id > 1", table)
 	}
@@ -149,4 +152,25 @@ func Escape(str string) string {
 	str = strings.Replace(str, `%`, `\%`, -1)
 	str = strings.Replace(str, `_`, `\_`, -1)
 	return str
+}
+
+// implements github.com/golang-migrate/migrate/v4.Logger
+type mLogger struct {
+	logger *log.Logger
+}
+
+func newMigrateLogger() *mLogger {
+	return &mLogger{
+		logger: log.DefaultLogger().WithDepth(5),
+	}
+}
+
+// Verbose ...
+func (l *mLogger) Verbose() bool {
+	return l.logger.GetLevel() <= log.DebugLevel
+}
+
+// Printf ...
+func (l *mLogger) Printf(format string, v ...interface{}) {
+	l.logger.Infof(format, v...)
 }

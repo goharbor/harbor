@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { GroupComponent } from './group.component';
 import { ClarityModule } from '@clr/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -43,7 +43,7 @@ describe('GroupComponent', () => {
     }
   };
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [GroupComponent],
       imports: [

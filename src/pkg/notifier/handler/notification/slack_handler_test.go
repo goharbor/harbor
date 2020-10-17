@@ -99,3 +99,8 @@ func TestSlackHandler_IsStateful(t *testing.T) {
 	handler := &SlackHandler{}
 	assert.False(t, handler.IsStateful())
 }
+
+func TestSlackHandler_Name(t *testing.T) {
+	handler := &SlackHandler{}
+	assert.Equal(t, "Slack", handler.Name())
+}

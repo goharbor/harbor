@@ -56,9 +56,9 @@ export class LabelComponent implements OnInit {
     @Input() hasUpdateLabelPermission: boolean;
     @Input() hasDeleteLabelPermission: boolean;
 
-    @ViewChild(CreateEditLabelComponent, {static: false})
+    @ViewChild(CreateEditLabelComponent)
     createEditLabel: CreateEditLabelComponent;
-    @ViewChild("confirmationDialog", {static: false})
+    @ViewChild("confirmationDialog")
     confirmationDialogComponent: ConfirmationDialogComponent;
 
     constructor(private labelService: LabelService,

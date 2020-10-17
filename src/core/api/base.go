@@ -25,10 +25,12 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/p2p/preheat"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -48,6 +50,11 @@ var (
 	retentionLauncher   retention.Launcher
 	retentionController retention.APIController
 )
+
+// GetRetentionController returns the retention API controller
+func GetRetentionController() retention.APIController {
+	return retentionController
+}
 
 // BaseController ...
 type BaseController struct {
@@ -190,7 +197,7 @@ func Init() error {
 
 	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, scheduler.Sched, retentionLauncher)
 
-	callbackFun := func(p interface{}) error {
+	retentionCallbackFun := func(p interface{}) error {
 		str, ok := p.(string)
 		if !ok {
 			return fmt.Errorf("the type of param %v isn't string", p)
@@ -202,7 +209,24 @@ func Init() error {
 		_, err := retentionController.TriggerRetentionExec(param.PolicyID, param.Trigger, false)
 		return err
 	}
-	err := scheduler.RegisterCallbackFunc(retention.SchedulerCallback, callbackFun)
+	err := scheduler.RegisterCallbackFunc(retention.SchedulerCallback, retentionCallbackFun)
+	if err != nil {
+		return err
+	}
+
+	p2pPreheatCallbackFun := func(p interface{}) error {
+		str, ok := p.(string)
+		if !ok {
+			return fmt.Errorf("the type of param %v isn't string", p)
+		}
+		param := &preheat.TriggerParam{}
+		if err := json.Unmarshal([]byte(str), param); err != nil {
+			return fmt.Errorf("failed to unmarshal the param: %v", err)
+		}
+		_, err := preheat.Enf.EnforcePolicy(orm.Context(), param.PolicyID)
+		return err
+	}
+	err = scheduler.RegisterCallbackFunc(preheat.SchedulerCallback, p2pPreheatCallbackFun)
 
 	return err
 }

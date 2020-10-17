@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
 import unittest
-import swagger_client
+import v2_swagger_client
 import time
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, TEARDOWN
 from library.project import Project
 from library.user import User
 
@@ -46,10 +46,14 @@ class TestProjectCVEAllowlist(unittest.TestCase):
         self.user_ra_id = int(user_ra_id)
         p_id, _ = self.project.create_project(metadata = {"public": "false"}, **ADMIN_CLIENT)
         self.project_pa_id = int(p_id)
-        m_id = self.project.add_project_members(self.project_pa_id, self.user_ra_id, member_role_id=3, **ADMIN_CLIENT)
+        m_id = self.project.add_project_members(self.project_pa_id, user_id=self.user_ra_id, member_role_id=3, **ADMIN_CLIENT)
         self.member_id = int(m_id)
 
     def tearDown(self):
+        print("Case completed")
+
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
+    def test_ClearData(self):
         print("Tearing down...")
         self.project.delete_project_member(self.project_pa_id, self.member_id, **ADMIN_CLIENT)
         self.project.delete_project(self.project_pa_id,**ADMIN_CLIENT)
@@ -63,9 +67,9 @@ class TestProjectCVEAllowlist(unittest.TestCase):
         self.assertEqual(0, len(p.cve_allowlist.items))
 
         # User(RA) updates the project CVE allowlist, verify it fails with Forbidden error.
-        item_list = [swagger_client.CVEAllowlistItem(cve_id="CVE-2019-12310")]
+        item_list = [v2_swagger_client.CVEAllowlistItem(cve_id="CVE-2019-12310")]
         exp = int(time.time()) + 1000
-        wl = swagger_client.CVEAllowlist(expires_at=exp, items=item_list)
+        wl = v2_swagger_client.CVEAllowlist(expires_at=exp, items=item_list)
         self.project.update_project(self.project_pa_id, cve_allowlist=wl, expect_status_code=403, **self.USER_RA_CLIENT)
 
         # Admin user updates User(RA) as project admin.
@@ -78,14 +82,14 @@ class TestProjectCVEAllowlist(unittest.TestCase):
         self.assertEqual(exp, p.cve_allowlist.expires_at)
 
         # User(RA) updates the project CVE allowlist with empty items list
-        wl2 = swagger_client.CVEAllowlist(items=[])
+        wl2 = v2_swagger_client.CVEAllowlist(items=[])
         self.project.update_project(self.project_pa_id, cve_allowlist=wl2, **self.USER_RA_CLIENT)
         p = self.project.get_project(self.project_pa_id, **self.USER_RA_CLIENT)
         self.assertEqual(0, len(p.cve_allowlist.items))
         self.assertIsNone(p.cve_allowlist.expires_at)
 
         # User(RA) updates the project metadata to set "reuse_sys_cve_allowlist" to true.
-        meta = swagger_client.ProjectMetadata(reuse_sys_cve_allowlist="true")
+        meta = v2_swagger_client.ProjectMetadata(reuse_sys_cve_allowlist="true")
         self.project.update_project(self.project_pa_id, metadata=meta, **self.USER_RA_CLIENT)
         p = self.project.get_project(self.project_pa_id, **self.USER_RA_CLIENT)
         self.assertEqual("true", p.metadata.reuse_sys_cve_allowlist)

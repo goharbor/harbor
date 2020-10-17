@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { EditProjectQuotasComponent } from './edit-project-quotas.component';
 import { SERVICE_CONFIG, IServiceConfig } from '../../../../entities/service.config';
 import { EditQuotaQuotaInterface } from '../../../../services';
@@ -20,7 +20,7 @@ describe('EditProjectQuotasComponent', () => {
     quotaHardLimitValue: {storageLimit: -1, storageUnit: "Byte"},
     isSystemDefaultQuota: true
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         HarborLibraryModule,

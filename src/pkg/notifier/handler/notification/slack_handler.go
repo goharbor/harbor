@@ -64,6 +64,11 @@ const (
 type SlackHandler struct {
 }
 
+// Name ...
+func (s *SlackHandler) Name() string {
+	return "Slack"
+}
+
 // Handle handles event to slack
 func (s *SlackHandler) Handle(value interface{}) error {
 	if value == nil {

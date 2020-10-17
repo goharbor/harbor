@@ -1,20 +1,10 @@
 import { TestBed, inject } from '@angular/core/testing';
-
 import { InterceptHttpService } from './intercept-http.service';
-import { CookieService } from 'ngx-cookie';
 import { HttpRequest, HttpResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 
 describe('InterceptHttpService', () => {
-  let cookie = "fdsa|ds";
-  const mockCookieService = {
-    get: function () {
-      return cookie;
-    },
-    set: function (cookieStr: string) {
-      cookie = cookieStr;
-    }
-  };
+  const mockedCSRFToken: string = 'test';
   const mockRequest = new HttpRequest('PUT', "", {
     headers: new Map()
   });
@@ -29,13 +19,21 @@ describe('InterceptHttpService', () => {
       }
     }
   };
-  beforeEach(() => TestBed.configureTestingModule({}));
   beforeEach(() => {
+    let store = {};
+    spyOn(localStorage, 'getItem').and.callFake( key => {
+      return store[key];
+    });
+    spyOn(localStorage, 'setItem').and.callFake((key, value) => {
+      return store[key] = value + '';
+    });
+    spyOn(localStorage, 'clear').and.callFake( () => {
+      store = {};
+    });
     TestBed.configureTestingModule({
       imports: [],
       providers: [
-        InterceptHttpService,
-        { provide: CookieService, useValue: mockCookieService }
+        InterceptHttpService
       ]
     });
 
@@ -46,10 +44,10 @@ describe('InterceptHttpService', () => {
 
   it('should be get right token and send right request when the cookie not exists', inject([InterceptHttpService],
     (service: InterceptHttpService) => {
-      mockCookieService.set("fdsa|ds");
+      localStorage.setItem("__csrf", mockedCSRFToken);
       service.intercept(mockRequest, mockHandle).subscribe(res => {
         if (res.status === 403) {
-          expect(mockRequest.headers.get("X-Harbor-CSRF-Token")).toEqual(cookie);
+          expect(mockRequest.headers.get("X-Harbor-CSRF-Token")).toEqual(mockedCSRFToken);
         } else {
           expect(res.status).toEqual(200);
         }

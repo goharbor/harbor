@@ -1,6 +1,6 @@
 FROM photon:2.0
 
-RUN tdnf install -y sudo >>/dev/null\
+RUN tdnf install -y shadow >> /dev/null \
     && tdnf clean all \
     && mkdir /clair-adapter/ \
     && groupadd -r -g 10000 clair-adapter \

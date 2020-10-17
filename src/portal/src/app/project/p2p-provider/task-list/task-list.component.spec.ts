@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -17,6 +17,7 @@ import { TaskListComponent } from './task-list.component';
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
 import { UserPermissionService } from '../../../../lib/services';
 import { Task } from '../../../../../ng-swagger-gen/models/task';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
 describe('TaskListComponent', () => {
   let component: TaskListComponent;
   let fixture: ComponentFixture<TaskListComponent>;
@@ -38,8 +39,13 @@ describe('TaskListComponent', () => {
     GetExecution() {
        return of(execution).pipe(delay(0));
     },
-    ListTasks() {
-      return of([task]).pipe(delay(0));
+    ListTasksResponse() {
+      return of(new HttpResponse({
+        body: [task],
+        headers:  new HttpHeaders({
+          "X-Total-Count": "1"
+        })
+      })).pipe(delay(0));
     }
   };
   const mockActivatedRoute = {
@@ -80,7 +86,7 @@ describe('TaskListComponent', () => {
       return of(true).pipe(delay(0));
     }
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA,

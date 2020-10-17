@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LabelsComponent } from './labels.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
@@ -11,7 +11,7 @@ describe('LabelsComponent', () => {
   let component: LabelsComponent;
   let fixture: ComponentFixture<LabelsComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,

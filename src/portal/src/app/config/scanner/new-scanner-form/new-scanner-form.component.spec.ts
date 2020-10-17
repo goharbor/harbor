@@ -1,4 +1,4 @@
-import { async, ComponentFixture, ComponentFixtureAutoDetect, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, ComponentFixtureAutoDetect, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { NewScannerFormComponent } from "./new-scanner-form.component";
 import { FormBuilder } from "@angular/forms";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";

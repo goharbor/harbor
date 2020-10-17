@@ -47,9 +47,9 @@ func (a *artifactEventTestSuite) TestResolveOfPushArtifactEventMetadata() {
 func (a *artifactEventTestSuite) TestResolveOfPullArtifactEventMetadata() {
 	e := &event.Event{}
 	metadata := &PullArtifactEventMetadata{
-		Ctx:      context.Background(),
 		Artifact: &artifact.Artifact{ID: 1},
 		Tag:      "latest",
+		Operator: "admin",
 	}
 	err := metadata.Resolve(e)
 	a.Require().Nil(err)

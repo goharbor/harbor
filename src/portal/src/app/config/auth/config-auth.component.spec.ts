@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ConfirmMessageHandler } from '../config.msg.utils';
 import { AppConfigService } from '../../services/app-config.service';
@@ -10,7 +10,6 @@ import { FormsModule } from '@angular/forms';
 import { of } from 'rxjs';
 import { ErrorHandler } from "../../../lib/utils/error-handler";
 import { SystemInfoService } from "../../../lib/services";
-import { Configuration } from '../../../lib/components/config/config';
 import { clone } from '../../../lib/utils/utils';
 import { CONFIG_AUTH_MODE } from '../../../lib/entities/shared.const';
 
@@ -37,7 +36,7 @@ describe('ConfigurationAuthComponent', () => {
         }
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),

@@ -55,9 +55,9 @@ func (p *PushArtifactEventMetadata) Resolve(event *event.Event) error {
 
 // PullArtifactEventMetadata is the metadata from which the pull artifact event can be resolved
 type PullArtifactEventMetadata struct {
-	Ctx      context.Context
 	Artifact *artifact.Artifact
 	Tag      string
+	Operator string
 }
 
 // Resolve to the event from the metadata
@@ -74,10 +74,7 @@ func (p *PullArtifactEventMetadata) Resolve(event *event.Event) error {
 	data := &event2.PullArtifactEvent{
 		ArtifactEvent: ae,
 	}
-	ctx, exist := security.FromContext(p.Ctx)
-	if exist {
-		data.Operator = ctx.GetUsername()
-	}
+	data.Operator = p.Operator
 	event.Topic = event2.TopicPullArtifact
 	event.Data = data
 	return nil

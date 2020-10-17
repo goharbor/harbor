@@ -20,6 +20,7 @@ import (
 
 	"helm.sh/helm/v3/cmd/helm/search"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	pro "github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
@@ -204,4 +205,28 @@ func filterRepositories(projects []*models.Project, keyword string) (
 		result = append(result, entry)
 	}
 	return result, nil
+}
+
+// Returns the highest role in the role list.
+// This func should be removed once we deprecate the "current_user_role_id" in project API
+// A user can have multiple roles and they may not have a strict ranking relationship
+func highestRole(roles []int) int {
+	if roles == nil {
+		return 0
+	}
+	rolePower := map[int]int{
+		common.RoleProjectAdmin: 50,
+		common.RoleMaintainer:   40,
+		common.RoleDeveloper:    30,
+		common.RoleGuest:        20,
+		common.RoleLimitedGuest: 10,
+	}
+	var highest, highestPower int
+	for _, role := range roles {
+		if p, ok := rolePower[role]; ok && p > highestPower {
+			highest = role
+			highestPower = p
+		}
+	}
+	return highest
 }

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AddMemberComponent } from './add-member.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -35,7 +35,7 @@ describe('AddMemberComponent', () => {
         handleError: () => { },
         isAppLevel: () => { },
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA

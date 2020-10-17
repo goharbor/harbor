@@ -12,7 +12,7 @@ REDIS_UID = 999
 REDIS_GID = 999
 
 ## Global variable
-templates_dir = "/usr/src/app/templates"
+templates_dir = Path("/usr/src/app/templates")
 
 host_root_dir = Path('/hostfs')
 

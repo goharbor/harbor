@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { AddRuleComponent } from './add-rule.component';
@@ -40,8 +40,8 @@ describe('AddRuleComponent', () => {
   };
   const mockErrorHandler = {
     handleErrorPopupUnauthorized: () => {}
-  }
-  beforeEach(async(() => {
+  };
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [AddRuleComponent, InlineAlertComponent],
       schemas: [
@@ -83,7 +83,7 @@ describe('AddRuleComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-  it("should rightly display default repositories and tag", async(() => {
+  it("should rightly display default repositories and tag", waitForAsync(() => {
     fixture.detectChanges();
 
     fixture.whenStable().then(() => {
@@ -97,7 +97,7 @@ describe('AddRuleComponent', () => {
       expect(elTag.value.trim()).toEqual("**");
     });
   }));
-  it("should rightly close", async(() => {
+  it("should rightly close", waitForAsync(() => {
     fixture.detectChanges();
     let elRep: HTMLButtonElement = fixture.nativeElement.querySelector("#close-btn");
     elRep.dispatchEvent(new Event('click'));
@@ -107,7 +107,7 @@ describe('AddRuleComponent', () => {
         expect(component.addRuleOpened).toEqual(false);
     });
   }));
-  it("should be validating repeat rule ", async(() => {
+  it("should be validating repeat rule ", waitForAsync(() => {
     fixture.detectChanges();
     component.rules = [mockRule];
     const elRep: HTMLButtonElement = fixture.nativeElement.querySelector("#add-edit-btn");

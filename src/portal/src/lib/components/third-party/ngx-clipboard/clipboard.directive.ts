@@ -1,5 +1,5 @@
 import { ClipboardService } from './clipboard.service';
-import { Directive, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, Renderer, ElementRef } from '@angular/core';
+import { Directive, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ElementRef, Renderer2 } from '@angular/core';
 
 @Directive({
     selector: '[ngxClipboard]'
@@ -15,7 +15,7 @@ export class ClipboardDirective implements OnInit, OnDestroy {
     @Output() public cbOnError: EventEmitter<any> = new EventEmitter<any>();
     constructor(
         private clipboardSrv: ClipboardService,
-        private renderer: Renderer
+        private renderer: Renderer2
 
     ) { }
 

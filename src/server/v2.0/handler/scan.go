@@ -48,7 +48,7 @@ func (s *scanAPI) Prepare(ctx context.Context, operation string, params interfac
 }
 
 func (s *scanAPI) ScanArtifact(ctx context.Context, params operation.ScanArtifactParams) middleware.Responder {
-	if err := s.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourceScan); err != nil {
+	if err := s.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceScan); err != nil {
 		return s.SendError(ctx, err)
 	}
 

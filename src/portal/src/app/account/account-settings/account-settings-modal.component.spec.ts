@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AccountSettingsModalComponent } from './account-settings-modal.component';
 import { SessionService } from "../../shared/session.service";
@@ -66,7 +66,7 @@ describe('AccountSettingsModalComponent', () => {
         navigate: () => { }
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [AccountSettingsModalComponent, InlineAlertComponent, ConfirmationDialogComponent],
             imports: [
@@ -108,7 +108,7 @@ describe('AccountSettingsModalComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should input right email', async(async () => {
+    it('should input right email', waitForAsync(async () => {
         await fixture.whenStable();
         // Update the title input
         userExisting = true;

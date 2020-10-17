@@ -16,8 +16,6 @@ RUN chown -R scanner:scanner /etc/pki/tls/certs \
     && chown scanner:scanner /home/scanner/bin/scanner-trivy && chmod u+x /home/scanner/bin/scanner-trivy \
     && chown scanner:scanner /home/scanner/install_cert.sh && chmod u+x /home/scanner/install_cert.sh
 
-EXPOSE 8080
-
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl --fail -s http://127.0.0.1:8080/probe/healthy || curl -k --fail -s https://127.0.0.1:8443/probe/healthy || exit 1
 
 ENV TRIVY_VERSION=${trivy_version}

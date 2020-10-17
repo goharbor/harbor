@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async } from "@angular/core/testing";
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 import { DebugElement } from "@angular/core";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
@@ -226,7 +226,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
     targetBaseEndpoint: CURRENT_BASE_HREF + "/registries/testing"
   };
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule, NoopAnimationsModule, RouterTestingModule],
       declarations: [
@@ -285,7 +285,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
     fixture.detectChanges();
   });
 
-  it("Should open creation modal and load endpoints", async(() => {
+  it("Should open creation modal and load endpoints", waitForAsync(() => {
     fixture.detectChanges();
     compCreate.openCreateEditRule();
     fixture.whenStable().then(() => {
@@ -300,7 +300,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
     });
   }));
 
-  it("Should open modal to edit replication rule", async(() => {
+  it("Should open modal to edit replication rule", waitForAsync(() => {
     fixture.detectChanges();
     compCreate.openCreateEditRule(mockRule.id);
     fixture.whenStable().then(() => {

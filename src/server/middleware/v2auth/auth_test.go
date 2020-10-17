@@ -262,7 +262,7 @@ func TestGetChallenge(t *testing.T) {
 		},
 		{
 			request:   req2,
-			challenge: `Bearer realm="https://harbor.test/service/token",service="harbor-registry"`,
+			challenge: `Basic realm="harbor"`,
 		},
 		{
 			request:   req2x,

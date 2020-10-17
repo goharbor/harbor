@@ -22,33 +22,27 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/stretchr/testify/suite"
 )
 
 type daoTestSuite struct {
 	suite.Suite
-	dao     DAO
-	execMgr task.ExecutionManager
-	ctx     context.Context
-	id      int64
-	execID  int64
+	dao DAO
+	ctx context.Context
+	id  int64
 }
 
 func (d *daoTestSuite) SetupSuite() {
 	d.dao = &dao{}
-	d.execMgr = task.NewExecutionManager()
 	common_dao.PrepareTestForPostgresSQL()
 	d.ctx = orm.Context()
 }
 
 func (d *daoTestSuite) SetupTest() {
-	execID, err := d.execMgr.Create(d.ctx, "vendor", 0, "trigger")
-	d.Require().Nil(err)
-	d.execID = execID
 	schedule := &schedule{
+		VendorType:        "Vendor",
+		VendorID:          1,
 		CRON:              "0 * * * * *",
-		ExecutionID:       execID,
 		CallbackFuncName:  "callback_func_01",
 		CallbackFuncParam: "callback_func_params",
 	}
@@ -59,19 +53,10 @@ func (d *daoTestSuite) SetupTest() {
 
 func (d *daoTestSuite) TearDownTest() {
 	d.Require().Nil(d.dao.Delete(d.ctx, d.id))
-	d.Require().Nil(d.execMgr.Delete(d.ctx, d.execID))
 }
 
 func (d *daoTestSuite) TestCreate() {
 	// the happy pass is covered in SetupTest
-
-	// foreign key error
-	_, err := d.dao.Create(d.ctx, &schedule{
-		CRON:             "0 * * * * *",
-		ExecutionID:      10000,
-		CallbackFuncName: "callback_func",
-	})
-	d.True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
 }
 
 func (d *daoTestSuite) TestList() {

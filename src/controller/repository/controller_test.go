@@ -15,6 +15,8 @@
 package repository
 
 import (
+	"testing"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -26,20 +28,19 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type controllerTestSuite struct {
 	suite.Suite
 	ctl     *controller
-	proMgr  *project.FakeManager
+	proMgr  *project.Manager
 	repoMgr *repository.FakeManager
 	argMgr  *arttesting.FakeManager
 	artCtl  *artifacttesting.Controller
 }
 
 func (c *controllerTestSuite) SetupTest() {
-	c.proMgr = &project.FakeManager{}
+	c.proMgr = &project.Manager{}
 	c.repoMgr = &repository.FakeManager{}
 	c.argMgr = &arttesting.FakeManager{}
 	c.artCtl = &artifacttesting.Controller{}
@@ -69,7 +70,7 @@ func (c *controllerTestSuite) TestEnsure() {
 
 	// doesn't exist
 	c.repoMgr.On("GetByName").Return(nil, errors.NotFoundError(nil))
-	c.proMgr.On("Get", "library").Return(&models.Project{
+	c.proMgr.On("Get", mock.AnythingOfType("*context.valueCtx"), "library").Return(&models.Project{
 		ProjectID: 1,
 	}, nil)
 	c.repoMgr.On("Create").Return(1, nil)

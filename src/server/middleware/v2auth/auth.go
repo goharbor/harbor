@@ -16,6 +16,7 @@ package v2auth
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/lib"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"net/url"
@@ -84,8 +85,9 @@ func (rc *reqChecker) projectID(name string) (int64, error) {
 func getChallenge(req *http.Request, accessList []access) string {
 	logger := log.G(req.Context())
 	auth := req.Header.Get(authHeader)
-	if len(auth) > 0 {
-		// Return basic auth challenge by default
+	if len(auth) > 0 ||
+		len(lib.V2CatalogURLRe.FindStringSubmatch(req.URL.Path)) == 1 {
+		// Return basic auth challenge by default, incl. request to '/v2/_catalog'
 		return `Basic realm="harbor"`
 	}
 	// No auth header, treat it as CLI and redirect to token service

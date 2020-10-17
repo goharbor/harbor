@@ -58,7 +58,7 @@ func TestMiddleware(t *testing.T) {
 		rec := httptest.NewRecorder()
 		srv.ServeHTTP(rec, c.req)
 		assert.Equal(t, c.statusCode, rec.Result().StatusCode)
-		assert.Equal(t, c.returnToken, hasCookie(rec.Result(), tokenCookie))
+		assert.Equal(t, c.returnToken, rec.Result().Header.Get(tokenHeader) != "")
 	}
 }
 

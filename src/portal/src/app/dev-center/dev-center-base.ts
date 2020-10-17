@@ -1,8 +1,9 @@
-import { AfterViewInit, OnInit } from '@angular/core';
+import { AfterViewInit, OnInit, Directive } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from "ngx-cookie";
 
+@Directive()
 export  abstract class DevCenterBase implements OnInit, AfterViewInit {
   constructor(
     public translate: TranslateService,

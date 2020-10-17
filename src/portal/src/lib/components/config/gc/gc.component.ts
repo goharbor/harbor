@@ -31,7 +31,7 @@ export class GcComponent implements OnInit {
   disableGC: boolean = false;
   getLabelCurrent = 'GC.CURRENT_SCHEDULE';
   @Output() loadingGcStatus = new EventEmitter<boolean>();
-  @ViewChild(CronScheduleComponent, {static: false})
+  @ViewChild(CronScheduleComponent)
   CronScheduleComponent: CronScheduleComponent;
   shouldDeleteUntagged: boolean;
   dryRunOnGoing: boolean = false;

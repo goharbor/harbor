@@ -35,11 +35,11 @@ import { ClrLoadingState } from '@clr/angular';
   styleUrls: ['./webhook.component.scss']
 })
 export class WebhookComponent implements OnInit {
-  @ViewChild(AddWebhookComponent, { static: false } )
+  @ViewChild(AddWebhookComponent)
   addWebhookComponent: AddWebhookComponent;
-  @ViewChild(AddWebhookFormComponent, { static: false })
+  @ViewChild(AddWebhookFormComponent)
   addWebhookFormComponent: AddWebhookFormComponent;
-  @ViewChild("confirmationDialogComponent", { static: false })
+  @ViewChild("confirmationDialogComponent")
   confirmationDialogComponent: ConfirmationDialogComponent;
   lastTriggers: LastTrigger[] = [];
   lastTriggerCount: number = 0;

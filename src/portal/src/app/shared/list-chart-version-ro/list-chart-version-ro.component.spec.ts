@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ListChartVersionRoComponent } from './list-chart-version-ro.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -27,7 +27,7 @@ describe('ListChartVersionRoComponent', () => {
             );
         }
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA

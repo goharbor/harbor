@@ -35,8 +35,8 @@ export class ChangePasswordComponent {
     confirmPwd: string = "";
     userId: number;
 
-    @ViewChild("resetPwdForm", { static: false }) resetPwdForm: NgForm;
-    @ViewChild(InlineAlertComponent, { static: false })
+    @ViewChild("resetPwdForm") resetPwdForm: NgForm;
+    @ViewChild(InlineAlertComponent)
     inlineAlert: InlineAlertComponent;
 
     constructor(

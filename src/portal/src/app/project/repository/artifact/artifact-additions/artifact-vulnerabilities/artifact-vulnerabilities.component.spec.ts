@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactVulnerabilitiesComponent } from './artifact-vulnerabilities.component';
 import { NO_ERRORS_SCHEMA } from "@angular/core";
 import { ClarityModule } from "@clr/angular";
@@ -65,7 +65,7 @@ describe('ArtifactVulnerabilitiesComponent', () => {
       }
     }
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         BrowserAnimationsModule,

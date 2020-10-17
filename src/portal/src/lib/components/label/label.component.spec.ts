@@ -1,17 +1,16 @@
-import {Label} from "../../services/interface";
-import {LabelComponent} from "./label.component";
-import {async, ComponentFixture, TestBed} from "@angular/core/testing";
-import {LabelDefaultService, LabelService} from "../../services/label.service";
-import {SharedModule} from "../../utils/shared/shared.module";
-import {NoopAnimationsModule} from "@angular/platform-browser/animations";
-import {FilterComponent} from "../filter/filter.component";
-import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
-import {CreateEditLabelComponent} from "../create-edit-label/create-edit-label.component";
-import {LabelPieceComponent} from "../label-piece/label-piece.component";
-import {InlineAlertComponent} from "../inline-alert/inline-alert.component";
-import {ErrorHandler} from "../../utils/error-handler/error-handler";
-
-import {IServiceConfig, SERVICE_CONFIG} from "../../entities/service.config";
+import { Label } from "../../services";
+import { LabelComponent } from "./label.component";
+import { waitForAsync, ComponentFixture, TestBed } from "@angular/core/testing";
+import { LabelDefaultService, LabelService } from "../../services";
+import { SharedModule } from "../../utils/shared/shared.module";
+import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { FilterComponent } from "../filter/filter.component";
+import { ConfirmationDialogComponent } from "../confirmation-dialog";
+import { CreateEditLabelComponent } from "../create-edit-label/create-edit-label.component";
+import { LabelPieceComponent } from "../label-piece/label-piece.component";
+import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
+import { ErrorHandler } from "../../utils/error-handler";
+import { IServiceConfig, SERVICE_CONFIG } from "../../entities/service.config";
 import { OperationService } from "../operation/operation.service";
 import { of } from "rxjs";
 import { CURRENT_BASE_HREF } from "../../utils/utils";
@@ -42,15 +41,15 @@ describe('LabelComponent (inline template)', () => {
     ];
 
     let mockOneData: Label = {
-            color: "#9b0d54",
-            creation_time: "",
-            description: "",
-            id: 1,
-            name: "label0-g",
-            project_id: 0,
-            scope: "g",
-            update_time: "",
-        };
+        color: "#9b0d54",
+        creation_time: "",
+        description: "",
+        id: 1,
+        name: "label0-g",
+        project_id: 0,
+        scope: "g",
+        update_time: "",
+    };
 
     let comp: LabelComponent;
     let fixture: ComponentFixture<LabelComponent>;
@@ -64,7 +63,7 @@ describe('LabelComponent (inline template)', () => {
         systemInfoEndpoint: CURRENT_BASE_HREF + '/label/testing'
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 SharedModule,
@@ -80,9 +79,9 @@ describe('LabelComponent (inline template)', () => {
             ],
             providers: [
                 ErrorHandler,
-                { provide: SERVICE_CONFIG, useValue: config },
+                {provide: SERVICE_CONFIG, useValue: config},
                 {provide: LabelService, useClass: LabelDefaultService},
-                { provide: OperationService }
+                {provide: OperationService}
             ]
         });
     }));
@@ -103,7 +102,7 @@ describe('LabelComponent (inline template)', () => {
         expect(spy.calls.any()).toBeTruthy();
     });
 
-    it('should open create label modal', async(() => {
+    it('should open create label modal', waitForAsync(() => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
@@ -112,23 +111,4 @@ describe('LabelComponent (inline template)', () => {
             expect(comp.targets[0].name).toEqual('label0-g');
         });
     }));
-
-    /*it('should open to edit existing label', async() => {
-        fixture.detectChanges();
-        fixture.whenStable().then(() => {
-        let de: DebugElement = fixture.debugElement.query(del => del.classes['active']);
-        expect(de).toBeTruthy();
-        fixture.detectChanges();
-        click(de);
-        fixture.detectChanges();
-
-        let deInput: DebugElement = fixture.debugElement.query(By.css['input']);
-        expect(deInput).toBeTruthy();
-        let elInput: HTMLElement = deInput.nativeElement;
-        expect(elInput).toBeTruthy();
-        expect(elInput.textContent).toEqual('label1-g');
-
-        })
-    })*/
-
 });

@@ -234,18 +234,21 @@ func Test_createGroupSearchFilter(t *testing.T) {
 		groupNameAttribute string
 	}
 	tests := []struct {
-		name string
-		args args
-		want string
+		name    string
+		args    args
+		want    string
+		wantErr error
 	}{
-		{"Normal Filter", args{oldFilter: "objectclass=groupOfNames", groupName: "harbor_users", groupNameAttribute: "cn"}, "(&(objectclass=groupOfNames)(cn=*harbor_users*))"},
-		{"Empty Old", args{groupName: "harbor_users", groupNameAttribute: "cn"}, "cn=*harbor_users*"},
-		{"Empty Both", args{groupNameAttribute: "cn"}, "cn=*"},
-		{"Empty name", args{oldFilter: "objectclass=groupOfNames", groupNameAttribute: "cn"}, "objectclass=groupOfNames"},
+		{"Normal Filter", args{oldFilter: "objectclass=groupOfNames", groupName: "harbor_users", groupNameAttribute: "cn"}, "(&(objectclass=groupOfNames)(cn=*harbor_users*))", nil},
+		{"Empty Old", args{groupName: "harbor_users", groupNameAttribute: "cn"}, "(cn=*harbor_users*)", nil},
+		{"Empty Both", args{groupNameAttribute: "cn"}, "(cn=*)", nil},
+		{"Empty name", args{oldFilter: "objectclass=groupOfNames", groupNameAttribute: "cn"}, "(objectclass=groupOfNames)", nil},
+		{"Empty name with complex filter", args{oldFilter: "(&(objectClass=groupOfNames)(cn=*sample*))", groupNameAttribute: "cn"}, "(&(objectClass=groupOfNames)(cn=*sample*))", nil},
+		{"Empty name with bad filter", args{oldFilter: "(&(objectClass=groupOfNames),cn=*sample*)", groupNameAttribute: "cn"}, "", ErrInvalidFilter},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := createGroupSearchFilter(tt.args.oldFilter, tt.args.groupName, tt.args.groupNameAttribute); got != tt.want {
+			if got, err := createGroupSearchFilter(tt.args.oldFilter, tt.args.groupName, tt.args.groupNameAttribute); got != tt.want && err != tt.wantErr {
 				t.Errorf("createGroupSearchFilter() = %v, want %v", got, tt.want)
 			}
 		})
@@ -258,7 +261,7 @@ func TestSession_SearchGroup(t *testing.T) {
 		ldapConn   *goldap.Conn
 	}
 	type args struct {
-		baseDN             string
+		groupDN            string
 		filter             string
 		groupName          string
 		groupNameAttribute string
@@ -281,7 +284,7 @@ func TestSession_SearchGroup(t *testing.T) {
 	}{
 		{"normal search",
 			fields{ldapConfig: ldapConfig},
-			args{baseDN: "dc=example,dc=com", filter: "objectClass=groupOfNames", groupName: "harbor_users", groupNameAttribute: "cn"},
+			args{groupDN: "cn=harbor_users,ou=groups,dc=example,dc=com", filter: "objectClass=groupOfNames", groupName: "harbor_users", groupNameAttribute: "cn"},
 			[]models.LdapGroup{{GroupName: "harbor_users", GroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com"}}, false},
 	}
 	for _, tt := range tests {
@@ -292,7 +295,7 @@ func TestSession_SearchGroup(t *testing.T) {
 			}
 			session.Open()
 			defer session.Close()
-			got, err := session.searchGroup(tt.args.baseDN, tt.args.filter, tt.args.groupName, tt.args.groupNameAttribute)
+			got, err := session.searchGroup(tt.args.groupDN, tt.args.filter, tt.args.groupName, tt.args.groupNameAttribute)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Session.SearchGroup() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -313,11 +316,36 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 		LdapBaseDn:         ldapTestConfig[common.LDAPBaseDN].(string),
 	}
 	ldapGroupConfig := models.LdapGroupConf{
-		LdapGroupBaseDN:        "ou=group,dc=example,dc=com",
+		LdapGroupBaseDN:        "dc=example,dc=com",
 		LdapGroupFilter:        "objectclass=groupOfNames",
 		LdapGroupNameAttribute: "cn",
 		LdapGroupSearchScope:   2,
 	}
+	ldapGroupConfig2 := models.LdapGroupConf{
+		LdapGroupBaseDN:        "dc=example,dc=com",
+		LdapGroupFilter:        "objectclass=groupOfNames",
+		LdapGroupNameAttribute: "o",
+		LdapGroupSearchScope:   2,
+	}
+	groupConfigWithEmptyBaseDN := models.LdapGroupConf{
+		LdapGroupBaseDN:        "",
+		LdapGroupFilter:        "(objectclass=groupOfNames)",
+		LdapGroupNameAttribute: "cn",
+		LdapGroupSearchScope:   2,
+	}
+	groupConfigWithFilter := models.LdapGroupConf{
+		LdapGroupBaseDN:        "dc=example,dc=com",
+		LdapGroupFilter:        "(cn=*admin*)",
+		LdapGroupNameAttribute: "cn",
+		LdapGroupSearchScope:   2,
+	}
+	groupConfigWithDifferentGroupDN := models.LdapGroupConf{
+		LdapGroupBaseDN:        "dc=harbor,dc=example,dc=com",
+		LdapGroupFilter:        "(objectclass=groupOfNames)",
+		LdapGroupNameAttribute: "cn",
+		LdapGroupSearchScope:   2,
+	}
+
 	type fields struct {
 		ldapConfig      models.LdapConf
 		ldapGroupConfig models.LdapGroupConf
@@ -340,11 +368,39 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 		{"search non-exist group",
 			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
 			args{groupDN: "cn=harbor_non_users,ou=groups,dc=example,dc=com"},
-			nil, true},
+			[]models.LdapGroup{}, false},
 		{"search invalid group dn",
 			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
 			args{groupDN: "random string"},
 			nil, true},
+		{"search with gid = cn",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
+			args{groupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"},
+			[]models.LdapGroup{{GroupName: "harbor_group", GroupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"}}, false},
+		{"search with gid = o",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig2},
+			args{groupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"},
+			[]models.LdapGroup{{GroupName: "hgroup", GroupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"}}, false},
+		{"search with empty group base dn",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithEmptyBaseDN},
+			args{groupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"},
+			[]models.LdapGroup{{GroupName: "harbor_group", GroupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"}}, false},
+		{"search with group filter success",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithFilter},
+			args{groupDN: "cn=harbor_admin,ou=groups,dc=example,dc=com"},
+			[]models.LdapGroup{{GroupName: "harbor_admin", GroupDN: "cn=harbor_admin,ou=groups,dc=example,dc=com"}}, false},
+		{"search with group filter fail",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithFilter},
+			args{groupDN: "cn=harbor_users,ou=groups,dc=example,dc=com"},
+			[]models.LdapGroup{}, false},
+		{"search with different group base dn success",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithDifferentGroupDN},
+			args{groupDN: "cn=harbor_root,dc=harbor,dc=example,dc=com"},
+			[]models.LdapGroup{{GroupName: "harbor_root", GroupDN: "cn=harbor_root,dc=harbor,dc=example,dc=com"}}, false},
+		{"search with different group base dn fail",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithDifferentGroupDN},
+			args{groupDN: "cn=harbor_guest,ou=groups,dc=example,dc=com"},
+			[]models.LdapGroup{}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -367,6 +423,35 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 	}
 }
 
+func TestCreateUserSearchFilter(t *testing.T) {
+	type args struct {
+		origFilter string
+		ldapUID    string
+		username   string
+	}
+	cases := []struct {
+		name    string
+		in      args
+		want    string
+		wantErr error
+	}{
+		{name: `Normal test`, in: args{"(objectclass=inetorgperson)", "cn", "sample"}, want: "(&(objectclass=inetorgperson)(cn=sample)", wantErr: nil},
+		{name: `Bad original filter`, in: args{"(objectclass=inetorgperson)ldap*", "cn", "sample"}, want: "", wantErr: ErrInvalidFilter},
+		{name: `Complex original filter`, in: args{"(&(objectclass=inetorgperson)(|(memberof=cn=harbor_users,ou=groups,dc=example,dc=com)(memberof=cn=harbor_admin,ou=groups,dc=example,dc=com)(memberof=cn=harbor_guest,ou=groups,dc=example,dc=com)))", "cn", "sample"}, want: "(&(&(objectclass=inetorgperson)(|(memberof=cn=harbor_users,ou=groups,dc=example,dc=com)(memberof=cn=harbor_admin,ou=groups,dc=example,dc=com)(memberof=cn=harbor_guest,ou=groups,dc=example,dc=com)))(cn=sample)", wantErr: nil},
+		{name: `Empty original filter`, in: args{"", "cn", "sample"}, want: "(cn=sample)", wantErr: nil},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			got, gotErr := createUserSearchFilter(tt.in.origFilter, tt.in.ldapUID, tt.in.origFilter)
+			if got != tt.want && gotErr != tt.wantErr {
+				t.Errorf(`(%v) = %v; want "%v"`, tt.in, got, tt.want)
+			}
+
+		})
+	}
+}
+
 func TestNormalizeFilter(t *testing.T) {
 	type args struct {
 		filter string
@@ -376,9 +461,11 @@ func TestNormalizeFilter(t *testing.T) {
 		args args
 		want string
 	}{
-		{"normal test", args{"(objectclass=user)"}, "objectclass=user"},
-		{"with space", args{" (objectclass=user) "}, "objectclass=user"},
-		{"nothing", args{"objectclass=user"}, "objectclass=user"},
+		{"normal test", args{"(objectclass=user)"}, "(objectclass=user)"},
+		{"with space", args{" (objectclass=user) "}, "(objectclass=user)"},
+		{"nothing", args{"objectclass=user"}, "(objectclass=user)"},
+		{"and condition", args{"&(objectclass=user)(cn=admin)"}, "(&(objectclass=user)(cn=admin))"},
+		{"or condition", args{"|(objectclass=user)(cn=admin)"}, "(|(objectclass=user)(cn=admin))"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

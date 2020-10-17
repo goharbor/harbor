@@ -15,13 +15,10 @@
 package token
 
 import (
-	"crypto"
-	"encoding/base64"
-	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/docker/libtrust"
 	"github.com/goharbor/harbor/src/common/models"
@@ -30,14 +27,17 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/lib/log"
+	tokenpkg "github.com/goharbor/harbor/src/pkg/token"
+	"github.com/goharbor/harbor/src/pkg/token/claims/v2"
 )
 
 const (
-	// Issuer is the issuer of the internal token service in Harbor for registry
-	Issuer = "harbor-token-issuer"
+	signingMethod = "RS256"
 )
 
-var privateKey string
+var (
+	privateKey string
+)
 
 func init() {
 	privateKey = config.TokenPrivateKeyPath()
@@ -56,7 +56,7 @@ func GetResourceActions(scopes []string) []*token.ResourceActions {
 
 		typee := ""
 		name := ""
-		actions := []string{}
+		actions := make([]string, 0)
 
 		if length == 1 {
 			typee = items[0]
@@ -94,7 +94,9 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 		err = f.filter(ctx, pm, a)
 		log.Debugf("user: %s, access: %v", ctx.GetUsername(), a)
 		if err != nil {
-			return err
+			log.Errorf("Failed to handle the resource %s:%s, due to error %v, returning empty access for it.",
+				a.Type, a.Name, err)
+			a.Actions = []string{}
 		}
 	}
 	return nil
@@ -102,7 +104,7 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 
 // MakeToken makes a valid jwt token based on parms.
 func MakeToken(username, service string, access []*token.ResourceActions) (*models.Token, error) {
-	pk, err := libtrust.LoadKeyFile(privateKey)
+	options, err := tokenpkg.NewOptions(signingMethod, v2.Issuer, privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -110,21 +112,45 @@ func MakeToken(username, service string, access []*token.ResourceActions) (*mode
 	if err != nil {
 		return nil, err
 	}
+	now := time.Now().UTC()
 
-	tk, expiresIn, issuedAt, err := makeTokenCore(Issuer, username, service, expiration, access, pk)
+	claims := &v2.Claims{
+		StandardClaims: jwt.StandardClaims{
+			Issuer:    options.Issuer,
+			Subject:   username,
+			Audience:  service,
+			ExpiresAt: now.Add(time.Duration(expiration) * time.Minute).Unix(),
+			NotBefore: now.Unix(),
+			IssuedAt:  now.Unix(),
+			Id:        utils.GenerateRandomStringWithLen(16),
+		},
+		Access: access,
+	}
+	tok, err := tokenpkg.New(options, claims)
 	if err != nil {
 		return nil, err
 	}
-	rs := fmt.Sprintf("%s.%s", tk.Raw, base64UrlEncode(tk.Signature))
+	// Add kid to token header for compatibility with docker distribution's code
+	// see https://github.com/docker/distribution/blob/release/2.7/registry/auth/token/token.go#L197
+	k, err := libtrust.UnmarshalPrivateKeyPEM(options.PrivateKey)
+	if err != nil {
+		return nil, err
+	}
+	tok.Header["kid"] = k.KeyID()
+
+	rawToken, err := tok.Raw()
+	if err != nil {
+		return nil, err
+	}
 	return &models.Token{
-		Token:     rs,
-		ExpiresIn: expiresIn,
-		IssuedAt:  issuedAt.Format(time.RFC3339),
+		Token:     rawToken,
+		ExpiresIn: expiration * 60,
+		IssuedAt:  now.Format(time.RFC3339),
 	}, nil
 }
 
 func permToActions(p string) []string {
-	res := []string{}
+	res := make([]string, 0)
 	if strings.Contains(p, "W") {
 		res = append(res, "push")
 	}
@@ -138,59 +164,4 @@ func permToActions(p string) []string {
 		res = append(res, "scanner-pull")
 	}
 	return res
-}
-
-// make token core
-func makeTokenCore(issuer, subject, audience string, expiration int,
-	access []*token.ResourceActions, signingKey libtrust.PrivateKey) (t *token.Token, expiresIn int, issuedAt *time.Time, err error) {
-
-	joseHeader := &token.Header{
-		Type:       "JWT",
-		SigningAlg: "RS256",
-		KeyID:      signingKey.KeyID(),
-	}
-
-	jwtID := utils.GenerateRandomStringWithLen(16)
-
-	now := time.Now().UTC()
-	issuedAt = &now
-	expiresIn = expiration * 60
-
-	claimSet := &token.ClaimSet{
-		Issuer:     issuer,
-		Subject:    subject,
-		Audience:   audience,
-		Expiration: now.Add(time.Duration(expiration) * time.Minute).Unix(),
-		NotBefore:  now.Unix(),
-		IssuedAt:   now.Unix(),
-		JWTID:      jwtID,
-		Access:     access,
-	}
-
-	var joseHeaderBytes, claimSetBytes []byte
-
-	if joseHeaderBytes, err = json.Marshal(joseHeader); err != nil {
-		return nil, 0, nil, fmt.Errorf("unable to marshal jose header: %s", err)
-	}
-	if claimSetBytes, err = json.Marshal(claimSet); err != nil {
-		return nil, 0, nil, fmt.Errorf("unable to marshal claim set: %s", err)
-	}
-
-	encodedJoseHeader := base64UrlEncode(joseHeaderBytes)
-	encodedClaimSet := base64UrlEncode(claimSetBytes)
-	payload := fmt.Sprintf("%s.%s", encodedJoseHeader, encodedClaimSet)
-
-	var signatureBytes []byte
-	if signatureBytes, _, err = signingKey.Sign(strings.NewReader(payload), crypto.SHA256); err != nil {
-		return nil, 0, nil, fmt.Errorf("unable to sign jwt payload: %s", err)
-	}
-
-	signature := base64UrlEncode(signatureBytes)
-	tokenString := fmt.Sprintf("%s.%s", payload, signature)
-	t, err = token.NewToken(tokenString)
-	return
-}
-
-func base64UrlEncode(b []byte) string {
-	return strings.TrimRight(base64.URLEncoding.EncodeToString(b), "=")
 }

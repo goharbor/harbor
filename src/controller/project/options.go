@@ -19,27 +19,44 @@ type Option func(*Options)
 
 // Options options used by `Get` method of `Controller`
 type Options struct {
-	CVEAllowlist bool // get project with cve allowlist
-	Metadata     bool // get project with metadata
+	WithCVEAllowlist       bool // get project with cve allowlist
+	WithEffectCVEAllowlist bool // get project with effect cve allowlist
+	WithMetadata           bool // get project with metadata
+	WithOwner              bool // get project with owner name
 }
 
-// CVEAllowlist set CVEAllowlist for the Options
-func CVEAllowlist(allowlist bool) Option {
+// WithCVEAllowlist set WithCVEAllowlist for the Options
+func WithCVEAllowlist() Option {
 	return func(opts *Options) {
-		opts.CVEAllowlist = allowlist
+		opts.WithCVEAllowlist = true
 	}
 }
 
-// Metadata set Metadata for the Options
+// WithEffectCVEAllowlist set WithEffectCVEAllowlist for the Options
+func WithEffectCVEAllowlist() Option {
+	return func(opts *Options) {
+		opts.WithMetadata = true // we need `reuse_sys_cve_allowlist` value in the metadata of project
+		opts.WithEffectCVEAllowlist = true
+	}
+}
+
+// Metadata set WithMetadata for the Options
 func Metadata(metadata bool) Option {
 	return func(opts *Options) {
-		opts.Metadata = metadata
+		opts.WithMetadata = metadata
+	}
+}
+
+// WithOwner set WithOwner for the Options
+func WithOwner() Option {
+	return func(opts *Options) {
+		opts.WithOwner = true
 	}
 }
 
 func newOptions(options ...Option) *Options {
 	opts := &Options{
-		Metadata: true, // default get project with metadata
+		WithMetadata: true, // default get project with metadata
 	}
 
 	for _, f := range options {

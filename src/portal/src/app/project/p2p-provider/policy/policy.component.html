@@ -1,10 +1,18 @@
 <div class="row">
-    <h4 class="mt-1">{{'P2P_PROVIDER.POLICIES' | translate}}</h4>
+    <h4 class="mt-1">
+        <span>{{'P2P_PROVIDER.POLICIES' | translate}}</span>
+        <clr-tooltip>
+            <clr-icon class="color-57" clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                {{'P2P_PROVIDER.PREHEAT_EXPLAIN' | translate}}
+            </clr-tooltip-content>
+        </clr-tooltip>
+    </h4>
     <clr-datagrid (clrDgSingleSelectedChange)="refreshJobs($event)" [clrDgLoading]="loading" [(clrDgSingleSelected)]="selectedRow">
         <clr-dg-action-bar>
             <div class="clr-row">
                 <div class="clr-col-7">
-                    <button (click)="newPolicy()" [disabled]="!hasCreatPermission" [clrLoading]="addBtnState"
+                    <button (click)="newPolicy()" [disabled]="!hasCreatPermission || !hasAddModalInit" [clrLoading]="addBtnState"
                             id="new-policy" type="button" class="btn  btn-secondary">
                         <clr-icon shape="plus" size="16"></clr-icon>
                         {{'P2P_PROVIDER.NEW_POLICY' | translate}}
@@ -69,7 +77,7 @@
         </clr-dg-action-bar>
         <clr-dg-column [clrDgField]="'name'">{{'P2P_PROVIDER.NAME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'P2P_PROVIDER.ENABLED' | translate}}</clr-dg-column>
-        <clr-dg-column>{{'P2P_PROVIDER.PROVIDER' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'provider_name'">{{'P2P_PROVIDER.PROVIDER' | translate}}</clr-dg-column>
         <clr-dg-column>{{'P2P_PROVIDER.FILTERS' | translate}}</clr-dg-column>
         <clr-dg-column>{{'P2P_PROVIDER.TRIGGER' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'P2P_PROVIDER.CREATED' | translate}}</clr-dg-column>
@@ -116,7 +124,7 @@
                     <span>&nbsp;{{'P2P_PROVIDER.EDN_TEXT' | translate}}</span>
                 </div>
             </clr-dg-cell>
-            <clr-dg-cell>
+            <clr-dg-cell  class="no-wrapper">
                 {{getTriggerTypeI18n(p.trigger) | translate}}
                 <clr-signpost *ngIf="isScheduled(p.trigger)">
                     <clr-signpost-content *clrIfOpen>
@@ -156,20 +164,19 @@
                         <select id="selectKey" (change)="selectFilterKey($event)">
                             <option value="id">{{"P2P_PROVIDER.ID" | translate | lowercase}}</option>
                             <option value="status">{{"REPLICATION.STATUS" | translate | lowercase}}</option>
-                            <option value="vendor_type">{{"P2P_PROVIDER.PROVIDER_TYPE" | translate | lowercase}}</option>
                         </select>
                     </div>
                     <hbr-filter (filterEvt)="doFilter($event)" [currentValue]="searchString" id="filter-executions" [withDivider]="true"
                                 (openFlag)="openFilter($event)" filterPlaceholder='{{"REPLICATION.FILTER_EXECUTIONS_PLACEHOLDER" | translate}}'></hbr-filter>
                     <span class="refresh-btn">
-                                 <clr-icon shape="refresh" (click)="refresh()" [hidden]="loading"></clr-icon>
+                                 <clr-icon shape="refresh" (click)="refreshJobs()" [hidden]="loading"></clr-icon>
                             </span>
                 </div>
             </div>
         </clr-dg-action-bar>
         <clr-dg-column>{{'REPLICATION.ID' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
-        <clr-dg-column>{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'P2P_PROVIDER.TRIGGER' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.DURATION' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.SUCCESS_RATE' | translate}}</clr-dg-column>
@@ -188,22 +195,22 @@
                     </clr-tooltip-content>
                 </clr-tooltip>
             </clr-dg-cell>
-            <clr-dg-cell>{{execution.trigger}}</clr-dg-cell>
+            <clr-dg-cell>{{getTriggerTypeI18nForExecution(execution.trigger) | translate}}</clr-dg-cell>
             <clr-dg-cell>{{execution.start_time | date: 'short'}}</clr-dg-cell>
             <clr-dg-cell>{{getDuration(execution)}}</clr-dg-cell>
-            <clr-dg-cell>{{getSuccessRate(execution.metrics)}}</clr-dg-cell>
+            <clr-dg-cell>{{getSuccessRate(execution.metrics) | percent}}</clr-dg-cell>
             <clr-dg-cell>{{execution.vendor_type}}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
             <span *ngIf="totalExecutionCount">{{pagination.firstItem + 1}}
                 - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}</span>
             {{totalExecutionCount}} {{'REPLICATION.ITEMS' | translate}}
-            <clr-dg-pagination #pagination [(clrDgPage)]="currentExecutionPage" [clrDgPageSize]="10"
+            <clr-dg-pagination #pagination [(clrDgPage)]="currentExecutionPage" [clrDgPageSize]="pageSize"
                                [clrDgTotalItems]="totalExecutionCount"></clr-dg-pagination>
         </clr-dg-footer>
     </clr-datagrid>
 </div>
-<add-p2p-policy [providers]="providers" (notify)="success($event)"></add-p2p-policy>
+<add-p2p-policy (hasInit)="addModalInit()" [providers]="providers" (notify)="success($event)"></add-p2p-policy>
 <confirmation-dialog (confirmAction)="confirmSwitch($event)" #confirmationDialogComponent></confirmation-dialog>
 
 

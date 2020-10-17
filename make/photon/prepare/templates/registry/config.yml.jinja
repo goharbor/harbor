@@ -24,6 +24,9 @@ redis:
 {% else %}
   addr: {{redis_host}}
 {% endif %}
+  readtimeout: 10s
+  writetimeout: 10s
+  dialtimeout: 10s
   password: {{redis_password}}
   db: {{redis_db_index_reg}}
 http:

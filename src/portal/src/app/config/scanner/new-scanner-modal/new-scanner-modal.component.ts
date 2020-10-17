@@ -27,7 +27,7 @@ export class NewScannerModalComponent {
     originValue: any;
     uid: string;
     editScanner: Scanner;
-    @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
+    @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
     constructor(
         private configScannerService: ConfigScannerService,
         private msgHandler: MessageHandlerService,

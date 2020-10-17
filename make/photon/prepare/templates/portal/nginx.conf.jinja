@@ -1,0 +1,51 @@
+
+worker_processes auto;
+pid /tmp/nginx.pid;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+
+    client_body_temp_path /tmp/client_body_temp;
+    proxy_temp_path /tmp/proxy_temp;
+    fastcgi_temp_path /tmp/fastcgi_temp;
+    uwsgi_temp_path /tmp/uwsgi_temp;
+    scgi_temp_path /tmp/scgi_temp;
+
+    server {
+{% if internal_tls.enabled %}
+        listen 8443 ssl;
+        # SSL
+        ssl_certificate /etc/harbor/tls/portal.crt;
+        ssl_certificate_key /etc/harbor/tls/portal.key;
+
+        # Recommendations from https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
+        ssl_protocols TLSv1.2;
+        ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';
+        ssl_prefer_server_ciphers on;
+        ssl_session_cache shared:SSL:10m;
+{% else %}
+        listen 8080;
+{% endif %}
+        server_name  localhost;
+
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        include /etc/nginx/mime.types;
+
+        gzip on;
+        gzip_min_length 1000;
+        gzip_proxied expired no-cache no-store private auth;
+        gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        location = /index.html {
+            add_header Cache-Control "no-store, no-cache, must-revalidate";
+        }
+    }
+}

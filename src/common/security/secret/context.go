@@ -80,6 +80,5 @@ func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool
 		return false
 	}
 	return s.store.GetUsername(s.secret) == secret.JobserviceUser ||
-		s.store.GetUsername(s.secret) == secret.CoreUser ||
-		s.store.GetUsername(s.secret) == secret.ProxyserviceUser
+		s.store.GetUsername(s.secret) == secret.CoreUser
 }

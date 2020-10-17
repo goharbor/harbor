@@ -3,14 +3,13 @@ from __future__ import absolute_import
 
 import unittest
 
+from testutils import ADMIN_CLIENT
+from testutils import harbor_server
+from testutils import TEARDOWN
 import library.repository
 import library.docker_api
 import library.containerd
 from library.base import _assert_status_code
-from testutils import ADMIN_CLIENT
-from testutils import harbor_server
-
-from testutils import TEARDOWN
 from library.project import Project
 from library.user import User
 from library.repository import Repository
@@ -34,7 +33,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):

@@ -38,12 +38,12 @@ type HookHandler struct {
 
 // Handle the job status changing webhook
 func (h *HookHandler) Handle(ctx context.Context, taskID int64, sc *job.StatusChange) error {
+	task, err := h.taskDAO.Get(ctx, taskID)
+	if err != nil {
+		return err
+	}
 	// process check in data
 	if len(sc.CheckIn) > 0 {
-		task, err := h.taskDAO.Get(ctx, taskID)
-		if err != nil {
-			return err
-		}
 		execution, err := h.executionDAO.Get(ctx, task.ExecutionID)
 		if err != nil {
 			return err
@@ -58,6 +58,10 @@ func (h *HookHandler) Handle(ctx context.Context, taskID int64, sc *job.StatusCh
 		return processor(ctx, t, sc)
 	}
 
-	// update status
-	return h.taskDAO.UpdateStatus(ctx, taskID, sc.Status, sc.Metadata.Revision)
+	// update task status
+	if err = h.taskDAO.UpdateStatus(ctx, taskID, sc.Status, sc.Metadata.Revision); err != nil {
+		return err
+	}
+	// update execution status
+	return h.executionDAO.RefreshStatus(ctx, task.ExecutionID)
 }

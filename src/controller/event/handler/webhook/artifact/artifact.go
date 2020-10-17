@@ -35,6 +35,11 @@ import (
 type Handler struct {
 }
 
+// Name ...
+func (a *Handler) Name() string {
+	return "ArtifactWebhook"
+}
+
 // Handle preprocess artifact event data and then publish hook event
 func (a *Handler) Handle(value interface{}) error {
 	switch v := value.(type) {

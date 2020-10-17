@@ -1,12 +1,6 @@
-import {
-  Inject,
-  // tslint:disable-next-line:no-unused-variable
-  InjectionToken,
-  Injectable,
-  Optional,
-  Renderer,
-  SkipSelf
-} from "@angular/core";
+import { Inject, 
+// tslint:disable-next-line:no-unused-variable
+InjectionToken, Injectable, Optional, SkipSelf, Renderer2 } from "@angular/core";
 import { DOCUMENT } from "@angular/common";
 import { WINDOW } from "../ngx-window-token/window-token";
 
@@ -46,7 +40,7 @@ export class ClipboardService {
    */
   public copyFromInputElement(
     targetElm: HTMLInputElement | HTMLTextAreaElement,
-    renderer: Renderer
+    renderer: Renderer2
   ): boolean {
     try {
       this.selectTarget(targetElm, renderer);
@@ -62,7 +56,7 @@ export class ClipboardService {
    * Creates a fake textarea element, sets its value from `text` property,
    * and makes a selection on it.
    */
-  public copyFromContent(content: string, renderer: Renderer) {
+  public copyFromContent(content: string, renderer: Renderer2) {
     if (!this.tempTextArea) {
       this.tempTextArea = this.createTempTextArea(this.document, this.window);
       this.document.body.appendChild(this.tempTextArea);
@@ -82,13 +76,10 @@ export class ClipboardService {
   // select the target html input element
   private selectTarget(
     inputElement: HTMLInputElement | HTMLTextAreaElement,
-    renderer: Renderer
+    renderer: Renderer2
   ): number | undefined {
-    renderer.invokeElementMethod(inputElement, "select");
-    renderer.invokeElementMethod(inputElement, "setSelectionRange", [
-      0,
-      inputElement.value.length
-    ]);
+    inputElement.select();
+    inputElement.setSelectionRange(0, inputElement.value.length);
     return inputElement.value.length;
   }
 

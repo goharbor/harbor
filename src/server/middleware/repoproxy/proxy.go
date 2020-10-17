@@ -17,20 +17,20 @@ package repoproxy
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/secret"
-	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/lib/errors"
-	httpLib "github.com/goharbor/harbor/src/lib/http"
-	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/registry"
 	"io"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/proxy"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
+	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/replication/registry"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
@@ -83,8 +83,8 @@ func preCheck(ctx context.Context) (art lib.ArtifactInfo, p *models.Project, ctl
 	return
 }
 
-// ManifestGetMiddleware middleware handle request for get manifest
-func ManifestGetMiddleware() func(http.Handler) http.Handler {
+// ManifestMiddleware middleware handle request for get or head manifest
+func ManifestMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		if err := handleManifest(w, r, next); err != nil {
 			httpLib.SendError(w, err)
@@ -98,12 +98,40 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	if err != nil {
 		return err
 	}
-	if !canProxy(p) || proxyCtl.UseLocalManifest(ctx, art) {
+	if !canProxy(p) {
+		next.ServeHTTP(w, r)
+		return nil
+	}
+	remote, err := proxy.NewRemoteHelper(p.RegistryID)
+	if err != nil {
+		return err
+	}
+	useLocal, err := proxyCtl.UseLocalManifest(ctx, art, remote)
+	if err != nil {
+		return err
+	}
+	if useLocal {
 		next.ServeHTTP(w, r)
 		return nil
 	}
 	log.Debugf("the tag is %v, digest is %v", art.Tag, art.Digest)
-	man, err := proxyCtl.ProxyManifest(ctx, p, art)
+	if r.Method == http.MethodHead {
+		err = proxyManifestHead(ctx, w, proxyCtl, p, art, remote)
+	} else if r.Method == http.MethodGet {
+		err = proxyManifestGet(ctx, w, proxyCtl, p, art, remote)
+	}
+	if err != nil {
+		if errors.IsNotFoundErr(err) {
+			return err
+		}
+		log.Warningf("Proxy to remote failed, fallback to local repo, error: %v", err)
+		next.ServeHTTP(w, r)
+	}
+	return nil
+}
+
+func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+	man, err := ctl.ProxyManifest(ctx, art, remote)
 	if err != nil {
 		return err
 	}
@@ -143,14 +171,6 @@ func setHeaders(w http.ResponseWriter, size int64, mediaType string, dig string)
 	h.Set("Etag", dig)
 }
 
-// isProxyProject check the project is a proxy project
-func isProxyProject(p *models.Project) bool {
-	if p == nil {
-		return false
-	}
-	return p.RegistryID > 0
-}
-
 // isProxySession check if current security context is proxy session
 func isProxySession(ctx context.Context) bool {
 	sc, ok := security.FromContext(ctx)
@@ -158,7 +178,7 @@ func isProxySession(ctx context.Context) bool {
 		log.Error("Failed to get security context")
 		return false
 	}
-	if sc.IsSolutionUser() && sc.GetUsername() == secret.ProxyserviceUser {
+	if sc.GetUsername() == proxycachesecret.ProxyCacheService {
 		return true
 	}
 	return false
@@ -174,13 +194,26 @@ func DisableBlobAndManifestUploadMiddleware() func(http.Handler) http.Handler {
 			httpLib.SendError(w, err)
 			return
 		}
-		if isProxyProject(p) && !isProxySession(ctx) {
+		if p.IsProxy() && !isProxySession(ctx) {
 			httpLib.SendError(w,
-				errors.MethodNotAllowedError(
+				errors.DeniedError(
 					errors.Errorf("can not push artifact to a proxy project: %v", p.Name)))
 			return
 		}
 		next.ServeHTTP(w, r)
 		return
 	})
+}
+
+func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+	exist, dig, err := ctl.HeadManifest(ctx, art, remote)
+	if err != nil {
+		return err
+	}
+	if !exist {
+		return errors.NotFoundError(fmt.Errorf("The tag %v:%v is not found", art.Repository, art.Tag))
+	}
+	w.Header().Set("Docker-Content-Digest", dig)
+	w.Header().Set("Etag", dig)
+	return nil
 }

@@ -38,7 +38,7 @@ class Replication(base.Base):
         if str(rule_data.name) != str(expect_rule_name):
             raise Exception(r"Check replication rule failed, expect <{}> actual <{}>.".format(expect_rule_name, str(rule_data.name)))
         else:
-            print r"Check Replication rule passed, rule name <{}>.".format(str(rule_data.name))
+            print(r"Check Replication rule passed, rule name <{}>.".format(str(rule_data.name)))
             #get_trigger = str(rule_data.trigger.kind)
             #if expect_trigger is not None and get_trigger == str(expect_trigger):
             #    print r"Check Replication rule trigger passed, trigger name <{}>.".format(get_trigger)

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ForgotPasswordComponent } from './forgot-password.component';
 import { ClarityModule } from "@clr/angular";
@@ -17,7 +17,7 @@ describe('ForgotPasswordComponent', () => {
         sendResetPasswordMail: () => of(null)
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             declarations: [ForgotPasswordComponent, InlineAlertComponent],
             imports: [

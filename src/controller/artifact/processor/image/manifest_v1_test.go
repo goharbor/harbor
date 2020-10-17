@@ -15,10 +15,11 @@
 package image
 
 import (
+	"testing"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type manifestV1ProcessorTestSuite struct {
@@ -78,7 +79,7 @@ func (m *manifestV1ProcessorTestSuite) TestAbstractMetadata() {
 }
 `
 	artifact := &artifact.Artifact{}
-	err := m.processor.AbstractMetadata(nil, []byte(manifest), artifact)
+	err := m.processor.AbstractMetadata(nil, artifact, []byte(manifest))
 	m.Require().Nil(err)
 	m.Assert().Equal("amd64", artifact.ExtraAttrs["architecture"].(string))
 }
@@ -89,11 +90,11 @@ func (m *manifestV1ProcessorTestSuite) TestAbstractAddition() {
 }
 
 func (m *manifestV1ProcessorTestSuite) TestGetArtifactType() {
-	m.Assert().Equal(ArtifactTypeImage, m.processor.GetArtifactType())
+	m.Assert().Equal(ArtifactTypeImage, m.processor.GetArtifactType(nil, nil))
 }
 
 func (m *manifestV1ProcessorTestSuite) TestListAdditionTypes() {
-	additions := m.processor.ListAdditionTypes()
+	additions := m.processor.ListAdditionTypes(nil, nil)
 	m.Len(additions, 0)
 }
 

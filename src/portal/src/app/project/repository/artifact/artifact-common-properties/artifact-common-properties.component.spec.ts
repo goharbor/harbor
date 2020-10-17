@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ArtifactCommonPropertiesComponent } from './artifact-common-properties.component';
 import { ClarityModule } from "@clr/angular";
@@ -16,7 +16,7 @@ describe('ArtifactCommonPropertiesComponent', () => {
     os: "linux"
   };
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         ClarityModule,

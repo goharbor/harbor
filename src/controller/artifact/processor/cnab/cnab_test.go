@@ -15,15 +15,16 @@
 package cnab
 
 import (
+	"io/ioutil"
+	"strings"
+	"testing"
+
 	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
-	"strings"
-	"testing"
 )
 
 type processorTestSuite struct {
@@ -93,7 +94,7 @@ func (p *processorTestSuite) TestAbstractMetadata() {
 	p.Require().Nil(err)
 	p.regCli.On("PullManifest").Return(mani, "", nil)
 	p.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
-	err = p.processor.AbstractMetadata(nil, nil, art)
+	err = p.processor.AbstractMetadata(nil, art, nil)
 	p.Require().Nil(err)
 	p.Len(art.ExtraAttrs, 7)
 	p.Equal("0.1.1", art.ExtraAttrs["version"].(string))
@@ -101,7 +102,7 @@ func (p *processorTestSuite) TestAbstractMetadata() {
 }
 
 func (p *processorTestSuite) TestGetArtifactType() {
-	p.Assert().Equal(ArtifactTypeCNAB, p.processor.GetArtifactType())
+	p.Assert().Equal(ArtifactTypeCNAB, p.processor.GetArtifactType(nil, nil))
 }
 
 func TestProcessorTestSuite(t *testing.T) {

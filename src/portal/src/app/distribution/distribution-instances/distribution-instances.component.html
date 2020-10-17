@@ -17,10 +17,6 @@
                               'DISTRIBUTION.ADD_ACTION' | translate
                                 }}
                             </button>
-                            <button id="set-default"
-                                    [disabled]="!(selectedRow && selectedRow.length === 1 && !selectedRow[0].default && selectedRow[0].enabled)"
-                                    class="btn  btn-secondary"
-                                    (click)="setAsDefault()">{{'SCANNER.SET_AS_DEFAULT' | translate}}</button>
                             <clr-dropdown
                                     [clrCloseMenuOnItemClick]="false"
                                     class="btn  btn-link"
@@ -30,18 +26,21 @@
                                     <clr-dropdown>
                                         <button type="button" class="btn  btn-secondary" (click)="editInstance()"
                                                 [disabled]="!(selectedRow && selectedRow.length === 1)">
-                                            <clr-icon shape="edit" size="16"></clr-icon>&nbsp;{{'DISTRIBUTION.EDIT_ACTION' | translate}}
+                                            <clr-icon shape="edit" size="16"></clr-icon>&nbsp;
+                                            <span id="distribution-edit">{{'DISTRIBUTION.EDIT_ACTION' | translate}}</span>
                                         </button>
                                         <button type="button" class="btn  btn-secondary" (click)="operateInstances('enable', selectedRow)"
                                                 [disabled]="!(selectedRow && selectedRow.length === 1 && !selectedRow[0].enabled)">
-                                            <clr-icon shape="connect" size="16"></clr-icon>&nbsp;{{'DISTRIBUTION.ENABLE_ACTION' | translate}}
+                                            <clr-icon shape="connect" size="16"></clr-icon>&nbsp;
+                                            <span id="distribution-enable">{{'DISTRIBUTION.ENABLE_ACTION' | translate}}</span>
                                         </button>
                                         <button
                                                 type="button"
                                                 class="btn btn-secondary"
                                                 (click)="operateInstances('disable', selectedRow)"
                                                 [disabled]="!(selectedRow && selectedRow.length === 1 && selectedRow[0].enabled)">
-                                            <clr-icon shape="disconnect" size="16"></clr-icon>&nbsp;{{'DISTRIBUTION.DISABLE_ACTION' | translate}}
+                                            <clr-icon shape="disconnect" size="16"></clr-icon>&nbsp;
+                                            <span id="distribution-disable">{{'DISTRIBUTION.DISABLE_ACTION' | translate}}</span>
                                         </button>
                                         <div class="dropdown-divider"></div>
                                         <button
@@ -49,7 +48,8 @@
                                                 class="btn btn-secondary"
                                                 (click)="operateInstances('delete', selectedRow)"
                                                 [disabled]="selectedRow.length < 1">
-                                            <clr-icon shape="window-close" size="16"></clr-icon>&nbsp;{{'DISTRIBUTION.DELETE_ACTION' | translate}}
+                                            <clr-icon shape="window-close" size="16"></clr-icon>&nbsp;
+                                            <span id="distribution-delete">{{'DISTRIBUTION.DELETE_ACTION' | translate}}</span>
                                         </button>
                                     </clr-dropdown>
                                 </clr-dropdown-menu>
@@ -80,38 +80,10 @@
                 <clr-dg-row *ngFor="let instance of instances" [clrDgItem]="instance">
                     <clr-dg-cell>
                         <span>{{ instance.name }}</span>
-                        <span *ngIf="instance.default" class="label label-info ml-1">{{'SCANNER.DEFAULT' | translate}}</span>
                     </clr-dg-cell>
                     <clr-dg-cell>{{ instance.endpoint }}</clr-dg-cell>
-                    <clr-dg-cell>
+                    <clr-dg-cell class="no-wrapper">
                       <span>{{ instance.vendor }}</span>
-                      <clr-signpost *ngIf="providerMap[instance.vendor]">
-                        <clr-signpost-content *clrIfOpen>
-                            <div>
-                                <span>
-                                    <img (error)="showDefaultIcon($event, instance.vendor)" class="height-24" [src]="providerMap[instance.vendor].icon">
-                                </span>
-                            </div>
-                            <div class="margin-top-5px">
-                                <span>{{'DISTRIBUTION.NAME' | translate}}:</span>
-                                <span class="ml-1">{{providerMap[instance.vendor].name}}</span>
-                            </div>
-                            <div class="margin-top-5px">
-                                <span class="no-wrapper">
-                                    <span>{{'DISTRIBUTION.MAINTAINER' | translate}}:</span>
-                                    <span class="ml-1">{{providerMap[instance.vendor].maintainers?.join(',')}}</span>
-                                </span>
-                            </div>
-                            <div class="margin-top-5px">
-                                <span>{{'DISTRIBUTION.SOURCE' | translate}}:</span>
-                                <a target="_blank" href="{{providerMap[instance.vendor].source}}" class="ml-1">{{providerMap[instance.vendor].source}}</a>
-                            </div>
-                            <div class="margin-top-5px">
-                                <span>{{'DISTRIBUTION.VERSION' | translate}}:</span>
-                                <span class="ml-1">{{providerMap[instance.vendor].version}}</span>
-                            </div>
-                        </clr-signpost-content>
-                      </clr-signpost>
                     </clr-dg-cell>
                     <clr-dg-cell>
                         <span *ngIf="!instance.hasCheckHealth;else elseBlockLoading" class="spinner spinner-inline ml-2"></span>
@@ -122,15 +94,24 @@
                             </ng-template>
                         </ng-template>
                     </clr-dg-cell>
-                    <clr-dg-cell>{{ instance.enabled || false }}</clr-dg-cell>
+                    <clr-dg-cell>
+                        <div *ngIf="instance.enabled" class="icon-wrap">
+                            <clr-icon shape="check-circle" size="20" class="is-success enabled-icon"></clr-icon>
+                            <span class="margin-left-5px">{{'WEBHOOK.ENABLED' | translate}}</span>
+                        </div>
+                        <div *ngIf="!instance.enabled" class="icon-wrap">
+                            <clr-icon shape="exclamation-triangle" size="20" class="is-warning"></clr-icon>
+                            <span class="margin-left-5px">{{'WEBHOOK.DISABLED' | translate}}</span>
+                        </div>
+                    </clr-dg-cell>
                     <clr-dg-cell>{{ instance.auth_mode }}</clr-dg-cell>
                     <clr-dg-cell>{{fmtTime(instance.setup_timestamp) | date: 'short'}}</clr-dg-cell>
                     <clr-dg-cell>{{ instance.description }}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount" [(clrDgPage)]="currentPage">
-                        <span *ngIf="pagination.totalItems">{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }} {{ 'HELM_CHART.OF' | translate }} </span>
-                        <span>{{ pagination.totalItems }} {{ 'HELM_CHART.ITEMS' | translate }}</span>
+                        <span *ngIf="totalCount">{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }} {{ 'HELM_CHART.OF' | translate }} </span>
+                        <span>{{ totalCount }} {{ 'HELM_CHART.ITEMS' | translate }}</span>
                     </clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>

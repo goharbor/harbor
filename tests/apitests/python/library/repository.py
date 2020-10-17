@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import site
-reload(site)
 import time
 import base
 import swagger_client
@@ -16,7 +14,7 @@ def pull_harbor_image(registry, username, password, image, tag, expected_login_e
     time.sleep(2)
     ret = _docker_api.docker_image_pull(r'{}/{}'.format(registry, image), tag = tag, expected_error_message = expected_error_message)
 
-def push_image_to_project(project_name, registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None, profix_for_image = None):
+def push_image_to_project(project_name, registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None, profix_for_image = None, new_image=None):
     _docker_api = DockerAPI()
     _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
     time.sleep(2)
@@ -24,6 +22,8 @@ def push_image_to_project(project_name, registry, username, password, image, tag
         return
     _docker_api.docker_image_pull(image, tag = tag)
     time.sleep(2)
+
+    image = new_image or image
 
     if profix_for_image == None:
         new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(image, tag), r'{}/{}/{}'.format(registry, project_name, image))
@@ -121,7 +121,6 @@ class Repository(base.Base, object):
     def check_repository_exist(self, project_Name, repo_name, **kwargs):
         repositories = self.list_repositories(project_Name, **kwargs)
         for  repo in repositories:
-            print project_Name+"/"+repo_name
             if repo.name == project_Name+"/"+repo_name:
                 return True
         return False

@@ -20,7 +20,7 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 Create An New Project And Go Into Project
-    [Arguments]  ${projectname}  ${public}=false  ${count_quota}=${null}  ${storage_quota}=${null}  ${storage_quota_unit}=${null}
+    [Arguments]  ${projectname}  ${public}=false  ${count_quota}=${null}  ${storage_quota}=${null}  ${storage_quota_unit}=${null}  ${proxy_cache}=${false}  ${registry}=${null}
     Navigate To Projects
     Retry Button Click  xpath=${create_project_button_xpath}
     Log To Console  Project Name: ${projectname}
@@ -30,6 +30,7 @@ Create An New Project And Go Into Project
     Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element_project_public}  AND  Retry Element Click  ${element_project_public}
     Run Keyword If  '${count_quota}'!='${null}'  Input Count Quota  ${count_quota}
     Run Keyword If  '${storage_quota}'!='${null}'  Input Storage Quota  ${storage_quota}  ${storage_quota_unit}
+    Run Keyword If  '${proxy_cache}' == '${true}'  Run Keywords  Mouse Down  ${project_proxy_cache_switcher_id}  AND  Mouse Up  ${project_proxy_cache_switcher_id}  AND  Retry Element Click  ${project_registry_select_id}  AND  Retry Element Click  xpath=//select[@id='registry']//option[contains(.,'${registry}')]
     Capture Page Screenshot
     Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
     Capture Page Screenshot
@@ -198,14 +199,16 @@ Do Log Advanced Search
 
 Retry Click Repo Name
     [Arguments]  ${repo_name_element}
-    :For  ${n}  IN RANGE  1  10
-    \    ${out}  Run Keyword And Ignore Error  Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}   Retry Wait Element  ${tag_table_column_vulnerabilities}
-    \    Exit For Loop If  '${out[0]}'=='PASS'
+    FOR  ${n}  IN RANGE  1  10
+        ${out}  Run Keyword And Ignore Error  Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}   Retry Wait Element  ${tag_table_column_vulnerabilities}
+        Exit For Loop If  '${out[0]}'=='PASS'
+    END
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
-    :For  ${n}  IN RANGE  1  10
-    \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
-    \    Exit For Loop If  '${out[0]}'=='PASS'
+    FOR  ${n}  IN RANGE  1  10
+        ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
+        Exit For Loop If  '${out[0]}'=='PASS'
+    END
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
 Go Into Repo
@@ -214,15 +217,16 @@ Go Into Repo
     Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
     ${repo_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${repoName}')]/a
     Retry Element Click  ${repo_search_icon}
-    :For  ${n}  IN RANGE  1  10
-    \    Retry Clear Element Text  ${repo_search_input}
-    \    Retry Text Input  ${repo_search_input}  ${repoName}
-    \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  ${repo_name_element}
-    \    Sleep  2
-    \    Continue For Loop If  '${out[0]}'=='FAIL'
-    \    ${out}  Retry Click Repo Name  ${repo_name_element}
-    \    Sleep  2
-    \    Exit For Loop
+    FOR  ${n}  IN RANGE  1  10
+        Retry Clear Element Text  ${repo_search_input}
+        Retry Text Input  ${repo_search_input}  ${repoName}
+        ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  ${repo_name_element}
+        Sleep  2
+        Continue For Loop If  '${out[0]}'=='FAIL'
+        ${out}  Retry Click Repo Name  ${repo_name_element}
+        Sleep  2
+        Exit For Loop
+    END
 
 
 Click Index Achieve
@@ -232,11 +236,12 @@ Click Index Achieve
 Go Into Index And Contain Artifacts
     [Arguments]  ${tag_name}  ${limit}=3
     Retry Double Keywords When Error  Click Index Achieve  ${tag_name}  Page Should Contain Element  ${tag_table_column_os_arch}
-    :For  ${n}  IN RANGE  1  10
-    \    ${out}  Run Keyword And Ignore Error  Page Should Contain Element  ${artifact_rows}  limit=${limit}
-    \    Exit For Loop If  '${out[0]}'=='PASS'
-    \    Capture Page Screenshot  gointo_${tag_name}.png
-    \    Sleep  3
+    FOR  ${n}  IN RANGE  1  10
+        ${out}  Run Keyword And Ignore Error  Page Should Contain Element  ${artifact_rows}  limit=${limit}
+        Exit For Loop If  '${out[0]}'=='PASS'
+        Capture Page Screenshot  gointo_${tag_name}.png
+        Sleep  3
+    END
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 

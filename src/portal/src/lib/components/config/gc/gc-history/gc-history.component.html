@@ -13,7 +13,7 @@
   <clr-dg-row *ngFor="let job of jobs" [clrDgItem]='job'>
     <clr-dg-cell>{{job.id }}</clr-dg-cell>
     <clr-dg-cell>{{(job.type ? 'SCHEDULE.'+ job.type.toUpperCase() : '') | translate }}</clr-dg-cell>
-    <clr-dg-cell>{{isDryRun(job?.parameters)}}</clr-dg-cell>
+    <clr-dg-cell>{{isDryRun(job?.parameters) | translate}}</clr-dg-cell>
     <clr-dg-cell>{{job.status.toUpperCase() | translate}}</clr-dg-cell>
     <clr-dg-cell>{{job.createTime | date:'medium'}}</clr-dg-cell>
     <clr-dg-cell>{{job.updateTime | date:'medium'}}</clr-dg-cell>

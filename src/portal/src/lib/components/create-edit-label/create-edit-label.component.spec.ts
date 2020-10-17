@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async } from "@angular/core/testing";
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 
 import { SharedModule } from "../../utils/shared/shared.module";
@@ -36,7 +36,7 @@ describe("CreateEditLabelComponent (inline template)", () => {
   let spy: jasmine.Spy;
   let spyOne: jasmine.Spy;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule, NoopAnimationsModule],
       declarations: [
@@ -76,7 +76,7 @@ describe("CreateEditLabelComponent (inline template)", () => {
     expect(comp).toBeTruthy();
   });
 
-  it("should get label and open modal", async(() => {
+  it("should get label and open modal", waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();

@@ -58,7 +58,7 @@
                     </clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
-                    <span>{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+                    <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
                         {{'DESTINATION.OF' | translate}}</span>
                     {{totalCount}} {{'SUMMARY.QUOTAS' | translate}}
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage"
