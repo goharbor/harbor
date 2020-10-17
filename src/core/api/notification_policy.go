@@ -128,7 +128,7 @@ func (w *NotificationPolicyAPI) Post() {
 
 	id, err := notification.PolicyMgr.Create(policy)
 	if err != nil {
-		w.SendInternalServerError(fmt.Errorf("failed to create the notification policy: %v", err))
+		w.SendError(err)
 		return
 	}
 	w.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
@@ -180,7 +180,7 @@ func (w *NotificationPolicyAPI) Put() {
 	policy.ProjectID = w.project.ProjectID
 
 	if err = notification.PolicyMgr.Update(policy); err != nil {
-		w.SendInternalServerError(fmt.Errorf("failed to update the notification policy: %v", err))
+		w.SendError(err)
 		return
 	}
 }
@@ -384,6 +384,7 @@ func initSupportedEvents() map[string]struct{} {
 		event.TopicScanningFailed,
 		event.TopicScanningCompleted,
 		event.TopicReplication,
+		event.TopicTagRetention,
 	}
 
 	var supportedEventTypes = make(map[string]struct{})

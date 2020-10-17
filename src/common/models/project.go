@@ -15,10 +15,16 @@
 package models
 
 import (
+	"context"
+	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
+	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/lib/pq"
 )
 
 const (
@@ -75,6 +81,11 @@ func (p *Project) IsPublic() bool {
 	return isTrue(public)
 }
 
+// IsProxy returns true when the project type is proxy cache
+func (p *Project) IsProxy() bool {
+	return p.RegistryID > 0
+}
+
 // ContentTrustEnabled ...
 func (p *Project) ContentTrustEnabled() bool {
 	enabled, exist := p.GetMetadata(ProMetaEnableContentTrust)
@@ -120,9 +131,65 @@ func (p *Project) AutoScan() bool {
 	return isTrue(auto)
 }
 
-func isTrue(value string) bool {
-	return strings.ToLower(value) == "true" ||
-		strings.ToLower(value) == "1"
+// FilterByPublic returns orm.QuerySeter with public filter
+func (p *Project) FilterByPublic(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	subQuery := `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = '%s'`
+	if isTrue(value) {
+		subQuery = fmt.Sprintf(subQuery, "true")
+	} else {
+		subQuery = fmt.Sprintf(subQuery, "false")
+	}
+	return qs.FilterRaw("project_id", fmt.Sprintf("IN (%s)", subQuery))
+}
+
+// FilterByOwner returns orm.QuerySeter with owner filter
+func (p *Project) FilterByOwner(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	username, ok := value.(string)
+	if !ok {
+		return qs
+	}
+
+	return qs.FilterRaw("owner_id", fmt.Sprintf("IN (SELECT user_id FROM harbor_user WHERE username = %s)", pq.QuoteLiteral(username)))
+}
+
+// FilterByMember returns orm.QuerySeter with member filter
+func (p *Project) FilterByMember(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	query, ok := value.(*MemberQuery)
+	if !ok {
+		return qs
+	}
+	subQuery := fmt.Sprintf(`SELECT project_id FROM project_member WHERE entity_id = %d AND entity_type = 'u'`, query.UserID)
+	if query.Role > 0 {
+		subQuery = fmt.Sprintf("%s AND role = %d", subQuery, query.Role)
+	}
+
+	if query.WithPublic {
+		subQuery = fmt.Sprintf("(%s) UNION (SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'true')", subQuery)
+	}
+
+	if len(query.GroupIDs) > 0 {
+		var elems []string
+		for _, groupID := range query.GroupIDs {
+			elems = append(elems, strconv.Itoa(groupID))
+		}
+
+		tpl := "(%s) UNION (SELECT project_id FROM project_member pm, user_group ug WHERE pm.entity_id = ug.id AND pm.entity_type = 'g' AND ug.id IN (%s))"
+		subQuery = fmt.Sprintf(tpl, subQuery, strings.TrimSpace(strings.Join(elems, ", ")))
+	}
+
+	return qs.FilterRaw("project_id", fmt.Sprintf("IN (%s)", subQuery))
+}
+
+func isTrue(i interface{}) bool {
+	switch value := i.(type) {
+	case bool:
+		return value
+	case string:
+		v := strings.ToLower(value)
+		return v == "true" || v == "1"
+	default:
+		return false
+	}
 }
 
 // ProjectQueryParam can be used to set query parameters when listing projects.
@@ -148,9 +215,12 @@ type ProjectQueryParam struct {
 
 // MemberQuery filter by member's username and role
 type MemberQuery struct {
+	UserID   int    // the user id
 	Name     string // the username of member
 	Role     int    // the role of the member has to the project
 	GroupIDs []int  // the group ID of current user belongs to
+
+	WithPublic bool // include the public projects for the member
 }
 
 // Pagination ...
@@ -211,5 +281,6 @@ type ProjectSummary struct {
 	GuestCount        int64 `json:"guest_count"`
 	LimitedGuestCount int64 `json:"limited_guest_count"`
 
-	Quota *QuotaSummary `json:"quota,omitempty"`
+	Quota    *QuotaSummary   `json:"quota,omitempty"`
+	Registry *model.Registry `json:"registry"`
 }

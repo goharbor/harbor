@@ -1,15 +1,32 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package retention
 
 import (
 	"context"
+	"strings"
+	"testing"
+
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
+	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
-	"strings"
-	"testing"
 )
 
 type ControllerTestSuite struct {
@@ -29,7 +46,7 @@ func TestController(t *testing.T) {
 }
 
 func (s *ControllerTestSuite) TestPolicy() {
-	projectMgr := &fakeProjectManager{}
+	projectMgr := &project.Manager{}
 	repositoryMgr := &repository.FakeManager{}
 	retentionScheduler := &fakeRetentionScheduler{}
 	retentionLauncher := &fakeLauncher{}
@@ -127,7 +144,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 }
 
 func (s *ControllerTestSuite) TestExecution() {
-	projectMgr := &fakeProjectManager{}
+	projectMgr := &project.Manager{}
 	repositoryMgr := &repository.FakeManager{}
 	retentionScheduler := &fakeRetentionScheduler{}
 	retentionLauncher := &fakeLauncher{}
@@ -203,15 +220,21 @@ func (s *ControllerTestSuite) TestExecution() {
 type fakeRetentionScheduler struct {
 }
 
-func (f *fakeRetentionScheduler) Schedule(ctx context.Context, cron string, callbackFuncName string, params interface{}) (int64, error) {
+func (f *fakeRetentionScheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string, cron string, callbackFuncName string, params interface{}) (int64, error) {
 	return 111, nil
 }
 
-func (f *fakeRetentionScheduler) UnSchedule(ctx context.Context, id int64) error {
+func (f *fakeRetentionScheduler) UnScheduleByID(ctx context.Context, id int64) error {
+	return nil
+}
+func (f *fakeRetentionScheduler) UnScheduleByVendor(ctx context.Context, vendorType string, vendorID int64) error {
 	return nil
 }
 
 func (f *fakeRetentionScheduler) GetSchedule(ctx context.Context, id int64) (*scheduler.Schedule, error) {
+	return nil, nil
+}
+func (f *fakeRetentionScheduler) ListSchedules(ctx context.Context, q *q.Query) ([]*scheduler.Schedule, error) {
 	return nil, nil
 }
 

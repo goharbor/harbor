@@ -1,5 +1,5 @@
 import { SystemInfoService } from '../../services/system-info.service';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ErrorHandler } from '../../utils/error-handler/error-handler';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ProjectPolicyConfigComponent } from './project-policy-config.component';
@@ -113,7 +113,7 @@ describe('ProjectPolicyConfigComponent', () => {
     component.projectId = 1;
     fixture.detectChanges();
   }
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule],
       declarations: [

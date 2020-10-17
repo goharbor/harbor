@@ -256,22 +256,16 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 
 		log.Debugf("\nnamespace: %s \t repositories: %#v\n\n", namespace, repos)
 
-		if _, ok := util.IsSpecificPathComponent(namespacePattern); ok {
-			log.Debugf("specific namespace: %s", repoPattern)
-			repositories = append(repositories, repos...)
-		} else {
-			for _, repo := range repos {
-
-				var ok bool
-				var repoName = filepath.Join(repo.RepoNamespace, repo.RepoName)
-				ok, err = util.Match(repoPattern, repoName)
-				log.Debugf("\n Repository: %s\t repoPattern: %s\t Match: %v\n", repoName, repoPattern, ok)
-				if err != nil {
-					return
-				}
-				if ok {
-					repositories = append(repositories, repo)
-				}
+		for _, repo := range repos {
+			var ok bool
+			var repoName = filepath.Join(repo.RepoNamespace, repo.RepoName)
+			ok, err = util.Match(repoPattern, repoName)
+			log.Debugf("\n Repository: %s\t repoPattern: %s\t Match: %v\n", repoName, repoPattern, ok)
+			if err != nil {
+				return
+			}
+			if ok {
+				repositories = append(repositories, repo)
 			}
 		}
 	}
@@ -279,7 +273,6 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 
 	var rawResources = make([]*model.Resource, len(repositories))
 	runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
-	defer runner.Cancel()
 
 	for i, r := range repositories {
 		index := i
@@ -323,12 +316,9 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 			return nil
 		})
 	}
-	runner.Wait()
-
-	if runner.IsCancelled() {
-		return nil, fmt.Errorf("FetchArtifacts error when collect tags for repos")
+	if err = runner.Wait(); err != nil {
+		return nil, fmt.Errorf("failed to fetch artifacts: %v", err)
 	}
-
 	for _, r := range rawResources {
 		if r != nil {
 			resources = append(resources, r)

@@ -33,7 +33,7 @@ import { errorHandler as errorHandlerFn } from "../../../lib/utils/shared/shared
   styleUrls: ["./robot-account.component.scss"]
 })
 export class RobotAccountComponent implements OnInit, OnDestroy {
-  @ViewChild(AddRobotComponent, {static: false})
+  @ViewChild(AddRobotComponent)
   addRobotComponent: AddRobotComponent;
   selectedRow: Robot[] = [];
   robotsCopy: Robot[] = [];

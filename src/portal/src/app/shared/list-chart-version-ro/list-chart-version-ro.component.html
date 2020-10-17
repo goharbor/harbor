@@ -15,11 +15,11 @@
       <clr-dg-cell>{{ chart.Chart.created | date}}</clr-dg-cell>
   </clr-dg-row>
   <clr-dg-footer>
-      <clr-dg-pagination #pagination [clrDgPageSize]="5" [clrDgTotalItems]="pagination.totalItems">
-          <span *ngIf="pagination.totalItems">
+      <clr-dg-pagination #pagination [clrDgPageSize]="5" [clrDgTotalItems]="charts?.length">
+          <span *ngIf="charts?.length">
               {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'HELM_CHART.OF' | translate}}
           </span>
-          {{pagination.totalItems}} {{'HELM_CHART.ITEMS'| translate}}
+          {{charts?.length}} {{'HELM_CHART.ITEMS'| translate}}
       </clr-dg-pagination>
   </clr-dg-footer>
 </clr-datagrid>

@@ -103,6 +103,12 @@ type extURLGetter func(c *selector.Candidate) (string, error)
 // The purpose of defining such a func template is decoupling code
 type accessCredMaker func(c *selector.Candidate) (string, error)
 
+// matchedPolicy is a temporary intermediary struct for passing parameters
+type matchedPolicy struct {
+	policy   *pol.Schema
+	filtered []*selector.Candidate
+}
+
 var (
 	// Enf default enforcer
 	Enf = NewEnforcer()
@@ -207,7 +213,7 @@ func (de *defaultEnforcer) EnforcePolicy(ctx context.Context, policyID int64) (i
 	// Override security settings if necessary
 	ov := overrideSecuritySettings(pl, pro)
 	for _, ss := range ov {
-		log.Infof("Policy %s.%s's criteria '%s' is override from value '%s' to '%s'", ss...)
+		log.Infof("Policy %s.%s's criteria '%s' uses value '%s' from project configurations", ss...)
 	}
 
 	// Do filters
@@ -254,8 +260,7 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 		return nil, enforceErrorExt(err, art)
 	}
 
-	matched := 0
-	ids := make([]int64, 0)
+	matched := make([]*matchedPolicy, 0)
 	for _, pl := range l {
 		// Skip disabled policies
 		if !pl.Enabled {
@@ -269,23 +274,10 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 			continue
 		}
 
-		// Get and check if the provider instance bound with the policy is healthy
-		inst, err := de.instMgr.Get(ctx, pl.ProviderID)
-		if err != nil {
-			log.Errorf("Failed to get the preheat provider instance bound with the policy %d:%s with error: %s", pl.ID, pl.Name, err.Error())
-			continue
-		}
-
-		// Skip unhealthy instance
-		if err := checkProviderHealthy(inst); err != nil {
-			log.Errorf("The preheat provider instance bound with the policy %d:%s is not healthy: %s", pl.ID, pl.Name, err.Error())
-			continue
-		}
-
 		// Override security settings if necessary
 		ov := overrideSecuritySettings(pl, p)
 		for _, ss := range ov {
-			log.Infof("Policy %s.%s's criteria '%s' is override from value '%s' to '%s'", ss...)
+			log.Infof("Policy %s.%s's criteria '%s' uses value '%s' from project configurations", ss...)
 		}
 
 		filtered, err := policy.NewFilter().BuildFrom(pl).Filter(candidates)
@@ -295,25 +287,52 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 			continue
 		}
 
-		matched++
-
+		// The artifact candidate is matched with the policy
 		if len(filtered) > 0 {
-			// Matched
-			eid, err := de.launchExecutions(ctx, filtered, pl, inst)
-			if err != nil {
-				// Log error and continue
-				log.Errorf("Failed to launch execution for policy %d:%s with error: %s", pl.ID, pl.Name, err.Error())
-			} else {
-				// Success and then append the execution id to list
-				ids = append(ids, eid)
-			}
+			matched = append(matched, &matchedPolicy{pl, filtered})
 		}
 	}
 
-	if matched != len(ids) {
+	ids := make([]int64, 0)
+	// No policy matched
+	if len(matched) == 0 {
+		// Log it
+		log.Debugf("No preheat policy matched for the artifact %s@%s", art.RepositoryName, art.Digest)
+		// Do nothing
+		return ids, nil
+	}
+
+	// Launch preheat executions for all the matched policies.
+	// Check the health of the instance bound with the policy at this moment.
+	for _, mp := range matched {
+		// Get and check if the provider instance bound with the policy is healthy
+		inst, err := de.instMgr.Get(ctx, mp.policy.ProviderID)
+		if err != nil {
+			log.Errorf("Failed to get the preheat provider instance bound with the policy %d:%s with error: %s", mp.policy.ID, mp.policy.Name, err.Error())
+			continue
+		}
+
+		// Skip unhealthy instance
+		if err := checkProviderHealthy(inst); err != nil {
+			log.Errorf("The preheat provider instance bound with the policy %d:%s is not healthy: %s", mp.policy.ID, mp.policy.Name, err.Error())
+			continue
+		}
+
+		// Launch executions now
+		eid, err := de.launchExecutions(ctx, mp.filtered, mp.policy, inst)
+		if err != nil {
+			// Log error and continue
+			log.Errorf("Failed to launch execution for policy %d:%s with error: %s", mp.policy.ID, mp.policy.Name, err.Error())
+		} else {
+			// Success and then append the execution id to list
+			ids = append(ids, eid)
+		}
+	}
+
+	if len(matched) != len(ids) {
 		// Some policy enforcement are failed
 		// Treat it as an error case
-		return ids, enforceErrorExt(errors.Errorf("%d policies matched but only %d successfully enforced", matched, len(ids)), art)
+		return ids, enforceErrorExt(errors.Errorf("%d policies matched but only %d successfully enforced", len(matched), len(ids)), art)
 	}
 
 	return ids, nil
@@ -423,6 +442,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 		},
 		ImageName: fmt.Sprintf("%s/%s", candidate.Namespace, candidate.Repository),
 		Tag:       candidate.Tags[0],
+		Digest:    candidate.Digest,
 	}
 
 	piData, err := pi.ToJSON()
@@ -456,7 +476,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 
 // getVulnerabilitySev gets the severity code value for the given artifact with allowlist option set
 func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *models.Project, art *artifact.Artifact) (uint, error) {
-	al := report.CVESet(p.CVEAllowlist.CVESet())
+	al := p.CVEAllowlist.CVESet()
 	r, err := de.scanCtl.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport}, report.WithCVEAllowlist(&al))
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
@@ -495,6 +515,7 @@ func (de *defaultEnforcer) toCandidates(ctx context.Context, p *models.Project, 
 		}
 
 		// If artifact has more than one tag, then split them into separate candidate for easy filtering.
+		// TODO: Do we need to support untagged artifacts here?
 		for _, t := range a.Tags {
 			candidates = append(candidates, &selector.Candidate{
 				NamespaceID: p.ProjectID,
@@ -518,7 +539,7 @@ func (de *defaultEnforcer) toCandidates(ctx context.Context, p *models.Project, 
 // getProject gets the full metadata of the specified project
 func (de *defaultEnforcer) getProject(ctx context.Context, id int64) (*models.Project, error) {
 	// Get project info with CVE allow list and metadata
-	return de.proCtl.Get(ctx, id, project.CVEAllowlist(true), project.Metadata(true))
+	return de.proCtl.Get(ctx, id, project.WithEffectCVEAllowlist())
 }
 
 // enforceError is a wrap error
@@ -575,52 +596,49 @@ func checkProviderHealthy(inst *provider.Instance) error {
 
 // Check the project security settings and override the related settings in the policy if necessary.
 // NOTES: if the security settings (relevant with signature and vulnerability) are set at the project configuration,
-// they will have the highest priority and override the related settings of the preheat policy.
-// e.g (use signature as an example, similar case to vulnerability severity part):
-//   if policy.signature = false and project.config.signature = true; then policy.signature = true
-//   if policy.signature = true and project.config.signature = true; then policy.signature = true
-//   if policy.signature = true and project.config.signature = false; then policy.signature = true
-//   if policy.signature = false and project.config.signature = false; then policy.signature = false
-//
-// If override happened, then return the override setting list
+// the corresponding filters of P2P preheat policy will be set using the relevant settings of project configurations.
 func overrideSecuritySettings(p *pol.Schema, pro *models.Project) [][]interface{} {
 	if p == nil || pro == nil {
 		return nil
 	}
 
 	override := make([][]interface{}, 0)
+	filters := make([]*pol.Filter, 0)
 	for _, fl := range p.Filters {
-		switch fl.Type {
-		case pol.FilterTypeSignature:
-			if ct, ok := pro.Metadata[proMetaKeyContentTrust]; ok && ct == "true" {
-				if sig, ok := fl.Value.(bool); !ok || (ok && !sig) {
-					// Record this is a override case
-					r1 := []interface{}{pro.Name, p.Name, fl.Type, fmt.Sprintf("%v", sig), ct}
-					override = append(override, r1)
-				}
-
-				// Override: must be set align with project configuration setting
-				fl.Value = true
-			}
-		case pol.FilterTypeVulnerability:
-			if v, ok := pro.Metadata[proMetaKeyVulnerability]; ok && v == "true" {
-				if se, ok := pro.Metadata[proMetaKeySeverity]; ok && len(se) > 0 {
-					se = strings.Title(strings.ToLower(se))
-					code := vuln.Severity(se).Code()
-
-					if sev, ok := fl.Value.(int); !ok || (ok && sev < code) {
-						// Record this is a override case
-						r2 := []interface{}{pro.Name, p.Name, fl.Type, fmt.Sprintf("%v:%d", fl.Value, sev), fmt.Sprintf("%s:%d", se, code)}
-						override = append(override, r2)
-
-						// Override: must be set align with project configuration setting
-						fl.Value = code
-					}
-				}
-			}
-		default:
+		if fl.Type != pol.FilterTypeSignature && fl.Type != pol.FilterTypeVulnerability {
+			filters = append(filters, fl)
 		}
 	}
+
+	// Append signature filter if content trust config is set at project configurations
+	if ct, ok := pro.Metadata[proMetaKeyContentTrust]; ok && ct == "true" {
+		filters = append(filters, &pol.Filter{
+			Type:  pol.FilterTypeSignature,
+			Value: true,
+		})
+
+		// Record this is a override case
+		r1 := []interface{}{pro.Name, p.Name, pol.FilterTypeSignature, fmt.Sprintf("%v", true)}
+		override = append(override, r1)
+	}
+	// Append vulnerability filter if vulnerability severity config is set at project configurations
+	if v, ok := pro.Metadata[proMetaKeyVulnerability]; ok && v == "true" {
+		if se, ok := pro.Metadata[proMetaKeySeverity]; ok && len(se) > 0 {
+			se = strings.Title(strings.ToLower(se))
+			code := vuln.Severity(se).Code()
+			filters = append(filters, &pol.Filter{
+				Type:  pol.FilterTypeVulnerability,
+				Value: code,
+			})
+
+			// Record this is a override case
+			r2 := []interface{}{pro.Name, p.Name, pol.FilterTypeVulnerability, fmt.Sprintf("%v:%d", se, code)}
+			override = append(override, r2)
+		}
+	}
+
+	// Override
+	p.Filters = filters
 
 	return override
 }

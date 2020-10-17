@@ -41,7 +41,7 @@ export class NewUserModalComponent {
 
     @ViewChild(NewUserFormComponent, {static: true})
     newUserForm: NewUserFormComponent;
-    @ViewChild(InlineAlertComponent, {static: false})
+    @ViewChild(InlineAlertComponent)
     inlineAlert: InlineAlertComponent;
 
     getNewUser(): User {

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, ComponentFixtureAutoDetect, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, ComponentFixtureAutoDetect, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ClrLoadingState } from "@clr/angular";
 import { ConfigScannerService } from "../config-scanner.service";
 import { NewScannerModalComponent } from "./new-scanner-modal.component";

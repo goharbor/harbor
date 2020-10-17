@@ -72,6 +72,8 @@ func (d *Database) Save(cfgs map[string]interface{}) error {
 			if _, ok := item.ItemType.(*metadata.PasswordType); ok {
 				if encryptPassword, err := encrypt.Instance().Encrypt(strValue); err == nil {
 					entry.Value = encryptPassword
+				} else {
+					log.Errorf("encrypt password failed, error: %v", err)
 				}
 			}
 			configEntries = append(configEntries, *entry)

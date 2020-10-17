@@ -137,6 +137,11 @@ func (suite *ScanImagePreprocessHandlerSuite) TestHandle() {
 // MockHTTPHandler ...
 type MockHTTPHandler struct{}
 
+// Name ...
+func (m *MockHTTPHandler) Name() string {
+	return "MockHTTP"
+}
+
 // Handle ...
 func (m *MockHTTPHandler) Handle(value interface{}) error {
 	return nil

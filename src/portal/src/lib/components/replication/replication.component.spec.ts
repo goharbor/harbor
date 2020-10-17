@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
@@ -153,7 +153,7 @@ describe('Replication Component (inline template)', () => {
     replicationRuleEndpoint: CURRENT_BASE_HREF + '/policies/replication/testing'
   };
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
       imports: [
@@ -214,7 +214,7 @@ describe('Replication Component (inline template)', () => {
   });
 
 
-  it('Should load replication rules', async(() => {
+  it('Should load replication rules', waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -227,7 +227,7 @@ describe('Replication Component (inline template)', () => {
     });
   }));
 
-  it('Should load replication jobs', async(() => {
+  it('Should load replication jobs', waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -241,7 +241,7 @@ describe('Replication Component (inline template)', () => {
     });
   }));
 
-  it('Should filter replication rules by keywords', async(() => {
+  it('Should filter replication rules by keywords', waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -253,7 +253,7 @@ describe('Replication Component (inline template)', () => {
     });
   }));
 
-  it('Should filter replication jobs by keywords', async(() => {
+  it('Should filter replication jobs by keywords', waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -266,7 +266,7 @@ describe('Replication Component (inline template)', () => {
     });
   }));
 
-  it('Should filter replication jobs by status', async(() => {
+  it('Should filter replication jobs by status', waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -277,7 +277,7 @@ describe('Replication Component (inline template)', () => {
     });
   }));
 
-  it('Should filter replication jobs by date range', async(() => {
+  it('Should filter replication jobs by date range', waitForAsync(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();

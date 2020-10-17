@@ -39,6 +39,18 @@ type Execution struct {
 	ExtraAttrs    string    `orm:"column(extra_attrs)"` // json string
 	StartTime     time.Time `orm:"column(start_time)"`
 	EndTime       time.Time `orm:"column(end_time)"`
+	Revision      int64     `orm:"column(revision)"`
+}
+
+// Metrics is the task metrics for one execution
+type Metrics struct {
+	TaskCount          int64 `json:"task_count"`
+	SuccessTaskCount   int64 `json:"success_task_count"`
+	ErrorTaskCount     int64 `json:"error_task_count"`
+	PendingTaskCount   int64 `json:"pending_task_count"`
+	RunningTaskCount   int64 `json:"running_task_count"`
+	ScheduledTaskCount int64 `json:"scheduled_task_count"`
+	StoppedTaskCount   int64 `json:"stopped_task_count"`
 }
 
 // Task database model

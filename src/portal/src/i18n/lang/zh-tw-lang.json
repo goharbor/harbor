@@ -13,7 +13,8 @@
     "REMEMBER": "記住我",
     "INVALID_MSG": "用戶名或者密碼不正確。",
     "FORGOT_PWD": "忘記密碼",
-    "HEADER_LINK": "登錄"
+    "HEADER_LINK": "登錄",
+    "CORE_SERVICE_NOT_AVAILABLE": "Core service is not available."
   },
   "SIGN_UP": {
     "TITLE": "註冊"
@@ -244,7 +245,7 @@
     "QUOTA_UNLIMIT_TIP": "如果你想要對存儲不設置上限,請輸入-1。",
     "TYPE": "Type",
     "PROXY_CACHE": "Proxy Cache",
-    "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular namespace within a target registry.Harbor can only act a proxy for DockerHub and Harbor registries.",
+    "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub and Harbor registries.",
     "ENDPOINT": "Endpoint",
     "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
   },
@@ -612,7 +613,15 @@
     "NAMESPACE_TOOLTIP": "Namespace名稱由小寫字符、數字和._-組成且至少2個字符並以字符或者數字開頭。",
     "TAG":"標籤",
     "LABEL": "標籤",
-    "RESOURCE": "資源"
+    "RESOURCE": "資源",
+    "ENABLE_TITLE": "Enable rule",
+    "ENABLE_SUMMARY": "Do you want to enable rule {{param}}?",
+    "DISABLE_TITLE": "Disable rule",
+    "DISABLE_SUMMARY": "Do you want to disable rule {{param}}?",
+    "ENABLE_SUCCESS": "Enabled rule successfully",
+    "ENABLE_FAILED": "Enabling rule failed",
+    "DISABLE_SUCCESS": "Disabled rule successfully",
+    "DISABLE_FAILED": "Disabling rule failed"
   },
   "DESTINATION":{
     "NEW_ENDPOINT": "新建目標",
@@ -669,8 +678,8 @@
     "DELETION_SUMMARY_REPO": "確認刪除鏡像倉庫{{repoName}}?",
     "DELETION_TITLE_ARTIFACT": "刪除鏡像Artifact 確認",
     "DELETION_SUMMARY_ARTIFACT": "確認刪除鏡像Artifact {{param}}? 如果您刪除此Artifact,則這個digest 的所有Tag 也將被刪除。",
-    "DELETION_TITLE_TAG": "刪除鏡像Tag 確認",
-    "DELETION_SUMMARY_TAG": "確認刪除鏡像Tag {{param}}? 如果您刪除此Tag,則這個Tag 引用的同一個digest 的所有其他Tag 也將被刪除。",
+    "DELETION_TITLE_TAG": "刪除Tag 確認",
+    "DELETION_SUMMARY_TAG": "確認刪除Tag {{param}}?",
     "DELETION_TITLE_TAG_DENIED": "已簽名的鏡像不能被刪除",
     "DELETION_SUMMARY_TAG_DENIED": "要刪除此鏡像Tag 必須首先從Notary 中刪除。\n請執行如下Notary 命令刪除:\n",
     "TAGS_NO_DELETE": "在只讀模式下刪除是被禁止的",
@@ -1313,7 +1322,9 @@
     "COUNT_LARGE": "參數“個數”太大",
     "DAYS_LARGE": "參數“天數”太大",
     "EXECUTION_TYPE": "執行類型",
-    "ACTION": "操作"
+    "ACTION": "操作",
+    "YES": "Yes",
+    "NO": "No"
   },
   "IMMUTABLE_TAG": {
     "IMMUTABLE_RULES": "不可變的 Tag 規則",
@@ -1458,7 +1469,7 @@
     "UPDATE_FAILED": "Updating instance failed",
     "REQUEST_PREHEAT_SUCCESS": "Preheat request successfully",
     "REQUEST_PREHEAT_FAILED": "Preheat request failed",
-    "DESCRIPTION": "description",
+    "DESCRIPTION": "Description",
     "AUTH_MODE": "Auth Mode",
     "USERNAME": "Username",
     "PASSWORD": "Password",
@@ -1486,7 +1497,7 @@
     "CREATE_INSTANCE": "Create instance"
   },
   "P2P_PROVIDER": {
-    "P2P_PROVIDER": "Preheat",
+    "P2P_PROVIDER": "P2P Preheat",
     "POLICIES": "Policies",
     "NEW_POLICY": "NEW POLICY",
     "NAME": "Name",
@@ -1508,7 +1519,7 @@
     "PROVIDER_REQUIRED": "Provider is required",
     "ADDED_SUCCESS": "Added policy successfully",
     "UPDATED_SUCCESS": "Updated policy successfully",
-    "EXECUTE": "Execute",
+    "EXECUTE": "EXECUTE",
     "EXECUTE_SUCCESSFULLY": "Executed successfully",
     "EXECUTE_TITLE": "Confirm Policy Execution",
     "EXECUTE_SUMMARY": "Do you want to execute the policy {{param}}?",
@@ -1520,7 +1531,9 @@
     "PROVIDER_TYPE": "Vendor",
     "ID": "Execution ID",
     "NO_PROVIDER": "Please add a provider first",
-    "EXTRA_ATTRS": "Artifact, Digest and Kind",
+    "ARTIFACT": "Artifact",
+    "DIGEST": "Digest",
+    "TYPE": "Type",
     "TASKS": "Tasks",
     "TASKS_PLACEHOLDER": "We couldn't find any task",
     "SEVERITY_WARNING": "Vulnerability settings here conflicts with the relevant project configuration that will override the settings here",
@@ -1547,6 +1560,11 @@
     "UPDATED_SUCCESSFULLY": "Updated policy successfully",
     "EXECUTIONS": "Executions",
     "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
-    "CONTENT_WARNING": "Content trust settings here conflicts with the relevant project configuration that will override the settings here"
+    "CONTENT_WARNING": "Content trust settings here conflicts with the relevant project configuration that will override the settings here",
+    "PREHEAT_EXPLAIN": "Preheat will migrate the image to the p2p network",
+    "CRITERIA_EXPLAIN": "As specified in 'Deployment security' section under Configuration tab",
+    "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote provider uses a self-signed or untrusted certificate.",
+    "NAME_TOOLTIP": "Policy name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+    "NEED_HELP": "Please ask your system admin to add a provider first"
   }
 }

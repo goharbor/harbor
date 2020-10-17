@@ -7,7 +7,8 @@ const (
 	ImageScanAllJob = "IMAGE_SCAN_ALL"
 	// ImageGC the name of image garbage collection job in job service
 	ImageGC = "IMAGE_GC"
-
+	// ImageGCReadOnly the name of image garbage collection read only job in job service
+	ImageGCReadOnly = "IMAGE_GC_READ_ONLY"
 	// JobKindGeneric : Kind of generic job
 	JobKindGeneric = "Generic"
 	// JobKindScheduled : Kind of scheduled job

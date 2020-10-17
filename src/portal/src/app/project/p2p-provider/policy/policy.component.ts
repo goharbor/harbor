@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -49,9 +49,9 @@ import { ProviderUnderProject } from '../../../../../ng-swagger-gen/models/provi
   styleUrls: ['./policy.component.scss']
 })
 export class PolicyComponent implements OnInit, OnDestroy {
-  @ViewChild(AddP2pPolicyComponent, { static: false } )
+  @ViewChild(AddP2pPolicyComponent)
   addP2pPolicyComponent: AddP2pPolicyComponent;
-  @ViewChild("confirmationDialogComponent", { static: false })
+  @ViewChild("confirmationDialogComponent")
   confirmationDialogComponent: ConfirmationDialogComponent;
   projectId: number;
   projectName: string;
@@ -81,6 +81,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
   project: Project;
   severity_map: any = PROJECT_SEVERITY_LEVEL_TO_TEXT_MAP;
   timeout: any;
+  hasAddModalInit: boolean = false;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -106,10 +107,10 @@ export class PolicyComponent implements OnInit, OnDestroy {
        this._searchSubscription.unsubscribe();
        this._searchSubscription = null;
      }
-     if (this.timeout) {
-       clearTimeout(this.timeout);
-       this.timeout = null;
-     }
+     this.clearLoop();
+  }
+  addModalInit() {
+     this.hasAddModalInit = true;
   }
   getPermissions() {
     const permissionsList: Observable<boolean>[] = [];
@@ -134,7 +135,11 @@ export class PolicyComponent implements OnInit, OnDestroy {
   getProviders() {
     this.preheatService.ListProvidersUnderProject({projectName: this.projectName})
       .subscribe(res => {
-        this.providers = res;
+        if (res && res.length) {
+          this.providers = res.filter(provider => {
+            return provider.enabled;
+          });
+        }
       });
   }
   refresh() {
@@ -255,6 +260,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
     if (this.selectedRow) {
       this.addP2pPolicyComponent.isOpen = true;
       this.addP2pPolicyComponent.isEdit = true;
+      this.addP2pPolicyComponent.inlineAlert.close();
       this.addP2pPolicyComponent.policy = clone(this.selectedRow);
       const filter: any[] = JSON.parse(this.selectedRow.filters);
       if (filter && filter.length) {
@@ -265,14 +271,8 @@ export class PolicyComponent implements OnInit, OnDestroy {
           if (item.type === FILTER_TYPE.TAG && item.value) {
             this.addP2pPolicyComponent.tags = item.value.replace(/[{}]/g, "");
           }
-          if (item.type === FILTER_TYPE.SIGNATURE) {
-            this.addP2pPolicyComponent.onlySignedImages = item.value;
-          }
           if (item.type === FILTER_TYPE.LABEL && item.value) {
             this.addP2pPolicyComponent.labels = item.value.replace(/[{}]/g, "");
-          }
-          if (item.type === FILTER_TYPE.VULNERABILITY) {
-            this.addP2pPolicyComponent.severity = item.value;
           }
         });
       }
@@ -287,7 +287,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
         description: this.addP2pPolicyComponent.policy.description,
         repo: this.addP2pPolicyComponent.repos,
         tag: this.addP2pPolicyComponent.tags,
-        onlySignedImages: this.addP2pPolicyComponent.onlySignedImages,
+        onlySignedImages: this.addP2pPolicyComponent.enableContentTrust,
         severity: this.addP2pPolicyComponent.severity,
         label: this.addP2pPolicyComponent.labels,
         triggerType: this.addP2pPolicyComponent.triggerType
@@ -363,23 +363,13 @@ export class PolicyComponent implements OnInit, OnDestroy {
       }).pipe(finalize(() => this.jobsLoading = false))
         .subscribe(response => {
           if (response.headers) {
-            let xHeader: string = response.headers.get('x-total-count');
+            let xHeader: string = response.headers.get('X-Total-Count');
             if (xHeader) {
               this.totalExecutionCount = parseInt(xHeader, 0);
             }
           }
           this.executionList = response.body;
-          if (this.executionList && this.executionList.length) {
-            for (let i = 0; i < this.executionList.length; i++) {
-              if (this.p2pProviderService.willChangStatus(this.executionList[i].status)) {
-                if (!this.timeout) {
-                  this.timeout = setTimeout(() => {
-                    this.clrLoadJobs(null, false);
-                  }, TIME_OUT);
-                }
-              }
-            }
-          }
+          this.setLoop();
         }, error => {
           this.messageHandlerService.handleError(error);
         });
@@ -416,6 +406,12 @@ export class PolicyComponent implements OnInit, OnDestroy {
       return TRIGGER_I18N_MAP[JSON.parse(trigger).type];
     }
     return TRIGGER_I18N_MAP[TRIGGER.MANUAL];
+  }
+  getTriggerTypeI18nForExecution(trigger: string) {
+    if (trigger && TRIGGER_I18N_MAP[trigger]) {
+      return TRIGGER_I18N_MAP[trigger];
+    }
+    return trigger;
   }
   isScheduled(trigger: string): boolean {
     return JSON.parse(trigger).type === TRIGGER.SCHEDULED;
@@ -464,7 +460,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
   subscribeSearch() {
     if (!this._searchSubscription) {
       this._searchSubscription = this._searchSubject.pipe(
-        distinctUntilChanged(),
+        debounceTime(500),
         switchMap(searchString => {
           this.jobsLoading = true;
           let params: string;
@@ -486,10 +482,31 @@ export class PolicyComponent implements OnInit, OnDestroy {
             }
            }
            this.executionList = response.body;
+           this.setLoop();
       });
     }
   }
   canStop(): boolean {
     return this.selectedExecutionRow && this.p2pProviderService.willChangStatus(this.selectedExecutionRow.status);
+  }
+  clearLoop() {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = null;
+    }
+  }
+  setLoop() {
+    this.clearLoop();
+    if (this.executionList && this.executionList.length) {
+      for (let i = 0; i < this.executionList.length; i++) {
+        if (this.p2pProviderService.willChangStatus(this.executionList[i].status)) {
+          if (!this.timeout) {
+            this.timeout = setTimeout(() => {
+              this.clrLoadJobs(null, false);
+            }, TIME_OUT);
+          }
+        }
+      }
+    }
   }
 }

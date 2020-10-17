@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ConfirmMessageHandler } from '../config.msg.utils';
 import { ConfigurationService } from '../config.service';
@@ -19,7 +19,7 @@ describe('ConfigurationEmailComponent', () => {
     let fakeMessageHandlerService = {
         showSuccess: () => null
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),

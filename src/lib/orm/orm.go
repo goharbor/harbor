@@ -22,6 +22,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
+// RegisterModel ...
+func RegisterModel(models ...interface{}) {
+	orm.RegisterModel(models...)
+}
+
 type ormKey struct{}
 
 // FromContext returns orm from context
@@ -44,6 +49,11 @@ func NewContext(ctx context.Context, o orm.Ormer) context.Context {
 // Context returns a context with an orm
 func Context() context.Context {
 	return NewContext(context.Background(), orm.NewOrm())
+}
+
+// Clone returns new context with orm for ctx
+func Clone(ctx context.Context) context.Context {
+	return NewContext(ctx, orm.NewOrm())
 }
 
 // WithTransaction a decorator which make f run in transaction

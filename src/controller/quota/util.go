@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -55,40 +54,14 @@ func RefreshForProjects(ctx context.Context) error {
 		return err
 	}
 
-	projects := func(chunkSize int) <-chan *models.Project {
-		ch := make(chan *models.Project, chunkSize)
+	chunkSize := 50 // default chunk size is 50
+	for result := range project.ListAll(ctx, chunkSize, nil, project.Metadata(false)) {
+		if result.Error != nil {
+			log.Errorf("refresh quota for all projects got error: %v", result.Error)
+			continue
+		}
 
-		go func() {
-			defer close(ch)
-
-			params := &models.ProjectQueryParam{
-				Pagination: &models.Pagination{Page: 1, Size: int64(chunkSize)},
-			}
-
-			for {
-				results, err := project.Ctl.List(ctx, params, project.Metadata(false))
-				if err != nil {
-					log.Errorf("list projects failed, error: %v", err)
-					return
-				}
-
-				for _, p := range results {
-					ch <- p
-				}
-
-				if len(results) < chunkSize {
-					break
-				}
-
-				params.Pagination.Page++
-			}
-
-		}()
-
-		return ch
-	}(50) // default chunk size is 50
-
-	for p := range projects {
+		p := result.Data
 		referenceID := ReferenceID(p.ProjectID)
 
 		_, err := Ctl.GetByRef(ctx, ProjectReference, referenceID)

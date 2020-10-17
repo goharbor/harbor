@@ -21,60 +21,68 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/stretchr/testify/suite"
 )
 
-func addProject(ctx context.Context, project models.Project) (int64, error) {
+type Foo struct {
+	ID   int64  `orm:"pk;auto;column(id)"`
+	Name string `orm:"column(name)"`
+}
+
+func (*Foo) TableName() string {
+	return "foo"
+}
+
+func addFoo(ctx context.Context, foo Foo) (int64, error) {
 	o, err := FromContext(ctx)
 	if err != nil {
 		return 0, err
 	}
 
-	return o.Insert(&project)
+	return o.Insert(&foo)
 }
 
-func readProject(ctx context.Context, id int64) (*models.Project, error) {
+func readFoo(ctx context.Context, id int64) (*Foo, error) {
 	o, err := FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	project := &models.Project{
-		ProjectID: id,
+	foo := &Foo{
+		ID: id,
 	}
 
-	if err := o.Read(project, "project_id"); err != nil {
+	if err := o.Read(foo, "id"); err != nil {
 		return nil, err
 	}
 
-	return project, nil
+	return foo, nil
 }
 
-func deleteProject(ctx context.Context, id int64) error {
+func deleteFoo(ctx context.Context, id int64) error {
 	o, err := FromContext(ctx)
 	if err != nil {
 		return err
 	}
-	project := &models.Project{
-		ProjectID: id,
+	foo := &Foo{
+		ID: id,
 	}
 
-	_, err = o.Delete(project, "project_id")
+	_, err = o.Delete(foo, "id")
 	return err
 }
 
-func existProject(ctx context.Context, id int64) bool {
+func existFoo(ctx context.Context, id int64) bool {
 	o, err := FromContext(ctx)
 	if err != nil {
 		return false
 	}
 
-	project := &models.Project{
-		ProjectID: id,
+	foo := &Foo{
+		ID: id,
 	}
 
-	if err := o.Read(project, "project_id"); err != nil {
+	if err := o.Read(foo, "id"); err != nil {
 		return false
 	}
 
@@ -88,7 +96,40 @@ type OrmSuite struct {
 
 // SetupSuite ...
 func (suite *OrmSuite) SetupSuite() {
+	RegisterModel(&Foo{})
 	dao.PrepareTestForPostgresSQL()
+
+	o, err := FromContext(Context())
+	if err != nil {
+		suite.Fail("got error %v", err)
+	}
+
+	sql := `
+	CREATE TABLE IF NOT EXISTS foo (
+		id SERIAL PRIMARY KEY NOT NULL,
+		name VARCHAR (30),
+		UNIQUE (name)
+	)
+	`
+
+	_, err = o.Raw(sql).Exec()
+	if err != nil {
+		suite.Fail("got error %v", err)
+	}
+}
+
+func (suite *OrmSuite) TearDownSuite() {
+	o, err := FromContext(Context())
+	if err != nil {
+		suite.Fail("got error %v", err)
+	}
+
+	sql := `DROP TABLE foo`
+
+	_, err = o.Raw(sql).Exec()
+	if err != nil {
+		suite.Fail("got error %v", err)
+	}
 }
 
 func (suite *OrmSuite) TestContext() {
@@ -107,13 +148,13 @@ func (suite *OrmSuite) TestWithTransaction() {
 
 	var id int64
 	t1 := WithTransaction(func(ctx context.Context) (err error) {
-		id, err = addProject(ctx, models.Project{Name: "t1", OwnerID: 1})
+		id, err = addFoo(ctx, Foo{Name: "t1"})
 		return err
 	})
 
 	suite.Nil(t1(ctx))
-	suite.True(existProject(ctx, id))
-	suite.Nil(deleteProject(ctx, id))
+	suite.True(existFoo(ctx, id))
+	suite.Nil(deleteFoo(ctx, id))
 }
 
 func (suite *OrmSuite) TestSequentialTransactions() {
@@ -122,50 +163,50 @@ func (suite *OrmSuite) TestSequentialTransactions() {
 	var id1, id2 int64
 	t1 := func(ctx context.Context, retErr error) error {
 		return WithTransaction(func(ctx context.Context) (err error) {
-			id1, err = addProject(ctx, models.Project{Name: "t1", OwnerID: 1})
+			id1, err = addFoo(ctx, Foo{Name: "t1"})
 			if err != nil {
 				return err
 			}
 
 			// Ensure t1 created success
-			suite.True(existProject(ctx, id1))
+			suite.True(existFoo(ctx, id1))
 
 			return retErr
 		})(ctx)
 	}
 	t2 := func(ctx context.Context, retErr error) error {
 		return WithTransaction(func(ctx context.Context) (err error) {
-			id2, _ = addProject(ctx, models.Project{Name: "t2", OwnerID: 1})
+			id2, _ = addFoo(ctx, Foo{Name: "t2"})
 			if err != nil {
 				return err
 			}
 
 			// Ensure t2 created success
-			suite.True(existProject(ctx, id2))
+			suite.True(existFoo(ctx, id2))
 
 			return retErr
 		})(ctx)
 	}
 
 	if suite.Nil(t1(ctx, nil)) {
-		suite.True(existProject(ctx, id1))
+		suite.True(existFoo(ctx, id1))
 	}
 
 	if suite.Nil(t2(ctx, nil)) {
-		suite.True(existProject(ctx, id2))
+		suite.True(existFoo(ctx, id2))
 	}
 
-	// delete project t1 and t2 in db
-	suite.Nil(deleteProject(ctx, id1))
-	suite.Nil(deleteProject(ctx, id2))
+	// delete foo t1 and t2 in db
+	suite.Nil(deleteFoo(ctx, id1))
+	suite.Nil(deleteFoo(ctx, id2))
 
 	if suite.Error(t1(ctx, errors.New("oops"))) {
-		suite.False(existProject(ctx, id1))
+		suite.False(existFoo(ctx, id1))
 	}
 
 	if suite.Nil(t2(ctx, nil)) {
-		suite.True(existProject(ctx, id2))
-		suite.Nil(deleteProject(ctx, id2))
+		suite.True(existFoo(ctx, id2))
+		suite.Nil(deleteFoo(ctx, id2))
 	}
 }
 
@@ -174,11 +215,11 @@ func (suite *OrmSuite) TestNestedTransaction() {
 
 	var id1, id2 int64
 	nt1 := WithTransaction(func(ctx context.Context) (err error) {
-		id1, err = addProject(ctx, models.Project{Name: "nt1", OwnerID: 1})
+		id1, err = addFoo(ctx, Foo{Name: "nt1"})
 		return err
 	})
 	nt2 := WithTransaction(func(ctx context.Context) (err error) {
-		id2, err = addProject(ctx, models.Project{Name: "nt2", OwnerID: 1})
+		id2, err = addFoo(ctx, Foo{Name: "nt2"})
 		return err
 	})
 
@@ -193,36 +234,36 @@ func (suite *OrmSuite) TestNestedTransaction() {
 			}
 
 			// Ensure nt1 and nt2 created success
-			suite.True(existProject(ctx, id1))
-			suite.True(existProject(ctx, id2))
+			suite.True(existFoo(ctx, id1))
+			suite.True(existFoo(ctx, id2))
 
 			return retErr
 		})(ctx)
 	}
 
 	if suite.Nil(nt(ctx, nil)) {
-		suite.True(existProject(ctx, id1))
-		suite.True(existProject(ctx, id2))
+		suite.True(existFoo(ctx, id1))
+		suite.True(existFoo(ctx, id2))
 
-		// delete project nt1 and nt2 in db
-		suite.Nil(deleteProject(ctx, id1))
-		suite.Nil(deleteProject(ctx, id2))
-		suite.False(existProject(ctx, id1))
-		suite.False(existProject(ctx, id2))
+		// delete foo nt1 and nt2 in db
+		suite.Nil(deleteFoo(ctx, id1))
+		suite.Nil(deleteFoo(ctx, id2))
+		suite.False(existFoo(ctx, id1))
+		suite.False(existFoo(ctx, id2))
 	}
 
 	if suite.Error(nt(ctx, errors.New("oops"))) {
-		suite.False(existProject(ctx, id1))
-		suite.False(existProject(ctx, id2))
+		suite.False(existFoo(ctx, id1))
+		suite.False(existFoo(ctx, id2))
 	}
 
 	// test nt1 failed but we skip it and nt2 success
 	suite.Nil(nt1(ctx))
-	suite.True(existProject(ctx, id1))
+	suite.True(existFoo(ctx, id1))
 
 	// delete nt1 here because id1 will overwrite in the following transaction
 	defer func(id int64) {
-		suite.Nil(deleteProject(ctx, id))
+		suite.Nil(deleteFoo(ctx, id))
 	}(id1)
 
 	t := WithTransaction(func(ctx context.Context) error {
@@ -233,16 +274,16 @@ func (suite *OrmSuite) TestNestedTransaction() {
 		}
 
 		// Ensure t2 created success
-		suite.True(existProject(ctx, id2))
+		suite.True(existFoo(ctx, id2))
 
 		return nil
 	})
 
 	if suite.Nil(t(ctx)) {
-		suite.True(existProject(ctx, id2))
+		suite.True(existFoo(ctx, id2))
 
-		// delete project t2 in db
-		suite.Nil(deleteProject(ctx, id2))
+		// delete foo t2 in db
+		suite.Nil(deleteFoo(ctx, id2))
 	}
 }
 
@@ -251,11 +292,11 @@ func (suite *OrmSuite) TestNestedSavepoint() {
 
 	var id1, id2 int64
 	ns1 := WithTransaction(func(ctx context.Context) (err error) {
-		id1, err = addProject(ctx, models.Project{Name: "ns1", OwnerID: 1})
+		id1, err = addFoo(ctx, Foo{Name: "ns1"})
 		return err
 	})
 	ns2 := WithTransaction(func(ctx context.Context) (err error) {
-		id2, err = addProject(ctx, models.Project{Name: "ns2", OwnerID: 1})
+		id2, err = addFoo(ctx, Foo{Name: "ns2"})
 		return err
 	})
 
@@ -270,8 +311,8 @@ func (suite *OrmSuite) TestNestedSavepoint() {
 			}
 
 			// Ensure nt1 and nt2 created success
-			suite.True(existProject(ctx, id1))
-			suite.True(existProject(ctx, id2))
+			suite.True(existFoo(ctx, id1))
+			suite.True(existFoo(ctx, id2))
 
 			return retErr
 		})(ctx)
@@ -287,25 +328,25 @@ func (suite *OrmSuite) TestNestedSavepoint() {
 	// transaction commit and s1s2 commit
 	suite.Nil(t(ctx, nil, nil))
 	// Ensure nt1 and nt2 created success
-	suite.True(existProject(ctx, id1))
-	suite.True(existProject(ctx, id2))
-	// delete project nt1 and nt2 in db
-	suite.Nil(deleteProject(ctx, id1))
-	suite.Nil(deleteProject(ctx, id2))
-	suite.False(existProject(ctx, id1))
-	suite.False(existProject(ctx, id2))
+	suite.True(existFoo(ctx, id1))
+	suite.True(existFoo(ctx, id2))
+	// delete foo nt1 and nt2 in db
+	suite.Nil(deleteFoo(ctx, id1))
+	suite.Nil(deleteFoo(ctx, id2))
+	suite.False(existFoo(ctx, id1))
+	suite.False(existFoo(ctx, id2))
 
 	// transaction commit and s1s2 rollback
 	suite.Nil(t(ctx, nil, errors.New("oops")))
 	// Ensure nt1 and nt2 created failed
-	suite.False(existProject(ctx, id1))
-	suite.False(existProject(ctx, id2))
+	suite.False(existFoo(ctx, id1))
+	suite.False(existFoo(ctx, id2))
 
 	// transaction rollback and s1s2 commit
 	suite.Error(t(ctx, errors.New("oops"), nil))
 	// Ensure nt1 and nt2 created failed
-	suite.False(existProject(ctx, id1))
-	suite.False(existProject(ctx, id2))
+	suite.False(existFoo(ctx, id1))
+	suite.False(existFoo(ctx, id2))
 }
 
 func TestRunOrmSuite(t *testing.T) {

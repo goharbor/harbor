@@ -7,7 +7,7 @@ import { SessionService } from "../shared/session.service";
   styleUrls: ["./gc-page.component.scss"]
 })
 export class GcPageComponent implements OnInit {
-  inProgress: boolean;
+  inProgress: boolean = true;
   constructor(private session: SessionService) {}
 
   ngOnInit() {}

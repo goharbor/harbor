@@ -28,7 +28,7 @@ export class ProjectConfigComponent implements OnInit {
   projectName: string;
   currentUser: SessionUser;
   hasSignedIn: boolean;
-
+  isProxyCacheProject: boolean = false;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -42,6 +42,9 @@ export class ProjectConfigComponent implements OnInit {
     if (resolverData) {
       let pro: Project = <Project>resolverData['projectResolver'];
       this.projectName = pro.name;
+      if (pro.registry_id) {
+        this.isProxyCacheProject = true;
+      }
     }
   }
 }

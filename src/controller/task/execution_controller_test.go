@@ -17,6 +17,8 @@ package task
 import (
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/q"
+
 	model "github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/task"
@@ -26,7 +28,7 @@ import (
 type executionControllerTestSuite struct {
 	suite.Suite
 	ctl *executionController
-	mgr *task.FakeExecutionManager
+	mgr *task.ExecutionManager
 }
 
 // TestExecutionControllerTestSuite tests controller.
@@ -36,10 +38,18 @@ func TestExecutionControllerTestSuite(t *testing.T) {
 
 // SetupTest setups the testing env.
 func (ec *executionControllerTestSuite) SetupTest() {
-	ec.mgr = &task.FakeExecutionManager{}
+	ec.mgr = &task.ExecutionManager{}
 	ec.ctl = &executionController{
 		mgr: ec.mgr,
 	}
+}
+
+// TestCount tests count.
+func (ec *executionControllerTestSuite) TestCount() {
+	ec.mgr.On("Count", mock.Anything, mock.Anything).Return(int64(10), nil)
+	total, err := ec.ctl.Count(nil, &q.Query{})
+	ec.NoError(err)
+	ec.Equal(int64(10), total)
 }
 
 // TestStop tests stop.

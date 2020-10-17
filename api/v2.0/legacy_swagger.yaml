@@ -53,214 +53,6 @@ paths:
               $ref: '#/definitions/Search'
         '500':
           description: Unexpected internal errors.
-  /projects:
-    get:
-      summary: List projects
-      description: |
-        This endpoint returns all projects created by Harbor, and can be filtered by project name.
-      parameters:
-        - name: name
-          in: query
-          description: The name of project.
-          required: false
-          type: string
-        - name: public
-          in: query
-          description: The project is public or private.
-          required: false
-          type: boolean
-          format: int32
-        - name: owner
-          in: query
-          description: The name of project owner.
-          required: false
-          type: string
-        - name: page
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: 'The page number, default is 1.'
-        - name: page_size
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: 'The size of per page, default is 10, maximum is 100.'
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Return all matched projects.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Project'
-          headers:
-            X-Total-Count:
-              description: The total count of projects
-              type: integer
-            Link:
-              description: Link refers to the previous page and next page
-              type: string
-        '401':
-          description: User need to log in first.
-        '500':
-          description: Internal errors.
-    head:
-      summary: Check if the project name user provided already exists.
-      description: |
-        This endpoint is used to check if the project name user provided already exist.
-      parameters:
-        - name: project_name
-          in: query
-          description: Project name for checking exists.
-          required: true
-          type: string
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Project name exists.
-        '404':
-          description: Project name does not exist.
-        '500':
-          description: Unexpected internal errors.
-    post:
-      summary: Create a new project.
-      description: |
-        This endpoint is for user to create a new project.
-      parameters:
-        - name: project
-          in: body
-          description: New created project.
-          required: true
-          schema:
-            $ref: '#/definitions/ProjectReq'
-      tags:
-        - Products
-      responses:
-        '201':
-          description: Project created successfully.
-        '400':
-          description: Unsatisfied with constraints of the project creation.
-        '401':
-          description: User need to log in first.
-        '409':
-          description: Project name already exists.
-        '415':
-          $ref: '#/responses/UnsupportedMediaType'
-        '500':
-          description: Unexpected internal errors.
-  '/projects/{project_id}':
-    get:
-      summary: Return specific project detail information
-      description: |
-        This endpoint returns specific project information by project ID.
-      parameters:
-        - name: project_id
-          in: path
-          description: Project ID for filtering results.
-          required: true
-          type: integer
-          format: int64
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Return matched project information.
-          schema:
-            $ref: '#/definitions/Project'
-        '401':
-          description: User need to log in first.
-        '500':
-          description: Internal errors.
-    put:
-      summary: Update properties for a selected project.
-      description: |
-        This endpoint is aimed to update the properties of a project.
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Selected project ID.
-        - name: project
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/ProjectReq'
-          description: Updates of project.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Updated project properties successfully.
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission to the project.
-        '404':
-          description: Project ID does not exist.
-        '500':
-          description: Unexpected internal errors.
-    delete:
-      summary: Delete project by projectID
-      description: |
-        This endpoint is aimed to delete project by project ID.
-      parameters:
-        - name: project_id
-          in: path
-          description: Project ID of project which will be deleted.
-          required: true
-          type: integer
-          format: int64
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Project is deleted successfully.
-        '400':
-          description: Invalid project id.
-        '403':
-          description: User need to log in first.
-        '404':
-          description: Project does not exist.
-        '412':
-          description: 'Project contains policies, can not be deleted.'
-        '500':
-          description: Internal errors.
-  '/projects/{project_id}/summary':
-    get:
-      summary: Get summary of the project.
-      description: Get summary of the project.
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Relevant project ID
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get summary of the project successfully.
-          schema:
-            $ref: '#/definitions/ProjectSummary'
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission to get summary of the project.
-        '404':
-          description: Project ID does not exist.
-        '500':
-          description: Unexpected internal errors.
   '/projects/{project_id}/metadatas':
     get:
       summary: Get project metadata.
@@ -459,6 +251,10 @@ paths:
       responses:
         '201':
           description: Project member created successfully.
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
         '400':
           description: 'Illegal format of project member or project id is invalid, or LDAP DN is invalid.'
         '401':
@@ -619,6 +415,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/User'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '400':
           description: Invalid user ID.
         '401':
@@ -643,6 +446,10 @@ paths:
       responses:
         '201':
           description: User created successfully.
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
         '400':
           description: Unsatisfied with constraints of the user creation.
         '403':
@@ -728,6 +535,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/UserSearch'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '500':
           description: Unexpected internal errors.
   '/users/{user_id}':
@@ -964,6 +778,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ReplicationExecution'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '401':
           description: User need to login first.
         '403':
@@ -986,6 +807,10 @@ paths:
       responses:
         '201':
           description: Success.
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
         '400':
           description: Bad request.
         '401':
@@ -1067,6 +892,18 @@ paths:
           format: int64
           description: The execution ID.
           required: true
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page number.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page.
       tags:
         - Products
       responses:
@@ -1076,6 +913,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ReplicationTask'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '400':
           description: Bad request.
         '401':
@@ -1135,7 +979,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The page nubmer.
+          description: The page number.
         - name: page_size
           in: query
           type: integer
@@ -1151,6 +995,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ReplicationPolicy'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '400':
           $ref: '#/responses/BadRequest'
         '401':
@@ -1305,7 +1156,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The page nubmer.
+          description: The page number.
         - name: page_size
           in: query
           type: integer
@@ -1321,6 +1172,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Label'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '400':
           description: Invalid parameters.
         '401':
@@ -1343,6 +1201,10 @@ paths:
       responses:
         '201':
           description: Create successfully.
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
         '400':
           description: Invalid parameters.
         '401':
@@ -1495,6 +1357,10 @@ paths:
       responses:
         '201':
           description: Registry created successfully.
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
         '400':
           description: Unsatisfied with constraints of the registry creation.
         '401':
@@ -1861,6 +1727,10 @@ paths:
       responses:
         '201':
           description: User group created successfully.
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
         '400':
           description: Invalid LDAP group DN.
         '401':
@@ -2350,6 +2220,18 @@ paths:
       summary: Get all robot accounts of specified project
       description: Get all robot accounts of specified project
       parameters:
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page number.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page.
         - name: project_id
           in: path
           type: integer
@@ -2366,6 +2248,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/RobotAccount'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '400':
           description: The project id is invalid.
         '401':
@@ -2400,6 +2289,10 @@ paths:
           description: Project member created successfully.
           schema:
             $ref: '#/definitions/RobotAccountPostRep'
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
         '400':
           description: Project id is not valid.
         '401':
@@ -2737,6 +2630,10 @@ paths:
       responses:
         '201':
           description: Project webhook policy create successfully.
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
         '400':
           description: Illegal format of provided ID value.
         '401':
@@ -2937,6 +2834,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/WebhookJob'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '400':
           description: Illegal format of provided ID value.
         '401':
@@ -3120,6 +3024,10 @@ paths:
       responses:
         '201':
           description: Project created successfully.
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
         '400':
           description: Illegal format of provided ID value.
         '401':
@@ -3228,6 +3136,18 @@ paths:
           format: int64
           required: true
           description: Retention ID.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page number.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page.
       responses:
         '200':
           description: Get a Retention job successfully.
@@ -3236,6 +3156,13 @@ paths:
             items:
               type: object
               $ref: '#/definitions/RetentionExecution'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '401':
           description: User need to log in first.
         '403':
@@ -3302,6 +3229,18 @@ paths:
           format: int64
           required: true
           description: Retention execution ID.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page number.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page.
       responses:
         '200':
           description: Get Retention job tasks successfully.
@@ -3310,6 +3249,13 @@ paths:
             items:
               type: object
               $ref: '#/definitions/RetentionExecutionTask'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '401':
           description: User need to log in first.
         '403':
@@ -3370,6 +3316,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ScannerRegistration'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '400':
           description: Bad query paramters
         '401':
@@ -3378,7 +3331,19 @@ paths:
           description: Request is not allowed, system role required
         '500':
           description: Internal server error happened
-
+      parameters:
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page number.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page.
     post:
       summary: Create a scanner registration
       description: |
@@ -3395,6 +3360,10 @@ paths:
       responses:
         '201':
           description: Created successfully
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
         '400':
           description: Bad registration request
         '401':
@@ -3629,6 +3598,18 @@ paths:
         - Products
         - Scanners
       parameters:
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page number.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page.
         - name: project_id
           in: path
           required: true
@@ -3642,6 +3623,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ScannerRegistration'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
         '400':
           description: Bad project ID or query parameters
         '401':
@@ -3691,6 +3679,10 @@ responses:
     description: 'Success'
   Created:
     description: 'Created'
+    headers:
+      Location:
+        type: string
+        description: The URL of the created resource
   BadRequest:
     description: 'Bad Request'
   Unauthorized:
@@ -3877,6 +3869,8 @@ definitions:
           used:
             $ref: "#/definitions/ResourceList"
             description: The used status of the quota
+      registry:
+          $ref: "#/definitions/Registry"
   User:
     type: object
     properties:
@@ -5085,6 +5079,7 @@ definitions:
     type: object
     additionalProperties:
       type: integer
+      format: int64
   QuotaUpdateReq:
     type: object
     properties:

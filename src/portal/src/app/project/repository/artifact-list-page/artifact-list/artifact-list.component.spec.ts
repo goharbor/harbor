@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async, } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync, } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ArtifactListComponent } from './artifact-list.component';
 import { of } from "rxjs";
@@ -69,7 +69,7 @@ describe('ArtifactListComponent (inline template)', () => {
   const config: IServiceConfig = {
     repositoryBaseEndpoint: "/api/repositories/testing"
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         ClarityModule,

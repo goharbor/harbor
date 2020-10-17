@@ -40,7 +40,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
     // tslint:disable-next-line:no-input-rename
     @Input('allConfig') currentConfig: Configuration = new Configuration();
     private originalConfig: Configuration;
-    @ViewChild('authConfigFrom', {static: false}) authForm: NgForm;
+    @ViewChild('authConfigFrom') authForm: NgForm;
     @Output() refreshAllconfig = new EventEmitter<any>();
 
     constructor(
@@ -263,5 +263,9 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
             console.error('Nothing changed');
         }
     }
-
+    changeAutoOnBoard() {
+        if (!this.currentConfig.oidc_auto_onboard.value) {
+            this.currentConfig.oidc_user_claim.value = "";
+        }
+    }
 }

@@ -16,6 +16,9 @@ package p2p
 
 import (
 	"context"
+
+	"github.com/goharbor/harbor/src/controller/tag"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/event"
@@ -27,6 +30,11 @@ import (
 // Handler ...
 type Handler struct {
 	Context func() context.Context
+}
+
+// Name ...
+func (p *Handler) Name() string {
+	return "P2PPreheat"
 }
 
 // Handle ...
@@ -55,7 +63,13 @@ func (p *Handler) handlePushArtifact(event *event.PushArtifactEvent) error {
 	if event.Artifact.Type != image.ArtifactTypeImage {
 		return nil
 	}
-	log.Debugf("preheat artifact event %s:%s", event.Artifact.RepositoryName, event.Artifact.Digest)
+
+	// NOTES: So far, we only support artifact with tags
+	if len(event.Tags) == 0 {
+		return nil
+	}
+
+	log.Debugf("preheat: artifact pushed %s:%s@%s", event.Artifact.RepositoryName, event.Tags, event.Artifact.Digest)
 
 	art, err := artifact.Ctl.Get(p.Context(), event.Artifact.ID, &artifact.Option{
 		WithTag:   true,
@@ -64,12 +78,26 @@ func (p *Handler) handlePushArtifact(event *event.PushArtifactEvent) error {
 	if err != nil {
 		return err
 	}
+
+	// Only with the pushed tags, ignore other tags
+	pt := make([]*tag.Tag, 0)
+	for _, tg := range art.Tags {
+		if tg.Name == event.Tags[0] {
+			pt = append(pt, tg)
+			break
+		}
+	}
+	art.Tags = pt
+
 	_, err = preheat.Enf.PreheatArtifact(p.Context(), art)
 	return err
 }
 
 func (p *Handler) handleImageScanned(event *event.ScanImageEvent) error {
-	log.Debugf("preheat image scanned %s:%s", event.Artifact.Repository, event.Artifact.Tag)
+	// TODO: If the scan is targeting an manifest list, here the artifacts we get are all the children
+	//  artifacts of the manifest list. The children artifacts are high probably untagged ones that
+	//  will be definitely ignored by the tag filter. We need to find a way to resolve this issue.
+	log.Debugf("preheat: image scanned %s:%s", event.Artifact.Repository, event.Artifact.Tag)
 	art, err := artifact.Ctl.GetByReference(p.Context(), event.Artifact.Repository, event.Artifact.Digest,
 		&artifact.Option{
 			WithTag:   true,
@@ -87,10 +115,16 @@ func (p *Handler) handleArtifactLabeled(event *event.ArtifactLabeledEvent) error
 		WithTag:   true,
 		WithLabel: true,
 	})
+
+	if err != nil {
+		return err
+	}
+
+	// Only care image at this moment
 	if art.Type != image.ArtifactTypeImage {
 		return nil
 	}
-	log.Debugf("preheat artifact labeled %s:%s", art.Artifact.RepositoryName, art.Artifact.Digest)
+	log.Debugf("preheat: artifact labeled %s:%s", art.Artifact.RepositoryName, art.Artifact.Digest)
 
 	_, err = preheat.Enf.PreheatArtifact(p.Context(), art)
 	return err

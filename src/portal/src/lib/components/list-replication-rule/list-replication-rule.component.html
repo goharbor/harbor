@@ -2,9 +2,44 @@
 <clr-datagrid [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" (clrDgSingleSelectedChange)="selectRule($event)" [clrDgRowSelection]="true">
     <clr-dg-action-bar>
         <button type="button" id="new_replication_rule_id" class="btn  btn-secondary" *ngIf="hasCreateReplicationPermission" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
-        <button type="button" id="edit_replication_rule_id" class="btn  btn-secondary" *ngIf="hasUpdateReplicationPermission" [disabled]="!selectedRow" (click)="editRule(selectedRow)"><clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'REPLICATION.EDIT_POLICY' | translate}}</button>
-        <button type="button" id="delete_replication_rule_id" class="btn  btn-secondary" *ngIf="hasDeleteReplicationPermission" [disabled]="!selectedRow" (click)="deleteRule(selectedRow)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPLICATION.DELETE_POLICY' | translate}}</button>
         <button type="button" id="replication_exe_id" class="btn  btn-secondary" *ngIf="hasExecuteReplicationPermission" [disabled]="!selectedRow" (click)="replicateRule(selectedRow)"><clr-icon shape="export" size="16"></clr-icon>&nbsp;{{'REPLICATION.REPLICATE' | translate}}</button>
+        <clr-dropdown
+                [clrCloseMenuOnItemClick]="false"
+                class="btn  btn-link"
+                clrDropdownTrigger>
+            <span id="rule-action">{{ 'BUTTON.ACTIONS' | translate}}<clr-icon shape="caret down"></clr-icon></span>
+            <clr-dropdown-menu *clrIfOpen>
+                <clr-dropdown>
+                    <button type="button" class="btn  btn-secondary" (click)="editRule(selectedRow)"
+                            [disabled]="!selectedRow">
+                        <clr-icon shape="edit" size="16"></clr-icon>&nbsp;
+                        <span id="edit_replication_rule_id">{{'REPLICATION.EDIT_POLICY' | translate}}</span>
+                    </button>
+                    <button type="button" class="btn  btn-secondary" (click)="operateRule('enable', selectedRow)"
+                            [disabled]="!(selectedRow && !selectedRow.enabled)">
+                        <clr-icon shape="connect" size="16"></clr-icon>&nbsp;
+                        <span id="rule-enable">{{'DISTRIBUTION.ENABLE_ACTION' | translate}}</span>
+                    </button>
+                    <button
+                            type="button"
+                            class="btn btn-secondary"
+                            (click)="operateRule('disable', selectedRow)"
+                            [disabled]="!(selectedRow && selectedRow.enabled)">
+                        <clr-icon shape="disconnect" size="16"></clr-icon>&nbsp;
+                        <span id="rule-disable">{{'DISTRIBUTION.DISABLE_ACTION' | translate}}</span>
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <button
+                            type="button"
+                            class="btn btn-secondary"
+                            (click)="deleteRule(selectedRow)"
+                            [disabled]="!selectedRow">
+                        <clr-icon shape="window-close" size="16"></clr-icon>&nbsp;
+                        <span id="delete_replication_rule_id">{{'REPLICATION.DELETE_POLICY' | translate}}</span>
+                    </button>
+                </clr-dropdown>
+            </clr-dropdown-menu>
+        </clr-dropdown>
     </clr-dg-action-bar>
     <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'status'" class="status-width">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
@@ -48,7 +83,7 @@
         </clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
-      <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} </span>{{pagination.totalItems }} {{'REPLICATION.ITEMS' | translate}}
+      <span *ngIf="changedRules?.length">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} </span>{{changedRules?.length }} {{'REPLICATION.ITEMS' | translate}}
       <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>

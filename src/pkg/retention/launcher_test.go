@@ -15,7 +15,8 @@
 package retention
 
 import (
-	"fmt"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	_ "github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
@@ -24,41 +25,13 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
 	hjob "github.com/goharbor/harbor/src/testing/job"
+	"github.com/goharbor/harbor/src/testing/mock"
+	projecttesting "github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
-
-type fakeProjectManager struct {
-	projects []*models.Project
-}
-
-func (f *fakeProjectManager) List(...*models.ProjectQueryParam) ([]*models.Project, error) {
-	return f.projects, nil
-}
-func (f *fakeProjectManager) Get(idOrName interface{}) (*models.Project, error) {
-	id, ok := idOrName.(int64)
-	if ok {
-		for _, pro := range f.projects {
-			if pro.ProjectID == id {
-				return pro, nil
-			}
-		}
-		return nil, nil
-	}
-	name, ok := idOrName.(string)
-	if ok {
-		for _, pro := range f.projects {
-			if pro.Name == name {
-				return pro, nil
-			}
-		}
-		return nil, nil
-	}
-	return nil, fmt.Errorf("invalid parameter: %v, should be ID(int64) or name(string)", idOrName)
-}
 
 type fakeRetentionManager struct{}
 
@@ -145,10 +118,11 @@ func (l *launchTestSuite) SetupTest() {
 		ProjectID: 2,
 		Name:      "test",
 	}
-	l.projectMgr = &fakeProjectManager{
-		projects: []*models.Project{
-			pro1, pro2,
-		}}
+	projectMgr := &projecttesting.Manager{}
+	mock.OnAnything(projectMgr, "List").Return([]*models.Project{
+		pro1, pro2,
+	}, nil)
+	l.projectMgr = projectMgr
 	l.repositoryMgr = &repository.FakeManager{}
 	l.retentionMgr = &fakeRetentionManager{}
 	l.jobserviceClient = &hjob.MockJobClient{

@@ -37,6 +37,11 @@ import (
 type Handler struct {
 }
 
+// Name ...
+func (si *Handler) Name() string {
+	return "ScanWebhook"
+}
+
 // Handle preprocess chart event data and then publish hook event
 func (si *Handler) Handle(value interface{}) error {
 	if value == nil {

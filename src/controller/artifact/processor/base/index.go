@@ -36,7 +36,7 @@ type IndexProcessor struct {
 }
 
 // AbstractMetadata abstracts metadata of artifact
-func (m *IndexProcessor) AbstractMetadata(ctx context.Context, content []byte, artifact *artifact.Artifact) error {
+func (m *IndexProcessor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, content []byte) error {
 	return nil
 }
 
@@ -47,11 +47,11 @@ func (m *IndexProcessor) AbstractAddition(ctx context.Context, artifact *artifac
 }
 
 // GetArtifactType returns the artifact type
-func (m *IndexProcessor) GetArtifactType() string {
+func (m *IndexProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
 	return ""
 }
 
 // ListAdditionTypes returns the supported addition types
-func (m *IndexProcessor) ListAdditionTypes() []string {
+func (m *IndexProcessor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
 	return nil
 }

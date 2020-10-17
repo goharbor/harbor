@@ -21,7 +21,7 @@ export class ImmutableTagComponent implements OnInit {
   editIndex: number;
   loadingRule: boolean = false;
 
-  @ViewChild('addRule', { static: false }) addRuleComponent: AddRuleComponent;
+  @ViewChild('addRule') addRuleComponent: AddRuleComponent;
   constructor(
     private route: ActivatedRoute,
     private immutableTagService: ImmutableTagService,

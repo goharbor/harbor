@@ -1,24 +1,24 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ChartDetailValueComponent } from './chart-detail-value.component';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
-import { MarkdownModule, MarkdownService, MarkedOptions  } from 'ngx-markdown';
+import { MarkdownModule, MarkedOptions  } from 'ngx-markdown';
 import { BrowserModule } from '@angular/platform-browser';
 
 describe('ChartDetailValueComponent', () => {
     let component: ChartDetailValueComponent;
     let fixture: ComponentFixture<ChartDetailValueComponent>;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),
-                MarkdownModule,
                 ClarityModule,
                 FormsModule,
-                BrowserModule
+                BrowserModule,
+                MarkdownModule.forRoot({ sanitize: SecurityContext.HTML }),
             ],
             declarations: [ChartDetailValueComponent],
             schemas: [
@@ -26,7 +26,6 @@ describe('ChartDetailValueComponent', () => {
             ],
             providers: [
                 TranslateService,
-                MarkdownService,
                 { provide: MarkedOptions, useValue: {} },
             ]
         }).compileComponents();

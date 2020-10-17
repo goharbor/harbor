@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PushImageButtonComponent } from './push-image.component';
 import { CopyInputComponent } from './copy-input.component';
@@ -13,7 +13,7 @@ describe('PushImageButtonComponent (inline template)', () => {
   let fixture: ComponentFixture<PushImageButtonComponent>;
   let serviceConfig: IServiceConfig;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule

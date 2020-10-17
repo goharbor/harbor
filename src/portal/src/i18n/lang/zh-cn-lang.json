@@ -13,7 +13,8 @@
         "REMEMBER": "记住我",
         "INVALID_MSG": "用户名或者密码不正确。",
         "FORGOT_PWD": "忘记密码",
-        "HEADER_LINK": "登录"
+        "HEADER_LINK": "登录",
+        "CORE_SERVICE_NOT_AVAILABLE": "核心服务不可用。"
     },
     "SIGN_UP": {
         "TITLE": "注册"
@@ -175,7 +176,7 @@
         "LOGS": "日志",
         "TASKS": "任务",
         "API_EXPLORER": "API控制中心",
-        "HARBOR_API_MANAGEMENT": "Harbor Api V2.0",
+        "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
         "HELM_API_MANAGEMENT": "Harbor Api",
         "DISTRIBUTIONS": {
             "NAME": "分布式分发",
@@ -289,7 +290,7 @@
         "SYS_ADMIN": "系统管理员",
         "PROJECT_ADMIN": "项目管理员",
         "PROJECT_MAINTAINER": "维护人员",
-        "DEVELOPER": "开发人员",
+        "DEVELOPER": "开发者",
         "GUEST": "访客",
         "LIMITED_GUEST": "受限访客",
         "DELETE": "删除",
@@ -503,7 +504,7 @@
         "SOURCE": "源",
         "DESTINATION": "目标",
         "POLICY": "政策",
-        "DURATION": "到期时间",
+        "DURATION": "持续时间",
         "SUCCESS_RATE": "成功百分比",
         "SUCCESS": "成功",
         "FAILURE": "失败",
@@ -616,7 +617,15 @@
         "NAMESPACE_TOOLTIP": "Namespace名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
         "TAG": "Tag",
         "LABEL": "标签",
-        "RESOURCE": "资源"
+        "RESOURCE": "资源",
+        "ENABLE_TITLE": "启用规则",
+        "ENABLE_SUMMARY": "确定启用规则 {{param}}?",
+        "DISABLE_TITLE": "禁用规则",
+        "DISABLE_SUMMARY": "确认禁用规则 {{param}}?",
+        "ENABLE_SUCCESS": "启用规则成功",
+        "ENABLE_FAILED": "启用规则失败",
+        "DISABLE_SUCCESS": "禁用规则成功",
+        "DISABLE_FAILED": "禁用规则失败"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -673,8 +682,8 @@
         "DELETION_SUMMARY_REPO": "确认删除镜像仓库 {{repoName}}?",
         "DELETION_TITLE_ARTIFACT": "删除镜像 Artifact 确认",
         "DELETION_SUMMARY_ARTIFACT": "确认删除镜像 Artifact {{param}}? 如果您删除此 Artifact，则这个 digest 的所有 Tag 也将被删除。",
-        "DELETION_TITLE_TAG": "删除镜像 Tag 确认",
-        "DELETION_SUMMARY_TAG": "确认删除镜像 Tag {{param}}? 如果您删除此 Tag，则这个 Tag 引用的同一个 digest 的所有其他 Tag 也将被删除。",
+        "DELETION_TITLE_TAG": "删除 Tag 确认",
+        "DELETION_SUMMARY_TAG": "确认删除 Tag {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "已签名的镜像不能被删除",
         "DELETION_SUMMARY_TAG_DENIED": "要删除此镜像 Tag 必须首先从 Notary 中删除。\n请执行如下 Notary 命令删除:\n",
         "TAGS_NO_DELETE": "在只读模式下删除是被禁止的",
@@ -1326,7 +1335,9 @@
         "COUNT_LARGE": "参数“个数”太大",
         "DAYS_LARGE": "参数“天数”太大",
         "EXECUTION_TYPE": "执行类型",
-        "ACTION": "操作"
+        "ACTION": "操作",
+        "YES": "是",
+        "NO": "否"
     },
     "IMMUTABLE_TAG": {
         "IMMUTABLE_RULES": "不可变的 Tag 规则",
@@ -1356,7 +1367,7 @@
     },
     "SCANNER": {
         "DELETION_SUMMARY": "确定删除扫描器{{param}}？",
-        "SKIP_CERT_VERIFY": "当远程注册使用自签或不可信证书时可勾选此项以跳过证书认证。",
+        "SKIP_CERT_VERIFY": "当远端服务使用自签或不可信证书时可勾选此项以跳过证书认证。",
         "NAME": "名称",
         "NAME_EXISTS": "名称已存在",
         "NAME_REQUIRED": "名称为必填项",
@@ -1446,7 +1457,7 @@
         "ENDPOINT": "端点",
         "STATUS": "状态",
         "ENABLED": "启用",
-        "SETUP_TIMESTAMP": "设置时间",
+        "SETUP_TIMESTAMP": "创建时间",
         "PROVIDER": "供应商",
         "DELETION_TITLE": "删除实例",
         "DELETION_SUMMARY": "你确认删除实例 {{param}}?",
@@ -1499,7 +1510,7 @@
         "CREATE_INSTANCE": "新建实例"
     },
     "P2P_PROVIDER": {
-        "P2P_PROVIDER": "预热",
+        "P2P_PROVIDER": "P2P 预热",
         "POLICIES": "策略",
         "NEW_POLICY": "新建策略",
         "NAME": "名称",
@@ -1533,7 +1544,9 @@
         "PROVIDER_TYPE": "发起方",
         "ID": "执行 ID",
         "NO_PROVIDER": "请先添加提供商",
-        "EXTRA_ATTRS": "Artifact, 摘要和类型",
+        "ARTIFACT": "Artifact",
+        "DIGEST": "摘要",
+        "TYPE": "类型",
         "TASKS": "任务",
         "TASKS_PLACEHOLDER": "暂无记录",
         "SEVERITY_WARNING": "此处漏洞等级设置与项目设置冲突且将会被项目设置覆盖",
@@ -1560,6 +1573,11 @@
         "UPDATED_SUCCESSFULLY": "更新策略成功",
         "EXECUTIONS": "执行记录",
         "TAG_SEPARATOR": "使用逗号分割 tags,tag* 和 **",
-        "CONTENT_WARNING": "内容信任设置与项目设置冲突且将会被项目设置覆盖"
+        "CONTENT_WARNING": "内容信任设置与项目设置冲突且将会被项目设置覆盖",
+        "PREHEAT_EXPLAIN": "预热功能可加载镜像至 P2P 网络",
+        "CRITERIA_EXPLAIN": "由项目设置下的'部署安全'项所指定",
+        "SKIP_CERT_VERIFY": "当远端服务使用自签或不可信证书时可勾选此项以跳过证书认证。",
+        "DESTINATION_NAME_TOOLTIP": "策略名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
+        "NEED_HELP": "请先让您的系统管理员添加提供商"
     }
 }

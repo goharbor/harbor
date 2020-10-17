@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute } from '@angular/router';
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
@@ -12,7 +12,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { delay } from "rxjs/operators";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
 import { ConfirmationDialogComponent } from "../../../../lib/components/confirmation-dialog";
-import { UserPermissionService } from '../../../../lib/services';
+import { ProjectService, UserPermissionService } from '../../../../lib/services';
 import { PolicyComponent } from './policy.component';
 import { PreheatService } from '../../../../../ng-swagger-gen/services/preheat.service';
 import { AddP2pPolicyComponent } from '../add-p2p-policy/add-p2p-policy.component';
@@ -113,8 +113,19 @@ describe('PolicyComponent', () => {
             return of([execution]).pipe(delay(0));
         }
     };
-
-    beforeEach(async(() => {
+    const mockedProjectService = {
+        getProject() {
+            return of({
+                name: 'library',
+                metadata: {
+                    prevent_vul: 'true',
+                    enable_content_trust: 'true',
+                    severity: 'none'
+                }
+            });
+        }
+    };
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
@@ -142,6 +153,7 @@ describe('PolicyComponent', () => {
                 { provide: UserPermissionService, useValue: mockUserPermissionService },
                 { provide: SessionService, useValue: mockedSessionService },
                 { provide: AppConfigService, useValue: mockedAppConfigService },
+                { provide: ProjectService, useValue: mockedProjectService },
             ]
         })
             .compileComponents();

@@ -33,10 +33,10 @@ import { MessageHandlerService } from '../shared/message-handler/message-handler
 export class ProjectComponent implements OnInit, OnDestroy {
   projectTypes = ProjectTypes;
   quotaObj: QuotaHardInterface;
-  @ViewChild(CreateProjectComponent, {static: false})
+  @ViewChild(CreateProjectComponent)
   creationProject: CreateProjectComponent;
 
-  @ViewChild(ListProjectComponent, {static: false})
+  @ViewChild(ListProjectComponent)
   listProject: ListProjectComponent;
 
   currentFilteredType: number = 0; // all projects

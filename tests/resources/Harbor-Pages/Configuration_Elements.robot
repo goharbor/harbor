@@ -42,5 +42,24 @@ ${checkbox_delete_untagged_artifacts}  //gc-config//clr-toggle-wrapper/label[con
 ${cfg_auth_automatic_onboarding_checkbox}  //clr-checkbox-wrapper//label[contains(@for,'oidcAutoOnboard')]
 ${cfg_auth_user_name_claim_input}  //*[@id='oidcUserClaim']
 
+${cfg_auth_ldap_group_admin_dn}  //*[@id='ldapGroupAdminDN']
+
+
+${distribution_add_btn_id}  //*[@id='new-instance']
+${distribution_provider_select_id}  //*[@id='provider']
+${distribution_name_input_id}  //*[@id='name']
+${distribution_endpoint_id}  //*[@id='endpoint']
+${distribution_description_id}  //*[@id='description']
+${distribution_auth_none_mode_ratio_id}  //*[@id='none_mode']
+${distribution_auth_basic_mode_ratio_id}  //*[@id='basic_mode']
+${distribution_auth_oauth_mode_ratio_id}  //*[@id='token_mode']
+${distribution_enable_checkbox_id}  //*[@id='enabled']
+${distribution_insecure_checkbox_id}  //*[@id='insecure']
+${distribution_add_save_btn_id}  //*[@id='instance-ok']
+${distribution_action_btn_id}  //*[@id='member-action']
+${distribution_del_btn_id}  //*[@id='distribution-delete']
+${distribution_edit_btn_id}  //*[@id='distribution-edit']
+${filter_dist_btn}  //hbr-filter//clr-icon[contains(@class,'search-btn')]
+${filter_dist_input}  //hbr-filter//input
 
 

@@ -1,4 +1,4 @@
-import { TestBed, async, inject } from '@angular/core/testing';
+import { TestBed, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MemberPermissionGuard } from './member-permission-guard-activate.service';
 import { of } from 'rxjs';

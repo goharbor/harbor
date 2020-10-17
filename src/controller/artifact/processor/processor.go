@@ -17,6 +17,7 @@ package processor
 import (
 	"context"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
@@ -35,12 +36,12 @@ type Addition struct {
 // Processor processes specified artifact
 type Processor interface {
 	// GetArtifactType returns the type of one kind of artifact specified by media type
-	GetArtifactType() string
+	GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string
 	// ListAdditionTypes returns the supported addition types of one kind of artifact specified by media type
-	ListAdditionTypes() []string
+	ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string
 	// AbstractMetadata abstracts the metadata for the specific artifact type into the artifact model,
 	// the metadata can be got from the manifest or other layers referenced by the manifest.
-	AbstractMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error
+	AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error
 	// AbstractAddition abstracts the addition of the artifact.
 	// The additions are different for different artifacts:
 	// build history for image; values.yaml, readme and dependencies for chart, etc
@@ -66,7 +67,7 @@ func Get(mediaType string) Processor {
 	// no registered processor found, use the default one
 	if processor == nil {
 		log.Debugf("the processor for media type %s not found, use the default one", mediaType)
-		processor = &defaultProcessor{mediaType: mediaType}
+		processor = DefaultProcessor
 	}
 	return processor
 }

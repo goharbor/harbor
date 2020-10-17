@@ -63,12 +63,12 @@ export class MemberComponent implements OnInit, OnDestroy {
   isLdapMode: boolean;
   isHttpAuthMode: boolean;
   isOidcMode: boolean;
-  @ViewChild(AddMemberComponent, {static: false})
+  @ViewChild(AddMemberComponent)
   addMemberComponent: AddMemberComponent;
 
-  @ViewChild(AddGroupComponent, {static: false})
+  @ViewChild(AddGroupComponent)
   addGroupComponent: AddGroupComponent;
-  @ViewChild(AddHttpAuthGroupComponent, {static: false})
+  @ViewChild(AddHttpAuthGroupComponent)
   addHttpAuthGroupComponent: AddHttpAuthGroupComponent;
   hasCreateMemberPermission: boolean;
   hasUpdateMemberPermission: boolean;

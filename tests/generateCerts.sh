@@ -18,7 +18,7 @@ if [[ -z ${OPENSSLCNF} ]]; then
 fi
 
 # Create CA certificate
-#openssl req \
+# openssl req \
 #    -newkey rsa:4096 -nodes -sha256 -keyout $CUR_DIR/harbor_ca.key \
 #    -x509 -days 365 -out $CUR_DIR/harbor_ca.crt -subj '/C=CN/ST=PEK/L=Bei Jing/O=VMware/CN=HarborCA'
 

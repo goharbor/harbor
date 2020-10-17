@@ -1,4 +1,4 @@
-import { TestBed, async, inject } from '@angular/core/testing';
+import { TestBed, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SignInGuard } from './sign-in-guard-activate.service';
 import { SessionService } from '../../shared/session.service';

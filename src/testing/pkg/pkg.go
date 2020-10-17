@@ -16,9 +16,16 @@ package pkg
 
 //go:generate mockery --case snake --dir ../../pkg/blob --name Manager --output ./blob --outpkg blob
 //go:generate mockery --case snake --dir ../../vendor/github.com/docker/distribution --name Manifest --output ./distribution --outpkg distribution
+//go:generate mockery --case snake --dir ../../pkg/project --name Manager --output ./project --outpkg project
+//go:generate mockery --case snake --dir ../../pkg/project/metadata --name Manager --output ./project/metadata --outpkg metadata
 //go:generate mockery --case snake --dir ../../pkg/quota --name Manager --output ./quota --outpkg quota
 //go:generate mockery --case snake --dir ../../pkg/quota/driver --name Driver --output ./quota/driver --outpkg driver
+//go:generate mockery --case snake --dir ../../pkg/scan/allowlist --name Manager --output ./scan/allowlist --outpkg allowlist
 //go:generate mockery --case snake --dir ../../pkg/scan/report --name Manager --output ./scan/report --outpkg report
 //go:generate mockery --case snake --dir ../../pkg/scan/rest/v1 --all --output ./scan/rest/v1 --outpkg v1
 //go:generate mockery --case snake --dir ../../pkg/scan/scanner --all --output ./scan/scanner --outpkg scanner
 //go:generate mockery --case snake --dir ../../pkg/scheduler --name Scheduler --output ./scheduler --outpkg scheduler
+//go:generate mockery --case snake --dir ../../pkg/task --name Manager --output ./task --outpkg task
+//go:generate mockery --case snake --dir ../../pkg/task --name ExecutionManager --output ./task --outpkg task
+//go:generate mockery --case snake --dir ../../pkg/user --name Manager --output ./user --outpkg user
+//go:generate mockery --case snake --dir ../../pkg/robot/dao --name RobotAccountDao --output ./robot/dao --outpkg dao

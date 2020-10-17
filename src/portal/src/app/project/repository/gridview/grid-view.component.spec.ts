@@ -9,7 +9,7 @@
  * conditions of the subcomponent's license, as noted in the LICENSE file.
  */
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { GridViewComponent } from './grid-view.component';
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../lib/entities/service.config";
 import { SharedModule } from "../../../../lib/utils/shared/shared.module";
@@ -23,7 +23,7 @@ describe('GridViewComponent', () => {
   let config: IServiceConfig = {
   };
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,

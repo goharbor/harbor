@@ -62,17 +62,17 @@ func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Ar
 	case "", "application/json", schema1.MediaTypeSignedManifest:
 		a.abstractManifestV1Metadata(artifact)
 	case v1.MediaTypeImageManifest, schema2.MediaTypeManifest:
-		if err = a.abstractManifestV2Metadata(content, artifact); err != nil {
+		if err = a.abstractManifestV2Metadata(artifact, content); err != nil {
 			return err
 		}
 	case v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList:
-		if err = a.abstractIndexMetadata(ctx, content, artifact); err != nil {
+		if err = a.abstractIndexMetadata(ctx, artifact, content); err != nil {
 			return err
 		}
 	default:
 		return fmt.Errorf("unsupported manifest media type: %s", artifact.ManifestMediaType)
 	}
-	return processor.Get(artifact.MediaType).AbstractMetadata(ctx, content, artifact)
+	return processor.Get(artifact.MediaType).AbstractMetadata(ctx, artifact, content)
 }
 
 // the artifact is enveloped by docker manifest v1
@@ -86,7 +86,7 @@ func (a *abstractor) abstractManifestV1Metadata(artifact *artifact.Artifact) {
 }
 
 // the artifact is enveloped by OCI manifest or docker manifest v2
-func (a *abstractor) abstractManifestV2Metadata(content []byte, artifact *artifact.Artifact) error {
+func (a *abstractor) abstractManifestV2Metadata(artifact *artifact.Artifact, content []byte) error {
 	manifest := &v1.Manifest{}
 	if err := json.Unmarshal(content, manifest); err != nil {
 		return err
@@ -104,7 +104,7 @@ func (a *abstractor) abstractManifestV2Metadata(content []byte, artifact *artifa
 }
 
 // the artifact is enveloped by OCI index or docker manifest list
-func (a *abstractor) abstractIndexMetadata(ctx context.Context, content []byte, art *artifact.Artifact) error {
+func (a *abstractor) abstractIndexMetadata(ctx context.Context, art *artifact.Artifact, content []byte) error {
 	// the identity of index is still in progress, we use the manifest mediaType
 	// as the media type of artifact
 	art.MediaType = art.ManifestMediaType

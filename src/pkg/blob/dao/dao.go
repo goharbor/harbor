@@ -155,6 +155,8 @@ func (d *dao) CreateBlob(ctx context.Context, blob *models.Blob) (int64, error) 
 	}
 
 	blob.CreationTime = time.Now()
+	// the default status is none
+	blob.Status = models.StatusNone
 
 	return o.InsertOrUpdate(blob, "digest")
 }
@@ -181,9 +183,9 @@ func (d *dao) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, e
 
 	var sql string
 	if blob.Status == models.StatusNone {
-		sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version >= ? AND status IN (%s) RETURNING version as new_vesrion`
+		sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version >= ? AND status IN (%s) RETURNING version as new_version`
 	} else {
-		sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version = ? AND status IN (%s) RETURNING version as new_vesrion`
+		sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version = ? AND status IN (%s) RETURNING version as new_version`
 	}
 
 	var newVersion int64

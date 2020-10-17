@@ -15,10 +15,13 @@
 package image
 
 import (
+	"context"
+
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/artifact"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -40,6 +43,6 @@ type indexProcessor struct {
 	*base.IndexProcessor
 }
 
-func (i *indexProcessor) GetArtifactType() string {
+func (i *indexProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
 	return ArtifactTypeImage
 }

@@ -95,6 +95,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
         configs = yaml.load(f)
 
     config_dict = {
+        'portal_url': 'http://portal:8080',
         'registry_url': 'http://registry:5000',
         'registry_controller_url': 'http://registryctl:8080',
         'core_url': 'http://core:8080',
@@ -346,6 +347,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
         config_dict['internal_tls'] = InternalTLS()
 
     if config_dict['internal_tls'].enabled:
+        config_dict['portal_url'] = 'https://portal:8443'
         config_dict['registry_url'] = 'https://registry:5443'
         config_dict['registry_controller_url'] = 'https://registryctl:8443'
         config_dict['core_url'] = 'https://core:8443'

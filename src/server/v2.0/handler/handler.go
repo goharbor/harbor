@@ -35,6 +35,7 @@ func New() http.Handler {
 		ScanAPI:       newScanAPI(),
 		ProjectAPI:    newProjectAPI(),
 		PreheatAPI:    newPreheatAPI(),
+		IconAPI:       newIconAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

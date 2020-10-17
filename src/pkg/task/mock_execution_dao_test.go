@@ -95,6 +95,29 @@ func (_m *mockExecutionDAO) Get(ctx context.Context, id int64) (*dao.Execution, 
 	return r0, r1
 }
 
+// GetMetrics provides a mock function with given fields: ctx, id
+func (_m *mockExecutionDAO) GetMetrics(ctx context.Context, id int64) (*dao.Metrics, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 *dao.Metrics
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *dao.Metrics); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dao.Metrics)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // List provides a mock function with given fields: ctx, query
 func (_m *mockExecutionDAO) List(ctx context.Context, query *q.Query) ([]*dao.Execution, error) {
 	ret := _m.Called(ctx, query)
@@ -116,6 +139,20 @@ func (_m *mockExecutionDAO) List(ctx context.Context, query *q.Query) ([]*dao.Ex
 	}
 
 	return r0, r1
+}
+
+// RefreshStatus provides a mock function with given fields: ctx, id
+func (_m *mockExecutionDAO) RefreshStatus(ctx context.Context, id int64) error {
+	ret := _m.Called(ctx, id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // Update provides a mock function with given fields: ctx, execution, props

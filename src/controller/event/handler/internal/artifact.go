@@ -31,6 +31,11 @@ type Handler struct {
 	Context func() context.Context
 }
 
+// Name ...
+func (a *Handler) Name() string {
+	return "InternalArtifact"
+}
+
 // Handle ...
 func (a *Handler) Handle(value interface{}) error {
 	switch v := value.(type) {
@@ -67,7 +72,9 @@ func (a *Handler) updatePullTime(ctx context.Context, event *event.ArtifactEvent
 		if err != nil {
 			log.Infof("failed to list tags when to update pull time, %v", err)
 		} else {
-			tagID = tags[0].ID
+			if len(tags) != 0 {
+				tagID = tags[0].ID
+			}
 		}
 	}
 	if err := artifact.Ctl.UpdatePullTime(ctx, event.Artifact.ID, tagID, time.Now()); err != nil {

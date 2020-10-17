@@ -3,7 +3,6 @@ package dao
 import (
 	"testing"
 
-	common_models "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
@@ -98,7 +97,7 @@ func TestGetPolicies(t *testing.T) {
 	}{
 		{name: "GetTotalOfRepPolicies nil", args: args{name: "Test 0"}, wantPolicies: []*models.RepPolicy{}},
 		{name: "GetTotalOfRepPolicies 1", args: args{name: "Test 1"}, wantPolicies: []*models.RepPolicy{testPolic1}},
-		{name: "GetTotalOfRepPolicies 2", args: args{name: "Test", page: 1, pageSize: 2}, wantPolicies: []*models.RepPolicy{testPolic1, testPolic2}},
+		{name: "GetTotalOfRepPolicies 2", args: args{name: "Test", page: 1, pageSize: 2}, wantPolicies: []*models.RepPolicy{testPolic3, testPolic2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -106,10 +105,8 @@ func TestGetPolicies(t *testing.T) {
 				{
 					Name:      tt.args.name,
 					Namespace: tt.args.namespace,
-					Pagination: common_models.Pagination{
-						Page: tt.args.page,
-						Size: tt.args.pageSize,
-					},
+					Page:      tt.args.page,
+					Size:      tt.args.pageSize,
 				},
 			}...)
 			if tt.wantErr {

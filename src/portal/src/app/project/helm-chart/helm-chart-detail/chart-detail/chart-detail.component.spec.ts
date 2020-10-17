@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ChartDetailComponent } from './chart-detail.component';
 import { ClarityModule } from '@clr/angular';
@@ -99,7 +99,7 @@ describe('ChartDetailComponent', () => {
         },
         downloadChart: function () { }
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),

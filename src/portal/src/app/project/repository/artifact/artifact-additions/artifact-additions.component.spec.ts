@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactAdditionsComponent } from './artifact-additions.component';
 import { AdditionLinks } from "../../../../../../ng-swagger-gen/models/addition-links";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../../lib/entities/service.config";
@@ -19,7 +19,7 @@ describe('ArtifactAdditionsComponent', () => {
   let component: ArtifactAdditionsComponent;
   let fixture: ComponentFixture<ArtifactAdditionsComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         ProjectModule

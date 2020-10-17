@@ -1,15 +1,16 @@
 package notification
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHttpHelper(t *testing.T) {
-	c1 := GetHTTPInstance(true)
+	c1 := httpHelper.clients[insecure]
 	assert.NotNil(t, c1)
 
-	c2 := GetHTTPInstance(false)
+	c2 := httpHelper.clients[secure]
 	assert.NotNil(t, c2)
 
 	_, ok := httpHelper.clients["notExists"]

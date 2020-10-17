@@ -55,14 +55,14 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
   showSecretDetail = false;
   resetForms = new ResetSecret();
   showGenerateCli: boolean = false;
-  @ViewChild("confirmationDialog", {static: false})
+  @ViewChild("confirmationDialog")
   confirmationDialogComponent: ConfirmationDialogComponent;
 
   accountFormRef: NgForm;
   @ViewChild("accountSettingsFrom", {static: true}) accountForm: NgForm;
   @ViewChild("resetSecretFrom", {static: true}) resetSecretFrom: NgForm;
-  @ViewChild(InlineAlertComponent, {static: false}) inlineAlert: InlineAlertComponent;
-  @ViewChild("copyInput", {static: false}) copyInput: CopyInputComponent;
+  @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
+  @ViewChild("copyInput") copyInput: CopyInputComponent;
 
   constructor(
     private session: SessionService,

@@ -16,6 +16,7 @@ package policy
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/goharbor/harbor/src/lib/q"
@@ -115,15 +116,26 @@ func (m *managerTestSuite) TestUpdate() {
 
 // TestGet tests Get method.
 func (m *managerTestSuite) TestGet() {
-	m.dao.On("Get").Return(&policy.Schema{}, nil)
+	m.dao.On("Get").Return(&policy.Schema{
+		ID:         1,
+		Name:       "mgr-policy",
+		FiltersStr: `[{"type":"repository","value":"harbor*"},{"type":"tag","value":"2*"}]`,
+		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"* * * * */1"}}`, policy.TriggerTypeScheduled),
+	}, nil)
 	_, err := m.mgr.Get(nil, 1)
 	m.Require().Nil(err)
 }
 
 // TestGetByName tests Get method.
 func (m *managerTestSuite) TestGetByName() {
-	m.dao.On("GetByName").Return(&policy.Schema{}, nil)
-	_, err := m.mgr.Get(nil, 1)
+	m.dao.On("GetByName").Return(&policy.Schema{
+		ID:         1,
+		ProjectID:  1,
+		Name:       "mgr-policy",
+		FiltersStr: `[{"type":"repository","value":"harbor*"},{"type":"tag","value":"2*"}]`,
+		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"* * * * */1"}}`, policy.TriggerTypeScheduled),
+	}, nil)
+	_, err := m.mgr.GetByName(nil, 1, "mgr-policy")
 	m.Require().Nil(err)
 }
 
@@ -146,52 +158,4 @@ func (m *managerTestSuite) TestListPoliciesByProject() {
 	m.dao.On("List").Return([]*policy.Schema{}, nil)
 	_, err := m.mgr.ListPoliciesByProject(nil, 1, nil)
 	m.Require().Nil(err)
-}
-
-// TestParsePolicy tests parsePolicy.
-func (m *managerTestSuite) TestParsePolicy() {
-	schema := &policy.Schema{FiltersStr: "invalid"}
-	_, err := parsePolicy(schema)
-	m.Require().Error(err)
-
-	schema = &policy.Schema{TriggerStr: "invalid"}
-	_, err = parsePolicy(schema)
-	m.Require().Error(err)
-
-	schema = &policy.Schema{
-		FiltersStr: `[
-    {
-        "type": "repository",
-        "value": "dev**"
-    },
-    {
-        "type": "tag",
-        "value": "v1*"
-    },
-    {
-        "type": "label",
-        "value": [
-            "lb1",
-            "lb2"
-        ]
-    },
-    {
-        "type": "signature",
-        "value": true
-    }
-]`,
-		TriggerStr: `{
-    "type": "scheduled",
-    "trigger_setting": {
-        "cron": "0 0 2 1 * ? *"
-    }
-}`,
-	}
-	schema, err = parsePolicy(schema)
-	m.Require().NoError(err)
-	m.Require().NotNil(schema.Trigger)
-	m.Require().Equal("0 0 2 1 * ? *", schema.Trigger.Settings.Cron)
-	m.Require().NotNil(schema.Filters)
-	m.Require().Len(schema.Filters, 4)
-	m.Require().True(schema.Filters[3].Value.(bool))
 }

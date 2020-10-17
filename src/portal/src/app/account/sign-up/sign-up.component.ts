@@ -42,10 +42,10 @@ export class SignUpComponent {
     @ViewChild(NewUserFormComponent, {static: true})
     newUserForm: NewUserFormComponent;
 
-    @ViewChild(InlineAlertComponent, {static: false})
+    @ViewChild(InlineAlertComponent)
     inlineAlert: InlineAlertComponent;
 
-    @ViewChild(Modal, {static: false})
+    @ViewChild(Modal)
     modal: Modal;
 
     getNewUser(): User {

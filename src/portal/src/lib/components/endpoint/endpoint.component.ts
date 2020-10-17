@@ -53,10 +53,10 @@ import { OperationService } from "../operation/operation.service";
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EndpointComponent implements OnInit, OnDestroy {
-    @ViewChild(CreateEditEndpointComponent, {static: false})
+    @ViewChild(CreateEditEndpointComponent)
     createEditEndpointComponent: CreateEditEndpointComponent;
 
-    @ViewChild("confirmationDialog", {static: false})
+    @ViewChild("confirmationDialog")
     confirmationDialogComponent: ConfirmationDialogComponent;
 
     targets: Endpoint[];

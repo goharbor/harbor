@@ -16,10 +16,7 @@ package policy
 
 import (
 	"context"
-	"encoding/json"
-	"strconv"
 
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	dao "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/policy"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
@@ -38,7 +35,7 @@ type Manager interface {
 	Update(ctx context.Context, schema *policy.Schema, props ...string) (err error)
 	// Get the policy schema by id
 	Get(ctx context.Context, id int64) (schema *policy.Schema, err error)
-	// GetByName the policy schema by id
+	// GetByName the policy schema by project ID and name
 	GetByName(ctx context.Context, projectID int64, name string) (schema *policy.Schema, err error)
 	// Delete the policy schema by id
 	Delete(ctx context.Context, id int64) (err error)
@@ -81,7 +78,10 @@ func (m *manager) Get(ctx context.Context, id int64) (schema *policy.Schema, err
 		return nil, err
 	}
 
-	return parsePolicy(schema)
+	if err = schema.Decode(); err != nil {
+		return nil, err
+	}
+	return schema, nil
 }
 
 // Get the policy schema by name
@@ -91,7 +91,10 @@ func (m *manager) GetByName(ctx context.Context, projectID int64, name string) (
 		return nil, err
 	}
 
-	return parsePolicy(schema)
+	if err = schema.Decode(); err != nil {
+		return nil, err
+	}
+	return schema, nil
 }
 
 // Delete the policy schema by id
@@ -107,11 +110,9 @@ func (m *manager) ListPolicies(ctx context.Context, query *q.Query) (schemas []*
 	}
 
 	for i := range schemas {
-		schema, err := parsePolicy(schemas[i])
-		if err != nil {
+		if err = schemas[i].Decode(); err != nil {
 			return nil, err
 		}
-		schemas[i] = schema
 	}
 
 	return schemas, nil
@@ -130,72 +131,4 @@ func (m *manager) ListPoliciesByProject(ctx context.Context, project int64, quer
 	query.Keywords["project_id"] = project
 
 	return m.ListPolicies(ctx, query)
-}
-
-// parsePolicy parse policy model.
-func parsePolicy(schema *policy.Schema) (*policy.Schema, error) {
-	if schema == nil {
-		return nil, errors.New("policy schema can not be nil")
-	}
-
-	// parse filters
-	filters, err := parseFilters(schema.FiltersStr)
-	if err != nil {
-		return nil, err
-	}
-	schema.Filters = filters
-
-	// parse trigger
-	trigger, err := parseTrigger(schema.TriggerStr)
-	if err != nil {
-		return nil, err
-	}
-	schema.Trigger = trigger
-
-	return schema, nil
-}
-
-// parseFilters parse filterStr to filter.
-func parseFilters(filterStr string) ([]*policy.Filter, error) {
-	if len(filterStr) == 0 {
-		return nil, nil
-	}
-
-	var filters []*policy.Filter
-	if err := json.Unmarshal([]byte(filterStr), &filters); err != nil {
-		return nil, err
-	}
-
-	// Convert value type
-	// TODO: remove switch after UI bug #12579 fixed
-	for _, f := range filters {
-		if f.Type == policy.FilterTypeVulnerability {
-			switch f.Value.(type) {
-			case string:
-				sev, err := strconv.ParseInt(f.Value.(string), 10, 32)
-				if err != nil {
-					return nil, errors.Wrapf(err, "parse filters")
-				}
-				f.Value = (int)(sev)
-			case float64:
-				f.Value = (int)(f.Value.(float64))
-			}
-		}
-	}
-
-	return filters, nil
-}
-
-// parseTrigger parse triggerStr to trigger.
-func parseTrigger(triggerStr string) (*policy.Trigger, error) {
-	if len(triggerStr) == 0 {
-		return nil, nil
-	}
-
-	trigger := &policy.Trigger{}
-	if err := json.Unmarshal([]byte(triggerStr), trigger); err != nil {
-		return nil, err
-	}
-
-	return trigger, nil
 }

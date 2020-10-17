@@ -15,7 +15,8 @@ class InternalTLS:
         'core.crt', 'core.key',
         'job_service.crt', 'job_service.key',
         'registryctl.crt', 'registryctl.key',
-        'registry.crt', 'registry.key'
+        'registry.crt', 'registry.key',
+        'portal.crt', 'portal.key'
     }
 
     clair_certs_filename = {

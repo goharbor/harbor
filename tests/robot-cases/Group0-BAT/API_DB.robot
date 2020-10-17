@@ -2,7 +2,6 @@
 Documentation  Harbor BATs
 Resource  ../../resources/APITest-Util.robot
 Resource  ../../resources/Docker-Util.robot
-Library  ../../apitests/python/library/Harbor.py  ${SERVER_CONFIG}
 Library  OperatingSystem
 Library  String
 Library  Collections
@@ -113,6 +112,10 @@ Test Case - Create/Delete tag
 Test Case - Scan Image
     [Tags]  scan
     Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
+
+Test Case - Scan Image In Public Project
+    [Tags]  scan
+    Harbor API Test  ./tests/apitests/python/test_scan_image_artifact_in_public_project.py
 
 Test Case - Scan All Images
     [Tags]  scan_all

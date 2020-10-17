@@ -30,6 +30,11 @@ import (
 type DelArtHandler struct {
 }
 
+// Name ...
+func (o *DelArtHandler) Name() string {
+	return "DeleteArtifactWebhook"
+}
+
 // Handle ...
 func (o *DelArtHandler) Handle(value interface{}) error {
 	if value == nil {

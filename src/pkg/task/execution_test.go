@@ -20,6 +20,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -42,6 +43,14 @@ func (e *executionManagerTestSuite) SetupTest() {
 		taskMgr:      e.taskMgr,
 		taskDAO:      e.taskDAO,
 	}
+}
+
+func (e *executionManagerTestSuite) TestCount() {
+	e.execDAO.On("Count", mock.Anything, mock.Anything).Return(int64(10), nil)
+	total, err := e.execMgr.Count(nil, &q.Query{})
+	e.Require().Nil(err)
+	e.Equal(int64(10), total)
+	e.execDAO.AssertExpectations(e.T())
 }
 
 func (e *executionManagerTestSuite) TestCreate() {
@@ -68,6 +77,26 @@ func (e *executionManagerTestSuite) TestMarkError() {
 }
 
 func (e *executionManagerTestSuite) TestStop() {
+	// the execution contains no tasks and the status isn't final
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+	}, nil)
+	e.taskDAO.On("List", mock.Anything, mock.Anything).Return(nil, nil)
+	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err := e.execMgr.Stop(nil, 1)
+	e.Require().Nil(err)
+	e.taskDAO.AssertExpectations(e.T())
+	e.execDAO.AssertExpectations(e.T())
+
+	// reset the mocks
+	e.SetupTest()
+
+	// the execution contains tasks
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+	}, nil)
 	e.taskDAO.On("List", mock.Anything, mock.Anything).Return([]*dao.Task{
 		{
 			ID:          1,
@@ -75,9 +104,51 @@ func (e *executionManagerTestSuite) TestStop() {
 		},
 	}, nil)
 	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
-	err := e.execMgr.Stop(nil, 1)
+	err = e.execMgr.Stop(nil, 1)
 	e.Require().Nil(err)
 	e.taskDAO.AssertExpectations(e.T())
+	e.execDAO.AssertExpectations(e.T())
+	e.taskMgr.AssertExpectations(e.T())
+}
+
+func (e *executionManagerTestSuite) TestStopAndWait() {
+	// timeout
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+	}, nil)
+	e.taskDAO.On("List", mock.Anything, mock.Anything).Return([]*dao.Task{
+		{
+			ID:          1,
+			ExecutionID: 1,
+		},
+	}, nil)
+	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+	err := e.execMgr.StopAndWait(nil, 1, 1*time.Second)
+	e.Require().NotNil(err)
+	e.taskDAO.AssertExpectations(e.T())
+	e.execDAO.AssertExpectations(e.T())
+	e.taskMgr.AssertExpectations(e.T())
+
+	// reset mocks
+	e.SetupTest()
+
+	// pass
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.StoppedStatus.String(),
+	}, nil)
+	e.taskDAO.On("List", mock.Anything, mock.Anything).Return([]*dao.Task{
+		{
+			ID:          1,
+			ExecutionID: 1,
+		},
+	}, nil)
+	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+	err = e.execMgr.StopAndWait(nil, 1, 1*time.Second)
+	e.Require().Nil(err)
+	e.taskDAO.AssertExpectations(e.T())
+	e.execDAO.AssertExpectations(e.T())
 	e.taskMgr.AssertExpectations(e.T())
 }
 
@@ -118,10 +189,16 @@ func (e *executionManagerTestSuite) TestGet() {
 		ID:     1,
 		Status: job.SuccessStatus.String(),
 	}, nil)
+	e.execDAO.On("GetMetrics", mock.Anything, mock.Anything).Return(&dao.Metrics{
+		TaskCount:        1,
+		SuccessTaskCount: 1,
+	}, nil)
 	exec, err := e.execMgr.Get(nil, 1)
 	e.Require().Nil(err)
 	e.Equal(int64(1), exec.ID)
 	e.Equal(job.SuccessStatus.String(), exec.Status)
+	e.Equal(int64(1), exec.Metrics.TaskCount)
+	e.Equal(int64(1), exec.Metrics.SuccessTaskCount)
 	e.execDAO.AssertExpectations(e.T())
 }
 
@@ -132,134 +209,18 @@ func (e *executionManagerTestSuite) TestList() {
 			Status: job.SuccessStatus.String(),
 		},
 	}, nil)
+	e.execDAO.On("GetMetrics", mock.Anything, mock.Anything).Return(&dao.Metrics{
+		TaskCount:        1,
+		SuccessTaskCount: 1,
+	}, nil)
 	execs, err := e.execMgr.List(nil, nil)
 	e.Require().Nil(err)
 	e.Require().Len(execs, 1)
 	e.Equal(int64(1), execs[0].ID)
 	e.Equal(job.SuccessStatus.String(), execs[0].Status)
+	e.Equal(int64(1), execs[0].Metrics.TaskCount)
+	e.Equal(int64(1), execs[0].Metrics.SuccessTaskCount)
 	e.execDAO.AssertExpectations(e.T())
-}
-
-func (e *executionManagerTestSuite) TestPopulateExecutionMetrics() {
-	e.taskDAO.On("ListStatusCount", mock.Anything, mock.Anything).Return([]*dao.StatusCount{
-		{
-			Status: job.SuccessStatus.String(),
-			Count:  1,
-		},
-		{
-			Status: job.ErrorStatus.String(),
-			Count:  1,
-		},
-		{
-			Status: job.StoppedStatus.String(),
-			Count:  1,
-		},
-		{
-			Status: job.RunningStatus.String(),
-			Count:  1,
-		},
-		{
-			Status: job.PendingStatus.String(),
-			Count:  1,
-		},
-		{
-			Status: job.ScheduledStatus.String(),
-			Count:  1,
-		},
-	}, nil)
-	exec := &Execution{}
-	e.execMgr.populateExecutionMetrics(nil, exec)
-	e.Require().NotNil(exec.Metrics)
-	e.Equal(int64(6), exec.Metrics.TaskCount)
-	e.Equal(int64(1), exec.Metrics.SuccessTaskCount)
-	e.Equal(int64(1), exec.Metrics.ErrorTaskCount)
-	e.Equal(int64(1), exec.Metrics.StoppedTaskCount)
-	e.Equal(int64(1), exec.Metrics.PendingTaskCount)
-	e.Equal(int64(1), exec.Metrics.RunningTaskCount)
-	e.Equal(int64(1), exec.Metrics.ScheduledTaskCount)
-	e.taskDAO.AssertExpectations(e.T())
-}
-
-func (e *executionManagerTestSuite) TestPopulateExecutionStatus() {
-	// running
-	exec := &Execution{}
-	e.execMgr.populateExecutionStatus(exec)
-	e.Equal(job.RunningStatus.String(), exec.Status)
-
-	// running
-	exec = &Execution{
-		Metrics: &Metrics{
-			SuccessTaskCount:   1,
-			ErrorTaskCount:     1,
-			PendingTaskCount:   1,
-			RunningTaskCount:   1,
-			ScheduledTaskCount: 1,
-			StoppedTaskCount:   1,
-		},
-	}
-	e.execMgr.populateExecutionStatus(exec)
-	e.Equal(job.RunningStatus.String(), exec.Status)
-
-	// error
-	exec = &Execution{
-		Metrics: &Metrics{
-			SuccessTaskCount:   1,
-			ErrorTaskCount:     1,
-			PendingTaskCount:   0,
-			RunningTaskCount:   0,
-			ScheduledTaskCount: 0,
-			StoppedTaskCount:   1,
-		},
-	}
-	e.execMgr.populateExecutionStatus(exec)
-	e.Equal(job.ErrorStatus.String(), exec.Status)
-
-	// stopped
-	exec = &Execution{
-		Metrics: &Metrics{
-			SuccessTaskCount:   1,
-			ErrorTaskCount:     0,
-			PendingTaskCount:   0,
-			RunningTaskCount:   0,
-			ScheduledTaskCount: 0,
-			StoppedTaskCount:   1,
-		},
-	}
-	e.execMgr.populateExecutionStatus(exec)
-	e.Equal(job.StoppedStatus.String(), exec.Status)
-
-	// success
-	exec = &Execution{
-		Metrics: &Metrics{
-			SuccessTaskCount:   1,
-			ErrorTaskCount:     0,
-			PendingTaskCount:   0,
-			RunningTaskCount:   0,
-			ScheduledTaskCount: 0,
-			StoppedTaskCount:   0,
-		},
-	}
-	e.execMgr.populateExecutionStatus(exec)
-	e.Equal(job.SuccessStatus.String(), exec.Status)
-}
-
-func (e *executionManagerTestSuite) TestPopulateExecutionEndTime() {
-	// isn't final status
-	exec := &Execution{
-		Status: job.RunningStatus.String(),
-	}
-	e.execMgr.populateExecutionEndTime(nil, exec)
-	e.Equal(time.Time{}, exec.EndTime)
-
-	// final status
-	now := time.Now()
-	exec = &Execution{
-		Status: job.SuccessStatus.String(),
-	}
-	e.taskDAO.On("GetMaxEndTime", mock.Anything, mock.Anything).Return(now, nil)
-	e.execMgr.populateExecutionEndTime(nil, exec)
-	e.Equal(now, exec.EndTime)
-	e.taskDAO.AssertExpectations(e.T())
 }
 
 func TestExecutionManagerSuite(t *testing.T) {

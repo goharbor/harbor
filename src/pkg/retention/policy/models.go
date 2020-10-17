@@ -28,8 +28,6 @@ const (
 	// TriggerKindSchedule Schedule
 	TriggerKindSchedule = "Schedule"
 
-	// TriggerReferencesJobid job_id
-	TriggerReferencesJobid = "job_id"
 	// TriggerSettingsCron cron
 	TriggerSettingsCron = "cron"
 
@@ -97,10 +95,6 @@ type Trigger struct {
 	// Settings for the specified trigger
 	// '[cron]="* 22 11 * * *"' for the 'Schedule'
 	Settings map[string]interface{} `json:"settings" valid:"Required"`
-
-	// References of the trigger
-	// e.g: schedule job ID
-	References map[string]interface{} `json:"references"`
 }
 
 // Scope definition

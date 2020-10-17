@@ -3,8 +3,6 @@ package utils
 import (
 	"context"
 	"sync"
-
-	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // PassportsPool holds a given number of passports, they can be applied or be revoked. PassportsPool
@@ -60,16 +58,15 @@ func (p *passportsPool) Revoke() bool {
 type LimitedConcurrentRunner interface {
 	// AddTask adds a task to run
 	AddTask(task func() error)
-	// Wait waits all the tasks to be finished
-	Wait()
+	// Wait waits all the tasks to be finished, returns error if the any of the tasks gets error
+	Wait() (err error)
 	// Cancel cancels all tasks, tasks that already started will continue to run
-	Cancel()
-	// IsCancelled checks whether context is cancelled. This happens when some task encountered
-	// critical errors.
-	IsCancelled() bool
+	Cancel(err error)
 }
 
 type limitedConcurrentRunner struct {
+	sync.Mutex
+	err           error
 	wg            *sync.WaitGroup
 	ctx           context.Context
 	cancel        context.CancelFunc
@@ -106,23 +103,23 @@ func (r *limitedConcurrentRunner) AddTask(task func() error) {
 
 		err := task()
 		if err != nil {
-			log.Errorf("%v", err)
-			r.cancel()
+			r.Cancel(err)
 		}
 	}()
 }
 
 // Wait waits all the tasks to be finished
-func (r *limitedConcurrentRunner) Wait() {
+func (r *limitedConcurrentRunner) Wait() (err error) {
 	r.wg.Wait()
+	return r.err
 }
 
 // Cancel cancels all tasks, tasks that already started will continue to run
-func (r *limitedConcurrentRunner) Cancel() {
+func (r *limitedConcurrentRunner) Cancel(err error) {
+	if err != nil {
+		r.Lock()
+		defer r.Unlock()
+		r.err = err
+	}
 	r.cancel()
-}
-
-// IsCancelled checks whether context is cancelled. This happens when some task encountered critical errors.
-func (r *limitedConcurrentRunner) IsCancelled() bool {
-	return r.ctx.Err() != nil
 }

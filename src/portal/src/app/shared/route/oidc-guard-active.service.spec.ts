@@ -1,4 +1,4 @@
-import { TestBed, async, inject } from '@angular/core/testing';
+import { TestBed, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { OidcGuard } from './oidc-guard-active.service';
 import { AppConfigService } from '../../services/app-config.service';

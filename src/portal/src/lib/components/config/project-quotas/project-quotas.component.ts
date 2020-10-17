@@ -32,7 +32,7 @@ const QuotaType = 'project';
 export class ProjectQuotasComponent implements OnChanges {
 
   config: Configuration = new Configuration();
-  @ViewChild('editProjectQuotas', {static: false})
+  @ViewChild('editProjectQuotas')
   editQuotaDialog: EditProjectQuotasComponent;
   loading = true;
   quotaHardLimitValue: QuotaHardLimitInterface;

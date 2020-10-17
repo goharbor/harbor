@@ -21,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
@@ -70,20 +69,21 @@ func callbackFuncExist(name string) bool {
 }
 
 func triggerCallback(ctx context.Context, task *task.Task, change *job.StatusChange) (err error) {
-	schedules, err := Sched.(*scheduler).dao.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
-			"ExecutionID": task.ExecutionID,
-		},
-	})
+	execution, err := Sched.(*scheduler).execMgr.Get(ctx, task.ExecutionID)
 	if err != nil {
 		return err
 	}
-	if len(schedules) == 0 {
-		return fmt.Errorf("the schedule whose execution ID is %d not found", task.ExecutionID)
+	if execution.VendorType != JobNameScheduler {
+		return fmt.Errorf("the vendor type of execution %d isn't %s: %s",
+			task.ExecutionID, JobNameScheduler, execution.VendorType)
 	}
-	callbackFunc, err := getCallbackFunc(schedules[0].CallbackFuncName)
+	schedule, err := Sched.(*scheduler).dao.Get(ctx, execution.VendorID)
 	if err != nil {
 		return err
 	}
-	return callbackFunc(schedules[0].CallbackFuncParam)
+	callbackFunc, err := getCallbackFunc(schedule.CallbackFuncName)
+	if err != nil {
+		return err
+	}
+	return callbackFunc(schedule.CallbackFuncParam)
 }

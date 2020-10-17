@@ -17,9 +17,11 @@ package blob
 import (
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
-	"testing"
 
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/pkg/blob"
@@ -258,17 +260,42 @@ func (suite *ControllerTestSuite) TestSync() {
 }
 
 func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
-	sessionID := uuid.New().String()
+	{
+		sessionID := uuid.New().String()
 
-	size, err := Ctl.GetAcceptedBlobSize(sessionID)
-	suite.Nil(err)
-	suite.Equal(int64(0), size)
+		size, err := Ctl.GetAcceptedBlobSize(sessionID)
+		suite.Nil(err)
+		suite.Equal(int64(0), size)
 
-	suite.Nil(Ctl.SetAcceptedBlobSize(sessionID, 100))
+		suite.Nil(Ctl.SetAcceptedBlobSize(sessionID, 100))
 
-	size, err = Ctl.GetAcceptedBlobSize(sessionID)
-	suite.Nil(err)
-	suite.Equal(int64(100), size)
+		size, err = Ctl.GetAcceptedBlobSize(sessionID)
+		suite.Nil(err)
+		suite.Equal(int64(100), size)
+	}
+
+	{
+		// test blob size expired
+		ctl := &controller{blobSizeExpiration: time.Second * 5}
+
+		sessionID := uuid.New().String()
+
+		size, err := ctl.GetAcceptedBlobSize(sessionID)
+		suite.Nil(err)
+		suite.Equal(int64(0), size)
+
+		suite.Nil(ctl.SetAcceptedBlobSize(sessionID, 100))
+
+		size, err = ctl.GetAcceptedBlobSize(sessionID)
+		suite.Nil(err)
+		suite.Equal(int64(100), size)
+
+		time.Sleep(time.Second * 10)
+
+		size, err = ctl.GetAcceptedBlobSize(sessionID)
+		suite.Nil(err)
+		suite.Equal(int64(0), size)
+	}
 }
 
 func (suite *ControllerTestSuite) TestTouch() {

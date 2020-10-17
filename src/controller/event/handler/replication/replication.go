@@ -30,6 +30,11 @@ import (
 type Handler struct {
 }
 
+// Name ...
+func (r *Handler) Name() string {
+	return "Replication"
+}
+
 // Handle ...
 func (r *Handler) Handle(value interface{}) error {
 	pushArtEvent, ok := value.(*event.PushArtifactEvent)
