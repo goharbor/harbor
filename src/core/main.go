@@ -17,6 +17,7 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
@@ -51,6 +52,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/server"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const (
@@ -217,6 +219,15 @@ func main() {
 		beego.BConfig.Listen.HTTPSCertFile = iTLSCertPath
 		beego.BeeApp.Server.TLSConfig = common_http.NewServerTLSConfig()
 	}
+
+	prometheusServer := http.NewServeMux()
+	prometheusServer.Handle("/metrics", promhttp.Handler())
+	go func() {
+		if err := http.ListenAndServe(":2112", prometheusServer); err != nil {
+			log.Errorf("Error starting prometheus server: %v", err)
+		}
+		log.Infof("Running prometheus server on 0.0.0.0:2112")
+	}()
 
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
 	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)

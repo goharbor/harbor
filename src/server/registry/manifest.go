@@ -30,15 +30,106 @@ import (
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/server/router"
 	"github.com/opencontainers/go-digest"
+	"github.com/prometheus/client_golang/prometheus"
 )
+
+var (
+	pullCounterTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_pull_total",
+			Help: "Number of docker pull operations",
+		},
+		[]string{"repository", "reference"},
+	)
+
+	pullCounterSuccess = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_pull_success",
+			Help: "Number of successful docker pull operations",
+		},
+		[]string{"repository", "reference"},
+	)
+
+	pullCounterFailed = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_pull_failed",
+			Help: "Number of failed docker pull operations",
+		},
+		[]string{"repository", "reference"},
+	)
+
+	pushCounterTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_push_total",
+			Help: "Number of docker push operations",
+		},
+		[]string{"repository", "reference"},
+	)
+
+	pushCounterSuccess = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_push_success",
+			Help: "Number of successful docker push operations",
+		},
+		[]string{"repository", "reference"},
+	)
+
+	pushCounterFailed = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_push_failed",
+			Help: "Number of failed docker push operations",
+		},
+		[]string{"repository", "reference"},
+	)
+
+	deleteCounterTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_delete_total",
+			Help: "Number of manifest delete operations",
+		},
+		[]string{"repository", "reference"},
+	)
+
+	deleteCounterSuccess = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_delete_success",
+			Help: "Number of successful manifest delete operations",
+		},
+		[]string{"repository", "reference"},
+	)
+
+	deleteCounterFailed = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_delete_failed",
+			Help: "Number of failed manifest delete operations",
+		},
+		[]string{"repository", "reference"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		pullCounterTotal,
+		pullCounterSuccess,
+		pullCounterFailed,
+		pushCounterTotal,
+		pushCounterSuccess,
+		pushCounterFailed,
+		deleteCounterTotal,
+		deleteCounterSuccess,
+		deleteCounterFailed,
+	)
+}
 
 // make sure the artifact exist before proxying the request to the backend registry
 func getManifest(w http.ResponseWriter, req *http.Request) {
 	repository := router.Param(req.Context(), ":splat")
 	reference := router.Param(req.Context(), ":reference")
+	pullCounterTotal.WithLabelValues(repository, reference).Inc()
 	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
 		lib_http.SendError(w, err)
+		pullCounterFailed.WithLabelValues(repository, reference).Inc()
 		return
 	}
 
@@ -65,6 +156,9 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	if _, err = digest.Parse(reference); err != nil {
 		e.Tag = reference
 	}
+
+	pullCounterSuccess.WithLabelValues(repository, reference).Inc()
+
 	notification.AddEvent(req.Context(), e)
 }
 
@@ -72,34 +166,40 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 func deleteManifest(w http.ResponseWriter, req *http.Request) {
 	repository := router.Param(req.Context(), ":splat")
 	reference := router.Param(req.Context(), ":reference")
+	deleteCounterTotal.WithLabelValues(repository, reference).Inc()
 	// v2 doesn't support delete by tag
 	// add parse digest here is to return ErrDigestInvalidFormat before GetByReference throws an NOT_FOUND(404)
 	// Do not add the logic into GetByReference as it's a shared method for PUT/GET/DELETE/Internal call,
 	// and NOT_FOUND satisfy PUT/GET/Internal call.
 	if _, err := digest.Parse(reference); err != nil {
 		lib_http.SendError(w, errors.Wrapf(err, "unsupported digest %s", reference).WithCode(errors.UNSUPPORTED))
+		deleteCounterFailed.WithLabelValues(repository, reference).Inc()
 		return
 	}
 	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
 		lib_http.SendError(w, err)
+		deleteCounterFailed.WithLabelValues(repository, reference).Inc()
 		return
 	}
 	if err = artifact.Ctl.Delete(req.Context(), art.ID); err != nil {
 		lib_http.SendError(w, err)
+		deleteCounterFailed.WithLabelValues(repository, reference).Inc()
 		return
 	}
+	deleteCounterSuccess.WithLabelValues(repository, reference).Inc()
 	w.WriteHeader(http.StatusAccepted)
 }
 
 func putManifest(w http.ResponseWriter, req *http.Request) {
 	repo := router.Param(req.Context(), ":splat")
 	reference := router.Param(req.Context(), ":reference")
-
+	pushCounterTotal.WithLabelValues(repo, reference).Inc()
 	// make sure the repository exist before pushing the manifest
 	_, _, err := repository.Ctl.Ensure(req.Context(), repo)
 	if err != nil {
 		lib_http.SendError(w, err)
+		pushCounterFailed.WithLabelValues(repo, reference).Inc()
 		return
 	}
 
@@ -110,6 +210,7 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 		if _, err := buffer.Flush(); err != nil {
 			log.Errorf("failed to flush: %v", err)
 		}
+		pushCounterFailed.WithLabelValues(repo, reference).Inc()
 		return
 	}
 
@@ -128,6 +229,7 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	_, _, err = artifact.Ctl.Ensure(req.Context(), repo, dgt, tags...)
 	if err != nil {
 		lib_http.SendError(w, err)
+		pushCounterFailed.WithLabelValues(repo, reference).Inc()
 		return
 	}
 
@@ -135,4 +237,5 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	if _, err := buffer.Flush(); err != nil {
 		log.Errorf("failed to flush: %v", err)
 	}
+	pushCounterSuccess.WithLabelValues(repo, reference).Inc()
 }
