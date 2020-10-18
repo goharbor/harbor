@@ -139,3 +139,8 @@ class InternalTLS:
                 os.chown(file, DEFAULT_UID, DEFAULT_GID)
 
 
+class Metric:
+    def __init__(self, enabled: bool = False, port: int = 8080, path: str = "metrics" ):
+        self.enabled = enabled
+        self.port = port
+        self.path = path

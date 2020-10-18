@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/artifactinfo"
 	"github.com/goharbor/harbor/src/server/middleware/csrf"
 	"github.com/goharbor/harbor/src/server/middleware/log"
+	"github.com/goharbor/harbor/src/server/middleware/metric"
 	"github.com/goharbor/harbor/src/server/middleware/notification"
 	"github.com/goharbor/harbor/src/server/middleware/orm"
 	"github.com/goharbor/harbor/src/server/middleware/readonly"
@@ -68,6 +69,7 @@ var (
 // MiddleWares returns global middlewares
 func MiddleWares() []beego.MiddleWare {
 	return []beego.MiddleWare{
+		metric.Middleware(),
 		requestid.Middleware(),
 		log.Middleware(),
 		session.Middleware(),
