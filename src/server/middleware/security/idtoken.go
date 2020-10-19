@@ -40,7 +40,7 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 	if !strings.HasPrefix(req.URL.Path, "/api") {
 		return nil
 	}
-	if strings.Contains(req.URL.Path, "ping") {
+	if req.URL.Path == "/api/v2.0/ping" {
 		return nil
         }
 	claims, err := oidc.VerifyToken(req.Context(), bearerToken(req))
