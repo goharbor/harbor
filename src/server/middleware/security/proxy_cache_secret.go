@@ -38,5 +38,5 @@ func (p *proxyCacheSecret) Generate(req *http.Request) security.Context {
 		return nil
 	}
 	log.Debugf("a proxy cache secret security context generated for request %s %s", req.Method, req.URL.Path)
-	return proxycachesecret.NewSecurityContext(req.Context(), artifact.Repository)
+	return proxycachesecret.NewSecurityContext(artifact.Repository)
 }

@@ -33,7 +33,7 @@ type Context interface {
 	// IsSolutionUser returns whether the user is solution user
 	IsSolutionUser() bool
 	// Can returns whether the user can do action on resource
-	Can(action types.Action, resource types.Resource) bool
+	Can(ctx context.Context, action types.Action, resource types.Resource) bool
 }
 
 type securityKey struct{}

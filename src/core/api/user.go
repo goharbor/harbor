@@ -486,9 +486,10 @@ func (ua *UserAPI) ListUserPermissions() {
 	scope := rbac.Resource(ua.Ctx.Input.Query("scope"))
 	policies := []*types.Policy{}
 
+	ctx := ua.Ctx.Request.Context()
 	if ns, ok := types.NamespaceFromResource(scope); ok {
 		for _, policy := range ns.GetPolicies() {
-			if ua.SecurityCtx.Can(policy.Action, policy.Resource) {
+			if ua.SecurityCtx.Can(ctx, policy.Action, policy.Resource) {
 				policies = append(policies, policy)
 			}
 		}

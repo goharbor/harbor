@@ -108,7 +108,7 @@ func TestMiddleware(t *testing.T) {
 	sc := &securitytesting.Context{}
 	sc.On("IsAuthenticated").Return(true)
 	sc.On("IsSysAdmin").Return(false)
-	mock.OnAnything(sc, "Can").Return(func(action types.Action, resource types.Resource) bool {
+	mock.OnAnything(sc, "Can").Return(func(ctx context.Context, action types.Action, resource types.Resource) bool {
 		perms := map[string]map[rbac.Action]struct{}{
 			"/project/1/repository": {
 				rbac.ActionPull: {},

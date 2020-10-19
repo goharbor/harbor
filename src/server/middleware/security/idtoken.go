@@ -68,5 +68,5 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 		}
 	}
 	log.Debugf("an ID token security context generated for request %s %s", req.Method, req.URL.Path)
-	return local.NewSecurityContext(u, config.GlobalProjectMgr)
+	return local.NewSecurityContext(u)
 }

@@ -58,6 +58,8 @@ type Controller interface {
 	List(ctx context.Context, query *q.Query, options ...Option) ([]*models.Project, error)
 	// Update update the project
 	Update(ctx context.Context, project *models.Project) error
+	// ListRoles lists the roles of user for the specific project
+	ListRoles(ctx context.Context, projectID int64, u *user.User) ([]int, error)
 }
 
 // NewController creates an instance of the default project controller
@@ -224,6 +226,10 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 	}
 
 	return nil
+}
+
+func (c *controller) ListRoles(ctx context.Context, projectID int64, u *user.User) ([]int, error) {
+	return c.projectMgr.ListRoles(ctx, projectID, u.UserID, u.GroupIDs...)
 }
 
 func (c *controller) assembleProjects(ctx context.Context, projects models.Projects, options ...Option) error {

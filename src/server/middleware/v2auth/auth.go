@@ -16,8 +16,6 @@ package v2auth
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"net/url"
 	"strings"
@@ -28,7 +26,9 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -63,7 +63,7 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 				return "", err
 			}
 			resource := rbac.NewProjectNamespace(pid).Resource(rbac.ResourceRepository)
-			if !securityCtx.Can(a.action, resource) {
+			if !securityCtx.Can(req.Context(), a.action, resource) {
 				return getChallenge(req, al), fmt.Errorf("unauthorized to access repository: %s, action: %s", a.name, a.action)
 			}
 		}

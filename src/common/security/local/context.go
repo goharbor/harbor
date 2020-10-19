@@ -15,11 +15,12 @@
 package local
 
 import (
+	"context"
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator/admin"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -28,16 +29,16 @@ import (
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
 	user      *models.User
-	pm        promgr.ProjectManager
+	ctl       project.Controller
 	evaluator evaluator.Evaluator
 	once      sync.Once
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(user *models.User, pm promgr.ProjectManager) *SecurityContext {
+func NewSecurityContext(user *models.User) *SecurityContext {
 	return &SecurityContext{
 		user: user,
-		pm:   pm,
+		ctl:  project.Ctl,
 	}
 }
 
@@ -80,16 +81,17 @@ func (s *SecurityContext) IsSolutionUser() bool {
 }
 
 // Can returns whether the user can do action on resource
-func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool {
+func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
 	s.once.Do(func() {
 		var evaluators evaluator.Evaluators
 		if s.IsSysAdmin() {
 			evaluators = evaluators.Add(admin.New(s.GetUsername()))
 		}
-		evaluators = evaluators.Add(rbac.NewProjectUserEvaluator(s.User(), s.pm))
+
+		evaluators = evaluators.Add(rbac.NewProjectEvaluator(s.ctl, rbac.NewBuilderForUser(s.user, s.ctl)))
 
 		s.evaluator = evaluators
 	})
 
-	return s.evaluator != nil && s.evaluator.HasPermission(resource, action)
+	return s.evaluator != nil && s.evaluator.HasPermission(ctx, resource, action)
 }

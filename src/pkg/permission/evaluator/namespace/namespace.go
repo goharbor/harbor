@@ -15,6 +15,7 @@
 package namespace
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -23,7 +24,7 @@ import (
 )
 
 // EvaluatorFactory returns the evaluator.Evaluator of the namespace
-type EvaluatorFactory func(types.Namespace) evaluator.Evaluator
+type EvaluatorFactory func(context.Context, types.Namespace) evaluator.Evaluator
 
 var _ evaluator.Evaluator = &Evaluator{}
 
@@ -35,21 +36,21 @@ type Evaluator struct {
 }
 
 // HasPermission returns true when user has action permission for the resource
-func (e *Evaluator) HasPermission(resource types.Resource, action types.Action) bool {
+func (e *Evaluator) HasPermission(ctx context.Context, resource types.Resource, action types.Action) bool {
 	ns, ok := types.NamespaceFromResource(resource)
 	if ok && ns.Kind() == e.namespaceKind {
 		var eva evaluator.Evaluator
 
-		key := fmt.Sprintf("%s:%v", ns.Kind(), ns.Identity())
+		key := fmt.Sprintf("%p:%s:%v", ctx, ns.Kind(), ns.Identity())
 		value, ok := e.cache.Load(key)
 		if !ok {
-			eva = e.factory(ns)
+			eva = e.factory(ctx, ns)
 			e.cache.Store(key, eva)
 		} else {
 			eva, _ = value.(evaluator.Evaluator) // maybe value is nil
 		}
 
-		return eva != nil && eva.HasPermission(resource, action)
+		return eva != nil && eva.HasPermission(ctx, resource, action)
 	}
 
 	return false

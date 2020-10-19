@@ -39,6 +39,8 @@ type DAO interface {
 	GetByName(ctx context.Context, name string) (*models.Project, error)
 	// List list projects
 	List(ctx context.Context, query *q.Query) ([]*models.Project, error)
+	// Lists the roles of user for the specific project
+	ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error)
 }
 
 // New returns an instance of the default DAO
@@ -172,4 +174,35 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.Project, erro
 	}
 
 	return projects, nil
+}
+
+func (d *dao) ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error) {
+	qs, err := orm.QuerySetter(ctx, &Member{}, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	conds := []*orm.Condition{
+		orm.NewCondition().And("entity_type", "u").And("project_id", projectID).And("entity_id", userID),
+	}
+	if len(groupIDs) > 0 {
+		conds = append(conds, orm.NewCondition().And("entity_type", "g").And("project_id", projectID).And("entity_id__in", groupIDs))
+	}
+
+	cond := orm.NewCondition()
+	for _, c := range conds {
+		cond = cond.OrCond(c)
+	}
+
+	var values orm.ParamsList
+	if _, err := qs.SetCond(cond).ValuesFlat(&values, "role"); err != nil {
+		return nil, err
+	}
+
+	var roles []int
+	for _, value := range values {
+		roles = append(roles, int(value.(int64)))
+	}
+
+	return roles, nil
 }

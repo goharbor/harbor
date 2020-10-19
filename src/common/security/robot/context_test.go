@@ -15,19 +15,17 @@
 package robot
 
 import (
+	"context"
 	"fmt"
-	"os"
+	"reflect"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/core/promgr"
-	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
+	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,64 +34,49 @@ var (
 		Name:    "testrobot",
 		OwnerID: 1,
 	}
-	pm = promgr.NewDefaultProjectManager(local.NewDriver(), true)
 )
-
-func TestMain(m *testing.M) {
-	test.InitDatabaseFromEnv()
-
-	// add project
-	id, err := dao.AddProject(*private)
-	if err != nil {
-		log.Fatalf("failed to add project: %v", err)
-	}
-	private.ProjectID = id
-	defer dao.DeleteProject(id)
-
-	os.Exit(m.Run())
-}
 
 func TestIsAuthenticated(t *testing.T) {
 	// unauthenticated
-	ctx := NewSecurityContext(nil, nil, nil)
+	ctx := NewSecurityContext(nil, nil)
 	assert.False(t, ctx.IsAuthenticated())
 
 	// authenticated
 	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
-	}, nil, nil)
+	}, nil)
 	assert.True(t, ctx.IsAuthenticated())
 }
 
 func TestGetUsername(t *testing.T) {
 	// unauthenticated
-	ctx := NewSecurityContext(nil, nil, nil)
+	ctx := NewSecurityContext(nil, nil)
 	assert.Equal(t, "", ctx.GetUsername())
 
 	// authenticated
 	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
-	}, nil, nil)
+	}, nil)
 	assert.Equal(t, "test", ctx.GetUsername())
 }
 
 func TestIsSysAdmin(t *testing.T) {
 	// unauthenticated
-	ctx := NewSecurityContext(nil, nil, nil)
+	ctx := NewSecurityContext(nil, nil)
 	assert.False(t, ctx.IsSysAdmin())
 
 	// authenticated, non admin
 	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
-	}, nil, nil)
+	}, nil)
 	assert.False(t, ctx.IsSysAdmin())
 }
 
 func TestIsSolutionUser(t *testing.T) {
-	ctx := NewSecurityContext(nil, nil, nil)
+	ctx := NewSecurityContext(nil, nil)
 	assert.False(t, ctx.IsSolutionUser())
 }
 
@@ -109,9 +92,13 @@ func TestHasPullPerm(t *testing.T) {
 		Description: "desc",
 	}
 
-	ctx := NewSecurityContext(robot, pm, policies)
+	ctl := &projecttesting.Controller{}
+	mock.OnAnything(ctl, "Get").Return(private, nil)
+
+	ctx := NewSecurityContext(robot, policies)
+	ctx.ctl = ctl
 	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
-	assert.True(t, ctx.Can(rbac.ActionPull, resource))
+	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
 }
 
 func TestHasPushPerm(t *testing.T) {
@@ -126,9 +113,13 @@ func TestHasPushPerm(t *testing.T) {
 		Description: "desc",
 	}
 
-	ctx := NewSecurityContext(robot, pm, policies)
+	ctl := &projecttesting.Controller{}
+	mock.OnAnything(ctl, "Get").Return(private, nil)
+
+	ctx := NewSecurityContext(robot, policies)
+	ctx.ctl = ctl
 	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
-	assert.True(t, ctx.Can(rbac.ActionPush, resource))
+	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource))
 }
 
 func TestHasPushPullPerm(t *testing.T) {
@@ -147,7 +138,56 @@ func TestHasPushPullPerm(t *testing.T) {
 		Description: "desc",
 	}
 
-	ctx := NewSecurityContext(robot, pm, policies)
+	ctl := &projecttesting.Controller{}
+	mock.OnAnything(ctl, "Get").Return(private, nil)
+
+	ctx := NewSecurityContext(robot, policies)
+	ctx.ctl = ctl
 	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
-	assert.True(t, ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource))
+	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource) && ctx.Can(context.TODO(), rbac.ActionPull, resource))
+}
+
+func Test_filterRobotPolicies(t *testing.T) {
+	type args struct {
+		p        *models.Project
+		policies []*types.Policy
+	}
+	tests := []struct {
+		name string
+		args args
+		want []*types.Policy
+	}{
+		{
+			"policies of one project",
+			args{
+				&models.Project{ProjectID: 1},
+				[]*types.Policy{
+					{Resource: "/project/1/repository", Action: "pull", Effect: "allow"},
+				},
+			},
+			[]*types.Policy{
+				{Resource: "/project/1/repository", Action: "pull", Effect: "allow"},
+			},
+		},
+		{
+			"policies of multi projects",
+			args{
+				&models.Project{ProjectID: 1},
+				[]*types.Policy{
+					{Resource: "/project/1/repository", Action: "pull", Effect: "allow"},
+					{Resource: "/project/2/repository", Action: "pull", Effect: "allow"},
+				},
+			},
+			[]*types.Policy{
+				{Resource: "/project/1/repository", Action: "pull", Effect: "allow"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := filterRobotPolicies(tt.args.p, tt.args.policies); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("filterRobotPolicies() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
