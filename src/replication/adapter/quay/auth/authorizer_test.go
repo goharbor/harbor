@@ -12,24 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package quay
+package auth
 
 import (
-	"fmt"
-	"strings"
+	"net/http"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-type cred struct {
-	OAuth2Token       string `json:"oauth2_token"`
-	AccountName       string `json:"account_name"`
-	DockerCliPassword string `json:"docker_cli_password"`
-}
+func TestAuthorizer(t *testing.T) {
+	req1, err := http.NewRequest("GET", "http://1.1.1.1/v2/_catalog", nil)
+	assert.NoError(t, err)
+	assert.True(t, isCatalog(req1))
 
-type orgCreate struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
-
-func buildOrgURL(endpoint, orgName string) string {
-	return fmt.Sprintf("%s/api/v1/organization/%s", strings.TrimRight(endpoint, "/"), orgName)
+	req2, err := http.NewRequest("GET", "http://1.1.1.1/v2/library/nginx/tags/list", nil)
+	assert.NoError(t, err)
+	assert.False(t, isCatalog(req2))
 }
