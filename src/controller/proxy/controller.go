@@ -60,7 +60,9 @@ type Controller interface {
 	ProxyBlob(ctx context.Context, p *models.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error)
 	// ProxyManifest proxy the manifest request to the remote server, p is the proxy project,
 	// art is the ArtifactInfo which includes the tag or digest of the manifest
-	ProxyManifest(ctx context.Context, p *models.Project, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error)
+	ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error)
+	// HeadManifest send manifest head request to the remote server
+	HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, string, error)
 }
 type controller struct {
 	blobCtl     blob.Controller
@@ -121,7 +123,7 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	return dig == a.Digest, nil // digest matches
 }
 
-func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
+func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
 	var man distribution.Manifest
 	remoteRepo := getRemoteRepo(art)
 	ref := getReference(art)
@@ -166,7 +168,11 @@ func (c *controller) ProxyManifest(ctx context.Context, p *models.Project, art l
 
 	return man, nil
 }
-
+func (c *controller) HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, string, error) {
+	remoteRepo := getRemoteRepo(art)
+	ref := getReference(art)
+	return remote.ManifestExist(remoteRepo, ref)
+}
 func (c *controller) ProxyBlob(ctx context.Context, p *models.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error) {
 	remoteRepo := getRemoteRepo(art)
 	log.Debugf("The blob doesn't exist, proxy the request to the target server, url:%v", remoteRepo)
