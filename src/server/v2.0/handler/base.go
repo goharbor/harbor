@@ -57,7 +57,7 @@ func (*BaseAPI) HasPermission(ctx context.Context, action rbac.Action, resource 
 		return false
 	}
 
-	return s.Can(action, resource)
+	return s.Can(ctx, action, resource)
 }
 
 // HasProjectPermission returns true when the request has action permission on project subresource

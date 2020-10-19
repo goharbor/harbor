@@ -93,7 +93,7 @@ func (a *authProxy) Generate(req *http.Request) security.Context {
 	}
 	user.GroupIDs = u2.GroupIDs
 	log.Debugf("an auth proxy security context generated for request %s %s", req.Method, req.URL.Path)
-	return local.NewSecurityContext(user, config.GlobalProjectMgr)
+	return local.NewSecurityContext(user)
 }
 
 func (a *authProxy) matchAuthProxyUserName(name string) (string, bool) {

@@ -164,6 +164,29 @@ func (_m *Controller) List(ctx context.Context, query *q.Query, options ...proje
 	return r0, r1
 }
 
+// ListRoles provides a mock function with given fields: ctx, projectID, u
+func (_m *Controller) ListRoles(ctx context.Context, projectID int64, u *models.User) ([]int, error) {
+	ret := _m.Called(ctx, projectID, u)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context, int64, *models.User) []int); ok {
+		r0 = rf(ctx, projectID, u)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int64, *models.User) error); ok {
+		r1 = rf(ctx, projectID, u)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: ctx, _a1
 func (_m *Controller) Update(ctx context.Context, _a1 *models.Project) error {
 	ret := _m.Called(ctx, _a1)

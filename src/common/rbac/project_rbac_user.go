@@ -23,37 +23,31 @@ type projectRBACUser struct {
 	project      *models.Project
 	username     string
 	projectRoles []int
+	policies     []*types.Policy
 }
 
 // GetUserName returns username of the visitor
-func (user *projectRBACUser) GetUserName() string {
-	return user.username
+func (pru *projectRBACUser) GetUserName() string {
+	return pru.username
 }
 
 // GetPolicies returns policies of the visitor
-func (user *projectRBACUser) GetPolicies() []*types.Policy {
-	if user.project.IsPublic() {
-		return getPoliciesForPublicProject(user.project.ProjectID)
+func (pru *projectRBACUser) GetPolicies() []*types.Policy {
+	policies := pru.policies
+
+	if pru.project.IsPublic() {
+		policies = append(policies, getPoliciesForPublicProject(pru.project.ProjectID)...)
 	}
 
-	return nil
+	return policies
 }
 
 // GetRoles returns roles of the visitor
-func (user *projectRBACUser) GetRoles() []types.RBACRole {
+func (pru *projectRBACUser) GetRoles() []types.RBACRole {
 	roles := []types.RBACRole{}
-	for _, roleID := range user.projectRoles {
-		roles = append(roles, &projectRBACRole{projectID: user.project.ProjectID, roleID: roleID})
+	for _, roleID := range pru.projectRoles {
+		roles = append(roles, &projectRBACRole{projectID: pru.project.ProjectID, roleID: roleID})
 	}
 
 	return roles
-}
-
-// NewProjectRBACUser returns RBACUser for the project
-func NewProjectRBACUser(project *models.Project, username string, projectRoles ...int) types.RBACUser {
-	return &projectRBACUser{
-		project:      project,
-		username:     username,
-		projectRoles: projectRoles,
-	}
 }

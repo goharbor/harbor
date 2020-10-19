@@ -14,10 +14,7 @@
 package token
 
 import (
-	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/docker/distribution/registry/auth/token"
-	"github.com/stretchr/testify/assert"
-
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -29,9 +26,13 @@ import (
 	"runtime"
 	"testing"
 
+	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/docker/distribution/registry/auth/token"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
@@ -243,7 +244,7 @@ func (f *fakeSecurityContext) IsSysAdmin() bool {
 func (f *fakeSecurityContext) IsSolutionUser() bool {
 	return false
 }
-func (f *fakeSecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
+func (f *fakeSecurityContext) Can(ctx context.Context, action rbac.Action, resource rbac.Resource) bool {
 	return false
 }
 func (f *fakeSecurityContext) GetMyProjects() ([]*models.Project, error) {
@@ -271,21 +272,26 @@ func TestFilterAccess(t *testing.T) {
 		Name:    "catalog",
 		Actions: []string{},
 	}
-	err = filterAccess(a1, &fakeSecurityContext{
+
+	ctx := func(secCtx security.Context) context.Context {
+		return security.NewContext(context.TODO(), secCtx)
+	}
+
+	err = filterAccess(ctx(&fakeSecurityContext{
 		isAdmin: true,
-	}, nil, registryFilterMap)
+	}), a1, nil, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra1, *a1[0], "Mismatch after registry filter Map")
 
-	err = filterAccess(a2, &fakeSecurityContext{
+	err = filterAccess(ctx(&fakeSecurityContext{
 		isAdmin: true,
-	}, nil, notaryFilterMap)
+	}), a2, nil, notaryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a2[0], "Mismatch after notary filter Map")
 
-	err = filterAccess(a3, &fakeSecurityContext{
+	err = filterAccess(ctx(&fakeSecurityContext{
 		isAdmin: false,
-	}, nil, registryFilterMap)
+	}), a3, nil, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a3[0], "Mismatch after registry filter Map")
 }

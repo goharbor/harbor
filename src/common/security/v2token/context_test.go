@@ -22,17 +22,17 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project/models"
-	"github.com/goharbor/harbor/src/testing/pkg/project"
+	"github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAll(t *testing.T) {
 	ctx := context.TODO()
 
-	mgr := &project.Manager{}
-	mgr.On("Get", ctx, int64(1)).Return(&models.Project{ProjectID: 1, Name: "library"}, nil)
-	mgr.On("Get", ctx, int64(2)).Return(&models.Project{ProjectID: 2, Name: "test"}, nil)
-	mgr.On("Get", ctx, int64(3)).Return(&models.Project{ProjectID: 3, Name: "development"}, nil)
+	ctl := &project.Controller{}
+	ctl.On("Get", ctx, int64(1)).Return(&models.Project{ProjectID: 1, Name: "library"}, nil)
+	ctl.On("Get", ctx, int64(2)).Return(&models.Project{ProjectID: 2, Name: "test"}, nil)
+	ctl.On("Get", ctx, int64(3)).Return(&models.Project{ProjectID: 3, Name: "development"}, nil)
 
 	access := []*token.ResourceActions{
 		{
@@ -63,9 +63,7 @@ func TestAll(t *testing.T) {
 	}
 	sc := New(context.Background(), "jack", access)
 	tsc := sc.(*tokenSecurityCtx)
-	tsc.getProject = func(id int64) (*models.Project, error) {
-		return mgr.Get(ctx, id)
-	}
+	tsc.ctl = ctl
 
 	cases := []struct {
 		resource types.Resource
@@ -115,6 +113,6 @@ func TestAll(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		assert.Equal(t, c.expect, sc.Can(c.action, c.resource))
+		assert.Equal(t, c.expect, sc.Can(ctx, c.action, c.resource))
 	}
 }

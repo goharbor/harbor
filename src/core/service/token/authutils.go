@@ -15,6 +15,8 @@
 package token
 
 import (
+	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -24,11 +26,11 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/lib/log"
 	tokenpkg "github.com/goharbor/harbor/src/pkg/token"
-	"github.com/goharbor/harbor/src/pkg/token/claims/v2"
+	v2 "github.com/goharbor/harbor/src/pkg/token/claims/v2"
 )
 
 const (
@@ -81,8 +83,12 @@ func GetResourceActions(scopes []string) []*token.ResourceActions {
 }
 
 // filterAccess iterate a list of resource actions and try to use the filter that matches the resource type to filter the actions.
-func filterAccess(access []*token.ResourceActions, ctx security.Context,
-	pm promgr.ProjectManager, filters map[string]accessFilter) error {
+func filterAccess(ctx context.Context, access []*token.ResourceActions,
+	ctl project.Controller, filters map[string]accessFilter) error {
+	secCtx, ok := security.FromContext(ctx)
+	if !ok {
+		return fmt.Errorf("failed to  get security context from request")
+	}
 	var err error
 	for _, a := range access {
 		f, ok := filters[a.Type]
@@ -91,8 +97,8 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 			log.Warningf("No filter found for access type: %s, skip filter, the access of resource '%s' will be set empty.", a.Type, a.Name)
 			continue
 		}
-		err = f.filter(ctx, pm, a)
-		log.Debugf("user: %s, access: %v", ctx.GetUsername(), a)
+		err = f.filter(ctx, ctl, a)
+		log.Debugf("user: %s, access: %v", secCtx.GetUsername(), a)
 		if err != nil {
 			log.Errorf("Failed to handle the resource %s:%s, due to error %v, returning empty access for it.",
 				a.Type, a.Name, err)

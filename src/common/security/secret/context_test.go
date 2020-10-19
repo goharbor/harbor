@@ -15,6 +15,7 @@
 package secret
 
 import (
+	libctx "context"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -99,7 +100,7 @@ func TestHasPullPerm(t *testing.T) {
 	resource := rbac.Resource("/project/project_name/repository")
 	// secret store is null
 	context := NewSecurityContext("", nil)
-	hasReadPerm := context.Can(rbac.ActionPull, resource)
+	hasReadPerm := context.Can(libctx.TODO(), rbac.ActionPull, resource)
 	assert.False(t, hasReadPerm)
 
 	// invalid secret
@@ -107,7 +108,7 @@ func TestHasPullPerm(t *testing.T) {
 		secret.NewStore(map[string]string{
 			"jobservice_secret": secret.JobserviceUser,
 		}))
-	hasReadPerm = context.Can(rbac.ActionPull, resource)
+	hasReadPerm = context.Can(libctx.TODO(), rbac.ActionPull, resource)
 	assert.False(t, hasReadPerm)
 
 	// valid secret, project name
@@ -115,12 +116,12 @@ func TestHasPullPerm(t *testing.T) {
 		secret.NewStore(map[string]string{
 			"jobservice_secret": secret.JobserviceUser,
 		}))
-	hasReadPerm = context.Can(rbac.ActionPull, resource)
+	hasReadPerm = context.Can(libctx.TODO(), rbac.ActionPull, resource)
 	assert.True(t, hasReadPerm)
 
 	// valid secret, project ID
 	resource = rbac.Resource("/project/1/repository")
-	hasReadPerm = context.Can(rbac.ActionPull, resource)
+	hasReadPerm = context.Can(libctx.TODO(), rbac.ActionPull, resource)
 	assert.True(t, hasReadPerm)
 }
 
@@ -132,11 +133,11 @@ func TestHasPushPerm(t *testing.T) {
 
 	// project name
 	resource := rbac.Resource("/project/project_name/repository")
-	assert.False(t, context.Can(rbac.ActionPush, resource))
+	assert.False(t, context.Can(libctx.TODO(), rbac.ActionPush, resource))
 
 	// project ID
 	resource = rbac.Resource("/project/1/repository")
-	assert.False(t, context.Can(rbac.ActionPush, resource))
+	assert.False(t, context.Can(libctx.TODO(), rbac.ActionPush, resource))
 }
 
 func TestHasPushPullPerm(t *testing.T) {
@@ -147,9 +148,9 @@ func TestHasPushPullPerm(t *testing.T) {
 
 	// project name
 	resource := rbac.Resource("/project/project_name/repository")
-	assert.False(t, context.Can(rbac.ActionPush, resource) && context.Can(rbac.ActionPull, resource))
+	assert.False(t, context.Can(libctx.TODO(), rbac.ActionPush, resource) && context.Can(libctx.TODO(), rbac.ActionPull, resource))
 
 	// project ID
 	resource = rbac.Resource("/project/1/repository")
-	assert.False(t, context.Can(rbac.ActionPush, resource) && context.Can(rbac.ActionPull, resource))
+	assert.False(t, context.Can(libctx.TODO(), rbac.ActionPush, resource) && context.Can(libctx.TODO(), rbac.ActionPull, resource))
 }

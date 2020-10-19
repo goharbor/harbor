@@ -24,6 +24,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/user/models"
 )
 
+// User alias to models.User
+type User = models.User
+
 var (
 	// Mgr is the global project manager
 	Mgr = New()
