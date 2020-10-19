@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, Input, OnInit, OnDestroy, ElementRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from "rxjs";
 import { TranslateService } from '@ngx-translate/core';
 import { Message } from './message';
 import { MessageService } from './message.service';
 import { CommonRoutes, dismissInterval, httpStatusCode } from "../../lib/entities/shared.const";
 
-
+const YES: string = 'yes';
 @Component({
   selector: 'global-message',
   templateUrl: 'message.component.html',
@@ -41,6 +41,7 @@ export class MessageComponent implements OnInit, OnDestroy {
     private elementRef: ElementRef,
     private messageService: MessageService,
     private router: Router,
+    private route: ActivatedRoute,
     private translate: TranslateService) { }
 
   ngOnInit(): void {
@@ -134,5 +135,9 @@ export class MessageComponent implements OnInit, OnDestroy {
       clearTimeout(this.timer);
     }
     this.globalMessageOpened = false;
+  }
+  // if navigate from global search(un-logged users visit public project)
+  isFromGlobalSearch(): boolean {
+    return this.route.snapshot.queryParams['publicAndNotLogged'] === YES;
   }
 }

@@ -72,6 +72,7 @@ export interface LabelState {
   show: boolean;
 }
 export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
+const YES: string = 'yes';
 @Component({
   selector: 'artifact-list-tab',
   templateUrl: './artifact-list-tab.component.html',
@@ -822,7 +823,11 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
   goIntoArtifactSummaryPage(artifact: Artifact): void {
     const relativeRouterLink: string[] = ['artifacts', artifact.digest];
-    this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute });
+    if (this.activatedRoute.snapshot.queryParams['publicAndNotLogged'] === YES) {
+      this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute, queryParams: {publicAndNotLogged: YES} });
+    } else {
+      this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute });
+    }
   }
 
   onSuccess($event: any): void {
@@ -941,7 +946,11 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       depth = artifact.digest;
     }
     const linkUrl = ['harbor', 'projects', this.projectId, 'repositories', this.repoName, 'depth', depth];
-    this.router.navigate(linkUrl);
+    if (this.activatedRoute.snapshot.queryParams['publicAndNotLogged'] === YES) {
+      this.router.navigate(linkUrl, {queryParams: {publicAndNotLogged: YES}});
+    } else {
+      this.router.navigate(linkUrl);
+    }
   }
   selectFilterType() {
     this.lastFilteredTagName = '';
