@@ -38,7 +38,38 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/prometheus/client_golang/prometheus"
 )
+
+var (
+	loginCounterTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_login_total",
+			Help: "Number of login operations",
+		},
+		[]string{},
+	)
+
+	loginCounterSuccess = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_login_success",
+			Help: "Number of successful login operations",
+		},
+		[]string{},
+	)
+
+	loginCounterFailed = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "harbor_login_failed",
+			Help: "Number of failed login operations",
+		},
+		[]string{},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(loginCounterTotal, loginCounterSuccess, loginCounterFailed)
+}
 
 // CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
 type CommonController struct {
@@ -83,6 +114,7 @@ func redirectForOIDC(ctx context.Context, username string) bool {
 
 // Login handles login request from UI.
 func (cc *CommonController) Login() {
+	loginCounterTotal.WithLabelValues().Inc()
 	principal := cc.GetString("principal")
 	password := cc.GetString("password")
 	if redirectForOIDC(cc.Ctx.Request.Context(), principal) {
@@ -107,12 +139,15 @@ func (cc *CommonController) Login() {
 	})
 	if err != nil {
 		log.Errorf("Error occurred in UserLogin: %v", err)
+		loginCounterFailed.WithLabelValues().Inc()
 		cc.CustomAbort(http.StatusUnauthorized, "")
 	}
 
 	if user == nil {
+		loginCounterFailed.WithLabelValues().Inc()
 		cc.CustomAbort(http.StatusUnauthorized, "")
 	}
+	loginCounterSuccess.WithLabelValues().Inc()
 	cc.PopulateUserSession(*user)
 }
 
