@@ -101,7 +101,6 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	log.Debugf("%d of repositories post filter", len(repositories))
 
 	runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
-	defer runner.Cancel()
 
 	for _, r := range repositories {
 		repo := r
@@ -126,10 +125,8 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 		})
 	}
 
-	runner.Wait()
-
-	if runner.IsCancelled() {
-		return nil, fmt.Errorf("FetchArtifacts error when collect tags for repos")
+	if err = runner.Wait(); err != nil {
+		return nil, err
 	}
 
 	return resources, nil
