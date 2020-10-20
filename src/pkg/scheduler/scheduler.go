@@ -15,194 +15,312 @@
 package scheduler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"sync"
 	"time"
 
-	chttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/job"
-	"github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/core/config"
+	beegoorm "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/scheduler/model"
-)
-
-// const definitions
-const (
-	JobParamCallbackFunc       = "callback_func"
-	JobParamCallbackFuncParams = "params"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/task"
+	cronlib "github.com/robfig/cron"
 )
 
 var (
-	// GlobalScheduler is an instance of the default scheduler that
-	// can be used globally. Call Init() to initialize it first
-	GlobalScheduler Scheduler
-	registry        = make(map[string]CallbackFunc)
+	// Sched is an instance of the default scheduler that can be used globally
+	Sched = New()
 )
 
-// CallbackFunc defines the function that the scheduler calls when triggered
-type CallbackFunc func(interface{}) error
+// Schedule describes the detail information about the created schedule
+type Schedule struct {
+	ID           int64     `json:"id"`
+	VendorType   string    `json:"vendor_type"`
+	VendorID     int64     `json:"vendor_id"`
+	CRONType     string    `json:"cron_type"`
+	CRON         string    `json:"cron"`
+	Status       string    `json:"status"` // status of the underlying task(jobservice job)
+	CreationTime time.Time `json:"creation_time"`
+	UpdateTime   time.Time `json:"update_time"`
+	// we can extend this model to include more information(e.g. how many times the schedule already
+	// runs; when will the schedule runs next time)
+}
 
 // Scheduler provides the capability to run a periodic task, a callback function
 // needs to be registered before using the scheduler
-// The "params" is passed to the callback function specified by "callbackFuncName"
-// as encoded json string, so the callback function must decode it before using
 type Scheduler interface {
-	Schedule(cron string, callbackFuncName string, params interface{}) (int64, error)
-	UnSchedule(id int64) error
-}
-
-// Register the callback function with name, and the function will be called
-// by the scheduler when the scheduler is triggered
-func Register(name string, callbackFunc CallbackFunc) error {
-	if len(name) == 0 {
-		return errors.New("empty name")
-	}
-	if callbackFunc == nil {
-		return errors.New("callback function is nil")
-	}
-
-	_, exist := registry[name]
-	if exist {
-		return fmt.Errorf("callback function %s already exists", name)
-	}
-	registry[name] = callbackFunc
-
-	return nil
-}
-
-// GetCallbackFunc returns the registered callback function specified by the name
-func GetCallbackFunc(name string) (CallbackFunc, error) {
-	f, exist := registry[name]
-	if !exist {
-		return nil, fmt.Errorf("callback function %s not found", name)
-	}
-	return f, nil
-}
-
-func callbackFuncExist(name string) bool {
-	_, exist := registry[name]
-	return exist
-}
-
-// Init the GlobalScheduler
-func Init() {
-	GlobalScheduler = New(config.InternalCoreURL())
+	// Schedule creates a task which calls the specified callback function periodically
+	// The callback function needs to be registered first
+	// The "vendorType" specifies the type of vendor (e.g. replication, scan, gc, retention, etc.),
+	// and the "vendorID" specifies the ID of vendor if needed(e.g. policy ID for replication and retention).
+	// The "params" is passed to the callback function as encoded json string, so the callback
+	// function must decode it before using
+	Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
+		cron string, callbackFuncName string, params interface{}) (int64, error)
+	// UnScheduleByID the schedule specified by ID
+	UnScheduleByID(ctx context.Context, id int64) error
+	// UnScheduleByVendor the schedule specified by vendor
+	UnScheduleByVendor(ctx context.Context, vendorType string, vendorID int64) error
+	// GetSchedule gets the schedule specified by ID
+	GetSchedule(ctx context.Context, id int64) (*Schedule, error)
+	// ListSchedules according to the query
+	ListSchedules(ctx context.Context, query *q.Query) ([]*Schedule, error)
 }
 
 // New returns an instance of the default scheduler
-func New(internalCoreURL string) Scheduler {
+func New() Scheduler {
 	return &scheduler{
-		internalCoreURL:  internalCoreURL,
-		jobserviceClient: job.GlobalClient,
-		manager:          GlobalManager,
+		dao:     &dao{},
+		execMgr: task.ExecMgr,
+		taskMgr: task.Mgr,
 	}
 }
 
 type scheduler struct {
-	sync.RWMutex
-	internalCoreURL  string
-	manager          Manager
-	jobserviceClient job.Client
+	dao     DAO
+	execMgr task.ExecutionManager
+	taskMgr task.Manager
 }
 
-func (s *scheduler) Schedule(cron string, callbackFuncName string, params interface{}) (int64, error) {
+// Currently all database operations inside one request handling are covered by
+// one transaction, which means if any one of the operations fails, all of them
+// will be roll back. As the scheduler creates jobservice jobs that cannot be
+// roll back by the transaction, this will cause some unexpected data inconsistence
+// in some cases.
+// The implementation of "Schedule" replaces the ormer with a new one in the context
+// to out of control from the global transaction, and uses a new transaction that only
+// covers the logic inside the function
+func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
+	cron string, callbackFuncName string, params interface{}) (int64, error) {
+	var scheduleID int64
+	f := func(ctx context.Context) error {
+		id, err := s.schedule(ctx, vendorType, vendorID, cronType, cron, callbackFuncName, params)
+		if err != nil {
+			return err
+		}
+		scheduleID = id
+		return nil
+	}
+
+	ctx = orm.NewContext(ctx, beegoorm.NewOrm())
+	if err := orm.WithTransaction(f)(ctx); err != nil {
+		return 0, err
+	}
+	return scheduleID, nil
+}
+
+func (s *scheduler) schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
+	cron string, callbackFuncName string, params interface{}) (int64, error) {
+	if len(vendorType) == 0 {
+		return 0, fmt.Errorf("empty vendor type")
+	}
+	if _, err := cronlib.Parse(cron); err != nil {
+		return 0, errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessage("invalid cron %s: %v", cron, err)
+	}
 	if !callbackFuncExist(callbackFuncName) {
 		return 0, fmt.Errorf("callback function %s not found", callbackFuncName)
 	}
 
-	// create schedule record
 	now := time.Now()
-	scheduleID, err := s.manager.Create(&model.Schedule{
-		CreationTime: &now,
-		UpdateTime:   &now,
+	sched := &schedule{
+		VendorType:       vendorType,
+		VendorID:         vendorID,
+		CRONType:         cronType,
+		CRON:             cron,
+		CallbackFuncName: callbackFuncName,
+		CreationTime:     now,
+		UpdateTime:       now,
+	}
+	if params != nil {
+		paramsData, err := json.Marshal(params)
+		if err != nil {
+			return 0, err
+		}
+		sched.CallbackFuncParam = string(paramsData)
+	}
+	// create schedule record
+	// when checkin hook comes, the database record must exist,
+	// so the database record must be created first before submitting job
+	id, err := s.dao.Create(ctx, sched)
+	if err != nil {
+		return 0, err
+	}
+
+	execID, err := s.execMgr.Create(ctx, JobNameScheduler, id, task.ExecutionTriggerManual)
+	if err != nil {
+		return 0, err
+	}
+
+	taskID, err := s.taskMgr.Create(ctx, execID, &task.Job{
+		Name: JobNameScheduler,
+		Metadata: &job.Metadata{
+			JobKind: job.KindPeriodic,
+			Cron:    cron,
+		},
 	})
 	if err != nil {
 		return 0, err
 	}
-	// if got error in the following steps, delete the schedule record in database
+	// make sure the created task is stopped if got any error in the following steps
 	defer func() {
-		if err != nil {
-			e := s.manager.Delete(scheduleID)
-			if e != nil {
-				log.Errorf("failed to delete the schedule %d: %v", scheduleID, e)
-			}
+		if err == nil {
+			return
+		}
+		if err := s.taskMgr.Stop(ctx, taskID); err != nil {
+			log.Errorf("failed to stop the task %d: %v", taskID, err)
 		}
 	}()
-	log.Debugf("the schedule record %d created", scheduleID)
-
-	// submit scheduler job to Jobservice
-	statusHookURL := fmt.Sprintf("%s/service/notifications/schedules/%d", s.internalCoreURL, scheduleID)
-	jd := &models.JobData{
-		Name: JobNameScheduler,
-		Parameters: map[string]interface{}{
-			JobParamCallbackFunc: callbackFuncName,
-		},
-		Metadata: &models.JobMetadata{
-			JobKind: job.JobKindPeriodic,
-			Cron:    cron,
-		},
-		StatusHook: statusHookURL,
-	}
-	if params != nil {
-		var paramsData []byte
-		paramsData, err = json.Marshal(params)
-		if err != nil {
-			return 0, err
-		}
-		jd.Parameters[JobParamCallbackFuncParams] = string(paramsData)
-	}
-	jobID, err := s.jobserviceClient.SubmitJob(jd)
+	// when task manager creating a task, it creates the task database record first and
+	// then submits the job to jobservice. If the submitting failed, it doesn't return
+	// any error. So we check the task status to make sure the job is submitted to jobservice
+	// successfully here
+	task, err := s.taskMgr.Get(ctx, taskID)
 	if err != nil {
 		return 0, err
 	}
-	// if got error in the following steps, stop the scheduler job
-	defer func() {
-		if err != nil {
-			if e := s.jobserviceClient.PostAction(jobID, job.JobActionStop); e != nil {
-				log.Errorf("failed to stop the scheduler job %s: %v", jobID, e)
-			}
-		}
-	}()
-	log.Debugf("the scheduler job submitted to Jobservice, job ID: %s", jobID)
-
-	// populate the job ID for the schedule
-	err = s.manager.Update(&model.Schedule{
-		ID:    scheduleID,
-		JobID: jobID,
-	}, "JobID")
-	if err != nil {
+	if task.Status == job.ErrorStatus.String() {
+		// assign the error to "err" to trigger the defer function to clean up the created task
+		err = fmt.Errorf("failed to create the schedule: the task status is %s", job.ErrorStatus.String())
 		return 0, err
 	}
 
-	return scheduleID, nil
+	return id, nil
 }
 
-func (s *scheduler) UnSchedule(id int64) error {
-	schedule, err := s.manager.Get(id)
+func (s *scheduler) UnScheduleByID(ctx context.Context, id int64) error {
+	executions, err := s.execMgr.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"VendorType": JobNameScheduler,
+			"VendorID":   id,
+		},
+	})
 	if err != nil {
 		return err
 	}
-	if schedule == nil {
-		log.Warningf("the schedule record %d not found", id)
-		return nil
-	}
-	if err = s.jobserviceClient.PostAction(schedule.JobID, job.JobActionStop); err != nil {
-		herr, ok := err.(*chttp.Error)
-		// if the job specified by jobID is not found in Jobservice, just delete
-		// the schedule record
-		if !ok || herr.Code != http.StatusNotFound {
+	if len(executions) > 0 {
+		executionID := executions[0].ID
+		// stop the execution
+		if err = s.execMgr.StopAndWait(ctx, executionID, 10*time.Second); err != nil {
+			return err
+		}
+		// delete execution
+		if err = s.execMgr.Delete(ctx, executionID); err != nil {
 			return err
 		}
 	}
-	log.Debugf("the stop action for job %s submitted to the Jobservice", schedule.JobID)
-	if err = s.manager.Delete(schedule.ID); err != nil {
+
+	// delete schedule record
+	return s.dao.Delete(ctx, id)
+}
+
+func (s *scheduler) UnScheduleByVendor(ctx context.Context, vendorType string, vendorID int64) error {
+	q := &q.Query{
+		Keywords: map[string]interface{}{
+			"VendorType": vendorType,
+		},
+	}
+	if vendorID > 0 {
+		q.Keywords["VendorID"] = vendorID
+	}
+	schedules, err := s.dao.List(ctx, q)
+	if err != nil {
 		return err
 	}
-	log.Debugf("the schedule record %d deleted", schedule.ID)
-
+	for _, schedule := range schedules {
+		if err = s.UnScheduleByID(ctx, schedule.ID); err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+func (s *scheduler) GetSchedule(ctx context.Context, id int64) (*Schedule, error) {
+	schedule, err := s.dao.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return s.convertSchedule(ctx, schedule)
+}
+
+func (s *scheduler) ListSchedules(ctx context.Context, query *q.Query) ([]*Schedule, error) {
+	schedules, err := s.dao.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var scheds []*Schedule
+	for _, schedule := range schedules {
+		sched, err := s.convertSchedule(ctx, schedule)
+		if err != nil {
+			return nil, err
+		}
+		scheds = append(scheds, sched)
+	}
+	return scheds, nil
+}
+
+func (s *scheduler) convertSchedule(ctx context.Context, schedule *schedule) (*Schedule, error) {
+	schd := &Schedule{
+		ID:           schedule.ID,
+		VendorType:   schedule.VendorType,
+		VendorID:     schedule.VendorID,
+		CRONType:     schedule.CRONType,
+		CRON:         schedule.CRON,
+		CreationTime: schedule.CreationTime,
+		UpdateTime:   schedule.UpdateTime,
+	}
+	executions, err := s.execMgr.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"VendorType": JobNameScheduler,
+			"VendorID":   schedule.ID,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(executions) == 0 {
+		// if no execution found for the schedule, mark it's status as error
+		schd.Status = job.ErrorStatus.String()
+	} else {
+		schd.Status = executions[0].Status
+	}
+	return schd, nil
+}
+
+// HandleLegacyHook handles the legacy web hook for scheduler
+// We rewrite the implementation of scheduler with task manager mechanism in v2.1,
+// this method is used to handle the job status hook for the legacy implementation
+// We can remove the method and the hook endpoint after several releases
+func HandleLegacyHook(ctx context.Context, scheduleID int64, sc *job.StatusChange) error {
+	scheduler := Sched.(*scheduler)
+	executions, err := scheduler.execMgr.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"VendorType": JobNameScheduler,
+			"VendorID":   scheduleID,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if len(executions) == 0 {
+		return errors.New(nil).WithCode(errors.NotFoundCode).
+			WithMessage("no execution found for the schedule %d", scheduleID)
+	}
+
+	tasks, err := scheduler.taskMgr.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"ExecutionID": executions[0].ID,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if len(tasks) == 0 {
+		return errors.New(nil).WithCode(errors.NotFoundCode).
+			WithMessage("no task found for the execution %d", executions[0].ID)
+	}
+	return task.NewHookHandler().Handle(ctx, tasks[0].ID, sc)
 }

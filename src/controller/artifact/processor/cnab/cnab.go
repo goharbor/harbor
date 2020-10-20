@@ -45,7 +45,7 @@ type processor struct {
 	manifestProcessor *base.ManifestProcessor
 }
 
-func (p *processor) AbstractMetadata(ctx context.Context, manifest []byte, art *artifact.Artifact) error {
+func (p *processor) AbstractMetadata(ctx context.Context, art *artifact.Artifact, manifest []byte) error {
 	cfgManiDgt := ""
 	// try to get the digest of the manifest that the config layer is referenced by
 	for _, reference := range art.References {
@@ -69,9 +69,9 @@ func (p *processor) AbstractMetadata(ctx context.Context, manifest []byte, art *
 	}
 
 	// abstract the metadata from config layer
-	return p.manifestProcessor.AbstractMetadata(ctx, payload, art)
+	return p.manifestProcessor.AbstractMetadata(ctx, art, payload)
 }
 
-func (p *processor) GetArtifactType() string {
+func (p *processor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
 	return ArtifactTypeCNAB
 }

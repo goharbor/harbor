@@ -20,7 +20,6 @@ import (
 	"net/http"
 	"strconv"
 
-	common_model "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/event"
@@ -58,10 +57,8 @@ func (r *ReplicationPolicyAPI) List() {
 	// TODO: support more query
 	query := &model.PolicyQuery{
 		Name: r.GetString("name"),
-		Pagination: common_model.Pagination{
-			Page: page,
-			Size: size,
-		},
+		Page: page,
+		Size: size,
 	}
 
 	total, policies, err := replication.PolicyCtl.List(query)

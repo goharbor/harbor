@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { LogPageComponent } from './log-page.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
@@ -6,7 +6,7 @@ describe('LogPageComponent', () => {
     let component: LogPageComponent;
     let fixture: ComponentFixture<LogPageComponent>;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
             ],

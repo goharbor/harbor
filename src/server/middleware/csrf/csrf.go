@@ -1,6 +1,7 @@
 package csrf
 
 import (
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"os"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/gorilla/csrf"
 )
@@ -19,7 +19,6 @@ import (
 const (
 	csrfKeyEnv  = "CSRF_KEY"
 	tokenHeader = "X-Harbor-CSRF-Token"
-	tokenCookie = "__csrf"
 )
 
 var (
@@ -31,13 +30,7 @@ var (
 // attachToken makes sure if csrf generate a new token it will be included in the response header
 func attachToken(w http.ResponseWriter, r *http.Request) {
 	if t := csrf.Token(r); len(t) > 0 {
-		http.SetCookie(w, &http.Cookie{
-			Name:     tokenCookie,
-			Secure:   secureFlag,
-			Value:    t,
-			Path:     "/",
-			SameSite: http.SameSiteStrictMode,
-		})
+		w.Header().Set(tokenHeader, t)
 	} else {
 		log.Warningf("token not found in context, skip attaching")
 	}
@@ -45,7 +38,7 @@ func attachToken(w http.ResponseWriter, r *http.Request) {
 
 func handleError(w http.ResponseWriter, r *http.Request) {
 	attachToken(w, r)
-	serror.SendError(w, errors.New(csrf.FailureReason(r)).WithCode(errors.ForbiddenCode))
+	lib_http.SendError(w, errors.New(csrf.FailureReason(r)).WithCode(errors.ForbiddenCode))
 	return
 }
 

@@ -15,8 +15,9 @@
 package image
 
 import (
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type indexProcessTestSuite struct {
@@ -29,7 +30,7 @@ func (i *indexProcessTestSuite) SetupTest() {
 }
 
 func (i *indexProcessTestSuite) TestGetArtifactType() {
-	i.Assert().Equal(ArtifactTypeImage, i.processor.GetArtifactType())
+	i.Assert().Equal(ArtifactTypeImage, i.processor.GetArtifactType(nil, nil))
 }
 
 func TestIndexProcessTestSuite(t *testing.T) {

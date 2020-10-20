@@ -15,19 +15,21 @@
 package registry
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/registry"
-	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/router"
 	"github.com/opencontainers/go-digest"
-	"net/http"
-	"strings"
 )
 
 // make sure the artifact exist before proxying the request to the backend registry
@@ -36,7 +38,7 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	reference := router.Param(req.Context(), ":reference")
 	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
-		serror.SendError(w, err)
+		lib_http.SendError(w, err)
 		return
 	}
 
@@ -54,9 +56,10 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 		req.UserAgent() == registry.UserAgent {
 		return
 	}
+
 	e := &metadata.PullArtifactEventMetadata{
-		Ctx:      req.Context(),
 		Artifact: &art.Artifact,
+		Operator: operator.FromContext(req.Context()),
 	}
 	// the reference is tag
 	if _, err = digest.Parse(reference); err != nil {
@@ -74,16 +77,16 @@ func deleteManifest(w http.ResponseWriter, req *http.Request) {
 	// Do not add the logic into GetByReference as it's a shared method for PUT/GET/DELETE/Internal call,
 	// and NOT_FOUND satisfy PUT/GET/Internal call.
 	if _, err := digest.Parse(reference); err != nil {
-		serror.SendError(w, errors.Wrapf(err, "unsupported digest %s", reference).WithCode(errors.UNSUPPORTED))
+		lib_http.SendError(w, errors.Wrapf(err, "unsupported digest %s", reference).WithCode(errors.UNSUPPORTED))
 		return
 	}
 	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
-		serror.SendError(w, err)
+		lib_http.SendError(w, err)
 		return
 	}
 	if err = artifact.Ctl.Delete(req.Context(), art.ID); err != nil {
-		serror.SendError(w, err)
+		lib_http.SendError(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)
@@ -96,7 +99,7 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	// make sure the repository exist before pushing the manifest
 	_, _, err := repository.Ctl.Ensure(req.Context(), repo)
 	if err != nil {
-		serror.SendError(w, err)
+		lib_http.SendError(w, err)
 		return
 	}
 
@@ -124,7 +127,7 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 
 	_, _, err = artifact.Ctl.Ensure(req.Context(), repo, dgt, tags...)
 	if err != nil {
-		serror.SendError(w, err)
+		lib_http.SendError(w, err)
 		return
 	}
 

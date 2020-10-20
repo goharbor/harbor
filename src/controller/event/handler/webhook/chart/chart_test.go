@@ -46,7 +46,7 @@ func TestChartPreprocessHandler_Handle(t *testing.T) {
 			models.ProMetaEnableContentTrust:   "true",
 			models.ProMetaPreventVul:           "true",
 			models.ProMetaSeverity:             "Low",
-			models.ProMetaReuseSysCVEWhitelist: "false",
+			models.ProMetaReuseSysCVEAllowlist: "false",
 		},
 	})
 	defer func(id int64) {
@@ -133,4 +133,9 @@ func TestChartPreprocessHandler_Handle(t *testing.T) {
 func TestChartPreprocessHandler_IsStateful(t *testing.T) {
 	handler := &Handler{}
 	assert.False(t, handler.IsStateful())
+}
+
+func TestChartPreprocessHandler_Name(t *testing.T) {
+	handler := &Handler{}
+	assert.Equal(t, "ChartWebhook", handler.Name())
 }

@@ -24,7 +24,7 @@ export class AddWebhookComponent implements OnInit {
    webhook: Webhook;
   @Input()
   metadata: any;
-  @ViewChild(AddWebhookFormComponent, { static: false })
+  @ViewChild(AddWebhookFormComponent)
   addWebhookFormComponent: AddWebhookFormComponent;
   @Output() notify = new EventEmitter<Webhook>();
 

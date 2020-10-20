@@ -176,6 +176,16 @@ export const USERSTATICPERMISSION = {
             "UPDATE": "update",
         }
     },
+    "P2P_PROVIDER": {
+        "KEY": "preheat-policy",
+        "VALUE": {
+            "LIST": "list",
+            "READ": "read",
+            "CREATE": "create",
+            "UPDATE": "update",
+            "DELETE": "delete"
+        }
+    },
     "SCANNER": {
         "KEY": "scanner",
         "VALUE": {

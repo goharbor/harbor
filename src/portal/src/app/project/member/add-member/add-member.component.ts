@@ -64,7 +64,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
 
   hasChanged: boolean;
 
-  @ViewChild(InlineAlertComponent, {static: false})
+  @ViewChild(InlineAlertComponent)
   inlineAlert: InlineAlertComponent;
 
   @Input() projectId: number;

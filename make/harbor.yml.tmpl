@@ -40,8 +40,8 @@ database:
   # The maximum number of connections in the idle connection pool. If it <=0, no idle connections are retained.
   max_idle_conns: 50
   # The maximum number of open connections to the database. If it <= 0, then there is no limit on the number of open connections.
-  # Note: the default number of connections is 100 for postgres.
-  max_open_conns: 100
+  # Note: the default number of connections is 1024 for postgres of harbor.
+  max_open_conns: 1000
 
 # The default data volume
 data_volume: /data
@@ -67,32 +67,32 @@ clair:
   updaters_interval: 12
 
 # Trivy configuration
+#
+# Trivy DB contains vulnerability information from NVD, Red Hat, and many other upstream vulnerability databases.
+# It is downloaded by Trivy from the GitHub release page https://github.com/aquasecurity/trivy-db/releases and cached
+# in the local file system. In addition, the database contains the update timestamp so Trivy can detect whether it
+# should download a newer version from the Internet or use the cached one. Currently, the database is updated every
+# 12 hours and published as a new release to GitHub.
 trivy:
   # ignoreUnfixed The flag to display only fixed vulnerabilities
   ignore_unfixed: false
   # skipUpdate The flag to enable or disable Trivy DB downloads from GitHub
   #
   # You might want to enable this flag in test or CI/CD environments to avoid GitHub rate limiting issues.
-  # If the flag is enabled you have to manually download the `trivy.db` file and mount it in the
-  # /home/scanner/.cache/trivy/db/trivy.db path.
+  # If the flag is enabled you have to download the `trivy-offline.tar.gz` archive manually, extract `trivy.db` and
+  # `metadata.json` files and mount them in the `/home/scanner/.cache/trivy/db` path.
   skip_update: false
   #
   # insecure The flag to skip verifying registry certificate
   insecure: false
   # github_token The GitHub access token to download Trivy DB
   #
-  # Trivy DB contains vulnerability information from NVD, Red Hat, and many other upstream vulnerability databases.
-  # It is downloaded by Trivy from the GitHub release page https://github.com/aquasecurity/trivy-db/releases and cached
-  # in the local file system (/home/scanner/.cache/trivy/db/trivy.db). In addition, the database contains the update
-  # timestamp so Trivy can detect whether it should download a newer version from the Internet or use the cached one.
-  # Currently, the database is updated every 12 hours and published as a new release to GitHub.
-  #
   # Anonymous downloads from GitHub are subject to the limit of 60 requests per hour. Normally such rate limit is enough
   # for production operations. If, for any reason, it's not enough, you could increase the rate limit to 5000
   # requests per hour by specifying the GitHub access token. For more details on GitHub rate limiting please consult
   # https://developer.github.com/v3/#rate-limiting
   #
-  # You can create a GitHub token by following the instuctions in
+  # You can create a GitHub token by following the instructions in
   # https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line
   #
   # github_token: xxx
@@ -171,9 +171,14 @@ _version: 2.0.0
 
 # Uncomment external_redis if using external Redis server
 # external_redis:
-#   host: redis
-#   port: 6379
+#   # support redis, redis+sentinel
+#   # host for redis: <host_redis>:<port_redis>
+#   # host for redis+sentinel:
+#   #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
+#   host: redis:6379
 #   password:
+#   # sentinel_master_set must be set to support redis+sentinel
+#   #sentinel_master_set:
 #   # db_index 0 is for core, it's unchangeable
 #   registry_db_index: 1
 #   jobservice_db_index: 2

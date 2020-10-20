@@ -77,13 +77,13 @@
           <clr-dg-cell>{{j.start_time | date: 'short'}}</clr-dg-cell>
           <clr-dg-cell>{{getDuration(j)}}</clr-dg-cell>
           <clr-dg-cell>
-            {{(j.total > 0 ? j.succeed / j.total : 1)| percent }}
+            {{(j.status === 'InProgress'? (j.total > 0 ? j.succeed / j.total : 0): j.total > 0 ? j.succeed / j.total : 1)| percent }}
           </clr-dg-cell>
           <clr-dg-cell>{{j.total}}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
           <span *ngIf="showPaginationIndex">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}</span>
-          {{pagination.totalItems}} {{'REPLICATION.ITEMS' | translate}}
+          {{totalCount}} {{'REPLICATION.ITEMS' | translate}}
           <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
         </clr-dg-footer>
       </clr-datagrid>

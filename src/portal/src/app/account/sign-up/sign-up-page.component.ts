@@ -35,7 +35,7 @@ export class SignUpPageComponent implements OnInit {
         private msgService: MessageService,
         private router: Router) { }
 
-    @ViewChild(NewUserFormComponent, {static: false})
+    @ViewChild(NewUserFormComponent)
     newUserForm: NewUserFormComponent;
 
     getNewUser(): User {

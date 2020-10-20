@@ -61,7 +61,7 @@ fi
 # GC credentials
 keyfile="/root/harbor-ci-logs.key"
 botofile="/root/.boto"
-echo -en $GS_PRIVATE_KEY > $keyfile
+echo -n $GS_PRIVATE_KEY > $keyfile
 chmod 400 $keyfile
 echo "[Credentials]" >> $botofile
 echo "gs_service_key_file = $keyfile" >> $botofile
@@ -92,7 +92,6 @@ export Harbor_Assets_Version=$Harbor_Assets_Version
 #  the env is for online and offline package.
 export Harbor_Package_Version=$Harbor_Package_Version
 export NPM_REGISTRY=$NPM_REGISTRY
-
 # release branch must have their own base image with branch name, master and others will use the dev as base.
 if [[ $DRONE_BRANCH == "release-"* ]]; then
   Harbor_Build_Base_Tag=$target_release_version
@@ -115,7 +114,7 @@ function uploader {
 
 function package_installer {
     echo "Package Harbor offline installer."
-    pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+    robot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
     harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
     harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
     upload_build=true

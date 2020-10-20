@@ -22,12 +22,10 @@ import (
 	"strings"
 	"time"
 
-	// registry image resolvers
-	_ "github.com/goharbor/harbor/src/controller/artifact/processor/image"
-	// register chart resolver
-	_ "github.com/goharbor/harbor/src/controller/artifact/processor/chart"
-	// register CNAB resolver
-	_ "github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
+	"github.com/goharbor/harbor/src/lib/icon"
 
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
@@ -45,6 +43,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/pkg/label"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/signature"
@@ -63,6 +62,13 @@ var (
 
 	// ErrSkip error to skip walk the children of the artifact
 	ErrSkip = stderrors.New("skip")
+
+	// icon digests for each known type
+	defaultIcons = map[string]string{
+		image.ArtifactTypeImage: icon.DigestOfIconImage,
+		chart.ArtifactTypeChart: icon.DigestOfIconChart,
+		cnab.ArtifactTypeCNAB:   icon.DigestOfIconCNAB,
+	}
 )
 
 // Controller defines the operations related with artifacts and tags
@@ -184,7 +190,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 	}
 
 	// populate the artifact type
-	artifact.Type = processor.Get(artifact.MediaType).GetArtifactType()
+	artifact.Type = processor.Get(artifact.MediaType).GetArtifactType(ctx, artifact)
 
 	// create it
 	// use orm.WithTransaction here to avoid the issue:
@@ -483,8 +489,27 @@ func (c *controller) GetAddition(ctx context.Context, artifactID int64, addition
 	return processor.Get(artifact.MediaType).AbstractAddition(ctx, artifact, addition)
 }
 
-func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int64) error {
-	return c.labelMgr.AddTo(ctx, labelID, artifactID)
+func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int64) (err error) {
+	defer func() {
+		if err == nil {
+			// trigger label artifact event
+			e := &event.Event{}
+			metaData := &metadata.ArtifactLabeledMetadata{
+				ArtifactID: artifactID,
+				LabelID:    labelID,
+				Ctx:        ctx,
+			}
+			if err := e.Build(metaData); err == nil {
+				if err := e.Publish(); err != nil {
+					log.Error(errors.Wrap(err, "mark label to resource handler: event publish"))
+				}
+			} else {
+				log.Error(errors.Wrap(err, "mark label to resource handler: event build"))
+			}
+		}
+	}()
+	err = c.labelMgr.AddTo(ctx, labelID, artifactID)
+	return
 }
 
 func (c *controller) RemoveLabel(ctx context.Context, artifactID int64, labelID int64) error {
@@ -545,6 +570,9 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	// populate addition links
 	c.populateAdditionLinks(ctx, artifact)
 
+	// populate icon for the known artifact types
+	c.populateIcon(artifact)
+
 	if option == nil {
 		return artifact
 	}
@@ -555,6 +583,16 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 		c.populateLabels(ctx, artifact)
 	}
 	return artifact
+}
+
+func (c *controller) populateIcon(art *Artifact) {
+	if len(art.Icon) == 0 {
+		if i, ok := defaultIcons[art.Type]; ok {
+			art.Icon = i
+		} else {
+			art.Icon = icon.DigestOfIconDefault
+		}
+	}
 }
 
 func (c *controller) populateTags(ctx context.Context, art *Artifact, option *tag.Option) {
@@ -580,7 +618,7 @@ func (c *controller) populateLabels(ctx context.Context, art *Artifact) {
 }
 
 func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifact) {
-	types := processor.Get(artifact.MediaType).ListAdditionTypes()
+	types := processor.Get(artifact.MediaType).ListAdditionTypes(ctx, &artifact.Artifact)
 	if len(types) > 0 {
 		version := lib.GetAPIVersion(ctx)
 		for _, t := range types {

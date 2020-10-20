@@ -15,97 +15,201 @@
 package scheduler
 
 import (
-	"github.com/goharbor/harbor/src/testing/job"
-	schedulertesting "github.com/goharbor/harbor/src/testing/pkg/scheduler"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/task"
+	"github.com/goharbor/harbor/src/testing/mock"
+	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
-var sch *scheduler
-
 type schedulerTestSuite struct {
 	suite.Suite
+	scheduler *scheduler
+	dao       *mockDAO
+	execMgr   *tasktesting.ExecutionManager
+	taskMgr   *tasktesting.Manager
 }
 
 func (s *schedulerTestSuite) SetupTest() {
-	t := s.T()
-	// empty callback function registry before running every test case
-	// and register a new callback function named "callback"
-	registry = make(map[string]CallbackFunc)
-	err := Register("callback", func(interface{}) error { return nil })
-	require.Nil(t, err)
+	registry = map[string]CallbackFunc{}
+	err := RegisterCallbackFunc("callback", func(interface{}) error { return nil })
+	s.Require().Nil(err)
 
-	// recreate the scheduler object
-	sch = &scheduler{
-		jobserviceClient: &job.MockJobClient{},
-		manager:          &schedulertesting.FakeManager{},
+	s.dao = &mockDAO{}
+	s.execMgr = &tasktesting.ExecutionManager{}
+	s.taskMgr = &tasktesting.Manager{}
+
+	s.scheduler = &scheduler{
+		dao:     s.dao,
+		execMgr: s.execMgr,
+		taskMgr: s.taskMgr,
 	}
 }
 
-func (s *schedulerTestSuite) TestRegister() {
-	t := s.T()
-	var name string
-	var callbackFun CallbackFunc
-
-	// empty name
-	err := Register(name, callbackFun)
-	require.NotNil(t, err)
-
-	// nil callback function
-	name = "test"
-	err = Register(name, callbackFun)
-	require.NotNil(t, err)
-
-	// pass
-	callbackFun = func(interface{}) error { return nil }
-	err = Register(name, callbackFun)
-	require.Nil(t, err)
-
-	// duplicate name
-	err = Register(name, callbackFun)
-	require.NotNil(t, err)
-}
-
-func (s *schedulerTestSuite) TestGetCallbackFunc() {
-	t := s.T()
-	// not exist
-	_, err := GetCallbackFunc("not-exist")
-	require.NotNil(t, err)
-
-	// pass
-	f, err := GetCallbackFunc("callback")
-	require.Nil(t, err)
-	assert.NotNil(t, f)
-}
-
 func (s *schedulerTestSuite) TestSchedule() {
-	t := s.T()
+	// empty vendor type
+	id, err := s.scheduler.Schedule(nil, "", 0, "", "0 * * * * *", "callback", nil)
+	s.NotNil(err)
+
+	// invalid cron
+	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "", "callback", nil)
+	s.NotNil(err)
 
 	// callback function not exist
-	_, err := sch.Schedule("0 * * * * *", "not-exist", nil)
-	require.NotNil(t, err)
+	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "not-exist", nil)
+	s.NotNil(err)
+
+	// failed to submit to jobservice
+	s.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.taskMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Task{
+		ID:          1,
+		ExecutionID: 1,
+		Status:      job.ErrorStatus.String(),
+	}, nil)
+	s.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+	_, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "callback", "param")
+	s.Require().NotNil(err)
+	s.dao.AssertExpectations(s.T())
+	s.execMgr.AssertExpectations(s.T())
+	s.taskMgr.AssertExpectations(s.T())
+
+	// reset mocks
+	s.SetupTest()
 
 	// pass
-	id, err := sch.Schedule("0 * * * * *", "callback", nil)
-	require.Nil(t, err)
-	assert.Equal(t, int64(1), id)
+	s.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.taskMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Task{
+		ID:          1,
+		ExecutionID: 1,
+		Status:      job.SuccessStatus.String(),
+	}, nil)
+	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "callback", "param")
+	s.Require().Nil(err)
+	s.Equal(int64(1), id)
+	s.dao.AssertExpectations(s.T())
+	s.execMgr.AssertExpectations(s.T())
+	s.taskMgr.AssertExpectations(s.T())
 }
 
-func (s *schedulerTestSuite) TestUnSchedule() {
-	t := s.T()
-	// schedule not exist
-	err := sch.UnSchedule(1)
-	require.NotNil(t, err)
+func (s *schedulerTestSuite) TestUnScheduleByID() {
+	// the execution isn't stopped
+	s.execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{
+		{
+			ID: 1,
+		},
+	}, nil)
+	s.execMgr.On("StopAndWait", mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("error"))
+	err := s.scheduler.UnScheduleByID(nil, 1)
+	s.NotNil(err)
+	s.dao.AssertExpectations(s.T())
+	s.execMgr.AssertExpectations(s.T())
 
-	// schedule exist
-	id, err := sch.Schedule("0 * * * * *", "callback", nil)
-	require.Nil(t, err)
-	assert.Equal(t, int64(1), id)
+	// reset mocks
+	s.SetupTest()
 
-	err = sch.UnSchedule(id)
-	require.Nil(t, err)
+	// pass
+	s.execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{
+		{
+			ID: 1,
+		},
+	}, nil)
+	s.execMgr.On("StopAndWait", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	s.dao.On("Delete", mock.Anything, mock.Anything).Return(nil)
+	s.execMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
+	err = s.scheduler.UnScheduleByID(nil, 1)
+	s.Nil(err)
+	s.dao.AssertExpectations(s.T())
+	s.execMgr.AssertExpectations(s.T())
+}
+
+func (s *schedulerTestSuite) TestUnScheduleByVendor() {
+	s.dao.On("List", mock.Anything, mock.Anything).Return([]*schedule{
+		{
+			ID: 1,
+		},
+	}, nil)
+	s.execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{
+		{
+			ID: 1,
+		},
+	}, nil)
+	s.execMgr.On("StopAndWait", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	s.dao.On("Delete", mock.Anything, mock.Anything).Return(nil)
+	s.execMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
+	err := s.scheduler.UnScheduleByVendor(nil, "vendor", 1)
+	s.Nil(err)
+	s.dao.AssertExpectations(s.T())
+	s.execMgr.AssertExpectations(s.T())
+}
+
+func (s *schedulerTestSuite) TestGetSchedule() {
+	// no execution for the schedule
+	s.dao.On("Get", mock.Anything, mock.Anything).Return(&schedule{
+		ID:         1,
+		VendorType: "vendor",
+		VendorID:   1,
+		CRON:       "0 * * * * *",
+	}, nil)
+	s.execMgr.On("List", mock.Anything, mock.Anything).Return(nil, nil)
+	schd, err := s.scheduler.GetSchedule(nil, 1)
+	s.Require().Nil(err)
+	s.Equal("0 * * * * *", schd.CRON)
+	s.Equal(job.ErrorStatus.String(), schd.Status)
+	s.dao.AssertExpectations(s.T())
+	s.execMgr.AssertExpectations(s.T())
+
+	// reset mocks
+	s.SetupTest()
+
+	// pass
+	s.dao.On("Get", mock.Anything, mock.Anything).Return(&schedule{
+		ID:         1,
+		VendorType: "vendor",
+		VendorID:   1,
+		CRON:       "0 * * * * *",
+	}, nil)
+	s.execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{
+		{
+			ID:     1,
+			Status: job.SuccessStatus.String(),
+		},
+	}, nil)
+	schd, err = s.scheduler.GetSchedule(nil, 1)
+	s.Require().Nil(err)
+	s.Equal("0 * * * * *", schd.CRON)
+	s.Equal(job.SuccessStatus.String(), schd.Status)
+	s.dao.AssertExpectations(s.T())
+	s.execMgr.AssertExpectations(s.T())
+}
+
+func (s *schedulerTestSuite) TestListSchedules() {
+	s.dao.On("List", mock.Anything, mock.Anything).Return([]*schedule{
+		{
+			ID:         1,
+			VendorType: "vendor",
+			VendorID:   1,
+			CRON:       "0 * * * * *",
+		},
+	}, nil)
+	s.execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{
+		{
+			ID:     1,
+			Status: job.SuccessStatus.String(),
+		},
+	}, nil)
+	schds, err := s.scheduler.ListSchedules(nil, nil)
+	s.Require().Nil(err)
+	s.Require().Len(schds, 1)
+	s.Equal("0 * * * * *", schds[0].CRON)
+	s.Equal(job.SuccessStatus.String(), schds[0].Status)
+	s.dao.AssertExpectations(s.T())
+	s.execMgr.AssertExpectations(s.T())
 }
 
 func TestScheduler(t *testing.T) {

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ArtifactListPageComponent } from './artifact-list-page.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -61,7 +61,7 @@ describe('ArtifactListPageComponent', () => {
         data: of({
             projectResolver: {
                 ismember: true,
-                role_name: 'master',
+                role_name: 'maintainer',
             }
         }),
         params: {
@@ -73,7 +73,7 @@ describe('ArtifactListPageComponent', () => {
     const config: IServiceConfig = {
         repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories/testing"
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA

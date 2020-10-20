@@ -34,6 +34,16 @@ func New(kw KeyWords) *Query {
 	return &Query{Keywords: kw}
 }
 
+// MustClone returns the clone of query when it's not nil
+// or returns a new Query instance
+func MustClone(query *Query) *Query {
+	if query != nil {
+		clone := *query
+		return &clone
+	}
+	return New(KeyWords{})
+}
+
 // Range query
 type Range struct {
 	Min interface{}

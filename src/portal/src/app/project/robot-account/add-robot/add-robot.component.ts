@@ -50,7 +50,7 @@ export class AddRobotComponent implements OnInit, OnDestroy {
   @Input() projectName: string;
   @Output() create = new EventEmitter<boolean>();
   @ViewChild("robotForm", {static: true}) currentForm: NgForm;
-  @ViewChild("copyAlert", {static: false}) copyAlert: InlineAlertComponent;
+  @ViewChild("copyAlert") copyAlert: InlineAlertComponent;
   private _expiresDate: Date;
   isNeverExpired: boolean = false;
   expiresDatePlaceholder: string = ' ';

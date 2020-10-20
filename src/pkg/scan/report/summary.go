@@ -17,6 +17,7 @@ package report
 import (
 	"reflect"
 
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
@@ -24,31 +25,21 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 )
 
-// CVESet defines the CVE whitelist with a hash set way for easy query.
-type CVESet map[string]struct{}
-
-// Contains checks whether the specified CVE is in the set or not.
-func (cs CVESet) Contains(cve string) bool {
-	_, ok := cs[cve]
-
-	return ok
-}
-
 // Options provides options for getting the report w/ summary.
 type Options struct {
 	// If it is set, the returned report will contains artifact digest for the vulnerabilities
 	ArtifactDigest string
 	// If it is set, the returned summary will not count the CVEs in the list in.
-	CVEWhitelist CVESet
+	CVEAllowlist models.CVESet
 }
 
 // Option for getting the report w/ summary with func template way.
 type Option func(options *Options)
 
-// WithCVEWhitelist is an option of setting CVE whitelist.
-func WithCVEWhitelist(set *CVESet) Option {
+// WithCVEAllowlist is an option of setting CVE allowlist.
+func WithCVEAllowlist(set *models.CVESet) Option {
 	return func(options *Options) {
-		options.CVEWhitelist = *set
+		options.CVEAllowlist = *set
 	}
 }
 
@@ -127,7 +118,7 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 	if sum.Duration < 0 {
 		sum.Duration = 0
 	}
-	if len(ops.CVEWhitelist) > 0 {
+	if len(ops.CVEAllowlist) > 0 {
 		sum.CVEBypassed = make([]string, 0)
 	}
 
@@ -170,11 +161,11 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 
 	overallSev := vuln.None
 	for _, v := range rp.Vulnerabilities {
-		if len(ops.CVEWhitelist) > 0 && ops.CVEWhitelist.Contains(v.ID) {
-			// If whitelist is set, then check if we need to bypass it
+		if len(ops.CVEAllowlist) > 0 && ops.CVEAllowlist.Contains(v.ID) {
+			// If allowlist is set, then check if we need to bypass it
 			// Reduce the total
 			vsum.Total--
-			// Append the by passed CVEs specified in the whitelist
+			// Append the by passed CVEs specified in the allowlist
 			sum.CVEBypassed = append(sum.CVEBypassed, v.ID)
 
 			continue
@@ -199,7 +190,7 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 	sum.Summary = vsum
 
 	// Override the overall severity of the filtered list if needed.
-	if len(ops.CVEWhitelist) > 0 {
+	if len(ops.CVEAllowlist) > 0 {
 		sum.Severity = overallSev
 	}
 

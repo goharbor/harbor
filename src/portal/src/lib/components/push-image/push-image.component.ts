@@ -13,12 +13,12 @@ export class PushImageButtonComponent {
   @Input() registryUrl: string = "unknown";
   @Input() projectName: string = "unknown";
 
-  @ViewChild("tagCopyImage", {static: false}) tagCopyImageInput: CopyInputComponent;
-  @ViewChild("pushCopyImage", {static: false}) pushCopImageyInput: CopyInputComponent;
-  @ViewChild("tagCopyChart", {static: false}) tagCopyChartInput: CopyInputComponent;
-  @ViewChild("pushCopyChart", {static: false}) pushCopyChartInput: CopyInputComponent;
-  @ViewChild("pushCopyCnab", {static: false}) pushCopCnabyInput: CopyInputComponent;
-  @ViewChild("copyAlert", {static: false}) copyAlert: InlineAlertComponent;
+  @ViewChild("tagCopyImage") tagCopyImageInput: CopyInputComponent;
+  @ViewChild("pushCopyImage") pushCopImageyInput: CopyInputComponent;
+  @ViewChild("tagCopyChart") tagCopyChartInput: CopyInputComponent;
+  @ViewChild("pushCopyChart") pushCopyChartInput: CopyInputComponent;
+  @ViewChild("pushCopyCnab") pushCopCnabyInput: CopyInputComponent;
+  @ViewChild("copyAlert") copyAlert: InlineAlertComponent;
 
   public get tagCommandImage(): string {
     return `docker tag SOURCE_IMAGE[:TAG] ${this.registryUrl}/${

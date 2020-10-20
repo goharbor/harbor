@@ -81,7 +81,16 @@
                         </ng-template>
                     </ng-template>
                 </clr-dg-cell>
-                <clr-dg-cell>{{!scanner.disabled}}</clr-dg-cell>
+                <clr-dg-cell>
+                    <div *ngIf="!scanner.disabled" class="icon-wrap">
+                        <clr-icon shape="check-circle" size="20" class="is-success enabled-icon"></clr-icon>
+                        <span class="margin-left-5px">{{'WEBHOOK.ENABLED' | translate}}</span>
+                    </div>
+                    <div *ngIf="scanner.disabled" class="icon-wrap">
+                        <clr-icon shape="exclamation-triangle" size="20" class="is-warning"></clr-icon>
+                        <span class="margin-left-5px">{{'WEBHOOK.DISABLED' | translate}}</span>
+                    </div>
+                </clr-dg-cell>
                 <clr-dg-cell>{{scanner.auth?scanner.auth:'None'}}</clr-dg-cell>
                 <scanner-metadata *clrIfExpanded [uid]="scanner.uuid"  ngProjectAs="clr-dg-row-detail"></scanner-metadata>
             </clr-dg-row>

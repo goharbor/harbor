@@ -17,8 +17,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/event/metadata"
-	"github.com/goharbor/harbor/src/pkg/notification"
 	"net/http"
 	"strings"
 	"time"
@@ -30,10 +28,13 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -48,6 +49,7 @@ const (
 func newArtifactAPI() *artifactAPI {
 	return &artifactAPI{
 		artCtl:  artifact.Ctl,
+		proCtl:  project.Ctl,
 		repoCtl: repository.Ctl,
 		scanCtl: scan.DefaultController,
 		tagCtl:  tag.Ctl,
@@ -57,6 +59,7 @@ func newArtifactAPI() *artifactAPI {
 type artifactAPI struct {
 	BaseAPI
 	artCtl  artifact.Controller
+	proCtl  project.Controller
 	repoCtl repository.Controller
 	scanCtl scan.Controller
 	tagCtl  tag.Controller
@@ -152,6 +155,10 @@ func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArt
 		return a.SendError(ctx, err)
 	}
 
+	if err := a.requireNonProxyCacheProject(ctx, params.ProjectName); err != nil {
+		return a.SendError(ctx, err)
+	}
+
 	srcRepo, ref, err := parse(params.From)
 	if err != nil {
 		return a.SendError(ctx, err)
@@ -200,6 +207,11 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceTag); err != nil {
 		return a.SendError(ctx, err)
 	}
+
+	if err := a.requireNonProxyCacheProject(ctx, params.ProjectName); err != nil {
+		return a.SendError(ctx, err)
+	}
+
 	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
 		params.Reference, &artifact.Option{
 			WithTag: true,
@@ -225,6 +237,18 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 
 	// as we provide no API for get the single tag, ignore setting the location header here
 	return operation.NewCreateTagCreated()
+}
+
+func (a *artifactAPI) requireNonProxyCacheProject(ctx context.Context, name string) error {
+	pro, err := a.proCtl.GetByName(ctx, name)
+	if err != nil {
+		return err
+	}
+	if pro.IsProxy() {
+		return errors.New(nil).WithCode(errors.MethodNotAllowedCode).
+			WithMessage("the operation isn't supported for a proxy cache project")
+	}
+	return nil
 }
 
 func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagParams) middleware.Responder {
@@ -303,7 +327,7 @@ func (a *artifactAPI) ListTags(ctx context.Context, params operation.ListTagsPar
 
 	var ts []*models.Tag
 	for _, tag := range tags {
-		ts = append(ts, tag.ToSwagger())
+		ts = append(ts, model.NewTag(tag).ToSwagger())
 	}
 	return operation.NewListTagsOK().
 		WithXTotalCount(total).

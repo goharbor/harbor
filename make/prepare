@@ -51,11 +51,12 @@ secret_dir=${data_path}/secret
 config_dir=$harbor_prepare_path/common/config
 
 # Run prepare script
-docker run --rm -v $input_dir:/input:z \
-                    -v $data_path:/data:z \
-                    -v $harbor_prepare_path:/compose_location:z \
-                    -v $config_dir:/config:z \
-                    -v /:/hostfs:z \
+docker run --rm -v $input_dir:/input \
+                    -v $data_path:/data \
+                    -v $harbor_prepare_path:/compose_location \
+                    -v $config_dir:/config \
+                    -v /:/hostfs \
+                    --privileged \
                     goharbor/prepare:dev prepare $@
 
 echo "Clean up the input dir"

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ListRepositoryROComponent } from './list-repository-ro.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -6,9 +6,9 @@ import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
+import { SessionService } from "../session.service";
 
 describe('ListRepositoryRoComponent', () => {
     let component: ListRepositoryROComponent;
@@ -16,7 +16,7 @@ describe('ListRepositoryRoComponent', () => {
     const mockSearchTriggerService = {
         closeSearch: () => { }
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
@@ -33,6 +33,7 @@ describe('ListRepositoryRoComponent', () => {
             declarations: [ListRepositoryROComponent],
             providers: [
                 TranslateService,
+                SessionService,
                 { provide: SearchTriggerService, useValue: mockSearchTriggerService }
 
             ]

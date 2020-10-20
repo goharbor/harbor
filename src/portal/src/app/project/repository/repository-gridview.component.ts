@@ -9,11 +9,11 @@ import {
   SimpleChanges,
   Inject, OnDestroy
 } from "@angular/core";
-import { forkJoin, Subscription } from "rxjs";
+import {forkJoin, of, Subscription} from "rxjs";
 import { debounceTime, distinctUntilChanged, switchMap } from "rxjs/operators";
 import { TranslateService } from "@ngx-translate/core";
 import { map, catchError } from "rxjs/operators";
-import { Observable, throwError as observableThrowError } from "rxjs";
+import { Observable } from "rxjs";
 import { ClrDatagridStateInterface } from "@clr/angular";
 import {
   RepositoryService as NewRepositoryService
@@ -49,6 +49,7 @@ import { SessionService } from "../../shared/session.service";
 import { GridViewComponent } from "./gridview/grid-view.component";
 import { Repository as NewRepository } from "../../../../ng-swagger-gen/models/repository";
 import { StrictHttpResponse as __StrictHttpResponse } from '../../../../ng-swagger-gen/strict-http-response';
+import {HttpErrorResponse} from "@angular/common/http";
 
 
 @Component({
@@ -84,15 +85,16 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
   totalCount = 0;
   currentState: ClrDatagridStateInterface;
 
-  @ViewChild("confirmationDialog", {static: false})
+  @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
 
-  @ViewChild("gridView", {static: false}) gridView: GridViewComponent;
+  @ViewChild("gridView") gridView: GridViewComponent;
   hasCreateRepositoryPermission: boolean;
   hasDeleteRepositoryPermission: boolean;
   @ViewChild(FilterComponent, {static: true})
   filterComponent: FilterComponent;
   searchSub: Subscription;
+  isProxyCacheProject: boolean = false;
 
   constructor(@Inject(SERVICE_CONFIG) private configInfo: IServiceConfig,
               private errorHandlerService: ErrorHandler,
@@ -122,7 +124,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
   }
 
   goIntoRepo(repoEvt: NewRepository): void {
-    let linkUrl = ['harbor', 'projects', repoEvt.project_id, 'repositories', repoEvt.name.split(`${this.projectName}/`)[1]];
+    let linkUrl = ['harbor', 'projects', repoEvt.project_id, 'repositories', repoEvt.name.substr(this.projectName.length + 1)];
     this.router.navigate(linkUrl);
   }
 
@@ -139,6 +141,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
       let pro: Project = <Project>resolverData['projectResolver'];
       this.hasProjectAdminRole = pro.has_project_admin_role;
       this.projectName = pro.name;
+      if (pro.registry_id) {
+        this.isProxyCacheProject = true;
+      }
     }
     this.hasSignedIn = this.session.getCurrentUser() !== null;
     // Get system info for tag views
@@ -188,8 +193,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
   }
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
-    this.loading = true;
-    // forkJoin(...repArr).subscribe(() => {
     if (message &&
       message.source === ConfirmationTargets.REPOSITORY &&
       message.state === ConfirmationState.CONFIRMED) {
@@ -199,19 +202,29 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         repoLists.forEach(repo => {
           observableLists.push(this.delOperate(repo));
         });
-        forkJoin(observableLists).subscribe((item) => {
+        forkJoin(observableLists).subscribe(resArr => {
+          let error;
+          if (resArr && resArr.length) {
+            resArr.forEach(item => {
+              if (item instanceof HttpErrorResponse) {
+                error = errorHandler(item);
+              }
+            });
+          }
+          if (error) {
+            this.errorHandlerService.error(error);
+          } else {
+            this.translateService.get("BATCH.DELETED_SUCCESS").subscribe(res => {
+              this.errorHandlerService.info(res);
+            });
+          }
           this.selectedRow = [];
-          this.refresh();
           let st: ClrDatagridStateInterface = this.getStateAfterDeletion();
           if (!st) {
             this.refresh();
           } else {
             this.clrLoad(st);
           }
-        }, error => {
-          this.errorHandlerService.error(error);
-          this.loading = false;
-          this.refresh();
         });
       }
     }
@@ -223,7 +236,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     operMessage.name = 'OPERATION.DELETE_REPO';
     operMessage.data.id = repo.id;
     operMessage.state = OperationState.progressing;
-    repo.name = repo.name.split(`${this.projectName}/`)[1];
+    repo.name = repo.name.substr(this.projectName.length + 1);
     operMessage.data.name = repo.name;
 
     this.operationService.publishInfo(operMessage);
@@ -239,10 +252,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
           });
         }), catchError(error => {
         const message = errorHandler(error);
-        this.translateService.get(message).subscribe(res =>
-          operateChanges(operMessage, OperationState.failure, res)
-        );
-        return observableThrowError(message);
+        this.translateService.get(message).subscribe(res => {
+              operateChanges(operMessage, OperationState.failure, res);
+        });
+        return of(error);
       }));
   }
 

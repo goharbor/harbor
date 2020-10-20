@@ -17,7 +17,6 @@ package model
 import (
 	"fmt"
 	"github.com/astaxie/beego/validation"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/robfig/cron"
 	"time"
 )
@@ -168,5 +167,6 @@ type PolicyQuery struct {
 	Namespace    string
 	SrcRegistry  int64
 	DestRegistry int64
-	models.Pagination
+	Page         int64
+	Size         int64
 }

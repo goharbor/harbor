@@ -39,7 +39,6 @@ def oras_pull(harbor_server, user, password, project, repo, tag):
           os.rmdir(cwd)
         os.makedirs(cwd)
         os.chdir(cwd)
-        print "Tmp dir:", cwd
     except Exception as e:
         raise Exception('Error: Exited with error {}',format(e))
     ret = base.run_command([oras_cmd, "pull", harbor_server + "/" + project + "/" + repo+":"+ tag, "-a"])

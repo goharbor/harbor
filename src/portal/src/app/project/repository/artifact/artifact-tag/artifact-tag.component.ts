@@ -14,7 +14,7 @@ import { ErrorHandler } from "../../../../../lib/utils/error-handler";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../../lib/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../lib/components/operation/operate";
 import { errorHandler } from "../../../../../lib/utils/shared/shared.utils";
-import { ArtifactFront as Artifact } from "../artifact";
+import { ArtifactFront as Artifact, artifactImages, artifactPullCommands } from '../artifact';
 import { ArtifactService } from '../../../../../../ng-swagger-gen/services/artifact.service';
 import { Tag } from '../../../../../../ng-swagger-gen/models/tag';
 import {
@@ -43,6 +43,7 @@ const DeleteTagWithNotoryCommand2 = ':4443 -d ~/.docker/trust remove -p ';
 export class ArtifactTagComponent implements OnInit, OnDestroy {
   @Input() artifactDetails: Artifact;
   @Input() projectName: string;
+  @Input() isProxyCacheProject: boolean = false;
   @Input() projectId: number;
   @Input() repositoryName: string;
   newTagName = new InitTag();
@@ -54,7 +55,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   loading = true;
   openTag = false;
   availableTime = AVAILABLE_TIME;
-  @ViewChild("confirmationDialog", { static: false })
+  @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
   hasDeleteTagPermission: boolean;
   hasCreateTagPermission: boolean;
@@ -242,10 +243,10 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
           } else if (deleteErrorList.length === deleteResult.length) {
             // all is error
             this.loading = false;
-            this.errorHandlerService.error(deleteResult[deleteResult.length - 1].error);
+            this.errorHandlerService.error(deleteResult[deleteResult.length - 1]);
           } else {
             // some artifact delete success but it has error delete things
-            this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1].error);
+            this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1]);
             // if delete one success  refresh list
             this.currentPage = 1;
             let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
@@ -255,7 +256,12 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
       }
     }
   }
-
+  deletePort(url): string {
+    if (url && url.indexOf(':') !== -1) {
+      return url.split(':')[0];
+    }
+    return url;
+  }
   delOperate(tag: Tag): Observable<any> | null {
     // init operation info
     let operMessage = new OperateInfo();
@@ -267,10 +273,10 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     if (tag.signed) {
       forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
         this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
-          let wrongInfo: string = res[1] + DeleteTagWithNotoryCommand1 + this.registryUrl +
+          const wrongInfo: string = res[1] + DeleteTagWithNotoryCommand1 + this.deletePort(this.registryUrl) +
             DeleteTagWithNotoryCommand2 +
             this.registryUrl + "/" + this.repositoryName +
-            " " + name;
+            " " + tag.name;
           operateChanges(operMessage, OperationState.failure, wrongInfo);
         });
         return of(null);
@@ -326,5 +332,22 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   }
   public get registryUrl(): string {
     return this.systemInfo ? this.systemInfo.registry_url : '';
+  }
+  hasPullCommand(): boolean {
+    return this.artifactDetails
+      && (this.artifactDetails.type ===  artifactImages[0]
+        || this.artifactDetails.type ===  artifactImages[1]
+        || this.artifactDetails.type ===  artifactImages[2]);
+  }
+  getPullCommand(tag: Tag): string {
+    let pullCommand: string = '';
+    if (tag && tag.name && this.artifactDetails ) {
+      artifactPullCommands.forEach(artifactPullCommand => {
+        if (artifactPullCommand.type === this.artifactDetails.type) {
+          pullCommand = `${artifactPullCommand.pullCommand} ${this.registryUrl}/${this.projectName}/${this.repositoryName}:${tag.name}`;
+        }
+      });
+    }
+   return pullCommand;
   }
 }

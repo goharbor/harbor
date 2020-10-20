@@ -1,6 +1,4 @@
-import { ComponentFixture, TestBed, async } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from "rxjs";
 import { RepositoryService as NewRepositoryService } from "../../../../ng-swagger-gen/services/repository.service";
@@ -105,7 +103,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
       }
     }
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
@@ -143,7 +141,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
   });
 
-  it('should create', async(() => {
+  it('should create', waitForAsync(() => {
     expect(compRepo).toBeTruthy();
   }));
 });

@@ -33,7 +33,7 @@ import { errorHandler as errorHandlerFn } from "../../../lib/utils/shared/shared
   styleUrls: ["./robot-account.component.scss"]
 })
 export class RobotAccountComponent implements OnInit, OnDestroy {
-  @ViewChild(AddRobotComponent, {static: false})
+  @ViewChild(AddRobotComponent)
   addRobotComponent: AddRobotComponent;
   selectedRow: Robot[] = [];
   robotsCopy: Robot[] = [];
@@ -136,13 +136,15 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
     let robotsDelete$ = robots.map(robot => this.delOperate(robot));
     forkJoin(robotsDelete$)
       .pipe(
-        catchError(err => observableThrowError(err)),
         finalize(() => {
           this.retrieve();
           this.selectedRow = [];
         })
       )
-      .subscribe(() => { });
+      .subscribe(() => { }
+      , error => {
+        this.errorHandler.error(error);
+      });
   }
 
   delOperate(robot: Robot) {
@@ -164,7 +166,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
             this.translate.get(errorMsg).subscribe(res =>
               operateChanges(operMessage, OperationState.failure, res)
             );
-            return observableThrowError(errorMsg);
+            return observableThrowError(error);
           }
         )
       ));

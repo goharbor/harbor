@@ -21,12 +21,13 @@ Resource  ../../resources/Util.robot
 *** Keywords ***
 
 Sign In Harbor With OIDC User
-    [Arguments]  ${url}  ${username}=${OIDC_USERNAME}
-    ${head_username}=  Set Variable  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//button[contains(.,'${username}')]
+    [Arguments]  ${url}  ${username}=${OIDC_USERNAME}  ${is_onboard}=${false}  ${username_claim}=${null}
+    ${full_name}=   Set Variable  ${username}@example.com
+    ${head_username}=   Set Variable If  '${username_claim}' == 'email'  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//button[contains(.,'${full_name}')]  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//button[contains(.,'${username}')]
     Init Chrome Driver
     Go To    ${url}
     Retry Element Click    ${log_oidc_provider_btn}
-    Retry Text Input    ${dex_login_btn}    ${username}@example.com
+    Retry Text Input    ${dex_login_btn}    ${full_name}
     Retry Text Input    ${dex_pwd_btn}    password
     Retry Element Click    ${submit_login_btn}
     Retry Element Click    ${grant_btn}
@@ -35,8 +36,12 @@ Sign In Harbor With OIDC User
     #  but if this user has been logged into harbor successfully, this input box will not show up,
     #  so there is condition branch for this stituation.
     ${isVisible}=  Run Keyword And Return Status  Element Should Be Visible  ${oidc_username_input}
+    Run Keyword If  ${is_onboard} == ${true}  Should Not Be True  ${isVisible}
     Run Keyword If  '${isVisible}' == 'True'  Run Keywords  Retry Text Input    ${oidc_username_input}    ${username}  AND  Retry Element Click    ${save_btn}
     Retry Wait Element  ${head_username}
+    ${name_display}=  Get Text  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown[2]//button/span
+    Run Keyword If  '${username_claim}' == 'email'  Should Be Equal As Strings  ${name_display}  ${full_name}
+    ...  ELSE    Should Be Equal As Strings  ${name_display}  ${username}
 
 Get Secrete By API
     [Arguments]  ${url}  ${username}=${OIDC_USERNAME}

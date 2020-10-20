@@ -32,7 +32,7 @@ const QuotaType = 'project';
 export class ProjectQuotasComponent implements OnChanges {
 
   config: Configuration = new Configuration();
-  @ViewChild('editProjectQuotas', {static: false})
+  @ViewChild('editProjectQuotas')
   editQuotaDialog: EditProjectQuotasComponent;
   loading = true;
   quotaHardLimitValue: QuotaHardLimitInterface;
@@ -220,7 +220,7 @@ export class ProjectQuotasComponent implements OnChanges {
   }
 
   goToLink(proId) {
-    let linkUrl = ["harbor", "projects", proId, "summary"];
+    let linkUrl = ["harbor", "projects", proId];
     this.router.navigate(linkUrl);
   }
   refresh() {

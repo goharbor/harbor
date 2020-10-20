@@ -27,7 +27,6 @@ import { AddMemberComponent } from './member/add-member/add-member.component';
 import { AddGroupComponent } from './member/add-group/add-group.component';
 import { MemberService } from './member/member.service';
 import { RobotService } from './robot-account/robot-account.service';
-import { ProjectRoutingResolver } from '../services/routing-resolvers/project-routing-resolver.service';
 import { TargetExistsValidatorDirective } from '../shared/target-exists-directive';
 import { HelmChartModule } from './helm-chart/helm-chart.module';
 import { RobotAccountComponent } from './robot-account/robot-account.component';
@@ -64,6 +63,11 @@ import { ArtifactDefaultService, ArtifactService } from "./repository/artifact/a
 import { GridViewComponent } from "./repository/gridview/grid-view.component";
 import { LastTriggerComponent } from "./webhook/last-trigger/last-trigger.component";
 import { AllPipesModule } from '../all-pipes/all-pipes.module';
+import { PolicyComponent } from './p2p-provider/policy/policy.component';
+import { P2pProviderService } from './p2p-provider/p2p-provider.service';
+import { AddP2pPolicyComponent } from './p2p-provider/add-p2p-policy/add-p2p-policy.component';
+import { TaskListComponent } from './p2p-provider/task-list/task-list.component';
+import { P2pProviderComponent } from './p2p-provider/p2p-provider.component';
 
 @NgModule({
   imports: [
@@ -112,7 +116,11 @@ import { AllPipesModule } from '../all-pipes/all-pipes.module';
     ValuesComponent,
     ArtifactVulnerabilitiesComponent,
     GridViewComponent,
-    LastTriggerComponent
+    LastTriggerComponent,
+    PolicyComponent,
+    AddP2pPolicyComponent,
+    TaskListComponent,
+    P2pProviderComponent
   ],
   exports: [ProjectComponent, ListProjectComponent],
   providers: [
@@ -122,6 +130,7 @@ import { AllPipesModule } from '../all-pipes/all-pipes.module';
     ConfigScannerService,
     ArtifactDefaultService,
     { provide: ArtifactService, useClass: ArtifactDefaultService },
+    P2pProviderService
   ]
 })
 export class ProjectModule {

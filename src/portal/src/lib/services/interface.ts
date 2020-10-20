@@ -34,6 +34,7 @@ export interface Endpoint extends Base {
   name: string;
   type: string;
   url: string;
+  status?: string;
 }
 
 export interface PingEndpoint extends Base {
@@ -439,7 +440,7 @@ export interface ProjectRootInterface {
   VALUE: number;
   LABEL: string;
 }
-export interface SystemCVEWhitelist {
+export interface SystemCVEAllowlist {
   id: number;
   project_id: number;
   expires_at: number;

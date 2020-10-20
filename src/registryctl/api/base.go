@@ -16,8 +16,9 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/docker/distribution/registry/storage/driver"
 	"github.com/goharbor/harbor/src/lib/errors"
-	server_error "github.com/goharbor/harbor/src/server/error"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 )
 
@@ -38,7 +39,10 @@ func HandleBadRequest(w http.ResponseWriter, err error) {
 
 // HandleError ...
 func HandleError(w http.ResponseWriter, err error) {
-	server_error.SendError(w, err)
+	if _, ok := err.(driver.PathNotFoundError); ok {
+		err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage(err.Error())
+	}
+	lib_http.SendError(w, err)
 }
 
 // WriteJSON response status code will be written automatically if there is an error

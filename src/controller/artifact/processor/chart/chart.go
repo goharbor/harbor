@@ -121,10 +121,10 @@ func (p *processor) AbstractAddition(ctx context.Context, artifact *artifact.Art
 	return nil, nil
 }
 
-func (p *processor) GetArtifactType() string {
+func (p *processor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
 	return ArtifactTypeChart
 }
 
-func (p *processor) ListAdditionTypes() []string {
+func (p *processor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
 	return []string{AdditionTypeValues, AdditionTypeReadme, AdditionTypeDependencies}
 }

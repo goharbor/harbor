@@ -259,7 +259,7 @@ export interface HarborModuleConfig {
 })
 
 export class HarborLibraryModule {
-  static forRoot(config: HarborModuleConfig = {}): ModuleWithProviders {
+  static forRoot(config: HarborModuleConfig = {}): ModuleWithProviders<HarborLibraryModule> {
     return {
       ngModule: HarborLibraryModule,
       providers: [
@@ -295,7 +295,7 @@ export class HarborLibraryModule {
     };
   }
 
-  static forChild(config: HarborModuleConfig = {}): ModuleWithProviders {
+  static forChild(config: HarborModuleConfig = {}): ModuleWithProviders<HarborLibraryModule> {
     return {
       ngModule: HarborLibraryModule,
       providers: [

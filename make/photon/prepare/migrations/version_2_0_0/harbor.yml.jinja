@@ -134,21 +134,32 @@ clair:
 {% endif %}
 
 # Trivy configuration
+#
+# Trivy DB contains vulnerability information from NVD, Red Hat, and many other upstream vulnerability databases.
+# It is downloaded by Trivy from the GitHub release page https://github.com/aquasecurity/trivy-db/releases and cached
+# in the local file system. In addition, the database contains the update timestamp so Trivy can detect whether it
+# should download a newer version from the Internet or use the cached one. Currently, the database is updated every
+# 12 hours and published as a new release to GitHub.
 trivy:
-  # github_token The GitHub access token to download Trivy DB
+  # ignoreUnfixed The flag to display only fixed vulnerabilities
+  ignore_unfixed: false
+  # skipUpdate The flag to enable or disable Trivy DB downloads from GitHub
   #
-  # Trivy DB contains vulnerability information from NVD, Red Hat, and many other upstream vulnerability databases.
-  # It is downloaded by Trivy from the GitHub release page https://github.com/aquasecurity/trivy-db/releases and cached
-  # in the local file system (/home/scanner/.cache/trivy/db/trivy.db). In addition, the database contains the update
-  # timestamp so Trivy can detect whether it should download a newer version from the Internet or use the cached one.
-  # Currently, the database is updated every 12 hours and published as a new release to GitHub.
+  # You might want to enable this flag in test or CI/CD environments to avoid GitHub rate limiting issues.
+  # If the flag is enabled you have to download the `trivy-offline.tar.gz` archive manually, extract `trivy.db` and
+  # `metadata.json` files and mount them in the `/home/scanner/.cache/trivy/db` path.
+  skip_update: false
+  #
+  # insecure The flag to skip verifying registry certificate
+  insecure: false
+  # github_token The GitHub access token to download Trivy DB
   #
   # Anonymous downloads from GitHub are subject to the limit of 60 requests per hour. Normally such rate limit is enough
   # for production operations. If, for any reason, it's not enough, you could increase the rate limit to 5000
   # requests per hour by specifying the GitHub access token. For more details on GitHub rate limiting please consult
   # https://developer.github.com/v3/#rate-limiting
   #
-  # You can create a GitHub token by following the instuctions in
+  # You can create a GitHub token by following the instructions in
   # https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line
   #
   # github_token: xxx
@@ -281,6 +292,8 @@ external_database:
 #     username: harbor_db_username
 #     password: harbor_db_password
 #     ssl_mode: disable
+#     max_idle_conns: 2
+#     max_open_conns: 0
 #   clair:
 #     host: clair_db_host
 #     port: clair_db_port
@@ -306,9 +319,14 @@ external_database:
 
 {% if external_redis is defined %}
 external_redis:
-  host: {{ external_redis.host }}
-  port: {{ external_redis.port }}
+  # support redis, redis+sentinel
+  # host for redis: <host_redis>:<port_redis>
+  # host for redis+sentinel:
+  #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
+  host: {{ external_redis.host }}:{{ external_redis.port }}
   password: {{ external_redis.password }}
+  # sentinel_master_set must be set to support redis+sentinel
+  #sentinel_master_set:
   # db_index 0 is for core, it's unchangeable
   registry_db_index: {{ external_redis.registry_db_index }}
   jobservice_db_index: {{ external_redis.jobservice_db_index }}
@@ -319,9 +337,14 @@ external_redis:
 {% else %}
 # Umcomments external_redis if using external Redis server
 # external_redis:
-#   host: redis
-#   port: 6379
+#   # support redis, redis+sentinel
+#   # host for redis: <host_redis>:<port_redis>
+#   # host for redis+sentinel:
+#   #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
+#   host: redis:6379
 #   password:
+#   # sentinel_master_set must be set to support redis+sentinel
+#   #sentinel_master_set:
 #   # db_index 0 is for core, it's unchangeable
 #   registry_db_index: 1
 #   jobservice_db_index: 2

@@ -16,15 +16,10 @@ package awsecr
 
 import (
 	"errors"
-	"net/http"
 	"regexp"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
 	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
-	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
@@ -52,11 +47,16 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 	if err != nil {
 		return nil, err
 	}
-	authorizer := NewAuth(region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure)
+	svc, err := getAwsSvc(
+		region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, nil)
+	if err != nil {
+		return nil, err
+	}
+	authorizer := NewAuth(registry.Credential.AccessKey, svc)
 	return &adapter{
 		registry: registry,
 		Adapter:  native.NewAdapterWithAuthorizer(registry, authorizer),
-		region:   region,
+		cacheSvc: svc,
 	}, nil
 }
 
@@ -88,9 +88,8 @@ var (
 
 type adapter struct {
 	*native.Adapter
-	registry      *model.Registry
-	region        string
-	forceEndpoint *string
+	registry *model.Registry
+	cacheSvc *awsecrapi.ECR
 }
 
 func (*adapter) Info() (info *model.RegistryInfo, err error) {
@@ -189,6 +188,14 @@ func getAdapterInfo() *model.AdapterPattern {
 					Key:   "sa-east-1",
 					Value: "https://api.ecr.sa-east-1.amazonaws.com",
 				},
+				{
+					Key:   "cn-north-1",
+					Value: "https://api.ecr.cn-north-1.amazonaws.com.cn",
+				},
+				{
+					Key:   "cn-northwest-1",
+					Value: "https://api.ecr.cn-northwest-1.amazonaws.com.cn",
+				},
 			},
 		},
 	}
@@ -197,11 +204,6 @@ func getAdapterInfo() *model.AdapterPattern {
 
 // HealthCheck checks health status of a registry
 func (a *adapter) HealthCheck() (model.HealthStatus, error) {
-	if a.registry.Credential == nil ||
-		len(a.registry.Credential.AccessKey) == 0 || len(a.registry.Credential.AccessSecret) == 0 {
-		log.Errorf("no credential to ping registry %s", a.registry.URL)
-		return model.Unhealthy, nil
-	}
 	if err := a.Ping(); err != nil {
 		log.Errorf("failed to ping registry %s: %v", a.registry.URL, err)
 		return model.Unhealthy, nil
@@ -234,33 +236,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 }
 
 func (a *adapter) createRepository(repository string) error {
-	if a.registry.Credential == nil ||
-		len(a.registry.Credential.AccessKey) == 0 || len(a.registry.Credential.AccessSecret) == 0 {
-		return errors.New("no credential ")
-	}
-	cred := credentials.NewStaticCredentials(
-		a.registry.Credential.AccessKey,
-		a.registry.Credential.AccessSecret,
-		"")
-	if a.region == "" {
-		return errors.New("no region parsed")
-	}
-
-	config := &aws.Config{
-		Credentials: cred,
-		Region:      &a.region,
-		HTTPClient: &http.Client{
-			Transport: commonhttp.GetHTTPTransportByInsecure(a.registry.Insecure),
-		},
-	}
-	if a.forceEndpoint != nil {
-		config.Endpoint = a.forceEndpoint
-	}
-	sess := session.Must(session.NewSession(config))
-
-	svc := awsecrapi.New(sess)
-
-	_, err := svc.CreateRepository(&awsecrapi.CreateRepositoryInput{
+	_, err := a.cacheSvc.CreateRepository(&awsecrapi.CreateRepositoryInput{
 		RepositoryName: &repository,
 	})
 	if err != nil {
@@ -276,40 +252,7 @@ func (a *adapter) createRepository(repository string) error {
 
 // DeleteManifest ...
 func (a *adapter) DeleteManifest(repository, reference string) error {
-	// AWS doesn't implement standard OCI delete manifest API, so use it's sdk.
-	if a.registry.Credential == nil ||
-		len(a.registry.Credential.AccessKey) == 0 || len(a.registry.Credential.AccessSecret) == 0 {
-		return errors.New("no credential ")
-	}
-	cred := credentials.NewStaticCredentials(
-		a.registry.Credential.AccessKey,
-		a.registry.Credential.AccessSecret,
-		"")
-	if a.region == "" {
-		return errors.New("no region parsed")
-	}
-
-	var tr *http.Transport
-	if a.registry.Insecure {
-		tr = commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
-	} else {
-		tr = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
-	}
-	config := &aws.Config{
-		Credentials: cred,
-		Region:      &a.region,
-		HTTPClient: &http.Client{
-			Transport: tr,
-		},
-	}
-	if a.forceEndpoint != nil {
-		config.Endpoint = a.forceEndpoint
-	}
-	sess := session.Must(session.NewSession(config))
-
-	svc := awsecrapi.New(sess)
-
-	_, err := svc.BatchDeleteImage(&awsecrapi.BatchDeleteImageInput{
+	_, err := a.cacheSvc.BatchDeleteImage(&awsecrapi.BatchDeleteImageInput{
 		RepositoryName: &repository,
 		ImageIds:       []*awsecrapi.ImageIdentifier{{ImageTag: &reference}},
 	})

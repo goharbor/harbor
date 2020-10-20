@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HarborLibraryModule } from '../../harbor-library.module';
 import { ConfirmationDialogComponent } from './confirmation-dialog.component';
 import { IServiceConfig, SERVICE_CONFIG } from '../../entities/service.config';
@@ -24,7 +24,7 @@ describe('ConfirmationDialogComponent', () => {
         ConfirmationTargets.CONFIG
     );
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 HarborLibraryModule,

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, flush } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { PasswordSettingService } from './password-setting.service';
 import { SessionService } from '../../shared/session.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
@@ -25,7 +25,7 @@ describe('PasswordSettingComponent', () => {
         showSuccess: () => { }
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 ClarityModule,

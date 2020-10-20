@@ -1,19 +1,37 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package artifact
 
 import (
+	"testing"
+	"time"
+
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr/metamgr"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication"
 	daoModels "github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/model"
+	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"testing"
-	"time"
 )
 
 type fakedNotificationPolicyMgr struct {
@@ -26,9 +44,6 @@ type fakedReplicationMgr struct {
 }
 
 type fakedReplicationRegistryMgr struct {
-}
-
-type fakedProjectMgr struct {
 }
 
 func (f *fakedNotificationPolicyMgr) Create(*models.NotificationPolicy) (int64, error) {
@@ -158,7 +173,7 @@ func (f *fakedReplicationRegistryMgr) Add(*model.Registry) (int64, error) {
 }
 
 // List registries, returns total count, registry list and error
-func (f *fakedReplicationRegistryMgr) List(...*model.RegistryQuery) (int64, []*model.Registry, error) {
+func (f *fakedReplicationRegistryMgr) List(query *q.Query) (int64, []*model.Registry, error) {
 	return 0, nil, nil
 }
 
@@ -193,63 +208,31 @@ func (f *fakedReplicationRegistryMgr) HealthCheck() error {
 	return nil
 }
 
-func (f *fakedProjectMgr) Get(projectIDOrName interface{}) (*models.Project, error) {
-	return &models.Project{ProjectID: 1}, nil
-}
-func (f *fakedProjectMgr) Create(*models.Project) (int64, error) {
-	return 0, nil
-}
-func (f *fakedProjectMgr) Delete(projectIDOrName interface{}) error {
-	return nil
-}
-func (f *fakedProjectMgr) Update(projectIDOrName interface{}, project *models.Project) error {
-	return nil
-}
-func (f *fakedProjectMgr) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
-	return nil, nil
-}
-func (f *fakedProjectMgr) IsPublic(projectIDOrName interface{}) (bool, error) {
-	return true, nil
-}
-func (f *fakedProjectMgr) Exists(projectIDOrName interface{}) (bool, error) {
-	return false, nil
-}
-
-// get all public project
-func (f *fakedProjectMgr) GetPublic() ([]*models.Project, error) {
-	return nil, nil
-}
-
-func (f *fakedProjectMgr) GetAuthorized(user *models.User) ([]*models.Project, error) {
-	return nil, nil
-}
-
-// if the project manager uses a metadata manager, return it, otherwise return nil
-func (f *fakedProjectMgr) GetMetadataManager() metamgr.ProjectMetadataManager {
-	return nil
-}
-
 func TestReplicationHandler_Handle(t *testing.T) {
+	common_dao.PrepareTestForPostgresSQL()
 	config.Init()
 
 	PolicyMgr := notification.PolicyMgr
 	execution := replication.OperationCtl
 	rpPolicy := replication.PolicyCtl
 	rpRegistry := replication.RegistryMgr
-	project := config.GlobalProjectMgr
+	prj := project.Ctl
 
 	defer func() {
 		notification.PolicyMgr = PolicyMgr
 		replication.OperationCtl = execution
 		replication.PolicyCtl = rpPolicy
 		replication.RegistryMgr = rpRegistry
-		config.GlobalProjectMgr = project
+		project.Ctl = prj
 	}()
 	notification.PolicyMgr = &fakedNotificationPolicyMgr{}
 	replication.OperationCtl = &fakedReplicationMgr{}
 	replication.PolicyCtl = &fakedReplicationPolicyMgr{}
 	replication.RegistryMgr = &fakedReplicationRegistryMgr{}
-	config.GlobalProjectMgr = &fakedProjectMgr{}
+	projectCtl := &projecttesting.Controller{}
+	project.Ctl = projectCtl
+
+	mock.OnAnything(projectCtl, "GetByName").Return(&models.Project{ProjectID: 1}, nil)
 
 	handler := &ReplicationHandler{}
 
@@ -304,4 +287,9 @@ func TestReplicationHandler_Handle(t *testing.T) {
 func TestReplicationHandler_IsStateful(t *testing.T) {
 	handler := &ReplicationHandler{}
 	assert.False(t, handler.IsStateful())
+}
+
+func TestReplicationHandler_Name(t *testing.T) {
+	handler := &ReplicationHandler{}
+	assert.Equal(t, "ReplicationWebhook", handler.Name())
 }

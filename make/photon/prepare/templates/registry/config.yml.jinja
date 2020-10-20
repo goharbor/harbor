@@ -17,7 +17,16 @@ storage:
     disable: true
 {% endif %}
 redis:
-  addr: {{redis_host}}:{{redis_port}}
+{% if sentinel_master_set %}
+  # sentinel hosts with comma
+  addr: {{redis_host}}
+  sentinelMasterSet: {{sentinel_master_set}}
+{% else %}
+  addr: {{redis_host}}
+{% endif %}
+  readtimeout: 10s
+  writetimeout: 10s
+  dialtimeout: 10s
   password: {{redis_password}}
   db: {{redis_db_index_reg}}
 http:

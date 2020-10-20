@@ -16,6 +16,7 @@ package artifactinfo
 
 import (
 	"fmt"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -24,8 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	serror "github.com/goharbor/harbor/src/server/error"
-	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/opencontainers/go-digest"
 )
 
@@ -39,10 +38,10 @@ const (
 
 var (
 	urlPatterns = map[string]*regexp.Regexp{
-		"manifest":    middleware.V2ManifestURLRe,
-		"tag_list":    middleware.V2TagListURLRe,
-		"blob_upload": middleware.V2BlobUploadURLRe,
-		"blob":        middleware.V2BlobURLRe,
+		"manifest":    lib.V2ManifestURLRe,
+		"tag_list":    lib.V2TagListURLRe,
+		"blob_upload": lib.V2BlobUploadURLRe,
+		"blob":        lib.V2BlobURLRe,
 	}
 )
 
@@ -56,20 +55,20 @@ func Middleware() func(http.Handler) http.Handler {
 				next.ServeHTTP(rw, req)
 				return
 			}
-			repo := m[middleware.RepositorySubexp]
+			repo := m[lib.RepositorySubexp]
 			pn, err := projectNameFromRepo(repo)
 			if err != nil {
-				serror.SendError(rw, errors.BadRequestError(err))
+				lib_http.SendError(rw, errors.BadRequestError(err))
 				return
 			}
 			art := lib.ArtifactInfo{
 				Repository:  repo,
 				ProjectName: pn,
 			}
-			if d, ok := m[middleware.DigestSubexp]; ok {
+			if d, ok := m[lib.DigestSubexp]; ok {
 				art.Digest = d
 			}
-			if ref, ok := m[middleware.ReferenceSubexp]; ok {
+			if ref, ok := m[lib.ReferenceSubexp]; ok {
 				art.Reference = ref
 			}
 			if t, ok := m[tag]; ok {
@@ -80,7 +79,7 @@ func Middleware() func(http.Handler) http.Handler {
 				// it's not clear in OCI spec how to handle invalid from parm
 				bmp, err := projectNameFromRepo(bmr)
 				if err != nil {
-					serror.SendError(rw, errors.BadRequestError(err))
+					lib_http.SendError(rw, errors.BadRequestError(err))
 					return
 				}
 				art.BlobMountDigest = m[blobMountDigest]
@@ -120,9 +119,9 @@ func parse(url *url.URL) (map[string]string, bool) {
 			break
 		}
 	}
-	if digest.DigestRegexp.MatchString(m[middleware.ReferenceSubexp]) {
-		m[middleware.DigestSubexp] = m[middleware.ReferenceSubexp]
-	} else if ref, ok := m[middleware.ReferenceSubexp]; ok {
+	if digest.DigestRegexp.MatchString(m[lib.ReferenceSubexp]) {
+		m[lib.DigestSubexp] = m[lib.ReferenceSubexp]
+	} else if ref, ok := m[lib.ReferenceSubexp]; ok {
 		m[tag] = ref
 	}
 	return m, match

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DependenciesComponent } from "./dependencies.component";
 import { AdditionsService } from '../additions.service';
@@ -39,7 +39,7 @@ describe('DependenciesComponent', () => {
     const config: IServiceConfig = {
         repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories/testing"
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),

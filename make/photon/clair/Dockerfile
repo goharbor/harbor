@@ -9,8 +9,6 @@ COPY ./make/photon/common/install_cert.sh /home/clair/
 
 VOLUME /config
 
-EXPOSE 6060 6061
-
 RUN chown -R clair:clair /etc/pki/tls/certs && chown -R clair:clair /home/clair \
     && chmod u+x /home/clair/clair \
     && chmod u+x /home/clair/docker-entrypoint.sh \

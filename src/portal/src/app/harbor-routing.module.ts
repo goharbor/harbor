@@ -63,6 +63,10 @@ import { ArtifactSummaryComponent } from "./project/repository/artifact/artifact
 import { ReplicationTasksComponent } from "../lib/components/replication/replication-tasks/replication-tasks.component";
 import { ReplicationTasksRoutingResolverService } from "./services/routing-resolvers/replication-tasks-routing-resolver.service";
 import { ArtifactDetailRoutingResolverService } from "./services/routing-resolvers/artifact-detail-routing-resolver.service";
+import { DistributionInstancesComponent } from './distribution/distribution-instances/distribution-instances.component';
+import { PolicyComponent } from './project/p2p-provider/policy/policy.component';
+import { TaskListComponent } from './project/p2p-provider/task-list/task-list.component';
+import { P2pProviderComponent } from './project/p2p-provider/p2p-provider.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -123,6 +127,11 @@ const harborRoutes: Routes = [
         component: TotalReplicationPageComponent,
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard]
+      },
+      {
+        path: 'distribution/instances',
+        component: DistributionInstancesComponent,
+        canActivate: [SystemAdminGuard]
       },
       {
         path: 'interrogation-services',
@@ -320,6 +329,28 @@ const harborRoutes: Routes = [
               }
             },
             component: ScannerComponent
+          },
+          {
+            path: 'p2p-provider',
+            canActivate: [MemberPermissionGuard],
+            data: {
+              permissionParam: {
+                resource: USERSTATICPERMISSION.P2P_PROVIDER.KEY,
+                action: USERSTATICPERMISSION.P2P_PROVIDER.VALUE.READ
+              }
+            },
+            component: P2pProviderComponent,
+            children: [
+              {
+                path: 'policies',
+                component: PolicyComponent
+              },
+              {
+                path: ':preheatPolicyName/executions/:executionId/tasks',
+                component: TaskListComponent
+              },
+              { path: '', redirectTo: 'policies', pathMatch: 'full' },
+            ],
           },
           {
             path: '',

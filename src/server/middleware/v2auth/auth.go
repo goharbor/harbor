@@ -16,6 +16,8 @@ package v2auth
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/lib"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"net/url"
 	"strings"
@@ -28,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	serror "github.com/goharbor/harbor/src/server/error"
 )
 
 const (
@@ -84,8 +85,9 @@ func (rc *reqChecker) projectID(name string) (int64, error) {
 func getChallenge(req *http.Request, accessList []access) string {
 	logger := log.G(req.Context())
 	auth := req.Header.Get(authHeader)
-	if len(auth) > 0 {
-		// Return basic auth challenge by default
+	if len(auth) > 0 ||
+		len(lib.V2CatalogURLRe.FindStringSubmatch(req.URL.Path)) == 1 {
+		// Return basic auth challenge by default, incl. request to '/v2/_catalog'
 		return `Basic realm="harbor"`
 	}
 	// No auth header, treat it as CLI and redirect to token service
@@ -141,7 +143,7 @@ func Middleware() func(http.Handler) http.Handler {
 				// the header is needed for "docker manifest" commands: https://github.com/docker/cli/issues/989
 				rw.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
 				rw.Header().Set("Www-Authenticate", challenge)
-				serror.SendError(rw, errors.UnauthorizedError(err).WithMessage(err.Error()))
+				lib_http.SendError(rw, errors.UnauthorizedError(err).WithMessage(err.Error()))
 				return
 			}
 			next.ServeHTTP(rw, req)

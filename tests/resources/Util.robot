@@ -20,7 +20,7 @@ Library  requests
 Library  Process
 Library  SSHLibrary  1 minute
 Library  DateTime
-Library  Selenium2Library  60  10
+Library  SeleniumLibrary  60  10
 Library  JSONLibrary
 Resource  Nimbus-Util.robot
 Resource  Vsphere-Util.robot
@@ -35,6 +35,8 @@ Resource  Harbor-Pages/Project.robot
 Resource  Harbor-Pages/Project_Elements.robot
 Resource  Harbor-Pages/Project-Members.robot
 Resource  Harbor-Pages/Project-Members_Elements.robot
+Resource  Harbor-Pages/Project-P2P-Preheat.robot
+Resource  Harbor-Pages/Project-P2P-Preheat-Elements.robot
 Resource  Harbor-Pages/Project-Webhooks.robot
 Resource  Harbor-Pages/Project-Webhooks_Elements.robot
 Resource  Harbor-Pages/Project-Repository.robot
@@ -206,16 +208,18 @@ Text Input
 Clear Field Of Characters
     [Arguments]  ${field}  ${character count}
     [Documentation]  This keyword pushes the delete key (ascii: \8) a specified number of times in a specified field.
-    : FOR  ${index}  IN RANGE  ${character count}
-    \    Press Keys  ${field}  \\8
+    FOR  ${index}  IN RANGE  ${character count}
+        Press Keys  ${field}  \\8
+    END
 
 Wait Unitl Command Success
     [Arguments]  ${cmd}  ${times}=8
-    :FOR  ${n}  IN RANGE  1  ${times}
-    \    Log  Trying ${cmd}: ${n} ...  console=True
-    \    ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
-    \    Exit For Loop If  '${rc}'=='0'
-    \    Sleep  2
+    FOR  ${n}  IN RANGE  1  ${times}
+        Log  Trying ${cmd}: ${n} ...  console=True
+        ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
+        Exit For Loop If  '${rc}'=='0'
+        Sleep  2
+    END
     Log  Command Result is ${output}
     Should Be Equal As Strings  '${rc}'  '0'
     [Return]  ${output}
@@ -229,41 +233,45 @@ Command Should be Failed
 
 Retry Keyword N Times When Error
     [Arguments]  ${times}  ${keyword}  @{elements}
-    :For  ${n}  IN RANGE  1  ${times}
-    \    Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
-    \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
-    \    Log To Console  Return value is ${out} and ${out[0]}
-    \    Run Keyword If  '${keyword}'=='Make Swagger Client'  Exit For Loop If  '${out[0]}'=='PASS' and '${out[1]}'=='0'
-    \    ...  ELSE  Exit For Loop If  '${out[0]}'=='PASS'
-    \    Sleep  10
+    FOR  ${n}  IN RANGE  1  ${times}
+        Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
+        ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
+        Log To Console  Return value is ${out} and ${out[0]}
+        Capture Page Screenshot  record.png
+        Run Keyword If  '${keyword}'=='Make Swagger Client'  Exit For Loop If  '${out[0]}'=='PASS' and '${out[1]}'=='0'
+        ...  ELSE  Exit For Loop If  '${out[0]}'=='PASS'
+        Sleep  10
+    END
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
     [Return]  ${out[1]}
 
 Retry Keyword When Return Value Mismatch
     [Arguments]  ${keyword}  ${expected_value}  ${count}  @{elements}
-    :For  ${n}  IN RANGE  1  ${count}
-    \    Log To Console  Trying ${keyword} ${n} times ...
-    \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
-    \    Log To Console  Return value is ${out[1]}
-    \    ${status}=  Set Variable If  '${out[1]}'=='${expected_value}'  'PASS'  'FAIL'
-    \    Exit For Loop If  '${out[1]}'=='${expected_value}'
-    \    Sleep  2
+    FOR  ${n}  IN RANGE  1  ${count}
+        Log To Console  Trying ${keyword} ${n} times ...
+        ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
+        Log To Console  Return value is ${out[1]}
+        ${status}=  Set Variable If  '${out[1]}'=='${expected_value}'  'PASS'  'FAIL'
+        Exit For Loop If  '${out[1]}'=='${expected_value}'
+        Sleep  2
+    END
     Run Keyword If  ${status}=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  ${status}  'PASS'
 
 Retry Double Keywords When Error
     [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}  ${DoAssert}=${true}  ${times}=3
-    :For  ${n}  IN RANGE  1  ${times}
-    \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
-    \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
-    \    Capture Page Screenshot
-    \    Sleep  1
-    \    ${out2}  Run Keyword And Ignore Error  ${keyword2}  ${element2}
-    \    Capture Page Screenshot
-    \    Log To Console  Return value is ${out1[0]} ${out2[0]}
-    \    Exit For Loop If  '${out2[0]}'=='PASS'
-    \    Sleep  1
+    FOR  ${n}  IN RANGE  1  ${times}
+        Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
+        ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
+        Capture Page Screenshot
+        Sleep  1
+        ${out2}  Run Keyword And Ignore Error  ${keyword2}  ${element2}
+        Capture Page Screenshot
+        Log To Console  Return value is ${out1[0]} ${out2[0]}
+        Exit For Loop If  '${out2[0]}'=='PASS'
+        Sleep  1
+    END
     Return From Keyword If  ${DoAssert} == ${false}  '${out2[0]}'
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
 

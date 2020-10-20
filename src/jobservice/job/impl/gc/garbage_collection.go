@@ -15,43 +15,26 @@
 package gc
 
 import (
-	"fmt"
 	"os"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/registryctl"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/artifactrash"
-	"github.com/goharbor/harbor/src/pkg/blob"
-
-	"github.com/garyburd/redigo/redis"
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/config"
-	"github.com/goharbor/harbor/src/common/registryctl"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
+	"github.com/goharbor/harbor/src/pkg/artifactrash"
+	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
+	"github.com/goharbor/harbor/src/pkg/blob"
+	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/registryctl/client"
 )
 
 var (
 	regCtlInit = registryctl.Init
-
-	getReadOnly = func(cfgMgr *config.CfgManager) (bool, error) {
-		if err := cfgMgr.Load(); err != nil {
-			return false, err
-		}
-		return cfgMgr.Get(common.ReadOnly).GetBool(), nil
-	}
-
-	setReadOnly = func(cfgMgr *config.CfgManager, switcher bool) error {
-		cfg := map[string]interface{}{
-			common.ReadOnly: switcher,
-		}
-		cfgMgr.UpdateConfig(cfg)
-		return cfgMgr.Save()
-	}
 )
 
 const (
@@ -60,7 +43,6 @@ const (
 	dialWriteTimeout      = 10 * time.Second
 	blobPrefix            = "blobs::*"
 	repoPrefix            = "repository::*"
-	uploadSizePattern     = "upload:*:size"
 )
 
 // GarbageCollector is the struct to run registry's garbage collection
@@ -68,13 +50,18 @@ type GarbageCollector struct {
 	artCtl            artifact.Controller
 	artrashMgr        artifactrash.Manager
 	blobMgr           blob.Manager
-	projectCtl        project.Controller
 	registryCtlClient client.Client
 	logger            logger.Interface
-	cfgMgr            *config.CfgManager
-	CoreURL           string
 	redisURL          string
 	deleteUntagged    bool
+	dryRun            bool
+	// holds all of trashed artifacts' digest and repositories.
+	// The source data of trashedArts is the table ArtifactTrash and it's only used as a dictionary by sweep when to delete a manifest.
+	// As table blob has no repositories data, and the repositories are required when to delete a manifest, so use the table ArtifactTrash to capture them.
+	trashedArts map[string][]model.ArtifactTrash
+	// hold all of GC candidates(non-referenced blobs), it's captured by mark and consumed by sweep.
+	deleteSet       []*blob_models.Blob
+	timeWindowHours int64
 }
 
 // MaxFails implements the interface in job/Interface
@@ -97,58 +84,11 @@ func (gc *GarbageCollector) Validate(params job.Parameters) error {
 	return nil
 }
 
-// Run implements the interface in job/Interface
-// The workflow of GC is:
-// 1, set harbor to readonly
-// 2, select the candidate artifacts from Harbor DB.
-// 3, call registry API(--delete-untagged=false) to delete manifest bases on the results of #2
-// 4, clean keys of redis DB of registry, clean artifact trash and untagged from DB.
-// 5, roll back readonly.
-// More details:
-// 1, why disable delete untagged when to call registry API
-//		Generally because that we introduce Harbor tag in v2.0, it's in database but no corresponding data in registry.
-//		Also one failure case example:
-// 			there are two parts for putting an manifest in Harbor: write database and write storage, but they're not in a transaction,
-//			which leads to the data mismatching in parallel pushing images with same tag but different digest. The valid artifact in
-//			harbor DB could be a untagged one in the storage. If we enable the delete untagged, the valid data could be removed from the storage.
-// 2, what to be cleaned
-//		> the deleted artifact, bases on table of artifact_trash and artifact
-//		> the untagged artifact(optional), bases on table of artifact.
-func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
-	if err := gc.init(ctx, params); err != nil {
-		return err
-	}
-	readOnlyCur, err := getReadOnly(gc.cfgMgr)
-	if err != nil {
-		return err
-	}
-	if readOnlyCur != true {
-		if err := setReadOnly(gc.cfgMgr, true); err != nil {
-			return err
-		}
-		defer setReadOnly(gc.cfgMgr, readOnlyCur)
-	}
-	gc.logger.Infof("start to run gc in job.")
-	if err := gc.deleteCandidates(ctx); err != nil {
-		gc.logger.Errorf("failed to delete GC candidates in gc job, with error: %v", err)
-	}
-	gcr, err := gc.registryCtlClient.StartGC()
-	if err != nil {
-		gc.logger.Errorf("failed to get gc result: %v", err)
-		return err
-	}
-	gc.removeUntaggedBlobs(ctx)
-	if err := gc.cleanCache(); err != nil {
-		return err
-	}
-	gc.logger.Infof("GC results: status: %t, message: %s, start: %s, end: %s.", gcr.Status, gcr.Msg, gcr.StartTime, gcr.EndTime)
-	gc.logger.Infof("success to run gc in job.")
-	return nil
-}
-
 func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 	regCtlInit()
 	gc.logger = ctx.GetLogger()
+	gc.deleteSet = make([]*blob_models.Blob, 0)
+	gc.trashedArts = make(map[string][]model.ArtifactTrash, 0)
 	opCmd, flag := ctx.OPCommand()
 	if flag && opCmd.IsStop() {
 		gc.logger.Info("received the stop signal, quit GC job.")
@@ -160,25 +100,21 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 		gc.artCtl = artifact.Ctl
 		gc.artrashMgr = artifactrash.NewManager()
 		gc.blobMgr = blob.NewManager()
-		gc.projectCtl = project.Ctl
 	}
 	if err := gc.registryCtlClient.Health(); err != nil {
 		gc.logger.Errorf("failed to start gc as registry controller is unreachable: %v", err)
 		return err
 	}
+	gc.parseParams(params)
+	return nil
+}
 
-	errTpl := "failed to get required property: %s"
-	if v, ok := ctx.Get(common.CoreURL); ok && len(v.(string)) > 0 {
-		gc.CoreURL = v.(string)
-	} else {
-		return fmt.Errorf(errTpl, common.CoreURL)
-	}
-	secret := os.Getenv("JOBSERVICE_SECRET")
-	configURL := gc.CoreURL + common.CoreConfigPath
-	gc.cfgMgr = config.NewRESTCfgManager(configURL, secret)
+// parseParams set the parameters according to the GC API call.
+func (gc *GarbageCollector) parseParams(params job.Parameters) {
+	// redis url
 	gc.redisURL = params["redis_url_reg"].(string)
 
-	// default is to delete the untagged artifact
+	// delete untagged: default is to delete the untagged artifact
 	gc.deleteUntagged = true
 	deleteUntagged, exist := params["delete_untagged"]
 	if exist {
@@ -186,23 +122,222 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 			gc.deleteUntagged = untagged
 		}
 	}
+
+	// time window: default is 2 hours, and for testing/debugging, it can be set to 0.
+	gc.timeWindowHours = 2
+	timeWindow, exist := params["time_window"]
+	if exist {
+		if timeWindow, ok := timeWindow.(float64); ok {
+			gc.timeWindowHours = int64(timeWindow)
+		}
+	}
+
+	// dry run: default is false. And for dry run we can have button in the UI.
+	gc.dryRun = false
+	dryRun, exist := params["dry_run"]
+	if exist {
+		if dryRun, ok := dryRun.(bool); ok && dryRun {
+			gc.dryRun = dryRun
+		}
+	}
+
+	gc.logger.Infof("Garbage Collection parameters: [delete_untagged: %t, dry_run: %t, time_window: %d]",
+		gc.deleteUntagged, gc.dryRun, gc.timeWindowHours)
+}
+
+// Run implements the interface in job/Interface
+func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
+	if err := gc.init(ctx, params); err != nil {
+		return err
+	}
+
+	gc.logger.Infof("start to run gc in job.")
+
+	// mark
+	if err := gc.mark(ctx); err != nil {
+		gc.logger.Errorf("failed to execute GC job at mark phase, error: %v", err)
+		return err
+	}
+
+	// sweep
+	if !gc.dryRun {
+		if err := gc.sweep(ctx); err != nil {
+			gc.logger.Errorf("failed to execute GC job at sweep phase, error: %v", err)
+			return err
+		}
+
+		if err := gc.cleanCache(); err != nil {
+			return err
+		}
+	}
+	gc.logger.Infof("success to run gc in job.")
+	return nil
+}
+
+// mark
+func (gc *GarbageCollector) mark(ctx job.Context) error {
+	arts, err := gc.deletedArt(ctx)
+	if err != nil {
+		gc.logger.Errorf("failed to get deleted Artifacts in gc job, with error: %v", err)
+		return err
+	}
+	// just log it, the job will continue to execute, the orphan blobs that created in the quota exceeding case can be removed.
+	if len(arts) == 0 {
+		gc.logger.Warning("no removed artifacts.")
+	}
+	gc.trashedArts = arts
+
+	// get gc candidates, and set the repositories.
+	// AS the reference count is calculated by joining table project_blob and blob, here needs to call removeUntaggedBlobs to remove these non-used blobs from table project_blob firstly.
+	if !gc.dryRun {
+		gc.removeUntaggedBlobs(ctx)
+	}
+	blobs, err := gc.blobMgr.UselessBlobs(ctx.SystemContext(), gc.timeWindowHours)
+	if err != nil {
+		gc.logger.Errorf("failed to get gc candidate: %v", err)
+		return err
+	}
+	if len(blobs) == 0 {
+		gc.logger.Info("no need to execute GC as there is no non referenced artifacts.")
+		return nil
+	}
+
+	// update delete status for the candidates.
+	blobCt := 0
+	mfCt := 0
+	makeSize := int64(0)
+	for _, blob := range blobs {
+		if !gc.dryRun {
+			blob.Status = blob_models.StatusDelete
+			count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
+			if err != nil {
+				gc.logger.Warningf("failed to mark gc candidate, skip it.: %s, error: %v", blob.Digest, err)
+				continue
+			}
+			if count == 0 {
+				gc.logger.Warningf("no blob found to mark gc candidate, skip it. ID:%d, digest:%s", blob.ID, blob.Digest)
+				continue
+			}
+		}
+		gc.logger.Infof("blob eligible for deletion: %s", blob.Digest)
+		gc.deleteSet = append(gc.deleteSet, blob)
+		if blob.IsManifest() {
+			mfCt++
+		} else {
+			blobCt++
+		}
+		// do not count the foreign layer size as it's actually not in the storage.
+		if !blob.IsForeignLayer() {
+			makeSize = makeSize + blob.Size
+		}
+	}
+	gc.logger.Infof("%d blobs and %d manifests eligible for deletion", blobCt, mfCt)
+	gc.logger.Infof("The GC could free up %d MB space, the size is a rough estimation.", makeSize/1024/1024)
+	return nil
+}
+
+func (gc *GarbageCollector) sweep(ctx job.Context) error {
+	gc.logger = ctx.GetLogger()
+	sweepSize := int64(0)
+	for _, blob := range gc.deleteSet {
+		// set the status firstly, if the blob is updated by any HEAD/PUT request, it should be fail and skip.
+		blob.Status = blob_models.StatusDeleting
+		count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
+		if err != nil {
+			gc.logger.Errorf("failed to mark gc candidate deleting, skip: %s, %s", blob.Digest, blob.Status)
+			continue
+		}
+		if count == 0 {
+			gc.logger.Warningf("no blob found to mark gc candidate deleting, ID:%d, digest:%s", blob.ID, blob.Digest)
+			continue
+		}
+
+		// remove tags and revisions of a manifest
+		if _, exist := gc.trashedArts[blob.Digest]; exist && blob.IsManifest() {
+			for _, art := range gc.trashedArts[blob.Digest] {
+				// Harbor cannot know the existing tags in the backend from its database, so let the v2 DELETE manifest to remove all of them.
+				gc.logger.Infof("delete the manifest with registry v2 API: %s, %s, %s",
+					art.RepositoryName, blob.ContentType, blob.Digest)
+				if err := v2DeleteManifest(art.RepositoryName, blob.Digest); err != nil {
+					gc.logger.Errorf("failed to delete manifest with v2 API, %s, %s, %v", art.RepositoryName, blob.Digest, err)
+					if err := ignoreNotFound(func() error {
+						return gc.markDeleteFailed(ctx, blob)
+					}); err != nil {
+						return err
+					}
+					return errors.Wrapf(err, "failed to delete manifest with v2 API: %s, %s", art.RepositoryName, blob.Digest)
+				}
+				// for manifest, it has to delete the revisions folder of each repository
+				gc.logger.Infof("delete manifest from storage: %s", blob.Digest)
+				if err := ignoreNotFound(func() error {
+					return gc.registryCtlClient.DeleteManifest(art.RepositoryName, blob.Digest)
+				}); err != nil {
+					if err := ignoreNotFound(func() error {
+						return gc.markDeleteFailed(ctx, blob)
+					}); err != nil {
+						return err
+					}
+					return errors.Wrapf(err, "failed to remove manifest from storage: %s, %s", art.RepositoryName, blob.Digest)
+				}
+
+				gc.logger.Infof("delete artifact trash record from database: %d, %s, %s", art.ID, art.RepositoryName, art.Digest)
+				if err := ignoreNotFound(func() error {
+					return gc.artrashMgr.Delete(ctx.SystemContext(), art.ID)
+				}); err != nil {
+					return err
+				}
+			}
+		}
+
+		// delete all of blobs, which include config, layer and manifest
+		// for the foreign layer, as it's not stored in the storage, no need to call the delete api and count size, but still have to delete the DB record.
+		if !blob.IsForeignLayer() {
+			gc.logger.Infof("delete blob from storage: %s", blob.Digest)
+			if err := ignoreNotFound(func() error {
+				return gc.registryCtlClient.DeleteBlob(blob.Digest)
+			}); err != nil {
+				if err := ignoreNotFound(func() error {
+					return gc.markDeleteFailed(ctx, blob)
+				}); err != nil {
+					return err
+				}
+				return errors.Wrapf(err, "failed to delete blob from storage: %s, %s", blob.Digest, blob.Status)
+			}
+			sweepSize = sweepSize + blob.Size
+		}
+
+		gc.logger.Infof("delete blob record from database: %d, %s", blob.ID, blob.Digest)
+		if err := ignoreNotFound(func() error {
+			return gc.blobMgr.Delete(ctx.SystemContext(), blob.ID)
+		}); err != nil {
+			if err := ignoreNotFound(func() error {
+				return gc.markDeleteFailed(ctx, blob)
+			}); err != nil {
+				return err
+			}
+			return errors.Wrapf(err, "failed to delete blob from database: %s, %s", blob.Digest, blob.Status)
+		}
+	}
+	gc.logger.Infof("The GC job actual frees up %d MB space.", sweepSize/1024/1024)
 	return nil
 }
 
 // cleanCache is to clean the registry cache for GC.
 // To do this is because the issue https://github.com/docker/distribution/issues/2094
 func (gc *GarbageCollector) cleanCache() error {
-	con, err := redis.DialURL(
-		gc.redisURL,
-		redis.DialConnectTimeout(dialConnectionTimeout),
-		redis.DialReadTimeout(dialReadTimeout),
-		redis.DialWriteTimeout(dialWriteTimeout),
-	)
-
+	pool, err := redislib.GetRedisPool("GarbageCollector", gc.redisURL, &redislib.PoolParam{
+		PoolMaxIdle:           0,
+		PoolMaxActive:         1,
+		PoolIdleTimeout:       60 * time.Second,
+		DialConnectionTimeout: dialConnectionTimeout,
+		DialReadTimeout:       dialReadTimeout,
+		DialWriteTimeout:      dialWriteTimeout,
+	})
 	if err != nil {
 		gc.logger.Errorf("failed to connect to redis %v", err)
 		return err
 	}
+	con := pool.Get()
 	defer con.Close()
 
 	// clean all keys in registry redis DB.
@@ -210,8 +345,7 @@ func (gc *GarbageCollector) cleanCache() error {
 	// sample of keys in registry redis:
 	// 1) "blobs::sha256:1a6fd470b9ce10849be79e99529a88371dff60c60aab424c077007f6979b4812"
 	// 2) "repository::library/hello-world::blobs::sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f"
-	// 3) "upload:fbd2e0a3-262d-40bb-abe4-2f43aa6f9cda:size"
-	patterns := []string{blobPrefix, repoPrefix, uploadSizePattern}
+	patterns := []string{blobPrefix, repoPrefix}
 	for _, pattern := range patterns {
 		if err := delKeys(con, pattern); err != nil {
 			gc.logger.Errorf("failed to clean registry cache %v, pattern %s", err, pattern)
@@ -222,24 +356,17 @@ func (gc *GarbageCollector) cleanCache() error {
 	return nil
 }
 
-// deleteCandidates deletes the two parts of artifact from harbor DB
+// deletedArt contains the two parts of artifact
 // 1, required part, the artifacts were removed from Harbor.
 // 2, optional part, the untagged artifacts.
-func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
+func (gc *GarbageCollector) deletedArt(ctx job.Context) (map[string][]model.ArtifactTrash, error) {
 	if os.Getenv("UTTEST") == "true" {
 		gc.logger = ctx.GetLogger()
 	}
-	// default is not to clean trash
-	flushTrash := false
-	defer func() {
-		if flushTrash {
-			gc.logger.Info("flush artifact trash")
-			if err := gc.artrashMgr.Flush(ctx.SystemContext()); err != nil {
-				gc.logger.Errorf("failed to flush artifact trash: %v", err)
-			}
-		}
-	}()
+	arts := make([]model.ArtifactTrash, 0)
 
+	// artMap : map[digest : []ArtifactTrash list]
+	artMap := make(map[string][]model.ArtifactTrash)
 	// handle the optional ones, and the artifact controller will move them into trash.
 	if gc.deleteUntagged {
 		untagged, err := gc.artCtl.List(ctx.SystemContext(), &q.Query{
@@ -248,7 +375,7 @@ func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
 			},
 		}, nil)
 		if err != nil {
-			return err
+			return artMap, err
 		}
 		gc.logger.Info("start to delete untagged artifact.")
 		for _, art := range untagged {
@@ -263,71 +390,64 @@ func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
 		gc.logger.Info("end to delete untagged artifact.")
 	}
 
-	// handle the trash
-	required, err := gc.artrashMgr.Filter(ctx.SystemContext())
+	// filter gets all of deleted artifact, here do not need time window as the manifest candidate has to remove all of its reference.
+	arts, err := gc.artrashMgr.Filter(ctx.SystemContext(), 0)
 	if err != nil {
-		return err
+		return artMap, err
 	}
-	gc.logger.Info("required candidate: %+v", required)
-	for _, art := range required {
-		if err := deleteManifest(art.RepositoryName, art.Digest); err != nil {
-			return fmt.Errorf("failed to delete manifest, %s:%s with error: %v", art.RepositoryName, art.Digest, err)
+
+	// group the deleted artifact by digest. The repositories of blob is needed when to delete as a manifest.
+	if len(arts) > 0 {
+		gc.logger.Info("artifact trash candidates.")
+		for _, art := range arts {
+			gc.logger.Info(art.String())
+			_, exist := artMap[art.Digest]
+			if !exist {
+				artMap[art.Digest] = []model.ArtifactTrash{art}
+			} else {
+				repos := artMap[art.Digest]
+				repos = append(repos, art)
+				artMap[art.Digest] = repos
+			}
 		}
-		gc.logger.Infof("delete the manifest with registry v2 API: RepositoryName(%s)-MediaType:(%s)-Digest:(%s)",
-			art.RepositoryName, art.ManifestMediaType, art.Digest)
 	}
-	gc.logger.Info("end to delete required artifact.")
-	flushTrash = true
-	return nil
+
+	return artMap, nil
 }
 
 // clean the untagged blobs in each project, these blobs are not referenced by any manifest and will be cleaned by GC
 func (gc *GarbageCollector) removeUntaggedBlobs(ctx job.Context) {
-	// get all projects
-	projects := func(chunkSize int) <-chan *models.Project {
-		ch := make(chan *models.Project, chunkSize)
-
-		go func() {
-			defer close(ch)
-
-			params := &models.ProjectQueryParam{
-				Pagination: &models.Pagination{Page: 1, Size: int64(chunkSize)},
-			}
-
-			for {
-				results, err := gc.projectCtl.List(ctx.SystemContext(), params, project.Metadata(false))
-				if err != nil {
-					gc.logger.Errorf("list projects failed, error: %v", err)
-					return
-				}
-
-				for _, p := range results {
-					ch <- p
-				}
-
-				if len(results) < chunkSize {
-					break
-				}
-
-				params.Pagination.Page++
-			}
-
-		}()
-
-		return ch
-	}(50)
-
-	for project := range projects {
+	for result := range project.ListAll(ctx.SystemContext(), 50, nil, project.Metadata(false)) {
+		if result.Error != nil {
+			gc.logger.Errorf("remove untagged blobs for all projects got error: %v", result.Error)
+			continue
+		}
+		p := result.Data
 		all, err := gc.blobMgr.List(ctx.SystemContext(), blob.ListParams{
-			ProjectID: project.ProjectID,
+			ProjectID:  p.ProjectID,
+			UpdateTime: time.Now().Add(-time.Duration(gc.timeWindowHours) * time.Hour),
 		})
 		if err != nil {
 			gc.logger.Errorf("failed to get blobs of project, %v", err)
 			continue
 		}
-		if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), project.ProjectID, all); err != nil {
+		if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), p.ProjectID, all); err != nil {
 			gc.logger.Errorf("failed to clean untagged blobs of project, %v", err)
 			continue
 		}
 	}
+}
+
+// markDeleteFailed set the blob status to StatusDeleteFailed
+func (gc *GarbageCollector) markDeleteFailed(ctx job.Context, blob *blob_models.Blob) error {
+	blob.Status = blob_models.StatusDeleteFailed
+	count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
+	if err != nil {
+		gc.logger.Errorf("failed to mark gc candidate delete failed: %s, %s", blob.Digest, blob.Status)
+		return errors.Wrapf(err, "failed to mark gc candidate delete failed: %s, %s", blob.Digest, blob.Status)
+	}
+	if count == 0 {
+		return errors.New(nil).WithMessage("no blob found to mark delete failed, ID:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
+	}
+	return nil
 }

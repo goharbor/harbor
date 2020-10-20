@@ -85,11 +85,12 @@ body {
 }
 
 .color-green {
-  color: #1d5100;
+  color: #00d40f;
 }
 
 .color-red {
   color: red;
+  margin-left: 2px;
 }
 
 .datagrid-table,
@@ -458,4 +459,8 @@ button:focus {
 }
 .text-align-r {
   text-align: right !important;
+}
+.datagrid-expandable-caret.datagrid-fixed-column.datagrid-cell.ng-star-inserted {
+  align-items: center;
+  display: flex;
 }

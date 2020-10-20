@@ -43,7 +43,12 @@ export const enum ConfirmationTargets {
   HELM_CHART,
   HELM_CHART_VERSION,
   WEBHOOK,
-  SCANNER
+  SCANNER,
+  INSTANCE,
+  P2P_PROVIDER,
+  P2P_PROVIDER_EXECUTE,
+  P2P_PROVIDER_STOP,
+  P2P_PROVIDER_DELETE
 }
 
 export const enum ActionType {
@@ -66,13 +71,13 @@ export const RoleInfo = {
   1: "MEMBER.PROJECT_ADMIN",
   2: "MEMBER.DEVELOPER",
   3: "MEMBER.GUEST",
-  4: "MEMBER.PROJECT_MASTER",
+  4: "MEMBER.PROJECT_MAINTAINER",
   5: "MEMBER.LIMITED_GUEST",
 };
 
 export const RoleMapping = {
   "projectAdmin": "MEMBER.PROJECT_ADMIN",
-  "master": "MEMBER.PROJECT_MASTER",
+  "maintainer": "MEMBER.PROJECT_MAINTAINER",
   "developer": "MEMBER.DEVELOPER",
   "guest": "MEMBER.GUEST",
   "limitedGuest": "MEMBER.LIMITED_GUEST",
@@ -82,19 +87,20 @@ export const ProjectRoles = [
   { id: 1, value: "MEMBER.PROJECT_ADMIN" },
   { id: 2, value: "MEMBER.DEVELOPER" },
   { id: 3, value: "MEMBER.GUEST" },
-  { id: 4, value: "MEMBER.PROJECT_MASTER" },
+  { id: 4, value: "MEMBER.PROJECT_MAINTAINER" },
   { id: 5, value: "MEMBER.LIMITED_GUEST" },
 ];
 
 export enum Roles {
   PROJECT_ADMIN = 1,
-  PROJECT_MASTER = 4,
+  PROJECT_MAINTAINER = 4,
   DEVELOPER = 2,
   GUEST = 3,
   LIMITED_GUEST = 5,
   OTHER = 0,
 }
 export const DefaultHelmIcon = '/images/helm-gray.svg';
+
 export enum ResourceType {
   REPOSITORY = 1,
   CHART_VERSION = 2,

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TagRetentionComponent } from './tag-retention.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -58,7 +58,7 @@ describe('TagRetentionComponent', () => {
     const mockErrorHandler = {
         error: () => { }
     };
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA

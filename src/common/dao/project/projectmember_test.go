@@ -16,11 +16,12 @@ package project
 
 import (
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"os"
-	"testing"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -67,7 +68,7 @@ func TestMain(m *testing.M) {
 			"delete from project where name='member_test_01' or name='member_test_02'",
 			"delete from harbor_user where username='member_test_01' or username='member_test_02' or username='pm_sample'",
 			"delete from user_group",
-			"delete from project_member",
+			"delete from project_member where id > 1",
 		}
 		dao.PrepareTestData(clearSqls, initSqls)
 		cfg.Init()
@@ -310,7 +311,7 @@ func TestGetTotalOfProjectMembers(t *testing.T) {
 		wantErr bool
 	}{
 		{"Get total of project admin", args{currentProject.ProjectID, []int{common.RoleProjectAdmin}}, 2, false},
-		{"Get total of master", args{currentProject.ProjectID, []int{common.RoleMaster}}, 0, false},
+		{"Get total of maintainer", args{currentProject.ProjectID, []int{common.RoleMaintainer}}, 0, false},
 		{"Get total of developer", args{currentProject.ProjectID, []int{common.RoleDeveloper}}, 0, false},
 		{"Get total of guest", args{currentProject.ProjectID, []int{common.RoleGuest}}, 0, false},
 	}

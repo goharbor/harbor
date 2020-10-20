@@ -3,6 +3,13 @@ import os
 import sys
 
 sys.path.insert(0, os.environ["SWAGGER_CLIENT_PATH"])
+path=os.getcwd() + "/library"
+sys.path.insert(0, path)
+
+
+path=os.getcwd() + "/tests/apitests/python/library"
+sys.path.insert(0, path)
+
 import v2_swagger_client
 from swagger_client.rest import ApiException
 import swagger_client.models
@@ -53,7 +60,7 @@ class TestResult(object):
     def get_final_result(self):
         if self.num_errors > 0:
             for each_err_msg in self.error_message:
-                print "Error message:", each_err_msg
+                print("Error message:", each_err_msg)
             raise Exception(r"Test case failed with {} errors.".format(self.num_errors))
 
 from contextlib import contextmanager
@@ -77,9 +84,9 @@ def created_project(name=None, metadata=None, user_id=None, member_role_id=None)
 
     api = Project()
 
-    project_id, project_name = api.create_project(name=None, metadata=None, **ADMIN_CLIENT)
+    project_id, project_name = api.create_project(name=name, metadata=metadata, **ADMIN_CLIENT)
     if user_id:
-        api.add_project_members(project_id, user_id, member_role_id=member_role_id, **ADMIN_CLIENT)
+        api.add_project_members(project_id, user_id=user_id, member_role_id=member_role_id, **ADMIN_CLIENT)
 
     try:
         yield (project_id, project_name)

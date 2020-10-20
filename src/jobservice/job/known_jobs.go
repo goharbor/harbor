@@ -26,6 +26,8 @@ const (
 	ImageScanAllJob = "IMAGE_SCAN_ALL"
 	// ImageGC the name of image garbage collection job in job service
 	ImageGC = "IMAGE_GC"
+	// ImageGCReadOnly the name of image garbage collection read only job in job service
+	ImageGCReadOnly = "IMAGE_GC_READ_ONLY"
 	// Replication : the name of the replication job in job service
 	Replication = "REPLICATION"
 	// ReplicationScheduler : the name of the replication scheduler job in job service
@@ -36,4 +38,6 @@ const (
 	SlackJob = "SLACK"
 	// Retention : the name of the retention job
 	Retention = "RETENTION"
+	// P2PPreheat : the name of the P2P preheat job
+	P2PPreheat = "P2P_PREHEAT"
 )

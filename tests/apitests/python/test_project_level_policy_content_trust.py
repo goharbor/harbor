@@ -4,7 +4,6 @@ import unittest
 
 from testutils import ADMIN_CLIENT
 from testutils import harbor_server
-
 from testutils import TEARDOWN
 from library.artifact import Artifact
 from library.project import Project
@@ -23,7 +22,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDown(self):
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):

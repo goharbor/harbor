@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactSummaryComponent } from "./artifact-summary.component";
 import { of } from "rxjs";
 import { ClarityModule } from "@clr/angular";
@@ -12,6 +12,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { AppConfigService } from "../../../services/app-config.service";
 import { Project } from "../../project";
 import { AllPipesModule } from "../../../all-pipes/all-pipes.module";
+import { ArtifactDefaultService } from './artifact.service';
 
 describe('ArtifactSummaryComponent', () => {
 
@@ -26,9 +27,12 @@ describe('ArtifactSummaryComponent', () => {
     }
   };
 
-  const fakedArtifactService = {
-    getArtifact() {
-       return of(mockedArtifact);
+  const fakedArtifactDefaultService = {
+    getIconsFromBackEnd() {
+      return undefined;
+    },
+    getIcon() {
+      return undefined;
     }
   };
   let component: ArtifactSummaryComponent;
@@ -51,7 +55,7 @@ describe('ArtifactSummaryComponent', () => {
     data: of({
       projectResolver: {
         ismember: true,
-        role_name: 'master',
+        role_name: 'maintainer',
       }
     })
   };
@@ -63,7 +67,7 @@ describe('ArtifactSummaryComponent', () => {
   const mockRouter = {
     navigate: () => { }
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         ClarityModule,
@@ -86,7 +90,7 @@ describe('ArtifactSummaryComponent', () => {
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: ProjectService, useValue: fakedProjectService },
-        { provide: ArtifactService, useValue: fakedArtifactService },
+        { provide: ArtifactDefaultService, useValue: fakedArtifactDefaultService },
         ErrorHandler
       ]
     })

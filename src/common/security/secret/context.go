@@ -79,5 +79,6 @@ func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool
 	if s.store == nil {
 		return false
 	}
-	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.CoreUser
+	return s.store.GetUsername(s.secret) == secret.JobserviceUser ||
+		s.store.GetUsername(s.secret) == secret.CoreUser
 }

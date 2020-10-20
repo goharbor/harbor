@@ -37,7 +37,8 @@ export const enum ConfirmationTargets {
   CONFIG_TAB,
   HELM_CHART,
   HELM_CHART_VERSION,
-  STOP_EXECUTIONS
+  STOP_EXECUTIONS,
+  REPLICATION
 }
 
 export const enum ActionType {
@@ -133,9 +134,9 @@ export const PROJECT_ROOTS = [
     LABEL: "GROUP.PROJECT_ADMIN"
   },
   {
-    NAME: "master",
+    NAME: "maintainer",
     VALUE: 4,
-    LABEL: "GROUP.PROJECT_MASTER"
+    LABEL: "GROUP.PROJECT_MAINTAINER"
   },
   {
     NAME: "developer",

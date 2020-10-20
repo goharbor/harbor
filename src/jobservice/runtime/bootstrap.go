@@ -17,6 +17,7 @@ package runtime
 import (
 	"context"
 	"fmt"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"os"
 	"os/signal"
 	"sync"
@@ -32,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/gcreadonly"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
@@ -42,6 +44,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	sc "github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/all"
@@ -51,8 +54,7 @@ import (
 
 const (
 	dialConnectionTimeout = 30 * time.Second
-	healthCheckPeriod     = time.Minute
-	dialReadTimeout       = healthCheckPeriod + 10*time.Second
+	dialReadTimeout       = 10 * time.Second
 	dialWriteTimeout      = 10 * time.Second
 )
 
@@ -256,12 +258,14 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.ImageScanJob:           (*sc.Job)(nil),
 			job.ImageScanAllJob:        (*all.Job)(nil),
 			job.ImageGC:                (*gc.GarbageCollector)(nil),
+			job.ImageGCReadOnly:        (*gcreadonly.GarbageCollector)(nil),
 			job.Replication:            (*replication.Replication)(nil),
 			job.ReplicationScheduler:   (*replication.Scheduler)(nil),
 			job.Retention:              (*retention.Job)(nil),
 			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),
 			job.WebhookJob:             (*notification.WebhookJob)(nil),
 			job.SlackJob:               (*notification.SlackJob)(nil),
+			job.P2PPreheat:             (*preheat.Job)(nil),
 		}); err != nil {
 		// exit
 		return nil, err
@@ -276,25 +280,15 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 
 // Get a redis connection pool
 func (bs *Bootstrap) getRedisPool(redisPoolConfig *config.RedisPoolConfig) *redis.Pool {
-	return &redis.Pool{
-		MaxIdle:     6,
-		Wait:        true,
-		IdleTimeout: time.Duration(redisPoolConfig.IdleTimeoutSecond) * time.Second,
-		Dial: func() (redis.Conn, error) {
-			return redis.DialURL(
-				redisPoolConfig.RedisURL,
-				redis.DialConnectTimeout(dialConnectionTimeout),
-				redis.DialReadTimeout(dialReadTimeout),
-				redis.DialWriteTimeout(dialWriteTimeout),
-			)
-		},
-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
-			if time.Since(t) < time.Minute {
-				return nil
-			}
-
-			_, err := c.Do("PING")
-			return err
-		},
+	if pool, err := redislib.GetRedisPool("JobService", redisPoolConfig.RedisURL, &redislib.PoolParam{
+		PoolMaxIdle:           6,
+		PoolIdleTimeout:       time.Duration(redisPoolConfig.IdleTimeoutSecond) * time.Second,
+		DialConnectionTimeout: dialConnectionTimeout,
+		DialReadTimeout:       dialReadTimeout,
+		DialWriteTimeout:      dialWriteTimeout,
+	}); err != nil {
+		panic(err)
+	} else {
+		return pool
 	}
 }

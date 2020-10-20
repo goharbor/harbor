@@ -120,11 +120,6 @@ func (d *DefaultManager) GetPolicy(id int64) (*policy.Metadata, error) {
 		return nil, err
 	}
 	p.ID = id
-	if p.Trigger.Settings != nil {
-		if _, ok := p.Trigger.References[policy.TriggerReferencesJobid]; ok {
-			p.Trigger.References[policy.TriggerReferencesJobid] = int64(p.Trigger.References[policy.TriggerReferencesJobid].(float64))
-		}
-	}
 	return p, nil
 }
 

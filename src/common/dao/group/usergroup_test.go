@@ -68,7 +68,7 @@ func TestMain(m *testing.M) {
 			"delete from project where name='group_project_private'",
 			"delete from harbor_user where username='member_test_01' or username='pm_sample' or username='grouptestu09'",
 			"delete from user_group",
-			"delete from project_member",
+			"delete from project_member where id > 1",
 		}
 		dao.ExecuteBatchSQL(initSqls)
 		defer dao.ExecuteBatchSQL(clearSqls)

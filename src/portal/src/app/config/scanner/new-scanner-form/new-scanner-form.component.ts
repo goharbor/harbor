@@ -46,8 +46,8 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
     showEndpointError: boolean = false;
     originValue: any;
     isEdit: boolean;
-    @ViewChild('name', {static: false}) scannerName: ElementRef;
-    @ViewChild('endpointUrl', {static: false}) scannerEndpointUrl: ElementRef;
+    @ViewChild('name') scannerName: ElementRef;
+    @ViewChild('endpointUrl') scannerEndpointUrl: ElementRef;
     constructor(private fb: FormBuilder, private scannerService: ConfigScannerService) {
     }
     ngAfterViewInit(): void {

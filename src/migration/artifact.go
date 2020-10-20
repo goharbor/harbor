@@ -16,6 +16,7 @@ package migration
 
 import (
 	"context"
+
 	art "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -24,9 +25,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
-func upgradeData(ctx context.Context) error {
+func abstractArtData(ctx context.Context) error {
 	abstractor := art.NewAbstractor()
-	pros, err := project.Mgr.List()
+	pros, err := project.Mgr.List(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -41,7 +42,7 @@ func upgradeData(ctx context.Context) error {
 			continue
 		}
 		for _, repo := range repos {
-			log.Debugf("abstracting artifact metadata under repository %s ....", repo.Name)
+			log.Infof("abstracting artifact metadata under repository %s ....", repo.Name)
 			arts, err := artifact.Mgr.List(ctx, &q.Query{
 				Keywords: map[string]interface{}{
 					"RepositoryID": repo.RepositoryID,
@@ -51,22 +52,22 @@ func upgradeData(ctx context.Context) error {
 				log.Errorf("failed to list artifacts under the repository %s: %v, skip", repo.Name, err)
 				continue
 			}
-			for _, art := range arts {
-				if err = abstract(ctx, abstractor, art); err != nil {
-					log.Errorf("failed to abstract the artifact %s@%s: %v, skip", art.RepositoryName, art.Digest, err)
+			for _, a := range arts {
+				if err = abstract(ctx, abstractor, a); err != nil {
+					log.Errorf("failed to abstract the artifact %s@%s: %v, skip", a.RepositoryName, a.Digest, err)
 					continue
 				}
-				if err = artifact.Mgr.Update(ctx, art); err != nil {
-					log.Errorf("failed to update the artifact %s@%s: %v, skip", repo.Name, art.Digest, err)
+				if err = artifact.Mgr.Update(ctx, a); err != nil {
+					log.Errorf("failed to update the artifact %s@%s: %v, skip", repo.Name, a.Digest, err)
 					continue
 				}
 			}
-			log.Debugf("artifact metadata under repository %s abstracted", repo.Name)
+			log.Infof("artifact metadata under repository %s abstracted", repo.Name)
 		}
 	}
 
 	// update data version
-	return setDataVersion(ctx, 30)
+	return setDataVersion(ctx, dataversionV2_0_0)
 }
 
 func abstract(ctx context.Context, abstractor art.Abstractor, art *artifact.Artifact) error {

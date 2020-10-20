@@ -36,10 +36,6 @@ export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig
     imports: [
         CommonModule,
         HttpClientModule,
-        HttpClientXsrfModule.withOptions({
-            cookieName: '__csrf',
-            headerName: 'X-Harbor-CSRF-Token'
-        }),
         FormsModule,
         ReactiveFormsModule,
         ClipboardModule,

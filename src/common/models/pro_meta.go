@@ -25,7 +25,7 @@ const (
 	ProMetaPreventVul           = "prevent_vul" // prevent vulnerable images from being pulled
 	ProMetaSeverity             = "severity"
 	ProMetaAutoScan             = "auto_scan"
-	ProMetaReuseSysCVEWhitelist = "reuse_sys_cve_whitelist"
+	ProMetaReuseSysCVEAllowlist = "reuse_sys_cve_allowlist"
 )
 
 // ProjectMetadata holds the metadata of a project.
@@ -36,5 +36,4 @@ type ProjectMetadata struct {
 	Value        string    `orm:"column(value)" json:"value"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
-	Deleted      bool      `orm:"column(deleted)" json:"deleted"`
 }

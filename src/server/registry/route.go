@@ -17,11 +17,11 @@ package registry
 import (
 	"net/http"
 
-	"github.com/goharbor/harbor/src/server/middleware/artifactinfo"
 	"github.com/goharbor/harbor/src/server/middleware/blob"
 	"github.com/goharbor/harbor/src/server/middleware/contenttrust"
 	"github.com/goharbor/harbor/src/server/middleware/immutable"
 	"github.com/goharbor/harbor/src/server/middleware/quota"
+	"github.com/goharbor/harbor/src/server/middleware/repoproxy"
 	"github.com/goharbor/harbor/src/server/middleware/v2auth"
 	"github.com/goharbor/harbor/src/server/middleware/vulnerable"
 	"github.com/goharbor/harbor/src/server/router"
@@ -31,7 +31,6 @@ import (
 func RegisterRoutes() {
 	root := router.NewRoute().
 		Path("/v2").
-		Middleware(artifactinfo.Middleware()).
 		Middleware(v2auth.Middleware())
 	// catalog
 	root.NewRoute().
@@ -47,12 +46,14 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodGet).
 		Path("/*/manifests/:reference").
+		Middleware(repoproxy.ManifestMiddleware()).
 		Middleware(contenttrust.Middleware()).
 		Middleware(vulnerable.Middleware()).
 		HandlerFunc(getManifest)
 	root.NewRoute().
 		Method(http.MethodHead).
 		Path("/*/manifests/:reference").
+		Middleware(repoproxy.ManifestMiddleware()).
 		HandlerFunc(getManifest)
 	root.NewRoute().
 		Method(http.MethodDelete).
@@ -62,14 +63,22 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodPut).
 		Path("/*/manifests/:reference").
+		Middleware(repoproxy.DisableBlobAndManifestUploadMiddleware()).
 		Middleware(immutable.Middleware()).
 		Middleware(quota.PutManifestMiddleware()).
 		Middleware(blob.PutManifestMiddleware()).
 		HandlerFunc(putManifest)
+	// blob get
+	root.NewRoute().
+		Method(http.MethodGet).
+		Path("/*/blobs/:digest").
+		Middleware(repoproxy.BlobGetMiddleware()).
+		Handler(proxy)
 	// initiate blob upload
 	root.NewRoute().
 		Method(http.MethodPost).
 		Path("/*/blobs/uploads").
+		Middleware(repoproxy.DisableBlobAndManifestUploadMiddleware()).
 		Middleware(quota.PostInitiateBlobUploadMiddleware()).
 		Middleware(blob.PostInitiateBlobUploadMiddleware()).
 		Handler(proxy)
@@ -84,6 +93,11 @@ func RegisterRoutes() {
 		Path("/*/blobs/uploads/:session_id").
 		Middleware(quota.PutBlobUploadMiddleware()).
 		Middleware(blob.PutBlobUploadMiddleware()).
+		Handler(proxy)
+	root.NewRoute().
+		Method(http.MethodHead).
+		Path("/*/blobs/:digest").
+		Middleware(blob.HeadBlobMiddleware()).
 		Handler(proxy)
 	// others
 	root.NewRoute().Path("/*").Handler(proxy)

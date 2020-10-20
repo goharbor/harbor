@@ -1,5 +1,5 @@
-::ng-deep .modal-dialog {
-  width: 25rem;
+:host::ng-deep.modal-dialog {
+  width: 29rem;
 }
 
 .modal-body {
@@ -13,7 +13,7 @@
   .clr-form {
     padding-left: 0;
     .left-label {
-      width: 9.5rem;
+      width: 11.5rem;
       font-weight: 100;
       position: relative;
     }
@@ -46,7 +46,7 @@
 
   .clr-form-compact-common {
     .left-label {
-      width: 7.3rem;
+      width: 9.5rem;
     }
 
     .quota-input {

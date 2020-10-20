@@ -7,7 +7,7 @@
                         <clr-icon shape="download"></clr-icon>
                         {{'CONFIG.REGISTRY_CERTIFICATE' | translate | uppercase}}
                     </a>
-                    <hbr-push-image-button class="push-image-button" *ngIf="hasCreateRepositoryPermission" [registryUrl]="registryUrl" [projectName]="projectName"></hbr-push-image-button>
+                    <hbr-push-image-button class="push-image-button" *ngIf="hasCreateRepositoryPermission && !isProxyCacheProject" [registryUrl]="registryUrl" [projectName]="projectName"></hbr-push-image-button>
                     <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" [currentValue]="lastFilteredRepoName"></hbr-filter>
                     <span class="card-btn" (click)="showCard(true)" (mouseenter) ="mouseEnter('card') "  (mouseleave) ="mouseLeave('card')">
                         <clr-icon [ngClass]="{'is-highlight': isCardView || isHovering('card') }" shape="view-cards"></clr-icon>
@@ -41,7 +41,7 @@
                 </clr-dg-row>
                 <clr-dg-footer>
                     <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
-                    {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}
+                    {{totalCount}} {{'REPOSITORY.ITEMS' | translate}}
                     <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>

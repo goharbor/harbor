@@ -30,6 +30,7 @@ const EVENT_TYPES_TEXT_MAP = {
   'QUOTA_WARNING': 'Quota near threshold',
   'SCANNING_FAILED': 'Scanning failed',
   'SCANNING_COMPLETED': 'Scanning finished',
+  'TAG_RETENTION': 'Tag retention finished',
 };
 
 @Injectable()

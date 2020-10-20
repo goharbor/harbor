@@ -1,0 +1,49 @@
+.action-head-pos {
+    padding-right: 18px;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.icon-wrap {
+    display: flex;
+    align-items: center;
+    height: 20px;
+}
+.cell {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+.margin-left-5px{
+    margin-left: 5px;
+}
+.margin-left-10px{
+    margin-left: 10px;
+}
+.flex-end {
+    align-items: center;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 1.5rem;
+}
+.refresh-btn {
+    margin-top: 6px;
+    cursor: pointer;
+}
+.filter-tag {
+    margin-top: 7px;
+}
+.filter-title {
+    font-weight: 400;
+}
+.margin-top-5px {
+    margin-top: 5px;
+}
+.opacity08 {
+    opacity: 0.8;
+}
+.no-wrapper {
+    white-space: nowrap;
+}

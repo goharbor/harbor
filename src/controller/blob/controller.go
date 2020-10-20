@@ -17,15 +17,16 @@ package blob
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/docker/distribution"
-	"github.com/garyburd/redigo/redis"
-	"github.com/goharbor/harbor/src/common/models"
-	util "github.com/goharbor/harbor/src/common/utils/redis"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/blob"
+	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
+	"github.com/gomodule/redigo/redis"
 )
 
 var (
@@ -75,17 +76,31 @@ type Controller interface {
 
 	// GetAcceptedBlobSize returns the accepted size of stream upload blob.
 	GetAcceptedBlobSize(sessionID string) (int64, error)
+
+	// Touch updates the blob status to StatusNone and increase version every time.
+	Touch(ctx context.Context, blob *blob.Blob) error
+
+	// Fail updates the blob status to StatusDeleteFailed and increase version every time.
+	Fail(ctx context.Context, blob *blob.Blob) error
+
+	// Update updates the blob, it cannot handle blob status transitions.
+	Update(ctx context.Context, blob *blob.Blob) error
+
+	// Delete deletes the blob by its id
+	Delete(ctx context.Context, id int64) error
 }
 
 // NewController creates an instance of the default repository controller
 func NewController() Controller {
 	return &controller{
-		blobMgr: blob.Mgr,
+		blobMgr:            blob.Mgr,
+		blobSizeExpiration: time.Hour * 24, // keep the size of blob in redis with 24 hours
 	}
 }
 
 type controller struct {
-	blobMgr blob.Manager
+	blobMgr            blob.Manager
+	blobSizeExpiration time.Duration
 }
 
 func (c *controller) AssociateWithArtifact(ctx context.Context, blobDigests []string, artifactDigest string) error {
@@ -184,7 +199,7 @@ func (c *controller) FindMissingAssociationsForProject(ctx context.Context, proj
 		associated[blob.Digest] = true
 	}
 
-	var results []*models.Blob
+	var results []*blob.Blob
 	for _, blob := range blobs {
 		if !associated[blob.Digest] {
 			results = append(results, blob)
@@ -260,7 +275,7 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 	if len(updating) > 0 {
 		orm.WithTransaction(func(ctx context.Context) error {
 			for _, blob := range updating {
-				if err := c.blobMgr.Update(ctx, blob); err != nil {
+				if err := c.Update(ctx, blob); err != nil {
 					log.G(ctx).Warningf("Failed to update blob %s, error: %v", blob.Digest, err)
 					return err
 				}
@@ -282,27 +297,30 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 }
 
 func (c *controller) SetAcceptedBlobSize(sessionID string, size int64) error {
-	conn := util.DefaultPool().Get()
+	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
-	key := fmt.Sprintf("upload:%s:size", sessionID)
-	reply, err := redis.String(conn.Do("SET", key, size))
+	key := blobSizeKey(sessionID)
+	reply, err := redis.String(conn.Do("SET", key, size, "EX", int64(c.blobSizeExpiration/time.Second)))
 	if err != nil {
+		log.Errorf("failed to set accepted blob size for session %s in redis, error: %v", sessionID, err)
 		return err
 	}
 
 	if reply != "OK" {
-		return fmt.Errorf("bad reply value")
+		err := fmt.Errorf("failed to set accepted blob size for session %s in redis, error: expected reply is 'OK' but actual it is '%s'", sessionID, reply)
+		log.Errorf("%s", err.Error())
+		return err
 	}
 
 	return nil
 }
 
 func (c *controller) GetAcceptedBlobSize(sessionID string) (int64, error) {
-	conn := util.DefaultPool().Get()
+	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
-	key := fmt.Sprintf("upload:%s:size", sessionID)
+	key := blobSizeKey(sessionID)
 	size, err := redis.Int64(conn.Do("GET", key))
 	if err != nil {
 		if err == redis.ErrNil {
@@ -313,4 +331,40 @@ func (c *controller) GetAcceptedBlobSize(sessionID string) (int64, error) {
 	}
 
 	return size, nil
+}
+
+func (c *controller) Touch(ctx context.Context, blob *blob.Blob) error {
+	blob.Status = blob_models.StatusNone
+	count, err := c.blobMgr.UpdateBlobStatus(ctx, blob)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return errors.New(nil).WithMessage(fmt.Sprintf("no blob item is updated to StatusNone, id:%d, digest:%s", blob.ID, blob.Digest)).WithCode(errors.NotFoundCode)
+	}
+	return nil
+}
+
+func (c *controller) Fail(ctx context.Context, blob *blob.Blob) error {
+	blob.Status = blob_models.StatusDeleteFailed
+	count, err := c.blobMgr.UpdateBlobStatus(ctx, blob)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return errors.New(nil).WithMessage(fmt.Sprintf("no blob item is updated to StatusDeleteFailed, id:%d, digest:%s", blob.ID, blob.Digest)).WithCode(errors.NotFoundCode)
+	}
+	return nil
+}
+
+func (c *controller) Update(ctx context.Context, blob *blob.Blob) error {
+	return c.blobMgr.Update(ctx, blob)
+}
+
+func (c *controller) Delete(ctx context.Context, id int64) error {
+	return c.blobMgr.Delete(ctx, id)
+}
+
+func blobSizeKey(sessionID string) string {
+	return fmt.Sprintf("upload:%s:size", sessionID)
 }

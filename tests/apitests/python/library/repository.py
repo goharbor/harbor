@@ -13,9 +13,8 @@ def pull_harbor_image(registry, username, password, image, tag, expected_login_e
         return
     time.sleep(2)
     ret = _docker_api.docker_image_pull(r'{}/{}'.format(registry, image), tag = tag, expected_error_message = expected_error_message)
-    print ret
 
-def push_image_to_project(project_name, registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None, profix_for_image = None):
+def push_image_to_project(project_name, registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None, profix_for_image = None, new_image=None):
     _docker_api = DockerAPI()
     _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
     time.sleep(2)
@@ -23,6 +22,8 @@ def push_image_to_project(project_name, registry, username, password, image, tag
         return
     _docker_api.docker_image_pull(image, tag = tag)
     time.sleep(2)
+
+    image = new_image or image
 
     if profix_for_image == None:
         new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(image, tag), r'{}/{}/{}'.format(registry, project_name, image))
@@ -40,14 +41,8 @@ def push_special_image_to_project(project_name, registry, username, password, im
     time.sleep(2)
     if expected_login_error_message != None:
         return
-    return _docker_api.docker_image_build(r'{}/{}/{}'.format(registry, project_name, image), tags = tags, size=size, expected_error_message=expected_error_message)
+    return _docker_api.docker_image_build(r'{}/{}/{}'.format(registry, project_name, image), tags = tags, size=int(size), expected_error_message=expected_error_message)
 
-def is_repo_exist_in_project(repositories, repo_name):
-    result = False
-    for reop in repositories:
-        if reop.name == repo_name:
-            return True
-    return result
 
 class Repository(base.Base, object):
     def __init__(self):
@@ -78,10 +73,16 @@ class Repository(base.Base, object):
         if self.image_exists(repository, tag, **kwargs):
             raise Exception("image %s:%s exists" % (repository, tag))
 
-    def delete_repoitory(self, project_name, repo_name, **kwargs):
+    def delete_repoitory(self, project_name, repo_name, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
-        _, status_code, _ = client.delete_repository_with_http_info(project_name, repo_name)
+        try:
+            _, status_code, _ = client.delete_repository_with_http_info(project_name, repo_name)
+        except Exception as e:
+            base._assert_status_code(expect_status_code, e.status)
+            return e.body
+        base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
+
 
     def list_repositories(self, project_name, **kwargs):
         client = self._get_client(**kwargs)
@@ -112,16 +113,22 @@ class Repository(base.Base, object):
         if tag.scan_overview != None:
             raise Exception("Image should be <Not Scanned> state!")
 
-    def repository_should_exist(self, project_id, repo_name, **kwargs):
-        repositories = self.list_repositories(project_id, **kwargs)
-        if is_repo_exist_in_project(repositories, repo_name) == False:
+    def repository_should_exist(self, project_Name, repo_name, **kwargs):
+        repositories = self.list_repositories(project_Name, **kwargs)
+        if repo_name not in repositories:
             raise Exception("Repository {} is not exist.".format(repo_name))
+
+    def check_repository_exist(self, project_Name, repo_name, **kwargs):
+        repositories = self.list_repositories(project_Name, **kwargs)
+        for  repo in repositories:
+            if repo.name == project_Name+"/"+repo_name:
+                return True
+        return False
 
     def signature_should_exist(self, repo_name, tag, **kwargs):
         signatures = self.get_repo_signatures(repo_name, **kwargs)
         for each_sign in signatures:
             if each_sign.tag == tag and len(each_sign.hashes["sha256"]) == 44:
-                print "sha256:", len(each_sign.hashes["sha256"])
                 return
         raise Exception(r"Signature of {}:{} is not exist!".format(repo_name, tag))
 

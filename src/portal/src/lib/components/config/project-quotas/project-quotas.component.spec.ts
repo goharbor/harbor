@@ -1,4 +1,4 @@
-import { async, ComponentFixture, ComponentFixtureAutoDetect, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, ComponentFixtureAutoDetect, TestBed } from '@angular/core/testing';
 import { ProjectQuotasComponent } from './project-quotas.component';
 import { IServiceConfig, SERVICE_CONFIG } from '../../../entities/service.config';
 import { Router } from '@angular/router';
@@ -58,7 +58,7 @@ describe('ProjectQuotasComponent', () => {
   const timeout = (ms: number) => {
      return new Promise(resolve => setTimeout(resolve, ms));
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         HarborLibraryModule,
@@ -76,7 +76,7 @@ describe('ProjectQuotasComponent', () => {
       .compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
 
     fixture = TestBed.createComponent(ProjectQuotasComponent);
     component = fixture.componentInstance;

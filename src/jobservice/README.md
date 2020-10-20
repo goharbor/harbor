@@ -37,7 +37,7 @@ With job service, you can:
 
 The overall architecture of the job service is shown in the below graph:
 
-![js arch](../../docs/img/jobservice/js-arch.png)
+![js arch](https://raw.githubusercontent.com/goharbor/website/master/docs/img/jobservice/js-arch.png)
 
 Components:
 
@@ -55,7 +55,7 @@ Components:
 
 Currently, the worker (compute node) and controller (control plane) are packaged in one process. To achieve scalability and HA functionality, multiple nodes can be deployed under a LB layer.
 
-![js deployment](../../docs/img/jobservice/js-deploy.png)
+![js deployment](https://raw.githubusercontent.com/goharbor/website/master/docs/img/jobservice/js-deploy.png)
 
 As described in above graph, the controller and work pool which are located in different nodes can also talk to each other via a virtual channel - the backend persistent driver. That means the job enqueued by a controller may be selected by other worker pool which is located in another node.
 

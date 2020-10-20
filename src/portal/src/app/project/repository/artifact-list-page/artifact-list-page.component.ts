@@ -36,7 +36,7 @@ export class ArtifactListPageComponent implements OnInit {
   isGuest: boolean;
   registryUrl: string;
 
-  @ViewChild(ArtifactListComponent, {static: false})
+  @ViewChild(ArtifactListComponent)
   repositoryComponent: ArtifactListComponent;
   depth: string;
   constructor(

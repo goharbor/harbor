@@ -17,22 +17,27 @@ package artifact
 import (
 	"context"
 	"fmt"
+
 	beegorm "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
-	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
 // Handler preprocess artifact event data
 type Handler struct {
-	project *models.Project
+}
+
+// Name ...
+func (a *Handler) Name() string {
+	return "ArtifactWebhook"
 }
 
 // Handle preprocess artifact event data and then publish hook event
@@ -56,13 +61,13 @@ func (a *Handler) IsStateful() bool {
 }
 
 func (a *Handler) handle(event *event.ArtifactEvent) error {
-	var err error
-	a.project, err = project.Mgr.Get(event.Artifact.ProjectID)
+	prj, err := project.Ctl.Get(orm.Context(), event.Artifact.ProjectID, project.Metadata(true))
 	if err != nil {
-		log.Errorf("failed to get project:%d, error: %v", event.Artifact.ProjectID, err)
+		log.Errorf("failed to get project: %d, error: %v", event.Artifact.ProjectID, err)
 		return err
 	}
-	policies, err := notification.PolicyMgr.GetRelatedPolices(a.project.ProjectID, event.EventType)
+
+	policies, err := notification.PolicyMgr.GetRelatedPolices(prj.ProjectID, event.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", event.EventType, err)
 		return err
@@ -72,7 +77,7 @@ func (a *Handler) handle(event *event.ArtifactEvent) error {
 		return nil
 	}
 
-	payload, err := a.constructArtifactPayload(event)
+	payload, err := a.constructArtifactPayload(event, prj)
 	if err != nil {
 		return err
 	}
@@ -84,14 +89,14 @@ func (a *Handler) handle(event *event.ArtifactEvent) error {
 	return nil
 }
 
-func (a *Handler) constructArtifactPayload(event *event.ArtifactEvent) (*model.Payload, error) {
+func (a *Handler) constructArtifactPayload(event *event.ArtifactEvent, project *models.Project) (*model.Payload, error) {
 	repoName := event.Repository
 	if repoName == "" {
 		return nil, fmt.Errorf("invalid %s event with empty repo name", event.EventType)
 	}
 
 	repoType := models.ProjectPrivate
-	if a.project.IsPublic() {
+	if project.IsPublic() {
 		repoType = models.ProjectPublic
 	}
 
@@ -103,7 +108,7 @@ func (a *Handler) constructArtifactPayload(event *event.ArtifactEvent) (*model.P
 		EventData: &notifyModel.EventData{
 			Repository: &notifyModel.Repository{
 				Name:         imageName,
-				Namespace:    a.project.Name,
+				Namespace:    project.Name,
 				RepoFullName: repoName,
 				RepoType:     repoType,
 			},

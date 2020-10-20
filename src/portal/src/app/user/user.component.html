@@ -40,7 +40,7 @@
                 </clr-dg-row>
                 <clr-dg-footer>
                     <span *ngIf="totalCount>0">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'USER.OF' | translate }}</span>
-                    {{pagination.totalItems}} {{'USER.ITEMS' | translate }}
+                    {{totalCount}} {{'USER.ITEMS' | translate }}
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount">
                     </clr-dg-pagination>
                 </clr-dg-footer>

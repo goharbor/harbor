@@ -40,21 +40,10 @@ type ManifestProcessor struct {
 }
 
 // AbstractMetadata abstracts metadata of artifact
-func (m *ManifestProcessor) AbstractMetadata(ctx context.Context, content []byte, artifact *artifact.Artifact) error {
-	// get manifest
-	manifest := &v1.Manifest{}
-	if err := json.Unmarshal(content, manifest); err != nil {
-		return err
-	}
-	// get config layer
-	_, blob, err := m.RegCli.PullBlob(artifact.RepositoryName, manifest.Config.Digest.String())
-	if err != nil {
-		return err
-	}
-	defer blob.Close()
+func (m *ManifestProcessor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, content []byte) error {
 	// parse metadata from config layer
 	metadata := map[string]interface{}{}
-	if err := json.NewDecoder(blob).Decode(&metadata); err != nil {
+	if err := m.UnmarshalConfig(ctx, artifact.RepositoryName, content, &metadata); err != nil {
 		return err
 	}
 	// if no properties specified, populate all metadata into the ExtraAttrs
@@ -79,11 +68,33 @@ func (m *ManifestProcessor) AbstractAddition(ctx context.Context, artifact *arti
 }
 
 // GetArtifactType returns the artifact type
-func (m *ManifestProcessor) GetArtifactType() string {
+func (m *ManifestProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
 	return ""
 }
 
 // ListAdditionTypes returns the supported addition types
-func (m *ManifestProcessor) ListAdditionTypes() []string {
+func (m *ManifestProcessor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
 	return nil
+}
+
+// UnmarshalConfig unmarshal the config blob of the artifact into the specified object "v"
+func (m *ManifestProcessor) UnmarshalConfig(ctx context.Context, repository string, manifest []byte, v interface{}) error {
+	// unmarshal manifest
+	mani := &v1.Manifest{}
+	if err := json.Unmarshal(manifest, mani); err != nil {
+		return err
+	}
+	// if the size of the config blob is 0(empty config blob), return directly
+	if mani.Config.Size == 0 {
+		return nil
+	}
+	// get config layer
+	_, blob, err := m.RegCli.PullBlob(repository, mani.Config.Digest.String())
+	if err != nil {
+		return err
+	}
+	defer blob.Close()
+
+	// unmarshal config layer
+	return json.NewDecoder(blob).Decode(v)
 }

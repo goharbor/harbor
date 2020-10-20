@@ -47,6 +47,7 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
   hasTagRetentionPermission: boolean;
   hasWebhookListPermission: boolean;
   hasScannerReadPermission: boolean;
+  hasP2pProviderReadPermission: boolean;
   tabLinkNavList = [
     {
       linkName: "summary",
@@ -85,6 +86,12 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
       permissions: () => this.hasScannerReadPermission
     },
     {
+      linkName: "p2p-provider",
+      tabLinkInOverflow: false,
+      showTabName: "P2P_PROVIDER.P2P_PROVIDER",
+      permissions: () => this.hasP2pProviderReadPermission
+    },
+    {
       linkName: "tag-strategy",
       tabLinkInOverflow: false,
       showTabName: "PROJECT_DETAIL.POLICY",
@@ -118,6 +125,7 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
   previousWindowWidth: number;
   private _subject = new Subject<string>();
   private _subscription: Subscription;
+  isProxyCacheProject: boolean = false;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -129,6 +137,9 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
     this.hasSignedIn = this.sessionService.getCurrentUser() !== null;
     this.route.data.subscribe(data => {
       this.currentProject = <Project>data['projectResolver'];
+      if (this.currentProject.registry_id) {
+        this.isProxyCacheProject = true;
+      }
       this.isMember = this.currentProject.is_member;
       this.roleName = this.currentProject.role_name;
     });
@@ -189,12 +200,14 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
       USERSTATICPERMISSION.WEBHOOK.KEY, USERSTATICPERMISSION.WEBHOOK.VALUE.LIST));
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.SCANNER.KEY, USERSTATICPERMISSION.SCANNER.VALUE.READ));
+    permissionsList.push(this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.P2P_PROVIDER.KEY, USERSTATICPERMISSION.P2P_PROVIDER.VALUE.READ));
 
     forkJoin(...permissionsList).subscribe(Rules => {
       [this.hasProjectReadPermission, this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission
         , this.hasLabelListPermission, this.hasRepositoryListPermission, this.hasHelmChartsListPermission, this.hasRobotListPermission
         , this.hasLabelCreatePermission, this.hasTagRetentionPermission, this.hasWebhookListPermission,
-      this.hasScannerReadPermission] = Rules;
+      this.hasScannerReadPermission, this.hasP2pProviderReadPermission] = Rules;
     }, error => this.errorHandler.error(error));
   }
 

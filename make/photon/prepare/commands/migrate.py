@@ -10,10 +10,13 @@ from migrations import accept_versions
 @click.command()
 @click.option('-i', '--input', 'input_', required=True, help="The path of original config file")
 @click.option('-o', '--output', default='', help="the path of output config file")
-@click.option('-t', '--target', default='2.0.0', help="target version of input path")
+@click.option('-t', '--target', default='2.1.0', help="target version of input path")
 def migrate(input_, output, target):
     """
     migrate command will migrate config file style to specific version
+    :input_: is the path of the original config file
+    :output: is the destination path of config file, the generated configs will storage in it
+    :target: is the the target version of config file will upgrade to
     """
     if target not in accept_versions:
         click.echo('target version {} not supported'.format(target))

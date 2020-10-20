@@ -109,9 +109,6 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	}
 
 	for _, project := range projects {
-		if !existPatterns(project.FullPath, pathPatterns) {
-			continue
-		}
 		repositories, err := a.clientGitlabAPI.getRepositories(project.ID)
 		if err != nil {
 			return nil, err
@@ -168,7 +165,7 @@ func (a *adapter) searchByPattern(pattern string) []*Project {
 		if ok {
 			for _, name := range names {
 				substrings := strings.Split(name, "/")
-				if len(substrings) != 2 {
+				if len(substrings) < 2 {
 					continue
 				}
 				var projectsByName, err = a.clientGitlabAPI.getProjectsByName(substrings[1])
@@ -182,7 +179,7 @@ func (a *adapter) searchByPattern(pattern string) []*Project {
 			}
 		} else {
 			substrings := strings.Split(pattern, "/")
-			if len(substrings) != 2 {
+			if len(substrings) < 2 {
 				return projects
 			}
 			projectName := substrings[1]

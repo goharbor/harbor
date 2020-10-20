@@ -15,7 +15,7 @@ class TestProjects(unittest.TestCase):
 
     @classmethod
     def tearDown(cls):
-        print "Case completed"
+        print("Case completed")
 
     def testProjectQuota(self):
         """

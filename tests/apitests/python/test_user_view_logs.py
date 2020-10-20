@@ -34,7 +34,7 @@ class TestProjects(unittest.TestCase):
     @classmethod
     def tearDown(self):
         self.test_result.get_final_result()
-        print "Case completed"
+        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
@@ -90,6 +90,7 @@ class TestProjects(unittest.TestCase):
                                              format(user_user_view_logs_name, project_user_view_logs_name, "artifact", operation, log_count))
         #4.1 Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(project_user_view_logs_name, repo_name.split('/')[1], **TestProjects.USER_USER_VIEW_LOGS_CLIENT)
+        time.sleep(6)
 
         #4.2 In project(PA), there should be 1 'delete' log record;
         operation = "delete"

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CreateProjectComponent } from './create-project.component';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
@@ -6,11 +6,14 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { ProjectService } from "../../../lib/services";
+import { EndpointDefaultService, EndpointService, ProjectService } from '../../../lib/services';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { ErrorHandler } from '../../../lib/utils/error-handler';
+import { IServiceConfig, SERVICE_CONFIG } from '../../../lib/entities/service.config';
+import { CURRENT_BASE_HREF } from '../../../lib/utils/utils';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('CreateProjectComponent', () => {
     let component: CreateProjectComponent;
@@ -31,10 +34,14 @@ describe('CreateProjectComponent', () => {
         showSuccess: function() {
         }
     };
+    const config: IServiceConfig = {
+        systemInfoEndpoint: CURRENT_BASE_HREF + "/endpoints/testing"
+    };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
+                HttpClientTestingModule,
                 BrowserAnimationsModule,
                 FormsModule,
                 ClarityModule,
@@ -46,8 +53,10 @@ describe('CreateProjectComponent', () => {
             ],
             providers: [
                 TranslateService,
+                { provide: SERVICE_CONFIG, useValue: config },
                 {provide: ProjectService, useValue: mockProjectService},
                 {provide: MessageHandlerService, useValue: mockMessageHandlerService},
+                { provide: EndpointService, useClass: EndpointDefaultService },
                 ErrorHandler
             ]
         }).compileComponents();
@@ -110,5 +119,14 @@ describe('CreateProjectComponent', () => {
         await fixture.whenStable();
         const modelBody: HTMLDivElement = fixture.nativeElement.querySelector(".modal-body");
         expect(modelBody).toBeFalsy();
+    });
+
+    it('should enable proxy cache', async () => {
+        component.enableProxyCache = true;
+        component.isSystemAdmin = true;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const endpoint: HTMLDivElement = fixture.nativeElement.querySelector("#endpoint");
+        expect(endpoint).toBeFalsy();
     });
 });

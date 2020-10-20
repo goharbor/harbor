@@ -119,6 +119,14 @@ func (_m *APIController) GetRetentionExecTaskLog(taskID int64) ([]byte, error) {
 	return r0, r1
 }
 
+// GetRetentionExecTask provides a mock function with given fields: taskID
+func (_m *APIController) GetRetentionExecTask(taskID int64) (*retention.Task, error) {
+	return &retention.Task{
+		ID:          1,
+		ExecutionID: 1,
+	}, nil
+}
+
 // GetTotalOfRetentionExecTasks provides a mock function with given fields: executionID
 func (_m *APIController) GetTotalOfRetentionExecTasks(executionID int64) (int64, error) {
 	ret := _m.Called(executionID)

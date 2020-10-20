@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+import { waitForAsync, ComponentFixture, TestBed } from "@angular/core/testing";
 import { SharedModule } from "../../utils/shared/shared.module";
 import { ImageNameInputComponent } from "./image-name-input.component";
 import { ErrorHandler } from "../../utils/error-handler/error-handler";
@@ -32,7 +32,7 @@ describe("ImageNameInputComponent (inline template)", () => {
         projectBaseEndpoint: CURRENT_BASE_HREF + "/projects/testing"
     };
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 SharedModule
@@ -58,7 +58,7 @@ describe("ImageNameInputComponent (inline template)", () => {
         spy = spyOn(projectService, "listProjects").and.returnValues(of(new HttpResponse({ body: mockProjects })));
     });
 
-    it("should load data", async(() => {
+    it("should load data", waitForAsync(() => {
         expect(spy.calls.any).toBeTruthy();
     }));
 });

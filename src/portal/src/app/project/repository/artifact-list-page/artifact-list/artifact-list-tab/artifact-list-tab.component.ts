@@ -54,17 +54,25 @@ import {
 } from "../../../../../../lib/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../../lib/components/operation/operate";
 import { errorHandler } from "../../../../../../lib/utils/shared/shared.utils";
-import { ArtifactFront as Artifact, mutipleFilter, artifactPullCommands } from "../../../artifact/artifact";
+import {
+  ArtifactFront as Artifact,
+  mutipleFilter,
+  artifactPullCommands,
+  artifactDefault
+} from '../../../artifact/artifact';
 import { Project } from "../../../../project";
 import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 import { ADDITIONS } from "../../../artifact/artifact-additions/models";
 import { Platform } from "../../../../../../../ng-swagger-gen/models/platform";
+import { IconService } from '../../../../../../../ng-swagger-gen/services/icon.service';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
   show: boolean;
 }
 export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
+const YES: string = 'yes';
 @Component({
   selector: 'artifact-list-tab',
   templateUrl: './artifact-list-tab.component.html',
@@ -125,14 +133,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   };
   filterOneLabel: Label = this.initFilter;
 
-  @ViewChild("confirmationDialog", { static: false })
+  @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
 
-  @ViewChild("imageNameInput", { static: false })
+  @ViewChild("imageNameInput")
   imageNameInput: ImageNameInputComponent;
 
-  @ViewChild("digestTarget", { static: false }) textInput: ElementRef;
-  @ViewChild("copyInput", { static: false }) copyInput: CopyInputComponent;
+  @ViewChild("digestTarget") textInput: ElementRef;
+  @ViewChild("copyInput") copyInput: CopyInputComponent;
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;
@@ -161,7 +169,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
   scanFiinishArtifactLength: number = 0;
   onScanArtifactsLength: number = 0;
-
   constructor(
     private errorHandlerService: ErrorHandler,
     private userPermissionService: UserPermissionService,
@@ -374,6 +381,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 artifact.platform = clone(platFormAttr[index].platform);
               });
               this.getPullCommand(this.artifactList);
+              this.getIconsFromBackEnd();
             }, error => {
               this.errorHandlerService.error(error);
             });
@@ -403,6 +411,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             this.artifactList = doSorting<Artifact>(this.artifactList, state);
 
             this.getPullCommand(this.artifactList);
+            this.getIconsFromBackEnd();
           }, error => {
             // error
             this.errorHandlerService.error(error);
@@ -748,10 +757,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           } else if (deleteErrorList.length === deleteResult.length) {
             // all is error
             this.loading = false;
-            this.errorHandlerService.error(deleteResult[deleteResult.length - 1].error);
+            this.errorHandlerService.error(deleteResult[deleteResult.length - 1]);
           } else {
             // some artifact delete success but it has error delete things
-            this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1].error);
+            this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1]);
             // if delete one success  refresh list
             let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
             this.clrLoad(st);
@@ -814,7 +823,11 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
   goIntoArtifactSummaryPage(artifact: Artifact): void {
     const relativeRouterLink: string[] = ['artifacts', artifact.digest];
-    this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute });
+    if (this.activatedRoute.snapshot.queryParams['publicAndNotLogged'] === YES) {
+      this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute, queryParams: {publicAndNotLogged: YES} });
+    } else {
+      this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute });
+    }
   }
 
   onSuccess($event: any): void {
@@ -933,7 +946,11 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       depth = artifact.digest;
     }
     const linkUrl = ['harbor', 'projects', this.projectId, 'repositories', this.repoName, 'depth', depth];
-    this.router.navigate(linkUrl);
+    if (this.activatedRoute.snapshot.queryParams['publicAndNotLogged'] === YES) {
+      this.router.navigate(linkUrl, {queryParams: {publicAndNotLogged: YES}});
+    } else {
+      this.router.navigate(linkUrl);
+    }
   }
   selectFilterType() {
     this.lastFilteredTagName = '';
@@ -991,5 +1008,18 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
       }
     }
+  }
+  getIconsFromBackEnd() {
+    if (this.artifactList && this.artifactList.length) {
+      this.artifactService.getIconsFromBackEnd(this.artifactList);
+    }
+  }
+  showDefaultIcon(event: any) {
+    if (event && event.target) {
+      event.target.src = artifactDefault;
+    }
+  }
+  getIcon(icon: string): SafeUrl {
+    return this.artifactService.getIcon(icon);
   }
 }

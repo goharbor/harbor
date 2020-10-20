@@ -18,6 +18,10 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
+
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/blob/models"
 
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/pkg/blob"
@@ -27,6 +31,8 @@ import (
 	blobtesting "github.com/goharbor/harbor/src/testing/pkg/blob"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
+
+	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
 )
 
 type ControllerTestSuite struct {
@@ -254,17 +260,116 @@ func (suite *ControllerTestSuite) TestSync() {
 }
 
 func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
-	sessionID := uuid.New().String()
+	{
+		sessionID := uuid.New().String()
 
-	size, err := Ctl.GetAcceptedBlobSize(sessionID)
+		size, err := Ctl.GetAcceptedBlobSize(sessionID)
+		suite.Nil(err)
+		suite.Equal(int64(0), size)
+
+		suite.Nil(Ctl.SetAcceptedBlobSize(sessionID, 100))
+
+		size, err = Ctl.GetAcceptedBlobSize(sessionID)
+		suite.Nil(err)
+		suite.Equal(int64(100), size)
+	}
+
+	{
+		// test blob size expired
+		ctl := &controller{blobSizeExpiration: time.Second * 5}
+
+		sessionID := uuid.New().String()
+
+		size, err := ctl.GetAcceptedBlobSize(sessionID)
+		suite.Nil(err)
+		suite.Equal(int64(0), size)
+
+		suite.Nil(ctl.SetAcceptedBlobSize(sessionID, 100))
+
+		size, err = ctl.GetAcceptedBlobSize(sessionID)
+		suite.Nil(err)
+		suite.Equal(int64(100), size)
+
+		time.Sleep(time.Second * 10)
+
+		size, err = ctl.GetAcceptedBlobSize(sessionID)
+		suite.Nil(err)
+		suite.Equal(int64(0), size)
+	}
+}
+
+func (suite *ControllerTestSuite) TestTouch() {
+	ctx := suite.Context()
+
+	err := Ctl.Touch(ctx, &blob.Blob{
+		Status: models.StatusNone,
+	})
+	suite.NotNil(err)
+	suite.True(errors.IsNotFoundErr(err))
+
+	digest := suite.prepareBlob()
+	blob, err := Ctl.Get(ctx, digest)
 	suite.Nil(err)
-	suite.Equal(int64(0), size)
-
-	suite.Nil(Ctl.SetAcceptedBlobSize(sessionID, 100))
-
-	size, err = Ctl.GetAcceptedBlobSize(sessionID)
+	blob.Status = models.StatusDelete
+	_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), blob)
 	suite.Nil(err)
-	suite.Equal(int64(100), size)
+
+	err = Ctl.Touch(ctx, blob)
+	suite.Nil(err)
+	suite.Equal(blob.Status, models.StatusNone)
+}
+
+func (suite *ControllerTestSuite) TestFail() {
+	ctx := suite.Context()
+
+	err := Ctl.Fail(ctx, &blob.Blob{
+		Status: models.StatusNone,
+	})
+	suite.NotNil(err)
+	suite.True(errors.IsNotFoundErr(err))
+
+	digest := suite.prepareBlob()
+	blob, err := Ctl.Get(ctx, digest)
+	suite.Nil(err)
+
+	blob.Status = models.StatusDelete
+	_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), blob)
+	suite.Nil(err)
+
+	// StatusDelete cannot be marked as StatusDeleteFailed
+	err = Ctl.Fail(ctx, blob)
+	suite.NotNil(err)
+	suite.True(errors.IsNotFoundErr(err))
+
+	blob.Status = models.StatusDeleting
+	_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), blob)
+	suite.Nil(err)
+
+	err = Ctl.Fail(ctx, blob)
+	suite.Nil(err)
+
+	blobAfter, err := Ctl.Get(ctx, digest)
+	suite.Nil(err)
+	suite.Equal(models.StatusDeleteFailed, blobAfter.Status)
+}
+
+func (suite *ControllerTestSuite) TestDelete() {
+	ctx := suite.Context()
+
+	digest := suite.DigestString()
+	_, err := Ctl.Ensure(ctx, digest, "application/octet-stream", 100)
+	suite.Nil(err)
+
+	blob, err := Ctl.Get(ctx, digest)
+	suite.Nil(err)
+	suite.Equal(digest, blob.Digest)
+
+	err = Ctl.Delete(ctx, blob.ID)
+	suite.Nil(err)
+
+	exist, err := Ctl.Exist(ctx, digest)
+	suite.Nil(err)
+	suite.False(exist)
 }
 
 func TestControllerTestSuite(t *testing.T) {

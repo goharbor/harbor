@@ -76,7 +76,7 @@ export class ChartVersionComponent implements OnInit {
 
   addLabelHeaders = 'HELM_CHART.ADD_LABEL_TO_CHART_VERSION';
 
-  @ViewChild("confirmationDialog", {static: false})
+  @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
   hasAddRemoveHelmChartVersionPermission: boolean;
   hasDownloadHelmChartVersionPermission: boolean;
@@ -166,15 +166,15 @@ export class ChartVersionComponent implements OnInit {
     return this.helmChartService
       .deleteChartVersion(this.projectName, this.chartName, version.version)
       .pipe(map(
-        () => operateChanges(operateMsg, OperationState.success),
+        () => operateChanges(operateMsg, OperationState.success)),
         catchError( error => {
           const message = errorHandlerFn(error);
           this.translateService.get(message).subscribe(res =>
             operateChanges(operateMsg, OperationState.failure, res)
           );
-          return observableThrowError(message);
+          return observableThrowError(error);
         }
-      )));
+      ));
   }
 
   deleteVersions(versions: HelmChartVersion[]) {
@@ -191,6 +191,8 @@ export class ChartVersionComponent implements OnInit {
       if (totalCount === successCount) {
         this.backEvt.emit();
       }
+    }, error => {
+      this.errorHandler.error(error);
     });
   }
 
