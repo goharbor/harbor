@@ -1,0 +1,21 @@
+name: Publish Docker
+on:
+  push:
+    tags:
+      - "*"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Set output
+        id: vars
+        run: |
+          echo ::set-output name=VERSIONTAG::${GITHUB_REF#refs/*/}
+          echo ::set-output name=PKGVERSIONTAG::${GITHUB_REF#refs/*/}
+      - run: make build pushimage
+        env:
+          REGISTRYPROJECTNAME: flanksource
+          REGISTRYSERVER: docker.io
+          REGISTRYUSER: ${{ secrets.DOCKER_USERNAME }}
+          REGISTRYPASSWORD: ${{ secrets.DOCKER_PASSWORD }}
