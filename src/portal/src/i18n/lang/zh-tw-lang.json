@@ -922,7 +922,9 @@
       "OIDC_SETNAME": "設置OIDC用戶名",
       "OIDC_SETNAMECONTENT": "在通過第三方（OIDC）進行身份驗證時,您必須第一次創建一個Harbor用戶名。這將在端口中用於與項目、角色等關聯。",
       "OIDC_USERNAME": "用戶名",
-      "GROUP_CLAIM_NAME": "組名稱"
+      "GROUP_CLAIM_NAME": "組名稱",
+      "OIDC_ADMIN_GROUP": "OIDC Admin Group",
+      "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
     },
     "SCANNING":{
       "TRIGGER_SCAN_ALL_SUCCESS": "啟動掃描所有鏡像任務成功!",

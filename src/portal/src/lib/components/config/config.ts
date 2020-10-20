@@ -105,6 +105,7 @@ export class Configuration {
     storage_per_project: NumberValueItem;
     cfg_expiration: NumberValueItem;
     oidc_groups_claim: StringValueItem;
+    oidc_admin_group: StringValueItem;
     public constructor() {
         this.auth_mode = new StringValueItem("db_auth", true);
         this.project_creation_restriction = new StringValueItem("everyone", true);
@@ -160,6 +161,7 @@ export class Configuration {
         this.oidc_auto_onboard = new BoolValueItem(false, true);
         this.oidc_scope = new StringValueItem('', true);
         this.oidc_groups_claim = new StringValueItem('', true);
+        this.oidc_admin_group = new StringValueItem('', true);
         this.oidc_user_claim = new StringValueItem('', true);
         this.count_per_project = new NumberValueItem(-1, true);
         this.storage_per_project = new NumberValueItem(-1, true);
