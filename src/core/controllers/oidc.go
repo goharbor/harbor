@@ -20,8 +20,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common/dao/group"
-
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -153,12 +151,7 @@ func (oc *OIDCController) Callback() {
 			return
 		}
 	}
-
-	gids, err := group.PopulateGroup(models.UserGroupsFromName(info.Groups, common.OIDCGroupType))
-	if err != nil {
-		log.Warningf("Failed to populate groups, error: %v, user will have empty group list, username: %s", err, info.Username)
-	}
-	u.GroupIDs = gids
+	oidc.InjectGroupsToUser(info, u)
 	oidcUser, err := dao.GetOIDCUserByUserID(u.UserID)
 	if err != nil {
 		oc.SendInternalServerError(err)
@@ -181,30 +174,24 @@ func userOnboard(oc *OIDCController, info *oidc.UserInfo, username string, token
 		oc.SendInternalServerError(err)
 		return nil, false
 	}
-
-	gids, err := group.PopulateGroup(models.UserGroupsFromName(info.Groups, common.OIDCGroupType))
-	if err != nil {
-		log.Warningf("Failed to populate group user will have empty group list. username: %s", username)
-	}
-
 	oidcUser := models.OIDCUser{
 		SubIss: info.Subject + info.Issuer,
 		Secret: s,
 		Token:  t,
 	}
 
-	user := models.User{
+	user := &models.User{
 		Username:     username,
 		Realname:     username,
 		Email:        info.Email,
-		GroupIDs:     gids,
 		OIDCUserMeta: &oidcUser,
 		Comment:      oidcUserComment,
 	}
+	oidc.InjectGroupsToUser(info, user)
 
-	log.Debugf("User created: %+v\n", user)
+	log.Debugf("User created: %+v\n", *user)
 
-	err = dao.OnBoardOIDCUser(&user)
+	err = dao.OnBoardOIDCUser(user)
 	if err != nil {
 		if strings.Contains(err.Error(), dao.ErrDupUser.Error()) {
 			oc.RenderError(http.StatusConflict, "Conflict, the user with same username or email has been onboarded.")
@@ -215,7 +202,7 @@ func userOnboard(oc *OIDCController, info *oidc.UserInfo, username string, token
 		return nil, false
 	}
 
-	return &user, true
+	return user, true
 }
 
 // Onboard handles the request to onboard a user authenticated via OIDC provider

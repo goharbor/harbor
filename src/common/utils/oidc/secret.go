@@ -4,15 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/common"
+	"sync"
+
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"sync"
 )
 
 // SecretVerifyError wraps the different errors happened when verifying a secret for OIDC user.  When seeing this error,
@@ -117,12 +116,7 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 	if err != nil {
 		return nil, verifyError(err)
 	}
-	gids, err := group.PopulateGroup(models.UserGroupsFromName(info.Groups, common.OIDCGroupType))
-	if err != nil {
-		log.Warningf("failed to get group ID, error: %v, skip populating groups", err)
-	} else {
-		user.GroupIDs = gids
-	}
+	InjectGroupsToUser(info, user)
 	return user, nil
 }
 

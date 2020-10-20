@@ -26,6 +26,8 @@ import (
 	"time"
 
 	gooidc "github.com/coreos/go-oidc"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -119,12 +121,13 @@ type Token struct {
 // UserInfo wraps the information that is extracted via token.  It will be transformed to data object that is persisted
 // in the DB
 type UserInfo struct {
-	Issuer        string   `json:"iss"`
-	Subject       string   `json:"sub"`
-	Username      string   `json:"name"`
-	Email         string   `json:"email"`
-	Groups        []string `json:"groups"`
-	hasGroupClaim bool
+	Issuer           string   `json:"iss"`
+	Subject          string   `json:"sub"`
+	Username         string   `json:"name"`
+	Email            string   `json:"email"`
+	Groups           []string `json:"groups"`
+	AdminGroupMember bool     `json:"AdminGroupMember"`
+	hasGroupClaim    bool
 }
 
 func getOauthConf() (*oauth2.Config, error) {
@@ -247,7 +250,7 @@ func UserInfoFromToken(ctx context.Context, token *Token) (*UserInfo, error) {
 		return nil, err
 	}
 	setting := provider.setting.Load().(models.OIDCSetting)
-	local, err := userInfoFromIDToken(ctx, token, setting)
+	local, err := UserInfoFromIDToken(ctx, token, setting)
 	if err != nil {
 		return nil, err
 	}
@@ -280,9 +283,11 @@ func mergeUserInfo(remote, local *UserInfo) *UserInfo {
 	}
 	if remote.hasGroupClaim {
 		res.Groups = remote.Groups
+		res.AdminGroupMember = remote.AdminGroupMember
 		res.hasGroupClaim = true
 	} else if local.hasGroupClaim {
 		res.Groups = local.Groups
+		res.AdminGroupMember = local.AdminGroupMember
 		res.hasGroupClaim = true
 	} else {
 		res.Groups = []string{}
@@ -300,10 +305,11 @@ func userInfoFromRemote(ctx context.Context, token *Token, setting models.OIDCSe
 	if err != nil {
 		return nil, err
 	}
-	return userInfoFromClaims(u, setting.GroupsClaim, setting.UserClaim)
+	return userInfoFromClaims(u, setting)
 }
 
-func userInfoFromIDToken(ctx context.Context, token *Token, setting models.OIDCSetting) (*UserInfo, error) {
+// UserInfoFromIDToken extract user info from ID token
+func UserInfoFromIDToken(ctx context.Context, token *Token, setting models.OIDCSetting) (*UserInfo, error) {
 	if token.RawIDToken == "" {
 		return nil, nil
 	}
@@ -312,34 +318,41 @@ func userInfoFromIDToken(ctx context.Context, token *Token, setting models.OIDCS
 		return nil, err
 	}
 
-	return userInfoFromClaims(idt, setting.GroupsClaim, setting.UserClaim)
+	return userInfoFromClaims(idt, setting)
 }
 
-func userInfoFromClaims(c claimsProvider, g, u string) (*UserInfo, error) {
+func userInfoFromClaims(c claimsProvider, setting models.OIDCSetting) (*UserInfo, error) {
 	res := &UserInfo{}
 	if err := c.Claims(res); err != nil {
 		return nil, err
 	}
-	if u != "" {
+	if setting.UserClaim != "" {
 		allClaims := make(map[string]interface{})
 		if err := c.Claims(&allClaims); err != nil {
 			return nil, err
 		}
 
-		username, ok := allClaims[u].(string)
+		username, ok := allClaims[setting.UserClaim].(string)
 		if !ok {
-			return nil, fmt.Errorf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", u)
+			return nil, fmt.Errorf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
 		}
 		res.Username = username
-
 	}
-	res.Groups, res.hasGroupClaim = GroupsFromClaims(c, g)
+	res.Groups, res.hasGroupClaim = groupsFromClaims(c, setting.GroupsClaim)
+	if len(setting.AdminGroup) > 0 {
+		for _, g := range res.Groups {
+			if g == setting.AdminGroup {
+				res.AdminGroupMember = true
+				break
+			}
+		}
+	}
 	return res, nil
 }
 
-// GroupsFromClaims fetches the group name list from claimprovider, such as decoded ID token.
+// groupsFromClaims fetches the group name list from claimprovider, such as decoded ID token.
 // If the claims does not have the claim defined as k, the second return value will be false, otherwise true
-func GroupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
+func groupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 	res := make([]string, 0)
 	claimMap := make(map[string]interface{})
 	if err := gp.Claims(&claimMap); err != nil {
@@ -360,6 +373,29 @@ func GroupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 		res = append(res, s)
 	}
 	return res, true
+}
+
+type populate func(groupNames []string) ([]int, error)
+
+func populateGroupsDB(groupNames []string) ([]int, error) {
+	return group.PopulateGroup(models.UserGroupsFromName(groupNames, common.OIDCGroupType))
+}
+
+// InjectGroupsToUser populates the group to DB and inject the group IDs to user model.
+// The third optional parm is for UT only, when using the func, the third
+func InjectGroupsToUser(info *UserInfo, user *models.User, f ...populate) {
+	var populateGroups populate
+	if len(f) == 0 {
+		populateGroups = populateGroupsDB
+	} else {
+		populateGroups = f[0]
+	}
+	if gids, err := populateGroups(info.Groups); err != nil {
+		log.Warningf("failed to get group ID, error: %v, skip populating groups", err)
+	} else {
+		user.GroupIDs = gids
+	}
+	user.AdminRoleInAuth = info.AdminGroupMember
 }
 
 // Conn wraps connection info of an OIDC endpoint
