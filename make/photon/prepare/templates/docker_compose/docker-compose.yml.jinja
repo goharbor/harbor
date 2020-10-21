@@ -61,9 +61,6 @@ services:
 {% endif %}
     networks:
       - harbor
-{% if with_clair %}
-      - harbor-clair
-{% endif %}
     dns_search: .
     depends_on:
       - log
@@ -137,11 +134,6 @@ services:
         aliases:
           - harbor-db
   {% endif %}
-  {% if with_clair %}
-      harbor-clair:
-        aliases:
-          - harbor-db
-  {% endif %}
     dns_search: .
     env_file:
       - ./common/config/db/env
@@ -197,11 +189,6 @@ services:
       harbor:
 {% if with_notary %}
       harbor-notary:
-{% endif %}
-{% if with_clair %}
-      harbor-clair:
-        aliases:
-          - harbor-core
 {% endif %}
 {% if with_chartmuseum %}
       harbor-chartmuseum:
@@ -287,9 +274,6 @@ services:
 {% endif %}
     networks:
       - harbor
-{% if with_clair %}
-      - harbor-clair
-{% endif %}
     dns_search: .
     depends_on:
       - core
@@ -315,11 +299,6 @@ services:
       harbor:
   {% if with_chartmuseum %}
       harbor-chartmuseum:
-        aliases:
-          - redis
-  {% endif %}
-  {% if with_clair %}
-      harbor-clair:
         aliases:
           - redis
   {% endif %}
@@ -468,87 +447,6 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-signer"
 {% endif %}
-{% if with_clair %}
-  clair:
-    networks:
-      - harbor-clair
-    container_name: clair
-    image: goharbor/clair-photon:{{clair_version}}
-    restart: always
-    cap_drop:
-      - ALL
-    cap_add:
-      - DAC_OVERRIDE
-      - SETGID
-      - SETUID
-    cpu_quota: 50000
-    dns_search: .
-    depends_on:
-      - log
-  {% if external_database == False %}
-      - postgresql
-  {% endif %}
-    volumes:
-      - type: bind
-        source: ./common/config/clair/config.yaml
-        target: /etc/clair/config.yaml
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
-{%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.clair_crt_path}}
-        target: /etc/harbor/ssl/clair.crt
-      - type: bind
-        source: {{internal_tls.clair_key_path}}
-        target: /etc/harbor/ssl/clair.key
-{% endif %}
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "clair"
-    env_file:
-      ./common/config/clair/clair_env
-  clair-adapter:
-    networks:
-      - harbor-clair
-    container_name: clair-adapter
-    image: goharbor/clair-adapter-photon:{{clair_adapter_version}}
-    restart: always
-    cap_drop:
-      - ALL
-    cap_add:
-      - DAC_OVERRIDE
-      - SETGID
-      - SETUID
-    cpu_quota: 50000
-    dns_search: .
-    depends_on:
-      - clair
-{% if external_redis == False %}
-      - redis
-{% endif %}
-    volumes:
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
-{%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.clair_adapter_crt_path}}
-        target: /etc/harbor/ssl/clair_adapter.crt
-      - type: bind
-        source: {{internal_tls.clair_adapter_key_path}}
-        target: /etc/harbor/ssl/clair_adapter.key
-{% endif %}
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "clair-adapter"
-    env_file:
-      ./common/config/clair-adapter/env
-{% endif %}
 {% if with_trivy %}
   trivy-adapter:
     container_name: trivy-adapter
@@ -641,10 +539,6 @@ networks:
   harbor-notary:
     external: false
   notary-sig:
-    external: false
-{% endif %}
-{% if with_clair %}
-  harbor-clair:
     external: false
 {% endif %}
 {% if with_chartmuseum %}

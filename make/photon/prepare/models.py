@@ -19,11 +19,6 @@ class InternalTLS:
         'portal.crt', 'portal.key'
     }
 
-    clair_certs_filename = {
-        'clair_adapter.crt', 'clair_adapter.key',
-        'clair.crt', 'clair.key'
-    }
-
     trivy_certs_filename = {
         'trivy_adapter.crt', 'trivy_adapter.key',
     }
@@ -49,8 +44,6 @@ class InternalTLS:
         self.tls_dir = tls_dir
         if self.enabled:
             self.required_filenames = self.harbor_certs_filename
-            if kwargs.get('with_clair'):
-                self.required_filenames.update(self.clair_certs_filename)
             if kwargs.get('with_notary'):
                 self.required_filenames.update(self.notary_certs_filename)
             if kwargs.get('with_chartmuseum'):
