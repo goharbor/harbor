@@ -371,11 +371,7 @@ func (session *Session) SearchGroupByDN(groupDN string) ([]models.LdapGroup, err
 	if _, err := goldap.ParseDN(groupDN); err != nil {
 		return nil, ErrDNSyntax
 	}
-	ldapFilter, err := createGroupSearchFilter(session.ldapGroupConfig.LdapGroupFilter, "", session.ldapGroupConfig.LdapGroupNameAttribute)
-	if err != nil {
-		return nil, err
-	}
-	groupList, err := session.searchGroup(groupDN, ldapFilter, "", session.ldapGroupConfig.LdapGroupNameAttribute)
+	groupList, err := session.searchGroup(groupDN, session.ldapGroupConfig.LdapGroupFilter, "", session.ldapGroupConfig.LdapGroupNameAttribute)
 	if serverError, ok := err.(*goldap.Error); ok {
 		log.Debugf("resultCode:%v", serverError.ResultCode)
 	}
