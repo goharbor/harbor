@@ -923,7 +923,9 @@
             "OIDC_SETNAME": "Definir o Utilizador OIDC",
             "OIDC_SETNAMECONTENT": "Você deve Criar um Nome de usuário do Porto a primeira vez que autenticar através de um terceiro (OIDC). Isto será usado Dentro de Harbor para ser associado a projetos, papéis, etc.",
             "OIDC_USERNAME": "Utilizador",
-            "GROUP_CLAIM_NAME": "Group Claim Name"
+            "GROUP_CLAIM_NAME": "Group Claim Name",
+            "OIDC_ADMIN_GROUP": "OIDC Admin Group",
+            "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Disparo de análise geral efetuado com sucesso!",

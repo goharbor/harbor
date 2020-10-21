@@ -927,7 +927,9 @@
             "OIDC_SETNAME": "Set OIDC nombre de usuario",
             "OIDC_SETNAMECONTENT": "Usted debe crear un Harbor nombre de usuario la primera vez cuando la autenticación a través de un tercero (OIDC). Esta será usada en Harbor para ser asociados con proyectos, funciones, etc.",
             "OIDC_USERNAME": "Usuario",
-            "GROUP_CLAIM_NAME": "Group Claim Name"
+            "GROUP_CLAIM_NAME": "Group Claim Name",
+            "OIDC_ADMIN_GROUP": "OIDC Admin Group",
+            "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",

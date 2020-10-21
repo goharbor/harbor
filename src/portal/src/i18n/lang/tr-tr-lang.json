@@ -927,7 +927,9 @@
             "OIDC_SETNAME": "OIDC Kullanıcı Adını Ayarla",
             "OIDC_SETNAMECONTENT": "Üçüncü tarafla (OIDC) kimlik doğrulaması yaparken ilk kez bir Harbor kullanıcı adı oluşturmalısınız. Bu, harbor projeler, roller vb. ile ilişkilendirilmek üzere kullanılacaktır.",
             "OIDC_USERNAME": "Kullanıcı Adı",
-            "GROUP_CLAIM_NAME": "Group Claim Name"
+            "GROUP_CLAIM_NAME": "Group Claim Name",
+            "OIDC_ADMIN_GROUP": "OIDC Admin Group",
+            "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Tümünü başarılı bir şekilde tara!",
