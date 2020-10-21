@@ -28,6 +28,8 @@ Nightly Test Setup
     Run Keyword  CA setup  ${ip}  ${HARBOR_PASSWORD}
     Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
+    Log To Console  Start Containerd Daemon Locally ...
+    Run Keyword  Start Containerd Daemon Locally
     Log To Console  wget mariadb ...
     Run  wget ${prometheus_chart_file_url}
 
@@ -45,7 +47,10 @@ Nightly Test Setup For Nightly
     Run Keyword If  '${ip1}' != '${EMPTY}'  CA setup For Nightly  ${ip1}  ${HARBOR_PASSWORD}  /ca/ca1.crt
     Run Keyword If  '${ip1}' != '${EMPTY}'  Run  rm -rf ./harbor_ca.crt
     Run Keyword  CA setup For Nightly  ${ip}  ${HARBOR_PASSWORD}
+    Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
+    Log To Console  Start Containerd Daemon Locally ...
+    Run Keyword  Start Containerd Daemon Locally
 
 CA Setup For Nightly
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt
