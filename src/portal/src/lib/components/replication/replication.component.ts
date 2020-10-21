@@ -20,22 +20,19 @@ import {
   OnDestroy,
   EventEmitter
 } from "@angular/core";
-import { Comparator, State } from "../../services/interface";
 import { finalize, catchError, map, debounceTime, distinctUntilChanged, switchMap, delay } from "rxjs/operators";
 import { Subscription, forkJoin, timer, Observable, throwError as observableThrowError, observable } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
-
 import { ListReplicationRuleComponent } from "../list-replication-rule/list-replication-rule.component";
 import { CreateEditRuleComponent } from "../create-edit-rule/create-edit-rule.component";
-import { ErrorHandler } from "../../utils/error-handler/error-handler";
-
-import { ReplicationService } from "../../services/replication.service";
-import { RequestQueryParams } from "../../services/RequestQueryParams";
+import { ErrorHandler } from "../../utils/error-handler";
+import { Comparator, ReplicationService } from "../../services";
+import { RequestQueryParams } from "../../services";
 import {
   ReplicationRule,
   ReplicationJob,
   ReplicationJobItem
-} from "../../services/interface";
+} from "../../services";
 
 import {
   CustomComparator,
@@ -63,6 +60,7 @@ import { OperationService } from "../operation/operation.service";
 import { Router } from "@angular/router";
 import { errorHandler as errorHandFn } from "../../utils/shared/shared.utils";
 import { FilterComponent } from "../filter/filter.component";
+import { ClrDatagridStateInterface } from '@clr/angular';
 const ONE_HOUR_SECONDS: number = 3600;
 const ONE_MINUTE_SECONDS: number = 60;
 const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
@@ -111,15 +109,9 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   isOpenFilterTag: boolean;
   ruleStatus = ruleStatus;
   currentRuleStatus: { key: string; description: string };
-
   currentTerm: string;
   defaultFilter = "trigger";
-
-  changedRules: ReplicationRule[];
-
   selectedRow: ReplicationJobItem[] = [];
-  rules: ReplicationRule[];
-  loading: boolean;
   isStopOnGoing: boolean;
   hiddenJobList = true;
 
@@ -148,7 +140,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   currentPage: number = 1;
   totalCount: number = 0;
   pageSize: number = DEFAULT_PAGE_SIZE;
-  currentState: State;
+  currentState: ClrDatagridStateInterface;
   jobsLoading: boolean = false;
   timerDelay: Subscription;
   @ViewChild(FilterComponent, {static: true})
@@ -173,16 +165,24 @@ export class ReplicationComponent implements OnInit, OnDestroy {
           debounceTime(500),
           distinctUntilChanged(),
           switchMap( ruleName => {
-            this.loading = true;
-            return this.replicationService.getReplicationRules(this.projectId, ruleName);
+            this.listReplicationRule.loading = true;
+            this.listReplicationRule.page = 1;
+            return this.replicationService.getReplicationRulesResponse(ruleName);
           })
-      ).subscribe(rules => {
-                this.hideJobs();
-                this.listReplicationRule.changedRules = rules || [];
-                this.loading = false;
+      ).subscribe(response => {
+              this.hideJobs();
+                 // Get total count
+              if (response.headers) {
+                  let xHeader: string = response.headers.get("x-total-count");
+                  if (xHeader) {
+                      this.totalCount = parseInt(xHeader, 0);
+                  }
+              }
+              this.listReplicationRule.rules = response.body as ReplicationRule[];
+              this.listReplicationRule.loading = false;
             }, error => {
-                this.errorHandler.error(error);
-                this.loading = false;
+              this.errorHandler.error(error);
+              this.listReplicationRule.loading = false;
             });
     }
     this.currentRuleStatus = this.ruleStatus[0];
@@ -220,10 +220,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   }
 
   // Server driven data loading
-  clrLoadJobs(state: State): void {
+  clrLoadJobs(state: ClrDatagridStateInterface): void {
     if (!state || !state.page || !this.search.ruleId) {
       return;
     }
+    this.pageSize = state.page.size;
     this.currentState = state;
 
     let pageNumber: number = calculatePage(state);
@@ -283,7 +284,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.loadFirstPage();
   }
   loadFirstPage(): void {
-    let st: State = this.currentState;
+    let st: ClrDatagridStateInterface = this.currentState;
     if (!st) {
       st = {
         page: {}
@@ -366,12 +367,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   customRedirect(rule: ReplicationRule) {
     this.redirect.emit(rule);
   }
-
-  doSearchRules(ruleName: string) {
-    this.search.ruleName = ruleName;
-    this.listReplicationRule.retrieveRules(ruleName);
-  }
-
   doFilterJob($event: any): void {
     this.defaultFilter = $event["target"].value;
     this.doSearchJobs(this.currentTerm);
@@ -469,19 +464,22 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   reloadRules(isReady: boolean) {
     if (isReady) {
       this.search.ruleName = "";
-      this.listReplicationRule.retrieveRules(this.search.ruleName);
+      this.filterComponent.currentValue = "";
+      this.listReplicationRule.refreshRule();
     }
   }
 
   refreshRules() {
-    this.listReplicationRule.retrieveRules();
+    this.search.ruleName = "";
+    this.filterComponent.currentValue = "";
+    this.listReplicationRule.refreshRule();
   }
 
   refreshJobs() {
     this.currentTerm = "";
     this.currentPage = 1;
 
-    let st: State = {
+    let st: ClrDatagridStateInterface = {
       page: {
         from: 0,
         to: this.pageSize - 1,

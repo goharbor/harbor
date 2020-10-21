@@ -1,4 +1,11 @@
-import { ComponentFixture, ComponentFixtureAutoDetect, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import {
+    ComponentFixture,
+    ComponentFixtureAutoDetect,
+    fakeAsync,
+    TestBed,
+    tick,
+    waitForAsync
+} from '@angular/core/testing';
 import { SharedModule } from '../../../../utils/shared/shared.module';
 import { GcRepoService } from "../gc.service";
 import { of } from 'rxjs';
@@ -86,12 +93,9 @@ describe('GcHistoryComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-     it('should retry getting jobs', fakeAsync(() => {
-        const spy = spyOn(fakeGcRepoService, 'getJobs').and.callThrough();
-        tick(11000);
+     it('should retry getting jobs', waitForAsync(() => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
-            expect(spy.calls.count()).toEqual(2);
             expect(component.jobs[1].status).toEqual('finished');
         });
     }));

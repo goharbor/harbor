@@ -36,6 +36,7 @@ import { OperationService } from "../../../lib/components/operation/operation.se
 import { operateChanges, OperateInfo, OperationState } from "../../../lib/components/operation/operate";
 import { errorHandler } from "../../../lib/utils/shared/shared.utils";
 import {HttpErrorResponse} from "@angular/common/http";
+import { ClrDatagridStateInterface } from '@clr/angular';
 
 @Component({
     selector: "list-project",
@@ -135,10 +136,11 @@ export class ListProjectComponent implements OnDestroy {
         this.router.navigate(linkUrl);
     }
 
-    clrLoad(state: State) {
+    clrLoad(state: ClrDatagridStateInterface) {
         if (!state || !state.page) {
             return;
         }
+        this.pageSize = state.page.size;
         this.selectedRow = [];
 
         // Keep state for future filtering and sorting

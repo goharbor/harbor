@@ -14,7 +14,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AddRuleComponent } from "./add-rule/add-rule.component";
-import { ClrDatagridStringFilterInterface } from "@clr/angular";
+import {ClrDatagridStateInterface, ClrDatagridStringFilterInterface} from "@clr/angular";
 import { TagRetentionService } from "./tag-retention.service";
 import { Retention, Rule } from "./retention";
 
@@ -24,7 +24,7 @@ import { finalize } from "rxjs/operators";
 import { CronScheduleComponent } from "../../../../lib/components/cron-schedule";
 import { ErrorHandler } from "../../../../lib/utils/error-handler";
 import { OriginCron } from "../../../../lib/services";
-import { clone } from "../../../../lib/utils/utils";
+import {clone, DEFAULT_PAGE_SIZE} from "../../../../lib/utils/utils";
 
 const MIN = 60000;
 const SEC = 1000;
@@ -85,7 +85,7 @@ export class TagRetentionComponent implements OnInit {
     label: string = 'TAG_RETENTION.TRIGGER';
     loadingRule: boolean = false;
     currentPage: number = 1;
-    pageSize: number = 10;
+    pageSize: number = DEFAULT_PAGE_SIZE;
     totalCount: number = 0;
     currentLogPage: number = 1;
     totalLogCount: number = 0;
@@ -278,11 +278,14 @@ export class TagRetentionComponent implements OnInit {
             });
     }
 
-    refreshList() {
+    refreshList(state?: ClrDatagridStateInterface) {
         this.index = -1 ;
         this.selectedItem = null;
         this.loadingExecutions = true;
         if (this.retentionId) {
+            if (state && state.page) {
+                this.pageSize = state.page.size;
+            }
             this.tagRetentionService.getRunNowList(this.retentionId, this.currentPage, this.pageSize)
               .pipe(finalize(() => this.loadingExecutions = false))
               .subscribe(
@@ -473,9 +476,8 @@ export class TagRetentionComponent implements OnInit {
     getI18nKey(str: string) {
         return this.tagRetentionService.getI18nKey(str);
     }
-    clrLoad() {
-
-        this.refreshList();
+    clrLoad(state: ClrDatagridStateInterface) {
+        this.refreshList(state);
     }
     /**
      *

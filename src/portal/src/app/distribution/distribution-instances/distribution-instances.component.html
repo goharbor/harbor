@@ -4,7 +4,7 @@
             {{ 'SIDE_NAV.DISTRIBUTIONS.INSTANCES' | translate }}
         </h2>
         <div>
-            <clr-datagrid (clrDgRefresh)="loadData()" [clrDgLoading]="inProgress" [(clrDgSelected)]="selectedRow">
+            <clr-datagrid (clrDgRefresh)="loadData($event)" [clrDgLoading]="inProgress" [(clrDgSelected)]="selectedRow">
                 <clr-dg-action-bar>
                     <div class="clr-row">
                         <div class="clr-col-7">
@@ -110,6 +110,7 @@
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount" [(clrDgPage)]="currentPage">
+                        <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
                         <span *ngIf="totalCount">{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }} {{ 'HELM_CHART.OF' | translate }} </span>
                         <span>{{ totalCount }} {{ 'HELM_CHART.ITEMS' | translate }}</span>
                     </clr-dg-pagination>

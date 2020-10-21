@@ -1,32 +1,23 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { DebugElement, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
+import {DebugElement, CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA} from '@angular/core';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 
 import { SharedModule } from '../../utils/shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ReplicationComponent } from './replication.component';
-import { ListReplicationRuleComponent } from '../list-replication-rule/list-replication-rule.component';
-import { CreateEditRuleComponent } from '../create-edit-rule/create-edit-rule.component';
 import { CronScheduleComponent } from '../cron-schedule/cron-schedule.component';
-import { DatePickerComponent } from '../datetime-picker/datetime-picker.component';
-import { FilterComponent } from '../filter/filter.component';
-import { InlineAlertComponent } from '../inline-alert/inline-alert.component';
 import {ReplicationRule, ReplicationJob, Endpoint} from '../../services/interface';
 import { CronTooltipComponent } from "../cron-schedule/cron-tooltip/cron-tooltip.component";
-
 import { ErrorHandler } from '../../utils/error-handler/error-handler';
 import { SERVICE_CONFIG, IServiceConfig } from '../../entities/service.config';
-import { ReplicationService, ReplicationDefaultService } from '../../services/replication.service';
-import { EndpointService, EndpointDefaultService } from '../../services/endpoint.service';
-import { JobLogService, JobLogDefaultService, ReplicationJobItem } from '../../services';
-import {ProjectDefaultService, ProjectService} from "../../services/project.service";
+import { ReplicationService } from '../../services/replication.service';
+import { ReplicationJobItem } from '../../services';
 import {OperationService} from "../operation/operation.service";
-import {FilterLabelComponent} from "../create-edit-rule/filter-label.component";
-import {LabelPieceComponent} from "../label-piece/label-piece.component";
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
+import {of, Subscription} from 'rxjs';
 import { CURRENT_BASE_HREF } from "../../utils/utils";
+import {HttpHeaders, HttpResponse} from "@angular/common/http";
+import {delay} from "rxjs/operators";
 
 
 describe('Replication Component (inline template)', () => {
@@ -129,33 +120,37 @@ describe('Replication Component (inline template)', () => {
     metadata: {xTotalCount: 3},
     data: mockJobs
   };
-
   let fixture: ComponentFixture<ReplicationComponent>;
-  let fixtureCreate: ComponentFixture<CreateEditRuleComponent>;
   let comp: ReplicationComponent;
-  let compCreate: CreateEditRuleComponent;
-
-  let replicationService: ReplicationService;
-  let endpointService: EndpointService;
-
-  let spyRules: jasmine.Spy;
-  let spyJobs: jasmine.Spy;
-  let spyEndpoints: jasmine.Spy;
-
-  let deGrids: DebugElement[];
-  let deRules: DebugElement;
   let deJobs: DebugElement;
-
-  let elRule: HTMLElement;
-  let elJob: HTMLElement;
-
   let config: IServiceConfig = {
     replicationRuleEndpoint: CURRENT_BASE_HREF + '/policies/replication/testing'
+  };
+  const fakedErrorHandler = {
+    error() {
+    }
+  };
+  const fakedReplicationService = {
+    getReplicationRulesResponse() {
+      return of(new HttpResponse({
+        body: mockRules,
+        headers:  new HttpHeaders({
+          "x-total-count": "2"
+        })
+      })).pipe(delay(0));
+    },
+    getExecutions() {
+      return of(mockJob).pipe(delay(0));
+    },
+    getEndpoints() {
+      return of(mockEndpoints).pipe(delay(0));
+    }
   };
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA ,
+      NO_ERRORS_SCHEMA],
       imports: [
         SharedModule,
         NoopAnimationsModule,
@@ -163,131 +158,37 @@ describe('Replication Component (inline template)', () => {
       ],
       declarations: [
         ReplicationComponent,
-        ListReplicationRuleComponent,
-        CreateEditRuleComponent,
         CronTooltipComponent,
         CronScheduleComponent,
         ConfirmationDialogComponent,
-        DatePickerComponent,
-        FilterComponent,
-        InlineAlertComponent,
-        FilterLabelComponent,
-        LabelPieceComponent
       ],
       providers: [
-        ErrorHandler,
+        { provide: ErrorHandler, useValue: fakedErrorHandler },
         { provide: SERVICE_CONFIG, useValue: config },
-        { provide: ReplicationService, useClass: ReplicationDefaultService },
-        { provide: EndpointService, useClass: EndpointDefaultService },
-        { provide: ProjectService, useClass: ProjectDefaultService },
-        { provide: JobLogService, useClass: JobLogDefaultService },
+        { provide: ReplicationService, useValue: fakedReplicationService },
         { provide: OperationService }
       ]
     });
   }));
-
   beforeEach(() => {
     fixture = TestBed.createComponent(ReplicationComponent);
-    fixtureCreate = TestBed.createComponent(CreateEditRuleComponent);
     comp = fixture.componentInstance;
-    compCreate = fixtureCreate.componentInstance;
     comp.projectId = 1;
     comp.search.ruleId = 1;
-
-    replicationService = fixture.debugElement.injector.get(ReplicationService);
-
-    endpointService = fixtureCreate.debugElement.injector.get(EndpointService);
-
-    spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(of(mockRules));
-    spyJobs = spyOn(replicationService, 'getExecutions').and.returnValues(of(mockJob));
-
-
-    spyEndpoints = spyOn(endpointService, 'getEndpoints').and.returnValues(of(mockEndpoints));
+    comp.withReplicationJob = true;
+    comp.hiddenJobList = false;
+    comp.searchSub = new Subscription();
+    spyOn(comp, "clrLoadJobs").and.returnValue(undefined);
+    comp.jobs = mockJobs;
     fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      deGrids = fixture.debugElement.queryAll(del => del.classes['datagrid']);
-      fixture.detectChanges();
-      expect(deGrids).toBeTruthy();
-      expect(deGrids.length).toEqual(2);
-    });
   });
-
-
-  it('Should load replication rules', waitForAsync(() => {
+  it('Should load replication jobs', async () => {
     fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      deRules = deGrids[0].query(By.css('datagrid-cell'));
-      expect(deRules).toBeTruthy();
-      fixture.detectChanges();
-      elRule = deRules.nativeElement;
-      expect(elRule).toBeTruthy();
-      expect(elRule.textContent).toEqual('sync_01');
-    });
-  }));
-
-  it('Should load replication jobs', waitForAsync(() => {
-    fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      deJobs = deGrids[1].query(By.css('datagrid-cell'));
-      expect(deJobs).toBeTruthy();
-      fixture.detectChanges();
-      elJob = deJobs.nativeElement;
-      fixture.detectChanges();
-      expect(elJob).toBeTruthy();
-      expect(elJob.textContent).toEqual('library/nginx');
-    });
-  }));
-
-  it('Should filter replication rules by keywords', waitForAsync(() => {
-    fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      comp.doSearchRules('sync_01');
-      fixture.detectChanges();
-      let el: HTMLElement = deRules.nativeElement;
-      fixture.detectChanges();
-      expect(el.textContent.trim()).toEqual('sync_01');
-    });
-  }));
-
-  it('Should filter replication jobs by keywords', waitForAsync(() => {
-    fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      comp.doSearchJobs('nginx');
-      fixture.detectChanges();
-      let el: HTMLElement = deJobs.nativeElement;
-      fixture.detectChanges();
-      expect(el).toBeTruthy();
-      expect(el.textContent.trim()).toEqual('library/nginx');
-    });
-  }));
-
-  it('Should filter replication jobs by status', waitForAsync(() => {
-    fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      let el: HTMLElement = deJobs.nativeElement;
-      fixture.detectChanges();
-      expect(el).toBeTruthy();
-      expect(el.textContent.trim()).toEqual('library/mysql');
-    });
-  }));
-
-  it('Should filter replication jobs by date range', waitForAsync(() => {
-    fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      let el: HTMLElement = deJobs.nativeElement;
-      fixture.detectChanges();
-      expect(el).toBeTruthy();
-      expect(el.textContent.trim()).toEqual('library/nginx');
-    });
-  }));
-
+    await fixture.whenStable();
+    const rows = fixture.nativeElement.querySelectorAll("clr-dg-row");
+    expect(rows).toBeTruthy();
+    expect(rows.length).toEqual(3);
+  });
   it('function "getDuration" should work', () => {
     // ms level
     const item: ReplicationJobItem = {

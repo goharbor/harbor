@@ -357,6 +357,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     if (!state || !state.page) {
       return;
     }
+    this.pageSize = state.page.size;
     this.selectedRow = [];
     // Keep it for future filtering and sorting
     this.currentState = state;

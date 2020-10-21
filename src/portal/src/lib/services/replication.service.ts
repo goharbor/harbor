@@ -17,6 +17,7 @@ import {
 import { RequestQueryParams } from "./RequestQueryParams";
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
+import { Project } from '../components/project-policy-config/project';
 /**
  * Define the service methods to handle the replication (rule and job) related things.
  *
@@ -45,6 +46,12 @@ export abstract class ReplicationService {
     queryParams?: RequestQueryParams
   ):
     | Observable<ReplicationRule[]>;
+  abstract getReplicationRulesResponse(
+    ruleName?: string,
+    page?: number ,
+    pageSize?: number,
+    queryParams?: RequestQueryParams
+  ): Observable<HttpResponse<ReplicationRule[]>>;
 
   /**
    * Get the specified replication rule.
@@ -256,7 +263,7 @@ export class ReplicationDefaultService extends ReplicationService {
   ):
     | Observable<ReplicationRule[]> {
     if (!queryParams) {
-      queryParams = queryParams = new RequestQueryParams();
+      queryParams = new RequestQueryParams();
     }
 
     if (projectId) {
@@ -266,10 +273,31 @@ export class ReplicationDefaultService extends ReplicationService {
     if (ruleName) {
       queryParams = queryParams.set("name", ruleName);
     }
-
     return this.http
       .get(this._ruleBaseUrl, buildHttpRequestOptions(queryParams))
       .pipe(map(response => response as ReplicationRule[])
+        , catchError(error => observableThrowError(error)));
+  }
+  public getReplicationRulesResponse(
+    ruleName?: string,
+    page?: number,
+    pageSize?: number,
+    queryParams?: RequestQueryParams): Observable<HttpResponse<ReplicationRule[]>> {
+    if (!queryParams) {
+      queryParams = new RequestQueryParams();
+    }
+    if (ruleName) {
+      queryParams = queryParams.set("name", ruleName);
+    }
+    if (page) {
+      queryParams = queryParams.set("page", page + "");
+    }
+    if (pageSize) {
+      queryParams = queryParams.set("page_size", pageSize + "");
+    }
+   return this.http
+      .get<HttpResponse<ReplicationRule[]>>(this._ruleBaseUrl, buildHttpRequestOptionsWithObserveResponse(queryParams))
+       .pipe(map(response => response as HttpResponse<ReplicationRule[]>)
         , catchError(error => observableThrowError(error)));
   }
 

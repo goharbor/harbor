@@ -21,11 +21,11 @@
     <div *ngIf="showProjectMemberInfo" class="display-flex project-detail pt-05">
       <h5 class="mt-0 width-7-5">{{'SUMMARY.PROJECT_MEMBER' | translate}}</h5>
       <ul class="list-unstyled">
-        <li>{{ summaryInformation?.project_admin_count }} {{'SUMMARY.ADMIN' | translate}}</li>
-        <li>{{ summaryInformation?.maintainer_count }} {{'SUMMARY.MAINTAINER' | translate}}</li>
-        <li>{{ summaryInformation?.developer_count }} {{'SUMMARY.DEVELOPER' | translate}}</li>
-        <li>{{ summaryInformation?.guest_count }} {{'SUMMARY.GUEST' | translate}}</li>
-        <li>{{ summaryInformation?.limited_guest_count }} {{'SUMMARY.LIMITED_GUEST' | translate}}</li>
+        <li>{{ summaryInformation?.project_admin_count?summaryInformation?.project_admin_count:0 }} {{'SUMMARY.ADMIN' | translate}}</li>
+        <li>{{ summaryInformation?.maintainer_count?summaryInformation?.maintainer_count:0 }} {{'SUMMARY.MAINTAINER' | translate}}</li>
+        <li>{{ summaryInformation?.developer_count?summaryInformation?.developer_count:0 }} {{'SUMMARY.DEVELOPER' | translate}}</li>
+        <li>{{ summaryInformation?.guest_count?summaryInformation?.guest_count:0 }} {{'SUMMARY.GUEST' | translate}}</li>
+        <li>{{ summaryInformation?.limited_guest_count?summaryInformation?.limited_guest_count:0 }} {{'SUMMARY.LIMITED_GUEST' | translate}}</li>
       </ul>
     </div>
   </div>
