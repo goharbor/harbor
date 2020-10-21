@@ -181,7 +181,6 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		if err := a.metadataMgr.Add(ctx, projectID, md); err != nil {
 			return a.SendError(ctx, err)
 		}
-		return nil
 	}
 
 	location := fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), projectID)
