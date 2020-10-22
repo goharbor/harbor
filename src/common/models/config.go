@@ -85,6 +85,7 @@ type OIDCSetting struct {
 	ClientID     string   `json:"client_id"`
 	ClientSecret string   `json:"client_secret"`
 	GroupsClaim  string   `json:"groups_claim"`
+	AdminGroup   string   `json:"admin_group"`
 	RedirectURL  string   `json:"redirect_url"`
 	Scope        []string `json:"scope"`
 	UserClaim    string   `json:"user_claim"`

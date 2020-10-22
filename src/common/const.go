@@ -105,6 +105,7 @@ const (
 	OIDCCLientID                     = "oidc_client_id"
 	OIDCClientSecret                 = "oidc_client_secret"
 	OIDCVerifyCert                   = "oidc_verify_cert"
+	OIDCAdminGroup                   = "oidc_admin_group"
 	OIDCGroupsClaim                  = "oidc_groups_claim"
 	OIDCAutoOnboard                  = "oidc_auto_onboard"
 	OIDCScope                        = "oidc_scope"
