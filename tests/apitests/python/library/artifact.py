@@ -101,3 +101,19 @@ class Artifact(base.Base, object):
         return {
             0: False,
         }.get(len(artifact), True)
+
+    def waiting_for_reference_exist(self, project_name, repo_name, reference, ignore_not_found = False, period = 60, loop_count = 8, **kwargs):
+        _loop_count = loop_count
+        while True:
+            print("Waiting for reference {} round...".format(_loop_count))
+            _loop_count = _loop_count - 1
+            if (_loop_count == 0):
+                break
+            artifact = self.get_reference_info(project_name, repo_name, reference, ignore_not_found=ignore_not_found, **kwargs)
+            print("artifact 0:", artifact)
+            #scan_status = artifact[0].scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'].scan_status
+            if artifact  and artifact !=[]:
+                print("artifact 1:", artifact)
+                return
+            time.sleep(period)
+        raise Exception("Referencet is not exist {} {} {}.".format(project_name, repo_name, reference))
