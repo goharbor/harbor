@@ -144,3 +144,7 @@ Test Case - Push Chart File To Chart Repository By Helm V2 With Robot Account
 Test Case - Replication From Dockerhub
     [Tags]  replic_dockerhub
     Harbor API Test  ./tests/apitests/python/test_replication_from_dockerhub.py
+
+Test Case - Proxy Cache
+    [Tags]  proxy_cache
+    Harbor API Test  ./tests/apitests/python/test_proxy_cache.py
