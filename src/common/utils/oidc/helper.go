@@ -126,7 +126,7 @@ type UserInfo struct {
 	Username         string   `json:"name"`
 	Email            string   `json:"email"`
 	Groups           []string `json:"groups"`
-	AdminGroupMember bool     `json:"AdminGroupMember"`
+	AdminGroupMember bool     `json:"admin_group_member"`
 	hasGroupClaim    bool
 }
 
@@ -382,8 +382,12 @@ func populateGroupsDB(groupNames []string) ([]int, error) {
 }
 
 // InjectGroupsToUser populates the group to DB and inject the group IDs to user model.
-// The third optional parm is for UT only, when using the func, the third
+// The third optional parm is for UT only.
 func InjectGroupsToUser(info *UserInfo, user *models.User, f ...populate) {
+	if info == nil || user == nil {
+		log.Warningf("user info or user model is nil, skip the func")
+		return
+	}
 	var populateGroups populate
 	if len(f) == 0 {
 		populateGroups = populateGroupsDB
