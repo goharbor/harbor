@@ -43,6 +43,10 @@
                             <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
                             {{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}
                         </a>
+                         <a clrVerticalNavLink routerLink="/harbor/robot-accounts" routerLinkActive="active">
+                            <clr-icon shape="robot-head" clrVerticalNavIcon></clr-icon>
+                             {{"SYSTEM_ROBOT.ROBOT_ACCOUNT_NAV" | translate}}
+                        </a>
                         <a *ngIf='isLdapMode || isHttpAuthMode || isOidcMode' clrVerticalNavLink
                             routerLink="/harbor/groups" routerLinkActive="active">
                             <clr-icon shape="users" clrVerticalNavIcon></clr-icon>

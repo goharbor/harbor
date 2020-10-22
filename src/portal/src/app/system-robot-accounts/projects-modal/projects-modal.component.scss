@@ -1,0 +1,23 @@
+.nav-divider {
+    display: inline-block;
+    width: 1px;
+    height: 30px;
+    position: relative;
+    top: 10px;
+    opacity: 0.15;
+    content: '';
+    margin-right: 1rem;
+    margin-left: 1rem;
+}
+.name {
+    font-size: 16px;
+    opacity: 0.9;
+}
+.permissions {
+    height: 16px;
+    display: flex;
+    align-items: center;
+}
+.datagrid-host {
+    position: inherit;
+}

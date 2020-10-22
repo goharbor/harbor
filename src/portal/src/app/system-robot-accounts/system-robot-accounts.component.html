@@ -1,3 +1,4 @@
+<h2 class="custom-h2">{{"SYSTEM_ROBOT.ROBOT_ACCOUNT_NAV" | translate}}</h2>
 <div class="row robot-space">
   <div>
     <div class="row flex-items-xs-between rightPos">
@@ -13,10 +14,10 @@
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <clr-dg-action-bar>
-      <button [disabled]="!hasRobotCreatePermission" [clrLoading]="addBtnState" class="btn  btn-secondary" (click)="openNewRobotModal(false)">
+      <button [disabled]="loadingData" [clrLoading]="addBtnState" class="btn  btn-secondary" (click)="openNewRobotModal(false)">
         <span>
           <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'ROBOT_ACCOUNT.NEW_ROBOT_ACCOUNT'
-                | translate }}
+          | translate }}
         </span>
       </button>
       <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn
@@ -24,17 +25,17 @@
         <span>{{'MEMBER.ACTION' | translate}}<clr-icon shape="caret
             down"></clr-icon></span>
         <clr-dropdown-menu *clrIfOpen>
-          <button [disabled]="!hasRobotReadPermission || !(selectedRows && selectedRows.length === 1) || !selectedRows[0].editable" clrDropdownItem (click)="openTokenModal()">
+          <button [disabled]="loadingData || !(selectedRows && selectedRows.length === 1)" clrDropdownItem (click)="openTokenModal()">
             <clr-icon shape="details" size="16"></clr-icon>&nbsp;
             <span id="system-robot-token">{{"SYSTEM_ROBOT.VIEW_SECRET" | translate}}</span>
           </button>
-          <button [disabled]="!hasRobotUpdatePermission || !(selectedRows && selectedRows.length === 1) || !selectedRows[0].editable" clrDropdownItem (click)="openNewRobotModal(true)">
+          <button [disabled]="loadingData || !(selectedRows && selectedRows.length === 1)" clrDropdownItem (click)="openNewRobotModal(true)">
             <clr-icon shape="edit" size="16"></clr-icon>&nbsp;
             <span id="system-robot-edit">{{'BUTTON.EDIT' | translate}}</span>
           </button>
           <button *ngIf="selectedRows && selectedRows.length === 1 && selectedRows[0].disable" type="button" class="btn  btn-secondary"
                   (click)="disableOrEnable()"
-                  [disabled]="!hasRobotUpdatePermission ||!(selectedRows && selectedRows.length === 1 && selectedRows[0].disable) || !selectedRows[0].editable">
+                  [disabled]="!(selectedRows && selectedRows.length === 1 && selectedRows[0].disable)">
             <clr-icon size="16" shape="success-standard"></clr-icon>&nbsp;
             <span id="distribution-enable">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</span>
           </button>
@@ -42,12 +43,12 @@
                   type="button"
                   class="btn btn-secondary"
                   (click)="disableOrEnable()"
-                  [disabled]="!hasRobotUpdatePermission ||!(selectedRows && selectedRows.length === 1 && !selectedRows[0].disable) || !selectedRows[0].editable">
+                  [disabled]="!(selectedRows && selectedRows.length === 1 && !selectedRows[0].disable)">
             <clr-icon size="16" shape="ban"></clr-icon>&nbsp;
             <span id="distribution-disable">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
           </button>
           <div class="dropdown-divider"></div>
-          <button [disabled]="!hasRobotDeletePermission || !(selectedRows && selectedRows.length >=1)" clrDropdownItem (click)="openDeleteRobotsDialog()">
+          <button [disabled]="loadingData || !(selectedRows && selectedRows.length >=1)" clrDropdownItem (click)="openDeleteRobotsDialog()">
             <clr-icon shape="window-close" size="16"></clr-icon>&nbsp;
             <span id="system-robot-delete">{{'BUTTON.DELETE' | translate}}</span>
           </button>
@@ -57,43 +58,46 @@
     <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRows">
       <clr-dg-column>{{'ROBOT_ACCOUNT.NAME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'ROBOT_ACCOUNT.ENABLED_STATE' | translate}}</clr-dg-column>
-      <clr-dg-column>{{"SYSTEM_ROBOT.PERMISSION_COLUMN" | translate}}</clr-dg-column>
+      <clr-dg-column>{{"SYSTEM_ROBOT.PROJECTS" | translate}}</clr-dg-column>
       <clr-dg-column>{{'ROBOT_ACCOUNT.CREATETION' | translate}}</clr-dg-column>
-      <clr-dg-column>{{'SYSTEM_ROBOT.EXPIRED_AT' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'SYSTEM_ROBOT.EXPIRES_AT' | translate}}</clr-dg-column>
       <clr-dg-column>{{'ROBOT_ACCOUNT.DESCRIPTION' | translate}}</clr-dg-column>
       <clr-dg-placeholder>{{
         'SYSTEM_ROBOT.NOT_FOUND' | translate
         }}</clr-dg-placeholder>
       <clr-dg-row *clrDgItems="let r of robots" [clrDgItem]="r">
-        <clr-dg-cell>
-          {{r.name}}
-          <span *ngIf="!r.editable" class="label label-warning ml-1">{{'SYSTEM_ROBOT.LEGACY' | translate}}</span>
-        </clr-dg-cell>
+        <clr-dg-cell>{{r.name}}</clr-dg-cell>
         <clr-dg-cell [ngSwitch]="r.disable">
           <clr-icon shape="check-circle" *ngSwitchCase="false" size="20" class="color-green"></clr-icon>
           <clr-icon shape="times-circle" *ngSwitchCase="true" size="16" class="color-red red-position"></clr-icon>
         </clr-dg-cell>
         <clr-dg-cell>
-          <div class="permissions">
-            <clr-dropdown [clrCloseMenuOnItemClick]="false" *ngIf="r.permissions[0]?.access?.length">
+          <div class="all-projects" *ngIf="r.permissionScope?.coverAll">
+            <span>{{"SYSTEM_ROBOT.ALL_PROJECTS" | translate}}</span>
+            <clr-dropdown [clrCloseMenuOnItemClick]="false">
               <button class="btn btn-link" clrDropdownTrigger>
-                {{r.permissions[0]?.access?.length}} {{"SYSTEM_ROBOT.PERMISSIONS" | translate}}
+                {{r.permissionScope?.access?.length}} {{"SYSTEM_ROBOT.PERMISSIONS" | translate}}
                 <clr-icon shape="caret down"></clr-icon>
               </button>
               <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
-                <div clrDropdownItem *ngFor="let item of r.permissions[0]?.access">
+                <div clrDropdownItem *ngFor="let item of r.permissionScope?.access">
                   <span>{{i18nMap[item.action] | translate}} {{i18nMap[item.resource] | translate}}</span>
                 </div>
               </clr-dropdown-menu>
             </clr-dropdown>
           </div>
+          <span *ngIf="!r.permissionScope || !r.permissionScope?.coverAll">
+            <a href="javascript:void(0)" (click)="openProjectModal(getProjects(r), r.name)">
+              {{getProjects(r)?.length?getProjects(r)?.length:""}} {{'SYSTEM_ROBOT.COVERED_PROJECTS' | translate}}
+            </a>
+          </span>
         </clr-dg-cell>
         <clr-dg-cell>{{r.creation_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>{{r.expires_at === -1?("ROBOT_ACCOUNT.NEVER_EXPIRED" | translate):(r.expires_at * 1000 | date: 'short')}}</clr-dg-cell>
         <clr-dg-cell>{{r.description}}</clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
-        <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage" [clrDgTotalItems]="total">
+        <clr-dg-pagination  #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage" [clrDgTotalItems]="total">
           <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
           <span *ngIf="total">{{pagination.firstItem + 1}}
             -
@@ -105,5 +109,8 @@
     </clr-datagrid>
   </div>
 </div>
-<add-robot [projectId]="projectId" [projectName]="projectName" (addSuccess)="addSuccess($event)"></add-robot>
+<new-robot  (addSuccess)="addSuccess($event)"></new-robot>
 <view-token (refreshSuccess)="refresh()"></view-token>
+<app-projects-modal></app-projects-modal>
+
+

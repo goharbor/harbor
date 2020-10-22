@@ -21,7 +21,6 @@ import { ConfigurationService } from "./config.service";
 import { ConfirmMessageHandler } from "./config.msg.utils";
 import { ConfigurationAuthComponent } from "./auth/config-auth.component";
 import { ConfigurationEmailComponent } from "./email/config-email.component";
-import { RobotApiRepository } from "../project/robot-account/robot.api.repository";
 import { ConfigurationScannerComponent } from "./scanner/config-scanner.component";
 import { NewScannerModalComponent } from "./scanner/new-scanner-modal/new-scanner-modal.component";
 import { NewScannerFormComponent } from "./scanner/new-scanner-form/new-scanner-form.component";
@@ -44,7 +43,6 @@ import { ScannerMetadataComponent } from "./scanner/scanner-metadata/scanner-met
     providers: [
         ConfigurationService,
         ConfirmMessageHandler,
-        RobotApiRepository,
         ConfigScannerService,
     ]
 })

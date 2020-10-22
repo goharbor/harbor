@@ -1,68 +1,69 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { NewRobotComponent } from './new-robot/new-robot.component';
+import { ViewTokenComponent } from './view-token/view-token.component';
+import { RobotService } from "../../../ng-swagger-gen/services/robot.service";
+import { Robot } from "../../../ng-swagger-gen/models/robot";
+import { clone, DEFAULT_PAGE_SIZE } from "../../lib/utils/utils";
 import { ClrDatagridStateInterface, ClrLoadingState } from "@clr/angular";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
-import { forkJoin, Observable, of, Subscription } from "rxjs";
-import { UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
+import { MessageHandlerService } from "../shared/message-handler/message-handler.service";
 import {
   ACTION_RESOURCE_I18N_MAP,
+  FrontRobot,
+  NAMESPACE_ALL_PROJECTS,
   PermissionsKinds
-} from "../../system-robot-accounts/system-robot-util";
-import { clone, DEFAULT_PAGE_SIZE } from "../../../lib/utils/utils";
-import { ViewTokenComponent } from "../../system-robot-accounts/view-token/view-token.component";
-import { FilterComponent } from "../../../lib/components/filter/filter.component";
-import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
-import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
-import { OperationService } from "../../../lib/components/operation/operation.service";
-import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../shared/shared.const";
-import { RobotService } from "../../../../ng-swagger-gen/services/robot.service";
-import { Robot } from "../../../../ng-swagger-gen/models/robot";
-import { ActivatedRoute } from "@angular/router";
-import { Project } from "../../../../ng-swagger-gen/models/project";
+} from "./system-robot-util";
+import { ProjectsModalComponent } from "./projects-modal/projects-modal.component";
+import { Permission } from "../../../ng-swagger-gen/models/permission";
+import { forkJoin, Observable, of, Subscription } from "rxjs";
+import { FilterComponent } from "../../lib/components/filter/filter.component";
+import { ProjectService } from "../../../ng-swagger-gen/services/project.service";
+import { ConfirmationMessage } from "../shared/confirmation-dialog/confirmation-message";
+import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../shared/shared.const";
+import { ConfirmationDialogService } from "../shared/confirmation-dialog/confirmation-dialog.service";
 import { HttpErrorResponse } from "@angular/common/http";
-import { errorHandler } from "../../../lib/utils/shared/shared.utils";
-import { operateChanges, OperateInfo, OperationState } from "../../../lib/components/operation/operate";
-import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
-import { AddRobotComponent } from "./add-robot/add-robot.component";
-import { TranslateService } from "@ngx-translate/core";
+import { errorHandler } from "../../lib/utils/shared/shared.utils";
+import { operateChanges, OperateInfo, OperationState } from "../../lib/components/operation/operate";
+import { OperationService } from "../../lib/components/operation/operation.service";
+import { Observable as __Observable } from "rxjs/internal/Observable";
+import { Project } from "../../../ng-swagger-gen/models/project";
 import { DomSanitizer } from "@angular/platform-browser";
-
+import { TranslateService } from "@ngx-translate/core";
+const FIRST_PROJECTS_PAGE_SIZE: number = 100;
 @Component({
-  selector: "app-robot-account",
-  templateUrl: "./robot-account.component.html",
-  styleUrls: ["./robot-account.component.scss"]
+  selector: 'system-robot-accounts',
+  templateUrl: './system-robot-accounts.component.html',
+  styleUrls: ['./system-robot-accounts.component.scss']
 })
-export class RobotAccountComponent implements OnInit, OnDestroy {
+export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
   i18nMap = ACTION_RESOURCE_I18N_MAP;
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage: number = 1;
   total: number = 0;
-  robots: Robot[] = [];
-  selectedRows: Robot[] = [];
+  robots: FrontRobot[] = [];
+  selectedRows: FrontRobot[] = [];
   loading: boolean = true;
+  loadingData: boolean = false;
   addBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
-  @ViewChild(AddRobotComponent)
-  newRobotComponent: AddRobotComponent;
+  hasGetAllProjects: boolean = false;
+  @ViewChild(NewRobotComponent)
+  newRobotComponent: NewRobotComponent;
   @ViewChild(ViewTokenComponent)
   viewTokenComponent: ViewTokenComponent;
+  @ViewChild(ProjectsModalComponent)
+  projectsModalComponent: ProjectsModalComponent;
   @ViewChild(FilterComponent, {static: true})
   filterComponent: FilterComponent;
   searchSub: Subscription;
   searchKey: string;
   subscription: Subscription;
-  hasRobotCreatePermission: boolean;
-  hasRobotUpdatePermission: boolean;
-  hasRobotDeletePermission: boolean;
-  hasRobotReadPermission: boolean;
-  projectId: number;
-  projectName: string;
   constructor(private robotService: RobotService,
+              private projectService: ProjectService,
               private msgHandler: MessageHandlerService,
               private operateDialogService: ConfirmationDialogService,
               private operationService: OperationService,
-              private userPermissionService: UserPermissionService,
-              private route: ActivatedRoute,
-              private translate: TranslateService,
               private sanitizer: DomSanitizer,
+              private translate: TranslateService,
   ) {
     this.subscription = operateDialogService.confirmationConfirm$.subscribe(
         message => {
@@ -81,13 +82,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
     );
   }
   ngOnInit() {
-    this.projectId = +this.route.snapshot.parent.params["id"];
-    let resolverData = this.route.snapshot.parent.data;
-    if (resolverData) {
-      let project = <Project>resolverData["projectResolver"];
-      this.projectName = project.name;
-    }
-    this.getPermissionsList();
+    this.loadDataFromBackend();
     if (!this.searchSub) {
       this.searchSub = this.filterComponent.filterTerms.pipe(
           debounceTime(500),
@@ -101,7 +96,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
             };
             this.searchKey = robotSearchName;
             if (this.searchKey) {
-              queryParam.q = encodeURIComponent(`Level=${PermissionsKinds.PROJECT},ProjectID=${this.projectId},name=~${this.searchKey}`);
+              queryParam.q = encodeURIComponent(`name=~${this.searchKey}`);
             }
             this.loading = true;
             return  this.robotService.ListRobotResponse(queryParam)
@@ -113,34 +108,73 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
             response.headers.get('x-total-count')
         );
         this.robots = response.body as Robot[];
+        this.calculateProjects();
       }, error => {
         this.msgHandler.handleError(error);
       });
     }
-  }
-  getPermissionsList(): void {
-    let permissionsList = [];
-    permissionsList.push(this.userPermissionService.getPermission(this.projectId,
-        USERSTATICPERMISSION.ROBOT.KEY, USERSTATICPERMISSION.ROBOT.VALUE.CREATE));
-    permissionsList.push(this.userPermissionService.getPermission(this.projectId,
-        USERSTATICPERMISSION.ROBOT.KEY, USERSTATICPERMISSION.ROBOT.VALUE.UPDATE));
-    permissionsList.push(this.userPermissionService.getPermission(this.projectId,
-        USERSTATICPERMISSION.ROBOT.KEY, USERSTATICPERMISSION.ROBOT.VALUE.DELETE));
-    permissionsList.push(this.userPermissionService.getPermission(this.projectId,
-        USERSTATICPERMISSION.ROBOT.KEY, USERSTATICPERMISSION.ROBOT.VALUE.READ));
-
-    forkJoin(...permissionsList).subscribe(Rules => {
-      this.hasRobotCreatePermission = Rules[0] as boolean;
-      this.hasRobotUpdatePermission = Rules[1] as boolean;
-      this.hasRobotDeletePermission = Rules[2] as boolean;
-      this.hasRobotReadPermission = Rules[3] as boolean;
-    }, error => this.msgHandler.error(error));
   }
   ngOnDestroy() {
     if (this.searchSub) {
       this.searchSub.unsubscribe();
       this.searchSub = null;
     }
+  }
+  loadDataFromBackend() {
+    this.loadingData = true;
+    this.addBtnState = ClrLoadingState.LOADING;
+    this.projectService.listProjectsResponse({
+      withDetail: false,
+      page: 1,
+      pageSize: FIRST_PROJECTS_PAGE_SIZE
+    }).subscribe(result => {
+      // Get total count
+      if (result.headers) {
+        const xHeader: string = result.headers.get("X-Total-Count");
+        const totalCount = parseInt(xHeader, 0);
+        if (totalCount <= FIRST_PROJECTS_PAGE_SIZE) { // already gotten all projects
+          if (this.newRobotComponent && this.newRobotComponent.listAllProjectsComponent) {
+            this.newRobotComponent.listAllProjectsComponent.cachedAllProjects = result.body;
+          }
+          if (this.projectsModalComponent) {
+            this.projectsModalComponent.cachedAllProjects = result.body;
+          }
+          this.loadingData = false;
+          this.addBtnState = ClrLoadingState.ERROR;
+        } else { // get all the projects in specified times
+          const times: number = Math.ceil(totalCount / FIRST_PROJECTS_PAGE_SIZE);
+          const observableList: Observable<Project[]>[] = [];
+          for (let i = 1; i <= times; i++) {
+            observableList.push( this.projectService.listProjects({
+              withDetail: false,
+              page: i,
+              pageSize: FIRST_PROJECTS_PAGE_SIZE
+            }));
+          }
+          forkJoin(observableList)
+              .pipe(finalize(() => {
+            this.loadingData = false;
+            this.addBtnState = ClrLoadingState.ERROR;
+          })).subscribe(res => {
+            if (res && res.length) {
+              let arr = [];
+              res.forEach(item => {
+                arr = arr.concat(item);
+              });
+              if (this.newRobotComponent && this.newRobotComponent.listAllProjectsComponent) {
+                this.newRobotComponent.listAllProjectsComponent.cachedAllProjects = arr;
+              }
+              if (this.projectsModalComponent) {
+                this.projectsModalComponent.cachedAllProjects = arr;
+              }
+            }
+          });
+        }
+      }
+    }, error => {
+      this.loadingData = false;
+      this.addBtnState = ClrLoadingState.ERROR;
+    });
   }
   clrLoad(state?: ClrDatagridStateInterface) {
     if (state && state.page && state.page.size) {
@@ -150,10 +184,9 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
     const queryParam: RobotService.ListRobotParams = {
       page: this.currentPage,
       pageSize: this.pageSize,
-      q: encodeURIComponent(`Level=${PermissionsKinds.PROJECT},ProjectID=${this.projectId}`)
     };
     if (this.searchKey) {
-      queryParam.q += encodeURIComponent(`,name=~${this.searchKey}`);
+      queryParam.q = encodeURIComponent(`name=~${this.searchKey}`);
     }
     this.loading = true;
     this.robotService.ListRobotResponse(queryParam)
@@ -164,6 +197,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
                   response.headers.get('x-total-count')
               );
               this.robots = response.body as Robot[];
+              this.calculateProjects();
             },
             err => {
               this.msgHandler.error(err);
@@ -179,6 +213,41 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
   openTokenModal() {
     this.viewTokenComponent.open();
     this.viewTokenComponent.robot = clone(this.selectedRows[0]);
+  }
+  calculateProjects() {
+    if (this.robots && this.robots.length) {
+      for (let i = 0 ; i < this.robots.length; i++) {
+        if (this.robots[i] && this.robots[i].permissions && this.robots[i].permissions.length) {
+          for (let j = 0 ; j < this.robots[i].permissions.length; j++) {
+            if (this.robots[i].permissions[j].kind === PermissionsKinds.PROJECT
+            && this.robots[i].permissions[j].namespace === NAMESPACE_ALL_PROJECTS) {
+              this.robots[i].permissionScope = {
+                coverAll: true,
+                access: this.robots[i].permissions[j].access
+              };
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  getProjects(r: FrontRobot): Permission[] {
+    const arr = [];
+    if (r && r.permissions && r.permissions.length) {
+      for (let i = 0 ; i < r.permissions.length; i++) {
+        if (r.permissions[i].kind === PermissionsKinds.PROJECT
+           ) {
+          arr.push(r.permissions[i]);
+        }
+      }
+    }
+    return arr;
+  }
+  openProjectModal(permissions: Permission[], robotName: string) {
+    this.projectsModalComponent.projectsModalOpened = true;
+    this.projectsModalComponent.robotName = robotName;
+    this.projectsModalComponent.permissions = permissions;
   }
   refresh() {
     this.currentPage = 1;
@@ -269,9 +338,9 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
       robot: robot,
       robotId: robot.id
     }).subscribe( res => {
-      operateChanges(opeMessage, OperationState.success);
-      this.msgHandler.showSuccess(successMessage);
-      this.refresh();
+            operateChanges(opeMessage, OperationState.success);
+            this.msgHandler.showSuccess(successMessage);
+            this.refresh();
     }, error => {
       operateChanges(opeMessage, OperationState.failure, errorHandler(error));
       this.msgHandler.showSuccess(error);

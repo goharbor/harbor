@@ -1,29 +1,41 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { ClarityModule } from '@clr/angular';
-import { of, Subscription } from 'rxjs';
-import { ActivatedRoute } from "@angular/router";
-import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
-import { TranslateModule } from '@ngx-translate/core';
-import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
-import { RobotAccountComponent } from './robot-account.component';
-import { UserPermissionService } from "../../../lib/services";
-import { OperationService } from "../../../lib/components/operation/operation.service";
-import { RobotService } from "../../../../ng-swagger-gen/services/robot.service";
-import { HttpHeaders, HttpResponse } from "@angular/common/http";
-import { Robot } from "../../../../ng-swagger-gen/models/robot";
-import { delay } from "rxjs/operators";
-import { Action, PermissionsKinds, Resource } from "../../system-robot-accounts/system-robot-util";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { ClarityModule } from "@clr/angular";
+import { TranslateModule } from "@ngx-translate/core";
+import {  NO_ERRORS_SCHEMA } from "@angular/core";
+import { SystemRobotAccountsComponent } from './system-robot-accounts.component';
+import { RobotService } from "../../../ng-swagger-gen/services/robot.service";
+import { HttpHeaders, HttpResponse } from "@angular/common/http";
+import { of, Subscription } from "rxjs";
+import { delay } from "rxjs/operators";
+import { Robot } from "../../../ng-swagger-gen/models/robot";
+import { Action, PermissionsKinds, Resource } from "./system-robot-util";
+import { Project } from "../../../ng-swagger-gen/models/project";
+import { ProjectService } from "../../../ng-swagger-gen/services/project.service";
+import { MessageHandlerService } from "../shared/message-handler/message-handler.service";
+import { ConfirmationDialogService } from "../shared/confirmation-dialog/confirmation-dialog.service";
+import { OperationService } from "../../lib/components/operation/operation.service";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 
-describe('RobotAccountComponent', () => {
-  let component: RobotAccountComponent;
-  let fixture: ComponentFixture<RobotAccountComponent>;
+describe('SystemRobotAccountsComponent', () => {
+  let component: SystemRobotAccountsComponent;
+  let fixture: ComponentFixture<SystemRobotAccountsComponent>;
+  const project1: Project = {
+    project_id: 1,
+    name: 'project1'
+  };
+  const project2: Project = {
+    project_id: 2,
+    name: 'project2'
+  };
+  const project3: Project = {
+    project_id: 3,
+    name: 'project3'
+  };
   const robot1: Robot = {
     id: 1,
     name: 'robot1',
-    level: PermissionsKinds.PROJECT,
+    level: PermissionsKinds.SYSTEM,
     disable: false,
     expires_at: (new Date().getTime() + 100000) % 1000,
     description: 'for test',
@@ -44,7 +56,7 @@ describe('RobotAccountComponent', () => {
   const robot2: Robot = {
     id: 2,
     name: 'robot2',
-    level: PermissionsKinds.PROJECT,
+    level: PermissionsKinds.SYSTEM,
     disable: false,
     expires_at: (new Date().getTime() + 100000) % 1000,
     description: 'for test',
@@ -65,7 +77,7 @@ describe('RobotAccountComponent', () => {
   const robot3: Robot = {
     id: 3,
     name: 'robot3',
-    level: PermissionsKinds.PROJECT,
+    level: PermissionsKinds.SYSTEM,
     disable: false,
     expires_at: (new Date().getTime() + 100000) % 1000,
     description: 'for test',
@@ -83,9 +95,13 @@ describe('RobotAccountComponent', () => {
       }
     ]
   };
-  const mockUserPermissionService = {
-    getPermission() {
-      return of(true);
+  const mockProjectService = {
+    listProjectsResponse: () => {
+      const res: HttpResponse<Array<Project>> = new HttpResponse<Array<Project>>({
+        headers: new HttpHeaders({'x-total-count': '3'}),
+        body: [project1, project2, project3]
+      });
+      return of(res).pipe(delay(0));
     }
   };
   const fakedRobotService = {
@@ -105,38 +121,29 @@ describe('RobotAccountComponent', () => {
   };
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      schemas: [
-        NO_ERRORS_SCHEMA
-      ],
       imports: [
         BrowserAnimationsModule,
         ClarityModule,
         TranslateModule.forRoot(),
         HttpClientTestingModule
       ],
+      declarations: [ SystemRobotAccountsComponent ],
       providers: [
-        {
-          provide: ActivatedRoute, useValue: {
-            snapshot: {
-              parent: {
-                params: { id: 1 },
-                data: null
-              },
-            }
-          }
-        },
         { provide: MessageHandlerService, useValue: fakedMessageHandlerService },
         ConfirmationDialogService,
         OperationService,
-        { provide: UserPermissionService, useValue: mockUserPermissionService },
         { provide: RobotService, useValue: fakedRobotService},
+        { provide: ProjectService, useValue: mockProjectService},
       ],
-      declarations: [RobotAccountComponent]
-    }).compileComponents();
+      schemas: [
+        NO_ERRORS_SCHEMA
+      ],
+    })
+    .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(RobotAccountComponent);
+    fixture = TestBed.createComponent(SystemRobotAccountsComponent);
     component = fixture.componentInstance;
     component.searchSub = new Subscription();
     fixture.detectChanges();
@@ -145,7 +152,7 @@ describe('RobotAccountComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-  it('should render project robot list',  async () => {
+  it('should render robot list',  async () => {
     fixture.autoDetectChanges();
     await fixture.whenStable();
     const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');
