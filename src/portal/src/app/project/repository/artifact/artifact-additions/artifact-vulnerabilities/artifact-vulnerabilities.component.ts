@@ -4,8 +4,9 @@ import { ClrDatagridComparatorInterface, ClrLoadingState } from "@clr/angular";
 import { finalize } from "rxjs/operators";
 import { AdditionLink } from "../../../../../../../ng-swagger-gen/models/addition-link";
 import {
+  ProjectService,
   ScannerVo,
-  ScanningResultService,
+  ScanningResultService, SystemInfoService,
   UserPermissionService,
   USERSTATICPERMISSION,
   VulnerabilityItem
@@ -20,6 +21,7 @@ import { ChannelService } from "../../../../../../lib/services/channel.service";
 import { ResultBarChartComponent } from "../../../vulnerability-scanning/result-bar-chart.component";
 import { Subscription } from "rxjs";
 import { Artifact } from "../../../../../../../ng-swagger-gen/models/artifact";
+import {SessionService} from "../../../../../shared/session.service";
 
 @Component({
   selector: 'hbr-artifact-vulnerabilities',
@@ -53,12 +55,16 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   resultBarChartComponent: ResultBarChartComponent;
   sub: Subscription;
   hasViewInitWithDelay: boolean = false;
+  currentCVEList: Array<{ "cve_id": string; }> = [];
   constructor(
     private errorHandler: ErrorHandler,
     private additionsService: AdditionsService,
     private userPermissionService: UserPermissionService,
     private scanningService: ScanningResultService,
     private channel: ChannelService,
+    private session: SessionService,
+    private projectService: ProjectService,
+    private systemInfoService: SystemInfoService,
   ) {
     const that = this;
     this.severitySort = {
@@ -80,6 +86,10 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.hasViewInitWithDelay = true;
     }, 0);
+    if (this.isSystemAdmin()) {
+      // get system and project CVE allow list
+      this.getCurrentCVEAllowList();
+    }
   }
   ngOnDestroy() {
     if (this.sub) {
@@ -193,5 +203,38 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
       return scanOverview[DEFAULT_SUPPORTED_MIME_TYPE];
     }
     return null;
+  }
+  isSystemAdmin(): boolean {
+    const account = this.session.getCurrentUser();
+    return account && account.has_admin_role;
+  }
+  getCurrentCVEAllowList() {
+    this.projectService.getProject(this.projectId).subscribe(
+        projectRes => {
+          if (projectRes && projectRes.cve_allowlist
+              && projectRes.metadata && projectRes.metadata.reuse_sys_cve_allowlist !== "true"
+          ) { // use project CVE allow list
+            this.currentCVEList = projectRes.cve_allowlist['items'];
+          } else { // use system CVE allow list
+            this.systemInfoService.getSystemAllowlist().subscribe(
+                systemRes => {
+                  if (systemRes && systemRes.items && systemRes.items.length) {
+                    this.currentCVEList = systemRes.items;
+                  }
+                }
+            );
+          }
+        }
+    );
+  }
+  isInAllowList(CVEId: string): boolean {
+    if (this.currentCVEList && this.currentCVEList.length) {
+      for (let i = 0; i < this.currentCVEList.length; i++) {
+        if (CVEId === this.currentCVEList[i].cve_id) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }

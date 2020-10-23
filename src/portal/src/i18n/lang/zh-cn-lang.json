@@ -1016,7 +1016,8 @@
             "COLUMN_FIXED": "修复版本",
             "COLUMN_DESCRIPTION": "简介",
             "FOOT_ITEMS": "项目",
-            "FOOT_OF": "总共"
+            "FOOT_OF": "总共",
+            "IN_ALLOW_LIST": "已入特赦名单"
         },
         "CHART": {
             "SCANNING_TIME": "扫描完成时间:",

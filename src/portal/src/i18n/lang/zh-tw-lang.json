@@ -1011,7 +1011,8 @@
       "COLUMN_FIXED": "修復版本",
       "COLUMN_DESCRIPTION": "簡介",
       "FOOT_ITEMS": "項目",
-      "FOOT_OF": "總共"
+      "FOOT_OF": "總共",
+      "IN_ALLOW_LIST": "Listed In CVE Allowlist"
     },
     "CHART":{
       "SCANNING_TIME": "掃描完成時間:",
