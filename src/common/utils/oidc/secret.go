@@ -10,7 +10,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -60,6 +59,7 @@ func (dm *defaultManager) getEncryptKey() (string, error) {
 // VerifySecret verifies the secret and the token associated with it, it refreshes the token in the DB if it's
 // refreshed during the verification.  It returns a populated user model based on the ID token associated with the secret.
 func (dm *defaultManager) VerifySecret(ctx context.Context, username string, secret string) (*models.User, error) {
+	log.Debugf("Verifying the secret for user: %s", username)
 	user, err := dao.GetUser(models.User{Username: username})
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 		return nil, fmt.Errorf("failed to get oidc user info, error: %v", err)
 	}
 	if oidcUser == nil {
-		return nil, fmt.Errorf("user is not onboarded as OIDC user")
+		return nil, fmt.Errorf("user is not onboarded as OIDC user, username: %s", username)
 	}
 	key, err := dm.getEncryptKey()
 	if err != nil {
@@ -83,7 +83,7 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 		return nil, fmt.Errorf("failed to decrypt secret from DB: %v", err)
 	}
 	if secret != plainSecret {
-		return nil, verifyError(errors.New("secret mismatch"))
+		return nil, verifyError(fmt.Errorf("secret mismatch, username: %s", username))
 	}
 	tokenStr, err := utils.ReversibleDecrypt(oidcUser.Token, key)
 	if err != nil {
@@ -98,7 +98,7 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 		log.Debug("Refreshing token")
 		token, err = refreshToken(ctx, token)
 		if err != nil {
-			return nil, fmt.Errorf("failed to refresh token")
+			return nil, fmt.Errorf("failed to refresh token, username: %s, error: %v", username, err)
 		}
 		tb, err := json.Marshal(token)
 		if err != nil {
@@ -117,6 +117,7 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 		return nil, verifyError(err)
 	}
 	InjectGroupsToUser(info, user)
+	log.Debugf("Secret verification succeed, username: %s", username)
 	return user, nil
 }
 
