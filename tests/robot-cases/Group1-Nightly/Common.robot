@@ -694,6 +694,7 @@ Test Case - Read Only Mode
     Close Browser
 
 Test Case - Proxy Cache
+    [Tags]  proxy_cache
     ${d}=  Get Current Date    result_format=%m%s
     ${registry}=  Set Variable  https://hub.docker.com/
     ${user_namespace}=  Set Variable  danfengliu
