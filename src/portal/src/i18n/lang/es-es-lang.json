@@ -1455,7 +1455,7 @@
         "ENABLE_ACTION": "Enable",
         "DISABLE_ACTION": "Disable",
         "DELETE_ACTION": "Delete",
-        "NOT_FOUND": "Not found",
+        "NOT_FOUND": "We couldn't find any instance!",
         "NAME": "Name",
         "ENDPOINT": "Endpoint",
         "STATUS": "Status",

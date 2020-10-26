@@ -1454,7 +1454,7 @@
         "ENABLE_ACTION": "启用",
         "DISABLE_ACTION": "禁用",
         "DELETE_ACTION": "删除",
-        "NOT_FOUND": "未发现任何记录",
+        "NOT_FOUND": "未发现任何实例",
         "NAME": "名称",
         "ENDPOINT": "端点",
         "STATUS": "状态",

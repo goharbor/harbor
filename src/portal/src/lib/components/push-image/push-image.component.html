@@ -24,25 +24,25 @@
                 <section>
                     <h5 class="mt-0">{{ 'PUSH_IMAGE.DOCKER' | translate }} {{ 'PUSH_IMAGE.TITLE' | translate }}</h5>
                     <article class="commands-section">
-                        <hbr-copy-input #tagCopyImage (onCopyError)="onCpError($event)" inputSize="50" headerTitle="{{ 'PUSH_IMAGE.TAG_COMMAND' | translate }}" defaultValue="{{tagCommandImage}}"></hbr-copy-input>
+                        <hbr-copy-input #tagCopyImage (onCopyError)="onCpError($event)" inputSize="65" headerTitle="{{ 'PUSH_IMAGE.TAG_COMMAND' | translate }}" defaultValue="{{tagCommandImage}}"></hbr-copy-input>
                     </article>
                     <article class="commands-section">
-                        <hbr-copy-input #pushCopyImage (onCopyError)="onCpError($event)" inputSize="50" headerTitle="{{ 'PUSH_IMAGE.PUSH_COMMAND' | translate }}" defaultValue="{{pushCommandImage}}"></hbr-copy-input>
+                        <hbr-copy-input #pushCopyImage (onCopyError)="onCpError($event)" inputSize="65" headerTitle="{{ 'PUSH_IMAGE.PUSH_COMMAND' | translate }}" defaultValue="{{pushCommandImage}}"></hbr-copy-input>
                     </article>
                 </section>
                 <section>
                     <h5>{{ 'PUSH_IMAGE.HELM' | translate }} {{ 'PUSH_IMAGE.TITLE' | translate }}</h5>
                     <article class="commands-section">
-                        <hbr-copy-input #tagCopyChart (onCopyError)="onCpError($event)" inputSize="50" headerTitle="{{ 'PUSH_IMAGE.TAG_COMMAND_CHART' | translate }}" defaultValue="{{tagCommandChart}}"></hbr-copy-input>
+                        <hbr-copy-input #tagCopyChart (onCopyError)="onCpError($event)" inputSize="65" headerTitle="{{ 'PUSH_IMAGE.TAG_COMMAND_CHART' | translate }}" defaultValue="{{tagCommandChart}}"></hbr-copy-input>
                     </article>
                     <article class="commands-section">
-                        <hbr-copy-input #pushCopyChart (onCopyError)="onCpError($event)" inputSize="50" headerTitle="{{ 'PUSH_IMAGE.PUSH_COMMAND_CHART' | translate }}" defaultValue="{{pushCommandChart}}"></hbr-copy-input>
+                        <hbr-copy-input #pushCopyChart (onCopyError)="onCpError($event)" inputSize="65" headerTitle="{{ 'PUSH_IMAGE.PUSH_COMMAND_CHART' | translate }}" defaultValue="{{pushCommandChart}}"></hbr-copy-input>
                     </article>
                 </section>
                 <section>
                     <h5>{{ 'PUSH_IMAGE.CNAB' | translate }} {{ 'PUSH_IMAGE.TITLE' | translate }}</h5>
                     <article class="commands-section">
-                        <hbr-copy-input #pushCopyCnab (onCopyError)="onCpError($event)" inputSize="50" headerTitle="{{ 'PUSH_IMAGE.PUSH_COMMAND_CNAB' | translate }}" defaultValue="{{pushCommandCnab}}"></hbr-copy-input>
+                        <hbr-copy-input #pushCopyCnab (onCopyError)="onCpError($event)" inputSize="65" headerTitle="{{ 'PUSH_IMAGE.PUSH_COMMAND_CNAB' | translate }}" defaultValue="{{pushCommandCnab}}"></hbr-copy-input>
                     </article>
                 </section>
             </div>
