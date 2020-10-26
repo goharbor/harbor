@@ -76,7 +76,7 @@
 
   <div class="tasks-detail">
     <h3 class="modal-title">{{'P2P_PROVIDER.TASKS' | translate}}</h3>
-    <clr-datagrid (clrDgRefresh)="clrLoadTasks(true)" [clrDgLoading]="loading">
+    <clr-datagrid (clrDgRefresh)="clrLoadTasks(true, $event)" [clrDgLoading]="loading">
       <clr-dg-action-bar>
         <div class="row flex-end">
           <div class="select filter-tag clr-select-wrapper" [hidden]="!isOpenFilterTag">
@@ -133,11 +133,13 @@
         </clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
-        <span *ngIf="totalCount">{{pagination.firstItem + 1}}
-          - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}</span>
-        {{totalCount}} {{'REPLICATION.ITEMS' | translate}}
         <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize"
-                           [clrDgTotalItems]="totalCount"></clr-dg-pagination>
+                           [clrDgTotalItems]="totalCount">
+          <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+          <span *ngIf="totalCount">{{pagination.firstItem + 1}}
+            - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}</span>
+          {{totalCount}} {{'REPLICATION.ITEMS' | translate}}
+        </clr-dg-pagination>
       </clr-dg-footer>
     </clr-datagrid>
   </div>

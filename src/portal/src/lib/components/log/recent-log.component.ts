@@ -17,6 +17,7 @@ import { finalize } from "rxjs/operators";
 import { AuditlogService } from "../../../../ng-swagger-gen/services/auditlog.service";
 import { AuditLog } from "../../../../ng-swagger-gen/models/audit-log";
 import ListAuditLogsParams = AuditlogService.ListAuditLogsParams;
+import { ClrDatagridStateInterface } from '@clr/angular';
 
 @Component({
     selector: 'hbr-log',
@@ -69,7 +70,10 @@ export class RecentLogComponent implements OnInit {
         this.doFilter(this.currentTerm);
     }
 
-    load() {
+    load(state?: ClrDatagridStateInterface) {
+        if (state && state.page) {
+           this.pageSize = state.page.size;
+        }
         // Keep it for future filter
         // this.currentState = state;
         const params: ListAuditLogsParams = {

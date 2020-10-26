@@ -20,8 +20,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils/oidc"
@@ -33,14 +31,16 @@ import (
 type idToken struct{}
 
 func (i *idToken) Generate(req *http.Request) security.Context {
-	log := log.G(req.Context())
-	if lib.GetAuthMode(req.Context()) != common.OIDCAuth {
+	ctx := req.Context()
+	log := log.G(ctx)
+	if lib.GetAuthMode(ctx) != common.OIDCAuth {
 		return nil
 	}
 	if !strings.HasPrefix(req.URL.Path, "/api") {
 		return nil
 	}
-	claims, err := oidc.VerifyToken(req.Context(), bearerToken(req))
+	token := bearerToken(req)
+	claims, err := oidc.VerifyToken(ctx, token)
 	if err != nil {
 		log.Warningf("failed to verify token: %v", err)
 		return nil
@@ -54,19 +54,17 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 		log.Warning("user matches token's claims is not onboarded.")
 		return nil
 	}
-	settings, err := config.OIDCSetting()
+	setting, err := config.OIDCSetting()
 	if err != nil {
 		log.Errorf("failed to get OIDC settings: %v", err)
 		return nil
 	}
-	if groupNames, ok := oidc.GroupsFromClaims(claims, settings.GroupsClaim); ok {
-		groups := models.UserGroupsFromName(groupNames, common.OIDCGroupType)
-		u.GroupIDs, err = group.PopulateGroup(groups)
-		if err != nil {
-			log.Errorf("failed to get group ID list for OIDC user %s: %v", u.Username, err)
-			return nil
-		}
+	info, err := oidc.UserInfoFromIDToken(ctx, &oidc.Token{RawIDToken: token}, *setting)
+	if err != nil {
+		log.Errorf("Failed to get user info from ID token: %v", err)
+		return nil
 	}
+	oidc.InjectGroupsToUser(info, u)
 	log.Debugf("an ID token security context generated for request %s %s", req.Method, req.URL.Path)
 	return local.NewSecurityContext(u, config.GlobalProjectMgr)
 }

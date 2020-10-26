@@ -15,18 +15,11 @@ import {
     Component,
     Input,
     Output,
-    OnInit,
     EventEmitter,
     ViewChild,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    OnChanges,
-    SimpleChange,
-    SimpleChanges
 } from "@angular/core";
-import { Comparator } from "../../services";
 import { TranslateService } from "@ngx-translate/core";
-import { map, catchError } from "rxjs/operators";
+import { map, catchError, finalize } from "rxjs/operators";
 import { Observable, forkJoin, throwError as observableThrowError } from "rxjs";
 import { ReplicationService } from "../../services";
 import {
@@ -41,33 +34,23 @@ import {
     ConfirmationButtons
 } from "../../entities/shared.const";
 import { ErrorHandler } from "../../utils/error-handler";
-import { clone, CustomComparator } from "../../utils/utils";
+import { clone } from "../../utils/utils";
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
 import { errorHandler as errorHandFn} from "../../utils/shared/shared.utils";
-
-
-const jobstatus = "InProgress";
-
+import { ClrDatagridStateInterface } from '@clr/angular';
 @Component({
     selector: "hbr-list-replication-rule",
     templateUrl: "./list-replication-rule.component.html",
     styleUrls: ["./list-replication-rule.component.scss"],
-    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ListReplicationRuleComponent implements OnInit, OnChanges {
-    nullTime = "0001-01-01T00:00:00Z";
-
-    @Input() projectId: number;
+export class ListReplicationRuleComponent  {
     @Input() selectedId: number | string;
     @Input() withReplicationJob: boolean;
-
-    @Input() loading = false;
     @Input() hasCreateReplicationPermission: boolean;
     @Input() hasUpdateReplicationPermission: boolean;
     @Input() hasDeleteReplicationPermission: boolean;
     @Input() hasExecuteReplicationPermission: boolean;
-    @Output() reload = new EventEmitter<boolean>();
     @Output() selectOne = new EventEmitter<ReplicationRule>();
     @Output() editOne = new EventEmitter<ReplicationRule>();
     @Output() toggleOne = new EventEmitter<ReplicationRule>();
@@ -75,30 +58,22 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     @Output() redirect = new EventEmitter<ReplicationRule>();
     @Output() openNewRule = new EventEmitter<any>();
     @Output() replicateManual = new EventEmitter<ReplicationRule>();
-
-    projectScope = false;
-
-    rules: ReplicationRule[];
-    changedRules: ReplicationRule[];
-    ruleName: string;
-
+    rules: ReplicationRule[] = [];
     selectedRow: ReplicationRule;
-
     @ViewChild("toggleConfirmDialog")
     toggleConfirmDialog: ConfirmationDialogComponent;
-
     @ViewChild("deletionConfirmDialog")
     deletionConfirmDialog: ConfirmationDialogComponent;
-
-    startTimeComparator: Comparator<ReplicationRule> = new CustomComparator<ReplicationRule>("start_time", "date");
-    enabledComparator: Comparator<ReplicationRule> = new CustomComparator<ReplicationRule>("enabled", "number");
+    page: number = 1;
+    pageSize: number = 5;
+    totalCount: number = 0;
+    ruleName: string = "";
+    loading: boolean = true;
 
     constructor(private replicationService: ReplicationService,
         private translateService: TranslateService,
         private errorHandler: ErrorHandler,
-        private operationService: OperationService,
-        private ref: ChangeDetectorRef) {
-        setInterval(() => ref.markForCheck(), 500);
+        private operationService: OperationService) {
     }
 
     trancatedDescription(desc: string): string {
@@ -108,47 +83,9 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
             return desc;
         }
     }
-
-    ngOnInit(): void {
-        // Global scope
-        if (!this.projectScope) {
-            this.retrieveRules();
-        }
-    }
-    ngOnChanges(changes: SimpleChanges): void {
-        let proIdChange: SimpleChange = changes["projectId"];
-        if (proIdChange) {
-            if (proIdChange.currentValue !== proIdChange.previousValue) {
-                if (proIdChange.currentValue) {
-                    this.projectId = proIdChange.currentValue;
-                    this.projectScope = true; // Scope is project, not global list
-                    // Initially load the replication rule data
-                    this.retrieveRules();
-                }
-            }
-        }
-    }
-
-    retrieveRules(ruleName = ""): void {
-        this.loading = true;
-        /*this.selectedRow = null;*/
-        this.replicationService.getReplicationRules(this.projectId, ruleName)
-            .subscribe(rules => {
-                this.rules = rules || [];
-                // job list hidden
-                this.hideJobs.emit();
-                this.changedRules = this.rules;
-                this.loading = false;
-            }, error => {
-                this.errorHandler.error(error);
-                this.loading = false;
-            });
-    }
-
     replicateRule(rule: ReplicationRule): void {
         this.replicateManual.emit(rule);
     }
-
     deletionConfirm(message: ConfirmationAcknowledgement) {
         if (
             message &&
@@ -174,7 +111,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                         .subscribe(msg => {
                         operateChanges(opeMessage, OperationState.success);
                         this.errorHandler.info(msg);
-                        this.retrieveRules('');
+                        this.refreshRule();
                     });
                 }, error => {
                     const errMessage = errorHandFn(error);
@@ -228,9 +165,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
             forkJoin(...observableLists).subscribe(item => {
                 this.selectedRow = null;
-                this.reload.emit(true);
-                let hnd = setInterval(() => this.ref.markForCheck(), 200);
-                setTimeout(() => clearInterval(hnd), 2000);
+                this.refreshRule();
             }, error => {
                 this.errorHandler.error(error);
             });
@@ -289,5 +224,37 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
             buttons
         );
         this.deletionConfirmDialog.open(msg);
+    }
+    clrLoad(state?: ClrDatagridStateInterface) {
+        if (state && state.page) {
+            this.pageSize = state.page.size;
+        }
+        this.loading = true;
+        this.replicationService.getReplicationRulesResponse(
+            this.ruleName,
+            this.page,
+            this.pageSize)
+            .pipe(finalize(() => this.loading = false))
+            .subscribe(response => {
+              // job list hidden
+              this.hideJobs.emit();
+              // Get total count
+              if (response.headers) {
+                  let xHeader: string = response.headers.get("x-total-count");
+                  if (xHeader) {
+                      this.totalCount = parseInt(xHeader, 0);
+                  }
+              }
+              this.rules = response.body as ReplicationRule[];
+            }, error => {
+              this.errorHandler.error(error);
+            });
+    }
+    refreshRule() {
+        this.page = 1;
+        this.totalCount = 0;
+        this.selectedRow = null;
+        this.ruleName = "";
+        this.clrLoad();
     }
 }

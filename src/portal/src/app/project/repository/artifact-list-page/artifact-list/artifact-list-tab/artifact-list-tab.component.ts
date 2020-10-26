@@ -312,6 +312,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       if (!state || !state.page) {
         return;
       }
+      this.pageSize = state.page.size;
       this.selectedRow = [];
       // Keep it for future filtering and sorting
 

@@ -144,15 +144,17 @@
             <clr-dg-cell>{{p.description}}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
-            <span *ngIf="policyList?.length > 0">1 - {{policyList?.length}} {{'WEBHOOK.OF' | translate}} </span> {{policyList?.length}} {{'WEBHOOK.ITEMS' | translate}}
-            <clr-dg-pagination [clrDgPageSize]="10"></clr-dg-pagination>
+            <clr-dg-pagination [clrDgPageSize]="10">
+                <clr-dg-page-size [clrPageSizeOptions]="[10,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+                <span *ngIf="policyList?.length > 0">1 - {{policyList?.length}} {{'WEBHOOK.OF' | translate}} </span> {{policyList?.length}} {{'WEBHOOK.ITEMS' | translate}}
+            </clr-dg-pagination>
         </clr-dg-footer>
     </clr-datagrid>
 </div>
 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 " *ngIf="selectedRow">
     <h4 class="mt-2">{{'P2P_PROVIDER.EXECUTIONS' | translate}}</h4>
     <clr-datagrid [(clrDgSingleSelected)]="selectedExecutionRow" [clrDgLoading]="jobsLoading"
-                  (clrDgRefresh)="clrLoadJobs(null,true)">
+                  (clrDgRefresh)="clrLoadJobs(null,true, $event)">
         <clr-dg-action-bar>
             <div class="clr-row">
                 <div class="clr-col-7">
@@ -202,11 +204,14 @@
             <clr-dg-cell>{{execution.vendor_type}}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
-            <span *ngIf="totalExecutionCount">{{pagination.firstItem + 1}}
-                - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}</span>
-            {{totalExecutionCount}} {{'REPLICATION.ITEMS' | translate}}
+
             <clr-dg-pagination #pagination [(clrDgPage)]="currentExecutionPage" [clrDgPageSize]="pageSize"
-                               [clrDgTotalItems]="totalExecutionCount"></clr-dg-pagination>
+                               [clrDgTotalItems]="totalExecutionCount">
+                <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+                <span *ngIf="totalExecutionCount">{{pagination.firstItem + 1}}
+                    - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}</span>
+                {{totalExecutionCount}} {{'REPLICATION.ITEMS' | translate}}
+            </clr-dg-pagination>
         </clr-dg-footer>
     </clr-datagrid>
 </div>

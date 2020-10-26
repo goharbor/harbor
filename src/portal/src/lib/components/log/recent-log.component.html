@@ -20,7 +20,7 @@
         </div>
     </div>
     <div>
-        <clr-datagrid (clrDgRefresh)="load()" [clrDgLoading]="loading">
+        <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="loading">
             <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.RESOURCE' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.RESOURCE_TYPE' | translate}}</clr-dg-column>
@@ -35,9 +35,11 @@
                 <clr-dg-cell>{{l.op_time | date: 'short'}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
-                <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'AUDIT_LOG.OF' | translate}} {{totalCount}} {{'AUDIT_LOG.ITEMS'
+                <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount">
+                    <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+                    <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'AUDIT_LOG.OF' | translate}} {{totalCount}} {{'AUDIT_LOG.ITEMS'
                 | translate}}</span>
-                <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
+                </clr-dg-pagination>
             </clr-dg-footer>
         </clr-datagrid>
     </div>

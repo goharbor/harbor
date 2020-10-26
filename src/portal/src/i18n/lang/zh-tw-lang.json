@@ -922,7 +922,9 @@
       "OIDC_SETNAME": "設置OIDC用戶名",
       "OIDC_SETNAMECONTENT": "在通過第三方（OIDC）進行身份驗證時,您必須第一次創建一個Harbor用戶名。這將在端口中用於與項目、角色等關聯。",
       "OIDC_USERNAME": "用戶名",
-      "GROUP_CLAIM_NAME": "組名稱"
+      "GROUP_CLAIM_NAME": "組名稱",
+      "OIDC_ADMIN_GROUP": "OIDC Admin Group",
+      "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
     },
     "SCANNING":{
       "TRIGGER_SCAN_ALL_SUCCESS": "啟動掃描所有鏡像任務成功!",
@@ -1439,7 +1441,7 @@
     "ENABLE_ACTION": "Enable",
     "DISABLE_ACTION": "Disable",
     "DELETE_ACTION": "Delete",
-    "NOT_FOUND": "Not found",
+    "NOT_FOUND": "We couldn't find any instance!",
     "NAME": "Name",
     "ENDPOINT": "Endpoint",
     "STATUS": "Status",
@@ -1566,5 +1568,8 @@
     "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote provider uses a self-signed or untrusted certificate.",
     "NAME_TOOLTIP": "Policy name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
     "NEED_HELP": "Please ask your system admin to add a provider first"
+  },
+  "PAGINATION": {
+        "PAGE_SIZE": "Page size"
   }
 }

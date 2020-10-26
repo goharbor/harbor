@@ -18,6 +18,7 @@ import { forkJoin } from 'rxjs';
 import { QuotaService } from "../../../services/quota.service";
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
+import { ClrDatagridStateInterface } from '@clr/angular';
 const quotaSort = {
   storage: "used.storage",
   sortType: 'string'
@@ -170,10 +171,11 @@ export class ProjectQuotasComponent implements OnChanges {
     const storageUnit = this.getIntegerAndUnit(storageNumberAndUnit, 0).partCharacterHard;
     this.quotaHardLimitValue = { storageLimit, storageUnit };
   }
-  getQuotaList(state: State) {
+  getQuotaList(state: ClrDatagridStateInterface) {
     if (!state || !state.page) {
       return;
     }
+    this.pageSize = state.page.size;
     // Keep state for future filtering and sorting
     this.currentState = state;
 

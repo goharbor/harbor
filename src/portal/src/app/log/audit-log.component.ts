@@ -19,6 +19,8 @@ import { ProjectService } from "../../../ng-swagger-gen/services/project.service
 import { AuditLog } from "../../../ng-swagger-gen/models/audit-log";
 import { Project } from "../project/project";
 import { finalize } from "rxjs/operators";
+import {DEFAULT_PAGE_SIZE} from "../../lib/utils/utils";
+import {ClrDatagridStateInterface} from "@clr/angular";
 
 const optionalSearch: {} = { 0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE' };
 
@@ -72,7 +74,7 @@ export class AuditLogComponent implements OnInit {
   ];
 
   pageOffset = 1;
-  pageSize = 15;
+  pageSize = DEFAULT_PAGE_SIZE;
   totalRecordCount = 0;
   currentPage = 1;
   totalPage = 0;
@@ -98,7 +100,10 @@ export class AuditLogComponent implements OnInit {
     }
   }
 
-  retrieve() {
+  retrieve(state?: ClrDatagridStateInterface) {
+    if (state && state.page) {
+      this.pageSize = state.page.size;
+    }
     const arr: string[] = [];
     if (this.queryUsername) {
       arr.push(`username=~${this.queryUsername}`);

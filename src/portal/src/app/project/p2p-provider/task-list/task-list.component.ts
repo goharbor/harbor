@@ -11,7 +11,7 @@ import { Execution } from '../../../../../ng-swagger-gen/models/execution';
 import { PreheatService } from '../../../../../ng-swagger-gen/services/preheat.service';
 import { EXECUTION_STATUS, P2pProviderService, TIME_OUT } from '../p2p-provider.service';
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
-import { ClrLoadingState } from '@clr/angular';
+import {ClrDatagridStateInterface, ClrLoadingState} from '@clr/angular';
 
 @Component({
   selector: 'task-list',
@@ -220,10 +220,13 @@ export class TaskListComponent implements OnInit, OnDestroy {
     return this.preheatService.rootUrl
       + `/projects/${this.projectName}/preheat/policies/${this.preheatPolicyName}/executions/${this.executionId}/tasks/${taskId}/logs`;
   }
-  clrLoadTasks(withLoading): void {
-      if (withLoading) {
-        this.loading = true;
-      }
+  clrLoadTasks(withLoading, state?: ClrDatagridStateInterface): void {
+    if (withLoading) {
+      this.loading = true;
+    }
+    if (state && state.page) {
+      this.pageSize = state.page.size;
+    }
     let params: string;
     if (this.searchString) {
       params =  encodeURIComponent(`${this.filterKey}=~${this.searchString}`);

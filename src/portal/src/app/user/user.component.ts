@@ -318,6 +318,9 @@ export class UserComponent implements OnInit, OnDestroy {
 
     // Data loading
     load(state: any): void {
+        if (state && state.page) {
+           this.pageSize = state.page.size;
+        }
         this.selectedRow = [];
         this.onGoing = true;
         this.getUserListByPaging();

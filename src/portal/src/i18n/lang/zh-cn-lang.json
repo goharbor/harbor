@@ -927,7 +927,9 @@
             "OIDC_SETNAME": "设置OIDC用户名",
             "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在Harbor中用于与项目、角色等关联。",
             "OIDC_USERNAME": "用户名",
-            "GROUP_CLAIM_NAME": "组名称"
+            "GROUP_CLAIM_NAME": "组名称",
+            "OIDC_ADMIN_GROUP": "OIDC管理员组",
+            "OIDC_ADMIN_GROUP_INFO": "OIDC管理员组名称。所有该组内用户都会有管理员权限，此属性可以为空。"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
@@ -1452,7 +1454,7 @@
         "ENABLE_ACTION": "启用",
         "DISABLE_ACTION": "禁用",
         "DELETE_ACTION": "删除",
-        "NOT_FOUND": "未发现任何记录",
+        "NOT_FOUND": "未发现任何实例",
         "NAME": "名称",
         "ENDPOINT": "端点",
         "STATUS": "状态",
@@ -1579,5 +1581,8 @@
         "SKIP_CERT_VERIFY": "当远端服务使用自签或不可信证书时可勾选此项以跳过证书认证。",
         "DESTINATION_NAME_TOOLTIP": "策略名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
         "NEED_HELP": "请先让您的系统管理员添加提供商"
+    },
+    "PAGINATION": {
+        "PAGE_SIZE": "页面大小"
     }
 }

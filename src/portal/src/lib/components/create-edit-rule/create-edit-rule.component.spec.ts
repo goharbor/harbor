@@ -1,13 +1,10 @@
-import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
+import {ComponentFixture, fakeAsync, TestBed, tick, waitForAsync} from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 import { DebugElement } from "@angular/core";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
-
 import { SharedModule } from "../../utils/shared/shared.module";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { ReplicationComponent } from "../replication/replication.component";
-
-import { ListReplicationRuleComponent } from "../list-replication-rule/list-replication-rule.component";
 import { CronTooltipComponent } from "../cron-schedule/cron-tooltip/cron-tooltip.component";
 import { CreateEditRuleComponent } from "./create-edit-rule.component";
 import { DatePickerComponent } from "../datetime-picker/datetime-picker.component";
@@ -24,7 +21,6 @@ import { ErrorHandler } from "../../utils/error-handler/error-handler";
 import { SERVICE_CONFIG, IServiceConfig } from "../../entities/service.config";
 import {
   ReplicationService,
-  ReplicationDefaultService,
   JobLogService,
   JobLogDefaultService
 } from "../../services";
@@ -40,6 +36,8 @@ import {LabelPieceComponent} from "../label-piece/label-piece.component";
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from "rxjs";
 import { CURRENT_BASE_HREF } from "../../utils/utils";
+import {HttpHeaders, HttpResponse} from "@angular/common/http";
+import {delay} from "rxjs/operators";
 
 describe("CreateEditRuleComponent (inline template)", () => {
   let mockRules: ReplicationRule[] = [
@@ -203,35 +201,47 @@ describe("CreateEditRuleComponent (inline template)", () => {
       "event_based"
     ]
   };
-
-  let fixture: ComponentFixture<ReplicationComponent>;
-  let fixtureCreate: ComponentFixture<CreateEditRuleComponent>;
-
-  let comp: ReplicationComponent;
-  let compCreate: CreateEditRuleComponent;
-
-  let replicationService: ReplicationService;
-  let endpointService: EndpointService;
-
-  let spyRules: jasmine.Spy;
-  let spyOneRule: jasmine.Spy;
-
-  let spyJobs: jasmine.Spy;
-  let spyAdapter: jasmine.Spy;
-  let spyEndpoint: jasmine.Spy;
-
-
+  let fixture: ComponentFixture<CreateEditRuleComponent>;
+  let comp: CreateEditRuleComponent;
   let config: IServiceConfig = {
     replicationBaseEndpoint: CURRENT_BASE_HREF + "/replication/testing",
     targetBaseEndpoint: CURRENT_BASE_HREF + "/registries/testing"
   };
-
+  const fakedErrorHandler = {
+    error() {
+    }
+  };
+  const fakedReplicationService = {
+    getReplicationRule() {
+      return of(mockRule).pipe(delay(0));
+    },
+    getReplicationRulesResponse() {
+      return of(new HttpResponse({
+        body: mockRules,
+        headers:  new HttpHeaders({
+          "x-total-count": "2"
+        })
+      })).pipe(delay(0));
+    },
+    getExecutions() {
+      return of(mockJob).pipe(delay(0));
+    },
+    getEndpoints() {
+      return of(mockEndpoints).pipe(delay(0));
+    },
+    getRegistryInfo() {
+      return  of(mockRegistryInfo).pipe(delay(0));
+    }
+  };
+  const fakedEndpointService = {
+    getEndpoints() {
+      return of(mockEndpoints).pipe(delay(0));
+    }
+  };
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule, NoopAnimationsModule, RouterTestingModule],
       declarations: [
-        ReplicationComponent,
-        ListReplicationRuleComponent,
         CreateEditRuleComponent,
         CronTooltipComponent,
         ConfirmationDialogComponent,
@@ -242,75 +252,40 @@ describe("CreateEditRuleComponent (inline template)", () => {
         LabelPieceComponent
       ],
       providers: [
-        ErrorHandler,
+        { provide: ErrorHandler, useValue: fakedErrorHandler },
         { provide: SERVICE_CONFIG, useValue: config },
-        { provide: ReplicationService, useClass: ReplicationDefaultService },
-        { provide: EndpointService, useClass: EndpointDefaultService },
-        { provide: JobLogService, useClass: JobLogDefaultService },
-        { provide: OperationService },
-        { provide: LabelService }
+        { provide: ReplicationService, useValue: fakedReplicationService },
+        { provide: EndpointService, useValue: fakedEndpointService },
       ]
     });
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ReplicationComponent);
-    fixtureCreate = TestBed.createComponent(CreateEditRuleComponent);
+    fixture = TestBed.createComponent(CreateEditRuleComponent);
     comp = fixture.componentInstance;
-    compCreate = fixtureCreate.componentInstance;
-    comp.projectId = 1;
-    comp.search.ruleId = 1;
-
-    replicationService = fixture.debugElement.injector.get(ReplicationService);
-
-    endpointService = fixtureCreate.debugElement.injector.get(EndpointService);
-
-    spyRules = spyOn(
-      replicationService,
-      "getReplicationRules"
-    ).and.returnValues(of(mockRules));
-    spyOneRule = spyOn(
-      replicationService,
-      "getReplicationRule"
-    ).and.returnValue(of(mockRule));
-    spyJobs = spyOn(replicationService, "getExecutions").and.returnValues(
-      of(mockJob));
-
-    spyAdapter = spyOn(replicationService, "getRegistryInfo").and.returnValues(
-        of(mockRegistryInfo));
-    spyEndpoint = spyOn(endpointService, "getEndpoints").and.returnValues(
-      of(mockEndpoints)
-    );
-
     fixture.detectChanges();
   });
 
-  it("Should open creation modal and load endpoints", waitForAsync(() => {
+  it("Should open creation modal and load endpoints", async () => {
     fixture.detectChanges();
-    compCreate.openCreateEditRule();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      let de: DebugElement = fixture.debugElement.query(By.css("input"));
-      expect(de).toBeTruthy();
-      let deSelect: DebugElement = fixture.debugElement.query(By.css("select"));
-      expect(deSelect).toBeTruthy();
-      let elSelect: HTMLElement = de.nativeElement;
-      expect(elSelect).toBeTruthy();
-      expect(elSelect.childNodes.item(0).textContent).toEqual("target_01");
-    });
-  }));
+    await fixture.whenStable();
+    comp.openCreateEditRule();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const modal =  fixture.nativeElement.querySelector("clr-modal");
+    expect(modal).toBeTruthy();
+    const selectionOptions = fixture.nativeElement.querySelectorAll("#dest_registry>option");
+    expect(selectionOptions).toBeTruthy();
+    expect(selectionOptions.length).toEqual(5);
+  });
 
-  it("Should open modal to edit replication rule", waitForAsync(() => {
+  it("Should open modal to edit replication rule", fakeAsync( () => {
     fixture.detectChanges();
-    compCreate.openCreateEditRule(mockRule.id);
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      let de: DebugElement = fixture.debugElement.query(By.css("input"));
-      expect(de).toBeTruthy();
-      fixture.detectChanges();
-      let el: HTMLElement = de.nativeElement;
-      expect(el).toBeTruthy();
-      expect(el.textContent.trim()).toEqual("sync_01");
-    });
+    comp.openCreateEditRule(mockRule.id);
+    fixture.detectChanges();
+    tick(5000);
+    const ruleNameInput: HTMLInputElement = fixture.nativeElement.querySelector("#ruleName");
+    expect(ruleNameInput).toBeTruthy();
+    expect(ruleNameInput.value.trim()).toEqual("sync_01");
   }));
 });
