@@ -220,10 +220,6 @@
   text-transform: none;
 }
 
-.labelBtn:hover {
-  background-color: #eee;
-}
-
 .labelBtn:focus {
   outline: none;
 }
@@ -410,10 +406,6 @@ clr-datagrid {
   padding: 0;
   li {
     padding-left: 1rem;
-    &:hover {
-      background-color: #eee;
-      
-    }
   }
 }
 .no-border:focus {
