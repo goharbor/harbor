@@ -80,7 +80,7 @@ class TestProjects(unittest.TestCase):
 
         #7. Get signature of image with tag(TA), it should be exist.
         artifact = self.artifact.get_reference_info(TestProjects.project_sign_image_name, image, tag, **TestProjects.USER_sign_image_CLIENT)
-        self.assertEqual(artifact[0].tags[0].signed, True)
+        self.assertEqual(artifact.tags[0].signed, True)
 
         push_special_image_to_project(TestProjects.project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, self.repo_name_1, ['1.0'])
         self.repo.delete_repoitory(TestProjects.project_sign_image_name, self.repo_name_1, **TestProjects.USER_sign_image_CLIENT)

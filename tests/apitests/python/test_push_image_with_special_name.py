@@ -80,7 +80,7 @@ class TestProjects(unittest.TestCase):
         full_name = urllib.parse.quote(profix+"/"+image,'utf-8')
 
         artifact = self.artifact.get_reference_info(TestProjects.project_sign_image_name, full_name, tag, **TestProjects.USER_sign_image_CLIENT)
-        self.assertEqual(artifact[0].type, 'IMAGE')
+        self.assertEqual(artifact.type, 'IMAGE')
 
 if __name__ == '__main__':
     unittest.main()

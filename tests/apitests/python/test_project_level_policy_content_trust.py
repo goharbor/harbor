@@ -71,7 +71,7 @@ class TestProjects(unittest.TestCase):
 
         #4. Image(IA) should exist;
         artifact = self.artifact.get_reference_info(TestProjects.project_content_trust_name, image, tag, **TestProjects.USER_CONTENT_TRUST_CLIENT)
-        self.assertEqual(artifact[0].tags[0].name, tag)
+        self.assertEqual(artifact.tags[0].name, tag)
 
         #5. Pull image(IA) successfully;
         pull_harbor_image(harbor_server, admin_name, admin_password, TestProjects.repo_name, tag)
