@@ -152,3 +152,7 @@ Test Case - Proxy Cache
 Test Case - Tag Immutability
     [Tags]  tag_immutability
     Harbor API Test  ./tests/apitests/python/test_tag_immutability.py
+
+Test Case - P2P
+    [Tags]  p2p
+    Harbor API Test  ./tests/apitests/python/test_p2p.py
