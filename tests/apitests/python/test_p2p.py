@@ -5,9 +5,7 @@ import unittest
 import urllib
 import sys
 
-from testutils import ADMIN_CLIENT
-from testutils import harbor_server
-from testutils import TEARDOWN
+from testutils import ADMIN_CLIENT, TEARDOWN, harbor_server, suppress_urllib3_warning
 from library.base import _random_name
 from library.base import _assert_status_code
 from library.project import Project
@@ -22,8 +20,8 @@ import library.containerd
 import v2_swagger_client
 
 class TestP2P(unittest.TestCase):
-    @classmethod
-    def setUpClass(self):
+    @suppress_urllib3_warning
+    def setUp(self):
         self.url = ADMIN_CLIENT["endpoint"]
         self.user_password = "Aa123456"
         self.project= Project()
@@ -33,8 +31,8 @@ class TestP2P(unittest.TestCase):
         self.artifact = Artifact()
         self.preheat = Preheat()
 
-    @classmethod
-    def tearDownClass(self):
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
+    def tearDown(self):
         print("Case completed")
 
     def do_validate(self, registry_type):
@@ -65,8 +63,7 @@ class TestP2P(unittest.TestCase):
 
         #This need to be removed once issue #13378 fixed.
         instance = self.preheat.get_instance(instance_name)
-        print("========instance:", instance.id)
-        print("instance_id:", instance_id)
+        print("instance:", instance)
 
         #2. Create a new project;
         project_id, project_name = self.project.create_project(metadata = {"public": "false"}, **USER_CLIENT)

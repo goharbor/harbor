@@ -27,7 +27,6 @@ class Preheat(base.Base, object):
             return
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(201, status_code)
-        print("===================header:", header)
         return base._get_id_from_header(header), name
 
     def create_policy(self, project_name, project_id, provider_id, name = None, description="It's a dragonfly policy",
@@ -42,7 +41,6 @@ class Preheat(base.Base, object):
         print("policy:",policy)
         try:
             data, status_code, header = client.create_policy_with_http_info(project_name, policy)
-            print("===================policy data:", data)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:

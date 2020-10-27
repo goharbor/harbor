@@ -118,7 +118,7 @@ class Artifact(base.Base, object):
             None: False,
         }.get(artifact, True)
 
-    def waiting_for_reference_exist(self, project_name, repo_name, reference, ignore_not_found = True, period = 60, loop_count = 8, **kwargs):
+    def waiting_for_reference_exist(self, project_name, repo_name, reference, ignore_not_found = True, period = 60, loop_count = 18, **kwargs):
         _loop_count = loop_count
         while True:
             print("Waiting for reference {} round...".format(_loop_count))
