@@ -30,15 +30,18 @@ class Project(base.Base):
             kwargs["credential"] = base.Credential('basic_auth', username, password)
         super(Project, self).__init__(**kwargs)
 
-    def create_project(self, name=None, metadata=None, expect_status_code = 201, expect_response_body = None, **kwargs):
+    def create_project(self, name=None, registry_id=None, metadata=None, expect_status_code = 201, expect_response_body = None, **kwargs):
         if name is None:
             name = base._random_name("project")
         if metadata is None:
             metadata = {}
+        if registry_id is None:
+            registry_id = registry_id
+
         client = self._get_client(**kwargs)
 
         try:
-            _, status_code, header = client.create_project_with_http_info(v2_swagger_client.ProjectReq(project_name=name, metadata=metadata))
+            _, status_code, header = client.create_project_with_http_info(v2_swagger_client.ProjectReq(project_name=name, registry_id = registry_id, metadata=metadata))
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
@@ -46,6 +49,7 @@ class Project(base.Base):
             return
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(201, status_code)
+        print("==========header:", header)
         return base._get_id_from_header(header), name
 
     def get_projects(self, params, **kwargs):

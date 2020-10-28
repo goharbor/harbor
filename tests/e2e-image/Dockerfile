@@ -2,9 +2,10 @@ FROM ubuntu:18.04
 ENV LANG C.UTF-8
 # V 2.0
 # V 2.0.1: upgrade docker to version 19.03.12
-# V 2.5 Add support for e2e py-test 
+# V 2.5 Add support for e2e py-test
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget curl gnupg2
+RUN apt-get install libseccomp2
 RUN wget  --no-check-certificate -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
 
@@ -79,6 +80,11 @@ RUN apt-get update && apt install libnss3-tools && \
     certutil -d sql:$HOME/.pki/nssdb -N -f password.ca
 
 RUN pip3 install pyasn1 google-apitools==0.5.31 gsutil robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot robotframework-JSONLibrary --upgrade
+
+
+ENV CONTAINERD_VERSION 1.3.4
+RUN wget https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CONTAINERD_VERSION}.linux-amd64.tar.gz && \
+    tar --no-overwrite-dir -C / -xzf cri-containerd-${CONTAINERD_VERSION}.linux-amd64.tar.gz
 
 # Install docker, docker compose
 RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-19.03.12.tgz && \
@@ -157,8 +163,11 @@ ENV DIND_COMMIT 3b5fac462d21ca164b3778647420016315289034
 RUN wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
     && chmod +x /usr/local/bin/dind
 
+COPY containerd_config.toml /etc/containerd/config.toml
+
 # This container needs to be run in privileged mode(run with --privileged option) to make it work
 COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
+
 RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
 
 VOLUME /var/lib/docker
