@@ -1012,7 +1012,8 @@
             "COLUMN_FIXED": "Corrigido na versão",
             "COLUMN_DESCRIPTION": "Descrição",
             "FOOT_ITEMS": "Itens",
-            "FOOT_OF": "de"
+            "FOOT_OF": "de",
+            "IN_ALLOW_LIST": "Listed In CVE Allowlist"
         },
         "CHART": {
             "SCANNING_TIME": "Tempo de conclusão da análise:",

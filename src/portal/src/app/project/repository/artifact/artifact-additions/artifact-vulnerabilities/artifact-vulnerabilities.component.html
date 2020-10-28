@@ -28,7 +28,7 @@
             <clr-dg-column [clrDgField]="'package'">{{'VULNERABILITY.GRID.COLUMN_PACKAGE' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'version'">{{'VULNERABILITY.GRID.COLUMN_VERSION' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'fix_version'">{{'VULNERABILITY.GRID.COLUMN_FIXED' | translate}}</clr-dg-column>
-
+            <clr-dg-column *ngIf="isSystemAdmin()">{{'VULNERABILITY.GRID.IN_ALLOW_LIST' | translate}}</clr-dg-column>
             <clr-dg-placeholder>
                 <span *ngIf="hasScanned();else elseBlock">{{'VULNERABILITY.STATE.OTHER_STATUS' | translate}}</span>
                 <ng-template #elseBlock>
@@ -66,6 +66,9 @@
                         <clr-icon shape="wrench" class="is-success" size="20"></clr-icon>&nbsp;<span class="font-color-green">{{res.fix_version}}</span>
                     </div>
                     <ng-template #elseBlock>{{res.fix_version}}</ng-template>
+                </clr-dg-cell>
+                <clr-dg-cell *ngIf="isSystemAdmin()">
+                    {{(isInAllowList(res.id)?"TAG_RETENTION.YES":"TAG_RETENTION.NO") | translate}}
                 </clr-dg-cell>
                 <clr-dg-row-detail *clrIfExpanded>
                     {{'VULNERABILITY.GRID.COLUMN_DESCRIPTION' | translate}}: {{res.description}}
