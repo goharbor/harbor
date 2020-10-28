@@ -1016,7 +1016,8 @@
             "COLUMN_FIXED": "Fixed in version",
             "COLUMN_DESCRIPTION": "Description",
             "FOOT_ITEMS": "Items",
-            "FOOT_OF": "of"
+            "FOOT_OF": "of",
+            "IN_ALLOW_LIST": "Listed In CVE Allowlist"
         },
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",

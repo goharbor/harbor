@@ -1016,7 +1016,8 @@
             "COLUMN_FIXED": "Sürümde düzeltildi",
             "COLUMN_DESCRIPTION": "Açıklama",
             "FOOT_ITEMS": "Öğeler",
-            "FOOT_OF": "of"
+            "FOOT_OF": "of",
+            "IN_ALLOW_LIST": "Listed In CVE Allowlist"
         },
         "CHART": {
             "SCANNING_TIME": "Tarama tamamlanma zamanı:",

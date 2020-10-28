@@ -138,6 +138,17 @@ Start Docker Daemon Locally
     Sleep  2s
     [Return]  ${handle}
 
+Start Containerd Daemon Locally
+    ${handle}=  Start Process  containerd > ./daemon-local.log 2>&1 &  shell=True
+    FOR  ${IDX}  IN RANGE  5
+        ${pid}=  Run  pidof containerd
+        Log To Console  pid: ${pid}
+        Exit For Loop If  '${pid}' != '${EMPTY}'
+        Sleep  2s
+    END
+    Sleep  2s
+    [Return]  ${handle}
+
 Prepare Docker Cert
     [Arguments]  ${ip}
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
