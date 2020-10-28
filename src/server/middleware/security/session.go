@@ -22,7 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -45,5 +44,5 @@ func (s *session) Generate(req *http.Request) security.Context {
 		return nil
 	}
 	log.Debugf("a session security context generated for request %s %s", req.Method, req.URL.Path)
-	return local.NewSecurityContext(&user, config.GlobalProjectMgr)
+	return local.NewSecurityContext(&user)
 }

@@ -27,10 +27,19 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 )
 
-// Params ...
+// NewCondition alias function of orm.NewCondition
+var NewCondition = orm.NewCondition
+
+// Condition alias to orm.Condition
+type Condition = orm.Condition
+
+// Params alias to orm.Params
 type Params = orm.Params
 
-// QuerySeter ...
+// ParamsList alias to orm.ParamsList
+type ParamsList = orm.ParamsList
+
+// QuerySeter alias to orm.QuerySeter
 type QuerySeter = orm.QuerySeter
 
 // Escape special characters

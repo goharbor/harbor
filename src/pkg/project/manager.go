@@ -46,6 +46,9 @@ type Manager interface {
 
 	// List projects according to the query
 	List(ctx context.Context, query *q.Query) ([]*models.Project, error)
+
+	// ListRoles returns the roles of user for the specific project
+	ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error)
 }
 
 // New returns a default implementation of Manager
@@ -110,4 +113,9 @@ func (m *manager) Get(ctx context.Context, idOrName interface{}) (*models.Projec
 // List projects according to the query
 func (m *manager) List(ctx context.Context, query *q.Query) ([]*models.Project, error) {
 	return m.dao.List(ctx, query)
+}
+
+// Lists the roles of user for the specific project
+func (m *manager) ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error) {
+	return m.dao.ListRoles(ctx, projectID, userID, groupIDs...)
 }

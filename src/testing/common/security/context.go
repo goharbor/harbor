@@ -3,6 +3,8 @@
 package security
 
 import (
+	context "context"
+
 	mock "github.com/stretchr/testify/mock"
 
 	types "github.com/goharbor/harbor/src/pkg/permission/types"
@@ -13,13 +15,13 @@ type Context struct {
 	mock.Mock
 }
 
-// Can provides a mock function with given fields: action, resource
-func (_m *Context) Can(action types.Action, resource types.Resource) bool {
-	ret := _m.Called(action, resource)
+// Can provides a mock function with given fields: ctx, action, resource
+func (_m *Context) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
+	ret := _m.Called(ctx, action, resource)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(types.Action, types.Resource) bool); ok {
-		r0 = rf(action, resource)
+	if rf, ok := ret.Get(0).(func(context.Context, types.Action, types.Resource) bool); ok {
+		r0 = rf(ctx, action, resource)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}

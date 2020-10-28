@@ -15,6 +15,7 @@
 package rbac
 
 import (
+	"context"
 	"sync"
 
 	"github.com/casbin/casbin"
@@ -32,7 +33,7 @@ type Evaluator struct {
 }
 
 // HasPermission returns true when the rbac user has action permission for the resource
-func (e *Evaluator) HasPermission(resource types.Resource, action types.Action) bool {
+func (e *Evaluator) HasPermission(ctx context.Context, resource types.Resource, action types.Action) bool {
 	e.once.Do(func() {
 		e.enforcer = makeEnforcer(e.rbacUser)
 	})

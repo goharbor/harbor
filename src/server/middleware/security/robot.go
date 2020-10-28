@@ -21,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/security"
 	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	pkgrobot "github.com/goharbor/harbor/src/pkg/robot"
 	pkg_token "github.com/goharbor/harbor/src/pkg/token"
@@ -66,5 +65,5 @@ func (r *robot) Generate(req *http.Request) security.Context {
 		return nil
 	}
 	log.Debugf("a robot security context generated for request %s %s", req.Method, req.URL.Path)
-	return robotCtx.NewSecurityContext(robot, config.GlobalProjectMgr, rtk.Claims.(*robot_claim.Claim).Access)
+	return robotCtx.NewSecurityContext(robot, rtk.Claims.(*robot_claim.Claim).Access)
 }

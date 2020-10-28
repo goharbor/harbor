@@ -15,6 +15,7 @@
 package token
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -24,8 +25,9 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -127,19 +129,21 @@ func parseImg(s string) (*image, error) {
 
 // An accessFilter will filter access based on userinfo
 type accessFilter interface {
-	filter(ctx security.Context, pm promgr.ProjectManager, a *token.ResourceActions) error
+	filter(ctx context.Context, ctl project.Controller, a *token.ResourceActions) error
 }
 
 type registryFilter struct {
 }
 
-func (reg registryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
+func (reg registryFilter) filter(ctx context.Context, ctl project.Controller,
 	a *token.ResourceActions) error {
 	// Do not filter if the request is to access registry catalog
 	if a.Name != "catalog" {
 		return fmt.Errorf("Unable to handle, type: %s, name: %s", a.Type, a.Name)
 	}
-	if !ctx.IsSysAdmin() {
+
+	secCtx, ok := security.FromContext(ctx)
+	if !ok || !secCtx.IsSysAdmin() {
 		// Set the actions to empty is the user is not admin
 		a.Actions = []string{}
 	}
@@ -151,7 +155,7 @@ type repositoryFilter struct {
 	parser imageParser
 }
 
-func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
+func (rep repositoryFilter) filter(ctx context.Context, ctl project.Controller,
 	a *token.ResourceActions) error {
 	// clear action list to assign to new acess element after perm check.
 	img, err := rep.parser.parse(a.Name)
@@ -161,24 +165,26 @@ func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManage
 	projectName := img.namespace
 	permission := ""
 
-	project, err := pm.Get(projectName)
+	project, err := ctl.GetByName(ctx, projectName)
 	if err != nil {
+		if errors.IsNotFoundErr(err) {
+			log.Debugf("project %s does not exist, set empty permission", projectName)
+			a.Actions = []string{}
+			return nil
+		}
 		return err
 	}
-	if project == nil {
-		log.Debugf("project %s does not exist, set empty permission", projectName)
-		a.Actions = []string{}
-		return nil
-	}
+
+	secCtx, _ := security.FromContext(ctx)
 
 	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(rbac.ResourceRepository)
-	if ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource) {
+	if secCtx.Can(ctx, rbac.ActionPush, resource) && secCtx.Can(ctx, rbac.ActionPull, resource) {
 		permission = "RWM"
-	} else if ctx.Can(rbac.ActionPush, resource) {
+	} else if secCtx.Can(ctx, rbac.ActionPush, resource) {
 		permission = "RW"
-	} else if ctx.Can(rbac.ActionScannerPull, resource) {
+	} else if secCtx.Can(ctx, rbac.ActionScannerPull, resource) {
 		permission = "RS"
-	} else if ctx.Can(rbac.ActionPull, resource) {
+	} else if secCtx.Can(ctx, rbac.ActionPull, resource) {
 		permission = "R"
 	}
 
@@ -207,8 +213,6 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 		return nil, fmt.Errorf("failed to  get security context from request")
 	}
 
-	pm := config.GlobalProjectMgr
-
 	// for docker login
 	if !ctx.IsAuthenticated() {
 		if len(scopes) == 0 {
@@ -216,7 +220,7 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 		}
 	}
 	access := GetResourceActions(scopes)
-	err = filterAccess(access, ctx, pm, g.filterMap)
+	err = filterAccess(r.Context(), access, project.Ctl, g.filterMap)
 	if err != nil {
 		return nil, err
 	}

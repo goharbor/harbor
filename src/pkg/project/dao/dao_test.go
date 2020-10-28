@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -334,6 +335,58 @@ func (suite *DaoTestSuite) TestListByMember() {
 				projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"member": memberQuery}))
 				suite.Nil(err)
 				suite.Len(projects, 2)
+			})
+		})
+	}
+}
+
+func (suite *DaoTestSuite) TestListRoles() {
+	{
+		// only projectAdmin
+		suite.WithUser(func(userID int64, username string) {
+			project := &models.Project{
+				Name:    utils.GenerateRandomString(),
+				OwnerID: int(userID),
+			}
+			projectID, err := suite.dao.Create(orm.Context(), project)
+			suite.Nil(err)
+			defer suite.dao.Delete(orm.Context(), projectID)
+
+			roles, err := suite.dao.ListRoles(orm.Context(), projectID, int(userID))
+			suite.Nil(err)
+			suite.Len(roles, 1)
+			suite.Contains(roles, common.RoleProjectAdmin)
+		})
+	}
+
+	{
+		// projectAdmin and user groups
+		suite.WithUser(func(userID int64, username string) {
+			project := &models.Project{
+				Name:    utils.GenerateRandomString(),
+				OwnerID: int(userID),
+			}
+			projectID, err := suite.dao.Create(orm.Context(), project)
+			suite.Nil(err)
+
+			defer suite.dao.Delete(orm.Context(), projectID)
+
+			suite.WithUserGroup(func(groupID int64, groupName string) {
+
+				o, err := orm.FromContext(orm.Context())
+				if err != nil {
+					suite.Fail("got error %v", err)
+				}
+
+				var pid int64
+				suite.Nil(o.Raw("INSERT INTO project_member (project_id, entity_id, role, entity_type) values (?, ?, ?, ?) RETURNING id", projectID, groupID, common.RoleGuest, "g").QueryRow(&pid))
+				defer o.Raw("DELETE FROM project_member WHERE id = ?", pid)
+
+				roles, err := suite.dao.ListRoles(orm.Context(), projectID, int(userID), int(groupID))
+				suite.Nil(err)
+				suite.Len(roles, 2)
+				suite.Contains(roles, common.RoleProjectAdmin)
+				suite.Contains(roles, common.RoleGuest)
 			})
 		})
 	}
