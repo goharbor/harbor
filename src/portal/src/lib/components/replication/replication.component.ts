@@ -178,6 +178,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
                       this.totalCount = parseInt(xHeader, 0);
                   }
               }
+              this.listReplicationRule.selectedRow = null; // Clear selection
               this.listReplicationRule.rules = response.body as ReplicationRule[];
               this.listReplicationRule.loading = false;
             }, error => {
