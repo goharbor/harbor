@@ -208,10 +208,15 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
       instance.vendor = this.model.vendor;
       instance.name = this.model.name;
       instance.endpoint = this.model.endpoint;
+      instance.insecure = this.model.insecure;
       instance.enabled = this.model.enabled;
-      instance.description = this.model.description;
       instance.auth_mode = this.model.auth_mode;
-      instance.auth_info = this.model.auth_info;
+      instance.description = this.model.description;
+      if (instance.auth_mode !== AuthMode.NONE) {
+        instance.auth_info = this.authData;
+      } else {
+        delete instance.auth_info;
+      }
       this.distributionService.UpdateInstance({preheatInstanceName: this.model.name, instance: this.handleInstance(instance)
         }).subscribe(
         response => {
@@ -247,6 +252,8 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
       } else {
         delete this.model.auth_info;
       }
+      // set insure property to true or false
+      this.model.insecure = !!this.model.insecure;
       this.distributionService.CreateInstance({instance: this.model}).subscribe(
         response => {
           this.translate.get('DISTRIBUTION.CREATE_SUCCESS').subscribe(msg => {
@@ -278,6 +285,9 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
     if (editingMode) {
       this.model = clone(data);
       this.originModelForEdit = clone(data);
+      // set insure property to true or false
+      this.originModelForEdit.insecure = !!data.insecure;
+      this.model.insecure = !!data.insecure;
       this.authData = this.model.auth_info || {};
     } else {
       this.reset();
