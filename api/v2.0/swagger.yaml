@@ -957,9 +957,7 @@ paths:
             $ref: '#/definitions/Instance'
       responses:
         '201':
-          description: Response to insatnce created
-          schema:
-            $ref: '#/definitions/InstanceCreatedResp'
+          $ref: '#/responses/201'
         '400':
           $ref: '#/responses/400'
         '401':
@@ -1008,9 +1006,7 @@ paths:
         - $ref: '#/parameters/instanceName'
       responses:
         '200':
-          description: Instance ID deleted
-          schema:
-            $ref: '#/definitions/InstanceDeletedResp'
+          $ref: '#/responses/200'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -1036,9 +1032,7 @@ paths:
             $ref: '#/definitions/Instance'
       responses:
         '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/InstanceUpdateResp'
+          $ref: '#/responses/200'
         '400':
           $ref: '#/responses/400'
         '401':
@@ -2015,24 +2009,6 @@ definitions:
         type: integer
         format: int64
         description: The timestamp of instance setting up
-  InstanceUpdateResp:
-    type: object
-    properties:
-      updated:
-        type: integer
-        description: ID of instance updated
-  InstanceDeletedResp:
-    type: object
-    properties:
-      removed:
-        type: integer
-        description: ID of instance removed
-  InstanceCreatedResp:
-    type: object
-    properties:
-      id:
-        type: integer
-        description: ID of instance created
   PreheatPolicy:
     type: object
     properties:
