@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -68,7 +69,9 @@ func (api *preheatAPI) CreateInstance(ctx context.Context, params operation.Crea
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
-	return operation.NewCreateInstanceCreated()
+
+	location := fmt.Sprintf("%s/%s", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), instance.Name)
+	return operation.NewCreateInstanceCreated().WithLocation(location)
 }
 
 func (api *preheatAPI) DeleteInstance(ctx context.Context, params operation.DeleteInstanceParams) middleware.Responder {
@@ -238,7 +241,9 @@ func (api *preheatAPI) CreatePolicy(ctx context.Context, params operation.Create
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
-	return operation.NewCreatePolicyCreated()
+
+	location := fmt.Sprintf("%s/%s", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), policy.Name)
+	return operation.NewCreatePolicyCreated().WithLocation(location)
 }
 
 // UpdatePolicy is Update preheat policy
