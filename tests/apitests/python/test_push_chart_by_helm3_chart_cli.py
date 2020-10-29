@@ -76,8 +76,8 @@ class TestProjects(unittest.TestCase):
 
         #5.1 Get chart(CA) by reference successfully;
         artifact = self.artifact.get_reference_info(TestProjects.project_push_chart_name, self.repo_name, self.verion, **TestProjects.USER_CLIENT)
-        self.assertEqual(artifact[0].type, 'CHART')
-        self.assertEqual(artifact[0].tags[0].name, self.verion)
+        self.assertEqual(artifact.type, 'CHART')
+        self.assertEqual(artifact.tags[0].name, self.verion)
 
         #5.2 Chart bundle can be pulled by ctr successfully;
         #oci_ref = harbor_server+"/"+TestProjects.project_push_chart_name+"/"+self.repo_name+":"+self.verion
