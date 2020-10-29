@@ -133,12 +133,11 @@ class DockerAPI(object):
 
     def docker_image_push(self, harbor_registry, tag, expected_error_message = None):
         caught_err = False
-        ret = ""
+        ret = None
         if expected_error_message is "":
             expected_error_message = None
         try:
-            self.DCLIENT.push(harbor_registry, tag)
-            return ret
+            ret = self.DCLIENT.push(harbor_registry, tag)
         except Exception as err:
             caught_err = True
             if expected_error_message is not None:

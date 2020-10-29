@@ -22,12 +22,15 @@ class Artifact(base.Base, object):
             params["with_tag"] = kwargs["with_tag"]
         if "with_scan_overview" in kwargs:
             params["with_scan_overview"] = kwargs["with_scan_overview"]
+        if "with_immutable_status" in kwargs:
+            params["with_immutable_status"] = kwargs["with_immutable_status"]
 
         try:
-            return client.get_artifact_with_http_info(project_name, repo_name, reference, **params)
+            data, status_code, _ = client.get_artifact_with_http_info(project_name, repo_name, reference, **params)
+            return data
         except ApiException as e:
             if e.status == 404 and ignore_not_found == True:
-                return []
+                return None
 
     def delete_artifact(self, project_name, repo_name, reference, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
@@ -62,10 +65,10 @@ class Artifact(base.Base, object):
             if expect_response_body is not None:
                 base._assert_status_body(expect_response_body, e.body)
             return
-
-        base._assert_status_code(expect_status_code, status_code)
-        base._assert_status_code(201, status_code)
-        return data
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            base._assert_status_code(201, status_code)
+            return data
 
     def create_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 201, ignore_conflict = False, **kwargs):
         client = self._get_client(**kwargs)
@@ -75,12 +78,19 @@ class Artifact(base.Base, object):
         except ApiException as e:
             if e.status == 409 and ignore_conflict == True:
                 return
-        base._assert_status_code(expect_status_code, status_code)
+            else:
+                raise Exception("Create tag error, {}.".format(e.body))
+        else:
+            base._assert_status_code(expect_status_code, status_code)
 
     def delete_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
-        _, status_code, _ = client.delete_tag_with_http_info(project_name, repo_name, reference, tag_name)
-        base._assert_status_code(expect_status_code, status_code)
+        try:
+            _, status_code, _ = client.delete_tag_with_http_info(project_name, repo_name, reference, tag_name)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
 
     def check_image_scan_result(self, project_name, repo_name, reference, expected_scan_status = "Success", **kwargs):
         timeout_count = 30

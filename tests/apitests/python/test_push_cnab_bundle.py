@@ -92,8 +92,8 @@ class TestProjects(unittest.TestCase):
         artifact = self.artifact.get_reference_info(TestProjects.project_push_bundle_name, self.cnab_repo_name, reference_sha256, **TestProjects.USER_CLIENT)
 
         #8. Verify artifact information;
-        self.assertEqual(artifact[0].type, 'CNAB')
-        self.assertEqual(artifact[0].digest, reference_sha256)
+        self.assertEqual(artifact.type, 'CNAB')
+        self.assertEqual(artifact.digest, reference_sha256)
 
 if __name__ == '__main__':
     unittest.main()
