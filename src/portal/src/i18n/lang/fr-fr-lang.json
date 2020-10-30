@@ -627,7 +627,8 @@
         "DELETED_FAILED": "Echec de la suppression du point final",
         "CANNOT_EDIT": "Le point final ne peut pas être modifié tant que la règle de réplication est activée.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Echec de la suppression du point final en cours d'utilisation",
-        "PLACEHOLDER": "Nous n'avons trouvé aucun point final !"
+        "PLACEHOLDER": "Nous n'avons trouvé aucun point final !",
+        "DEPRECATED": "Helm Hub is moving to Artifact Hub"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copier le Résumé",
