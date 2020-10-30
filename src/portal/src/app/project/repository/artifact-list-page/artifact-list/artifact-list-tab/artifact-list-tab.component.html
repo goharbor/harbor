@@ -47,7 +47,7 @@
                         </div>
                         <div class="flex-xs-middle">
                         <hbr-filter [withDivider]="true" [readonly]="isFilterReadonly"
-                            filterPlaceholder="{{'ARTIFACT.FILTER_FOR_ARTIFACTS' | translate}}"
+                            filterPlaceholder="{{getFilterPlaceholder() | translate}}"
                             (filterEvt)="doSearchArtifactByFilter($event)" (openFlag)="openFlagEvent($event)"
                             [currentValue]="lastFilteredTagName">
                         </hbr-filter>
