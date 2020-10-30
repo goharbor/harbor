@@ -14,7 +14,7 @@
       <clr-select-container>
         <label class="required">{{'DESTINATION.PROVIDER' | translate}}</label>
         <select clrSelect name="adapter" id="adapter" (change)="adapterChange($event)" [(ngModel)]="target.type" [disabled]="testOngoing || editDisabled">
-          <option *ngFor="let adapter of adapterList" value="{{adapter}}">{{getAdapterText(adapter)}}</option>
+          <option [ngClass]="{hidden: shouldHide(adapter)}" *ngFor="let adapter of adapterList" value="{{adapter}}">{{getAdapterText(adapter)}}</option>
         </select>
       </clr-select-container>
       <!-- Endpoint name -->

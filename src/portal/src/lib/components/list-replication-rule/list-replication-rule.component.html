@@ -1,5 +1,5 @@
 <div  class="list-rule">
-<clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" (clrDgSingleSelectedChange)="selectRule($event)" [clrDgRowSelection]="true">
+<clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" (clrDgSingleSelectedChange)="selectRule($event)">
     <clr-dg-action-bar>
         <button type="button" id="new_replication_rule_id" class="btn  btn-secondary" *ngIf="hasCreateReplicationPermission" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
         <button type="button" id="replication_exe_id" class="btn  btn-secondary" *ngIf="hasExecuteReplicationPermission" [disabled]="!selectedRow" (click)="replicateRule(selectedRow)"><clr-icon shape="export" size="16"></clr-icon>&nbsp;{{'REPLICATION.REPLICATE' | translate}}</button>
@@ -63,7 +63,15 @@
             </div>
         </clr-dg-cell>
         <clr-dg-cell class="col-width">
-            {{p.src_registry ? p.src_registry.name : ''}}
+            <span class="margin-right-2px">{{p.src_registry ? p.src_registry.name : ''}}</span>
+            <clr-signpost *ngIf="isHelmHub(p.src_registry)">
+                <clr-icon clrSignpostTrigger
+                          class="color-red" shape="error-standard"></clr-icon>
+                <clr-signpost-content *clrIfOpen>
+                    <a href="https://helm.sh/blog/helm-hub-moving-to-artifact-hub"
+                       target="_blank">{{'DESTINATION.DEPRECATED' | translate}}</a>
+                </clr-signpost-content>
+            </clr-signpost>
         </clr-dg-cell>
         <clr-dg-cell class="col-width">	
             {{p.src_registry && p.src_registry.id > 0 ? 'pull-based' : 'push-based'}}	

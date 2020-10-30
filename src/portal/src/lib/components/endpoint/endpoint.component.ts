@@ -24,7 +24,7 @@ import { TranslateService } from "@ngx-translate/core";
 import { Comparator } from "../../services/interface";
 
 import { Endpoint } from "../../services/interface";
-import { EndpointService } from "../../services/endpoint.service";
+import {EndpointService, HELM_HUB} from "../../services/endpoint.service";
 
 import { ErrorHandler } from "../../utils/error-handler";
 import { map, catchError, finalize } from "rxjs/operators";
@@ -242,5 +242,8 @@ export class EndpointComponent implements OnInit, OnDestroy {
 
     getAdapterText(adapter: string): string {
         return this.endpointService.getAdapterText(adapter);
+    }
+    isHelmHub(str: string): boolean {
+        return str === HELM_HUB;
     }
 }

@@ -659,7 +659,8 @@
         "DELETED_FAILED": "Ha fallado la eliminación del endpoint.",
         "CANNOT_EDIT": "El endpoint no puede ser cambiado mientras la regla de replicación está activa.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Fallo al eliminar el endpoint en uso.",
-        "PLACEHOLDER": "We couldn't find any endpoints!"
+        "PLACEHOLDER": "We couldn't find any endpoints!",
+        "DEPRECATED": "Helm Hub is moving to Artifact Hub"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copy Digest",

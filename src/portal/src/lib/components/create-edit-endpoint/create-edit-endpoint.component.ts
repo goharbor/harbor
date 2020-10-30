@@ -25,7 +25,7 @@ import { NgForm } from "@angular/forms";
 import { Subscription, throwError as observableThrowError } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 
-import { EndpointService } from "../../services/endpoint.service";
+import {EndpointService, HELM_HUB} from "../../services/endpoint.service";
 import { ErrorHandler } from "../../utils/error-handler";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { Endpoint, PingEndpoint } from "../../services/interface";
@@ -37,7 +37,6 @@ import { AppConfigService } from '../../../app/services/app-config.service';
 const FAKE_PASSWORD = "rjGcfuRu";
 const FAKE_JSON_KEY = "No Change";
 const METADATA_URL = CURRENT_BASE_HREF + "/replication/adapterinfos";
-const HELM_HUB = "helm-hub";
 const FIXED_PATTERN_TYPE: string = "EndpointPatternTypeFix";
 @Component({
   selector: "hbr-create-edit-endpoint",
@@ -484,5 +483,9 @@ export class CreateEditEndpointComponent
 
   getAdapterText(adapter: string): string {
     return this.endpointService.getAdapterText(adapter);
+  }
+  // hide helm hub option when creating registry
+  shouldHide(adapter: string) {
+    return adapter === HELM_HUB && !this.endpointId;
   }
 }

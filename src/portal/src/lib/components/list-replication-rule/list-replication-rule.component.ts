@@ -21,7 +21,7 @@ import {
 import { TranslateService } from "@ngx-translate/core";
 import { map, catchError, finalize } from "rxjs/operators";
 import { Observable, forkJoin, throwError as observableThrowError } from "rxjs";
-import { ReplicationService } from "../../services";
+import {HELM_HUB, ReplicationService} from "../../services";
 import {
     ReplicationRule
 } from "../../services";
@@ -256,5 +256,8 @@ export class ListReplicationRuleComponent  {
         this.selectedRow = null;
         this.ruleName = "";
         this.clrLoad();
+    }
+    isHelmHub(srcRegistry: any): boolean {
+      return srcRegistry && srcRegistry.type === HELM_HUB;
     }
 }
