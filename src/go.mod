@@ -18,7 +18,6 @@ require (
 	github.com/bugsnag/bugsnag-go v1.5.2 // indirect
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/casbin/casbin v1.7.0
-	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e // indirect
 	github.com/coreos/go-oidc v2.1.0+incompatible
 	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
@@ -56,17 +55,16 @@ require (
 	github.com/olekukonko/tablewriter v0.0.1
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.1
-	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
-	github.com/prometheus/client_golang v1.0.0
+	github.com/prometheus/client_golang v1.8.0
 	github.com/robfig/cron v1.0.0
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
 	github.com/spf13/viper v1.4.0 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/theupdateframework/notary v0.6.1
-	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
-	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gopkg.in/asn1-ber.v1 v1.0.0-20150924051756-4e86f4367175
 	gopkg.in/dancannon/gorethink.v3 v3.0.5 // indirect
@@ -74,7 +72,7 @@ require (
 	gopkg.in/gorethink/gorethink.v3 v3.0.5 // indirect
 	gopkg.in/ldap.v2 v2.5.0
 	gopkg.in/square/go-jose.v2 v2.3.0 // indirect
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.3.0
 	helm.sh/helm/v3 v3.1.1
 	k8s.io/api v0.17.3
 	k8s.io/apimachinery v0.17.3
