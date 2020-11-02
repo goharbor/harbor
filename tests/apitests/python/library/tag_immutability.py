@@ -42,25 +42,19 @@ class Tag_Immutability(base.Base):
 
     def list_tag_immutability_policy_rules(self, project_id, **kwargs):
         client = self._get_client(**kwargs)
-        data = []
         return client.projects_project_id_immutabletagrules_get(project_id)
 
     def get_rule(self, project_id, rule_id, **kwargs):
         rules = self.list_tag_immutability_policy_rules(project_id, **kwargs)
-        exist = False
         for r in rules:
             if r.id == rule_id:
                 return r
-                break
-        else:
-            return None
+        return None
 
     def update_tag_immutability_policy_rule(self, project_id, rule_id, selector_repository_decoration = None,
                                             selector_repository=None, selector_tag_decoration = None,
                                             selector_tag=None, disabled = None, expect_status_code = 200, **kwargs):
         rule = self.get_rule( project_id, rule_id,**kwargs)
-        print("==========rule:", rule)
-        print("------------------disabled:", disabled)
         if selector_repository_decoration:
             rule.scope_selectors["repository"][0].decoration = selector_repository_decoration
         if selector_repository:
@@ -70,9 +64,7 @@ class Tag_Immutability(base.Base):
         if selector_tag:
             rule.tag_selectors[0].pattern = selector_tag
         if disabled is not None:
-            print("**************:", rule)
             rule.disabled = disabled
-        print("=========2222=rule:", rule)
         client = self._get_client(**kwargs)
         try:
             _, status_code, header = client.projects_project_id_immutabletagrules_id_put_with_http_info(project_id, rule_id, rule)
