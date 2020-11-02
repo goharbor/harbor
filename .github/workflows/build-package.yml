@@ -95,7 +95,7 @@ jobs:
           uploader ${harbor_online_build_bundle}.asc        $harbor_target_bucket
           uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
           uploader harbor-offline-installer-latest.tgz.asc  $harbor_target_bucket
-          echo "::set-env name=BUILD_BUNDLE::$harbor_offline_build_bundle"
+          echo "BUILD_BUNDLE=$harbor_offline_build_bundle" >> $GITHUB_ENV
       - name: Slack Notification
         uses: sonots/slack-notice-action@v3
         with:
