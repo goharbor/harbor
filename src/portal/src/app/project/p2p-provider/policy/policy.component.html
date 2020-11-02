@@ -31,6 +31,15 @@
                                            class="margin-left-5px">{{'P2P_PROVIDER.EXECUTE' | translate}}</span>
                                 </span>
                             </button>
+                            <button clrDropdownItem
+                                    class="btn  btn-secondary"
+                                    [disabled]="!selectedRow  || !hasUpdatePermission"
+                                    (click)="editPolicy()">
+                                <span>
+                                    <clr-icon class="margin-top-0" size="16" shape="pencil"></clr-icon>
+                                    <span id="edit-policy" class="margin-left-5px">{{'BUTTON.EDIT' | translate}}</span>
+                                </span>
+                            </button>
                             <button class="btn  btn-secondary" clrDropdownItem (click)="switchStatus()"
                                     [disabled]="!selectedRow || !hasUpdatePermission">
                                   <span id="toggle-policy">
@@ -43,15 +52,6 @@
                                           <span class="margin-left-5px">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
                                        </span>
                                   </span>
-                            </button>
-                            <button clrDropdownItem
-                                    class="btn  btn-secondary"
-                                    [disabled]="!selectedRow  || !hasUpdatePermission"
-                                    (click)="editPolicy()">
-                                <span>
-                                    <clr-icon class="margin-top-0" size="16" shape="pencil"></clr-icon>
-                                    <span id="edit-policy" class="margin-left-5px">{{'BUTTON.EDIT' | translate}}</span>
-                                </span>
                             </button>
                             <div class="dropdown-divider"></div>
                             <button clrDropdownItem (click)="deletePolicy()"
