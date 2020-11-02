@@ -250,11 +250,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           if (this.filterName.length) {
             this.filterOnGoing = true;
             this.imageFilterLabels.forEach(data => {
-              if (data.label.name.indexOf(this.filterName) !== -1) {
-                data.show = true;
-              } else {
-                data.show = false;
-              }
+              data.show = data.label.name.indexOf(this.filterName) !== -1;
             });
           }
         });
@@ -267,11 +263,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           if (this.stickName.length) {
             this.filterOnGoing = true;
             this.imageStickLabels.forEach(data => {
-              if (data.label.name.indexOf(this.stickName) !== -1) {
-                data.show = true;
-              } else {
-                data.show = false;
-              }
+              data.show = data.label.name.indexOf(this.stickName) !== -1;
             });
           }
         });
@@ -562,21 +554,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
   filterLabel(labelInfo: LabelState): void {
     let labelId = labelInfo.label.id;
-    // insert the unselected label to groups with the same icons
-    let preLabelInfo = this.imageFilterLabels.find(data => data.label.id === this.filterOneLabel.id);
-    if (preLabelInfo) {
-      this.sortOperation(this.imageFilterLabels, preLabelInfo);
-    }
-
     this.imageFilterLabels.filter(data => {
-      if (data.label.id !== labelId) {
-        data.iconsShow = false;
-      } else {
-        data.iconsShow = true;
-      }
+      data.iconsShow = data.label.id === labelId;
     });
-    this.imageFilterLabels.splice(this.imageFilterLabels.indexOf(labelInfo), 1);
-    this.imageFilterLabels.unshift(labelInfo);
     this.filterOneLabel = labelInfo.label;
 
     // reload data
@@ -595,12 +575,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
 
   unFilterLabel(labelInfo: LabelState): void {
-    // insert the unselected label to groups with the same icons
-    this.sortOperation(this.imageFilterLabels, labelInfo);
-
     this.filterOneLabel = this.initFilter;
     labelInfo.iconsShow = false;
-
     // reload data
     this.currentPage = 1;
     let st: ClrDatagridStateInterface = this.currentState;
@@ -618,20 +594,31 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   closeFilter(): void {
     this.openLabelFilterPanel = false;
   }
-
+  reSortImageFilterLabels() {
+    if (this.imageFilterLabels && this.imageFilterLabels.length) {
+      for (let i = 0; i < this.imageFilterLabels.length; i++) {
+        if (this.imageFilterLabels[i].iconsShow) {
+          const arr: LabelState[] = this.imageFilterLabels.splice(i, 1);
+          this.imageFilterLabels.unshift(...arr);
+          break;
+        }
+      }
+    }
+  }
+  getFilterPlaceholder(): string {
+    return this.showlabel ? "" : 'ARTIFACT.FILTER_FOR_ARTIFACTS';
+  }
   openFlagEvent(isOpen: boolean): void {
     if (isOpen) {
       this.openLabelFilterPanel = true;
+      // every time  when filer panel opens, resort imageFilterLabels labels
+      this.reSortImageFilterLabels();
       this.openLabelFilterPiece = true;
       this.openSelectFilterPiece = true;
       this.filterName = '';
       // redisplay all labels
       this.imageFilterLabels.forEach(data => {
-        if (data.label.name.indexOf(this.filterName) !== -1) {
-          data.show = true;
-        } else {
-          data.show = false;
-        }
+        data.show = data.label.name.indexOf(this.filterName) !== -1;
       });
     } else {
       this.openLabelFilterPanel = false;
@@ -957,6 +944,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     this.lastFilteredTagName = '';
     if (this.filterByType === 'labels') {
       this.openLabelFilterPanel = true;
+      // every time  when filer panel opens, resort imageFilterLabels labels
+      this.reSortImageFilterLabels();
       this.openLabelFilterPiece = true;
     } else {
       this.openLabelFilterPiece = false;
