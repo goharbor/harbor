@@ -13,20 +13,20 @@
                     <button type="button" class="btn  btn-secondary" (click)="editRule(selectedRow)"
                             [disabled]="!selectedRow">
                         <clr-icon shape="edit" size="16"></clr-icon>&nbsp;
-                        <span id="edit_replication_rule_id">{{'REPLICATION.EDIT_POLICY' | translate}}</span>
+                        <span id="edit_replication_rule_id">{{'BUTTON.EDIT' | translate}}</span>
                     </button>
-                    <button type="button" class="btn  btn-secondary" (click)="operateRule('enable', selectedRow)"
+                    <button *ngIf="selectedRow && !selectedRow.enabled" type="button" class="btn  btn-secondary" (click)="operateRule('enable', selectedRow)"
                             [disabled]="!(selectedRow && !selectedRow.enabled)">
-                        <clr-icon shape="connect" size="16"></clr-icon>&nbsp;
-                        <span id="rule-enable">{{'DISTRIBUTION.ENABLE_ACTION' | translate}}</span>
+                        <clr-icon size="16" shape="success-standard"></clr-icon>&nbsp;
+                        <span id="rule-enable">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</span>
                     </button>
-                    <button
+                    <button *ngIf="(!selectedRow) || (selectedRow && selectedRow.enabled)"
                             type="button"
                             class="btn btn-secondary"
                             (click)="operateRule('disable', selectedRow)"
                             [disabled]="!(selectedRow && selectedRow.enabled)">
-                        <clr-icon shape="disconnect" size="16"></clr-icon>&nbsp;
-                        <span id="rule-disable">{{'DISTRIBUTION.DISABLE_ACTION' | translate}}</span>
+                        <clr-icon size="16" shape="ban"></clr-icon>&nbsp;
+                        <span id="rule-disable">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
                     </button>
                     <div class="dropdown-divider"></div>
                     <button
@@ -35,7 +35,7 @@
                             (click)="deleteRule(selectedRow)"
                             [disabled]="!selectedRow">
                         <clr-icon shape="window-close" size="16"></clr-icon>&nbsp;
-                        <span id="delete_replication_rule_id">{{'REPLICATION.DELETE_POLICY' | translate}}</span>
+                        <span id="delete_replication_rule_id">{{'BUTTON.DELETE' | translate}}</span>
                     </button>
                 </clr-dropdown>
             </clr-dropdown-menu>

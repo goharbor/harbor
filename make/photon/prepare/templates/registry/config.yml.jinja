@@ -41,7 +41,14 @@ http:
 {% endif %}
   secret: placeholder
   debug:
+{% if metric.enabled %}
+    addr: :{{ metric.port }}
+    prometheus:
+      enabled: true
+      path: {{ metric.path }}
+{% else %}
     addr: localhost:5001
+{% endif %}
 auth:
   htpasswd:
     realm: harbor-registry-basic-realm

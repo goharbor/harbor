@@ -239,5 +239,22 @@ http {
       listen 8080;
       #server_name harbordomain.com;
       return 308 https://{{https_redirect}}$request_uri;
-  } 
+  }
+  {% if metric.enabled %}
+  upstream core_metrics {
+    server core:{{ metric.port }};
+  }
+
+  upstream registry_metrics {
+    server registry:{{ metric.port }};
+  }
+  server {
+    listen 9090;
+    location = {{ metric.path }} {
+      if ($arg_comp = core) { proxy_pass http://core_metrics; }
+      if ($arg_comp = registry) { proxy_pass http://registry_metrics; }
+      proxy_pass http://core_metrics;
+    }
+  }
+  {% endif %}
 }

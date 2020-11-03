@@ -61,4 +61,9 @@ def prepare_docker_compose(configs, with_clair, with_trivy, with_notary, with_ch
     if log_ep_host:
         rendering_variables['external_log_endpoint'] = True
 
+    # for metrics
+    metric = configs.get('metric')
+    if metric:
+        rendering_variables['metric'] = metric
+
     render_jinja(docker_compose_template_path, docker_compose_yml_path,  mode=0o644, **rendering_variables)

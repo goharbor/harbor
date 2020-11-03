@@ -153,6 +153,9 @@ var (
 		{Name: common.RobotTokenDuration, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_TOKEN_DURATION", DefaultValue: "43200", ItemType: &IntType{}, Editable: true},
 		{Name: common.RobotNamePrefix, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_NAME_PREFIX", DefaultValue: "robot$", ItemType: &StringType{}, Editable: true},
 		{Name: common.NotificationEnable, Scope: UserScope, Group: BasicGroup, EnvKey: "NOTIFICATION_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true},
+		{Name: common.MetricEnable, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_ENABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
+		{Name: common.MetricPort, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_PORT", DefaultValue: "9090", ItemType: &IntType{}, Editable: true},
+		{Name: common.MetricPath, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_PATH", DefaultValue: "/metrics", ItemType: &StringType{}, Editable: true},
 
 		{Name: common.QuotaPerProjectEnable, Scope: UserScope, Group: QuotaGroup, EnvKey: "QUOTA_PER_PROJECT_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true},
 		{Name: common.CountPerProject, Scope: UserScope, Group: QuotaGroup, EnvKey: "COUNT_PER_PROJECT", DefaultValue: "-1", ItemType: &QuotaType{}, Editable: true},
