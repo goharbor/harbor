@@ -214,7 +214,7 @@ func init() {
 	mockServer := test.NewJobServiceServer()
 	defer mockServer.Close()
 
-	chain := middleware.Chain(orm.Middleware(), security.Middleware())
+	chain := middleware.Chain(orm.Middleware(), security.Middleware(), security.UnauthorizedMiddleware())
 	handler = chain(beego.BeeApp.Handlers)
 }
 

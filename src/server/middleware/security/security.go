@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/server/middleware"
 )
 
 var (
@@ -34,7 +35,6 @@ var (
 		&basicAuth{},
 		&session{},
 		&proxyCacheSecret{},
-		&unauthorized{},
 	}
 )
 
@@ -44,23 +44,34 @@ type generator interface {
 }
 
 // Middleware returns a security context middleware that populates the security context into the request context
-func Middleware() func(http.Handler) http.Handler {
-	return func(handler http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			log := log.G(r.Context())
-			mode, err := config.AuthMode()
-			if err == nil {
-				r = r.WithContext(lib.WithAuthMode(r.Context(), mode))
-			} else {
-				log.Warningf("failed to get auth mode: %v", err)
+func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
+	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		log := log.G(r.Context())
+		mode, err := config.AuthMode()
+		if err == nil {
+			r = r.WithContext(lib.WithAuthMode(r.Context(), mode))
+		} else {
+			log.Warningf("failed to get auth mode: %v", err)
+		}
+		for _, generator := range generators {
+			if ctx := generator.Generate(r); ctx != nil {
+				r = r.WithContext(security.NewContext(r.Context(), ctx))
+				break
 			}
-			for _, generator := range generators {
-				if ctx := generator.Generate(r); ctx != nil {
-					r = r.WithContext(security.NewContext(r.Context(), ctx))
-					break
-				}
-			}
-			handler.ServeHTTP(w, r)
-		})
-	}
+		}
+		next.ServeHTTP(w, r)
+	}, skippers...)
+}
+
+// UnauthorizedMiddleware returns a security context middleware
+// that populates the unauthorized security context when not security context found in the request context
+func UnauthorizedMiddleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
+	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		if _, ok := security.FromContext(r.Context()); !ok {
+			u := &unauthorized{}
+			r = r.WithContext(security.NewContext(r.Context(), u.Generate(r)))
+		}
+
+		next.ServeHTTP(w, r)
+	}, skippers...)
 }
