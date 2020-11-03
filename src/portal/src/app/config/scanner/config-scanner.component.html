@@ -23,6 +23,12 @@
                             <span id="action-scanner">{{'MEMBER.ACTION' | translate}}<clr-icon class="clr-icon" shape="caret down"></clr-icon></span>
                             <clr-dropdown-menu *clrIfOpen>
                                 <button clrDropdownItem
+                                        (click)="editScanner()"
+                                        class="btn  btn-secondary" [disabled]="!selectedRow">
+                                    <clr-icon class="margin-top-0" size="16" shape="pencil"></clr-icon>
+                                    <span class="margin-left-10">{{'BUTTON.EDIT' | translate}}</span>
+                                </button>
+                                <button clrDropdownItem
                                         (click)="changeStat()"
                                         [disabled]="!(selectedRow && !selectedRow.is_default)">
                                     <span *ngIf="selectedRow && selectedRow.disabled">
@@ -34,12 +40,7 @@
                                         <span class="margin-left-10">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
                                     </span>
                                 </button>
-                                <button clrDropdownItem
-                                        (click)="editScanner()"
-                                        class="btn  btn-secondary" [disabled]="!selectedRow">
-                                    <clr-icon class="margin-top-0" size="16" shape="pencil"></clr-icon>
-                                    <span class="margin-left-10">{{'BUTTON.EDIT' | translate}}</span>
-                                </button>
+                                <div class="dropdown-divider"></div>
                                 <button clrDropdownItem
                                         (click)="deleteScanners()"
                                         class="btn  btn-secondary" [disabled]="!selectedRow">

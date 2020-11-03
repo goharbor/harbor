@@ -154,7 +154,9 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
       if (!state || !state.page || !this.executionId) {
         return;
       }
-      this.pageSize = state.page.size;
+      if (state && state.page && state.page.size) {
+        this.pageSize = state.page.size;
+      }
       let params: RequestQueryParams = new RequestQueryParams();
       params = params.set('page_size', this.pageSize + '').set('page', this.currentPage + '');
       if (this.searchTask && this.searchTask !== "") {

@@ -27,20 +27,20 @@
                                         <button type="button" class="btn  btn-secondary" (click)="editInstance()"
                                                 [disabled]="!(selectedRow && selectedRow.length === 1)">
                                             <clr-icon shape="edit" size="16"></clr-icon>&nbsp;
-                                            <span id="distribution-edit">{{'DISTRIBUTION.EDIT_ACTION' | translate}}</span>
+                                            <span id="distribution-edit">{{'BUTTON.EDIT' | translate}}</span>
                                         </button>
-                                        <button type="button" class="btn  btn-secondary" (click)="operateInstances('enable', selectedRow)"
+                                        <button *ngIf="selectedRow && selectedRow.length === 1 && !selectedRow[0].enabled" type="button" class="btn  btn-secondary" (click)="operateInstances('enable', selectedRow)"
                                                 [disabled]="!(selectedRow && selectedRow.length === 1 && !selectedRow[0].enabled)">
                                             <clr-icon shape="connect" size="16"></clr-icon>&nbsp;
-                                            <span id="distribution-enable">{{'DISTRIBUTION.ENABLE_ACTION' | translate}}</span>
+                                            <span id="distribution-enable">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</span>
                                         </button>
-                                        <button
+                                        <button *ngIf="!(selectedRow && selectedRow.length === 1 && !selectedRow[0].enabled)"
                                                 type="button"
                                                 class="btn btn-secondary"
                                                 (click)="operateInstances('disable', selectedRow)"
                                                 [disabled]="!(selectedRow && selectedRow.length === 1 && selectedRow[0].enabled)">
                                             <clr-icon shape="disconnect" size="16"></clr-icon>&nbsp;
-                                            <span id="distribution-disable">{{'DISTRIBUTION.DISABLE_ACTION' | translate}}</span>
+                                            <span id="distribution-disable">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
                                         </button>
                                         <div class="dropdown-divider"></div>
                                         <button
@@ -49,7 +49,7 @@
                                                 (click)="operateInstances('delete', selectedRow)"
                                                 [disabled]="selectedRow.length < 1">
                                             <clr-icon shape="window-close" size="16"></clr-icon>&nbsp;
-                                            <span id="distribution-delete">{{'DISTRIBUTION.DELETE_ACTION' | translate}}</span>
+                                            <span id="distribution-delete">{{'BUTTON.DELETE' | translate}}</span>
                                         </button>
                                     </clr-dropdown>
                                 </clr-dropdown-menu>
