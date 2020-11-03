@@ -33,6 +33,22 @@
 
         </clr-input-container>
         <clr-input-container>
+            <label for="robotNamePrefix" class="required">{{'ROBOT_ACCOUNT.NAME_PREFIX' | translate}}
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'CONFIG.TOOLTIP.ROBOT_NAME_PREFIX' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <input clrInput name="robotNamePrefix" type="text"
+                   [(ngModel)]="systemSettings.robot_name_prefix.value"
+                   required
+                   autocomplete="off"
+                   id="robotNamePrefix" size="20" [disabled]="!robotNamePrefixEditable()" />
+            <clr-control-error>{{'ROBOT_ACCOUNT.NAME_PREFIX_REQUIRED' | translate}}</clr-control-error>
+        </clr-input-container>
+        <clr-input-container>
             <label for="robotTokenExpiration" class="required">{{'ROBOT_ACCOUNT.TOKEN_EXPIRATION' | translate}}
                 <clr-tooltip>
                     <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>

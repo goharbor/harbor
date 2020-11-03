@@ -365,7 +365,9 @@
         "EXPIRES_AT": "Expires At",
         "EXPIRATION_TOOLTIP": "If not set, the expiration time of system configuration will be used",
         "INVALID_VALUE": "The value of the expiration time is invalid",
-        "NEVER_EXPIRED": "Never Expired"
+        "NEVER_EXPIRED": "Never Expired",
+        "NAME_PREFIX": "Robot Name Prefix",
+        "NAME_PREFIX_REQUIRED": "Robot name prefix is required"
     },
     "GROUP": {
         "GROUP": "Grupo",
@@ -864,6 +866,7 @@
             "LDAP_UID": "O atributo utilizado na busca de um uusário. Pode ser uid, cn, email, sAMAccountName ou outro atributo dependendo LDAP/AD.",
             "LDAP_SCOPE": "O escopo de busca de usuários.",
             "TOKEN_EXPIRATION": "O tempo de expiração (em minutos) de um token criado pelo serviço de token. O padrão é 30 minutos.",
+            "ROBOT_NAME_PREFIX": "Prefixed string for each robot name,and default value is 'robot$'",
             "ROBOT_TOKEN_EXPIRATION": "O tempo de expiração (dias) do token da conta do robô, o padrão é 30 dias. Mostra o número de dias convertidos de minutos e arredonda para baixo",
             "PRO_CREATION_RESTRICTION": "A opção para definir quais usuários possuem permissão de criar projetos. Por padrão, qualquer um pode criar projetos. Configure para 'Apenas Administradores' para que apenas Administradores possam criar projetos.",
             "ROOT_CERT_DOWNLOAD": "Baixar o certificado raiz do registry.",

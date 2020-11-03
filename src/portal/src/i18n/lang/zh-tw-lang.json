@@ -364,7 +364,9 @@
     "EXPIRES_AT": "到期日",
     "EXPIRATION_TOOLTIP": "如不設置,將會使用系統設置中的過期時間。",
     "INVALID_VALUE": "無效的過期日期",
-    "NEVER_EXPIRED": "永不過期"
+    "NEVER_EXPIRED": "永不過期",
+    "NAME_PREFIX": "Robot Name Prefix",
+    "NAME_PREFIX_REQUIRED": "Robot name prefix is required"
   },
   "WEBHOOK":{
     "EDIT_BUTTON": "編輯",
@@ -864,6 +866,7 @@
       "LDAP_UID": "在搜索中用來匹配用戶的屬性,可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服務器支持的屬性。",
       "LDAP_SCOPE": "搜索用戶的範圍。",
       "TOKEN_EXPIRATION": "由令牌服務創建的令牌的過期時間（分鐘）,默認為30分鐘。",
+      "ROBOT_NAME_PREFIX": "Prefixed string for each robot name,and default value is 'robot$'",
       "ROBOT_TOKEN_EXPIRATION": "機器人帳戶的令牌的過期時間（天）,默認為30天,顯示的結果為分鐘轉化的天數並向下取整。",
       "PRO_CREATION_RESTRICTION": "用來確定哪些用戶有權限創建項目,默認為'所有人',設置為'僅管理員'則只有管理員可以創建項目。",
       "ROOT_CERT_DOWNLOAD": "下載鏡像庫根證書。",
