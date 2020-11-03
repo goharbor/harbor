@@ -26,6 +26,7 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
+	"net/url"
 )
 
 type label struct {
@@ -151,16 +152,21 @@ func (a *Adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
 	if info.Metadata == nil || len(info.Metadata.URLs) == 0 || len(info.Metadata.URLs[0]) == 0 {
 		return nil, fmt.Errorf("cannot got the download url for chart %s:%s", name, version)
 	}
-	url := strings.ToLower(info.Metadata.URLs[0])
+
+	url, err := url.Parse(info.Metadata.URLs[0])
+	if err != nil {
+		return nil, err
+	}
 	// relative URL
-	if !(strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")) {
+	urlStr := url.String()
+	if !(url.Scheme == "http" || url.Scheme == "https") {
 		project, _, err := parseChartName(name)
 		if err != nil {
 			return nil, err
 		}
-		url = fmt.Sprintf("%s/chartrepo/%s/%s", a.Client.GetURL(), project, url)
+		urlStr = fmt.Sprintf("%s/chartrepo/%s/%s", a.Client.GetURL(), project, urlStr)
 	}
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequest(http.MethodGet, urlStr, nil)
 	if err != nil {
 		return nil, err
 	}
