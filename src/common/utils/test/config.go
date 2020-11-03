@@ -64,6 +64,7 @@ var defaultConfig = map[string]interface{}{
 	common.JobServiceURL:              "http://myjob:8888/",
 	common.ReadOnly:                   false,
 	common.NotaryURL:                  "http://notary-server:4443",
+	common.RobotNamePrefix:            "robot$",
 }
 
 // GetDefaultConfigMap returns the defailt config map for easier modification.

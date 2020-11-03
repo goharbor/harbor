@@ -190,6 +190,7 @@ func TestConfig(t *testing.T) {
 
 	assert.True(NotificationEnable())
 	assert.Equal(int64(0), GetGCTimeWindow())
+	assert.Equal("robot$", RobotPrefix())
 
 }
 
