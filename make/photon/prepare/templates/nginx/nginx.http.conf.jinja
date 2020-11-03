@@ -208,4 +208,21 @@ http {
       return 404;
     }
   }
+  {% if metric.enabled %}
+  upstream core_metrics {
+    server core:9090;
+  }
+
+  upstream registry_metrics {
+    server registry:5001;
+  }
+  server {
+    listen 9090;
+    location = /metrics {
+      if ($arg_comp = core) { proxy_pass http://core_metrics; }
+      if ($arg_comp = registry) { proxy_pass http://registry_metrics; }
+      proxy_pass http://core_metrics;
+    }
+  }
+  {% endif %}
 }

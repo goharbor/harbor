@@ -43,6 +43,7 @@ import (
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/migration"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
@@ -162,6 +163,11 @@ func main() {
 	log.Info("initializing configurations...")
 	config.Init()
 	log.Info("configurations initialization completed")
+	metricCfg := config.Metric()
+	if metricCfg.Enabled {
+		metric.RegisterCollectors()
+		go metric.ServeProm(metricCfg.Path, metricCfg.Port)
+	}
 	token.InitCreators()
 	database, err := config.Database()
 	if err != nil {
