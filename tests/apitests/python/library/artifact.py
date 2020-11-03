@@ -13,7 +13,7 @@ class Artifact(base.Base, object):
         client = self._get_client(**kwargs)
         return client.list_artifacts(project_name, repo_name)
 
-    def get_reference_info(self, project_name, repo_name, reference, ignore_not_found = False,**kwargs):
+    def get_reference_info(self, project_name, repo_name, reference, expect_status_code = 200, ignore_not_found = False,**kwargs):
         client = self._get_client(**kwargs)
         params = {}
         if "with_signature" in kwargs:
@@ -22,12 +22,21 @@ class Artifact(base.Base, object):
             params["with_tag"] = kwargs["with_tag"]
         if "with_scan_overview" in kwargs:
             params["with_scan_overview"] = kwargs["with_scan_overview"]
+        if "with_immutable_status" in kwargs:
+            params["with_immutable_status"] = kwargs["with_immutable_status"]
 
         try:
-            return client.get_artifact_with_http_info(project_name, repo_name, reference, **params)
+            data, status_code, _ = client.get_artifact_with_http_info(project_name, repo_name, reference, **params)
+            return data
         except ApiException as e:
             if e.status == 404 and ignore_not_found == True:
-                return []
+                return None
+            else:
+                raise Exception("Failed to get reference, {} {}".format(e.status, e.body))
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            base._assert_status_code(200, status_code)
+            return None
 
     def delete_artifact(self, project_name, repo_name, reference, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
@@ -39,9 +48,9 @@ class Artifact(base.Base, object):
             if expect_response_body is not None:
                 base._assert_status_body(expect_response_body, e.body)
             return
-
-        base._assert_status_code(expect_status_code, status_code)
-        base._assert_status_code(200, status_code)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            base._assert_status_code(200, status_code)
 
     def get_addition(self, project_name, repo_name, reference, addition, **kwargs):
         client = self._get_client(**kwargs)
@@ -62,10 +71,10 @@ class Artifact(base.Base, object):
             if expect_response_body is not None:
                 base._assert_status_body(expect_response_body, e.body)
             return
-
-        base._assert_status_code(expect_status_code, status_code)
-        base._assert_status_code(201, status_code)
-        return data
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            base._assert_status_code(201, status_code)
+            return data
 
     def create_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 201, ignore_conflict = False, **kwargs):
         client = self._get_client(**kwargs)
@@ -75,12 +84,19 @@ class Artifact(base.Base, object):
         except ApiException as e:
             if e.status == 409 and ignore_conflict == True:
                 return
-        base._assert_status_code(expect_status_code, status_code)
+            else:
+                raise Exception("Create tag error, {}.".format(e.body))
+        else:
+            base._assert_status_code(expect_status_code, status_code)
 
     def delete_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
-        _, status_code, _ = client.delete_tag_with_http_info(project_name, repo_name, reference, tag_name)
-        base._assert_status_code(expect_status_code, status_code)
+        try:
+            _, status_code, _ = client.delete_tag_with_http_info(project_name, repo_name, reference, tag_name)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
 
     def check_image_scan_result(self, project_name, repo_name, reference, expected_scan_status = "Success", **kwargs):
         timeout_count = 30
@@ -91,7 +107,7 @@ class Artifact(base.Base, object):
             if (timeout_count == 0):
                 break
             artifact = self.get_reference_info(project_name, repo_name, reference, **kwargs)
-            scan_status = artifact[0].scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'].scan_status
+            scan_status = artifact.scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'].scan_status
             if scan_status == expected_scan_status:
                 return
         raise Exception("Scan image result is {}, not as expected {}.".format(scan_status, expected_scan_status))
@@ -99,10 +115,10 @@ class Artifact(base.Base, object):
     def check_reference_exist(self, project_name, repo_name, reference, ignore_not_found = False, **kwargs):
         artifact = self.get_reference_info( project_name, repo_name, reference, ignore_not_found=ignore_not_found, **kwargs)
         return {
-            0: False,
-        }.get(len(artifact), True)
+            None: False,
+        }.get(artifact, True)
 
-    def waiting_for_reference_exist(self, project_name, repo_name, reference, ignore_not_found = False, period = 60, loop_count = 8, **kwargs):
+    def waiting_for_reference_exist(self, project_name, repo_name, reference, ignore_not_found = True, period = 60, loop_count = 8, **kwargs):
         _loop_count = loop_count
         while True:
             print("Waiting for reference {} round...".format(_loop_count))
@@ -114,4 +130,4 @@ class Artifact(base.Base, object):
             if artifact  and artifact !=[]:
                 return  artifact
             time.sleep(period)
-        raise Exception("Referencet is not exist {} {} {}.".format(project_name, repo_name, reference))
+        raise Exception("Reference is not exist {} {} {}.".format(project_name, repo_name, reference))

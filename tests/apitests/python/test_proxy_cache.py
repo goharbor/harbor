@@ -114,19 +114,19 @@ class TestProxyCache(unittest.TestCase):
 
         #10. Manifest index pulled by docker CLI should be cached;
         ret_index_by_d = self.artifact.waiting_for_reference_exist(project_name, urllib.parse.quote(index_repo_name,'utf-8'), index_for_docker["tag"], **USER_CLIENT)
-        print("Index's reference by docker CLI:",ret_index_by_d[0].references)
-        self.assertTrue(len(ret_index_by_d[0].references) == 1)
+        print("Index's reference by docker CLI:", ret_index_by_d.references)
+        self.assertTrue(len(ret_index_by_d.references) == 1)
 
         #11. Manifest index pulled by ctr CLI should be cached;
         ret_index_by_c = self.artifact.waiting_for_reference_exist(project_name, urllib.parse.quote(index_repo_name_for_ctr,'utf-8'), index_for_ctr["tag"], **USER_CLIENT)
-        print("Index's reference by ctr CLI:",ret_index_by_c[0].references)
-        self.assertTrue(len(ret_index_by_c[0].references) == 1)
+        print("Index's reference by ctr CLI:", ret_index_by_c.references)
+        self.assertTrue(len(ret_index_by_c.references) == 1)
 
     def test_proxy_cache_from_harbor(self):
         self.do_validate("harbor")
 
-    def test_proxy_cache_from_dockerhub(self):
-        self.do_validate("docker-hub")
+    #def test_proxy_cache_from_dockerhub(self):
+    #    self.do_validate("docker-hub")
 
     def suite():
         suite = unittest.TestSuite(unittest.makeSuite(TestProxyCache))
