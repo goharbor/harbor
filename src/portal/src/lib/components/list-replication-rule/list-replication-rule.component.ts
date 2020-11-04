@@ -47,6 +47,7 @@ import { CustomComparator } from "../../utils/utils";
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
 import { errorHandler as errorHandFn } from "../../utils/shared/shared.utils";
+import {HELM_HUB} from "../../services";
 
 const jobstatus = "InProgress";
 
@@ -231,5 +232,8 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                     );
                     return observableThrowError(error);
                 }));
+    }
+    isHelmHub(srcRegistry: any): boolean {
+        return srcRegistry && srcRegistry.type === HELM_HUB;
     }
 }
