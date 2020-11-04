@@ -22,10 +22,13 @@ const ADAPTERS_MAP = {
   "google-gcr": "Google GCR",
   "harbor": "Harbor",
   "helm-hub": "Helm Hub",
+  "artifact-hub": "Artifact Hub",
   "huawei-SWR": "Huawei SWR",
   "jfrog-artifactory": "JFrog Artifactory",
   "quay": "Quay"
 };
+
+export const HELM_HUB: string = "helm-hub";
 
 
 
