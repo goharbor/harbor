@@ -93,7 +93,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 		}
 	}
 
-	projects = a.searchByPattern(nameFilter)
+	projects = a.getProjectsByPattern(nameFilter)
 	if len(projects) == 0 {
 		projects, err = a.clientGitlabAPI.getProjects()
 		if err != nil {
@@ -156,8 +156,9 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	return resources, nil
 }
 
-func (a *adapter) searchByPattern(pattern string) []*Project {
+func (a *adapter) getProjectsByPattern(pattern string) []*Project {
 	var projects []*Project
+	projectset := make(map[string]bool)
 	var err error
 	if len(pattern) > 0 {
 
@@ -168,6 +169,10 @@ func (a *adapter) searchByPattern(pattern string) []*Project {
 				if len(substrings) < 2 {
 					continue
 				}
+				if _, ok := projectset[substrings[1]]; ok {
+					continue
+				}
+				projectset[substrings[1]] = true
 				var projectsByName, err = a.clientGitlabAPI.getProjectsByName(substrings[1])
 				if err != nil {
 					return nil
@@ -199,6 +204,7 @@ func (a *adapter) searchByPattern(pattern string) []*Project {
 	}
 	return projects
 }
+
 func existPatterns(path string, patterns []string) bool {
 	correct := false
 	if len(patterns) > 0 {
