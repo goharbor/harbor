@@ -1,6 +1,8 @@
 import time
 import os
 import sys
+import warnings
+from functools import wraps
 
 sys.path.insert(0, os.environ["SWAGGER_CLIENT_PATH"])
 path=os.getcwd() + "/library"
@@ -62,6 +64,17 @@ class TestResult(object):
             for each_err_msg in self.error_message:
                 print("Error message:", each_err_msg)
             raise Exception(r"Test case failed with {} errors.".format(self.num_errors))
+
+def suppress_urllib3_warning(func):
+    @wraps(func)
+    def inner_func(*args):
+        warnings.filterwarnings(action="ignore",
+                                message="unclosed",
+                                category=ResourceWarning)
+        warnings.filterwarnings(action='ignore',
+                                message='Unverified HTTPS request')
+        func(*args)
+    return inner_func
 
 from contextlib import contextmanager
 

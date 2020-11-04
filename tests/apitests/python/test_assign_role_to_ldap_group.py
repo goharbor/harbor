@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest
 
-from testutils import harbor_server
+from testutils import harbor_server, suppress_urllib3_warning
 from testutils import TEARDOWN
 from testutils import ADMIN_CLIENT
 from testutils import created_user, created_project
@@ -16,7 +16,7 @@ from library.projectV2 import ProjectV2
 
 
 class TestAssignRoleToLdapGroup(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.conf= Configurations()
         self.project = Project()
@@ -24,7 +24,7 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
         self.repo = Repository()
         self.user= User()
 
-    @classmethod
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
         print("Case completed")
 

@@ -5,7 +5,7 @@ import unittest
 import urllib
 import sys
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
 from library.base import _random_name
@@ -20,8 +20,8 @@ from library.artifact import Artifact
 import library.containerd
 
 class TestProxyCache(unittest.TestCase):
-    @classmethod
-    def setUpClass(self):
+    @suppress_urllib3_warning
+    def setUp(self):
         self.url = ADMIN_CLIENT["endpoint"]
         self.user_password = "Aa123456"
         self.project= Project()
@@ -30,8 +30,8 @@ class TestProxyCache(unittest.TestCase):
         self.registry = Registry()
         self.artifact = Artifact()
 
-    @classmethod
-    def tearDownClass(self):
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
+    def tearDown(self):
         print("Case completed")
 
     def do_validate(self, registry_type):

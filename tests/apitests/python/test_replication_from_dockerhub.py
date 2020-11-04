@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import TEARDOWN
 from library.project import Project
 from library.user import User
@@ -12,7 +12,7 @@ from library.repository import Repository
 import swagger_client
 
 class TestProjects(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.project = Project()
         self.user = User()
@@ -23,12 +23,8 @@ class TestProjects(unittest.TestCase):
         self.image = "alpine"
         self.tag = "latest"
 
-    @classmethod
-    def tearDown(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete rule(RA);
         self.replication.delete_replication_rule(TestProjects.rule_id, **ADMIN_CLIENT)
 

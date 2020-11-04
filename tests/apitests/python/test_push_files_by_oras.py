@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import unittest
 import urllib
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
 import library.oras
@@ -14,7 +14,7 @@ from library.artifact import Artifact
 
 
 class TestProjects(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.project = Project()
         self.user = User()
@@ -23,12 +23,8 @@ class TestProjects(unittest.TestCase):
         self.repo_name = "hello-artifact"
         self.tag = "test_v2"
 
-    @classmethod
-    def tearDown(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete user(UA);
         self.user.delete_user(TestProjects.user_sign_image_id, **ADMIN_CLIENT)
 

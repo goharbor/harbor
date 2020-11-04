@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import unittest
 import time
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import TEARDOWN
 from testutils import harbor_server
 from library.user import User
@@ -16,7 +16,7 @@ from library.repository import push_special_image_to_project
 from library.artifact import Artifact
 
 class TestProjects(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.system = System()
         self.project = Project()
@@ -27,12 +27,8 @@ class TestProjects(unittest.TestCase):
         self.repo_name_untag = "test_untag"
         self.tag = "v1.0"
 
-    @classmethod
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
-        print("Case completed")
-
-    @unittest.skipIf(TEARDOWN == True, "Test data won't be erased.")
-    def test_ClearData(self):
         #2. Delete project(PA);
         self.project.delete_project(TestProjects.project_gc_id, **TestProjects.USER_GC_CLIENT)
 
