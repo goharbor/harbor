@@ -105,16 +105,16 @@ Test Case - Push Cnab Bundle
     [Tags]  push_cnab
     Harbor API Test  ./tests/apitests/python/test_push_cnab_bundle.py
 
-Test Case - Create/Delete tag
-    [Tags]  tag_cuid
-    Harbor API Test  ./tests/apitests/python/test_create_delete_tag.py
+Test Case - Tag CRUD
+    [Tags]  tag_crud
+    Harbor API Test  ./tests/apitests/python/test_tag_crud.py
 
 Test Case - Scan Image
     [Tags]  scan
     Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
 
 Test Case - Scan Image In Public Project
-    [Tags]  scan
+    [Tags]  scan_public_project
     Harbor API Test  ./tests/apitests/python/test_scan_image_artifact_in_public_project.py
 
 Test Case - Scan All Images
@@ -148,3 +148,7 @@ Test Case - Replication From Dockerhub
 Test Case - Proxy Cache
     [Tags]  proxy_cache
     Harbor API Test  ./tests/apitests/python/test_proxy_cache.py
+
+Test Case - Tag Immutability
+    [Tags]  tag_immutability
+    Harbor API Test  ./tests/apitests/python/test_tag_immutability.py

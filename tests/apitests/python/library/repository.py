@@ -13,8 +13,10 @@ def pull_harbor_image(registry, username, password, image, tag, expected_login_e
         return
     time.sleep(2)
     ret = _docker_api.docker_image_pull(r'{}/{}'.format(registry, image), tag = tag, expected_error_message = expected_error_message)
+    print("Docker pull image return message: {}".format(ret))
 
 def push_image_to_project(project_name, registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None, profix_for_image = None, new_image=None):
+    print("Start to push image {}/{}/{}:{}".format(registry, project_name, image, tag) )
     _docker_api = DockerAPI()
     _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
     time.sleep(2)
@@ -22,15 +24,14 @@ def push_image_to_project(project_name, registry, username, password, image, tag
         return
     _docker_api.docker_image_pull(image, tag = tag)
     time.sleep(2)
-
+    original_name = image
     image = new_image or image
 
     if profix_for_image == None:
-        new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(image, tag), r'{}/{}/{}'.format(registry, project_name, image))
+        new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(original_name, tag), r'{}/{}/{}'.format(registry, project_name, image), tag = tag)
     else:
-        new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(image, tag), r'{}/{}/{}/{}'.format(registry, project_name, profix_for_image, image))
+        new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(original_name, tag), r'{}/{}/{}/{}'.format(registry, project_name, profix_for_image, image), tag = tag)
     time.sleep(2)
-
     _docker_api.docker_image_push(new_harbor_registry, new_tag, expected_error_message = expected_error_message)
 
     return r'{}/{}'.format(project_name, image), new_tag

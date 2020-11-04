@@ -132,22 +132,19 @@ class DockerAPI(object):
             raise Exception(r" Docker tag image {} failed, error is [{}]".format (image, str(err)))
 
     def docker_image_push(self, harbor_registry, tag, expected_error_message = None):
-        caught_err = False
-        ret = ""
+        ret = None
         if expected_error_message is "":
             expected_error_message = None
         try:
-            self.DCLIENT.push(harbor_registry, tag)
-            return ret
+            ret = self.DCLIENT.push(harbor_registry, tag)
         except Exception as err:
-            caught_err = True
             if expected_error_message is not None:
                 print( "docker image push error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Push image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
                 raise Exception(r" Docker push image {} failed, error is [{}]".format (harbor_registry, message))
-        if caught_err == False:
+        else:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r" Failed to catch error [{}] when push image {}, return message: {}".

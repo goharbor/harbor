@@ -76,7 +76,7 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
             repo_name_dev, _ = push_image_to_project(project_name, harbor_server, USER_DEV["username"], USER_DEV["password"], USER_DEV["repo"], "latest")
             artifacts = self.artifact.list_artifacts(project_name, USER_DEV["repo"], **USER_DEV)
             self.assertTrue(len(artifacts) == 1)
-            push_image_to_project(project_name, harbor_server, USER_GUEST["username"], USER_GUEST["password"], USER_GUEST["repo"], "latest")
+            push_image_to_project(project_name, harbor_server, USER_GUEST["username"], USER_GUEST["password"], USER_GUEST["repo"], "latest", expected_error_message = "unauthorized to access repository")
             artifacts = self.artifact.list_artifacts(project_name, USER_GUEST["repo"], **USER_GUEST)
             self.assertTrue(len(artifacts) == 0)
 

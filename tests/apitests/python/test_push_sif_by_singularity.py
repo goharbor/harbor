@@ -67,7 +67,7 @@ class TestProjects(unittest.TestCase):
 
         #5. Get and verify artifacts by tag;
         artifact = self.artifact.get_reference_info(TestProjects.project_name, self.repo_name, self.tag, **TestProjects.USER_CLIENT)
-        self.assertEqual(artifact[0].tags[0].name, self.tag)
+        self.assertEqual(artifact.tags[0].name, self.tag)
 
         #6. Pull sif file from harbor by singularity;
         library.singularity.singularity_pull(TestProjects.project_name + ".sif", "oras://"+harbor_server + "/" + TestProjects.project_name + "/" + self.repo_name+":"+ self.tag)

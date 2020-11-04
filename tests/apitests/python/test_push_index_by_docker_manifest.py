@@ -95,10 +95,10 @@ class TestProjects(unittest.TestCase):
 
         #6. Get index(IA) by reference successfully;
         index_data = self.artifact.get_reference_info(TestProjects.project_push_index_name, self.index_name, self.index_tag, **TestProjects.USER_CLIENT)
-        manifests_sha256_harbor_ret = [index_data[0].references[1].child_digest, index_data[0].references[0].child_digest]
+        manifests_sha256_harbor_ret = [index_data.references[1].child_digest, index_data.references[0].child_digest]
 
         #7. Verify harbor index is index(IA) pushed by docker manifest CLI;
-        self.assertEqual(index_data[0].digest, index_sha256_cli_ret)
+        self.assertEqual(index_data.digest, index_sha256_cli_ret)
         self.assertEqual(manifests_sha256_harbor_ret.count(manifests_sha256_cli_ret[0]), 1)
         self.assertEqual(manifests_sha256_harbor_ret.count(manifests_sha256_cli_ret[1]), 1)
 

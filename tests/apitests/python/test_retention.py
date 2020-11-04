@@ -112,12 +112,12 @@ class TestProjects(unittest.TestCase):
         #List artifacts successfully, and untagged artifact in test1 should be the only one retained;
         artifacts_1 = self.artifact.list_artifacts(TestProjects.project_src_repo_name, self.repo_name_1, **TestProjects.USER_RA_CLIENT)
         self.assertTrue(len(artifacts_1)==1)
-        self.assertEqual(artifacts_1[0].digest, tag_data_artifact3_image1[0].digest)
+        self.assertEqual(artifacts_1[0].digest, tag_data_artifact3_image1.digest)
 
         #List artifacts successfully, and artifact with latest tag in test2 should be the only one retained;
         artifacts_2 = self.artifact.list_artifacts(TestProjects.project_src_repo_name, self.repo_name_2, **TestProjects.USER_RA_CLIENT)
         self.assertTrue(len(artifacts_2)==1)
-        self.assertEqual(artifacts_2[0].digest, tag_data_artifact2_image2[0].digest)
+        self.assertEqual(artifacts_2[0].digest, tag_data_artifact2_image2.digest)
 
     @classmethod
     def tearDownClass(self):
