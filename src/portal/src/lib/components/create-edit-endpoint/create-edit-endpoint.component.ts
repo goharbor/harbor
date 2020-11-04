@@ -481,4 +481,8 @@ export class CreateEditEndpointComponent
   getAdapterText(adapter: string): string {
     return this.endpointService.getAdapterText(adapter);
   }
+  // hide helm hub option when creating registry
+  shouldHide(adapter: string) {
+    return adapter === HELM_HUB && !this.endpointId;
+  }
 }
