@@ -136,6 +136,8 @@ const (
 	DefaultRegistryCtlURL             = "http://registryctl:8080"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
 	RobotPrefix = "robot$"
+	// System admin defined the robot name prefix.
+	RobotNamePrefix = "robot_name_prefix"
 	// Use this prefix to index user who tries to login with web hook token.
 	AuthProxyUserNamePrefix = "tokenreview$"
 	CoreConfigPath          = "/api/internal/configurations"
