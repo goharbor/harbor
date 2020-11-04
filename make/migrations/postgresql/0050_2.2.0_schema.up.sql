@@ -1,4 +1,5 @@
 ALTER TABLE schedule ADD COLUMN IF NOT EXISTS cron_type varchar(64);
+ALTER TABLE robot ADD COLUMN IF NOT EXISTS secret varchar(2048);
 
 DO $$
 DECLARE
