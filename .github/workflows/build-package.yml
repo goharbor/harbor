@@ -26,6 +26,13 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
       - run: gcloud info
+      - name: remove git-lfs
+        shell: bash
+        run: |
+          cat /etc/apt/sources.list
+          ls /etc/apt/sources.list.d
+          sudo rm /etc/apt/sources.list.d/github_git-lfs.list
+          sudo rm /etc/apt/sources.list.d/github_git-lfs.list.save
       - name: Set up Go 1.14
         uses: actions/setup-go@v1
         with:
