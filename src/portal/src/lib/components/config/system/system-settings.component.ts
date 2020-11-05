@@ -82,6 +82,12 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
             this.systemSettings.robot_token_duration.editable;
     }
 
+    robotNamePrefixEditable(): boolean {
+        return this.systemSettings &&
+            this.systemSettings.robot_name_prefix &&
+            this.systemSettings.robot_name_prefix.editable;
+    }
+
     public isValid(): boolean {
         return this.systemSettingsForm && this.systemSettingsForm.valid;
     }
@@ -108,7 +114,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
         let changes = {};
         for (let prop in allChanges) {
             if (prop === 'token_expiration' || prop === 'read_only' || prop === 'project_creation_restriction'
-                || prop === 'robot_token_duration' || prop === 'notification_enable') {
+                || prop === 'robot_token_duration' || prop === 'notification_enable' || prop === 'robot_name_prefix') {
                 changes[prop] = allChanges[prop];
             }
         }

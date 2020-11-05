@@ -367,7 +367,9 @@
         "EXPIRES_AT": "Expires At",
         "EXPIRATION_TOOLTIP": "If not set, the expiration time of system configuration will be used",
         "INVALID_VALUE": "The value of the expiration time is invalid",
-        "NEVER_EXPIRED": "Never Expired"
+        "NEVER_EXPIRED": "Never Expired",
+        "NAME_PREFIX": "Robot Name Prefix",
+        "NAME_PREFIX_REQUIRED": "Robot name prefix is required"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "DÜZENLE",
@@ -869,6 +871,7 @@
             "LDAP_UID": "Bir kullanıcıyla eşleşmek için aramada kullanılan özellik. LDAP / AD'nize bağlı olarak, kullanıcı kimliği, cn, e-posta, sAMAccountName veya diğer özellikler olabilir.",
             "LDAP_SCOPE": "Kullanıcıları aramak için kapsam.",
             "TOKEN_EXPIRATION": "Token servisi tarafından oluşturulan bir tokenın sona erme süresi (dakika cinsinden). Varsayılan 30 dakikadır.",
+            "ROBOT_NAME_PREFIX": "Prefixed string for each robot name,and default value is 'robot$'",
             "ROBOT_TOKEN_EXPIRATION": "Robot hesabının token son kullanma süresi (gün olarak), Varsayılan 30 gündür. Dakika ve yuvarlamadan dönüştürülen gün sayısını göster",
             "PRO_CREATION_RESTRICTION": "Hangi kullanıcıların proje oluşturma iznine sahip olduğunu belirten bayrak. Varsayılan olarak, herkes bir proje oluşturabilir. 'Yalnızca Yönetici' olarak ayarlayın, böylece yalnızca bir yönetici bir proje oluşturabilir.",
             "ROOT_CERT_DOWNLOAD": "Kayıt defteri kök sertifikasını indirin.",

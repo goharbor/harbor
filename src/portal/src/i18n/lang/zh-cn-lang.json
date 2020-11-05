@@ -366,7 +366,9 @@
         "EXPIRES_AT": "到期日",
         "EXPIRATION_TOOLTIP": "如不设置，将会使用系统设置中的过期时间。",
         "INVALID_VALUE": "无效的过期日期",
-        "NEVER_EXPIRED": "永不过期"
+        "NEVER_EXPIRED": "永不过期",
+        "NAME_PREFIX": "机器人账户名称前缀",
+        "NAME_PREFIX_REQUIRED": "机器人账户名称前缀为必填项"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "编辑",
@@ -870,6 +872,7 @@
             "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
             "LDAP_SCOPE": "搜索用户的范围。",
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
+            "ROBOT_NAME_PREFIX": "每个机器人账户名称的前缀字符串,默认值为 'robot$'",
             "ROBOT_TOKEN_EXPIRATION": "机器人账户的令牌的过期时间（天），默认为30天,显示的结果为分钟转化的天数并向下取整。",
             "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
             "ROOT_CERT_DOWNLOAD": "下载镜像库根证书。",
