@@ -38,6 +38,10 @@ var (
 	match         = regexp.MustCompile
 	numericRegexp = match(`[0-9]+`)
 
+	// The ping endpoint will be blocked when DB conns reach the max open conns of the sql.DB
+	// which will make ping request timeout, so skip the middlewares which will require DB conn.
+	pingSkipper = middleware.MethodAndPathSkipper(http.MethodGet, match("^/api/v2.0/ping"))
+
 	// dbTxSkippers skip the transaction middleware for GET Blob, PATCH Blob Upload and PUT Blob Upload APIs
 	// because the APIs may take a long time to run, enable the transaction middleware in them will hold the database connections
 	// until the API finished, this behavior may eat all the database connections.
@@ -47,6 +51,7 @@ var (
 		middleware.MethodAndPathSkipper(http.MethodGet, distribution.BlobURLRegexp),
 		middleware.MethodAndPathSkipper(http.MethodPatch, distribution.BlobUploadURLRegexp),
 		middleware.MethodAndPathSkipper(http.MethodPut, distribution.BlobUploadURLRegexp),
+		pingSkipper,
 	}
 
 	// readonlySkippers skip the post request when harbor sets to readonly.
@@ -63,6 +68,7 @@ var (
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/retention/task/"+numericRegexp.String())),
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/schedules/"+numericRegexp.String())),
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/webhook/"+numericRegexp.String())),
+		pingSkipper,
 	}
 )
 
@@ -74,11 +80,12 @@ func MiddleWares() []beego.MiddleWare {
 		log.Middleware(),
 		session.Middleware(),
 		csrf.Middleware(),
-		orm.Middleware(),
-		notification.Middleware(), // notification must ahead of transaction ensure the DB transaction execution complete
+		orm.Middleware(pingSkipper),
+		notification.Middleware(pingSkipper), // notification must ahead of transaction ensure the DB transaction execution complete
 		transaction.Middleware(dbTxSkippers...),
 		artifactinfo.Middleware(),
-		security.Middleware(),
+		security.Middleware(pingSkipper),
+		security.UnauthorizedMiddleware(),
 		readonly.Middleware(readonlySkippers...),
 	}
 }
