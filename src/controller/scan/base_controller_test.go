@@ -102,7 +102,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	}
 
 	sc := &scannertesting.Controller{}
-	sc.On("GetRegistrationByProject", suite.artifact.ProjectID).Return(suite.registration, nil)
+	sc.On("GetRegistrationByProject", context.TODO(), suite.artifact.ProjectID).Return(suite.registration, nil)
 	sc.On("Ping", suite.registration).Return(m, nil)
 
 	mgr := &reporttesting.Manager{}

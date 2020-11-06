@@ -2,15 +2,13 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/core/config"
-
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
@@ -19,7 +17,7 @@ import (
 // RetentionAPI ...
 type RetentionAPI struct {
 	BaseController
-	pm promgr.ProjectManager
+	metaMgr metadata.Manager
 }
 
 // Prepare validates the user
@@ -29,7 +27,8 @@ func (r *RetentionAPI) Prepare() {
 		r.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
-	r.pm = config.GlobalProjectMgr
+
+	r.metaMgr = metadata.Mgr
 }
 
 // GetMetadatas Get Metadatas
@@ -164,18 +163,19 @@ func (r *RetentionAPI) CreateRetention() {
 			return
 		}
 
-		proj, err := r.pm.Get(p.Scope.Reference)
-		if err != nil {
-			r.SendBadRequestError(err)
-		}
-		if proj == nil {
-			r.SendBadRequestError(fmt.Errorf("invalid Project id %d", p.Scope.Reference))
+		if _, err := r.ProjectCtl.Get(r.Context(), p.Scope.Reference); err != nil {
+			if errors.IsNotFoundErr(err) {
+				r.SendBadRequestError(fmt.Errorf("invalid Project id %d", p.Scope.Reference))
+			} else {
+				r.SendBadRequestError(err)
+			}
+			return
 		}
 	default:
 		r.SendBadRequestError(fmt.Errorf("scope %s is not support", p.Scope.Level))
 		return
 	}
-	old, err := r.pm.GetMetadataManager().Get(p.Scope.Reference, "retention_id")
+	old, err := r.metaMgr.Get(r.Context(), p.Scope.Reference, "retention_id")
 	if err != nil {
 		r.SendInternalServerError(err)
 		return
@@ -189,7 +189,7 @@ func (r *RetentionAPI) CreateRetention() {
 		r.SendInternalServerError(err)
 		return
 	}
-	if err := r.pm.GetMetadataManager().Add(p.Scope.Reference,
+	if err := r.metaMgr.Add(r.Context(), p.Scope.Reference,
 		map[string]string{"retention_id": strconv.FormatInt(id, 10)}); err != nil {
 		r.SendInternalServerError(err)
 	}

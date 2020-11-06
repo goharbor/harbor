@@ -15,6 +15,8 @@
 package scanner
 
 import (
+	"context"
+
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -96,23 +98,25 @@ type Controller interface {
 	// SetRegistrationByProject sets scanner for the given project.
 	//
 	//  Arguments:
+	//    ctx context.Context : the context.Context for this method
 	//    projectID int64  : the ID of the given project
 	//    scannerID string : the UUID of the the scanner
 	//
 	//  Returns:
 	//    error : non nil error if any errors occurred
-	SetRegistrationByProject(projectID int64, scannerID string) error
+	SetRegistrationByProject(ctx context.Context, projectID int64, scannerID string) error
 
 	// GetRegistrationByProject returns the configured scanner registration of the given project or
 	// the system default registration if exists or `nil` if no system registrations set.
 	//
 	//   Arguments:
+	//     ctx context.Context : the context.Context for this method
 	//     projectID int64 : the ID of the given project
 	//
 	//   Returns:
 	//     *scanner.Registration : the default scanner registration
 	//     error                 : non nil error if any errors occurred
-	GetRegistrationByProject(projectID int64, options ...Option) (*scanner.Registration, error)
+	GetRegistrationByProject(ctx context.Context, projectID int64, options ...Option) (*scanner.Registration, error)
 
 	// Ping pings Scanner Adapter to test EndpointURL and Authorization settings.
 	// The implementation is supposed to call the GetMetadata method on scanner.Client.

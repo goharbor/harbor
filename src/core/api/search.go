@@ -16,21 +16,19 @@ package api
 
 import (
 	"fmt"
-	"strings"
-
-	"helm.sh/helm/v3/cmd/helm/search"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	pro "github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"helm.sh/helm/v3/cmd/helm/search"
 )
 
 type chartSearchHandler func(string, []string) ([]*search.Result, error)
@@ -51,42 +49,32 @@ type searchResult struct {
 // Get ...
 func (s *SearchAPI) Get() {
 	keyword := s.GetString("q")
-	isSysAdmin := s.SecurityCtx.IsSysAdmin()
 
-	var projects []*models.Project
-	var err error
+	query := q.New(q.KeyWords{})
+	query.Sorting = "name"
 
-	if isSysAdmin {
-		result, err := s.ProjectMgr.List(nil)
-		if err != nil {
-			s.ParseAndHandleError("failed to get projects", err)
-			return
-		}
-		projects = result.Projects
-	} else {
-		projects, err = s.ProjectMgr.GetPublic()
-		if err != nil {
-			s.ParseAndHandleError("failed to get projects", err)
-			return
-		}
-		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok {
-			mys, err := s.ProjectMgr.GetAuthorized(sc.User())
-			if err != nil {
-				s.SendInternalServerError(fmt.Errorf(
-					"failed to get authorized projects: %v", err))
-				return
-			}
-			exist := map[int64]bool{}
-			for _, p := range projects {
-				exist[p.ProjectID] = true
-			}
+	if keyword != "" {
+		query.Keywords["name"] = &q.FuzzyMatchValue{Value: keyword}
+	}
 
-			for _, p := range mys {
-				if !exist[p.ProjectID] {
-					projects = append(projects, p)
-				}
+	if !s.SecurityCtx.IsSysAdmin() {
+		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {
+			user := sc.User()
+			member := &project.MemberQuery{
+				UserID:     user.UserID,
+				GroupIDs:   user.GroupIDs,
+				WithPublic: true,
 			}
+			query.Keywords["member"] = member
+		} else {
+			query.Keywords["public"] = true
 		}
+	}
+
+	projects, err := s.ProjectCtl.List(s.Context(), query)
+	if err != nil {
+		s.ParseAndHandleError("failed to get projects", err)
+		return
 	}
 
 	projectResult := []*models.Project{}
@@ -94,16 +82,13 @@ func (s *SearchAPI) Get() {
 	for _, p := range projects {
 		proNames = append(proNames, p.Name)
 
-		if len(keyword) > 0 && !strings.Contains(p.Name, keyword) {
-			continue
-		}
-
-		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok {
-			roles, err := pro.ListRoles(sc.User(), p.ProjectID)
+		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {
+			roles, err := s.ProjectCtl.ListRoles(s.Context(), p.ProjectID, sc.User())
 			if err != nil {
 				s.SendInternalServerError(fmt.Errorf("failed to list roles: %v", err))
 				return
 			}
+			p.RoleList = roles
 			p.Role = highestRole(roles)
 		}
 

@@ -15,10 +15,9 @@
 package chart
 
 import (
+	"context"
 	"errors"
 	"fmt"
-
-	"github.com/goharbor/harbor/src/lib/orm"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
@@ -32,6 +31,7 @@ import (
 
 // Handler preprocess chart event data
 type Handler struct {
+	Context func() context.Context
 }
 
 // Name ...
@@ -50,7 +50,7 @@ func (cph *Handler) Handle(value interface{}) error {
 		return fmt.Errorf("data miss in chart event: %v", chartEvent)
 	}
 
-	prj, err := project.Ctl.GetByName(orm.Context(), chartEvent.ProjectName, project.Metadata(true))
+	prj, err := project.Ctl.Get(cph.Context(), chartEvent.ProjectName, project.Metadata(true))
 	if err != nil {
 		log.Errorf("failed to find project[%s] for chart event: %v", chartEvent.ProjectName, err)
 		return err

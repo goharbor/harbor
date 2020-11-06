@@ -1,11 +1,11 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/notification"
 )
 
@@ -33,15 +33,16 @@ func (w *NotificationJobAPI) Prepare() {
 		return
 	}
 
-	project, err := w.ProjectMgr.Get(pid)
+	project, err := w.ProjectCtl.Get(w.Context(), pid)
 	if err != nil {
-		w.SendInternalServerError(fmt.Errorf("failed to get project %d: %v", pid, err))
+		if errors.IsNotFoundErr(err) {
+			w.SendNotFoundError(fmt.Errorf("project %d not found", pid))
+		} else {
+			w.SendInternalServerError(fmt.Errorf("failed to get project %d: %v", pid, err))
+		}
 		return
 	}
-	if project == nil {
-		w.SendNotFoundError(fmt.Errorf("project %d not found", pid))
-		return
-	}
+
 	w.project = project
 }
 

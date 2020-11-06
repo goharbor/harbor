@@ -57,15 +57,16 @@ func (r *RobotAPI) Prepare() {
 		r.SendBadRequestError(errors.New(errMsg))
 		return
 	}
-	project, err := r.ProjectMgr.Get(pid)
+	project, err := r.ProjectCtl.Get(r.Context(), pid)
 	if err != nil {
-		r.ParseAndHandleError(fmt.Sprintf("failed to get project %d", pid), err)
+		if errors.IsNotFoundErr(err) {
+			r.SendNotFoundError(fmt.Errorf("project %d not found", pid))
+		} else {
+			r.ParseAndHandleError(fmt.Sprintf("failed to get project %d", pid), err)
+		}
 		return
 	}
-	if project == nil {
-		r.SendNotFoundError(fmt.Errorf("project %d not found", pid))
-		return
-	}
+
 	r.project = project
 	r.ctr = robot.RobotCtr
 

@@ -110,7 +110,7 @@ func (l *LabelAPI) Post() {
 	case common.LabelScopeGlobal:
 		label.ProjectID = 0
 	case common.LabelScopeProject:
-		exist, err := l.ProjectMgr.Exists(label.ProjectID)
+		exist, err := l.ProjectCtl.Exists(l.Context(), label.ProjectID)
 		if err != nil {
 			l.SendInternalServerError(fmt.Errorf("failed to check the existence of project %d: %v",
 				label.ProjectID, err))

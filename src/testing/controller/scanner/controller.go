@@ -3,6 +3,8 @@
 package scanner
 
 import (
+	context "context"
+
 	controllerscanner "github.com/goharbor/harbor/src/controller/scanner"
 	mock "github.com/stretchr/testify/mock"
 
@@ -108,20 +110,20 @@ func (_m *Controller) GetRegistration(registrationUUID string) (*scanner.Registr
 	return r0, r1
 }
 
-// GetRegistrationByProject provides a mock function with given fields: projectID, options
-func (_m *Controller) GetRegistrationByProject(projectID int64, options ...controllerscanner.Option) (*scanner.Registration, error) {
+// GetRegistrationByProject provides a mock function with given fields: ctx, projectID, options
+func (_m *Controller) GetRegistrationByProject(ctx context.Context, projectID int64, options ...controllerscanner.Option) (*scanner.Registration, error) {
 	_va := make([]interface{}, len(options))
 	for _i := range options {
 		_va[_i] = options[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, projectID)
+	_ca = append(_ca, ctx, projectID)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
 	var r0 *scanner.Registration
-	if rf, ok := ret.Get(0).(func(int64, ...controllerscanner.Option) *scanner.Registration); ok {
-		r0 = rf(projectID, options...)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, ...controllerscanner.Option) *scanner.Registration); ok {
+		r0 = rf(ctx, projectID, options...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*scanner.Registration)
@@ -129,8 +131,8 @@ func (_m *Controller) GetRegistrationByProject(projectID int64, options ...contr
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int64, ...controllerscanner.Option) error); ok {
-		r1 = rf(projectID, options...)
+	if rf, ok := ret.Get(1).(func(context.Context, int64, ...controllerscanner.Option) error); ok {
+		r1 = rf(ctx, projectID, options...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -212,13 +214,13 @@ func (_m *Controller) SetDefaultRegistration(registrationUUID string) error {
 	return r0
 }
 
-// SetRegistrationByProject provides a mock function with given fields: projectID, scannerID
-func (_m *Controller) SetRegistrationByProject(projectID int64, scannerID string) error {
-	ret := _m.Called(projectID, scannerID)
+// SetRegistrationByProject provides a mock function with given fields: ctx, projectID, scannerID
+func (_m *Controller) SetRegistrationByProject(ctx context.Context, projectID int64, scannerID string) error {
+	ret := _m.Called(ctx, projectID, scannerID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int64, string) error); ok {
-		r0 = rf(projectID, scannerID)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string) error); ok {
+		r0 = rf(ctx, projectID, scannerID)
 	} else {
 		r0 = ret.Error(0)
 	}

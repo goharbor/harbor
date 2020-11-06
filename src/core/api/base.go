@@ -26,8 +26,8 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/p2p/preheat"
+	projectcontroller "github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -61,22 +61,22 @@ type BaseController struct {
 	api.BaseAPI
 	// SecurityCtx is the security context used to authN &authZ
 	SecurityCtx security.Context
-	// ProjectMgr is the project manager which abstracts the operations
+	// ProjectCtl is the project controller which abstracts the operations
 	// related to projects
-	ProjectMgr promgr.ProjectManager
+	ProjectCtl projectcontroller.Controller
 }
 
 // Prepare inits security context and project manager from request
 // context
 func (b *BaseController) Prepare() {
-	ctx, ok := security.FromContext(b.Ctx.Request.Context())
+	ctx, ok := security.FromContext(b.Context())
 	if !ok {
 		log.Errorf("failed to get security context")
 		b.SendInternalServerError(errors.New(""))
 		return
 	}
 	b.SecurityCtx = ctx
-	b.ProjectMgr = config.GlobalProjectMgr
+	b.ProjectCtl = projectcontroller.Ctl
 }
 
 // RequireAuthenticated returns true when the request is authenticated
@@ -96,16 +96,13 @@ func (b *BaseController) HasProjectPermission(projectIDOrName interface{}, actio
 		return false, err
 	}
 
-	project, err := b.ProjectMgr.Get(projectIDOrName)
+	project, err := b.ProjectCtl.Get(b.Context(), projectIDOrName)
 	if err != nil {
 		return false, err
 	}
-	if project == nil {
-		return false, errors.NotFoundError(fmt.Errorf("project %v not found", projectIDOrName))
-	}
 
 	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(subresource...)
-	if !b.SecurityCtx.Can(b.Ctx.Request.Context(), action, resource) {
+	if !b.SecurityCtx.Can(b.Context(), action, resource) {
 		return false, nil
 	}
 

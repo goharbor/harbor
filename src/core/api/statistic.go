@@ -17,11 +17,13 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/security/local"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/security/local"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 )
 
 const (
@@ -58,7 +60,7 @@ func (s *StatisticAPI) Prepare() {
 // Get total projects and repos of the user
 func (s *StatisticAPI) Get() {
 	statistic := map[string]int64{}
-	pubProjs, err := s.ProjectMgr.GetPublic()
+	pubProjs, err := s.ProjectCtl.List(s.Context(), q.New(q.KeyWords{"public": true}), project.Metadata(false))
 	if err != nil {
 		s.ParseAndHandleError("failed to get public projects", err)
 		return
@@ -84,14 +86,14 @@ func (s *StatisticAPI) Get() {
 	}
 
 	if s.SecurityCtx.IsSysAdmin() {
-		result, err := s.ProjectMgr.List(nil)
+		count, err := s.ProjectCtl.Count(s.Context(), nil)
 		if err != nil {
 			log.Errorf("failed to get total of projects: %v", err)
 			s.SendInternalServerError(fmt.Errorf("failed to get total of projects: %v", err))
 			return
 		}
-		statistic[TPC] = result.Total
-		statistic[PriPC] = result.Total - statistic[PubPC]
+		statistic[TPC] = count
+		statistic[PriPC] = count - statistic[PubPC]
 
 		n, err := dao.GetTotalOfRepositories()
 		if err != nil {
@@ -103,17 +105,21 @@ func (s *StatisticAPI) Get() {
 		statistic[PriRC] = n - statistic[PubRC]
 	} else {
 		privProjectIDs := make([]int64, 0)
-		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok {
-			myProjects, err := s.ProjectMgr.GetAuthorized(sc.User())
+		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {
+			user := sc.User()
+			member := &project.MemberQuery{
+				UserID:   user.UserID,
+				GroupIDs: user.GroupIDs,
+			}
+
+			myProjects, err := s.ProjectCtl.List(s.Context(), q.New(q.KeyWords{"member": member, "public": false}), project.Metadata(false))
 			if err != nil {
 				s.ParseAndHandleError(fmt.Sprintf(
 					"failed to get projects of user %s", s.username), err)
 				return
 			}
 			for _, p := range myProjects {
-				if !p.IsPublic() {
-					privProjectIDs = append(privProjectIDs, p.ProjectID)
-				}
+				privProjectIDs = append(privProjectIDs, p.ProjectID)
 			}
 		}
 
