@@ -17,7 +17,6 @@ const (
 	VARIABLE
 	FUNCTION
 	SEPARATOR
-	ACCESSOR
 
 	COMPARATOR
 	LOGICALOP
@@ -67,8 +66,6 @@ func (kind TokenKind) String() string {
 		return "CLAUSE_CLOSE"
 	case TERNARY:
 		return "TERNARY"
-	case ACCESSOR:
-		return "ACCESSOR"
 	}
 
 	return "UNKNOWN"

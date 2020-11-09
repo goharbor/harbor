@@ -55,9 +55,10 @@ require (
 	github.com/olekukonko/tablewriter v0.0.1
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.1
+	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
-	github.com/prometheus/client_golang v1.8.0
+	github.com/prometheus/client_golang v1.7.1
 	github.com/robfig/cron v1.0.0
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
 	github.com/spf13/viper v1.4.0 // indirect

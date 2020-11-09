@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 	"unicode"
 )
@@ -65,7 +64,7 @@ func readToken(stream *lexerStream, state lexerState, functions map[string]Expre
 	var completed bool
 	var err error
 
-	// numeric is 0-9, or . or 0x followed by digits
+	// numeric is 0-9, or .
 	// string starts with '
 	// variable is alphanumeric, always starts with a letter
 	// bracket always means variable
@@ -83,26 +82,6 @@ func readToken(stream *lexerStream, state lexerState, functions map[string]Expre
 
 		// numeric constant
 		if isNumeric(character) {
-
-			if stream.canRead() && character == '0' {
-				character = stream.readCharacter()
-
-				if stream.canRead() && character == 'x' {
-					tokenString, _ = readUntilFalse(stream, false, true, true, isHexDigit)
-					tokenValueInt, err := strconv.ParseUint(tokenString, 16, 64)
-
-					if err != nil {
-						errorMsg := fmt.Sprintf("Unable to parse hex value '%v' to uint64\n", tokenString)
-						return ExpressionToken{}, errors.New(errorMsg), false
-					}
-
-					kind = NUMERIC
-					tokenValue = float64(tokenValueInt)
-					break
-				} else {
-					stream.rewind(1)
-				}
-			}
 
 			tokenString = readTokenUntilFalse(stream, isNumeric)
 			tokenValue, err = strconv.ParseFloat(tokenString, 64)
@@ -173,32 +152,6 @@ func readToken(stream *lexerStream, state lexerState, functions map[string]Expre
 			if found {
 				kind = FUNCTION
 				tokenValue = function
-			}
-
-			// accessor?
-			accessorIndex := strings.Index(tokenString, ".")
-			if accessorIndex > 0 {
-
-				// check that it doesn't end with a hanging period
-				if tokenString[len(tokenString)-1] == '.' {
-					errorMsg := fmt.Sprintf("Hanging accessor on token '%s'", tokenString)
-					return ExpressionToken{}, errors.New(errorMsg), false
-				}
-
-				kind = ACCESSOR
-				splits := strings.Split(tokenString, ".")
-				tokenValue = splits
-
-				// check that none of them are unexported
-				for i := 1; i < len(splits); i++ {
-
-					firstCharacter := getFirstRune(splits[i])
-
-					if unicode.ToUpper(firstCharacter) != firstCharacter {
-						errorMsg := fmt.Sprintf("Unable to access unexported field '%s' in token '%s'", splits[i], tokenString)
-						return ExpressionToken{}, errors.New(errorMsg), false
-					}
-				}
 			}
 			break
 		}
@@ -414,23 +367,6 @@ func checkBalance(tokens []ExpressionToken) error {
 	return nil
 }
 
-func isDigit(character rune) bool {
-	return unicode.IsDigit(character)
-}
-
-func isHexDigit(character rune) bool {
-
-	character = unicode.ToLower(character)
-
-	return unicode.IsDigit(character) ||
-		character == 'a' ||
-		character == 'b' ||
-		character == 'c' ||
-		character == 'd' ||
-		character == 'e' ||
-		character == 'f'
-}
-
 func isNumeric(character rune) bool {
 
 	return unicode.IsDigit(character) || character == '.'
@@ -447,8 +383,6 @@ func isNotAlphanumeric(character rune) bool {
 		unicode.IsLetter(character) ||
 		character == '(' ||
 		character == ')' ||
-		character == '[' ||
-		character == ']' || // starting to feel like there needs to be an `isOperation` func (#59)
 		!isNotQuote(character))
 }
 
@@ -456,8 +390,7 @@ func isVariableName(character rune) bool {
 
 	return unicode.IsLetter(character) ||
 		unicode.IsDigit(character) ||
-		character == '_' ||
-		character == '.'
+		character == '_'
 }
 
 func isNotClosingBracket(character rune) bool {
@@ -514,13 +447,4 @@ func tryParseExactTime(candidate string, format string) (time.Time, bool) {
 	}
 
 	return ret, true
-}
-
-func getFirstRune(candidate string) rune {
-
-	for _, character := range candidate {
-		return character
-	}
-
-	return 0
 }

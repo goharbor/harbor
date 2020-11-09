@@ -107,14 +107,11 @@ func parseMDStat(mdStatData []byte) ([]MDStat, error) {
 		syncedBlocks := size
 		recovering := strings.Contains(lines[syncLineIdx], "recovery")
 		resyncing := strings.Contains(lines[syncLineIdx], "resync")
-		checking := strings.Contains(lines[syncLineIdx], "check")
 
 		// Append recovery and resyncing state info.
-		if recovering || resyncing || checking {
+		if recovering || resyncing {
 			if recovering {
 				state = "recovering"
-			} else if checking {
-				state = "checking"
 			} else {
 				state = "resyncing"
 			}

@@ -4,9 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"reflect"
 	"regexp"
-	"strings"
+	"reflect"
 )
 
 const (
@@ -67,16 +66,16 @@ func (this *evaluationStage) setToNonStage(other evaluationStage) {
 func (this *evaluationStage) isShortCircuitable() bool {
 
 	switch this.symbol {
-	case AND:
-		fallthrough
-	case OR:
-		fallthrough
-	case TERNARY_TRUE:
-		fallthrough
-	case TERNARY_FALSE:
-		fallthrough
-	case COALESCE:
-		return true
+		case AND:
+			fallthrough
+		case OR:
+			fallthrough
+		case TERNARY_TRUE: 
+			fallthrough
+		case TERNARY_FALSE:
+			fallthrough
+		case COALESCE:
+			return true
 	}
 
 	return false
@@ -244,163 +243,7 @@ func makeFunctionStage(function ExpressionFunction) evaluationOperator {
 		default:
 			return function(right)
 		}
-	}
-}
 
-func typeConvertParam(p reflect.Value, t reflect.Type) (ret reflect.Value, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			errorMsg := fmt.Sprintf("Argument type conversion failed: failed to convert '%s' to '%s'", p.Kind().String(), t.Kind().String())
-			err = errors.New(errorMsg)
-			ret = p
-		}
-	}()
-
-	return p.Convert(t), nil
-}
-
-func typeConvertParams(method reflect.Value, params []reflect.Value) ([]reflect.Value, error) {
-
-	methodType := method.Type()
-	numIn := methodType.NumIn()
-	numParams := len(params)
-
-	if numIn != numParams {
-		if numIn > numParams {
-			return nil, fmt.Errorf("Too few arguments to parameter call: got %d arguments, expected %d", len(params), numIn)
-		}
-		return nil, fmt.Errorf("Too many arguments to parameter call: got %d arguments, expected %d", len(params), numIn)
-	}
-
-	for i := 0; i < numIn; i++ {
-		t := methodType.In(i)
-		p := params[i]
-		pt := p.Type()
-
-		if t.Kind() != pt.Kind() {
-			np, err := typeConvertParam(p, t)
-			if err != nil {
-				return nil, err
-			}
-			params[i] = np
-		}
-	}
-
-	return params, nil
-}
-
-func makeAccessorStage(pair []string) evaluationOperator {
-
-	reconstructed := strings.Join(pair, ".")
-
-	return func(left interface{}, right interface{}, parameters Parameters) (ret interface{}, err error) {
-
-		var params []reflect.Value
-
-		value, err := parameters.Get(pair[0])
-		if err != nil {
-			return nil, err
-		}
-
-		// while this library generally tries to handle panic-inducing cases on its own,
-		// accessors are a sticky case which have a lot of possible ways to fail.
-		// therefore every call to an accessor sets up a defer that tries to recover from panics, converting them to errors.
-		defer func() {
-			if r := recover(); r != nil {
-				errorMsg := fmt.Sprintf("Failed to access '%s': %v", reconstructed, r.(string))
-				err = errors.New(errorMsg)
-				ret = nil
-			}
-		}()
-
-		for i := 1; i < len(pair); i++ {
-
-			coreValue := reflect.ValueOf(value)
-
-			var corePtrVal reflect.Value
-
-			// if this is a pointer, resolve it.
-			if coreValue.Kind() == reflect.Ptr {
-				corePtrVal = coreValue
-				coreValue = coreValue.Elem()
-			}
-
-			if coreValue.Kind() != reflect.Struct {
-				return nil, errors.New("Unable to access '" + pair[i] + "', '" + pair[i-1] + "' is not a struct")
-			}
-
-			field := coreValue.FieldByName(pair[i])
-			if field != (reflect.Value{}) {
-				value = field.Interface()
-				continue
-			}
-
-			method := coreValue.MethodByName(pair[i])
-			if method == (reflect.Value{}) {
-				if corePtrVal.IsValid() {
-					method = corePtrVal.MethodByName(pair[i])
-				}
-				if method == (reflect.Value{}) {
-					return nil, errors.New("No method or field '" + pair[i] + "' present on parameter '" + pair[i-1] + "'")
-				}
-			}
-
-			switch right.(type) {
-			case []interface{}:
-
-				givenParams := right.([]interface{})
-				params = make([]reflect.Value, len(givenParams))
-				for idx, _ := range givenParams {
-					params[idx] = reflect.ValueOf(givenParams[idx])
-				}
-
-			default:
-
-				if right == nil {
-					params = []reflect.Value{}
-					break
-				}
-
-				params = []reflect.Value{reflect.ValueOf(right.(interface{}))}
-			}
-
-			params, err = typeConvertParams(method, params)
-
-			if err != nil {
-				return nil, errors.New("Method call failed - '" + pair[0] + "." + pair[1] + "': " + err.Error())
-			}
-
-			returned := method.Call(params)
-			retLength := len(returned)
-
-			if retLength == 0 {
-				return nil, errors.New("Method call '" + pair[i-1] + "." + pair[i] + "' did not return any values.")
-			}
-
-			if retLength == 1 {
-
-				value = returned[0].Interface()
-				continue
-			}
-
-			if retLength == 2 {
-
-				errIface := returned[1].Interface()
-				err, validType := errIface.(error)
-
-				if validType && errIface != nil {
-					return returned[0].Interface(), err
-				}
-
-				value = returned[0].Interface()
-				continue
-			}
-
-			return nil, errors.New("Method call '" + pair[0] + "." + pair[1] + "' did not return either one value, or a value and an error. Cannot interpret meaning.")
-		}
-
-		value = castToFloat64(value)
-		return value, nil
 	}
 }
 
