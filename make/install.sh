@@ -15,6 +15,8 @@ item=0
 
 # notary is not enabled by default
 with_notary=$false
+# clair is deprecated
+with_clair=$false
 # trivy is not enabled by default
 with_trivy=$false
 # chartmuseum is not enabled by default
@@ -27,6 +29,8 @@ while [ $# -gt 0 ]; do
             exit 0;;
             --with-notary)
             with_notary=true;;
+            --with-clair)
+            with_clair=true;;
             --with-trivy)
             with_trivy=true;;
             --with-chartmuseum)
@@ -37,6 +41,12 @@ while [ $# -gt 0 ]; do
         esac
         shift || true
 done
+
+if [ $with_clair ]
+then
+    error "Clair is deprecated please remove it from installation arguments !!!"
+    exit 1
+fi
 
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
