@@ -319,7 +319,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
         config_dict['external_database'] = False
 
     # update redis configs
-    config_dict.update(get_redis_configs(configs.get("external_redis", None), with_clair, with_trivy))
+    config_dict.update(get_redis_configs(configs.get("redis", None), configs.get("external_redis", None), with_clair, with_trivy))
 
     # auto generated secret string for core
     config_dict['core_secret'] = generate_random_string(16)
@@ -404,7 +404,7 @@ def get_redis_url_param(redis=None):
     return ""
 
 
-def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
+def get_redis_configs(internal_redis=None, external_redis=None, with_clair=True, with_trivy=True):
     """Returns configs for redis
 
     >>> get_redis_configs()['external_redis']
@@ -444,6 +444,7 @@ def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
     True
     """
     external_redis = external_redis or {}
+    internal_redis = internal_redis or {}
 
     configs = dict(external_redis=bool(external_redis))
 
@@ -459,6 +460,8 @@ def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
         'idle_timeout_seconds': 30,
     }
 
+    # overwriting existing keys by internal_redis
+    redis.update({key: value for (key, value) in internal_redis.items() if value})
     # overwriting existing keys by external_redis
     redis.update({key: value for (key, value) in external_redis.items() if value})
 
@@ -466,6 +469,7 @@ def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
     configs['redis_url_chart'] = get_redis_url(redis['chartmuseum_db_index'], redis)
     configs['redis_url_js'] = get_redis_url(redis['jobservice_db_index'], redis)
     configs['redis_url_reg'] = get_redis_url(redis['registry_db_index'], redis)
+    configs['harbor_redis_password'] = internal_redis.get('password', '')
 
     if with_clair:
         configs['redis_url_clair'] = get_redis_url(redis['clair_db_index'], redis)
