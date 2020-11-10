@@ -83,6 +83,8 @@ class DockerAPI(object):
     def docker_login(self, registry, username, password, expected_error_message = None):
         if expected_error_message is "":
             expected_error_message = None
+        if registry == "docker":
+            registry = None
         try:
             self.DCLIENT.login(registry = registry, username=username, password=password)
         except docker.errors.APIError as err:

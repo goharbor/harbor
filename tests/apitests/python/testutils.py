@@ -27,6 +27,8 @@ CHART_API_CLIENT=dict(endpoint = os.environ.get("HARBOR_HOST_SCHEMA", "https")+ 
 USER_ROLE=dict(admin=0,normal=1)
 TEARDOWN = os.environ.get('TEARDOWN', 'true').lower() in ('true', 'yes')
 notary_url = os.environ.get('NOTARY_URL', 'https://'+harbor_server+':4443')
+DOCKER_USER = os.environ.get('DOCKER_USER', 'danfengliu')
+DOCKER_PWD = os.environ.get('DOCKER_PWD', 'Aa123456')
 
 def GetProductApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
 

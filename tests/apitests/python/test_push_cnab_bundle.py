@@ -13,6 +13,8 @@ from library.user import User
 from library.repository import Repository
 from library.artifact import Artifact
 from library.docker_api import DockerAPI
+from testutils import DOCKER_USER
+from testutils import DOCKER_PWD
 
 class TestProjects(unittest.TestCase):
     @suppress_urllib3_warning
@@ -65,6 +67,7 @@ class TestProjects(unittest.TestCase):
 
         #3. Pull images for bundle;
         _docker_api = DockerAPI()
+        _docker_api.docker_login("docker", DOCKER_USER, DOCKER_PWD)
         _docker_api.docker_image_pull("alpine", tag = "latest")
         _docker_api.docker_image_pull("haproxy", tag = "latest")
 
