@@ -17,8 +17,8 @@ type lexerState struct {
 var validLexerStates = []lexerState{
 
 	lexerState{
-		kind:       UNKNOWN,
-		isEOF:      false,
+		kind: UNKNOWN,
+		isEOF: false,
 		isNullable: true,
 		validNextKinds: []TokenKind{
 
@@ -28,7 +28,6 @@ var validLexerStates = []lexerState{
 			VARIABLE,
 			PATTERN,
 			FUNCTION,
-			ACCESSOR,
 			STRING,
 			TIME,
 			CLAUSE,
@@ -48,7 +47,6 @@ var validLexerStates = []lexerState{
 			VARIABLE,
 			PATTERN,
 			FUNCTION,
-			ACCESSOR,
 			STRING,
 			TIME,
 			CLAUSE,
@@ -178,7 +176,6 @@ var validLexerStates = []lexerState{
 			NUMERIC,
 			VARIABLE,
 			FUNCTION,
-			ACCESSOR,
 			STRING,
 			BOOLEAN,
 			CLAUSE,
@@ -197,7 +194,6 @@ var validLexerStates = []lexerState{
 			BOOLEAN,
 			VARIABLE,
 			FUNCTION,
-			ACCESSOR,
 			STRING,
 			TIME,
 			CLAUSE,
@@ -217,7 +213,6 @@ var validLexerStates = []lexerState{
 			BOOLEAN,
 			VARIABLE,
 			FUNCTION,
-			ACCESSOR,
 			STRING,
 			TIME,
 			CLAUSE,
@@ -235,7 +230,6 @@ var validLexerStates = []lexerState{
 			BOOLEAN,
 			VARIABLE,
 			FUNCTION,
-			ACCESSOR,
 			CLAUSE,
 			CLAUSE_CLOSE,
 		},
@@ -255,7 +249,6 @@ var validLexerStates = []lexerState{
 			TIME,
 			VARIABLE,
 			FUNCTION,
-			ACCESSOR,
 			CLAUSE,
 			SEPARATOR,
 		},
@@ -267,21 +260,6 @@ var validLexerStates = []lexerState{
 		isNullable: false,
 		validNextKinds: []TokenKind{
 			CLAUSE,
-		},
-	},
-	lexerState{
-
-		kind:       ACCESSOR,
-		isEOF:      true,
-		isNullable: false,
-		validNextKinds: []TokenKind{
-			CLAUSE,
-			MODIFIER,
-			COMPARATOR,
-			LOGICALOP,
-			CLAUSE_CLOSE,
-			TERNARY,
-			SEPARATOR,
 		},
 	},
 	lexerState{
@@ -298,7 +276,6 @@ var validLexerStates = []lexerState{
 			TIME,
 			VARIABLE,
 			FUNCTION,
-			ACCESSOR,
 			CLAUSE,
 		},
 	},

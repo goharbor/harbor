@@ -133,7 +133,6 @@ func (this EvaluableExpression) Evaluate(parameters map[string]interface{}) (int
 	if parameters == nil {
 		return this.Eval(nil)
 	}
-
 	return this.Eval(MapParameters(parameters))
 }
 
@@ -156,10 +155,7 @@ func (this EvaluableExpression) Eval(parameters Parameters) (interface{}, error)
 
 	if parameters != nil {
 		parameters = &sanitizedParameters{parameters}
-	} else {
-		parameters = DUMMY_PARAMETERS
 	}
-
 	return this.evaluateStage(this.evaluationStages, parameters)
 }
 
@@ -177,27 +173,27 @@ func (this EvaluableExpression) evaluateStage(stage *evaluationStage, parameters
 
 	if stage.isShortCircuitable() {
 		switch stage.symbol {
-		case AND:
-			if left == false {
-				return false, nil
-			}
-		case OR:
-			if left == true {
-				return true, nil
-			}
-		case COALESCE:
-			if left != nil {
-				return left, nil
-			}
-
-		case TERNARY_TRUE:
-			if left == false {
-				right = shortCircuitHolder
-			}
-		case TERNARY_FALSE:
-			if left != nil {
-				right = shortCircuitHolder
-			}
+			case AND:
+				if left == false {
+					return false, nil
+				}
+			case OR:
+				if left == true {
+					return true, nil
+				}
+			case COALESCE:
+				if left != nil {
+					return left, nil
+				}
+			
+			case TERNARY_TRUE:
+				if left == false {
+					right = shortCircuitHolder
+				}
+			case TERNARY_FALSE:
+				if left != nil {
+					right = shortCircuitHolder
+				}
 		}
 	}
 
