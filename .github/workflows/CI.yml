@@ -144,7 +144,11 @@ jobs:
           cd src/github.com/goharbor/harbor
           echo IP: $IP
           df -h
+          TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+          curl -v -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest
           bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
+          TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+          curl -v -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest
           df -h
 
   APITEST_LDAP:

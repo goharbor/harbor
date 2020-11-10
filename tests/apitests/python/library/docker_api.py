@@ -3,6 +3,7 @@
 import base
 import subprocess
 import json
+from testutils import DOCKER_USER, DOCKER_PWD
 
 try:
     import docker
@@ -83,6 +84,8 @@ class DockerAPI(object):
     def docker_login(self, registry, username, password, expected_error_message = None):
         if expected_error_message is "":
             expected_error_message = None
+        if registry == "docker":
+            registry = None
         try:
             self.DCLIENT.login(registry = registry, username=username, password=password)
         except docker.errors.APIError as err:
@@ -155,11 +158,11 @@ class DockerAPI(object):
                                     format (harbor_registry, ret))
 
     def docker_image_build(self, harbor_registry, tags=None, size=1, expected_error_message = None):
-        caught_err = False
         ret = ""
         try:
             baseimage='busybox:latest'
             if not self.DCLIENT.images(name=baseimage):
+                self.DCLIENT.login(username=DOCKER_USER, password=DOCKER_PWD)
                 self.DCLIENT.pull(baseimage)
             c=self.DCLIENT.create_container(image='busybox:latest',command='dd if=/dev/urandom of=test bs=1M count=%d' % size )
             self.DCLIENT.start(c)
@@ -182,14 +185,13 @@ class DockerAPI(object):
             image = self.DCLIENT2.images.get(repo)
             return repo, image.id
         except Exception as err:
-            caught_err = True
             if expected_error_message is not None:
                 print( "docker image build error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Push image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
                 raise Exception(r" Docker build image {} failed, error is [{}]".format (harbor_registry, str(err)))
-        if caught_err == False:
+        else:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r" Failed to catch error [{}] when build image {}, return message: {}".
