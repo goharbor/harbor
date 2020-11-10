@@ -118,7 +118,7 @@
                 <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
                   <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='name'">{{'TOOLTIP.NAME_FILTER' | translate}}</span>
                   <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='tag'">{{'TOOLTIP.TAG_FILTER' | translate}}</span>
-                  <span class="tooltip-content" >{{'TOOLTIP.LABEL_FILTER' | translate}}</span>
+                  <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='label'">{{'TOOLTIP.LABEL_FILTER' | translate}}</span>
                   <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='resource'">{{'TOOLTIP.RESOURCE_FILTER' | translate}}</span>
                 </clr-tooltip-content>
               </clr-tooltip>
