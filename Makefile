@@ -76,7 +76,6 @@ REGISTRYSERVER=
 REGISTRYPROJECTNAME=goharbor
 DEVFLAG=true
 NOTARYFLAG=false
-CLAIRFLAG=false
 TRIVYFLAG=false
 HTTPPROXY=
 BUILDBIN=false
@@ -101,9 +100,7 @@ PREPARE_VERSION_NAME=versions
 #versions
 REGISTRYVERSION=v2.7.1-patch-2819-2553-redis
 NOTARYVERSION=v0.6.1
-CLAIRVERSION=v2.1.6
 NOTARYMIGRATEVERSION=v3.5.4
-CLAIRADAPTERVERSION=v1.1.1
 TRIVYVERSION=v0.9.2
 TRIVYADAPTERVERSION=v0.14.1
 
@@ -117,11 +114,9 @@ CHARTMUSEUM_SRC_TAG=v0.12.0
 REGISTRY_SRC_TAG=v2.7.1
 
 # dependency binaries
-CLAIRURL=https://storage.googleapis.com/harbor-builds/bin/clair/release2.0-${CLAIRVERSION}/clair
 CHARTURL=https://storage.googleapis.com/harbor-builds/bin/chartmuseum/release-${CHARTMUSEUMVERSION}/chartm
 NORARYURL=https://storage.googleapis.com/harbor-builds/bin/notary/release-${NOTARYVERSION}/binary-bundle.tgz
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
-CLAIR_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-clair/releases/download/$(CLAIRADAPTERVERSION)/harbor-scanner-clair_$(CLAIRADAPTERVERSION:v%=%)_Linux_x86_64.tar.gz
 TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
 TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/aquasecurity/harbor-scanner-trivy/releases/download/$(TRIVYADAPTERVERSION)/harbor-scanner-trivy_$(TRIVYADAPTERVERSION:v%=%)_Linux_x86_64.tar.gz
 
@@ -129,8 +124,6 @@ define VERSIONS_FOR_PREPARE
 VERSION_TAG: $(VERSIONTAG)
 REGISTRY_VERSION: $(REGISTRYVERSION)
 NOTARY_VERSION: $(NOTARYVERSION)
-CLAIR_VERSION: $(CLAIRVERSION)
-CLAIR_ADAPTER_VERSION: $(CLAIRADAPTERVERSION)
 TRIVY_VERSION: $(TRIVYVERSION)
 TRIVY_ADAPTER_VERSION: $(TRIVYADAPTERVERSION)
 CHARTMUSEUM_VERSION: $(CHARTMUSEUMVERSION)
@@ -210,9 +203,6 @@ PREPARECMD_PARA=--conf $(INSIDE_CONFIGPATH)/$(CONFIGFILE)
 ifeq ($(NOTARYFLAG), true)
 	PREPARECMD_PARA+= --with-notary
 endif
-ifeq ($(CLAIRFLAG), true)
-	PREPARECMD_PARA+= --with-clair
-endif
 ifeq ($(TRIVYFLAG), true)
 	PREPARECMD_PARA+= --with-trivy
 endif
@@ -239,14 +229,7 @@ DOCKERIMAGENAME_REGCTL=goharbor/harbor-registryctl
 
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
-DOCKERCOMPOSETPLFILENAME=docker-compose.tpl
 DOCKERCOMPOSEFILENAME=docker-compose.yml
-DOCKERCOMPOSENOTARYTPLFILENAME=docker-compose.notary.tpl
-DOCKERCOMPOSENOTARYFILENAME=docker-compose.notary.yml
-DOCKERCOMPOSECLAIRTPLFILENAME=docker-compose.clair.tpl
-DOCKERCOMPOSECLAIRFILENAME=docker-compose.clair.yml
-DOCKERCOMPOSECHARTMUSEUMTPLFILENAME=docker-compose.chartmuseum.tpl
-DOCKERCOMPOSECHARTMUSEUMFILENAME=docker-compose.chartmuseum.yml
 
 SEDCMD=$(shell which sed)
 SEDCMDI=$(SEDCMD) -i
@@ -296,9 +279,6 @@ DOCKERCOMPOSE_FILE_OPT=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
 	DOCKERSAVE_PARA+= goharbor/notary-server-photon:$(VERSIONTAG) goharbor/notary-signer-photon:$(VERSIONTAG)
-endif
-ifeq ($(CLAIRFLAG), true)
-	DOCKERSAVE_PARA+= goharbor/clair-photon:$(VERSIONTAG) goharbor/clair-adapter-photon:$(VERSIONTAG)
 endif
 ifeq ($(TRIVYFLAG), true)
 	DOCKERSAVE_PARA+= goharbor/trivy-adapter-photon:$(VERSIONTAG)
@@ -409,18 +389,18 @@ build:
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG) \
 	 -e NOTARYVERSION=$(NOTARYVERSION) -e NOTARYMIGRATEVERSION=$(NOTARYMIGRATEVERSION) \
 	 -e TRIVYVERSION=$(TRIVYVERSION) -e TRIVYADAPTERVERSION=$(TRIVYADAPTERVERSION) \
-	 -e CLAIRVERSION=$(CLAIRVERSION) -e CLAIRADAPTERVERSION=$(CLAIRADAPTERVERSION) -e VERSIONTAG=$(VERSIONTAG) \
+	 -e VERSIONTAG=$(VERSIONTAG) \
 	 -e BUILDBIN=$(BUILDBIN) \
 	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e CHARTMUSEUM_SRC_TAG=$(CHARTMUSEUM_SRC_TAG) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
-	 -e CLAIRURL=$(CLAIRURL) -e CHARTURL=$(CHARTURL) -e NORARYURL=$(NORARYURL) -e REGISTRYURL=$(REGISTRYURL) -e CLAIR_ADAPTER_DOWNLOAD_URL=$(CLAIR_ADAPTER_DOWNLOAD_URL) \
+	 -e CHARTURL=$(CHARTURL) -e NORARYURL=$(NORARYURL) -e REGISTRYURL=$(REGISTRYURL) \
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)
 
 build_base_docker:
-	@for name in chartserver clair clair-adapter trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+	@for name in chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
 		echo $$name ; \
 		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . && \
 		if [ -n "$(PUSHBASEIMAGE)" ] ; then \
@@ -429,7 +409,7 @@ build_base_docker:
 	done
 
 pull_base_docker:
-	@for name in chartserver clair clair-adapter trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+	@for name in chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
 		echo $$name ; \
 		$(DOCKERPULL) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) ; \
 	done

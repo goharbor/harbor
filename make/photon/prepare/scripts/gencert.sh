@@ -77,27 +77,6 @@ openssl req -new \
 openssl x509 -req -days $DAYS -sha256 -in registryctl.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out registryctl.crt
 
 
-
-# generate clair_adapter key
-openssl req -new \
-        -newkey rsa:4096 -nodes -sha256 -keyout clair_adapter.key \
-        -out clair_adapter.csr \
-        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=clair-adapter"
-
-# sign clair_adapter csr with CA certificate and key
-openssl x509 -req -days $DAYS -sha256 -in clair_adapter.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out clair_adapter.crt
-
-
-# generate clair key
-openssl req -new \
-        -newkey rsa:4096 -nodes -sha256 -keyout clair.key \
-        -out clair.csr \
-        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=clair"
-
-# sign clair csr with CA certificate and key
-openssl x509 -req -days $DAYS -sha256 -in clair.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -out clair.crt
-
-
 # generate trivy_adapter key
 openssl req -new \
         -newkey rsa:4096 -nodes -sha256 -keyout trivy_adapter.key \
