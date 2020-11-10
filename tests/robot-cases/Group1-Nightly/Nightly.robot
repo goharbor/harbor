@@ -133,7 +133,6 @@ Test Case - User View Projects
     Create An New Project  test${d}2
     Create An New Project  test${d}3
     Switch To Log
-    Capture Page Screenshot  UserViewProjects.png
     Wait Until Page Contains  test${d}1
     Wait Until Page Contains  test${d}2
     Wait Until Page Contains  test${d}3
@@ -368,9 +367,7 @@ TestCase - Project Admin Add Labels To Repo
     # Add labels
     Switch To Project Label
     Create New Labels  label111
-    Capture Page Screenshot  CreateLabel1.png
     Create New Labels  label22
-    Capture Page Screenshot  CreateLabel2.png
     Sleep  2
     Switch To Project Repo
     Go Into Repo  project${d}/redis

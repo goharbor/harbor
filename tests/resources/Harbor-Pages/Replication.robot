@@ -25,7 +25,6 @@ Filter Replication Rule
     Retry Element Click  ${filter_rules_btn}
     Retry Text Input  ${filter_rules_input}  ${ruleName}
     Retry Wait Until Page Contains Element   ${rule_name_element}
-    Capture Page Screenshot  filter_replic_${ruleName}.png
 
 Filter Registry
     [Arguments]  ${registry_name}
@@ -35,7 +34,6 @@ Filter Registry
     Retry Element Click  ${filter_registry_btn}
     Retry Text Input  ${filter_registry_input}  ${registry_name}
     Retry Wait Until Page Contains Element   ${registry_name_element}
-    Capture Page Screenshot  filter_repistry_${registry_name}.png
 
 Select Dest Registry
     [Arguments]    ${endpoint}
@@ -73,8 +71,8 @@ Create A New Endpoint
     Retry Text Input  xpath=${destination_name_xpath}    ${name}
     Run Keyword If  '${provider}' == 'harbor'  Run keyword  Retry Text Input  xpath=${destination_url_xpath}  ${url}
     Run Keyword If  '${provider}' == 'aws-ecr' or '${provider}' == 'google-gcr'   Run keyword  Select Destination URL  ${url}
-    Run Keyword If  '${provider}' != 'google-gcr'   Retry Text Input  xpath=${destination_username_xpath}  ${username}
-    Retry Text Input  xpath=${destination_password_xpath}  ${pwd}
+    Run Keyword If  '${provider}' != 'google-gcr' and '${username}' != '${null}'    Retry Text Input  xpath=${destination_username_xpath}  ${username}
+    Run Keyword If  '${pwd}' != '${null}'  Retry Text Input  xpath=${destination_password_xpath}  ${pwd}
     #cancel verify cert since we use a selfsigned cert
     Retry Element Click  ${destination_insecure_xpath}
     Run Keyword If  '${save}' == 'Y'  Run keyword  Retry Double Keywords When Error  Retry Element Click  ${replication_save_xpath}  Retry Wait Until Page Not Contains Element  ${replication_save_xpath}
@@ -274,7 +272,5 @@ Executions Result Count Should Be
     [Arguments]  ${expected_status}  ${expected_trigger_type}  ${expected_result_count}
     Sleep  10
     ${count}=  Get Element Count  xpath=//clr-dg-row[contains(.,'${expected_status}') and contains(.,'${expected_trigger_type}')]
-    Capture Page Screenshot
     Should Be Equal As Integers  ${count}  ${expected_result_count}
-    Capture Page Screenshot
 

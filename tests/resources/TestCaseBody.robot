@@ -212,7 +212,6 @@ Helm CLI Push Without Sign In Harbor
     Switch To Project Charts
     Go Into Chart Version  ${harbor_chart_name}
     Retry Wait Until Page Contains  ${harbor_chart_version}
-    Capture Page Screenshot
 
 Helm3 CLI Push Without Sign In Harbor
     [Arguments]  ${sign_in_user}  ${sign_in_pwd}
@@ -221,7 +220,6 @@ Helm3 CLI Push Without Sign In Harbor
     Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}  helm_repo_name=${HARBOR_URL}/chartrepo/project${d}  helm_cmd=helm3
     Switch To Project Charts
     Retry Double Keywords When Error  Go Into Chart Version  ${harbor_chart_name}  Retry Wait Until Page Contains  ${harbor_chart_version}
-    Capture Page Screenshot
 
 #Important Note: All CVE IDs in CVE Allowlist cases must unique!
 Body Of Verfiy System Level CVE Allowlist

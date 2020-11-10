@@ -3,6 +3,7 @@
 import base
 import json
 import docker_api
+from testutils import DOCKER_USER, DOCKER_PWD
 
 def load_bundle(service_image, invocation_image):
     bundle_file = "./tests/apitests/python/bundle_data/bundle.json"
@@ -41,6 +42,10 @@ def cnab_push_bundle(bundle_file, target):
 
 def push_cnab_bundle(harbor_server, user, password, service_image, invocation_image, target, auto_update_bundle = True):
     docker_api.docker_info_display()
+
+    #Add docker login command to avoid pull request access rate elimitation by docker hub
+    docker_api.docker_login_cmd("", DOCKER_USER, DOCKER_PWD, enable_manifest = False)
+
     docker_api.docker_login_cmd(harbor_server, user, password, enable_manifest = False)
     bundle_file = load_bundle(service_image, invocation_image)
     fixed_bundle_file = cnab_fixup_bundle(bundle_file, target, auto_update_bundle = auto_update_bundle)
