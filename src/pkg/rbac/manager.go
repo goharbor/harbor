@@ -18,19 +18,19 @@ type Manager interface {
 	CreatePermission(ctx context.Context, rp *model.RolePermission) (int64, error)
 	// DeletePermission ...
 	DeletePermission(ctx context.Context, id int64) error
-	// ListPermission list role permissions according to the query.
-	ListPermission(ctx context.Context, query *q.Query) ([]*model.RolePermission, error)
-	// DeletePermissionByRole get permissions by role type and id
-	DeletePermissionByRole(ctx context.Context, roleType string, roleID int64) error
+	// ListPermissions list role permissions according to the query.
+	ListPermissions(ctx context.Context, query *q.Query) ([]*model.RolePermission, error)
+	// DeletePermissionsByRole get permissions by role type and id
+	DeletePermissionsByRole(ctx context.Context, roleType string, roleID int64) error
 
 	// CreateRbacPolicy ...
-	CreateRbacPolicy(ctx context.Context, rp *model.RbacPolicy) (int64, error)
+	CreateRbacPolicy(ctx context.Context, pp *model.PermissionPolicy) (int64, error)
 	// DeleteRbacPolicy ...
 	DeleteRbacPolicy(ctx context.Context, id int64) error
-	// ListRbacPolicy list RbacPolicy according to the query.
-	ListRbacPolicy(ctx context.Context, query *q.Query) ([]*model.RbacPolicy, error)
+	// ListRbacPolicies list PermissionPolicy according to the query.
+	ListRbacPolicies(ctx context.Context, query *q.Query) ([]*model.PermissionPolicy, error)
 	// GetPermissionsByRole ...
-	GetPermissionsByRole(ctx context.Context, roleType string, roleID int64) ([]*model.RolePermissions, error)
+	GetPermissionsByRole(ctx context.Context, roleType string, roleID int64) ([]*model.UniversalRolePermission, error)
 }
 
 // NewManager returns an instance of the default manager
@@ -54,26 +54,26 @@ func (m *manager) DeletePermission(ctx context.Context, id int64) error {
 	return m.dao.DeletePermission(ctx, id)
 }
 
-func (m *manager) ListPermission(ctx context.Context, query *q.Query) ([]*model.RolePermission, error) {
-	return m.dao.ListPermission(ctx, query)
+func (m *manager) ListPermissions(ctx context.Context, query *q.Query) ([]*model.RolePermission, error) {
+	return m.dao.ListPermissions(ctx, query)
 }
 
-func (m *manager) DeletePermissionByRole(ctx context.Context, roleType string, roleID int64) error {
-	return m.dao.DeletePermissionByRole(ctx, roleType, roleID)
+func (m *manager) DeletePermissionsByRole(ctx context.Context, roleType string, roleID int64) error {
+	return m.dao.DeletePermissionsByRole(ctx, roleType, roleID)
 }
 
-func (m *manager) CreateRbacPolicy(ctx context.Context, rp *model.RbacPolicy) (int64, error) {
-	return m.dao.CreateRbacPolicy(ctx, rp)
+func (m *manager) CreateRbacPolicy(ctx context.Context, pp *model.PermissionPolicy) (int64, error) {
+	return m.dao.CreateRbacPolicy(ctx, pp)
 }
 
 func (m *manager) DeleteRbacPolicy(ctx context.Context, id int64) error {
 	return m.dao.DeleteRbacPolicy(ctx, id)
 }
 
-func (m *manager) ListRbacPolicy(ctx context.Context, query *q.Query) ([]*model.RbacPolicy, error) {
-	return m.dao.ListRbacPolicy(ctx, query)
+func (m *manager) ListRbacPolicies(ctx context.Context, query *q.Query) ([]*model.PermissionPolicy, error) {
+	return m.dao.ListRbacPolicies(ctx, query)
 }
 
-func (m *manager) GetPermissionsByRole(ctx context.Context, roleType string, roleID int64) ([]*model.RolePermissions, error) {
+func (m *manager) GetPermissionsByRole(ctx context.Context, roleType string, roleID int64) ([]*model.UniversalRolePermission, error) {
 	return m.dao.GetPermissionsByRole(ctx, roleType, roleID)
 }

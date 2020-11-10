@@ -38,20 +38,20 @@ func (_m *DAO) CreatePermission(ctx context.Context, rp *model.RolePermission) (
 	return r0, r1
 }
 
-// CreateRbacPolicy provides a mock function with given fields: ctx, rp
-func (_m *DAO) CreateRbacPolicy(ctx context.Context, rp *model.RbacPolicy) (int64, error) {
-	ret := _m.Called(ctx, rp)
+// CreateRbacPolicy provides a mock function with given fields: ctx, pp
+func (_m *DAO) CreateRbacPolicy(ctx context.Context, pp *model.PermissionPolicy) (int64, error) {
+	ret := _m.Called(ctx, pp)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, *model.RbacPolicy) int64); ok {
-		r0 = rf(ctx, rp)
+	if rf, ok := ret.Get(0).(func(context.Context, *model.PermissionPolicy) int64); ok {
+		r0 = rf(ctx, pp)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *model.RbacPolicy) error); ok {
-		r1 = rf(ctx, rp)
+	if rf, ok := ret.Get(1).(func(context.Context, *model.PermissionPolicy) error); ok {
+		r1 = rf(ctx, pp)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -73,8 +73,8 @@ func (_m *DAO) DeletePermission(ctx context.Context, id int64) error {
 	return r0
 }
 
-// DeletePermissionByRole provides a mock function with given fields: ctx, roleType, roleID
-func (_m *DAO) DeletePermissionByRole(ctx context.Context, roleType string, roleID int64) error {
+// DeletePermissionsByRole provides a mock function with given fields: ctx, roleType, roleID
+func (_m *DAO) DeletePermissionsByRole(ctx context.Context, roleType string, roleID int64) error {
 	ret := _m.Called(ctx, roleType, roleID)
 
 	var r0 error
@@ -102,15 +102,15 @@ func (_m *DAO) DeleteRbacPolicy(ctx context.Context, id int64) error {
 }
 
 // GetPermissionsByRole provides a mock function with given fields: ctx, roleType, roleID
-func (_m *DAO) GetPermissionsByRole(ctx context.Context, roleType string, roleID int64) ([]*model.RolePermissions, error) {
+func (_m *DAO) GetPermissionsByRole(ctx context.Context, roleType string, roleID int64) ([]*model.UniversalRolePermission, error) {
 	ret := _m.Called(ctx, roleType, roleID)
 
-	var r0 []*model.RolePermissions
-	if rf, ok := ret.Get(0).(func(context.Context, string, int64) []*model.RolePermissions); ok {
+	var r0 []*model.UniversalRolePermission
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64) []*model.UniversalRolePermission); ok {
 		r0 = rf(ctx, roleType, roleID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.RolePermissions)
+			r0 = ret.Get(0).([]*model.UniversalRolePermission)
 		}
 	}
 
@@ -124,8 +124,8 @@ func (_m *DAO) GetPermissionsByRole(ctx context.Context, roleType string, roleID
 	return r0, r1
 }
 
-// ListPermission provides a mock function with given fields: ctx, query
-func (_m *DAO) ListPermission(ctx context.Context, query *q.Query) ([]*model.RolePermission, error) {
+// ListPermissions provides a mock function with given fields: ctx, query
+func (_m *DAO) ListPermissions(ctx context.Context, query *q.Query) ([]*model.RolePermission, error) {
 	ret := _m.Called(ctx, query)
 
 	var r0 []*model.RolePermission
@@ -147,16 +147,16 @@ func (_m *DAO) ListPermission(ctx context.Context, query *q.Query) ([]*model.Rol
 	return r0, r1
 }
 
-// ListRbacPolicy provides a mock function with given fields: ctx, query
-func (_m *DAO) ListRbacPolicy(ctx context.Context, query *q.Query) ([]*model.RbacPolicy, error) {
+// ListRbacPolicies provides a mock function with given fields: ctx, query
+func (_m *DAO) ListRbacPolicies(ctx context.Context, query *q.Query) ([]*model.PermissionPolicy, error) {
 	ret := _m.Called(ctx, query)
 
-	var r0 []*model.RbacPolicy
-	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) []*model.RbacPolicy); ok {
+	var r0 []*model.PermissionPolicy
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) []*model.PermissionPolicy); ok {
 		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.RbacPolicy)
+			r0 = ret.Get(0).([]*model.PermissionPolicy)
 		}
 	}
 

@@ -36,31 +36,31 @@ func (m *managerTestSuite) TestDeletePermission() {
 	m.dao.AssertExpectations(m.T())
 }
 
-func (m *managerTestSuite) TestListPermission() {
-	m.dao.On("ListPermission", mock.Anything, mock.Anything).Return([]*model.RolePermission{
+func (m *managerTestSuite) TestListPermissions() {
+	m.dao.On("ListPermissions", mock.Anything, mock.Anything).Return([]*model.RolePermission{
 		{
-			ID:           1,
-			RoleType:     "robot",
-			RoleID:       2,
-			RBACPolicyID: 3,
+			ID:                 1,
+			RoleType:           "robot",
+			RoleID:             2,
+			PermissionPolicyID: 3,
 		},
 	}, nil)
-	rpers, err := m.mgr.ListPermission(context.Background(), nil)
+	rpers, err := m.mgr.ListPermissions(context.Background(), nil)
 	m.Require().Nil(err)
 	m.Equal(1, len(rpers))
 	m.dao.AssertExpectations(m.T())
 }
 
-func (m *managerTestSuite) TestDeletePermissionByRole() {
-	m.dao.On("DeletePermissionByRole", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	err := m.mgr.DeletePermissionByRole(context.Background(), "robot", 1)
+func (m *managerTestSuite) TestDeletePermissionsByRole() {
+	m.dao.On("DeletePermissionsByRole", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err := m.mgr.DeletePermissionsByRole(context.Background(), "robot", 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }
 
 func (m *managerTestSuite) TestCreateRbacPolicy() {
 	m.dao.On("CreateRbacPolicy", mock.Anything, mock.Anything).Return(int64(1), nil)
-	_, err := m.mgr.CreateRbacPolicy(context.Background(), &model.RbacPolicy{})
+	_, err := m.mgr.CreateRbacPolicy(context.Background(), &model.PermissionPolicy{})
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }
@@ -72,8 +72,8 @@ func (m *managerTestSuite) TestDeleteRbacPolicy() {
 	m.dao.AssertExpectations(m.T())
 }
 
-func (m *managerTestSuite) TestListRbacPolicy() {
-	m.dao.On("ListRbacPolicy", mock.Anything, mock.Anything).Return([]*model.RbacPolicy{
+func (m *managerTestSuite) TestListRbacPolicies() {
+	m.dao.On("ListRbacPolicies", mock.Anything, mock.Anything).Return([]*model.PermissionPolicy{
 		{
 			ID:       1,
 			Scope:    "/system",
@@ -81,14 +81,14 @@ func (m *managerTestSuite) TestListRbacPolicy() {
 			Action:   "create",
 		},
 	}, nil)
-	rpers, err := m.mgr.ListRbacPolicy(context.Background(), nil)
+	rpers, err := m.mgr.ListRbacPolicies(context.Background(), nil)
 	m.Require().Nil(err)
 	m.Equal(1, len(rpers))
 	m.dao.AssertExpectations(m.T())
 }
 
 func (m *managerTestSuite) TestGetPermissionsByRole() {
-	m.dao.On("GetPermissionsByRole", mock.Anything, mock.Anything, mock.Anything).Return([]*model.RolePermissions{
+	m.dao.On("GetPermissionsByRole", mock.Anything, mock.Anything, mock.Anything).Return([]*model.UniversalRolePermission{
 		{
 			RoleType: "robot",
 			RoleID:   1,

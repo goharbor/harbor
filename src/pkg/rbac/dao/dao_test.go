@@ -32,49 +32,49 @@ func (suite *DaoTestSuite) SetupSuite() {
 	suite.Suite.ClearTables = []string{"rbac_policy", "role_permission"}
 
 	suite.prepareRolePermission()
-	suite.prepareRbacPolicy()
+	suite.preparePermissionPolicy()
 }
 
 func (suite *DaoTestSuite) prepareRolePermission() {
 	rp := &model.RolePermission{
-		RoleType:     "robot",
-		RoleID:       1,
-		RBACPolicyID: 2,
+		RoleType:           "robot",
+		RoleID:             1,
+		PermissionPolicyID: 2,
 	}
 	id, err := suite.dao.CreatePermission(orm.Context(), rp)
 	suite.permissionID1 = id
 	suite.Nil(err)
 
 	rp2 := &model.RolePermission{
-		RoleType:     "robot",
-		RoleID:       1,
-		RBACPolicyID: 3,
+		RoleType:           "robot",
+		RoleID:             1,
+		PermissionPolicyID: 3,
 	}
 	id2, err := suite.dao.CreatePermission(orm.Context(), rp2)
 	suite.permissionID2 = id2
 	suite.Nil(err)
 
 	rp3 := &model.RolePermission{
-		RoleType:     "robot",
-		RoleID:       1,
-		RBACPolicyID: 4,
+		RoleType:           "robot",
+		RoleID:             1,
+		PermissionPolicyID: 4,
 	}
 	id3, err := suite.dao.CreatePermission(orm.Context(), rp3)
 	suite.permissionID3 = id3
 	suite.Nil(err)
 
 	rp4 := &model.RolePermission{
-		RoleType:     "serviceaccount",
-		RoleID:       2,
-		RBACPolicyID: 1,
+		RoleType:           "serviceaccount",
+		RoleID:             2,
+		PermissionPolicyID: 1,
 	}
 	id4, err := suite.dao.CreatePermission(orm.Context(), rp4)
 	suite.permissionID4 = id4
 	suite.Nil(err)
 }
 
-func (suite *DaoTestSuite) prepareRbacPolicy() {
-	rp := &model.RbacPolicy{
+func (suite *DaoTestSuite) preparePermissionPolicy() {
+	rp := &model.PermissionPolicy{
 		Scope:    "/system",
 		Resource: "label",
 		Action:   "create",
@@ -83,7 +83,7 @@ func (suite *DaoTestSuite) prepareRbacPolicy() {
 	suite.rbacPolicyID1 = id
 	suite.Nil(err)
 
-	rp2 := &model.RbacPolicy{
+	rp2 := &model.PermissionPolicy{
 		Scope:    "/project/1",
 		Resource: "repository",
 		Action:   "push",
@@ -92,7 +92,7 @@ func (suite *DaoTestSuite) prepareRbacPolicy() {
 	suite.rbacPolicyID2 = id2
 	suite.Nil(err)
 
-	rp3 := &model.RbacPolicy{
+	rp3 := &model.PermissionPolicy{
 		Scope:    "/project/1",
 		Resource: "repository",
 		Action:   "pull",
@@ -101,7 +101,7 @@ func (suite *DaoTestSuite) prepareRbacPolicy() {
 	suite.rbacPolicyID3 = id3
 	suite.Nil(err)
 
-	rp4 := &model.RbacPolicy{
+	rp4 := &model.PermissionPolicy{
 		Scope:    "/project/2",
 		Resource: "helm-chart",
 		Action:   "create",
@@ -113,9 +113,9 @@ func (suite *DaoTestSuite) prepareRbacPolicy() {
 
 func (suite *DaoTestSuite) TestCreatePermission() {
 	rp := &model.RolePermission{
-		RoleType:     "robot",
-		RoleID:       1,
-		RBACPolicyID: 2,
+		RoleType:           "robot",
+		RoleID:             1,
+		PermissionPolicyID: 2,
 	}
 	_, err := suite.dao.CreatePermission(orm.Context(), rp)
 	suite.Nil(err)
@@ -130,23 +130,23 @@ func (suite *DaoTestSuite) TestDeletePermission() {
 	suite.Nil(err)
 }
 
-func (suite *DaoTestSuite) TestListPermission() {
-	rps, err := suite.dao.ListPermission(orm.Context(), &q.Query{
+func (suite *DaoTestSuite) TestListPermissions() {
+	rps, err := suite.dao.ListPermissions(orm.Context(), &q.Query{
 		Keywords: map[string]interface{}{
-			"role_type":      "robot",
-			"role_id":        1,
-			"rbac_policy_id": 4,
+			"role_type":            "robot",
+			"role_id":              1,
+			"permission_policy_id": 4,
 		},
 	})
 	suite.Require().Nil(err)
-	suite.Equal(int64(4), rps[0].RBACPolicyID)
+	suite.Equal(int64(4), rps[0].PermissionPolicyID)
 }
 
-func (suite *DaoTestSuite) TestDeletePermissionByRole() {
-	err := suite.dao.DeletePermissionByRole(orm.Context(), "serviceaccount", 2)
+func (suite *DaoTestSuite) TestDeletePermissionsByRole() {
+	err := suite.dao.DeletePermissionsByRole(orm.Context(), "serviceaccount", 2)
 	suite.Require().Nil(err)
 
-	rps, err := suite.dao.ListPermission(orm.Context(), &q.Query{
+	rps, err := suite.dao.ListPermissions(orm.Context(), &q.Query{
 		Keywords: map[string]interface{}{
 			"role_type": "serviceaccount",
 			"role_id":   2,
@@ -158,7 +158,7 @@ func (suite *DaoTestSuite) TestDeletePermissionByRole() {
 }
 
 func (suite *DaoTestSuite) TestCreateRbacPolicy() {
-	rp := &model.RbacPolicy{
+	rp := &model.PermissionPolicy{
 		Scope:    "/system",
 		Resource: "label",
 		Action:   "create",
@@ -176,8 +176,8 @@ func (suite *DaoTestSuite) TestDeleteRbacPolicy() {
 	suite.Nil(err)
 }
 
-func (suite *DaoTestSuite) TestListRbacPolicy() {
-	rps, err := suite.dao.ListRbacPolicy(orm.Context(), &q.Query{
+func (suite *DaoTestSuite) TestListRbacPolicies() {
+	rps, err := suite.dao.ListRbacPolicies(orm.Context(), &q.Query{
 		Keywords: map[string]interface{}{
 			"scope":    "/project/1",
 			"resource": "repository",
@@ -189,7 +189,7 @@ func (suite *DaoTestSuite) TestListRbacPolicy() {
 }
 
 func (suite *DaoTestSuite) TestGetPermissionsByRole() {
-	rp := &model.RbacPolicy{
+	rp := &model.PermissionPolicy{
 		Scope:    "/system",
 		Resource: "label",
 		Action:   "delete",
@@ -198,9 +198,9 @@ func (suite *DaoTestSuite) TestGetPermissionsByRole() {
 	suite.Nil(err)
 
 	rpe := &model.RolePermission{
-		RoleType:     "TestGetPermissionsByRole",
-		RoleID:       1,
-		RBACPolicyID: id,
+		RoleType:           "TestGetPermissionsByRole",
+		RoleID:             1,
+		PermissionPolicyID: id,
 	}
 	_, err = suite.dao.CreatePermission(orm.Context(), rpe)
 	suite.Nil(err)

@@ -7,16 +7,16 @@ import (
 
 func init() {
 	orm.RegisterModel(&RolePermission{})
-	orm.RegisterModel(&RbacPolicy{})
+	orm.RegisterModel(&PermissionPolicy{})
 }
 
 // RolePermission records the relations of role and permission
 type RolePermission struct {
-	ID           int64     `orm:"pk;auto;column(id)"`
-	RoleType     string    `orm:"column(role_type)"`
-	RoleID       int64     `orm:"column(role_id)"`
-	RBACPolicyID int64     `orm:"column(rbac_policy_id)"`
-	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	ID                 int64     `orm:"pk;auto;column(id)"`
+	RoleType           string    `orm:"column(role_type)"`
+	RoleID             int64     `orm:"column(role_id)"`
+	PermissionPolicyID int64     `orm:"column(permission_policy_id)"`
+	CreationTime       time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 }
 
 // TableName for role permission
@@ -24,8 +24,8 @@ func (rp *RolePermission) TableName() string {
 	return "role_permission"
 }
 
-// RbacPolicy records the policy of rbac
-type RbacPolicy struct {
+// PermissionPolicy records the policy of rbac
+type PermissionPolicy struct {
 	ID           int64     `orm:"pk;auto;column(id)"`
 	Scope        string    `orm:"column(scope)"`
 	Resource     string    `orm:"column(resource)"`
@@ -34,13 +34,13 @@ type RbacPolicy struct {
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 }
 
-// TableName for rbac policy
-func (rbacPolicy *RbacPolicy) TableName() string {
-	return "rbac_policy"
+// TableName for permission policy
+func (permissionPolicy *PermissionPolicy) TableName() string {
+	return "permission_policy"
 }
 
-// RolePermissions ...
-type RolePermissions struct {
+// UniversalRolePermission ...
+type UniversalRolePermission struct {
 	RoleType string `orm:"column(role_type)"`
 	RoleID   int64  `orm:"column(role_id)"`
 	Scope    string `orm:"column(scope)"`
