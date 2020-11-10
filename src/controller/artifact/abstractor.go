@@ -18,11 +18,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
@@ -36,14 +39,16 @@ type Abstractor interface {
 // NewAbstractor creates a new abstractor
 func NewAbstractor() Abstractor {
 	return &abstractor{
-		artMgr: artifact.Mgr,
-		regCli: registry.Cli,
+		artMgr:  artifact.Mgr,
+		blobMgr: blob.Mgr,
+		regCli:  registry.Cli,
 	}
 }
 
 type abstractor struct {
-	artMgr artifact.Manager
-	regCli registry.Client
+	artMgr  artifact.Manager
+	blobMgr blob.Manager
+	regCli  registry.Client
 }
 
 func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact) error {
@@ -60,7 +65,9 @@ func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Ar
 
 	switch artifact.ManifestMediaType {
 	case "", "application/json", schema1.MediaTypeSignedManifest:
-		a.abstractManifestV1Metadata(artifact)
+		if err := a.abstractManifestV1Metadata(ctx, artifact, content); err != nil {
+			return err
+		}
 	case v1.MediaTypeImageManifest, schema2.MediaTypeManifest:
 		if err = a.abstractManifestV2Metadata(artifact, content); err != nil {
 			return err
@@ -76,13 +83,36 @@ func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Ar
 }
 
 // the artifact is enveloped by docker manifest v1
-func (a *abstractor) abstractManifestV1Metadata(artifact *artifact.Artifact) {
+func (a *abstractor) abstractManifestV1Metadata(ctx context.Context, artifact *artifact.Artifact, content []byte) error {
 	// unify the media type of v1 manifest to "schema1.MediaTypeSignedManifest"
 	artifact.ManifestMediaType = schema1.MediaTypeSignedManifest
 	// as no config layer in the docker v1 manifest, use the "schema1.MediaTypeSignedManifest"
 	// as the media type of artifact
 	artifact.MediaType = schema1.MediaTypeSignedManifest
-	// there is no layer size in v1 manifest, doesn't set the artifact size
+
+	manifest := &schema1.Manifest{}
+	if err := json.Unmarshal(content, manifest); err != nil {
+		return err
+	}
+
+	digests := make([]string, len(manifest.FSLayers))
+	for i, fsLayer := range manifest.FSLayers {
+		digests[i] = fsLayer.BlobSum.String()
+	}
+
+	// there is no layer size in v1 manifest, compute the artifact size from the blobs
+	blobs, err := a.blobMgr.List(ctx, blob.ListParams{BlobDigests: digests})
+	if err != nil {
+		log.G(ctx).Errorf("failed to get blobs of the artifact %s, error %v", artifact.Digest, err)
+		return err
+	}
+
+	artifact.Size = int64(len(content))
+	for _, blob := range blobs {
+		artifact.Size += blob.Size
+	}
+
+	return nil
 }
 
 // the artifact is enveloped by OCI manifest or docker manifest v2
