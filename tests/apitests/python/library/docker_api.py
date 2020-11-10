@@ -112,7 +112,7 @@ class DockerAPI(object):
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Pull image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
-                raise Exception(r" Docker pull image {} failed, error is [{}]".format (image, message))
+                raise Exception(r" Docker pull image {} failed, error is [{}]".format (image, str(err)))
         if caught_err == False:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:

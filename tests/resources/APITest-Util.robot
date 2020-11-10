@@ -14,4 +14,5 @@ Harbor API Test
     Log To Console  ${ip}
     ${rc}  ${output}=  Run And Return Rc And Output  SWAGGER_CLIENT_PATH=${current_dir}/harborclient HARBOR_HOST=${ip} python ${testcase_name}
     Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0

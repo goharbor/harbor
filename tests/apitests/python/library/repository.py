@@ -80,9 +80,12 @@ class Repository(base.Base, object):
             _, status_code, _ = client.delete_repository_with_http_info(project_name, repo_name)
         except Exception as e:
             base._assert_status_code(expect_status_code, e.status)
-            return e.body
-        base._assert_status_code(expect_status_code, status_code)
-        base._assert_status_code(200, status_code)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+            return
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            base._assert_status_code(200, status_code)
 
 
     def list_repositories(self, project_name, **kwargs):

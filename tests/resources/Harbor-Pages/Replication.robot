@@ -149,8 +149,8 @@ Rename Rule
     Retry Element Click  ${rule_filter_search}
     Retry Text Input  ${rule_filter_input}  ${rule}
     Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
-    Retry Element Click  ${replication_action}
-    Retry Element Click  ${action_bar_edit}
+    Retry Element Click  ${replication_rule_action}
+    Retry Element Click  ${replication_rule_action_bar_edit}
     Retry Text Input  ${rule_name}  ${newname}
     Retry Element Click  ${rule_save_button}
 
@@ -159,8 +159,8 @@ Delete Rule
     Retry Element Click  ${rule_filter_search}
     Retry Text Input   ${rule_filter_input}  ${rule}
     Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
-    Retry Element Click  ${replication_action}
-    Retry Element Click  ${action_bar_delete}
+    Retry Element Click  ${replication_rule_action}
+    Retry Element Click  ${replication_rule_action_bar_delete}
     Retry Wait Until Page Contains Element  ${dialog_delete}
     #change from click to mouse down and up
     Mouse Down  ${dialog_delete}
@@ -169,7 +169,7 @@ Delete Rule
 
 Select Rule
     [Arguments]  ${rule}
-    Retry Double Keywords When Error  Retry Element Click  //clr-dg-cell[contains(.,'${rule}')]  Retry Wait Element  ${replication_exec_id}
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${rule}')]/div/div[1]/div  Retry Wait Element  ${replication_rule_exec_id}
 
 Stop Jobs
     Retry Element Click  ${stop_jobs_button}
@@ -180,25 +180,25 @@ View Job Log
     Retry Text Input  ${job_filter_input}  ${job}
     Retry Link Click  //clr-dg-row[contains(.,'${job}')]//a
 
-Find Item And Click Edit Button
+Find Registry And Click Edit Button
     [Arguments]    ${name}
     Filter Object    ${name}
     Retry Select Object    ${name}
-    Retry Element Click    ${action_bar_edit}
+    Retry Element Click    ${registry_edit_btn}
 
 Find Rule And Click Edit Button
     [Arguments]    ${name}
     Filter Object    ${name}
     Retry Select Object    ${name}
-    Retry Element Click    ${replication_action}
-    Retry Element Click    ${action_bar_edit}
+    Retry Element Click    ${replication_rule_action}
+    Retry Element Click    ${replication_rule_action_bar_edit}
 
-Find Item And Click Delete Button
+Find Rule And Click Delete Button
     [Arguments]    ${name}
     Filter Object    ${name}
     Retry Select Object    ${name}
-    Retry Element Click    ${replication_action}
-    Retry Element Click    ${action_bar_delete}
+    Retry Element Click    ${replication_rule_action}
+    Retry Element Click    ${replication_rule_action_bar_delete}
 
 Switch To Replication Manage Page
     [Arguments]    ${name}
@@ -213,7 +213,7 @@ Delete Replication Rule By Name
     [Arguments]    ${name}
     Switch To Registries
     Switch To Replication Manage
-    Find Item And Click Delete Button  ${name}
+    Find Rule And Click Delete Button  ${name}
 
 Ensure Delete Replication Rule By Name
     [Arguments]    ${name}
@@ -223,7 +223,7 @@ Ensure Delete Replication Rule By Name
 
 Rename Endpoint
     [arguments]  ${name}  ${newname}
-    Find Item And Click Edit Button  ${name}
+    Find Registry And Click Edit Button  ${name}
     Retry Wait Until Page Contains Element  ${destination_name_xpath}
     Retry Text Input  ${destination_name_xpath}  ${newname}
     Retry Element Click  ${replication_save_xpath}
@@ -233,15 +233,15 @@ Delete Endpoint
     Retry Element Click  ${endpoint_filter_search}
     Retry Text Input   ${endpoint_filter_input}  ${name}
     #click checkbox before target endpoint
-    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${name}')]//clr-checkbox-wrapper  Retry Wait Element  ${action_bar_delete}
-    Retry Element Click  ${action_bar_delete}
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${name}')]//clr-checkbox-wrapper  Retry Wait Element  ${registry_del_btn}
+    Retry Element Click  ${registry_del_btn}
     Wait Until Page Contains Element  ${dialog_delete}
     Retry Element Click  ${dialog_delete}
 
 Select Rule And Replicate
     [Arguments]  ${rule_name}
     Select Rule  ${rule_name}
-    Retry Element Click    ${replication_exec_id}
+    Retry Element Click    ${replication_rule_exec_id}
     Retry Double Keywords When Error    Retry Element Click    xpath=${dialog_replicate}    Retry Wait Until Page Not Contains Element    xpath=${dialog_replicate}
 
 Delete Replication Rule
@@ -250,8 +250,8 @@ Delete Replication Rule
     Retry Text Input   ${endpoint_filter_input}  ${name}
     #click checkbox before target endpoint
     Retry Element Click  //clr-dg-row[contains(.,'${name}')]//label
-    Retry Element Click  ${replication_action}
-    Retry Element Click  ${action_bar_delete}
+    Retry Element Click  ${replication_rule_action}
+    Retry Element Click  ${replication_rule_action_bar_delete}
     Wait Until Page Contains Element  ${dialog_delete}
     Retry Element Click  ${dialog_delete}
 

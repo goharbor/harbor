@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from testutils import harbor_server
+from testutils import harbor_server, suppress_urllib3_warning
 from testutils import TEARDOWN
 from testutils import ADMIN_CLIENT
 from library.artifact import Artifact
@@ -13,7 +13,7 @@ from library.repository import push_image_to_project
 from library.label import Label
 
 class TestProjects(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.project = Project()
         self.user = User()
@@ -21,12 +21,8 @@ class TestProjects(unittest.TestCase):
         self.repo = Repository()
         self.label = Label()
 
-    @classmethod
-    def tearDown(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(TestProjects.project_add_g_lbl_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_add_g_lbl_CLIENT)
 

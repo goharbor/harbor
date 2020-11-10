@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
 from library.sign import sign_image
@@ -13,7 +13,7 @@ from library.repository import push_image_to_project
 from library.repository import push_special_image_to_project
 
 class TestProjects(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.project = Project()
         self.user = User()
@@ -21,12 +21,8 @@ class TestProjects(unittest.TestCase):
         self.repo = Repository()
         self.repo_name_1 = "test1_sign"
 
-    @classmethod
-    def tearDown(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         # remove the deletion as the signed image cannot be deleted.
         #1. Delete repository(RA) by user(UA);
         #self.repo.delete_repoitory(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_sign_image_CLIENT)
@@ -85,9 +81,7 @@ class TestProjects(unittest.TestCase):
         push_special_image_to_project(TestProjects.project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, self.repo_name_1, ['1.0'])
         self.repo.delete_repoitory(TestProjects.project_sign_image_name, self.repo_name_1, **TestProjects.USER_sign_image_CLIENT)
 
-        ret = self.repo.delete_repoitory(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], expect_status_code=412, **TestProjects.USER_sign_image_CLIENT)
-        self.assertIn("with signature cannot be deleted", ret)
-
+        self.repo.delete_repoitory(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], expect_status_code=412, expect_response_body = "with signature cannot be deleted", **TestProjects.USER_sign_image_CLIENT)
 
 if __name__ == '__main__':
     unittest.main()

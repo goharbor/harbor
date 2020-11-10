@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import unittest
 import sys
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, TEARDOWN, suppress_urllib3_warning
 from testutils import harbor_server
 from library.project import Project
 from library.user import User
@@ -16,8 +16,8 @@ from library.tag_immutability import Tag_Immutability
 from library.repository import push_special_image_to_project
 
 class TestTagImmutability(unittest.TestCase):
-    @classmethod
-    def setUpClass(self):
+    @suppress_urllib3_warning
+    def setUp(self):
         self.url = ADMIN_CLIENT["endpoint"]
         self.user_password = "Aa123456"
         self.project= Project()
@@ -31,6 +31,10 @@ class TestTagImmutability(unittest.TestCase):
         self.USER_CLIENT = dict(with_signature = True, with_immutable_status = True, endpoint = self.url, username = self.user_name, password = self.user_password)
         self.exsiting_rule = dict(selector_repository="rel*", selector_tag="v2.*")
         self.project_id, self.project_name = self.project.create_project(metadata = {"public": "false"}, **self.USER_CLIENT)
+
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
+    def tearDown(self):
+        print("Case completed")
 
     def check_tag_immutability(self, artifact, tag_name, status = True):
         for tag in artifact.tags:
@@ -287,10 +291,6 @@ class TestTagImmutability(unittest.TestCase):
         """
         self.tag_immutability.create_tag_immutability_policy_rule(self.project_id, **self.exsiting_rule, **self.USER_CLIENT)
         self.tag_immutability.create_tag_immutability_policy_rule(self.project_id, **self.exsiting_rule, expect_status_code = 409, **self.USER_CLIENT)
-
-    @classmethod
-    def tearDownClass(self):
-        print("Case completed")
 
 if __name__ == '__main__':
     suite = unittest.TestSuite(unittest.makeSuite(TestTagImmutability))

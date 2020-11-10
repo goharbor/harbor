@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
 import library.repository
@@ -15,8 +15,8 @@ from library.artifact import Artifact
 from library.docker_api import DockerAPI
 
 class TestProjects(unittest.TestCase):
-    @classmethod
-    def setUpClass(self):
+    @suppress_urllib3_warning
+    def setUp(self):
         self.project= Project()
         self.user= User()
         self.artifact = Artifact()
@@ -26,12 +26,8 @@ class TestProjects(unittest.TestCase):
         self.cnab_repo_name = "test_cnab"
         self.cnab_tag = "test_cnab_tag"
 
-    @classmethod
-    def tearDownClass(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(TestProjects.project_push_bundle_name, self.cnab_repo_name, **TestProjects.USER_CLIENT)
 

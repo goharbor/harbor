@@ -49,7 +49,6 @@ class Project(base.Base):
             return
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(201, status_code)
-        print("==========header:", header)
         return base._get_id_from_header(header), name
 
     def get_projects(self, params, **kwargs):
