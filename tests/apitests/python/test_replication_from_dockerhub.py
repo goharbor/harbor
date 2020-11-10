@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import os
 import unittest
 
 from testutils import ADMIN_CLIENT, suppress_urllib3_warning
@@ -22,6 +23,8 @@ class TestProjects(unittest.TestCase):
         self.repo = Repository()
         self.image = "alpine"
         self.tag = "latest"
+        self.access_key = os.environ.get("HARBOR_TEST_DOCKER_USERNAME", "")
+        self.access_secret = os.environ.get("HARBOR_TEST_DOCKER_PASSWORD", "")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
@@ -75,7 +78,7 @@ class TestProjects(unittest.TestCase):
             expected_project_id = TestProjects.project_add_rule_id, **TestProjects.USER_add_rule_CLIENT)
 
         #3. Create a new registry;
-        TestProjects.registry_id, _ = self.registry.create_registry("https://hub.docker.com", registry_type="docker-hub", access_key = "", access_secret = "", insecure=False, **ADMIN_CLIENT)
+        TestProjects.registry_id, _ = self.registry.create_registry("https://hub.docker.com", registry_type="docker-hub", access_key=self.access_key, access_secret=self.access_secret, insecure=False, **ADMIN_CLIENT)
 
         #4. Create a pull-based rule for this registry;
         TestProjects.rule_id, rule_name = self.replication.create_replication_policy(src_registry=swagger_client.Registry(id=int(TestProjects.registry_id)),
