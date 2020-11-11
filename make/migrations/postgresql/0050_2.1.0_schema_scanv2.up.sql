@@ -1,8 +1,3 @@
- --force an upgrade of the schema-- REMOVE once dev complete
- DROP TABLE IF EXISTS "scan_report_v2";
- DROP TABLE IF EXISTS "vulnerability_record_v2";
- DROP TABLE IF EXISTS "report_vulnerability_record_v2";
- -----------------------------
  
  -- --------------------------------------------------
     --  Table Structure for `main.Report`
