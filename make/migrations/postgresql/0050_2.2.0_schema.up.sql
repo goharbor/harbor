@@ -1,3 +1,10 @@
+/* 
+Fixes issue https://github.com/goharbor/harbor/issues/13317 
+  Ensure the role_id of maintainer is 4 and the role_id of limisted guest is 5
+*/
+UPDATE role SET role_id=4 WHERE name='maintainer' AND role_id!=4;
+UPDATE role SET role_id=5 WHERE name='limitedGuest' AND role_id!=5;
+
 ALTER TABLE schedule ADD COLUMN IF NOT EXISTS cron_type varchar(64);
 
 DO $$
