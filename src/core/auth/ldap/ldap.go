@@ -100,28 +100,41 @@ func (l *Auth) attachLDAPGroup(ldapUsers []models.LdapUser, u *models.User, sess
 		// most likely user doesn't configure user group info, it should not block user login
 	}
 	groupAdminDN := utils.TrimLower(groupCfg.LdapGroupAdminDN)
-	// Attach user group
-	for _, groupDN := range ldapUsers[0].GroupDNList {
-
-		groupDN = utils.TrimLower(groupDN)
-		// Attach LDAP group admin
-		if len(groupAdminDN) > 0 && groupAdminDN == groupDN {
-			u.AdminRoleInAuth = true
-		}
-
-	}
 	userGroups := make([]models.UserGroup, 0)
-	for _, dn := range ldapUsers[0].GroupDNList {
-		lGroups, err := sess.SearchGroupByDN(dn)
+	// Attach user group
+	if groupCfg.LdapGroupUseMemberOf {
+		for _, groupDN := range ldapUsers[0].GroupDNList {
+
+			groupDN = utils.TrimLower(groupDN)
+			// Attach LDAP group admin
+			if len(groupAdminDN) > 0 && groupAdminDN == groupDN {
+				u.AdminRoleInAuth = true
+			}
+
+		}
+		for _, dn := range ldapUsers[0].GroupDNList {
+			lGroups, err := sess.SearchGroupByDN(dn)
+			if err != nil {
+				log.Warningf("Can not get the ldap group name with DN %v, error %v", dn, err)
+				continue
+			}
+			if len(lGroups) == 0 {
+				log.Warningf("Can not get the ldap group name with DN %v", dn)
+				continue
+			}
+			userGroups = append(userGroups, models.UserGroup{GroupName: lGroups[0].GroupName, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
+		}
+	} else {
+		lGroups, err := sess.SearchGroupsForUser(ldapUsers[0].DN)
 		if err != nil {
-			log.Warningf("Can not get the ldap group name with DN %v, error %v", dn, err)
-			continue
+			log.Warningf("Can not get the ldap groups for user %v, error %v", ldapUsers[0].DN, err)
 		}
-		if len(lGroups) == 0 {
-			log.Warningf("Can not get the ldap group name with DN %v", dn)
-			continue
+		for _, group := range lGroups {
+			if len(groupAdminDN) > 0 && groupAdminDN == utils.TrimLower(group.GroupDN) {
+				u.AdminRoleInAuth = true
+			}
+			userGroups = append(userGroups, models.UserGroup{GroupName: group.GroupName, LdapGroupDN: group.GroupDN, GroupType: common.LDAPGroupType})
 		}
-		userGroups = append(userGroups, models.UserGroup{GroupName: lGroups[0].GroupName, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
 	}
 	u.GroupIDs, err = group.PopulateGroup(userGroups)
 	if err != nil {

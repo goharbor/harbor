@@ -194,7 +194,7 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 		return nil, err
 	}
 
-	result, err := session.SearchLdap(ldapFilter)
+	result, err := session.SearchLdap(ldapFilter, session.ldapConfig.LdapScope)
 	if err != nil {
 		return nil, err
 	}
@@ -272,7 +272,7 @@ func (session *Session) Open() error {
 }
 
 // SearchLdap to search ldap with the provide filter
-func (session *Session) SearchLdap(filter string) (*goldap.SearchResult, error) {
+func (session *Session) SearchLdap(filter string, scope int) (*goldap.SearchResult, error) {
 	attributes := []string{"uid", "cn", "mail", "email"}
 	lowerUID := strings.ToLower(session.ldapConfig.LdapUID)
 
@@ -285,12 +285,11 @@ func (session *Session) SearchLdap(filter string) (*goldap.SearchResult, error) 
 	log.Debugf("Membership attribute: %s\n", groupAttr)
 	attributes = append(attributes, groupAttr)
 
-	return session.SearchLdapAttribute(session.ldapConfig.LdapBaseDn, filter, attributes)
+	return session.SearchLdapAttribute(session.ldapConfig.LdapBaseDn, filter, attributes, scope)
 }
 
 // SearchLdapAttribute - to search ldap with the provide filter, with specified attributes
-func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []string) (*goldap.SearchResult, error) {
-
+func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []string, scope int) (*goldap.SearchResult, error) {
 	if err := session.Bind(session.ldapConfig.LdapSearchDn, session.ldapConfig.LdapSearchPassword); err != nil {
 		return nil, fmt.Errorf("Can not bind search dn, error: %v", err)
 	}
@@ -388,6 +387,32 @@ func (session *Session) groupBaseDN() string {
 	return session.ldapGroupConfig.LdapGroupBaseDN
 }
 
+// SearchGroupsForUser -- Search groups where LdapGroupMembershipAttribute contains userDN
+func (session *Session) SearchGroupsForUser(userDN string) ([]models.LdapGroup, error) {
+	ldapGroups := make([]models.LdapGroup, 0)
+	log.Debugf("Search groups for User %s", userDN)
+	ldapFilter, err := createGroupSearchFilter(session.ldapGroupConfig.LdapGroupFilter, userDN, session.ldapGroupConfig.LdapGroupMembershipAttribute)
+	if err != nil {
+		log.Errorf("wrong filter format: filter:%v, value:%v, attribute:%v", session.ldapGroupConfig.LdapGroupFilter, userDN, session.ldapGroupConfig.LdapGroupMembershipAttribute)
+	}
+	result, err := session.SearchLdapAttribute(session.groupBaseDN(), ldapFilter, []string{session.ldapGroupConfig.LdapGroupNameAttribute}, session.ldapGroupConfig.LdapGroupSearchScope)
+	if err != nil {
+		return ldapGroups, err
+	}
+	if len(result.Entries) == 0 {
+		log.Debugf("Found no groups for user %s", userDN)
+		return ldapGroups, err
+	}
+	for _, ldapEntry := range result.Entries {
+		groupName := ""
+		if len(ldapEntry.Attributes) > 0 {
+			groupName = ldapEntry.Attributes[0].Values[0]
+		}
+		ldapGroups = append(ldapGroups, models.LdapGroup{GroupDN: ldapEntry.DN, GroupName: groupName})
+	}
+	return ldapGroups, nil
+}
+
 // searchGroup -- Given a group DN and filter, search group
 func (session *Session) searchGroup(groupDN, filter, gName, groupNameAttribute string) ([]models.LdapGroup, error) {
 	ldapGroups := make([]models.LdapGroup, 0)
@@ -412,7 +437,7 @@ func (session *Session) searchGroup(groupDN, filter, gName, groupNameAttribute s
 	// There maybe many groups under the LDAP group base DN
 	// If return all groups in LDAP group base DN, it might get "Size Limit Exceeded" error
 	// Take the groupDN as the baseDN in the search request to avoid return too many records
-	result, err := session.SearchLdapAttribute(groupDN, ldapFilter, []string{groupNameAttribute})
+	result, err := session.SearchLdapAttribute(groupDN, ldapFilter, []string{groupNameAttribute}, session.ldapGroupConfig.LdapGroupSearchScope)
 	if err != nil {
 		return ldapGroups, err
 	}

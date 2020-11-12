@@ -901,7 +901,9 @@
             "LDAP_GROUP_ADMIN_DN": "LDAP Group Admin DN",
             "LDAP_GROUP_ADMIN_DN_INFO": "Specify an LDAP group DN. All LDAP user in this group will have harbor admin privilege. Keep it blank if you do not want to.",
             "LDAP_GROUP_MEMBERSHIP": "LDAP Group Membership",
-            "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\"",
+            "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\". If \"Group Membership Attribute at User\" is disabled, it could be \"member\".",
+            "LDAP_GROUP_USE_MEMBER_OF": "Group Membership Attribute at User",
+            "LDAP_GROUP_USE_MEMBER_OF_INFO": "If enabled, the \"LDAP Group Membership\" Attribute of the user is evaluated for group memberships. If disabled, the \"LDAP Group Membership\" attribute at the groups are evaluated (disable, if memberof-overlay is missing).",
             "GROUP_SCOPE": "LDAP Group Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
 

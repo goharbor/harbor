@@ -107,6 +107,10 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
         return !isEmpty(this.getChanges());
     }
 
+    setLdapGroupUseMemberOfValue($event: any) {
+        this.currentConfig.ldap_group_use_member_of.value = $event;
+    }
+
     setVerifyCertValue($event: any) {
         this.currentConfig.ldap_verify_cert.value = $event;
     }
