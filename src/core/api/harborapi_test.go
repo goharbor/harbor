@@ -795,6 +795,26 @@ func (a testapi) LdapPost(authInfo usrInfo, ldapConf apilib.LdapConf) (int, erro
 	return httpStatusCode, err
 }
 
+// Search Ldap Groups
+func (a testapi) LdapGroupsSearch(groupName, groupDN string, authInfo ...usrInfo) (int, []apilib.LdapGroupsSearch, error) {
+	_sling := sling.New().Get(a.basePath)
+	// create path and map variables
+	path := "/api/ldap/groups/search"
+	_sling = _sling.Path(path)
+	// body params
+	type QueryParams struct {
+		GroupName string `url:"groupname, omitempty"`
+		GroupDN   string `url:"groupdn, omitempty"`
+	}
+	_sling = _sling.QueryStruct(&QueryParams{GroupName: groupName, GroupDN: groupDN})
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo...)
+	var successPayLoad []apilib.LdapGroupsSearch
+	if 200 == httpStatusCode && nil == err {
+		err = json.Unmarshal(body, &successPayLoad)
+	}
+	return httpStatusCode, successPayLoad, err
+}
+
 func (a testapi) GetConfig(authInfo usrInfo) (int, map[string]*value, error) {
 	_sling := sling.New().Base(a.basePath).Get("/api/configurations")
 
