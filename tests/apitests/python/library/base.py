@@ -28,7 +28,7 @@ def get_endpoint():
 
 def _create_client(server, credential, debug, api_type="products"):
     cfg = None
-    if api_type in ('projectv2', 'artifact', 'repository', 'scan'):
+    if api_type in ('projectv2', 'artifact', 'repository', 'scan', 'preheat'):
         cfg = v2_swagger_client.Configuration()
     else:
         cfg = swagger_client.Configuration()
@@ -55,6 +55,7 @@ def _create_client(server, credential, debug, api_type="products"):
         "products":   swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
         "projectv2":  v2_swagger_client.ProjectApi(v2_swagger_client.ApiClient(cfg)),
         "artifact":   v2_swagger_client.ArtifactApi(v2_swagger_client.ApiClient(cfg)),
+        "preheat":   v2_swagger_client.PreheatApi(v2_swagger_client.ApiClient(cfg)),
         "repository": v2_swagger_client.RepositoryApi(v2_swagger_client.ApiClient(cfg)),
         "scan": v2_swagger_client.ScanApi(v2_swagger_client.ApiClient(cfg)),
         "scanner": swagger_client.ScannersApi(swagger_client.ApiClient(cfg)),
