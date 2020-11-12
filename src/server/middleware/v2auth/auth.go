@@ -15,6 +15,7 @@
 package v2auth
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -23,8 +24,8 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -37,7 +38,7 @@ const (
 )
 
 type reqChecker struct {
-	pm promgr.ProjectManager
+	ctl project.Controller
 }
 
 func (rc *reqChecker) check(req *http.Request) (string, error) {
@@ -58,7 +59,7 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 			return getChallenge(req, al), fmt.Errorf("authorize header needed to send HEAD to repository")
 		} else if a.target == repository {
 			pn := strings.Split(a.name, "/")[0]
-			pid, err := rc.projectID(pn)
+			pid, err := rc.projectID(req.Context(), pn)
 			if err != nil {
 				return "", err
 			}
@@ -71,14 +72,12 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 	return "", nil
 }
 
-func (rc *reqChecker) projectID(name string) (int64, error) {
-	p, err := rc.pm.Get(name)
+func (rc *reqChecker) projectID(ctx context.Context, name string) (int64, error) {
+	p, err := rc.ctl.Get(ctx, name)
 	if err != nil {
 		return 0, err
 	}
-	if p == nil {
-		return 0, fmt.Errorf("project not found, name: %s", name)
-	}
+
 	return p.ProjectID, nil
 }
 
@@ -131,9 +130,9 @@ var (
 // Middleware checks the permission of the request to access the artifact
 func Middleware() func(http.Handler) http.Handler {
 	once.Do(func() {
-		if checker.pm == nil { // for UT, where pm has been set to a mock value
+		if checker.ctl == nil { // for UT, where ctl has been set to a mock value
 			checker = reqChecker{
-				pm: config.GlobalProjectMgr,
+				ctl: project.Ctl,
 			}
 		}
 	})

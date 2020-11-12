@@ -159,7 +159,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 		return errors.New("nil artifact to scan")
 	}
 
-	r, err := bc.sc.GetRegistrationByProject(artifact.ProjectID)
+	r, err := bc.sc.GetRegistrationByProject(ctx, artifact.ProjectID)
 	if err != nil {
 		return errors.Wrap(err, "scan controller: scan")
 	}
@@ -316,7 +316,7 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 	}
 
 	// Get current scanner settings
-	r, err := bc.sc.GetRegistrationByProject(artifact.ProjectID)
+	r, err := bc.sc.GetRegistrationByProject(ctx, artifact.ProjectID)
 	if err != nil {
 		return nil, errors.Wrap(err, "scan controller: get report")
 	}

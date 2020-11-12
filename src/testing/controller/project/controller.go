@@ -74,20 +74,41 @@ func (_m *Controller) Delete(ctx context.Context, id int64) error {
 	return r0
 }
 
-// Get provides a mock function with given fields: ctx, projectID, options
-func (_m *Controller) Get(ctx context.Context, projectID int64, options ...project.Option) (*models.Project, error) {
+// Exists provides a mock function with given fields: ctx, projectIDOrName
+func (_m *Controller) Exists(ctx context.Context, projectIDOrName interface{}) (bool, error) {
+	ret := _m.Called(ctx, projectIDOrName)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, interface{}) bool); ok {
+		r0 = rf(ctx, projectIDOrName)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, interface{}) error); ok {
+		r1 = rf(ctx, projectIDOrName)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Get provides a mock function with given fields: ctx, projectIDOrName, options
+func (_m *Controller) Get(ctx context.Context, projectIDOrName interface{}, options ...project.Option) (*models.Project, error) {
 	_va := make([]interface{}, len(options))
 	for _i := range options {
 		_va[_i] = options[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, ctx, projectID)
+	_ca = append(_ca, ctx, projectIDOrName)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
 	var r0 *models.Project
-	if rf, ok := ret.Get(0).(func(context.Context, int64, ...project.Option) *models.Project); ok {
-		r0 = rf(ctx, projectID, options...)
+	if rf, ok := ret.Get(0).(func(context.Context, interface{}, ...project.Option) *models.Project); ok {
+		r0 = rf(ctx, projectIDOrName, options...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Project)
@@ -95,8 +116,8 @@ func (_m *Controller) Get(ctx context.Context, projectID int64, options ...proje
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int64, ...project.Option) error); ok {
-		r1 = rf(ctx, projectID, options...)
+	if rf, ok := ret.Get(1).(func(context.Context, interface{}, ...project.Option) error); ok {
+		r1 = rf(ctx, projectIDOrName, options...)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -49,7 +49,7 @@ func (sa *ProjectScannerAPI) Prepare() {
 	}
 
 	// Check if the project exists
-	exists, err := sa.ProjectMgr.Exists(pid)
+	exists, err := sa.ProjectCtl.Exists(sa.Context(), pid)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "project scanner API"))
 		return
@@ -72,7 +72,7 @@ func (sa *ProjectScannerAPI) GetProjectScanner() {
 		return
 	}
 
-	r, err := sa.c.GetRegistrationByProject(sa.pid)
+	r, err := sa.c.GetRegistrationByProject(sa.Context(), sa.pid)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: get project scanners"))
 		return
@@ -106,7 +106,7 @@ func (sa *ProjectScannerAPI) SetProjectScanner() {
 		return
 	}
 
-	if err := sa.c.SetRegistrationByProject(sa.pid, uuid); err != nil {
+	if err := sa.c.SetRegistrationByProject(sa.Context(), sa.pid, uuid); err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: set project scanners"))
 		return
 	}

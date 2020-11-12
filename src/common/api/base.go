@@ -15,16 +15,17 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"strconv"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/validation"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -39,6 +40,11 @@ const (
 // BaseAPI wraps common methods for controllers to host API
 type BaseAPI struct {
 	beego.Controller
+}
+
+// Context returns the context.Context from http.Request
+func (b *BaseAPI) Context() context.Context {
+	return b.Ctx.Request.Context()
 }
 
 // GetStringFromPath gets the param from path and returns it as string

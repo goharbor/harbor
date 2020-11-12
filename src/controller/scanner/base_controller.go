@@ -15,11 +15,13 @@
 package scanner
 
 import (
-	"github.com/goharbor/harbor/src/core/promgr/metamgr"
+	"context"
+
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	rscanner "github.com/goharbor/harbor/src/pkg/scan/scanner"
@@ -38,7 +40,7 @@ var DefaultController = New()
 func New() Controller {
 	return &basicController{
 		manager:    rscanner.New(),
-		proMetaMgr: metamgr.NewDefaultProjectMetadataManager(),
+		proMetaMgr: metadata.Mgr,
 		clientPool: v1.DefaultClientPool,
 	}
 }
@@ -48,7 +50,7 @@ type basicController struct {
 	// Managers for managing the scanner registrations
 	manager rscanner.Manager
 	// For operating the project level configured scanner
-	proMetaMgr metamgr.ProjectMetadataManager
+	proMetaMgr metadata.Manager
 	// Client pool for talking to adapters
 	clientPool v1.ClientPool
 }
@@ -151,7 +153,7 @@ func (bc *basicController) SetDefaultRegistration(registrationUUID string) error
 }
 
 // SetRegistrationByProject ...
-func (bc *basicController) SetRegistrationByProject(projectID int64, registrationID string) error {
+func (bc *basicController) SetRegistrationByProject(ctx context.Context, projectID int64, registrationID string) error {
 	if projectID == 0 {
 		return errors.New("invalid project ID")
 	}
@@ -162,7 +164,7 @@ func (bc *basicController) SetRegistrationByProject(projectID int64, registratio
 
 	// Only keep the UUID in the metadata of the given project
 	// Scanner metadata existing?
-	m, err := bc.proMetaMgr.Get(projectID, proScannerMetaKey)
+	m, err := bc.proMetaMgr.Get(ctx, projectID, proScannerMetaKey)
 	if err != nil {
 		return errors.Wrap(err, "api controller: set project scanner")
 	}
@@ -172,14 +174,14 @@ func (bc *basicController) SetRegistrationByProject(projectID int64, registratio
 		// Compare and set new
 		if registrationID != m[proScannerMetaKey] {
 			m[proScannerMetaKey] = registrationID
-			if err := bc.proMetaMgr.Update(projectID, m); err != nil {
+			if err := bc.proMetaMgr.Update(ctx, projectID, m); err != nil {
 				return errors.Wrap(err, "api controller: set project scanner")
 			}
 		}
 	} else {
 		meta := make(map[string]string, 1)
 		meta[proScannerMetaKey] = registrationID
-		if err := bc.proMetaMgr.Add(projectID, meta); err != nil {
+		if err := bc.proMetaMgr.Add(ctx, projectID, meta); err != nil {
 			return errors.Wrap(err, "api controller: set project scanner")
 		}
 	}
@@ -188,13 +190,13 @@ func (bc *basicController) SetRegistrationByProject(projectID int64, registratio
 }
 
 // GetRegistrationByProject ...
-func (bc *basicController) GetRegistrationByProject(projectID int64, options ...Option) (*scanner.Registration, error) {
+func (bc *basicController) GetRegistrationByProject(ctx context.Context, projectID int64, options ...Option) (*scanner.Registration, error) {
 	if projectID == 0 {
 		return nil, errors.New("invalid project ID")
 	}
 
 	// First, get it from the project metadata
-	m, err := bc.proMetaMgr.Get(projectID, proScannerMetaKey)
+	m, err := bc.proMetaMgr.Get(ctx, projectID, proScannerMetaKey)
 	if err != nil {
 		return nil, errors.Wrap(err, "api controller: get project scanner")
 	}
@@ -210,7 +212,7 @@ func (bc *basicController) GetRegistrationByProject(projectID int64, options ...
 			if registration == nil {
 				// Not found
 				// Might be deleted by the admin, the project scanner ID reference should be cleared
-				if err := bc.proMetaMgr.Delete(projectID, proScannerMetaKey); err != nil {
+				if err := bc.proMetaMgr.Delete(ctx, projectID, proScannerMetaKey); err != nil {
 					return nil, errors.Wrap(err, "api controller: get project scanner")
 				}
 			}

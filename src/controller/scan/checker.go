@@ -53,7 +53,7 @@ func (c *checker) IsScannable(ctx context.Context, art *artifact.Artifact) (bool
 
 	r, ok := c.registrations[projectID]
 	if !ok {
-		registration, err := c.scannerCtl.GetRegistrationByProject(projectID)
+		registration, err := c.scannerCtl.GetRegistrationByProject(ctx, projectID)
 		if err != nil {
 			return false, err
 		}

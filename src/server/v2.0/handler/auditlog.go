@@ -3,12 +3,13 @@ package handler
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit"
@@ -19,13 +20,15 @@ import (
 
 func newAuditLogAPI() *auditlogAPI {
 	return &auditlogAPI{
-		auditMgr: audit.Mgr,
+		auditMgr:   audit.Mgr,
+		projectCtl: project.Ctl,
 	}
 }
 
 type auditlogAPI struct {
 	BaseAPI
-	auditMgr audit.Manager
+	auditMgr   audit.Manager
+	projectCtl project.Controller
 }
 
 func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAuditLogsParams) middleware.Responder {
@@ -43,8 +46,14 @@ func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAud
 
 	if !secCtx.IsSysAdmin() {
 		ol := &q.OrList{}
-		if sc, ok := secCtx.(*local.SecurityContext); ok {
-			projects, err := config.GlobalProjectMgr.GetAuthorized(sc.User())
+		if sc, ok := secCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {
+			user := sc.User()
+			member := &project.MemberQuery{
+				UserID:   user.UserID,
+				GroupIDs: user.GroupIDs,
+			}
+
+			projects, err := a.projectCtl.List(ctx, q.New(q.KeyWords{"member": member}), project.Metadata(false))
 			if err != nil {
 				return a.SendError(ctx, fmt.Errorf(
 					"failed to get projects of user %s: %v", secCtx.GetUsername(), err))

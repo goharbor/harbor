@@ -15,7 +15,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -24,15 +23,15 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/core/promgr/metamgr"
-	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 )
 
 // MetadataAPI ...
 type MetadataAPI struct {
 	BaseController
-	metaMgr metamgr.ProjectMetadataManager
+	metaMgr metadata.Manager
 	project *models.Project
 	name    string
 }
@@ -41,14 +40,7 @@ type MetadataAPI struct {
 func (m *MetadataAPI) Prepare() {
 	m.BaseController.Prepare()
 
-	m.metaMgr = m.ProjectMgr.GetMetadataManager()
-
-	// the project manager doesn't use a project metadata manager
-	if m.metaMgr == nil {
-		log.Debug("the project manager doesn't use a project metadata manager")
-		m.RenderError(http.StatusMethodNotAllowed, "")
-		return
-	}
+	m.metaMgr = metadata.Mgr
 
 	id, err := m.GetInt64FromPath(":id")
 	if err != nil || id <= 0 {
@@ -62,14 +54,13 @@ func (m *MetadataAPI) Prepare() {
 		return
 	}
 
-	project, err := m.ProjectMgr.Get(id)
+	project, err := m.ProjectCtl.Get(m.Context(), id)
 	if err != nil {
-		m.ParseAndHandleError(fmt.Sprintf("failed to get project %d", id), err)
-		return
-	}
-
-	if project == nil {
-		m.handleProjectNotFound(id)
+		if errors.IsNotFoundErr(err) {
+			m.handleProjectNotFound(id)
+		} else {
+			m.ParseAndHandleError(fmt.Sprintf("failed to get project %d", id), err)
+		}
 		return
 	}
 
@@ -78,7 +69,7 @@ func (m *MetadataAPI) Prepare() {
 	name := m.GetStringFromPath(":name")
 	if len(name) > 0 {
 		m.name = name
-		metas, err := m.metaMgr.Get(project.ProjectID, name)
+		metas, err := m.metaMgr.Get(m.Context(), project.ProjectID, name)
 		if err != nil {
 			m.SendInternalServerError(fmt.Errorf("failed to get metadata of project %d: %v", project.ProjectID, err))
 			return
@@ -103,9 +94,9 @@ func (m *MetadataAPI) Get() {
 	var metas map[string]string
 	var err error
 	if len(m.name) > 0 {
-		metas, err = m.metaMgr.Get(m.project.ProjectID, m.name)
+		metas, err = m.metaMgr.Get(m.Context(), m.project.ProjectID, m.name)
 	} else {
-		metas, err = m.metaMgr.Get(m.project.ProjectID)
+		metas, err = m.metaMgr.Get(m.Context(), m.project.ProjectID)
 	}
 
 	if err != nil {
@@ -140,7 +131,7 @@ func (m *MetadataAPI) Post() {
 	}
 
 	keys := reflect.ValueOf(ms).MapKeys()
-	mts, err := m.metaMgr.Get(m.project.ProjectID, keys[0].String())
+	mts, err := m.metaMgr.Get(m.Context(), m.project.ProjectID, keys[0].String())
 	if err != nil {
 		m.SendInternalServerError(fmt.Errorf("failed to get metadata for project %d: %v", m.project.ProjectID, err))
 		return
@@ -151,7 +142,7 @@ func (m *MetadataAPI) Post() {
 		return
 	}
 
-	if err := m.metaMgr.Add(m.project.ProjectID, ms); err != nil {
+	if err := m.metaMgr.Add(m.Context(), m.project.ProjectID, ms); err != nil {
 		m.SendInternalServerError(fmt.Errorf("failed to create metadata for project %d: %v", m.project.ProjectID, err))
 		return
 	}
@@ -185,7 +176,7 @@ func (m *MetadataAPI) Put() {
 		return
 	}
 
-	if err := m.metaMgr.Update(m.project.ProjectID, map[string]string{
+	if err := m.metaMgr.Update(m.Context(), m.project.ProjectID, map[string]string{
 		m.name: ms[m.name],
 	}); err != nil {
 		m.SendInternalServerError(fmt.Errorf("failed to update metadata %s of project %d: %v", m.name, m.project.ProjectID, err))
@@ -199,7 +190,7 @@ func (m *MetadataAPI) Delete() {
 		return
 	}
 
-	if err := m.metaMgr.Delete(m.project.ProjectID, m.name); err != nil {
+	if err := m.metaMgr.Delete(m.Context(), m.project.ProjectID, m.name); err != nil {
 		m.SendInternalServerError(fmt.Errorf("failed to delete metadata %s of project %d: %v", m.name, m.project.ProjectID, err))
 		return
 	}

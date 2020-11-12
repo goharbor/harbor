@@ -15,11 +15,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/controller/event/metadata"
-
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/label"
 	hlog "github.com/goharbor/harbor/src/lib/log"
@@ -151,14 +151,14 @@ func (cra *ChartRepositoryAPI) GetIndex() {
 		return
 	}
 
-	results, err := cra.ProjectMgr.List(nil)
+	projects, err := cra.ProjectCtl.List(cra.Context(), nil, project.Metadata(false))
 	if err != nil {
 		cra.SendInternalServerError(err)
 		return
 	}
 
 	namespaces := []string{}
-	for _, r := range results.Projects {
+	for _, r := range projects {
 		namespaces = append(namespaces, r.Name)
 	}
 
@@ -433,7 +433,7 @@ func (cra *ChartRepositoryAPI) requireNamespace(namespace string) bool {
 		return false
 	}
 
-	existing, err := cra.ProjectMgr.Exists(namespace)
+	existing, err := cra.ProjectCtl.Exists(cra.Context(), namespace)
 	if err != nil {
 		// Check failed with error
 		cra.SendInternalServerError(fmt.Errorf("failed to check existence of namespace %s with error: %s", namespace, err.Error()))
@@ -491,11 +491,16 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 			extInfo["projectName"] = cra.namespace
 			extInfo["chartName"] = chartDetails.Metadata.Name
 
-			public, err := cra.ProjectMgr.IsPublic(cra.namespace)
+			var public bool
+
+			project, err := cra.ProjectCtl.Get(cra.Context(), cra.namespace)
 			if err != nil {
 				hlog.Errorf("failed to check the public of project %s: %v", cra.namespace, err)
 				public = false
+			} else {
+				public = project.IsPublic()
 			}
+
 			e := &rep_event.Event{
 				Type: rep_event.EventTypeChartUpload,
 				Resource: &model.Resource{

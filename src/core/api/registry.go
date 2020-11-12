@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	common_models "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -378,13 +377,13 @@ func (t *RegistryAPI) Delete() {
 	}
 
 	// check whether the registry is referenced by any proxy cache projects
-	result, err := t.ProjectMgr.List(&common_models.ProjectQueryParam{RegistryID: id})
+	count, err := t.ProjectCtl.Count(t.Context(), q.New(q.KeyWords{"registry_id": id}))
 	if err != nil {
 		t.SendInternalServerError(fmt.Errorf("failed to list projects: %v", err))
 		return
 	}
-	if result != nil && result.Total > 0 {
-		t.SendPreconditionFailedError(fmt.Errorf("Can't delete registry %d,  %d proxy cache projects referennce it", id, result.Total))
+	if count > 0 {
+		t.SendPreconditionFailedError(fmt.Errorf("Can't delete registry %d,  %d proxy cache projects referennce it", id, count))
 		return
 	}
 

@@ -618,7 +618,6 @@ func TestModifiable(t *testing.T) {
 			Controller: beego.Controller{},
 		},
 		SecurityCtx: nil,
-		ProjectMgr:  nil,
 	}
 
 	ua1 := &UserAPI{

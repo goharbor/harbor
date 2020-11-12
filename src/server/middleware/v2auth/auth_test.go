@@ -16,6 +16,7 @@ package v2auth
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -27,68 +28,46 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
+	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/assert"
 )
 
-type mockPM struct{}
-
-func (mockPM) Get(projectIDOrName interface{}) (*models.Project, error) {
-	name := projectIDOrName.(string)
-	id, _ := strconv.Atoi(strings.TrimPrefix(name, "project_"))
-	if id == 0 {
-		return nil, nil
-	}
-	return &models.Project{
-		ProjectID: int64(id),
-		Name:      name,
-	}, nil
-}
-
-func (mockPM) Create(*models.Project) (int64, error) {
-	panic("implement me")
-}
-
-func (mockPM) Delete(projectIDOrName interface{}) error {
-	panic("implement me")
-}
-
-func (mockPM) Update(projectIDOrName interface{}, project *models.Project) error {
-	panic("implement me")
-}
-
-func (mockPM) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
-	panic("implement me")
-}
-
-func (mockPM) IsPublic(projectIDOrName interface{}) (bool, error) {
-	return false, nil
-}
-
-func (mockPM) Exists(projectIDOrName interface{}) (bool, error) {
-	panic("implement me")
-}
-
-func (mockPM) GetPublic() ([]*models.Project, error) {
-	panic("implement me")
-}
-
-func (mockPM) GetAuthorized(user *models.User) ([]*models.Project, error) {
-	return nil, nil
-}
-
-func (mockPM) GetMetadataManager() metamgr.ProjectMetadataManager {
-	panic("implement me")
-}
-
 func TestMain(m *testing.M) {
+	ctl := &projecttesting.Controller{}
+
+	mockGet := func(ctx context.Context,
+		projectIDOrName interface{}, options ...project.Option) (*models.Project, error) {
+		name := projectIDOrName.(string)
+		id, _ := strconv.Atoi(strings.TrimPrefix(name, "project_"))
+		if id == 0 {
+			return nil, fmt.Errorf("%s not found", name)
+		}
+		return &models.Project{
+			ProjectID: int64(id),
+			Name:      name,
+		}, nil
+	}
+	mock.OnAnything(ctl, "Get").Return(
+		func(ctx context.Context,
+			projectIDOrName interface{}, options ...project.Option) *models.Project {
+			p, _ := mockGet(ctx, projectIDOrName, options...)
+			return p
+		},
+		func(ctx context.Context,
+			projectIDOrName interface{}, options ...project.Option) error {
+			_, err := mockGet(ctx, projectIDOrName, options...)
+			return err
+		},
+	)
+
 	checker = reqChecker{
-		pm: mockPM{},
+		ctl: ctl,
 	}
 	conf := map[string]interface{}{
 		common.ExtEndpoint: "https://harbor.test",

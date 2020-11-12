@@ -50,8 +50,10 @@ type Controller interface {
 	Count(ctx context.Context, query *q.Query) (int64, error)
 	// Delete delete the project by project id
 	Delete(ctx context.Context, id int64) error
-	// Get get the project by project id
-	Get(ctx context.Context, projectID int64, options ...Option) (*models.Project, error)
+	// Exists returns true when the specific project exists
+	Exists(ctx context.Context, projectIDOrName interface{}) (bool, error)
+	// Get get the project by project id or name
+	Get(ctx context.Context, projectIDOrName interface{}, options ...Option) (*models.Project, error)
 	// GetByName get the project by project name
 	GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error)
 	// List list projects
@@ -140,8 +142,19 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (c *controller) Get(ctx context.Context, projectID int64, options ...Option) (*models.Project, error) {
-	p, err := c.projectMgr.Get(ctx, projectID)
+func (c *controller) Exists(ctx context.Context, projectIDOrName interface{}) (bool, error) {
+	_, err := c.projectMgr.Get(ctx, projectIDOrName)
+	if err == nil {
+		return true, nil
+	} else if errors.IsNotFoundErr(err) {
+		return false, nil
+	} else {
+		return false, err
+	}
+}
+
+func (c *controller) Get(ctx context.Context, projectIDOrName interface{}, options ...Option) (*models.Project, error) {
+	p, err := c.projectMgr.Get(ctx, projectIDOrName)
 	if err != nil {
 		return nil, err
 	}
@@ -229,6 +242,10 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 }
 
 func (c *controller) ListRoles(ctx context.Context, projectID int64, u *user.User) ([]int, error) {
+	if u == nil {
+		return nil, nil
+	}
+
 	return c.projectMgr.ListRoles(ctx, projectID, u.UserID, u.GroupIDs...)
 }
 
