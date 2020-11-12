@@ -130,7 +130,7 @@ var (
 // Middleware checks the permission of the request to access the artifact
 func Middleware() func(http.Handler) http.Handler {
 	once.Do(func() {
-		if checker.ctl == nil { // for UT, where pm has been set to a mock value
+		if checker.ctl == nil { // for UT, where ctl has been set to a mock value
 			checker = reqChecker{
 				ctl: project.Ctl,
 			}
