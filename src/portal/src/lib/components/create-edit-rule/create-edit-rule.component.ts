@@ -34,7 +34,7 @@ import { EndpointService } from "../../services/endpoint.service";
 import { cronRegex } from "../../utils/utils";
 import { FilterType } from "../../entities/shared.const";
 
-
+const PREFIX: string = '0 ';
 @Component({
   selector: "hbr-create-edit-rule",
   templateUrl: "./create-edit-rule.component.html",
@@ -575,5 +575,23 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }, []);
 
     fromIndex.setControl('value', this.fb.array(labelValue));
+  }
+  // set prefix '0 ', so user can not set item of 'seconds'
+  inputInvalid(e: any) {
+    if (this.headerTitle === 'REPLICATION.ADD_POLICY') { // adding model
+      if (e && e.target) {
+        if (!e.target.value || (e.target.value && e.target.value.indexOf(PREFIX)) !== 0) {
+          e.target.value = PREFIX;
+        }
+      }
+    }
+  }
+  // when trigger type is scheduled, should set cron prefix to '0 '
+  changeTrigger(e: any) {
+    if (this.headerTitle === 'REPLICATION.ADD_POLICY') { // adding model
+      if (e && e.target && e.target.value === this.TRIGGER_TYPES.SCHEDULED) {
+        this.ruleForm.get('trigger').get('trigger_settings').get('cron').setValue(PREFIX);
+      }
+    }
   }
 }
