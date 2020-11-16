@@ -16,26 +16,23 @@ COPY ./api/v2.0/legacy_swagger.yaml /build_dir/swagger.yaml
 COPY ./api/v2.0/swagger.yaml /build_dir/swagger2.yaml
 COPY ./api/swagger.yaml /build_dir/swagger3.yaml
 
-RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > swagger.json
-RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger2.yaml > swagger2.json
-RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger3.yaml > swagger3.json
-
-COPY ./LICENSE /build_dir
 COPY src/portal /build_dir
 
 ENV NPM_CONFIG_REGISTRY=${npm_registry}
 RUN npm install --unsafe-perm
 RUN npm run generate-build-timestamp
 RUN node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --prod
+RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > dist/swagger.json
+RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger2.yaml > dist/swagger2.json
+RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger3.yaml > dist/swagger3.json
+
+RUN cp swagger.yaml dist
+COPY ./LICENSE /build_dir/dist
 
 FROM ${harbor_base_namespace}/harbor-portal-base:${harbor_base_image_version}
 
 COPY --from=nodeportal /build_dir/dist /usr/share/nginx/html
-COPY --from=nodeportal /build_dir/swagger.yaml /usr/share/nginx/html
-COPY --from=nodeportal /build_dir/swagger.json /usr/share/nginx/html
-COPY --from=nodeportal /build_dir/swagger2.json /usr/share/nginx/html
-COPY --from=nodeportal /build_dir/swagger3.json /usr/share/nginx/html
-COPY --from=nodeportal /build_dir/LICENSE /usr/share/nginx/html
+COPY --from=nodeportal /build_dir/package*.json /usr/share/nginx/
 
 VOLUME /var/cache/nginx /var/log/nginx /run
 
