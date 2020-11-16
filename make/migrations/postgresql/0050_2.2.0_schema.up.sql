@@ -6,6 +6,7 @@ UPDATE role SET role_id=4 WHERE name='maintainer' AND role_id!=4;
 UPDATE role SET role_id=5 WHERE name='limitedGuest' AND role_id!=5;
 
 ALTER TABLE schedule ADD COLUMN IF NOT EXISTS cron_type varchar(64);
+ALTER TABLE robot ADD COLUMN IF NOT EXISTS secret varchar(2048);
 
 DO $$
 DECLARE
