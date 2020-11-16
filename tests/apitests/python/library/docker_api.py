@@ -103,20 +103,18 @@ class DockerAPI(object):
             _tag = "latest"
         if expected_error_message is "":
             expected_error_message = None
-        caught_err = False
         ret = ""
         try:
-            self.DCLIENT.pull(r'{}:{}'.format(image, _tag))
+            ret = self.DCLIENT.pull(r'{}:{}'.format(image, _tag))
             return ret
         except Exception as err:
-            caught_err = True
             if expected_error_message is not None:
                 print( "docker image pull error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Pull image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
                 raise Exception(r" Docker pull image {} failed, error is [{}]".format (image, str(err)))
-        if caught_err == False:
+        else:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r" Failed to catch error [{}] when pull image {}, return message: {}".format (expected_error_message, image, str(ret)))

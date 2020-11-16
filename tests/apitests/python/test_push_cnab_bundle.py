@@ -13,6 +13,9 @@ from library.user import User
 from library.repository import Repository
 from library.artifact import Artifact
 from library.docker_api import DockerAPI
+from testutils import DOCKER_USER
+from testutils import DOCKER_PWD
+
 class TestProjects(unittest.TestCase):
     @suppress_urllib3_warning
     def setUp(self):
