@@ -4,7 +4,7 @@ from pathlib import Path
 from shutil import copytree, rmtree
 
 from g import internal_tls_dir, DEFAULT_GID, DEFAULT_UID, PG_GID, PG_UID
-from utils.misc import check_permission, owner_can_read, get_realpath
+from utils.misc import check_permission, owner_can_read, get_realpath, port_number_valid
 
 
 class InternalTLS:
@@ -137,3 +137,7 @@ class Metric:
         self.enabled = enabled
         self.port = port
         self.path = path
+
+    def validate(self):
+        if not port_number_valid(self.port):
+            raise Exception('Port number in metrics is not valid')
