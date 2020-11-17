@@ -175,7 +175,7 @@ func (c *Controller) GetChartVersionDetails(namespace, chartName, version string
 		chartDetails.Security.Signature.Provenance = provFilePath
 	} else {
 		// Just log it
-		hlog.Errorf("Failed to get prov file for chart %s with error: %s, got %d bytes", chartV.Name, err.Error(), len(provBytes))
+		hlog.Debugf("Failed to get prov file for chart %s with error: %s, got %d bytes", chartV.Name, err.Error(), len(provBytes))
 	}
 
 	return chartDetails, nil
