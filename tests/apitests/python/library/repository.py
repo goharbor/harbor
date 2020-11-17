@@ -20,7 +20,8 @@ def push_image_to_project(project_name, registry, username, password, image, tag
     time.sleep(2)
     if expected_login_error_message != None:
         return
-    _docker_api.docker_image_pull(image, tag = tag)
+    ret = _docker_api.docker_image_pull(image, tag = tag)
+    print("docker image pull ret:", ret)
     time.sleep(2)
 
     new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(image, tag), r'{}/{}/{}'.format(registry, project_name, image))
