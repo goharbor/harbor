@@ -335,7 +335,7 @@ func setTagQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, e
 		sql := fmt.Sprintf(`IN (
 		SELECT DISTINCT art.id FROM artifact art
 		JOIN tag ON art.id=tag.artifact_id
-		WHERE tag.name = '%s')`, orm.Escape(s))
+		WHERE tag.name = '%s')`, s)
 		qs = qs.FilterRaw("id", sql)
 		return qs, nil
 	}
