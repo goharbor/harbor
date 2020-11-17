@@ -55,7 +55,9 @@ Package Harbor Offline
     [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true  ${with_chartmuseum}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
-    docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+    Log  ${rc}
+    Log  ${output}
     Log To Console  \n\nmake package_offline BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
     ${rc}  ${output}=  Run And Return Rc And Output  make package_offline BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
     Log To Console  ${rc}
@@ -66,7 +68,9 @@ Package Harbor Online
     [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=false  ${with_chartmuseum}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
-    docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+    Log  ${rc}
+    Log  ${output}
     Log To Console  \nmake package_online VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
     ${rc}  ${output}=  Run And Return Rc And Output  make package_online VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
     Log  ${rc}
