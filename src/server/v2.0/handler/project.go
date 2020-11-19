@@ -29,7 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
-	"github.com/goharbor/harbor/src/pkg/robot"
+	"github.com/goharbor/harbor/src/pkg/robot2"
 	"github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
@@ -48,7 +48,7 @@ func newProjectAPI() *projectAPI {
 		repositoryCtl: repository.Ctl,
 		projectCtl:    project.Ctl,
 		quotaCtl:      quota.Ctl,
-		robotMgr:      robot.Mgr,
+		robotMgr:      robot2.Mgr,
 		preheatCtl:    preheat.Ctl,
 	}
 }
@@ -61,7 +61,7 @@ type projectAPI struct {
 	repositoryCtl repository.Controller
 	projectCtl    project.Controller
 	quotaCtl      quota.Controller
-	robotMgr      robot.Manager
+	robotMgr      robot2.Manager
 	preheatCtl    preheat.Controller
 }
 

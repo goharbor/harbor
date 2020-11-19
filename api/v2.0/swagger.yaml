@@ -1410,6 +1410,154 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_id_or_name}/robots:
+    get:
+      summary: Get all robot accounts of specified project
+      description: Get all robot accounts of specified project
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectIDOrName'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+      tags:
+        - robotv1
+      operationId: ListRobotV1
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of robot accounts
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Robot'
+        '400':
+          $ref: '#/responses/400'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a robot account
+      description: Create a robot account
+      tags:
+        - robotv1
+      operationId: CreateRobotV1
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectIDOrName'
+        - name: robot
+          in: body
+          description: The JSON object of a robot account.
+          required: true
+          schema:
+            $ref: '#/definitions/RobotCreateV1'
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+            Location:
+              description: The location of the resource
+              type: string
+          schema:
+            $ref: '#/definitions/RobotCreated'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_id_or_name}/robots/{robot_id}:
+    get:
+      summary: Get a robot account
+      description: This endpoint returns specific robot account information by robot ID.
+      tags:
+        - robotv1
+      operationId: GetRobotByIDV1
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectIDOrName'
+        - $ref: '#/parameters/robotId'
+      responses:
+        '200':
+          description: Return matched robot information.
+          schema:
+            $ref: '#/definitions/Robot'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update status of robot account.
+      description: Used to disable/enable a specified robot account.
+      tags:
+        - robotv1
+      operationId: UpdateRobotV1
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectIDOrName'
+        - $ref: '#/parameters/robotId'
+        - name: robot
+          in: body
+          description: The JSON object of a robot account.
+          required: true
+          schema:
+            $ref: '#/definitions/Robot'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a robot account
+      description: This endpoint deletes specific robot account information by robot ID.
+      tags:
+        - robotv1
+      operationId: DeleteRobotV1
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectIDOrName'
+        - $ref: '#/parameters/robotId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /icons/{digest}:
     get:
       summary: Get artifact icon
@@ -1427,6 +1575,149 @@ paths:
             $ref: '#/definitions/Icon'
         '400':
           $ref: '#/responses/400'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /robots:
+    get:
+      summary: Get robot account
+      description: List the robot accounts with the specified level and project.
+      tags:
+        - robot
+      operationId: ListRobot
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of robot accounts
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Robot'
+        '400':
+          $ref: '#/responses/400'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a robot account
+      description: Create a robot account
+      tags:
+        - robot
+      operationId: CreateRobot
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: robot
+          in: body
+          description: The JSON object of a robot account.
+          required: true
+          schema:
+            $ref: '#/definitions/RobotCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+            Location:
+              description: The location of the resource
+              type: string
+          schema:
+            $ref: '#/definitions/RobotCreated'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /robots/{robot_id}:
+    get:
+      summary: Get a robot account
+      description: This endpoint returns specific robot account information by robot ID.
+      tags:
+        - robot
+      operationId: GetRobotByID
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/robotId'
+      responses:
+        '200':
+          description: Return matched robot information.
+          schema:
+            $ref: '#/definitions/Robot'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update a robot account
+      description: This endpoint updates specific robot account information by robot ID.
+      tags:
+        - robot
+      operationId: UpdateRobot
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/robotId'
+        - name: robot
+          in: body
+          description: The JSON object of a robot account.
+          required: true
+          schema:
+            $ref: '#/definitions/RobotCreate'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a robot account
+      description: This endpoint deletes specific robot account information by robot ID.
+      tags:
+        - robot
+      operationId: DeleteRobot
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/robotId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
         '500':
@@ -1661,6 +1952,12 @@ parameters:
     required: true
     type: integer
     format: int64
+  projectIDOrName:
+    name: project_id_or_name
+    in: path
+    description: The id or name of the project
+    required: true
+    type: string
   repositoryName:
     name: repository_name
     in: path
@@ -1724,6 +2021,12 @@ parameters:
     name: task_id
     in: path
     description: Task ID
+    required: true
+    type: integer
+  robotId:
+    name: robot_id
+    in: path
+    description: Robot ID
     required: true
     type: integer
 responses:
@@ -2518,7 +2821,7 @@ definitions:
             $ref: "#/definitions/ResourceList"
             description: The used status of the quota
       registry:
-          $ref: "#/definitions/Registry"
+        $ref: "#/definitions/Registry"
   CVEAllowlist:
     type: object
     description: The CVE Allowlist for system or project
@@ -2693,3 +2996,129 @@ definitions:
         type: string
         format: date-time
         description: The end time of the task
+  Robot:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the robot
+      name:
+        type: string
+        description: The name of the tag
+      description:
+        type: string
+        description: The description of the robot
+      secret:
+        type: string
+        description: The secret of the robot
+      level:
+        type: string
+        description: The level of the robot, project or system
+      disable:
+        type: boolean
+        x-omitempty: false
+        description: The disable status of the robot
+      expires_at:
+        type: integer
+        format: int64
+        description: The expiration data of the robot
+      permissions:
+        type: array
+        items:
+          $ref: '#/definitions/Permission'
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the robot.
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the robot.
+  RobotCreate:
+    type: object
+    description: The request for robot account creation.
+    properties:
+      name:
+        type: string
+        description: The name of the tag
+      description:
+        type: string
+        description: The description of the robot
+      secret:
+        type: string
+        description: The secret of the robot
+      level:
+        type: string
+        description: The level of the robot, project or system
+      disable:
+        type: boolean
+        description: The disable status of the robot
+      expires_at:
+        type: integer
+        format: int64
+        description: The expiration data of the robot
+      permissions:
+        type: array
+        items:
+          $ref: '#/definitions/Permission'
+  RobotCreated:
+    type: object
+    description: The response for robot account creation.
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the robot
+      name:
+        type: string
+        description: The name of the tag
+      secret:
+        type: string
+        description: The secret of the robot
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the robot.
+  Permission:
+    type: object
+    properties:
+      kind:
+        type: string
+        description: The kind of the permission
+      namespace:
+        type: string
+        description: The namespace of the permission
+      access:
+        type: array
+        items:
+          $ref: '#/definitions/Access'
+  Access:
+    type: object
+    properties:
+      resource:
+        type: string
+        description: The resource of the access
+      action:
+        type: string
+        description: The action of the access
+      effect:
+        type: string
+        description: The effect of the access
+  RobotCreateV1:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of robot account
+      description:
+        type: string
+        description: The description of robot account
+      expires_at:
+        type: integer
+        description: The expiration time on or after which the JWT MUST NOT be accepted for processing.
+      access:
+        type: array
+        description: The permission of robot account
+        items:
+          $ref: '#/definitions/Access'
