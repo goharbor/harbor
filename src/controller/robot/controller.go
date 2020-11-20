@@ -105,7 +105,7 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-
+	r.ID = robotID
 	if err := d.createPermission(ctx, r); err != nil {
 		return 0, err
 	}
@@ -261,6 +261,7 @@ func (d *controller) populatePermissions(ctx context.Context, r *Robot) error {
 			log.Errorf("failed to decode scope of robot %d: %v", r.ID, err)
 			return err
 		}
+		p.Scope = scope
 		p.Kind = kind
 		p.Namespace = namespace
 		p.Access = accesses

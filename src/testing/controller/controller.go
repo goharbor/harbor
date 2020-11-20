@@ -22,3 +22,4 @@ package controller
 //go:generate mockery --case snake --dir ../../controller/scan --name Checker --output ./scan --outpkg scan
 //go:generate mockery --case snake --dir ../../controller/scanner --name Controller --output ./scanner --outpkg scanner
 //go:generate mockery --case snake --dir ../../controller/replication --name Controller --output ./replication --outpkg replication
+//go:generate mockery --case snake --dir ../../controller/robot --name Controller --output ./robot --outpkg robot

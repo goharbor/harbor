@@ -16,6 +16,7 @@ package jobs
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
@@ -129,7 +130,7 @@ func (h *Handler) HandleScan() {
 		}
 	}
 
-	if err := scan.DefaultController.HandleJobHooks(h.trackID, h.change); err != nil {
+	if err := scan.DefaultController.HandleJobHooks(orm.Context(), h.trackID, h.change); err != nil {
 		err = errors.Wrap(err, "scan job hook handler")
 		log.Error(err)
 		h.SendInternalServerError(err)

@@ -18,20 +18,21 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/project"
 	"sync"
 
 	cj "github.com/goharbor/harbor/src/common/job"
 	jm "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	ar "github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/robot"
 	sc "github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	"github.com/goharbor/harbor/src/pkg/robot"
-	"github.com/goharbor/harbor/src/pkg/robot/model"
+	"github.com/goharbor/harbor/src/pkg/robot2/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
@@ -70,6 +71,8 @@ type basicController struct {
 	sc sc.Controller
 	// Robot account controller
 	rc robot.Controller
+	// Project controller
+	pro project.Controller
 	// Job service client
 	jc jcGetter
 	// UUID generator
@@ -88,7 +91,9 @@ func NewController() Controller {
 		// Refer to the default scanner controller
 		sc: sc.DefaultController,
 		// Refer to the default robot account controller
-		rc: robot.RobotCtr,
+		rc: robot.Ctl,
+		// Refer to the default project controller
+		pro: project.Ctl,
 		// Refer to the default job service client
 		jc: func() cj.Client {
 			return cj.GlobalClient
@@ -282,7 +287,7 @@ func (bc *basicController) makeReportPlaceholder(ctx context.Context, r *scanner
 }
 
 func (bc *basicController) scanArtifact(ctx context.Context, r *scanner.Registration, artifact *ar.Artifact, trackID string, producesMimes []string) error {
-	jobID, err := bc.launchScanJob(trackID, artifact, r, producesMimes)
+	jobID, err := bc.launchScanJob(ctx, trackID, artifact, r, producesMimes)
 	if err != nil {
 		// Update the status to the concrete error
 		// Change status code to normal error code
@@ -494,7 +499,7 @@ func (bc *basicController) GetScanLog(uuid string) ([]byte, error) {
 }
 
 // HandleJobHooks ...
-func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChange) error {
+func (bc *basicController) HandleJobHooks(ctx context.Context, trackID string, change *job.StatusChange) error {
 	if len(trackID) == 0 {
 		return errors.New("empty track ID")
 	}
@@ -514,7 +519,7 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 				}
 
 				if r.ID > 0 {
-					if err := robot.RobotCtr.DeleteRobotAccount(r.ID); err != nil {
+					if err := robot.Ctl.Delete(ctx, r.ID); err != nil {
 						// Should not block the main flow, just logged
 						log.Error(errors.Wrap(err, "scan controller: handle job hook"))
 					} else {
@@ -578,34 +583,59 @@ func (bc *basicController) GetStats(requester string) (*all.Stats, error) {
 }
 
 // makeRobotAccount creates a robot account based on the arguments for scanning.
-func (bc *basicController) makeRobotAccount(projectID int64, repository string, registration *scanner.Registration) (*model.Robot, error) {
+func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64, repository string, registration *scanner.Registration) (*robot.Robot, error) {
 	// Use uuid as name to avoid duplicated entries.
 	UUID, err := bc.uuid()
 	if err != nil {
 		return nil, errors.Wrap(err, "scan controller: make robot account")
 	}
 
-	resource := rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceRepository)
-	robotReq := &model.RobotCreate{
-		Name:        fmt.Sprintf("%s-%s", registration.Name, UUID),
-		Description: "for scan",
-		ProjectID:   projectID,
-		Access: []*types.Policy{
-			{Resource: resource, Action: rbac.ActionPull},
-			{Resource: resource, Action: rbac.ActionScannerPull},
-		},
-	}
-
-	rb, err := bc.rc.CreateRobotAccount(robotReq)
+	p, err := bc.pro.Get(ctx, projectID)
 	if err != nil {
 		return nil, errors.Wrap(err, "scan controller: make robot account")
 	}
 
-	return rb, nil
+	robotReq := &robot.Robot{
+		Robot: model.Robot{
+			Name:        fmt.Sprintf("%s-%s", registration.Name, UUID),
+			Description: "for scan",
+			ProjectID:   projectID,
+			ExpiresAt:   -1,
+		},
+		Level: robot.LEVELPROJECT,
+		Permissions: []*robot.Permission{
+			{
+				Kind:      "project",
+				Namespace: p.Name,
+				Access: []*types.Policy{
+					{
+						Resource: rbac.ResourceRepository,
+						Action:   rbac.ActionPull,
+					},
+					{
+						Resource: rbac.ResourceRepository,
+						Action:   rbac.ActionScannerPull,
+					},
+				},
+			},
+		},
+	}
+
+	rb, err := bc.rc.Create(ctx, robotReq)
+	if err != nil {
+		return nil, errors.Wrap(err, "scan controller: make robot account")
+	}
+
+	r, err := bc.rc.Get(ctx, rb, &robot.Option{WithPermission: false})
+	if err != nil {
+		return nil, errors.Wrap(err, "scan controller: make robot account")
+	}
+
+	return r, nil
 }
 
 // launchScanJob launches a job to run scan
-func (bc *basicController) launchScanJob(trackID string, artifact *ar.Artifact, registration *scanner.Registration, mimes []string) (jobID string, err error) {
+func (bc *basicController) launchScanJob(ctx context.Context, trackID string, artifact *ar.Artifact, registration *scanner.Registration, mimes []string) (jobID string, err error) {
 	var ck string
 	if registration.UseInternalAddr {
 		ck = configCoreInternalAddr
@@ -618,7 +648,7 @@ func (bc *basicController) launchScanJob(trackID string, artifact *ar.Artifact, 
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}
 
-	robot, err := bc.makeRobotAccount(artifact.ProjectID, artifact.RepositoryName, registration)
+	robot, err := bc.makeRobotAccount(ctx, artifact.ProjectID, artifact.RepositoryName, registration)
 	if err != nil {
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}

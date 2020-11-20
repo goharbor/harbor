@@ -120,7 +120,6 @@ func (rAPI *robotAPI) ListRobot(ctx context.Context, params operation.ListRobotP
 
 	} else {
 		level = robot.LEVELSYSTEM
-		projectID = 0
 		query.Keywords["ProjectID"] = 0
 	}
 
@@ -239,21 +238,13 @@ func (rAPI *robotAPI) validate(r *models.RobotCreate) error {
 		return errors.New(nil).WithMessage("bad request empty permission").WithCode(errors.BadRequestCode)
 	}
 
-	if r.Level == robot.LEVELPROJECT {
-		// to create a project robot, the permission must be only one project scope.
-		if len(r.Permissions) > 1 {
-			return errors.New(nil).WithMessage("bad request permission").WithCode(errors.BadRequestCode)
-		}
+	// to create a project robot, the permission must be only one project scope.
+	if r.Level == robot.LEVELPROJECT && len(r.Permissions) > 1 {
+		return errors.New(nil).WithMessage("bad request permission").WithCode(errors.BadRequestCode)
 	}
 	return nil
 }
 
 func isValidLevel(l string) bool {
-	switch l {
-	case
-		robot.LEVELSYSTEM,
-		robot.LEVELPROJECT:
-		return true
-	}
-	return false
+	return l == robot.LEVELSYSTEM || l == robot.LEVELPROJECT
 }

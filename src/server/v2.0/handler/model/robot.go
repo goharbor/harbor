@@ -7,10 +7,12 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
 
+// Robot ...
 type Robot struct {
 	*robot.Robot
 }
 
+// ToSwagger ...
 func (r *Robot) ToSwagger() *models.Robot {
 	perms := []*models.Permission{}
 	for _, p := range r.Permissions {

@@ -23,7 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	"github.com/goharbor/harbor/src/pkg/robot/model"
+	"github.com/goharbor/harbor/src/pkg/robot2/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/assert"
@@ -38,45 +38,45 @@ var (
 
 func TestIsAuthenticated(t *testing.T) {
 	// unauthenticated
-	ctx := NewSecurityContext(nil, nil)
+	ctx := NewSecurityContext(nil, false, nil)
 	assert.False(t, ctx.IsAuthenticated())
 
 	// authenticated
 	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
-	}, nil)
+	}, false, nil)
 	assert.True(t, ctx.IsAuthenticated())
 }
 
 func TestGetUsername(t *testing.T) {
 	// unauthenticated
-	ctx := NewSecurityContext(nil, nil)
+	ctx := NewSecurityContext(nil, false, nil)
 	assert.Equal(t, "", ctx.GetUsername())
 
 	// authenticated
 	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
-	}, nil)
+	}, false, nil)
 	assert.Equal(t, "test", ctx.GetUsername())
 }
 
 func TestIsSysAdmin(t *testing.T) {
 	// unauthenticated
-	ctx := NewSecurityContext(nil, nil)
+	ctx := NewSecurityContext(nil, false, nil)
 	assert.False(t, ctx.IsSysAdmin())
 
 	// authenticated, non admin
 	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
-	}, nil)
+	}, false, nil)
 	assert.False(t, ctx.IsSysAdmin())
 }
 
 func TestIsSolutionUser(t *testing.T) {
-	ctx := NewSecurityContext(nil, nil)
+	ctx := NewSecurityContext(nil, false, nil)
 	assert.False(t, ctx.IsSolutionUser())
 }
 
@@ -95,7 +95,7 @@ func TestHasPullPerm(t *testing.T) {
 	ctl := &projecttesting.Controller{}
 	mock.OnAnything(ctl, "Get").Return(private, nil)
 
-	ctx := NewSecurityContext(robot, policies)
+	ctx := NewSecurityContext(robot, false, policies)
 	ctx.ctl = ctl
 	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
@@ -116,7 +116,7 @@ func TestHasPushPerm(t *testing.T) {
 	ctl := &projecttesting.Controller{}
 	mock.OnAnything(ctl, "Get").Return(private, nil)
 
-	ctx := NewSecurityContext(robot, policies)
+	ctx := NewSecurityContext(robot, false, policies)
 	ctx.ctl = ctl
 	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource))
@@ -141,7 +141,7 @@ func TestHasPushPullPerm(t *testing.T) {
 	ctl := &projecttesting.Controller{}
 	mock.OnAnything(ctl, "Get").Return(private, nil)
 
-	ctx := NewSecurityContext(robot, policies)
+	ctx := NewSecurityContext(robot, false, policies)
 	ctx.ctl = ctl
 	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource) && ctx.Can(context.TODO(), rbac.ActionPull, resource))

@@ -42,6 +42,7 @@ type Permission struct {
 	Kind      string          `json:"kind"`
 	Namespace string          `json:"namespace"`
 	Access    []*types.Policy `json:"access"`
+	Scope     string          `json:"-"`
 }
 
 // Option ...

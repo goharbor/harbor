@@ -19,6 +19,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	models "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/controller/robot"
 	"testing"
 	"time"
 
@@ -27,15 +29,16 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	"github.com/goharbor/harbor/src/pkg/robot/model"
+	"github.com/goharbor/harbor/src/pkg/robot2/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
+	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
+	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
 	mocktesting "github.com/goharbor/harbor/src/testing/mock"
 	reporttesting "github.com/goharbor/harbor/src/testing/pkg/scan/report"
@@ -166,27 +169,48 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	mgr.On("UpdateStatus", "the-uuid-123", "Success", (int64)(10000)).Return(nil)
 	suite.reportMgr = mgr
 
-	rc := &MockRobotController{}
-
-	resource := fmt.Sprintf("/project/%d/repository", suite.artifact.ProjectID)
-	access := []*types.Policy{
-		{Resource: types.Resource(resource), Action: rbac.ActionPull},
-		{Resource: types.Resource(resource), Action: rbac.ActionScannerPull},
-	}
+	rc := &robottesting.Controller{}
 
 	rname := fmt.Sprintf("%s-%s", suite.registration.Name, "the-uuid-123")
-	account := &model.RobotCreate{
-		Name:        rname,
-		Description: "for scan",
-		ProjectID:   suite.artifact.ProjectID,
-		Access:      access,
+
+	account := &robot.Robot{
+		Robot: model.Robot{
+			Name:        rname,
+			Description: "for scan",
+			ProjectID:   suite.artifact.ProjectID,
+			ExpiresAt:   -1,
+		},
+		Level: robot.LEVELPROJECT,
+		Permissions: []*robot.Permission{
+			{
+				Kind:      "project",
+				Namespace: "library",
+				Access: []*types.Policy{
+					{
+						Resource: "repository",
+						Action:   rbac.ActionPull,
+					},
+					{
+						Resource: "repository",
+						Action:   rbac.ActionScannerPull,
+					},
+				},
+			},
+		},
 	}
-	rc.On("CreateRobotAccount", account).Return(&model.Robot{
-		ID:          1,
-		Name:        rname,
-		Token:       "robot-account",
-		Description: "for scan",
-		ProjectID:   suite.artifact.ProjectID,
+
+	rc.On("Create", context.TODO(), account).Return(int64(1), nil)
+	rc.On("Get", context.TODO(), int64(1), &robot.Option{
+		WithPermission: false,
+	}).Return(&robot.Robot{
+		Robot: model.Robot{
+			ID:          1,
+			Name:        rname,
+			Secret:      "robot-account",
+			Description: "for scan",
+			ProjectID:   suite.artifact.ProjectID,
+		},
+		Level: "project",
 	}, nil)
 
 	// Set job parameters
@@ -208,7 +232,8 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	regJSON, err := suite.registration.ToJSON()
 	require.NoError(suite.T(), err)
 
-	rb, _ := rc.CreateRobotAccount(account)
+	id, _ := rc.Create(context.TODO(), account)
+	rb, _ := rc.Get(context.TODO(), id, &robot.Option{WithPermission: false})
 	robotJSON, err := rb.ToJSON()
 	require.NoError(suite.T(), err)
 
@@ -237,6 +262,12 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		walkFn(suite.artifact)
 	})
 
+	proCtl := &projecttesting.Controller{}
+	proCtl.On("Get", context.TODO(), suite.artifact.ProjectID).Return(&models.Project{
+		ProjectID: suite.artifact.ProjectID,
+		Name:      "library",
+	}, nil)
+
 	suite.c = &basicController{
 		manager: mgr,
 		ar:      suite.ar,
@@ -244,7 +275,8 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		jc: func() cj.Client {
 			return jc
 		},
-		rc: rc,
+		rc:  rc,
+		pro: proCtl,
 		uuid: func() (string, error) {
 			return "the-uuid-123", nil
 		},
@@ -369,7 +401,7 @@ func (suite *ControllerTestSuite) TestScanControllerHandleJobHooks() {
 		},
 	}
 
-	err = suite.c.HandleJobHooks("the-uuid-123", statusChange)
+	err = suite.c.HandleJobHooks(context.TODO(), "the-uuid-123", statusChange)
 	require.NoError(suite.T(), err)
 }
 
@@ -411,53 +443,4 @@ func (mjc *MockJobServiceClient) GetExecutions(uuid string) ([]job.Stats, error)
 	}
 
 	return args.Get(0).([]job.Stats), args.Error(1)
-}
-
-// MockRobotController ...
-type MockRobotController struct {
-	mock.Mock
-}
-
-// GetRobotAccount ...
-func (mrc *MockRobotController) GetRobotAccount(id int64) (*model.Robot, error) {
-	args := mrc.Called(id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*model.Robot), args.Error(1)
-}
-
-// CreateRobotAccount ...
-func (mrc *MockRobotController) CreateRobotAccount(robotReq *model.RobotCreate) (*model.Robot, error) {
-	args := mrc.Called(robotReq)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*model.Robot), args.Error(1)
-}
-
-// DeleteRobotAccount ...
-func (mrc *MockRobotController) DeleteRobotAccount(id int64) error {
-	args := mrc.Called(id)
-
-	return args.Error(0)
-}
-
-// UpdateRobotAccount ...
-func (mrc *MockRobotController) UpdateRobotAccount(r *model.Robot) error {
-	args := mrc.Called(r)
-
-	return args.Error(0)
-}
-
-// ListRobotAccount ...
-func (mrc *MockRobotController) ListRobotAccount(query *q.Query) ([]*model.Robot, error) {
-	args := mrc.Called(query)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).([]*model.Robot), args.Error(1)
 }

@@ -80,7 +80,7 @@ type Controller interface {
 	//
 	//   Returns:
 	//     error  : non nil error if any errors occurred
-	HandleJobHooks(trackID string, change *job.StatusChange) error
+	HandleJobHooks(ctx context.Context, trackID string, change *job.StatusChange) error
 
 	// Delete the reports related with the specified digests
 	//
