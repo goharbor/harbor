@@ -15,10 +15,11 @@
 package blob
 
 import (
-	"github.com/goharbor/harbor/src/lib/errors"
 	"io/ioutil"
 	"net/http"
 
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -32,6 +33,7 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		ctx := r.Context()
 		logger := log.G(ctx)
 
+		lib.NopCloseRequest(r) // make the r.Body re-readable
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			return err
