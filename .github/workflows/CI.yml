@@ -47,9 +47,9 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           go env
-          echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
-          echo "::add-path::$(go env GOPATH)/bin"
-          echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem"
+          echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
         shell: bash
       - name: before_install
         run: |
@@ -64,7 +64,7 @@ jobs:
           sudo mv docker-compose /usr/local/bin
           IP=`hostname -I | awk '{print $1}'`
           echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
-          echo "::set-env name=IP::$IP"
+          echo "IP=$IP" >> $GITHUB_ENV
           sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
           sudo update-ca-certificates
           sudo service docker restart
@@ -113,13 +113,13 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           go env
-          echo "::set-env name=CNAB_PATH::$(go env GOPATH)/src/github.com/docker"
-          echo "::set-env name=GITHUB_TOKEN::${{ secrets.GITHUB_TOKEN }}"
-          echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
-          echo "::add-path::$(go env GOPATH)/bin"
-          echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem"
+          echo "CNAB_PATH=$(go env GOPATH)/src/github.com/docker" >> $GITHUB_ENV
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+          echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
           IP=`hostname -I | awk '{print $1}'`
-          echo "::set-env name=IP::$IP"
+          echo "IP=$IP" >> $GITHUB_ENV
         shell: bash
       - name: before_install
         run: |
@@ -208,9 +208,11 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           go env
-          echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
-          echo "::add-path::$(go env GOPATH)/bin"
-          echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem"
+          echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
+          IP=`hostname -I | awk '{print $1}'`
+          echo "IP=$IP" >> $GITHUB_ENV
         shell: bash
       - name: before_install
         run: |
@@ -226,7 +228,7 @@ jobs:
           sudo mv docker-compose /usr/local/bin
           IP=`hostname -I | awk '{print $1}'`
           echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
-          echo "::set-env name=IP::$IP"
+          echo "IP=$IP" >> $GITHUB_ENV
           python -V
           sudo apt-get update -y ; sudo apt-get install -y zbar-tools libzbar-dev python-zbar python3.7
           sudo rm /usr/bin/python ; sudo ln -s /usr/bin/python3.7 /usr/bin/python ; sudo apt-get install -y python3-pip
@@ -271,9 +273,9 @@ jobs:
           pwd
           docker version
           go env
-          echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
-          echo "::add-path::$(go env GOPATH)/bin"
-          echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem"
+          echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
         shell: bash
       - name: before_install
         run: |
@@ -289,7 +291,7 @@ jobs:
           sudo mv docker-compose /usr/local/bin
           IP=`hostname -I | awk '{print $1}'`
           echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
-          echo "::set-env name=IP::$IP"
+          echo "IP=$IP" >> $GITHUB_ENV
           sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
           sudo update-ca-certificates
           sudo service docker restart
