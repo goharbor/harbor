@@ -6,23 +6,22 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/metric"
 )
 
 func instrumentHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		now, url, code := time.Now(), r.URL.EscapedPath(), "0"
+		now, url := time.Now(), r.URL.EscapedPath()
 
 		metric.TotalInFlightGauge.WithLabelValues(url).Inc()
 		defer metric.TotalInFlightGauge.WithLabelValues(url).Dec()
+		rc := lib.NewResponseRecorder(w)
 
-		next.ServeHTTP(w, r)
-		if r.Response != nil {
-			code = strconv.Itoa(r.Response.StatusCode)
-		}
+		next.ServeHTTP(rc, r)
 
 		metric.TotalReqDurSummary.WithLabelValues(r.Method, url).Observe(time.Since(now).Seconds())
-		metric.TotalReqCnt.WithLabelValues(r.Method, code, url).Inc()
+		metric.TotalReqCnt.WithLabelValues(r.Method, strconv.Itoa(rc.StatusCode), url).Inc()
 	})
 }
 
