@@ -22,9 +22,7 @@ Resource  ../../resources/Util.robot
 GC Now
     [Arguments]  ${harbor_url}  ${login_user}  ${login_pwd}  ${untag}=${false}
     Switch To Garbage Collection
-    Capture Page Screenshot
     Run Keyword If  '${untag}' == '${true}'  Retry Element Click  xpath=${checkbox_delete_untagged_artifacts}
-    Capture Page Screenshot
     Click GC Now
     Logout Harbor
     Sleep  2

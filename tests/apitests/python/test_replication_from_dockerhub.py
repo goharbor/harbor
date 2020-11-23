@@ -10,6 +10,7 @@ from library.registry import Registry
 from library.artifact import Artifact
 from library.repository import Repository
 import swagger_client
+from testutils import DOCKER_USER, DOCKER_PWD
 
 class TestProjects(unittest.TestCase):
     @suppress_urllib3_warning
@@ -75,7 +76,7 @@ class TestProjects(unittest.TestCase):
             expected_project_id = TestProjects.project_add_rule_id, **TestProjects.USER_add_rule_CLIENT)
 
         #3. Create a new registry;
-        TestProjects.registry_id, _ = self.registry.create_registry("https://hub.docker.com", registry_type="docker-hub", access_key = "", access_secret = "", insecure=False, **ADMIN_CLIENT)
+        TestProjects.registry_id, _ = self.registry.create_registry("https://hub.docker.com", registry_type="docker-hub", access_key = DOCKER_USER, access_secret = DOCKER_PWD, insecure=False, **ADMIN_CLIENT)
 
         #4. Create a pull-based rule for this registry;
         TestProjects.rule_id, rule_name = self.replication.create_replication_policy(src_registry=swagger_client.Registry(id=int(TestProjects.registry_id)),

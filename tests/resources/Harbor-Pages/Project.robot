@@ -24,16 +24,13 @@ Create An New Project And Go Into Project
     Navigate To Projects
     Retry Button Click  xpath=${create_project_button_xpath}
     Log To Console  Project Name: ${projectname}
-    Capture Page Screenshot
     Retry Text Input  xpath=${project_name_xpath}  ${projectname}
     ${element_project_public}=  Set Variable  xpath=${project_public_xpath}
     Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element_project_public}  AND  Retry Element Click  ${element_project_public}
     Run Keyword If  '${count_quota}'!='${null}'  Input Count Quota  ${count_quota}
     Run Keyword If  '${storage_quota}'!='${null}'  Input Storage Quota  ${storage_quota}  ${storage_quota_unit}
     Run Keyword If  '${proxy_cache}' == '${true}'  Run Keywords  Mouse Down  ${project_proxy_cache_switcher_id}  AND  Mouse Up  ${project_proxy_cache_switcher_id}  AND  Retry Element Click  ${project_registry_select_id}  AND  Retry Element Click  xpath=//select[@id='registry']//option[contains(.,'${registry}')]
-    Capture Page Screenshot
     Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
-    Capture Page Screenshot
     Sleep  2
     Go Into Project  ${projectname}  has_image=${false}
 
@@ -102,7 +99,6 @@ Search Private Projects
     Retry Element Click  xpath=//select
     Retry Element Click  xpath=//select/option[@value=1]
     Sleep  1
-    Capture Page Screenshot  SearchPrivateProjects.png
 
 Make Project Private
     [Arguments]  ${projectname}
@@ -164,7 +160,6 @@ Advanced Search Should Display
 
 # it's not a common keywords, only used into log case.
 Do Log Advanced Search
-    Capture Page Screenshot  LogAdvancedSearch.png
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'pull')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'create')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'delete')]
@@ -193,7 +188,6 @@ Do Log Advanced Search
     Retry Element Click  xpath=//audit-log//hbr-filter//clr-icon
     Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor
     Sleep  1
-    Capture Page Screenshot  LogAdvancedSearch2.png
     ${rc} =  Get Element Count  //audit-log//clr-dg-row
     Should Be Equal As Integers  ${rc}  0
 
@@ -239,7 +233,6 @@ Go Into Index And Contain Artifacts
     FOR  ${n}  IN RANGE  1  10
         ${out}  Run Keyword And Ignore Error  Page Should Contain Element  ${artifact_rows}  limit=${limit}
         Exit For Loop If  '${out[0]}'=='PASS'
-        Capture Page Screenshot  gointo_${tag_name}.png
         Sleep  3
     END
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
@@ -268,7 +261,6 @@ Edit Repo Info
     Input Text  xpath=//*[@id='info-edit-textarea']  test_description_info
     Retry Element Click  xpath=//*[@id='edit-save']
     Retry Wait Until Page Contains  test_description_info
-    Capture Page Screenshot
 
 Switch To Project Label
     Retry Element Click  xpath=//project-detail//a[contains(.,'Labels')]
@@ -281,7 +273,6 @@ Switch To Project Repo
 Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label
-    Capture Page Screenshot  add_${labelName}.png
     Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span
     Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'Add Labels')]
     Retry Element Click  xpath=//clr-dropdown//div//label[contains(.,'${labelName}')]
@@ -301,7 +292,6 @@ Filter Labels In Tags
     Retry Element Click  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName2}')]
     Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
     Sleep  2
-    Capture Page Screenshot  filter_${labelName2}.png
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${labelName2}')]
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'${labelName1}')]
 

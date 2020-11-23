@@ -5,7 +5,7 @@ import unittest
 import urllib
 import sys
 
-from testutils import ADMIN_CLIENT, suppress_urllib3_warning
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning, DOCKER_USER, DOCKER_PWD
 from testutils import harbor_server
 from testutils import TEARDOWN
 from library.base import _random_name
@@ -65,9 +65,9 @@ class TestProxyCache(unittest.TestCase):
 
         #1. Create a new registry;
         if registry_type == "docker-hub":
-            user_namespace = "danfengliu"
+            user_namespace = DOCKER_USER
             access_key = user_namespace
-            access_secret = "Aa123456"
+            access_secret = DOCKER_PWD
             registry = "https://hub.docker.com"
             # Memo: ctr will not send image pull request if manifest list already exist, so we pull different manifest list for different registry;
             index_for_ctr = dict(image = "alpine", tag = "3.12.0")

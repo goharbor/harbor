@@ -29,6 +29,28 @@ Test Case - Sign With Admin
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Close Browser
 
+Test Case - Push CNAB Bundle and Display
+    [Tags]  run-once
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+
+    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
+    Create An New Project And Go Into Project  test${d}
+
+    ${target}=  Set Variable  ${ip}/test${d}/cnab${d}:cnab_tag${d}
+    Retry Keyword N Times When Error  5  CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json  ${DOCKER_USER}  ${DOCKER_PWD}
+
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/cnab${d}
+
+    Go Into Repo  test${d}/cnab${d}
+    Wait Until Page Contains  cnab_tag${d}
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/cnab${d}
+    Go Into Repo  test${d}/cnab${d}
+    Go Into Index And Contain Artifacts  cnab_tag${d}  limit=3
+    Close Browser
+
 Test Case - Create An New Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -494,10 +516,8 @@ Test Case - Project Quotas Control Under Copy
     Sleep  2
     Go Into Project  project_b_${d}
     Sleep  2
-    Capture Page Screenshot
     Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(.,'${image_a}')]/a
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-cell[contains(.,'${image_b}')]/a
-    Capture Page Screenshot
     Close Browser
 
 Test Case - Webhook CRUD
@@ -611,27 +631,6 @@ Test Case - Push Docker Manifest Index and Display
     Go Into Index And Contain Artifacts  index_tag${d}  limit=2
     Close Browser
 
-Test Case - Push CNAB Bundle and Display
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
-    Create An New Project And Go Into Project  test${d}
-
-    ${target}=  Set Variable  ${ip}/test${d}/cnab${d}:cnab_tag${d}
-    Retry Keyword N Times When Error  5  CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json
-
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/cnab${d}
-
-    Go Into Repo  test${d}/cnab${d}
-    Wait Until Page Contains  cnab_tag${d}
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/cnab${d}
-    Go Into Repo  test${d}/cnab${d}
-    Go Into Index And Contain Artifacts  cnab_tag${d}  limit=3
-    Close Browser
-
 Test Case - Push Helm Chart and Display
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -694,10 +693,10 @@ Test Case - Read Only Mode
     Close Browser
 
 Test Case - Proxy Cache
-    [Tags]  proxy_cache
+    [Tags]  run-once
     ${d}=  Get Current Date    result_format=%m%s
     ${registry}=  Set Variable  https://hub.docker.com/
-    ${user_namespace}=  Set Variable  danfengliu
+    ${user_namespace}=  Set Variable  ${DOCKER_USER}
     ${image}=  Set Variable  for_proxy
     ${tag}=  Set Variable  1.0
     ${manifest_index}=  Set Variable  index081597864867
@@ -705,7 +704,7 @@ Test Case - Proxy Cache
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Registries
-    Create A New Endpoint  docker-hub  e1${d}  ${registry}  ${user_namespace}    Aa123456
+    Create A New Endpoint  docker-hub  e1${d}  ${registry}  ${user_namespace}    ${DOCKER_PWD}
     Create An New Project And Go Into Project  project${d}  proxy_cache=${true}  registry=e1${d}
     Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
     Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${user_namespace}/${image}  tag=${tag}
