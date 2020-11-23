@@ -1999,12 +1999,15 @@ definitions:
       enabled:
         type: boolean
         description: Whether the instance is activated or not
+        x-omitempty: false
       default:
         type: boolean
         description: Whether the instance is default or not
+        x-omitempty: false
       insecure:
         type: boolean
         description: Whether the instance endpoint is insecure or not
+        x-omitempty: false
       setup_timestamp:
         type: integer
         format: int64
@@ -2039,6 +2042,7 @@ definitions:
       enabled:
         type: boolean
         description: Whether the preheat policy enabled
+        x-omitempty: false
       creation_time:
         type: string
         format: date-time
