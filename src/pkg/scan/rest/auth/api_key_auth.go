@@ -37,9 +37,9 @@ func (aa *apiKeyAuthorizer) Authorize(req *http.Request) error {
 }
 
 // NewAPIKeyAuthorizer news a apiKeyAuthorizer
-func NewAPIKeyAuthorizer(accessCred string) Authorizer {
+func NewAPIKeyAuthorizer(key, accessCred string) Authorizer {
 	return &apiKeyAuthorizer{
-		typeID:     APIKey,
+		typeID:     key,
 		accessCred: accessCred,
 	}
 }
