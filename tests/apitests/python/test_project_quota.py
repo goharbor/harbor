@@ -1,20 +1,20 @@
 from __future__ import absolute_import
 import unittest
 
-from testutils import harbor_server, created_project, created_user
-from testutils import ADMIN_CLIENT
+from testutils import harbor_server, created_project, created_user, \
+                      TEARDOWN, ADMIN_CLIENT,suppress_urllib3_warning
 from library.repository import Repository
 from library.repository import push_image_to_project
 from library.system import System
 
 class TestProjects(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(cls):
         cls.repo = Repository()
         cls.system = System()
 
-    @classmethod
-    def tearDown(cls):
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
+    def tearDown(self):
         print("Case completed")
 
     def testProjectQuota(self):

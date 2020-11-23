@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from testutils import ADMIN_CLIENT, CHART_API_CLIENT
+from testutils import ADMIN_CLIENT, CHART_API_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
 import library.repository
@@ -13,8 +13,8 @@ from library.user import User
 from library.chart import Chart
 
 class TestProjects(unittest.TestCase):
-    @classmethod
-    def setUpClass(self):
+    @suppress_urllib3_warning
+    def setUp(self):
         self.project= Project()
         self.user= User()
         self.chart=  Chart()
@@ -28,12 +28,8 @@ class TestProjects(unittest.TestCase):
         self.chart_repo_name = "chart_local"
         self.repo_name = "harbor_api_test"
 
-    @classmethod
-    def tearDownClass(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete user(UA).
         self.user.delete_user(TestProjects.user_id, **ADMIN_CLIENT)
 

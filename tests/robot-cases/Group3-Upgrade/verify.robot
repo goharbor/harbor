@@ -49,7 +49,7 @@ Test Case - Upgrade Verify
     ${data}=  Load Json From File  ${CURDIR}${/}data.json
     Run Keyword  Verify User  ${data}
     Run Keyword  Verify Project  ${data}
-    #Run Keyword  Verify Project Label  ${data}
+    Run Keyword  Verify Project Label  ${data}
     Run Keyword  Verify Project Metadata  ${data}
     Run Keyword  Verify Member Exist  ${data}
     Run Keyword  Verify Robot Account Exist  ${data}

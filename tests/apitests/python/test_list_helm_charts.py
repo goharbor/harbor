@@ -2,25 +2,22 @@ from __future__ import absolute_import
 
 import unittest
 
-from testutils import ADMIN_CLIENT, CHART_API_CLIENT
+from testutils import ADMIN_CLIENT, CHART_API_CLIENT, suppress_urllib3_warning
 from testutils import TEARDOWN
+import base
 from library.user import User
 from library.project import Project
 from library.chart import Chart
 
 class TestProjects(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.chart= Chart()
         self.project= Project()
         self.user= User()
 
-    @classmethod
-    def tearDown(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete chart file;
         self.chart.delete_chart_with_version(TestProjects.project_chart_name, TestProjects.CHART_NAME, TestProjects.VERSION, **CHART_API_CLIENT)
 
@@ -50,6 +47,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.CHART_NAME = 'mariadb'
         TestProjects.VERSION = '4.3.1'
 
+        base.run_command( ["curl", r"-o", "./tests/apitests/python/mariadb-4.3.1.tgz", "https://storage.googleapis.com/harbor-builds/bin/charts/mariadb-4.3.1.tgz"])
         #1. Create a new user(UA);
         TestProjects.user_chart_id, user_chart_name = self.user.create_user(user_password = user_chart_password, **ADMIN_CLIENT)
 

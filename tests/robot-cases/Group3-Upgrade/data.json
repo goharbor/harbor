@@ -28,38 +28,15 @@
    ],
    "endpoint":[
       {
-         "url":"http://url",
-         "name":"endpoint1",
-         "user":"admin",
-         "pass":"Harbor12345",
-         "insecure":true,
-         "type":"harbor"
-      },
-      {
-         "url":"https://hub.docker.com",
+         "url":"https://harbor-repo.vmware.com",
          "name":"endpoint_for_proxy_cache",
          "user":"",
          "pass":"",
          "insecure":false,
-         "type":"docker-hub"
+         "type":"harbor"
       }
    ],
    "replicationrule":[
-      {
-         "project":"project1",
-         "endpoint":"endpoint1",
-         "trigger":"Manual",
-         "rulename":"rulename",
-         "is_src_registry":false,
-         "dest_namespace":"rule1-namespace",
-         "trigger_type":"event_based",
-         "cron":"",
-         "deletion":true,
-         "enabled":true,
-         "override":true,
-         "name_filters":"namefilter1",
-         "tag_filters":"tagfilter1"
-      },
       {
          "project":"library",
          "endpoint":"endpoint_for_proxy_cache",
@@ -203,7 +180,7 @@
          "storage_unit_for_verify":"GB",
          "replications":{
             "rulename":"ruleproject1",
-            "endpointname":"endpoint1",
+            "endpointname":"endpoint_for_proxy_cache",
             "trigger":"Manual"
          },
          "labels":[
@@ -325,7 +302,7 @@
          "storage_unit_for_verify":"TB",
          "replications":{
             "rulename":"rulename1",
-            "endpointname":"endpoint1",
+            "endpointname":"endpoint_for_proxy_cache",
             "trigger":"Manual"
          },
          "labels":[
@@ -392,7 +369,7 @@
             "skip_cert_verify":false,
             "auth_header":"bbb",
             "enabled":true,
-            "notify_type":"http",
+            "notify_type":"slack",
             "name":"webhook28"
          },
          "configuration":{

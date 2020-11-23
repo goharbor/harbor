@@ -1,15 +1,19 @@
 import time
 import os
 import sys
+import warnings
+from functools import wraps
 
-sys.path.insert(0, os.environ["SWAGGER_CLIENT_PATH"])
+sys.path.insert(0, os.environ.get("SWAGGER_CLIENT_PATH", ''))
 path=os.getcwd() + "/library"
 sys.path.insert(0, path)
 
 
 path=os.getcwd() + "/tests/apitests/python/library"
 sys.path.insert(0, path)
-
+path=os.getcwd() + "/tests/apitests/python/"
+sys.path.insert(0, path)
+print(sys.path)
 import v2_swagger_client
 from swagger_client.rest import ApiException
 import swagger_client.models
@@ -18,15 +22,17 @@ from pprint import pprint
 admin_user = "admin"
 admin_pwd = "Harbor12345"
 
-harbor_server = os.environ["HARBOR_HOST"]
+harbor_server = os.environ.get("HARBOR_HOST", '')
 #CLIENT=dict(endpoint="https://"+harbor_server+"/api")
 ADMIN_CLIENT=dict(endpoint = os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api/v2.0", username = admin_user, password =  admin_pwd)
 CHART_API_CLIENT=dict(endpoint = os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api", username = admin_user, password =  admin_pwd)
 USER_ROLE=dict(admin=0,normal=1)
 TEARDOWN = os.environ.get('TEARDOWN', 'true').lower() in ('true', 'yes')
 notary_url = os.environ.get('NOTARY_URL', 'https://'+harbor_server+':4443')
+DOCKER_USER = os.environ.get('DOCKER_USER', '')
+DOCKER_PWD = os.environ.get('DOCKER_PWD', '')
 
-def GetProductApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
+def GetProductApi(username, password, harbor_server= os.environ.get("HARBOR_HOST", '')):
 
     cfg = swagger_client.Configuration()
     cfg.host = "https://"+harbor_server+"/api/v2.0"
@@ -38,7 +44,7 @@ def GetProductApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
     api_instance = swagger_client.ProductsApi(api_client)
     return api_instance
 
-def GetRepositoryApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
+def GetRepositoryApi(username, password, harbor_server= os.environ.get("HARBOR_HOST", '')):
 
     cfg = v2_swagger_client.Configuration()
     cfg.host = "https://"+harbor_server+"/api/v2.0"
@@ -62,6 +68,16 @@ class TestResult(object):
             for each_err_msg in self.error_message:
                 print("Error message:", each_err_msg)
             raise Exception(r"Test case failed with {} errors.".format(self.num_errors))
+
+def suppress_urllib3_warning(func):
+    @wraps(func)
+    def inner_func(*args):
+        warnings.filterwarnings(action="ignore",
+                                message="unclosed",
+                                category=ResourceWarning)
+        warnings.filterwarnings(action='ignore', message='Unverified HTTPS request')
+        func(*args)
+    return inner_func
 
 from contextlib import contextmanager
 

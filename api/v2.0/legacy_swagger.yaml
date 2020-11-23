@@ -2781,7 +2781,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/ImmutableTagRule'
+              $ref: '#/definitions/RetentionRule'
         '400':
           description: Illegal format of provided ID value.
         '401':
@@ -2801,10 +2801,11 @@ paths:
           format: int64
           required: true
           description: Relevant project ID.
-        - name: immutabletagrule
+        - name: RetentionRule
           in: body
+          required: true
           schema:
-            $ref: '#/definitions/ImmutableTagRule'
+            $ref: '#/definitions/RetentionRule'
       tags:
         - Products
       responses:
@@ -2834,10 +2835,11 @@ paths:
           format: int64
           required: true
           description: Immutable tag rule ID.
-        - name: immutabletagrule
+        - name: RetentionRule
           in: body
+          required: true
           schema:
-            $ref: '#/definitions/ImmutableTagRule'
+            $ref: '#/definitions/RetentionRule'
       tags:
         - Products
       responses:
@@ -5207,19 +5209,6 @@ definitions:
       enabled:
         type: boolean
         description: The quota is enable or disable
-  ImmutableTagRule:
-    type: object
-    properties:
-      id:
-        type: integer
-        format: int64
-      project_id:
-        type: integer
-        format: int64
-      tag_filter:
-        type: string
-      enabled:
-        type: boolean
 
   ScannerRegistration:
     type: object

@@ -18,6 +18,7 @@ harbor_logs_bucket="harbor-ci-logs"
 #echo "content_language = en" >> $botofile
 #echo "default_project_id = $GS_PROJECT_ID" >> $botofile
 DIR="$(cd "$(dirname "$0")" && pwd)"
+E2E_IMAGE="goharbor/harbor-e2e-engine:2.6"
 
 # GS util
 function uploader {
@@ -30,7 +31,7 @@ set +e
 docker ps
 # run db auth api cases
 if [ "$1" = 'DB' ]; then
-    robot -X -v ip:$2 -v HARBOR_PASSWORD:Harbor12345 $DIR/../../tests/robot-cases/Group0-BAT/API_DB.robot
+    docker run -i --privileged -v $DIR/../../:/drone -v $DIR/../:/ca -w /drone $E2E_IMAGE robot -v DOCKER_USER:${DOCKER_USER} -v DOCKER_PWD:${DOCKER_PWD} -v ip:$2  -v ip1: -v HARBOR_PASSWORD:Harbor12345 /drone/tests/robot-cases/Group1-Nightly/Setup.robot /drone/tests/robot-cases/Group0-BAT/API_DB.robot
 elif [ "$1" = 'LDAP' ]; then
     # run ldap api cases
     python $DIR/../../tests/configharbor.py -H $IP -u $HARBOR_ADMIN -p $HARBOR_ADMIN_PASSWD -c auth_mode=ldap_auth \
@@ -39,7 +40,7 @@ elif [ "$1" = 'LDAP' ]; then
                                   ldap_search_password=admin \
                                   ldap_base_dn=dc=example,dc=com \
                                   ldap_uid=cn
-    robot -X -v ip:$2 -v HARBOR_PASSWORD:Harbor12345 $DIR/../../tests/robot-cases/Group0-BAT/API_LDAP.robot
+    docker run -i --privileged -v $DIR/../../:/drone -v $DIR/../:/ca -w /drone $E2E_IMAGE robot -v DOCKER_USER:${DOCKER_USER} -v DOCKER_PWD:${DOCKER_PWD} -v ip:$2  -v ip1: -v HARBOR_PASSWORD:Harbor12345 /drone/tests/robot-cases/Group1-Nightly/Setup.robot /drone/tests/robot-cases/Group0-BAT/API_LDAP.robot
 else
     rc=999
 fi
