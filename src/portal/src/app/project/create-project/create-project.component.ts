@@ -75,7 +75,7 @@ export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges
   checkNameSubscribe: Subscription;
 
   registries: Endpoint[] = [];
-  supportedRegistryTypeQueryString: string = "type={docker-hub harbor}";
+  supportedRegistryTypeQueryString: string = "type={docker-hub harbor azure-acr aws-ecr google-gcr}";
 
   constructor(private projectService: ProjectService,
               private translateService: TranslateService,
