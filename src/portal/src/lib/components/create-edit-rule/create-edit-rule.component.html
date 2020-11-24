@@ -1,7 +1,7 @@
 <clr-modal [(clrModalOpen)]="createEditRuleOpened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
   <h3 class="modal-title">{{headerTitle | translate}}</h3>
-  <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
   <div class="modal-body modal-body-height">
+    <hbr-inline-alert (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
     <form [formGroup]="ruleForm" novalidate class="clr-form clr-form-horizontal">
       <div class="clr-form-control" [class.clr-error]="(ruleForm.controls.name.touched && ruleForm.controls.name.invalid) || !isRuleNameValid">
         <label class="clr-control-label required">{{'REPLICATION.NAME' | translate}}</label>
@@ -171,7 +171,7 @@
           <div formGroupName="trigger">
             <!--on trigger-->
             <div class="select width-115 clr-select-wrapper">
-              <select id="ruleTrigger" formControlName="type" class="clr-select">
+              <select (change)="changeTrigger($event)" id="ruleTrigger" formControlName="type" class="clr-select">
                 <option *ngFor="let trigger of supportedTriggers" [value]="trigger">{{'REPLICATION.' + trigger.toUpperCase() | translate }}</option>
               </select>
             </div>
@@ -180,7 +180,7 @@
                 <label class="required">Cron String</label>
                 <label for="targetCron" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm tooltip-top-right"
                   [class.invalid]="!isNotSchedule() && cronTouched && !cronInputValid(ruleForm.value.trigger?.trigger_settings?.cron || '')">
-                  <input type="text" name=targetCron id="targetCron" required class="form-control cron-input clr-input" formControlName="cron">
+                  <input (input)="inputInvalid($event)" type="text" name=targetCron id="targetCron" required class="form-control cron-input clr-input" formControlName="cron">
                   <span class="tooltip-content">
                     {{'TOOLTIP.CRON_REQUIRED' | translate }}
                   </span>
