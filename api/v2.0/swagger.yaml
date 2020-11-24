@@ -1431,6 +1431,209 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /replication/executions:
+    get:
+      summary: List replication executions
+      description: List replication executions
+      tags:
+        - replication
+      operationId: listReplicationExecutions
+      parameters:
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: policy_id
+          in: query
+          type: integer
+          required: false
+          description: The ID of the policy that the executions belong to.
+        - name: status
+          in: query
+          type: string
+          required: false
+          description: The execution status.
+        - name: trigger
+          in: query
+          type: string
+          required: false
+          description: The trigger mode.
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of the resources
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReplicationExecution'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Start one replication execution
+      description: Start one replication execution according to the policy
+      tags:
+        - replication
+      operationId: startReplication
+      parameters:
+        - name: execution
+          in: body
+          description: The ID of policy that the execution belongs to
+          required: true
+          schema:
+            $ref: '#/definitions/StartReplicationExecution'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /replication/executions/{id}:
+    get:
+      summary: Get the specific replication execution
+      description: Get the replication execution specified by ID
+      tags:
+        - replication
+      operationId: getReplicationExecution
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The ID of the execution.
+          required: true
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ReplicationExecution'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Stop the specific replication execution
+      description: Stop the replication execution specified by ID
+      tags:
+        - replication
+      operationId: stopReplication
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The ID of the execution.
+          required: true
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /replication/executions/{id}/tasks:
+    get:
+      summary: List replication tasks for a specific execution
+      description: List replication tasks for a specific execution
+      tags:
+        - replication
+      operationId: listReplicationTasks
+      parameters:
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The ID of the execution that the tasks belongs to.
+          required: true
+        - name: status
+          in: query
+          type: string
+          required: false
+          description: The task status.
+        - name: resource_type
+          in: query
+          type: string
+          required: false
+          description: The resource type.
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of the resources
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReplicationTask'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /replication/executions/{id}/tasks/{task_id}/log:
+    get:
+      summary: Get the log of the specific replication task
+      description: Get the log of the specific replication task
+      tags:
+        - replication
+      operationId: getReplicationLog
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The ID of the execution that the tasks belongs to.
+          required: true
+        - name: task_id
+          in: path
+          type: integer
+          format: int64
+          description: The ID of the task.
+          required: true
+      responses:
+        '200':
+          description: Success
+          headers:
+            Content-Type:
+              description: The content type of response body
+              type: string
+          schema:
+            type: string
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   query:
     name: q
@@ -2123,6 +2326,7 @@ definitions:
         description: The status message of task
       run_count:
         type: integer
+        format: int32
         description: The count of task run
       extra_attrs:
         $ref: '#/definitions/ExtraAttrs'
@@ -2398,3 +2602,94 @@ definitions:
     additionalProperties:
       type: integer
       format: int64
+  ReplicationExecution:
+    type: object
+    description: The replication execution
+    properties:
+      id:
+        type: integer
+        description: The ID of the execution
+      policy_id:
+        type: integer
+        description: The ID if the policy that the execution belongs to
+      status:
+        type: string
+        description: The status of the execution
+      trigger:
+        type: string
+        description: The trigger mode
+      start_time:
+        type: string
+        format: date-time
+        description: The start time
+      end_time:
+        type: string
+        format: date-time
+        description: The end time
+      status_text:
+        type: string
+        x-omitempty: false
+        description: The status text
+      total:
+        type: integer
+        x-omitempty: false
+        description: The total count of all executions
+      failed:
+        type: integer
+        x-omitempty: false
+        description: The count of failed executions
+      succeed:
+        type: integer
+        x-omitempty: false
+        description: The count of succeed executions
+      in_progress:
+        type: integer
+        x-omitempty: false
+        description: The count of in_progress executions
+      stopped:
+        type: integer
+        x-omitempty: false
+        description: The count of stopped executions
+  StartReplicationExecution:
+    type: object
+    properties:
+      policy_id:
+        type: integer
+        format: int64
+        description: The ID of policy that the execution belongs to.
+  ReplicationTask:
+    type: object
+    description: The replication task
+    properties:
+      id:
+        type: integer
+        description: The ID of the task
+      execution_id:
+        type: integer
+        description: The ID of the execution that the task belongs to
+      status:
+        type: string
+        description: The status of the task
+      job_id:
+        type: string
+        description: The ID of the underlying job that the task related to
+      operation:
+        type: string
+        description: The operation of the task
+      resource_type:
+        type: string
+        description: The type of the resource that the task operates
+      src_resource:
+        type: string
+        description: The source resource that the task operates
+      dst_resource:
+        type: string
+        description: The destination resource that the task operates
+      start_time:
+        type: string
+        format: date-time
+        description: The start time of the task
+      end_time:
+        type: string
+        format: date-time
+        description: The end time of the task

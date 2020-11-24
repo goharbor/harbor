@@ -58,10 +58,6 @@ func registerLegacyRoutes() {
 
 	beego.Router("/api/"+version+"/replication/adapters", &api.ReplicationAdapterAPI{}, "get:List")
 	beego.Router("/api/"+version+"/replication/adapterinfos", &api.ReplicationAdapterAPI{}, "get:ListAdapterInfos")
-	beego.Router("/api/"+version+"/replication/executions", &api.ReplicationOperationAPI{}, "get:ListExecutions;post:CreateExecution")
-	beego.Router("/api/"+version+"/replication/executions/:id([0-9]+)", &api.ReplicationOperationAPI{}, "get:GetExecution;put:StopExecution")
-	beego.Router("/api/"+version+"/replication/executions/:id([0-9]+)/tasks", &api.ReplicationOperationAPI{}, "get:ListTasks")
-	beego.Router("/api/"+version+"/replication/executions/:id([0-9]+)/tasks/:tid([0-9]+)/log", &api.ReplicationOperationAPI{}, "get:GetTaskLog")
 	beego.Router("/api/"+version+"/replication/policies", &api.ReplicationPolicyAPI{}, "get:List;post:Create")
 	beego.Router("/api/"+version+"/replication/policies/:id([0-9]+)", &api.ReplicationPolicyAPI{}, "get:Get;put:Update;delete:Delete")
 

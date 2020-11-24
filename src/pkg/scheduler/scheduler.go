@@ -289,38 +289,3 @@ func (s *scheduler) convertSchedule(ctx context.Context, schedule *schedule) (*S
 	}
 	return schd, nil
 }
-
-// HandleLegacyHook handles the legacy web hook for scheduler
-// We rewrite the implementation of scheduler with task manager mechanism in v2.1,
-// this method is used to handle the job status hook for the legacy implementation
-// We can remove the method and the hook endpoint after several releases
-func HandleLegacyHook(ctx context.Context, scheduleID int64, sc *job.StatusChange) error {
-	scheduler := Sched.(*scheduler)
-	executions, err := scheduler.execMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
-			"VendorType": JobNameScheduler,
-			"VendorID":   scheduleID,
-		},
-	})
-	if err != nil {
-		return err
-	}
-	if len(executions) == 0 {
-		return errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("no execution found for the schedule %d", scheduleID)
-	}
-
-	tasks, err := scheduler.taskMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
-			"ExecutionID": executions[0].ID,
-		},
-	})
-	if err != nil {
-		return err
-	}
-	if len(tasks) == 0 {
-		return errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("no task found for the execution %d", executions[0].ID)
-	}
-	return task.NewHookHandler().Handle(ctx, tasks[0].ID, sc)
-}

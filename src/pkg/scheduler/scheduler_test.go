@@ -15,13 +15,15 @@
 package scheduler
 
 import (
+	"context"
 	"fmt"
+	"testing"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/mock"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type schedulerTestSuite struct {
@@ -34,7 +36,7 @@ type schedulerTestSuite struct {
 
 func (s *schedulerTestSuite) SetupTest() {
 	registry = map[string]CallbackFunc{}
-	err := RegisterCallbackFunc("callback", func(interface{}) error { return nil })
+	err := RegisterCallbackFunc("callback", func(context.Context, string) error { return nil })
 	s.Require().Nil(err)
 
 	s.dao = &mockDAO{}

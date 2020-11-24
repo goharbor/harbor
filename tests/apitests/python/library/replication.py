@@ -45,41 +45,7 @@ class Replication(base.Base):
             #else:
             #    raise Exception(r"Check replication rule trigger failed, expect <{}> actual <{}>.".format(expect_trigger, get_trigger))
 
-
-    def start_replication(self, rule_id, **kwargs):
-        client = self._get_client(**kwargs)
-        return client.replications_post(swagger_client.Replication(int(rule_id)))
-
-    def list_replication_jobs(self, rule_id, **kwargs):
-        client = self._get_client(**kwargs)
-        return client.jobs_replication_get(int(rule_id))
-
-    def wait_until_jobs_finish(self, rule_id, retry=10, interval=5, **kwargs):
-        Succeed = False
-        for i in range(retry):
-            Succeed = False
-            jobs = self.get_replication_executions(rule_id, **kwargs)
-            for job in jobs:
-                if job.status == "Succeed":
-                    return
-            if not Succeed:
-                time.sleep(interval)
-        if not Succeed:
-            raise Exception("The jobs not Succeed")
-
     def delete_replication_rule(self, rule_id, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         _, status_code, _ = client.replication_policies_id_delete_with_http_info(rule_id)
         base._assert_status_code(expect_status_code, status_code)
-
-    def trigger_replication_executions(self, rule_id, expect_status_code = 201, **kwargs):
-        client = self._get_client(**kwargs)
-        _, status_code, _ = client.replication_executions_post_with_http_info({"policy_id":rule_id})
-        base._assert_status_code(expect_status_code, status_code)
-
-
-    def get_replication_executions(self, rule_id, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
-        data, status_code, _ = client.replication_executions_get_with_http_info(policy_id=rule_id)
-        base._assert_status_code(expect_status_code, status_code)
-        return data

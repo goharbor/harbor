@@ -17,20 +17,25 @@ package controller
 import (
 	"fmt"
 
-	"github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/policy/manager"
-	"github.com/goharbor/harbor/src/replication/policy/scheduler"
+)
+
+// const definitions
+const (
+	CallbackFuncName = "REPLICATION_CALLBACK"
 )
 
 // NewController returns a policy controller which can CURD and schedule policies
-func NewController(js job.Client) policy.Controller {
+func NewController() policy.Controller {
 	mgr := manager.NewDefaultManager()
-	scheduler := scheduler.NewScheduler(js)
 	ctl := &controller{
-		scheduler: scheduler,
+		scheduler: scheduler.Sched,
 	}
 	ctl.Controller = mgr
 	return ctl
@@ -47,10 +52,7 @@ func (c *controller) Create(policy *model.Policy) (int64, error) {
 		return 0, err
 	}
 	if isScheduledTrigger(policy) {
-		// TODO: need a way to show the schedule status to users
-		// maybe we can add a property "schedule status" for
-		// listing policy API
-		if err = c.scheduler.Schedule(id, policy.Trigger.Settings.Cron); err != nil {
+		if _, err = c.scheduler.Schedule(orm.Context(), job.Replication, id, "", policy.Trigger.Settings.Cron, CallbackFuncName, id); err != nil {
 			log.Errorf("failed to schedule the policy %d: %v", id, err)
 		}
 	}
@@ -72,7 +74,7 @@ func (c *controller) Update(policy *model.Policy) error {
 	// need to reschedule the policy
 	// unschedule first if needed
 	if isScheduledTrigger(origin) {
-		if err = c.scheduler.Unschedule(origin.ID); err != nil {
+		if err = c.scheduler.UnScheduleByVendor(orm.Context(), job.Replication, origin.ID); err != nil {
 			return fmt.Errorf("failed to unschedule the policy %d: %v", origin.ID, err)
 		}
 	}
@@ -82,7 +84,7 @@ func (c *controller) Update(policy *model.Policy) error {
 	}
 	// schedule again if needed
 	if isScheduledTrigger(policy) {
-		if err = c.scheduler.Schedule(policy.ID, policy.Trigger.Settings.Cron); err != nil {
+		if _, err = c.scheduler.Schedule(orm.Context(), job.Replication, policy.ID, "", policy.Trigger.Settings.Cron, CallbackFuncName, policy.ID); err != nil {
 			return fmt.Errorf("failed to schedule the policy %d: %v", policy.ID, err)
 		}
 	}
@@ -98,7 +100,7 @@ func (c *controller) Remove(policyID int64) error {
 		return fmt.Errorf("policy %d not found", policyID)
 	}
 	if isScheduledTrigger(policy) {
-		if err = c.scheduler.Unschedule(policyID); err != nil {
+		if err = c.scheduler.UnScheduleByVendor(orm.Context(), job.Replication, policyID); err != nil {
 			return err
 		}
 	}

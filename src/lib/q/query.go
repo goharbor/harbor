@@ -37,11 +37,18 @@ func New(kw KeyWords) *Query {
 // MustClone returns the clone of query when it's not nil
 // or returns a new Query instance
 func MustClone(query *Query) *Query {
-	if query != nil {
-		clone := *query
-		return &clone
+	q := &Query{
+		Keywords: map[string]interface{}{},
 	}
-	return New(KeyWords{})
+	if query != nil {
+		q.PageNumber = query.PageNumber
+		q.PageSize = query.PageSize
+		q.Sorting = query.Sorting
+		for k, v := range query.Keywords {
+			q.Keywords[k] = v
+		}
+	}
+	return q
 }
 
 // Range query

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/auditlog"
 	"github.com/goharbor/harbor/src/controller/event/handler/internal"
@@ -10,8 +11,12 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/chart"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/quota"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/scan"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier"
+	"github.com/goharbor/harbor/src/pkg/task"
 )
 
 func init() {
@@ -54,4 +59,12 @@ func init() {
 	// internal
 	notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{Context: orm.Context})
 	notifier.Subscribe(event.TopicPushArtifact, &internal.Handler{Context: orm.Context})
+
+	task.RegisterTaskStatusChangePostFunc(job.Replication, func(ctx context.Context, taskID int64, status string) error {
+		notification.AddEvent(ctx, &metadata.ReplicationMetaData{
+			ReplicationTaskID: taskID,
+			Status:            status,
+		})
+		return nil
+	})
 }

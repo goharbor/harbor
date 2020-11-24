@@ -48,7 +48,7 @@ func (e *executionDAOTestSuite) SetupTest() {
 	id, err := e.executionDAO.Create(e.ctx, &Execution{
 		VendorType: "test",
 		Trigger:    "test",
-		ExtraAttrs: "{}",
+		ExtraAttrs: `{"key":"value"}`,
 	})
 	e.Require().Nil(err)
 	e.executionID = id
@@ -62,22 +62,42 @@ func (e *executionDAOTestSuite) TearDownTest() {
 func (e *executionDAOTestSuite) TestCount() {
 	count, err := e.executionDAO.Count(e.ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"VendorType": "test",
+			"VendorType":     "test",
+			"ExtraAttrs.key": "value",
 		},
 	})
 	e.Require().Nil(err)
 	e.Equal(int64(1), count)
+
+	count, err = e.executionDAO.Count(e.ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"VendorType":     "test",
+			"ExtraAttrs.key": "incorrect-value",
+		},
+	})
+	e.Require().Nil(err)
+	e.Equal(int64(0), count)
 }
 
 func (e *executionDAOTestSuite) TestList() {
 	executions, err := e.executionDAO.List(e.ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"VendorType": "test",
+			"VendorType":     "test",
+			"ExtraAttrs.key": "value",
 		},
 	})
 	e.Require().Nil(err)
 	e.Require().Len(executions, 1)
 	e.Equal(e.executionID, executions[0].ID)
+
+	executions, err = e.executionDAO.List(e.ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"VendorType":     "test",
+			"ExtraAttrs.key": "incorrect-value",
+		},
+	})
+	e.Require().Nil(err)
+	e.Require().Len(executions, 0)
 }
 
 func (e *executionDAOTestSuite) TestGet() {
@@ -200,8 +220,10 @@ func (e *executionDAOTestSuite) TestRefreshStatus() {
 	e.Require().Nil(err)
 	defer e.taskDao.Delete(e.ctx, taskID01)
 
-	err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
+	statusChanged, currentStatus, err := e.executionDAO.RefreshStatus(e.ctx, e.executionID)
 	e.Require().Nil(err)
+	e.True(statusChanged)
+	e.Equal(job.SuccessStatus.String(), currentStatus)
 	execution, err := e.executionDAO.Get(e.ctx, e.executionID)
 	e.Require().Nil(err)
 	e.Equal(job.SuccessStatus.String(), execution.Status)
@@ -218,8 +240,10 @@ func (e *executionDAOTestSuite) TestRefreshStatus() {
 	e.Require().Nil(err)
 	defer e.taskDao.Delete(e.ctx, taskID02)
 
-	err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
+	statusChanged, currentStatus, err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
 	e.Require().Nil(err)
+	e.True(statusChanged)
+	e.Equal(job.StoppedStatus.String(), currentStatus)
 	execution, err = e.executionDAO.Get(e.ctx, e.executionID)
 	e.Require().Nil(err)
 	e.Equal(job.StoppedStatus.String(), execution.Status)
@@ -236,8 +260,10 @@ func (e *executionDAOTestSuite) TestRefreshStatus() {
 	e.Require().Nil(err)
 	defer e.taskDao.Delete(e.ctx, taskID03)
 
-	err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
+	statusChanged, currentStatus, err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
 	e.Require().Nil(err)
+	e.True(statusChanged)
+	e.Equal(job.ErrorStatus.String(), currentStatus)
 	execution, err = e.executionDAO.Get(e.ctx, e.executionID)
 	e.Require().Nil(err)
 	e.Equal(job.ErrorStatus.String(), execution.Status)
@@ -271,8 +297,29 @@ func (e *executionDAOTestSuite) TestRefreshStatus() {
 	e.Require().Nil(err)
 	defer e.taskDao.Delete(e.ctx, taskID06)
 
-	err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
+	statusChanged, currentStatus, err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
 	e.Require().Nil(err)
+	e.True(statusChanged)
+	e.Equal(job.RunningStatus.String(), currentStatus)
+	execution, err = e.executionDAO.Get(e.ctx, e.executionID)
+	e.Require().Nil(err)
+	e.Equal(job.RunningStatus.String(), execution.Status)
+	e.Empty(execution.EndTime)
+
+	// add another running task, the status shouldn't be changed
+	taskID07, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: e.executionID,
+		Status:      job.RunningStatus.String(),
+		StatusCode:  job.RunningStatus.Code(),
+		ExtraAttrs:  "{}",
+	})
+	e.Require().Nil(err)
+	defer e.taskDao.Delete(e.ctx, taskID07)
+
+	statusChanged, currentStatus, err = e.executionDAO.RefreshStatus(e.ctx, e.executionID)
+	e.Require().Nil(err)
+	e.False(statusChanged)
+	e.Equal(job.RunningStatus.String(), currentStatus)
 	execution, err = e.executionDAO.Get(e.ctx, e.executionID)
 	e.Require().Nil(err)
 	e.Equal(job.RunningStatus.String(), execution.Status)
