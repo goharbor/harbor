@@ -58,7 +58,7 @@ Verify Project Metadata
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Project Configuration
         Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.public  ${project_config_public_checkbox}
@@ -94,7 +94,7 @@ Verify Member Exist
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Member
         @{members}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].member..name
@@ -111,7 +111,7 @@ Verify Webhook
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Project Webhooks
         ${enabled}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.enabled
@@ -163,7 +163,7 @@ Verify Tag Immutability Rule
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Tag Immutability
         @{repo_decoration}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_immutability_rule.repo_decoration
@@ -236,12 +236,12 @@ Verify System Label
 Verify Project Label
     [Arguments]    ${json}
     Log To Console  "Verify Project Label..."
-    @{project}= Get Value From Json  ${json}  $.peoject.[*].name
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     FOR    ${project}    IN    @{project}
         @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
-        ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+        ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Project Label
         @{projectlabel}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..labels..name
@@ -273,8 +273,7 @@ Verify Replicationrule
         Init Chrome Driver
         Log To Console    -----replicationrule-----"${replicationrule}"------------
         Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-        Switch To Replication Manage
-        Select Rule And Click Edit Button    ${replicationrule}
+        Edit Replication Rule By Name    ${replicationrule}
         @{is_src_registry}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].is_src_registry
         @{trigger_type}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].trigger_type
         @{name_filters}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].name_filters
@@ -288,12 +287,13 @@ Verify Replicationrule
         ${endpoint0}=   Set Variable    @{endpoint}[0]
         Log To Console    -----endpoint0-----${endpoint0}------------
         @{endpoint_type}=    Get Value From Json    ${json}    $.endpoint[?(@.name=${endpoint0})].type
+        @{endpoint_url}=    Get Value From Json    ${json}    $.endpoint[?(@.name=${endpoint0})].url
         Retry Textfield Value Should Be    ${filter_name_id}    @{name_filters}[0]
         Retry Textfield Value Should Be    ${filter_tag_id}    @{tag_filters}[0]
         Retry Textfield Value Should Be    ${rule_name_input}    ${replicationrule}
         Retry Textfield Value Should Be    ${dest_namespace_xpath}    @{dest_namespace}[0]
         Log To Console    -----endpoint_type-----@{endpoint_type}[0]------------
-        ${registry}=    Set Variable If    "@{endpoint_type}[0]"=="harbor"    ${endpoint0}-https://${IP}    ${endpoint0}-https://hub.docker.com
+        ${registry}=    Set Variable If    "@{endpoint_type}[0]"=="harbor"    ${endpoint0}-@{endpoint_url}[0]    ${endpoint0}-https://hub.docker.com
         Log To Console    -------registry---${registry}------------
         Run Keyword If    '@{is_src_registry}[0]' == '${true}'    Retry List Selection Should Be    ${src_registry_dropdown_list}    ${registry}
         ...    ELSE    Retry List Selection Should Be    ${dest_registry_dropdown_list}    ${registry}

@@ -18,9 +18,8 @@ Resource  ../../resources/Util.robot
 Default Tags  Nightly
 
 *** Test Cases ***
-Test Suites Setup
-    [Tags]  setup
-    Nightly Test Setup  ${ip}  ${HARBOR_PASSWORD}  ${ip1}
+Test Suites Setup For UI Test
+    Nightly Test Setup For Nightly  ${ip}  ${HARBOR_PASSWORD}  ${ip1}
     Setup API Test
 
 Test Case - Get Harbor Version

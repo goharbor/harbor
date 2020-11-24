@@ -11,24 +11,11 @@ set -e
 if [ -z "$1" ]; then echo no ip specified; exit 1;fi
 # prepare cert ...
 sudo ./tests/generateCerts.sh $1
-sudo mkdir -p /etc/docker/certs.d/$1 && sudo cp ./tests/harbor_ca.crt /etc/docker/certs.d/$1/ && rm -rf ~/.docker/ &&  mkdir -p ~/.docker/tls/$1:4443/ && sudo cp ./tests/harbor_ca.crt ~/.docker/tls/$1:4443/
-
+sudo wget https://bootstrap.pypa.io/get-pip.py && sudo python ./get-pip.py && sudo pip install --ignore-installed urllib3 chardet requests --upgrade
 sudo ./tests/hostcfg.sh
 
 if [ "$2" = 'LDAP' ]; then
     cd tests && sudo ./ldapprepare.sh && cd ..
-fi
-
-# prepare a chart file for API_DB test...
-sudo curl -o $DIR/../../tests/apitests/python/mariadb-4.3.1.tgz https://storage.googleapis.com/harbor-builds/bin/charts/mariadb-4.3.1.tgz
-
-sudo wget https://bootstrap.pypa.io/get-pip.py && sudo python ./get-pip.py && sudo pip install --ignore-installed urllib3 chardet requests && sudo pip install robotframework==3.2.1 robotframework-httplibrary requests --upgrade
-sudo make swagger_client
-#TODO: Swagger python package used to installed into dist-packages, but it's changed into site-packages all in a sudden, we havn't found the root cause.
-#      so current workround is to copy swagger packages from site-packages to dist-packages.
-package_dir=/usr/lib/python3.7/site-packages
-if [ -d $package_dir ] && [  $(find $package_dir -type f -name "*client*.egg" | wc -l) -gt 0 ];then
-    sudo cp -rf ${package_dir}/* /usr/local/lib/python3.7/dist-packages
 fi
 
 if [ $GITHUB_TOKEN ];

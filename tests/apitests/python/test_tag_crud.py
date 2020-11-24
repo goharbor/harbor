@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
 import library.repository
@@ -17,8 +17,8 @@ from library.repository import push_image_to_project
 from library.repository import pull_harbor_image
 
 class TestProjects(unittest.TestCase):
-    @classmethod
-    def setUpClass(self):
+    @suppress_urllib3_warning
+    def setUp(self):
         self.project= Project()
         self.user= User()
         self.artifact = Artifact()
@@ -27,12 +27,8 @@ class TestProjects(unittest.TestCase):
         self.user_password = "Aa123456"
         self.repo_name = "hello-world"
 
-    @classmethod
-    def tearDownClass(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete repository(RA,IA) by user(UA);
         self.repo.delete_repoitory(TestProjects.project_name, self.repo_name, **TestProjects.USER_CLIENT)
 
@@ -41,6 +37,7 @@ class TestProjects(unittest.TestCase):
 
         #3. Delete user(UA).
         self.user.delete_user(TestProjects.user_id, **ADMIN_CLIENT)
+        print("Case completed")
 
     def testCreateDeleteTag(self):
         """
@@ -79,8 +76,8 @@ class TestProjects(unittest.TestCase):
         artifact = self.artifact.get_reference_info(TestProjects.project_name, self.repo_name, tag, **TestProjects.USER_CLIENT)
 
         #6. Verify the image(IA) contains tag named 1.0;
-        self.assertEqual(artifact[0].tags[0].name, "1.0")
-        self.assertEqual(artifact[0].tags[1].name, tag)
+        self.assertEqual(artifact.tags[0].name, "1.0")
+        self.assertEqual(artifact.tags[1].name, tag)
 
         #7. Delete the tag(1.0) from image(IA);
         self.artifact.delete_tag(TestProjects.project_name, self.repo_name, tag, "1.0",**TestProjects.USER_CLIENT)
@@ -89,7 +86,7 @@ class TestProjects(unittest.TestCase):
         artifact = self.artifact.get_reference_info(TestProjects.project_name, self.repo_name, tag, **TestProjects.USER_CLIENT)
 
         #9. Verify the image(IA) contains no tag named 1.0;
-        self.assertEqual(artifact[0].tags[0].name, tag)
+        self.assertEqual(artifact.tags[0].name, tag)
 
 
 

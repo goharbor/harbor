@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import unittest
 import time
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import TEARDOWN
 from testutils import harbor_server
 from library.repository import push_special_image_to_project
@@ -31,8 +31,8 @@ class TestProjects(unittest.TestCase):
     Tear Down:
         1. Delete project test-retention
     """
-    @classmethod
-    def setUpClass(self):
+    @suppress_urllib3_warning
+    def setUp(self):
         self.user = User()
         self.system = System()
         self.repo = Repository()
@@ -41,6 +41,16 @@ class TestProjects(unittest.TestCase):
         self.artifact = Artifact()
         self.repo_name_1 = "test1"
         self.repo_name_2 = "test2"
+
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
+    def tearDown(self):
+        # TODO delete_repoitory will fail when no tags left anymore
+        #     resp=self.repo.list_repositories(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
+        #     for repo in resp:
+        #         self.repo.delete_repoitory(repo.name, **TestProjects.USER_RA_CLIENT)
+        #     self.project.delete_project(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
+        #     self.user.delete_user(TestProjects.user_ra_id, **ADMIN_CLIENT)
+        print("Case completed")
 
     def testTagRetention(self):
         user_ra_password = "Aa123456"
@@ -112,26 +122,12 @@ class TestProjects(unittest.TestCase):
         #List artifacts successfully, and untagged artifact in test1 should be the only one retained;
         artifacts_1 = self.artifact.list_artifacts(TestProjects.project_src_repo_name, self.repo_name_1, **TestProjects.USER_RA_CLIENT)
         self.assertTrue(len(artifacts_1)==1)
-        self.assertEqual(artifacts_1[0].digest, tag_data_artifact3_image1[0].digest)
+        self.assertEqual(artifacts_1[0].digest, tag_data_artifact3_image1.digest)
 
         #List artifacts successfully, and artifact with latest tag in test2 should be the only one retained;
         artifacts_2 = self.artifact.list_artifacts(TestProjects.project_src_repo_name, self.repo_name_2, **TestProjects.USER_RA_CLIENT)
         self.assertTrue(len(artifacts_2)==1)
-        self.assertEqual(artifacts_2[0].digest, tag_data_artifact2_image2[0].digest)
-
-    @classmethod
-    def tearDownClass(self):
-        print("Case completed")
-
-    # TODO delete_repoitory will fail when no tags left anymore
-    # @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    # def test_ClearData(self):
-    #     resp=self.repo.list_repositories(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
-    #     for repo in resp:
-    #         self.repo.delete_repoitory(repo.name, **TestProjects.USER_RA_CLIENT)
-    #     self.project.delete_project(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
-    #     self.user.delete_user(TestProjects.user_ra_id, **ADMIN_CLIENT)
-
+        self.assertEqual(artifacts_2[0].digest, tag_data_artifact2_image2.digest)
 
 if __name__ == '__main__':
     unittest.main()

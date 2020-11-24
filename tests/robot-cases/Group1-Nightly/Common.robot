@@ -29,6 +29,28 @@ Test Case - Sign With Admin
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Close Browser
 
+Test Case - Push CNAB Bundle and Display
+    [Tags]  run-once
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+
+    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
+    Create An New Project And Go Into Project  test${d}
+
+    ${target}=  Set Variable  ${ip}/test${d}/cnab${d}:cnab_tag${d}
+    Retry Keyword N Times When Error  5  CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json  ${DOCKER_USER}  ${DOCKER_PWD}
+
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/cnab${d}
+
+    Go Into Repo  test${d}/cnab${d}
+    Wait Until Page Contains  cnab_tag${d}
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/cnab${d}
+    Go Into Repo  test${d}/cnab${d}
+    Go Into Index And Contain Artifacts  cnab_tag${d}  limit=3
+    Close Browser
+
 Test Case - Create An New Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -494,10 +516,8 @@ Test Case - Project Quotas Control Under Copy
     Sleep  2
     Go Into Project  project_b_${d}
     Sleep  2
-    Capture Page Screenshot
     Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(.,'${image_a}')]/a
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-cell[contains(.,'${image_b}')]/a
-    Capture Page Screenshot
     Close Browser
 
 Test Case - Webhook CRUD
@@ -609,27 +629,6 @@ Test Case - Push Docker Manifest Index and Display
     Wait Until Page Contains  test${d}/index${d}
     Go Into Repo  test${d}/index${d}
     Go Into Index And Contain Artifacts  index_tag${d}  limit=2
-    Close Browser
-
-Test Case - Push CNAB Bundle and Display
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
-    Create An New Project And Go Into Project  test${d}
-
-    ${target}=  Set Variable  ${ip}/test${d}/cnab${d}:cnab_tag${d}
-    CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json
-
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/cnab${d}
-
-    Go Into Repo  test${d}/cnab${d}
-    Wait Until Page Contains  cnab_tag${d}
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/cnab${d}
-    Go Into Repo  test${d}/cnab${d}
-    Go Into Index And Contain Artifacts  cnab_tag${d}  limit=3
     Close Browser
 
 Test Case - Push Helm Chart and Display

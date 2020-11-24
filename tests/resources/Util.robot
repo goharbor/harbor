@@ -86,7 +86,7 @@ Wait Until Element Is Visible And Enabled
 
 Retry Action Keyword
     [Arguments]  ${keyword}  @{param}
-    Retry Keyword N Times When Error  3  ${keyword}  @{param}
+    Retry Keyword N Times When Error  8  ${keyword}  @{param}
 
 Retry Wait Element
     [Arguments]  ${element_xpath}
@@ -211,7 +211,7 @@ Clear Field Of Characters
     END
 
 Wait Unitl Command Success
-    [Arguments]  ${cmd}  ${times}=8
+    [Arguments]  ${cmd}  ${times}=2
     FOR  ${n}  IN RANGE  1  ${times}
         Log  Trying ${cmd}: ${n} ...  console=True
         ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
@@ -235,7 +235,6 @@ Retry Keyword N Times When Error
         Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
         ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
         Log To Console  Return value is ${out} and ${out[0]}
-        Capture Page Screenshot  record.png
         Run Keyword If  '${keyword}'=='Make Swagger Client'  Exit For Loop If  '${out[0]}'=='PASS' and '${out[1]}'=='0'
         ...  ELSE  Exit For Loop If  '${out[0]}'=='PASS'
         Sleep  10
@@ -262,14 +261,13 @@ Retry Double Keywords When Error
     FOR  ${n}  IN RANGE  1  ${times}
         Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
         ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
-        Capture Page Screenshot
         Sleep  1
         ${out2}  Run Keyword And Ignore Error  ${keyword2}  ${element2}
-        Capture Page Screenshot
         Log To Console  Return value is ${out1[0]} ${out2[0]}
         Exit For Loop If  '${out2[0]}'=='PASS'
         Sleep  1
     END
+    Capture Page Screenshot
     Return From Keyword If  ${DoAssert} == ${false}  '${out2[0]}'
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
 

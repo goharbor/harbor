@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
 from library.base import _assert_status_code
@@ -15,19 +15,15 @@ from library.repository import push_image_to_project
 from library.repository import pull_harbor_image
 
 class TestProjects(unittest.TestCase):
-    @classmethod
-    def setUpClass(self):
+    @suppress_urllib3_warning
+    def setUp(self):
         self.project = Project()
         self.user = User()
         self.artifact = Artifact()
         self.repo = Repository()
 
-    @classmethod
-    def tearDownClass(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete repository(RA);
         self.repo.delete_repoitory(TestProjects.project_src_repo_name, (TestProjects.src_repo_name).split('/')[1], **TestProjects.USER_RETAG_CLIENT)
 
@@ -97,19 +93,19 @@ class TestProjects(unittest.TestCase):
         src_tag_data = self.artifact.get_reference_info(TestProjects.project_src_repo_name, TestProjects.src_repo_name.split('/')[1], tag_name, **TestProjects.USER_RETAG_CLIENT)
         TestProjects.dst_repo_name = TestProjects.project_dst_repo_name+"/"+ dst_repo_sub_name
         #8. Retag image in project(PA) to project(PB), it should be forbidden;
-        self.artifact.copy_artifact(TestProjects.project_dst_repo_name, dst_repo_sub_name, TestProjects.src_repo_name+"@"+src_tag_data[0].digest, expect_status_code=403, **TestProjects.USER_RETAG_CLIENT)
+        self.artifact.copy_artifact(TestProjects.project_dst_repo_name, dst_repo_sub_name, TestProjects.src_repo_name+"@"+src_tag_data.digest, expect_status_code=403, **TestProjects.USER_RETAG_CLIENT)
 
         #9. Update role of user-retag as admin member of project(PB);
         self.project.update_project_member_role(TestProjects.project_dst_repo_id, retag_member_id, 1, **ADMIN_CLIENT)
 
         #10. Retag image in project(PA) to project(PB), it should be successful;
-        self.artifact.copy_artifact(TestProjects.project_dst_repo_name, dst_repo_sub_name, TestProjects.src_repo_name+"@"+src_tag_data[0].digest, **TestProjects.USER_RETAG_CLIENT)
+        self.artifact.copy_artifact(TestProjects.project_dst_repo_name, dst_repo_sub_name, TestProjects.src_repo_name+"@"+src_tag_data.digest, **TestProjects.USER_RETAG_CLIENT)
 
         #11. Get repository(RB)'s image tag detail information;
         dst_tag_data = self.artifact.get_reference_info(TestProjects.project_dst_repo_name, dst_repo_sub_name, tag_name, **TestProjects.USER_RETAG_CLIENT)
 
         #12. Read digest of retaged image, it must be the same with the image in repository(RA);
-        self.assertEqual(src_tag_data[0].digest, dst_tag_data[0].digest)
+        self.assertEqual(src_tag_data.digest, dst_tag_data.digest)
 
         #13. Pull image from project(PB) by user_retag, it must be successful;"
         pull_harbor_image(harbor_server, user_retag_name, user_retag_password, TestProjects.dst_repo_name, tag_name)

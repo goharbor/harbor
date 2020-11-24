@@ -4,7 +4,7 @@ import unittest
 import swagger_client
 import time
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, TEARDOWN, suppress_urllib3_warning
 from library.user import User
 from library.system import System
 
@@ -27,6 +27,7 @@ class TestSysCVEWhitelist(unittest.TestCase):
         1. Clear the system level CVE whitelist.
         2. Delete User(RA)
     """
+    @suppress_urllib3_warning
     def setUp(self):
         self.user = User()
         self.system = System()
@@ -39,11 +40,18 @@ class TestSysCVEWhitelist(unittest.TestCase):
                                    password=user_ra_password)
         self.user_ra_id = int(user_ra_id)
 
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
+    def tearDown(self):
+        print("TearDown: Clearing the Whitelist")
+        self.system.set_cve_whitelist(**ADMIN_CLIENT)
+        print("TearDown: Deleting user: %d" % self.user_ra_id)
+        self.user.delete_user(self.user_ra_id, **ADMIN_CLIENT)
+
     def testSysCVEWhitelist(self):
-        # 1. User(RA) reads the system level CVE whitelist and it's empty.
+        # 1. User(RA) reads the system level CVE allowlist and it's empty.
         wl = self.system.get_cve_whitelist(**self.USER_RA_CLIENT)
         self.assertEqual(0, len(wl.items), "The initial system level CVE whitelist is not empty: %s" % wl.items)
-        # 2. User(RA) updates the system level CVE whitelist, verify it's failed.
+        # 2. User(RA) updates the system level CVE allowlist, verify it's failed.
         cves = ['CVE-2019-12310']
         self.system.set_cve_whitelist(None, 403, *cves, **self.USER_RA_CLIENT)
         # 3. Update user(RA) to system admin
@@ -61,13 +69,6 @@ class TestSysCVEWhitelist(unittest.TestCase):
         # 7. User(RA) reads the system level CVE whitelist, verify the expiration date is updated.
         wl = self.system.get_cve_whitelist(**self.USER_RA_CLIENT)
         self.assertEqual(exp, wl.expires_at)
-
-    def tearDown(self):
-        print("TearDown: Clearing the Whitelist")
-        self.system.set_cve_whitelist(**ADMIN_CLIENT)
-        print("TearDown: Deleting user: %d" % self.user_ra_id)
-        self.user.delete_user(self.user_ra_id, **ADMIN_CLIENT)
-
 
 if __name__ == '__main__':
     unittest.main()

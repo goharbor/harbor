@@ -2,11 +2,12 @@
 
 import base
 import swagger_client
+from swagger_client.rest import ApiException
 
 class User(base.Base):
 
     def create_user(self, name=None,
-        email = None, user_password=None, realname = None, role_id = None, **kwargs):
+        email = None, user_password=None, realname = None, role_id = None, expect_status_code=201, **kwargs):
         if name is None:
             name = base._random_name("user")
         if realname is None:
@@ -20,13 +21,16 @@ class User(base.Base):
 
         client = self._get_client(**kwargs)
         user = swagger_client.User(username = name, email = email, password = user_password, realname = realname, role_id = role_id)
-        _, status_code, header = client.users_post_with_http_info(user)
 
-        base._assert_status_code(201, status_code)
+        try:
+            _, status_code, header = client.users_post_with_http_info(user)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            return base._get_id_from_header(header), name
 
-        return base._get_id_from_header(header), name
-
-    def get_users(self, user_name=None, email=None, page=None, page_size=None, **kwargs):
+    def get_users(self, user_name=None, email=None, page=None, page_size=None, expect_status_code=200, **kwargs):
         client = self._get_client(**kwargs)
         params={}
         if user_name is not None:
@@ -37,9 +41,13 @@ class User(base.Base):
             params["page"] = page
         if page_size is not None:
             params["page_size"] = page_size
-        data, status_code, _ = client.users_get_with_http_info(**params)
-        base._assert_status_code(200, status_code)
-        return data
+        try:
+            data, status_code, _ = client.users_get_with_http_info(**params)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            return data
 
     def get_user_by_id(self, user_id, **kwargs):
         client = self._get_client(**kwargs)
@@ -47,8 +55,8 @@ class User(base.Base):
         base._assert_status_code(200, status_code)
         return data
 
-    def get_user_by_name(self, name, **kwargs):
-        users = self.get_users(user_name=name, **kwargs)
+    def get_user_by_name(self, name, expect_status_code=200, **kwargs):
+        users = self.get_users(user_name=name, expect_status_code=expect_status_code , **kwargs)
         for user in users:
             if user.username == name:
                 return user

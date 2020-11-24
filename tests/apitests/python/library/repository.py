@@ -5,6 +5,7 @@ import base
 import swagger_client
 from docker_api import DockerAPI
 from swagger_client.rest import ApiException
+from testutils import DOCKER_USER, DOCKER_PWD
 
 def pull_harbor_image(registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None):
     _docker_api = DockerAPI()
@@ -13,24 +14,26 @@ def pull_harbor_image(registry, username, password, image, tag, expected_login_e
         return
     time.sleep(2)
     ret = _docker_api.docker_image_pull(r'{}/{}'.format(registry, image), tag = tag, expected_error_message = expected_error_message)
+    print("Docker pull image return message: {}".format(ret))
 
 def push_image_to_project(project_name, registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None, profix_for_image = None, new_image=None):
+    print("Start to push image {}/{}/{}:{}".format(registry, project_name, image, tag) )
     _docker_api = DockerAPI()
+    _docker_api.docker_login("docker", DOCKER_USER, DOCKER_PWD)
+    _docker_api.docker_image_pull(image, tag = tag)
     _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
     time.sleep(2)
     if expected_login_error_message != None:
         return
-    _docker_api.docker_image_pull(image, tag = tag)
     time.sleep(2)
-
+    original_name = image
     image = new_image or image
 
     if profix_for_image == None:
-        new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(image, tag), r'{}/{}/{}'.format(registry, project_name, image))
+        new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(original_name, tag), r'{}/{}/{}'.format(registry, project_name, image), tag = tag)
     else:
-        new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(image, tag), r'{}/{}/{}/{}'.format(registry, project_name, profix_for_image, image))
+        new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(original_name, tag), r'{}/{}/{}/{}'.format(registry, project_name, profix_for_image, image), tag = tag)
     time.sleep(2)
-
     _docker_api.docker_image_push(new_harbor_registry, new_tag, expected_error_message = expected_error_message)
 
     return r'{}/{}'.format(project_name, image), new_tag
@@ -79,9 +82,12 @@ class Repository(base.Base, object):
             _, status_code, _ = client.delete_repository_with_http_info(project_name, repo_name)
         except Exception as e:
             base._assert_status_code(expect_status_code, e.status)
-            return e.body
-        base._assert_status_code(expect_status_code, status_code)
-        base._assert_status_code(200, status_code)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+            return
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            base._assert_status_code(200, status_code)
 
 
     def list_repositories(self, project_name, **kwargs):

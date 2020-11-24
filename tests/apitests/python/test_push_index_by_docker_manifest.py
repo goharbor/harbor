@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
 import library.repository
@@ -18,8 +18,8 @@ from library.repository import push_image_to_project
 from library.repository import pull_harbor_image
 
 class TestProjects(unittest.TestCase):
-    @classmethod
-    def setUpClass(self):
+    @suppress_urllib3_warning
+    def setUp(self):
         self.project= Project()
         self.user= User()
         self.artifact = Artifact()
@@ -31,12 +31,8 @@ class TestProjects(unittest.TestCase):
         self.image_a = "alpine"
         self.image_b = "busybox"
 
-    @classmethod
-    def tearDownClass(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete repository(RA,RB,IA) by user(UA);
         self.repo.delete_repoitory(TestProjects.project_push_index_name, self.index_name, **TestProjects.USER_CLIENT)
         self.repo.delete_repoitory(TestProjects.project_push_index_name, self.image_a, **TestProjects.USER_CLIENT)
@@ -95,10 +91,11 @@ class TestProjects(unittest.TestCase):
 
         #6. Get index(IA) by reference successfully;
         index_data = self.artifact.get_reference_info(TestProjects.project_push_index_name, self.index_name, self.index_tag, **TestProjects.USER_CLIENT)
-        manifests_sha256_harbor_ret = [index_data[0].references[1].child_digest, index_data[0].references[0].child_digest]
+        print("===========index_data:",index_data)
+        manifests_sha256_harbor_ret = [index_data.references[1].child_digest, index_data.references[0].child_digest]
 
         #7. Verify harbor index is index(IA) pushed by docker manifest CLI;
-        self.assertEqual(index_data[0].digest, index_sha256_cli_ret)
+        self.assertEqual(index_data.digest, index_sha256_cli_ret)
         self.assertEqual(manifests_sha256_harbor_ret.count(manifests_sha256_cli_ret[0]), 1)
         self.assertEqual(manifests_sha256_harbor_ret.count(manifests_sha256_cli_ret[1]), 1)
 

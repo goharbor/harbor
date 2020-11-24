@@ -17,6 +17,10 @@ ${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
 
 *** Test Cases ***
 
+Test Case - Scan All Images
+    [Tags]  scan_all
+    Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py
+
 Test Case - Garbage Collection
     [Tags]  gc
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
@@ -105,21 +109,13 @@ Test Case - Push Cnab Bundle
     [Tags]  push_cnab
     Harbor API Test  ./tests/apitests/python/test_push_cnab_bundle.py
 
-Test Case - Create/Delete tag
-    [Tags]  tag_cuid
-    Harbor API Test  ./tests/apitests/python/test_create_delete_tag.py
+Test Case - Tag CRUD
+    [Tags]  tag_crud
+    Harbor API Test  ./tests/apitests/python/test_tag_crud.py
 
 Test Case - Scan Image
     [Tags]  scan
     Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
-
-Test Case - Scan Image In Public Project
-    [Tags]  scan
-    Harbor API Test  ./tests/apitests/python/test_scan_image_artifact_in_public_project.py
-
-Test Case - Scan All Images
-    [Tags]  scan_all
-    Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py
 
 Test Case - Registry API
     [Tags]  reg_api
@@ -144,3 +140,12 @@ Test Case - Push Chart File To Chart Repository By Helm V2 With Robot Account
 Test Case - Replication From Dockerhub
     [Tags]  replic_dockerhub
     Harbor API Test  ./tests/apitests/python/test_replication_from_dockerhub.py
+
+Test Case - Tag Immutability
+    [Tags]  tag_immutability
+    Harbor API Test  ./tests/apitests/python/test_tag_immutability.py
+
+Test Case - Scan Image In Public Project
+    [Tags]  scan_public_project
+    Harbor API Test  ./tests/apitests/python/test_scan_image_artifact_in_public_project.py
+

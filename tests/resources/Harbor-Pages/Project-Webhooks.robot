@@ -16,7 +16,6 @@ Create A New Webhook
     Retry Text Input  ${webhook_name_xpath}   ${webhook_name}
     Retry Text Input  ${webhook_endpoint_id_xpath}  ${webhook_endpoint_url}
     Retry Double Keywords When Error  Retry Element Click  ${create_webhooks_continue_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_webhooks_continue_button_xpath}
-    Capture Page Screenshot
     Retry Wait Until Page Contains  ${webhook_name}
 
 Update A Webhook
@@ -35,7 +34,6 @@ Update A Webhook
     Retry Text Input  ${webhook_endpoint_id_xpath}  ${new_webhook_enpoint}
     Retry Double Keywords When Error  Retry Element Click  ${edit_webhooks_save_button_xpath}  Retry Wait Until Page Not Contains Element  ${edit_webhooks_save_button_xpath}
     Retry Wait Until Page Contains  ${new_webhook_name}
-    Capture Page Screenshot
 
 Enable/Disable State of Same Webhook
     [Arguments]  ${webhook_name}

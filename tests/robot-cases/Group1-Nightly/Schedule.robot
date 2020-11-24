@@ -39,14 +39,15 @@ Test Case - Scan Schedule Job
     Retry Wait Until Page Contains Element  ${not_scanned_icon}
     Switch To Vulnerability Page
     ${flag}=  Set Variable  ${false}
-    :FOR    ${i}    IN RANGE    999999
-    \    ${minite}=  Get Current Date  result_format=%M
-    \    ${minite_int} =  Convert To Integer  ${minite}
-    \    ${left} =  Evaluate 	${minite_int}%10
-    \    Log To Console    ${i}/${left}
-    \    Sleep  55
-    \    Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Set Scan Schedule  custom  value=* */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
-    \    Exit For Loop If    '${flag}' == '${true}'
+    FOR    ${i}    IN RANGE    999999
+        ${minite}=  Get Current Date  result_format=%M
+        ${minite_int} =  Convert To Integer  ${minite}
+        ${left} =  Evaluate 	${minite_int}%10
+        Log To Console    ${i}/${left}
+        Sleep  55
+        Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Set Scan Schedule  custom  value=* */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
+        Exit For Loop If    '${flag}' == '${true}'
+    END
     # After scan custom schedule is set, image should stay in unscanned status.
     Log To Console  Sleep for 300 seconds......
     Sleep  300
@@ -73,17 +74,18 @@ Test Case - Replication Schedule Job
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  ${project_name}
     Switch To Registries
-    Create A New Endpoint    docker-hub    e${d}    https://hub.docker.com/    danfengliu    Aa123456    Y
+    Create A New Endpoint    harbor    e${d}    https://cicd.harbor.vmwarecna.net    ${null}    ${null}    Y
     Switch To Replication Manage
     ${flag}=  Set Variable  ${false}
-    :FOR    ${i}    IN RANGE    999999
-    \    ${minite}=  Get Current Date  result_format=%M
-    \    ${minite_int} =  Convert To Integer  ${minite}
-    \    ${left} =  Evaluate 	${minite_int}%10
-    \    Log To Console    ${i}/${left}
-    \    Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Create A Rule With Existing Endpoint    rule${d}    pull    danfengliu/*    image    e${d}    ${project_name}  mode=Scheduled  cron=* */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
-    \    Sleep  40
-    \    Exit For Loop If    '${flag}' == '${true}'
+    FOR    ${i}    IN RANGE    999999
+        ${minite}=  Get Current Date  result_format=%M
+        ${minite_int} =  Convert To Integer  ${minite}
+        ${left} =  Evaluate 	${minite_int}%10
+        Log To Console    ${i}/${left}
+        Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Create A Rule With Existing Endpoint    rule${d}    pull    nightly/{mariadb,centos}    image    e${d}    ${project_name}  mode=Scheduled  cron=* */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
+        Sleep  40
+        Exit For Loop If    '${flag}' == '${true}'
+    END
 
     # After replication schedule is set, project should contain 2 images.
     Log To Console  Sleep for 720 seconds......

@@ -3,18 +3,19 @@ from __future__ import absolute_import
 
 import unittest
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning, TEARDOWN
 from library.project import Project
 from library.user import User
 
 class TestProjects(unittest.TestCase):
-    """UserGroup unit test stubs"""
+    @suppress_urllib3_warning
     def setUp(self):
         self.project = Project()
         self.user= User()
 
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
-        pass
+        print("Case completed")
 
     def testAddProjectMember(self):
         """
