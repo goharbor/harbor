@@ -133,6 +133,10 @@ func match(filters []*model.Filter, resource *model.Resource) (bool, error) {
 	match := true
 	repository := resource.Metadata.Repository.Name
 	for _, filter := range filters {
+		if filter.Type == model.FilterTypeResource && filter.Value.(model.ResourceType) != resource.Type {
+			match = false
+			break
+		}
 		if filter.Type != model.FilterTypeName {
 			continue
 		}
