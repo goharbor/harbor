@@ -87,7 +87,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
             }
         }
 
-        // Make sure the updated configuration can be loaded
+        // Before login: Make sure the updated configuration can be loaded
         this.appConfigService.load()
             .subscribe(updatedConfig => this.appConfig = updatedConfig
                 , error => {
@@ -255,6 +255,14 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                     this.router.navigateByUrl(this.redirectUrl);
                 }
                 this.isCoreServiceAvailable = true;
+
+                // after login successfully: Make sure the updated configuration can be loaded
+                this.appConfigService.load()
+                    .subscribe(updatedConfig => this.appConfig = updatedConfig
+                        , error => {
+                            // Catch the error
+                            console.error("Failed to load bootstrap options with error: ", error);
+                        });
             }, error => {
                 // 403 oidc login no body;
                 if (this.isOidcLoginMode && error && error.status === 403) {
