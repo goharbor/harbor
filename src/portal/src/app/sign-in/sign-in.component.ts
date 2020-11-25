@@ -141,6 +141,9 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         return this.appConfig.auth_mode === CONFIG_AUTH_MODE.DB_AUTH
             && this.appConfig.self_registration;
     }
+    public get isBasicLoginMode(): boolean {
+        return this.appConfig.auth_mode === CONFIG_AUTH_MODE.DB_AUTH;
+    }
     public get isOidcLoginMode(): boolean {
         return this.appConfig.auth_mode === CONFIG_AUTH_MODE.OIDC_AUTH;
     }
@@ -295,5 +298,3 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         }
     }
 }
-
-

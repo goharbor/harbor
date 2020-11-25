@@ -11,7 +11,7 @@
                     <span>{{'BUTTON.LOG_IN_OIDC' | translate }}</span>
                 </button>
             </a>
-            <div class="login-group">
+            <div class="login-group" *ngIf="isBasicLoginMode">
                 <clr-input-container>
                     <input clrInput class="username" type="text" required [(ngModel)]="signInCredential.principal" name="login_username" id="login_username"
                            placeholder='{{"PLACEHOLDER.SIGN_IN_NAME" | translate}}' #userNameInput='ngModel'>
