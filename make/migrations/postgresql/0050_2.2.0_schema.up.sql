@@ -5,6 +5,13 @@ Fixes issue https://github.com/goharbor/harbor/issues/13317
 UPDATE role SET role_id=4 WHERE name='maintainer' AND role_id!=4;
 UPDATE role SET role_id=5 WHERE name='limitedGuest' AND role_id!=5;
 
+/*
+Clean the dirty data in quota/quota_usage
+  Remove quota/quota_usage when the referenced project not exists
+*/
+DELETE FROM quota WHERE reference='project' AND reference_id::integer NOT IN (SELECT project_id FROM project WHERE deleted=FALSE);
+DELETE FROM quota_usage WHERE reference='project' AND reference_id::integer NOT IN (SELECT project_id FROM project WHERE deleted=FALSE);
+
 ALTER TABLE schedule ADD COLUMN IF NOT EXISTS cron_type varchar(64);
 ALTER TABLE robot ADD COLUMN IF NOT EXISTS secret varchar(2048);
 
