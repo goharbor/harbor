@@ -4,6 +4,7 @@ package envs
 var ConcourseCILdapEnv = Environment{
 	Protocol:       "https",
 	TestingProject: "concoursecitesting01",
+	GCRProjectName: "gcr.io/eminent-nation-87317/harbortile-ci/",
 	ImageName:      "busybox",
 	ImageTag:       "latest",
 	CAFile:         "../../../ca.crt",

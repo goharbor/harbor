@@ -17,6 +17,7 @@ type Environment struct {
 	Admin          string //env var: TESTING_ENV_ADMIN
 	AdminPass      string //env var: TESTING_ENV_ADMIN_PASS
 	TestingProject string //env var: TESTING_PROJECT_NAME
+	GCRProjectName string //env var: TESTING_IMAGE_NAME
 	ImageName      string //env var: TESTING_IMAGE_NAME
 	ImageTag       string //env var: TESTING_IMAGE_TAG
 	CAFile         string //env var: CA_FILE_PATH

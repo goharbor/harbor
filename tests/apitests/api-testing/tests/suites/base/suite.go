@@ -23,7 +23,7 @@ func (ccs *ConcourseCiSuite) PushImage(onEnvironment *envs.Environment) error {
 		return err
 	}
 
-	imagePulling := fmt.Sprintf("%s:%s", onEnvironment.ImageName, onEnvironment.ImageTag)
+	imagePulling := fmt.Sprintf("%s:%s", onEnvironment.GCRProjectName+onEnvironment.ImageName, onEnvironment.ImageTag)
 	if err := docker.Pull(imagePulling); err != nil {
 		return err
 	}
