@@ -101,7 +101,6 @@ Search Private Projects
     Retry Element Click  xpath=//select
     Retry Element Click  xpath=//select/option[@value=1]
     Sleep  1
-    Capture Page Screenshot  SearchPrivateProjects.png
 
 Make Project Private
     [Arguments]  ${projectname}
@@ -163,7 +162,6 @@ Advanced Search Should Display
 
 # it's not a common keywords, only used into log case.
 Do Log Advanced Search
-    Capture Page Screenshot  LogAdvancedSearch.png
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'pull')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'create')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'delete')]
@@ -192,7 +190,6 @@ Do Log Advanced Search
     Retry Element Click  xpath=//audit-log//hbr-filter//clr-icon
     Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor
     Sleep  1
-    Capture Page Screenshot  LogAdvancedSearch2.png
     ${rc} =  Get Element Count  //audit-log//clr-dg-row
     Should Be Equal As Integers  ${rc}  0
 
@@ -238,7 +235,6 @@ Go Into Index And Contain Artifacts
     FOR  ${n}  IN RANGE  1  10
         ${out}  Run Keyword And Ignore Error  Page Should Contain Element  ${artifact_rows}  limit=${limit}
         Exit For Loop If  '${out[0]}'=='PASS'
-        Capture Page Screenshot  gointo_${tag_name}.png
         Sleep  3
     END
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
@@ -267,7 +263,6 @@ Edit Repo Info
     Input Text  xpath=//*[@id='info-edit-textarea']  test_description_info
     Retry Element Click  xpath=//*[@id='edit-save']
     Retry Wait Until Page Contains  test_description_info
-    Capture Page Screenshot
 
 Switch To Project Label
     Retry Element Click  xpath=//project-detail//a[contains(.,'Labels')]
@@ -280,7 +275,6 @@ Switch To Project Repo
 Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label
-    Capture Page Screenshot  add_${labelName}.png
     Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span
     Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'Add Labels')]
     Retry Element Click  xpath=//clr-dropdown//div//label[contains(.,'${labelName}')]
@@ -300,7 +294,6 @@ Filter Labels In Tags
     Retry Element Click  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName2}')]
     Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
     Sleep  2
-    Capture Page Screenshot  filter_${labelName2}.png
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${labelName2}')]
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'${labelName1}')]
 

@@ -25,7 +25,6 @@ Delete Success
         Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${obj}')]/../div/clr-icon[@shape='success-standard']
     END
     Sleep  1
-    Capture Page Screenshot
 
 Delete Fail
     [Arguments]  @{obj}
@@ -33,7 +32,6 @@ Delete Fail
         Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${obj}')]/../div/clr-icon[@shape='error-standard']
     END
     Sleep  1
-    Capture Page Screenshot
 
 Filter Object
 #Filter project repo user tag.
@@ -64,13 +62,10 @@ Multi-delete Object
         Retry Element Click  ${element}
     END
     Sleep  1
-    Capture Page Screenshot
     Retry Element Click  ${delete_btn}
     Sleep  1
-    Capture Page Screenshot
     Retry Element Click  ${repo_delete_on_card_view_btn}
     Sleep  1
-    Capture Page Screenshot
     Sleep  1
 
 # This func cannot support as the delete user flow changed.
@@ -81,15 +76,12 @@ Multi-delete Artifact
         Retry Element Click  ${element}
     END
     Sleep  1
-    Capture Page Screenshot
     Retry Element Click  ${artifact_action_xpath}
     Sleep  1
     Retry Element Click  ${artifact_action_delete_xpath}
     Sleep  1
-    Capture Page Screenshot
     Retry Element Click  ${repo_delete_on_card_view_btn}
     Sleep  1
-    Capture Page Screenshot
     Sleep  1
 
 Multi-delete User

@@ -19,6 +19,16 @@ Resource  ../../resources/Util.robot
 *** Variables ***
 
 *** Keywords ***
+Switch To Configuration Authentication
+    Sleep  1
+    Retry Element Click  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${configuration_authentication_tabsheet_id}
+
+Set LDAP Group Admin DN
+    [Arguments]   ${group_dn}
+    Switch To Configuration Authentication
+    Retry Text Input  ${cfg_auth_ldap_group_admin_dn}  ${group_dn}
+    Retry Element Click  ${config_auth_save_button_xpath}
 
 Ldap User Should Not See Change Password
     Retry Element Click  //clr-header//clr-dropdown[2]//button

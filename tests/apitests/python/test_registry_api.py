@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest
 
-from testutils import harbor_server
+from testutils import harbor_server, suppress_urllib3_warning
 from testutils import admin_user
 from testutils import admin_pwd
 from testutils import TEARDOWN
@@ -20,7 +20,7 @@ import library.base
 import json
 
 class TestProjects(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.system = System()
         self.project= Project()
@@ -29,12 +29,8 @@ class TestProjects(unittest.TestCase):
         self.repo = Repository()
         self.repo_name = "hello-world"
 
-    @classmethod
-    def tearDown(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete Alice's repository and Luca's repository;
         self.repo.delete_repoitory(TestProjects.project_Alice_name, TestProjects.repo_a.split('/')[1], **ADMIN_CLIENT)
         self.repo.delete_repoitory(TestProjects.project_Alice_name, TestProjects.repo_b.split('/')[1], **ADMIN_CLIENT)

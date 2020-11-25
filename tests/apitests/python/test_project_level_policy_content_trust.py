@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
 from library.artifact import Artifact
@@ -13,19 +13,15 @@ from library.repository import push_image_to_project
 from library.repository import pull_harbor_image
 
 class TestProjects(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.project= Project()
         self.user= User()
         self.artifact= Artifact()
         self.repo= Repository()
 
-    @classmethod
-    def tearDown(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(TestProjects.project_content_trust_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_CONTENT_TRUST_CLIENT)
 
@@ -71,7 +67,7 @@ class TestProjects(unittest.TestCase):
 
         #4. Image(IA) should exist;
         artifact = self.artifact.get_reference_info(TestProjects.project_content_trust_name, image, tag, **TestProjects.USER_CONTENT_TRUST_CLIENT)
-        self.assertEqual(artifact[0].tags[0].name, tag)
+        self.assertEqual(artifact.tags[0].name, tag)
 
         #5. Pull image(IA) successfully;
         pull_harbor_image(harbor_server, admin_name, admin_password, TestProjects.repo_name, tag)
