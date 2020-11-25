@@ -72,11 +72,12 @@ func (ccs *ConcourseCiSuite01) Run(onEnvironment *envs.Environment) *lib.Report 
 	//s5
 	img := lib.NewImageUtil(onEnvironment.RootURI(), onEnvironment.HTTPClient)
 	repoName := fmt.Sprintf("%s/%s", onEnvironment.TestingProject, onEnvironment.ImageName)
-	if err := img.ScanTag(repoName, onEnvironment.ImageTag); err != nil {
-		report.Failed("ScanTag", err)
-	} else {
-		report.Passed("ScanTag")
-	}
+	// skip to scan tag
+	// if err := img.ScanTag(repoName, onEnvironment.ImageTag); err != nil {
+	// 	report.Failed("ScanTag", err)
+	// } else {
+	// 	report.Passed("ScanTag")
+	// }
 
 	//s6
 	if err := ccs.PullImage(onEnvironment); err != nil {
