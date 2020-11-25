@@ -15,7 +15,10 @@ go get -d github.com/lib/pq
 go get golang.org/x/lint/golint
 go get github.com/GeertJohan/fgt
 go get github.com/dghubble/sling
-go get github.com/stretchr/testify
+gomod=${GO111MODULE}
+export GO111MODULE=on
+go get github.com/stretchr/testify@v1.4.0
+export GO111MODULE=${gomod}
 go get golang.org/x/tools/cmd/cover
 go get github.com/mattn/goveralls
 go get -u github.com/client9/misspell/cmd/misspell
