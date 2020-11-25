@@ -54,7 +54,8 @@ class TestLdapAdminRole(unittest.TestCase):
 
         # query project with ldap user mike
         projects = self.mike_product_api.projects_get(name="test_private")
-        self.assertTrue(projects.count>1)
+        print(projects)
+        self.assertTrue(len(projects) == 1)
         self.project_id = projects[0].project_id
         pass
 

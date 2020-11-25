@@ -26,6 +26,7 @@ Nightly Test Setup
     Run Keyword If  '${ip1}' != '${EMPTY}'  Run  rm -rf ./harbor_ca.crt
     Run Keyword  CA setup  ${ip}  ${HARBOR_PASSWORD}
     Run Keyword  Start Docker Daemon Locally
+    Wait Unitl Command Success  docker login -u ${DOCKER_USER} -p ${DOCKER_PWD}
 
 CA Setup
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt

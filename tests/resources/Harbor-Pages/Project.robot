@@ -313,4 +313,3 @@ Input Storage Quota
 Select Storage Quota unit
     [Arguments]  ${unit}
     Select From List By Value  ${project_add_storage_quota_unit_id}  ${unit}
-

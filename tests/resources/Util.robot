@@ -233,7 +233,7 @@ Click Element If Visible
 
 Retry Keyword When Error
     [Arguments]  ${keyword}  @{elements}
-    :For  ${n}  IN RANGE  1  6
+    :For  ${n}  IN RANGE  1  3
     \    Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
     \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
     \    Log To Console  Return value is ${out[0]}
@@ -257,7 +257,7 @@ Retry Keyword When Return Value Mismatch
 
 Retry Double Keywords When Error
     [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}  ${DoAssert}=${true}
-    :For  ${n}  IN RANGE  1  5
+    :For  ${n}  IN RANGE  1  3
     \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
     \    Capture Page Screenshot

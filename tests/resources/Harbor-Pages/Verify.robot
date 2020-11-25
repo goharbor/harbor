@@ -152,7 +152,7 @@ Verify Replicationrule
     \    Log To Console    -----replicationrule-----"${replicationrule}"------------
     \    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     \    Switch To Replication Manage
-    \    Select Rule And Click Edit Button    ${replicationrule}
+    \    Edit Replication Rule    ${replicationrule}
     \    @{is_src_registry}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].is_src_registry
     \    @{trigger_type}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].trigger_type
     \    @{name_filters}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].name_filters
@@ -166,8 +166,8 @@ Verify Replicationrule
     \    ${endpoint0}=   Set Variable    @{endpoint}[0]
     \    Log To Console    -----endpoint0-----${endpoint0}------------
     \    @{endpoint_type}=    Get Value From Json    ${json}    $.endpoint[?(@.name=${endpoint0})].type
-    \    Retry Textfield Value Should Be    ${source_project}    @{name_filters}[0]
-    \    Retry Textfield Value Should Be    ${filter_tag}    @{tag_filters}[0]
+    \    Retry Textfield Value Should Be    ${filter_name_id}   @{name_filters}[0]
+    \    Retry Textfield Value Should Be    ${filter_tag_id}    @{tag_filters}[0]
     \    Retry Textfield Value Should Be    ${rule_name_input}    ${replicationrule}
     \    Retry Textfield Value Should Be    ${dest_namespace_xpath}    @{dest_namespace}[0]
     \    Log To Console    -----endpoint_type-----@{endpoint_type}[0]------------
