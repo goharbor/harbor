@@ -423,6 +423,104 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 	}
 }
 
+func TestSession_SearchGroupByName(t *testing.T) {
+	ldapConfig := models.LdapConf{
+		LdapURL:            ldapTestConfig[common.LDAPURL].(string) + ":389",
+		LdapSearchDn:       ldapTestConfig[common.LDAPSearchDN].(string),
+		LdapScope:          2,
+		LdapSearchPassword: ldapTestConfig[common.LDAPSearchPwd].(string),
+		LdapBaseDn:         ldapTestConfig[common.LDAPBaseDN].(string),
+	}
+	ldapGroupConfig := models.LdapGroupConf{
+		LdapGroupBaseDN:        "dc=example,dc=com",
+		LdapGroupFilter:        "objectclass=groupOfNames",
+		LdapGroupNameAttribute: "cn",
+		LdapGroupSearchScope:   2,
+	}
+	ldapGroupConfig2 := models.LdapGroupConf{
+		LdapGroupBaseDN:        "dc=example,dc=com",
+		LdapGroupFilter:        "objectclass=groupOfNames",
+		LdapGroupNameAttribute: "o",
+		LdapGroupSearchScope:   2,
+	}
+	groupConfigWithFilter := models.LdapGroupConf{
+		LdapGroupBaseDN:        "dc=example,dc=com",
+		LdapGroupFilter:        "(cn=*admin*)",
+		LdapGroupNameAttribute: "cn",
+		LdapGroupSearchScope:   2,
+	}
+	groupConfigWithDifferentGroupDN := models.LdapGroupConf{
+		LdapGroupBaseDN:        "dc=harbor,dc=example,dc=com",
+		LdapGroupFilter:        "(objectclass=groupOfNames)",
+		LdapGroupNameAttribute: "cn",
+		LdapGroupSearchScope:   2,
+	}
+
+	type fields struct {
+		ldapConfig      models.LdapConf
+		ldapGroupConfig models.LdapGroupConf
+		ldapConn        *goldap.Conn
+	}
+	type args struct {
+		groupName string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []models.LdapGroup
+		wantErr bool
+	}{
+		{"normal search",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
+			args{groupName: "harbor_users"},
+			[]models.LdapGroup{{GroupName: "harbor_users", GroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com"}}, false},
+		{"search non-exist group",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
+			args{groupName: "harbor_non_users"},
+			[]models.LdapGroup{}, false},
+		{"search with gid = o",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig2},
+			args{groupName: "hgroup"},
+			[]models.LdapGroup{{GroupName: "hgroup", GroupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"}}, false},
+		{"search with group filter success",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithFilter},
+			args{groupName: "harbor_admin"},
+			[]models.LdapGroup{{GroupName: "harbor_admin", GroupDN: "cn=harbor_admin,ou=groups,dc=example,dc=com"}}, false},
+		{"search with group filter fail",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithFilter},
+			args{groupName: "harbor_users"},
+			[]models.LdapGroup{}, false},
+		{"search with different group base dn success",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithDifferentGroupDN},
+			args{groupName: "harbor_root"},
+			[]models.LdapGroup{{GroupName: "harbor_root", GroupDN: "cn=harbor_root,dc=harbor,dc=example,dc=com"}}, false},
+		{"search with different group base dn fail",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithDifferentGroupDN},
+			args{groupName: "harbor_guest"},
+			[]models.LdapGroup{}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			session := &Session{
+				ldapConfig:      tt.fields.ldapConfig,
+				ldapGroupConfig: tt.fields.ldapGroupConfig,
+				ldapConn:        tt.fields.ldapConn,
+			}
+			session.Open()
+			defer session.Close()
+			got, err := session.SearchGroupByName(tt.args.groupName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Session.SearchGroupByName() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Session.SearchGroupByName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestCreateUserSearchFilter(t *testing.T) {
 	type args struct {
 		origFilter string
