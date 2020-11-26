@@ -80,9 +80,14 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, error) {
 		return 0, err
 	}
 
-	if r.ExpiresAt == 0 {
-		tokenDuration := time.Duration(config.RobotTokenDuration()) * time.Minute
-		r.ExpiresAt = time.Now().UTC().Add(tokenDuration).Unix()
+	var expiresAt int64
+	if r.Duration == -1 {
+		expiresAt = -1
+	} else if r.Duration == 0 {
+		// system default robot duration
+		expiresAt = time.Now().UTC().Add(time.Duration(config.RobotTokenDuration()) * 60 * 24 * time.Minute).Unix()
+	} else {
+		expiresAt = time.Now().UTC().Add(time.Duration(r.Duration) * 60 * 24 * time.Minute).Unix()
 	}
 
 	key, err := config.SecretKey()
@@ -99,8 +104,9 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, error) {
 		Name:        r.Name,
 		Description: r.Description,
 		ProjectID:   r.ProjectID,
-		ExpiresAt:   r.ExpiresAt,
+		ExpiresAt:   expiresAt,
 		Secret:      secret,
+		Duration:    r.Duration,
 	})
 	if err != nil {
 		return 0, err
@@ -128,7 +134,7 @@ func (d *controller) Update(ctx context.Context, r *Robot) error {
 	if r == nil {
 		return errors.New("cannot update a nil robot").WithCode(errors.BadRequestCode)
 	}
-	if err := d.robotMgr.Update(ctx, &r.Robot); err != nil {
+	if err := d.robotMgr.Update(ctx, &r.Robot, "secret", "description", "disabled", "duration"); err != nil {
 		return err
 	}
 	if err := d.setProjectID(ctx, r); err != nil {
@@ -206,6 +212,7 @@ func (d *controller) populate(ctx context.Context, r *model.Robot, option *Optio
 	}
 	robot.Name = fmt.Sprintf("%s%s", config.RobotPrefix(), r.Name)
 	robot.setLevel()
+	robot.setEditable()
 	if option == nil {
 		return robot, nil
 	}

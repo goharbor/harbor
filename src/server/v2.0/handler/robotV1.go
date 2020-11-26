@@ -9,6 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -134,7 +135,7 @@ func (rAPI *robotV1API) DeleteRobotV1(ctx context.Context, params operation.Dele
 	}
 
 	// ignore the not permissions error.
-	if err := rAPI.robotCtl.Delete(ctx, params.RobotID); err != nil && errors.IsNotFoundErr(err) {
+	if err := rAPI.robotCtl.Delete(ctx, params.RobotID); err != nil && !errors.IsNotFoundErr(err) {
 		return rAPI.SendError(ctx, err)
 	}
 	return operation.NewDeleteRobotV1OK()
@@ -223,15 +224,17 @@ func (rAPI *robotV1API) UpdateRobotV1(ctx context.Context, params operation.Upda
 	}
 	robot := r[0]
 
-	// for v1 API, only update the name and description.
+	// for v1 API, only update the disable and description.
 	if robot.Disabled != params.Robot.Disable {
 		robot.Robot.Disabled = params.Robot.Disable
+		robot.Name = strings.TrimPrefix(params.Robot.Name, config.RobotPrefix())
 		if err := rAPI.robotMgr.Update(ctx, &robot.Robot); err != nil {
 			return rAPI.SendError(ctx, err)
 		}
 	}
 	if robot.Description != params.Robot.Description {
 		robot.Robot.Description = params.Robot.Description
+		robot.Name = strings.TrimPrefix(params.Robot.Name, config.RobotPrefix())
 		if err := rAPI.robotMgr.Update(ctx, &robot.Robot); err != nil {
 			return rAPI.SendError(ctx, err)
 		}

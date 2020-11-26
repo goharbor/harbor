@@ -600,7 +600,7 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 			Name:        fmt.Sprintf("%s-%s", registration.Name, UUID),
 			Description: "for scan",
 			ProjectID:   projectID,
-			ExpiresAt:   -1,
+			Duration:    int64(config.RobotTokenDuration()),
 		},
 		Level: robot.LEVELPROJECT,
 		Permissions: []*robot.Permission{

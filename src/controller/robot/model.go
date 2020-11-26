@@ -25,6 +25,7 @@ type Robot struct {
 	model.Robot
 	ProjectName string
 	Level       string
+	Editable    bool          `json:"editable"`
 	Permissions []*Permission `json:"permissions"`
 }
 
@@ -35,6 +36,14 @@ func (r *Robot) setLevel() {
 	} else {
 		r.Level = LEVELPROJECT
 	}
+}
+
+// setEditable, no secret and no permissions should be a old format robot, and it's not editable.
+func (r *Robot) setEditable() {
+	if r.Secret == "" && len(r.Permissions) == 0 {
+		return
+	}
+	r.Editable = true
 }
 
 // Permission ...

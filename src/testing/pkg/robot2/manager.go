@@ -132,13 +132,20 @@ func (_m *Manager) List(ctx context.Context, query *q.Query) ([]*model.Robot, er
 	return r0, r1
 }
 
-// Update provides a mock function with given fields: ctx, m
-func (_m *Manager) Update(ctx context.Context, m *model.Robot) error {
-	ret := _m.Called(ctx, m)
+// Update provides a mock function with given fields: ctx, m, props
+func (_m *Manager) Update(ctx context.Context, m *model.Robot, props ...string) error {
+	_va := make([]interface{}, len(props))
+	for _i := range props {
+		_va[_i] = props[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, m)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *model.Robot) error); ok {
-		r0 = rf(ctx, m)
+	if rf, ok := ret.Get(0).(func(context.Context, *model.Robot, ...string) error); ok {
+		r0 = rf(ctx, m, props...)
 	} else {
 		r0 = ret.Error(0)
 	}

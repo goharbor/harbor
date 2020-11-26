@@ -19,8 +19,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/common"
 	models "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/core/config"
 	"testing"
 	"time"
 
@@ -173,12 +175,17 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 	rname := fmt.Sprintf("%s-%s", suite.registration.Name, "the-uuid-123")
 
+	conf := map[string]interface{}{
+		common.RobotTokenDuration: "30",
+	}
+	config.InitWithSettings(conf)
+
 	account := &robot.Robot{
 		Robot: model.Robot{
 			Name:        rname,
 			Description: "for scan",
 			ProjectID:   suite.artifact.ProjectID,
-			ExpiresAt:   -1,
+			Duration:    int64(config.RobotTokenDuration()),
 		},
 		Level: robot.LEVELPROJECT,
 		Permissions: []*robot.Permission{
