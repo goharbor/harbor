@@ -20,6 +20,7 @@ type tencentAuthCredential struct {
 	cacheToken        *cacheToken
 	cacheTokenExpired *time.Time
 }
+
 // cacheToken ...
 type cacheToken struct {
 	user     string
