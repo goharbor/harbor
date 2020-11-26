@@ -128,12 +128,12 @@ describe('SummaryComponent', () => {
     " for container   | undefined |\n| `registry.volumes` | used to create PVCs if persistence is enabled (see " +
     "instructions in values.yaml) | see values.yaml |\n| `registry.nodeSelector` | Node labels for pod assignment " +
     "| `{}` |\n| `registry.tolerations` | Tolerations for pod assignment | `[]` |\n| `registry.affinity` | " +
-    "Node/Pod affinities | `{}` |\n| **Clair** |\n| `clair.enabled` | Enable Clair? | `true` |\n| " +
-    "`clair.image.repository` | Repository for clair image | `vmware/clair-photon` |\n| `clair.image.tag` |" +
-    " Tag for clair image | `v2.0.1-v1.4.0`\n| `clair.resources` | [resources](https://kubernetes.io/docs/concepts/" +
-    "configuration/manage-compute-resources-container/) to allocate for container   | undefined\n| `clair.nodeSelector" +
-    "` | Node labels for pod assignment | `{}` |\n| `clair.tolerations` | Tolerations for pod assignment | `[]` |\n| " +
-    "`clair.affinity` | Node/Pod affinities | `{}` |\n| `postgresql` | Overrides for postgresql chart [values.yaml](https" +
+    "Node/Pod affinities | `{}` |\n| **Trivy** |\n| `trivy.enabled` | Enable Trivy? | `true` |\n| " +
+    "`trivy.image.repository` | Repository for trivy image | `goharbor/trivy-photon` |\n| `trivy.image.tag` |" +
+    " Tag for trivy image | `v2.0.1-v1.4.0`\n| `trivy.resources` | [resources](https://kubernetes.io/docs/concepts/" +
+    "configuration/manage-compute-resources-container/) to allocate for container   | undefined\n| `trivy.nodeSelector" +
+    "` | Node labels for pod assignment | `{}` |\n| `trivy.tolerations` | Tolerations for pod assignment | `[]` |\n| " +
+    "`trivy.affinity` | Node/Pod affinities | `{}` |\n| `postgresql` | Overrides for postgresql chart [values.yaml](https" +
     "://github.com/kubernetes/charts/blob/f2938a46e3ae8e2512ede1142465004094c3c333/stable/postgresql/values.yaml) | " +
     "see values.yaml\n| **Notary** |\n| `notary.enabled` | Enable Notary? | `true` |\n| `notary.server.image.repository`" +
     " | Repository for notary server image | `vmware/notary-server-photon` |\n| `notary.server.image.tag` | Tag for " +

@@ -64,7 +64,6 @@ Test Case - Upgrade Verify
     Run Keyword  Verify System Setting  ${data}
     Run Keyword  Verify System Setting Allowlist  ${data}
     Run Keyword  Verify Image Tag  ${data}
-    Run Keyword  Verify Clair Is Default Scanner
 
 Test Case - Upgrade Verify
     [Tags]  2.0-latest

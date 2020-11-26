@@ -14,7 +14,7 @@ import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 const mockSystemInfo: SystemInfo[] = [
   {
-    'with_clair': true,
+    'with_trivy': true,
     'with_notary': true,
     'with_admiral': false,
     'admiral_endpoint': 'NA',
@@ -26,7 +26,7 @@ const mockSystemInfo: SystemInfo[] = [
     'harbor_version': 'v1.1.1-rc1-160-g565110d'
   },
   {
-    'with_clair': false,
+    'with_trivy': false,
     'with_notary': false,
     'with_admiral': false,
     'admiral_endpoint': 'NA',

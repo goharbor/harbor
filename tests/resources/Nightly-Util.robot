@@ -75,7 +75,6 @@ Collect Logs
     SSHLibrary.Get File  /var/log/harbor/registry.log
     SSHLibrary.Get File  /var/log/harbor/proxy.log
     SSHLibrary.Get File  /var/log/harbor/adminserver.log
-    SSHLibrary.Get File  /var/log/harbor/clair.log
     SSHLibrary.Get File  /var/log/harbor/jobservice.log
     SSHLibrary.Get File  /var/log/harbor/postgresql.log
     SSHLibrary.Get File  /var/log/harbor/notary-server.log

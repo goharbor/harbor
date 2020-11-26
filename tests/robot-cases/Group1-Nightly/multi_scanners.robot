@@ -47,9 +47,6 @@ Test Case - Switch Scanner
 
     Switch To Scanners Page
 
-    Set Default Scanner  Clair
-    Should Display The Default Clair Scanner
-
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
     Retry Wait Until Page Contains Element  ${not_scanned_icon}

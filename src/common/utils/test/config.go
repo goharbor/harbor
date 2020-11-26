@@ -55,7 +55,7 @@ var defaultConfig = map[string]interface{}{
 	common.TokenExpiration:            30,
 	common.AdminInitialPassword:       "password",
 	common.WithNotary:                 false,
-	common.WithClair:                  false,
+	common.WithTrivy:                  false,
 	common.UAAClientID:                "testid",
 	common.UAAClientSecret:            "testsecret",
 	common.UAAEndpoint:                "10.192.168.5",

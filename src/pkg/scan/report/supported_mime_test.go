@@ -42,7 +42,7 @@ func (suite *SupportedMimesSuite) SetupSuite() {
 	rp := vuln.Report{
 		GeneratedAt: time.Now().UTC().String(),
 		Scanner: &v1.Scanner{
-			Name:    "Clair",
+			Name:    "Trivy",
 			Vendor:  "Harbor",
 			Version: "0.1.0",
 		},

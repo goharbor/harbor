@@ -47,7 +47,7 @@ describe('RegistryConfigComponent (inline template)', () => {
   let mockSystemInfo: SystemInfo = {
     "with_notary": true,
     "with_admiral": false,
-    "with_clair": true,
+    "with_trivy": true,
     "admiral_endpoint": "NA",
     "auth_mode": "db_auth",
     "registry_url": "10.112.122.56",
