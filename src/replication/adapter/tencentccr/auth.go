@@ -7,8 +7,10 @@ import (
 	"github.com/goharbor/harbor/src/common/http/modifier"
 )
 
+// Credential ...
 type Credential modifier.Modifier
 
+// Implements interface Credential
 type tencentAuthCredential struct {
 	region    string
 	accessKey string
@@ -18,7 +20,7 @@ type tencentAuthCredential struct {
 	cacheToken        *cacheToken
 	cacheTokenExpired *time.Time
 }
-
+// cacheToken ...
 type cacheToken struct {
 	user     string
 	password string
