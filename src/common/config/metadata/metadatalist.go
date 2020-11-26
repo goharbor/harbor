@@ -63,6 +63,7 @@ var (
 
 		{Name: common.AdminInitialPassword, Scope: SystemScope, Group: BasicGroup, EnvKey: "HARBOR_ADMIN_PASSWORD", DefaultValue: "", ItemType: &PasswordType{}, Editable: true},
 		{Name: common.AUTHMode, Scope: UserScope, Group: BasicGroup, EnvKey: "AUTH_MODE", DefaultValue: "db_auth", ItemType: &AuthModeType{}, Editable: false},
+		{Name: common.BasicAuthEnabled, Scope: SystemScope, Group: BasicGroup, EnvKey: "BASIC_AUTH_ENABLED", DefaultValue: "true", ItemType: &BoolType{}, Editable: true},
 		{Name: common.ChartRepoURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CHART_REPOSITORY_URL", DefaultValue: "http://chartmuseum:9999", ItemType: &StringType{}, Editable: false},
 
 		{Name: common.ClairAdapterURL, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_ADAPTER_URL", DefaultValue: "http://clair-adapter:8080", ItemType: &StringType{}, Editable: false},

@@ -3961,6 +3961,9 @@ definitions:
       external_url:
         type: string
         description: The external URL of Harbor, with protocol.
+      basic_auth_enabled:
+        type: boolean
+        description: 'Allow basicAuth login when auth_mode is not basicAuth'
       auth_mode:
         type: string
         description: The auth mode of current Harbor instance.
@@ -4075,6 +4078,9 @@ definitions:
   Configurations:
     type: object
     properties:
+      basic_auth_enabled:
+        type: boolean
+        description: 'Allow basicAuth login when auth_mode is not basicAuth'
       auth_mode:
         type: string
         description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'
@@ -4193,6 +4199,9 @@ definitions:
   ConfigurationsResponse:
     type: object
     properties:
+      basic_auth_enabled:
+        $ref: '#/definitions/BoolConfigItem'
+        description: 'Allow basicAuth login when auth_mode is not basicAuth'
       auth_mode:
         $ref: '#/definitions/StringConfigItem'
         description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'

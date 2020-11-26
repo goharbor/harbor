@@ -122,6 +122,16 @@ func AuthMode() (string, error) {
 	return cfgMgr.Get(common.AUTHMode).GetString(), nil
 }
 
+// BasicAuthEnabled ...
+func BasicAuthEnabled() (bool, error) {
+	err := cfgMgr.Load()
+	if err != nil {
+		log.Errorf("failed to load config, error %v", err)
+		return "true", err
+	}
+	return cfgMgr.Get(common.BasicAuthEnabled).GetBool(), nil
+}
+
 // TokenPrivateKeyPath returns the path to the key for signing token for registry
 func TokenPrivateKeyPath() string {
 	path := os.Getenv("TOKEN_PRIVATE_KEY_PATH")

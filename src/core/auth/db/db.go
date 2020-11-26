@@ -19,6 +19,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/auth"
+	"github.com/goharbor/harbor/src/core/config"
 )
 
 // Auth implements Authenticator interface to authenticate user against DB.
@@ -53,5 +54,7 @@ func (d *Auth) OnBoardUser(u *models.User) error {
 }
 
 func init() {
-	auth.Register(common.DBAuth, &Auth{})
+	if basicAuthEnabled, err := config.BasicAuthEnabled(); basicAuthEnabled{
+		auth.Register(common.DBAuth, &Auth{})
+	}
 }

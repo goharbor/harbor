@@ -24,6 +24,7 @@ func TestCfgMetaData_InitFromArray(t *testing.T) {
 	testArray := []Item{
 		{Scope: SystemScope, Group: BasicGroup, EnvKey: "HARBOR_ADMIN_PASSWORD", DefaultValue: "", Name: common.AdminInitialPassword, ItemType: &PasswordType{}, Editable: true},
 		{Scope: UserScope, Group: BasicGroup, EnvKey: "AUTH_MODE", DefaultValue: "db_auth", Name: common.AUTHMode, ItemType: &StringType{}, Editable: false},
+		{Scope: SystemScope, Group: BasicGroup, EnvKey: "BASIC_AUTH_ENABLED", DefaultValue: "true", Name: common.BasicAuthEnabled, ItemType: &BoolType{}, Editable: true},
 		{Scope: SystemScope, Group: BasicGroup, EnvKey: "CHART_REPOSITORY_URL", DefaultValue: "http://chartmuseum:9999", Name: common.ChartRepoURL, ItemType: &StringType{}, Editable: false},
 	}
 	curInst := Instance()

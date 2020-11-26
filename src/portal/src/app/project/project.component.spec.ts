@@ -27,6 +27,10 @@ describe('ProjectComponent', () => {
     const mockConfigurationService = {
         getConfiguration: () => {
             return of({
+                "basic_auth_enabled": {
+                  "value": true,
+                  "editable": true
+                },
                 "auth_mode": {
                   "value": "oidc_auth",
                   "editable": false

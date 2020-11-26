@@ -2188,6 +2188,9 @@ definitions:
       endpoint:
         type: string
         description: The service endpoint of this instance
+      basic_auth_enabled:
+        type: boolean
+        description: 'Allow basicAuth login when auth_mode is not basicAuth'
       auth_mode:
         type: string
         description: The authentication way supported
