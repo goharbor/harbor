@@ -44,7 +44,7 @@ export class ArtifactDetailRoutingResolverService implements Resolve<Artifact> {
               projectName: project.name,
               withLabel: true,
               withScanOverview: true,
-              withSignature: true,
+              withTag: false,
               withImmutableStatus: true
             }), of(project)]);
           }),

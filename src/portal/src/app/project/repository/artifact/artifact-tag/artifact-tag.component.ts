@@ -86,21 +86,21 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
       .subscribe(systemInfo => this.systemInfo = systemInfo, error => this.errorHandlerService.error(error));
   }
   checkTagName(name) {
-      let listArtifactParams: ArtifactService.ListArtifactsParams = {
+      const listTagParams: ArtifactService.ListTagsParams = {
         projectName: this.projectName,
         repositoryName: dbEncodeURIComponent(this.repositoryName),
-        withLabel: true,
-        withScanOverview: true,
-        withTag: true,
-        q: encodeURIComponent(`tags=${name}`)
+        reference: this.artifactDetails.digest,
+        withSignature: true,
+        withImmutableStatus: true,
+        q: encodeURIComponent(`name=${name}`)
       };
-      return this.artifactService.listArtifacts(listArtifactParams)
+      return this.artifactService.listTags(listTagParams)
       .pipe(finalize(() => this.tagNameCheckOnGoing = false));
   }
   invalidCreateTag() {
     if (!this.tagNameCheckSub) {
       this.tagNameCheckSub = this.tagNameChecker
-        .pipe(debounceTime(200))
+        .pipe(debounceTime(500))
         .pipe(distinctUntilChanged())
         .pipe(switchMap(name => {
           this.tagNameCheckOnGoing = true;

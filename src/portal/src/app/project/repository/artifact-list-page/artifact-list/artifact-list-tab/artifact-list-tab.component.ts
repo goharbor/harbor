@@ -58,14 +58,13 @@ import {
   ArtifactFront as Artifact,
   mutipleFilter,
   artifactPullCommands,
-  artifactDefault
+  artifactDefault, ArtifactFront
 } from '../../../artifact/artifact';
 import { Project } from "../../../../project";
 import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 import { ADDITIONS } from "../../../artifact/artifact-additions/models";
 import { Platform } from "../../../../../../../ng-swagger-gen/models/platform";
-import { IconService } from '../../../../../../../ng-swagger-gen/services/icon.service';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { SafeUrl } from '@angular/platform-browser';
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
@@ -91,7 +90,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   @Input() registryUrl: string;
   @Input() withNotary: boolean;
   @Input() withAdmiral: boolean;
-  artifactList: Artifact[] = [];
+  artifactList: ArtifactFront[] = [];
   availableTime = AVAILABLE_TIME;
   showTagManifestOpened: boolean;
   retagDialogOpened: boolean;
@@ -342,8 +341,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           withImmutableStatus: true,
           withLabel: true,
           withScanOverview: true,
-          withSignature: true,
-          withTag: true
+          withTag: false
         };
         this.newArtifactService.getArtifact(artifactParam).subscribe(
           res => {
@@ -359,8 +357,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                   withImmutableStatus: true,
                   withLabel: true,
                   withScanOverview: true,
-                  withSignature: true,
-                  withTag: true
+                  withTag: false
                 };
                 platFormAttr.push({platform: child.platform});
                 observableLists.push(this.newArtifactService.getArtifact(childParams));
@@ -374,6 +371,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 artifact.platform = clone(platFormAttr[index].platform);
               });
               this.getPullCommand(this.artifactList);
+              this.getArtifactTagsAsync(this.artifactList);
               this.getIconsFromBackEnd();
             }, error => {
               this.errorHandlerService.error(error);
@@ -388,7 +386,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           repositoryName: dbEncodeURIComponent(this.repoName),
           withLabel: true,
           withScanOverview: true,
-          withTag: true
+          withTag: false
         };
         Object.assign(listArtifactParams, params);
         this.newArtifactService.listArtifactsResponse(listArtifactParams)
@@ -404,6 +402,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             this.artifactList = doSorting<Artifact>(this.artifactList, state);
 
             this.getPullCommand(this.artifactList);
+            this.getArtifactTagsAsync(this.artifactList);
             this.getIconsFromBackEnd();
           }, error => {
             // error
@@ -1011,5 +1010,32 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
   getIcon(icon: string): SafeUrl {
     return this.artifactService.getIcon(icon);
+  }
+  // get Tags and display less than 9 tags(too many tags will make UI stuck)
+  getArtifactTagsAsync(artifacts: ArtifactFront[]) {
+    if (artifacts && artifacts.length) {
+      artifacts.forEach(item => {
+        const listTagParams: NewArtifactService.ListTagsParams = {
+          projectName: this.projectName,
+          repositoryName: dbEncodeURIComponent(this.repoName),
+          reference: item.digest,
+          withSignature: true,
+          withImmutableStatus: true,
+          page: 1,
+          pageSize: 8
+        };
+        this.newArtifactService.listTagsResponse(listTagParams).subscribe(
+            res => {
+              if (res.headers) {
+                let xHeader: string = res.headers.get("x-total-count");
+                if (xHeader) {
+                  item.tagNumber = Number.parseInt(xHeader);
+                }
+              }
+              item.tags = res.body;
+            }
+        );
+      });
+    }
   }
 }
