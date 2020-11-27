@@ -214,64 +214,6 @@ class Project(base.Base):
             base._assert_status_code(expect_status_code, status_code)
             return base._get_id_from_header(header)
 
-    def add_project_robot_account(self, project_id, project_name, expires_at, robot_name = None, robot_desc = None, has_pull_right = True,  has_push_right = True, has_chart_read_right = True,  has_chart_create_right = True, expect_status_code = 201, **kwargs):
-        kwargs['api_type'] = 'products'
-        if robot_name is None:
-            robot_name = base._random_name("robot")
-        if robot_desc is None:
-            robot_desc = base._random_name("robot_desc")
-        if has_pull_right is False and has_push_right is False:
-            has_pull_right = True
-        access_list = []
-        resource_by_project_id = "/project/"+str(project_id)+"/repository"
-        resource_helm_by_project_id = "/project/"+str(project_id)+"/helm-chart"
-        resource_helm_create_by_project_id = "/project/"+str(project_id)+"/helm-chart-version"
-        action_pull = "pull"
-        action_push = "push"
-        action_read = "read"
-        action_create = "create"
-        if has_pull_right is True:
-            robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_by_project_id, action = action_pull)
-            access_list.append(robotAccountAccess)
-        if has_push_right is True:
-            robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_by_project_id, action = action_push)
-            access_list.append(robotAccountAccess)
-        if has_chart_read_right is True:
-            robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_helm_by_project_id, action = action_read)
-            access_list.append(robotAccountAccess)
-        if has_chart_create_right is True:
-            robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_helm_create_by_project_id, action = action_create)
-            access_list.append(robotAccountAccess)
-
-        robotAccountCreate = swagger_client.RobotAccountCreate(robot_name, robot_desc, expires_at, access_list)
-        client = self._get_client(**kwargs)
-        data = []
-        data, status_code, header = client.projects_project_id_robots_post_with_http_info(project_id, robotAccountCreate)
-        base._assert_status_code(expect_status_code, status_code)
-        base._assert_status_code(201, status_code)
-        return base._get_id_from_header(header), data
-
-    def get_project_robot_account_by_id(self, project_id, robot_id, **kwargs):
-        kwargs['api_type'] = 'products'
-        client = self._get_client(**kwargs)
-        data, status_code, _ = client.projects_project_id_robots_robot_id_get_with_http_info(project_id, robot_id)
-        return data
-
-    def disable_project_robot_account(self, project_id, robot_id, disable,  expect_status_code = 200, **kwargs):
-        kwargs['api_type'] = 'products'
-        client = self._get_client(**kwargs)
-        robotAccountUpdate = swagger_client.RobotAccountUpdate(disable)
-        _, status_code, _ = client.projects_project_id_robots_robot_id_put_with_http_info(project_id, robot_id, robotAccountUpdate)
-        base._assert_status_code(expect_status_code, status_code)
-        base._assert_status_code(200, status_code)
-
-    def delete_project_robot_account(self, project_id, robot_id, expect_status_code = 200, **kwargs):
-        kwargs['api_type'] = 'products'
-        client = self._get_client(**kwargs)
-        _, status_code, _ = client.projects_project_id_robots_robot_id_delete_with_http_info(project_id, robot_id)
-        base._assert_status_code(expect_status_code, status_code)
-        base._assert_status_code(200, status_code)
-
     def query_user_logs(self, project_name, status_code=200, **kwargs):
         try:
             logs = self.get_project_log(project_name, expect_status_code=status_code, **kwargs)

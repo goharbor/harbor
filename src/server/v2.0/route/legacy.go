@@ -42,8 +42,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/search", &api.SearchAPI{})
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/robots", &api.RobotAPI{}, "post:Post;get:List")
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/robots/:id([0-9]+)", &api.RobotAPI{}, "get:Get;put:Put;delete:Delete")
 
 	beego.Router("/api/"+version+"/quotas", &api.QuotaAPI{}, "get:List")
 	beego.Router("/api/"+version+"/quotas/:id([0-9]+)", &api.QuotaAPI{}, "get:Get;put:Put")

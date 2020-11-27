@@ -143,13 +143,13 @@ func (_m *Controller) GetSummary(ctx context.Context, _a1 *artifact.Artifact, mi
 	return r0, r1
 }
 
-// HandleJobHooks provides a mock function with given fields: trackID, change
-func (_m *Controller) HandleJobHooks(trackID string, change *job.StatusChange) error {
-	ret := _m.Called(trackID, change)
+// HandleJobHooks provides a mock function with given fields: ctx, trackID, change
+func (_m *Controller) HandleJobHooks(ctx context.Context, trackID string, change *job.StatusChange) error {
+	ret := _m.Called(ctx, trackID, change)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, *job.StatusChange) error); ok {
-		r0 = rf(trackID, change)
+	if rf, ok := ret.Get(0).(func(context.Context, string, *job.StatusChange) error); ok {
+		r0 = rf(ctx, trackID, change)
 	} else {
 		r0 = ret.Error(0)
 	}

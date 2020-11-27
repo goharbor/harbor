@@ -16,11 +16,12 @@ package scan
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/pkg/robot2/model"
 	"testing"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -90,10 +91,13 @@ func (suite *JobTestSuite) TestJob() {
 	sData, err := sr.ToJSON()
 	require.NoError(suite.T(), err)
 
-	robot := &model.Robot{
-		ID:    1,
-		Name:  "robot",
-		Token: "token",
+	robot := &robot.Robot{
+		Robot: model.Robot{
+			ID:     1,
+			Name:   "robot",
+			Secret: "token",
+		},
+		Level: "project",
 	}
 
 	robotData, err := robot.ToJSON()

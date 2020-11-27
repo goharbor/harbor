@@ -23,20 +23,21 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	"github.com/goharbor/harbor/src/pkg/robot/model"
+	"github.com/goharbor/harbor/src/pkg/robot2/model"
 )
 
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
-	robot     *model.Robot
-	ctl       project.Controller
-	policy    []*types.Policy
-	evaluator evaluator.Evaluator
-	once      sync.Once
+	robot         *model.Robot
+	isSystemLevel bool
+	ctl           project.Controller
+	policy        []*types.Policy
+	evaluator     evaluator.Evaluator
+	once          sync.Once
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(robot *model.Robot, policy []*types.Policy) *SecurityContext {
+func NewSecurityContext(robot *model.Robot, isSystemLevel bool, policy []*types.Policy) *SecurityContext {
 	return &SecurityContext{
 		ctl:    project.Ctl,
 		robot:  robot,
@@ -76,7 +77,11 @@ func (s *SecurityContext) IsSolutionUser() bool {
 // Can returns whether the robot can do action on resource
 func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
 	s.once.Do(func() {
-		s.evaluator = rbac.NewProjectEvaluator(s.ctl, rbac.NewBuilderForPolicies(s.GetUsername(), s.policy, filterRobotPolicies))
+		if s.isSystemLevel {
+			s.evaluator = rbac.NewProjectEvaluator(s.ctl, rbac.NewBuilderForPolicies(s.GetUsername(), s.policy))
+		} else {
+			s.evaluator = rbac.NewProjectEvaluator(s.ctl, rbac.NewBuilderForPolicies(s.GetUsername(), s.policy, filterRobotPolicies))
+		}
 	})
 
 	return s.evaluator != nil && s.evaluator.HasPermission(ctx, resource, action)

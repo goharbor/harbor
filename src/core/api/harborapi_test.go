@@ -133,9 +133,6 @@ func init() {
 	beego.Router("/api/system/CVEAllowlist", &SysCVEAllowlistAPI{}, "get:Get;put:Put")
 	beego.Router("/api/system/oidc/ping", &OIDCAPI{}, "post:Ping")
 
-	beego.Router("/api/projects/:pid([0-9]+)/robots/", &RobotAPI{}, "post:Post;get:List")
-	beego.Router("/api/projects/:pid([0-9]+)/robots/:id([0-9]+)", &RobotAPI{}, "get:Get;put:Put;delete:Delete")
-
 	beego.Router("/api/replication/adapters", &ReplicationAdapterAPI{}, "get:List")
 
 	beego.Router("/api/replication/policies", &ReplicationPolicyAPI{}, "get:List;post:Create")
