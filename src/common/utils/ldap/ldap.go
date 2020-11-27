@@ -434,11 +434,11 @@ func (session *Session) searchGroup(groupDN, filter, gName, groupNameAttribute s
 
 // UnderBaseDN - check if the childDN is under the baseDN, if the baseDN equals current DN, return true
 func UnderBaseDN(baseDN, childDN string) (bool, error) {
-	base, err := goldap.ParseDN(baseDN)
+	base, err := goldap.ParseDN(strings.ToLower(baseDN))
 	if err != nil {
 		return false, err
 	}
-	child, err := goldap.ParseDN(childDN)
+	child, err := goldap.ParseDN(strings.ToLower(childDN))
 	if err != nil {
 		return false, err
 	}

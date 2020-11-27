@@ -517,6 +517,12 @@ func TestUnderBaseDN(t *testing.T) {
 			wantError: true,
 			want:      false,
 		},
+		{
+			name:      `should be case-insensitive`,
+			in:        args{"CN=Users,CN=harbor,DC=com", "cn=harbor_group_1,cn=users,cn=harbor,dc=com"},
+			wantError: false,
+			want:      true,
+		},
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
