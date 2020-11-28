@@ -42,6 +42,9 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/lib/cache"
+	_ "github.com/goharbor/harbor/src/lib/cache/memory" // memory cache
+	_ "github.com/goharbor/harbor/src/lib/cache/redis"  // redis cache
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/migration"
@@ -156,6 +159,11 @@ func main() {
 
 			beego.BConfig.WebConfig.Session.SessionProvider = "redis"
 			beego.BConfig.WebConfig.Session.SessionProviderConfig = strings.Join(ss, ",")
+		}
+
+		log.Info("initializing cache ...")
+		if err := cache.Initialize(redisURL); err != nil {
+			log.Fatalf("failed to initialize cache: %v", err)
 		}
 	}
 	beego.AddTemplateExt("htm")
