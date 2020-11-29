@@ -42,6 +42,9 @@ ${checkbox_delete_untagged_artifacts}  //gc-config//clr-toggle-wrapper/label[con
 ${cfg_auth_automatic_onboarding_checkbox}  //clr-checkbox-wrapper//label[contains(@for,'oidcAutoOnboard')]
 ${cfg_auth_user_name_claim_input}  //*[@id='oidcUserClaim']
 
+${cfg_auth_ldap_group_admin_dn}  //*[@id='ldapGroupAdminDN']
+
+
 ${distribution_add_btn_id}  //*[@id='new-instance']
 ${distribution_provider_select_id}  //*[@id='provider']
 ${distribution_name_input_id}  //*[@id='name']

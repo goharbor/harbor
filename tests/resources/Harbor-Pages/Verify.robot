@@ -336,8 +336,7 @@ Verify Replicationrule
         Init Chrome Driver
         Log To Console    -----replicationrule-----"${replicationrule}"------------
         Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-        Switch To Replication Manage
-        Select Rule And Click Edit Button    ${replicationrule}
+        Edit Replication Rule    ${replicationrule}
         @{is_src_registry}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].is_src_registry
         @{trigger_type}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].trigger_type
         @{name_filters}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].name_filters
@@ -351,12 +350,13 @@ Verify Replicationrule
         ${endpoint0}=   Set Variable    @{endpoint}[0]
         Log To Console    -----endpoint0-----${endpoint0}------------
         @{endpoint_type}=    Get Value From Json    ${json}    $.endpoint[?(@.name=${endpoint0})].type
+        @{endpoint_url}=    Get Value From Json    ${json}    $.endpoint[?(@.name=${endpoint0})].url
         Retry Textfield Value Should Be    ${filter_name_id}    @{name_filters}[0]
         Retry Textfield Value Should Be    ${filter_tag_id}    @{tag_filters}[0]
         Retry Textfield Value Should Be    ${rule_name_input}    ${replicationrule}
         Retry Textfield Value Should Be    ${dest_namespace_xpath}    @{dest_namespace}[0]
         Log To Console    -----endpoint_type-----@{endpoint_type}[0]------------
-        ${registry}=    Set Variable If    "@{endpoint_type}[0]"=="harbor"    ${endpoint0}-https://${IP}    ${endpoint0}-https://hub.docker.com
+        ${registry}=    Set Variable If    "@{endpoint_type}[0]"=="harbor"    ${endpoint0}-@{endpoint_url}[0]    ${endpoint0}-https://hub.docker.com
         Log To Console    -------registry---${registry}------------
         Run Keyword If    '@{is_src_registry}[0]' == '${true}'    Retry List Selection Should Be    ${src_registry_dropdown_list}    ${registry}
         ...    ELSE    Retry List Selection Should Be    ${dest_registry_dropdown_list}    ${registry}
@@ -516,7 +516,7 @@ Verify Distributions
         ${endpoint}=  Get Value From Json  ${json}  $.distributions[?(@.name=${name})].endpoint
         ${vendor}=  Get Value From Json  ${json}  $.distributions[?(@.name=${name})].vendor
         ${auth_mode}=  Get Value From Json  ${json}  $.distributions[?(@.name=${name})].auth_mode
-        Retry Wait Until Page Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}[0]') and contains(.,'${vendor}[0]') and contains(.,'${auth_mode}[0]')]
+        Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,'${name}') and contains(.,'${endpoint}[0]') and contains(.,'${vendor}[0]') and contains(.,'${auth_mode}[0]')]
     END
 
 Verify P2P Preheat Policy
@@ -542,5 +542,5 @@ Loop P2P Preheat Policys
     [Arguments]  ${json}  ${project}  @{policy_names}
     FOR    ${policy}    IN    @{policy_names}
         ${provider_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].p2p_preheat_policy[?(@.name=${policy})].provider_name
-        Retry Wait Until Page Contains Element   //div[@class='datagrid-scrolling-cells' and contains(.,'${policy}') and contains(.,'${provider_name}[0]')]
+        Retry Wait Until Page Contains Element   //clr-dg-row[contains(.,'${policy}') and contains(.,'${provider_name}[0]')]
     END

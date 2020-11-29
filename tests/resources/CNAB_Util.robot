@@ -19,7 +19,8 @@ Library  Process
 
 *** Keywords ***
 CNAB Push Bundle
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${target}  ${bundle_file}
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/cnab_push_bundle.sh ${ip} ${user} ${pwd} ${target} ${bundle_file}
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${target}  ${bundle_file}  ${docker_user}  ${docker_pwd}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/cnab_push_bundle.sh ${ip} ${user} ${pwd} ${target} ${bundle_file} ${docker_user} ${docker_pwd}
+    Log To Console  ${output}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0

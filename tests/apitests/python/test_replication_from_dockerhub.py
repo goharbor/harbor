@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import TEARDOWN
 from library.project import Project
 from library.user import User
@@ -10,9 +10,10 @@ from library.registry import Registry
 from library.artifact import Artifact
 from library.repository import Repository
 import swagger_client
+from testutils import DOCKER_USER, DOCKER_PWD
 
 class TestProjects(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.project = Project()
         self.user = User()
@@ -23,12 +24,8 @@ class TestProjects(unittest.TestCase):
         self.image = "alpine"
         self.tag = "latest"
 
-    @classmethod
-    def tearDown(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete rule(RA);
         self.replication.delete_replication_rule(TestProjects.rule_id, **ADMIN_CLIENT)
 
@@ -79,7 +76,7 @@ class TestProjects(unittest.TestCase):
             expected_project_id = TestProjects.project_add_rule_id, **TestProjects.USER_add_rule_CLIENT)
 
         #3. Create a new registry;
-        TestProjects.registry_id, _ = self.registry.create_registry("https://hub.docker.com", registry_type="docker-hub", access_key = "", access_secret = "", insecure=False, **ADMIN_CLIENT)
+        TestProjects.registry_id, _ = self.registry.create_registry("https://hub.docker.com", registry_type="docker-hub", access_key = DOCKER_USER, access_secret = DOCKER_PWD, insecure=False, **ADMIN_CLIENT)
 
         #4. Create a pull-based rule for this registry;
         TestProjects.rule_id, rule_name = self.replication.create_replication_policy(src_registry=swagger_client.Registry(id=int(TestProjects.registry_id)),
@@ -94,7 +91,7 @@ class TestProjects(unittest.TestCase):
         self.replication.trigger_replication_executions(TestProjects.rule_id, **ADMIN_CLIENT)
 
         #7. Wait for completion of this replication job;
-        self.replication.wait_until_jobs_finish(TestProjects.rule_id, **ADMIN_CLIENT)
+        self.replication.wait_until_jobs_finish(TestProjects.rule_id,interval=30, **ADMIN_CLIENT)
 
         #8. Check image is replicated into target project successfully.
         artifact = self.artifact.get_reference_info(TestProjects.project_name, self.image, self.tag, **ADMIN_CLIENT)

@@ -28,6 +28,8 @@ Nightly Test Setup
     Run Keyword  CA setup  ${ip}  ${HARBOR_PASSWORD}
     Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
+    Log To Console  Start Containerd Daemon Locally ...
+    Run Keyword  Start Containerd Daemon Locally
     Log To Console  wget mariadb ...
     Run  wget ${prometheus_chart_file_url}
 
@@ -45,13 +47,19 @@ Nightly Test Setup For Nightly
     Run Keyword If  '${ip1}' != '${EMPTY}'  CA setup For Nightly  ${ip1}  ${HARBOR_PASSWORD}  /ca/ca1.crt
     Run Keyword If  '${ip1}' != '${EMPTY}'  Run  rm -rf ./harbor_ca.crt
     Run Keyword  CA setup For Nightly  ${ip}  ${HARBOR_PASSWORD}
+    Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
+    Log To Console  Start Containerd Daemon Locally ...
+    Run Keyword  Start Containerd Daemon Locally
+    #Prepare docker image for push special image keyword in replication test
+    Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/busybox:latest
+    Docker Tag  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/busybox:latest  busybox:latest
 
 CA Setup For Nightly
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt
     Run  cp ${cert} harbor_ca.crt
     Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}
-    Prepare Docker Cert  ${ip}
+    Prepare Docker Cert For Nightly  ${ip}
     Prepare Helm Cert
 
 Collect Nightly Logs

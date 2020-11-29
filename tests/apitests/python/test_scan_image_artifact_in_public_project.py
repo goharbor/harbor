@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest
 
-from testutils import harbor_server
+from testutils import harbor_server, TEARDOWN, suppress_urllib3_warning
 from testutils import created_user, created_project
 from library.artifact import Artifact
 from library.repository import Repository, push_image_to_project
@@ -9,13 +9,13 @@ from library.scan import Scan
 
 
 class TestScanImageInPublicProject(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.artifact = Artifact()
         self.repo = Repository()
         self.scan = Scan()
 
-    @classmethod
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
         print("Case completed")
 
