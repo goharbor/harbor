@@ -49,6 +49,12 @@ func (hc *HealthCollector) Collect(c chan<- prometheus.Metric) {
 	}
 }
 func (hc *HealthCollector) getHealthStatus() []prometheus.Metric {
+	if CacheEnabled() {
+		value, ok := CacheGet(healthCollectorName)
+		if ok {
+			return value.([]prometheus.Metric)
+		}
+	}
 	result := []prometheus.Metric{}
 	res, err := hbrCli.Get(healthURL)
 	if err != nil {
@@ -61,6 +67,9 @@ func (hc *HealthCollector) getHealthStatus() []prometheus.Metric {
 	result = append(result, harborHealth.MustNewConstMetric(healthy(healthResponse.Status)))
 	for _, v := range healthResponse.Components {
 		result = append(result, harborComponentsHealth.MustNewConstMetric(healthy(v.Status), v.Name))
+	}
+	if CacheEnabled() {
+		CachePut(healthCollectorName, result)
 	}
 	return result
 }

@@ -149,13 +149,18 @@ func getPublicValue(public bool) string {
 }
 
 func getProjectInfo() *projectOverviewInfo {
+	if CacheEnabled() {
+		value, ok := CacheGet(ProjectCollectorName)
+		if ok {
+			return value.(*projectOverviewInfo)
+		}
+	}
 	overview := &projectOverviewInfo{}
 	pc := []projectCount{}
 	pMap := make(map[int64]*projectInfo)
 	_, err := dao.GetOrmer().Raw(totalProjectSQL).QueryRows(&pc)
-	if err != nil {
-		log.Errorf("get data from DB failure")
-	}
+	checkErr(err, "get data from DB failure")
+
 	updateProjectBasicInfo(pMap)
 	updateProjectMemberInfo(pMap)
 	updateProjectRepoInfo(pMap)
@@ -163,15 +168,16 @@ func getProjectInfo() *projectOverviewInfo {
 
 	overview.projectTotals = pc
 	overview.ProjectMap = pMap
+	if CacheEnabled() {
+		CachePut(ProjectCollectorName, overview)
+	}
 	return overview
 }
 
 func updateProjectBasicInfo(projectMap map[int64]*projectInfo) {
 	pList := make([]*projectInfo, 0)
 	_, err := dao.GetOrmer().Raw(projectBasicSQL).QueryRows(&pList)
-	if err != nil {
-		log.Errorf("get data from DB failure")
-	}
+	checkErr(err, "get project from DB failure")
 	for _, p := range pList {
 		projectMap[p.ProjectID] = p
 	}
@@ -180,9 +186,7 @@ func updateProjectBasicInfo(projectMap map[int64]*projectInfo) {
 func updateProjectMemberInfo(projectMap map[int64]*projectInfo) {
 	pList := make([]projectInfo, 0)
 	_, err := dao.GetOrmer().Raw(projectMemberSQL).QueryRows(&pList)
-	if err != nil {
-		log.Errorf("get data from DB failure")
-	}
+	checkErr(err, "get project member data from DB failure")
 	for _, p := range pList {
 		if _, ok := projectMap[p.ProjectID]; ok {
 			projectMap[p.ProjectID].MemberTotal = p.MemberTotal
@@ -190,14 +194,13 @@ func updateProjectMemberInfo(projectMap map[int64]*projectInfo) {
 			log.Errorf("%v, ID %d", errProjectNotFound, p.ProjectID)
 		}
 	}
-
 }
 
 func updateProjectRepoInfo(projectMap map[int64]*projectInfo) {
 	pList := make([]projectInfo, 0)
 	_, err := dao.GetOrmer().Raw(projectRepoSQL).QueryRows(&pList)
 	if err != nil {
-		log.Errorf("get data from DB failure")
+		checkErr(err, "get project repo data from DB failure")
 	}
 	for _, p := range pList {
 		if _, ok := projectMap[p.ProjectID]; ok {
@@ -212,9 +215,7 @@ func updateProjectRepoInfo(projectMap map[int64]*projectInfo) {
 func updateProjectArtifactInfo(projectMap map[int64]*projectInfo) {
 	aList := make([]artifactInfo, 0)
 	_, err := dao.GetOrmer().Raw(projectArtifactsSQL).QueryRows(&aList)
-	if err != nil {
-		log.Errorf("get data from DB failure")
-	}
+	checkErr(err, "get data from DB failure")
 	for _, a := range aList {
 		if _, ok := projectMap[a.ProjectID]; ok {
 			projectMap[a.ProjectID].Artifact = a
@@ -224,8 +225,10 @@ func updateProjectArtifactInfo(projectMap map[int64]*projectInfo) {
 	}
 }
 
-func checkErr(err error, msg string) {
-	if err != nil {
-		log.Errorf("%s: %v", msg, err)
+func checkErr(err error, arg string) {
+	if err == nil {
+		return
 	}
+
+	log.Errorf("%s: %v", arg, err)
 }

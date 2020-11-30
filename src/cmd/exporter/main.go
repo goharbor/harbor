@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"strings"
 
@@ -56,16 +55,21 @@ func main() {
 		TLSEnabled:             viper.GetBool("exporter.tls_enabled"),
 		Certificate:            viper.GetString("exporter.tls_cert"),
 		Key:                    viper.GetString("exporter.tls_key"),
+		CacheDuration:          viper.GetInt64("exporter.cache_time"),
+		CacheCleanInterval:     viper.GetInt64("exporter.cache_clean_interval"),
 	}
 	harborExporter := exporter.NewExporter(exporterOpt)
-	log.Infof("Starting harbor_exporter with port=%v path=%v metrics=%v max_request=%v tls=%v cert=%v key=%v",
+	log.Infof("Starting harbor_exporter with port=%v path=%v metrics=%v max_request=%v tls=%v cert=%v key=%v cache_time=%v clean_internal=%v",
 		exporterOpt.Port,
 		exporterOpt.MetricsPath,
 		exporterOpt.ExporterMetricsEnabled,
 		exporterOpt.MaxRequests,
 		exporterOpt.TLSEnabled,
 		exporterOpt.Certificate,
-		exporterOpt.Key)
+		exporterOpt.Key,
+		exporterOpt.CacheDuration,
+		exporterOpt.CacheCleanInterval,
+	)
 	prometheus.MustRegister(harborExporter)
 	if err := harborExporter.ListenAndServe(); err != nil {
 		log.Errorf("Error starting Harbor expoter %s", err)

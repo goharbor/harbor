@@ -50,6 +50,12 @@ func (hc *SystemInfoCollector) Collect(c chan<- prometheus.Metric) {
 }
 
 func (hc *SystemInfoCollector) getSysInfo() []prometheus.Metric {
+	if CacheEnabled() {
+		value, ok := CacheGet(systemInfoCollectorName)
+		if ok {
+			return value.([]prometheus.Metric)
+		}
+	}
 	result := []prometheus.Metric{}
 	res, err := hbrCli.Get(sysInfoURL)
 	if err != nil {
@@ -65,6 +71,9 @@ func (hc *SystemInfoCollector) getSysInfo() []prometheus.Metric {
 		sysInfoResponse.ExternalURL,
 		sysInfoResponse.HarborVersion,
 		sysInfoResponse.StorageProvider))
+	if CacheEnabled() {
+		CachePut(systemInfoCollectorName, result)
+	}
 	return result
 }
 
