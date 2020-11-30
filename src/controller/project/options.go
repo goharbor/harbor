@@ -19,10 +19,18 @@ type Option func(*Options)
 
 // Options options used by `Get` method of `Controller`
 type Options struct {
+	WithDetail             bool
 	WithCVEAllowlist       bool // get project with cve allowlist
 	WithEffectCVEAllowlist bool // get project with effect cve allowlist
 	WithMetadata           bool // get project with metadata
 	WithOwner              bool // get project with owner name
+}
+
+// Detail set WithDetail for the Options
+func Detail(detail bool) Option {
+	return func(opts *Options) {
+		opts.WithDetail = detail
+	}
 }
 
 // WithCVEAllowlist set WithCVEAllowlist for the Options
@@ -56,6 +64,7 @@ func WithOwner() Option {
 
 func newOptions(options ...Option) *Options {
 	opts := &Options{
+		WithDetail:   true, // default get project details
 		WithMetadata: true, // default get project with metadata
 	}
 

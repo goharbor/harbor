@@ -409,7 +409,7 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 		return operation.NewListProjectsOK().WithXTotalCount(0).WithPayload([]*models.Project{})
 	}
 
-	projects, err := a.projectCtl.List(ctx, query, project.WithCVEAllowlist(), project.WithOwner())
+	projects, err := a.projectCtl.List(ctx, query, project.Detail(lib.BoolValue(params.WithDetail)), project.WithCVEAllowlist(), project.WithOwner())
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
