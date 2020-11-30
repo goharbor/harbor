@@ -49,7 +49,7 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
     // When routing change, clear
     this.msgHandler.clear();
-    if (this.appConfigService.getConfig().read_only.toString() === 'true') {
+    if (this.appConfigService.getConfig().read_only && this.appConfigService.getConfig().read_only.toString() === 'true') {
       this.msgHandler.handleReadOnly();
     }
 
