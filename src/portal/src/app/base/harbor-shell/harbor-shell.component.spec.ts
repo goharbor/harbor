@@ -57,7 +57,7 @@ describe('HarborShellComponent', () => {
         },
         getConfig: function () {
             return {
-                with_clair: true
+                with_trivy: true
             };
         }
     };

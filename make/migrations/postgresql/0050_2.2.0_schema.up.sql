@@ -247,3 +247,22 @@ BEGIN
 END $$;
 
 DROP TABLE IF EXISTS replication_schedule_job;
+
+/* remove the clair scanner */
+DO $$
+DECLARE
+   scanner_info record;
+   is_clair_default boolean;
+   immutable_clair_uuid VARCHAR(64);
+BEGIN
+  SELECT INTO scanner_info * FROM scanner_registration WHERE name = 'Clair' AND immutable = TRUE;
+  IF scanner_info IS NOT NULL THEN
+    is_clair_default = scanner_info.is_default;
+    immutable_clair_uuid = scanner_info.uuid;
+    DELETE FROM scanner_registration WHERE id = scanner_info.id;
+    DELETE FROM scan_report WHERE registration_uuid = immutable_clair_uuid;
+  END IF;
+  IF is_clair_default THEN
+  UPDATE scanner_registration SET is_default = TRUE WHERE name = 'Trivy' AND immutable = TRUE;
+  END IF;
+END $$;

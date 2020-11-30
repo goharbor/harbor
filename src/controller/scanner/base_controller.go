@@ -328,7 +328,7 @@ func (bc *basicController) GetMetadata(registrationUUID string) (*v1.ScannerAdap
 }
 
 var (
-	reservedNames = []string{"Clair", "Trivy"}
+	reservedNames = []string{"Trivy"}
 )
 
 func isReservedName(name string) bool {

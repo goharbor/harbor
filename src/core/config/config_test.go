@@ -32,7 +32,7 @@ func TestConfig(t *testing.T) {
 	dao.PrepareTestData([]string{"delete from properties where k='scan_all_policy'"}, []string{})
 	defaultCACertPath = path.Join(currPath(), "test", "ca.crt")
 	c := map[string]interface{}{
-		common.WithClair:       false,
+		common.WithTrivy:       false,
 		common.WithChartMuseum: false,
 		common.WithNotary:      false,
 	}
@@ -147,8 +147,8 @@ func TestConfig(t *testing.T) {
 	if WithNotary() {
 		t.Errorf("Withnotary should be false")
 	}
-	if WithClair() {
-		t.Errorf("WithClair should be false")
+	if WithTrivy() {
+		t.Errorf("WithTrivy should be false")
 	}
 	if ReadOnly() {
 		t.Errorf("ReadOnly should be false")

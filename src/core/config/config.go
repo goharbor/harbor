@@ -314,16 +314,6 @@ func WithNotary() bool {
 	return cfgMgr.Get(common.WithNotary).GetBool()
 }
 
-// WithClair returns a bool value to indicate if Harbor's deployed with Clair
-func WithClair() bool {
-	return cfgMgr.Get(common.WithClair).GetBool()
-}
-
-// ClairAdapterEndpoint returns the endpoint of clair adapter instance, by default it's the one deployed within Harbor.
-func ClairAdapterEndpoint() string {
-	return cfgMgr.Get(common.ClairAdapterURL).GetString()
-}
-
 // WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.
 func WithTrivy() bool {
 	return cfgMgr.Get(common.WithTrivy).GetBool()

@@ -46,16 +46,16 @@ func TestScanAllAPI(t *testing.T) {
 func (suite *ScanAllAPITestSuite) SetupSuite() {
 	// Ensure scanner is there
 	reg := &scanner.Registration{
-		Name:        "Clair",
-		Description: "The clair scanner adapter",
-		URL:         "https://clair.com:8080",
+		Name:        "Trivy",
+		Description: "The trivy scanner adapter",
+		URL:         "https://trivy.com:8080",
 		Disabled:    false,
 		IsDefault:   true,
 	}
 
 	scMgr := sc.New()
 	uuid, err := scMgr.Create(reg)
-	require.NoError(suite.T(), err, "failed to initialize clair scanner")
+	require.NoError(suite.T(), err, "failed to initialize trivy scanner")
 
 	suite.uuid = uuid
 	suite.m = scMgr

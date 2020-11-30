@@ -229,7 +229,6 @@ func main() {
 }
 
 const (
-	clairScanner = "Clair"
 	trivyScanner = "Trivy"
 )
 
@@ -251,20 +250,6 @@ func registerScanners() {
 		uninstallScannerNames = append(uninstallScannerNames, trivyScanner)
 	}
 
-	if config.WithClair() {
-		log.Info("Registering Clair scanner")
-		wantedScanners = append(wantedScanners, scanner.Registration{
-			Name:            clairScanner,
-			Description:     "The Clair scanner adapter",
-			URL:             config.ClairAdapterEndpoint(),
-			UseInternalAddr: true,
-			Immutable:       true,
-		})
-	} else {
-		log.Info("Removing Clair scanner")
-		uninstallScannerNames = append(uninstallScannerNames, clairScanner)
-	}
-
 	if err := scan.RemoveImmutableScanners(uninstallScannerNames); err != nil {
 		log.Warningf("failed to remove scanners: %v", err)
 	}
@@ -284,9 +269,6 @@ func registerScanners() {
 func getDefaultScannerName() string {
 	if config.WithTrivy() {
 		return trivyScanner
-	}
-	if config.WithClair() {
-		return clairScanner
 	}
 	return ""
 }

@@ -43,7 +43,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
   let spyScanner: jasmine.Spy;
   let scannerMock = {
     disabled: false,
-    name: "Clair"
+    name: "Trivy"
   };
   let mockActivatedRoute = {
     snapshot: {

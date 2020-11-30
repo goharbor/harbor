@@ -70,7 +70,7 @@ func (suite *JobTestSuite) TestJob() {
 		ID:   0,
 		UUID: "uuid",
 		Name: "TestJob",
-		URL:  "https://clair.com:8080",
+		URL:  "https://trivy.com:8080",
 	}
 
 	rData, err := r.ToJSON()
@@ -121,7 +121,7 @@ func (suite *JobTestSuite) TestJob() {
 	rp := vuln.Report{
 		GeneratedAt: time.Now().UTC().String(),
 		Scanner: &v1.Scanner{
-			Name:    "Clair",
+			Name:    "Trivy",
 			Vendor:  "Harbor",
 			Version: "0.1.0",
 		},

@@ -77,7 +77,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 	m := &v1.ScannerAdapterMetadata{
 		Scanner: &v1.Scanner{
-			Name:    "Clair",
+			Name:    "Trivy",
 			Vendor:  "Harbor",
 			Version: "0.1.0",
 		},
@@ -123,7 +123,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	rp := vuln.Report{
 		GeneratedAt: time.Now().UTC().String(),
 		Scanner: &v1.Scanner{
-			Name:    "Clair",
+			Name:    "Trivy",
 			Vendor:  "Harbor",
 			Version: "0.1.0",
 		},

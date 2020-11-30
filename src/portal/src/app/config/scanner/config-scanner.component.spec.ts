@@ -17,7 +17,7 @@ describe('ConfigurationScannerComponent', () => {
   let mockScannerMetadata = {
     scanner: {
       name: 'test1',
-      vendor: 'clair',
+      vendor: 'trivy',
       version: '1.0.1',
      },
     capabilities: [{

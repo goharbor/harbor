@@ -67,7 +67,6 @@ var defaultConfigWithVerifyCert = map[string]interface{}{
 	common.TokenExpiration:            30,
 	common.AdminInitialPassword:       "password",
 	common.WithNotary:                 false,
-	common.WithClair:                  false,
 }
 
 func TestMain(m *testing.M) {

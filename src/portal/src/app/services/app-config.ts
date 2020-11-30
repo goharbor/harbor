@@ -18,7 +18,7 @@ import { ClairDBStatus } from "../../lib/services";
 export class AppConfig {
     with_notary: boolean;
     with_admiral: boolean;
-    with_clair: boolean;
+    with_trivy: boolean;
     admiral_endpoint: string;
     auth_mode: string;
     registry_url: string;
@@ -37,7 +37,7 @@ export class AppConfig {
         // Set default value
         this.with_notary = false;
         this.with_admiral = false;
-        this.with_clair = false;
+        this.with_trivy = false;
         this.admiral_endpoint = "";
         this.auth_mode = "db_auth";
         this.registry_url = "";

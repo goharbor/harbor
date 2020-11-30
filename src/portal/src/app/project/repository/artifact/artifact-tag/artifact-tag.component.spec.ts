@@ -38,7 +38,7 @@ describe('ArtifactTagComponent', () => {
             project_creation_restriction: "",
             with_chartmuseum: "",
             with_notary: "",
-            with_clair: "",
+            with_trivy: "",
             with_admiral: "",
             registry_url: "",
         };

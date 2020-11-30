@@ -57,12 +57,9 @@ func TestEnsureScanners(t *testing.T) {
 			Keywords: map[string]interface{}{
 				"ex_name__in": []string{
 					"trivy",
-					"clair",
 				},
 			},
-		}).Return([]*scanner.Registration{
-			{Name: "clair", URL: "http://clair:8080"},
-		}, nil)
+		}).Return([]*scanner.Registration{}, nil)
 		mgr.On("Create", &scanner.Registration{
 			Name: "trivy",
 			URL:  "http://trivy:8080",
@@ -70,7 +67,6 @@ func TestEnsureScanners(t *testing.T) {
 
 		err := EnsureScanners([]scanner.Registration{
 			{Name: "trivy", URL: "http://trivy:8080"},
-			{Name: "clair", URL: "http://clair:8080"},
 		})
 
 		assert.NoError(t, err)
@@ -85,25 +81,18 @@ func TestEnsureScanners(t *testing.T) {
 			Keywords: map[string]interface{}{
 				"ex_name__in": []string{
 					"trivy",
-					"clair",
 				},
 			},
 		}).Return([]*scanner.Registration{
 			{Name: "trivy", URL: "http://trivy:8080"},
-			{Name: "clair", URL: "http://clair:8080"},
 		}, nil)
 		mgr.On("Update", &scanner.Registration{
 			Name: "trivy",
 			URL:  "http://trivy:8443",
 		}).Return(nil)
-		mgr.On("Update", &scanner.Registration{
-			Name: "clair",
-			URL:  "http://clair:8443",
-		}).Return(nil)
 
 		err := EnsureScanners([]scanner.Registration{
 			{Name: "trivy", URL: "http://trivy:8443"},
-			{Name: "clair", URL: "http://clair:8443"},
 		})
 
 		assert.NoError(t, err)
@@ -130,7 +119,7 @@ func TestEnsureDefaultScanner(t *testing.T) {
 		scannerManager = mgr
 
 		mgr.On("GetDefault").Return(&scanner.Registration{
-			Name: "clair",
+			Name: "trivy",
 		}, nil)
 
 		err := EnsureDefaultScanner("trivy")

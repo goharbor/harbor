@@ -44,7 +44,7 @@ func (suite *SummaryTestSuite) SetupSuite() {
 	rp := vuln.Report{
 		GeneratedAt: time.Now().UTC().String(),
 		Scanner: &v1.Scanner{
-			Name:    "Clair",
+			Name:    "Trivy",
 			Vendor:  "Harbor",
 			Version: "0.1.0",
 		},
@@ -102,7 +102,7 @@ func (suite *SummaryTestSuite) TestSummaryGenerateSummaryNoOptions() {
 	suite.Nil(nativeSummary.CVEBypassed)
 	suite.Equal(2, nativeSummary.Summary.Total)
 
-	suite.Equal("Clair", nativeSummary.Scanner.Name)
+	suite.Equal("Trivy", nativeSummary.Scanner.Name)
 	suite.Equal("Harbor", nativeSummary.Scanner.Vendor)
 	suite.Equal("0.1.0", nativeSummary.Scanner.Version)
 }
