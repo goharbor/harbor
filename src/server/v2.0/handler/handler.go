@@ -39,6 +39,8 @@ func New() http.Handler {
 		RobotAPI:       newRobotAPI(),
 		Robotv1API:     newRobotV1API(),
 		ReplicationAPI: newReplicationAPI(),
+		SysteminfoAPI:  newSystemInfoAPI(),
+		PingAPI:        newPingAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

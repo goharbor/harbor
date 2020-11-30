@@ -19,8 +19,8 @@ import (
 	"reflect"
 	"syscall"
 
-	storage "github.com/goharbor/harbor/src/core/systeminfo/imagestorage"
 	"github.com/goharbor/harbor/src/lib/log"
+	storage "github.com/goharbor/harbor/src/pkg/systeminfo/imagestorage"
 )
 
 const (

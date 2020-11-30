@@ -17,7 +17,7 @@ package filesystem
 import (
 	"testing"
 
-	storage "github.com/goharbor/harbor/src/core/systeminfo/imagestorage"
+	storage "github.com/goharbor/harbor/src/pkg/systeminfo/imagestorage"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -113,9 +113,6 @@ func init() {
 	beego.Router("/api/registries", &RegistryAPI{}, "get:List;post:Post")
 	beego.Router("/api/registries/ping", &RegistryAPI{}, "post:Ping")
 	beego.Router("/api/registries/:id([0-9]+)", &RegistryAPI{}, "get:Get;put:Put;delete:Delete")
-	beego.Router("/api/systeminfo", &SystemInfoAPI{}, "get:GetGeneralInfo")
-	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
-	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
 	beego.Router("/api/ldap/ping", &LdapAPI{}, "post:Ping")
 	beego.Router("/api/ldap/users/search", &LdapAPI{}, "get:Search")
 	beego.Router("/api/ldap/groups/search", &LdapAPI{}, "get:SearchGroup")
@@ -125,7 +122,6 @@ func init() {
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
 	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
-	beego.Router("/api/ping", &SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/system/gc/:id", &GCAPI{}, "get:GetGC")
 	beego.Router("/api/system/gc/:id([0-9]+)/log", &GCAPI{}, "get:GetLog")
 	beego.Router("/api/system/gc/schedule", &GCAPI{}, "get:Get;put:Put;post:Post")
@@ -737,39 +733,6 @@ func (a testapi) UsersDelete(userID int, authInfo usrInfo) (int, error) {
 	_sling = _sling.Path(path)
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, err
-}
-
-// Get system volume info
-func (a testapi) VolumeInfoGet(authInfo usrInfo) (int, apilib.SystemInfo, error) {
-	_sling := sling.New().Get(a.basePath)
-	path := "/api/systeminfo/volumes"
-	_sling = _sling.Path(path)
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	var successPayLoad apilib.SystemInfo
-	if 200 == httpStatusCode && nil == err {
-		err = json.Unmarshal(body, &successPayLoad)
-	}
-
-	return httpStatusCode, successPayLoad, err
-}
-
-func (a testapi) GetGeneralInfo() (int, []byte, error) {
-	_sling := sling.New().Get(a.basePath).Path("/api/systeminfo")
-	return request(_sling, jsonAcceptHeader)
-}
-
-func (a testapi) Ping() (int, []byte, error) {
-	_sling := sling.New().Get(a.basePath).Path("/api/ping")
-	return request(_sling, jsonAcceptHeader)
-}
-
-// Get system cert
-func (a testapi) CertGet(authInfo usrInfo) (int, []byte, error) {
-	_sling := sling.New().Get(a.basePath)
-	path := "/api/systeminfo/getcert"
-	_sling = _sling.Path(path)
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, body, err
 }
 
 // Post ldap test

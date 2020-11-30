@@ -1925,6 +1925,75 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /systeminfo:
+    get:
+      summary: Get general system info
+      description: |
+        This API is for retrieving general system info, this can be called by anonymous request.  Some attributes will be omitted in the response when this API is called by anonymous request.
+      tags:
+        - systeminfo
+      responses:
+        '200':
+          description: Get general info successfully.
+          schema:
+            $ref: '#/definitions/GeneralInfo'
+        '500':
+          $ref: '#/responses/500'
+  /systeminfo/volumes:
+    get:
+      summary: Get system volume info (total/free size).
+      description: |
+        This endpoint is for retrieving system volume info that only provides for admin user.  Note that the response only reflects the storage status of local disk.
+      tags:
+        - systeminfo
+      responses:
+        '200':
+          description: Get system volumes successfully.
+          schema:
+            $ref: '#/definitions/SystemInfo'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /systeminfo/getcert:
+    get:
+      summary: Get default root certificate.
+      description: |
+        This endpoint is for downloading a default root certificate.
+      tags:
+        - systeminfo
+      produces:
+        - application/octet-stream
+      responses:
+        '200':
+          description: Get default root certificate successfully.
+          schema:
+            type: file
+          headers:
+            Content-Disposition:
+              description: To set the filename of the downloaded file.
+              type: string
+        '404':
+          description: Not found the default root certificate.
+        '500':
+          $ref: '#/responses/500'
+  /ping:
+    get:
+      summary: Ping Harbor to check if it's alive.
+      description: This API simply replies a pong to indicate the process to handle API is up, disregarding the health status of dependent components.
+      tags:
+        - ping
+      produces:
+        - text/plain
+      responses:
+        '200':
+          description: The API server is alive
+          schema:
+            type: string
 parameters:
   query:
     name: q
@@ -3122,3 +3191,108 @@ definitions:
         description: The permission of robot account
         items:
           $ref: '#/definitions/Access'
+  Storage:
+    type: object
+    properties:
+      total:
+        type: integer
+        format: uint64
+        description: Total volume size.
+      free:
+        type: integer
+        format: uint64
+        description: Free volume size.
+  GeneralInfo:
+    type: object
+    properties:
+      with_notary:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: If the Harbor instance is deployed with nested notary.
+      with_chartmuseum:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: If the Harbor instance is deployed with nested chartmuseum.
+      registry_url:
+        type: string
+        x-nullable: true
+        x-omitempty: true
+        description: The url of registry against which the docker command should be issued.
+      external_url:
+        type: string
+        x-nullable: true
+        x-omitempty: true
+        description: The external URL of Harbor, with protocol.
+      auth_mode:
+        type: string
+        x-nullable: true
+        x-omitempty: true
+        description: The auth mode of current Harbor instance.
+      project_creation_restriction:
+        type: string
+        x-nullable: true
+        x-omitempty: true
+        description: 'Indicate who can create projects, it could be ''adminonly'' or ''everyone''.'
+      self_registration:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: Indicate whether the Harbor instance enable user to register himself.
+      has_ca_root:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: Indicate whether there is a ca root cert file ready for download in the file system.
+      harbor_version:
+        type: string
+        x-nullable: true
+        x-omitempty: true
+        description: The build version of Harbor.
+      registry_storage_provider_name:
+        type: string
+        x-nullable: true
+        x-omitempty: true
+        description: The storage provider's name of Harbor registry
+      read_only:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: The flag to indicate whether Harbor is in readonly mode.
+      notification_enable:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: The flag to indicate whether notification mechanism is enabled on Harbor instance.
+      authproxy_settings:
+        description: The setting of auth proxy this is only available when Harbor relies on authproxy for authentication.
+        x-nullable: true
+        x-omitempty: true
+        $ref: '#/definitions/AuthproxySetting'
+  AuthproxySetting:
+    type: object
+    properties:
+      endpoint:
+        type: string
+        description: The fully qualified URI of login endpoint of authproxy, such as 'https://192.168.1.2:8443/login'
+      tokenreivew_endpoint:
+        type: string
+        description: The fully qualified URI of token review endpoint of authproxy, such as 'https://192.168.1.2:8443/tokenreview'
+      skip_search:
+        type: boolean
+        description: The flag to determine whether Harbor can skip search the user/group when adding him as a member.
+      verify_cert:
+        type: boolean
+        description: The flag to determine whether Harbor should verify the certificate when connecting to the auth proxy.
+      server_certificate:
+        type: string
+        description: The certificate to be pinned when connecting auth proxy.
+  SystemInfo:
+    type: object
+    properties:
+      storage:
+        type: array
+        description: The storage of system.
+        items:
+          $ref: '#/definitions/Storage'

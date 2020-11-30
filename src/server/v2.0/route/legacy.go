@@ -38,7 +38,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/ldap/users/import", &api.LdapAPI{}, "post:ImportUser")
 	beego.Router("/api/"+version+"/email/ping", &api.EmailAPI{}, "post:Ping")
 	beego.Router("/api/"+version+"/health", &api.HealthAPI{}, "get:CheckHealth")
-	beego.Router("/api/"+version+"/ping", &api.SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/"+version+"/search", &api.SearchAPI{})
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
@@ -72,10 +71,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/statistics", &api.StatisticAPI{})
 	beego.Router("/api/"+version+"/labels", &api.LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/"+version+"/labels/:id([0-9]+)", &api.LabelAPI{}, "get:Get;put:Put;delete:Delete")
-
-	beego.Router("/api/"+version+"/systeminfo", &api.SystemInfoAPI{}, "get:GetGeneralInfo")
-	beego.Router("/api/"+version+"/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")
-	beego.Router("/api/"+version+"/systeminfo/getcert", &api.SystemInfoAPI{}, "get:GetCert")
 
 	beego.Router("/api/"+version+"/registries", &api.RegistryAPI{}, "get:List;post:Post")
 	beego.Router("/api/"+version+"/registries/:id([0-9]+)", &api.RegistryAPI{}, "get:Get;put:Put;delete:Delete")

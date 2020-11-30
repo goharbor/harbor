@@ -16,16 +16,17 @@ package oidc
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/common"
-	config2 "github.com/goharbor/harbor/src/common/config"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/stretchr/testify/assert"
 	"net/url"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/goharbor/harbor/src/common"
+	config2 "github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
