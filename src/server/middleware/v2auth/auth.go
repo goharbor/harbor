@@ -110,16 +110,31 @@ func getChallenge(req *http.Request, accessList []access) string {
 }
 
 func tokenSvcEndpoint(req *http.Request) (string, error) {
-	logger := log.G(req.Context())
 	rawCoreURL := config.InternalCoreURL()
-	if coreURL, err := url.Parse(rawCoreURL); err == nil {
-		if req.Host == coreURL.Host {
-			return rawCoreURL, nil
-		}
-	} else {
-		logger.Errorf("Failed to parse core url, error: %v, fallback to external endpoint", err)
+	if match(req.Context(), req.Host, rawCoreURL) {
+		return rawCoreURL, nil
 	}
 	return config.ExtEndpoint()
+}
+
+func match(ctx context.Context, reqHost, rawURL string) bool {
+	logger := log.G(ctx)
+	cfgURL, err := url.Parse(rawURL)
+	if err != nil {
+		logger.Errorf("Failed to parse url: %s, error: %v", rawURL, err)
+		return false
+	}
+	if cfgURL.Scheme == "http" && cfgURL.Port() == "80" ||
+		cfgURL.Scheme == "https" && cfgURL.Port() == "443" {
+		cfgURL.Host = cfgURL.Hostname()
+	}
+	if cfgURL.Scheme == "http" && strings.HasSuffix(reqHost, ":80") {
+		reqHost = strings.TrimSuffix(reqHost, ":80")
+	}
+	if cfgURL.Scheme == "https" && strings.HasSuffix(reqHost, ":443") {
+		reqHost = strings.TrimSuffix(reqHost, ":443")
+	}
+	return reqHost == cfgURL.Host
 }
 
 var (
