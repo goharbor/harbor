@@ -251,6 +251,9 @@ func (c *controller) ListRoles(ctx context.Context, projectID int64, u *user.Use
 
 func (c *controller) assembleProjects(ctx context.Context, projects models.Projects, options ...Option) error {
 	opts := newOptions(options...)
+	if !opts.WithDetail {
+		return nil
+	}
 	if opts.WithMetadata {
 		if err := c.loadMetadatas(ctx, projects); err != nil {
 			return err
