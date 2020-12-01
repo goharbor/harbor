@@ -59,7 +59,7 @@ class TestProjects(unittest.TestCase):
 
         #3. Create a new robot account(RA) with full priviliges in project(PA) with user(UA);
         robot_id, robot_account = self.robot.create_project_robot(TestProjects.project_name,
-                                                                         2441000531 ,**TestProjects.USER_CLIENT)
+                                                                         30 ,**TestProjects.USER_CLIENT)
         #4. Push chart to project(PA) by Helm2 CLI with robot account(RA);"
         library.helm.helm2_add_repo(self.chart_repo_name, "https://"+harbor_server, TestProjects.project_name, robot_account.name, robot_account.secret)
         library.helm.helm2_push(self.chart_repo_name, self.chart_file, TestProjects.project_name, robot_account.name, robot_account.secret)

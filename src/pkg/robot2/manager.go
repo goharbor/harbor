@@ -30,7 +30,7 @@ type Manager interface {
 	DeleteByProjectID(ctx context.Context, projectID int64) error
 
 	// Update ...
-	Update(ctx context.Context, m *model.Robot) error
+	Update(ctx context.Context, m *model.Robot, props ...string) error
 
 	// List ...
 	List(ctx context.Context, query *q.Query) ([]*model.Robot, error)
@@ -75,8 +75,8 @@ func (m *manager) DeleteByProjectID(ctx context.Context, projectID int64) error 
 }
 
 // Update ...
-func (m *manager) Update(ctx context.Context, r *model.Robot) error {
-	return m.dao.Update(ctx, r)
+func (m *manager) Update(ctx context.Context, r *model.Robot, props ...string) error {
+	return m.dao.Update(ctx, r, props...)
 }
 
 // List ...

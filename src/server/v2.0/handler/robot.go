@@ -31,7 +31,7 @@ type robotAPI struct {
 }
 
 func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRobotParams) middleware.Responder {
-	if err := rAPI.validate(params.Robot); err != nil {
+	if err := rAPI.validate(params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
@@ -43,10 +43,11 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 		Robot: pkg.Robot{
 			Name:        params.Robot.Name,
 			Description: params.Robot.Description,
-			ExpiresAt:   params.Robot.ExpiresAt,
+			Duration:    params.Robot.Duration,
 		},
 		Level: params.Robot.Level,
 	}
+
 	lib.JSONCopy(&r.Permissions, params.Robot.Permissions)
 
 	rid, err := rAPI.robotCtl.Create(ctx, r)
@@ -65,6 +66,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 		Name:         created.Name,
 		Secret:       created.Secret,
 		CreationTime: strfmt.DateTime(created.CreationTime),
+		ExpiresAt:    created.ExpiresAt,
 	})
 }
 
@@ -83,6 +85,10 @@ func (rAPI *robotAPI) DeleteRobot(ctx context.Context, params operation.DeleteRo
 	}
 
 	if err := rAPI.robotCtl.Delete(ctx, params.RobotID); err != nil {
+		// for the version 1 robot account, has to ignore the no permissions error.
+		if !r.Editable && errors.IsNotFoundErr(err) {
+			return operation.NewDeleteRobotOK()
+		}
 		return rAPI.SendError(ctx, err)
 	}
 	return operation.NewDeleteRobotOK()
@@ -170,7 +176,7 @@ func (rAPI *robotAPI) GetRobotByID(ctx context.Context, params operation.GetRobo
 }
 
 func (rAPI *robotAPI) UpdateRobot(ctx context.Context, params operation.UpdateRobotParams) middleware.Responder {
-	if err := rAPI.validate(params.Robot); err != nil {
+	if err := rAPI.validate(params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
@@ -189,24 +195,19 @@ func (rAPI *robotAPI) UpdateRobot(ctx context.Context, params operation.UpdateRo
 		return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("cannot update the level or name of robot"))
 	}
 
-	// refresh secret only
-	if params.Robot.Secret != r.Secret && params.Robot.Secret != "" {
-		key, err := config.SecretKey()
-		if err != nil {
-			return rAPI.SendError(ctx, err)
-		}
-		secret, err := utils.ReversibleEncrypt(params.Robot.Secret, key)
-		if err != nil {
-			return rAPI.SendError(ctx, err)
-		}
-		r.Secret = secret
-		if err := rAPI.robotCtl.Update(ctx, r); err != nil {
-			return rAPI.SendError(ctx, err)
+	if r.Duration != params.Robot.Duration {
+		r.Duration = params.Robot.Duration
+		if params.Robot.Duration == -1 {
+			r.ExpiresAt = -1
+		} else if params.Robot.Duration == 0 {
+			r.Duration = int64(config.RobotTokenDuration())
+			r.ExpiresAt = r.CreationTime.AddDate(0, 0, config.RobotTokenDuration()).Unix()
+		} else {
+			r.ExpiresAt = r.CreationTime.AddDate(0, 0, int(params.Robot.Duration)).Unix()
 		}
 	}
 
 	r.Description = params.Robot.Description
-	r.ExpiresAt = params.Robot.ExpiresAt
 	r.Disabled = params.Robot.Disable
 	if len(params.Robot.Permissions) != 0 {
 		lib.JSONCopy(&r.Permissions, params.Robot.Permissions)
@@ -219,6 +220,45 @@ func (rAPI *robotAPI) UpdateRobot(ctx context.Context, params operation.UpdateRo
 	return operation.NewUpdateRobotOK()
 }
 
+func (rAPI *robotAPI) RefreshSec(ctx context.Context, params operation.RefreshSecParams) middleware.Responder {
+	if err := rAPI.validate(params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+
+	if err := rAPI.requireAccess(ctx, params.Robot.Level, params.Robot.Permissions[0].Namespace, rbac.ActionUpdate); err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+
+	r, err := rAPI.robotCtl.Get(ctx, params.RobotID, &robot.Option{
+		WithPermission: true,
+	})
+	if err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+
+	if params.Robot.Secret != r.Secret {
+		return rAPI.SendError(ctx, errors.New(nil).WithMessage("the secret must be same with current").WithCode(errors.BadRequestCode))
+	}
+
+	key, err := config.SecretKey()
+	if err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+	str := utils.GenerateRandomString()
+	secret, err := utils.ReversibleEncrypt(str, key)
+	if err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+	r.Secret = secret
+	if err := rAPI.robotCtl.Update(ctx, r); err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+
+	return operation.NewRefreshSecOK().WithPayload(&models.RobotSec{
+		Secret: r.Secret,
+	})
+}
+
 func (rAPI *robotAPI) requireAccess(ctx context.Context, level string, projectIDOrName interface{}, action rbac.Action) error {
 	if level == robot.LEVELSYSTEM {
 		return rAPI.RequireSysAdmin(ctx)
@@ -229,17 +269,21 @@ func (rAPI *robotAPI) requireAccess(ctx context.Context, level string, projectID
 }
 
 // more validation
-func (rAPI *robotAPI) validate(r *models.RobotCreate) error {
-	if !isValidLevel(r.Level) {
+func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Permission) error {
+	if !isValidDuration(d) {
+		return errors.New(nil).WithMessage("bad request error duration input").WithCode(errors.BadRequestCode)
+	}
+
+	if !isValidLevel(level) {
 		return errors.New(nil).WithMessage("bad request error level input").WithCode(errors.BadRequestCode)
 	}
 
-	if len(r.Permissions) == 0 {
+	if len(permissions) == 0 {
 		return errors.New(nil).WithMessage("bad request empty permission").WithCode(errors.BadRequestCode)
 	}
 
 	// to create a project robot, the permission must be only one project scope.
-	if r.Level == robot.LEVELPROJECT && len(r.Permissions) > 1 {
+	if level == robot.LEVELPROJECT && len(permissions) > 1 {
 		return errors.New(nil).WithMessage("bad request permission").WithCode(errors.BadRequestCode)
 	}
 	return nil
@@ -247,4 +291,8 @@ func (rAPI *robotAPI) validate(r *models.RobotCreate) error {
 
 func isValidLevel(l string) bool {
 	return l == robot.LEVELSYSTEM || l == robot.LEVELPROJECT
+}
+
+func isValidDuration(d int64) bool {
+	return d >= int64(-1)
 }

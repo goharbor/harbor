@@ -1690,7 +1690,7 @@ paths:
           description: The JSON object of a robot account.
           required: true
           schema:
-            $ref: '#/definitions/RobotCreate'
+            $ref: '#/definitions/Robot'
       responses:
         '200':
           $ref: '#/responses/200'
@@ -1704,6 +1704,36 @@ paths:
           $ref: '#/responses/404'
         '409':
           $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    patch:
+      summary: Refresh the robot secret
+      description: Refresh the robot secret
+      tags:
+        - robot
+      operationId: RefreshSec
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/robotId'
+        - name: robot
+          description: The JSON object of a robot account.
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Robot'
+      responses:
+        '200':
+          description: Return refreshed robot sec.
+          schema:
+            $ref: '#/definitions/RobotSec'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
     delete:
@@ -3090,6 +3120,14 @@ definitions:
       level:
         type: string
         description: The level of the robot, project or system
+      duration:
+        type: integer
+        format: int64
+        description: The duration of the robot in days
+      editable:
+        type: boolean
+        x-omitempty: false
+        description: The editable status of the robot
       disable:
         type: boolean
         x-omitempty: false
@@ -3129,10 +3167,10 @@ definitions:
       disable:
         type: boolean
         description: The disable status of the robot
-      expires_at:
+      duration:
         type: integer
         format: int64
-        description: The expiration data of the robot
+        description: The duration of the robot in days
       permissions:
         type: array
         items:
@@ -3155,6 +3193,17 @@ definitions:
         type: string
         format: date-time
         description: The creation time of the robot.
+      expires_at:
+        type: integer
+        format: int64
+        description: The expiration data of the robot
+  RobotSec:
+    type: object
+    description: The response for refresh/update robot account secret.
+    properties:
+      secret:
+        type: string
+        description: The secret of the robot
   Permission:
     type: object
     properties:

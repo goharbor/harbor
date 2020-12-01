@@ -6,6 +6,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/core/config"
 	core_cfg "github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -108,7 +109,7 @@ func (suite *ControllerTestSuite) TestCreate() {
 		Robot: model.Robot{
 			Name:        "testcreate",
 			Description: "testcreate",
-			ExpiresAt:   0,
+			Duration:    0,
 		},
 		ProjectName: "library",
 		Level:       LEVELPROJECT,
@@ -156,7 +157,12 @@ func (suite *ControllerTestSuite) TestUpdate() {
 	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
 	ctx := context.TODO()
 
-	robotMgr.On("Update", mock.Anything, mock.Anything).Return(nil)
+	conf := map[string]interface{}{
+		common.RobotPrefix: "robot$",
+	}
+	config.InitWithSettings(conf)
+
+	robotMgr.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	projectMgr.On("Get", mock.Anything, mock.Anything).Return(&models.Project{ProjectID: 1, Name: "library"}, nil)
 	rbacMgr.On("DeletePermissionsByRole", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
@@ -167,7 +173,7 @@ func (suite *ControllerTestSuite) TestUpdate() {
 		Robot: model.Robot{
 			Name:        "testcreate",
 			Description: "testcreate",
-			ExpiresAt:   0,
+			Duration:    0,
 		},
 		ProjectName: "library",
 		Level:       LEVELPROJECT,

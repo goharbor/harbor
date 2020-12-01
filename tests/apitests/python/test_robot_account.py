@@ -92,7 +92,7 @@ class TestProjects(unittest.TestCase):
 
         #4. Create a new robot account(RA) with pull and push privilege in project(PA) by user(UA);
         robot_id, robot_account = self.robot.create_project_robot(TestProjects.project_ra_name_a,
-                                                                         2441000531 ,**TestProjects.USER_RA_CLIENT)
+                                                                         30 ,**TestProjects.USER_RA_CLIENT)
 
         #5. Check robot account info, it should has both pull and push privilege;
         data = self.robot.get_robot_account_by_id(robot_id, **TestProjects.USER_RA_CLIENT)

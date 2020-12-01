@@ -9,7 +9,7 @@ class Robot(base.Base, object):
     def __init__(self):
         super(Robot,self).__init__(api_type = "robot")
 
-    def create_project_robot(self, project_name, expires_at, robot_name = None, robot_desc = None, has_pull_right = True,  has_push_right = True, has_chart_read_right = True,  has_chart_create_right = True, expect_status_code = 201, **kwargs):
+    def create_project_robot(self, project_name, duration, robot_name = None, robot_desc = None, has_pull_right = True,  has_push_right = True, has_chart_read_right = True,  has_chart_create_right = True, expect_status_code = 201, **kwargs):
         if robot_name is None:
             robot_name = base._random_name("robot")
         if robot_desc is None:
@@ -37,7 +37,7 @@ class Robot(base.Base, object):
         robotaccountPermissions = v2_swagger_client.Permission(kind = "project", namespace = project_name, access = access_list)
         permission_list = []
         permission_list.append(robotaccountPermissions)
-        robotAccountCreate = v2_swagger_client.RobotCreate(name=robot_name, description=robot_desc, expires_at=expires_at, level="project", permissions = permission_list)
+        robotAccountCreate = v2_swagger_client.RobotCreate(name=robot_name, description=robot_desc, duration=duration, level="project", permissions = permission_list)
 
         client = self._get_client(**kwargs)
         data = []
@@ -54,7 +54,7 @@ class Robot(base.Base, object):
     def disable_robot_account(self, robot_id, disable, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         data = self.get_robot_account_by_id(robot_id, **kwargs)
-        robotAccountUpdate = v2_swagger_client.RobotCreate(name=data.name, description=data.description, expires_at=data.expires_at, level=data.level, permissions = data.permissions, disable = disable)
+        robotAccountUpdate = v2_swagger_client.RobotCreate(name=data.name, description=data.description, duration=data.duration, level=data.level, permissions = data.permissions, disable = disable)
 
         _, status_code, _ = client.update_robot_with_http_info(robot_id, robotAccountUpdate)
         base._assert_status_code(expect_status_code, status_code)
