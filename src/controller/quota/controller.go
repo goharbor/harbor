@@ -132,10 +132,11 @@ func (c *controller) assembleQuota(ctx context.Context, q *quota.Quota, opts *Op
 
 		ref, err := driver.Load(ctx, q.ReferenceID)
 		if err != nil {
-			return nil, err
+			log.G(ctx).Warningf("failed to load referenced %s object %s for quota %d, error %v",
+				q.Reference, q.ReferenceID, q.ID, err)
+		} else {
+			q.Ref = ref
 		}
-
-		q.Ref = ref
 	}
 
 	return q, nil
