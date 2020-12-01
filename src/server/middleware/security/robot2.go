@@ -52,18 +52,18 @@ func (r *robot2) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
-	var accesses []*types.Policy
 	robot := robots[0]
-	if secret != robot.Secret {
-		log.Error("the secret provided is not correct.")
+	if utils.Encrypt(secret, robot.Salt, utils.SHA256) != robot.Secret {
+		log.Errorf("failed to authenticate robot account: %s", name)
 		return nil
 	}
 	if robot.Disabled {
-		log.Error("the robot is disabled.")
+		log.Errorf("failed to authenticate disabled robot account: %s", name)
 		return nil
 	}
 	// add the expiration check
 
+	var accesses []*types.Policy
 	for _, p := range robot.Permissions {
 		for _, a := range p.Access {
 			accesses = append(accesses, &types.Policy{

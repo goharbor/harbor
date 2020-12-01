@@ -1715,12 +1715,12 @@ paths:
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/robotId'
-        - name: robot
+        - name: robotSec
           description: The JSON object of a robot account.
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Robot'
+            $ref: '#/definitions/RobotSec'
       responses:
         '200':
           description: Return refreshed robot sec.
