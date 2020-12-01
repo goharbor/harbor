@@ -266,3 +266,65 @@ func TestGetChallenge(t *testing.T) {
 	}
 
 }
+
+func TestMatch(t *testing.T) {
+	cases := []struct {
+		reqHost string
+		rawURL  string
+		expect  bool
+	}{
+		{
+			"abc.com",
+			"http://abc.com",
+			true,
+		},
+		{
+			"abc.com",
+			"https://abc.com",
+			true,
+		},
+		{
+			"abc.com:80",
+			"http://abc.com",
+			true,
+		},
+		{
+			"abc.com:80",
+			"https://abc.com",
+			false,
+		},
+		{
+			"abc.com:443",
+			"http://abc.com",
+			false,
+		},
+		{
+			"abc.com:443",
+			"https://abc.com",
+			true,
+		},
+		{
+			"abcd.com:443",
+			"https://abc.com",
+			false,
+		},
+		{
+			"abc.com:8443",
+			"https://abc.com:8443",
+			true,
+		},
+		{
+			"abc.com",
+			"https://abc.com:443",
+			true,
+		},
+		{
+			"abc.com",
+			"http://abc.com:443",
+			false,
+		},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.expect, match(context.Background(), c.reqHost, c.rawURL))
+	}
+}
