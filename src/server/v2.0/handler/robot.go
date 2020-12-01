@@ -17,7 +17,6 @@ import (
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/robot"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func newRobotAPI() *robotAPI {
@@ -201,11 +200,13 @@ func (rAPI *robotAPI) UpdateRobot(ctx context.Context, params operation.UpdateRo
 		if params.Robot.Duration == -1 {
 			r.ExpiresAt = -1
 		} else if params.Robot.Duration == 0 {
-			r.ExpiresAt = r.CreationTime.UTC().Add(time.Duration(config.RobotTokenDuration()) * 60 * 24 * time.Minute).Unix()
+			r.Duration = int64(config.RobotTokenDuration())
+			r.ExpiresAt = r.CreationTime.AddDate(0, 0, config.RobotTokenDuration()).Unix()
 		} else {
-			r.ExpiresAt = r.CreationTime.UTC().Add(time.Duration(params.Robot.Duration) * 60 * 24 * time.Minute).Unix()
+			r.ExpiresAt = r.CreationTime.AddDate(0, 0, int(params.Robot.Duration)).Unix()
 		}
 	}
+
 	r.Description = params.Robot.Description
 	r.Disabled = params.Robot.Disable
 	if len(params.Robot.Permissions) != 0 {

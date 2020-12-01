@@ -185,7 +185,6 @@ func (suite *ControllerTestSuite) SetupSuite() {
 			Name:        rname,
 			Description: "for scan",
 			ProjectID:   suite.artifact.ProjectID,
-			Duration:    int64(config.RobotTokenDuration()),
 		},
 		Level: robot.LEVELPROJECT,
 		Permissions: []*robot.Permission{

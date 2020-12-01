@@ -85,9 +85,10 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, error) {
 		expiresAt = -1
 	} else if r.Duration == 0 {
 		// system default robot duration
-		expiresAt = time.Now().UTC().Add(time.Duration(config.RobotTokenDuration()) * 60 * 24 * time.Minute).Unix()
+		r.Duration = int64(config.RobotTokenDuration())
+		expiresAt = time.Now().AddDate(0, 0, config.RobotTokenDuration()).Unix()
 	} else {
-		expiresAt = time.Now().UTC().Add(time.Duration(r.Duration) * 60 * 24 * time.Minute).Unix()
+		expiresAt = time.Now().AddDate(0, 0, int(r.Duration)).Unix()
 	}
 
 	key, err := config.SecretKey()
