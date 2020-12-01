@@ -106,14 +106,25 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	if err != nil {
 		return err
 	}
-	useLocal, err := proxyCtl.UseLocalManifest(ctx, art, remote)
+	useLocal, man, err := proxyCtl.UseLocalManifest(ctx, art, remote)
+
 	if err != nil {
 		return err
 	}
 	if useLocal {
+		if man != nil {
+			w.Header().Set("Content-Type", man.ContentType)
+			w.Header().Set("Docker-Content-Digest", man.Digest)
+			w.Header().Set("Etag", man.Digest)
+			w.Write(man.Content)
+			return nil
+		}
 		next.ServeHTTP(w, r)
 		return nil
 	}
+
+	log.Warningf("Artifact: %v:%v, digest:%v is not found in proxy cache, fetch it from remote repo", art.Repository, art.Tag, art.Digest)
+
 	log.Debugf("the tag is %v, digest is %v", art.Tag, art.Digest)
 	if r.Method == http.MethodHead {
 		err = proxyManifestHead(ctx, w, proxyCtl, p, art, remote)

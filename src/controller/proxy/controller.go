@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -41,6 +42,8 @@ const (
 	maxManifestListWait = 20
 	maxManifestWait     = 10
 	sleepIntervalSec    = 20
+	// keep manifest list in cache for one week
+	manifestListCacheIntervalSec = 7 * 24 * 60 * 60
 )
 
 var (
@@ -54,7 +57,7 @@ type Controller interface {
 	// UseLocalBlob check if the blob should use local copy
 	UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) bool
 	// UseLocalManifest check manifest should use local copy
-	UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, error)
+	UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *ManifestList, error)
 	// ProxyBlob proxy the blob request to the remote server, p is the proxy project
 	// art is the ArtifactInfo which includes the digest of the blob
 	ProxyBlob(ctx context.Context, p *models.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error)
@@ -68,6 +71,7 @@ type controller struct {
 	blobCtl     blob.Controller
 	artifactCtl artifact.Controller
 	local       localInterface
+	cache       cache.Cache
 }
 
 // ControllerInstance -- Get the proxy controller instance
@@ -79,6 +83,7 @@ func ControllerInstance() Controller {
 			blobCtl:     blob.Ctl,
 			artifactCtl: artifact.Ctl,
 			local:       newLocalHelper(),
+			cache:       cache.Default(),
 		}
 	})
 
@@ -96,33 +101,53 @@ func (c *controller) UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) boo
 	return exist
 }
 
-func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, error) {
+// ManifestList ...
+type ManifestList struct {
+	Content     []byte
+	Digest      string
+	ContentType string
+}
+
+func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *ManifestList, error) {
 	a, err := c.local.GetManifest(ctx, art)
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
-	if a == nil {
-		return false, nil
+	// Pull by digest when artifact exist in local
+	if a != nil && len(art.Digest) > 0 {
+		return true, nil, nil
 	}
-	// Pull by digest
-	if len(art.Digest) > 0 {
-		return true, nil
-	}
-	// Pull by tag
+
 	remoteRepo := getRemoteRepo(art)
-	exist, dig, err := remote.ManifestExist(remoteRepo, art.Tag) // HEAD
+	exist, dig, err := remote.ManifestExist(remoteRepo, getReference(art)) // HEAD
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
 	if !exist {
 		go func() {
 			c.local.DeleteManifest(remoteRepo, art.Tag)
 		}()
-		return false, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
+		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
 	}
-	return dig == a.Digest, nil // digest matches
+
+	var content []byte
+	err = c.cache.Fetch(getManifestListKey(art.Repository, dig), &content)
+	if err == cache.ErrNotFound {
+		log.Debugf("Digest is not found in manifest list cache, key:cache:%v", getManifestListKey(art.Repository, dig))
+	} else if err != nil {
+		log.Errorf("Failed to get manifest list, error: %v", err)
+	} else {
+		log.Debugf("Get the manifest list with key=cache:%v", getManifestListKey(art.Repository, dig))
+		return true, &ManifestList{content, dig, manifestlist.MediaTypeManifestList}, nil
+	}
+
+	return a != nil && dig == a.Digest, nil, nil // digest matches
 }
 
+func getManifestListKey(repo, dig string) string {
+	// actual redis key is cache:manifest.list.sha256:xxxx
+	return "manifestlist:" + repo + ":" + dig
+}
 func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
 	var man distribution.Manifest
 	remoteRepo := getRemoteRepo(art)
@@ -209,6 +234,19 @@ func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc di
 }
 
 func (c *controller) waitAndPushManifest(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, contType string, r RemoteInterface) {
+	if contType == manifestlist.MediaTypeManifestList {
+		_, payload, err := man.Payload()
+		if err != nil {
+			log.Errorf("failed to get payload, error %v", err)
+		}
+		dig := digest.FromBytes([]byte(payload))
+		key := getManifestListKey(art.Repository, string(dig))
+		log.Debugf("Cache manifest list with key=cache:%v", key)
+		err = c.cache.Save(key, payload)
+		if err != nil {
+			log.Errorf("failed to cache payload, error %v", err)
+		}
+	}
 	if contType == manifestlist.MediaTypeManifestList || contType == v1.MediaTypeImageIndex {
 		err := c.local.PushManifestList(ctx, art.Repository, getReference(art), man)
 		if err != nil {
