@@ -51,7 +51,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 
 	lib.JSONCopy(&r.Permissions, params.Robot.Permissions)
 
-	rid, err := rAPI.robotCtl.Create(ctx, r)
+	rid, pwd, err := rAPI.robotCtl.Create(ctx, r)
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
@@ -65,7 +65,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 	return operation.NewCreateRobotCreated().WithLocation(location).WithPayload(&models.RobotCreated{
 		ID:           created.ID,
 		Name:         created.Name,
-		Secret:       created.Secret,
+		Secret:       pwd,
 		CreationTime: strfmt.DateTime(created.CreationTime),
 		ExpiresAt:    created.ExpiresAt,
 	})
@@ -214,7 +214,9 @@ func (rAPI *robotAPI) UpdateRobot(ctx context.Context, params operation.UpdateRo
 		lib.JSONCopy(&r.Permissions, params.Robot.Permissions)
 	}
 
-	if err := rAPI.robotCtl.Update(ctx, r); err != nil {
+	if err := rAPI.robotCtl.Update(ctx, r, &robot.Option{
+		WithPermission: true,
+	}); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
@@ -236,23 +238,25 @@ func (rAPI *robotAPI) RefreshSec(ctx context.Context, params operation.RefreshSe
 	}
 
 	var secret string
+	robotSec := &models.RobotSec{}
 	if params.RobotSec.Secret != "" {
 		if !isValidSec(params.RobotSec.Secret) {
 			return rAPI.SendError(ctx, errors.New("the secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number").WithCode(errors.BadRequestCode))
 		}
 		secret = utils.Encrypt(params.RobotSec.Secret, r.Salt, utils.SHA256)
+		robotSec.Secret = ""
 	} else {
-		secret = utils.Encrypt(utils.GenerateRandomString(), r.Salt, utils.SHA256)
+		pwd := utils.GenerateRandomString()
+		secret = utils.Encrypt(pwd, r.Salt, utils.SHA256)
+		robotSec.Secret = pwd
 	}
 
 	r.Secret = secret
-	if err := rAPI.robotCtl.Update(ctx, r); err != nil {
+	if err := rAPI.robotCtl.Update(ctx, r, nil); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
-	return operation.NewRefreshSecOK().WithPayload(&models.RobotSec{
-		Secret: r.Secret,
-	})
+	return operation.NewRefreshSecOK().WithPayload(robotSec)
 }
 
 func (rAPI *robotAPI) requireAccess(ctx context.Context, level string, projectIDOrName interface{}, action rbac.Action) error {

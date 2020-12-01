@@ -205,7 +205,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		},
 	}
 
-	rc.On("Create", context.TODO(), account).Return(int64(1), nil)
+	rc.On("Create", context.TODO(), account).Return(int64(1), "robot-account", nil)
 	rc.On("Get", context.TODO(), int64(1), &robot.Option{
 		WithPermission: false,
 	}).Return(&robot.Robot{
@@ -238,7 +238,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	regJSON, err := suite.registration.ToJSON()
 	require.NoError(suite.T(), err)
 
-	id, _ := rc.Create(context.TODO(), account)
+	id, _, _ := rc.Create(context.TODO(), account)
 	rb, _ := rc.Get(context.TODO(), id, &robot.Option{WithPermission: false})
 	robotJSON, err := rb.ToJSON()
 	require.NoError(suite.T(), err)

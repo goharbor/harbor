@@ -32,13 +32,13 @@ type Controller interface {
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
 
 	// Create ...
-	Create(ctx context.Context, r *Robot) (int64, error)
+	Create(ctx context.Context, r *Robot) (int64, string, error)
 
 	// Delete ...
 	Delete(ctx context.Context, id int64) error
 
 	// Update ...
-	Update(ctx context.Context, r *Robot) error
+	Update(ctx context.Context, r *Robot, option *Option) error
 
 	// List ...
 	List(ctx context.Context, query *q.Query, option *Option) ([]*Robot, error)
@@ -75,9 +75,9 @@ func (d *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
 }
 
 // Create ...
-func (d *controller) Create(ctx context.Context, r *Robot) (int64, error) {
+func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error) {
 	if err := d.setProjectID(ctx, r); err != nil {
-		return 0, err
+		return 0, "", err
 	}
 
 	var expiresAt int64
@@ -105,13 +105,13 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, error) {
 		Salt:        salt,
 	})
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 	r.ID = robotID
 	if err := d.createPermission(ctx, r); err != nil {
-		return 0, err
+		return 0, "", err
 	}
-	return robotID, nil
+	return robotID, pwd, nil
 }
 
 // Delete ...
@@ -126,22 +126,21 @@ func (d *controller) Delete(ctx context.Context, id int64) error {
 }
 
 // Update ...
-func (d *controller) Update(ctx context.Context, r *Robot) error {
+func (d *controller) Update(ctx context.Context, r *Robot, option *Option) error {
 	if r == nil {
 		return errors.New("cannot update a nil robot").WithCode(errors.BadRequestCode)
 	}
 	if err := d.robotMgr.Update(ctx, &r.Robot, "secret", "description", "disabled", "duration"); err != nil {
 		return err
 	}
-	if err := d.setProjectID(ctx, r); err != nil {
-		return err
-	}
 	// update the permission
-	if err := d.rbacMgr.DeletePermissionsByRole(ctx, ROBOTTYPE, r.ID); err != nil {
-		return err
-	}
-	if err := d.createPermission(ctx, r); err != nil {
-		return err
+	if option != nil && option.WithPermission {
+		if err := d.rbacMgr.DeletePermissionsByRole(ctx, ROBOTTYPE, r.ID); err != nil {
+			return err
+		}
+		if err := d.createPermission(ctx, r); err != nil {
+			return err
+		}
 	}
 	return nil
 }

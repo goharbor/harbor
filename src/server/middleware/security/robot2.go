@@ -27,16 +27,6 @@ func (r *robot2) Generate(req *http.Request) security.Context {
 	if !strings.HasPrefix(name, config.RobotPrefix()) {
 		return nil
 	}
-	key, err := config.SecretKey()
-	if err != nil {
-		log.Error("failed to get secret key")
-		return nil
-	}
-	_, err = utils.ReversibleDecrypt(secret, key)
-	if err != nil {
-		log.Errorf("failed to decode secret key: %s, %v", secret, err)
-		return nil
-	}
 
 	// TODO use the naming pattern to avoid the permission boundary crossing.
 	robots, err := robot_ctl.Ctl.List(req.Context(), q.New(q.KeyWords{
