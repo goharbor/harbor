@@ -11,5 +11,6 @@ COPY ./make/photon/notary/binary/migrations/ /migrations/
 COPY ./make/photon/notary/signer-start.sh /bin/signer-start.sh
 
 RUN chmod +x /bin/notary-signer /migrations/migrate.sh /bin/migrate /bin/migrate-patch /bin/signer-start.sh
+RUN chage -M 99999 root
 ENV SERVICE_NAME=notary_signer
 ENTRYPOINT [ "/bin/signer-start.sh" ]

@@ -20,6 +20,8 @@ RUN chown -R 10000:10000 /clair \
     && chmod u+x /docker-entrypoint.sh \
     && chmod +x /dumb-init
 
+RUN chage -M 99999 root
+
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1:6061/health || exit 1
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

@@ -18,6 +18,8 @@ RUN mkdir -p /etc/registry
 COPY ./make/photon/registry/binary/registry /usr/bin
 RUN chmod u+x /usr/bin/registry
 
+RUN chage -M 99999 root
+
 HEALTHCHECK CMD curl 127.0.0.1:5000/
 
 VOLUME ["/var/lib/registry"]

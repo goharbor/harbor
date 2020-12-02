@@ -8,6 +8,8 @@ COPY ./make/photon/redis/docker-entrypoint.sh /usr/bin/
 COPY ./make/photon/redis/redis.conf /etc/redis.conf
 RUN chmod +x /usr/bin/docker-entrypoint.sh \
     && chown redis:redis /etc/redis.conf
+RUN chage -M 99999 root
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 6379
