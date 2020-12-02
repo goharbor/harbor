@@ -214,7 +214,7 @@ func decodeFilters(filterStr string) ([]*Filter, error) {
 		return nil, err
 	}
 
-	// Convert value type
+	// ToRelationalSchema value type
 	// TODO: remove switch after UI bug #12579 fixed
 	for _, f := range filters {
 		if f.Type == FilterTypeVulnerability {

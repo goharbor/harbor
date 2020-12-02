@@ -260,6 +260,43 @@ func (suite *ControllerTestSuite) TestPing() {
 	suite.NotNil(meta)
 }
 
+// TestPingWithGenericMimeType tests ping for scanners supporting MIME type MimeTypeGenericVulnerabilityReport
+func (suite *ControllerTestSuite) TestPingWithGenericMimeType() {
+	m := &v1.ScannerAdapterMetadata{
+		Scanner: &v1.Scanner{
+			Name:    "Trivy",
+			Vendor:  "Harbor",
+			Version: "0.1.0",
+		},
+		Capabilities: []*v1.ScannerCapability{{
+			ConsumesMimeTypes: []string{
+				v1.MimeTypeOCIArtifact,
+				v1.MimeTypeDockerArtifact,
+			},
+			ProducesMimeTypes: []string{
+				v1.MimeTypeGenericVulnerabilityReport,
+				v1.MimeTypeRawReport,
+			},
+		}},
+		Properties: v1.ScannerProperties{
+			"extra": "testing",
+		},
+	}
+	mc := &v1testing.Client{}
+	mc.On("GetMetadata").Return(m, nil)
+
+	mcp := &v1testing.ClientPool{}
+	mocktesting.OnAnything(mcp, "Get").Return(mc, nil)
+	suite.c = &basicController{
+		manager:    suite.mMgr,
+		proMetaMgr: suite.mMeta,
+		clientPool: mcp,
+	}
+	meta, err := suite.c.Ping(suite.sample)
+	require.NoError(suite.T(), err)
+	suite.NotNil(meta)
+}
+
 // TestGetMetadata ...
 func (suite *ControllerTestSuite) TestGetMetadata() {
 	suite.sample.UUID = "uuid"

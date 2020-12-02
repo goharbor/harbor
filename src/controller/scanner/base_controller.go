@@ -296,17 +296,17 @@ func (bc *basicController) Ping(registration *scanner.Registration) (*v1.Scanner
 			return nil, errors.Errorf("missing %s in consumes_mime_types", v1.MimeTypeDockerArtifact)
 		}
 
-		// v1.MimeTypeNativeReport is required
+		// either of v1.MimeTypeNativeReport OR v1.MimeTypeGenericVulnerabilityReport is required
 		found = false
 		for _, pm := range ca.ProducesMimeTypes {
-			if pm == v1.MimeTypeNativeReport {
+			if pm == v1.MimeTypeNativeReport || pm == v1.MimeTypeGenericVulnerabilityReport {
 				found = true
 				break
 			}
 		}
 
 		if !found {
-			return nil, errors.Errorf("missing %s in produces_mime_types", v1.MimeTypeNativeReport)
+			return nil, errors.Errorf("missing %s or %s in produces_mime_types", v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport)
 		}
 	}
 

@@ -104,13 +104,15 @@ const (
 
 // basicManager is a default implementation of report manager.
 type basicManager struct {
-	dao scan.DAO
+	dao     scan.DAO
+	vulnDao scan.VulnerabilityRecordDao
 }
 
 // NewManager news basic manager.
 func NewManager() Manager {
 	return &basicManager{
-		dao: scan.New(),
+		dao:     scan.New(),
+		vulnDao: scan.NewVulnerabilityRecordDao(),
 	}
 }
 
@@ -136,6 +138,10 @@ func (bm *basicManager) Create(ctx context.Context, r *scan.Report) (string, err
 }
 
 func (bm *basicManager) Delete(ctx context.Context, uuid string) error {
+	_, err := bm.vulnDao.DeleteForReport(ctx, uuid)
+	if err != nil {
+		return err
+	}
 	query := q.Query{Keywords: q.KeyWords{"uuid": uuid}}
 	count, err := bm.dao.DeleteMany(ctx, query)
 	if err != nil {
@@ -192,13 +198,20 @@ func (bm *basicManager) DeleteByDigests(ctx context.Context, digests ...string) 
 		return nil
 	}
 
+	// delete the vulnerability records to the report UUID mapping for the digests
+	// provided
+	_, err := bm.vulnDao.DeleteForDigests(ctx, digests...)
+
+	if err != nil {
+		return err
+	}
 	var ol q.OrList
 	for _, digest := range digests {
 		ol.Values = append(ol.Values, digest)
 	}
 
 	query := q.Query{Keywords: q.KeyWords{"digest": &ol}}
-	_, err := bm.dao.DeleteMany(ctx, query)
+	_, err = bm.dao.DeleteMany(ctx, query)
 	return err
 }
 

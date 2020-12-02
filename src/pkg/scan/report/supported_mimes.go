@@ -26,7 +26,8 @@ import (
 // SupportedMimes indicates what mime types are supported to render at UI end.
 var SupportedMimes = map[string]interface{}{
 	// The native report type
-	v1.MimeTypeNativeReport: (*vuln.Report)(nil),
+	v1.MimeTypeNativeReport:               (*vuln.Report)(nil),
+	v1.MimeTypeGenericVulnerabilityReport: (*vuln.Report)(nil),
 }
 
 // ResolveData is a helper func to parse the JSON data with the given mime type.

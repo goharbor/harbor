@@ -25,7 +25,9 @@ type Merger func(r1, r2 interface{}) (interface{}, error)
 
 // SupportedMergers declares mappings between mime type and report merger func.
 var SupportedMergers = map[string]Merger{
-	v1.MimeTypeNativeReport: MergeNativeReport,
+	v1.MimeTypeNativeReport:               MergeNativeReport,
+	v1.MimeTypeGenericVulnerabilityReport: MergeNativeReport,
+
 }
 
 // Merge merge report r1 and r2

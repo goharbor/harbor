@@ -37,6 +37,7 @@ import (
 	sca "github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/postprocessors"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -86,6 +87,8 @@ type basicController struct {
 
 	execMgr task.ExecutionManager
 	taskMgr task.Manager
+	// Converter for V1 report to V2 report
+	reportConverter postprocessors.NativeScanReportConverter
 }
 
 // NewController news a scan API controller
@@ -125,6 +128,8 @@ func NewController() Controller {
 
 		execMgr: task.ExecMgr,
 		taskMgr: task.Mgr,
+		// Get the scan V1 to V2 report converters
+		reportConverter: postprocessors.NewNativeToRelationalSchemaConverter(),
 	}
 }
 
@@ -397,8 +402,8 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 	mimes := make([]string, 0)
 	mimes = append(mimes, mimeTypes...)
 	if len(mimes) == 0 {
-		// Retrieve native as default
-		mimes = append(mimes, v1.MimeTypeNativeReport)
+		// Retrieve native  and the new generic format as default
+		mimes = append(mimes, v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport)
 	}
 
 	// Get current scanner settings
@@ -593,10 +598,19 @@ func (bc *basicController) UpdateReport(ctx context.Context, report *sca.CheckIn
 		return errors.New("no report found to update data")
 	}
 
-	if err := bc.manager.UpdateReportData(ctx, rpl[0].UUID, report.RawReport); err != nil {
+	log.Infof("Converting report ID %s to  the new V2 schema", rpl[0].UUID)
+	_, reportData, err := bc.reportConverter.ToRelationalSchema(ctx, rpl[0].UUID, rpl[0].RegistrationUUID, rpl[0].Digest, report.RawReport)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to convert vulnerability data to new schema for report UUID : %s", rpl[0].UUID)
+	}
+	// update the original report with the new summarized report with all vulnerability data removed.
+	// this is required since the top level layers relay on the vuln.Report struct that
+	// contains additional metadata within the report which if stored in the new columns within the scan_report table
+	// would be redundant
+	if err := bc.manager.UpdateReportData(ctx, rpl[0].UUID, reportData); err != nil {
 		return errors.Wrap(err, "scan controller: handle job hook")
 	}
-
+	log.Infof("Converted report ID %s to the new V2 schema", rpl[0].UUID)
 	return nil
 }
 
@@ -605,7 +619,6 @@ func (bc *basicController) DeleteReports(ctx context.Context, digests ...string)
 	if err := bc.manager.DeleteByDigests(ctx, digests...); err != nil {
 		return errors.Wrap(err, "scan controller: delete reports")
 	}
-
 	return nil
 }
 
@@ -835,6 +848,11 @@ func (bc *basicController) assembleReports(ctx context.Context, reports ...*scan
 		} else {
 			report.Status = job.ErrorStatus.String()
 		}
+		completeReport, err := bc.reportConverter.FromRelationalSchema(ctx, report.UUID, report.Digest, report.Report)
+		if err != nil {
+			return err
+		}
+		report.Report = completeReport
 	}
 
 	return nil

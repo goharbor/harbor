@@ -469,3 +469,44 @@ BEGIN
     update properties set v = cast(duration_in_days as text)  WHERE k = 'robot_token_duration';
   END IF;
 END $$;
+
+/*
+Common vulnerability reporting schema.
+Github proposal link : https://github.com/goharbor/community/pull/145
+*/
+
+-- --------------------------------------------------
+--  Table Structure for `main.VulnerabilityRecord`
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS "vulnerability_record" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "cve_id" text NOT NULL DEFAULT '' ,
+    "registration_uuid" text NOT NULL DEFAULT '',
+    "package" text NOT NULL DEFAULT '' ,
+    "package_version" text NOT NULL DEFAULT '' ,
+    "package_type" text NOT NULL DEFAULT '' ,
+    "severity" text NOT NULL DEFAULT '' ,
+    "fixed_version" text,
+    "urls" text,
+    "cvss_score_v3" double precision,
+    "cvss_score_v2" double precision,
+    "cvss_vector_v3" text,
+    "cvss_vector_v2" text,
+    "description" text,
+    "cwe_ids" text,
+    "vendor_attributes" json,
+    UNIQUE ("cve_id", "registration_uuid", "package", "package_version"),
+    CONSTRAINT fk_registration_uuid FOREIGN  KEY(registration_uuid) REFERENCES scanner_registration(uuid) ON DELETE CASCADE
+);
+
+-- --------------------------------------------------
+--  Table Structure for `main.ReportVulnerabilityRecord`
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS "report_vulnerability_record" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "report_uuid" text NOT NULL DEFAULT '' ,
+    "vuln_record_id" bigint NOT NULL DEFAULT 0 ,
+    UNIQUE ("report_uuid", "vuln_record_id"),
+    CONSTRAINT fk_vuln_record_id FOREIGN  KEY(vuln_record_id) REFERENCES vulnerability_record(id) ON DELETE CASCADE,
+    CONSTRAINT fk_report_uuid FOREIGN  KEY(report_uuid) REFERENCES scan_report(uuid) ON DELETE CASCADE
+);
