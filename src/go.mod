@@ -18,6 +18,7 @@ require (
 	github.com/bugsnag/bugsnag-go v1.5.2 // indirect
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/casbin/casbin v1.7.0
+	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e // indirect
 	github.com/coreos/go-oidc v2.1.0+incompatible
 	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
@@ -28,6 +29,8 @@ require (
 	github.com/docker/go-metrics v0.0.0-20181218153428-b84716841b82 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
 	github.com/ghodss/yaml v1.0.0
+	github.com/go-asn1-ber/asn1-ber v1.5.1
+	github.com/go-ldap/ldap/v3 v3.2.4
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/loads v0.19.4
 	github.com/go-openapi/runtime v0.19.5
@@ -67,11 +70,9 @@ require (
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	gopkg.in/asn1-ber.v1 v1.0.0-20150924051756-4e86f4367175
 	gopkg.in/dancannon/gorethink.v3 v3.0.5 // indirect
 	gopkg.in/fatih/pool.v2 v2.0.0 // indirect
 	gopkg.in/gorethink/gorethink.v3 v3.0.5 // indirect
-	gopkg.in/ldap.v2 v2.5.0
 	gopkg.in/square/go-jose.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	helm.sh/helm/v3 v3.1.1

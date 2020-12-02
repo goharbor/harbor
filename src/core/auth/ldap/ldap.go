@@ -19,11 +19,11 @@ import (
 	"regexp"
 	"strings"
 
+	goldap "github.com/go-ldap/ldap/v3"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/utils"
-	goldap "gopkg.in/ldap.v2"
 
 	"github.com/goharbor/harbor/src/common/models"
 	ldapUtils "github.com/goharbor/harbor/src/common/utils/ldap"

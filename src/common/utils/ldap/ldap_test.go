@@ -5,12 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	goldap "github.com/go-ldap/ldap/v3"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	uiConfig "github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	goldap "gopkg.in/ldap.v2"
 )
 
 var ldapTestConfig = map[string]interface{}{
