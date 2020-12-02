@@ -10,8 +10,8 @@
         "THEME_LIGHT_TEXT": "LIGHT"
     },
     "SIGN_IN": {
-        "REMEMBER": "Remember me",
-        "INVALID_MSG": "Invalid user name or password.",
+        "REMEMBER": "Remember username",
+        "INVALID_MSG": "Invalid username or password.",
         "FORGOT_PWD": "Forgot password",
         "HEADER_LINK": "Sign In",
         "CORE_SERVICE_NOT_AVAILABLE": "Core service is not available."
@@ -927,7 +927,7 @@
             "SCOPE": "OIDC Scope",
             "OIDC_VERIFYCERT": "Verify Certificate",
             "OIDC_AUTOONBOARD": "Automatic onboarding",
-            "USER_CLAIM": "Username Claim",    
+            "USER_CLAIM": "Username Claim",
             "OIDC_SETNAME": "Set OIDC Username",
             "OIDC_SETNAMECONTENT": "You must create a Harbor username the first time when authenticating via a third party(OIDC).This will be used within Harbor to be associated with projects, roles, etc.",
             "OIDC_USERNAME": "Username",
