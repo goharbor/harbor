@@ -117,6 +117,21 @@ class System(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return base._get_id_from_header(header)
 
+    def wait_until_scans_all_finish(self, **kwargs):
+        client = self._get_client(**kwargs)
+        timeout_count = 50
+        scan_status=""
+        while True:
+            time.sleep(5)
+            timeout_count = timeout_count - 1
+            if (timeout_count == 0):
+                break
+            stats = client.scans_all_metrics_get()
+            print("Scan all status:", stats)
+            if stats.ongoing:
+                return
+        raise Exception("Error: Scan all job is timeout.")
+
     def create_scan_all_schedule(self, schedule_type, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
         scanschedule = swagger_client.AdminJobScheduleObj()
