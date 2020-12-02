@@ -114,7 +114,7 @@ class DockerAPI(object):
             expected_error_message = None
         ret = ""
         try:
-            self.DCLIENT.pull(r'{}:{}'.format(image, _tag))
+            ret = self.DCLIENT.pull(r'{}:{}'.format(image, _tag))
             return ret
         except Exception as err:
             if expected_error_message is not None:
