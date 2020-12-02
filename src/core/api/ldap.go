@@ -25,8 +25,8 @@ import (
 	"errors"
 	"strings"
 
+	goldap "github.com/go-ldap/ldap/v3"
 	"github.com/goharbor/harbor/src/core/config"
-	goldap "gopkg.in/ldap.v2"
 )
 
 // LdapAPI handles requesst to /api/ldap/ping /api/ldap/user/search /api/ldap/user/import
