@@ -82,6 +82,7 @@ class TestScanAll(unittest.TestCase):
 
         #4. Trigger scan all event;
         self.system.scan_now(**ADMIN_CLIENT)
+        self.system.wait_until_scans_all_finish(**ADMIN_CLIENT)
 
         #5. Check if image in project_Alice and another image in project_Luca were both scanned.
         self.artifact.check_image_scan_result(TestScanAll.project_Alice_name, image_a, tag_Alice, **USER_ALICE_CLIENT)

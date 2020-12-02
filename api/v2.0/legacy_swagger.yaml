@@ -4991,6 +4991,10 @@ definitions:
           'Success': 5
           'Error': 2,
           'Running': 3
+      ongoing:
+        type: boolean
+        description: A flag indicating job status of scan all .
+
   SupportedWebhookEventTypes:
     type: object
     description: Supportted webhook event types and notify types.
