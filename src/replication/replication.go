@@ -61,6 +61,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/artifacthub"
 	// register the TencentCloud TCR adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/tencentcr"
+	// register the Github Container Registry adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/githubcr"
 )
 
 var (
