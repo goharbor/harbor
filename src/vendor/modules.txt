@@ -21,6 +21,8 @@ github.com/Azure/go-autorest/autorest/date
 github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.5.0
 github.com/Azure/go-autorest/tracing
+# github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c
+github.com/Azure/go-ntlmssp
 # github.com/FZambia/sentinel v1.1.0
 ## explicit
 github.com/FZambia/sentinel
@@ -148,6 +150,8 @@ github.com/casbin/casbin/persist/file-adapter
 github.com/casbin/casbin/rbac
 github.com/casbin/casbin/rbac/default-role-manager
 github.com/casbin/casbin/util
+# github.com/cenkalti/backoff v2.2.1+incompatible
+## explicit
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
 # github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e
@@ -232,6 +236,12 @@ github.com/exponent-io/jsonpath
 # github.com/ghodss/yaml v1.0.0
 ## explicit
 github.com/ghodss/yaml
+# github.com/go-asn1-ber/asn1-ber v1.5.1
+## explicit
+github.com/go-asn1-ber/asn1-ber
+# github.com/go-ldap/ldap/v3 v3.2.4
+## explicit
+github.com/go-ldap/ldap/v3
 # github.com/go-openapi/analysis v0.19.5
 github.com/go-openapi/analysis
 github.com/go-openapi/analysis/internal
@@ -502,6 +512,7 @@ golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/cast5
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
+golang.org/x/crypto/md4
 golang.org/x/crypto/openpgp
 golang.org/x/crypto/openpgp/armor
 golang.org/x/crypto/openpgp/clearsign
@@ -638,9 +649,6 @@ google.golang.org/protobuf/runtime/protoimpl
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
-# gopkg.in/asn1-ber.v1 v1.0.0-20150924051756-4e86f4367175
-## explicit
-gopkg.in/asn1-ber.v1
 # gopkg.in/dancannon/gorethink.v3 v3.0.5
 ## explicit
 # gopkg.in/fatih/pool.v2 v2.0.0
@@ -651,9 +659,6 @@ gopkg.in/asn1-ber.v1
 gopkg.in/inf.v0
 # gopkg.in/ini.v1 v1.42.0
 gopkg.in/ini.v1
-# gopkg.in/ldap.v2 v2.5.0
-## explicit
-gopkg.in/ldap.v2
 # gopkg.in/square/go-jose.v2 v2.3.0
 ## explicit
 gopkg.in/square/go-jose.v2

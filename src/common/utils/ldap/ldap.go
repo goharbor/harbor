@@ -23,11 +23,10 @@ import (
 	"strings"
 	"time"
 
+	goldap "github.com/go-ldap/ldap/v3"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
-
-	goldap "gopkg.in/ldap.v2"
 )
 
 // ErrNotFound ...
