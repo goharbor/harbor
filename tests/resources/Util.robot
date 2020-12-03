@@ -86,7 +86,7 @@ Wait Until Element Is Visible And Enabled
 
 Retry Action Keyword
     [Arguments]  ${keyword}  @{param}
-    Retry Keyword N Times When Error  8  ${keyword}  @{param}
+    Retry Keyword N Times When Error  3  ${keyword}  @{param}
 
 Retry Wait Element
     [Arguments]  ${element_xpath}
@@ -147,6 +147,11 @@ Retry Wait Until Page Contains
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Page Contains  @{param}
+
+Retry Wait Until Page Does Not Contains
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Wait Until Page Does Not Contain  @{param}
 
 Retry Wait Until Page Contains Element
     [Arguments]  ${element_xpath}

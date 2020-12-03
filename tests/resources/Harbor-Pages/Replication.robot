@@ -20,11 +20,21 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 Filter Replication Rule
-    [Arguments]  ${ruleName}
+    [Arguments]  ${ruleName}  ${exist}=${true}
     ${rule_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${ruleName}')]
     Retry Element Click  ${filter_rules_btn}
+    Sleep  2
+    Capture Page Screenshot
+    Retry Clear Element Text  ${filter_rules_input}
+    Sleep  2
+    Capture Page Screenshot
     Retry Text Input  ${filter_rules_input}  ${ruleName}
-    Retry Wait Until Page Contains Element   ${rule_name_element}
+    Sleep  2
+    Capture Page Screenshot
+    Run Keyword If  ${exist}==${true}  Retry Wait Until Page Contains Element   ${rule_name_element}
+    ...  ELSE  Retry Wait Element  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any replication rules!\")]
+
+
 
 Filter Registry
     [Arguments]  ${registry_name}
@@ -151,21 +161,9 @@ Rename Rule
     Retry Text Input  ${rule_name}  ${newname}
     Retry Element Click  ${rule_save_button}
 
-Delete Rule
-    [Arguments]  ${rule}
-    Retry Element Click  ${rule_filter_search}
-    Retry Text Input   ${rule_filter_input}  ${rule}
-    Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
-    Retry Element Click  ${action_bar_delete}
-    Retry Wait Until Page Contains Element  ${dialog_delete}
-    #change from click to mouse down and up
-    Mouse Down  ${dialog_delete}
-    Mouse Up  ${dialog_delete}
-    Sleep  2
-
 Select Rule
     [Arguments]  ${rule}
-    Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${rule}')]/div/div[2]/div/div/clr-radio-wrapper/label  Retry Wait Element  ${replication_rule_exec_id}
 
 Stop Jobs
     Retry Element Click  ${stop_jobs_button}
@@ -182,38 +180,25 @@ Find Registry And Click Edit Button
     Retry Select Object    ${name}
     Retry Element Click    ${registry_edit_btn}
 
-Find Rule And Click Edit Button
-    [Arguments]    ${name}
-    Filter Object    ${name}
-    Retry Select Object    ${name}
-    Retry Element Click    ${action_bar_edit}
-
-Find Rule And Click Delete Button
-    [Arguments]    ${name}
-    Filter Object    ${name}
-    Retry Select Object    ${name}
-    Retry Element Click    ${action_bar_delete}
-
 Switch To Replication Manage Page
-    [Arguments]    ${name}
     Switch To Registries
     Switch To Replication Manage
 
-Edit Replication Rule By Name
+Edit Replication Rule
     [Arguments]    ${name}
-    Retry Double Keywords When Error  Switch To Replication Manage Page  "NULL"  Find Rule And Click Edit Button  ${name}
+    Switch To Replication Manage Page
+    Filter Replication Rule  ${name}
+    Select Rule  ${name}
+    Retry Double Keywords When Error  Retry Element Click  ${replication_rule_action_bar_edit}  Retry Wait Until Page Contains  Edit Replication Rule
 
-Delete Replication Rule By Name
-    [Arguments]    ${name}
-    Switch To Registries
-    Switch To Replication Manage
-    Find Rule And Click Delete Button  ${name}
-
-Ensure Delete Replication Rule By Name
-    [Arguments]    ${name}
-    Delete Replication Rule By Name    ${name}
-    Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
-    Retry Wait Element  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any replication rules!\")]
+Delete Replication Rule
+    [Arguments]  ${name}
+    Switch To Replication Manage Page
+    Filter Replication Rule  ${name}
+    Select Rule  ${name}
+    Retry Double Keywords When Error  Retry Element Click  ${replication_rule_action_bar_delete}   Wait Until Page Contains Element  ${dialog_delete}
+    Retry Double Keywords When Error  Retry Element Click  ${dialog_delete}  Retry Wait Until Page Not Contains Element  ${dialog_delete}
+    Filter Replication Rule  ${name}  exist=${false}
 
 Rename Endpoint
     [arguments]  ${name}  ${newname}
@@ -237,16 +222,6 @@ Select Rule And Replicate
     Select Rule  ${rule_name}
     Retry Element Click    ${replication_rule_exec_id}
     Retry Double Keywords When Error    Retry Element Click    xpath=${dialog_replicate}    Retry Wait Until Page Not Contains Element    xpath=${dialog_replicate}
-
-Delete Replication Rule
-    [Arguments]  ${name}
-    Retry Element Click  ${endpoint_filter_search}
-    Retry Text Input   ${endpoint_filter_input}  ${name}
-    #click checkbox before target endpoint
-    Retry Element Click  //clr-dg-row[contains(.,'${name}')]//label
-    Retry Element Click  ${action_bar_delete}
-    Wait Until Page Contains Element  ${dialog_delete}
-    Retry Element Click  ${dialog_delete}
 
 Image Should Be Replicated To Project
     [Arguments]  ${project}  ${image}  ${period}=60  ${times}=3
