@@ -27,7 +27,7 @@ jobs:
     runs-on:
       #- self-hosted
       - ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - name: Set up Go 1.14
         uses: actions/setup-go@v1
