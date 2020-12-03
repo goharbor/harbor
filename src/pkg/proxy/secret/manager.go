@@ -78,7 +78,7 @@ func (man *mgr) Verify(sec, rn string) bool {
 
 	p, ok := v.(targetRepository)
 	if ok {
-		log.Infof("target repository found for secret: %s, repo name: %s, expires: $v", sec, p.name, p.expiresAt)
+		log.Infof("target repository found for secret: %s, repo name: %s, expires: %v", sec, p.name, p.expiresAt)
 	}
 	if ok && p.name == rn {
 		defer man.delete(sec)
