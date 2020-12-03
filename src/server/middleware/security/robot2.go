@@ -10,10 +10,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
+	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/pkg/robot2/model"
 	"net/http"
-	"strings"
 )
 
 type robot2 struct{}
@@ -27,10 +28,10 @@ func (r *robot2) Generate(req *http.Request) security.Context {
 	if !strings.HasPrefix(name, config.RobotPrefix()) {
 		return nil
 	}
-
-	// TODO use the naming pattern to avoid the permission boundary crossing.
+	name = strings.TrimPrefix(name, config.RobotPrefix())
+	// The robot name can be used as the unique identifier to locate robot as it contains the project name.
 	robots, err := robot_ctl.Ctl.List(req.Context(), q.New(q.KeyWords{
-		"name": strings.TrimPrefix(name, config.RobotPrefix()),
+		"name": name,
 	}), &robot_ctl.Option{
 		WithPermission: true,
 	})
@@ -51,7 +52,11 @@ func (r *robot2) Generate(req *http.Request) security.Context {
 		log.Errorf("failed to authenticate disabled robot account: %s", name)
 		return nil
 	}
-	// add the expiration check
+	now := time.Now().Unix()
+	if robot.ExpiresAt != -1 && robot.ExpiresAt <= now {
+		log.Errorf("the robot account is expired: %s", name)
+		return nil
+	}
 
 	var accesses []*types.Policy
 	for _, p := range robot.Permissions {
@@ -65,7 +70,7 @@ func (r *robot2) Generate(req *http.Request) security.Context {
 	}
 
 	modelRobot := &model.Robot{
-		Name: strings.TrimPrefix(name, config.RobotPrefix()),
+		Name: name,
 	}
 	log.Infof("a robot2 security context generated for request %s %s", req.Method, req.URL.Path)
 	return robotCtx.NewSecurityContext(modelRobot, robot.Level == robot_ctl.LEVELSYSTEM, accesses)
