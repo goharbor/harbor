@@ -85,7 +85,7 @@ func (p *pgsql) Register(alias ...string) error {
 	if len(alias) != 0 {
 		an = alias[0]
 	}
-	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s timezone=UTC",
 		p.host, p.port, p.usr, p.pwd, p.database, p.sslmode)
 
 	if err := orm.RegisterDataBase(an, "postgres", info, p.maxIdleConns, p.maxOpenConns); err != nil {
