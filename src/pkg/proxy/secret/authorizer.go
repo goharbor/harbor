@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
@@ -35,6 +36,7 @@ func NewAuthorizer() lib.Authorizer {
 type authorizer struct{}
 
 func (s *authorizer) Modify(req *http.Request) error {
+	logger := log.G(req.Context())
 	if req == nil {
 		return errors.New("the request is null")
 	}
@@ -48,7 +50,9 @@ func (s *authorizer) Modify(req *http.Request) error {
 			}
 		}
 	}
+	logger.Infof("ddddd  generating secret for repo: %s", repository)
 	secret := GetManager().Generate(repository)
+	logger.Infof("attaching secret for repo: %s, secret: %s", repository, secret)
 	req.Header.Set("Authorization", fmt.Sprintf("%s %s", secretPrefix, secret))
 	return nil
 }

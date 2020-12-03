@@ -80,7 +80,7 @@ func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool
 	}
 	namespace, ok := rbac.ProjectNamespaceParse(resource)
 	if !ok {
-		log.Debugf("got no namespace from the resource %s", resource)
+		log.Warningf("got no namespace from the resource %s", resource)
 		return false
 	}
 	project, err := s.getProject(namespace.Identity())
@@ -89,12 +89,12 @@ func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool
 		return false
 	}
 	if project == nil {
-		log.Debugf("project not found %v", namespace.Identity())
+		log.Warningf("project not found %v", namespace.Identity())
 		return false
 	}
 	pro, _ := utils.ParseRepository(s.repository)
 	if project.Name != pro {
-		log.Debugf("unauthorized for project %s", project.Name)
+		log.Warningf("unauthorized for project %s", project.Name)
 		return false
 	}
 	return true

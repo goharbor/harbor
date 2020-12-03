@@ -69,11 +69,17 @@ func (man *mgr) Generate(rn string) string {
 }
 
 func (man *mgr) Verify(sec, rn string) bool {
+	log.Infof("verifying secret: %s, repo: %s", sec, rn)
 	v, ok := man.m.Load(sec)
 	if !ok {
+		log.Infof("not in the map secret: %s, repo: %s", sec, rn)
 		return false
 	}
+
 	p, ok := v.(targetRepository)
+	if ok {
+		log.Infof("target repository found for secret: %s, repo name: %s, expires: $v", sec, p.name, p.expiresAt)
+	}
 	if ok && p.name == rn {
 		defer man.delete(sec)
 		return p.expiresAt.After(time.Now())
