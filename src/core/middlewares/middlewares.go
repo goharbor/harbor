@@ -74,9 +74,9 @@ func MiddleWares() []beego.MiddleWare {
 		csrf.Middleware(),
 		orm.Middleware(),
 		notification.Middleware(), // notification must ahead of transaction ensure the DB transaction execution complete
-		transaction.Middleware(dbTxSkippers...),
 		artifactinfo.Middleware(),
 		security.Middleware(),
 		readonly.Middleware(readonlySkippers...),
+		transaction.Middleware(dbTxSkippers...),
 	}
 }
