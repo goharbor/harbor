@@ -38,7 +38,7 @@ func (_m *Controller) Count(ctx context.Context, query *q.Query) (int64, error) 
 }
 
 // Create provides a mock function with given fields: ctx, r
-func (_m *Controller) Create(ctx context.Context, r *robot.Robot) (int64, error) {
+func (_m *Controller) Create(ctx context.Context, r *robot.Robot) (int64, string, error) {
 	ret := _m.Called(ctx, r)
 
 	var r0 int64
@@ -48,14 +48,21 @@ func (_m *Controller) Create(ctx context.Context, r *robot.Robot) (int64, error)
 		r0 = ret.Get(0).(int64)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *robot.Robot) error); ok {
+	var r1 string
+	if rf, ok := ret.Get(1).(func(context.Context, *robot.Robot) string); ok {
 		r1 = rf(ctx, r)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(string)
 	}
 
-	return r0, r1
+	var r2 error
+	if rf, ok := ret.Get(2).(func(context.Context, *robot.Robot) error); ok {
+		r2 = rf(ctx, r)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // Delete provides a mock function with given fields: ctx, id
@@ -118,13 +125,13 @@ func (_m *Controller) List(ctx context.Context, query *q.Query, option *robot.Op
 	return r0, r1
 }
 
-// Update provides a mock function with given fields: ctx, r
-func (_m *Controller) Update(ctx context.Context, r *robot.Robot) error {
-	ret := _m.Called(ctx, r)
+// Update provides a mock function with given fields: ctx, r, option
+func (_m *Controller) Update(ctx context.Context, r *robot.Robot, option *robot.Option) error {
+	ret := _m.Called(ctx, r, option)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *robot.Robot) error); ok {
-		r0 = rf(ctx, r)
+	if rf, ok := ret.Get(0).(func(context.Context, *robot.Robot, *robot.Option) error); ok {
+		r0 = rf(ctx, r, option)
 	} else {
 		r0 = ret.Error(0)
 	}

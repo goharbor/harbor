@@ -620,7 +620,7 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 		},
 	}
 
-	rb, err := bc.rc.Create(ctx, robotReq)
+	rb, pwd, err := bc.rc.Create(ctx, robotReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "scan controller: make robot account")
 	}
@@ -629,7 +629,7 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 	if err != nil {
 		return nil, errors.Wrap(err, "scan controller: make robot account")
 	}
-
+	r.Secret = pwd
 	return r, nil
 }
 

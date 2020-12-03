@@ -105,7 +105,7 @@ func (suite *ControllerTestSuite) TestCreate() {
 	rbacMgr.On("CreateRbacPolicy", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	rbacMgr.On("CreatePermission", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 
-	id, err := c.Create(ctx, &Robot{
+	id, _, err := c.Create(ctx, &Robot{
 		Robot: model.Robot{
 			Name:        "testcreate",
 			Description: "testcreate",
@@ -193,6 +193,8 @@ func (suite *ControllerTestSuite) TestUpdate() {
 				},
 			},
 		},
+	}, &Option{
+		WithPermission: true,
 	})
 	suite.Nil(err)
 }

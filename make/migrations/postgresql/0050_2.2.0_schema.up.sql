@@ -14,6 +14,7 @@ DELETE FROM quota_usage WHERE reference='project' AND reference_id::integer NOT 
 
 ALTER TABLE schedule ADD COLUMN IF NOT EXISTS cron_type varchar(64);
 ALTER TABLE robot ADD COLUMN IF NOT EXISTS secret varchar(2048);
+ALTER TABLE robot ADD COLUMN IF NOT EXISTS salt varchar(64);
 
 ALTER TABLE task ADD COLUMN IF NOT EXISTS vendor_type varchar(16);
 UPDATE task SET vendor_type = execution.vendor_type FROM execution WHERE task.execution_id = execution.id;

@@ -96,7 +96,7 @@ func (rAPI *robotV1API) CreateRobotV1(ctx context.Context, params operation.Crea
 	permission.Access = policies
 	r.Permissions = append(r.Permissions, permission)
 
-	rid, err := rAPI.robotCtl.Create(ctx, r)
+	rid, pwd, err := rAPI.robotCtl.Create(ctx, r)
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
@@ -110,7 +110,7 @@ func (rAPI *robotV1API) CreateRobotV1(ctx context.Context, params operation.Crea
 	return operation.NewCreateRobotV1Created().WithLocation(location).WithPayload(&models.RobotCreated{
 		ID:           created.ID,
 		Name:         created.Name,
-		Secret:       created.Secret,
+		Secret:       pwd,
 		CreationTime: strfmt.DateTime(created.CreationTime),
 	})
 }
