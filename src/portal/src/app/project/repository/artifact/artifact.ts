@@ -6,6 +6,7 @@ export interface ArtifactFront extends Artifact {
     showImage?: string;
     pullCommand?: string;
     annotationsArray?: Array<{[key: string]: any}>;
+    tagNumber?: number;
 }
 
 export const mutipleFilter = [

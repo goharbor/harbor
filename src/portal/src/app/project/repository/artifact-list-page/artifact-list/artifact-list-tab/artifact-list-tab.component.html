@@ -192,7 +192,6 @@
                 </clr-dg-cell>
                 <clr-dg-cell class="w-rem-4">
                     <div *ngIf="artifact.tags" class="truncated width-p-100">
-
                         <clr-tooltip class="width-p-100">
                             <div clrTooltipTrigger class="level-border">
                                 <div>
@@ -202,7 +201,7 @@
                                         </span>
                                         <span class="eslip"
                                             *ngIf="artifact?.tags?.length>1">...</span>
-                                        <span *ngIf="artifact?.tags?.length>1" > ({{artifact?.tags?.length}})</span>
+                                        <span *ngIf="artifact?.tags?.length>1" > ({{artifact?.tagNumber}})</span>
 
                                     </div>
                                 </div>
@@ -222,6 +221,7 @@
                                         </tr>
                                     </thead>
                                     <tbody class="tag-tbody">
+                                        <!--display less than 9 tags(too many tags will make UI stuck)-->
                                         <tr class="tag-tr" *ngFor="let tag of artifact.tags">
                                             <td class="left tag-body-color">{{tag.name}}</td>
                                             <td  *ngIf="withNotary" class="left tag-body-color" [ngSwitch]="tag.signed">
@@ -237,6 +237,7 @@
                                             <td class="left tag-body-color">{{tag.pull_time === availableTime ? '':(tag.pull_time | date: 'short')}}</td>
                                             <td class="left tag-body-color">{{tag.push_time | date: 'short'}}</td>
                                         </tr>
+                                        <tr *ngIf="artifact?.tagNumber > 8">...</tr>
                                     </tbody>
                                 </table>
                             </clr-tooltip-content>
