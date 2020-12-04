@@ -119,4 +119,4 @@ if __name__ == '__main__':
     suite = unittest.TestSuite(unittest.makeSuite(TestScan))
     result = unittest.TextTestRunner(sys.stdout, verbosity=2, failfast=True).run(suite)
     if not result.wasSuccessful():
-        raise Exception(r"Tag immutability test failed: {}".format(result))
+        raise Exception(r"Scan test failed: {}".format(result))
