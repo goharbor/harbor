@@ -73,7 +73,8 @@ Test Case - Upgrade Verify
     Run Keyword  Verify Project Metadata  ${data}  check_content_trust=${false}
     #Run Keyword  Verify Project Label  ${data}
     Run Keyword  Verify Member Exist  ${data}
-    Run Keyword  Verify Robot Account Exist  ${data}
+    #TODO in 2.2: Modify this case when new robot account feature is ready.
+    #Run Keyword  Verify Robot Account Exist  ${data}
     Run Keyword  Verify Project-level Allowlist  ${data}
     Run Keyword  Verify Webhook For 2.0  ${data}
     Run Keyword  Verify Tag Retention Rule  ${data}
@@ -96,7 +97,8 @@ Test Case - Upgrade Verify
     Run Keyword  Verify Project Metadata  ${data}  check_content_trust=${false}  verify_registry_name=${true}
     #Run Keyword  Verify Project Label  ${data}  verify_registry_name=${true}
     Run Keyword  Verify Member Exist  ${data}  verify_registry_name=${true}
-    Run Keyword  Verify Robot Account Exist  ${data}  verify_registry_name=${true}
+    ##TODO in 2.2: Modify this case when new robot account feature is ready.
+    #Run Keyword  Verify Robot Account Exist  ${data}  verify_registry_name=${true}
     Run Keyword  Verify Project-level Allowlist  ${data}  verify_registry_name=${true}
     Run Keyword  Verify Webhook For 2.0  ${data}  verify_registry_name=${true}
     Run Keyword  Verify Tag Retention Rule  ${data}  verify_registry_name=${true}

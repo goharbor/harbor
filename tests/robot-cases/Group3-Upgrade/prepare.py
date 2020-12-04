@@ -19,8 +19,8 @@ from os import path
 sys.path.append(args.libpath)
 sys.path.append(args.libpath + "/library")
 from library.docker_api import docker_manifest_push_to_harbor
-from library.repository import push_image_to_project
 from library.repository import Repository
+from library.repository import push_self_build_image_to_project
 
 url = "https://"+args.endpoint+"/api/"
 endpoint_url = "https://"+args.endpoint
@@ -577,8 +577,8 @@ class HarborAPI:
     def push_artifact_index(self, project, name, tag, **kwargs):
         image_a = "alpine"
         image_b = "busybox"
-        repo_name_a, tag_a = push_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_a, "latest")
-        repo_name_b, tag_b = push_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_b, "latest")
+        repo_name_a, tag_a = push_self_build_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_a, "latest")
+        repo_name_b, tag_b = push_self_build_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_b, "latest")
         manifests = [args.endpoint+"/"+repo_name_a+":"+tag_a, args.endpoint+"/"+repo_name_b+":"+tag_b]
         index = args.endpoint+"/"+project+"/"+name+":"+tag
         docker_manifest_push_to_harbor(index, manifests, args.endpoint, 'admin', 'Harbor12345', cfg_file = args.libpath + "/update_docker_cfg.sh")
@@ -647,7 +647,7 @@ def do_data_creation():
 
     harborAPI.push_artifact_index(data["projects"][0]["name"], data["projects"][0]["artifact_index"]["name"], data["projects"][0]["artifact_index"]["tag"], version=args.version)
     #pull_image("busybox", "redis", "haproxy", "alpine", "httpd:2")
-    push_image_to_project(data["projects"][0]["name"], args.endpoint, 'admin', 'Harbor12345', "busybox", "latest")
+    push_self_build_image_to_project(data["projects"][0]["name"], args.endpoint, 'admin', 'Harbor12345', "busybox", "latest")
     push_signed_image("alpine", data["projects"][0]["name"], "latest")
 
     for replicationrule in data["replicationrule"]:

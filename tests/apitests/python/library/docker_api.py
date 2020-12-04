@@ -95,7 +95,9 @@ class DockerAPI(object):
             registry = None
         ret = ""
         try:
+            print("Docker login: {}:{}:{}".format(registry,username,password))
             ret = self.DCLIENT.login(registry = registry, username=username, password=password)
+            print("Docker image login commond return:", ret)
             return ret
         except docker.errors.APIError as err:
             if expected_error_message is not None:
@@ -114,7 +116,8 @@ class DockerAPI(object):
             expected_error_message = None
         ret = ""
         try:
-            self.DCLIENT.pull(r'{}:{}'.format(image, _tag))
+            ret = self.DCLIENT.pull(r'{}:{}'.format(image, _tag))
+            print("Docker image pull commond return:", ret)
             return ret
         except Exception as err:
             if expected_error_message is not None:
@@ -135,19 +138,23 @@ class DockerAPI(object):
         _tag = base._random_name("tag")
         if tag is not None:
             _tag = tag
+        ret = ""
         try:
-            self.DCLIENT.tag(image, harbor_registry, _tag, force=True)
+            ret = self.DCLIENT.tag(image, harbor_registry, _tag, force=True)
+            print("Docker image tag commond return:", ret)
             return harbor_registry, _tag
         except docker.errors.APIError as err:
             raise Exception(r" Docker tag image {} failed, error is [{}]".format (image, str(err)))
 
     def docker_image_push(self, harbor_registry, tag, expected_error_message = None):
-        ret = None
+        ret = ""
         if expected_error_message is "":
             expected_error_message = None
         try:
             ret = self.DCLIENT.push(harbor_registry, tag)
+            print("Docker image push commond return:", ret)
         except Exception as err:
+            print( "docker image push catch Exception:", str(err))
             if expected_error_message is not None:
                 print( "docker image push error:", str(err))
                 if str(err).lower().find(expected_error_message.lower()) < 0:
@@ -155,10 +162,14 @@ class DockerAPI(object):
             else:
                 raise Exception(r" Docker push image {} failed, error is [{}]".format (harbor_registry, message))
         else:
+            print( "docker image push does not catch Exception:", str(expected_error_message))
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r" Failed to catch error [{}] when push image {}, return message: {}".
                                     format (expected_error_message, harbor_registry, str(ret)))
+                else:
+                    print("docker image push action return expected error message [{}]".format(expected_error_message))
+
             else:
                 if str(ret).lower().find("errorDetail".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".
@@ -170,6 +181,7 @@ class DockerAPI(object):
             baseimage='busybox:latest'
             self.DCLIENT.login(username=DOCKER_USER, password=DOCKER_PWD)
             if not self.DCLIENT.images(name=baseimage):
+                print( "docker pull is triggered when building {}".format(harbor_registry))
                 self.DCLIENT.pull(baseimage)
             c=self.DCLIENT.create_container(image='busybox:latest',command='dd if=/dev/urandom of=test bs=1M count=%d' % size )
             self.DCLIENT.start(c)
@@ -184,13 +196,14 @@ class DockerAPI(object):
                 self.DCLIENT.tag(firstrepo, repo)
             for tag in tags:
                 repo="%s:%s" % (harbor_registry, tag)
-                self.DCLIENT.push(repo)
+                ret = self.DCLIENT.push(repo)
+                print("docker_image_push ret:", ret)
                 print("build image %s with size %d" % (repo, size))
                 self.DCLIENT.remove_image(repo)
             self.DCLIENT.remove_container(c)
-            self.DCLIENT.pull(repo)
-            image = self.DCLIENT2.images.get(repo)
-            return repo, image.id
+            #self.DCLIENT.pull(repo)
+            #image = self.DCLIENT2.images.get(repo)
+            return repo
         except Exception as err:
             if expected_error_message is not None:
                 print( "docker image build error:", str(err))
@@ -199,10 +212,14 @@ class DockerAPI(object):
             else:
                 raise Exception(r" Docker build image {} failed, error is [{}]".format (harbor_registry, str(err)))
         else:
+            print("docker image build does not catch Exception:", str(expected_error_message))
+            print("Docker build -> docker image push ret:", ret)
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r" Failed to catch error [{}] when build image {}, return message: {}".
                                     format (expected_error_message, harbor_registry, str(ret)))
+                else:
+                    print("docker image build return expected error message [{}]".format(expected_error_message))
             else:
                 if str(ret).lower().find("errorDetail".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".format (harbor_registry, ret))

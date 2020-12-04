@@ -10,7 +10,6 @@ from library.user import User
 from library.system import System
 from library.project import Project
 from library.repository import Repository
-from library.repository import push_image_to_project
 from library.base import _assert_status_code
 from library.repository import push_special_image_to_project
 from library.artifact import Artifact

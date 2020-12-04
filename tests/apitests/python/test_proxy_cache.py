@@ -13,7 +13,6 @@ from library.base import _assert_status_code
 from library.project import Project
 from library.user import User
 from library.repository import Repository
-from library.repository import push_image_to_project
 from library.registry import Registry
 from library.repository import pull_harbor_image
 from library.artifact import Artifact

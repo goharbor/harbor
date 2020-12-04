@@ -10,7 +10,7 @@ from library.system import System
 from library.project import Project
 from library.user import User
 from library.repository import Repository
-from library.repository import push_image_to_project
+from library.repository import push_self_build_image_to_project
 from library.artifact import Artifact
 from library.scanner import Scanner
 from library.docker_api import list_image_tags
@@ -73,11 +73,11 @@ class TestProjects(unittest.TestCase):
 
         src_tag = "latest"
         image_a = "busybox"
-        TestProjects.repo_a, tag_a = push_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_a, src_tag)
+        TestProjects.repo_a, tag_a = push_self_build_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_a, src_tag)
         image_b = "alpine"
-        TestProjects.repo_b, tag_b = push_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_b, src_tag)
+        TestProjects.repo_b, tag_b = push_self_build_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_b, src_tag)
         image_c = "hello-world"
-        TestProjects.repo_c, tag_c = push_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_c, src_tag)
+        TestProjects.repo_c, tag_c = push_self_build_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_c, src_tag)
         create_tags = ["1.0","2.0","3.0"]
         for tag in create_tags:
             self.artifact.create_tag(TestProjects.project_Alice_name, self.repo_name, tag_c, tag, **USER_ALICE_CLIENT)

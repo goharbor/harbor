@@ -10,7 +10,7 @@ from library.user import User
 from library.projectV2 import ProjectV2
 from library.project import Project
 from library.repository import Repository
-from library.repository import push_image_to_project
+from library.repository import push_self_build_image_to_project
 from testutils import harbor_server
 
 class TestProjects(unittest.TestCase):
@@ -66,7 +66,7 @@ class TestProjects(unittest.TestCase):
                                              format(user_user_view_logs_name, project_user_view_logs_name, "project", operation, log_count))
 
         #3.1 Push a new image(IA) in project(PA) by admin;
-        repo_name, tag = push_image_to_project(project_user_view_logs_name, harbor_server, admin_name, admin_password, "tomcat", "latest")
+        repo_name, tag = push_self_build_image_to_project(project_user_view_logs_name, harbor_server, admin_name, admin_password, "tomcat", "latest")
         time.sleep(2)
 
         #3.2 In project(PA), there should be 1 'push' log record;
