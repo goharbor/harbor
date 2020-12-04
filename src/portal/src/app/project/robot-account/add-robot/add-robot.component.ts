@@ -2,254 +2,278 @@ import {
   Component,
   OnInit,
   Input,
-  ViewChild,
-  OnDestroy,
-  Output,
-  EventEmitter,
-  ChangeDetectorRef
+  OnDestroy, Output, EventEmitter, ViewChild,
 } from "@angular/core";
-import { Robot } from "../robot";
-import { NgForm } from "@angular/forms";
-import { Subject } from "rxjs";
-import { debounceTime, finalize } from "rxjs/operators";
-import { RobotService } from "../robot-account.service";
-import { TranslateService } from "@ngx-translate/core";
+import { debounceTime, distinctUntilChanged, filter, finalize, switchMap } from "rxjs/operators";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
+import {
+  ACTION_RESOURCE_I18N_MAP,
+  ExpirationType,
+  FrontAccess, INITIAL_ACCESSES, PermissionsKinds
+} from "../../../system-robot-accounts/system-robot-util";
+import { Robot } from "../../../../../ng-swagger-gen/models/robot";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { AppConfigService } from "../../../services/app-config.service";
-import { ErrorHandler } from "../../../../lib/utils/error-handler";
-const ONE_THOUSAND: number = 1000;
-const NEVER_EXPIRED: number = -1;
+import { NgForm } from "@angular/forms";
+import { ClrLoadingState } from "@clr/angular";
+import { Subject, Subscription } from "rxjs";
+import { RobotService } from "../../../../../ng-swagger-gen/services/robot.service";
+import { OperationService } from "../../../../lib/components/operation/operation.service";
+import { clone } from "../../../../lib/utils/utils";
+import { operateChanges, OperateInfo, OperationState } from "../../../../lib/components/operation/operate";
+import { errorHandler } from "../../../../lib/utils/shared/shared.utils";
+import { Access } from "../../../../../ng-swagger-gen/models/access";
+
 @Component({
   selector: "add-robot",
   templateUrl: "./add-robot.component.html",
   styleUrls: ["./add-robot.component.scss"]
 })
 export class AddRobotComponent implements OnInit, OnDestroy {
-  addRobotOpened: boolean;
-  copyToken: boolean;
-  robotToken: string;
-  robotAccount: string;
-  downLoadFileName: string = '';
-  downLoadHref: SafeUrl = '';
-  isSubmitOnGoing = false;
-  closable: boolean = false;
-  staticBackdrop: boolean = true;
-  createSuccess: string;
-  isRobotNameValid: boolean = true;
-  checkOnGoing: boolean = false;
-  robot: Robot = new Robot();
-  robotNameChecker: Subject<string> = new Subject<string>();
-  nameTooltipText = "ROBOT_ACCOUNT.ROBOT_NAME";
-  robotForm: NgForm;
-  imagePermissionPush: boolean = true;
-  imagePermissionPull: boolean = true;
-  withHelmChart: boolean;
   @Input() projectId: number;
   @Input() projectName: string;
-  @Output() create = new EventEmitter<boolean>();
-  @ViewChild("robotForm", {static: true}) currentForm: NgForm;
-  @ViewChild("copyAlert") copyAlert: InlineAlertComponent;
-  private _expiresDate: Date;
-  isNeverExpired: boolean = false;
-  expiresDatePlaceholder: string = ' ';
+  i18nMap = ACTION_RESOURCE_I18N_MAP;
+  isEditMode: boolean = false;
+  originalRobotForEdit: Robot;
+  @Output()
+  addSuccess: EventEmitter<Robot> = new EventEmitter<Robot>();
+  addRobotOpened: boolean = false;
+  systemRobot: Robot = {};
+  expirationType: string = ExpirationType.DAYS;
+  isNameExisting: boolean = false;
+  loading: boolean = false;
+  checkNameOnGoing: boolean = false;
+  defaultAccesses: FrontAccess[] = [];
+  defaultAccessesForEdit: FrontAccess[] = [];
+  @ViewChild(InlineAlertComponent)
+  inlineAlertComponent: InlineAlertComponent;
+  @ViewChild('robotForm', { static: true }) robotForm: NgForm;
+  saveBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  private _nameSubject: Subject<string> = new Subject<string>();
+  private _nameSubscription: Subscription;
   constructor(
       private robotService: RobotService,
-      private translate: TranslateService,
-      private errorHandler: ErrorHandler,
-      private cdr: ChangeDetectorRef,
-      private messageHandlerService: MessageHandlerService,
-      private sanitizer: DomSanitizer,
-      private appConfigService: AppConfigService
-
+      private msgHandler: MessageHandlerService,
+      private operationService: OperationService
   ) {}
   ngOnInit(): void {
-    this.withHelmChart = this.appConfigService.getConfig().with_chartmuseum;
-
-    this.robotNameChecker.pipe(debounceTime(800)).subscribe((name: string) => {
-      let cont = this.currentForm.controls["robot_name"];
-      if (cont) {
-        this.isRobotNameValid = cont.valid;
-        if (this.isRobotNameValid) {
-          this.checkOnGoing = true;
-          this.robotService
-              .listRobotAccount(this.projectId)
-              .pipe(
-                  finalize(() => {
-                    this.checkOnGoing = false;
-                    let hnd = setInterval(() => this.cdr.markForCheck(), 100);
-                    setTimeout(() => clearInterval(hnd), 2000);
-                  })
-              )
-              .subscribe(
-                  response => {
-                    if (response && response.length) {
-                      if (
-                          response.find(target => {
-                            return target.name === "robot$" + cont.value;
-                          })
-                      ) {
-                        this.isRobotNameValid = false;
-                        this.nameTooltipText = "ROBOT_ACCOUNT.ACCOUNT_EXISTING";
-                      }
-                    }
-                  },
-                  error => {
-                    this.errorHandler.error(error);
-                  }
-              );
-        } else {
-          this.nameTooltipText = "ROBOT_ACCOUNT.ROBOT_NAME";
-        }
-      }
-    });
+    this.subscribeName();
   }
-
-  openAddRobotModal(): void {
-    if (this.isSubmitOnGoing) {
-      return;
+  ngOnDestroy() {
+    if (this._nameSubscription) {
+      this._nameSubscription.unsubscribe();
+      this._nameSubscription = null;
     }
-    this.robot.name = "";
-    this.robot.description = "";
-    this.addRobotOpened = true;
-    this.imagePermissionPush = true;
-    this.imagePermissionPull = true;
-    this.isRobotNameValid = true;
-    this.robot = new Robot();
-    this.nameTooltipText = "ROBOT_ACCOUNT.ROBOT_NAME";
-    this.isNeverExpired = false;
-    this.expiresDate = null;
-    this.expiresDatePlaceholder = ' ';
-    this.copyAlert.close();
   }
-
-  onCancel(): void {
+  subscribeName() {
+    if (!this._nameSubscription) {
+      this._nameSubscription = this._nameSubject
+          .pipe(
+              debounceTime(500),
+              distinctUntilChanged(),
+              filter(name => {
+                if (this.isEditMode && this.originalRobotForEdit && this.originalRobotForEdit.name === name) {
+                  return false;
+                }
+                return  name.length > 0;
+              }),
+              switchMap((name) => {
+                this.isNameExisting = false;
+                this.checkNameOnGoing = true;
+                return  this.robotService.ListRobot({
+                  q: encodeURIComponent(`Level=${PermissionsKinds.PROJECT},ProjectID=${this.projectId},name=${name}`)
+                }).pipe(finalize(() => this.checkNameOnGoing = false));
+              }))
+          .subscribe(res => {
+            if (res && res.length > 0) {
+              this.isNameExisting = true;
+            }
+          });
+    }
+  }
+  isExpirationInvalid(): boolean {
+    return this.systemRobot.duration < -1;
+  }
+  inputExpiration() {
+    if (+this.systemRobot.duration === -1) {
+      this.expirationType = ExpirationType.NEVER;
+    } else {
+      this.expirationType = ExpirationType.DAYS;
+    }
+  }
+  changeExpirationType() {
+    if (this.expirationType === ExpirationType.DAYS) {
+      this.systemRobot.duration = null;
+    }
+    if (this.expirationType === ExpirationType.NEVER) {
+      this.systemRobot.duration = -1;
+    }
+  }
+  inputName() {
+    this._nameSubject.next(this.systemRobot.name);
+  }
+  cancel() {
     this.addRobotOpened = false;
   }
-
-  ngOnDestroy(): void {
-    this.robotNameChecker.unsubscribe();
-  }
-
-  onSubmit(): void {
-    if (this.isSubmitOnGoing) {
-      return;
-    }
-    // set value to robot.access.isPullImage and robot.access.isPushOrPullImage when submit
-    if ( this.imagePermissionPush && this.imagePermissionPull) {
-      this.robot.access.isPullImage = false;
-      this.robot.access.isPushOrPullImage = true;
-    } else {
-      this.robot.access.isPullImage = true;
-      this.robot.access.isPushOrPullImage = false;
-    }
-    if (this.isNeverExpired) {
-      this.robot.expires_at = NEVER_EXPIRED;
-    } else {
-      if (this.expiresDate) {
-        if (this.expiresDate <= new Date()) {
-          this.copyAlert.showInlineError("ROBOT_ACCOUNT.INVALID_VALUE");
-          return;
-        } else {
-          this.robot.expires_at = Math.floor(this.expiresDate.getTime() / ONE_THOUSAND);
-        }
+  getPermissions(): number {
+    let count: number = 0;
+    this.defaultAccesses.forEach(item => {
+      if (item.checked) {
+        count ++;
       }
+    });
+    return count;
+  }
+  chooseAccess(access: FrontAccess) {
+    access.checked = !access.checked;
+  }
+  reset() {
+    this.open(false);
+    this.defaultAccesses = clone(INITIAL_ACCESSES);
+    this.systemRobot = {};
+    this.robotForm.reset();
+    this.expirationType = ExpirationType.DAYS;
+  }
+  resetForEdit(robot: Robot) {
+    this.open(true);
+    this.defaultAccesses = clone(INITIAL_ACCESSES);
+    this.defaultAccesses.forEach( item => item.checked = false);
+    this.originalRobotForEdit = clone(robot);
+    this.systemRobot = robot;
+    this.expirationType =
+        robot.duration === -1 ? ExpirationType.NEVER : ExpirationType.DAYS;
+    this.defaultAccesses.forEach(item => {
+      this.systemRobot.permissions[0].access.forEach(item2 => {
+        if (item.resource === item2.resource && item.action === item2.action) {
+          item.checked = true;
+        }
+      });
+    });
+    this.defaultAccessesForEdit = clone(this.defaultAccesses);
+    this.robotForm.reset({
+      name: this.systemRobot.name,
+      expiration: this.systemRobot.duration,
+      description: this.systemRobot.description,
+    });
+  }
+  open(isEditMode: boolean) {
+    this.isEditMode = isEditMode;
+    this.addRobotOpened = true;
+    this.inlineAlertComponent.close();
+  }
+  disabled(): boolean {
+    if (!this.isEditMode) {
+      return !this.canAdd();
     }
-    this.isSubmitOnGoing = true;
-    this.robotService
-        .addRobotAccount(
-            this.projectId,
-            this.robot,
-            this.projectName
-        )
-        .subscribe(
-            response => {
-              this.isSubmitOnGoing = false;
-              this.robotToken = response.token;
-              this.robotAccount = response.name;
-              this.copyToken = true;
-              this.create.emit(true);
-              this.translate
-                  .get("ROBOT_ACCOUNT.CREATED_SUCCESS", { param: this.robotAccount })
-                  .subscribe((res: string) => {
-                    this.createSuccess = res;
-                  });
-              this.addRobotOpened = false;
-              // export to token file
-              const downLoadUrl = `data:text/json;charset=utf-8, ${encodeURIComponent(JSON.stringify(response))}`;
-              this.downLoadHref = this.sanitizer.bypassSecurityTrustUrl(downLoadUrl);
-              this.downLoadFileName = `${response.name}.json`;
-            },
-            error => {
-              this.isSubmitOnGoing = false;
-              this.copyAlert.showInlineError(error);
-            }
-        );
+    return !this.canEdit();
   }
-
-  isValid(): boolean {
-    return (
-        this.currentForm &&
-        this.currentForm.valid &&
-        !this.isSubmitOnGoing &&
-        this.isRobotNameValid &&
-        !this.checkOnGoing
-    );
-  }
-  get shouldDisable(): boolean {
-    if (this.robot && this.robot.access) {
-      return (
-          !this.isValid() ||
-          (!this.robot.access.isPushOrPullImage && !this.robot.access.isPullImage
-              && !this.robot.access.isPullChart && !this.robot.access.isPushChart)
-      );
+  canAdd(): boolean {
+    let flag = false;
+    this.defaultAccesses.forEach( item => {
+      if (item.checked) {
+        flag = true;
+      }
+    });
+    if (!flag) {
+      return false;
     }
+    return !this.robotForm.invalid;
   }
-
-  // Handle the form validation
-  handleValidation(): void {
-    let cont = this.currentForm.controls["robot_name"];
-    if (cont) {
-      this.robotNameChecker.next(cont.value);
+  canEdit() {
+    if (!this.canAdd()) {
+      return false;
     }
-  }
-
-  onCpError($event: any): void {
-    if (this.copyAlert) {
-      this.copyAlert.showInlineError("PUSH_IMAGE.COPY_ERROR");
+    // tslint:disable-next-line:triple-equals
+    if (this.systemRobot.duration != this.originalRobotForEdit.duration) {
+      return true;
     }
+    // tslint:disable-next-line:triple-equals
+    if (this.systemRobot.description != this.originalRobotForEdit.description) {
+      return true;
+    }
+    if (this.getAccessNum(this.defaultAccesses) !== this.getAccessNum(this.defaultAccessesForEdit)) {
+      return true;
+    }
+    let flag = true;
+    this.defaultAccessesForEdit.forEach(item => {
+      this.defaultAccesses.forEach(item2 => {
+        if (item.resource === item2.resource && item.action === item2.action && item.checked !== item2.checked) {
+          flag = false;
+        }
+      });
+    });
+    return !flag;
   }
-
-  onCpSuccess($event: any): void {
-    this.copyToken = false;
-    this.translate
-        .get("ROBOT_ACCOUNT.COPY_SUCCESS", { param: this.robotAccount })
-        .subscribe((res: string) => {
-          this.messageHandlerService.showSuccess(res);
+  save() {
+    this.saveBtnState = ClrLoadingState.LOADING;
+    const robot: Robot = clone(this.systemRobot);
+    robot.disable = false;
+    robot.level = PermissionsKinds.PROJECT;
+    robot.duration = +this.systemRobot.duration;
+    const access: Access[] = [];
+    this.defaultAccesses.forEach(item => {
+      if (item.checked) {
+        access.push({
+          resource: item.resource,
+          action: item.action
         });
-  }
-
-  closeModal() {
-    this.copyToken = false;
-  }
-  switch() {
-    if (this.isNeverExpired) {
-      this.expiresDate = null;
-      this.translate.get('ROBOT_ACCOUNT.NEVER_EXPIRED').subscribe(value => {
-        this.expiresDatePlaceholder = value;
+      }
+    });
+    robot.permissions = [{
+      namespace: this.projectName,
+      kind: PermissionsKinds.PROJECT,
+      access: access
+    }];
+    if (this.isEditMode) {
+      robot.disable = this.systemRobot.disable;
+      const opeMessage = new OperateInfo();
+      opeMessage.name = "SYSTEM_ROBOT.UPDATE_ROBOT";
+      opeMessage.data.id = robot.id;
+      opeMessage.state = OperationState.progressing;
+      opeMessage.data.name = robot.name;
+      this.operationService.publishInfo(opeMessage);
+      this.robotService.UpdateRobot({
+        robotId: this.originalRobotForEdit.id,
+        robot
+      }).subscribe( res => {
+        this.saveBtnState = ClrLoadingState.SUCCESS;
+        this.addSuccess.emit(null);
+        this.addRobotOpened = false;
+        operateChanges(opeMessage, OperationState.success);
+        this.msgHandler.showSuccess("SYSTEM_ROBOT.UPDATE_ROBOT_SUCCESSFULLY");
+      }, error => {
+        this.saveBtnState = ClrLoadingState.ERROR;
+        operateChanges(opeMessage, OperationState.failure, errorHandler(error));
+        this.inlineAlertComponent.showInlineError(error);
       });
     } else {
-      this.expiresDatePlaceholder = ' ';
+      const opeMessage = new OperateInfo();
+      opeMessage.name = "SYSTEM_ROBOT.ADD_ROBOT";
+      opeMessage.data.id = robot.id;
+      opeMessage.state = OperationState.progressing;
+      opeMessage.data.name = robot.name;
+      this.operationService.publishInfo(opeMessage);
+      this.robotService.CreateRobot({
+        robot: robot
+      }).subscribe( res => {
+        this.saveBtnState = ClrLoadingState.SUCCESS;
+        this.saveBtnState = ClrLoadingState.SUCCESS;
+        this.addSuccess.emit(res);
+        this.addRobotOpened = false;
+        operateChanges(opeMessage, OperationState.success);
+      }, error => {
+        this.saveBtnState = ClrLoadingState.ERROR;
+        this.inlineAlertComponent.showInlineError(error);
+        operateChanges(opeMessage, OperationState.failure, errorHandler(error));
+      });
     }
   }
-  get expiresDate(): Date {
-    return this._expiresDate;
-  }
-  set expiresDate(date: Date) {
-    if (date) {
-      this.isNeverExpired = false;
-    }
-    this._expiresDate = date;
+  getAccessNum(access: FrontAccess[]): number {
+    let count: number = 0;
+    access.forEach(item => {
+      if (item.checked) {
+        count ++;
+      }
+    });
+    return count;
   }
 }

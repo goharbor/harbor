@@ -47,6 +47,7 @@ import { IServiceConfig, SERVICE_CONFIG } from "../../lib/entities/service.confi
 import { ErrorHandler } from "../../lib/utils/error-handler";
 import { HarborLibraryModule } from "../../lib/harbor-library.module";
 import { CURRENT_BASE_HREF, V1_BASE_HREF } from "../../lib/utils/utils";
+import { ViewTokenComponent } from "../system-robot-accounts/view-token/view-token.component";
 
 const uiLibConfig: IServiceConfig = {
   enablei18Support: true,
@@ -102,7 +103,8 @@ const uiLibConfig: IServiceConfig = {
     ListRepositoryROComponent,
     GaugeComponent,
     DateValidatorDirective,
-    ListChartVersionRoComponent
+    ListChartVersionRoComponent,
+    ViewTokenComponent,
   ],
   exports: [
     CoreModule,
@@ -124,7 +126,8 @@ const uiLibConfig: IServiceConfig = {
     DateValidatorDirective,
     FormsModule,
     ReactiveFormsModule,
-    ListChartVersionRoComponent
+    ListChartVersionRoComponent,
+    ViewTokenComponent,
   ],
   providers: [
     SessionService,

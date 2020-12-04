@@ -67,6 +67,7 @@ import { DistributionInstancesComponent } from './distribution/distribution-inst
 import { PolicyComponent } from './project/p2p-provider/policy/policy.component';
 import { TaskListComponent } from './project/p2p-provider/task-list/task-list.component';
 import { P2pProviderComponent } from './project/p2p-provider/p2p-provider.component';
+import { SystemRobotAccountsComponent } from './system-robot-accounts/system-robot-accounts.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -110,6 +111,11 @@ const harborRoutes: Routes = [
       {
         path: 'users',
         component: UserComponent,
+        canActivate: [SystemAdminGuard]
+      },
+      {
+        path: 'robot-accounts',
+        component: SystemRobotAccountsComponent,
         canActivate: [SystemAdminGuard]
       },
       {

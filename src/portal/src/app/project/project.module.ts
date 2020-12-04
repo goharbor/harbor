@@ -26,7 +26,6 @@ import { MemberComponent } from './member/member.component';
 import { AddMemberComponent } from './member/add-member/add-member.component';
 import { AddGroupComponent } from './member/add-group/add-group.component';
 import { MemberService } from './member/member.service';
-import { RobotService } from './robot-account/robot-account.service';
 import { TargetExistsValidatorDirective } from '../shared/target-exists-directive';
 import { HelmChartModule } from './helm-chart/helm-chart.module';
 import { RobotAccountComponent } from './robot-account/robot-account.component';
@@ -78,7 +77,7 @@ import { P2pProviderComponent } from './p2p-provider/p2p-provider.component';
     HelmChartModule,
     SummaryModule,
     TagFeatureIntegrationModule,
-    AllPipesModule
+    AllPipesModule,
   ],
   declarations: [
     ProjectComponent,
@@ -120,12 +119,11 @@ import { P2pProviderComponent } from './p2p-provider/p2p-provider.component';
     PolicyComponent,
     AddP2pPolicyComponent,
     TaskListComponent,
-    P2pProviderComponent
+    P2pProviderComponent,
   ],
   exports: [ProjectComponent, ListProjectComponent],
   providers: [
     MemberService,
-    RobotService,
     WebhookService,
     ConfigScannerService,
     ArtifactDefaultService,

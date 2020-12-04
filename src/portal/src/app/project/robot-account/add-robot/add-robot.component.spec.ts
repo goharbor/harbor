@@ -1,55 +1,48 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClarityModule } from '@clr/angular';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AddRobotComponent } from './add-robot.component';
 import { FormsModule } from '@angular/forms';
-import { RobotService } from "../robot-account.service";
 import { of } from "rxjs";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AppConfigService } from "../../../services/app-config.service";
-import { ErrorHandler } from "../../../../lib/utils/error-handler";
+import { TranslateModule } from '@ngx-translate/core';
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { delay } from "rxjs/operators";
+import { RobotService } from "../../../../../ng-swagger-gen/services/robot.service";
+import { OperationService } from "../../../../lib/components/operation/operation.service";
+import { NO_ERRORS_SCHEMA } from "@angular/core";
+import { SharedModule } from "../../../shared/shared.module";
 
 describe('AddRobotComponent', () => {
   let component: AddRobotComponent;
   let fixture: ComponentFixture<AddRobotComponent>;
-  let fakeRobotService = {
-    listRobotAccount: function () {
-      return of([{
-        name: "robot$" + 1
-      }, {
-        name: "abc"
-      }]);
+  const fakedRobotService = {
+    ListRobot() {
+      return of([]).pipe(delay(0));
     }
   };
-  let fakeMessageHandlerService = {
-    showSuccess: function() {}
-  };
-  let fakeAppConfigService = {
-    getConfig: function() {
-      return {
-        with_chartmuseum: true
-      };
+  const fakedMessageHandlerService = {
+    showSuccess() {
+    },
+    error() {
     }
   };
-
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [AddRobotComponent],
-      schemas: [
-        CUSTOM_ELEMENTS_SCHEMA
-      ],
       imports: [
+        BrowserAnimationsModule,
         ClarityModule,
         TranslateModule.forRoot(),
-        FormsModule
+        FormsModule,
+        SharedModule
       ],
       providers: [
-        TranslateService,
-        ErrorHandler,
-        { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
-        { provide: AppConfigService, useValue: fakeAppConfigService },
-        { provide: RobotService, useValue: fakeRobotService }
+        OperationService,
+        { provide: RobotService, useValue: fakedRobotService },
+        { provide: MessageHandlerService, useValue: fakedMessageHandlerService },
+      ],
+      schemas: [
+        NO_ERRORS_SCHEMA
       ]
     }).compileComponents();
   }));

@@ -47,6 +47,7 @@ import { HarborLibraryModule } from "../lib/harbor-library.module";
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AllPipesModule } from './all-pipes/all-pipes.module';
 import { DistributionModule } from './distribution/distribution.module';
+import { SystemRobotAccountsModule } from './system-robot-accounts/system-robot-accounts.module';
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
 registerLocaleData(localeFr, 'fr-fr');
@@ -88,6 +89,7 @@ export function getCurrentLanguage(translateService: TranslateService) {
         HarborLibraryModule,
         AllPipesModule,
         DistributionModule,
+        SystemRobotAccountsModule
     ],
     exports: [
     ],

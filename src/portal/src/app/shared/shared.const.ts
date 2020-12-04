@@ -49,7 +49,8 @@ export const enum ConfirmationTargets {
   P2P_PROVIDER,
   P2P_PROVIDER_EXECUTE,
   P2P_PROVIDER_STOP,
-  P2P_PROVIDER_DELETE
+  P2P_PROVIDER_DELETE,
+  ROBOT_ACCOUNT_ENABLE_OR_DISABLE
 }
 
 export const enum ActionType {
