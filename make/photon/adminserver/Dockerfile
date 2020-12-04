@@ -8,6 +8,8 @@ COPY ./make/photon/adminserver/harbor_adminserver ./make/photon/adminserver/star
 #As UI will be blocked until adminserver is ready, let adminserver do the initialise work for DB
 COPY ./make/migrations /harbor/migrations
 
+RUN chage -M 99999 root
+
 HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/ping || exit 1 
 
 RUN chmod u+x /harbor/harbor_adminserver /harbor/start.sh
