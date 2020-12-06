@@ -25,6 +25,7 @@ import (
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/docker/distribution"
@@ -37,12 +38,18 @@ import (
 
 var (
 	retry int
+
+	copyConcurrentRunner int
 )
 
 func init() {
 	retry, _ = strconv.Atoi(os.Getenv("COPY_BLOB_RETRY_COUNT"))
 	if retry <= 0 {
 		retry = 5
+	}
+	copyConcurrentRunner, _ = strconv.Atoi(os.Getenv("COPY_RUNNER"))
+	if copyConcurrentRunner < 1 {
+		copyConcurrentRunner = 1
 	}
 	if err := trans.RegisterFactory(model.ResourceTypeImage, factory); err != nil {
 		log.Errorf("failed to register transfer factory: %v", err)
@@ -170,12 +177,19 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 	t.logger.Infof("copying %s:[%s](source registry) to %s:[%s](destination registry)...",
 		srcRepo, strings.Join(src.tags, ","), dstRepo, strings.Join(dst.tags, ","))
 	var err error
+	t.logger.Infof("copyConcurrentRunner %d", copyConcurrentRunner)
+	runner := utils.NewLimitedConcurrentRunner(copyConcurrentRunner)
 	for i := range src.tags {
-		if e := t.copyArtifact(srcRepo, src.tags[i], dstRepo, dst.tags[i], override); e != nil {
-			t.logger.Errorf(e.Error())
-			err = e
-		}
+		index := i
+		runner.AddTask(func() error {
+			if e := t.copyArtifact(srcRepo, src.tags[index], dstRepo, dst.tags[index], override); e != nil {
+				t.logger.Errorf(e.Error())
+				return e
+			}
+			return nil
+		})
 	}
+	err = runner.Wait()
 	if err != nil {
 		err = errors.New("got error during the whole transfer period, mark the job failure")
 		t.logger.Error(err)
@@ -188,6 +202,11 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 }
 
 func (t *transfer) copyArtifact(srcRepo, srcRef, dstRepo, dstRef string, override bool) error {
+	if t.shouldStop() {
+		log.Debugf("stop copying %s:%s(source registry) to %s:%s(destination registry)...",
+			srcRepo, srcRef, dstRepo, dstRef)
+		return nil
+	}
 	t.logger.Infof("copying %s:%s(source registry) to %s:%s(destination registry)...",
 		srcRepo, srcRef, dstRepo, dstRef)
 	// pull the manifest from the source registry
