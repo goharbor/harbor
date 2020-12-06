@@ -94,7 +94,7 @@
         "RULE_USER_EXISTING": "Nome já em uso.",
         "EMPTY": "Nome é obrigatório",
         "ENDPOINT_FORMAT": "Avaliação deve começar por HTTP:// Ou HTTPS://.",
-        "OIDC_ENDPOIT_FORMAT": "Avaliação deve começar por HTTPS://.",
+        "OIDC_ENDPOINT_FORMAT": "Avaliação deve começar por HTTPS://.",
         "OIDC_NAME": "O Nome do prestador de oidc.",
         "OIDC_ENDPOINT": "A URL de um servidor oidc denúncia.",
         "OIDC_SCOPE": "O âmbito de aplicação enviada Ao servidor oidc Durante a autenticação.TEM que conter 'openid' e 'offline_access'.Se você está usando o Google, por favor remova 'offline_access' desse Campo.",
@@ -131,8 +131,8 @@
         "CLI_PASSWORD_TIP": "Você Pode USAR este Segredo de clitóris Como senha Ao USAR clitóris de estivador /leme para acessar Harbor.",
         "COPY_SUCCESS": "SUCESSO de cópia",
         "COPY_ERROR": "Cópia falhou",
-        "ADMIN_CIL_SECRET_BUTTON": "GENERATE SECRET",
-        "ADMIN_CIL_SECRET_RESET_BUTTON": "Upload Your Own Secret",
+        "ADMIN_CLI_SECRET_BUTTON": "GENERATE SECRET",
+        "ADMIN_CLI_SECRET_RESET_BUTTON": "Upload Your Own Secret",
         "NEW_SECRET": "Secret",
         "CONFIRM_SECRET": "Re-enter Secret",
         "GENERATE_SUCCESS": "Cli secret setting is successful",
@@ -201,7 +201,7 @@
         "DELETE_SUCCESS": "Usários removidos com sucesso.",
         "ITEMS": "itens",
         "OF": "de",
-        "RESET_Ok": "Senha do usuário redefinida com sucesso",
+        "RESET_OK": "Senha do usuário redefinida com sucesso",
         "EXISTING_PASSWORD": "A nova senha não deve ser igual à antiga"
     },
     "PROJECT": {

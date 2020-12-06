@@ -96,7 +96,7 @@
         "NONEMPTY": "Can't be empty",
         "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
         "ENDPOINT_FORMAT": "Endpoint must start with HTTP:// or HTTPS://.",
-        "OIDC_ENDPOIT_FORMAT": "Endpoint must start with HTTPS://.",
+        "OIDC_ENDPOINT_FORMAT": "Endpoint must start with HTTPS://.",
         "OIDC_NAME": "El nombre de la OIDC proveedor.",
         "OIDC_ENDPOINT": "La dirección URL de un servidor OIDC denuncia.",
         "OIDC_SCOPE": "El ámbito de aplicación enviada a OIDC Server durante la autenticación.Tiene que contener 'Openid', y 'offline_access'.Si usted esta usando Google, por favor quitar 'offline_access' de este campo",
@@ -133,8 +133,8 @@
         "CLI_PASSWORD_TIP": "Puede utilizar este generador CLI secreto como utilizando Docker / Helm CLI para acceder a puerto.",
         "COPY_SUCCESS": "Copiar el éxito",
         "COPY_ERROR": "Copia no",
-        "ADMIN_CIL_SECRET_BUTTON": "GENERATE SECRET",
-        "ADMIN_CIL_SECRET_RESET_BUTTON": "Upload Your Own Secret",
+        "ADMIN_CLI_SECRET_BUTTON": "GENERATE SECRET",
+        "ADMIN_CLI_SECRET_RESET_BUTTON": "Upload Your Own Secret",
         "NEW_SECRET": "Secret",
         "CONFIRM_SECRET": "Re-enter Secret",
         "GENERATE_SUCCESS": "Cli secret setting is successful",
@@ -203,7 +203,7 @@
         "DELETE_SUCCESS": "Usuario eliminado satisfactoriamente.",
         "ITEMS": "elementos",
         "OF": "of",
-        "RESET_Ok": "Users password reset successfully",
+        "RESET_OK": "Users password reset successfully",
         "EXISTING_PASSWORD": "The new password can not be same with the old one"
     },
     "PROJECT": {

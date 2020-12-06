@@ -101,7 +101,7 @@ export class ChangePasswordComponent {
             .subscribe(() => {
                 this.onGoing = false;
                 this.opened = false;
-                this.msgHandler.showSuccess("USER.RESET_Ok");
+                this.msgHandler.showSuccess("USER.RESET_OK");
 
                 let hnd = setInterval(() => this.ref.markForCheck(), 100);
                 setTimeout(() => clearInterval(hnd), 2000);
