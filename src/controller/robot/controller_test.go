@@ -34,7 +34,7 @@ func (suite *ControllerTestSuite) TestGet() {
 	ctx := context.TODO()
 	projectMgr.On("Get", mock.Anything, mock.Anything).Return(&models.Project{ProjectID: 1, Name: "library"}, nil)
 	robotMgr.On("Get", mock.Anything, mock.Anything).Return(&model.Robot{
-		Name:        "test",
+		Name:        "library+test",
 		Description: "test get method",
 		ProjectID:   1,
 		Secret:      utils.RandStringBytes(10),

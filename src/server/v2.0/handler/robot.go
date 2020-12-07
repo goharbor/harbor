@@ -32,6 +32,10 @@ type robotAPI struct {
 }
 
 func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRobotParams) middleware.Responder {
+	if err := validateName(params.Robot.Name); err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+
 	if err := rAPI.validate(params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
@@ -305,4 +309,14 @@ func isValidSec(sec string) bool {
 		return true
 	}
 	return false
+}
+
+// validateName validates the robot name, especially '+' cannot be a valid character
+func validateName(name string) error {
+	robotNameReg := `^[a-z0-9]+(?:[._-][a-z0-9]+)*$`
+	legal := regexp.MustCompile(robotNameReg).MatchString(name)
+	if !legal {
+		return errors.BadRequestError(nil).WithMessage("robot name is not in lower case or contains illegal characters")
+	}
+	return nil
 }

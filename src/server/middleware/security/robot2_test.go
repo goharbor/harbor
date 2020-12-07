@@ -2,24 +2,16 @@ package security
 
 import (
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/utils/test"
 	core_cfg "github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
-	"os"
 	"testing"
 )
 
 func TestRobot2(t *testing.T) {
-	secretKeyPath := "/tmp/secretkey"
-	_, err := test.GenerateKey(secretKeyPath)
-	assert.Nil(t, err)
-	defer os.Remove(secretKeyPath)
-	os.Setenv("KEY_PATH", secretKeyPath)
-
 	conf := map[string]interface{}{
-		common.RobotPrefix: "robot@",
+		common.RobotNamePrefix: "robot@",
 	}
 	core_cfg.InitWithSettings(conf)
 

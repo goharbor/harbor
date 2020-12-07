@@ -76,7 +76,7 @@ func (d *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
 
 // Create ...
 func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error) {
-	if err := d.setProjectID(ctx, r); err != nil {
+	if err := d.setProject(ctx, r); err != nil {
 		return 0, "", err
 	}
 
@@ -95,8 +95,13 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 	salt := utils.GenerateRandomString()
 	secret := utils.Encrypt(pwd, salt, utils.SHA256)
 
+	name := r.Name
+	// for the project level robot, set the name pattern as projectname+robotname, and + is a illegal character.
+	if r.Level == LEVELPROJECT {
+		name = fmt.Sprintf("%s+%s", r.ProjectName, r.Name)
+	}
 	robotID, err := d.robotMgr.Create(ctx, &model.Robot{
-		Name:        r.Name,
+		Name:        name,
 		Description: r.Description,
 		ProjectID:   r.ProjectID,
 		ExpiresAt:   expiresAt,
@@ -208,10 +213,7 @@ func (d *controller) populate(ctx context.Context, r *model.Robot, option *Optio
 	robot.Name = fmt.Sprintf("%s%s", config.RobotPrefix(), r.Name)
 	robot.setLevel()
 	robot.setEditable()
-	if option == nil {
-		return robot, nil
-	}
-	if option.WithPermission {
+	if option != nil && option.WithPermission {
 		if err := d.populatePermissions(ctx, robot); err != nil {
 			return nil, err
 		}
@@ -273,24 +275,19 @@ func (d *controller) populatePermissions(ctx context.Context, r *Robot) error {
 	return nil
 }
 
-func (d *controller) setProjectID(ctx context.Context, r *Robot) error {
+// set the project info if it's a project level robot
+func (d *controller) setProject(ctx context.Context, r *Robot) error {
 	if r == nil {
 		return nil
 	}
-	var projectID int64
-	switch r.Level {
-	case LEVELSYSTEM:
-		projectID = 0
-	case LEVELPROJECT:
+	if r.Level == LEVELPROJECT {
 		pro, err := d.proMgr.Get(ctx, r.Permissions[0].Namespace)
 		if err != nil {
 			return err
 		}
-		projectID = pro.ProjectID
-	default:
-		return errors.New(nil).WithMessage("unknown robot account level").WithCode(errors.BadRequestCode)
+		r.ProjectName = pro.Name
+		r.ProjectID = pro.ProjectID
 	}
-	r.ProjectID = projectID
 	return nil
 }
 
