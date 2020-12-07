@@ -33,7 +33,8 @@ const (
 	RegistryTypeGitLab           RegistryType = "gitlab"
 	RegistryTypeDTR              RegistryType = "dtr"
 
-	RegistryTypeHelmHub RegistryType = "helm-hub"
+	RegistryTypeHelmHub     RegistryType = "helm-hub"
+	RegistryTypeArtifactHub RegistryType = "artifact-hub"
 
 	FilterStyleTypeText  = "input"
 	FilterStyleTypeRadio = "radio"

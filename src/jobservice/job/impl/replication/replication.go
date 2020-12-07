@@ -52,6 +52,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/gitlab"
 	// register the DTR adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/dtr"
+	// register the Artifact Hub adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/artifacthub"
 )
 
 // Replication implements the job interface
