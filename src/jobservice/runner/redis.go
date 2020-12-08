@@ -63,6 +63,8 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	// Check if the job is a periodic one as periodic job has its own ID format
 	if eID, yes := isPeriodicJobExecution(j); yes {
 		jID = eID
+
+		logger.Infof("Start to run periodical job execution: %s", eID)
 	}
 
 	// As the job stats may not be ready when job executing sometimes (corner case),
@@ -232,10 +234,6 @@ func (rj *RedisJob) retry(j job.Interface, wj *work.Job) {
 func isPeriodicJobExecution(j *work.Job) (string, bool) {
 	epoch, ok := j.Args[period.PeriodicExecutionMark]
 	return fmt.Sprintf("%s@%s", j.ID, epoch), ok
-}
-
-func bp(b bool) *bool {
-	return &b
 }
 
 func backoff(x int) int {
