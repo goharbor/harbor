@@ -351,7 +351,7 @@
         "ACCOUNT_EXISTING": "le robot est existe déjà.",
         "ALERT_TEXT": "This is the only time to copy this secret.You won't have another opportunity",
         "CREATED_SUCCESS": "Created '{{param}}' successfully.",
-        "COPY_SUCCESS": "Copy token successfully of '{{param}}'",
+        "COPY_SUCCESS": "Copy secret successfully of '{{param}}'",
         "DELETION_TITLE": "confirmer l'enlèvement des comptes du robot ",
         "DELETION_SUMMARY": "Voulez-vous supprimer la règle {{param}}?",
         "PULL_IS_MUST": "Pull permission is checked by default and can not be modified.",
@@ -1586,7 +1586,7 @@
         "PROJECTS": "Projects",
         "ALL_PROJECTS": "All projects with",
         "PERMISSIONS": "PERMISSION(S)",
-        "REFRESH_SECRET_SUMMARY": "Refresh the secret for this robot account",
+        "REFRESH_SECRET_SUMMARY": "Refresh the robot account secret automatically, or optionally open the details to manually specify a new secret",
         "TOKEN": "Secret",
         "NEW_TOKEN": "New Secret",
         "REFRESH": "REFRESH",
@@ -1621,6 +1621,8 @@
         "COVERED_PROJECTS": "PROJECT(S)",
         "CONFIRM_SECRET": "Confirm Secret",
         "SECRET_AGAIN": "Input secret again",
-        "INCONSISTENT": "Two secrets are inconsistent"
+        "INCONSISTENT": "Two secrets are inconsistent",
+        "NAME_TOOLTIP": "Robot name should be 1~255 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "ENABLE_NEW_SECRET": "Enable this option to manually specify a new secret"
     }
 }
