@@ -83,6 +83,7 @@ func (suite *PolicyStoreTestSuite) TestLoad() {
 	ps, err := Load(suite.namespace, conn)
 	suite.NoError(err, "load: nil error expected but got %s", err)
 	suite.Equal(1, len(ps), "count of loaded policies")
+	suite.Greater(ps[0].NumericID, int64(0), "numericID of the policy <> 0")
 }
 
 // TestPolicy tests policy itself
@@ -101,4 +102,19 @@ func (suite *PolicyStoreTestSuite) TestPolicy() {
 	assert.Equal(suite.T(), "5 * * * * *", p2.CronSpec)
 	err = p2.Validate()
 	assert.Nil(suite.T(), err, "policy validate: nil error expected but got %s", err)
+}
+
+// TestInvalidPolicy tests invalid policy
+func (suite *PolicyStoreTestSuite) TestInvalidPolicy() {
+	p := &Policy{}
+	suite.Error(p.Validate(), "error should be returned for empty ID")
+	p.ID = "pid"
+	suite.Error(p.Validate(), "error should be returned for empty job name")
+	p.JobName = "GC"
+	p.WebHookURL = "webhook"
+	suite.Error(p.Validate(), "error should be returned for invalid webhook")
+	p.WebHookURL = "https://webhook.com"
+	suite.Error(p.Validate(), "error should be returned for invalid cron spec")
+	p.CronSpec = "0 10 10 * * *"
+	suite.NoError(p.Validate(), "validation passed")
 }

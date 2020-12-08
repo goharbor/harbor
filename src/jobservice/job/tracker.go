@@ -515,6 +515,10 @@ func (bt *basicTracker) retrieve() error {
 	key := rds.KeyJobStats(bt.namespace, bt.jobID)
 	vals, err := redis.Strings(conn.Do("HGETALL", key))
 	if err != nil {
+		if errors.Is(err, redis.ErrNil) {
+			return errs.NoObjectFoundError(bt.jobID)
+		}
+
 		return err
 	}
 
