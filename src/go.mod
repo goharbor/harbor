@@ -63,6 +63,7 @@ require (
 	github.com/robfig/cron v1.0.0
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
 	github.com/spf13/viper v1.4.0 // indirect
+	github.com/vmihailenco/msgpack/v5 v5.0.0-rc.2
 	github.com/stretchr/testify v1.5.1
 	github.com/theupdateframework/notary v0.6.1
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
