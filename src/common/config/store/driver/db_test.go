@@ -14,11 +14,14 @@
 package driver
 
 import (
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/stretchr/testify/assert"
+	"fmt"
 	"os"
 	"testing"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config/metadata"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
@@ -61,4 +64,22 @@ func TestDatabase_Save(t *testing.T) {
 	assert.Equal(t, updatedMap["ldap_url"], ldapURL)
 	driver.Save(prevCfg)
 
+}
+
+func BenchmarkDatabaseLoad(b *testing.B) {
+	cfgs := map[string]interface{}{}
+	for _, item := range metadata.Instance().GetAll() {
+		cfgs[item.Name] = item.DefaultValue
+	}
+
+	driver := Database{}
+	driver.Save(cfgs)
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			if _, err := driver.Load(); err != nil {
+				fmt.Printf("load failed %v", err)
+			}
+		}
+	})
 }
