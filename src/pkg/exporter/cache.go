@@ -7,6 +7,8 @@ import (
 
 var c *cache
 
+const defaultCacheCleanInterval = 10
+
 type cachedValue struct {
 	Value      interface{}
 	Expiration int64
@@ -77,7 +79,13 @@ func CacheInit(opt *Opt) {
 		RWMutex:       &sync.RWMutex{},
 	}
 	go func() {
-		ticker := time.NewTicker(time.Duration(opt.CacheCleanInterval) * time.Second)
+		var cacheCleanInterval int64
+		if opt.CacheCleanInterval > 0 {
+			cacheCleanInterval = opt.CacheCleanInterval
+		} else {
+			cacheCleanInterval = defaultCacheCleanInterval
+		}
+		ticker := time.NewTicker(time.Duration(cacheCleanInterval) * time.Second)
 		for {
 			select {
 			case <-ticker.C:
