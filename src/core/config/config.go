@@ -391,6 +391,7 @@ func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
 	return &models.HTTPAuthProxy{
 		Endpoint:            cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
 		TokenReviewEndpoint: cfgMgr.Get(common.HTTPAuthProxyTokenReviewEndpoint).GetString(),
+		AdminGroups:         splitAndTrim(cfgMgr.Get(common.HTTPAuthProxyAdminGroups).GetString(), ","),
 		VerifyCert:          cfgMgr.Get(common.HTTPAuthProxyVerifyCert).GetBool(),
 		SkipSearch:          cfgMgr.Get(common.HTTPAuthProxySkipSearch).GetBool(),
 		ServerCertificate:   cfgMgr.Get(common.HTTPAuthProxyServerCertificate).GetString(),
@@ -405,11 +406,7 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 	}
 	scopeStr := cfgMgr.Get(common.OIDCScope).GetString()
 	extEndpoint := strings.TrimSuffix(cfgMgr.Get(common.ExtEndpoint).GetString(), "/")
-	scope := []string{}
-	for _, s := range strings.Split(scopeStr, ",") {
-		scope = append(scope, strings.TrimSpace(s))
-	}
-
+	scope := splitAndTrim(scopeStr, ",")
 	return &models.OIDCSetting{
 		Name:         cfgMgr.Get(common.OIDCName).GetString(),
 		Endpoint:     cfgMgr.Get(common.OIDCEndpoint).GetString(),
@@ -478,4 +475,14 @@ func Metric() *models.Metric {
 		Port:    cfgMgr.Get(common.MetricPort).GetInt(),
 		Path:    cfgMgr.Get(common.MetricPath).GetString(),
 	}
+}
+
+func splitAndTrim(s, sep string) []string {
+	res := make([]string, 0)
+	for _, s := range strings.Split(s, sep) {
+		if e := strings.TrimSpace(s); len(e) > 0 {
+			res = append(res, e)
+		}
+	}
+	return res
 }

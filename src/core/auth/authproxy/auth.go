@@ -116,7 +116,7 @@ func (a *Auth) tokenReview(sessionID string) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	u, err := authproxy.UserFromReviewStatus(reviewStatus)
+	u, err := authproxy.UserFromReviewStatus(reviewStatus, httpAuthProxySetting.AdminGroups)
 	if err != nil {
 		return nil, err
 	}

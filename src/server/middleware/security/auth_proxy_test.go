@@ -57,6 +57,7 @@ func TestAuthProxy(t *testing.T) {
 		SkipSearch:          true,
 		VerifyCert:          false,
 		TokenReviewEndpoint: server.URL,
+		AdminGroups:         []string{},
 	})
 
 	// No onboard

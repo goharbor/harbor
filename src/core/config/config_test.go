@@ -238,6 +238,7 @@ y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 	m := map[string]interface{}{
 		common.HTTPAuthProxySkipSearch:        "true",
 		common.HTTPAuthProxyVerifyCert:        "true",
+		common.HTTPAuthProxyAdminGroups:       "group1, group2",
 		common.HTTPAuthProxyEndpoint:          "https://auth.proxy/suffix",
 		common.HTTPAuthProxyServerCertificate: certificate,
 	}
@@ -246,6 +247,7 @@ y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 	assert.Nil(t, e)
 	assert.Equal(t, *v, models.HTTPAuthProxy{
 		Endpoint:          "https://auth.proxy/suffix",
+		AdminGroups:       []string{"group1", "group2"},
 		SkipSearch:        true,
 		VerifyCert:        true,
 		ServerCertificate: certificate,
@@ -278,4 +280,36 @@ func TestOIDCSetting(t *testing.T) {
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)
 	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
 	assert.Equal(t, "username", v.UserClaim)
+}
+
+func TestSplitAndTrim(t *testing.T) {
+	cases := []struct {
+		s      string
+		sep    string
+		expect []string
+	}{
+		{
+			s:      "abc",
+			sep:    ",",
+			expect: []string{"abc"},
+		},
+		{
+			s:      "a,   b, c",
+			sep:    ",",
+			expect: []string{"a", "b", "c"},
+		},
+		{
+			s:      "a,b,c    ",
+			sep:    ".",
+			expect: []string{"a,b,c"},
+		},
+		{
+			s:      "",
+			sep:    ",",
+			expect: []string{},
+		},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.expect, splitAndTrim(c.s, c.sep))
+	}
 }
