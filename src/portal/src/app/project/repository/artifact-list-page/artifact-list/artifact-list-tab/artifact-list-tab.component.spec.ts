@@ -5,7 +5,7 @@ import { of } from "rxjs";
 import { delay } from "rxjs/operators";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ArtifactDefaultService, ArtifactService } from "../../../artifact/artifact.service";
 import {
@@ -32,6 +32,7 @@ import { ChannelService } from "../../../../../../lib/services/channel.service";
 import { OperationService } from "../../../../../../lib/components/operation/operation.service";
 import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 import { AllPipesModule } from "../../../../../all-pipes/all-pipes.module";
+import { Tag } from "../../../../../../../ng-swagger-gen/models/tag";
 
 describe("ArtifactListTabComponent (inline template)", () => {
 
@@ -258,12 +259,9 @@ describe("ArtifactListTabComponent (inline template)", () => {
   const mockOperationService = {
     publishInfo: () => {}
   };
-  const mockArtifactService = {
-    TriggerArtifactChan$: {
-      subscribe: (fn) => {
-
-      }
-    }
+  const mockTag: Tag = {
+    id: 1,
+    name: "latest"
   };
   const mockNewArtifactService = {
     TriggerArtifactChan$: {
@@ -292,6 +290,13 @@ describe("ArtifactListTabComponent (inline template)", () => {
     },
     getIcon() {
       return undefined;
+    },
+    listTagsResponse: () => {
+      const res: HttpResponse<Array<Tag>> = new HttpResponse<Array<Tag>>({
+        headers: new HttpHeaders({'x-total-count': '1'}),
+        body: [mockTag]
+      });
+      return of(res).pipe(delay(0));
     }
   };
   beforeEach(waitForAsync(() => {
