@@ -58,6 +58,19 @@ func (d *daoTestSuite) TearDownTest() {
 
 func (d *daoTestSuite) TestCreate() {
 	// the happy pass is covered in SetupTest
+
+	// conflict
+	schedule := &schedule{
+		VendorType:        "Vendor",
+		VendorID:          1,
+		CRON:              "0 * * * * *",
+		CallbackFuncName:  "callback_func_01",
+		CallbackFuncParam: "callback_func_params",
+		ExtraAttrs:        `{"key":"value"}`,
+	}
+	_, err := d.dao.Create(d.ctx, schedule)
+	d.Require().NotNil(err)
+	d.True(errors.IsConflictErr(err))
 }
 
 func (d *daoTestSuite) TestList() {

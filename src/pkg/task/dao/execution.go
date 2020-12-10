@@ -17,11 +17,12 @@ package dao
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/log"
 	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 )
@@ -234,8 +235,8 @@ func (e *executionDAO) refreshStatus(ctx context.Context, id int64) (bool, strin
 		return false, "", false, err
 	}
 
-	sql := `update execution set status = ?, revision = revision+1 where id = ? and revision = ?`
-	result, err := ormer.Raw(sql, status, id, execution.Revision).Exec()
+	sql := `update execution set status = ?, revision = revision+1, update_time = ? where id = ? and revision = ?`
+	result, err := ormer.Raw(sql, status, time.Now(), id, execution.Revision).Exec()
 	if err != nil {
 		return false, "", false, err
 	}

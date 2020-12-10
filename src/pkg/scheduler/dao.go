@@ -59,6 +59,10 @@ func (d *dao) Create(ctx context.Context, schedule *schedule) (int64, error) {
 	}
 	id, err := ormer.Insert(schedule)
 	if err != nil {
+		if e := orm.AsConflictError(err, "schedule with vendor type: %s vendor ID: %d already exists",
+			schedule.VendorType, schedule.VendorID); e != nil {
+			err = e
+		}
 		return 0, err
 	}
 	return id, nil
@@ -118,6 +122,9 @@ func (d *dao) Update(ctx context.Context, schedule *schedule, props ...string) e
 	}
 	n, err := ormer.Update(schedule, props...)
 	if err != nil {
+		if e := orm.AsConflictError(err, "schedule with the same vendor type and vendor ID already exists"); e != nil {
+			err = e
+		}
 		return err
 	}
 	if n == 0 {

@@ -99,33 +99,39 @@ func (e *executionManager) Create(ctx context.Context, vendorType string, vendor
 		return 0, err
 	}
 
+	now := time.Now()
 	execution := &dao.Execution{
 		VendorType: vendorType,
 		VendorID:   vendorID,
 		Status:     job.RunningStatus.String(),
 		Trigger:    trigger,
 		ExtraAttrs: string(data),
-		StartTime:  time.Now(),
+		StartTime:  now,
+		UpdateTime: now,
 	}
 	return e.executionDAO.Create(ctx, execution)
 }
 
 func (e *executionManager) MarkDone(ctx context.Context, id int64, message string) error {
+	now := time.Now()
 	return e.executionDAO.Update(ctx, &dao.Execution{
 		ID:            id,
 		Status:        job.SuccessStatus.String(),
 		StatusMessage: message,
-		EndTime:       time.Now(),
-	}, "Status", "StatusMessage", "EndTime")
+		UpdateTime:    now,
+		EndTime:       now,
+	}, "Status", "StatusMessage", "UpdateTime", "EndTime")
 }
 
 func (e *executionManager) MarkError(ctx context.Context, id int64, message string) error {
+	now := time.Now()
 	return e.executionDAO.Update(ctx, &dao.Execution{
 		ID:            id,
 		Status:        job.ErrorStatus.String(),
 		StatusMessage: message,
-		EndTime:       time.Now(),
-	}, "Status", "StatusMessage", "EndTime")
+		UpdateTime:    now,
+		EndTime:       now,
+	}, "Status", "StatusMessage", "UpdateTime", "EndTime")
 }
 
 func (e *executionManager) Stop(ctx context.Context, id int64) error {
@@ -146,11 +152,13 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 	}
 	// contains no task and the status isn't final, update the status to stop directly
 	if len(tasks) == 0 && !job.Status(execution.Status).Final() {
+		now := time.Now()
 		return e.executionDAO.Update(ctx, &dao.Execution{
-			ID:      id,
-			Status:  job.StoppedStatus.String(),
-			EndTime: time.Now(),
-		}, "Status", "EndTime")
+			ID:         id,
+			Status:     job.StoppedStatus.String(),
+			UpdateTime: now,
+			EndTime:    now,
+		}, "Status", "UpdateTime", "EndTime")
 	}
 
 	for _, task := range tasks {
@@ -266,6 +274,7 @@ func (e *executionManager) populateExecution(ctx context.Context, execution *dao
 		Metrics:       nil,
 		Trigger:       execution.Trigger,
 		StartTime:     execution.StartTime,
+		UpdateTime:    execution.UpdateTime,
 		EndTime:       execution.EndTime,
 	}
 

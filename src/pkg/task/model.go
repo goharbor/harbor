@@ -49,6 +49,7 @@ type Execution struct {
 	// the customized attributes for different kinds of consumers
 	ExtraAttrs map[string]interface{} `json:"extra_attrs"`
 	StartTime  time.Time              `json:"start_time"`
+	UpdateTime time.Time              `json:"update_time"`
 	EndTime    time.Time              `json:"end_time"`
 }
 
