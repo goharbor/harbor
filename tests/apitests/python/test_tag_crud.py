@@ -10,7 +10,7 @@ from library.project import Project
 from library.user import User
 from library.repository import Repository
 from library.artifact import Artifact
-from library.repository import push_image_to_project
+from library.repository import push_self_build_image_to_project
 
 class TestProjects(unittest.TestCase):
     @suppress_urllib3_warning
@@ -63,7 +63,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_id, TestProjects.project_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_CLIENT)
 
         #3. Push an image(IA) to Harbor by docker successfully;
-        _, tag = push_image_to_project(TestProjects.project_name, harbor_server, 'admin', 'Harbor12345', self.repo_name, "latest")
+        repo_name, tag = push_self_build_image_to_project(TestProjects.project_name, harbor_server, 'admin', 'Harbor12345', self.repo_name, "latest")
 
         #4. Create a tag(1.0) for the image(IA)
         self.artifact.create_tag(TestProjects.project_name, self.repo_name, tag, "1.0",**TestProjects.USER_CLIENT)

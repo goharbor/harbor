@@ -9,7 +9,7 @@ from library.artifact import Artifact
 from library.project import Project
 from library.user import User
 from library.repository import Repository
-from library.repository import push_image_to_project
+from library.repository import push_self_build_image_to_project
 from library.repository import pull_harbor_image
 
 class TestProjects(unittest.TestCase):
@@ -63,7 +63,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_content_trust_id, TestProjects.project_content_trust_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_CONTENT_TRUST_CLIENT)
 
         #3. Push a new image(IA) in project(PA) by admin;
-        TestProjects.repo_name, tag = push_image_to_project(TestProjects.project_content_trust_name, harbor_server, admin_name, admin_password, image, "latest")
+        TestProjects.repo_name, tag = push_self_build_image_to_project(TestProjects.project_content_trust_name, harbor_server, admin_name, admin_password, image, "latest")
 
         #4. Image(IA) should exist;
         artifact = self.artifact.get_reference_info(TestProjects.project_content_trust_name, image, tag, **TestProjects.USER_CONTENT_TRUST_CLIENT)

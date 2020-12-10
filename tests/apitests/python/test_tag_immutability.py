@@ -9,7 +9,6 @@ from testutils import harbor_server
 from library.project import Project
 from library.user import User
 from library.repository import Repository
-from library.repository import push_image_to_project
 from library.registry import Registry
 from library.artifact import Artifact
 from library.tag_immutability import Tag_Immutability
@@ -180,8 +179,8 @@ class TestTagImmutability(unittest.TestCase):
         self.check_tag_immutability(artifact_a, image_a["tag2"], status = False)
 
         #5. Can not push image with the same image name and with the same tag name.
-        push_image_to_project(project_name, harbor_server, self.user_name, self.user_password, "tomcat", image_a["tag1"],
-                              new_image = image_a["name"], expected_error_message = "configured as immutable")
+        push_special_image_to_project(project_name, harbor_server, self.user_name, self.user_password, image_a["name"], [image_a["tag1"]], size=10
+                                      , expected_error_message = "configured as immutable")
 
     def test_copy_disability(self):
         """

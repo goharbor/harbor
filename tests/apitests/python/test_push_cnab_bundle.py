@@ -63,7 +63,7 @@ class TestProjects(unittest.TestCase):
 
         #3. Push bundle to harbor as repository(RA);
         target = harbor_server + "/" + TestProjects.project_push_bundle_name  + "/" + self.cnab_repo_name  + ":" + self.cnab_tag
-        reference_sha256 = library.cnab.push_cnab_bundle(harbor_server, user_name, self.user_push_cnab_password, "alpine:latest", "haproxy:latest", target)
+        reference_sha256 = library.cnab.push_cnab_bundle(harbor_server, user_name, self.user_push_cnab_password, "photon:latest", "kong:latest", target)
 
         #4. Get repository from Harbor successfully;
         index_data = self.repo.get_repository(TestProjects.project_push_bundle_name, self.cnab_repo_name, **TestProjects.USER_CLIENT)

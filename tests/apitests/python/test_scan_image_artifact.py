@@ -8,7 +8,7 @@ from testutils import ADMIN_CLIENT
 from library.project import Project
 from library.user import User
 from library.repository import Repository
-from library.repository import push_image_to_project
+from library.repository import push_self_build_image_to_project
 from library.artifact import Artifact
 from library.scan import Scan
 from library.sign import sign_image
@@ -75,7 +75,7 @@ class TestScan(unittest.TestCase):
         image = "docker"
         src_tag = "1.13"
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
-        self.repo_name1, tag = push_image_to_project(self.project_name, harbor_server, self.user_name, self.user_password, image, src_tag)
+        self.repo_name1, tag = push_self_build_image_to_project(self.project_name, harbor_server, self.user_name, self.user_password, image, src_tag)
 
         #6. Send scan image command and get tag(TA) information to check scan result, it should be finished;
         self.scan.scan_artifact(self.project_name, self.repo_name1.split('/')[1], tag, **self.USER_CLIENT)
@@ -104,15 +104,16 @@ class TestScan(unittest.TestCase):
 
         #Note: Please make sure that this Image has never been pulled before by any other cases,
         #      so it is a not-scanned image right after repository creation.
-        image = "redis"
+        #Note:busybox is pulled in setup phase, and setup is a essential phase.
+        image = "busybox"
         tag = "latest"
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
-        TestScan.repo_name_1, tag = push_image_to_project(self.project_name, harbor_server, self.user_name, self.user_password, image, tag)
+        #TestScan.repo_name_1, tag = push_self_build_image_to_project(self.project_name, harbor_server, self.user_name, self.user_password, image, tag)
 
         sign_image(harbor_server, self.project_name, image, tag)
 
         #6. Send scan image command and get tag(TA) information to check scan result, it should be finished;
-        self.scan.scan_artifact(self.project_name, TestScan.repo_name_1.split('/')[1], tag, **self.USER_CLIENT)
+        self.scan.scan_artifact(self.project_name, image, tag, **self.USER_CLIENT)
         self.artifact.check_image_scan_result(self.project_name, image, tag, **self.USER_CLIENT)
 
 if __name__ == '__main__':
