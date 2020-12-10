@@ -9,7 +9,6 @@ from library.artifact import Artifact
 from library.project import Project
 from library.user import User
 from library.repository import Repository
-from library.repository import push_image_to_project
 from library.repository import push_special_image_to_project
 
 class TestProjects(unittest.TestCase):
@@ -66,10 +65,11 @@ class TestProjects(unittest.TestCase):
         self.project.projects_should_exist(dict(public=False), expected_count = 1,
             expected_project_id = TestProjects.project_sign_image_id, **TestProjects.USER_sign_image_CLIENT)
 
-        image = "hello-world"
-        src_tag = "latest"
+        #Note:busybox is pulled in setup phase, and setup is a essential phase.
+        image = "busybox"
+        tag = "latest"
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
-        TestProjects.repo_name, tag = push_image_to_project(TestProjects.project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, image, src_tag)
+        #TestProjects.repo_name, tag = push_self_build_image_to_project(TestProjects.project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, image, src_tag)
 
         #6. Sign image with tag(TA) which was tagged by step #5;
         sign_image(harbor_server, TestProjects.project_sign_image_name, image, tag)
@@ -81,7 +81,7 @@ class TestProjects(unittest.TestCase):
         push_special_image_to_project(TestProjects.project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, self.repo_name_1, ['1.0'])
         self.repo.delete_repoitory(TestProjects.project_sign_image_name, self.repo_name_1, **TestProjects.USER_sign_image_CLIENT)
 
-        self.repo.delete_repoitory(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], expect_status_code=412, expect_response_body = "with signature cannot be deleted", **TestProjects.USER_sign_image_CLIENT)
+        self.repo.delete_repoitory(TestProjects.project_sign_image_name, image, expect_status_code=412, expect_response_body = "with signature cannot be deleted", **TestProjects.USER_sign_image_CLIENT)
 
 if __name__ == '__main__':
     unittest.main()
