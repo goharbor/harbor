@@ -17,7 +17,10 @@ package proxy
 import (
 	"context"
 	"fmt"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
+	"github.com/gomodule/redigo/redis"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/docker/distribution"
@@ -33,6 +36,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/opencontainers/go-digest"
 )
+
+// TrimmedManifestlist - key prefix for trimmed manifest
+const TrimmedManifestlist = "trimmedmanifestlist:"
 
 // localInterface defines operations related to local repo under proxy mode
 type localInterface interface {
@@ -154,14 +160,14 @@ func (l *localHelper) updateManifestList(ctx context.Context, repo string, manif
 	return nil, fmt.Errorf("current manifest list type is unknown, manifest type[%T], content [%+v]", manifest, manifest)
 }
 
-func (l *localHelper) PushManifestList(ctx context.Context, repo string, tag string, man distribution.Manifest) error {
+func (l *localHelper) PushManifestList(ctx context.Context, repo string, ref string, man distribution.Manifest) error {
 	// For manifest list, it might include some different manifest
 	// it will wait and check for 30 mins, if all depend manifests exist then push it
 	// if time exceed, only push the new updated manifest list which contains existing manifest
 	var newMan distribution.Manifest
 	var err error
 	for n := 0; n < maxManifestListWait; n++ {
-		log.Debugf("waiting for the manifest ready, repo %v, tag:%v", repo, tag)
+		log.Debugf("waiting for the manifest ready, repo %v, ref:%v", repo, ref)
 		time.Sleep(sleepIntervalSec * time.Second)
 		newMan, err = l.updateManifestList(ctx, repo, man)
 		if err != nil {
@@ -180,17 +186,41 @@ func (l *localHelper) PushManifestList(ctx context.Context, repo string, tag str
 		return err
 	}
 	log.Debugf("The manifest list payload: %v", string(pl))
-	dig := digest.FromBytes(pl)
+	newDig := digest.FromBytes(pl)
+	l.cacheTrimmedDigest(ctx, string(newDig))
 	// Because the manifest list maybe updated, need to recheck if it is exist in local
-	art := lib.ArtifactInfo{Repository: repo, Tag: tag}
+	art := lib.ArtifactInfo{Repository: repo, Tag: ref}
 	a, err := l.GetManifest(ctx, art)
 	if err != nil {
 		return err
 	}
-	if a != nil && a.Digest == string(dig) {
+	if a != nil && a.Digest == string(newDig) {
 		return nil
 	}
-	return l.PushManifest(repo, tag, newMan)
+	// when proxying library/busybox:<complete digest>, it gets the library/busybox:<partial digest>
+	// need to push the manifest with library/busybox:<partial digest>, because it is the actual manifest
+	if strings.HasPrefix(ref, "sha256:") {
+		ref = string(newDig)
+	}
+	return l.PushManifest(repo, ref, newMan)
+}
+
+func (l *localHelper) cacheTrimmedDigest(ctx context.Context, newDig string) {
+	conn := redislib.DefaultPool().Get()
+	defer conn.Close()
+	art := lib.GetArtifactInfo(ctx)
+	key := TrimmedManifestlist + string(art.Digest)
+	reply, err := redis.String(conn.Do("SET", key, newDig, "EX", int64(24*time.Hour/time.Second)))
+	if err != nil {
+		log.Errorf("failed to set trimmed digest in redis, error: %v", err)
+		return
+	}
+	if reply != "OK" {
+		err := fmt.Errorf("failed to set trimmed digest in redis, error: expected reply is 'OK' but actual it is '%s'", reply)
+		log.Errorf("%s", err.Error())
+		return
+	}
+	return
 }
 
 func (l *localHelper) CheckDependencies(ctx context.Context, repo string, man distribution.Manifest) []distribution.Descriptor {
