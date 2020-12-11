@@ -216,12 +216,17 @@ http {
   upstream registry_metrics {
     server registry:5001;
   }
+
+  upstream harbor_exporter {
+    server exporter:8080;
+  }
+
   server {
     listen 9090;
     location = /metrics {
       if ($arg_comp = core) { proxy_pass http://core_metrics; }
       if ($arg_comp = registry) { proxy_pass http://registry_metrics; }
-      proxy_pass http://core_metrics;
+      proxy_pass http://harbor_exporter;
     }
   }
   {% endif %}

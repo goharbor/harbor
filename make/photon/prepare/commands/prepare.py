@@ -22,6 +22,7 @@ from utils.redis import prepare_redis
 from utils.internal_tls import prepare_tls
 from utils.trivy_adapter import prepare_trivy_adapter
 from utils.portal import prepare_portal
+from utils.exporter import prepare_exporter
 from g import (config_dir, input_config_path, private_key_pem_path, root_crt_path, secret_key_dir,
 old_private_key_pem_path, old_crt_path)
 
@@ -61,6 +62,9 @@ def prepare(conf, with_notary, with_trivy, with_chartmuseum):
         root_crt_path=root_crt_path,
         old_private_key_pem_path=old_private_key_pem_path,
         old_crt_path=old_crt_path)
+
+    if config_dict['metric'].enabled:
+        prepare_exporter(config_dict)
 
     if with_notary:
         prepare_notary(config_dict, nginx_confd_dir, SSL_CERT_PATH, SSL_CERT_KEY_PATH)

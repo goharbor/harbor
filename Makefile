@@ -172,12 +172,14 @@ GOBUILDPATH_JOBSERVICE=$(GOBUILDPATHINCONTAINER)/src/jobservice
 GOBUILDPATH_REGISTRYCTL=$(GOBUILDPATHINCONTAINER)/src/registryctl
 GOBUILDPATH_MIGRATEPATCH=$(GOBUILDPATHINCONTAINER)/src/cmd/migrate-patch
 GOBUILDPATH_STANDALONE_DB_MIGRATOR=$(GOBUILDPATHINCONTAINER)/src/cmd/standalone-db-migrator
+GOBUILDPATH_EXPORTER=$(GOBUILDPATHINCONTAINER)/src/cmd/exporter
 GOBUILDMAKEPATH=make
 GOBUILDMAKEPATH_CORE=$(GOBUILDMAKEPATH)/photon/core
 GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/photon/jobservice
 GOBUILDMAKEPATH_REGISTRYCTL=$(GOBUILDMAKEPATH)/photon/registryctl
 GOBUILDMAKEPATH_NOTARY=$(GOBUILDMAKEPATH)/photon/notary
 GOBUILDMAKEPATH_STANDALONE_DB_MIGRATOR=$(GOBUILDMAKEPATH)/photon/standalone-db-migrator
+GOBUILDMAKEPATH_EXPORTER=$(GOBUILDMAKEPATH)/photon/exporter
 
 # binary
 CORE_BINARYPATH=$(BUILDPATH)/$(GOBUILDMAKEPATH_CORE)
@@ -226,6 +228,7 @@ DOCKERIMAGENAME_LOG=goharbor/harbor-log
 DOCKERIMAGENAME_DB=goharbor/harbor-db
 DOCKERIMAGENAME_CHART_SERVER=goharbor/chartmuseum-photon
 DOCKERIMAGENAME_REGCTL=goharbor/harbor-registryctl
+DOCKERIMAGENAME_EXPORTER=goharbor/harbor-exporter
 
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
@@ -368,7 +371,12 @@ compile_standalone_db_migrator:
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_STANDALONE_DB_MIGRATOR) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_STANDALONE_DB_MIGRATOR)/$(STANDALONE_DB_MIGRATOR_BINARYNAME)
 	@echo "Done."
 
-compile: check_environment versions_prepare compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch
+compile_exporter:
+	@echo "compiling binary for exporter (golang image)..."
+	@$(DOCKERCMD) build -f ${GOBUILDMAKEPATH_EXPORTER}/Dockerfile --build-arg build_image=$(GOBUILDIMAGE) -t $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) .
+	@echo "Done."
+
+compile: check_environment versions_prepare compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch compile_exporter
 
 update_prepare_version:
 	@echo "substitute the prepare version tag in prepare file..."
@@ -531,6 +539,8 @@ down:
 	@echo "stoping harbor instance..."
 	@$(DOCKERCOMPOSECMD) $(DOCKERCOMPOSE_FILE_OPT) down -v
 	@echo "Done."
+
+restart: down prepare start
 
 swagger_client:
 	@echo "Generate swagger client"

@@ -30,12 +30,12 @@ const (
 	internalTrustCAPath      = "INTERNAL_TLS_TRUST_CA_PATH"
 )
 
-// InternalTLSEnabled returns if internal TLS enabled
+// InternalTLSEnabled returns true if internal TLS enabled
 func InternalTLSEnabled() bool {
 	return strings.ToLower(os.Getenv(internalTLSEnable)) == "true"
 }
 
-// InternalEnableVerifyClientCert returns if mTLS enabled
+// InternalEnableVerifyClientCert returns true if mTLS enabled
 func InternalEnableVerifyClientCert() bool {
 	return strings.ToLower(os.Getenv(internalVerifyClientCert)) == "true"
 }

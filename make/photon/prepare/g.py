@@ -61,4 +61,5 @@ INTERNAL_NO_PROXY_DN = {
     'notary-server',
     'notary-signer',
     'trivy-adapter',
+    'exporter',
     }

@@ -532,6 +532,27 @@ services:
     env_file:
       ./common/config/chartserver/env
 {% endif %}
+{% if metric.enabled %}
+  exporter:
+    image: goharbor/harbor-exporter:{{version}}
+    container_name: harbor-exporter
+    env_file:
+      - ./common/config/exporter/env
+    restart: always
+    networks:
+      - harbor
+    dns_search: .
+    depends_on:
+      - core
+  {% if external_database == False %}
+      - postgresql
+  {% endif %}
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "exporter"
+{% endif %}
 networks:
   harbor:
     external: false
