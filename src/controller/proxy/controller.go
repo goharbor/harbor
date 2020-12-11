@@ -65,7 +65,7 @@ type Controller interface {
 	// art is the ArtifactInfo which includes the tag or digest of the manifest
 	ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error)
 	// HeadManifest send manifest head request to the remote server
-	HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, string, error)
+	HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error)
 }
 type controller struct {
 	blobCtl     blob.Controller
@@ -119,11 +119,11 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	}
 
 	remoteRepo := getRemoteRepo(art)
-	exist, dig, err := remote.ManifestExist(remoteRepo, getReference(art)) // HEAD
+	exist, desc, err := remote.ManifestExist(remoteRepo, getReference(art)) // HEAD
 	if err != nil {
 		return false, nil, err
 	}
-	if !exist {
+	if !exist || desc == nil {
 		go func() {
 			c.local.DeleteManifest(remoteRepo, art.Tag)
 		}()
@@ -132,18 +132,18 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 
 	var content []byte
 	if c.cache != nil {
-		err = c.cache.Fetch(getManifestListKey(art.Repository, dig), &content)
+		err = c.cache.Fetch(getManifestListKey(art.Repository, string(desc.Digest)), &content)
 		if err == nil {
-			log.Debugf("Get the manifest list with key=cache:%v", getManifestListKey(art.Repository, dig))
-			return true, &ManifestList{content, dig, manifestlist.MediaTypeManifestList}, nil
+			log.Debugf("Get the manifest list with key=cache:%v", getManifestListKey(art.Repository, string(desc.Digest)))
+			return true, &ManifestList{content, string(desc.Digest), manifestlist.MediaTypeManifestList}, nil
 		}
 		if err == cache.ErrNotFound {
-			log.Debugf("Digest is not found in manifest list cache, key=cache:%v", getManifestListKey(art.Repository, dig))
+			log.Debugf("Digest is not found in manifest list cache, key=cache:%v", getManifestListKey(art.Repository, string(desc.Digest)))
 		} else {
 			log.Errorf("Failed to get manifest list from cache, error: %v", err)
 		}
 	}
-	return a != nil && dig == a.Digest, nil, nil // digest matches
+	return a != nil && string(desc.Digest) == a.Digest, nil, nil // digest matches
 }
 
 func getManifestListKey(repo, dig string) string {
@@ -198,7 +198,7 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 
 	return man, nil
 }
-func (c *controller) HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, string, error) {
+func (c *controller) HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error) {
 	remoteRepo := getRemoteRepo(art)
 	ref := getReference(art)
 	return remote.ManifestExist(remoteRepo, ref)
