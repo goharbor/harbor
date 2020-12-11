@@ -206,14 +206,16 @@ func DisableBlobAndManifestUploadMiddleware() func(http.Handler) http.Handler {
 }
 
 func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
-	exist, dig, err := ctl.HeadManifest(ctx, art, remote)
+	exist, desc, err := ctl.HeadManifest(ctx, art, remote)
 	if err != nil {
 		return err
 	}
-	if !exist {
+	if !exist || desc == nil {
 		return errors.NotFoundError(fmt.Errorf("The tag %v:%v is not found", art.Repository, art.Tag))
 	}
-	w.Header().Set("Docker-Content-Digest", dig)
-	w.Header().Set("Etag", dig)
+	w.Header().Set("Content-Type", desc.MediaType)
+	w.Header().Set("Content-Length", fmt.Sprintf("%v", desc.Size))
+	w.Header().Set("Docker-Content-Digest", string(desc.Digest))
+	w.Header().Set("Etag", string(desc.Digest))
 	return nil
 }
