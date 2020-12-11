@@ -17,7 +17,9 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/cache"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/docker/distribution"
@@ -33,6 +35,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/opencontainers/go-digest"
 )
+
+// TrimmedManifestlist - key prefix for trimmed manifest
+const TrimmedManifestlist = "trimmedmanifestlist:"
 
 // localInterface defines operations related to local repo under proxy mode
 type localInterface interface {
@@ -68,6 +73,7 @@ func (l *localHelper) GetManifest(ctx context.Context, art lib.ArtifactInfo) (*a
 type localHelper struct {
 	registry    registry.Client
 	artifactCtl artifactController
+	cache       cache.Cache
 }
 
 type artifactController interface {
@@ -93,6 +99,7 @@ func (l *localHelper) init() {
 	// the traffic is internal only
 	registryURL := config.LocalCoreURL()
 	l.registry = registry.NewClientWithAuthorizer(registryURL, secret.NewAuthorizer(), true)
+	l.cache = cache.Default()
 }
 
 func (l *localHelper) PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error {
@@ -180,17 +187,32 @@ func (l *localHelper) PushManifestList(ctx context.Context, repo string, tag str
 		return err
 	}
 	log.Debugf("The manifest list payload: %v", string(pl))
-	dig := digest.FromBytes(pl)
+	newDig := digest.FromBytes(pl)
+	l.cacheTrimmedDigest(ctx, string(newDig))
 	// Because the manifest list maybe updated, need to recheck if it is exist in local
 	art := lib.ArtifactInfo{Repository: repo, Tag: tag}
 	a, err := l.GetManifest(ctx, art)
 	if err != nil {
 		return err
 	}
-	if a != nil && a.Digest == string(dig) {
+	if a != nil && a.Digest == string(newDig) {
 		return nil
 	}
+	// because current digest is changed, need to push to the new digest
+	if strings.HasPrefix(tag, "sha256:") {
+		tag = string(newDig)
+	}
 	return l.PushManifest(repo, tag, newMan)
+}
+
+func (l *localHelper) cacheTrimmedDigest(ctx context.Context, newDig string) {
+	if l.cache == nil {
+		return
+	}
+	art := lib.GetArtifactInfo(ctx)
+	key := TrimmedManifestlist + string(art.Digest)
+	log.Debugf("Saved key:%v, value:%v", key, newDig)
+	l.cache.Save(key, newDig)
 }
 
 func (l *localHelper) CheckDependencies(ctx context.Context, repo string, man distribution.Manifest) []distribution.Descriptor {

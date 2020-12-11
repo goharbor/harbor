@@ -328,13 +328,17 @@ func (t *transfer) pullManifest(repository, reference string) (
 }
 
 func (t *transfer) exist(repository, tag string) (bool, string, error) {
-	exist, digest, err := t.dst.ManifestExist(repository, tag)
+	exist, desc, err := t.dst.ManifestExist(repository, tag)
 	if err != nil {
 		t.logger.Errorf("failed to check the existence of the manifest of artifact %s:%s on the destination registry: %v",
 			repository, tag, err)
 		return false, "", err
 	}
-	return exist, digest, nil
+	var dig string
+	if desc != nil {
+		dig = string(desc.Digest)
+	}
+	return exist, dig, nil
 }
 
 func (t *transfer) pushManifest(manifest distribution.Manifest, repository, tag string) error {
