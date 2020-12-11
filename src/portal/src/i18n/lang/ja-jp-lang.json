@@ -10,11 +10,11 @@
         "THEME_LIGHT_TEXT": "ライトモード"
     },
     "SIGN_IN": {
-        "REMEMBER": "ログイン状態を記憶",
-        "INVALID_MSG": "ユーザー名またはパスワードが間違っています。",
-        "FORGOT_PWD": "パスワードを忘れた",
-        "HEADER_LINK": "サインイン",
-        "CORE_SERVICE_NOT_AVAILABLE": "コアサービスが利用不可になっています。"
+        "REMEMBER": "ユーザー情報の保存",
+        "INVALID_MSG": "ユーザー名またはパスワードが無効です。",
+        "FORGOT_PWD": "パスワードを忘れた場合",
+        "HEADER_LINK": "ログイン",
+        "CORE_SERVICE_NOT_AVAILABLE": "コア サービスを使用できません。"
     },
     "SIGN_UP": {
         "TITLE": "登録"
@@ -25,7 +25,7 @@
         "OK": "OK",
         "DELETE": "削除",
         "LOG_IN": "ログイン",
-        "LOG_IN_OIDC": "OIDCプロバイダ経由でログイン",
+        "LOG_IN_OIDC": "OIDC プロバイダ経由でログイン",
         "SIGN_UP_LINK": "アカウントを登録する",
         "SIGN_UP": "登録",
         "CONFIRM": "確認",
@@ -33,8 +33,8 @@
         "SAVE": "保存",
         "TEST_MAIL": "メールサーバーをテスト",
         "CLOSE": "閉じる",
-        "TEST_LDAP": "LDAPサーバーをテスト",
-        "TEST_OIDC": "OIDCサーバーをテスト",
+        "TEST_LDAP": "LDAP サーバーをテスト",
+        "TEST_OIDC": "OIDC サーバーをテスト",
         "MORE_INFO": "詳細情報...",
         "YES": "はい",
         "NO": "いいえ",
@@ -69,11 +69,11 @@
         "TAG_FILTER": "リソースのタグ及びバージョンをフィルターします。全てを指定するには空のままにするか、'1.0*'と指定すると'1.0'から始まる条件に合致する対象がフィルターされます。詳しくは、ユーザーガイドをご覧ください。",
         "LABEL_FILTER": "ラベルに紐付いたリソースをフィルターします。",
         "RESOURCE_FILTER": "リソースの種類でフィルターします。",
-        "PUSH_BASED": "リソースをローカルのHarborからリモートのレジストリにPushします。",
+        "PUSH_BASED": "リソースをローカルの Harbor からリモートのレジストリにPushします。",
         "PULL_BASED": "リソースをリモートのレジストリからローカルのHarborにPullします。",
         "DESTINATION_NAMESPACE": "対象の名前空間を指定します。空の場合、リソースはソースと同じ名前空間に配置されます。",
         "OVERRIDE": "対象の名前空間に同一のリソースが存在したときに、リソースを上書きするかどうかを指定します。",
-        "EMAIL": "メールアドレスはname@example.comのように有効な形式である必要があります。",
+        "EMAIL": "メールアドレスは name@example.com のように有効な形式である必要があります。",
         "USER_NAME": "記号を含まない、255字以下の文字列を指定してください。",
         "FULL_NAME": "20字以下の文字列を指定してください。",
         "COMMENT": "コメントは30字以下に収めてください。",
@@ -904,7 +904,6 @@
             "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\"",
             "GROUP_SCOPE": "LDAP Group Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
-
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
@@ -927,7 +926,7 @@
             "SCOPE": "OIDC Scope",
             "OIDC_VERIFYCERT": "Verify Certificate",
             "OIDC_AUTOONBOARD": "Automatic onboarding",
-            "USER_CLAIM": "Username Claim",    
+            "USER_CLAIM": "Username Claim",
             "OIDC_SETNAME": "Set OIDC Username",
             "OIDC_SETNAMECONTENT": "You must create a Harbor username the first time when authenticating via a third party(OIDC).This will be used within Harbor to be associated with projects, roles, etc.",
             "OIDC_USERNAME": "Username",
@@ -1216,7 +1215,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "An error occurred in Get schedule"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Schedule to GC",
