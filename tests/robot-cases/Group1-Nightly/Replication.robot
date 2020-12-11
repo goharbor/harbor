@@ -110,7 +110,7 @@ Test Case - Replication Rule Edit
     Create A New Endpoint    harbor    ${endpoint2}    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    Y
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    ${rule_name_old}    pull    nightly/a*    image    ${endpoint1}    project${d}
-    Edit Replication Rule By Name  ${rule_name_old}
+    Edit Replication Rule  ${rule_name_old}
     #  Change rule-name, source-registry, filter, trigger-mode for edition verification
     Clear Field Of Characters    ${rule_name_input}    30
     Retry Text Input    ${rule_name_input}    ${rule_name_new}
@@ -123,7 +123,7 @@ Test Case - Replication Rule Edit
     Retry Text Input  ${targetCron_id}  ${cron_str}
     Retry Double Keywords When Error    Retry Element Click    ${rule_save_button}    Retry Wait Until Page Not Contains Element    ${rule_save_button}
     #  verify all items were changed as expected
-    Edit Replication Rule By Name    ${rule_name_new}
+    Edit Replication Rule    ${rule_name_new}
     Retry Textfield Value Should Be    ${rule_name_input}               ${rule_name_new}
     Retry List Selection Should Be     ${src_registry_dropdown_list}    ${endpoint2}-https://${ip}
     Retry Textfield Value Should Be    ${filter_name_id}                project${d}
@@ -132,7 +132,7 @@ Test Case - Replication Rule Edit
     Retry List Selection Should Be     ${rule_trigger_select}           ${mode}
     Retry Textfield Value Should Be    ${targetCron_id}                 ${cron_str}
     Retry Element Click  ${rule_cancel_btn}
-    Ensure Delete Replication Rule By Name  ${rule_name_new}
+    Delete Replication Rule  ${rule_name_new}
     Close Browser
 
 Test Case - Replication Rule Delete
@@ -145,24 +145,12 @@ Test Case - Replication Rule Delete
     Create A New Endpoint    harbor    ${endpoint1}    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    Y
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    ${rule_name}    pull    ${DOCKER_USER}/*    image    ${endpoint1}    project${d}
-    Ensure Delete Replication Rule By Name  ${rule_name}
+    Delete Replication Rule  ${rule_name}
     Close Browser
 
 Test Case - Replication Of Pull Images from DockerHub To Self
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    #login source
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project  project${d}
-    Switch To Registries
-    Create A New Endpoint    docker-hub    e${d}    https://hub.docker.com/    ${DOCKER_USER}    ${DOCKER_PWD}    Y
-    Switch To Replication Manage
-    Create A Rule With Existing Endpoint    rule${d}    pull    ${DOCKER_USER}/{cent*,mariadb}    image    e${d}    project${d}
-    Select Rule And Replicate  rule${d}
-    #In docker-hub, under repository ${DOCKER_USER}, there're only 2 images: centos,mariadb.
-    Image Should Be Replicated To Project  project${d}  centos
-    Image Should Be Replicated To Project  project${d}  mariadb
-    Close Browser
+    @{target_images}=  Create List  mariadb  centos
+    Body Of Replication Of Pull Images from Registry To Self   docker-hub  https://hub.docker.com/  ${DOCKER_USER}    ${DOCKER_PWD}  ${DOCKER_USER}/{cent*,mariadb}  @{target_images}
 
 Test Case - Replication Of Push Images from Self To Harbor
     Init Chrome Driver
@@ -284,3 +272,10 @@ Test Case - Replication Of Push Images to DockerHub Triggered By Event
 
 Test Case - Replication Of Push Images to AWS-ECR Triggered By Event
     Body Of Replication Of Push Images to Registry Triggered By Event  aws-ecr  us-east-2  ${ecr_ac_id}  ${ecr_ac_key}  harbor-nightly-replication
+
+Test Case - Replication Of Pull Images from Gitlab To Self
+    @{target_images}=  Create List  photon  alpine
+    Body Of Replication Of Pull Images from Registry To Self   gitlab   https://registry.gitlab.com    ${gitlab_id}    ${gitlab_key}    dannylunsa/test_replication/{photon,alpine}    @{target_images}
+
+Test Case - Replication Of Push Images to Gitlab Triggered By Event
+    Body Of Replication Of Push Images to Registry Triggered By Event    gitlab   https://registry.gitlab.com    ${gitlab_id}    ${gitlab_key}    dannylunsa/test_replication
