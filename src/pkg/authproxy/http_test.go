@@ -21,19 +21,22 @@ func TestMain(m *testing.M) {
 
 func TestUserFromReviewStatus(t *testing.T) {
 	type result struct {
-		hasErr   bool
-		username string
-		groupLen int
+		hasErr      bool
+		username    string
+		groupLen    int
+		adminInAuth bool
 	}
 	cases := []struct {
-		input  v1beta1.TokenReviewStatus
-		expect result
+		input       v1beta1.TokenReviewStatus
+		adminGroups []string
+		expect      result
 	}{
 		{
 			input: v1beta1.TokenReviewStatus{
 				Authenticated: false,
 				Error:         "connection error",
 			},
+			adminGroups: []string{"admin"},
 			expect: result{
 				hasErr: true,
 			},
@@ -46,10 +49,12 @@ func TestUserFromReviewStatus(t *testing.T) {
 					UID:      "u-1",
 				},
 			},
+			adminGroups: []string{"admin"},
 			expect: result{
-				hasErr:   false,
-				username: "jack",
-				groupLen: 0,
+				hasErr:      false,
+				username:    "jack",
+				groupLen:    0,
+				adminInAuth: false,
 			},
 		},
 		{
@@ -61,21 +66,41 @@ func TestUserFromReviewStatus(t *testing.T) {
 				},
 				Error: "",
 			},
+			adminGroups: []string{"group2", "admin"},
 			expect: result{
-				hasErr:   false,
-				username: "daniel",
-				groupLen: 2,
+				hasErr:      false,
+				username:    "daniel",
+				groupLen:    2,
+				adminInAuth: true,
+			},
+		},
+		{
+			input: v1beta1.TokenReviewStatus{
+				Authenticated: true,
+				User: v1beta1.UserInfo{
+					Username: "daniel",
+					Groups:   []string{"group1", "group2"},
+				},
+				Error: "",
+			},
+			adminGroups: []string{},
+			expect: result{
+				hasErr:      false,
+				username:    "daniel",
+				groupLen:    2,
+				adminInAuth: false,
 			},
 		},
 	}
 	for _, c := range cases {
-		u, err := UserFromReviewStatus(c.input)
+		u, err := UserFromReviewStatus(c.input, c.adminGroups)
 		if c.expect.hasErr == true {
 			assert.NotNil(t, err)
 		} else {
 			assert.Nil(t, err)
 			assert.Equal(t, c.expect.username, u.Username)
 			assert.Equal(t, c.expect.groupLen, len(u.GroupIDs))
+			assert.Equal(t, c.expect.adminInAuth, u.AdminRoleInAuth)
 		}
 		if u != nil {
 			for _, gid := range u.GroupIDs {
