@@ -181,14 +181,10 @@ func (rAPI *robotAPI) GetRobotByID(ctx context.Context, params operation.GetRobo
 }
 
 func (rAPI *robotAPI) UpdateRobot(ctx context.Context, params operation.UpdateRobotParams) middleware.Responder {
-	if err := rAPI.validate(params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
+	var err error
+	if err := rAPI.RequireAuthenticated(ctx); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
-
-	if err := rAPI.requireAccess(ctx, params.Robot.Level, params.Robot.Permissions[0].Namespace, rbac.ActionUpdate); err != nil {
-		return rAPI.SendError(ctx, err)
-	}
-
 	r, err := rAPI.robotCtl.Get(ctx, params.RobotID, &robot.Option{
 		WithPermission: true,
 	})
@@ -196,32 +192,13 @@ func (rAPI *robotAPI) UpdateRobot(ctx context.Context, params operation.UpdateRo
 		return rAPI.SendError(ctx, err)
 	}
 
-	if params.Robot.Level != r.Level || params.Robot.Name != r.Name {
-		return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("cannot update the level or name of robot"))
+	if !r.Editable {
+		err = rAPI.updateV1Robot(ctx, params, r)
+	} else {
+		err = rAPI.updateV2Robot(ctx, params, r)
 	}
-
-	if r.Duration != params.Robot.Duration {
-		r.Duration = params.Robot.Duration
-		if params.Robot.Duration == -1 {
-			r.ExpiresAt = -1
-		} else if params.Robot.Duration == 0 {
-			r.Duration = int64(config.RobotTokenDuration())
-			r.ExpiresAt = r.CreationTime.AddDate(0, 0, config.RobotTokenDuration()).Unix()
-		} else {
-			r.ExpiresAt = r.CreationTime.AddDate(0, 0, int(params.Robot.Duration)).Unix()
-		}
-	}
-
-	r.Description = params.Robot.Description
-	r.Disabled = params.Robot.Disable
-	if len(params.Robot.Permissions) != 0 {
-		lib.JSONCopy(&r.Permissions, params.Robot.Permissions)
-	}
-
-	if err := rAPI.robotCtl.Update(ctx, r, &robot.Option{
-		WithPermission: true,
-	}); err != nil {
-		return rAPI.SendError(ctx, err)
+	if err != nil {
+		rAPI.SendError(ctx, err)
 	}
 
 	return operation.NewUpdateRobotOK()
@@ -289,6 +266,60 @@ func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Perm
 	// to create a project robot, the permission must be only one project scope.
 	if level == robot.LEVELPROJECT && len(permissions) > 1 {
 		return errors.New(nil).WithMessage("bad request permission").WithCode(errors.BadRequestCode)
+	}
+	return nil
+}
+
+// only disable can be updated for v1 robot
+func (rAPI *robotAPI) updateV1Robot(ctx context.Context, params operation.UpdateRobotParams, r *robot.Robot) error {
+	if err := rAPI.requireAccess(ctx, params.Robot.Level, r.ProjectID, rbac.ActionUpdate); err != nil {
+		return err
+	}
+	r.Disabled = params.Robot.Disable
+	r.Description = params.Robot.Description
+	if err := rAPI.robotCtl.Update(ctx, r, &robot.Option{
+		WithPermission: false,
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.UpdateRobotParams, r *robot.Robot) error {
+	if err := rAPI.validate(params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
+		return err
+	}
+
+	if err := rAPI.requireAccess(ctx, params.Robot.Level, params.Robot.Permissions[0].Namespace, rbac.ActionUpdate); err != nil {
+		return err
+	}
+
+	if params.Robot.Level != r.Level || params.Robot.Name != r.Name {
+		return errors.BadRequestError(nil).WithMessage("cannot update the level or name of robot")
+	}
+
+	if r.Duration != params.Robot.Duration {
+		r.Duration = params.Robot.Duration
+		if params.Robot.Duration == -1 {
+			r.ExpiresAt = -1
+		} else if params.Robot.Duration == 0 {
+			r.Duration = int64(config.RobotTokenDuration())
+			r.ExpiresAt = r.CreationTime.AddDate(0, 0, config.RobotTokenDuration()).Unix()
+		} else {
+			r.ExpiresAt = r.CreationTime.AddDate(0, 0, int(params.Robot.Duration)).Unix()
+		}
+	}
+
+	r.Description = params.Robot.Description
+	r.Disabled = params.Robot.Disable
+	if len(params.Robot.Permissions) != 0 {
+		lib.JSONCopy(&r.Permissions, params.Robot.Permissions)
+	}
+
+	if err := rAPI.robotCtl.Update(ctx, r, &robot.Option{
+		WithPermission: true,
+	}); err != nil {
+		return err
 	}
 	return nil
 }
