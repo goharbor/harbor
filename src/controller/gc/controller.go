@@ -177,7 +177,9 @@ func (c *controller) GetSchedule(ctx context.Context) (*scheduler.Schedule, erro
 
 // CreateSchedule ...
 func (c *controller) CreateSchedule(ctx context.Context, cronType, cron string, policy Policy) (int64, error) {
-	return c.schedulerMgr.Schedule(ctx, GCVendorType, -1, cronType, cron, SchedulerCallback, policy)
+	extras := make(map[string]interface{})
+	extras["delete_untagged"] = policy.DeleteUntagged
+	return c.schedulerMgr.Schedule(ctx, GCVendorType, -1, cronType, cron, SchedulerCallback, policy, extras)
 }
 
 // DeleteSchedule ...

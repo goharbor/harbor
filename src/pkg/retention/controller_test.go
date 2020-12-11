@@ -220,7 +220,7 @@ func (s *ControllerTestSuite) TestExecution() {
 type fakeRetentionScheduler struct {
 }
 
-func (f *fakeRetentionScheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string, cron string, callbackFuncName string, params interface{}) (int64, error) {
+func (f *fakeRetentionScheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string, cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error) {
 	return 111, nil
 }
 

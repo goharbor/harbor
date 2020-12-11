@@ -45,6 +45,7 @@ func (d *daoTestSuite) SetupTest() {
 		CRON:              "0 * * * * *",
 		CallbackFuncName:  "callback_func_01",
 		CallbackFuncParam: "callback_func_params",
+		ExtraAttrs:        `{"key":"value"}`,
 	}
 	id, err := d.dao.Create(d.ctx, schedule)
 	d.Require().Nil(err)
@@ -79,6 +80,7 @@ func (d *daoTestSuite) TestGet() {
 	schedule, err = d.dao.Get(d.ctx, d.id)
 	d.Require().Nil(err)
 	d.Equal(d.id, schedule.ID)
+	d.Equal("{\"key\":\"value\"}", schedule.ExtraAttrs)
 }
 
 func (d *daoTestSuite) TestDelete() {
@@ -93,7 +95,7 @@ func (d *daoTestSuite) TestUpdate() {
 	// not found
 	err := d.dao.Update(d.ctx, &schedule{
 		ID: 10000,
-	})
+	}, "CRON")
 	d.True(errors.IsNotFoundErr(err))
 
 	// pass

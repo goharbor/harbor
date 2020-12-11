@@ -268,6 +268,7 @@ BEGIN
   UPDATE scanner_registration SET is_default = TRUE WHERE name = 'Trivy' AND immutable = TRUE;
   END IF;
 END $$;
-ALTER TABLE execution ALTER COLUMN vendor_type TYPE varchar(64);
-ALTER TABLE schedule ALTER COLUMN vendor_type TYPE varchar(64);
-ALTER TABLE task ALTER COLUMN vendor_type TYPE varchar(64);
+ALTER TABLE execution ALTER COLUMN vendor_type type varchar(64);
+ALTER TABLE schedule ALTER COLUMN vendor_type type varchar(64);
+ALTER TABLE schedule ADD COLUMN IF NOT EXISTS extra_attrs JSON;
+ALTER TABLE task ALTER COLUMN vendor_type type varchar(64);

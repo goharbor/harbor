@@ -126,7 +126,7 @@ func (g *gcCtrTestSuite) TestGetSchedule() {
 
 func (g *gcCtrTestSuite) TestCreateSchedule() {
 	g.scheduler.On("Schedule", mock.Anything, mock.Anything, mock.Anything, mock.Anything,
-		mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 
 	dataMap := make(map[string]interface{})
 	p := Policy{

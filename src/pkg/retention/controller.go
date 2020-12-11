@@ -93,10 +93,11 @@ func (r *DefaultAPIController) CreateRetention(p *policy.Metadata) (int64, error
 	if p.Trigger.Kind == policy.TriggerKindSchedule {
 		cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
 		if ok && len(cron.(string)) > 0 {
+			extras := make(map[string]interface{})
 			if _, err = r.scheduler.Schedule(orm.Context(), schedulerVendorType, id, "", cron.(string), SchedulerCallback, TriggerParam{
 				PolicyID: id,
 				Trigger:  ExecutionTriggerSchedule,
-			}); err != nil {
+			}, extras); err != nil {
 				return 0, err
 			}
 		}
@@ -152,10 +153,11 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 		}
 	}
 	if needSch {
+		extras := make(map[string]interface{})
 		_, err := r.scheduler.Schedule(orm.Context(), schedulerVendorType, p.ID, "", p.Trigger.Settings[policy.TriggerSettingsCron].(string), SchedulerCallback, TriggerParam{
 			PolicyID: p.ID,
 			Trigger:  ExecutionTriggerSchedule,
-		})
+		}, extras)
 		if err != nil {
 			return err
 		}

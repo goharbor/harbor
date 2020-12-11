@@ -1,7 +1,9 @@
 package model
 
 import (
+	"encoding/json"
 	"github.com/go-openapi/strfmt"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"time"
@@ -55,11 +57,16 @@ type Schedule struct {
 // ToSwagger converts the schedule to the swagger model
 // TODO remove the hard code when after issue https://github.com/goharbor/harbor/issues/13047 is resolved.
 func (s *Schedule) ToSwagger() *models.GCHistory {
+	e, err := json.Marshal(s.ExtraAttrs)
+	if err != nil {
+		log.Error(err)
+	}
+
 	return &models.GCHistory{
 		ID:            0,
 		JobName:       "",
 		JobKind:       s.CRON,
-		JobParameters: s.Param,
+		JobParameters: string(e),
 		Deleted:       false,
 		JobStatus:     "",
 		Schedule: &models.ScheduleObj{

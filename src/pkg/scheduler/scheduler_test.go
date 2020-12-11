@@ -52,15 +52,16 @@ func (s *schedulerTestSuite) SetupTest() {
 
 func (s *schedulerTestSuite) TestSchedule() {
 	// empty vendor type
-	id, err := s.scheduler.Schedule(nil, "", 0, "", "0 * * * * *", "callback", nil)
+	extras := make(map[string]interface{})
+	id, err := s.scheduler.Schedule(nil, "", 0, "", "0 * * * * *", "callback", nil, extras)
 	s.NotNil(err)
 
 	// invalid cron
-	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "", "callback", nil)
+	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "", "callback", nil, extras)
 	s.NotNil(err)
 
 	// callback function not exist
-	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "not-exist", nil)
+	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "not-exist", nil, extras)
 	s.NotNil(err)
 
 	// failed to submit to jobservice
@@ -73,7 +74,7 @@ func (s *schedulerTestSuite) TestSchedule() {
 		Status:      job.ErrorStatus.String(),
 	}, nil)
 	s.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
-	_, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "callback", "param")
+	_, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "callback", "param", extras)
 	s.Require().NotNil(err)
 	s.dao.AssertExpectations(s.T())
 	s.execMgr.AssertExpectations(s.T())
@@ -91,7 +92,7 @@ func (s *schedulerTestSuite) TestSchedule() {
 		ExecutionID: 1,
 		Status:      job.SuccessStatus.String(),
 	}, nil)
-	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "callback", "param")
+	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "callback", "param", extras)
 	s.Require().Nil(err)
 	s.Equal(int64(1), id)
 	s.dao.AssertExpectations(s.T())
