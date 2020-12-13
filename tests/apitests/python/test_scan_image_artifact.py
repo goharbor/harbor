@@ -35,7 +35,7 @@ class TestScan(unittest.TestCase):
         #3. Add user(UA) as a member of project(PA) with project-admin role;
         self.project.add_project_members(self.project_id, user_id = self.user_id, **ADMIN_CLIENT)
 
-    @unittest.skipIf(TEARDOWN == True, "Test data won't be erased.")
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def do_tearDown(self):
         #1. Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(self.project_name, self.repo_name1.split('/')[1], **self.USER_CLIENT)
@@ -84,39 +84,6 @@ class TestScan(unittest.TestCase):
         self.do_tearDown()
 
     def testScanSignedImage(self):
-        """
-        Test case:
-            Scan A Signed Image
-        Test step and expected result:
-            1. Create a new user(UA);
-            2. Create a new private project(PA) by user(UA);
-            3. Add user(UA) as a member of project(PA) with project-admin role;
-            4. Get private project of user(UA), user(UA) can see only one private project which is project(PA);
-            5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
-            6. Send scan image command and get tag(TA) information to check scan result, it should be finished;
-            7. Swith Scanner;
-            8. Send scan another image command and get tag(TA) information to check scan result, it should be finished.
-        Tear down:
-            1. Delete repository(RA) by user(UA);
-            2. Delete project(PA);
-            3. Delete user(UA);
-        """
-
-        #Note: Please make sure that this Image has never been pulled before by any other cases,
-        #      so it is a not-scanned image right after repository creation.
-        #Note:busybox is pulled in setup phase, and setup is a essential phase.
-        image = "busybox"
-        tag = "latest"
-        #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
-        #TestScan.repo_name_1, tag = push_self_build_image_to_project(self.project_name, harbor_server, self.user_name, self.user_password, image, tag)
-
-        sign_image(harbor_server, self.project_name, image, tag)
-
-        #6. Send scan image command and get tag(TA) information to check scan result, it should be finished;
-        self.scan.scan_artifact(self.project_name, image, tag, **self.USER_CLIENT)
-        self.artifact.check_image_scan_result(self.project_name, image, tag, **self.USER_CLIENT)
-
-    def testScanManifestList(self):
         """
         Test case:
             Scan A Signed Image
