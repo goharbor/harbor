@@ -53,7 +53,7 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 }
 
 func getAdapterInfo() *model.AdapterPattern {
-	return &model.AdapterPattern{}
+	return nil
 }
 
 type adapter struct {
