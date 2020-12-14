@@ -850,7 +850,7 @@
         "AUTH_MODE_DB": "Veritabanı",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
-        "AUTH_MODE_HTTP": "http_auth",
+        "AUTH_MODE_HTTP": "Http Auth",
         "AUTH_MODE_OIDC": "OIDC",
         "SCOPE_BASE": "Temel",
         "SCOPE_ONE_LEVEL": "İlk Seviye",
@@ -916,7 +916,8 @@
             "ENDPOINT": "Sunucu Uç Noktası",
             "TOKEN_REVIEW": "Token Uç Noktasını İnceleyin",
             "SKIP_SEARCH": "Aramayı Atla",
-            "VERIFY_CERT": "Sertifikayı Doğrula"
+            "VERIFY_CERT": "Sertifikayı Doğrula",
+            "ADMIN_GROUPS": "Admin Groups"
         },
         "OIDC": {
             "OIDC_PROVIDER": "OIDC Sağlayıcı Adı",

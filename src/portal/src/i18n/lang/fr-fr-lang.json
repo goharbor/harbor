@@ -830,7 +830,7 @@
         "SELF_REGISTRATION": "Autoriser l'Auto-Inscription",
         "AUTH_MODE_DB": "Base de données",
         "AUTH_MODE_LDAP": "LDAP",
-        "AUTH_MODE_HTTP": "http_auth",
+        "AUTH_MODE_HTTP": "Http Auth",
         "AUTH_MODE_OIDC": "OIDC",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "Premier Niveau",
@@ -889,7 +889,8 @@
             "ENDPOINT": "serveur paramètre",
             "TOKEN_REVIEW": "examen symbolique paramètre",
             "SKIP_SEARCH": "Skip Search",
-            "VERIFY_CERT": "authentification vérifier cert"
+            "VERIFY_CERT": "authentification vérifier cert",
+            "ADMIN_GROUPS": "Admin Groups"
         },
         "OIDC": {
             "OIDC_PROVIDER": "OIDC Fournisseur",

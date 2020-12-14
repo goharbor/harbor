@@ -268,4 +268,13 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
             this.currentConfig.oidc_user_claim.value = "";
         }
     }
+    trimSpace(e: any) {
+        if (e && e.target) {
+            if (e.target.value) {
+                e.target.value = e.target.value.trim();
+            } else {
+                e.target.value = "";
+            }
+        }
+    }
 }

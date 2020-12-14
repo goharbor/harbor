@@ -846,7 +846,7 @@
     "AUTH_MODE_DB": "數據庫",
     "AUTH_MODE_LDAP":"LDAP",
     "AUTH_MODE_UAA":"UAA",
-    "AUTH_MODE_HTTP":"http_auth",
+    "AUTH_MODE_HTTP":"Http Auth",
     "AUTH_MODE_OIDC":"OIDC",
     "SCOPE_BASE":"本層",
     "SCOPE_ONE_LEVEL": "下一層",
@@ -911,7 +911,8 @@
       "ENDPOINT":"服務器端點",
       "TOKEN_REVIEW":"令牌審查端點",
       "SKIP_SEARCH":"跳過搜索",
-      "VERIFY_CERT": "Authentication驗證證書"
+      "VERIFY_CERT": "Authentication驗證證書",
+      "ADMIN_GROUPS": "Admin Groups"
     },
     "OIDC":{
       "OIDC_PROVIDER": "OIDC 供應商",

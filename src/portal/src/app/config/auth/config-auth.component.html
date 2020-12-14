@@ -283,6 +283,12 @@
                 [disabled]="!currentConfig.http_authproxy_tokenreview_endpoint.editable" />
             <clr-control-error>{{'TOOLTIP.ENDPOINT_FORMAT' | translate}}</clr-control-error>
         </clr-input-container>
+        <clr-input-container>
+            <label  for="HttpAdminGroup">{{'CONFIG.HTTP_AUTH.ADMIN_GROUPS' | translate}}</label>
+            <input autocomplete="off" (blur)="trimSpace($event)" clrInput name="HttpAdminGroup" type="text" #ngHttpAdminGroup="ngModel"
+                   [(ngModel)]="currentConfig.http_authproxy_admin_groups.value" id="HttpAdminGroup" size="35"
+                   [disabled]="disabled(currentConfig.http_authproxy_admin_groups)" />
+        </clr-input-container>
         <clr-checkbox-container clrInline>
             <label for="http_authproxy_verify_cert"
                 class="required">{{'CONFIG.HTTP_AUTH.VERIFY_CERT' | translate}}</label>
