@@ -25,7 +25,10 @@ const ADAPTERS_MAP = {
   "artifact-hub": "Artifact Hub",
   "huawei-SWR": "Huawei SWR",
   "jfrog-artifactory": "JFrog Artifactory",
-  "quay": "Quay"
+  "quay": "Quay",
+  "dtr": "DTR",
+  "tencent-tcr": "Tencent TCR",
+  "github-ghcr": "Github GHCR"
 };
 
 export const HELM_HUB: string = "helm-hub";
