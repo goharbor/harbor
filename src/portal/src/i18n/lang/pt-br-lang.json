@@ -846,7 +846,7 @@
         "AUTH_MODE_DB": "Banco de Dados",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
-        "AUTH_MODE_HTTP": "http_auth",
+        "AUTH_MODE_HTTP": "Http Auth",
         "AUTH_MODE_OIDC": "OIDC",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "OneLevel",
@@ -912,7 +912,8 @@
             "ENDPOINT": "Server endpoint",
             "TOKEN_REVIEW": "Ponto final do Token Review",
             "SKIP_SEARCH": "Skip Search",
-            "VERIFY_CERT": "Verificar certificado de Authentication"
+            "VERIFY_CERT": "Verificar certificado de Authentication",
+            "ADMIN_GROUPS": "Admin Groups"
         },
         "OIDC": {
             "OIDC_PROVIDER": "OIDC Fornecedor",
