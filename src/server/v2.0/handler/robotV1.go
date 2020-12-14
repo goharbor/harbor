@@ -3,10 +3,12 @@ package handler
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/core/config"
@@ -20,8 +22,6 @@ import (
 	handler_model "github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/robotv1"
-	"regexp"
-	"strings"
 )
 
 func newRobotV1API() *robotV1API {
@@ -40,7 +40,8 @@ type robotV1API struct {
 }
 
 func (rAPI *robotV1API) CreateRobotV1(ctx context.Context, params operation.CreateRobotV1Params) middleware.Responder {
-	if err := rAPI.RequireProjectAccess(ctx, params.ProjectIDOrName, rbac.ActionCreate, rbac.ResourceRobot); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := rAPI.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionCreate, rbac.ResourceRobot); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
@@ -57,19 +58,11 @@ func (rAPI *robotV1API) CreateRobotV1(ctx context.Context, params operation.Crea
 		Level: robot.LEVELPROJECT,
 	}
 
-	projectID, projectName, err := utils.ParseProjectIDOrName(params.ProjectIDOrName)
-	if err != nil {
-		return rAPI.SendError(ctx, err)
-	}
-
-	if projectID != 0 {
-		p, err := project.Ctl.Get(ctx, projectID)
+	projectName, ok := projectNameOrID.(string)
+	if !ok {
+		p, err := rAPI.projectCtr.Get(ctx, projectNameOrID, project.Metadata(false))
 		if err != nil {
-			log.Errorf("failed to get project %s: %v", projectName, err)
-			return rAPI.SendError(ctx, err)
-		}
-		if p == nil {
-			log.Warningf("project %s not found", projectName)
+			log.Errorf("failed to get project %s: %v", projectNameOrID, err)
 			return rAPI.SendError(ctx, err)
 		}
 		projectName = p.Name
@@ -116,11 +109,12 @@ func (rAPI *robotV1API) CreateRobotV1(ctx context.Context, params operation.Crea
 }
 
 func (rAPI *robotV1API) DeleteRobotV1(ctx context.Context, params operation.DeleteRobotV1Params) middleware.Responder {
-	if err := rAPI.RequireProjectAccess(ctx, params.ProjectIDOrName, rbac.ActionDelete, rbac.ResourceRobot); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := rAPI.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionDelete, rbac.ResourceRobot); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
-	pro, err := rAPI.projectCtr.Get(ctx, params.ProjectIDOrName)
+	pro, err := rAPI.projectCtr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
@@ -142,7 +136,8 @@ func (rAPI *robotV1API) DeleteRobotV1(ctx context.Context, params operation.Dele
 }
 
 func (rAPI *robotV1API) ListRobotV1(ctx context.Context, params operation.ListRobotV1Params) middleware.Responder {
-	if err := rAPI.RequireProjectAccess(ctx, params.ProjectIDOrName, rbac.ActionList, rbac.ResourceRobot); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := rAPI.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionList, rbac.ResourceRobot); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
@@ -151,7 +146,7 @@ func (rAPI *robotV1API) ListRobotV1(ctx context.Context, params operation.ListRo
 		return rAPI.SendError(ctx, err)
 	}
 
-	pro, err := rAPI.projectCtr.Get(ctx, params.ProjectIDOrName)
+	pro, err := rAPI.projectCtr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
@@ -182,11 +177,12 @@ func (rAPI *robotV1API) ListRobotV1(ctx context.Context, params operation.ListRo
 }
 
 func (rAPI *robotV1API) GetRobotByIDV1(ctx context.Context, params operation.GetRobotByIDV1Params) middleware.Responder {
-	if err := rAPI.RequireProjectAccess(ctx, params.ProjectIDOrName, rbac.ActionRead, rbac.ResourceRobot); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := rAPI.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead, rbac.ResourceRobot); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
-	pro, err := rAPI.projectCtr.Get(ctx, params.ProjectIDOrName)
+	pro, err := rAPI.projectCtr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
@@ -205,11 +201,12 @@ func (rAPI *robotV1API) GetRobotByIDV1(ctx context.Context, params operation.Get
 }
 
 func (rAPI *robotV1API) UpdateRobotV1(ctx context.Context, params operation.UpdateRobotV1Params) middleware.Responder {
-	if err := rAPI.RequireProjectAccess(ctx, params.ProjectIDOrName, rbac.ActionUpdate, rbac.ResourceRobot); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := rAPI.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionUpdate, rbac.ResourceRobot); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
-	pro, err := rAPI.projectCtr.Get(ctx, params.ProjectIDOrName)
+	pro, err := rAPI.projectCtr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
@@ -251,7 +248,8 @@ func (rAPI *robotV1API) validate(ctx context.Context, params operation.CreateRob
 		return errors.New(nil).WithMessage("bad request no access").WithCode(errors.BadRequestCode)
 	}
 
-	pro, err := rAPI.projectCtr.Get(ctx, params.ProjectIDOrName)
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	pro, err := rAPI.projectCtr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return err
 	}
@@ -267,7 +265,7 @@ func (rAPI *robotV1API) validate(ctx context.Context, params operation.CreateRob
 		p := &types.Policy{}
 		lib.JSONCopy(p, policy)
 		if !mp[p.String()] {
-			return errors.New(nil).WithMessage("%s action of %s resource not exist in project %s", policy.Action, policy.Resource, params.ProjectIDOrName).WithCode(errors.BadRequestCode)
+			return errors.New(nil).WithMessage("%s action of %s resource not exist in project %s", policy.Action, policy.Resource, projectNameOrID).WithCode(errors.BadRequestCode)
 		}
 	}
 

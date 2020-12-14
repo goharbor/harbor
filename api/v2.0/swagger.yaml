@@ -98,6 +98,7 @@ paths:
       operationId: createProject
       parameters:
         - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/resourceNameInLocation'
         - name: project
           in: body
           description: New created project.
@@ -115,7 +116,7 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
-  '/projects/{project_id}':
+  '/projects/{project_name_or_id}':
     get:
       summary: Return specific project detail information
       description: This endpoint returns specific project information by project ID.
@@ -124,7 +125,8 @@ paths:
       operationId: getProject
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
       responses:
         '200':
           description: Return matched project information.
@@ -142,7 +144,8 @@ paths:
       operationId: updateProject
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
         - name: project
           in: body
           required: true
@@ -170,7 +173,8 @@ paths:
       operationId: deleteProject
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
       responses:
         '200':
           $ref: '#/responses/200'
@@ -184,7 +188,7 @@ paths:
           $ref: '#/responses/412'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_id}/_deletable:
+  /projects/{project_name_or_id}/_deletable:
     get:
       summary: Get the deletable status of the project
       description: Get the deletable status of the project
@@ -193,7 +197,8 @@ paths:
       operationId: getProjectDeletable
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
       responses:
         '200':
           description: Return deletable status of the project.
@@ -207,7 +212,7 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  '/projects/{project_id}/summary':
+  '/projects/{project_name_or_id}/summary':
     get:
       summary: Get summary of the project.
       description: Get summary of the project.
@@ -216,7 +221,8 @@ paths:
       operationId: getProjectSummary
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
       responses:
         '200':
           description: Get summary of the project successfully.
@@ -1416,13 +1422,14 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_id_or_name}/robots:
+  /projects/{project_name_or_id}/robots:
     get:
       summary: Get all robot accounts of specified project
       description: Get all robot accounts of specified project
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectIDOrName'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/query'
@@ -1457,7 +1464,8 @@ paths:
       operationId: CreateRobotV1
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectIDOrName'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
         - name: robot
           in: body
           description: The JSON object of a robot account.
@@ -1486,7 +1494,7 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_id_or_name}/robots/{robot_id}:
+  /projects/{project_name_or_id}/robots/{robot_id}:
     get:
       summary: Get a robot account
       description: This endpoint returns specific robot account information by robot ID.
@@ -1495,7 +1503,8 @@ paths:
       operationId: GetRobotByIDV1
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectIDOrName'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
         - $ref: '#/parameters/robotId'
       responses:
         '200':
@@ -1518,7 +1527,8 @@ paths:
       operationId: UpdateRobotV1
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectIDOrName'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
         - $ref: '#/parameters/robotId'
         - name: robot
           in: body
@@ -1549,7 +1559,8 @@ paths:
       operationId: DeleteRobotV1
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectIDOrName'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
         - $ref: '#/parameters/robotId'
       responses:
         '200':
@@ -2044,23 +2055,30 @@ parameters:
     type: string
     required: false
     minLength: 1
+  resourceNameInLocation:
+    name: X-Resource-Name-In-Location
+    description: The flag to indicate whether to return the name of the resource in Location. When X-Resource-Name-In-Location is true, the Location will return the name of the resource.
+    in: header
+    type: boolean
+    required: false
+    default: false
+  isResourceName:
+    name: X-Is-Resource-Name
+    description: The flag to indicate whether the parameter which supports both name and id in the path is the name of the resource. When the X-Is-Resource-Name is false and the parameter can be converted to an integer, the parameter will be as an id, otherwise, it will be as a name.
+    in: header
+    type: boolean
+    required: false
+    default: false
   projectName:
     name: project_name
     in: path
     description: The name of the project
     required: true
     type: string
-  projectId:
-    name: project_id
+  projectNameOrId:
+    name: project_name_or_id
     in: path
-    description: The ID of the project
-    required: true
-    type: integer
-    format: int64
-  projectIDOrName:
-    name: project_id_or_name
-    in: path
-    description: The id or name of the project
+    description: The name or id of the project
     required: true
     type: string
   repositoryName:
