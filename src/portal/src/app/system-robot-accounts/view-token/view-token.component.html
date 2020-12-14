@@ -7,10 +7,15 @@
     </div>
     <div class="modal-body">
         <inline-alert class="modal-title"></inline-alert>
-        <p class="mt-0">{{"SYSTEM_ROBOT.REFRESH_SECRET_SUMMARY" | translate}}</p>
+        <p class="mt-0 mb-1">{{"SYSTEM_ROBOT.REFRESH_SECRET_SUMMARY" | translate}}</p>
         <section class="form-block show-info">
             <form #secretForm="ngForm" class="clr-form clr-form-horizontal">
-                <div class="clr-form-control">
+                <clr-toggle-wrapper class="mt-02">
+                    <input (change)="changeEnableNewSecret()" type="checkbox" clrToggle name="enableNewSecret" id="enable-new-secret"
+                           [(ngModel)]="enableNewSecret"/>
+                    <label for="enable-new-secret">{{"SYSTEM_ROBOT.ENABLE_NEW_SECRET" | translate}}</label>
+                </clr-toggle-wrapper>
+                <div class="clr-form-control" [style.visibility]="enableNewSecret ? 'visible' : 'hidden'">
                     <label for="new-token" class="clr-control-label">{{"SYSTEM_ROBOT.NEW_TOKEN" | translate}}</label>
                     <div class="clr-control-container" [class.clr-error]="(newToken.dirty || newToken.touched) && newToken.invalid">
                         <div class="clr-input-wrapper">
@@ -28,7 +33,7 @@
                         </clr-control-error>
                     </div>
                 </div>
-                <div class="clr-form-control">
+                <div class="clr-form-control" [style.visibility]="enableNewSecret ? 'visible' : 'hidden'">
                     <label for="confirm-token" class="clr-control-label">{{"SYSTEM_ROBOT.CONFIRM_SECRET" | translate}}</label>
                     <div class="clr-control-container" [class.clr-error]="notSame() || (confirmToken.dirty || confirmToken.touched) && confirmToken.invalid">
                         <div class="clr-input-wrapper">

@@ -1615,7 +1615,7 @@
         "PROJECTS": "覆盖项目数",
         "ALL_PROJECTS": "全部项目且具有",
         "PERMISSIONS": "项权限",
-        "REFRESH_SECRET_SUMMARY": "刷新当前机器人账户令牌",
+        "REFRESH_SECRET_SUMMARY": "您可以直接点击刷新按钮来随机生成新的令牌，或者手动为其指定一个新的令牌",
         "TOKEN": "令牌",
         "NEW_TOKEN": "新令牌",
         "REFRESH": "刷新",
@@ -1650,6 +1650,8 @@
         "COVERED_PROJECTS": "个项目",
         "CONFIRM_SECRET": "确认令牌",
         "SECRET_AGAIN": "请再次输入令牌",
-        "INCONSISTENT": "两次输入不一致"
+        "INCONSISTENT": "两次输入不一致",
+        "NAME_TOOLTIP": "机器人名称由小写字符、数字和._-组成且至少1个字符并以字符或者数字开头。",
+        "ENABLE_NEW_SECRET": "开启此项以便手动指定新令牌"
     }
 }

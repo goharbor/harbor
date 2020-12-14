@@ -33,6 +33,7 @@ export class ViewTokenComponent implements OnInit {
   createSuccess: string;
   downLoadFileName: string = '';
   downLoadHref: SafeUrl = '';
+  enableNewSecret: boolean = false;
   constructor(private robotService: RobotService,
               private operationService: OperationService,
               private msgHandler: MessageHandlerService,
@@ -96,6 +97,9 @@ export class ViewTokenComponent implements OnInit {
     });
   }
   canRefresh() {
+    if (this.enableNewSecret && !this.newSecret && !this.confirmSecret) {
+      return false;
+    }
     if (!this.newSecret && !this.confirmSecret) {
       return true;
     }
@@ -118,5 +122,10 @@ export class ViewTokenComponent implements OnInit {
 
   notSame(): boolean {
     return this.secretForm.valid && this.newSecret && this.confirmSecret && this.newSecret !== this.confirmSecret;
+  }
+  changeEnableNewSecret() {
+    this.secretForm.reset({
+      enableNewSecret: this.enableNewSecret
+    });
   }
 }

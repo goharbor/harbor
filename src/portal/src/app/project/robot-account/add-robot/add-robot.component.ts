@@ -250,7 +250,7 @@ export class AddRobotComponent implements OnInit, OnDestroy {
       opeMessage.name = "SYSTEM_ROBOT.ADD_ROBOT";
       opeMessage.data.id = robot.id;
       opeMessage.state = OperationState.progressing;
-      opeMessage.data.name = robot.name;
+      opeMessage.data.name = `${this.projectName}+${robot.name}`;
       this.operationService.publishInfo(opeMessage);
       this.robotService.CreateRobot({
         robot: robot
