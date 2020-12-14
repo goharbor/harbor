@@ -29,6 +29,17 @@ type Query struct {
 	Sorting string
 }
 
+// First make the query only fetch the first one record in the sorting order
+func (q *Query) First(sorting ...string) *Query {
+	q.PageNumber = 1
+	q.PageSize = 1
+	if len(sorting) > 0 {
+		q.Sorting = sorting[0]
+	}
+
+	return q
+}
+
 // New returns Query with keywords
 func New(kw KeyWords) *Query {
 	return &Query{Keywords: kw}

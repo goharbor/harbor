@@ -76,7 +76,7 @@ func (s *scanAPI) GetReportLog(ctx context.Context, params operation.GetReportLo
 		return s.SendError(ctx, err)
 	}
 
-	bytes, err := s.scanCtl.GetScanLog(params.ReportID)
+	bytes, err := s.scanCtl.GetScanLog(ctx, params.ReportID)
 	if err != nil {
 		return s.SendError(ctx, err)
 	}

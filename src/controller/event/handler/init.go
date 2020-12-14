@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/auditlog"
 	"github.com/goharbor/harbor/src/controller/event/handler/internal"
@@ -31,7 +32,7 @@ func init() {
 	notifier.Subscribe(event.TopicQuotaWarning, &quota.Handler{})
 	notifier.Subscribe(event.TopicScanningFailed, &scan.Handler{})
 	notifier.Subscribe(event.TopicScanningCompleted, &scan.Handler{})
-	notifier.Subscribe(event.TopicDeleteArtifact, &scan.DelArtHandler{})
+	notifier.Subscribe(event.TopicDeleteArtifact, &scan.DelArtHandler{Context: orm.Context})
 	notifier.Subscribe(event.TopicReplication, &artifact.ReplicationHandler{})
 	notifier.Subscribe(event.TopicTagRetention, &artifact.RetentionHandler{RetentionController: artifact.DefaultRetentionControllerFunc})
 

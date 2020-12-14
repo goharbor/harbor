@@ -80,11 +80,7 @@ func (suite *SummaryTestSuite) SetupSuite() {
 		Digest:           "digest-code",
 		RegistrationUUID: "reg-uuid-001",
 		MimeType:         v1.MimeTypeNativeReport,
-		JobID:            "job-uuid-001",
-		TrackID:          "track-uuid-001",
 		Status:           "Success",
-		StatusCode:       3,
-		StatusRevision:   10000,
 		Report:           string(jsonData),
 	}
 }

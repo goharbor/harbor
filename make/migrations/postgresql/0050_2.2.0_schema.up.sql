@@ -268,7 +268,18 @@ BEGIN
   UPDATE scanner_registration SET is_default = TRUE WHERE name = 'Trivy' AND immutable = TRUE;
   END IF;
 END $$;
+
 ALTER TABLE execution ALTER COLUMN vendor_type type varchar(64);
 ALTER TABLE schedule ALTER COLUMN vendor_type type varchar(64);
 ALTER TABLE schedule ADD COLUMN IF NOT EXISTS extra_attrs JSON;
 ALTER TABLE task ALTER COLUMN vendor_type type varchar(64);
+
+/* Remove these columns in scan_report because execution-task pattern will handle them */
+ALTER TABLE scan_report DROP COLUMN IF EXISTS job_id;
+ALTER TABLE scan_report DROP COLUMN IF EXISTS track_id;
+ALTER TABLE scan_report DROP COLUMN IF EXISTS requester;
+ALTER TABLE scan_report DROP COLUMN IF EXISTS status;
+ALTER TABLE scan_report DROP COLUMN IF EXISTS status_code;
+ALTER TABLE scan_report DROP COLUMN IF EXISTS status_rev;
+ALTER TABLE scan_report DROP COLUMN IF EXISTS start_time;
+ALTER TABLE scan_report DROP COLUMN IF EXISTS end_time;

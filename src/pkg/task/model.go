@@ -52,6 +52,16 @@ type Execution struct {
 	EndTime    time.Time              `json:"end_time"`
 }
 
+// IsOnGoing returns true when the execution is running
+func (exec *Execution) IsOnGoing() bool {
+	switch job.Status(exec.Status) {
+	case job.RunningStatus:
+		return true
+	default:
+		return false
+	}
+}
+
 // Task is the unit for running. It stores the jobservice job records and related information
 type Task struct {
 	ID int64 `json:"id"`
