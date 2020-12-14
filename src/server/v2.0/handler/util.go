@@ -20,10 +20,12 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
+	"strconv"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/scan"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -125,4 +127,19 @@ func unescapePathParams(params interface{}, fieldNames ...string) error {
 	}
 
 	return nil
+}
+
+func parseProjectNameOrID(str string, isResourceName *bool) interface{} {
+	if lib.BoolValue(isResourceName) {
+		// always as projectName
+		return str
+	}
+
+	v, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		// it's projectName
+		return str
+	}
+
+	return v // projectID
 }

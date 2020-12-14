@@ -183,16 +183,23 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		}
 	}
 
-	location := fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), projectID)
+	var location string
+	if lib.BoolValue(params.XResourceNameInLocation) {
+		location = fmt.Sprintf("%s/%s", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), req.ProjectName)
+	} else {
+		location = fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), projectID)
+	}
+
 	return operation.NewCreateProjectCreated().WithLocation(location)
 }
 
 func (a *projectAPI) DeleteProject(ctx context.Context, params operation.DeleteProjectParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectID, rbac.ActionDelete); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionDelete); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	result, err := a.deletable(ctx, params.ProjectID)
+	p, result, err := a.deletable(ctx, projectNameOrID)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -201,19 +208,19 @@ func (a *projectAPI) DeleteProject(ctx context.Context, params operation.DeleteP
 		return a.SendError(ctx, errors.PreconditionFailedError(errors.New(result.Message)))
 	}
 
-	if err := a.projectCtl.Delete(ctx, params.ProjectID); err != nil {
+	if err := a.projectCtl.Delete(ctx, p.ProjectID); err != nil {
 		return a.SendError(ctx, err)
 	}
 
 	// remove the robot associated with the project
-	if err := a.robotMgr.DeleteByProjectID(ctx, params.ProjectID); err != nil {
+	if err := a.robotMgr.DeleteByProjectID(ctx, p.ProjectID); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	referenceID := quota.ReferenceID(params.ProjectID)
+	referenceID := quota.ReferenceID(p.ProjectID)
 	q, err := a.quotaCtl.GetByRef(ctx, quota.ProjectReference, referenceID)
 	if err != nil {
-		log.Warningf("failed to get quota for project %d, error: %v", params.ProjectID, err)
+		log.Warningf("failed to get quota for project %s, error: %v", projectNameOrID, err)
 	} else {
 		if err := a.quotaCtl.Delete(ctx, q.ID); err != nil {
 			return a.SendError(ctx, fmt.Errorf("failed to delete quota for project: %v", err))
@@ -221,7 +228,7 @@ func (a *projectAPI) DeleteProject(ctx context.Context, params operation.DeleteP
 	}
 
 	// preheat policies under the project should be deleted after deleting the project
-	if err = a.preheatCtl.DeletePoliciesOfProject(ctx, params.ProjectID); err != nil {
+	if err = a.preheatCtl.DeletePoliciesOfProject(ctx, p.ProjectID); err != nil {
 		return a.SendError(ctx, err)
 	}
 
@@ -269,11 +276,12 @@ func (a *projectAPI) GetLogs(ctx context.Context, params operation.GetLogsParams
 }
 
 func (a *projectAPI) GetProject(ctx context.Context, params operation.GetProjectParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectID, rbac.ActionRead); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	p, err := a.getProject(ctx, params.ProjectID, project.WithCVEAllowlist(), project.WithOwner())
+	p, err := a.getProject(ctx, projectNameOrID, project.WithCVEAllowlist(), project.WithOwner())
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -282,11 +290,12 @@ func (a *projectAPI) GetProject(ctx context.Context, params operation.GetProject
 }
 
 func (a *projectAPI) GetProjectDeletable(ctx context.Context, params operation.GetProjectDeletableParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectID, rbac.ActionDelete); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionDelete); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	result, err := a.deletable(ctx, params.ProjectID)
+	_, result, err := a.deletable(ctx, projectNameOrID)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -295,11 +304,12 @@ func (a *projectAPI) GetProjectDeletable(ctx context.Context, params operation.G
 }
 
 func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.GetProjectSummaryParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectID, rbac.ActionRead); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	p, err := a.getProject(ctx, params.ProjectID)
+	p, err := a.getProject(ctx, projectNameOrID)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -440,11 +450,12 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 }
 
 func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateProjectParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectID, rbac.ActionUpdate); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionUpdate); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	p, err := a.projectCtl.Get(ctx, params.ProjectID, project.Metadata(false))
+	p, err := a.projectCtl.Get(ctx, projectNameOrID, project.Metadata(false))
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -452,10 +463,10 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	if params.Project.CVEAllowlist != nil {
 		if params.Project.CVEAllowlist.ProjectID == 0 {
 			// project_id in cve_allowlist not provided or provided as 0, let it to be the id of the project which will be updating
-			params.Project.CVEAllowlist.ProjectID = params.ProjectID
-		} else if params.Project.CVEAllowlist.ProjectID != params.ProjectID {
+			params.Project.CVEAllowlist.ProjectID = p.ProjectID
+		} else if params.Project.CVEAllowlist.ProjectID != p.ProjectID {
 			return a.SendError(ctx, errors.BadRequestError(nil).
-				WithMessage("project_id in cve_allowlist must be %d but it's %d", params.ProjectID, params.Project.CVEAllowlist.ProjectID))
+				WithMessage("project_id in cve_allowlist must be %d but it's %d", p.ProjectID, params.Project.CVEAllowlist.ProjectID))
 		}
 
 		if err := lib.JSONCopy(&p.CVEAllowlist, params.Project.CVEAllowlist); err != nil {
@@ -477,26 +488,26 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	return operation.NewUpdateProjectOK()
 }
 
-func (a *projectAPI) deletable(ctx context.Context, projectID int64) (*models.ProjectDeletable, error) {
-	proj, err := a.getProject(ctx, projectID)
+func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{}) (*project.Project, *models.ProjectDeletable, error) {
+	p, err := a.getProject(ctx, projectNameOrID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	result := &models.ProjectDeletable{Deletable: true}
-	if proj.RepoCount > 0 {
+	if p.RepoCount > 0 {
 		result.Deletable = false
 		result.Message = "the project contains repositories, can not be deleted"
-	} else if proj.ChartCount > 0 {
+	} else if p.ChartCount > 0 {
 		result.Deletable = false
 		result.Message = "the project contains helm charts, can not be deleted"
 	}
 
-	return result, nil
+	return p, result, nil
 }
 
-func (a *projectAPI) getProject(ctx context.Context, projectID int64, options ...project.Option) (*project.Project, error) {
-	p, err := a.projectCtl.Get(ctx, projectID, options...)
+func (a *projectAPI) getProject(ctx context.Context, projectNameOrID interface{}, options ...project.Option) (*project.Project, error) {
+	p, err := a.projectCtl.Get(ctx, projectNameOrID, options...)
 	if err != nil {
 		return nil, err
 	}
