@@ -45,7 +45,7 @@ func (suite *CacheTestSuite) TestContains() {
 	suite.cache.Save(key, "value", time.Second*5)
 	suite.True(suite.cache.Contains(key))
 
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 8)
 	suite.False(suite.cache.Contains(key))
 }
 
@@ -84,7 +84,7 @@ func (suite *CacheTestSuite) TestSave() {
 		suite.cache.Fetch(key, &value)
 		suite.Equal("hello, save", value)
 
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 8)
 
 		value = ""
 		suite.Error(suite.cache.Fetch(key, &value))
