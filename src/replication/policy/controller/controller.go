@@ -52,7 +52,8 @@ func (c *controller) Create(policy *model.Policy) (int64, error) {
 		return 0, err
 	}
 	if isScheduledTrigger(policy) {
-		if _, err = c.scheduler.Schedule(orm.Context(), job.Replication, id, "", policy.Trigger.Settings.Cron, CallbackFuncName, id); err != nil {
+		extras := make(map[string]interface{})
+		if _, err = c.scheduler.Schedule(orm.Context(), job.Replication, id, "", policy.Trigger.Settings.Cron, CallbackFuncName, id, extras); err != nil {
 			log.Errorf("failed to schedule the policy %d: %v", id, err)
 		}
 	}
@@ -84,7 +85,8 @@ func (c *controller) Update(policy *model.Policy) error {
 	}
 	// schedule again if needed
 	if isScheduledTrigger(policy) {
-		if _, err = c.scheduler.Schedule(orm.Context(), job.Replication, policy.ID, "", policy.Trigger.Settings.Cron, CallbackFuncName, policy.ID); err != nil {
+		extras := make(map[string]interface{})
+		if _, err = c.scheduler.Schedule(orm.Context(), job.Replication, policy.ID, "", policy.Trigger.Settings.Cron, CallbackFuncName, policy.ID, extras); err != nil {
 			return fmt.Errorf("failed to schedule the policy %d: %v", policy.ID, err)
 		}
 	}

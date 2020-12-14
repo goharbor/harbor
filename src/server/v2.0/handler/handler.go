@@ -41,6 +41,7 @@ func New() http.Handler {
 		ReplicationAPI: newReplicationAPI(),
 		SysteminfoAPI:  newSystemInfoAPI(),
 		PingAPI:        newPingAPI(),
+		GcAPI:          newGCAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

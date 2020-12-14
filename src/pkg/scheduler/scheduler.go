@@ -37,14 +37,15 @@ var (
 
 // Schedule describes the detail information about the created schedule
 type Schedule struct {
-	ID           int64     `json:"id"`
-	VendorType   string    `json:"vendor_type"`
-	VendorID     int64     `json:"vendor_id"`
-	CRONType     string    `json:"cron_type"`
-	CRON         string    `json:"cron"`
-	Status       string    `json:"status"` // status of the underlying task(jobservice job)
-	CreationTime time.Time `json:"creation_time"`
-	UpdateTime   time.Time `json:"update_time"`
+	ID           int64                  `json:"id"`
+	VendorType   string                 `json:"vendor_type"`
+	VendorID     int64                  `json:"vendor_id"`
+	CRONType     string                 `json:"cron_type"`
+	CRON         string                 `json:"cron"`
+	ExtraAttrs   map[string]interface{} `json:"extra_attrs"`
+	Status       string                 `json:"status"` // status of the underlying task(jobservice job)
+	CreationTime time.Time              `json:"creation_time"`
+	UpdateTime   time.Time              `json:"update_time"`
 	// we can extend this model to include more information(e.g. how many times the schedule already
 	// runs; when will the schedule runs next time)
 }
@@ -59,7 +60,7 @@ type Scheduler interface {
 	// The "params" is passed to the callback function as encoded json string, so the callback
 	// function must decode it before using
 	Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
-		cron string, callbackFuncName string, params interface{}) (int64, error)
+		cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error)
 	// UnScheduleByID the schedule specified by ID
 	UnScheduleByID(ctx context.Context, id int64) error
 	// UnScheduleByVendor the schedule specified by vendor
@@ -94,10 +95,10 @@ type scheduler struct {
 // to out of control from the global transaction, and uses a new transaction that only
 // covers the logic inside the function
 func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
-	cron string, callbackFuncName string, params interface{}) (int64, error) {
+	cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error) {
 	var scheduleID int64
 	f := func(ctx context.Context) error {
-		id, err := s.schedule(ctx, vendorType, vendorID, cronType, cron, callbackFuncName, params)
+		id, err := s.schedule(ctx, vendorType, vendorID, cronType, cron, callbackFuncName, params, extras)
 		if err != nil {
 			return err
 		}
@@ -113,7 +114,7 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 }
 
 func (s *scheduler) schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
-	cron string, callbackFuncName string, params interface{}) (int64, error) {
+	cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error) {
 	if len(vendorType) == 0 {
 		return 0, fmt.Errorf("empty vendor type")
 	}
@@ -141,6 +142,13 @@ func (s *scheduler) schedule(ctx context.Context, vendorType string, vendorID in
 			return 0, err
 		}
 		sched.CallbackFuncParam = string(paramsData)
+	}
+	if extras != nil {
+		extrasData, err := json.Marshal(extras)
+		if err != nil {
+			return 0, err
+		}
+		sched.ExtraAttrs = string(extrasData)
 	}
 	// create schedule record
 	// when checkin hook comes, the database record must exist,
@@ -272,6 +280,15 @@ func (s *scheduler) convertSchedule(ctx context.Context, schedule *schedule) (*S
 		CreationTime: schedule.CreationTime,
 		UpdateTime:   schedule.UpdateTime,
 	}
+	if len(schedule.ExtraAttrs) > 0 {
+		extras := map[string]interface{}{}
+		if err := json.Unmarshal([]byte(schedule.ExtraAttrs), &extras); err != nil {
+			log.Errorf("failed to unmarshal the extra attributes of schedule %d: %v", schedule.ID, err)
+			return nil, err
+		}
+		schd.ExtraAttrs = extras
+	}
+
 	executions, err := s.execMgr.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"VendorType": JobNameScheduler,

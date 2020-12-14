@@ -157,38 +157,6 @@ class System(base.Base):
         scan_all_id = self.create_scan_all_schedule('Manual', **kwargs)
         return scan_all_id
 
-    def gc_now(self, is_delete_untagged=False, **kwargs):
-        gc_id = self.create_gc_schedule('Manual', is_delete_untagged, **kwargs)
-        return gc_id
-
-    def validate_gc_job_status(self, gc_id, expected_gc_status, **kwargs):
-        get_gc_status_finish = False
-        timeout_count = 20
-        while timeout_count > 0:
-            time.sleep(5)
-            status = self.get_gc_status_by_id(gc_id, **kwargs)
-            print("GC job No: {}, status: {}".format(timeout_count, status.job_status))
-            if status.job_status == expected_gc_status:
-                get_gc_status_finish = True
-                break
-            timeout_count = timeout_count - 1
-
-        if not (get_gc_status_finish):
-            raise Exception("GC status is not as expected '{}' actual GC status is '{}'".format(expected_gc_status, status.job_status))
-
-    def validate_deletion_success(self, gc_id, **kwargs):
-        log_content = self.get_gc_log_by_id(gc_id, **kwargs)
-        key_message = "manifests eligible for deletion"
-        key_message_pos = log_content.find(key_message)
-        full_message = log_content[key_message_pos-30 : key_message_pos + len(key_message)]
-        deleted_files_count_list = re.findall(r'\s+(\d+)\s+blobs\s+and\s+\d+\s+manifests\s+eligible\s+for\s+deletion', full_message)
-
-        if len(deleted_files_count_list) != 1:
-            raise Exception(r"Fail to get blobs eligible for deletion in log file, failure is {}.".format(len(deleted_files_count_list)))
-        deleted_files_count = int(deleted_files_count_list[0])
-        if deleted_files_count == 0:
-            raise Exception(r"Get blobs eligible for deletion count is {}, while we expect more than 1.".format(deleted_files_count))
-
     def set_cve_allowlist(self, expires_at=None, expected_status_code=200, *cve_ids, **kwargs):
         client = self._get_client(**kwargs)
         cve_list = [swagger_client.CVEAllowlistItem(cve_id=c) for c in cve_ids]

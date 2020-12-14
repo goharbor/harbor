@@ -226,7 +226,7 @@ func TestCreate(t *testing.T) {
 
 	// scheduled trigger
 	scheduler.On("Schedule", mock.Anything, mock.Anything,
-		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	_, err = ctl.Create(&model.Policy{
 		Enabled: true,
 		Trigger: &model.Trigger{
@@ -269,7 +269,7 @@ func TestUpdate(t *testing.T) {
 
 	// the trigger changed
 	scheduler.On("Schedule", mock.Anything, mock.Anything,
-		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	scheduler.On("UnScheduleByVendor", mock.Anything, mock.Anything,
 		mock.Anything).Return(nil)
 

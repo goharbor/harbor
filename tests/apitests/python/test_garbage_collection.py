@@ -7,17 +7,17 @@ from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import TEARDOWN
 from testutils import harbor_server
 from library.user import User
-from library.system import System
 from library.project import Project
 from library.repository import Repository
 from library.base import _assert_status_code
 from library.repository import push_special_image_to_project
 from library.artifact import Artifact
+from library.gc import GC
 
 class TestProjects(unittest.TestCase):
     @suppress_urllib3_warning
     def setUp(self):
-        self.system = System()
+        self.gc = GC()
         self.project = Project()
         self.user = User()
         self.repo = Repository()
@@ -82,13 +82,13 @@ class TestProjects(unittest.TestCase):
         self.artifact.delete_tag(TestProjects.project_gc_untag_name, self.repo_name_untag, self.tag, self.tag, **ADMIN_CLIENT)
 
         #5. Tigger garbage collection operation;
-        gc_id = self.system.gc_now(**ADMIN_CLIENT)
+        gc_id = self.gc.gc_now(**ADMIN_CLIENT)
 
         #6. Check garbage collection job was finished;
-        self.system.validate_gc_job_status(gc_id, "finished", **ADMIN_CLIENT)
+        self.gc.validate_gc_job_status(gc_id, "Success", **ADMIN_CLIENT)
 
         #7. Get garbage collection log, check there is a number of files was deleted;
-        self.system.validate_deletion_success(gc_id, **ADMIN_CLIENT)
+        self.gc.validate_deletion_success(gc_id, **ADMIN_CLIENT)
 
         artifacts = self.artifact.list_artifacts(TestProjects.project_gc_untag_name, self.repo_name_untag, **TestProjects.USER_GC_CLIENT)
         _assert_status_code(len(artifacts), 1)
@@ -96,13 +96,13 @@ class TestProjects(unittest.TestCase):
         time.sleep(5)
 
         #9. Tigger garbage collection operation;
-        gc_id = self.system.gc_now(is_delete_untagged=True, **ADMIN_CLIENT)
+        gc_id = self.gc.gc_now(is_delete_untagged=True, **ADMIN_CLIENT)
 
         #10. Check garbage collection job was finished;
-        self.system.validate_gc_job_status(gc_id, "finished", **ADMIN_CLIENT)
+        self.gc.validate_gc_job_status(gc_id, "Success", **ADMIN_CLIENT)
 
         #7. Get garbage collection log, check there is a number of files was deleted;
-        self.system.validate_deletion_success(gc_id, **ADMIN_CLIENT)
+        self.gc.validate_deletion_success(gc_id, **ADMIN_CLIENT)
 
         #11. Repository with untag image should be still there;
         repo_data_untag = self.repo.list_repositories(TestProjects.project_gc_untag_name, **TestProjects.USER_GC_CLIENT)

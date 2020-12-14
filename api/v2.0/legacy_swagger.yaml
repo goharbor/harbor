@@ -1549,25 +1549,6 @@ paths:
           description: Only admin has this authority.
         '500':
           description: Unexpected internal errors.
-  /system/gc:
-    get:
-      summary: Get gc results.
-      description: This endpoint let user get latest ten gc results.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get gc results successfully.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/GCResult'
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission of admin role.
-        '500':
-          description: Unexpected internal errors.
   '/system/gc/{id}':
     get:
       summary: Get gc status.
@@ -1590,101 +1571,6 @@ paths:
           description: User need to log in first.
         '403':
           description: User does not have permission of admin role.
-        '500':
-          description: Unexpected internal errors.
-  '/system/gc/{id}/log':
-    get:
-      summary: Get gc job log.
-      description: This endpoint let user get gc job logs filtered by specific ID.
-      parameters:
-        - name: id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Relevant job ID
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get successfully.
-          schema:
-            type: string
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission of admin role.
-        '404':
-          description: The specific gc ID's log does not exist.
-        '500':
-          description: Unexpected internal errors.
-  /system/gc/schedule:
-    get:
-      summary: Get gc's schedule.
-      description: This endpoint is for get schedule of gc job.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get gc's schedule.
-          schema:
-            $ref: '#/definitions/AdminJobSchedule'
-        '401':
-          description: User need to log in first.
-        '403':
-          description: Only admin has this authority.
-        '500':
-          description: Unexpected internal errors.
-    put:
-      summary: Update gc's schedule.
-      description: |
-        This endpoint is for update gc schedule.
-      parameters:
-        - name: schedule
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/AdminJobSchedule'
-          description: Updates of gc's schedule.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Updated gc's schedule successfully.
-        '400':
-          description: Invalid schedule type.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission of admin role.
-        '500':
-          description: Unexpected internal errors.
-    post:
-      summary: Create a gc schedule.
-      description: |
-        This endpoint is for update gc schedule.
-      parameters:
-        - name: schedule
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/AdminJobSchedule'
-          description: Updates of gc's schedule.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: GC schedule successfully.
-        '400':
-          description: Invalid schedule type.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission of admin role.
-        '409':
-          description: There is a "gc" job in progress, so the request cannot be served.
         '500':
           description: Unexpected internal errors.
   /system/scanAll/schedule:

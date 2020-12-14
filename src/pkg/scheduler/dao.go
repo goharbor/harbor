@@ -34,6 +34,7 @@ type schedule struct {
 	VendorID          int64     `orm:"column(vendor_id)"`
 	CRONType          string    `orm:"column(cron_type)"`
 	CRON              string    `orm:"column(cron)"`
+	ExtraAttrs        string    `orm:"column(extra_attrs)"`
 	CallbackFuncName  string    `orm:"column(callback_func_name)"`
 	CallbackFuncParam string    `orm:"column(callback_func_param)"`
 	CreationTime      time.Time `orm:"column(creation_time)"`

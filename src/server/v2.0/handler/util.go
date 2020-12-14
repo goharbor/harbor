@@ -29,6 +29,21 @@ import (
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
+const (
+	// ScheduleHourly : 'Hourly'
+	ScheduleHourly = "Hourly"
+	// ScheduleDaily : 'Daily'
+	ScheduleDaily = "Daily"
+	// ScheduleWeekly : 'Weekly'
+	ScheduleWeekly = "Weekly"
+	// ScheduleCustom : 'Custom'
+	ScheduleCustom = "Custom"
+	// ScheduleManual : 'Manual'
+	ScheduleManual = "Manual"
+	// ScheduleNone : 'None'
+	ScheduleNone = "None"
+)
+
 func boolValue(v *bool) bool {
 	if v != nil {
 		return *v
