@@ -25,7 +25,6 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	common_job "github.com/goharbor/harbor/src/common/job"
 	common_models "github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/core/api/models"
 	utils_core "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -263,23 +262,6 @@ func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
 					err := errors.Errorf("reject job submitting: job %s with ID %d is %s", jb.Name, jb.ID, jb.Status)
 					aj.SendConflictError(errors.Wrap(err, "submit : AJAPI"))
 					return
-				}
-
-				// For scan all job, check more
-				if jb.Name == common_job.ImageScanAllJob {
-					// Get the overall stats with the ID of the previous job
-					stats, err := scan.DefaultController.GetStats(fmt.Sprintf("%d", jb.ID))
-					if err != nil {
-						aj.SendInternalServerError(errors.Wrap(err, "submit : AJAPI"))
-						return
-					}
-
-					if stats.Total != stats.Completed {
-						// Not all scan processes are completed
-						err := errors.Errorf("scan processes started by %s job with ID %d is in progress: %s", jb.Name, jb.ID, progress(stats.Completed, stats.Total))
-						aj.SendPreconditionFailedError(errors.Wrap(err, "submit : AJAPI"))
-						return
-					}
 				}
 			}
 		}

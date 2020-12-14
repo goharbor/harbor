@@ -19,20 +19,16 @@ import "time"
 // Report of the scan.
 // Identified by the `digest`, `registration_uuid` and `mime_type`.
 type Report struct {
-	ID               int64     `orm:"pk;auto;column(id)"`
-	UUID             string    `orm:"unique;column(uuid)"`
-	Digest           string    `orm:"column(digest)"`
-	RegistrationUUID string    `orm:"column(registration_uuid)"`
-	MimeType         string    `orm:"column(mime_type)"`
-	JobID            string    `orm:"column(job_id)"`
-	TrackID          string    `orm:"column(track_id)"`
-	Requester        string    `orm:"column(requester)"`
-	Status           string    `orm:"column(status)"`
-	StatusCode       int       `orm:"column(status_code)"`
-	StatusRevision   int64     `orm:"column(status_rev)"`
-	Report           string    `orm:"column(report);type(json)"`
-	StartTime        time.Time `orm:"column(start_time);auto_now_add;type(datetime)"`
-	EndTime          time.Time `orm:"column(end_time);type(datetime)"`
+	ID               int64  `orm:"pk;auto;column(id)"`
+	UUID             string `orm:"unique;column(uuid)"`
+	Digest           string `orm:"column(digest)"`
+	RegistrationUUID string `orm:"column(registration_uuid)"`
+	MimeType         string `orm:"column(mime_type)"`
+	Report           string `orm:"column(report);type(json)"`
+
+	Status    string    `orm:"-"`
+	StartTime time.Time `orm:"-"`
+	EndTime   time.Time `orm:"-"`
 }
 
 // TableName for Report

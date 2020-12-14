@@ -16,13 +16,11 @@ package jobs
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
-	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/core/service/notifications"
 	jjob "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -31,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/retention"
-	sc "github.com/goharbor/harbor/src/pkg/scan"
 )
 
 var statusMap = map[string]string{
@@ -94,49 +91,8 @@ func (h *Handler) Prepare() {
 
 // HandleScan handles the webhook of scan job
 func (h *Handler) HandleScan() {
-	log.Debugf(
-		"Received scan job status update event: job UUID: %s, status: %s, track_id: %s, revision: %d, is checkin: %v",
-		h.change.JobID,
-		h.status,
-		h.trackID,
-		h.revision,
-		len(h.checkIn) > 0,
-	)
-
-	// Trigger image scan webhook event only for JobFinished and JobError status
-	if h.status == models.JobFinished ||
-		h.status == models.JobError ||
-		h.status == models.JobStopped {
-		// Get the required info from the job parameters
-		req, err := sc.ExtractScanReq(h.change.Metadata.Parameters)
-		if err != nil {
-			log.Error(errors.Wrap(err, "scan job hook handler: event publish"))
-		} else {
-			log.Debugf("Scan %s for artifact: %#v", h.status, req.Artifact)
-
-			e := &event.Event{}
-			metaData := &metadata.ScanImageMetaData{
-				Artifact: req.Artifact,
-				Status:   h.status,
-			}
-
-			if err := e.Build(metaData); err == nil {
-				if err := e.Publish(); err != nil {
-					log.Error(errors.Wrap(err, "scan job hook handler: event publish"))
-				}
-			} else {
-				log.Error(errors.Wrap(err, "scan job hook handler: event publish"))
-			}
-		}
-	}
-
-	if err := scan.DefaultController.HandleJobHooks(orm.Context(), h.trackID, h.change); err != nil {
-		err = errors.Wrap(err, "scan job hook handler")
-		log.Error(err)
-		h.SendInternalServerError(err)
-
-		return
-	}
+	// legacy handler for the scan job
+	return
 }
 
 // HandleRetentionTask handles the webhook of retention task
