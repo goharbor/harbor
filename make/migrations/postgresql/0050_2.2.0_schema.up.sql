@@ -20,6 +20,8 @@ ALTER TABLE task ADD COLUMN IF NOT EXISTS vendor_type varchar(16);
 UPDATE task SET vendor_type = execution.vendor_type FROM execution WHERE task.execution_id = execution.id;
 ALTER TABLE task ALTER COLUMN vendor_type SET NOT NULL;
 
+ALTER TABLE execution ADD COLUMN IF NOT EXISTS update_time timestamp;
+
 DO $$
 DECLARE
     art RECORD;
@@ -283,3 +285,6 @@ ALTER TABLE scan_report DROP COLUMN IF EXISTS status_code;
 ALTER TABLE scan_report DROP COLUMN IF EXISTS status_rev;
 ALTER TABLE scan_report DROP COLUMN IF EXISTS start_time;
 ALTER TABLE scan_report DROP COLUMN IF EXISTS end_time;
+
+/*add unique for vendor_type+vendor_id to avoid dup records when updating policies*/
+ALTER TABLE schedule ADD CONSTRAINT unique_schedule UNIQUE (vendor_type, vendor_id);

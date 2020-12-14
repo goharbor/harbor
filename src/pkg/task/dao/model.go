@@ -38,6 +38,7 @@ type Execution struct {
 	Trigger       string    `orm:"column(trigger)"`
 	ExtraAttrs    string    `orm:"column(extra_attrs)"` // json string
 	StartTime     time.Time `orm:"column(start_time)"`
+	UpdateTime    time.Time `orm:"column(update_time)"`
 	EndTime       time.Time `orm:"column(end_time)"`
 	Revision      int64     `orm:"column(revision)"`
 }

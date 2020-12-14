@@ -1942,6 +1942,8 @@ paths:
       tags:
         - replication
       operationId: getReplicationLog
+      produces:
+        - text/plain
       parameters:
         - name: id
           in: path
