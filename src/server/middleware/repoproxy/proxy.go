@@ -36,6 +36,13 @@ import (
 
 var registryMgr = registry.NewDefaultManager()
 
+const (
+	contentLength       = "Content-Length"
+	contentType         = "Content-Type"
+	dockerContentDigest = "Docker-Content-Digest"
+	etag                = "Etag"
+)
+
 // BlobGetMiddleware handle get blob request
 func BlobGetMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
@@ -106,14 +113,28 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	if err != nil {
 		return err
 	}
-	useLocal, err := proxyCtl.UseLocalManifest(ctx, art, remote)
+	useLocal, man, err := proxyCtl.UseLocalManifest(ctx, art, remote)
+
 	if err != nil {
 		return err
 	}
 	if useLocal {
+		if man != nil {
+			w.Header().Set(contentLength, fmt.Sprintf("%v", len(man.Content)))
+			w.Header().Set(contentType, man.ContentType)
+			w.Header().Set(dockerContentDigest, man.Digest)
+			w.Header().Set(etag, man.Digest)
+			if r.Method == http.MethodGet {
+				w.Write(man.Content)
+			}
+			return nil
+		}
 		next.ServeHTTP(w, r)
 		return nil
 	}
+
+	log.Warningf("Artifact: %v:%v, digest:%v is not found in proxy cache, fetch it from remote repo", art.Repository, art.Tag, art.Digest)
+
 	log.Debugf("the tag is %v, digest is %v", art.Tag, art.Digest)
 	if r.Method == http.MethodHead {
 		err = proxyManifestHead(ctx, w, proxyCtl, p, art, remote)
@@ -163,12 +184,12 @@ func canProxy(p *models.Project) bool {
 
 func setHeaders(w http.ResponseWriter, size int64, mediaType string, dig string) {
 	h := w.Header()
-	h.Set("Content-Length", fmt.Sprintf("%v", size))
+	h.Set(contentLength, fmt.Sprintf("%v", size))
 	if len(mediaType) > 0 {
-		h.Set("Content-Type", mediaType)
+		h.Set(contentType, mediaType)
 	}
-	h.Set("Docker-Content-Digest", dig)
-	h.Set("Etag", dig)
+	h.Set(dockerContentDigest, dig)
+	h.Set(etag, dig)
 }
 
 // isProxySession check if current security context is proxy session
@@ -213,7 +234,7 @@ func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Con
 	if !exist {
 		return errors.NotFoundError(fmt.Errorf("The tag %v:%v is not found", art.Repository, art.Tag))
 	}
-	w.Header().Set("Docker-Content-Digest", dig)
-	w.Header().Set("Etag", dig)
+	w.Header().Set(dockerContentDigest, dig)
+	w.Header().Set(etag, dig)
 	return nil
 }
