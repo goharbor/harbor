@@ -49,7 +49,7 @@ type replicationAPI struct {
 
 func (r *replicationAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
 	if err := r.RequireSysAdmin(ctx); err != nil {
-		r.SendError(ctx, err)
+		return r.SendError(ctx, err)
 	}
 	return nil
 }

@@ -28,7 +28,7 @@ def get_endpoint():
 
 def _create_client(server, credential, debug, api_type="products"):
     cfg = None
-    if api_type in ('projectv2', 'artifact', 'repository', 'scan', 'preheat', 'replication', 'robot'):
+    if api_type in ('projectv2', 'artifact', 'repository', 'scan', 'preheat', 'replication', 'robot', 'gc'):
         cfg = v2_swagger_client.Configuration()
     else:
         cfg = swagger_client.Configuration()
