@@ -106,6 +106,9 @@ func ListRegistrations(query *q.Query) ([]*Registration, error) {
 					qt = qt.Filter(kk, v)
 					continue
 				}
+				if s, ok := v.(string); ok {
+					v = liborm.Escape(s)
+				}
 
 				qt = qt.Filter(fmt.Sprintf("%s__icontains", k), v)
 			}

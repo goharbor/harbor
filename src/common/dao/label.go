@@ -71,7 +71,7 @@ func getLabelQuerySetter(query *models.LabelQuery) orm.QuerySeter {
 	qs := GetOrmer().QueryTable(&models.Label{})
 	if len(query.Name) > 0 {
 		if query.FuzzyMatchName {
-			qs = qs.Filter("Name__icontains", query.Name)
+			qs = qs.Filter("Name__icontains", Escape(query.Name))
 		} else {
 			qs = qs.Filter("Name", query.Name)
 		}

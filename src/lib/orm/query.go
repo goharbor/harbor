@@ -143,7 +143,7 @@ func snakeCase(str string) string {
 func queryByColumn(qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
 	// fuzzy match
 	if f, ok := value.(*q.FuzzyMatchValue); ok {
-		return qs.Filter(key+"__icontains", f.Value)
+		return qs.Filter(key+"__icontains", Escape(f.Value))
 	}
 
 	// range
