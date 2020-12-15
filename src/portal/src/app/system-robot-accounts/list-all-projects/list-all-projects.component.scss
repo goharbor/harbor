@@ -10,3 +10,9 @@
 .datagrid-host {
     position: inherit;
 }
+.dropdown-menu {
+    overflow-y: auto;
+}
+.dropdown-item {
+    min-height: 20px;
+}

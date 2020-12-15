@@ -32,7 +32,7 @@
                         {{getPermissions(p.permissions[0].access)}} {{"SYSTEM_ROBOT.PERMISSIONS" | translate}}
                         <clr-icon shape="caret down"></clr-icon>
                     </button>
-                    <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+                    <clr-dropdown-menu [style.height.px]="140" clrPosition="bottom-left" *clrIfOpen>
                         <div clrDropdownItem *ngFor="let item of p.permissions[0].access" (click)="chooseAccess(item)">
                             <clr-icon class="check" shape="check" [style.visibility]="item.checked ? 'visible' : 'hidden'"></clr-icon>
                             <span>{{i18nMap[item.action] | translate}} {{i18nMap[item.resource] | translate}}</span>
