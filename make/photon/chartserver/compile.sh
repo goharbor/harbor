@@ -31,6 +31,8 @@ for p in $(ls /go/bin/*.patch); do
   git apply $p || exit /b 1
 done
 
-#Compile
-cd $SRC_PATH/$MAIN_GO_PATH && go build -a -o $BIN_NAME
-mv $BIN_NAME /go/bin/
+cd $SRC_PATH/$MAIN_GO_PATH
+
+for targetarch in ${TARGETARCHS}; do
+  GOARCH=$targetarch go build -a -o /go/bin/${BIN_NAME}-$(go env GOOS)-${targetarch};
+done

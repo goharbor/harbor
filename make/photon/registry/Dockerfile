@@ -4,7 +4,8 @@ FROM ${harbor_base_namespace}/harbor-registry-base:${harbor_base_image_version}
 
 COPY ./make/photon/common/install_cert.sh /home/harbor
 COPY ./make/photon/registry/entrypoint.sh /home/harbor
-COPY ./make/photon/registry/binary/registry /usr/bin/registry_DO_NOT_USE_GC
+ARG TARGETARCH
+COPY ./make/photon/registry/binary/registry-linux-${TARGETARCH:-amd64} /usr/bin/registry_DO_NOT_USE_GC
 
 RUN chown -R harbor:harbor /etc/pki/tls/certs \
     && chown harbor:harbor /home/harbor/entrypoint.sh && chmod u+x /home/harbor/entrypoint.sh \

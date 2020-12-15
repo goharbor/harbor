@@ -2,7 +2,8 @@ ARG harbor_base_image_version
 ARG harbor_base_namespace
 FROM ${harbor_base_namespace}/harbor-chartserver-base:${harbor_base_image_version}
 
-COPY ./make/photon/chartserver/binary/chartm /home/chart/
+ARG TARGETARCH
+COPY ./make/photon/chartserver/binary/chartm-linux-${TARGETARCH:-amd64} /home/chart/chartm
 COPY ./make/photon/chartserver/docker-entrypoint.sh /home/chart/
 COPY ./make/photon/common/install_cert.sh /home/chart/
 

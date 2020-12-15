@@ -3,9 +3,11 @@ ARG harbor_base_namespace
 FROM ${harbor_base_namespace}/harbor-registryctl-base:${harbor_base_image_version}
 
 COPY ./make/photon/common/install_cert.sh /home/harbor
-COPY ./make/photon/registry/binary/registry /usr/bin/registry_DO_NOT_USE_GC
 COPY ./make/photon/registryctl/start.sh /home/harbor
-COPY ./make/photon/registryctl/harbor_registryctl /home/harbor
+
+ARG TARGETARCH
+COPY ./make/photon/registry/binary/registry-linux-${TARGETARCH:-amd64} /usr/bin/registry_DO_NOT_USE_GC
+COPY ./make/photon/registryctl/binary/harbor_registryctl-linux-${TARGETARCH:-amd64} /home/harbor/harbor_registryctl
 
 RUN chown -R harbor:harbor /etc/pki/tls/certs \
     && chown harbor:harbor /home/harbor/harbor_registryctl && chmod u+x /home/harbor/harbor_registryctl \

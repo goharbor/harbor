@@ -5,7 +5,8 @@ FROM ${harbor_base_namespace}/harbor-core-base:${harbor_base_image_version}
 HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/v2.0/ping || curl -k --fail -s https://127.0.0.1:8443/api/v2.0/ping || exit 1
 COPY ./make/photon/common/install_cert.sh /harbor/
 COPY ./make/photon/core/entrypoint.sh /harbor/
-COPY ./make/photon/core/harbor_core /harbor/
+ARG TARGETARCH
+COPY ./make/photon/core/binary/harbor_core-linux-${TARGETARCH:-amd64} /harbor/harbor_core
 COPY ./src/core/views /harbor/views
 COPY ./make/migrations /harbor/migrations
 COPY ./icons /harbor/icons

@@ -6,7 +6,9 @@ ENV EXTERNAL_DB 0
 
 RUN mkdir /harbor/
 COPY ./make/migrations /migrations
-COPY ./make/photon/standalone-db-migrator/migrate /harbor/
+
+ARG TARGETARCH
+COPY ./make/photon/standalone-db-migrator/binary/migrate-linux-${TARGETARCH:-amd64} /harbor/migrate
 COPY ./make/photon/standalone-db-migrator/entrypoint.sh /harbor/
 
 RUN chown -R postgres:postgres /harbor/ \

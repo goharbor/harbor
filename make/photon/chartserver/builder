@@ -18,7 +18,7 @@ CODE_VERSION="$3"
 MAIN_GO_PATH="$4"
 BIN_NAME="$5"
 
-set -e
+set -eux
 
 cd `dirname $0`
 cur=$PWD
@@ -28,7 +28,7 @@ rm -rf binary/$BIN_NAME || true
 cp compile.sh binary/
 cp *.patch binary/
 
-docker run -i --rm -v $cur/binary:/go/bin --name golang_code_builder $GOLANG_IMAGE /bin/bash /go/bin/compile.sh $GIT_PATH $CODE_VERSION $MAIN_GO_PATH $BIN_NAME
+docker run --rm -e TARGETARCHS="${TARGETARCHS}" -v $cur/binary:/go/bin --name golang_code_builder $GOLANG_IMAGE /bin/bash /go/bin/compile.sh $GIT_PATH $CODE_VERSION $MAIN_GO_PATH $BIN_NAME
 
 #Clear
 #docker rm -f golang_code_builder

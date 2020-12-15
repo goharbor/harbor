@@ -4,8 +4,9 @@ FROM ${harbor_base_namespace}/harbor-jobservice-base:${harbor_base_image_version
 
 COPY ./make/photon/common/install_cert.sh /harbor/
 COPY ./make/photon/jobservice/entrypoint.sh /harbor/
-COPY ./make/photon/jobservice/harbor_jobservice /harbor/
 
+ARG TARGETARCH
+COPY ./make/photon/jobservice/binary/harbor_jobservice-linux-${TARGETARCH:-amd64} /harbor/harbor_jobservice
 
 RUN chown -R harbor:harbor /etc/pki/tls/certs \
     && chown -R harbor:harbor /harbor/ \

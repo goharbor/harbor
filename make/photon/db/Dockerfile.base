@@ -1,4 +1,8 @@
-FROM photon:4.0
+# a hack to avoid break current installed
+# pg major upgrade issue https://github.com/docker-library/postgres/issues/37
+FROM photon:2.0 AS photon-amd64
+FROM photon:4.0 AS photon-arm64
+FROM photon-${TARGETARCH:-amd64}
 
 ENV PGDATA /var/lib/postgresql/data
 
