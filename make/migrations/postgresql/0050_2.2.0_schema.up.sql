@@ -294,3 +294,164 @@ ALTER TABLE scan_report DROP COLUMN IF EXISTS end_time;
 
 /*add unique for vendor_type+vendor_id to avoid dup records when updating policies*/
 ALTER TABLE schedule ADD CONSTRAINT unique_schedule UNIQUE (vendor_type, vendor_id);
+
+/*move the gc schedule job records into the new schedule table*/
+DO $$
+DECLARE
+    schd RECORD;
+    new_schd_id integer;
+    exec_id integer;
+    exec_status varchar(32);
+    task_status varchar(32);
+    task_status_code integer;
+BEGIN
+    FOR schd IN SELECT * FROM admin_job where job_name='IMAGE_GC' and job_kind='Periodic' and deleted=FALSE
+    LOOP
+        INSERT INTO schedule (vendor_type, vendor_id, cron, callback_func_name,
+            callback_func_param, cron_type, extra_attrs, creation_time, update_time)
+            VALUES ('GARBAGE_COLLECTION', -1,
+                (SELECT schd.cron_str::json->>'cron'),
+                'GARBAGE_COLLECTION',
+                (SELECT json_build_object('trigger', null, 'deleteuntagged', schd.job_parameters::json->'delete_untagged', 'dryrun', false, 'job_parameters', schd.job_parameters)),
+                (SELECT schd.cron_str::json->>'type'),
+                (SELECT json_build_object('delete_untagged', schd.job_parameters::json->'delete_untagged')),
+                schd.creation_time, schd.update_time) RETURNING id INTO new_schd_id;
+        IF schd.status = 'stopped' THEN
+            exec_status = 'Stopped';
+            task_status = 'Stopped';
+            task_status_code = 3;
+        ELSIF schd.status = 'error' THEN
+            exec_status = 'Error';
+            task_status = 'Error';
+            task_status_code = 3;
+        ELSIF schd.status = 'finished' THEN
+            exec_status = 'Success';
+            task_status = 'Success';
+            task_status_code = 3;
+        ELSIF schd.status = 'running' THEN
+            exec_status = 'Running';
+            task_status = 'Running';
+            task_status_code = 2;
+        ELSEIF schd.status = 'pending' THEN
+            exec_status = 'Running';
+            task_status = 'Pending';
+            task_status_code = 0;
+        ELSEIF schd.status = 'scheduled' THEN
+            exec_status = 'Running';
+            task_status = 'Scheduled';
+            task_status_code = 1;
+        ELSE
+            exec_status = 'Running';
+            task_status = 'Pending';
+            task_status_code = 0;
+        END IF;
+        INSERT INTO execution (vendor_type, vendor_id, status, revision, trigger, start_time, end_time)
+            VALUES ('SCHEDULER', new_schd_id, exec_status, 0, 'MANUAL', schd.creation_time, schd.update_time) RETURNING id INTO exec_id;
+        INSERT INTO task (vendor_type, execution_id, job_id, status, status_code, status_revision, run_count, creation_time, start_time, update_time, end_time)
+            VALUES ('SCHEDULER',exec_id, schd.job_uuid, task_status, task_status_code, 0, 1, schd.creation_time, schd.creation_time, schd.update_time, schd.update_time);
+    END LOOP;
+END $$;
+
+/*move the gc history into the new task&execution table*/
+DO $$
+DECLARE
+    aj RECORD;
+    exec_id integer;
+    exec_status varchar(32);
+    task_status varchar(32);
+    task_status_code integer;
+BEGIN
+    FOR aj IN SELECT * FROM admin_job where job_name='IMAGE_GC' and job_kind='Generic'and deleted=FALSE
+    LOOP
+        IF aj.status = 'stopped' THEN
+            exec_status = 'Stopped';
+            task_status = 'Stopped';
+            task_status_code = 3;
+        ELSIF aj.status = 'error' THEN
+            exec_status = 'Error';
+            task_status = 'Error';
+            task_status_code = 3;
+        ELSIF aj.status = 'finished' THEN
+            exec_status = 'Success';
+            task_status = 'Success';
+            task_status_code = 3;
+        ELSIF aj.status = 'running' THEN
+            exec_status = 'Running';
+            task_status = 'Running';
+            task_status_code = 2;
+        ELSEIF aj.status = 'pending' THEN
+            exec_status = 'Running';
+            task_status = 'Pending';
+            task_status_code = 0;
+        ELSEIF aj.status = 'scheduled' THEN
+            exec_status = 'Running';
+            task_status = 'Scheduled';
+            task_status_code = 1;
+        ELSE
+            exec_status = 'Running';
+            task_status = 'Pending';
+            task_status_code = 0;
+        END IF;
+        INSERT INTO execution (vendor_type, vendor_id, status, revision, extra_attrs, trigger, start_time, end_time)
+            VALUES ('GARBAGE_COLLECTION', -1, exec_status, 0, cast(aj.job_parameters as json),
+            'MANUAL', aj.creation_time, aj.update_time) RETURNING id INTO exec_id;
+        INSERT INTO task (vendor_type, execution_id, job_id, status, status_code, status_revision, run_count, extra_attrs, creation_time, start_time, update_time, end_time)
+            VALUES ('GARBAGE_COLLECTION',exec_id, aj.job_uuid, task_status, task_status_code, 0, 1, cast(aj.job_parameters as json), aj.creation_time, aj.creation_time, aj.update_time, aj.update_time);
+    END LOOP;
+END $$;
+
+/*move the scan all schedule records into the new schedule table*/
+DO $$
+DECLARE
+    schd RECORD;
+    new_schd_id integer;
+    exec_id integer;
+    exec_status varchar(32);
+    task_status varchar(32);
+    task_status_code integer;
+BEGIN
+    FOR schd IN SELECT * FROM admin_job where job_name='IMAGE_SCAN_ALL' and job_kind='Periodic' and deleted=FALSE
+    LOOP
+        INSERT INTO schedule (vendor_type, vendor_id, cron, callback_func_name,
+            cron_type, creation_time, update_time)
+            VALUES ('IMAGE_SCAN_ALL', 0,
+                 (SELECT schd.cron_str::json->>'cron'),
+                'scanAll',
+                (SELECT schd.cron_str::json->>'type'),
+                schd.creation_time, schd.update_time) RETURNING id INTO new_schd_id;
+        IF schd.status = 'stopped' THEN
+            exec_status = 'Stopped';
+            task_status = 'Stopped';
+            task_status_code = 3;
+        ELSIF schd.status = 'error' THEN
+            exec_status = 'Error';
+            task_status = 'Error';
+            task_status_code = 3;
+        ELSIF schd.status = 'finished' THEN
+            exec_status = 'Success';
+            task_status = 'Success';
+            task_status_code = 3;
+        ELSIF schd.status = 'running' THEN
+            exec_status = 'Running';
+            task_status = 'Running';
+            task_status_code = 2;
+        ELSEIF schd.status = 'pending' THEN
+            exec_status = 'Running';
+            task_status = 'Pending';
+            task_status_code = 0;
+        ELSEIF schd.status = 'scheduled' THEN
+            exec_status = 'Running';
+            task_status = 'Scheduled';
+            task_status_code = 1;
+        ELSE
+            exec_status = 'Running';
+            task_status = 'Pending';
+            task_status_code = 0;
+        END IF;
+        INSERT INTO execution (vendor_type, vendor_id, status, revision, trigger, start_time, end_time)
+            VALUES ('SCHEDULER', new_schd_id, exec_status, 0, 'MANUAL', schd.creation_time, schd.update_time) RETURNING id INTO exec_id;
+        INSERT INTO task (vendor_type, execution_id, job_id, status, status_code, status_revision, run_count, creation_time, start_time, update_time, end_time)
+            VALUES ('SCHEDULER',exec_id, schd.job_uuid, task_status, task_status_code, 0, 1, schd.creation_time, schd.creation_time, schd.update_time, schd.update_time);
+    END LOOP;
+END $$;
+
