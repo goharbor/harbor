@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib"
+	_ "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -116,7 +117,7 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_True() {
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
 	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(&artifact.Artifact{}, nil)
 
-	result, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
+	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
 	p.Assert().Nil(err)
 	p.Assert().True(result)
 }
@@ -125,8 +126,9 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_False() {
 	ctx := context.Background()
 	dig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
+	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(true, dig, nil)
 	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(nil, nil)
-	result, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
+	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
 	p.Assert().Nil(err)
 	p.Assert().False(result)
 }
@@ -136,7 +138,7 @@ func (p *proxyControllerTestSuite) TestUseLocalManifestWithTag_False() {
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Tag: "latest"}
 	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(&artifact.Artifact{}, nil)
 	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(false, "", nil)
-	result, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
+	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
 	p.Assert().True(errors.IsNotFoundErr(err))
 	p.Assert().False(result)
 }

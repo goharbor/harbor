@@ -127,7 +127,7 @@ func (l *localHelper) PushManifest(repo string, ref string, manifest distributio
 
 // DeleteManifest cleanup delete tag from local repo
 func (l *localHelper) DeleteManifest(repo, ref string) {
-	log.Debug("Remove tag from repo if it is exist")
+	log.Debugf("Remove tag from repo if it is exist, repo: %v ref: %v", repo, ref)
 	if err := l.registry.DeleteManifest(repo, ref); err != nil {
 		// sometimes user pull a non-exist image
 		log.Warningf("failed to remove artifact, error %v", err)
