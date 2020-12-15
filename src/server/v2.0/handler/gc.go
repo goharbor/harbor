@@ -28,6 +28,13 @@ func newGCAPI() *gcAPI {
 	}
 }
 
+func (g *gcAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+	if err := g.RequireSysAdmin(ctx); err != nil {
+		return g.SendError(ctx, err)
+	}
+	return nil
+}
+
 func (g *gcAPI) CreateGCSchedule(ctx context.Context, params operation.CreateGCScheduleParams) middleware.Responder {
 	id, err := g.kick(ctx, params.Schedule.Schedule.Type, params.Schedule.Schedule.Cron, params.Schedule.Parameters)
 	if err != nil {
