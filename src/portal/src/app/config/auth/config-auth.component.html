@@ -337,7 +337,7 @@
             [(ngModel)]="currentConfig.oidc_endpoint.value" id="oidcEndpoint" size="40"
             [disabled]="disabled(currentConfig.oidc_endpoint)"
             pattern="^([hH][tT]{2}[pP][sS]:\/\/)(.*?)*$" />
-            <clr-control-error>{{'TOOLTIP.OIDC_ENDPOIT_FORMAT' | translate}}</clr-control-error>
+            <clr-control-error>{{'TOOLTIP.OIDC_ENDPOINT_FORMAT' | translate}}</clr-control-error>
         </clr-input-container>
         <clr-input-container>
             <label for="oidcClientId" class="required">{{'CONFIG.OIDC.CLIENT_ID' | translate}}</label>

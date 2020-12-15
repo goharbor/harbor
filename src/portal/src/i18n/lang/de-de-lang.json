@@ -96,7 +96,7 @@
         "NONEMPTY": "Darf nicht leer sein",
         "REPO_TOOLTIP": "Nutzer können in diesem Modus keine Aktivitäten mit den Images durchführen.",
         "ENDPOINT_FORMAT": "Zieladdresse muss mit http:// oder https:// beginnen.",
-        "OIDC_ENDPOIT_FORMAT": "Zieladdresse muss mit https:// beginnen.",
+        "OIDC_ENDPOINT_FORMAT": "Zieladdresse muss mit https:// beginnen.",
         "OIDC_NAME": "Der Name des OIDC Providers.",
         "OIDC_ENDPOINT": "Die URL eines OIDC-kompatiblen Servers.",
         "OIDC_SCOPE": "Der Scope, der während der Authentifizierung zum OIDC-Server gesendet wird.  Es muss “openid”, und “offline_access” enthalten. Wenn Google verwendet wird, entfällt “offline_access”.",
@@ -133,8 +133,8 @@
         "CLI_PASSWORD_TIP": "Das CLI Secret kann als Passwort mittels docker/helm cli verwendet werden, um auf Harbor zuzugreifen.",
         "COPY_SUCCESS": "Kopieren erfolgreich",
         "COPY_ERROR": "Kopieren fehlgeschlagen",
-        "ADMIN_CIL_SECRET_BUTTON": "ERZEUGE SECRET",
-        "ADMIN_CIL_SECRET_RESET_BUTTON": "Eigenes Secret hochladen",
+        "ADMIN_CLI_SECRET_BUTTON": "ERZEUGE SECRET",
+        "ADMIN_CLI_SECRET_RESET_BUTTON": "Eigenes Secret hochladen",
         "NEW_SECRET": "Secret",
         "CONFIRM_SECRET": "Secret erneut eingeben",
         "GENERATE_SUCCESS": "Generieren des CLI Secret erfolgreich",
@@ -203,7 +203,7 @@
         "DELETE_SUCCESS": "Nutzer erfolgreich gelöscht.",
         "ITEMS": "Einträge",
         "OF": "von",
-        "RESET_Ok": "Passwort des Nutzers erfolgreich zurückgesetzt.",
+        "RESET_OK": "Passwort des Nutzers erfolgreich zurückgesetzt.",
         "EXISTING_PASSWORD": "Das neue und das alte Passwort dürfen nicht übereinstimmen."
     },
     "PROJECT": {
