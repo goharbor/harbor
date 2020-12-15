@@ -38,6 +38,13 @@ def push_image_to_project(project_name, registry, username, password, image, tag
 
     return r'{}/{}'.format(project_name, image), new_tag
 
+def push_self_build_image_to_project(project_name, registry, username, password, image, tag, size=2, expected_login_error_message = None, expected_error_message = None):
+    _docker_api = DockerAPI()
+    _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
+
+    push_special_image_to_project(project_name, registry, username, password, image, tags=[tag], size=size, expected_login_error_message = expected_login_error_message, expected_error_message = expected_error_message)
+    return r'{}/{}'.format(project_name, image), tag
+
 def push_special_image_to_project(project_name, registry, username, password, image, tags=None, size=1, expected_login_error_message=None, expected_error_message = None):
     _docker_api = DockerAPI()
     _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)

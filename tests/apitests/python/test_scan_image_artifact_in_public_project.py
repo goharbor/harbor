@@ -4,7 +4,7 @@ import unittest
 from testutils import harbor_server, TEARDOWN, suppress_urllib3_warning
 from testutils import created_user, created_project
 from library.artifact import Artifact
-from library.repository import Repository, push_image_to_project
+from library.repository import Repository, push_self_build_image_to_project
 from library.scan import Scan
 
 
@@ -41,7 +41,7 @@ class TestScanImageInPublicProject(unittest.TestCase):
         with created_user(password) as (user_id, username):
             with created_project(metadata={"public": "true"}, user_id=user_id) as (_, project_name):
                 image, src_tag = "docker", "1.13"
-                full_name, tag = push_image_to_project(project_name, harbor_server, username, password, image, src_tag)
+                full_name, tag = push_self_build_image_to_project(project_name, harbor_server, username, password, image, src_tag)
 
                 repo_name = full_name.split('/')[1]
 

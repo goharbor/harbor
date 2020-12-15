@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import time
 import base
 import v2_swagger_client
 from v2_swagger_client.rest import ApiException
@@ -39,7 +40,7 @@ class Preheat(base.Base, object):
                                                    trigger=trigger, enabled=enabled)
         print("policy:",policy)
         try:
-            _, status_code, header = client.create_policy_with_http_info(project_name, policy)
+            data, status_code, header = client.create_policy_with_http_info(project_name, policy)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
@@ -64,7 +65,7 @@ class Preheat(base.Base, object):
     def delete_instance(self, preheat_instance_name, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
         try:
-            _, status_code, _ = _, status_code, _ = client.delete_instance_with_http_info(preheat_instance_name)
+            _, status_code, header = _, status_code, _ = client.delete_instance_with_http_info(preheat_instance_name)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
