@@ -44,6 +44,8 @@
 # clean:        remove binary, Harbor images, specific version docker-compose \
 #               file, specific version tag and online/offline install package
 # cleanbinary:	remove core and jobservice binary
+# cleanbaseimage:
+#               remove the base images of Harbor images
 # cleanimage: 	remove Harbor images
 # cleandockercomposefile:
 #				remove specific version docker-compose
@@ -566,6 +568,11 @@ cleanbinary:
 	if [ -f $(MIGRATEPATCHBINARYPATH)/$(MIGRATEPATCHBINARYNAME) ] ; then rm $(MIGRATEPATCHBINARYPATH)/$(MIGRATEPATCHBINARYNAME) ; fi
 	rm -rf make/photon/*/binary/
 
+cleanbaseimage:
+	@echo "cleaning base image for photon..."
+	@for name in chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+		$(DOCKERRMIMAGE) -f $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) ; \
+	done
 
 cleanimage:
 	@echo "cleaning image for photon..."
@@ -598,12 +605,13 @@ cleanconfig:
 	rm -f $(BUILDPATH)/src/portal/proxy.config.json
 
 .PHONY: cleanall
-cleanall: cleanbinary cleanimage cleandockercomposefile cleanconfig cleanpackage
+cleanall: cleanbinary cleanimage cleanbaseimage cleandockercomposefile cleanconfig cleanpackage
 
 clean:
 	@echo "  make cleanall:		remove binary, Harbor images, specific version docker-compose"
 	@echo "		file, specific version tag, online and offline install package"
 	@echo "  make cleanbinary:		remove core and jobservice binary"
+	@echo "  make cleanbaseimage:		remove base image of Harbor images"
 	@echo "  make cleanimage:		remove Harbor images"
 	@echo "  make cleandockercomposefile:	remove specific version docker-compose"
 	@echo "  make cleanpackage:		remove online and offline install package"
