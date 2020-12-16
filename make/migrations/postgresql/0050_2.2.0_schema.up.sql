@@ -1,9 +1,15 @@
 /*
 Fixes issue https://github.com/goharbor/harbor/issues/13317 
-  Ensure the role_id of maintainer is 4 and the role_id of limisted guest is 5
+  Ensure the role_id of maintainer is 4 and the role_id of limited guest is 5
 */
 UPDATE role SET role_id=4 WHERE name='maintainer' AND role_id!=4;
 UPDATE role SET role_id=5 WHERE name='limitedGuest' AND role_id!=5;
+
+/*
+ Fixes issue https://github.com/goharbor/harbor/issues/12700
+ Add the empty CVE allowlist to project library.
+ */
+INSERT INTO cve_allowlist (project_id, items) SELECT 1, '[]' WHERE NOT EXISTS (SELECT id FROM cve_allowlist WHERE project_id=1);
 
 /*
 Clean the dirty data in quota/quota_usage
