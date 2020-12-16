@@ -198,7 +198,7 @@ func (rAPI *robotAPI) UpdateRobot(ctx context.Context, params operation.UpdateRo
 		err = rAPI.updateV2Robot(ctx, params, r)
 	}
 	if err != nil {
-		rAPI.SendError(ctx, err)
+		return rAPI.SendError(ctx, err)
 	}
 
 	return operation.NewUpdateRobotOK()
@@ -261,6 +261,12 @@ func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Perm
 
 	if len(permissions) == 0 {
 		return errors.New(nil).WithMessage("bad request empty permission").WithCode(errors.BadRequestCode)
+	}
+
+	for _, perm := range permissions {
+		if len(perm.Access) == 0 {
+			return errors.New(nil).WithMessage("bad request empty access").WithCode(errors.BadRequestCode)
+		}
 	}
 
 	// to create a project robot, the permission must be only one project scope.

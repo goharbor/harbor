@@ -455,3 +455,17 @@ BEGIN
     END LOOP;
 END $$;
 
+/*migrate robot_token_duration from minutes to days if exist*/
+DO $$
+DECLARE
+   properties_info record;
+   duration_in_minutes text;
+   duration_in_days integer;
+BEGIN
+  SELECT INTO properties_info * FROM properties WHERE k = 'robot_token_duration';
+  IF properties_info IS NOT NULL THEN
+    duration_in_minutes = properties_info.v;
+    duration_in_days = cast(duration_in_minutes as integer) / 60 / 24;
+    update properties set v = cast(duration_in_days as text)  WHERE k = 'robot_token_duration';
+  END IF;
+END $$;

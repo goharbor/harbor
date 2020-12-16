@@ -96,7 +96,7 @@ func TestConfig(t *testing.T) {
 	}
 
 	tkExp := RobotTokenDuration()
-	assert.Equal(tkExp, 43200)
+	assert.Equal(tkExp, 30)
 
 	if _, err := ExtEndpoint(); err != nil {
 		t.Fatalf("failed to get domain name: %v", err)
