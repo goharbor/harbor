@@ -41,7 +41,7 @@ func GetPolicies(queries ...*model.PolicyQuery) (int64, []*models.RepPolicy, err
 
 	query := queries[0]
 	if len(query.Name) != 0 {
-		qs = qs.Filter("Name__icontains", query.Name)
+		qs = qs.Filter("Name__icontains", common_dao.Escape(query.Name))
 	}
 	if len(query.Namespace) != 0 {
 		// TODO: Namespace filter not implemented yet
