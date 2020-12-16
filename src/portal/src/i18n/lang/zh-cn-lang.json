@@ -1653,6 +1653,9 @@
         "SECRET_AGAIN": "请再次输入令牌",
         "INCONSISTENT": "两次输入不一致",
         "NAME_TOOLTIP": "机器人名称由小写字符、数字和._-组成且至少1个字符并以字符或者数字开头。",
-        "ENABLE_NEW_SECRET": "开启此项以便手动指定新令牌"
+        "ENABLE_NEW_SECRET": "开启此项以便手动指定新令牌",
+        "DELETE": "删除",
+        "ARTIFACT_LABEL": "Artifact 标签",
+        "SCAN": "扫描"
     }
 }

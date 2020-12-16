@@ -1626,7 +1626,7 @@
         "PROJECTS_MODAL_TITLE": "Projects for Robot Account",
         "PROJECTS_MODAL_SUMMARY": "There are the projects covered by this robot account.",
         "CREATE_ROBOT": "Create System Robot Account",
-        "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover specific projects. Choose \"Cover all projects\" to be applied to all exiting and future projects",
+        "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover specific projects. Choose \"Cover all projects\" to be applied to all existing and future projects",
         "EDIT_ROBOT": "Edit System Robot Account",
         "EDIT_ROBOT_SUMMARY": "Edit a system Robot Account. Choose \"Cover all projects\" to be applied to all exiting and future projects",
         "EXPIRATION_TIME": "Expiration time",
@@ -1656,6 +1656,9 @@
         "SECRET_AGAIN": "Input secret again",
         "INCONSISTENT": "Two secrets are inconsistent",
         "NAME_TOOLTIP": "Robot name should be 1~255 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
-        "ENABLE_NEW_SECRET": "Enable this option to manually specify a new secret"
+        "ENABLE_NEW_SECRET": "Enable this option to manually specify a new secret",
+        "DELETE": "Delete",
+        "ARTIFACT_LABEL": "Artifact label",
+        "SCAN": "Scan"
     }
 }

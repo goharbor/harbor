@@ -54,12 +54,42 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
         "checked": true
     },
     {
+        "resource": "artifact",
+        "action": "delete",
+        "checked": true
+    },
+    {
         "resource": "helm-chart",
         "action": "read",
         "checked": true
     },
     {
         "resource": "helm-chart-version",
+        "action": "create",
+        "checked": true
+    },
+    {
+        "resource": "helm-chart-version",
+        "action": "delete",
+        "checked": true
+    },
+    {
+        "resource": "tag",
+        "action": "create",
+        "checked": true
+    },
+    {
+        "resource": "tag",
+        "action": "delete",
+        "checked": true
+    },
+    {
+        "resource": "artifact-label",
+        "action": "create",
+        "checked": true
+    },
+    {
+        "resource": "scan",
         "action": "create",
         "checked": true
     }
@@ -70,9 +100,14 @@ export const ACTION_RESOURCE_I18N_MAP = {
     'pull': 'ROBOT_ACCOUNT.PULL',
     'read': 'SYSTEM_ROBOT.READ',
     'create': 'SYSTEM_ROBOT.CREATE',
+    'delete': 'SYSTEM_ROBOT.DELETE',
     'repository': 'SYSTEM_ROBOT.ARTIFACT',
+    'artifact': 'SYSTEM_ROBOT.ARTIFACT',
     'helm-chart': 'SYSTEM_ROBOT.HELM',
-    'helm-chart-version': 'SYSTEM_ROBOT.HELM_VERSION'
+    'helm-chart-version': 'SYSTEM_ROBOT.HELM_VERSION',
+    'tag': 'REPLICATION.TAG',
+    'artifact-label': 'SYSTEM_ROBOT.ARTIFACT_LABEL',
+    'scan': 'SYSTEM_ROBOT.SCAN'
 };
 
 export enum ExpirationType {
