@@ -548,6 +548,8 @@ paths:
       responses:
         '202':
           $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
