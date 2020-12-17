@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/robot2/model"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"net/http"
 )
 

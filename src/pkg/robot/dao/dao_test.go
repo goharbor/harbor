@@ -4,7 +4,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/robot2/model"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -91,6 +91,23 @@ func (suite *DaoTestSuite) TestList() {
 	})
 	suite.Require().Nil(err)
 	suite.Equal(suite.robotID3, robots[0].ID)
+
+	r := &model.Robot{
+		Name:        "testvisible",
+		Description: "test visible",
+		ProjectID:   998,
+		Visible:     false,
+		Secret:      suite.RandString(10),
+	}
+	_, err = suite.dao.Create(orm.Context(), r)
+	suite.Nil(err)
+	robots, err = suite.dao.List(orm.Context(), &q.Query{
+		Keywords: map[string]interface{}{
+			"name":    "testvisible",
+			"visible": true,
+		},
+	})
+	suite.Equal(len(robots), 0)
 }
 
 func (suite *DaoTestSuite) TestGet() {

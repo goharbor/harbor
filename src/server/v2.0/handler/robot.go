@@ -11,7 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
-	pkg "github.com/goharbor/harbor/src/pkg/robot2/model"
+	pkg "github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/robot"
@@ -49,6 +49,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 			Name:        params.Robot.Name,
 			Description: params.Robot.Description,
 			Duration:    params.Robot.Duration,
+			Visible:     true,
 		},
 		Level: params.Robot.Level,
 	}
@@ -133,6 +134,7 @@ func (rAPI *robotAPI) ListRobot(ctx context.Context, params operation.ListRobotP
 		level = robot.LEVELSYSTEM
 		query.Keywords["ProjectID"] = 0
 	}
+	query.Keywords["Visible"] = true
 
 	if err := rAPI.requireAccess(ctx, level, projectID, rbac.ActionList); err != nil {
 		return rAPI.SendError(ctx, err)

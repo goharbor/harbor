@@ -17,8 +17,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	pkg_robot "github.com/goharbor/harbor/src/pkg/robot2"
-	pkg "github.com/goharbor/harbor/src/pkg/robot2/model"
+	pkg_robot "github.com/goharbor/harbor/src/pkg/robot"
+	pkg "github.com/goharbor/harbor/src/pkg/robot/model"
 	handler_model "github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/robotv1"
@@ -54,6 +54,7 @@ func (rAPI *robotV1API) CreateRobotV1(ctx context.Context, params operation.Crea
 			Name:        params.Robot.Name,
 			Description: params.Robot.Description,
 			ExpiresAt:   params.Robot.ExpiresAt,
+			Visible:     true,
 		},
 		Level: robot.LEVELPROJECT,
 	}
@@ -145,6 +146,7 @@ func (rAPI *robotV1API) ListRobotV1(ctx context.Context, params operation.ListRo
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
+	query.Keywords["Visible"] = true
 
 	pro, err := rAPI.projectCtr.Get(ctx, projectNameOrID)
 	if err != nil {

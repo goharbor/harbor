@@ -13,8 +13,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/rbac"
 	rbac_model "github.com/goharbor/harbor/src/pkg/rbac/model"
-	robot "github.com/goharbor/harbor/src/pkg/robot2"
-	"github.com/goharbor/harbor/src/pkg/robot2/model"
+	robot "github.com/goharbor/harbor/src/pkg/robot"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"time"
 )
 
@@ -108,6 +108,7 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 		Secret:      secret,
 		Duration:    r.Duration,
 		Salt:        salt,
+		Visible:     r.Visible,
 	})
 	if err != nil {
 		return 0, "", err

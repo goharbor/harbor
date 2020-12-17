@@ -30,5 +30,5 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/user --name Manager --output ./user --outpkg user
 //go:generate mockery --case snake --dir ../../pkg/rbac --name Manager --output ./rbac --outpkg rbac
 //go:generate mockery --case snake --dir ../../pkg/rbac/dao --name DAO --output ./rbac/dao --outpkg dao
-//go:generate mockery --case snake --dir ../../pkg/robot2 --name Manager --output ./robot2 --outpkg robot2
-//go:generate mockery --case snake --dir ../../pkg/robot2/dao --name DAO --output ./robot2/dao --outpkg dao
+//go:generate mockery --case snake --dir ../../pkg/robot --name Manager --output ./robot --outpkg robot
+//go:generate mockery --case snake --dir ../../pkg/robot/dao --name DAO --output ./robot/dao --outpkg dao

@@ -11,11 +11,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	rbac_model "github.com/goharbor/harbor/src/pkg/rbac/model"
-	"github.com/goharbor/harbor/src/pkg/robot2/model"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/rbac"
-	"github.com/goharbor/harbor/src/testing/pkg/robot2"
+	"github.com/goharbor/harbor/src/testing/pkg/robot"
 	"github.com/stretchr/testify/suite"
 	"os"
 	"testing"
@@ -28,7 +28,7 @@ type ControllerTestSuite struct {
 func (suite *ControllerTestSuite) TestGet() {
 	projectMgr := &project.Manager{}
 	rbacMgr := &rbac.Manager{}
-	robotMgr := &robot2.Manager{}
+	robotMgr := &robot.Manager{}
 
 	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
 	ctx := context.TODO()
@@ -70,7 +70,7 @@ func (suite *ControllerTestSuite) TestGet() {
 func (suite *ControllerTestSuite) TestCount() {
 	projectMgr := &project.Manager{}
 	rbacMgr := &rbac.Manager{}
-	robotMgr := &robot2.Manager{}
+	robotMgr := &robot.Manager{}
 
 	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
 	ctx := context.TODO()
@@ -96,7 +96,7 @@ func (suite *ControllerTestSuite) TestCreate() {
 
 	projectMgr := &project.Manager{}
 	rbacMgr := &rbac.Manager{}
-	robotMgr := &robot2.Manager{}
+	robotMgr := &robot.Manager{}
 
 	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
 	ctx := context.TODO()
@@ -137,7 +137,7 @@ func (suite *ControllerTestSuite) TestCreate() {
 func (suite *ControllerTestSuite) TestDelete() {
 	projectMgr := &project.Manager{}
 	rbacMgr := &rbac.Manager{}
-	robotMgr := &robot2.Manager{}
+	robotMgr := &robot.Manager{}
 
 	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
 	ctx := context.TODO()
@@ -152,7 +152,7 @@ func (suite *ControllerTestSuite) TestDelete() {
 func (suite *ControllerTestSuite) TestUpdate() {
 	projectMgr := &project.Manager{}
 	rbacMgr := &rbac.Manager{}
-	robotMgr := &robot2.Manager{}
+	robotMgr := &robot.Manager{}
 
 	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
 	ctx := context.TODO()
@@ -202,7 +202,7 @@ func (suite *ControllerTestSuite) TestUpdate() {
 func (suite *ControllerTestSuite) TestList() {
 	projectMgr := &project.Manager{}
 	rbacMgr := &rbac.Manager{}
-	robotMgr := &robot2.Manager{}
+	robotMgr := &robot.Manager{}
 
 	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
 	ctx := context.TODO()
@@ -251,7 +251,7 @@ func (suite *ControllerTestSuite) TestList() {
 func (suite *ControllerTestSuite) TestToScope() {
 	projectMgr := &project.Manager{}
 	rbacMgr := &rbac.Manager{}
-	robotMgr := &robot2.Manager{}
+	robotMgr := &robot.Manager{}
 
 	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
 	ctx := context.TODO()

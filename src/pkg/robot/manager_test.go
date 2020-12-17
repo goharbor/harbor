@@ -1,10 +1,10 @@
-package robot2
+package robot
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/pkg/robot2/model"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/goharbor/harbor/src/testing/pkg/robot2/dao"
+	"github.com/goharbor/harbor/src/testing/pkg/robot/dao"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )

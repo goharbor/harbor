@@ -2,7 +2,7 @@ package robot
 
 import (
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	"github.com/goharbor/harbor/src/pkg/robot2/model"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
