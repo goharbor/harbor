@@ -259,12 +259,16 @@ func (d *controller) populatePermissions(ctx context.Context, r *Robot) error {
 
 	var permissions []*Permission
 	for scope, accesses := range accessMap {
-		p := &Permission{}
 		kind, namespace, err := d.convertScope(ctx, scope)
 		if err != nil {
+			// if the project is removed, do not list it in the robot account permission.
+			if errors.IsNotFoundErr(err) {
+				continue
+			}
 			log.Errorf("failed to decode scope of robot %d: %v", r.ID, err)
 			return err
 		}
+		p := &Permission{}
 		p.Scope = scope
 		p.Kind = kind
 		p.Namespace = namespace
