@@ -192,7 +192,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 	}
 
 	if !scannable {
-		return errors.Errorf("the configured scanner %s does not support scanning artifact with mime type %s", r.Name, artifact.ManifestMediaType)
+		return errors.BadRequestError(nil).WithMessage("the configured scanner %s does not support scanning artifact with mime type %s", r.Name, artifact.ManifestMediaType)
 	}
 
 	type Param struct {

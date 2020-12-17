@@ -16,6 +16,7 @@ package test
 
 import (
 	"fmt"
+	"html"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -60,12 +61,12 @@ func (t *tokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		if reqUsername == t.username && reqPasswd == t.password {
 			serveToken(rw)
 		} else {
-			http.Error(rw, fmt.Sprintf("invalid username/password %s/%s", reqUsername, reqPasswd), http.StatusUnauthorized)
+			http.Error(rw, fmt.Sprintf("invalid username/password %s/%s", html.EscapeString(reqUsername), html.EscapeString(reqPasswd)), http.StatusUnauthorized)
 		}
 	} else if gt == "client_credentials" {
 		serveToken(rw)
 	} else {
-		http.Error(rw, fmt.Sprintf("invalid grant_type: %s", gt), http.StatusBadRequest)
+		http.Error(rw, fmt.Sprintf("invalid grant_type: %s", html.EscapeString(gt)), http.StatusBadRequest)
 		return
 	}
 }
@@ -130,7 +131,7 @@ func (su *searchUserHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request
 		http.Error(rw, "invalid request", http.StatusBadRequest)
 		return
 	}
-	http.Error(rw, fmt.Sprintf("Invalid request, elements: %v", elements), http.StatusBadRequest)
+	http.Error(rw, html.EscapeString(fmt.Sprintf("Invalid request, elements: %v", elements)), http.StatusBadRequest)
 }
 
 // NewMockServer ...

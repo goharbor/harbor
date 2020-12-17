@@ -17,12 +17,14 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils"
+	"html"
 	"io/ioutil"
-	"k8s.io/api/authentication/v1beta1"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+
+	"github.com/goharbor/harbor/src/common/utils"
+	"k8s.io/api/authentication/v1beta1"
 )
 
 type userEntry struct {
@@ -60,7 +62,7 @@ func (ah *authHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				}
 			}
 		}
-		http.Error(rw, fmt.Sprintf("Do not find entry in entrylist, username: %s", u), http.StatusUnauthorized)
+		http.Error(rw, fmt.Sprintf("Do not find entry in entrylist, username: %s", html.EscapeString(u)), http.StatusUnauthorized)
 	}
 }
 
@@ -74,11 +76,11 @@ func (rth *reviewTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 	}
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		http.Error(rw, fmt.Sprintf("failed to read request body, error: %v", err), http.StatusBadRequest)
+		http.Error(rw, html.EscapeString(fmt.Sprintf("failed to read request body, error: %v", err)), http.StatusBadRequest)
 	}
 	reviewData := &v1beta1.TokenReview{}
 	if err := json.Unmarshal(bodyBytes, reviewData); err != nil {
-		http.Error(rw, fmt.Sprintf("failed to decode request body, error: %v", err), http.StatusBadRequest)
+		http.Error(rw, html.EscapeString(fmt.Sprintf("failed to decode request body, error: %v", err)), http.StatusBadRequest)
 	}
 	defer req.Body.Close()
 	for _, e := range rth.entries {
@@ -91,7 +93,7 @@ func (rth *reviewTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 			}
 		}
 	}
-	http.Error(rw, fmt.Sprintf("failed to match token: %s, entrylist: %+v", reviewData.Spec.Token, rth.entries), http.StatusUnauthorized)
+	http.Error(rw, html.EscapeString(fmt.Sprintf("failed to match token: %s, entrylist: %+v", reviewData.Spec.Token, rth.entries)), http.StatusUnauthorized)
 }
 
 // NewMockServer creates the mock server for testing
