@@ -37,6 +37,8 @@ type Controller interface {
 
 	// GetTask gets the specific task
 	GetTask(ctx context.Context, id int64) (*Task, error)
+	// ListTasks lists the tasks according to the query
+	ListTasks(ctx context.Context, query *q.Query) (tasks []*Task, err error)
 	// GetTaskLog gets log of the specific task
 	GetTaskLog(ctx context.Context, id int64) ([]byte, error)
 
@@ -149,6 +151,21 @@ func (c *controller) GetTask(ctx context.Context, id int64) (*Task, error) {
 			WithMessage("garbage collection task %d not found", id)
 	}
 	return convertTask(tasks[0]), nil
+}
+
+// ListTasks ...
+func (c *controller) ListTasks(ctx context.Context, query *q.Query) ([]*Task, error) {
+	query = q.MustClone(query)
+	query.Keywords["VendorType"] = GCVendorType
+	tks, err := c.taskMgr.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var tasks []*Task
+	for _, tk := range tks {
+		tasks = append(tasks, convertTask(tk))
+	}
+	return tasks, nil
 }
 
 // GetTaskLog ...

@@ -111,6 +111,22 @@ func (g *gcCtrTestSuite) TestListExecutions() {
 	g.Equal("Manual", hs[0].Trigger)
 }
 
+func (g *gcCtrTestSuite) TestListTasks() {
+	g.taskMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Task{
+		{
+			ID:          1,
+			ExecutionID: 1,
+			Status:      job.RunningStatus.String(),
+		},
+	}, nil)
+	tasks, err := g.ctl.ListTasks(nil, nil)
+	g.Require().Nil(err)
+	g.Require().Len(tasks, 1)
+	g.Equal(int64(1), tasks[0].ID)
+	g.Equal(int64(1), tasks[0].ExecutionID)
+	g.taskMgr.AssertExpectations(g.T())
+}
+
 func (g *gcCtrTestSuite) TestGetSchedule() {
 	g.scheduler.On("ListSchedules", mock.Anything, mock.Anything).Return([]*scheduler.Schedule{
 		{
