@@ -71,7 +71,7 @@ class TestProjects(unittest.TestCase):
 
         #3. Push a image in project(PA) and then delete repository by admin;
         push_special_image_to_project(TestProjects.project_gc_name, harbor_server, admin_name, admin_password, self.repo_name, ["latest", "v1.2.3"])
-        self.repo.delete_repoitory(TestProjects.project_gc_name, self.repo_name, **TestProjects.USER_GC_CLIENT)
+        self.repo.delete_repository(TestProjects.project_gc_name, self.repo_name, **TestProjects.USER_GC_CLIENT)
 
         #4. Get repository by user(UA), it should get nothing;
         repo_data = self.repo.list_repositories(TestProjects.project_gc_name, **TestProjects.USER_GC_CLIENT)

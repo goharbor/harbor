@@ -32,9 +32,9 @@ class TestManifest(unittest.TestCase):
             3. Delete user(UA).
         """
         #1. Delete repository(RA,RB,IA) by user(UA);
-        TestManifest.repo.delete_repoitory(TestManifest.project_name, TestManifest.index_name, **TestManifest.USER_CLIENT)
-        TestManifest.repo.delete_repoitory(TestManifest.project_name, TestManifest.image_a, **TestManifest.USER_CLIENT)
-        TestManifest.repo.delete_repoitory(TestManifest.project_name, TestManifest.image_b, **TestManifest.USER_CLIENT)
+        TestManifest.repo.delete_repository(TestManifest.project_name, TestManifest.index_name, **TestManifest.USER_CLIENT)
+        TestManifest.repo.delete_repository(TestManifest.project_name, TestManifest.image_a, **TestManifest.USER_CLIENT)
+        TestManifest.repo.delete_repository(TestManifest.project_name, TestManifest.image_b, **TestManifest.USER_CLIENT)
 
         #2. Delete project(PA);
         TestManifest.project.delete_project(TestManifest.project_id, **TestManifest.USER_CLIENT)
