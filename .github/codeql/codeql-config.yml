@@ -1,0 +1,8 @@
+name: "Harbor CodeQL config"
+
+paths-ignore:
+  - src/vendor
+  - src/common/utils/uaa/test
+  - src/common/utils/test
+  - src/testing
+  - '**/*_test.go'
