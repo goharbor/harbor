@@ -7,11 +7,13 @@ if ! grep -q "Photon" /etc/lsb-release; then
     exit 0
 fi
 
-if [ ! -f ~/ca-bundle.crt.original ]; then
-    cp /etc/pki/tls/certs/ca-bundle.crt ~/ca-bundle.crt.original
+ORIGINAL_LOCATION=$(dirname "$0")
+
+if [ ! -f $ORIGINAL_LOCATION/ca-bundle.crt.original ]; then
+    cp /etc/pki/tls/certs/ca-bundle.crt $ORIGINAL_LOCATION/ca-bundle.crt.original
 fi
 
-cp ~/ca-bundle.crt.original /etc/pki/tls/certs/ca-bundle.crt
+cp $ORIGINAL_LOCATION/ca-bundle.crt.original /etc/pki/tls/certs/ca-bundle.crt
 
 # Install /etc/harbor/ssl/{component}/ca.crt to trust CA.
 echo "Appending internal tls trust CA to ca-bundle ..."
