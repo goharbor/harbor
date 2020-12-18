@@ -8,6 +8,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/gc"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
@@ -197,7 +198,16 @@ func (g *gcAPI) GetGC(ctx context.Context, params operation.GetGCParams) middlew
 }
 
 func (g *gcAPI) GetGCLog(ctx context.Context, params operation.GetGCLogParams) middleware.Responder {
-	log, err := g.gcCtr.GetTaskLog(ctx, params.GcID)
+	tasks, err := g.gcCtr.ListTasks(ctx, q.New(q.KeyWords{
+		"ExecutionID": params.GcID,
+	}))
+	if err != nil {
+		return g.SendError(ctx, err)
+	}
+	if len(tasks) == 0 {
+		return g.SendError(ctx, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("garbage collection %d log is not found", params.GcID))
+	}
+	log, err := g.gcCtr.GetTaskLog(ctx, tasks[0].ID)
 	if err != nil {
 		return g.SendError(ctx, err)
 	}
