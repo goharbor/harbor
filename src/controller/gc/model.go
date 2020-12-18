@@ -7,7 +7,7 @@ import (
 // Policy ...
 type Policy struct {
 	Trigger        *Trigger               `json:"trigger"`
-	DeleteUntagged bool                   `json:"bool"`
+	DeleteUntagged bool                   `json:"deleteuntagged"`
 	DryRun         bool                   `json:"dryrun"`
 	ExtraAttrs     map[string]interface{} `json:"extra_attrs"`
 }
