@@ -189,6 +189,9 @@ export class NewRobotComponent implements OnInit, OnDestroy {
         }
       });
     }
+    if (!this.coverAll) {
+      this.defaultAccesses.forEach( item => item.checked = true);
+    }
     this.robotForm.reset({
       name: this.systemRobot.name,
       expiration: this.systemRobot.duration,
@@ -281,18 +284,31 @@ export class NewRobotComponent implements OnInit, OnDestroy {
       return true;
     }
     if (this.coverAll !== this.coverAllForEdit) {
-      return true;
-    }
-    if (this.coverAll) {
-      let flag = true;
-      this.defaultAccessesForEdit.forEach(item => {
-        this.defaultAccesses.forEach(item2 => {
-          if (item.resource === item2.resource && item.action === item2.action && item.checked !== item2.checked) {
-            flag = false;
+      if (this.coverAll) {
+        let flag = false;
+        this.defaultAccesses.forEach(item => {
+          if (item.checked) {
+            flag = true;
           }
         });
-      });
-      return !flag;
+        if (!flag) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (this.coverAll === this.coverAllForEdit) {
+      if (this.coverAll) {
+        let flag = true;
+        this.defaultAccessesForEdit.forEach(item => {
+          this.defaultAccesses.forEach(item2 => {
+            if (item.resource === item2.resource && item.action === item2.action && item.checked !== item2.checked) {
+              flag = false;
+            }
+          });
+        });
+        return !flag;
+      }
     }
     if (this.systemRobot.permissions.length !== this.listAllProjectsComponent.selectedRow.length) {
       return true;

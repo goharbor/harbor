@@ -1657,6 +1657,7 @@
         "ENABLE_NEW_SECRET": "Enable this option to manually specify a new secret",
         "DELETE": "Delete",
         "ARTIFACT_LABEL": "Artifact label",
-        "SCAN": "Scan"
+        "SCAN": "Scan",
+        "SCANNER_PULL": "Scanner Pull"
     }
 }

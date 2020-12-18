@@ -13,10 +13,10 @@
 // limitations under the License.
 export class Volumes {
     constructor() {
-        this.storage = new Storage();
+        this.storage = [new Storage()];
     }
 
-    storage: Storage;
+    storage: Storage[];
 }
 
 export class Storage {
