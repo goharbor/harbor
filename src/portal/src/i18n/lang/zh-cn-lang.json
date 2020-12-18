@@ -1656,6 +1656,7 @@
         "ENABLE_NEW_SECRET": "开启此项以便手动指定新令牌",
         "DELETE": "删除",
         "ARTIFACT_LABEL": "Artifact 标签",
-        "SCAN": "扫描"
+        "SCAN": "扫描",
+        "SCANNER_PULL": "扫描器拉取"
     }
 }

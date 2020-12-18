@@ -17,7 +17,7 @@
             <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
             <span class="tooltip-content">{{'CONFIG.TOOLTIP.DAILY_CRON' | translate}}</span>
         </a>
-        <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
+        <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">&nbsp;{{ "SCHEDULE.CRON" | translate }} :</span>
         <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ oriCron }}</span>
         <button  [disabled]="disabled" class="btn btn-link" (click)="editSchedule()"
                  id="editSchedule">
@@ -35,7 +35,7 @@
                 <option [value]="SCHEDULE_TYPE.CUSTOM">{{'SCHEDULE.CUSTOM' | translate}}</option>
             </select>
         </div>
-        <span class="required" [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }}</span>
+        <span class="required" [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">&nbsp;{{ "SCHEDULE.CRON" | translate }}</span>
         <div [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM" class="cron-input">
             <div class="height-1rem clr-input-wrapper">
                 <label for="targetCron" aria-haspopup="true" role="tooltip" [class.clr-error]="dateInvalid"
@@ -78,7 +78,7 @@
             <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
             <span class="tooltip-content">{{'CONFIG.TOOLTIP.DAILY_CRON' | translate}}</span>
         </a>
-        <span *ngIf="originScheduleType===SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
+        <span *ngIf="originScheduleType===SCHEDULE_TYPE.CUSTOM">&nbsp;{{ "SCHEDULE.CRON" | translate }} :</span>
         <span *ngIf="originScheduleType===SCHEDULE_TYPE.CUSTOM">{{ oriCron }}</span>
         <button  [disabled]="disabled" class="btn btn-link" (click)="editSchedule()"
                  id="inline-edit">

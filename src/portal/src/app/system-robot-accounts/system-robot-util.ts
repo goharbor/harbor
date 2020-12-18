@@ -107,7 +107,8 @@ export const ACTION_RESOURCE_I18N_MAP = {
     'helm-chart-version': 'SYSTEM_ROBOT.HELM_VERSION',
     'tag': 'REPLICATION.TAG',
     'artifact-label': 'SYSTEM_ROBOT.ARTIFACT_LABEL',
-    'scan': 'SYSTEM_ROBOT.SCAN'
+    'scan': 'SYSTEM_ROBOT.SCAN',
+    'scanner-pull': 'SYSTEM_ROBOT.SCANNER_PULL'
 };
 
 export enum ExpirationType {

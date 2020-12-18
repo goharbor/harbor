@@ -69,11 +69,23 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
     }
 
     public get totalStorage(): number {
-        return this.getGBFromBytes(this.volumesInfo.storage.total);
+        let count: number = 0;
+        if (this.volumesInfo && this.volumesInfo.storage && this.volumesInfo.storage.length) {
+            this.volumesInfo.storage.forEach(item => {
+                count += item.total;
+            });
+        }
+        return this.getGBFromBytes(count);
     }
 
     public get freeStorage(): number {
-        return this.getGBFromBytes(this.volumesInfo.storage.free);
+        let count: number = 0;
+        if (this.volumesInfo && this.volumesInfo.storage && this.volumesInfo.storage.length) {
+            this.volumesInfo.storage.forEach(item => {
+                count += item.free;
+            });
+        }
+        return this.getGBFromBytes(count);
     }
 
     public getStatistics(): void {
@@ -98,7 +110,13 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
     }
 
     public get isValidStorage(): boolean {
-        return this.volumesInfo.storage.total !== 0 &&
+        let count: number = 0;
+        if (this.volumesInfo && this.volumesInfo.storage && this.volumesInfo.storage.length) {
+            this.volumesInfo.storage.forEach(item => {
+                count += item.total;
+            });
+        }
+        return count !== 0 &&
             this.appConfigService.getConfig().registry_storage_provider_name === "filesystem";
     }
 

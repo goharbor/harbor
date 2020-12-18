@@ -102,6 +102,8 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
             this.searchKey = robotSearchName;
             if (this.searchKey) {
               queryParam.q = encodeURIComponent(`Level=${PermissionsKinds.PROJECT},ProjectID=${this.projectId},name=~${this.searchKey}`);
+            } else {
+              queryParam.q = encodeURIComponent(`Level=${PermissionsKinds.PROJECT},ProjectID=${this.projectId}`);
             }
             this.loading = true;
             return  this.robotService.ListRobotResponse(queryParam)
