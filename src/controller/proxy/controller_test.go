@@ -23,13 +23,28 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	_ "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
-	testproxy "github.com/goharbor/harbor/src/testing/controller/proxy"
-	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"io"
 	"testing"
 )
+
+type remoteInterfaceMock struct {
+	mock.Mock
+}
+
+func (r *remoteInterfaceMock) BlobReader(repo, dig string) (int64, io.ReadCloser, error) {
+	panic("implement me")
+}
+
+func (r *remoteInterfaceMock) Manifest(repo string, ref string) (distribution.Manifest, string, error) {
+	panic("implement me")
+}
+
+func (r *remoteInterfaceMock) ManifestExist(repo, ref string) (bool, string, error) {
+	args := r.Called(repo, ref)
+	return args.Bool(0), args.String(1), args.Error(2)
+}
 
 type localInterfaceMock struct {
 	mock.Mock
@@ -80,14 +95,14 @@ func (l *localInterfaceMock) DeleteManifest(repo, ref string) {
 type proxyControllerTestSuite struct {
 	suite.Suite
 	local  *localInterfaceMock
-	remote *testproxy.RemoteInterface
+	remote *remoteInterfaceMock
 	ctr    Controller
 	proj   *models.Project
 }
 
 func (p *proxyControllerTestSuite) SetupTest() {
 	p.local = &localInterfaceMock{}
-	p.remote = &testproxy.RemoteInterface{}
+	p.remote = &remoteInterfaceMock{}
 	p.proj = &models.Project{RegistryID: 1}
 	p.ctr = &controller{
 		blobCtl:     blob.Ctl,
@@ -110,9 +125,8 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_True() {
 func (p *proxyControllerTestSuite) TestUseLocalManifest_False() {
 	ctx := context.Background()
 	dig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
-	desc := &distribution.Descriptor{Digest: digest.Digest(dig)}
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
-	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(true, desc, nil)
+	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(true, dig, nil)
 	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(nil, nil)
 	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
 	p.Assert().Nil(err)
@@ -122,9 +136,8 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_False() {
 func (p *proxyControllerTestSuite) TestUseLocalManifestWithTag_False() {
 	ctx := context.Background()
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Tag: "latest"}
-	desc := &distribution.Descriptor{}
 	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(&artifact.Artifact{}, nil)
-	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(false, desc, nil)
+	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(false, "", nil)
 	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
 	p.Assert().True(errors.IsNotFoundErr(err))
 	p.Assert().False(result)

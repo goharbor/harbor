@@ -16,7 +16,6 @@ package image
 
 import (
 	"bytes"
-	"github.com/opencontainers/go-digest"
 	"io"
 	"io/ioutil"
 	"testing"
@@ -36,11 +35,11 @@ func (f *fakeRegistry) FetchArtifacts([]*model.Filter) ([]*model.Resource, error
 	return nil, nil
 }
 
-func (f *fakeRegistry) ManifestExist(repository, reference string) (bool, *distribution.Descriptor, error) {
+func (f *fakeRegistry) ManifestExist(repository, reference string) (bool, string, error) {
 	if repository == "destination" && reference == "b1" {
-		return true, &distribution.Descriptor{Digest: digest.Digest("sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7")}, nil
+		return true, "sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7", nil
 	}
-	return false, &distribution.Descriptor{Digest: digest.Digest("sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7")}, nil
+	return false, "sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7", nil
 }
 func (f *fakeRegistry) PullManifest(repository, reference string, accepttedMediaTypes ...string) (distribution.Manifest, string, error) {
 	manifest := `{

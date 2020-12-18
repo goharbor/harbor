@@ -54,7 +54,7 @@ type Adapter interface {
 // ArtifactRegistry defines the capabilities that an artifact registry should have
 type ArtifactRegistry interface {
 	FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error)
-	ManifestExist(repository, reference string) (exist bool, desc *distribution.Descriptor, err error)
+	ManifestExist(repository, reference string) (exist bool, digest string, err error)
 	PullManifest(repository, reference string, accepttedMediaTypes ...string) (manifest distribution.Manifest, digest string, err error)
 	PushManifest(repository, reference, mediaType string, payload []byte) (string, error)
 	DeleteManifest(repository, reference string) error // the "reference" can be "tag" or "digest", the function needs to handle both

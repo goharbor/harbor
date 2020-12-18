@@ -30,7 +30,7 @@ type RemoteInterface interface {
 	// Manifest get manifest by reference
 	Manifest(repo string, ref string) (distribution.Manifest, string, error)
 	// ManifestExist checks manifest exist, if exist, return digest
-	ManifestExist(repo string, ref string) (bool, *distribution.Descriptor, error)
+	ManifestExist(repo string, ref string) (bool, string, error)
 }
 
 // remoteHelper defines operations related to remote repository under proxy
@@ -86,6 +86,6 @@ func (r *remoteHelper) Manifest(repo string, ref string) (distribution.Manifest,
 	return r.registry.PullManifest(repo, ref)
 }
 
-func (r *remoteHelper) ManifestExist(repo string, ref string) (bool, *distribution.Descriptor, error) {
+func (r *remoteHelper) ManifestExist(repo string, ref string) (bool, string, error) {
 	return r.registry.ManifestExist(repo, ref)
 }
