@@ -53,13 +53,9 @@ func (f *FakeClient) ListTags(repository string) ([]string, error) {
 }
 
 // ManifestExist ...
-func (f *FakeClient) ManifestExist(repository, reference string) (bool, *distribution.Descriptor, error) {
+func (f *FakeClient) ManifestExist(repository, reference string) (bool, string, error) {
 	args := f.Called()
-	var desc *distribution.Descriptor
-	if args[0] != nil {
-		desc = args[0].(*distribution.Descriptor)
-	}
-	return args.Bool(0), desc, args.Error(2)
+	return args.Bool(0), args.String(1), args.Error(2)
 }
 
 // PullManifest ...

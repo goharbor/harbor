@@ -134,7 +134,7 @@ func (_m *mockAdapter) Info() (*model.RegistryInfo, error) {
 }
 
 // ManifestExist provides a mock function with given fields: repository, reference
-func (_m *mockAdapter) ManifestExist(repository string, reference string) (bool, *distribution.Descriptor, error) {
+func (_m *mockAdapter) ManifestExist(repository string, reference string) (bool, string, error) {
 	ret := _m.Called(repository, reference)
 
 	var r0 bool
@@ -144,13 +144,11 @@ func (_m *mockAdapter) ManifestExist(repository string, reference string) (bool,
 		r0 = ret.Get(0).(bool)
 	}
 
-	var r1 *distribution.Descriptor
-	if rf, ok := ret.Get(1).(func(string, string) *distribution.Descriptor); ok {
+	var r1 string
+	if rf, ok := ret.Get(1).(func(string, string) string); ok {
 		r1 = rf(repository, reference)
 	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).(*distribution.Descriptor)
-		}
+		r1 = ret.Get(1).(string)
 	}
 
 	var r2 error

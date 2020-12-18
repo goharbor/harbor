@@ -44,7 +44,7 @@ func TestAdapter_FetchArtifacts(t *testing.T) {
 }
 
 func TestAdapter_ManifestExist(t *testing.T) {
-	exist, desc, err := HWAdapter.ManifestExist("", "")
+	exist, digest, err := HWAdapter.ManifestExist("", "")
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "[401]") {
 			t.Log("huawei ak/sk is not available", err.Error())
@@ -53,7 +53,7 @@ func TestAdapter_ManifestExist(t *testing.T) {
 		}
 	} else {
 		if exist {
-			t.Log(desc.Digest)
+			t.Log(digest)
 		}
 	}
 }

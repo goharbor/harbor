@@ -72,7 +72,7 @@ type Client interface {
 	// ListTags lists the tags under the specified repository
 	ListTags(repository string) (tags []string, err error)
 	// ManifestExist checks the existence of the manifest
-	ManifestExist(repository, reference string) (exist bool, desc *distribution.Descriptor, err error)
+	ManifestExist(repository, reference string) (exist bool, digest string, err error)
 	// PullManifest pulls the specified manifest
 	PullManifest(repository, reference string, acceptedMediaTypes ...string) (manifest distribution.Manifest, digest string, err error)
 	// PushManifest pushes the specified manifest
@@ -242,10 +242,10 @@ func (c *client) listTags(url string) ([]string, string, error) {
 	return tgs.Tags, next(resp.Header.Get("Link")), nil
 }
 
-func (c *client) ManifestExist(repository, reference string) (bool, *distribution.Descriptor, error) {
+func (c *client) ManifestExist(repository, reference string) (bool, string, error) {
 	req, err := http.NewRequest(http.MethodHead, buildManifestURL(c.url, repository, reference), nil)
 	if err != nil {
-		return false, nil, err
+		return false, "", err
 	}
 	for _, mediaType := range accepts {
 		req.Header.Add(http.CanonicalHeaderKey("Accept"), mediaType)
@@ -253,16 +253,12 @@ func (c *client) ManifestExist(repository, reference string) (bool, *distributio
 	resp, err := c.do(req)
 	if err != nil {
 		if errors.IsErr(err, errors.NotFoundCode) {
-			return false, nil, nil
+			return false, "", nil
 		}
-		return false, nil, err
+		return false, "", err
 	}
 	defer resp.Body.Close()
-	dig := resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
-	contentType := resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
-	contentLen := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
-	len, _ := strconv.Atoi(contentLen)
-	return true, &distribution.Descriptor{Digest: digest.Digest(dig), MediaType: contentType, Size: int64(len)}, nil
+	return true, resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest")), nil
 }
 
 func (c *client) PullManifest(repository, reference string, acceptedMediaTypes ...string) (
@@ -314,7 +310,7 @@ func (c *client) DeleteManifest(repository, reference string) error {
 	_, err := digest.Parse(reference)
 	if err != nil {
 		// the reference is tag, get the digest first
-		exist, desc, err := c.ManifestExist(repository, reference)
+		exist, digest, err := c.ManifestExist(repository, reference)
 		if err != nil {
 			return err
 		}
@@ -322,7 +318,7 @@ func (c *client) DeleteManifest(repository, reference string) error {
 			return errors.New(nil).WithCode(errors.NotFoundCode).
 				WithMessage("%s:%s not found", repository, reference)
 		}
-		reference = string(desc.Digest)
+		reference = digest
 	}
 	req, err := http.NewRequest(http.MethodDelete, buildManifestURL(c.url, repository, reference), nil)
 	if err != nil {
@@ -454,13 +450,13 @@ func (c *client) Copy(srcRepo, srcRef, dstRepo, dstRef string, override bool) er
 	}
 
 	// check the existence of the artifact on the destination repository
-	exist, desc, err := c.ManifestExist(dstRepo, dstRef)
+	exist, dstDgt, err := c.ManifestExist(dstRepo, dstRef)
 	if err != nil {
 		return err
 	}
 	if exist {
 		// the same artifact already exists
-		if desc != nil && srcDgt == string(desc.Digest) {
+		if srcDgt == dstDgt {
 			return nil
 		}
 		// the same name artifact exists, but not allowed to override
