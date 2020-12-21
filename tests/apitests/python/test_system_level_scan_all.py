@@ -4,20 +4,21 @@ import unittest
 from testutils import harbor_server, suppress_urllib3_warning
 from testutils import TEARDOWN
 from testutils import ADMIN_CLIENT
-from library.system import System
 from library.project import Project
 from library.user import User
 from library.repository import Repository
 from library.repository import push_self_build_image_to_project
 from library.artifact import Artifact
+from library.scan_all import ScanAll
+
 class TestScanAll(unittest.TestCase):
     @suppress_urllib3_warning
     def setUp(self):
-        self.system = System()
         self.project= Project()
         self.user= User()
         self.artifact = Artifact()
         self.repo = Repository()
+        self.scan_all = ScanAll()
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
@@ -81,8 +82,8 @@ class TestScanAll(unittest.TestCase):
         TestScanAll.repo_Luca_name, tag_Luca = push_self_build_image_to_project(TestScanAll.project_Luca_name, harbor_server, user_Luca_name, user_common_password, image_b, src_tag)
 
         #4. Trigger scan all event;
-        self.system.scan_now(**ADMIN_CLIENT)
-        self.system.wait_until_scans_all_finish(**ADMIN_CLIENT)
+        self.scan_all.scan_all_now(**ADMIN_CLIENT)
+        self.scan_all.wait_until_scans_all_finish(**ADMIN_CLIENT)
 
         #5. Check if image in project_Alice and another image in project_Luca were both scanned.
         self.artifact.check_image_scan_result(TestScanAll.project_Alice_name, image_a, tag_Alice, **USER_ALICE_CLIENT)

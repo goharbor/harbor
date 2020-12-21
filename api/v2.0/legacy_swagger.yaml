@@ -1549,99 +1549,6 @@ paths:
           description: Only admin has this authority.
         '500':
           description: Unexpected internal errors.
-  '/system/gc/{id}':
-    get:
-      summary: Get gc status.
-      description: This endpoint let user get gc status filtered by specific ID.
-      parameters:
-        - name: id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Relevant job ID
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get gc results successfully.
-          schema:
-            $ref: '#/definitions/GCResult'
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission of admin role.
-        '500':
-          description: Unexpected internal errors.
-  /system/scanAll/schedule:
-    get:
-      summary: Get scan_all's schedule.
-      description: This endpoint is for getting a schedule for the scan all job, which scans all of images in Harbor.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get a schedule for the scan all job, which scans all of images in Harbor.
-          schema:
-            $ref: '#/definitions/AdminJobSchedule'
-        '401':
-          description: User need to log in first.
-        '403':
-          description: Only admin has this authority.
-        '500':
-          description: Unexpected internal errors.
-    put:
-      summary: Update scan all's schedule.
-      description: |
-        This endpoint is for updating the schedule of scan all job, which scans all of images in Harbor.
-      parameters:
-        - name: schedule
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/AdminJobSchedule'
-          description: Updates the schedule of scan all job, which scans all of images in Harbor.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Updated scan_all's schedule successfully.
-        '400':
-          description: Invalid schedule type.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission of admin role.
-        '500':
-          description: Unexpected internal errors.
-    post:
-      summary: Create a schedule or a manual trigger for the scan all job.
-      description: |
-        This endpoint is for creating a schedule or a manual trigger for the scan all job, which scans all of images in Harbor.
-      parameters:
-        - name: schedule
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/AdminJobSchedule'
-          description: Create a schedule or a manual trigger for the scan all job.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Updated scan_all's schedule successfully.
-        '400':
-          description: Invalid schedule type.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission of admin role.
-        '409':
-          description: There is a "scanall" job in progress, so the request cannot be served.
-        '500':
-          description: Unexpected internal errors.
-        '503':
-          description: Harbor is not deployed with scanners.
   /configurations:
     get:
       summary: Get system configurations.
@@ -3074,42 +2981,6 @@ paths:
           description: Request is not allowed
         '500':
           description: Internal server error happened
-  '/scans/all/metrics':
-    get:
-      summary: Get the metrics of the latest scan all process
-      description: Get the metrics of the latest scan all process
-      tags:
-        - Products
-        - Scan
-      responses:
-        '200':
-          description: OK
-          schema:
-            $ref: '#/definitions/Stats'
-        '401':
-          description: Unauthorized request
-        '403':
-          description: Request is not allowed
-        '500':
-          description: Internal server error happened
-  '/scans/schedule/metrics':
-    get:
-      summary: Get the metrics of the latest scheduled scan all process
-      description: Get the metrics of the latest scheduled scan all process
-      tags:
-        - Products
-        - Scan
-      responses:
-        '200':
-          description: OK
-          schema:
-            $ref: '#/definitions/Stats'
-        '401':
-          description: Unauthorized request
-        '403':
-          description: Request is not allowed
-        '500':
-          description: Internal server error happened
 responses:
   OK:
     description: 'Success'
@@ -4152,56 +4023,6 @@ definitions:
     properties:
       labels:
         $ref: '#/definitions/Labels'
-  GCResult:
-    type: object
-    properties:
-      id:
-        type: integer
-        description: the id of gc job.
-      job_name:
-        type: string
-        description: the job name of gc job.
-      job_kind:
-        type: string
-        description: the job kind of gc job.
-      job_parameters:
-        type: string
-        description: the job parameters of gc job.
-      schedule:
-        $ref: '#/definitions/AdminJobScheduleObj'
-      job_status:
-        type: string
-        description: the status of gc job.
-      deleted:
-        type: boolean
-        description: if gc job was deleted.
-      creation_time:
-        type: string
-        description: the creation time of gc job.
-      update_time:
-        type: string
-        description: the update time of gc job.
-  AdminJobSchedule:
-    type: object
-    properties:
-      schedule:
-        $ref: '#/definitions/AdminJobScheduleObj'
-      parameters:
-        type: object
-        description: The parameters of admin job
-        additionalProperties:
-          type: boolean
-  AdminJobScheduleObj:
-    type: object
-    properties:
-      type:
-        type: string
-        description: |
-          The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manually' and 'None'.
-          'Manually' means to trigger it right away and 'None' means to cancel the schedule.
-      cron:
-        type: string
-        description: A cron expression, a time-based job scheduler.
   SearchResult:
     type: object
     description: The chart search result item
@@ -4847,39 +4668,6 @@ definitions:
       uuid:
         type: string
         description: The identifier of the scanner registration
-
-  Stats:
-    type: object
-    description: Stats provides the overall progress of the scan all process.
-    properties:
-      total:
-        type: integer
-        format: int
-        description: 'The total number of scan processes triggered by the scan all action'
-        example: 100
-      completed:
-        type: integer
-        format: int
-        description: 'The number of the finished scan processes triggered by the scan all action'
-        example: 90
-      requester:
-        type: string
-        description: 'The requester identity which usually uses the ID of the scan all job'
-        example: '28'
-      metrics:
-        type: object
-        description: 'The metrics data for the each status'
-        additionalProperties:
-          type: integer
-          format: int
-          example: 10
-        example:
-          'Success': 5
-          'Error': 2,
-          'Running': 3
-      ongoing:
-        type: boolean
-        description: A flag indicating job status of scan all .
 
   SupportedWebhookEventTypes:
     type: object

@@ -4,18 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/controller/gc"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/gc"
-	"os"
-	"strings"
 )
 
 type gcAPI struct {
@@ -116,13 +116,13 @@ func (g *gcAPI) updateSchedule(ctx context.Context, cronType, cron string, polic
 func (g *gcAPI) GetGCSchedule(ctx context.Context, params operation.GetGCScheduleParams) middleware.Responder {
 	schedule, err := g.gcCtr.GetSchedule(ctx)
 	if errors.IsNotFoundErr(err) {
-		return operation.NewGetGCScheduleOK().WithPayload(model.NewSchedule(&scheduler.Schedule{}).ToSwagger())
+		return operation.NewGetGCScheduleOK()
 	}
 	if err != nil {
 		return g.SendError(ctx, err)
 	}
 
-	return operation.NewGetGCScheduleOK().WithPayload(model.NewSchedule(schedule).ToSwagger())
+	return operation.NewGetGCScheduleOK().WithPayload(model.NewGCSchedule(schedule).ToSwagger())
 }
 
 func (g *gcAPI) GetGCHistory(ctx context.Context, params operation.GetGCHistoryParams) middleware.Responder {
@@ -171,7 +171,7 @@ func (g *gcAPI) GetGCHistory(ctx context.Context, params operation.GetGCHistoryP
 }
 
 func (g *gcAPI) GetGC(ctx context.Context, params operation.GetGCParams) middleware.Responder {
-	exec, err := g.gcCtr.GetExecution(ctx, params.GcID)
+	exec, err := g.gcCtr.GetExecution(ctx, params.GCID)
 	if err != nil {
 		return g.SendError(ctx, err)
 	}
@@ -199,13 +199,13 @@ func (g *gcAPI) GetGC(ctx context.Context, params operation.GetGCParams) middlew
 
 func (g *gcAPI) GetGCLog(ctx context.Context, params operation.GetGCLogParams) middleware.Responder {
 	tasks, err := g.gcCtr.ListTasks(ctx, q.New(q.KeyWords{
-		"ExecutionID": params.GcID,
+		"ExecutionID": params.GCID,
 	}))
 	if err != nil {
 		return g.SendError(ctx, err)
 	}
 	if len(tasks) == 0 {
-		return g.SendError(ctx, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("garbage collection %d log is not found", params.GcID))
+		return g.SendError(ctx, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("garbage collection %d log is not found", params.GCID))
 	}
 	log, err := g.gcCtr.GetTaskLog(ctx, tasks[0].ID)
 	if err != nil {

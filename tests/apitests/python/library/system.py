@@ -117,46 +117,6 @@ class System(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return base._get_id_from_header(header)
 
-    def wait_until_scans_all_finish(self, **kwargs):
-        client = self._get_client(**kwargs)
-        timeout_count = 50
-        scan_status=""
-        while True:
-            time.sleep(5)
-            timeout_count = timeout_count - 1
-            if (timeout_count == 0):
-                break
-            stats = client.scans_all_metrics_get()
-            print("Scan all status:", stats)
-            if stats.ongoing is False:
-                return
-        raise Exception("Error: Scan all job is timeout.")
-
-    def create_scan_all_schedule(self, schedule_type, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
-        scanschedule = swagger_client.AdminJobScheduleObj()
-        scanschedule.type = schedule_type
-        if cron is not None:
-            scanschedule.cron = cron
-
-        scan_all_schedule = swagger_client.AdminJobSchedule(scanschedule)
-        try:
-            _, status_code, header = client.system_scan_all_schedule_post_with_http_info(scan_all_schedule)
-        except ApiException as e:
-            if e.status == expect_status_code:
-                if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
-                    raise Exception(r"Create Scan All schedule response body is not as expected {} actual status is {}.".format(expect_response_body.strip(), e.body.strip()))
-                else:
-                    return e.reason, e.body
-            else:
-                raise Exception(r"Create Scan All schedule result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
-        base._assert_status_code(expect_status_code, status_code)
-        return base._get_id_from_header(header)
-
-    def scan_now(self, **kwargs):
-        scan_all_id = self.create_scan_all_schedule('Manual', **kwargs)
-        return scan_all_id
-
     def set_cve_allowlist(self, expires_at=None, expected_status_code=200, *cve_ids, **kwargs):
         client = self._get_client(**kwargs)
         cve_list = [swagger_client.CVEAllowlistItem(cve_id=c) for c in cve_ids]
