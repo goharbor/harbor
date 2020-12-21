@@ -15,25 +15,26 @@ import { Injectable } from '@angular/core';
 import { Router, Resolve, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, catchError } from "rxjs/operators";
-import { ReplicationJob, ReplicationService } from "../../../lib/services";
+import { ReplicationService } from "../../../../ng-swagger-gen/services";
+import { ReplicationExecution } from "../../../../ng-swagger-gen/models/replication-execution";
 
 @Injectable({
   providedIn: 'root'
 })
-export class ReplicationTasksRoutingResolverService implements Resolve<ReplicationJob> {
+export class ReplicationTasksRoutingResolverService implements Resolve<ReplicationExecution> {
 
   constructor(
     private replicationService: ReplicationService,
     private router: Router) { }
 
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<ReplicationJob> | any {
+  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<ReplicationExecution> | any {
     // Support both parameters and query parameters
     let executionId = route.params['id'];
     if (!executionId) {
       executionId = route.queryParams['project_id'];
     }
-    return this.replicationService.getExecutionById(executionId)
-      .pipe(map((res: ReplicationJob) => {
+    return this.replicationService.getReplicationExecution(+executionId)
+      .pipe(map((res: ReplicationExecution) => {
         if (!res) {
           this.router.navigate(['/harbor', 'projects']);
         }

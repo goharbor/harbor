@@ -1,20 +1,23 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ReplicationService } from "../../../services/replication.service";
 import { TranslateService } from '@ngx-translate/core';
 import { finalize } from "rxjs/operators";
 import { Subscription, timer } from "rxjs";
-import { ErrorHandler } from "../../../utils/error-handler/error-handler";
-import { ReplicationJob, ReplicationTasks, Comparator, ReplicationJobItem, State } from "../../../services/interface";
-import { CustomComparator, DEFAULT_PAGE_SIZE } from "../../../utils/utils";
-import { RequestQueryParams } from "../../../services/RequestQueryParams";
+import { ErrorHandler } from "../../../utils/error-handler";
+import { ClrDatagridComparatorInterface, ReplicationJob, ReplicationTasks } from "../../../services";
+import { CURRENT_BASE_HREF, CustomComparator, DEFAULT_PAGE_SIZE, doFiltering, doSorting } from "../../../utils/utils";
 import { REFRESH_TIME_DIFFERENCE } from '../../../entities/shared.const';
 import { ClrDatagridStateInterface } from '@clr/angular';
+import { ReplicationExecution } from "../../../../../ng-swagger-gen/models/replication-execution";
+import { ReplicationService } from "../../../../../ng-swagger-gen/services";
+import ListReplicationTasksParams = ReplicationService.ListReplicationTasksParams;
+import { ReplicationTask } from "../../../../../ng-swagger-gen/models/replication-task";
 
 const executionStatus = 'InProgress';
 const STATUS_MAP = {
   "Succeed": "Succeeded"
 };
+const SUCCEED: string = 'Succeed';
 @Component({
   selector: 'replication-tasks',
   templateUrl: './replication-tasks.component.html',
@@ -28,18 +31,18 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   totalCount: number;
   loading = true;
   searchTask: string;
-  defaultFilter = "resource_type";
-  tasks: ReplicationTasks[];
+  defaultFilter = "resourceType";
+  tasks: ReplicationTask[];
   taskItem: ReplicationTasks[] = [];
   tasksCopy: ReplicationTasks[] = [];
   stopOnGoing: boolean;
-  executions: ReplicationJobItem[];
+  execution: ReplicationExecution;
   timerDelay: Subscription;
   executionId: string;
-  startTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
+  startTimeComparator: ClrDatagridComparatorInterface<ReplicationTask> = new CustomComparator<
   ReplicationJob
   >("start_time", "date");
-  endTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
+  endTimeComparator: ClrDatagridComparatorInterface<ReplicationTask> = new CustomComparator<
     ReplicationJob
   >("end_time", "date");
 
@@ -56,18 +59,17 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     this.executionId = this.route.snapshot.params['id'];
     const resolverData = this.route.snapshot.data;
     if (resolverData) {
-      const replicationJob = <ReplicationJob>(resolverData["replicationTasksRoutingResolver"]);
-      this.executions = replicationJob.data;
+      this.execution = <ReplicationExecution>(resolverData["replicationTasksRoutingResolver"]);
       this.clrLoadPage();
     }
   }
   getExecutionDetail(): void {
     this.inProgress = true;
     if (this.executionId) {
-      this.replicationService.getExecutionById(this.executionId)
+      this.replicationService.getReplicationExecution(+this.executionId)
         .pipe(finalize(() => (this.inProgress = false)))
         .subscribe(res => {
-          this.executions = res.data;
+          this.execution = res;
           this.clrLoadPage();
         },
         error => {
@@ -80,12 +82,12 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     if (!this.timerDelay) {
       this.timerDelay = timer(REFRESH_TIME_DIFFERENCE, REFRESH_TIME_DIFFERENCE).subscribe(() => {
         let count: number = 0;
-        if (this.executions['status'] === executionStatus) {
+        if (this.execution['status'] === executionStatus) {
           count++;
         }
         if (count > 0) {
           this.getExecutionDetail();
-          let state: State = {
+          let state: ClrDatagridStateInterface = {
             page: {}
           };
           this.clrLoadTasks(state);
@@ -98,36 +100,36 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   }
 
   public get trigger(): string {
-    return this.executions && this.executions['trigger']
-      ? this.executions['trigger']
+    return this.execution && this.execution['trigger']
+      ? this.execution['trigger']
       : "";
   }
 
-  public get startTime(): Date {
-    return this.executions && this.executions['start_time']
-      ? this.executions['start_time']
+  public get startTime(): string {
+    return this.execution && this.execution['start_time']
+      ? this.execution['start_time']
       : null;
   }
 
-  public get successNum(): string {
-    return this.executions && this.executions['succeed'];
+  public get successNum(): number {
+    return this.execution && this.execution['succeed'];
   }
 
-  public get failedNum(): string {
-    return this.executions && this.executions['failed'];
+  public get failedNum(): number {
+    return this.execution && this.execution['failed'];
   }
 
-  public get progressNum(): string {
-    return this.executions && this.executions['in_progress'];
+  public get progressNum(): number {
+    return this.execution && this.execution['in_progress'];
   }
 
-  public get stoppedNum(): string {
-    return this.executions && this.executions['stopped'];
+  public get stoppedNum(): number {
+    return this.execution && this.execution['stopped'];
   }
 
   stopJob() {
     this.stopOnGoing = true;
-    this.replicationService.stopJobs(this.executionId)
+    this.replicationService.stopReplication(+this.executionId)
     .subscribe(response => {
       this.stopOnGoing = false;
        this.getExecutionDetail();
@@ -141,7 +143,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   }
 
   viewLog(taskId: number | string): string {
-    return this.replicationService.getJobBaseUrl() + "/executions/" + this.executionId + "/tasks/" + taskId + "/log";
+    return CURRENT_BASE_HREF + "/replication" + "/executions/" + this.executionId + "/tasks/" + taskId + "/log";
   }
 
   ngOnDestroy() {
@@ -157,14 +159,20 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
       if (state && state.page && state.page.size) {
         this.pageSize = state.page.size;
       }
-      let params: RequestQueryParams = new RequestQueryParams();
-      params = params.set('page_size', this.pageSize + '').set('page', this.currentPage + '');
+      const param: ListReplicationTasksParams = {
+        id: +this.executionId,
+        page: this.currentPage,
+        pageSize: this.pageSize,
+      };
       if (this.searchTask && this.searchTask !== "") {
-        params = params.set(this.defaultFilter, this.searchTask);
+        if (this.searchTask === STATUS_MAP.Succeed && this.defaultFilter === 'status') {// convert 'Succeeded' to 'Succeed'
+          param[this.defaultFilter] = SUCCEED;
+        } else {
+          param[this.defaultFilter] = this.searchTask;
+        }
       }
-
       this.loading = true;
-      this.replicationService.getReplicationTasks(this.executionId, params)
+      this.replicationService.listReplicationTasksResponse(param)
       .pipe(finalize(() => {
         this.loading = false;
       }))
@@ -176,6 +184,9 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
           }
         }
         this.tasks = res.body; // Keep the data
+        // Do customising filtering and sorting
+        this.tasks = doFiltering<ReplicationTask>(this.tasks, state);
+        this.tasks = doSorting<ReplicationTask>(this.tasks, state);
       },
       error => {
         this.errorHandler.error(error);
@@ -193,7 +204,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   // refresh icon
   refreshTasks(): void {
     this.currentPage = 1;
-    let state: State = {
+    let state: ClrDatagridStateInterface = {
       page: {}
     };
     this.clrLoadTasks(state);
@@ -202,7 +213,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   public doSearch(value: string): void {
     this.currentPage = 1;
     this.searchTask = value.trim();
-    let state: State = {
+    let state: ClrDatagridStateInterface = {
       page: {}
     };
     this.clrLoadTasks(state);
