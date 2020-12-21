@@ -14,15 +14,15 @@
             <h2 class="custom-h2 h2-style">{{executionId}}</h2>
           </div>
           <div>
-            <div class="status-progress" *ngIf="executions && executions['status'] === 'InProgress'">
+            <div class="status-progress" *ngIf="execution && execution['status'] === 'InProgress'">
               <span class="spinner spinner-inline"></span>
               <span>{{'REPLICATION.IN_PROGRESS'| translate}}</span>
             </div>
-            <div class="status-success" *ngIf="executions && executions['status'] === 'Succeed'">
+            <div class="status-success" *ngIf="execution && execution['status'] === 'Succeed'">
               <clr-icon size="18" shape="success-standard" class="color-green"></clr-icon>
               <span>{{'REPLICATION.SUCCESS'| translate}}</span>
             </div>
-            <div class="status-failed" *ngIf="executions && executions['status'] === 'Failed'">
+            <div class="status-failed" *ngIf="execution && execution['status'] === 'Failed'">
               <clr-icon size="18" shape="error-standard" class="color-red"></clr-icon>
               <span>{{'REPLICATION.FAILURE'| translate}}</span>
             </div>
@@ -75,12 +75,12 @@
   </section>
 
   <div class="tasks-detail">
-    <h3 class="modal-title">Tasks</h3>
+    <h3 class="modal-title">{{'P2P_PROVIDER.TASKS' | translate}}</h3>
     <div class="row flex-items-xs-between flex-items-xs-bottom">
       <div class="action-select">
         <div class="select filter-tag" [hidden]="!isOpenFilterTag">
           <select (change)="selectFilter($event)">
-            <option value="resource_type">{{'REPLICATION.RESOURCE_TYPE' |translate}}</option>
+            <option value="resourceType">{{'REPLICATION.RESOURCE_TYPE' |translate}}</option>
             <option value="status">{{'REPLICATION.STATUS' | translate}}</option>
           </select>
         </div>
@@ -93,15 +93,16 @@
       </div>
     </div>
     <clr-datagrid (clrDgRefresh)="clrLoadTasks($event)" [clrDgLoading]="loading">
-      <clr-dg-column [clrDgSortBy]="'id'">{{'REPLICATION.TASK_ID'| translate}}</clr-dg-column>
-      <clr-dg-column [clrDgField]="'resource_type'" class="resource-width">{{'REPLICATION.RESOURCE_TYPE' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'REPLICATION.TASK_ID'| translate}}</clr-dg-column>
+      <clr-dg-column class="resource-width">{{'REPLICATION.RESOURCE_TYPE' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgField]="'src_resource'">{{'REPLICATION.SOURCE' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgField]="'dst_resource'">{{'REPLICATION.DESTINATION' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgField]="'operation'">{{'REPLICATION.OPERATION' | translate}}</clr-dg-column>
-      <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgSortBy]="startTimeComparator">{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgSortBy]="endTimeComparator">{{'REPLICATION.END_TIME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
+      <clr-dg-placeholder>{{'P2P_PROVIDER.TASKS_PLACEHOLDER' | translate }}</clr-dg-placeholder>
       <clr-dg-row *ngFor="let t of tasks">
         <clr-dg-cell>{{t.id}}</clr-dg-cell>
         <clr-dg-cell class="resource-width">{{t.resource_type}}</clr-dg-cell>
