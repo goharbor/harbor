@@ -89,12 +89,6 @@ func (h *Handler) Prepare() {
 	}
 }
 
-// HandleScan handles the webhook of scan job
-func (h *Handler) HandleScan() {
-	// legacy handler for the scan job
-	return
-}
-
 // HandleRetentionTask handles the webhook of retention task
 func (h *Handler) HandleRetentionTask() {
 	taskID := h.id

@@ -1,5 +1,5 @@
 /*
-Fixes issue https://github.com/goharbor/harbor/issues/13317 
+Fixes issue https://github.com/goharbor/harbor/issues/13317
   Ensure the role_id of maintainer is 4 and the role_id of limited guest is 5
 */
 UPDATE role SET role_id=4 WHERE name='maintainer' AND role_id!=4;
@@ -159,7 +159,7 @@ BEGIN
       ELSIF rep_exec.status = 'Succeed' THEN
         status = 'Success';
       END IF;
-      
+
       INSERT INTO execution (vendor_type, vendor_id, status, status_message, revision, trigger, start_time, end_time)
         VALUES ('REPLICATION', rep_exec.policy_id, status, rep_exec.status_text, 0, trigger, rep_exec.start_time, rep_exec.end_time) RETURNING id INTO new_exec_id;
       UPDATE replication_execution SET new_execution_id=new_exec_id WHERE id=rep_exec.id;
@@ -454,6 +454,9 @@ BEGIN
             VALUES ('SCHEDULER',exec_id, schd.job_uuid, task_status, task_status_code, 0, 1, schd.creation_time, schd.creation_time, schd.update_time, schd.update_time);
     END LOOP;
 END $$;
+
+/* admin_job no more needed, drop it */
+DROP TABLE IF EXISTS admin_job;
 
 /*migrate robot_token_duration from minutes to days if exist*/
 DO $$

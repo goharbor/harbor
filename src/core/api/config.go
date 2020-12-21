@@ -24,7 +24,6 @@ import (
 	"github.com/goharbor/harbor/src/common/config/metadata"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/core/api/models"
 	corecfg "github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
@@ -148,6 +147,13 @@ func checkUnmodifiable(mgr *config.CfgManager, cfgs map[string]interface{}, keys
 	return
 }
 
+// ScanAllPolicy is represent the json request and object for scan all policy
+// Only for migrating from the legacy schedule.
+type ScanAllPolicy struct {
+	Type  string                 `json:"type"`
+	Param map[string]interface{} `json:"parameter,omitempty"`
+}
+
 // delete sensitive attrs and add editable field to every attr
 func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
 	result := map[string]*value{}
@@ -161,7 +167,7 @@ func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
 	}
 
 	if _, ok := cfg[common.ScanAllPolicy]; !ok {
-		cfg[common.ScanAllPolicy] = models.ScanAllPolicy{
+		cfg[common.ScanAllPolicy] = ScanAllPolicy{
 			Type: "none", // For legacy compatible
 		}
 	}
