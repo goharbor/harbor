@@ -45,7 +45,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/quotas", &api.QuotaAPI{}, "get:List")
 	beego.Router("/api/"+version+"/quotas/:id([0-9]+)", &api.QuotaAPI{}, "get:Get;put:Put")
 
-	beego.Router("/api/"+version+"/system/scanAll/schedule", &api.ScanAllAPI{}, "get:Get;put:Put;post:Post")
 	beego.Router("/api/"+version+"/system/CVEAllowlist", &api.SysCVEAllowlistAPI{}, "get:Get;put:Put")
 	beego.Router("/api/"+version+"/system/oidc/ping", &api.OIDCAPI{}, "post:Ping")
 
@@ -106,9 +105,4 @@ func registerLegacyRoutes() {
 	proScannerAPI := &api.ProjectScannerAPI{}
 	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
 	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/scanner/candidates", proScannerAPI, "get:GetProScannerCandidates")
-
-	// Add routes for scan all metrics
-	scanAllAPI := &api.ScanAllAPI{}
-	beego.Router("/api/"+version+"/scans/all/metrics", scanAllAPI, "get:GetScanAllMetrics")
-	beego.Router("/api/"+version+"/scans/schedule/metrics", scanAllAPI, "get:GetScheduleMetrics")
 }

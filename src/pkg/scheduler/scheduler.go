@@ -136,20 +136,19 @@ func (s *scheduler) schedule(ctx context.Context, vendorType string, vendorID in
 		CreationTime:     now,
 		UpdateTime:       now,
 	}
-	if params != nil {
-		paramsData, err := json.Marshal(params)
-		if err != nil {
-			return 0, err
-		}
-		sched.CallbackFuncParam = string(paramsData)
+
+	paramsData, err := json.Marshal(params)
+	if err != nil {
+		return 0, err
 	}
-	if extras != nil {
-		extrasData, err := json.Marshal(extras)
-		if err != nil {
-			return 0, err
-		}
-		sched.ExtraAttrs = string(extrasData)
+	sched.CallbackFuncParam = string(paramsData)
+
+	extrasData, err := json.Marshal(extras)
+	if err != nil {
+		return 0, err
 	}
+	sched.ExtraAttrs = string(extrasData)
+
 	// create schedule record
 	// when checkin hook comes, the database record must exist,
 	// so the database record must be created first before submitting job

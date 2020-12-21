@@ -19,7 +19,6 @@ import (
 	"net/http"
 
 	lib_http "github.com/goharbor/harbor/src/lib/http"
-
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/blob"
 	"github.com/goharbor/harbor/src/server/middleware/quota"
@@ -33,6 +32,7 @@ func New() http.Handler {
 		RepositoryAPI:  newRepositoryAPI(),
 		AuditlogAPI:    newAuditLogAPI(),
 		ScanAPI:        newScanAPI(),
+		ScanAllAPI:     newScanAllAPI(),
 		ProjectAPI:     newProjectAPI(),
 		PreheatAPI:     newPreheatAPI(),
 		IconAPI:        newIconAPI(),
@@ -41,7 +41,7 @@ func New() http.Handler {
 		ReplicationAPI: newReplicationAPI(),
 		SysteminfoAPI:  newSystemInfoAPI(),
 		PingAPI:        newPingAPI(),
-		GcAPI:          newGCAPI(),
+		GCAPI:          newGCAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

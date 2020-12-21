@@ -2,11 +2,13 @@ package model
 
 import (
 	"encoding/json"
+	"strings"
+	"time"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
-	"time"
 )
 
 // ScheduleParam defines the parameter of schedule trigger
@@ -41,44 +43,49 @@ func (h *GCHistory) ToSwagger() *models.GCHistory {
 		Deleted:       h.Deleted,
 		JobStatus:     h.Status,
 		Schedule: &models.ScheduleObj{
+			// covert MANUAL to Manual because the type of the ScheduleObj
+			// must be 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manual' and 'None'
+			Type: strings.Title(strings.ToLower(h.Schedule.Type)),
 			Cron: h.Schedule.Cron,
-			Type: h.Schedule.Type,
 		},
 		CreationTime: strfmt.DateTime(h.CreationTime),
 		UpdateTime:   strfmt.DateTime(h.UpdateTime),
 	}
 }
 
-// Schedule ...
-type Schedule struct {
+// GCSchedule ...
+type GCSchedule struct {
 	*scheduler.Schedule
 }
 
 // ToSwagger converts the schedule to the swagger model
-// TODO remove the hard code when after issue https://github.com/goharbor/harbor/issues/13047 is resolved.
-func (s *Schedule) ToSwagger() *models.GCHistory {
+func (s *GCSchedule) ToSwagger() *models.GCHistory {
+	if s.Schedule == nil {
+		return nil
+	}
+
 	e, err := json.Marshal(s.ExtraAttrs)
 	if err != nil {
 		log.Error(err)
 	}
 
 	return &models.GCHistory{
-		ID:            0,
+		ID:            s.ID,
 		JobName:       "",
 		JobKind:       s.CRON,
 		JobParameters: string(e),
 		Deleted:       false,
-		JobStatus:     "",
+		JobStatus:     s.Status,
 		Schedule: &models.ScheduleObj{
 			Cron: s.CRON,
-			Type: "Custom",
+			Type: s.CRONType,
 		},
 		CreationTime: strfmt.DateTime(s.CreationTime),
 		UpdateTime:   strfmt.DateTime(s.UpdateTime),
 	}
 }
 
-// NewSchedule ...
-func NewSchedule(s *scheduler.Schedule) *Schedule {
-	return &Schedule{Schedule: s}
+// NewGCSchedule ...
+func NewGCSchedule(s *scheduler.Schedule) *GCSchedule {
+	return &GCSchedule{Schedule: s}
 }
