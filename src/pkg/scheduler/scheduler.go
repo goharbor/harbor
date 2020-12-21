@@ -20,11 +20,9 @@ import (
 	"fmt"
 	"time"
 
-	beegoorm "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task"
 	cronlib "github.com/robfig/cron"
@@ -86,34 +84,7 @@ type scheduler struct {
 	taskMgr task.Manager
 }
 
-// Currently all database operations inside one request handling are covered by
-// one transaction, which means if any one of the operations fails, all of them
-// will be roll back. As the scheduler creates jobservice jobs that cannot be
-// roll back by the transaction, this will cause some unexpected data inconsistence
-// in some cases.
-// The implementation of "Schedule" replaces the ormer with a new one in the context
-// to out of control from the global transaction, and uses a new transaction that only
-// covers the logic inside the function
 func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
-	cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error) {
-	var scheduleID int64
-	f := func(ctx context.Context) error {
-		id, err := s.schedule(ctx, vendorType, vendorID, cronType, cron, callbackFuncName, params, extras)
-		if err != nil {
-			return err
-		}
-		scheduleID = id
-		return nil
-	}
-
-	ctx = orm.NewContext(ctx, beegoorm.NewOrm())
-	if err := orm.WithTransaction(f)(ctx); err != nil {
-		return 0, err
-	}
-	return scheduleID, nil
-}
-
-func (s *scheduler) schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
 	cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error) {
 	if len(vendorType) == 0 {
 		return 0, fmt.Errorf("empty vendor type")
