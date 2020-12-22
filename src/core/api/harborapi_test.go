@@ -35,7 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
-	api_models "github.com/goharbor/harbor/src/core/api/models"
 	apimodels "github.com/goharbor/harbor/src/core/api/models"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
@@ -858,36 +857,6 @@ func (a testapi) DeleteMeta(authInfor usrInfo, projectID int64, name string) (in
 
 	code, body, err := request(_sling, jsonAcceptHeader, authInfor)
 	return code, string(body), err
-}
-
-func (a testapi) AddScanAll(authInfor usrInfo, adminReq apilib.AdminJobReq) (int, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := "/api/system/scanAll/schedule"
-
-	_sling = _sling.Path(path)
-
-	// body params
-	_sling = _sling.BodyJSON(adminReq)
-	var httpStatusCode int
-	var err error
-
-	httpStatusCode, _, err = request(_sling, jsonAcceptHeader, authInfor)
-
-	return httpStatusCode, err
-}
-
-func (a testapi) ScanAllScheduleGet(authInfo usrInfo) (int, api_models.AdminJobSchedule, error) {
-	_sling := sling.New().Get(a.basePath)
-	path := "/api/system/scanAll/schedule"
-	_sling = _sling.Path(path)
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	var successPayLoad api_models.AdminJobSchedule
-	if 200 == httpStatusCode && nil == err {
-		err = json.Unmarshal(body, &successPayLoad)
-	}
-
-	return httpStatusCode, successPayLoad, err
 }
 
 func (a testapi) RegistryGet(authInfo usrInfo, registryID int64) (*model.Registry, int, error) {
