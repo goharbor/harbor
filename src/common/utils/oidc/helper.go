@@ -161,10 +161,16 @@ func AuthCodeURL(state string) (string, error) {
 		log.Errorf("Failed to get OAuth configuration, error: %v", err)
 		return "", err
 	}
-	if strings.HasPrefix(conf.Endpoint.AuthURL, googleEndpoint) { // make sure the refresh token will be returned
-		return conf.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.SetAuthURLParam("prompt", "consent")), nil
+	var options []oauth2.AuthCodeOption
+	setting := provider.setting.Load().(models.OIDCSetting)
+	for k, v := range setting.ExtraRedirectParms {
+		options = append(options, oauth2.SetAuthURLParam(k, v))
 	}
-	return conf.AuthCodeURL(state), nil
+	if strings.HasPrefix(conf.Endpoint.AuthURL, googleEndpoint) { // make sure the refresh token will be returned
+		options = append(options, oauth2.AccessTypeOffline)
+		options = append(options, oauth2.SetAuthURLParam("prompt", "consent"))
+	}
+	return conf.AuthCodeURL(state, options...), nil
 }
 
 // ExchangeToken get the token from token provider via the code

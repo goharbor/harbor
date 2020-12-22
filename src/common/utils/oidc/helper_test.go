@@ -90,12 +90,24 @@ func TestHelperGet(t *testing.T) {
 }
 
 func TestAuthCodeURL(t *testing.T) {
+	conf := map[string]interface{}{
+		common.OIDCName:               "test",
+		common.OIDCEndpoint:           "https://accounts.google.com",
+		common.OIDCVerifyCert:         "true",
+		common.OIDCScope:              "openid, profile, offline_access",
+		common.OIDCCLientID:           "client",
+		common.OIDCClientSecret:       "secret",
+		common.ExtEndpoint:            "https://harbor.test",
+		common.OIDCExtraRedirectParms: `{"test_key":"test_value"}`,
+	}
+	config.GetCfgManager().UpdateConfig(conf)
 	res, err := AuthCodeURL("random")
 	assert.Nil(t, err)
 	u, err := url.ParseRequestURI(res)
 	assert.Nil(t, err)
 	q, err := url.ParseQuery(u.RawQuery)
 	assert.Nil(t, err)
+	assert.Equal(t, "test_value", q.Get("test_key"))
 	assert.Equal(t, "offline", q.Get("access_type"))
 	assert.False(t, strings.Contains(q.Get("scope"), "offline_access"))
 }
