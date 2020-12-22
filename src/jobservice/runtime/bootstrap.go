@@ -17,7 +17,6 @@ package runtime
 import (
 	"context"
 	"fmt"
-	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"os"
 	"os/signal"
 	"sync"
@@ -44,10 +43,10 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
 	"github.com/goharbor/harbor/src/lib/errors"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
 	"github.com/goharbor/harbor/src/pkg/retention"
-	sc "github.com/goharbor/harbor/src/pkg/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/all"
+	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/gomodule/redigo/redis"
 )
@@ -255,8 +254,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			// Only for debugging and testing purpose
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
-			job.ImageScanJob:           (*sc.Job)(nil),
-			job.ImageScanAllJob:        (*all.Job)(nil),
+			job.ImageScanJob:           (*scan.Job)(nil),
 			job.ImageGC:                (*gc.GarbageCollector)(nil),
 			job.ImageGCReadOnly:        (*gcreadonly.GarbageCollector)(nil),
 			job.Replication:            (*replication.Replication)(nil),
