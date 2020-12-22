@@ -35,7 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/opencontainers/go-digest"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 const (
@@ -71,10 +70,11 @@ type Controller interface {
 	EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagName string) error
 }
 type controller struct {
-	blobCtl     blob.Controller
-	artifactCtl artifact.Controller
-	local       localInterface
-	cache       cache.Cache
+	blobCtl         blob.Controller
+	artifactCtl     artifact.Controller
+	local           localInterface
+	cache           cache.Cache
+	handlerRegistry map[string]ManifestCacheHandler
 }
 
 // ControllerInstance -- Get the proxy controller instance
@@ -82,11 +82,13 @@ func ControllerInstance() Controller {
 	// Lazy load the controller
 	// Because LocalHelper is not ready unless core startup completely
 	once.Do(func() {
+		l := newLocalHelper()
 		ctl = &controller{
-			blobCtl:     blob.Ctl,
-			artifactCtl: artifact.Ctl,
-			local:       newLocalHelper(),
-			cache:       cache.Default(),
+			blobCtl:         blob.Ctl,
+			artifactCtl:     artifact.Ctl,
+			local:           newLocalHelper(),
+			cache:           cache.Default(),
+			handlerRegistry: NewCacheHandlerRegistry(l),
 		}
 	})
 
@@ -97,9 +99,15 @@ func (c *controller) EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagNam
 	// search the digest in cache and query with trimmed digest
 	var trimmedDigest string
 	err := c.cache.Fetch(TrimmedManifestlist+art.Digest, &trimmedDigest)
-	if err != cache.ErrNotFound {
-		log.Debugf("Found trimed digest: %v", trimmedDigest)
+	if err == cache.ErrNotFound {
+		// skip to update digest, continue
+	} else if err != nil {
+		// for other error, return
+		return err
+	} else {
+		// found in redis, update the digest
 		art.Digest = trimmedDigest
+		log.Debugf("Found trimmed digest: %v", trimmedDigest)
 	}
 	a, err := c.local.GetManifest(ctx, art)
 	if err != nil {
@@ -260,53 +268,14 @@ func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc di
 }
 
 func (c *controller) waitAndPushManifest(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, contType string, r RemoteInterface) {
-	if contType == manifestlist.MediaTypeManifestList {
-		_, payload, err := man.Payload()
-		if err != nil {
-			log.Errorf("failed to get payload, error %v", err)
+	h, ok := c.handlerRegistry[contType]
+	if !ok {
+		h, ok = c.handlerRegistry[defaultHandler]
+		if !ok {
 			return
 		}
-		key := getManifestListKey(art.Repository, art.Digest)
-		log.Debugf("Cache manifest list with key=cache:%v", key)
-		err = c.cache.Save(key, payload, manifestListCacheInterval)
-		if err != nil {
-			log.Errorf("failed to cache payload, error %v", err)
-		}
 	}
-	if contType == manifestlist.MediaTypeManifestList || contType == v1.MediaTypeImageIndex {
-		err := c.local.PushManifestList(ctx, art.Repository, getReference(art), man)
-		if err != nil {
-			log.Errorf("error when push manifest list to local :%v", err)
-		}
-		return
-	}
-	var waitBlobs []distribution.Descriptor
-	for n := 0; n < maxManifestWait; n++ {
-		time.Sleep(sleepIntervalSec * time.Second)
-		waitBlobs = c.local.CheckDependencies(ctx, art.Repository, man)
-		if len(waitBlobs) == 0 {
-			break
-		}
-		log.Debugf("Current n=%v artifact: %v:%v", n, art.Repository, art.Tag)
-	}
-	if len(waitBlobs) > 0 {
-		// docker client will skip to pull layers exist in local
-		// these blobs are not exist in the proxy server
-		// it will cause the manifest dependency check always fail
-		// need to push these blobs before push manifest to avoid failure
-		log.Debug("Waiting blobs not empty, push it to local repo directly")
-		for _, desc := range waitBlobs {
-			err := c.putBlobToLocal(remoteRepo, art.Repository, desc, r)
-			if err != nil {
-				log.Errorf("Failed to push blob to local repo, error: %v", err)
-				return
-			}
-		}
-	}
-	err := c.local.PushManifest(art.Repository, getReference(art), man)
-	if err != nil {
-		log.Errorf("failed to push manifest, tag: %v, error %v", art.Tag, err)
-	}
+	h.CacheContent(ctx, remoteRepo, man, art, r)
 }
 
 // getRemoteRepo get the remote repository name, used in proxy cache

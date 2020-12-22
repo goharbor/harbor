@@ -16,24 +16,18 @@ package proxy
 
 import (
 	"context"
-	"fmt"
-	"github.com/goharbor/harbor/src/lib/cache"
-	"io"
-	"strings"
-	"time"
-
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/proxy/secret"
 	"github.com/goharbor/harbor/src/pkg/registry"
-	"github.com/opencontainers/go-digest"
+	"io"
 )
 
 // TrimmedManifestlist - key prefix for trimmed manifest
@@ -49,8 +43,6 @@ type localInterface interface {
 	PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error
 	// PushManifest push manifest to local repo, ref can be digest or tag
 	PushManifest(repo string, ref string, manifest distribution.Manifest) error
-	// PushManifestList push manifest list to local repo
-	PushManifestList(ctx context.Context, repo string, ref string, man distribution.Manifest) error
 	// CheckDependencies check if the manifest's dependency is ready
 	CheckDependencies(ctx context.Context, repo string, man distribution.Manifest) []distribution.Descriptor
 	// DeleteManifest cleanup delete tag from local cache
@@ -139,80 +131,6 @@ func (l *localHelper) DeleteManifest(repo, ref string) {
 		// sometimes user pull a non-exist image
 		log.Warningf("failed to remove artifact, error %v", err)
 	}
-}
-
-// updateManifestList -- Trim the manifest list, make sure at least one depend manifests is ready
-func (l *localHelper) updateManifestList(ctx context.Context, repo string, manifest distribution.Manifest) (distribution.Manifest, error) {
-	switch v := manifest.(type) {
-	case *manifestlist.DeserializedManifestList:
-		existMans := make([]manifestlist.ManifestDescriptor, 0)
-		for _, m := range v.Manifests {
-			art := lib.ArtifactInfo{Repository: repo, Digest: string(m.Digest)}
-			a, err := l.GetManifest(ctx, art)
-			if err != nil {
-				return nil, err
-			}
-			if a != nil {
-				existMans = append(existMans, m)
-			}
-		}
-		return manifestlist.FromDescriptors(existMans)
-	}
-	return nil, fmt.Errorf("current manifest list type is unknown, manifest type[%T], content [%+v]", manifest, manifest)
-}
-
-func (l *localHelper) PushManifestList(ctx context.Context, repo string, tag string, man distribution.Manifest) error {
-	// For manifest list, it might include some different manifest
-	// it will wait and check for 30 mins, if all depend manifests exist then push it
-	// if time exceed, only push the new updated manifest list which contains existing manifest
-	var newMan distribution.Manifest
-	var err error
-	for n := 0; n < maxManifestListWait; n++ {
-		log.Debugf("waiting for the manifest ready, repo %v, tag:%v", repo, tag)
-		time.Sleep(sleepIntervalSec * time.Second)
-		newMan, err = l.updateManifestList(ctx, repo, man)
-		if err != nil {
-			return err
-		}
-		if len(newMan.References()) == len(man.References()) {
-			break
-		}
-	}
-	if len(newMan.References()) == 0 {
-		return errors.New("manifest list doesn't contain any pushed manifest")
-	}
-	_, pl, err := newMan.Payload()
-	if err != nil {
-		log.Errorf("failed to get payload, error %v", err)
-		return err
-	}
-	log.Debugf("The manifest list payload: %v", string(pl))
-	newDig := digest.FromBytes(pl)
-	l.cacheTrimmedDigest(ctx, string(newDig))
-	// Because the manifest list maybe updated, need to recheck if it is exist in local
-	art := lib.ArtifactInfo{Repository: repo, Tag: tag}
-	a, err := l.GetManifest(ctx, art)
-	if err != nil {
-		return err
-	}
-	if a != nil && a.Digest == string(newDig) {
-		return nil
-	}
-	// because current digest is changed, need to push to the new digest
-	if strings.HasPrefix(tag, "sha256:") {
-		tag = string(newDig)
-	}
-	return l.PushManifest(repo, tag, newMan)
-}
-
-func (l *localHelper) cacheTrimmedDigest(ctx context.Context, newDig string) {
-	if l.cache == nil {
-		return
-	}
-	art := lib.GetArtifactInfo(ctx)
-	key := TrimmedManifestlist + string(art.Digest)
-	log.Debugf("Saved key:%v, value:%v", key, newDig)
-	l.cache.Save(key, newDig)
 }
 
 func (l *localHelper) CheckDependencies(ctx context.Context, repo string, man distribution.Manifest) []distribution.Descriptor {

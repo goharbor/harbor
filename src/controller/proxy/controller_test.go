@@ -63,7 +63,8 @@ func (l *localInterfaceMock) PushBlob(localRepo string, desc distribution.Descri
 }
 
 func (l *localInterfaceMock) PushManifest(repo string, tag string, manifest distribution.Manifest) error {
-	panic("implement me")
+	args := l.Called(repo, tag, manifest)
+	return args.Error(0)
 }
 
 func (l *localInterfaceMock) PushManifestList(ctx context.Context, repo string, tag string, man distribution.Manifest) error {

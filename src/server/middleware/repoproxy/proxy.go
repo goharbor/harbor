@@ -237,7 +237,7 @@ func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Con
 	if !exist || desc == nil {
 		return errors.NotFoundError(fmt.Errorf("The tag %v:%v is not found", art.Repository, art.Tag))
 	}
-	go func() {
+	go func(art lib.ArtifactInfo) {
 		// After docker 20.10 or containerd, the client heads the tag first,
 		// Then GET the image by digest, in order to associate the tag with the digest
 		// Ensure tag after head request, make sure tags in proxy cache keep update
@@ -251,7 +251,8 @@ func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Con
 			}
 			log.Debugf("Failed to ensure tag %+v , error %v", art, err)
 		}
-	}()
+	}(art)
+
 	w.Header().Set(contentType, desc.MediaType)
 	w.Header().Set(contentLength, fmt.Sprintf("%v", desc.Size))
 	w.Header().Set(dockerContentDigest, string(desc.Digest))
