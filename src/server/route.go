@@ -43,6 +43,7 @@ func registerRoutes() {
 	beego.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
 	beego.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
 	beego.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
+	beego.Router(common.AuthProxyRediretPath, &controllers.AuthProxyController{}, "get:HandleRedirect")
 
 	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig;put:Put")
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")

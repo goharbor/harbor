@@ -123,6 +123,14 @@ func (a *Auth) tokenReview(sessionID string) (*models.User, error) {
 	return u, nil
 }
 
+// VerifyToken reviews the token to generate the user model
+func (a *Auth) VerifyToken(token string) (*models.User, error) {
+	if err := a.ensure(); err != nil {
+		return nil, err
+	}
+	return a.tokenReview(token)
+}
+
 // OnBoardUser delegates to dao pkg to insert/update data in DB.
 func (a *Auth) OnBoardUser(u *models.User) error {
 	return dao.OnBoardUser(u)

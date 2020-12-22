@@ -147,7 +147,6 @@ func (b *BaseController) SendPermissionError() {
 	} else {
 		b.SendForbiddenError(errors.New(b.SecurityCtx.GetUsername()))
 	}
-
 }
 
 // WriteJSONData writes the JSON data to the client.
