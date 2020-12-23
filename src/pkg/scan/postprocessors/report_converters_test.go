@@ -409,6 +409,42 @@ func (suite *TestReportConverterSuite) TestNativeReportSummaryAfterConversion() 
 	rp := &scan.Report{
 		Digest:           "d1000",
 		RegistrationUUID: "ruuid",
+		MimeType:         v1.MimeTypeGenericVulnerabilityReport,
+		Report:           sampleReportWithMixedSeverity,
+		StartTime:        time.Now(),
+		EndTime:          time.Now().Add(1000),
+		UUID:             "reportUUID2",
+	}
+	suite.create(rp)
+	_, summary, err := suite.rc.ToRelationalSchema(orm.Context(), rp.UUID, rp.RegistrationUUID, rp.Digest, rp.Report)
+	require.NoError(suite.T(), err)
+	completeReport, err := suite.rc.FromRelationalSchema(orm.Context(), rp.UUID, rp.Digest, summary)
+	require.NoError(suite.T(), err)
+	v := new(vuln.Report)
+	err = json.Unmarshal([]byte(rp.Report), v)
+	require.NoError(suite.T(), err)
+	v.WithArtifactDigest(rp.Digest)
+	data, err := json.Marshal(v)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), string(data), completeReport)
+	// validate that summarization happens correctly on this report
+	rp.Report = completeReport
+	rp.Status = job.SuccessStatus.String()
+	summ, err := report.GenerateSummary(rp)
+	require.NoError(suite.T(), err)
+	nativeReportSummary := summ.(*vuln.NativeReportSummary)
+	sevMapping := nativeReportSummary.Summary.Summary
+	assert.True(suite.T(), len(sevMapping) == 3, "Expected entries in severity mapping for 'High', 'Low', 'Medium'")
+	assert.Equal(suite.T(), 1, sevMapping[vuln.Low])
+	assert.Equal(suite.T(), 1, sevMapping[vuln.High])
+	assert.Equal(suite.T(), 1, sevMapping[vuln.Medium])
+}
+
+func (suite *TestReportConverterSuite) TestGenericVulnReportSummaryAfterConversion() {
+
+	rp := &scan.Report{
+		Digest:           "d1000",
+		RegistrationUUID: "ruuid",
 		MimeType:         v1.MimeTypeNativeReport,
 		Report:           sampleReportWithMixedSeverity,
 		StartTime:        time.Now(),
