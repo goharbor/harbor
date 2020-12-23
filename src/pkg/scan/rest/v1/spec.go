@@ -39,7 +39,7 @@ const (
 	MimeTypeScanRequest = "application/vnd.scanner.adapter.scan.request+json; version=1.0"
 	// MimeTypeScanResponse defines the mime type for scan response
 	MimeTypeScanResponse = "application/vnd.scanner.adapter.scan.response+json; version=1.0"
-	// MimeTypeGenericReport defines the MIME type for the generic report with enhanced information
+	// MimeTypeGenericVulnerabilityReport defines the MIME type for the generic report with enhanced information
 	MimeTypeGenericVulnerabilityReport = "application/vnd.security.vulnerability.report; version=1.1"
 
 	apiPrefix = "/api/v1"
