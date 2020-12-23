@@ -224,12 +224,14 @@ Test Case - User View Projects
 Test Case - User View Logs
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
+    ${img}=    Set Variable    kong
+    ${tag}=    Set Variable    latest
 
     Sign In Harbor  ${HARBOR_URL}  user002  Test1@34
     Create An New Project And Go Into Project  project${d}
 
-    Push image  ${ip}  user002  Test1@34  project${d}  busybox:latest
-    Pull image  ${ip}  user002  Test1@34  project${d}  busybox:latest
+    Push image  ${ip}  user002  Test1@34  project${d}  ${img}:${tag}
+    Pull image  ${ip}  user002  Test1@34  project${d}  ${img}:${tag}
 
     Go Into Project  project${d}
     Delete Repo  project${d}
