@@ -123,10 +123,10 @@ type VulnerabilityItem struct {
 type CVSS struct {
 	// The CVSS-3 score for the vulnerability
 	// e.g. 2.5
-	ScoreV3 float64 `json:"score_v3"`
+	ScoreV3 *float64 `json:"score_v3"`
 	// The CVSS-3 score for the vulnerability
 	// e.g. 2.5
-	ScoreV2 float64 `json:"score_v2"`
+	ScoreV2 *float64 `json:"score_v2"`
 	// The CVSS-3 attack vector.
 	// e.g. CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N
 	VectorV3 string `json:"vector_v3"`

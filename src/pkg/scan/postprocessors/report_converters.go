@@ -107,8 +107,8 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 
 		// process the CVSS scores if the data is available
 		if (vuln.CVSS{} != v.CVSSDetails) {
-			vulnV2.CVE3Score = &v.CVSSDetails.ScoreV3
-			vulnV2.CVE2Score = &v.CVSSDetails.ScoreV2
+			vulnV2.CVE3Score = v.CVSSDetails.ScoreV3
+			vulnV2.CVE2Score = v.CVSSDetails.ScoreV2
 			vulnV2.CVSS3Vector = v.CVSSDetails.VectorV3
 			vulnV2.CVSS2Vector = v.CVSSDetails.VectorV2
 		}
@@ -142,8 +142,8 @@ func (c *nativeToRelationalSchemaConverter) fromSchema(ctx context.Context, repo
 		vi := new(vuln.VulnerabilityItem)
 		vi.ID = record.CVEID
 		vi.ArtifactDigest = artifactDigest
-		vi.CVSSDetails.ScoreV2 = *record.CVE2Score
-		vi.CVSSDetails.ScoreV3 = *record.CVE3Score
+		vi.CVSSDetails.ScoreV2 = record.CVE2Score
+		vi.CVSSDetails.ScoreV3 = record.CVE3Score
 		vi.CVSSDetails.VectorV2 = record.CVSS2Vector
 		vi.CVSSDetails.VectorV3 = record.CVSS3Vector
 		cweIDs := strings.Split(record.CWEIDs, ",")
