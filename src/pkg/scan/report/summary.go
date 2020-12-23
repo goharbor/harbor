@@ -88,7 +88,6 @@ func MergeNativeSummary(s1, s2 interface{}) (interface{}, error) {
 var SupportedGenerators = map[string]SummaryGenerator{
 	v1.MimeTypeNativeReport:               GenerateNativeSummary,
 	v1.MimeTypeGenericVulnerabilityReport: GenerateNativeSummary,
-
 }
 
 // GenerateSummary is a helper function to generate report

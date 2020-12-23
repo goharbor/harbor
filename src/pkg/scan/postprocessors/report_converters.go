@@ -113,7 +113,7 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 			vulnV2.CVSS2Vector = v.CVSSDetails.VectorV2
 		}
 		if len(v.CWEIds) > 0 {
-			vulnV2.CWEIds = strings.Join(v.CWEIds, ",")
+			vulnV2.CWEIDs = strings.Join(v.CWEIds, ",")
 		}
 
 		// marshall the presented vendor attributes as a json string
@@ -146,11 +146,11 @@ func (c *nativeToRelationalSchemaConverter) fromSchema(ctx context.Context, repo
 		vi.CVSSDetails.ScoreV3 = *record.CVE3Score
 		vi.CVSSDetails.VectorV2 = record.CVSS2Vector
 		vi.CVSSDetails.VectorV3 = record.CVSS3Vector
-		cweIds := strings.Split(record.CWEIds, ",")
-		for _, cweId := range cweIds {
-			vi.CWEIds = append(vi.CWEIds, cweId)
+		cweIDs := strings.Split(record.CWEIDs, ",")
+		for _, cweID := range cweIDs {
+			vi.CWEIds = append(vi.CWEIds, cweID)
 		}
-		vi.CWEIds = cweIds
+		vi.CWEIds = cweIDs
 		vi.Description = record.Description
 		vi.FixVersion = record.Fix
 		vi.Version = record.PackageVersion

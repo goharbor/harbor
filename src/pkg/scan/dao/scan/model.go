@@ -66,7 +66,7 @@ type VulnerabilityRecord struct {
 	CVSS3Vector      string   `orm:"column(cvss_vector_v3);null"` // e.g. CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N
 	CVSS2Vector      string   `orm:"column(cvss_vector_v2);null"` // e.g. AV:L/AC:M/Au:N/C:P/I:N/A:N
 	Description      string   `orm:"column(description);null"`
-	CWEIds           string   `orm:"column(cwe_ids);null"` // e.g. CWE-476,CWE-123,CWE-234
+	CWEIDs           string   `orm:"column(cwe_ids);null"` // e.g. CWE-476,CWE-123,CWE-234
 	VendorAttributes string   `orm:"column(vendor_attributes);type(json);null"`
 }
 

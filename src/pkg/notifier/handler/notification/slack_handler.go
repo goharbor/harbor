@@ -97,7 +97,7 @@ func (s *SlackHandler) process(event *model.HookEvent) error {
 	// Create a slackJob to send message to slack
 	j.Name = job.SlackJob
 
-	// ToRelationalSchema payload to slack format
+	// Convert payload to slack format
 	payload, err := s.convert(event.Payload)
 	if err != nil {
 		return fmt.Errorf("convert payload to slack body failed: %v", err)

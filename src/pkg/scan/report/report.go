@@ -27,7 +27,6 @@ type Merger func(r1, r2 interface{}) (interface{}, error)
 var SupportedMergers = map[string]Merger{
 	v1.MimeTypeNativeReport:               MergeNativeReport,
 	v1.MimeTypeGenericVulnerabilityReport: MergeNativeReport,
-
 }
 
 // Merge merge report r1 and r2
