@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"strings"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -124,10 +125,20 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 				vulnV2.VendorAttributes = string(vendorAttributes)
 			}
 		}
-		_, err = c.dao.InsertForReport(ctx, reportUUID, vulnV2)
+		o, err := orm.FromContext(ctx)
 		if err != nil {
 			return err
 		}
+		err = o.Begin()
+		if err != nil {
+			return err
+		}
+		_, err = c.dao.InsertForReport(ctx, reportUUID, vulnV2)
+		if err != nil {
+			o.Rollback()
+			return err
+		}
+		o.Commit()
 	}
 	log.Infof("Converted %d vulnerability records to the new schema for report ID %s and scanner Id %s", len(vulnReport.Vulnerabilities), reportUUID, registrationUUID)
 	return nil
