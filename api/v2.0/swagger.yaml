@@ -3753,3 +3753,10 @@ definitions:
         type: boolean
         description: A flag indicating job status of scan all.
         x-omitempty: false
+      trigger:
+        type: string
+        description: The trigger of the scan all job.
+        enum:
+          - Manual
+          - Schedule
+          - Event
