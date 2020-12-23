@@ -129,7 +129,7 @@ export class NewRobotComponent implements OnInit, OnDestroy {
           .pipe(finalize(() => this.loadingSystemConfig = false))
           .subscribe(res => {
             if (res && res.robot_token_duration && res.robot_token_duration.value) {
-              this.systemRobot.duration = Math.floor(res.robot_token_duration.value / MINUETS_ONE_DAY);
+              this.systemRobot.duration = res.robot_token_duration.value;
               this.systemExpirationDays = this.systemRobot.duration;
             }
           });

@@ -27,7 +27,7 @@
                 </clr-tooltip>
             </label>
             <input clrInput name="tokenExpiration" type="text" #tokenExpirationInput="ngModel"
-                [(ngModel)]="systemSettings.token_expiration.value" required pattern="^[1-9]{1}[0-9]*$"
+                [(ngModel)]="tokenExpirationValue" required pattern="^[1-9]{1}[0-9]*$"
                 id="tokenExpiration" size="20" [disabled]="!editable" />
             <clr-control-error>{{'TOOLTIP.NUMBER_REQUIRED' | translate}}</clr-control-error>
 
@@ -58,12 +58,12 @@
                 </clr-tooltip>
             </label>
             <input clrInput name="robotTokenExpiration" type="text" #robotTokenExpirationInput="ngModel"
-                (ngModelChange)="changeToken($event)" [(ngModel)]="robotTokenExpiration" required
+                [(ngModel)]="robotTokenExpirationValue" required
                 pattern="^[1-9]{1}[0-9]*$" id="robotTokenExpiration" size="20" [disabled]="!robotExpirationEditable" />
             <clr-control-error>{{'ROBOT_ACCOUNT.NUMBER_REQUIRED' | translate}}</clr-control-error>
 
         </clr-input-container>
-        <label *ngIf="canDownloadCert" for="certDownloadLink"
+        <label *ngIf="canDownloadCert"
             class="clr-control-label cert-down-label mt-1">{{'CONFIG.ROOT_CERT' | translate}}
             <clr-tooltip>
                 <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
@@ -90,7 +90,7 @@
 
 
         <div class="clr-form-control d-f">
-            <label for="systemAllowlist"
+            <label
                 class="clr-control-label">{{'CVE_ALLOWLIST.DEPLOYMENT_SECURITY'|translate}}</label>
             <div class="form-content">
                 <div class="font-size-13">
@@ -142,8 +142,7 @@
                     </div>
                     <div class="clr-col padding-top-8">
                         <div class="clr-row expire-data">
-                            <label class="bottom-line clr-col-4"
-                                for="expires">{{'CVE_ALLOWLIST.EXPIRES_AT'|translate}}</label>
+                            <label class="bottom-line clr-col-4">{{'CVE_ALLOWLIST.EXPIRES_AT'|translate}}</label>
                             <div>
                                 <input #dateInput placeholder="{{'CVE_ALLOWLIST.NEVER_EXPIRES'|translate}}" readonly
                                     type="date" [(clrDate)]="expiresDate" newFormLayout="true">
