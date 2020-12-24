@@ -55,10 +55,11 @@ type Scheduler interface {
 	// The callback function needs to be registered first
 	// The "vendorType" specifies the type of vendor (e.g. replication, scan, gc, retention, etc.),
 	// and the "vendorID" specifies the ID of vendor if needed(e.g. policy ID for replication and retention).
-	// The "params" is passed to the callback function as encoded json string, so the callback
+	// The "callbackFuncParams" is passed to the callback function as encoded json string, so the callback
 	// function must decode it before using
+	// The customized attributes can be put into the "extraAttrs"
 	Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
-		cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error)
+		cron string, callbackFuncName string, callbackFuncParams interface{}, extraAttrs map[string]interface{}) (int64, error)
 	// UnScheduleByID the schedule specified by ID
 	UnScheduleByID(ctx context.Context, id int64) error
 	// UnScheduleByVendor the schedule specified by vendor
@@ -85,7 +86,7 @@ type scheduler struct {
 }
 
 func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
-	cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error) {
+	cron string, callbackFuncName string, callbackFuncParams interface{}, extraAttrs map[string]interface{}) (int64, error) {
 	if len(vendorType) == 0 {
 		return 0, fmt.Errorf("empty vendor type")
 	}
@@ -108,13 +109,13 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 		UpdateTime:       now,
 	}
 
-	paramsData, err := json.Marshal(params)
+	paramsData, err := json.Marshal(callbackFuncParams)
 	if err != nil {
 		return 0, err
 	}
 	sched.CallbackFuncParam = string(paramsData)
 
-	extrasData, err := json.Marshal(extras)
+	extrasData, err := json.Marshal(extraAttrs)
 	if err != nil {
 		return 0, err
 	}

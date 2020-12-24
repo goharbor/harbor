@@ -125,6 +125,13 @@ func (t *taskManagerTestSuite) TestGet() {
 	t.dao.AssertExpectations(t.T())
 }
 
+func (t *taskManagerTestSuite) TestUpdateExtraAttrs() {
+	t.dao.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err := t.mgr.UpdateExtraAttrs(nil, 1, map[string]interface{}{})
+	t.Require().Nil(err)
+	t.dao.AssertExpectations(t.T())
+}
+
 func (t *taskManagerTestSuite) TestList() {
 	t.dao.On("List", mock.Anything, mock.Anything).Return([]*dao.Task{
 		{

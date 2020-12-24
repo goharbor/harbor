@@ -145,3 +145,17 @@ func (_m *mockTaskManager) Stop(ctx context.Context, id int64) error {
 
 	return r0
 }
+
+// UpdateExtraAttrs provides a mock function with given fields: ctx, id, extraAttrs
+func (_m *mockTaskManager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) error {
+	ret := _m.Called(ctx, id, extraAttrs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, map[string]interface{}) error); ok {
+		r0 = rf(ctx, id, extraAttrs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}

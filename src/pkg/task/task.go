@@ -49,6 +49,8 @@ type Manager interface {
 	// List the tasks according to the query
 	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	List(ctx context.Context, query *q.Query) (tasks []*Task, err error)
+	// Update the extra attributes of the specified task
+	UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) (err error)
 	// Get the log of the specified task
 	GetLog(ctx context.Context, id int64) (log []byte, err error)
 	// Count counts total of tasks according to the query.
@@ -208,6 +210,18 @@ func (m *manager) List(ctx context.Context, query *q.Query) ([]*Task, error) {
 		ts = append(ts, t)
 	}
 	return ts, nil
+}
+
+func (m *manager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) error {
+	data, err := json.Marshal(extraAttrs)
+	if err != nil {
+		return err
+	}
+	return m.dao.Update(ctx, &dao.Task{
+		ID:         id,
+		ExtraAttrs: string(data),
+		UpdateTime: time.Time{},
+	}, "ExtraAttrs", "UpdateTime")
 }
 
 func (m *manager) GetLog(ctx context.Context, id int64) ([]byte, error) {
