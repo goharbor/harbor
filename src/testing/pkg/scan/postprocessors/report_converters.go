@@ -13,7 +13,7 @@ type ScanReportV1ToV2Converter struct {
 
 // ToRelationalSchema is a mock implementation of the scan report conversion
 func (_c *ScanReportV1ToV2Converter) ToRelationalSchema(ctx context.Context, reportUUID string, registrationUUID string, digest string, reportData string) (string, string, error) {
-	return "mockId", "", nil
+	return "mockId", reportData, nil
 }
 
 // ToRelationalSchema is a mock implementation of the scan report conversion
