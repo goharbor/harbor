@@ -179,6 +179,11 @@ export class ScanningMetrics {
         [key: string]: number;
     };
     requester?: string;
-    isScheduled?: boolean;
+    trigger?: string;
     ongoing: boolean;
+}
+export enum Triggers {
+    MANUAL= 'Manual',
+    SCHEDULE = 'Schedule',
+    EVENT = 'Event'
 }
