@@ -125,20 +125,15 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 				vulnV2.VendorAttributes = string(vendorAttributes)
 			}
 		}
-		o, err := orm.FromContext(ctx)
-		if err != nil {
+		insertForReport := func(ctx context.Context) error {
+			_, err = c.dao.InsertForReport(ctx, reportUUID, vulnV2)
 			return err
 		}
-		err = o.Begin()
-		if err != nil {
+
+		err := orm.WithTransaction(insertForReport)(ctx)
+		if err != nil && errors.IsConflictErr(err) {
 			return err
 		}
-		_, err = c.dao.InsertForReport(ctx, reportUUID, vulnV2)
-		if err != nil {
-			o.Rollback()
-			return err
-		}
-		o.Commit()
 	}
 	log.Infof("Converted %d vulnerability records to the new schema for report ID %s and scanner Id %s", len(vulnReport.Vulnerabilities), reportUUID, registrationUUID)
 	return nil
