@@ -77,3 +77,16 @@ func (suite *SupportedMimesSuite) TestResolveData() {
 		return
 	})
 }
+
+// TestResolveDataForGenericMimeType tests the ResolveData.
+func (suite *SupportedMimesSuite) TestResolveDataForGenericMimeType() {
+	obj, err := ResolveData(v1.MimeTypeGenericVulnerabilityReport, suite.mockData)
+	require.NoError(suite.T(), err)
+	require.NotNil(suite.T(), obj)
+	require.Condition(suite.T(), func() (success bool) {
+		rp, ok := obj.(*vuln.Report)
+		success = ok && rp != nil && rp.Severity == vuln.High
+
+		return
+	})
+}

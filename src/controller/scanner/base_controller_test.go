@@ -66,6 +66,7 @@ func (suite *ControllerTestSuite) SetupTest() {
 			ProducesMimeTypes: []string{
 				v1.MimeTypeNativeReport,
 				v1.MimeTypeRawReport,
+				v1.MimeTypeGenericVulnerabilityReport,
 			},
 		}},
 		Properties: v1.ScannerProperties{
