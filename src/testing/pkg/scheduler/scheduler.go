@@ -62,20 +62,20 @@ func (_m *Scheduler) ListSchedules(ctx context.Context, query *q.Query) ([]*sche
 	return r0, r1
 }
 
-// Schedule provides a mock function with given fields: ctx, vendorType, vendorID, cronType, cron, callbackFuncName, params, extras
-func (_m *Scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string, cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error) {
-	ret := _m.Called(ctx, vendorType, vendorID, cronType, cron, callbackFuncName, params, extras)
+// Schedule provides a mock function with given fields: ctx, vendorType, vendorID, cronType, cron, callbackFuncName, callbackFuncParams, extraAttrs
+func (_m *Scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string, cron string, callbackFuncName string, callbackFuncParams interface{}, extraAttrs map[string]interface{}) (int64, error) {
+	ret := _m.Called(ctx, vendorType, vendorID, cronType, cron, callbackFuncName, callbackFuncParams, extraAttrs)
 
 	var r0 int64
 	if rf, ok := ret.Get(0).(func(context.Context, string, int64, string, string, string, interface{}, map[string]interface{}) int64); ok {
-		r0 = rf(ctx, vendorType, vendorID, cronType, cron, callbackFuncName, params, extras)
+		r0 = rf(ctx, vendorType, vendorID, cronType, cron, callbackFuncName, callbackFuncParams, extraAttrs)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, string, int64, string, string, string, interface{}, map[string]interface{}) error); ok {
-		r1 = rf(ctx, vendorType, vendorID, cronType, cron, callbackFuncName, params, extras)
+		r1 = rf(ctx, vendorType, vendorID, cronType, cron, callbackFuncName, callbackFuncParams, extraAttrs)
 	} else {
 		r1 = ret.Error(1)
 	}
