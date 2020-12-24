@@ -2,7 +2,6 @@ package postprocessors
 
 import (
 	"encoding/json"
-	common "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -304,7 +303,7 @@ func TestReportConverterTests(t *testing.T) {
 // SetupSuite sets up the report converter suite test cases
 func (suite *TestReportConverterSuite) SetupSuite() {
 	suite.rc = NewNativeToRelationalSchemaConverter()
-	common.PrepareTestForPostgresSQL()
+	suite.Suite.SetupSuite()
 	suite.vulnerabilityRecordDao = scan.NewVulnerabilityRecordDao()
 	suite.reportDao = scan.New()
 }
