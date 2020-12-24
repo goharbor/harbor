@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/controller/scan"
@@ -192,18 +193,30 @@ func (s *scanAllAPI) getMetrics(ctx context.Context, trigger ...string) (*models
 	}
 
 	sts := &models.Stats{}
-	if execution != nil && execution.Metrics != nil {
+	if execution != nil {
 		metrics := execution.Metrics
 		sts.Total = metrics.TaskCount
 		sts.Completed = metrics.SuccessTaskCount
-		sts.Metrics = map[string]int64{
-			"Pending": metrics.PendingTaskCount,
-			"Running": metrics.RunningTaskCount,
-			"Success": metrics.SuccessTaskCount,
-			"Error":   metrics.ErrorTaskCount,
-			"Stopped": metrics.StoppedTaskCount,
-		}
 		sts.Ongoing = !job.Status(execution.Status).Final() || sts.Total != sts.Completed
+		sts.Trigger = strings.Title(strings.ToLower(execution.Trigger))
+
+		if execution.Metrics != nil {
+			sts.Metrics = map[string]int64{
+				"Pending": metrics.PendingTaskCount,
+				"Running": metrics.RunningTaskCount,
+				"Success": metrics.SuccessTaskCount,
+				"Error":   metrics.ErrorTaskCount,
+				"Stopped": metrics.StoppedTaskCount,
+			}
+		} else {
+			sts.Metrics = map[string]int64{
+				"Pending": 0,
+				"Running": 0,
+				"Success": 0,
+				"Error":   0,
+				"Stopped": 0,
+			}
+		}
 	}
 
 	return sts, nil
