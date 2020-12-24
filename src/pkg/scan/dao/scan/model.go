@@ -91,7 +91,7 @@ func (vr *VulnerabilityRecord) TableName() string {
 // TableUnique for VulnerabilityRecord
 func (vr *VulnerabilityRecord) TableUnique() [][]string {
 	return [][]string{
-		{"cve_id", "registration_uuid", "package", "package_version", "digest"},
+		{"cve_id", "registration_uuid", "package", "package_version"},
 	}
 }
 
