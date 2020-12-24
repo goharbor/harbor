@@ -15,6 +15,7 @@
 package scan
 
 import (
+	htesting "github.com/goharbor/harbor/src/testing"
 	"testing"
 
 	common "github.com/goharbor/harbor/src/common/dao"
@@ -27,7 +28,7 @@ import (
 
 // ReportTestSuite is test suite of testing report DAO.
 type ReportTestSuite struct {
-	suite.Suite
+	htesting.Suite
 
 	dao DAO
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
+	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -272,7 +273,7 @@ const sampleReportWithMixedSeverity = `{
 
 // TestReportConverterSuite
 type TestReportConverterSuite struct {
-	suite.Suite
+	htesting.Suite
 	rc                     NativeScanReportConverter
 	rpUUID                 string
 	vulnerabilityRecordDao scan.VulnerabilityRecordDao
