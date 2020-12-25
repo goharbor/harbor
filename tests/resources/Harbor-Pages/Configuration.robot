@@ -156,6 +156,11 @@ Switch To Distribution
     Retry Element Click  xpath=//clr-main-container//clr-vertical-nav-group//span[contains(.,'Distributions')]
     Sleep  1
 
+Switch To Robot Account
+    Sleep  1
+    Retry Element Click  xpath=//clr-main-container//clr-vertical-nav-group//span[contains(.,'Robot Accounts')]
+    Sleep  1
+
 Modify Token Expiration
     [Arguments]  ${minutes}
     Input Text  xpath=//*[@id='tokenExpiration']  ${minutes}

@@ -754,3 +754,27 @@ Test Case - P2P Preheat Policy CRUD
     Delete A Distribution  ${dist_name}  ${endpoint}
     Close Browser
 
+Test Case - System Robot Account Cover All Projects
+    [Tags]  sys_robot_account_cover
+    ${d}=  Get Current Date    result_format=%m%s
+    ${pro_name}=  Set Variable  project_${d}
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  ${pro_name}
+    ${name}=  Create A New System Robot Account  is_cover_all=${true}
+    Navigate To Projects
+    Switch To Robot Account
+    System Robot Account Exist  ${name}  All
+    Close Browser
+
+Test Case - System Robot Account
+    [Tags]  sys_robot_account
+    ${d}=  Get Current Date    result_format=%m%s
+    ${project_count}=  Evaluate  random.randint(3, 5)
+    ${pro_name}=  Set Variable  project_${d}
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${project_permission_list}=  Create A Random Project Permission List  ${project_count}
+    ${name}=  Create A New System Robot Account  project_permission_list=${project_permission_list}
+    System Robot Account Exist  ${name}  ${project_count}
+    Close Browser

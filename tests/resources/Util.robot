@@ -69,6 +69,8 @@ Resource  Harbor-Pages/Vulnerability_Elements.robot
 Resource  Harbor-Pages/LDAP-Mode.robot
 Resource  Harbor-Pages/OIDC_Auth.robot
 Resource  Harbor-Pages/OIDC_Auth_Elements.robot
+Resource  Harbor-Pages/Robot_Account.robot
+Resource  Harbor-Pages/Robot_Account_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
 Resource  CNAB_Util.robot
