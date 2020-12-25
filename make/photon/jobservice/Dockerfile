@@ -8,9 +8,10 @@ COPY ./make/photon/jobservice/harbor_jobservice /harbor/
 
 
 RUN chown -R harbor:harbor /etc/pki/tls/certs \
-    && chown harbor:harbor /harbor/entrypoint.sh && chmod u+x /harbor/entrypoint.sh \
-    && chown harbor:harbor /harbor/install_cert.sh && chmod u+x /harbor/install_cert.sh \
-    && chown harbor:harbor /harbor/harbor_jobservice && chmod u+x /harbor/harbor_jobservice
+    && chown -R harbor:harbor /harbor/ \
+    && chmod u+x /harbor/entrypoint.sh \
+    && chmod u+x /harbor/install_cert.sh \
+    && chmod u+x /harbor/harbor_jobservice
 
 WORKDIR /harbor/
 

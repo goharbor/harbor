@@ -11,9 +11,10 @@ COPY ./make/migrations /harbor/migrations
 COPY ./icons /harbor/icons
 
 RUN chown -R harbor:harbor /etc/pki/tls/certs \
-    && chown harbor:harbor /harbor/entrypoint.sh && chmod u+x /harbor/entrypoint.sh \
-    && chown harbor:harbor /harbor/install_cert.sh && chmod u+x /harbor/install_cert.sh \
-    && chown harbor:harbor /harbor/harbor_core && chmod u+x /harbor/harbor_core
+    && chown -R harbor:harbor /harbor/ \
+    && chmod u+x /harbor/entrypoint.sh \
+    && chmod u+x /harbor/install_cert.sh \
+    && chmod u+x /harbor/harbor_core
 
 WORKDIR /harbor/
 USER harbor
