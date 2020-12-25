@@ -172,7 +172,7 @@ func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManage
 	}
 
 	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(rbac.ResourceRepository)
-	if ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource) {
+	if ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionDelete, resource) {
 		permission = "RWM"
 	} else if ctx.Can(rbac.ActionPush, resource) {
 		permission = "RW"
