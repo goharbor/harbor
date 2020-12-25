@@ -55,7 +55,7 @@ func boolValue(v *bool) bool {
 }
 
 func resolveVulnerabilitiesAddition(ctx context.Context, artifact *artifact.Artifact) (*processor.Addition, error) {
-	reports, err := scan.DefaultController.GetReport(ctx, artifact, []string{v1.MimeTypeNativeReport})
+	reports, err := scan.DefaultController.GetReport(ctx, artifact, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport})
 	if err != nil {
 		return nil, err
 	}

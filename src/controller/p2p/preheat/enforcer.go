@@ -477,7 +477,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 // getVulnerabilitySev gets the severity code value for the given artifact with allowlist option set
 func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *models.Project, art *artifact.Artifact) (uint, error) {
 	al := p.CVEAllowlist.CVESet()
-	r, err := de.scanCtl.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport}, report.WithCVEAllowlist(&al))
+	r, err := de.scanCtl.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport}, report.WithCVEAllowlist(&al))
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
 			// no vulnerability report
@@ -487,11 +487,17 @@ func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *models.Pr
 		return defaultSeverityCode, errors.Wrap(err, "get vulnerability severity")
 	}
 
-	// Severity is based on the native report format.
+	// Severity is based on the native report format or the generic vulnerability report format.
 	// In case no supported report format, treat as same to the no report scenario
 	sum, ok := r[v1.MimeTypeNativeReport]
 	if !ok {
-		return defaultSeverityCode, nil
+		// check if a report with MimeTypeGenericVulnerabilityReport is present.
+		// return the default severity code only if it does not exist
+		sum, ok = r[v1.MimeTypeGenericVulnerabilityReport]
+		if !ok {
+			return defaultSeverityCode, nil
+		}
+
 	}
 
 	sm, ok := sum.(*vuln.NativeReportSummary)

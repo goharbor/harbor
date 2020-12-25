@@ -126,6 +126,7 @@ func (mh *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				ProducesMimeTypes: []string{
 					MimeTypeNativeReport,
 					MimeTypeRawReport,
+					MimeTypeGenericVulnerabilityReport,
 				},
 			}},
 			Properties: ScannerProperties{

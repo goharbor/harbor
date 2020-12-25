@@ -42,6 +42,7 @@ import (
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
+	postprocessorstesting "github.com/goharbor/harbor/src/testing/pkg/scan/postprocessors"
 	reporttesting "github.com/goharbor/harbor/src/testing/pkg/scan/report"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
 	"github.com/stretchr/testify/assert"
@@ -60,11 +61,12 @@ type ControllerTestSuite struct {
 	artifact     *artifact.Artifact
 	rawReport    string
 
-	execMgr   *tasktesting.ExecutionManager
-	taskMgr   *tasktesting.Manager
-	reportMgr *reporttesting.Manager
-	ar        artifact.Controller
-	c         Controller
+	execMgr         *tasktesting.ExecutionManager
+	taskMgr         *tasktesting.Manager
+	reportMgr       *reporttesting.Manager
+	ar              artifact.Controller
+	c               Controller
+	reportConverter *postprocessorstesting.ScanReportV1ToV2Converter
 }
 
 // TestController is the entry point of ControllerTestSuite.
@@ -277,8 +279,9 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		cloneCtx: func(ctx context.Context) context.Context { return ctx },
 		makeCtx:  func() context.Context { return context.TODO() },
 
-		execMgr: suite.execMgr,
-		taskMgr: suite.taskMgr,
+		execMgr:         suite.execMgr,
+		taskMgr:         suite.taskMgr,
+		reportConverter: &postprocessorstesting.ScanReportV1ToV2Converter{},
 	}
 }
 

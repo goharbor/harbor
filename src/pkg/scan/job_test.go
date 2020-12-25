@@ -103,7 +103,7 @@ func (suite *JobTestSuite) TestJob() {
 	robotData, err := robot.ToJSON()
 	require.NoError(suite.T(), err)
 
-	mimeTypes := []string{v1.MimeTypeNativeReport}
+	mimeTypes := []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport}
 
 	jp := make(job.Parameters)
 	jp[JobParamRegistration] = rData
@@ -142,7 +142,7 @@ func (suite *JobTestSuite) TestJob() {
 	jRep, err := json.Marshal(rp)
 	require.NoError(suite.T(), err)
 
-	mc.On("GetScanReport", "scan_id", v1.MimeTypeNativeReport).Return(string(jRep), nil)
+	mc.On("GetScanReport", "scan_id", v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport).Return(string(jRep), nil)
 	mocktesting.OnAnything(suite.mcp, "Get").Return(mc, nil)
 
 	crp := &CheckInReport{

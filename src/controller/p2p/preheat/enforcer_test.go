@@ -106,7 +106,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 	fakeScanCtl.On("GetSummary",
 		context.TODO(),
 		mock.AnythingOfType("*artifact.Artifact"),
-		[]string{v1.MimeTypeNativeReport},
+		[]string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport},
 		mock.AnythingOfType("report.Option"),
 	).Return(mockVulnerabilitySummary(), nil)
 
@@ -308,6 +308,9 @@ func mockVulnerabilitySummary() map[string]interface{} {
 	// skip all unused properties
 	return map[string]interface{}{
 		v1.MimeTypeNativeReport: &vuln.NativeReportSummary{
+			Severity: vuln.Low,
+		},
+		v1.MimeTypeGenericVulnerabilityReport: &vuln.NativeReportSummary{
 			Severity: vuln.Low,
 		},
 	}

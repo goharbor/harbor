@@ -55,7 +55,8 @@ type SummaryMerger func(s1, s2 interface{}) (interface{}, error)
 
 // SupportedSummaryMergers declares mappings between mime type and summary merger func.
 var SupportedSummaryMergers = map[string]SummaryMerger{
-	v1.MimeTypeNativeReport: MergeNativeSummary,
+	v1.MimeTypeNativeReport:               MergeNativeSummary,
+	v1.MimeTypeGenericVulnerabilityReport: MergeNativeSummary,
 }
 
 // MergeSummary merge summary s1 and s2
@@ -85,7 +86,8 @@ func MergeNativeSummary(s1, s2 interface{}) (interface{}, error) {
 
 // SupportedGenerators declares mappings between mime type and summary generator func.
 var SupportedGenerators = map[string]SummaryGenerator{
-	v1.MimeTypeNativeReport: GenerateNativeSummary,
+	v1.MimeTypeNativeReport:               GenerateNativeSummary,
+	v1.MimeTypeGenericVulnerabilityReport: GenerateNativeSummary,
 }
 
 // GenerateSummary is a helper function to generate report

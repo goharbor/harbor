@@ -18,8 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"testing"
-
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -30,9 +28,11 @@ import (
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
 	"github.com/goharbor/harbor/src/testing/mock"
+	postprocessorstesting "github.com/goharbor/harbor/src/testing/pkg/scan/postprocessors"
 	reporttesting "github.com/goharbor/harbor/src/testing/pkg/scan/report"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
 	"github.com/stretchr/testify/suite"
+	"testing"
 )
 
 type CallbackTestSuite struct {
@@ -53,6 +53,7 @@ type CallbackTestSuite struct {
 
 	taskMgr         *tasktesting.Manager
 	originalTaskMgr task.Manager
+	reportConverter *postprocessorstesting.ScanReportV1ToV2Converter
 }
 
 func (suite *CallbackTestSuite) SetupSuite() {
@@ -73,11 +74,14 @@ func (suite *CallbackTestSuite) SetupSuite() {
 	task.Mgr = suite.taskMgr
 
 	suite.originalScanCtl = DefaultController
+	suite.reportConverter = &postprocessorstesting.ScanReportV1ToV2Converter{}
+
 	suite.scanCtl = &basicController{
-		makeCtx: context.TODO,
-		manager: suite.reportMgr,
-		execMgr: suite.execMgr,
-		taskMgr: suite.taskMgr,
+		makeCtx:         context.TODO,
+		manager:         suite.reportMgr,
+		execMgr:         suite.execMgr,
+		taskMgr:         suite.taskMgr,
+		reportConverter: suite.reportConverter,
 	}
 	DefaultController = suite.scanCtl
 }

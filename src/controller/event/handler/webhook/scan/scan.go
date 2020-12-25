@@ -131,7 +131,7 @@ func constructScanImagePayload(event *event.ScanImageEvent, project *models.Proj
 	// If the report is still not ready in the total time, then failed at then
 	for i := 0; i < 10; i++ {
 		// First check in case it is ready
-		if re, err := scan.DefaultController.GetReport(ctx, art, []string{v1.MimeTypeNativeReport}); err == nil {
+		if re, err := scan.DefaultController.GetReport(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport}); err == nil {
 			if len(re) > 0 && len(re[0].Report) > 0 {
 				break
 			}
@@ -143,7 +143,7 @@ func constructScanImagePayload(event *event.ScanImageEvent, project *models.Proj
 	}
 
 	// Add scan overview
-	summaries, err := scan.DefaultController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport})
+	summaries, err := scan.DefaultController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport})
 	if err != nil {
 		return nil, errors.Wrap(err, "construct scan payload")
 	}

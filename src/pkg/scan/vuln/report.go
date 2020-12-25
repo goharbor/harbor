@@ -109,4 +109,28 @@ type VulnerabilityItem struct {
 	// The artifact digest which the vulnerability belonged
 	// e.g: sha256@ee1d00c5250b5a886b09be2d5f9506add35dfb557f1ef37a7e4b8f0138f32956
 	ArtifactDigest string `json:"artifact_digest"`
+	// The CVSS3 and CVSS2 based scores and attack vector for the vulnerability item
+	CVSSDetails CVSS `json:"preferred_cvss"`
+	// A separated list of CWE Ids associated with this vulnerability
+	// e.g. CWE-465,CWE-124
+	CWEIds []string `json:"cwe_ids"`
+	// A collection of vendor specific attributes for the vulnerability item
+	// with each attribute represented as a key-value pair.
+	VendorAttributes map[string]interface{} `json:"vendor_attributes"`
+}
+
+// CVSS holds the score and attack vector for the vulnerability based on the CVSS3 and CVSS2 standards
+type CVSS struct {
+	// The CVSS-3 score for the vulnerability
+	// e.g. 2.5
+	ScoreV3 *float64 `json:"score_v3"`
+	// The CVSS-3 score for the vulnerability
+	// e.g. 2.5
+	ScoreV2 *float64 `json:"score_v2"`
+	// The CVSS-3 attack vector.
+	// e.g. CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N
+	VectorV3 string `json:"vector_v3"`
+	// The CVSS-3 attack vector.
+	// e.g. AV:L/AC:M/Au:N/C:P/I:N/A:N
+	VectorV2 string `json:"vector_v2"`
 }

@@ -22,7 +22,7 @@ import (
 )
 
 // NativeReportSummary is the default supported scan report summary model.
-// Generated based on the report with v1.MimeTypeNativeReport mime type.
+// Generated based on the report with v1.MimeTypeNativeReport or the v1.MimeTypeGenericVulnerabilityReport mime type.
 type NativeReportSummary struct {
 	ReportID        string                `json:"report_id"`
 	ScanStatus      string                `json:"scan_status"`
