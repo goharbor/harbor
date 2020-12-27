@@ -20,15 +20,10 @@ import (
 
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/core/service/notifications"
 	jjob "github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/notifier/event"
-	"github.com/goharbor/harbor/src/pkg/retention"
 )
 
 var statusMap = map[string]string{
@@ -86,61 +81,6 @@ func (h *Handler) Prepare() {
 	h.checkIn = data.CheckIn
 	if data.Metadata != nil {
 		h.revision = data.Metadata.Revision
-	}
-}
-
-// HandleRetentionTask handles the webhook of retention task
-func (h *Handler) HandleRetentionTask() {
-	taskID := h.id
-	status := h.rawStatus
-	log.Debugf("received retention task status update event: task-%d, status-%s", taskID, status)
-	mgr := &retention.DefaultManager{}
-	// handle checkin
-	if h.checkIn != "" {
-		var retainObj struct {
-			Total    int                `json:"total"`
-			Retained int                `json:"retained"`
-			Deleted  []*selector.Result `json:"deleted"`
-		}
-		if err := json.Unmarshal([]byte(h.checkIn), &retainObj); err != nil {
-			log.Errorf("failed to resolve checkin of retention task %d: %v", taskID, err)
-			return
-		}
-		task := &retention.Task{
-			ID:       taskID,
-			Total:    retainObj.Total,
-			Retained: retainObj.Retained,
-		}
-		if err := mgr.UpdateTask(task, "Total", "Retained"); err != nil {
-			log.Errorf("failed to update of retention task %d: %v", taskID, err)
-			h.SendInternalServerError(err)
-			return
-		}
-
-		e := &event.Event{}
-		metaData := &metadata.RetentionMetaData{
-			Total:    retainObj.Total,
-			Retained: retainObj.Retained,
-			Deleted:  retainObj.Deleted,
-			Status:   "SUCCESS",
-			TaskID:   taskID,
-		}
-
-		if err := e.Build(metaData); err == nil {
-			if err := e.Publish(); err != nil {
-				log.Error(errors.Wrap(err, "tag retention job hook handler: event publish"))
-			}
-		} else {
-			log.Error(errors.Wrap(err, "tag retention job hook handler: event publish"))
-		}
-		return
-	}
-
-	// handle status updating
-	if err := mgr.UpdateTaskStatus(taskID, status, h.revision); err != nil {
-		log.Errorf("failed to update the status of retention task %d: %v", taskID, err)
-		h.SendInternalServerError(err)
-		return
 	}
 }
 

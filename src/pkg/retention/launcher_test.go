@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/testing/mock"
 	projecttesting "github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
+	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -104,6 +105,8 @@ func (f *fakeRetentionManager) ListHistories(executionID int64, query *q.Query) 
 type launchTestSuite struct {
 	suite.Suite
 	projectMgr       project.Manager
+	execMgr          *tasktesting.ExecutionManager
+	taskMgr          *tasktesting.Manager
 	repositoryMgr    *repository.FakeManager
 	retentionMgr     Manager
 	jobserviceClient job.Client
@@ -125,6 +128,8 @@ func (l *launchTestSuite) SetupTest() {
 	l.projectMgr = projectMgr
 	l.repositoryMgr = &repository.FakeManager{}
 	l.retentionMgr = &fakeRetentionManager{}
+	l.execMgr = &tasktesting.ExecutionManager{}
+	l.taskMgr = &tasktesting.Manager{}
 	l.jobserviceClient = &hjob.MockJobClient{
 		JobUUID: []string{"1"},
 	}
@@ -156,10 +161,16 @@ func (l *launchTestSuite) TestGetRepositories() {
 }
 
 func (l *launchTestSuite) TestLaunch() {
+	l.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	l.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	l.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+
 	launcher := &launcher{
 		projectMgr:         l.projectMgr,
 		repositoryMgr:      l.repositoryMgr,
 		retentionMgr:       l.retentionMgr,
+		execMgr:            l.execMgr,
+		taskMgr:            l.taskMgr,
 		jobserviceClient:   l.jobserviceClient,
 		chartServerEnabled: true,
 	}
@@ -244,10 +255,13 @@ func (l *launchTestSuite) TestLaunch() {
 
 func (l *launchTestSuite) TestStop() {
 	t := l.T()
+	l.execMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 	launcher := &launcher{
 		projectMgr:       l.projectMgr,
 		repositoryMgr:    l.repositoryMgr,
 		retentionMgr:     l.retentionMgr,
+		execMgr:          l.execMgr,
+		taskMgr:          l.taskMgr,
 		jobserviceClient: l.jobserviceClient,
 	}
 	// invalid execution ID

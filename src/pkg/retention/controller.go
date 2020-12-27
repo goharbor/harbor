@@ -15,15 +15,18 @@
 package retention
 
 import (
+	"context"
 	"fmt"
-	"time"
-
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
-	"github.com/goharbor/harbor/src/pkg/retention/q"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
+	"github.com/goharbor/harbor/src/pkg/task"
+	"time"
 )
 
 // go:generate mockery -name APIController -case snake
@@ -60,6 +63,8 @@ type APIController interface {
 // DefaultAPIController ...
 type DefaultAPIController struct {
 	manager        Manager
+	execMgr        task.ExecutionManager
+	taskMgr        task.Manager
 	launcher       Launcher
 	projectManager project.Manager
 	repositoryMgr  repository.Manager
@@ -179,7 +184,34 @@ func (r *DefaultAPIController) DeleteRetention(id int64) error {
 		}
 	}
 
+	ctx := orm.Context()
+	err = r.deleteExecs(ctx, id)
+	if err != nil {
+		return err
+	}
 	return r.manager.DeletePolicyAndExec(id)
+}
+
+// deleteExecs delete executions
+func (r *DefaultAPIController) deleteExecs(ctx context.Context, vendorID int64) error {
+	executions, err := r.execMgr.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"VendorType": job.Retention,
+			"VendorID":   vendorID,
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	for _, execution := range executions {
+		if err = r.execMgr.Delete(ctx, execution.ID); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // TriggerRetentionExec Trigger Retention Execution
@@ -189,16 +221,19 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 		return 0, err
 	}
 
-	exec := &Execution{
-		PolicyID:  policyID,
-		StartTime: time.Now().Truncate(time.Second),
-		Trigger:   trigger,
-		DryRun:    dryRun,
-	}
-	id, err := r.manager.CreateExecution(exec)
+	ctx := orm.Context()
+	id, err := r.execMgr.Create(ctx, job.Retention, policyID, trigger,
+		map[string]interface{}{
+			"dry_run": dryRun,
+		},
+	)
 	if _, err = r.launcher.Launch(p, id, dryRun); err != nil {
-		// clean execution if launch failed
-		_ = r.manager.DeleteExecution(id)
+		if err1 := r.execMgr.StopAndWait(ctx, id, 10*time.Second); err1 != nil {
+			logger.Errorf("failed to stop the retention execution %d: %v", id, err1)
+		}
+		if err1 := r.execMgr.MarkError(ctx, id, err.Error()); err1 != nil {
+			logger.Errorf("failed to mark error for the retention execution %d: %v", id, err1)
+		}
 		return 0, err
 	}
 	return id, err
@@ -207,7 +242,8 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 
 // OperateRetentionExec Operate Retention Execution
 func (r *DefaultAPIController) OperateRetentionExec(eid int64, action string) error {
-	e, err := r.manager.GetExecution(eid)
+	ctx := orm.Context()
+	e, err := r.execMgr.Get(ctx, eid)
 	if err != nil {
 		return err
 	}
@@ -224,50 +260,135 @@ func (r *DefaultAPIController) OperateRetentionExec(eid int64, action string) er
 
 // GetRetentionExec Get Retention Execution
 func (r *DefaultAPIController) GetRetentionExec(executionID int64) (*Execution, error) {
-	return r.manager.GetExecution(executionID)
+	ctx := orm.Context()
+	e, err := r.execMgr.Get(ctx, executionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return convertExecution(e), nil
 }
 
 // ListRetentionExecs List Retention Executions
 func (r *DefaultAPIController) ListRetentionExecs(policyID int64, query *q.Query) ([]*Execution, error) {
-	return r.manager.ListExecutions(policyID, query)
+	ctx := orm.Context()
+	query = q.MustClone(query)
+	query.Keywords["VendorType"] = job.Retention
+	query.Keywords["VendorID"] = policyID
+	execs, err := r.execMgr.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var executions []*Execution
+	for _, exec := range execs {
+		executions = append(executions, convertExecution(exec))
+	}
+	return executions, nil
+}
+
+func convertExecution(exec *task.Execution) *Execution {
+	return &Execution{
+		ID:        exec.ID,
+		PolicyID:  exec.VendorID,
+		StartTime: exec.StartTime,
+		EndTime:   exec.EndTime,
+		Status:    exec.Status,
+		Trigger:   exec.Trigger,
+		DryRun:    exec.ExtraAttrs["dry_run"].(bool),
+	}
 }
 
 // GetTotalOfRetentionExecs Count Retention Executions
 func (r *DefaultAPIController) GetTotalOfRetentionExecs(policyID int64) (int64, error) {
-	return r.manager.GetTotalOfRetentionExecs(policyID)
+	ctx := orm.Context()
+	return r.execMgr.Count(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"VendorType": job.Retention,
+			"VendorID":   policyID,
+		},
+	})
 }
 
 // ListRetentionExecTasks List Retention Execution Histories
 func (r *DefaultAPIController) ListRetentionExecTasks(executionID int64, query *q.Query) ([]*Task, error) {
-	q1 := &q.TaskQuery{
-		ExecutionID: executionID,
+	ctx := orm.Context()
+	query = q.MustClone(query)
+	query.Keywords["VendorType"] = job.Retention
+	query.Keywords["ExecutionID"] = executionID
+	tks, err := r.taskMgr.List(ctx, query)
+	if err != nil {
+		return nil, err
 	}
-	if query != nil {
-		q1.PageSize = query.PageSize
-		q1.PageNumber = query.PageNumber
+	var tasks []*Task
+	for _, tk := range tks {
+		tasks = append(tasks, convertTask(tk))
 	}
-	return r.manager.ListTasks(q1)
+	return tasks, nil
+}
+
+func convertTask(t *task.Task) *Task {
+	return &Task{
+		ID:          t.ID,
+		ExecutionID: t.ExecutionID,
+		Repository:  t.GetStringFromExtraAttrs("repository"),
+		JobID:       t.JobID,
+		Status:      t.Status,
+		StatusCode:  job.Status(t.Status).Code(),
+		StartTime:   t.StartTime,
+		EndTime:     t.EndTime,
+		Total:       int(t.GetNumFromExtraAttrs("total")),
+		Retained:    int(t.GetNumFromExtraAttrs("retained")),
+	}
 }
 
 // GetTotalOfRetentionExecTasks Count Retention Execution Histories
 func (r *DefaultAPIController) GetTotalOfRetentionExecTasks(executionID int64) (int64, error) {
-	return r.manager.GetTotalOfTasks(executionID)
+	ctx := orm.Context()
+	return r.taskMgr.Count(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"VendorType":  job.Retention,
+			"ExecutionID": executionID,
+		},
+	})
 }
 
 // GetRetentionExecTaskLog Get Retention Execution Task Log
 func (r *DefaultAPIController) GetRetentionExecTaskLog(taskID int64) ([]byte, error) {
-	return r.manager.GetTaskLog(taskID)
+	ctx := orm.Context()
+	return r.taskMgr.GetLog(ctx, taskID)
 }
 
 // GetRetentionExecTask Get Retention Execution Task
 func (r *DefaultAPIController) GetRetentionExecTask(taskID int64) (*Task, error) {
-	return r.manager.GetTask(taskID)
+	ctx := orm.Context()
+	t, err := r.taskMgr.Get(ctx, taskID)
+	if err != nil {
+		return nil, err
+	}
+
+	return convertTask(t), nil
+}
+
+// UpdateTaskInfo Update task info
+func (r *DefaultAPIController) UpdateTaskInfo(taskID int64, total int, retained int) error {
+	ctx := orm.Context()
+	t, err := r.taskMgr.Get(ctx, taskID)
+	if err != nil {
+		return err
+	}
+
+	t.ExtraAttrs["total"] = total
+	t.ExtraAttrs["retained"] = retained
+
+	return r.taskMgr.UpdateExtraAttrs(ctx, taskID, t.ExtraAttrs)
 }
 
 // NewAPIController ...
-func NewAPIController(retentionMgr Manager, projectManager project.Manager, repositoryMgr repository.Manager, scheduler scheduler.Scheduler, retentionLauncher Launcher) APIController {
+func NewAPIController(retentionMgr Manager, projectManager project.Manager, repositoryMgr repository.Manager, scheduler scheduler.Scheduler, retentionLauncher Launcher, execMgr task.ExecutionManager, taskMgr task.Manager) APIController {
 	return &DefaultAPIController{
 		manager:        retentionMgr,
+		execMgr:        execMgr,
+		taskMgr:        taskMgr,
 		launcher:       retentionLauncher,
 		projectManager: projectManager,
 		repositoryMgr:  repositoryMgr,

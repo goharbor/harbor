@@ -3,15 +3,16 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"net/http"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
-	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
-	"github.com/goharbor/harbor/src/pkg/retention/q"
 )
 
 // RetentionAPI ...
@@ -266,7 +267,7 @@ func (r *RetentionAPI) TriggerRetentionExec() {
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
-	eid, err := retentionController.TriggerRetentionExec(id, retention.ExecutionTriggerManual, d.DryRun)
+	eid, err := retentionController.TriggerRetentionExec(id, task.ExecutionTriggerManual, d.DryRun)
 	if err != nil {
 		r.SendInternalServerError(err)
 		return
@@ -366,6 +367,10 @@ func (r *RetentionAPI) ListRetentionExecTasks() {
 	query := &q.Query{
 		PageNumber: page,
 		PageSize:   size,
+		Keywords: map[string]interface{}{
+			"VendorID":   id,
+			"VendorType": job.Retention,
+		},
 	}
 	p, err := retentionController.GetRetention(id)
 	if err != nil {
