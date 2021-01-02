@@ -32,6 +32,14 @@ import (
 var creatorMap map[string]Creator
 var registryFilterMap map[string]accessFilter
 var notaryFilterMap map[string]accessFilter
+var actionScopeMap = map[rbac.Action]string{
+	// Scopes checked by distribution, see: https://github.com/docker/distribution/blob/master/registry/handlers/app.go
+	rbac.ActionPull:   "pull",
+	rbac.ActionPush:   "push",
+	rbac.ActionDelete: "delete",
+	// For skipping policy check when scanner pulls artifacts
+	rbac.ActionScannerPull: "scanner-pull",
+}
 
 const (
 	// Notary service
@@ -159,31 +167,29 @@ func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManage
 		return err
 	}
 	projectName := img.namespace
-	permission := ""
 
 	project, err := pm.Get(projectName)
 	if err != nil {
 		return err
 	}
-	if project == nil {
-		log.Debugf("project %s does not exist, set empty permission", projectName)
-		a.Actions = []string{}
-		return nil
-	}
 
 	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(rbac.ResourceRepository)
-	if ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource) {
-		permission = "RWM"
-	} else if ctx.Can(rbac.ActionPush, resource) {
-		permission = "RW"
-	} else if ctx.Can(rbac.ActionScannerPull, resource) {
-		permission = "RS"
-	} else if ctx.Can(rbac.ActionPull, resource) {
-		permission = "R"
+	scopeList := make([]string, 0)
+	for s := range resourceScopes(ctx, resource) {
+		scopeList = append(scopeList, s)
 	}
-
-	a.Actions = permToActions(permission)
+	a.Actions = scopeList
 	return nil
+}
+
+func resourceScopes(sCtx security.Context, rc rbac.Resource) map[string]struct{} {
+	res := map[string]struct{}{}
+	for a, s := range actionScopeMap {
+		if sCtx.Can(a, rc) {
+			res[s] = struct{}{}
+		}
+	}
+	return res
 }
 
 type generalCreator struct {
