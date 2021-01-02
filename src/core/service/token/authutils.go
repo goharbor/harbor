@@ -154,20 +154,3 @@ func MakeToken(username, service string, access []*token.ResourceActions) (*mode
 		IssuedAt:  now.Format(time.RFC3339),
 	}, nil
 }
-
-func permToActions(p string) []string {
-	res := make([]string, 0)
-	if strings.Contains(p, "W") {
-		res = append(res, "push")
-	}
-	if strings.Contains(p, "M") {
-		res = append(res, "*")
-	}
-	if strings.Contains(p, "R") {
-		res = append(res, "pull")
-	}
-	if strings.Contains(p, "S") {
-		res = append(res, "scanner-pull")
-	}
-	return res
-}
