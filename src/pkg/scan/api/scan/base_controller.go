@@ -425,10 +425,16 @@ func (bc *basicController) createRobotAccount(projectID int64, repository string
 	}
 
 	resource := rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceRepository)
-	access := []*rbac.Policy{{
-		Resource: resource,
-		Action:   rbac.ActionScannerPull,
-	}}
+	access := []*rbac.Policy{
+		{
+			Resource: resource,
+			Action:   rbac.ActionScannerPull,
+		},
+		{
+			Resource: resource,
+			Action:   rbac.ActionPull,
+		},
+	}
 
 	robotReq := &model.RobotCreate{
 		Name:        UUID,

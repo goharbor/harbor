@@ -160,10 +160,16 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	rc := &MockRobotController{}
 
 	resource := fmt.Sprintf("/project/%d/repository", suite.artifact.NamespaceID)
-	access := []*rbac.Policy{{
-		Resource: rbac.Resource(resource),
-		Action:   rbac.ActionScannerPull,
-	}}
+	access := []*rbac.Policy{
+		{
+			Resource: rbac.Resource(resource),
+			Action:   rbac.ActionScannerPull,
+		},
+		{
+			Resource: rbac.Resource(resource),
+			Action:   rbac.ActionPull,
+		},
+	}
 
 	rname := "the-uuid-123"
 	account := &model.RobotCreate{
