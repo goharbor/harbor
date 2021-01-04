@@ -23,7 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	"github.com/goharbor/harbor/src/pkg/robot2/model"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 )
 
 // SecurityContext implements security.Context interface based on database

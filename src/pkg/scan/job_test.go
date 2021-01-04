@@ -17,7 +17,7 @@ package scan
 import (
 	"encoding/json"
 	"github.com/goharbor/harbor/src/controller/robot"
-	"github.com/goharbor/harbor/src/pkg/robot2/model"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"testing"
 	"time"
 
