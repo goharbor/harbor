@@ -13,9 +13,10 @@ type PackageData struct {
 
 // Package ...
 type Package struct {
-	PackageID  string      `json:"package_id"`
-	Name       string      `json:"name"`
-	Repository *Repository `json:"repository"`
+	PackageID      string      `json:"package_id"`
+	Name           string      `json:"name"`
+	NormalizedName string      `json:"normalized_name"`
+	Repository     *Repository `json:"repository"`
 }
 
 // Repository ...

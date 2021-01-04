@@ -17,7 +17,6 @@ package artifacthub
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"io"
@@ -28,14 +27,14 @@ import (
 func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {
 	pkgs, err := a.client.getAllPackages(HelmChart)
 	if err != nil {
-		return nil, err
+		return nil, errors.Errorf("get all packages failed: %v", err)
 	}
 
 	resources := []*model.Resource{}
 	var repositories []*model.Repository
 	for _, pkg := range pkgs {
 		repositories = append(repositories, &model.Repository{
-			Name: fmt.Sprintf("%s/%s", pkg.Repository.Name, pkg.Name),
+			Name: fmt.Sprintf("%s/%s", pkg.Repository.Name, pkg.NormalizedName),
 		})
 	}
 
@@ -47,8 +46,7 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 	for _, repository := range repositories {
 		pkgDetail, err := a.client.getHelmPackageDetail(repository.Name)
 		if err != nil {
-			log.Errorf("fetch package detail: %v", err)
-			return nil, err
+			return nil, errors.Errorf("fetch package detail %s: %v", repository.Name, err)
 		}
 
 		var artifacts []*model.Artifact
@@ -100,7 +98,7 @@ func (a *adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
 	}
 
 	if len(chartVersion.ContentURL) == 0 {
-		return nil, errors.Errorf("")
+		return nil, errors.Errorf("empty chart content url, %s:%s", name, version)
 	}
 	return a.download(chartVersion.ContentURL)
 }
