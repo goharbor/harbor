@@ -42,19 +42,16 @@ def push_self_build_image_to_project(project_name, registry, username, password,
     _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
 
     time.sleep(2)
-    if expected_login_error_message != None:
-        return
-
-    push_special_image_to_project(project_name, registry, username, password, image, tags=[tag], size=size, expected_login_error_message = expected_login_error_message, expected_error_message = expected_error_message)
-    return r'{}/{}'.format(project_name, image), tag
+    if expected_login_error_message in [None, ""]:
+        push_special_image_to_project(project_name, registry, username, password, image, tags=[tag], size=size, expected_login_error_message = expected_login_error_message, expected_error_message = expected_error_message)
+        return r'{}/{}'.format(project_name, image), tag
 
 def push_special_image_to_project(project_name, registry, username, password, image, tags=None, size=1, expected_login_error_message=None, expected_error_message = None):
     _docker_api = DockerAPI()
     _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
     time.sleep(2)
-    if expected_login_error_message != None:
-        return
-    return _docker_api.docker_image_build(r'{}/{}/{}'.format(registry, project_name, image), tags = tags, size=int(size), expected_error_message=expected_error_message)
+    if expected_login_error_message in [None, ""]:
+        return _docker_api.docker_image_build(r'{}/{}/{}'.format(registry, project_name, image), tags = tags, size=int(size), expected_error_message=expected_error_message)
 
 
 class Repository(base.Base, object):
@@ -105,6 +102,12 @@ class Repository(base.Base, object):
         data, status_code, _ = client.list_repositories_with_http_info(project_name)
         base._assert_status_code(200, status_code)
         return data
+
+    def clear_repositories(self, project_name, **kwargs):
+        repos = self.list_repositories(project_name, **kwargs)
+        print("Repos to be cleared:", repos)
+        for repo in repos:
+            self.delete_repository(project_name, repo.name.split('/')[1])
 
     def get_repository(self, project_name, repo_name, **kwargs):
         client = self._get_client(**kwargs)

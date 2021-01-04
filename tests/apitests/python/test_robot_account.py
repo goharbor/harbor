@@ -19,7 +19,6 @@ from library.chart import Chart
 import library.helm
 import base
 import v2_swagger_client
-
 class TestRobotAccount(unittest.TestCase):
     @suppress_urllib3_warning
     def setUp(self):
@@ -145,13 +144,14 @@ class TestRobotAccount(unittest.TestCase):
             else:
                 push_self_build_image_to_project(project_access["project_name"], harbor_server, system_ra_client["username"], system_ra_client["password"], "test_unpushable"+base._random_name("repo"), "v6.8.1"+base._random_name("tag"), expected_error_message = "unauthorized to access repository")
 
-    def verify_repository_unpushable(self, project_access_list, system_ra_client, expected_login_error_message = "unauthorized: authentication required"):
+    def verify_repository_unpushable(self, project_access_list, system_ra_client, expected_login_error_message = "unauthorized: authentication required", expected_error_message = ""):
         for project_access in project_access_list: #---repository:push---
             push_self_build_image_to_project(
                 project_access["project_name"],
                 harbor_server, system_ra_client["username"], system_ra_client["password"],
                 "test_unpushable"+base._random_name("repo"), "v6.8.1"+base._random_name("tag"),
-                expected_login_error_message = expected_login_error_message
+                expected_login_error_message = expected_login_error_message,
+                expected_error_message = expected_error_message
             )
 
     def test_02_SystemlevelRobotAccount(self):
@@ -162,7 +162,7 @@ class TestRobotAccount(unittest.TestCase):
 			1. Define a number of access lists;
             2. Create the same number of private projects;
 			3. Create a system robot account has permission for those projects;
-            4. Verify the system robot account has the corresponding rights;
+            4. Verify the system robot account has all the corresponding rights;
 			5. Disable the system robot account;
             6. Verify the system robot account has no the corresponding rights;
 			7. Enable the system robot account;
@@ -171,12 +171,15 @@ class TestRobotAccount(unittest.TestCase):
             10. Verify the system robot account has no the corresponding right with the old secret already;
             11. Verify the system robot account still has the corresponding right with the new secret;
 			12. List system robot account, then add a new project to the system robot account project permission list;
-            13. Delete this project;
-            14. List system robot account successfully;
-			15. Delete the system robot account;
-            16. Verify the system robot account has no the corresponding right;
-            17. Add a system robot account with all project coverd;
-            18. Verify the system robot account has no the corresponding right;
+            13. Verify the system robot account has the corresponding right for this new project;
+            14. Edit the system robot account as removing this new project from it;
+            15. Verify the system robot account has no the corresponding right for this new project;
+            16. Delete this project;
+            17. List system robot account successfully;
+			18. Delete the system robot account;
+            19. Verify the system robot account has no the corresponding right;
+            20. Add a system robot account with all project coverd;
+            21. Verify the system robot account has no the corresponding right;
         """
         #1. Define a number of access lists;
         CHART_FILE_LIST = [dict(name = 'prometheus', version='7.0.2'), dict(name = 'harbor', version='0.2.0')]
@@ -210,7 +213,7 @@ class TestRobotAccount(unittest.TestCase):
         SYSTEM_RA_CLIENT = dict(endpoint = TestRobotAccount.url, username = system_robot_account.name, password = system_robot_account.secret)
         SYSTEM_RA_CHART_CLIENT = dict(endpoint = CHART_API_CLIENT["endpoint"], username = SYSTEM_RA_CLIENT["username"], password = SYSTEM_RA_CLIENT["password"])
 
-        #4. Verify the system robot account has the corresponding rights;
+        #4. Verify the system robot account has all the corresponding rights;
         for project_access in project_access_list:
             print(r"project_access:", project_access)
             if project_access["check_list"][1]:    #---repository:push---
@@ -303,26 +306,44 @@ class TestRobotAccount(unittest.TestCase):
         self.robot.update_system_robot_account(system_robot_account_id, system_robot_account.name, robot_account_Permissions_list, **ADMIN_CLIENT)
         self.robot.list_robot(**ADMIN_CLIENT)
 
-        #13. Delete this project;
-        self.project.delete_project(project_for_del_id, **ADMIN_CLIENT)
+        #13. Verify the system robot account has the corresponding right for this new project;
+        project_access_list.append(dict(project_name = project_for_del_name, project_id = project_for_del_id, check_list = [True] * 10))
+        self.verify_repository_pushable(project_access_list, SYSTEM_RA_CLIENT)
 
-        #14. List system robot account successfully;
+        #14. Edit the system robot account as removing this new project from it;
+        robot_account_Permissions_list.remove(robot_account_Permissions)
+        self.robot.update_system_robot_account(system_robot_account_id, system_robot_account.name, robot_account_Permissions_list, **ADMIN_CLIENT)
         self.robot.list_robot(**ADMIN_CLIENT)
 
-		#15. Delete the system robot account;
+        #15. Verify the system robot account has no the corresponding right for this new project;
+        project_access_list_for_del = [dict(project_name = project_for_del_name, project_id = project_for_del_id, check_list = [True] * 10)]
+        self.verify_repository_unpushable(
+            project_access_list_for_del, SYSTEM_RA_CLIENT,
+            expected_login_error_message = "",
+            expected_error_message = "action: push: unauthorized to access repository"
+        )
+
+        #16. Delete this project;
+        self.repo.clear_repositories(project_for_del_name, **ADMIN_CLIENT)
+        self.project.delete_project(project_for_del_id, **ADMIN_CLIENT)
+
+        #17. List system robot account successfully;
+        self.robot.list_robot(**ADMIN_CLIENT)
+
+		#18. Delete the system robot account;
         self.robot.delete_robot_account(system_robot_account_id, **ADMIN_CLIENT)
 
-        #16. Verify the system robot account has no the corresponding right;
+        #19. Verify the system robot account has no the corresponding right;
         self.verify_repository_unpushable(project_access_list, SYSTEM_RA_CLIENT)
 
-        #17. Add a system robot account with all project coverd;
+        #20. Add a system robot account with all project coverd;
         all_true_access_list= self.robot.create_access_list( [True] * 10 )
         robot_account_Permissions_list = []
         robot_account_Permissions = v2_swagger_client.Permission(kind = "project", namespace = "*", access = all_true_access_list)
         robot_account_Permissions_list.append(robot_account_Permissions)
         _, system_robot_account_cover_all = self.robot.create_system_robot(robot_account_Permissions_list, 300)
 
-        #18. Verify the system robot account has no the corresponding right;
+        #21. Verify the system robot account has no the corresponding right;
         print("system_robot_account_cover_all:", system_robot_account_cover_all)
         SYSTEM_RA_CLIENT_COVER_ALL = dict(endpoint = TestRobotAccount.url, username = system_robot_account_cover_all.name, password = system_robot_account_cover_all.secret)
         projects = self.project.get_projects(dict(), **ADMIN_CLIENT)

@@ -337,6 +337,7 @@ Verify Replicationrule
         Log To Console    -----replicationrule-----"${replicationrule}"------------
         Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
         Edit Replication Rule    ${replicationrule}
+        Capture Page Screenshot
         @{is_src_registry}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].is_src_registry
         @{trigger_type}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].trigger_type
         @{name_filters}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].name_filters
@@ -364,6 +365,11 @@ Verify Replicationrule
         Retry List Selection Should Be    ${rule_trigger_select}    @{trigger_type}[0]
         Run Keyword If    '@{trigger_type}[0]' == 'scheduled'    Log To Console    ----------@{trigger_type}[0]------------
         Run Keyword If    '@{trigger_type}[0]' == 'scheduled'    Retry Textfield Value Should Be    ${targetCron_id}    @{cron}[0]
+    END
+
+    Reload Page
+    FOR    ${replicationrule}    IN    @{replicationrules}
+        Delete Replication Rule  ${replicationrule}
     END
     Close Browser
 
@@ -537,3 +543,20 @@ Loop P2P Preheat Policys
         ${provider_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].p2p_preheat_policy[?(@.name=${policy})].provider_name
         Retry Wait Until Page Contains Element   //clr-dg-row[contains(.,'${policy}') and contains(.,'${provider_name}[0]')]
     END
+
+
+Verify Quotas Display
+    [Arguments]    ${json}
+    Log To Console  "Verify Quotas Display..."
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    FOR    ${project}    IN    @{project}
+        ${is_proxy_project}=  Evaluate   "proxy" in """${project}"""
+        Continue For Loop If  '${is_proxy_project}' == '${true}'
+        ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  ${project}
+        ${storage_quota_expected_display}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].quotas_usage_display
+        Log All  storage_quota_expected_display:${storage_quota_expected_display}
+        Should Match Regexp  ${storage_quota_ret}  ${storage_quota_expected_display}[0]
+    END
+    Close Browser
