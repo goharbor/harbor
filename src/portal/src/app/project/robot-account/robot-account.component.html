@@ -4,7 +4,7 @@
       <div class="flex-xs-middle option-left">
       </div>
       <div class="flex-xs-middle option-right">
-        <hbr-filter [withDivider]="true" filterPlaceholder='{{"ROBOT_ACCOUNT.FILTER_PLACEHOLDER" | translate}}'></hbr-filter>
+        <hbr-filter [withDivider]="true" filterPlaceholder='{{"SYSTEM_ROBOT.SEARCH_BY_NAME" | translate}}'></hbr-filter>
         <span class="refresh-btn" (click)="refresh()">
           <clr-icon shape="refresh"></clr-icon>
         </span>
@@ -64,7 +64,7 @@
       <clr-dg-placeholder>{{
         'SYSTEM_ROBOT.NOT_FOUND' | translate
         }}</clr-dg-placeholder>
-      <clr-dg-row *clrDgItems="let r of robots" [clrDgItem]="r">
+      <clr-dg-row *ngFor="let r of robots" [clrDgItem]="r">
         <clr-dg-cell>
           {{r.name}}
           <span *ngIf="!r.editable" class="label label-warning ml-1">{{'SYSTEM_ROBOT.LEGACY' | translate}}</span>

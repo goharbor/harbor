@@ -1644,6 +1644,7 @@
     "DELETE": "Delete",
     "ARTIFACT_LABEL": "Artifact label",
     "SCAN": "Scan",
-    "SCANNER_PULL": "Scanner Pull"
+    "SCANNER_PULL": "Scanner Pull",
+    "SEARCH_BY_NAME": "Search by name(without prefix)"
   }
 }
