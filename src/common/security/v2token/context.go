@@ -99,12 +99,14 @@ func New(ctx context.Context, name string, access []*registry_token.ResourceActi
 				actionMap[rbac.ActionPull] = struct{}{}
 			case "push":
 				actionMap[rbac.ActionPush] = struct{}{}
+			case "delete":
+				actionMap[rbac.ActionDelete] = struct{}{}
+			case "scanner-pull":
+				actionMap[rbac.ActionScannerPull] = struct{}{}
 			case "*":
 				actionMap[rbac.ActionPull] = struct{}{}
 				actionMap[rbac.ActionPush] = struct{}{}
 				actionMap[rbac.ActionDelete] = struct{}{}
-			case "scanner-pull":
-				actionMap[rbac.ActionScannerPull] = struct{}{}
 			}
 		}
 		m[l[0]] = actionMap
