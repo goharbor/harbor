@@ -63,23 +63,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
               private route: ActivatedRoute,
               private translate: TranslateService,
               private sanitizer: DomSanitizer,
-  ) {
-    this.subscription = operateDialogService.confirmationConfirm$.subscribe(
-        message => {
-          if (
-              message &&
-              message.state === ConfirmationState.CONFIRMED &&
-              message.source === ConfirmationTargets.ROBOT_ACCOUNT
-          ) {
-            this.deleteRobots(message.data);
-          }
-          if ( message.state === ConfirmationState.CONFIRMED &&
-              message.source === ConfirmationTargets.ROBOT_ACCOUNT_ENABLE_OR_DISABLE) {
-            this.operateRobot();
-          }
-        }
-    );
-  }
+  ) {}
   ngOnInit() {
     this.projectId = +this.route.snapshot.parent.params["id"];
     let resolverData = this.route.snapshot.parent.data;
@@ -119,6 +103,23 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         this.msgHandler.handleError(error);
       });
     }
+    if (!this.subscription) {
+      this.subscription = this.operateDialogService.confirmationConfirm$.subscribe(
+          message => {
+            if (
+                message &&
+                message.state === ConfirmationState.CONFIRMED &&
+                message.source === ConfirmationTargets.PROJECT_ROBOT_ACCOUNT
+            ) {
+              this.deleteRobots(message.data);
+            }
+            if ( message.state === ConfirmationState.CONFIRMED &&
+                message.source === ConfirmationTargets.PROJECT_ROBOT_ACCOUNT_ENABLE_OR_DISABLE) {
+              this.operateRobot();
+            }
+          }
+      );
+    }
   }
   getPermissionsList(): void {
     let permissionsList = [];
@@ -142,6 +143,10 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
     if (this.searchSub) {
       this.searchSub.unsubscribe();
       this.searchSub = null;
+    }
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
     }
   }
   clrLoad(state?: ClrDatagridStateInterface) {
@@ -236,7 +241,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         "ROBOT_ACCOUNT.DELETION_SUMMARY",
         robotNames,
         this.selectedRows,
-        ConfirmationTargets.ROBOT_ACCOUNT,
+        ConfirmationTargets.PROJECT_ROBOT_ACCOUNT,
         ConfirmationButtons.DELETE_CANCEL
     );
     this.operateDialogService.openComfirmDialog(deletionMessage);
@@ -250,7 +255,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         summary,
         this.selectedRows[0].name,
         this.selectedRows[0],
-        ConfirmationTargets.ROBOT_ACCOUNT_ENABLE_OR_DISABLE,
+        ConfirmationTargets.PROJECT_ROBOT_ACCOUNT_ENABLE_OR_DISABLE,
         this.selectedRows[0].disable ? ConfirmationButtons.ENABLE_CANCEL : ConfirmationButtons.DISABLE_CANCEL
     );
     this.operateDialogService.openComfirmDialog(deletionMessage);

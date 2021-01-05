@@ -25,7 +25,6 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { errorHandler } from "../../lib/utils/shared/shared.utils";
 import { operateChanges, OperateInfo, OperationState } from "../../lib/components/operation/operate";
 import { OperationService } from "../../lib/components/operation/operation.service";
-import { Observable as __Observable } from "rxjs/internal/Observable";
 import { Project } from "../../../ng-swagger-gen/models/project";
 import { DomSanitizer } from "@angular/platform-browser";
 import { TranslateService } from "@ngx-translate/core";
@@ -64,23 +63,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
               private operationService: OperationService,
               private sanitizer: DomSanitizer,
               private translate: TranslateService,
-  ) {
-    this.subscription = operateDialogService.confirmationConfirm$.subscribe(
-        message => {
-          if (
-              message &&
-              message.state === ConfirmationState.CONFIRMED &&
-              message.source === ConfirmationTargets.ROBOT_ACCOUNT
-          ) {
-            this.deleteRobots(message.data);
-          }
-          if ( message.state === ConfirmationState.CONFIRMED &&
-              message.source === ConfirmationTargets.ROBOT_ACCOUNT_ENABLE_OR_DISABLE) {
-            this.operateRobot();
-          }
-        }
-    );
-  }
+  ) {}
   ngOnInit() {
     this.loadDataFromBackend();
     if (!this.searchSub) {
@@ -113,11 +96,32 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
         this.msgHandler.handleError(error);
       });
     }
+    if (!this.subscription) {
+      this.subscription = this.operateDialogService.confirmationConfirm$.subscribe(
+          message => {
+            if (
+                message &&
+                message.state === ConfirmationState.CONFIRMED &&
+                message.source === ConfirmationTargets.ROBOT_ACCOUNT
+            ) {
+              this.deleteRobots(message.data);
+            }
+            if ( message.state === ConfirmationState.CONFIRMED &&
+                message.source === ConfirmationTargets.ROBOT_ACCOUNT_ENABLE_OR_DISABLE) {
+              this.operateRobot();
+            }
+          }
+      );
+    }
   }
   ngOnDestroy() {
     if (this.searchSub) {
       this.searchSub.unsubscribe();
       this.searchSub = null;
+    }
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
     }
   }
   loadDataFromBackend() {
