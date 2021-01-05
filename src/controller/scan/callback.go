@@ -34,6 +34,13 @@ const (
 	ScanAllCallback = "scanAll"
 )
 
+var (
+	artifactCtl = artifact.Ctl
+	robotCtl    = robot.Ctl
+	scanCtl     = DefaultController
+	taskMgr     = task.Mgr
+)
+
 func init() {
 	if err := scheduler.RegisterCallbackFunc(ScanAllCallback, scanAllCallback); err != nil {
 		log.Fatalf("failed to register the callback for the scan all schedule, error %v", err)
@@ -54,7 +61,7 @@ func init() {
 }
 
 func scanAllCallback(ctx context.Context, param string) error {
-	_, err := DefaultController.ScanAll(ctx, task.ExecutionTriggerSchedule, true)
+	_, err := scanCtl.ScanAll(ctx, task.ExecutionTriggerSchedule, true)
 	return err
 }
 
@@ -64,7 +71,7 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 	js := job.Status(status)
 
 	if js.Final() {
-		t, err := task.Mgr.Get(ctx, taskID)
+		t, err := taskMgr.Get(ctx, taskID)
 		if err != nil {
 			return err
 		}
@@ -72,7 +79,7 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 		if js == job.SuccessStatus {
 			robotID := getRobotID(t.ExtraAttrs)
 			if robotID > 0 {
-				if err := robot.Ctl.Delete(ctx, robotID); err != nil {
+				if err := robotCtl.Delete(ctx, robotID); err != nil {
 					// Should not block the main flow, just logged
 					logger.WithFields(log.Fields{"robot_id": robotID, "error": err}).Error("delete robot account failed")
 				} else {
@@ -83,7 +90,7 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 
 		artifactID := getArtifactID(t.ExtraAttrs)
 		if artifactID > 0 {
-			art, err := artifact.Ctl.Get(ctx, artifactID, nil)
+			art, err := artifactCtl.Get(ctx, artifactID, nil)
 			if err != nil {
 				logger.WithFields(log.Fields{"artifact_id": artifactID, "error": err}).Errorf("failed to get artifact")
 			} else {
@@ -114,5 +121,5 @@ func scanTaskCheckInProcessor(ctx context.Context, t *task.Task, data string) (e
 		return err
 	}
 
-	return DefaultController.UpdateReport(ctx, checkInReport)
+	return scanCtl.UpdateReport(ctx, checkInReport)
 }
