@@ -17,6 +17,9 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/tag"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
+	"github.com/gomodule/redigo/redis"
 	"io"
 	"strings"
 	"sync"
@@ -41,6 +44,8 @@ const (
 	maxManifestListWait = 20
 	maxManifestWait     = 10
 	sleepIntervalSec    = 20
+	// keep manifest list in cache for one week
+	manifestListCacheInterval = 7 * 24 * 60 * 60 * time.Second
 )
 
 var (
@@ -62,7 +67,9 @@ type Controller interface {
 	// art is the ArtifactInfo which includes the tag or digest of the manifest
 	ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error)
 	// HeadManifest send manifest head request to the remote server
-	HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, string, error)
+	HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error)
+	// EnsureTag ensure tag for digest
+	EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagName string) error
 }
 type controller struct {
 	blobCtl     blob.Controller
@@ -83,6 +90,36 @@ func ControllerInstance() Controller {
 	})
 
 	return ctl
+}
+
+// GetTrimmedDigest  get trimmed digest from redis cache
+func (c *controller) GetTrimmedDigest(key string) (string, error) {
+	conn := redislib.DefaultPool().Get()
+	defer conn.Close()
+	val, err := redis.String(conn.Do("GET", key))
+	if err != nil {
+		if err == redis.ErrNil {
+			return "", nil
+		}
+		return "", err
+	}
+	return val, nil
+}
+
+func (c *controller) EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagName string) error {
+	// search the digest in cache and query with trimmed digest
+	trimmedDigest, err := c.GetTrimmedDigest(TrimmedManifestlist + art.Digest)
+	if err == nil && len(trimmedDigest) > 0 {
+		art.Digest = trimmedDigest
+	}
+	a, err := c.local.GetManifest(ctx, art)
+	if err != nil {
+		return err
+	}
+	if a == nil {
+		return fmt.Errorf("the artifact is not ready yet, failed to tag it to %v", tagName)
+	}
+	return tag.Ctl.Ensure(ctx, a.RepositoryID, a.Artifact.ID, tagName)
 }
 
 func (c *controller) UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) bool {
@@ -110,17 +147,18 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	}
 	// Pull by tag
 	remoteRepo := getRemoteRepo(art)
-	exist, dig, err := remote.ManifestExist(remoteRepo, art.Tag) // HEAD
+	exist, desc, err := remote.ManifestExist(remoteRepo, getReference(art)) // HEAD
 	if err != nil {
 		return false, err
 	}
-	if !exist {
+	if !exist || desc == nil {
 		go func() {
 			c.local.DeleteManifest(remoteRepo, art.Tag)
 		}()
 		return false, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
 	}
-	return dig == a.Digest, nil // digest matches
+
+	return a != nil && string(desc.Digest) == a.Digest, nil // digest matches
 }
 
 func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
@@ -168,7 +206,7 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 
 	return man, nil
 }
-func (c *controller) HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, string, error) {
+func (c *controller) HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error) {
 	remoteRepo := getRemoteRepo(art)
 	ref := getReference(art)
 	return remote.ManifestExist(remoteRepo, ref)

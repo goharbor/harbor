@@ -74,8 +74,8 @@ func (f *fakedAdapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resourc
 	}, nil
 }
 
-func (f *fakedAdapter) ManifestExist(repository, reference string) (exist bool, digest string, err error) {
-	return false, "", nil
+func (f *fakedAdapter) ManifestExist(repository, reference string) (exist bool, desc *distribution.Descriptor, err error) {
+	return false, nil, nil
 }
 func (f *fakedAdapter) PullManifest(repository, reference string, accepttedMediaTypes ...string) (manifest distribution.Manifest, digest string, err error) {
 	return nil, "", nil
