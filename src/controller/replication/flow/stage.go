@@ -19,7 +19,6 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
-	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 )
@@ -107,16 +106,6 @@ func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resourc
 	}
 
 	log.Debug("fetch resources from the source registry completed")
-	return resources, nil
-}
-
-// apply the filters to the resources and returns the filtered resources
-func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*model.Resource, error) {
-	resources, err := filter.DoFilterResources(resources, filters)
-	if err != nil {
-		return nil, err
-	}
-	log.Debug("filter resources completed")
 	return resources, nil
 }
 

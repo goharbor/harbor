@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -45,20 +44,7 @@ func NewDeletionFlow(executionID int64, policy *model.Policy, resources ...*mode
 }
 
 func (d *deletionFlow) Run(ctx context.Context) error {
-	logger := log.GetLogger(ctx)
-	srcResources, err := filterResources(d.resources, d.policy.Filters)
-	if err != nil {
-		return err
-	}
-	if len(srcResources) == 0 {
-		// no candidates, mark the execution as done directly
-		if err := d.executionMgr.MarkDone(ctx, d.executionID, "no resources need to be replicated"); err != nil {
-			logger.Errorf("failed to mark done for the execution %d: %v", d.executionID, err)
-		}
-		return nil
-	}
-
-	srcResources = assembleSourceResources(srcResources, d.policy)
+	srcResources := assembleSourceResources(d.resources, d.policy)
 	dstResources := assembleDestinationResources(srcResources, d.policy)
 
 	return d.createTasks(ctx, srcResources, dstResources)

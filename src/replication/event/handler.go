@@ -17,17 +17,17 @@ package event
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/pkg/task"
 
 	commonthttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/controller/replication"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/replication/config"
+	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/registry"
-	"github.com/goharbor/harbor/src/replication/util"
 )
 
 // Handler is the handler to handle event
@@ -115,37 +115,19 @@ func (h *handler) getRelatedPolicies(resource *model.Resource) ([]*model.Policy,
 		if resource.Deleted && !policy.Deletion {
 			continue
 		}
-		// doesn't match the name filter
-		m, err := match(policy.Filters, resource)
+
+		resources, err := filter.DoFilterResources([]*model.Resource{resource}, policy.Filters)
 		if err != nil {
 			return nil, err
 		}
-		if !m {
+		// doesn't match the filters
+		if len(resources) == 0 {
 			continue
 		}
+
 		result = append(result, policy)
 	}
 	return result, nil
-}
-
-// TODO unify the match logic with other?
-func match(filters []*model.Filter, resource *model.Resource) (bool, error) {
-	match := true
-	repository := resource.Metadata.Repository.Name
-	for _, filter := range filters {
-		if filter.Type != model.FilterTypeName {
-			continue
-		}
-		m, err := util.Match(filter.Value.(string), repository)
-		if err != nil {
-			return false, err
-		}
-		if !m {
-			match = false
-			break
-		}
-	}
-	return match, nil
 }
 
 // PopulateRegistries populates the source registry and destination registry properties for policy

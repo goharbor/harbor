@@ -51,14 +51,12 @@ func (c *copyFlow) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	var srcResources []*model.Resource
-	if len(c.resources) > 0 {
-		srcResources, err = filterResources(c.resources, c.policy.Filters)
-	} else {
+	srcResources := c.resources
+	if len(srcResources) == 0 {
 		srcResources, err = fetchResources(srcAdapter, c.policy)
-	}
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	isStopped, err := c.isExecutionStopped(ctx)
