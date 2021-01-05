@@ -1,8 +1,8 @@
 package retention
 
 import (
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
-	"github.com/goharbor/harbor/src/pkg/retention/q"
 )
 
 // FakedRetentionController ...

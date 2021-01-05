@@ -3,8 +3,8 @@
 package mocks
 
 import (
+	"github.com/goharbor/harbor/src/lib/q"
 	policy "github.com/goharbor/harbor/src/pkg/retention/policy"
-	q "github.com/goharbor/harbor/src/pkg/retention/q"
 	mock "github.com/stretchr/testify/mock"
 
 	retention "github.com/goharbor/harbor/src/pkg/retention"

@@ -142,6 +142,22 @@ func (t *Task) GetBoolFromExtraAttrs(key string) bool {
 	return b
 }
 
+// GetNumFromExtraAttrs returns the num value specified by key
+func (t *Task) GetNumFromExtraAttrs(key string) float64 {
+	if len(t.ExtraAttrs) == 0 {
+		return 0
+	}
+	rt, exist := t.ExtraAttrs[key]
+	if !exist {
+		return 0
+	}
+	v, ok := rt.(float64)
+	if !ok {
+		return 0
+	}
+	return v
+}
+
 // Job is the model represents the requested jobservice job
 type Job struct {
 	Name       string

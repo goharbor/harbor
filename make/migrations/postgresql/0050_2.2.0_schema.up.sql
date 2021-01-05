@@ -513,3 +513,85 @@ CREATE TABLE IF NOT EXISTS "report_vulnerability_record" (
     CONSTRAINT fk_vuln_record_id FOREIGN  KEY(vuln_record_id) REFERENCES vulnerability_record(id) ON DELETE CASCADE,
     CONSTRAINT fk_report_uuid FOREIGN  KEY(report_uuid) REFERENCES scan_report(uuid) ON DELETE CASCADE
 );
+
+/*delete the retention execution records whose policy doesn't exist*/
+DELETE FROM retention_execution
+WHERE id IN (SELECT re.id FROM retention_execution re
+                                   LEFT JOIN retention_policy rp ON re.policy_id=rp.id
+             WHERE rp.id IS NULL);
+
+/*delete the replication task records whose execution doesn't exist*/
+DELETE FROM retention_task
+WHERE id IN (SELECT rt.id FROM retention_task rt
+                                   LEFT JOIN retention_execution re ON rt.execution_id=re.id
+             WHERE re.id IS NULL);
+
+/*move the replication execution records into the new execution table*/
+ALTER TABLE retention_execution ADD COLUMN IF NOT EXISTS new_execution_id int;
+
+DO $$
+DECLARE
+    rep_exec RECORD;
+    status_count RECORD;
+    trigger varchar(64);
+    rep_status varchar(32);
+    rep_end_time timestamp;
+    new_exec_id integer;
+    in_progress integer;
+    failed integer;
+    success integer;
+    stopped integer;
+BEGIN
+FOR rep_exec IN SELECT * FROM retention_execution where new_execution_id is null
+LOOP
+
+FOR status_count IN SELECT status, COUNT(*) as c FROM retention_task WHERE execution_id=rep_exec.id GROUP BY status
+LOOP
+    IF status_count.status = 'Scheduled' or status_count.status = 'Pending' or status_count.status = 'Running' THEN
+        in_progress = in_progress + status_count.c;
+    ELSIF status_count.status = 'Stopped' THEN
+        stopped = stopped + status_count.c;
+    ELSIF status_count.status = 'Error' THEN
+        failed = failed + status_count.c;
+    ELSE
+        success = success + status_count.c;
+    END IF;
+END LOOP;
+
+IF in_progress>0 THEN
+rep_status = 'InProgress';
+ELSIF failed>0 THEN
+rep_status = 'Failed';
+ELSIF stopped>0 THEN
+rep_status = 'Stopped';
+ELSE
+rep_status = 'Succeed';
+END IF;
+select max(end_time) into rep_end_time from retention_task where execution_id = rep_exec.id;
+
+INSERT INTO execution (vendor_type, vendor_id, status, revision, trigger, start_time, end_time, extra_attrs)
+VALUES ('RETENTION', rep_exec.policy_id, rep_status, 0, rep_exec.trigger, rep_exec.start_time, rep_end_time,
+    CONCAT('{"dry_run": ', case rep_exec.dry_run when 't' then 'true' else 'false' end, '}')::json) RETURNING id INTO new_exec_id;
+UPDATE retention_execution SET new_execution_id=new_exec_id WHERE id=rep_exec.id;
+END LOOP;
+END $$;
+
+/*move the replication task records into the new task table*/
+DO $$
+DECLARE
+    rep_task RECORD;
+    status_code integer;
+BEGIN
+FOR rep_task IN SELECT * FROM retention_task
+LOOP
+INSERT INTO task (vendor_type, execution_id, job_id, status, status_code, status_revision,
+                  run_count, extra_attrs, creation_time, start_time, update_time, end_time)
+VALUES ('RETENTION', (SELECT new_execution_id FROM retention_execution WHERE id=rep_task.execution_id),
+        rep_task.job_id, rep_task.status, rep_task.status_code, rep_task.status_revision,
+        1, CONCAT('{"total":"', rep_task.total,'","retained":"', rep_task.retained,'"}')::json,
+        rep_task.start_time, rep_task.start_time, rep_task.end_time, rep_task.end_time);
+END LOOP;
+END $$;
+
+DROP TABLE IF EXISTS replication_task;
+DROP TABLE IF EXISTS replication_execution;

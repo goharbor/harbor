@@ -16,17 +16,20 @@ package retention
 
 import (
 	"context"
-	"strings"
-	"testing"
-
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
+	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"strings"
+	"testing"
 )
 
 type ControllerTestSuite struct {
@@ -50,8 +53,37 @@ func (s *ControllerTestSuite) TestPolicy() {
 	repositoryMgr := &repository.FakeManager{}
 	retentionScheduler := &fakeRetentionScheduler{}
 	retentionLauncher := &fakeLauncher{}
+	execMgr := &testingTask.ExecutionManager{}
+	taskMgr := &testingTask.Manager{}
 	retentionMgr := NewManager()
-	c := NewAPIController(retentionMgr, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
+	execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	execMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
+	execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+		ExtraAttrs: map[string]interface{}{
+			"dry_run": true,
+		},
+	}, nil)
+	execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+		ExtraAttrs: map[string]interface{}{
+			"dry_run": true,
+		},
+	}}, nil)
+	taskMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Task{{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+		ExtraAttrs: map[string]interface{}{
+			"total":    1,
+			"retained": 1,
+		},
+	}}, nil)
+	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+
+	c := NewAPIController(retentionMgr, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher, execMgr, taskMgr)
 
 	p1 := &policy.Metadata{
 		Algorithm: "or",
@@ -148,8 +180,36 @@ func (s *ControllerTestSuite) TestExecution() {
 	repositoryMgr := &repository.FakeManager{}
 	retentionScheduler := &fakeRetentionScheduler{}
 	retentionLauncher := &fakeLauncher{}
+	execMgr := &testingTask.ExecutionManager{}
+	taskMgr := &testingTask.Manager{}
 	retentionMgr := NewManager()
-	m := NewAPIController(retentionMgr, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
+	execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+		ExtraAttrs: map[string]interface{}{
+			"dry_run": true,
+		},
+	}, nil)
+	execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+		ExtraAttrs: map[string]interface{}{
+			"dry_run": true,
+		},
+	}}, nil)
+	taskMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Task{{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+		ExtraAttrs: map[string]interface{}{
+			"total":    1,
+			"retained": 1,
+		},
+	}}, nil)
+	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+
+	m := NewAPIController(retentionMgr, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher, execMgr, taskMgr)
 
 	p1 := &policy.Metadata{
 		Algorithm: "or",
@@ -213,7 +273,7 @@ func (s *ControllerTestSuite) TestExecution() {
 
 	ts, err := m.ListRetentionExecTasks(id, nil)
 	s.Require().Nil(err)
-	s.Require().EqualValues(0, len(ts))
+	s.Require().EqualValues(1, len(ts))
 
 }
 

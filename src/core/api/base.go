@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"net/http"
 
 	"github.com/ghodss/yaml"
@@ -45,9 +46,6 @@ const (
 // the managers/controllers used globally
 var (
 	projectMgr          project.Manager
-	retentionScheduler  scheduler.Scheduler
-	retentionMgr        retention.Manager
-	retentionLauncher   retention.Launcher
 	retentionController retention.APIController
 )
 
@@ -187,11 +185,11 @@ func Init() error {
 	// init project manager
 	initProjectManager()
 
-	retentionMgr = retention.NewManager()
+	retentionMgr := retention.NewManager()
 
-	retentionLauncher = retention.NewLauncher(projectMgr, repository.Mgr, retentionMgr)
+	retentionLauncher := retention.NewLauncher(projectMgr, repository.Mgr, retentionMgr, task.ExecMgr, task.Mgr)
 
-	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, scheduler.Sched, retentionLauncher)
+	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, scheduler.Sched, retentionLauncher, task.ExecMgr, task.Mgr)
 
 	retentionCallbackFun := func(ctx context.Context, p string) error {
 		param := &retention.TriggerParam{}
