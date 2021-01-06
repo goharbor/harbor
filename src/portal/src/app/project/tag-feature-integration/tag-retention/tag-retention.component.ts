@@ -358,33 +358,33 @@ export class TagRetentionComponent implements OnInit {
 
     loadLog() {
         if (this.isDetailOpened) {
-            setTimeout(() => {
+            setTimeout(() => {// when this.isDetailOpened is true, need to wait ngCheck finished
                 this.loadingHistories = true;
-            }, 0);
-            this.tagRetentionService.getExecutionHistory(this.retentionId, this.executionId, this.currentLogPage, this.logPageSize)
-                .pipe(finalize(() => this.loadingHistories = false))
-                .subscribe(
-                    (response: any) => {
-                        // Get total count
-                        if (response.headers) {
-                            let xHeader: string = response.headers.get("x-total-count");
-                            if (xHeader) {
-                                this.totalLogCount = parseInt(xHeader, 0);
+                this.tagRetentionService.getExecutionHistory(this.retentionId, this.executionId, this.currentLogPage, this.logPageSize)
+                    .pipe(finalize(() => this.loadingHistories = false))
+                    .subscribe(
+                        (response: any) => {
+                            // Get total count
+                            if (response.headers) {
+                                let xHeader: string = response.headers.get("x-total-count");
+                                if (xHeader) {
+                                    this.totalLogCount = parseInt(xHeader, 0);
+                                }
                             }
-                        }
-                        this.historyList = response.body as Array<any>;
-                        TagRetentionComponent.calculateDuration(this.historyList);
-                        if (this.historyList && this.historyList.length
-                            && this.historyList.some(item => {
-                                return item.status === RUNNING || item.status === PENDING;
-                            })) {
-                            setTimeout(() => {
-                                 this.loadLog();
-                            }, TIMEOUT);
-                        }
-                    }, error => {
-                        this.errorHandler.error(error);
-                    });
+                            this.historyList = response.body as Array<any>;
+                            TagRetentionComponent.calculateDuration(this.historyList);
+                            if (this.historyList && this.historyList.length
+                                && this.historyList.some(item => {
+                                    return item.status === RUNNING || item.status === PENDING;
+                                })) {
+                                setTimeout(() => {
+                                    this.loadLog();
+                                }, TIMEOUT);
+                            }
+                        }, error => {
+                            this.errorHandler.error(error);
+                        });
+            }, 0);
         }
     }
     openDetail(index, executionId) {
