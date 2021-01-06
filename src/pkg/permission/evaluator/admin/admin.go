@@ -15,6 +15,7 @@
 package admin
 
 import (
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -30,7 +31,8 @@ type Evaluator struct {
 // HasPermission always return true for the system administrator
 func (e *Evaluator) HasPermission(resource types.Resource, action types.Action) bool {
 	log.Debugf("system administrator %s require %s action for resource %s", e.username, action, resource)
-	return true
+	// scanner-pull is for scanner to bypass the policy checking so admin user should not have this permission
+	return action != rbac.ActionScannerPull
 }
 
 // New returns evaluator.Evaluator for the system administrator
