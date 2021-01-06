@@ -68,7 +68,7 @@ type ArtifactRegistry interface {
 type ChartRegistry interface {
 	FetchCharts(filters []*model.Filter) ([]*model.Resource, error)
 	ChartExist(name, version string) (bool, error)
-	DownloadChart(name, version string) (io.ReadCloser, error)
+	DownloadChart(name, version, contentURL string) (io.ReadCloser, error)
 	UploadChart(name, version string, chart io.Reader) error
 	DeleteChart(name, version string) error
 }

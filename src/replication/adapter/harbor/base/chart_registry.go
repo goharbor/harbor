@@ -144,7 +144,7 @@ func (a *Adapter) getChartInfo(name, version string) (*chartVersionDetail, error
 }
 
 // DownloadChart downloads the specific chart
-func (a *Adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
+func (a *Adapter) DownloadChart(name, version, contentURL string) (io.ReadCloser, error) {
 	info, err := a.getChartInfo(name, version)
 	if err != nil {
 		return nil, err

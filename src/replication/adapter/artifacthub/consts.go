@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	baseURL = "https://artifacthub.io"
+	baseURL            = "https://artifacthub.io"
+	getReplicationInfo = "/api/v1/harborReplication"
 )
 
 const (

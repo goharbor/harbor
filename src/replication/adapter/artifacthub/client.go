@@ -24,101 +24,6 @@ func newClient(registry *model.Registry) *Client {
 	}
 }
 
-// searchPackages query the artifact package list from artifact hub.
-func (c *Client) searchPackages(kind, offset, limit int, queryString string) (*PackageResponse, error) {
-	request, err := http.NewRequest(http.MethodGet, baseURL+searchPackages(kind, offset, limit, queryString), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.do(request)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		msg := &Message{}
-		err = json.Unmarshal(body, msg)
-		if err != nil {
-			msg.Message = string(body)
-		}
-		return nil, fmt.Errorf("search package list error %d: %s", resp.StatusCode, msg.Message)
-	}
-
-	packageResp := &PackageResponse{}
-	err = json.Unmarshal(body, packageResp)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshal package list response error: %v", err)
-	}
-	return packageResp, nil
-}
-
-// getAllPackages gets all of the specific kind of artifact packages from artifact hub.
-func (c *Client) getAllPackages(kind int) (pkgs []*Package, err error) {
-	offset := 0
-	limit := 50
-	shouldContinue := true
-	// todo: rate limit
-	for shouldContinue {
-		pkgResp, err := c.searchPackages(HelmChart, offset, limit, "")
-		if err != nil {
-			return nil, err
-		}
-
-		pkgs = append(pkgs, pkgResp.Data.Packages...)
-		total := pkgResp.Metadata.Total
-		offset = offset + limit
-		if offset >= total {
-			shouldContinue = false
-		}
-	}
-	return pkgs, nil
-}
-
-// getHelmPackageDetail get the chart detail of a helm chart from artifact hub.
-func (c *Client) getHelmPackageDetail(fullName string) (*PackageDetail, error) {
-	request, err := http.NewRequest(http.MethodGet, baseURL+getHelmPackageDetail(fullName), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.do(request)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, ErrHTTPNotFound
-	} else if resp.StatusCode != http.StatusOK {
-		msg := &Message{}
-		err = json.Unmarshal(body, msg)
-		if err != nil {
-			msg.Message = string(body)
-		}
-		return nil, fmt.Errorf("fetch package detail error %d: %s", resp.StatusCode, msg.Message)
-	}
-
-	pkgDetail := &PackageDetail{}
-	err = json.Unmarshal(body, pkgDetail)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshal package detail response error: %v", err)
-	}
-
-	return pkgDetail, nil
-}
-
 // getHelmVersion get the package version of a helm chart from artifact hub.
 func (c *Client) getHelmChartVersion(fullName, version string) (*ChartVersion, error) {
 	request, err := http.NewRequest(http.MethodGet, baseURL+getHelmVersion(fullName, version), nil)
@@ -155,6 +60,43 @@ func (c *Client) getHelmChartVersion(fullName, version string) (*ChartVersion, e
 	}
 
 	return chartVersion, nil
+}
+
+// getReplicationInfo gets the brief info of all helm chart from artifact hub.
+// see https://github.com/artifacthub/hub/issues/997
+func (c *Client) getReplicationInfo() ([]*ChartInfo, error) {
+	request, err := http.NewRequest(http.MethodGet, baseURL+getReplicationInfo, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		msg := &Message{}
+		err = json.Unmarshal(body, msg)
+		if err != nil {
+			msg.Message = string(body)
+		}
+		return nil, fmt.Errorf("get chart replication info error %d: %s", resp.StatusCode, msg.Message)
+	}
+
+	var chartInfo []*ChartInfo
+	err = json.Unmarshal(body, &chartInfo)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal chart replication info error: %v", err)
+	}
+
+	return chartInfo, nil
 }
 
 func (c *Client) checkHealthy() error {
