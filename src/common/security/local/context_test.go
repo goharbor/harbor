@@ -254,3 +254,20 @@ func TestHasPushPullPerm(t *testing.T) {
 		assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource) && ctx.Can(context.TODO(), rbac.ActionPull, resource))
 	}
 }
+
+func TestSysadminPerms(t *testing.T) {
+	// authenticated, system admin
+	ctl := &projecttesting.Controller{}
+	mock.OnAnything(ctl, "Get").Return(private, nil)
+	mock.OnAnything(ctl, "ListRoles").Return([]int{}, nil)
+
+	ctx := NewSecurityContext(&models.User{
+		Username:     "admin",
+		SysAdminFlag: true,
+	})
+	ctx.ctl = ctl
+	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource) && ctx.Can(context.TODO(), rbac.ActionPull, resource))
+	assert.False(t, ctx.Can(context.TODO(), rbac.ActionScannerPull, resource))
+
+}
