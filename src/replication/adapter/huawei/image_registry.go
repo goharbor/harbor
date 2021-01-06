@@ -3,11 +3,12 @@ package huawei
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/docker/distribution"
+	"github.com/goharbor/harbor/src/replication/model"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
-
-	"github.com/goharbor/harbor/src/replication/model"
 )
 
 // FetchArtifacts gets resources from Huawei SWR
@@ -54,17 +55,17 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 }
 
 // ManifestExist check the manifest of Huawei SWR
-func (a *adapter) ManifestExist(repository, reference string) (exist bool, digest string, err error) {
+func (a *adapter) ManifestExist(repository, reference string) (exist bool, desc *distribution.Descriptor, err error) {
 	token, err := getJwtToken(a, repository)
 	if err != nil {
-		return exist, digest, err
+		return exist, nil, err
 	}
 
 	urls := fmt.Sprintf("%s/v2/%s/manifests/%s", a.registry.URL, repository, reference)
 
 	r, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
-		return exist, digest, err
+		return exist, nil, err
 	}
 
 	r.Header.Add("content-type", "application/json; charset=utf-8")
@@ -72,29 +73,33 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, diges
 
 	resp, err := a.oriClient.Do(r)
 	if err != nil {
-		return exist, digest, err
+		return exist, nil, err
 	}
 
 	defer resp.Body.Close()
 	code := resp.StatusCode
 	if code >= 300 || code < 200 {
 		if code == 404 {
-			return false, digest, nil
+			return false, nil, nil
 		}
 		body, _ := ioutil.ReadAll(resp.Body)
-		return exist, digest, fmt.Errorf("[%d][%s]", code, string(body))
+		return exist, nil, fmt.Errorf("[%d][%s]", code, string(body))
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return exist, digest, err
+		return exist, nil, err
 	}
 	exist = true
 	manifest := hwManifest{}
 	err = json.Unmarshal(body, &manifest)
 	if err != nil {
-		return exist, digest, err
+		return exist, nil, err
 	}
-	return exist, manifest.Config.Digest, nil
+	contentType := resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
+	contentLen := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
+	len, _ := strconv.Atoi(contentLen)
+
+	return exist, &distribution.Descriptor{MediaType: contentType, Size: int64(len)}, nil
 }
 
 // DeleteManifest delete the manifest of Huawei SWR

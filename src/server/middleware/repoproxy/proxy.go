@@ -17,9 +17,6 @@ package repoproxy
 import (
 	"context"
 	"fmt"
-	"io"
-	"net/http"
-
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
@@ -29,9 +26,13 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/registry"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"io"
+	"net/http"
+	"time"
 )
 
 var registryMgr = registry.NewDefaultManager()
@@ -41,6 +42,8 @@ const (
 	contentType         = "Content-Type"
 	dockerContentDigest = "Docker-Content-Digest"
 	etag                = "Etag"
+	ensureTagInterval   = 10 * time.Second
+	ensureTagMaxRetry   = 60
 )
 
 // BlobGetMiddleware handle get blob request
@@ -227,14 +230,32 @@ func DisableBlobAndManifestUploadMiddleware() func(http.Handler) http.Handler {
 }
 
 func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
-	exist, dig, err := ctl.HeadManifest(ctx, art, remote)
+	exist, desc, err := ctl.HeadManifest(ctx, art, remote)
 	if err != nil {
 		return err
 	}
-	if !exist {
+	if !exist || desc == nil {
 		return errors.NotFoundError(fmt.Errorf("The tag %v:%v is not found", art.Repository, art.Tag))
 	}
-	w.Header().Set(dockerContentDigest, dig)
-	w.Header().Set(etag, dig)
+	go func(art lib.ArtifactInfo) {
+		// After docker 20.10 or containerd, the client heads the tag first,
+		// Then GET the image by digest, in order to associate the tag with the digest
+		// Ensure tag after head request, make sure tags in proxy cache keep update
+		bCtx := orm.Context()
+		for i := 0; i < ensureTagMaxRetry; i++ {
+			time.Sleep(ensureTagInterval)
+			bArt := lib.ArtifactInfo{ProjectName: art.ProjectName, Repository: art.Repository, Digest: string(desc.Digest)}
+			err := ctl.EnsureTag(bCtx, bArt, art.Tag)
+			if err == nil {
+				return
+			}
+			log.Debugf("Failed to ensure tag %+v , error %v", art, err)
+		}
+	}(art)
+
+	w.Header().Set(contentType, desc.MediaType)
+	w.Header().Set(contentLength, fmt.Sprintf("%v", desc.Size))
+	w.Header().Set(dockerContentDigest, string(desc.Digest))
+	w.Header().Set(etag, string(desc.Digest))
 	return nil
 }
