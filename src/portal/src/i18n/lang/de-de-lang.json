@@ -248,7 +248,7 @@
         "QUOTA_UNLIMIT_TIP": "Für eine unbegrenzte Speicherbeschränkung '-1' eingeben.",
         "TYPE": "Typ",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Die Aktivierung erlaubt es dem Projekt als \"pull-through cache\" für einen spezifischen Namespace der referenzierten Registry zu dienen. Harbor kann nur für DockerHub und Harbor Proxy sein.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Harbor, Aws ECR, Azure ACR, Quay and Google GCR registries.",
         "ENDPOINT": "Endpunkt",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt"
     },
