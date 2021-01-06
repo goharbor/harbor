@@ -367,6 +367,7 @@ paths:
         - $ref: '#/parameters/query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/acceptVulnerabilities'
         - name: with_tag
           in: query
           description: Specify whether the tags are included inside the returning artifacts
@@ -465,6 +466,7 @@ paths:
         - $ref: '#/parameters/reference'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/acceptVulnerabilities'
         - name: with_tag
           in: query
           description: Specify whether the tags are inclued inside the returning artifacts
@@ -699,6 +701,38 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities:
+    get:
+      summary: Get the vulnerabilities addition of the specific artifact
+      description: Get the vulnerabilities addition of the artifact specified by the reference under the project and repository.
+      tags:
+        - artifact
+      operationId: getVulnerabilitiesAddition
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - $ref: '#/parameters/acceptVulnerabilities'
+      responses:
+        '200':
+          description: Success
+          headers:
+            Content-Type:
+              description: The content type of the vulnerabilities addition
+              type: string
+          schema:
+            type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/{addition}:
     get:
       summary: Get the addition of the specific artifact
@@ -715,7 +749,7 @@ paths:
           in: path
           description: The type of addition.
           type: string
-          enum: [build_history, values.yaml, readme.md, dependencies, vulnerabilities]
+          enum: [build_history, values.yaml, readme.md, dependencies]
           required: true
       responses:
         '200':
@@ -2337,6 +2371,14 @@ parameters:
     type: boolean
     required: false
     default: false
+  acceptVulnerabilities:
+    name: X-Accept-Vulnerabilities
+    in: header
+    type: string
+    default: 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'
+    description: |-
+      A comma-separated lists of MIME types for the scan report or scan summary. The first mime type will be used when the report found for it.
+      Currently the mime type supports 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0' and 'application/vnd.security.vulnerability.report; version=1.1'
   projectName:
     name: project_name
     in: path

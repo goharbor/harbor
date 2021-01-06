@@ -36,6 +36,10 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
+var (
+	baseProjectCtl = project.Ctl
+)
+
 // BaseAPI base API handler
 type BaseAPI struct{}
 
@@ -68,7 +72,7 @@ func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName inte
 	}
 
 	if projectName != "" {
-		p, err := project.Ctl.GetByName(ctx, projectName)
+		p, err := baseProjectCtl.GetByName(ctx, projectName)
 		if err != nil {
 			log.Errorf("failed to get project %s: %v", projectName, err)
 			return false

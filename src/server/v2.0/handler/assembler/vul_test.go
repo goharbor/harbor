@@ -36,6 +36,7 @@ func (suite *VulAssemblerTestSuite) TestScannable() {
 		scanChecker:      checker,
 		scanCtl:          scanCtl,
 		withScanOverview: true,
+		mimeTypes:        []string{"mimeType"},
 	}
 
 	mock.OnAnything(checker, "IsScannable").Return(true, nil)

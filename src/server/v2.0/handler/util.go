@@ -15,19 +15,14 @@
 package handler
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"net/url"
 	"reflect"
 	"strconv"
+	"strings"
 
-	"github.com/goharbor/harbor/src/controller/artifact"
-	"github.com/goharbor/harbor/src/controller/artifact/processor"
-	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -46,49 +41,24 @@ const (
 	ScheduleNone = "None"
 )
 
-func boolValue(v *bool) bool {
-	if v != nil {
-		return *v
-	}
+func parseScanReportMimeTypes(header *string) []string {
+	var mimeTypes []string
 
-	return false
-}
-
-func resolveVulnerabilitiesAddition(ctx context.Context, artifact *artifact.Artifact) (*processor.Addition, error) {
-	reports, err := scan.DefaultController.GetReport(ctx, artifact, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport})
-	if err != nil {
-		return nil, err
-	}
-
-	vulnerabilities := make(map[string]interface{})
-	for _, rp := range reports {
-		// Resolve scan report data only when it is ready
-		if len(rp.Report) == 0 {
-			continue
-		}
-
-		vrp, err := report.ResolveData(rp.MimeType, []byte(rp.Report), report.WithArtifactDigest(rp.Digest))
-		if err != nil {
-			return nil, err
-		}
-
-		if v, ok := vulnerabilities[rp.MimeType]; ok {
-			r, err := report.Merge(rp.MimeType, v, vrp)
-			if err != nil {
-				return nil, err
+	if header != nil {
+		for _, mimeType := range strings.Split(*header, ",") {
+			mimeType = strings.TrimSpace(mimeType)
+			switch mimeType {
+			case v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport:
+				mimeTypes = append(mimeTypes, mimeType)
 			}
-			vulnerabilities[rp.MimeType] = r
-		} else {
-			vulnerabilities[rp.MimeType] = vrp
 		}
 	}
 
-	content, _ := json.Marshal(vulnerabilities)
+	if len(mimeTypes) == 0 {
+		mimeTypes = append(mimeTypes, v1.MimeTypeNativeReport)
+	}
 
-	return &processor.Addition{
-		Content:     content,
-		ContentType: "application/json",
-	}, nil
+	return mimeTypes
 }
 
 func unescapePathParams(params interface{}, fieldNames ...string) error {
