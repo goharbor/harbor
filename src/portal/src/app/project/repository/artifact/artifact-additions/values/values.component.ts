@@ -34,7 +34,7 @@ export class ValuesComponent implements OnInit {
   ngOnInit(): void {
     if (this.valuesLink && !this.valuesLink.absolute && this.valuesLink.href) {
       this.loading = true;
-      this.additionsService.getDetailByLink(this.valuesLink.href, true)
+      this.additionsService.getDetailByLink(this.valuesLink.href, false, true)
         .pipe(finalize(() => this.loading = false))
         .subscribe(
         res => {

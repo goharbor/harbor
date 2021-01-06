@@ -13,7 +13,6 @@ import {
 } from "../../../../../../lib/services";
 import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
 import {
-  DEFAULT_SUPPORTED_MIME_TYPE,
   SEVERITY_LEVEL_MAP,
   VULNERABILITY_SEVERITY
 } from "../../../../../../lib/utils/utils";
@@ -42,12 +41,14 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   @Input() artifact: Artifact;
   scan_overview: any;
   scanner: ScannerVo;
+  projectScanner: ScannerVo;
 
   scanningResults: VulnerabilityItem[] = [];
   loading: boolean = false;
   hasEnabledScanner: boolean = false;
   scanBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   severitySort: ClrDatagridComparatorInterface<VulnerabilityItem>;
+  cvssSort: ClrDatagridComparatorInterface<VulnerabilityItem>;
   hasScanningPermission: boolean = false;
   onSendingScanCommand: boolean = false;
   hasShowLoading: boolean = false;
@@ -70,6 +71,14 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
     this.severitySort = {
       compare(a: VulnerabilityItem, b: VulnerabilityItem): number {
         return that.getLevel(a) - that.getLevel(b);
+      }
+    };
+    this.cvssSort = {
+      compare(a: VulnerabilityItem, b: VulnerabilityItem): number {
+        if (a && a.preferred_cvss && a.preferred_cvss.score_v3 && b && b.preferred_cvss && b.preferred_cvss.score_v3) {
+          return (+a.preferred_cvss.score_v3) - (+b.preferred_cvss.score_v3);
+        }
+        return 0;
       }
     };
   }
@@ -105,7 +114,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.hasShowLoading = true;
       }
-      this.additionsService.getDetailByLink(this.vulnerabilitiesLink.href)
+      this.additionsService.getDetailByLink(this.vulnerabilitiesLink.href, true, false)
         .pipe(finalize(() => {
           this.loading = false;
           this.hasShowLoading = false;
@@ -113,13 +122,13 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
         .subscribe(
           res  => {
             this.scan_overview = res;
-            if (this.scan_overview && this.scan_overview[DEFAULT_SUPPORTED_MIME_TYPE]) {
-              this.scanningResults = this.scan_overview[DEFAULT_SUPPORTED_MIME_TYPE].vulnerabilities || [];
+            if (this.scan_overview && Object.values(this.scan_overview)[0]) {
+              this.scanningResults = (Object.values(this.scan_overview)[0] as any).vulnerabilities || [];
               // sort
               if (this.scanningResults) {
                 this.scanningResults.sort(((a, b) => this.getLevel(b) - this.getLevel(a)));
               }
-              this.scanner = this.scan_overview[DEFAULT_SUPPORTED_MIME_TYPE].scanner;
+              this.scanner = (Object.values(this.scan_overview)[0] as any).scanner;
             }
         }, error => {
           this.errorHandler.error(error);
@@ -148,6 +157,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
         } else {
           this.scanBtnState = ClrLoadingState.ERROR;
         }
+        this.projectScanner = response;
       }, error => {
         this.scanBtnState = ClrLoadingState.ERROR;
       });
@@ -200,7 +210,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   }
   handleScanOverview(scanOverview: any): any {
     if (scanOverview) {
-      return scanOverview[DEFAULT_SUPPORTED_MIME_TYPE];
+      return Object.values(scanOverview)[0];
     }
     return null;
   }
@@ -236,5 +246,16 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
       }
     }
     return false;
+  }
+  getScannerInfo(scanner: ScannerVo): string {
+    if (scanner) {
+      if (scanner.name && scanner.version) {
+        return `${scanner.name}@${scanner.version}`;
+      }
+      if (scanner.name && !scanner.version) {
+        return `${scanner.name}`;
+      }
+    }
+    return "";
   }
 }

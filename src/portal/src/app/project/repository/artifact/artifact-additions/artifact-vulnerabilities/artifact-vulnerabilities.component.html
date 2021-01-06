@@ -11,7 +11,11 @@
             <clr-dg-action-bar>
                 <div class="clr-row center">
                     <div class="ml-05">
-                        <button (click)="scanNow()" type="button"  class="btn  btn-secondary" [clrLoading]="scanBtnState" [disabled]="!(hasEnabledScanner && hasScanningPermission && !onSendingScanCommand)"><clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
+                        <button (click)="scanNow()" type="button"  class="btn  btn-secondary text-transform-none" [clrLoading]="scanBtnState" [disabled]="!(hasEnabledScanner && hasScanningPermission && !onSendingScanCommand)">
+                            <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;
+                            <span *ngIf="projectScanner">{{'VULNERABILITY.SCAN_BY' | translate: {scanner: getScannerInfo(projectScanner)} }}</span>
+                            <span *ngIf="!projectScanner">{{'VULNERABILITY.NO_SCANNER' | translate}}</span>
+                        </button>
                     </div>
                     <div class="ml-1">
                         <div [hidden]="!shouldShowBar()">
@@ -21,10 +25,12 @@
                             </hbr-vulnerability-bar>
                         </div>
                     </div>
+
                 </div>
             </clr-dg-action-bar>
             <clr-dg-column [clrDgField]="'id'">{{'VULNERABILITY.GRID.COLUMN_ID' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="severitySort">{{'VULNERABILITY.GRID.COLUMN_SEVERITY' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="cvssSort">{{'VULNERABILITY.GRID.CVSS3' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'package'">{{'VULNERABILITY.GRID.COLUMN_PACKAGE' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'version'">{{'VULNERABILITY.GRID.COLUMN_VERSION' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'fix_version'">{{'VULNERABILITY.GRID.COLUMN_FIXED' | translate}}</clr-dg-column>
@@ -59,6 +65,7 @@
                     <span *ngSwitchCase="'Unknown'" class="label label-unknown no-border">{{severityText(res.severity) | translate}}</span>
                     <span *ngSwitchDefault>{{severityText(res.severity) | translate}}</span>
                 </clr-dg-cell>
+                <clr-dg-cell>{{res.preferred_cvss?.score_v3}}</clr-dg-cell>
                 <clr-dg-cell>{{res.package}}</clr-dg-cell>
                 <clr-dg-cell>{{res.version}}</clr-dg-cell>
                 <clr-dg-cell>
@@ -76,6 +83,9 @@
             </clr-dg-row>
 
             <clr-dg-footer>
+                <div class="report">
+                    <i>{{'VULNERABILITY.REPORTED_BY' | translate: {scanner: getScannerInfo(scanner)} }}</i>
+                </div>
                 <clr-dg-pagination #pagination [clrDgPageSize]="25" [clrDgTotalItems]="scanningResults?.length">
                     <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
                     <span *ngIf="scanningResults?.length">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'VULNERABILITY.GRID.FOOT_OF' | translate}}</span> {{scanningResults?.length}} {{'VULNERABILITY.GRID.FOOT_ITEMS' | translate}}
