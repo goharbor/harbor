@@ -291,3 +291,15 @@ func PrepareGroupTest() {
 	}
 	dao.PrepareTestData(clearSqls, initSqls)
 }
+
+func TestSysadminPerms(t *testing.T) {
+	// authenticated, system admin
+	ctx := NewSecurityContext(&models.User{
+		Username:     "admin",
+		SysAdminFlag: true,
+	}, pm)
+	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+	assert.True(t, ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource))
+	assert.False(t, ctx.Can(rbac.ActionScannerPull, resource))
+
+}
