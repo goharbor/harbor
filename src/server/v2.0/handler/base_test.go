@@ -15,9 +15,17 @@
 package handler
 
 import (
-	"github.com/stretchr/testify/suite"
 	"net/url"
+	"os"
 	"testing"
+
+	"github.com/goharbor/harbor/src/controller/project"
+	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
+	"github.com/stretchr/testify/suite"
+)
+
+var (
+	projectCtlMock *projecttesting.Controller
 )
 
 type baseHandlerTestSuite struct {
@@ -107,4 +115,16 @@ func (b *baseHandlerTestSuite) TestLinks() {
 
 func TestBaseHandler(t *testing.T) {
 	suite.Run(t, &baseHandlerTestSuite{})
+}
+
+func TestMain(m *testing.M) {
+	projectCtlMock = &projecttesting.Controller{}
+
+	baseProjectCtl = projectCtlMock
+
+	exitVal := m.Run()
+
+	baseProjectCtl = project.Ctl
+
+	os.Exit(exitVal)
 }

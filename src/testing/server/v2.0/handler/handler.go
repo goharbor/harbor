@@ -63,34 +63,39 @@ func (suite *Suite) TearDownSuite() {
 }
 
 // DoReq ...
-func (suite *Suite) DoReq(method string, url string, body io.Reader, contentTypes ...string) (*http.Response, error) {
+func (suite *Suite) DoReq(method string, url string, body io.Reader, headers ...map[string]string) (*http.Response, error) {
 	req, err := http.NewRequest(method, suite.ts.URL+"/api/v2.0"+url, body)
 	if err != nil {
 		return nil, err
 	}
 
-	contentType := "application/json"
-	if len(contentTypes) > 0 {
-		contentType = contentTypes[0]
+	if len(headers) > 0 {
+		for key, value := range headers[0] {
+			req.Header.Set(key, value)
+		}
 	}
-	req.Header.Set("Content-Type", contentType)
+
+	contentType := req.Header.Get("Content-Type")
+	if contentType == "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
 	return suite.tc.Do(req)
 }
 
 // Delete ...
-func (suite *Suite) Delete(url string, contentTypes ...string) (*http.Response, error) {
-	return suite.DoReq(http.MethodDelete, url, nil, contentTypes...)
+func (suite *Suite) Delete(url string, headers ...map[string]string) (*http.Response, error) {
+	return suite.DoReq(http.MethodDelete, url, nil, headers...)
 }
 
 // Get ...
-func (suite *Suite) Get(url string, contentTypes ...string) (*http.Response, error) {
-	return suite.DoReq(http.MethodGet, url, nil, contentTypes...)
+func (suite *Suite) Get(url string, headers ...map[string]string) (*http.Response, error) {
+	return suite.DoReq(http.MethodGet, url, nil, headers...)
 }
 
 // GetJSON ...
-func (suite *Suite) GetJSON(url string, js interface{}) (*http.Response, error) {
-	res, err := suite.Get(url)
+func (suite *Suite) GetJSON(url string, js interface{}, headers ...map[string]string) (*http.Response, error) {
+	res, err := suite.Get(url, headers...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,8 +118,8 @@ func (suite *Suite) GetJSON(url string, js interface{}) (*http.Response, error) 
 }
 
 // Patch ...
-func (suite *Suite) Patch(url string, body io.Reader, contentTypes ...string) (*http.Response, error) {
-	return suite.DoReq(http.MethodPatch, url, body, contentTypes...)
+func (suite *Suite) Patch(url string, body io.Reader, headers ...map[string]string) (*http.Response, error) {
+	return suite.DoReq(http.MethodPatch, url, body, headers...)
 }
 
 // PatchJSON ...
@@ -128,8 +133,8 @@ func (suite *Suite) PatchJSON(url string, js interface{}) (*http.Response, error
 }
 
 // Post ...
-func (suite *Suite) Post(url string, body io.Reader, contentTypes ...string) (*http.Response, error) {
-	return suite.DoReq(http.MethodPost, url, body, contentTypes...)
+func (suite *Suite) Post(url string, body io.Reader, headers ...map[string]string) (*http.Response, error) {
+	return suite.DoReq(http.MethodPost, url, body, headers...)
 }
 
 // PostJSON ...
@@ -143,8 +148,8 @@ func (suite *Suite) PostJSON(url string, js interface{}) (*http.Response, error)
 }
 
 // Put ...
-func (suite *Suite) Put(url string, body io.Reader, contentTypes ...string) (*http.Response, error) {
-	return suite.DoReq(http.MethodPut, url, body, contentTypes...)
+func (suite *Suite) Put(url string, body io.Reader, headers ...map[string]string) (*http.Response, error) {
+	return suite.DoReq(http.MethodPut, url, body, headers...)
 }
 
 // PutJSON ...
