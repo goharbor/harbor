@@ -24,13 +24,16 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
 )
 
 var (
 	// ExecMgr is a global execution manager instance
-	ExecMgr = NewExecutionManager()
+	ExecMgr                            = NewExecutionManager()
+	executionSweeperCount              = map[string]uint8{}
+	defaultExecutionSweeperCount uint8 = 50
 )
 
 // ExecutionManager manages executions.
@@ -75,6 +78,7 @@ func NewExecutionManager() ExecutionManager {
 		executionDAO: dao.NewExecutionDAO(),
 		taskMgr:      Mgr,
 		taskDAO:      dao.NewTaskDAO(),
+		ormCreator:   orm.Crt,
 	}
 }
 
@@ -82,6 +86,7 @@ type executionManager struct {
 	executionDAO dao.ExecutionDAO
 	taskMgr      Manager
 	taskDAO      dao.TaskDAO
+	ormCreator   orm.Creator
 }
 
 func (e *executionManager) Count(ctx context.Context, query *q.Query) (int64, error) {
@@ -109,7 +114,58 @@ func (e *executionManager) Create(ctx context.Context, vendorType string, vendor
 		StartTime:  now,
 		UpdateTime: now,
 	}
-	return e.executionDAO.Create(ctx, execution)
+	id, err := e.executionDAO.Create(ctx, execution)
+	if err != nil {
+		return 0, err
+	}
+
+	// sweep the execution records to avoid the execution/task records explosion
+	go func() {
+		ctx := orm.NewContext(context.Background(), e.ormCreator.Create())
+		if err := e.sweep(ctx, vendorType); err != nil {
+			log.Errorf("failed to sweep the executions of %s: %v", vendorType, err)
+			return
+		}
+	}()
+
+	return id, nil
+}
+
+func (e *executionManager) sweep(ctx context.Context, vendorType string) error {
+	count := executionSweeperCount[vendorType]
+	if count == 0 {
+		count = defaultExecutionSweeperCount
+	}
+	for {
+		// the function "List" of the execution manager returns the execution records
+		// ordered by start time. After the sorting is supported in query, we should
+		// specify the sorting explicitly
+		// the execution records in second page are always the candidates should to be swept
+		executions, err := e.List(ctx, &q.Query{
+			Keywords: map[string]interface{}{
+				"VendorType": vendorType,
+			},
+			PageNumber: 2,
+			PageSize:   int64(count),
+		})
+		if err != nil {
+			return err
+		}
+		// no execution records need to be swept, return directly
+		if len(executions) == 0 {
+			return nil
+		}
+		for _, execution := range executions {
+			// if the status of the execution isn't final, skip
+			if !job.Status(execution.Status).Final() {
+				continue
+			}
+			if err = e.Delete(ctx, execution.ID); err != nil {
+				log.Errorf("failed to delete the execution %d: %v", execution.ID, err)
+				continue
+			}
+		}
+	}
 }
 
 func (e *executionManager) MarkDone(ctx context.Context, id int64, message string) error {
@@ -296,4 +352,11 @@ func (e *executionManager) populateExecution(ctx context.Context, execution *dao
 	}
 
 	return exec
+}
+
+// SetExecutionSweeperCount sets the count of execution records retained by the sweeper
+// If no count is set for the specified vendor, the default value will be used
+// The sweeper retains the latest created #count execution records for the specified vendor
+func SetExecutionSweeperCount(vendorType string, count uint8) {
+	executionSweeperCount[vendorType] = count
 }

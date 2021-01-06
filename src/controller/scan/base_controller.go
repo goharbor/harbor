@@ -60,6 +60,11 @@ const (
 	robotIDKey     = "robot_id"
 )
 
+func init() {
+	// keep only the latest created 5 scan all execution records
+	task.SetExecutionSweeperCount(job.ImageScanAllJob, 5)
+}
+
 // uuidGenerator is a func template which is for generating UUID.
 type uuidGenerator func() (string, error)
 
