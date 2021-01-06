@@ -34,6 +34,8 @@ Pull image
     Should Contain  ${output}  Digest:
     Should Contain  ${output}  Status:
     Should Not Contain  ${output}  No such image:
+    #Remove image for docker 20
+    Wait Unitl Command Success  docker rmi -f ${ip}/${project}/${image_with_tag}
 
 Push image
     # If no tag provided in $(image_with_or_without_tag}, latest will be the tag pulled from docker-hub or read from local
@@ -51,6 +53,9 @@ Push image
     ...  ELSE  Wait Unitl Command Success  docker tag ${image_in_use} ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker logout ${ip}
+    #Remove image for docker 20
+    Wait Unitl Command Success  docker rmi -f ${ip}/${project}/${image_in_use_with_tag}
+    Run Keyword If  ${need_pull_first}==${true}   Wait Unitl Command Success  docker rmi -f ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_in_use}
     Sleep  1
 
 Push Image With Tag
@@ -62,6 +67,9 @@ Push Image With Tag
     Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1} ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker logout ${ip}
+    #Remove image for docker 20
+    Wait Unitl Command Success  docker rmi -f ${ip}/${project}/${image}:${tag}
+    Wait Unitl Command Success  docker rmi -f ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1}
 
 Cannot Docker Login Harbor
     [Arguments]  ${ip}  ${user}  ${pwd}
