@@ -22,26 +22,30 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
+	"github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
 type executionManagerTestSuite struct {
 	suite.Suite
-	execMgr *executionManager
-	taskMgr *mockTaskManager
-	execDAO *mockExecutionDAO
-	taskDAO *mockTaskDAO
+	execMgr    *executionManager
+	taskMgr    *mockTaskManager
+	execDAO    *mockExecutionDAO
+	taskDAO    *mockTaskDAO
+	ormCreator *orm.Creator
 }
 
 func (e *executionManagerTestSuite) SetupTest() {
 	e.taskMgr = &mockTaskManager{}
 	e.execDAO = &mockExecutionDAO{}
 	e.taskDAO = &mockTaskDAO{}
+	e.ormCreator = &orm.Creator{}
 	e.execMgr = &executionManager{
 		executionDAO: e.execDAO,
 		taskMgr:      e.taskMgr,
 		taskDAO:      e.taskDAO,
+		ormCreator:   e.ormCreator,
 	}
 }
 
@@ -55,11 +59,16 @@ func (e *executionManagerTestSuite) TestCount() {
 
 func (e *executionManagerTestSuite) TestCreate() {
 	e.execDAO.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
+	e.ormCreator.On("Create").Return(&orm.FakeOrmer{})
+	e.execDAO.On("List", mock.Anything, mock.Anything).Return(nil, nil)
 	id, err := e.execMgr.Create(nil, "vendor", 0, ExecutionTriggerManual,
 		map[string]interface{}{"k": "v"})
 	e.Require().Nil(err)
 	e.Equal(int64(1), id)
+	// sleep to make sure the function in the goroutine run
+	time.Sleep(1 * time.Second)
 	e.execDAO.AssertExpectations(e.T())
+	e.ormCreator.AssertExpectations(e.T())
 }
 
 func (e *executionManagerTestSuite) TestMarkDone() {
