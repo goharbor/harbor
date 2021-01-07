@@ -156,3 +156,7 @@ Test Case - Tag Immutability
 Test Case - P2P
     [Tags]  p2p
     Harbor API Test  ./tests/apitests/python/test_p2p.py
+
+Test Case - Metrics
+    [Tags]  metrics
+    Harbor API Test  ./tests/apitests/python/test_verify_metrics_enabled.py
