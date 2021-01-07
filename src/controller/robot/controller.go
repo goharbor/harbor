@@ -3,7 +3,7 @@ package robot
 import (
 	"context"
 	"fmt"
-	rbac_common "github.com/goharbor/harbor/src/common/rbac"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -312,7 +312,7 @@ func (d *controller) convertScope(ctx context.Context, scope string) (kind, name
 		namespace = "*"
 	} else {
 		kind = LEVELPROJECT
-		ns, ok := rbac_common.ProjectNamespaceParse(types.Resource(scope))
+		ns, ok := rbac_project.NamespaceParse(types.Resource(scope))
 		if !ok {
 			log.Debugf("got no namespace from the resource %s", scope)
 			return "", "", errors.Errorf("got no namespace from the resource %s", scope)

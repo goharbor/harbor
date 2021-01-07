@@ -17,6 +17,7 @@ package v2auth
 import (
 	"context"
 	"fmt"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/rbac/system"
 	"net/http"
 	"net/url"
@@ -67,7 +68,7 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 			if err != nil {
 				return "", err
 			}
-			resource := rbac.NewProjectNamespace(pid).Resource(rbac.ResourceRepository)
+			resource := rbac_project.NewNamespace(pid).Resource(rbac.ResourceRepository)
 			if !securityCtx.Can(req.Context(), a.action, resource) {
 				return getChallenge(req, al), fmt.Errorf("unauthorized to access repository: %s, action: %s", a.name, a.action)
 			}

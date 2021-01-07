@@ -17,6 +17,7 @@ package robot
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac/project"
 	"reflect"
 	"testing"
 
@@ -97,7 +98,7 @@ func TestHasPullPerm(t *testing.T) {
 
 	ctx := NewSecurityContext(robot, false, policies)
 	ctx.ctl = ctl
-	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+	resource := project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
 }
 
@@ -118,7 +119,7 @@ func TestHasPushPerm(t *testing.T) {
 
 	ctx := NewSecurityContext(robot, false, policies)
 	ctx.ctl = ctl
-	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+	resource := project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource))
 }
 
@@ -143,7 +144,7 @@ func TestHasPushPullPerm(t *testing.T) {
 
 	ctx := NewSecurityContext(robot, false, policies)
 	ctx.ctl = ctl
-	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+	resource := project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource) && ctx.Can(context.TODO(), rbac.ActionPull, resource))
 }
 

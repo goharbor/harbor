@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbac
+package project
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
@@ -53,10 +54,10 @@ func TestAnonymousAccess(t *testing.T) {
 		ctl := &projecttesting.Controller{}
 		mock.OnAnything(ctl, "Get").Return(public, nil)
 
-		resource := NewProjectNamespace(public.ProjectID).Resource(ResourceRepository)
+		resource := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
 
-		evaluator := NewProjectEvaluator(ctl, NewBuilderForUser(nil, ctl))
-		assert.True(evaluator.HasPermission(context.TODO(), resource, ActionPull))
+		evaluator := NewEvaluator(ctl, NewBuilderForUser(nil, ctl))
+		assert.True(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull))
 	}
 
 	{
@@ -64,10 +65,10 @@ func TestAnonymousAccess(t *testing.T) {
 		ctl := &projecttesting.Controller{}
 		mock.OnAnything(ctl, "Get").Return(private, nil)
 
-		resource := NewProjectNamespace(private.ProjectID).Resource(ResourceRepository)
+		resource := NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 
-		evaluator := NewProjectEvaluator(ctl, NewBuilderForUser(nil, ctl))
-		assert.False(evaluator.HasPermission(context.TODO(), resource, ActionPull))
+		evaluator := NewEvaluator(ctl, NewBuilderForUser(nil, ctl))
+		assert.False(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull))
 	}
 }
 
@@ -83,9 +84,9 @@ func TestProjectRoleAccess(t *testing.T) {
 			UserID:   1,
 			Username: "username",
 		}
-		evaluator := NewProjectEvaluator(ctl, NewBuilderForUser(user, ctl))
-		resorce := NewProjectNamespace(public.ProjectID).Resource(ResourceRepository)
-		assert.True(evaluator.HasPermission(context.TODO(), resorce, ActionPush))
+		evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
+		resorce := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
+		assert.True(evaluator.HasPermission(context.TODO(), resorce, rbac.ActionPush))
 	}
 
 	{
@@ -97,9 +98,9 @@ func TestProjectRoleAccess(t *testing.T) {
 			UserID:   1,
 			Username: "username",
 		}
-		evaluator := NewProjectEvaluator(ctl, NewBuilderForUser(user, ctl))
-		resorce := NewProjectNamespace(public.ProjectID).Resource(ResourceRepository)
-		assert.False(evaluator.HasPermission(context.TODO(), resorce, ActionPush))
+		evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
+		resorce := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
+		assert.False(evaluator.HasPermission(context.TODO(), resorce, rbac.ActionPush))
 	}
 }
 
@@ -112,12 +113,12 @@ func BenchmarkProjectEvaluator(b *testing.B) {
 		UserID:   1,
 		Username: "username",
 	}
-	evaluator := NewProjectEvaluator(ctl, NewBuilderForUser(user, ctl))
-	resource := NewProjectNamespace(public.ProjectID).Resource(ResourceRepository)
+	evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
+	resource := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		evaluator.HasPermission(context.TODO(), resource, ActionPull)
+		evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull)
 	}
 }
 
@@ -130,12 +131,12 @@ func BenchmarkProjectEvaluatorParallel(b *testing.B) {
 		UserID:   1,
 		Username: "username",
 	}
-	evaluator := NewProjectEvaluator(ctl, NewBuilderForUser(user, ctl))
-	resource := NewProjectNamespace(public.ProjectID).Resource(ResourceRepository)
+	evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
+	resource := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			evaluator.HasPermission(context.TODO(), resource, ActionPull)
+			evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull)
 		}
 	})
 }

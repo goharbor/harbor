@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbac
+package project
 
 import (
 	"fmt"
@@ -23,8 +23,8 @@ import (
 )
 
 const (
-	// ProjectNamespaceKind kind for project namespace
-	ProjectNamespaceKind = "project"
+	// NamespaceKind kind for project projectNamespace
+	NamespaceKind = "project"
 )
 
 var (
@@ -36,7 +36,7 @@ type projectNamespace struct {
 }
 
 func (ns *projectNamespace) Kind() string {
-	return ProjectNamespaceKind
+	return NamespaceKind
 }
 
 func (ns *projectNamespace) Resource(subresources ...types.Resource) types.Resource {
@@ -51,13 +51,13 @@ func (ns *projectNamespace) GetPolicies() []*types.Policy {
 	return GetPoliciesOfProject(ns.projectID)
 }
 
-// NewProjectNamespace returns namespace for project
-func NewProjectNamespace(projectID int64) types.Namespace {
+// NewNamespace returns projectNamespace for project
+func NewNamespace(projectID int64) types.Namespace {
 	return &projectNamespace{projectID: projectID}
 }
 
-// ProjectNamespaceParse ...
-func ProjectNamespaceParse(resource types.Resource) (types.Namespace, bool) {
+// NamespaceParse ...
+func NamespaceParse(resource types.Resource) (types.Namespace, bool) {
 	matches := projectNamespaceRe.FindStringSubmatch(resource.String())
 
 	if len(matches) <= 1 {
@@ -69,9 +69,9 @@ func ProjectNamespaceParse(resource types.Resource) (types.Namespace, bool) {
 		return nil, false
 	}
 
-	return NewProjectNamespace(projectID), true
+	return NewNamespace(projectID), true
 }
 
 func init() {
-	types.RegistryNamespaceParse(ProjectNamespaceKind, ProjectNamespaceParse)
+	types.RegistryNamespaceParse(NamespaceKind, NamespaceParse)
 }

@@ -18,6 +18,7 @@ package handler
 
 import (
 	"context"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/rbac/system"
 	"net/http"
 	"net/url"
@@ -86,7 +87,7 @@ func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName inte
 		projectID = p.ProjectID
 	}
 
-	resource := rbac.NewProjectNamespace(projectID).Resource(subresource...)
+	resource := rbac_project.NewNamespace(projectID).Resource(subresource...)
 	return b.HasPermission(ctx, action, resource)
 }
 

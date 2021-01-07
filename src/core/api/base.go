@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"net/http"
 
@@ -99,7 +100,7 @@ func (b *BaseController) HasProjectPermission(projectIDOrName interface{}, actio
 		return false, err
 	}
 
-	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(subresource...)
+	resource := rbac_project.NewNamespace(project.ProjectID).Resource(subresource...)
 	if !b.SecurityCtx.Can(b.Context(), action, resource) {
 		return false, nil
 	}

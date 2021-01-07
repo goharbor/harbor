@@ -17,6 +17,7 @@ package token
 import (
 	"context"
 	"fmt"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"net/http"
 	"net/url"
 	"strings"
@@ -182,7 +183,7 @@ func (rep repositoryFilter) filter(ctx context.Context, ctl project.Controller,
 		return err
 	}
 
-	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(rbac.ResourceRepository)
+	resource := rbac_project.NewNamespace(project.ProjectID).Resource(rbac.ResourceRepository)
 	scopeList := make([]string, 0)
 	for s := range resourceScopes(ctx, resource) {
 		scopeList = append(scopeList, s)

@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"regexp"
 	"strings"
 
@@ -256,7 +257,7 @@ func (rAPI *robotV1API) validate(ctx context.Context, params operation.CreateRob
 		return err
 	}
 
-	policies := rbac.GetPoliciesOfProject(pro.ProjectID)
+	policies := rbac_project.GetPoliciesOfProject(pro.ProjectID)
 
 	mp := map[string]bool{}
 	for _, policy := range policies {

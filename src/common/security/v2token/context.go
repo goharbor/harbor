@@ -2,6 +2,7 @@ package v2token
 
 import (
 	"context"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"strings"
 
 	registry_token "github.com/docker/distribution/registry/auth/token"
@@ -55,7 +56,7 @@ func (t *tokenSecurityCtx) Can(ctx context.Context, action types.Action, resourc
 	if !strings.HasSuffix(resource.String(), rbac.ResourceRepository.String()) {
 		return false
 	}
-	ns, ok := rbac.ProjectNamespaceParse(resource)
+	ns, ok := rbac_project.NamespaceParse(resource)
 	if !ok {
 		t.logger.Warningf("Failed to get namespace from resource: %s", resource)
 		return false
