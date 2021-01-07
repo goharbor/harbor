@@ -190,6 +190,13 @@ func TestGetRelatedPolicies(t *testing.T) {
 			Repository: &model.Repository{
 				Name: "library/hello-world",
 			},
+			Artifacts: []*model.Artifact{
+				{
+					Type:   "image",
+					Digest: "sha256:90659bf80b44ce6be8234e6ff90a1ac34acbeb826903b02cfa0da11c82cbc042",
+					Tags:   []string{"latest"},
+				},
+			},
 		},
 	})
 	require.Nil(t, err)
@@ -201,6 +208,13 @@ func TestGetRelatedPolicies(t *testing.T) {
 		Metadata: &model.ResourceMetadata{
 			Repository: &model.Repository{
 				Name: "library/hello-world",
+			},
+			Artifacts: []*model.Artifact{
+				{
+					Type:   "image",
+					Digest: "sha256:90659bf80b44ce6be8234e6ff90a1ac34acbeb826903b02cfa0da11c82cbc042",
+					Tags:   []string{"latest"},
+				},
 			},
 		},
 		Deleted: true,
