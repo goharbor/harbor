@@ -31,7 +31,7 @@ export class SummaryComponent implements OnInit {
       && !this.summaryLink.absolute
       && this.summaryLink.href) {
       this.loading = true;
-      this.additionsService.getDetailByLink(this.summaryLink.href, true)
+      this.additionsService.getDetailByLink(this.summaryLink.href, false, true)
         .pipe(finalize(() => this.loading = false))
         .subscribe(
         res => {

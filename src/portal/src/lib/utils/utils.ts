@@ -245,7 +245,8 @@ export const DEFAULT_PAGE_SIZE: number = 15;
 /**
  *  The default supported mime type
  */
-export const DEFAULT_SUPPORTED_MIME_TYPE = "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0";
+export const DEFAULT_SUPPORTED_MIME_TYPES =
+    "application/vnd.security.vulnerability.report; version=1.1, application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0";
 
 /**
  *  the property name of vulnerability database updated time

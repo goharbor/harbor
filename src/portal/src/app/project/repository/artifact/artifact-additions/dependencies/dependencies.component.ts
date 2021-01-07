@@ -32,7 +32,7 @@ export class DependenciesComponent implements OnInit {
         && !this.dependenciesLink.absolute
         && this.dependenciesLink.href) {
       this.loading = true;
-      this.additionsService.getDetailByLink(this.dependenciesLink.href)
+      this.additionsService.getDetailByLink(this.dependenciesLink.href, false, false)
         .pipe(finalize(() => this.loading = false))
           .subscribe(
         res => {
