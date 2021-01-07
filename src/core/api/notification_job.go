@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -90,7 +91,8 @@ func (w *NotificationJobAPI) List() {
 }
 
 func (w *NotificationJobAPI) validateRBAC(action rbac.Action, projectID int64) bool {
-	if w.SecurityCtx.IsSysAdmin() {
+	resource := system.NewNamespace().Resource(rbac.ResourceNotificationPolicy)
+	if w.SecurityCtx.Can(w.Context(), action, resource) {
 		return true
 	}
 

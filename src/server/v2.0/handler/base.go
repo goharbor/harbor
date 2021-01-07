@@ -18,6 +18,7 @@ package handler
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -101,8 +102,8 @@ func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName inte
 	return errors.ForbiddenError(nil)
 }
 
-// RequireSysAdmin checks the system admin permission according to the security context
-func (b *BaseAPI) RequireSysAdmin(ctx context.Context) error {
+// RequireSystemAccess checks the system admin permission according to the security context
+func (b *BaseAPI) RequireSystemAccess(ctx context.Context, action rbac.Action, subresource ...rbac.Resource) error {
 	secCtx, ok := security.FromContext(ctx)
 	if !ok {
 		return errors.UnauthorizedError(errors.New("security context not found"))
@@ -110,7 +111,8 @@ func (b *BaseAPI) RequireSysAdmin(ctx context.Context) error {
 	if !secCtx.IsAuthenticated() {
 		return errors.UnauthorizedError(nil)
 	}
-	if !secCtx.IsSysAdmin() {
+	resource := system.NewNamespace().Resource(subresource...)
+	if !secCtx.Can(ctx, action, resource) {
 		return errors.ForbiddenError(nil).WithMessage(secCtx.GetUsername())
 	}
 	return nil

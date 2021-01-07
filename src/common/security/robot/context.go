@@ -16,6 +16,9 @@ package robot
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/common/rbac/system"
+	"github.com/goharbor/harbor/src/controller/robot"
+	"strings"
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/models"
@@ -31,7 +34,7 @@ type SecurityContext struct {
 	robot         *model.Robot
 	isSystemLevel bool
 	ctl           project.Controller
-	policy        []*types.Policy
+	policies      []*types.Policy
 	evaluator     evaluator.Evaluator
 	once          sync.Once
 }
@@ -39,9 +42,10 @@ type SecurityContext struct {
 // NewSecurityContext ...
 func NewSecurityContext(robot *model.Robot, isSystemLevel bool, policy []*types.Policy) *SecurityContext {
 	return &SecurityContext{
-		ctl:    project.Ctl,
-		robot:  robot,
-		policy: policy,
+		ctl:           project.Ctl,
+		robot:         robot,
+		policies:      policy,
+		isSystemLevel: isSystemLevel,
 	}
 }
 
@@ -78,9 +82,25 @@ func (s *SecurityContext) IsSolutionUser() bool {
 func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
 	s.once.Do(func() {
 		if s.isSystemLevel {
-			s.evaluator = rbac.NewProjectEvaluator(s.ctl, rbac.NewBuilderForPolicies(s.GetUsername(), s.policy))
+			var proPolicies []*types.Policy
+			var sysPolicies []*types.Policy
+			var evaluators evaluator.Evaluators
+			for _, p := range s.policies {
+				if strings.HasPrefix(p.Resource.String(), robot.SCOPESYSTEM) {
+					sysPolicies = append(sysPolicies, p)
+				} else if strings.HasPrefix(p.Resource.String(), robot.SCOPEPROJECT) {
+					proPolicies = append(proPolicies, p)
+				}
+			}
+			if len(sysPolicies) != 0 {
+				evaluators = evaluators.Add(system.NewEvaluator(s.GetUsername(), sysPolicies))
+			} else if len(proPolicies) != 0 {
+				evaluators = evaluators.Add(rbac.NewProjectEvaluator(s.ctl, rbac.NewBuilderForPolicies(s.GetUsername(), proPolicies)))
+			}
+			s.evaluator = evaluators
+
 		} else {
-			s.evaluator = rbac.NewProjectEvaluator(s.ctl, rbac.NewBuilderForPolicies(s.GetUsername(), s.policy, filterRobotPolicies))
+			s.evaluator = rbac.NewProjectEvaluator(s.ctl, rbac.NewBuilderForPolicies(s.GetUsername(), s.policies, filterRobotPolicies))
 		}
 	})
 

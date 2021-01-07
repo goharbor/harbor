@@ -17,6 +17,7 @@ package v2auth
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"net/http"
 	"net/url"
 	"strings"
@@ -52,8 +53,11 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 		if a.target == login && !securityCtx.IsAuthenticated() {
 			return getChallenge(req, al), errors.New("unauthorized")
 		}
-		if a.target == catalog && !securityCtx.IsSysAdmin() {
-			return getChallenge(req, al), fmt.Errorf("unauthorized to list catalog")
+		if a.target == catalog {
+			resource := system.NewNamespace().Resource(rbac.ResourceCatalog)
+			if !securityCtx.Can(req.Context(), rbac.ActionRead, resource) {
+				return getChallenge(req, al), fmt.Errorf("unauthorized to list catalog")
+			}
 		}
 		if a.target == repository && req.Header.Get(authHeader) == "" && req.Method == http.MethodHead { // make sure 401 is returned for CLI HEAD, see #11271
 			return getChallenge(req, al), fmt.Errorf("authorize header needed to send HEAD to repository")
