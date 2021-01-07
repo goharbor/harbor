@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/gc"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -30,13 +31,13 @@ func newGCAPI() *gcAPI {
 }
 
 func (g *gcAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
-	if err := g.RequireSysAdmin(ctx); err != nil {
-		return g.SendError(ctx, err)
-	}
 	return nil
 }
 
 func (g *gcAPI) CreateGCSchedule(ctx context.Context, params operation.CreateGCScheduleParams) middleware.Responder {
+	if err := g.RequireSystemAccess(ctx, rbac.ActionCreate, rbac.ResourceGarbageCollection); err != nil {
+		return g.SendError(ctx, err)
+	}
 	id, err := g.kick(ctx, params.Schedule.Schedule.Type, params.Schedule.Schedule.Cron, params.Schedule.Parameters)
 	if err != nil {
 		return g.SendError(ctx, err)
@@ -51,6 +52,9 @@ func (g *gcAPI) CreateGCSchedule(ctx context.Context, params operation.CreateGCS
 }
 
 func (g *gcAPI) UpdateGCSchedule(ctx context.Context, params operation.UpdateGCScheduleParams) middleware.Responder {
+	if err := g.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceGarbageCollection); err != nil {
+		return g.SendError(ctx, err)
+	}
 	_, err := g.kick(ctx, params.Schedule.Schedule.Type, params.Schedule.Schedule.Cron, params.Schedule.Parameters)
 	if err != nil {
 		return g.SendError(ctx, err)
@@ -114,6 +118,9 @@ func (g *gcAPI) updateSchedule(ctx context.Context, cronType, cron string, polic
 }
 
 func (g *gcAPI) GetGCSchedule(ctx context.Context, params operation.GetGCScheduleParams) middleware.Responder {
+	if err := g.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceGarbageCollection); err != nil {
+		return g.SendError(ctx, err)
+	}
 	schedule, err := g.gcCtr.GetSchedule(ctx)
 	if errors.IsNotFoundErr(err) {
 		return operation.NewGetGCScheduleOK()
@@ -126,6 +133,9 @@ func (g *gcAPI) GetGCSchedule(ctx context.Context, params operation.GetGCSchedul
 }
 
 func (g *gcAPI) GetGCHistory(ctx context.Context, params operation.GetGCHistoryParams) middleware.Responder {
+	if err := g.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceGarbageCollection); err != nil {
+		return g.SendError(ctx, err)
+	}
 	query, err := g.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
 	if err != nil {
 		return g.SendError(ctx, err)
@@ -171,6 +181,9 @@ func (g *gcAPI) GetGCHistory(ctx context.Context, params operation.GetGCHistoryP
 }
 
 func (g *gcAPI) GetGC(ctx context.Context, params operation.GetGCParams) middleware.Responder {
+	if err := g.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceGarbageCollection); err != nil {
+		return g.SendError(ctx, err)
+	}
 	exec, err := g.gcCtr.GetExecution(ctx, params.GCID)
 	if err != nil {
 		return g.SendError(ctx, err)
@@ -198,6 +211,9 @@ func (g *gcAPI) GetGC(ctx context.Context, params operation.GetGCParams) middlew
 }
 
 func (g *gcAPI) GetGCLog(ctx context.Context, params operation.GetGCLogParams) middleware.Responder {
+	if err := g.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceGarbageCollection); err != nil {
+		return g.SendError(ctx, err)
+	}
 	tasks, err := g.gcCtr.ListTasks(ctx, q.New(q.KeyWords{
 		"ExecutionID": params.GCID,
 	}))

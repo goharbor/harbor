@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"net/http"
@@ -435,7 +436,8 @@ func (r *RetentionAPI) requireAccess(p *policy.Metadata, action rbac.Action, sub
 		}
 		hasPermission, _ = r.HasProjectPermission(p.Scope.Reference, action, subresources...)
 	default:
-		hasPermission = r.SecurityCtx.IsSysAdmin()
+		resource := system.NewNamespace().Resource(rbac.ResourceTagRetention)
+		hasPermission = r.SecurityCtx.Can(r.Context(), action, resource)
 	}
 
 	if !hasPermission {

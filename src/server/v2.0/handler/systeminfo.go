@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/common/rbac"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/security"
@@ -43,7 +44,7 @@ func (s *sysInfoAPI) GetSysteminfoGetcert(ctx context.Context, params systeminfo
 }
 
 func (s *sysInfoAPI) GetSysteminfoVolumes(ctx context.Context, params systeminfo.GetSysteminfoVolumesParams) middleware.Responder {
-	if err := s.RequireSysAdmin(ctx); err != nil {
+	if err := s.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceSystemVolumes); err != nil {
 		return s.SendError(ctx, err)
 	}
 	c, err := s.ctl.GetCapacity(ctx)

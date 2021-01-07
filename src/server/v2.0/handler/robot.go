@@ -244,7 +244,7 @@ func (rAPI *robotAPI) RefreshSec(ctx context.Context, params operation.RefreshSe
 
 func (rAPI *robotAPI) requireAccess(ctx context.Context, level string, projectIDOrName interface{}, action rbac.Action) error {
 	if level == robot.LEVELSYSTEM {
-		return rAPI.RequireSysAdmin(ctx)
+		return rAPI.RequireSystemAccess(ctx, action, rbac.ResourceRobot)
 	} else if level == robot.LEVELPROJECT {
 		return rAPI.RequireProjectAccess(ctx, projectIDOrName, action, rbac.ResourceRobot)
 	}

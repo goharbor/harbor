@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -16,6 +15,7 @@ import (
 	projectCtl "github.com/goharbor/harbor/src/controller/project"
 	taskCtl "github.com/goharbor/harbor/src/controller/task"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
@@ -56,7 +56,7 @@ func (api *preheatAPI) Prepare(ctx context.Context, operation string, params int
 }
 
 func (api *preheatAPI) CreateInstance(ctx context.Context, params operation.CreateInstanceParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionCreate, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -75,7 +75,7 @@ func (api *preheatAPI) CreateInstance(ctx context.Context, params operation.Crea
 }
 
 func (api *preheatAPI) DeleteInstance(ctx context.Context, params operation.DeleteInstanceParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionDelete, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -93,7 +93,7 @@ func (api *preheatAPI) DeleteInstance(ctx context.Context, params operation.Dele
 }
 
 func (api *preheatAPI) GetInstance(ctx context.Context, params operation.GetInstanceParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -113,7 +113,7 @@ func (api *preheatAPI) GetInstance(ctx context.Context, params operation.GetInst
 
 // ListInstances is List p2p instances
 func (api *preheatAPI) ListInstances(ctx context.Context, params operation.ListInstancesParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -147,7 +147,7 @@ func (api *preheatAPI) ListInstances(ctx context.Context, params operation.ListI
 }
 
 func (api *preheatAPI) ListProviders(ctx context.Context, params operation.ListProvidersParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -162,7 +162,7 @@ func (api *preheatAPI) ListProviders(ctx context.Context, params operation.ListP
 
 // UpdateInstance is Update instance
 func (api *preheatAPI) UpdateInstance(ctx context.Context, params operation.UpdateInstanceParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -387,7 +387,7 @@ func (api *preheatAPI) ManualPreheat(ctx context.Context, params operation.Manua
 }
 
 func (api *preheatAPI) PingInstances(ctx context.Context, params operation.PingInstancesParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 

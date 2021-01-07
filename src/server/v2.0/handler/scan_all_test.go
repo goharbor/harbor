@@ -130,7 +130,7 @@ func (suite *ScanAllTestSuite) TestAuthorization() {
 		{
 			// system admin required
 			suite.Security.On("IsAuthenticated").Return(true).Once()
-			suite.Security.On("IsSysAdmin").Return(false).Once()
+			suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(false).Once()
 			suite.Security.On("GetUsername").Return("username").Once()
 
 			res, err := suite.DoReq(req.method, req.url, newBody(req.body))
@@ -141,8 +141,7 @@ func (suite *ScanAllTestSuite) TestAuthorization() {
 		{
 			// default scanner required
 			suite.Security.On("IsAuthenticated").Return(true).Once()
-			suite.Security.On("IsSysAdmin").Return(true).Once()
-
+			suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
 			mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return(nil, nil).Once()
 
 			res, err := suite.DoReq(req.method, req.url, newBody(req.body))
@@ -153,8 +152,7 @@ func (suite *ScanAllTestSuite) TestAuthorization() {
 		{
 			// default scanner required failed
 			suite.Security.On("IsAuthenticated").Return(true).Once()
-			suite.Security.On("IsSysAdmin").Return(true).Once()
-
+			suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
 			mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return(nil, fmt.Errorf("failed")).Once()
 
 			res, err := suite.DoReq(req.method, req.url, newBody(req.body))
@@ -167,7 +165,7 @@ func (suite *ScanAllTestSuite) TestAuthorization() {
 func (suite *ScanAllTestSuite) TestGetLatestScanAllMetrics() {
 	times := 3
 	suite.Security.On("IsAuthenticated").Return(true).Times(times)
-	suite.Security.On("IsSysAdmin").Return(true).Times(times)
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
 	mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{{ID: int64(1)}}, nil).Times(times)
 
 	{
@@ -205,7 +203,7 @@ func (suite *ScanAllTestSuite) TestGetLatestScanAllMetrics() {
 func (suite *ScanAllTestSuite) TestGetLatestScheduledScanAllMetrics() {
 	times := 3
 	suite.Security.On("IsAuthenticated").Return(true).Times(times)
-	suite.Security.On("IsSysAdmin").Return(true).Times(times)
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
 	mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{{ID: int64(1)}}, nil).Times(times)
 
 	{
@@ -243,7 +241,7 @@ func (suite *ScanAllTestSuite) TestGetLatestScheduledScanAllMetrics() {
 func (suite *ScanAllTestSuite) TestCreateScanAllSchedule() {
 	times := 11
 	suite.Security.On("IsAuthenticated").Return(true).Times(times)
-	suite.Security.On("IsSysAdmin").Return(true).Times(times)
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
 	mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{{ID: int64(1)}}, nil).Times(times)
 
 	{
@@ -356,7 +354,7 @@ func (suite *ScanAllTestSuite) TestCreateScanAllSchedule() {
 func (suite *ScanAllTestSuite) TestUpdateScanAllSchedule() {
 	times := 11
 	suite.Security.On("IsAuthenticated").Return(true).Times(times)
-	suite.Security.On("IsSysAdmin").Return(true).Times(times)
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
 	mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{{ID: int64(1)}}, nil).Times(times)
 
 	{
@@ -472,7 +470,7 @@ func (suite *ScanAllTestSuite) TestUpdateScanAllSchedule() {
 func (suite *ScanAllTestSuite) TestGetScanAllSchedule() {
 	times := 4
 	suite.Security.On("IsAuthenticated").Return(true).Times(times)
-	suite.Security.On("IsSysAdmin").Return(true).Times(times)
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
 	mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{{ID: int64(1)}}, nil).Times(times)
 
 	{

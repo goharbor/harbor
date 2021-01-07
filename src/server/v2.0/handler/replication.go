@@ -16,6 +16,7 @@ package handler
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"strconv"
 	"strings"
 
@@ -48,14 +49,14 @@ type replicationAPI struct {
 }
 
 func (r *replicationAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
-	if err := r.RequireSysAdmin(ctx); err != nil {
-		return r.SendError(ctx, err)
-	}
 	return nil
 }
 
 func (r *replicationAPI) StartReplication(ctx context.Context, params operation.StartReplicationParams) middleware.Responder {
 	// TODO move the following logic to the replication controller after refactoring the policy management part with the new programming model
+	if err := r.RequireSystemAccess(ctx, rbac.ActionCreate, rbac.ResourceReplication); err != nil {
+		return r.SendError(ctx, err)
+	}
 	policy, err := r.policyMgr.Get(params.Execution.PolicyID)
 	if err != nil {
 		return r.SendError(ctx, err)
@@ -85,6 +86,9 @@ func (r *replicationAPI) StartReplication(ctx context.Context, params operation.
 }
 
 func (r *replicationAPI) StopReplication(ctx context.Context, params operation.StopReplicationParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionCreate, rbac.ResourceReplication); err != nil {
+		return r.SendError(ctx, err)
+	}
 	if err := r.ctl.Stop(ctx, params.ID); err != nil {
 		return r.SendError(ctx, err)
 	}
@@ -92,6 +96,9 @@ func (r *replicationAPI) StopReplication(ctx context.Context, params operation.S
 }
 
 func (r *replicationAPI) ListReplicationExecutions(ctx context.Context, params operation.ListReplicationExecutionsParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceReplication); err != nil {
+		return r.SendError(ctx, err)
+	}
 	query, err := r.BuildQuery(ctx, nil, params.Page, params.PageSize)
 	if err != nil {
 		return r.SendError(ctx, err)
@@ -151,6 +158,9 @@ func (r *replicationAPI) ListReplicationExecutions(ctx context.Context, params o
 }
 
 func (r *replicationAPI) GetReplicationExecution(ctx context.Context, params operation.GetReplicationExecutionParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceReplication); err != nil {
+		return r.SendError(ctx, err)
+	}
 	execution, err := r.ctl.GetExecution(ctx, params.ID)
 	if err != nil {
 		return r.SendError(ctx, err)
@@ -159,6 +169,9 @@ func (r *replicationAPI) GetReplicationExecution(ctx context.Context, params ope
 }
 
 func (r *replicationAPI) ListReplicationTasks(ctx context.Context, params operation.ListReplicationTasksParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceReplication); err != nil {
+		return r.SendError(ctx, err)
+	}
 	query, err := r.BuildQuery(ctx, nil, params.Page, params.PageSize)
 	if err != nil {
 		return r.SendError(ctx, err)
@@ -210,6 +223,9 @@ func (r *replicationAPI) ListReplicationTasks(ctx context.Context, params operat
 }
 
 func (r *replicationAPI) GetReplicationLog(ctx context.Context, params operation.GetReplicationLogParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceReplication); err != nil {
+		return r.SendError(ctx, err)
+	}
 	execution, err := r.ctl.GetExecution(ctx, params.ID)
 	if err != nil {
 		return r.SendError(ctx, err)
@@ -229,7 +245,6 @@ func (r *replicationAPI) GetReplicationLog(ctx context.Context, params operation
 	}
 	return operation.NewGetReplicationLogOK().WithContentType("text/plain").WithPayload(string(log))
 }
-
 func convertExecution(execution *replication.Execution) *models.ReplicationExecution {
 	exec := &models.ReplicationExecution{
 		ID:         execution.ID,

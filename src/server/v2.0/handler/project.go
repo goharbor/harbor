@@ -76,22 +76,21 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	}
 
 	secCtx, _ := security.FromContext(ctx)
-	if onlyAdmin && !(secCtx.IsSysAdmin() || secCtx.IsSolutionUser()) {
+	if onlyAdmin && !(a.isSysAdmin(ctx, rbac.ActionCreate) || secCtx.IsSolutionUser()) {
 		log.Errorf("Only sys admin can create project")
 		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create project"))
 	}
 
 	req := params.Project
 
-	if req.RegistryID != nil && !secCtx.IsSysAdmin() {
-		// only system admin can create the proxy cache project
+	if req.RegistryID != nil && !a.isSysAdmin(ctx, rbac.ActionCreate) {
 		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create proxy cache project"))
 	}
 
 	// populate storage limit
 	if config.QuotaPerProjectEnable() {
 		// the security context is not sys admin, set the StorageLimit the global StoragePerProject
-		if req.StorageLimit == nil || *req.StorageLimit == 0 || !secCtx.IsSysAdmin() {
+		if req.StorageLimit == nil || *req.StorageLimit == 0 || !a.isSysAdmin(ctx, rbac.ActionCreate) {
 			setting, err := config.QuotaSetting()
 			if err != nil {
 				log.Errorf("failed to get quota setting: %v", err)
@@ -378,7 +377,7 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 
 	secCtx, ok := security.FromContext(ctx)
 	if ok && secCtx.IsAuthenticated() {
-		if !secCtx.IsSysAdmin() && !secCtx.IsSolutionUser() {
+		if !a.isSysAdmin(ctx, rbac.ActionList) && !secCtx.IsSolutionUser() {
 			// authenticated but not system admin or solution user,
 			// return public projects and projects that the user is member of
 			if l, ok := secCtx.(*local.SecurityContext); ok {
@@ -583,6 +582,13 @@ func (a *projectAPI) populateProperties(ctx context.Context, p *project.Project)
 		p.ChartCount = count
 	}
 	return nil
+}
+
+func (a *projectAPI) isSysAdmin(ctx context.Context, action rbac.Action) bool {
+	if err := a.RequireSystemAccess(ctx, action, rbac.ResourceProject); err != nil {
+		return false
+	}
+	return true
 }
 
 func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *models.ProjectSummary) {

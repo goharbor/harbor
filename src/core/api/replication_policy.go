@@ -17,9 +17,12 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"net/http"
 	"strconv"
 
@@ -36,23 +39,25 @@ import (
 // ReplicationPolicyAPI handles the replication policy requests
 type ReplicationPolicyAPI struct {
 	BaseController
+	resource types.Resource
 }
 
 // Prepare ...
 func (r *ReplicationPolicyAPI) Prepare() {
 	r.BaseController.Prepare()
-	if !r.SecurityCtx.IsSysAdmin() {
-		if !r.SecurityCtx.IsAuthenticated() {
-			r.SendUnAuthorizedError(errors.New("UnAuthorized"))
-			return
-		}
-		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+	if !r.SecurityCtx.IsAuthenticated() {
+		r.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
+	r.resource = system.NewNamespace().Resource(rbac.ResourceReplicationPolicy)
 }
 
 // List the replication policies
 func (r *ReplicationPolicyAPI) List() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionList, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	page, size, err := r.GetPaginationParams()
 	if err != nil {
 		r.SendInternalServerError(err)
@@ -82,6 +87,10 @@ func (r *ReplicationPolicyAPI) List() {
 
 // Create the replication policy
 func (r *ReplicationPolicyAPI) Create() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionCreate, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	policy := &model.Policy{}
 	isValid, err := r.DecodeJSONReqAndValidate(policy)
 	if !isValid {
@@ -141,6 +150,10 @@ func (r *ReplicationPolicyAPI) validateRegistry(policy *model.Policy) bool {
 
 // Get the specified replication policy
 func (r *ReplicationPolicyAPI) Get() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionRead, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	id, err := r.GetInt64FromPath(":id")
 	if id <= 0 || err != nil {
 		r.SendBadRequestError(errors.New("invalid policy ID"))
@@ -166,6 +179,10 @@ func (r *ReplicationPolicyAPI) Get() {
 
 // Update the replication policy
 func (r *ReplicationPolicyAPI) Update() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionUpdate, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	id, err := r.GetInt64FromPath(":id")
 	if id <= 0 || err != nil {
 		r.SendBadRequestError(errors.New("invalid policy ID"))
@@ -207,6 +224,10 @@ func (r *ReplicationPolicyAPI) Update() {
 
 // Delete the replication policy
 func (r *ReplicationPolicyAPI) Delete() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionDelete, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	id, err := r.GetInt64FromPath(":id")
 	if id <= 0 || err != nil {
 		r.SendBadRequestError(errors.New("invalid policy ID"))

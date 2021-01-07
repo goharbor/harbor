@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -44,7 +43,7 @@ func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAud
 		return a.SendError(ctx, err)
 	}
 
-	if !secCtx.IsSysAdmin() {
+	if err := a.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceAuditLog); err != nil {
 		ol := &q.OrList{}
 		if sc, ok := secCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {
 			user := sc.User()
