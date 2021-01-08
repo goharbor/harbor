@@ -146,7 +146,7 @@ func (a *adapter) getChartInfo(name, version string) (info *tcrChartVersionDetai
 	return
 }
 
-func (a *adapter) DownloadChart(name, version string) (rc io.ReadCloser, err error) {
+func (a *adapter) DownloadChart(name, version, contentURL string) (rc io.ReadCloser, err error) {
 	var info *tcrChartVersionDetail
 	info, err = a.getChartInfo(name, version)
 	if err != nil {

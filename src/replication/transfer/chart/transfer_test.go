@@ -45,7 +45,7 @@ func (f *fakeRegistry) FetchCharts(filters []*model.Filter) ([]*model.Resource, 
 func (f *fakeRegistry) ChartExist(name, version string) (bool, error) {
 	return true, nil
 }
-func (f *fakeRegistry) DownloadChart(name, version string) (io.ReadCloser, error) {
+func (f *fakeRegistry) DownloadChart(name, version, contentURL string) (io.ReadCloser, error) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte{'a'}))
 	return r, nil
 }

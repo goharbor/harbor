@@ -17,7 +17,6 @@ package artifacthub
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"io"
@@ -26,62 +25,92 @@ import (
 )
 
 func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {
-	pkgs, err := a.client.getAllPackages(HelmChart)
+	charts, err := a.client.getReplicationInfo()
 	if err != nil {
 		return nil, err
 	}
 
 	resources := []*model.Resource{}
 	var repositories []*model.Repository
-	for _, pkg := range pkgs {
-		repositories = append(repositories, &model.Repository{
-			Name: fmt.Sprintf("%s/%s", pkg.Repository.Name, pkg.Name),
-		})
+	var artifacts []*model.Artifact
+	repoSet := map[string]interface{}{}
+	versionSet := map[string]interface{}{}
+	for _, chart := range charts {
+		name := fmt.Sprintf("%s/%s", chart.Repository, chart.Package)
+		if _, ok := repoSet[name]; !ok {
+			repoSet[name] = nil
+			repositories = append(repositories, &model.Repository{
+				Name: name,
+			})
+		}
 	}
 
 	repositories, err = filter.DoFilterRepositories(repositories, filters)
 	if err != nil {
 		return nil, err
 	}
+	if len(repositories) == 0 {
+		return resources, nil
+	}
 
-	for _, repository := range repositories {
-		pkgDetail, err := a.client.getHelmPackageDetail(repository.Name)
-		if err != nil {
-			log.Errorf("fetch package detail: %v", err)
-			return nil, err
+	if len(repoSet) != len(repositories) {
+		repoSet = map[string]interface{}{}
+		for _, repo := range repositories {
+			repoSet[repo.Name] = nil
 		}
+	}
 
-		var artifacts []*model.Artifact
-		for _, version := range pkgDetail.AvailableVersions {
+	for _, chart := range charts {
+		name := fmt.Sprintf("%s/%s", chart.Repository, chart.Package)
+		if _, ok := repoSet[name]; ok {
 			artifacts = append(artifacts, &model.Artifact{
-				Tags: []string{version.Version},
+				Tags: []string{chart.Version},
 			})
 		}
+	}
 
-		artifacts, err = filter.DoFilterArtifacts(artifacts, filters)
-		if err != nil {
-			return nil, err
-		}
-		if len(artifacts) == 0 {
+	artifacts, err = filter.DoFilterArtifacts(artifacts, filters)
+	if err != nil {
+		return nil, err
+	}
+	if len(artifacts) == 0 {
+		return resources, nil
+	}
+
+	for _, arti := range artifacts {
+		versionSet[arti.Tags[0]] = nil
+	}
+
+	for _, chart := range charts {
+		name := fmt.Sprintf("%s/%s", chart.Repository, chart.Package)
+		if _, ok := repoSet[name]; !ok {
 			continue
 		}
-
-		for _, artifact := range artifacts {
-			resources = append(resources, &model.Resource{
-				Type:     model.ResourceTypeChart,
-				Registry: a.registry,
-				Metadata: &model.ResourceMetadata{
-					Repository: &model.Repository{
-						Name: repository.Name,
-					},
-					Artifacts: []*model.Artifact{artifact},
-				},
-			})
+		if _, ok := versionSet[chart.Version]; !ok {
+			continue
 		}
+		resources = append(resources, &model.Resource{
+			Type:     model.ResourceTypeChart,
+			Registry: a.registry,
+			Metadata: &model.ResourceMetadata{
+				Repository: &model.Repository{
+					Name: name,
+				},
+				Artifacts: []*model.Artifact{
+					{
+						Tags: []string{chart.Version},
+					},
+				},
+			},
+			ExtendedInfo: map[string]interface{}{
+				"contentURL": chart.ContentURL,
+			},
+		})
 	}
 	return resources, nil
 }
 
+// ChartExist will never be used, for this function is only used when endpoint is destination
 func (a *adapter) ChartExist(name, version string) (bool, error) {
 	_, err := a.client.getHelmChartVersion(name, version)
 	if err != nil {
@@ -93,16 +122,11 @@ func (a *adapter) ChartExist(name, version string) (bool, error) {
 	return true, nil
 }
 
-func (a *adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
-	chartVersion, err := a.client.getHelmChartVersion(name, version)
-	if err != nil {
-		return nil, err
+func (a *adapter) DownloadChart(name, version, contentURL string) (io.ReadCloser, error) {
+	if len(contentURL) == 0 {
+		return nil, errors.Errorf("empty chart content url, %s:%s", name, version)
 	}
-
-	if len(chartVersion.ContentURL) == 0 {
-		return nil, errors.Errorf("")
-	}
-	return a.download(chartVersion.ContentURL)
+	return a.download(contentURL)
 }
 
 func (a *adapter) download(contentURL string) (io.ReadCloser, error) {
