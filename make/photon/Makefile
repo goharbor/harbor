@@ -263,7 +263,7 @@ define _get_binary
 	$(CURL) --connect-timeout 30 -f -k -L $1 -o $2 || exit 1
 endef
 
-build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_clair_adapter _build_trivy_adapter _build_redis _build_chart_server
+build: _build_chart_server _build_notary _build_clair _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_clair_adapter _build_trivy_adapter _build_redis
 
 cleanimage:
 	@echo "cleaning image for photon..."
