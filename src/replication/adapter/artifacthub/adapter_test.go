@@ -82,7 +82,11 @@ func TestAdapter_DownloadChart(t *testing.T) {
 		URL:  "https://artifacthub.io",
 	})
 
-	data, err := a.DownloadChart("harbor/harbor", "1.5.0")
+	data, err := a.DownloadChart("harbor/harbor", "1.5.0", "")
+	assert.NotNil(t, err)
+	assert.Nil(t, data)
+
+	data, err = a.DownloadChart("harbor/harbor", "1.5.0", "https://helm.goharbor.io/harbor-1.5.0.tgz")
 	assert.Nil(t, err)
 	assert.NotNil(t, data)
 }

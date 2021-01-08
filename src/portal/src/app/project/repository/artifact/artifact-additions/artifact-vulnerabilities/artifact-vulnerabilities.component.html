@@ -11,7 +11,7 @@
             <clr-dg-action-bar>
                 <div class="clr-row center">
                     <div class="ml-05">
-                        <button (click)="scanNow()" type="button"  class="btn  btn-secondary text-transform-none" [clrLoading]="scanBtnState" [disabled]="!(hasEnabledScanner && hasScanningPermission && !onSendingScanCommand)">
+                        <button id="scan-btn" (click)="scanNow()" type="button"  class="btn  btn-secondary text-transform-none" [clrLoading]="scanBtnState" [disabled]="!(hasEnabledScanner && hasScanningPermission && !onSendingScanCommand)">
                             <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;
                             <span *ngIf="projectScanner">{{'VULNERABILITY.SCAN_BY' | translate: {scanner: getScannerInfo(projectScanner)} }}</span>
                             <span *ngIf="!projectScanner">{{'VULNERABILITY.NO_SCANNER' | translate}}</span>

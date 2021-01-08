@@ -15,6 +15,7 @@
 package retention
 
 import (
+	"github.com/goharbor/harbor/src/lib/orm"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/job"
@@ -136,7 +137,8 @@ func (l *launchTestSuite) SetupTest() {
 }
 
 func (l *launchTestSuite) TestGetProjects() {
-	projects, err := getProjects(l.projectMgr)
+	ctx := orm.Context()
+	projects, err := getProjects(ctx, l.projectMgr)
 	require.Nil(l.T(), err)
 	assert.Equal(l.T(), 2, len(projects))
 	assert.Equal(l.T(), int64(1), projects[0].NamespaceID)
@@ -151,7 +153,8 @@ func (l *launchTestSuite) TestGetRepositories() {
 			Name:         "library/image",
 		},
 	}, nil)
-	repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, 1, true)
+	ctx := orm.Context()
+	repositories, err := getRepositories(ctx, l.projectMgr, l.repositoryMgr, 1)
 	require.Nil(l.T(), err)
 	l.repositoryMgr.AssertExpectations(l.T())
 	assert.Equal(l.T(), 1, len(repositories))
@@ -166,23 +169,23 @@ func (l *launchTestSuite) TestLaunch() {
 	l.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 
 	launcher := &launcher{
-		projectMgr:         l.projectMgr,
-		repositoryMgr:      l.repositoryMgr,
-		retentionMgr:       l.retentionMgr,
-		execMgr:            l.execMgr,
-		taskMgr:            l.taskMgr,
-		jobserviceClient:   l.jobserviceClient,
-		chartServerEnabled: true,
+		projectMgr:       l.projectMgr,
+		repositoryMgr:    l.repositoryMgr,
+		retentionMgr:     l.retentionMgr,
+		execMgr:          l.execMgr,
+		taskMgr:          l.taskMgr,
+		jobserviceClient: l.jobserviceClient,
 	}
 
+	ctx := orm.Context()
 	var ply *policy.Metadata
 	// nil policy
-	n, err := launcher.Launch(ply, 1, false)
+	n, err := launcher.Launch(ctx, ply, 1, false)
 	require.NotNil(l.T(), err)
 
 	// nil rules
 	ply = &policy.Metadata{}
-	n, err = launcher.Launch(ply, 1, false)
+	n, err = launcher.Launch(ctx, ply, 1, false)
 	require.Nil(l.T(), err)
 	assert.Equal(l.T(), int64(0), n)
 
@@ -192,7 +195,7 @@ func (l *launchTestSuite) TestLaunch() {
 			{},
 		},
 	}
-	_, err = launcher.Launch(ply, 1, false)
+	_, err = launcher.Launch(ctx, ply, 1, false)
 	require.NotNil(l.T(), err)
 
 	// system scope
@@ -247,7 +250,7 @@ func (l *launchTestSuite) TestLaunch() {
 			},
 		},
 	}
-	n, err = launcher.Launch(ply, 1, false)
+	n, err = launcher.Launch(ctx, ply, 1, false)
 	require.Nil(l.T(), err)
 	l.repositoryMgr.AssertExpectations(l.T())
 	assert.Equal(l.T(), int64(1), n)
@@ -264,11 +267,12 @@ func (l *launchTestSuite) TestStop() {
 		taskMgr:          l.taskMgr,
 		jobserviceClient: l.jobserviceClient,
 	}
+	ctx := orm.Context()
 	// invalid execution ID
-	err := launcher.Stop(0)
+	err := launcher.Stop(ctx, 0)
 	require.NotNil(t, err)
 
-	err = launcher.Stop(1)
+	err = launcher.Stop(ctx, 1)
 	require.Nil(t, err)
 }
 

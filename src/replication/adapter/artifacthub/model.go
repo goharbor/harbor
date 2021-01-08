@@ -13,9 +13,10 @@ type PackageData struct {
 
 // Package ...
 type Package struct {
-	PackageID  string      `json:"package_id"`
-	Name       string      `json:"name"`
-	Repository *Repository `json:"repository"`
+	PackageID      string      `json:"package_id"`
+	Name           string      `json:"name"`
+	NormalizedName string      `json:"normalized_name"`
+	Repository     *Repository `json:"repository"`
 }
 
 // Repository ...
@@ -29,6 +30,7 @@ type Repository struct {
 type PackageDetail struct {
 	PackageID         string           `json:"package_id"`
 	Name              string           `json:"name"`
+	NormalizedName    string           `json:"normalized_name"`
 	Version           string           `json:"version"`
 	AppVersion        string           `json:"app_version"`
 	Repository        RepositoryDetail `json:"repository"`
@@ -69,4 +71,12 @@ type Metadata struct {
 // Message ...
 type Message struct {
 	Message string `json:"message"`
+}
+
+// ChartInfo ...
+type ChartInfo struct {
+	Repository string `json:"repository"`
+	Package    string `json:"package"`
+	Version    string `json:"version"`
+	ContentURL string `json:"url"`
 }

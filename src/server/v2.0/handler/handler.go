@@ -42,6 +42,7 @@ func New() http.Handler {
 		SysteminfoAPI:  newSystemInfoAPI(),
 		PingAPI:        newPingAPI(),
 		GCAPI:          newGCAPI(),
+		RetentionAPI:   newRetentionAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

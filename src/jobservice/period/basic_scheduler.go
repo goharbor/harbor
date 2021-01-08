@@ -145,7 +145,7 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 			// Mark job status to stopped to block execution.
 			// The executions here should not be in the final states,
 			// double confirmation: only stop the can-stop ones.
-			if job.RunningStatus.Compare(job.Status(e.Info.Status)) >= 0 {
+			if job.RunningStatus.After(job.Status(e.Info.Status)) || job.RunningStatus.Equal(job.Status(e.Info.Status)) {
 				if err := eTracker.Stop(); err != nil {
 					logger.Errorf("Stop execution %s error: %s", eID, err)
 				} else {

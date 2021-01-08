@@ -129,16 +129,6 @@ func init() {
 	beego.Router("/api/replication/policies", &ReplicationPolicyAPI{}, "get:List;post:Create")
 	beego.Router("/api/replication/policies/:id([0-9]+)", &ReplicationPolicyAPI{}, "get:Get;put:Update;delete:Delete")
 
-	beego.Router("/api/retentions/metadatas", &RetentionAPI{}, "get:GetMetadatas")
-	beego.Router("/api/retentions/:id", &RetentionAPI{}, "get:GetRetention")
-	beego.Router("/api/retentions", &RetentionAPI{}, "post:CreateRetention")
-	beego.Router("/api/retentions/:id", &RetentionAPI{}, "put:UpdateRetention")
-	beego.Router("/api/retentions/:id/executions", &RetentionAPI{}, "post:TriggerRetentionExec")
-	beego.Router("/api/retentions/:id/executions/:eid", &RetentionAPI{}, "patch:OperateRetentionExec")
-	beego.Router("/api/retentions/:id/executions", &RetentionAPI{}, "get:ListRetentionExecs")
-	beego.Router("/api/retentions/:id/executions/:eid/tasks", &RetentionAPI{}, "get:ListRetentionExecTasks")
-	beego.Router("/api/retentions/:id/executions/:eid/tasks/:tid", &RetentionAPI{}, "get:GetRetentionExecTaskLog")
-
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies", &NotificationPolicyAPI{}, "get:List;post:Post")
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/:id([0-9]+)", &NotificationPolicyAPI{})
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/test", &NotificationPolicyAPI{}, "post:Test")

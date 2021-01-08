@@ -34,7 +34,7 @@ func init() {
 	notifier.Subscribe(event.TopicScanningCompleted, &scan.Handler{})
 	notifier.Subscribe(event.TopicDeleteArtifact, &scan.DelArtHandler{Context: orm.Context})
 	notifier.Subscribe(event.TopicReplication, &artifact.ReplicationHandler{})
-	notifier.Subscribe(event.TopicTagRetention, &artifact.RetentionHandler{RetentionController: artifact.DefaultRetentionControllerFunc})
+	notifier.Subscribe(event.TopicTagRetention, &artifact.RetentionHandler{})
 
 	// replication
 	notifier.Subscribe(event.TopicPushArtifact, &replication.Handler{})
