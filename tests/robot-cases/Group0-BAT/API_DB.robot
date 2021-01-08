@@ -85,10 +85,6 @@ Test Case - Project Level CVE Allowlist
     [Tags]  pro_cve
     Harbor API Test  ./tests/apitests/python/test_project_level_cve_allowlist.py
 
-Test Case - Tag Retention
-    [Tags]  tag_retention
-    Harbor API Test  ./tests/apitests/python/test_retention.py
-
 Test Case - Health Check
     [Tags]  health
     Harbor API Test  ./tests/apitests/python/test_health_check.py
@@ -148,10 +144,6 @@ Test Case - Replication From Dockerhub
 Test Case - Proxy Cache
     [Tags]  proxy_cache
     Harbor API Test  ./tests/apitests/python/test_proxy_cache.py
-
-Test Case - Tag Immutability
-    [Tags]  tag_immutability
-    Harbor API Test  ./tests/apitests/python/test_tag_immutability.py
 
 Test Case - P2P
     [Tags]  p2p

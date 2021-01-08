@@ -1,32 +1,54 @@
 package artifact
 
 import (
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/controller/retention"
+	ret "github.com/goharbor/harbor/src/pkg/retention"
+	"github.com/stretchr/testify/mock"
+	"os"
 	"testing"
 	"time"
-
-	"github.com/goharbor/harbor/src/pkg/retention"
 
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	retentiontesting "github.com/goharbor/harbor/src/testing/controller/retention"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestRetentionHandler_Handle(t *testing.T) {
 	config.Init()
-	handler := &RetentionHandler{RetentionController: DefaultRetentionControllerFunc}
+	handler := &RetentionHandler{}
 
 	policyMgr := notification.PolicyMgr
-	retentionCtlFunc := handler.RetentionController
+	oldretentionCtl := retention.Ctl
 
 	defer func() {
 		notification.PolicyMgr = policyMgr
-		handler.RetentionController = retentionCtlFunc
+		retention.Ctl = oldretentionCtl
 	}()
 	notification.PolicyMgr = &fakedNotificationPolicyMgr{}
-	handler.RetentionController = retention.FakedRetentionControllerFunc
+	retentionCtl := &retentiontesting.Controller{}
+	retention.Ctl = retentionCtl
+	retentionCtl.On("GetRetentionExecTask", mock.Anything, mock.Anything).
+		Return(&ret.Task{
+			ID:          1,
+			ExecutionID: 1,
+			Status:      "Success",
+			StartTime:   time.Now(),
+			EndTime:     time.Now(),
+		}, nil)
+	retentionCtl.On("GetRetentionExec", mock.Anything, mock.Anything).Return(&ret.Execution{
+		ID:        1,
+		PolicyID:  1,
+		Status:    "Success",
+		Trigger:   "Manual",
+		DryRun:    true,
+		StartTime: time.Now(),
+		EndTime:   time.Now(),
+	}, nil)
 
 	type args struct {
 		data interface{}
@@ -79,4 +101,9 @@ func TestRetentionHandler_Handle(t *testing.T) {
 func TestRetentionHandler_IsStateful(t *testing.T) {
 	handler := &RetentionHandler{}
 	assert.False(t, handler.IsStateful())
+}
+
+func TestMain(m *testing.M) {
+	dao.PrepareTestForPostgresSQL()
+	os.Exit(m.Run())
 }

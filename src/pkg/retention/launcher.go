@@ -15,9 +15,8 @@
 package retention
 
 import (
+	"context"
 	"fmt"
-	beegoorm "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/task"
 
@@ -26,7 +25,6 @@ import (
 
 	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	pq "github.com/goharbor/harbor/src/lib/q"
@@ -58,7 +56,7 @@ type Launcher interface {
 	//  Returns:
 	//   int64               : the count of tasks
 	//   error               : common error if any errors occurred
-	Launch(policy *policy.Metadata, executionID int64, isDryRun bool) (int64, error)
+	Launch(ctx context.Context, policy *policy.Metadata, executionID int64, isDryRun bool) (int64, error)
 	// Stop the jobs for one execution
 	//
 	//  Arguments:
@@ -66,21 +64,19 @@ type Launcher interface {
 	//
 	//  Returns:
 	//   error : common error if any errors occurred
-	Stop(executionID int64) error
+	Stop(ctx context.Context, executionID int64) error
 }
 
 // NewLauncher returns an instance of Launcher
 func NewLauncher(projectMgr project.Manager, repositoryMgr repository.Manager,
 	retentionMgr Manager, execMgr task.ExecutionManager, taskMgr task.Manager) Launcher {
 	return &launcher{
-		projectMgr:         projectMgr,
-		repositoryMgr:      repositoryMgr,
-		retentionMgr:       retentionMgr,
-		execMgr:            execMgr,
-		taskMgr:            taskMgr,
-		jobserviceClient:   cjob.GlobalClient,
-		internalCoreURL:    config.InternalCoreURL(),
-		chartServerEnabled: config.WithChartMuseum(),
+		projectMgr:       projectMgr,
+		repositoryMgr:    repositoryMgr,
+		retentionMgr:     retentionMgr,
+		execMgr:          execMgr,
+		taskMgr:          taskMgr,
+		jobserviceClient: cjob.GlobalClient,
 	}
 }
 
@@ -92,17 +88,15 @@ type jobData struct {
 }
 
 type launcher struct {
-	retentionMgr       Manager
-	taskMgr            task.Manager
-	execMgr            task.ExecutionManager
-	projectMgr         project.Manager
-	repositoryMgr      repository.Manager
-	jobserviceClient   cjob.Client
-	internalCoreURL    string
-	chartServerEnabled bool
+	retentionMgr     Manager
+	taskMgr          task.Manager
+	execMgr          task.ExecutionManager
+	projectMgr       project.Manager
+	repositoryMgr    repository.Manager
+	jobserviceClient cjob.Client
 }
 
-func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool) (int64, error) {
+func (l *launcher) Launch(ctx context.Context, ply *policy.Metadata, executionID int64, isDryRun bool) (int64, error) {
 	if ply == nil {
 		return 0, launcherError(fmt.Errorf("the policy is nil"))
 	}
@@ -121,7 +115,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 	var err error
 	if level == "system" {
 		// get projects
-		allProjects, err = getProjects(l.projectMgr)
+		allProjects, err = getProjects(ctx, l.projectMgr)
 		if err != nil {
 			return 0, launcherError(err)
 		}
@@ -156,7 +150,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 		var repositoryCandidates []*selector.Candidate
 		// get repositories of projects
 		for _, projectCandidate := range projectCandidates {
-			repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, projectCandidate.NamespaceID, l.chartServerEnabled)
+			repositories, err := getRepositories(ctx, l.projectMgr, l.repositoryMgr, projectCandidate.NamespaceID)
 			if err != nil {
 				return 0, launcherError(err)
 			}
@@ -207,7 +201,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 	}
 
 	// submit tasks to jobservice
-	if err = l.submitTasks(executionID, jobDatas); err != nil {
+	if err = l.submitTasks(ctx, executionID, jobDatas); err != nil {
 		return 0, launcherError(err)
 	}
 
@@ -241,8 +235,7 @@ func createJobs(repositoryRules map[selector.Repository]*lwp.Metadata, isDryRun 
 	return jobDatas, nil
 }
 
-func (l *launcher) submitTasks(executionID int64, jobDatas []*jobData) error {
-	ctx := orm.Context()
+func (l *launcher) submitTasks(ctx context.Context, executionID int64, jobDatas []*jobData) error {
 	for _, jobData := range jobDatas {
 		_, err := l.taskMgr.Create(ctx, executionID, &task.Job{
 			Name:       jobData.JobName,
@@ -262,11 +255,10 @@ func (l *launcher) submitTasks(executionID int64, jobDatas []*jobData) error {
 	return nil
 }
 
-func (l *launcher) Stop(executionID int64) error {
+func (l *launcher) Stop(ctx context.Context, executionID int64) error {
 	if executionID <= 0 {
 		return launcherError(fmt.Errorf("invalid execution ID: %d", executionID))
 	}
-	ctx := orm.Context()
 	return l.execMgr.Stop(ctx, executionID)
 }
 
@@ -274,8 +266,8 @@ func launcherError(err error) error {
 	return errors.Wrap(err, "launcher")
 }
 
-func getProjects(projectMgr project.Manager) ([]*selector.Candidate, error) {
-	projects, err := projectMgr.List(orm.Context(), nil)
+func getProjects(ctx context.Context, projectMgr project.Manager) ([]*selector.Candidate, error) {
+	projects, err := projectMgr.List(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -289,8 +281,7 @@ func getProjects(projectMgr project.Manager) ([]*selector.Candidate, error) {
 	return candidates, nil
 }
 
-func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manager,
-	projectID int64, chartServerEnabled bool) ([]*selector.Candidate, error) {
+func getRepositories(ctx context.Context, projectMgr project.Manager, repositoryMgr repository.Manager, projectID int64) ([]*selector.Candidate, error) {
 	var candidates []*selector.Candidate
 	/*
 		pro, err := projectMgr.Get(projectID)
@@ -299,8 +290,7 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 		}
 	*/
 	// get image repositories
-	// TODO set the context which contains the ORM
-	imageRepositories, err := repositoryMgr.List(orm.NewContext(nil, beegoorm.NewOrm()), &pq.Query{
+	imageRepositories, err := repositoryMgr.List(ctx, &pq.Query{
 		Keywords: map[string]interface{}{
 			"ProjectID": projectID,
 		},
@@ -317,23 +307,6 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 			Kind:        "image",
 		})
 	}
-	// currently, doesn't support retention for chart
-	/*
-		if chartServerEnabled {
-			// get chart repositories when chart server is enabled
-			chartRepositories, err := repositoryMgr.ListChartRepositories(projectID)
-			if err != nil {
-				return nil, err
-			}
-			for _, r := range chartRepositories {
-				candidates = append(candidates, &art.Candidate{
-					Namespace:  pro.Name,
-					Repository: r.Name,
-					Kind:       "chart",
-				})
-			}
-		}
-	*/
 
 	return candidates, nil
 }
