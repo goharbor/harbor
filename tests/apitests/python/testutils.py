@@ -23,6 +23,7 @@ admin_user = "admin"
 admin_pwd = "Harbor12345"
 
 harbor_server = os.environ.get("HARBOR_HOST", '')
+harbor_url = "https://{}".format(harbor_server)
 #CLIENT=dict(endpoint="https://"+harbor_server+"/api")
 ADMIN_CLIENT=dict(endpoint = os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api/v2.0", username = admin_user, password =  admin_pwd)
 CHART_API_CLIENT=dict(endpoint = os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api", username = admin_user, password =  admin_pwd)
@@ -82,23 +83,30 @@ def suppress_urllib3_warning(func):
 from contextlib import contextmanager
 
 @contextmanager
-def created_user(password):
+def created_user(password, _teardown=None):
     from library.user import User
 
     api = User()
+    is_teardown = TEARDOWN
+    if _teardown in (True, False):
+        is_teardown = _teardown
 
     user_id, user_name = api.create_user(user_password=password, **ADMIN_CLIENT)
     try:
         yield (user_id, user_name)
     finally:
-        if TEARDOWN:
+        if is_teardown:
             api.delete_user(user_id, **ADMIN_CLIENT)
 
 @contextmanager
-def created_project(name=None, metadata=None, user_id=None, member_role_id=None):
+def created_project(name=None, metadata=None, user_id=None, member_role_id=None, _teardown=None):
     from library.project import Project
 
     api = Project()
+
+    is_teardown = TEARDOWN
+    if _teardown in (True, False):
+        is_teardown = _teardown
 
     project_id, project_name = api.create_project(name=name, metadata=metadata, **ADMIN_CLIENT)
     if user_id:
@@ -107,5 +115,5 @@ def created_project(name=None, metadata=None, user_id=None, member_role_id=None)
     try:
         yield (project_id, project_name)
     finally:
-        if TEARDOWN:
+        if is_teardown:
             api.delete_project(project_id, **ADMIN_CLIENT)
