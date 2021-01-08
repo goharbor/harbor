@@ -143,7 +143,7 @@ func (c *nativeToRelationalSchemaConverter) fromSchema(ctx context.Context, repo
 	for _, record := range records {
 		vi := new(vuln.VulnerabilityItem)
 		vi.ID = record.CVEID
-		vi.ArtifactDigest = artifactDigest
+		vi.ArtifactDigests = []string{artifactDigest}
 		vi.CVSSDetails.ScoreV2 = record.CVE2Score
 		vi.CVSSDetails.ScoreV3 = record.CVE3Score
 		vi.CVSSDetails.VectorV2 = record.CVSS2Vector

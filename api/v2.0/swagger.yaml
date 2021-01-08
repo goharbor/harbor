@@ -2800,6 +2800,21 @@ definitions:
         type: string
         format: date-time
         description: The update time of the label
+  Scanner:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of the scanner
+        example: "Trivy"
+      vendor:
+        type: string
+        description: Name of the scanner provider
+        example: "Aqua Security"
+      version:
+        type: string
+        description: Version of the scanner adapter
+        example: "v0.9.1"
   ScanOverview:
     type: object
     description: 'The scan overview attached in the metadata of tag'
@@ -2842,6 +2857,8 @@ definitions:
         type: integer
         description: 'The complete percent of the scanning which value is between 0 and 100'
         example: 100
+      scanner:
+        $ref: '#/definitions/Scanner'
   VulnerabilitySummary:
     type: object
     description: |
@@ -2852,11 +2869,13 @@ definitions:
         format: int
         description: 'The total number of the found vulnerabilities'
         example: 500
+        x-omitempty: false
       fixable:
         type: integer
         format: int
         description: 'The number of the fixable vulnerabilities'
         example: 100
+        x-omitempty: false
       summary:
         type: object
         description: 'Numbers of the vulnerabilities with different severity'
@@ -2867,6 +2886,7 @@ definitions:
         example:
           'Critical': 5
           'High': 5
+        x-omitempty: false
   AuditLog:
     type: object
     properties:

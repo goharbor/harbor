@@ -154,49 +154,10 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 
 	sum.CompleteCount = 1
 	sum.CompletePercent = 100
-
 	sum.Severity = rp.Severity
-	vsum := &vuln.VulnerabilitySummary{
-		Total:   len(rp.Vulnerabilities),
-		Summary: make(vuln.SeveritySummary),
-	}
-
-	overallSev := vuln.None
-	for _, v := range rp.Vulnerabilities {
-		if len(ops.CVEAllowlist) > 0 && ops.CVEAllowlist.Contains(v.ID) {
-			// If allowlist is set, then check if we need to bypass it
-			// Reduce the total
-			vsum.Total--
-			// Append the by passed CVEs specified in the allowlist
-			sum.CVEBypassed = append(sum.CVEBypassed, v.ID)
-
-			continue
-		}
-
-		if num, ok := vsum.Summary[v.Severity]; ok {
-			vsum.Summary[v.Severity] = num + 1
-		} else {
-			vsum.Summary[v.Severity] = 1
-		}
-
-		// Update the overall severity if necessary
-		if v.Severity.Code() > overallSev.Code() {
-			overallSev = v.Severity
-		}
-
-		// If the CVE item has a fixable version
-		if len(v.FixVersion) > 0 {
-			vsum.Fixable++
-		}
-	}
-	sum.Summary = vsum
-
-	// Override the overall severity of the filtered list if needed.
-	if len(ops.CVEAllowlist) > 0 {
-		sum.Severity = overallSev
-	}
-
 	sum.Scanner = rp.Scanner
+
+	sum.UpdateSeveritySummaryAndByPassed(rp.GetVulnerabilityItemList(), ops.CVEAllowlist)
 
 	return sum, nil
 }

@@ -21,27 +21,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMergeVulnerabilitySummary(t *testing.T) {
-	assert := assert.New(t)
-	v1 := VulnerabilitySummary{
-		Total:   1,
-		Fixable: 1,
-		Summary: map[Severity]int{Low: 1},
-	}
-
-	r := v1.Merge(&VulnerabilitySummary{
-		Total:   1,
-		Fixable: 1,
-		Summary: map[Severity]int{Low: 1, High: 1},
-	})
-
-	assert.Equal(2, r.Total)
-	assert.Equal(2, r.Fixable)
-	assert.Len(r.Summary, 2)
-	assert.Equal(2, r.Summary[Low])
-	assert.Equal(1, r.Summary[High])
-}
-
 func TestMergeNativeReportSummary(t *testing.T) {
 	assert := assert.New(t)
 	errorStatus := job.ErrorStatus.String()
@@ -53,20 +32,92 @@ func TestMergeNativeReportSummary(t *testing.T) {
 		Summary: map[Severity]int{Low: 1},
 	}
 
-	n1 := NativeReportSummary{
-		ScanStatus: runningStatus,
+	l := &VulnerabilityItemList{}
+	l.Add(&VulnerabilityItem{
+		ID:         "cve-id",
+		Package:    "openssl-libs",
+		Version:    "1:1.1.1g-11.el8",
 		Severity:   Low,
-		TotalCount: 1,
-		Summary:    &v1,
-	}
-
-	r := n1.Merge(&NativeReportSummary{
-		ScanStatus: errorStatus,
-		Severity:   Severity(""),
-		TotalCount: 1,
+		FixVersion: "1:1.1.1g-12.el8_3",
 	})
 
-	assert.Equal(runningStatus, r.ScanStatus)
-	assert.Equal(Low, r.Severity)
-	assert.Equal(v1, *r.Summary)
+	{
+		n1 := NativeReportSummary{
+			ScanStatus:            runningStatus,
+			Severity:              Low,
+			TotalCount:            1,
+			Summary:               &v1,
+			VulnerabilityItemList: l,
+		}
+
+		r := n1.Merge(&NativeReportSummary{
+			ScanStatus: errorStatus,
+			Severity:   Severity(""),
+			TotalCount: 1,
+		})
+
+		assert.Equal(runningStatus, r.ScanStatus)
+		assert.Equal(Low, r.Severity)
+		assert.Equal(v1, *r.Summary)
+	}
+
+	{
+		n1 := NativeReportSummary{
+			ScanStatus: runningStatus,
+			Severity:   Severity(""),
+			TotalCount: 1,
+		}
+
+		r := n1.Merge(&NativeReportSummary{
+			ScanStatus: errorStatus,
+			Severity:   Severity(""),
+			TotalCount: 1,
+		})
+
+		assert.Equal(runningStatus, r.ScanStatus)
+		assert.Equal(Severity(""), r.Severity)
+		assert.Nil(r.Summary)
+	}
+
+	{
+		n1 := &NativeReportSummary{
+			ScanStatus: errorStatus,
+			Severity:   Severity(""),
+			TotalCount: 1,
+		}
+
+		r := n1.Merge(&NativeReportSummary{
+			ScanStatus:            runningStatus,
+			Severity:              Low,
+			TotalCount:            1,
+			Summary:               &v1,
+			VulnerabilityItemList: l,
+		})
+
+		assert.Equal(runningStatus, r.ScanStatus)
+		assert.Equal(Low, r.Severity)
+		assert.Equal(v1, *r.Summary)
+	}
+
+	{
+		n1 := &NativeReportSummary{
+			ScanStatus:            runningStatus,
+			Severity:              Low,
+			TotalCount:            1,
+			Summary:               &v1,
+			VulnerabilityItemList: l,
+		}
+
+		r := n1.Merge(&NativeReportSummary{
+			ScanStatus:            runningStatus,
+			Severity:              Low,
+			TotalCount:            1,
+			Summary:               &v1,
+			VulnerabilityItemList: l,
+		})
+
+		assert.Equal(runningStatus, r.ScanStatus)
+		assert.Equal(Low, r.Severity)
+		assert.Equal(v1, *r.Summary)
+	}
 }
