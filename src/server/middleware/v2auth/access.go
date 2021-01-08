@@ -71,7 +71,7 @@ func accessList(req *http.Request) []access {
 		})
 		return l
 	}
-	if len(lib.V2CatalogURLRe.FindStringSubmatch(req.URL.Path)) == 1 {
+	if lib.V2CatalogURLRe.MatchString(req.URL.Path) {
 		l = append(l, access{
 			target: catalog,
 		})

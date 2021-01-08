@@ -85,8 +85,7 @@ func (rc *reqChecker) projectID(name string) (int64, error) {
 func getChallenge(req *http.Request, accessList []access) string {
 	logger := log.G(req.Context())
 	auth := req.Header.Get(authHeader)
-	if len(auth) > 0 ||
-		len(lib.V2CatalogURLRe.FindStringSubmatch(req.URL.Path)) == 1 {
+	if len(auth) > 0 || lib.V2CatalogURLRe.MatchString(req.URL.Path) {
 		// Return basic auth challenge by default, incl. request to '/v2/_catalog'
 		return `Basic realm="harbor"`
 	}
