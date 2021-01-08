@@ -90,7 +90,7 @@
         <clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="clrDgRefresh($event)" class="datagrid-top" [class.embeded-datagrid]="isEmbedded"
             [(clrDgSelected)]="selectedRow">
             <clr-dg-action-bar>
-                <button [clrLoading]="scanBtnState" type="button" class="btn  btn-secondary scan-btn"
+                <button id="scan-btn" [clrLoading]="scanBtnState" type="button" class="btn  btn-secondary scan-btn"
                     [disabled]="!(canScanNow() && selectedRowHasVul() && hasEnabledScanner && hasScanImagePermission )" (click)="scanNow()">
                     <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;
                     <span *ngIf="projectScanner">{{'VULNERABILITY.SCAN_BY' | translate: {scanner: getScannerInfo()} }}</span>
