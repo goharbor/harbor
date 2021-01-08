@@ -82,9 +82,6 @@ func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
 }
 
 func (t *transfer) initialize(src, dst *model.Resource) error {
-	if t.shouldStop() {
-		return nil
-	}
 	// create client for source registry
 	srcReg, err := createRegistry(src.Registry)
 	if err != nil {
