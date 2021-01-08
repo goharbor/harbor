@@ -96,7 +96,7 @@ func initDatabaseForTest(db *models.Database) {
 	}
 
 	if alias != "default" {
-		if err = globalOrm.Using(alias); err != nil {
+		if err = GetOrmer().Using(alias); err != nil {
 			log.Fatalf("failed to create new orm: %v", err)
 		}
 	}

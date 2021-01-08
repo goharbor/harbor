@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/task"
 	"net/http"
 
 	"github.com/ghodss/yaml"
@@ -32,9 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/project"
-	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 )
 
@@ -42,17 +38,6 @@ const (
 	yamlFileContentType = "application/x-yaml"
 	userSessionKey      = "user"
 )
-
-// the managers/controllers used globally
-var (
-	projectMgr          project.Manager
-	retentionController retention.APIController
-)
-
-// GetRetentionController returns the retention API controller
-func GetRetentionController() retention.APIController {
-	return retentionController
-}
 
 // BaseController ...
 type BaseController struct {
@@ -182,28 +167,6 @@ func Init() error {
 		return err
 	}
 
-	// init project manager
-	initProjectManager()
-
-	retentionMgr := retention.NewManager()
-
-	retentionLauncher := retention.NewLauncher(projectMgr, repository.Mgr, retentionMgr, task.ExecMgr, task.Mgr)
-
-	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, scheduler.Sched, retentionLauncher, task.ExecMgr, task.Mgr)
-
-	retentionCallbackFun := func(ctx context.Context, p string) error {
-		param := &retention.TriggerParam{}
-		if err := json.Unmarshal([]byte(p), param); err != nil {
-			return fmt.Errorf("failed to unmarshal the param: %v", err)
-		}
-		_, err := retentionController.TriggerRetentionExec(param.PolicyID, param.Trigger, false)
-		return err
-	}
-	err := scheduler.RegisterCallbackFunc(retention.SchedulerCallback, retentionCallbackFun)
-	if err != nil {
-		return err
-	}
-
 	p2pPreheatCallbackFun := func(ctx context.Context, p string) error {
 		param := &preheat.TriggerParam{}
 		if err := json.Unmarshal([]byte(p), param); err != nil {
@@ -212,7 +175,7 @@ func Init() error {
 		_, err := preheat.Enf.EnforcePolicy(ctx, param.PolicyID)
 		return err
 	}
-	err = scheduler.RegisterCallbackFunc(preheat.SchedulerCallback, p2pPreheatCallbackFun)
+	err := scheduler.RegisterCallbackFunc(preheat.SchedulerCallback, p2pPreheatCallbackFun)
 
 	return err
 }
@@ -230,8 +193,4 @@ func initChartController() error {
 
 	chartController = chartCtl
 	return nil
-}
-
-func initProjectManager() {
-	projectMgr = project.Mgr
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/retention"
 	"strconv"
 	"strings"
 	"sync"
@@ -50,6 +51,7 @@ func newProjectAPI() *projectAPI {
 		quotaCtl:      quota.Ctl,
 		robotMgr:      robot.Mgr,
 		preheatCtl:    preheat.Ctl,
+		retentionCtl:  retention.Ctl,
 	}
 }
 
@@ -63,6 +65,7 @@ type projectAPI struct {
 	quotaCtl      quota.Controller
 	robotMgr      robot.Manager
 	preheatCtl    preheat.Controller
+	retentionCtl  retention.Controller
 }
 
 func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateProjectParams) middleware.Responder {
@@ -170,9 +173,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// create a default retention policy for proxy project
 	if req.RegistryID != nil {
 		plc := policy.WithNDaysSinceLastPull(projectID, defaultDaysToRetentionForProxyCacheProject)
-		// TODO: move the retention controller to `src/controller/retention` and
-		// change to use the default retention controller in `src/controller/retention`
-		retentionID, err := api.GetRetentionController().CreateRetention(plc)
+		retentionID, err := a.retentionCtl.CreateRetention(ctx, plc)
 		if err != nil {
 			return a.SendError(ctx, err)
 		}

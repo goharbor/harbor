@@ -16,8 +16,15 @@ package retention
 
 import (
 	"context"
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -28,8 +35,6 @@ import (
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"strings"
-	"testing"
 )
 
 type ControllerTestSuite struct {
@@ -41,6 +46,11 @@ type ControllerTestSuite struct {
 // SetupSuite ...
 func (s *ControllerTestSuite) SetupSuite() {
 
+}
+
+func TestMain(m *testing.M) {
+	dao.PrepareTestForPostgresSQL()
+	os.Exit(m.Run())
 }
 
 // TestController ...
@@ -55,7 +65,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 	retentionLauncher := &fakeLauncher{}
 	execMgr := &testingTask.ExecutionManager{}
 	taskMgr := &testingTask.Manager{}
-	retentionMgr := NewManager()
+	retentionMgr := retention.NewManager()
 	execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	execMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
@@ -83,7 +93,15 @@ func (s *ControllerTestSuite) TestPolicy() {
 	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 
-	c := NewAPIController(retentionMgr, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher, execMgr, taskMgr)
+	c := defaultController{
+		manager:        retentionMgr,
+		execMgr:        execMgr,
+		taskMgr:        taskMgr,
+		launcher:       retentionLauncher,
+		projectManager: projectMgr,
+		repositoryMgr:  repositoryMgr,
+		scheduler:      retentionScheduler,
+	}
 
 	p1 := &policy.Metadata{
 		Algorithm: "or",
@@ -150,26 +168,27 @@ func (s *ControllerTestSuite) TestPolicy() {
 		},
 	}
 
-	id, err := c.CreateRetention(p1)
+	ctx := orm.Context()
+	id, err := c.CreateRetention(ctx, p1)
 	s.Require().Nil(err)
 	s.Require().True(id > 0)
 
-	p1, err = c.GetRetention(id)
+	p1, err = c.GetRetention(ctx, id)
 	s.Require().Nil(err)
 	s.Require().EqualValues("project", p1.Scope.Level)
 	s.Require().True(p1.ID > 0)
 
 	p1.Scope.Level = "test"
-	err = c.UpdateRetention(p1)
+	err = c.UpdateRetention(ctx, p1)
 	s.Require().Nil(err)
-	p1, err = c.GetRetention(id)
+	p1, err = c.GetRetention(ctx, id)
 	s.Require().Nil(err)
 	s.Require().EqualValues("test", p1.Scope.Level)
 
-	err = c.DeleteRetention(id)
+	err = c.DeleteRetention(ctx, id)
 	s.Require().Nil(err)
 
-	p1, err = c.GetRetention(id)
+	p1, err = c.GetRetention(ctx, id)
 	s.Require().NotNil(err)
 	s.Require().True(strings.Contains(err.Error(), "no such Retention policy"))
 	s.Require().Nil(p1)
@@ -182,7 +201,7 @@ func (s *ControllerTestSuite) TestExecution() {
 	retentionLauncher := &fakeLauncher{}
 	execMgr := &testingTask.ExecutionManager{}
 	taskMgr := &testingTask.Manager{}
-	retentionMgr := NewManager()
+	retentionMgr := retention.NewManager()
 	execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
 		ID:     1,
@@ -209,7 +228,15 @@ func (s *ControllerTestSuite) TestExecution() {
 	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 
-	m := NewAPIController(retentionMgr, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher, execMgr, taskMgr)
+	m := defaultController{
+		manager:        retentionMgr,
+		execMgr:        execMgr,
+		taskMgr:        taskMgr,
+		launcher:       retentionLauncher,
+		projectManager: projectMgr,
+		repositoryMgr:  repositoryMgr,
+		scheduler:      retentionScheduler,
+	}
 
 	p1 := &policy.Metadata{
 		Algorithm: "or",
@@ -251,27 +278,28 @@ func (s *ControllerTestSuite) TestExecution() {
 		},
 	}
 
-	policyID, err := m.CreateRetention(p1)
+	ctx := orm.Context()
+	policyID, err := m.CreateRetention(ctx, p1)
 	s.Require().Nil(err)
 	s.Require().True(policyID > 0)
 
-	id, err := m.TriggerRetentionExec(policyID, ExecutionTriggerManual, false)
+	id, err := m.TriggerRetentionExec(ctx, policyID, retention.ExecutionTriggerManual, false)
 	s.Require().Nil(err)
 	s.Require().True(id > 0)
 
-	e1, err := m.GetRetentionExec(id)
+	e1, err := m.GetRetentionExec(ctx, id)
 	s.Require().Nil(err)
 	s.Require().NotNil(e1)
 	s.Require().EqualValues(id, e1.ID)
 
-	err = m.OperateRetentionExec(id, "stop")
+	err = m.OperateRetentionExec(ctx, id, "stop")
 	s.Require().Nil(err)
 
-	es, err := m.ListRetentionExecs(policyID, nil)
+	es, err := m.ListRetentionExecs(ctx, policyID, nil)
 	s.Require().Nil(err)
 	s.Require().EqualValues(1, len(es))
 
-	ts, err := m.ListRetentionExecTasks(id, nil)
+	ts, err := m.ListRetentionExecTasks(nil, id, nil)
 	s.Require().Nil(err)
 	s.Require().EqualValues(1, len(ts))
 
@@ -301,10 +329,10 @@ func (f *fakeRetentionScheduler) ListSchedules(ctx context.Context, q *q.Query) 
 type fakeLauncher struct {
 }
 
-func (f *fakeLauncher) Stop(executionID int64) error {
+func (f *fakeLauncher) Stop(ctx context.Context, executionID int64) error {
 	return nil
 }
 
-func (f *fakeLauncher) Launch(policy *policy.Metadata, executionID int64, isDryRun bool) (int64, error) {
+func (f *fakeLauncher) Launch(ctx context.Context, policy *policy.Metadata, executionID int64, isDryRun bool) (int64, error) {
 	return 0, nil
 }
