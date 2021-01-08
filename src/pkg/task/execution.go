@@ -45,6 +45,8 @@ type ExecutionManager interface {
 	// The "extraAttrs" can be used to set the customized attributes
 	Create(ctx context.Context, vendorType string, vendorID int64, trigger string,
 		extraAttrs ...map[string]interface{}) (id int64, err error)
+	// Update the extra attributes of the specified execution
+	UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) (err error)
 	// MarkDone marks the status of the specified execution as success.
 	// It must be called to update the execution status if the created execution contains no tasks.
 	// In other cases, the execution status can be calculated from the referenced tasks automatically
@@ -166,6 +168,21 @@ func (e *executionManager) sweep(ctx context.Context, vendorType string) error {
 			}
 		}
 	}
+}
+
+func (e *executionManager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) error {
+	data, err := json.Marshal(extraAttrs)
+	if err != nil {
+		return err
+	}
+
+	execution := &dao.Execution{
+		ID:         id,
+		ExtraAttrs: string(data),
+		UpdateTime: time.Now(),
+	}
+
+	return e.executionDAO.Update(ctx, execution, "ExtraAttrs", "UpdateTime")
 }
 
 func (e *executionManager) MarkDone(ctx context.Context, id int64, message string) error {

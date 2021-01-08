@@ -277,8 +277,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 }
 
 func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bool) (int64, error) {
-	extraAttrs := map[string]interface{}{}
-	executionID, err := bc.execMgr.Create(ctx, job.ImageScanAllJob, 0, trigger, extraAttrs)
+	executionID, err := bc.execMgr.Create(ctx, job.ImageScanAllJob, 0, trigger)
 	if err != nil {
 		return 0, err
 	}
@@ -307,12 +306,19 @@ func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bo
 }
 
 func (bc *basicController) startScanAll(ctx context.Context, executionID int64) error {
-	artifactCount := 0
-	artifactScannedCount := 0
-
 	batchSize := 50
+
+	summary := struct {
+		TotalCount        int `json:"total_count"`
+		SubmitCount       int `json:"submit_count"`
+		ConflictCount     int `json:"conflict_count"`
+		PreconditionCount int `json:"precondition_count"`
+		UnsupportCount    int `json:"unsupport_count"`
+		UnknowCount       int `json:"unknow_count"`
+	}{}
+
 	for artifact := range ar.Iterator(ctx, batchSize, nil, nil) {
-		artifactCount++
+		summary.TotalCount++
 
 		scan := func(ctx context.Context) error {
 			return bc.Scan(ctx, artifact, WithExecutionID(executionID))
@@ -321,21 +327,72 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 		if err := orm.WithTransaction(scan)(ctx); err != nil {
 			// Just logged
 			log.Errorf("failed to scan artifact %s, error %v", artifact, err)
-			continue
-		}
 
-		artifactScannedCount++
+			switch errors.ErrCode(err) {
+			case errors.ConflictCode:
+				// a previous scan process is ongoing for the artifact
+				summary.ConflictCount++
+			case errors.PreconditionCode:
+				// scanner not found or it's disabled
+				summary.PreconditionCount++
+			case errors.BadRequestCode:
+				// artifact is unsupport
+				summary.UnsupportCount++
+			default:
+				summary.UnknowCount++
+			}
+		} else {
+			summary.SubmitCount++
+		}
+	}
+
+	extraAttrs := map[string]interface{}{"summary": summary}
+	if err := bc.execMgr.UpdateExtraAttrs(ctx, executionID, extraAttrs); err != nil {
+		log.Errorf("failed to set the summary info for the scan all execution, error: %v", err)
+		return err
+	}
+
+	if summary.SubmitCount > 0 { // at least one artifact submitted to the job service
+		return nil
 	}
 
 	// not artifact found
-	if artifactCount == 0 || artifactScannedCount == 0 {
-		message := "no task found"
-		if artifactCount == 0 {
-			message = "no artifact found"
+	if summary.TotalCount == 0 {
+		if err := bc.execMgr.MarkDone(ctx, executionID, "no artifact found"); err != nil {
+			log.Errorf("failed to mark the execution %d to be done, error: %v", executionID, err)
+			return err
 		}
+	} else if summary.PreconditionCount+summary.UnknowCount == 0 { // not scan job submitted and no failed
+		message := fmt.Sprintf("%d artifact(s) found", summary.TotalCount)
+
+		if summary.UnsupportCount > 0 {
+			message = fmt.Sprintf("%s, %d artifact(s) not scannable", message, summary.UnsupportCount)
+		}
+
+		if summary.ConflictCount > 0 {
+			message = fmt.Sprintf("%s, %d artifact(s) have a previous ongoing scan process", message, summary.ConflictCount)
+		}
+
+		message = fmt.Sprintf("%s, but no scan job submitted to the job service", message)
 
 		if err := bc.execMgr.MarkDone(ctx, executionID, message); err != nil {
 			log.Errorf("failed to mark the execution %d to be done, error: %v", executionID, err)
+			return err
+		}
+	} else { // not scan job submitted and failed
+		message := fmt.Sprintf("%d artifact(s) found", summary.TotalCount)
+
+		if summary.PreconditionCount > 0 {
+			message = fmt.Sprintf("%s, scanner not found or disabled for %d of them", message, summary.PreconditionCount)
+		}
+
+		if summary.UnknowCount > 0 {
+			message = fmt.Sprintf("%s, internal error happened for %d of them", message, summary.UnknowCount)
+		}
+
+		message = fmt.Sprintf("%s, but no scan job submitted to the job service", message)
+		if err := bc.execMgr.MarkError(ctx, executionID, message); err != nil {
+			log.Errorf("failed to mark the execution %d to be error, error: %v", executionID, err)
 			return err
 		}
 	}
