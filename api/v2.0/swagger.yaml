@@ -2443,9 +2443,9 @@ paths:
 
   /retentions/{id}/executions:
     post:
-      summary: Trigger a Retention job
-      operationId: triggerRetentionJob
-      description: Trigger a Retention job, if dry_run is True, nothing would be deleted actually.
+      summary: Trigger a Retention Execution
+      operationId: triggerRetentionExecution
+      description: Trigger a Retention Execution, if dry_run is True, nothing would be deleted actually.
       tags:
         - Retention
       produces:
@@ -2469,11 +2469,7 @@ paths:
         '200':
           description: Trigger a Retention job successfully.
         '201':
-          description: Retention job created successfully.
-          headers:
-            Location:
-              type: string
-              description: The URL of the created resource
+          $ref: '#/responses/201'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -2481,9 +2477,9 @@ paths:
         '500':
           $ref: '#/responses/500'
     get:
-      summary: Get Retention jobs
-      operationId: listRetentionJob
-      description: Get Retention jobs, job status may be delayed before job service schedule it up.
+      summary: Get Retention executions
+      operationId: listRetentionExecutions
+      description: Get Retention executions, execution status may be delayed before job service schedule it up.
       tags:
         - Retention
       parameters:
@@ -2507,7 +2503,7 @@ paths:
           description: The size of per page.
       responses:
         '200':
-          description: Get a Retention job successfully.
+          description: Get a Retention execution successfully.
           schema:
             type: array
             items:
@@ -2529,9 +2525,9 @@ paths:
 
   /retentions/{id}/executions/{eid}:
     patch:
-      summary: Stop a Retention job
-      operationId: operateRetentionJob
-      description: Stop a Retention job, only support "stop" action now.
+      summary: Stop a Retention execution
+      operationId: operateRetentionExecution
+      description: Stop a Retention execution, only support "stop" action now.
       tags:
         - Retention
       parameters:
@@ -2568,9 +2564,9 @@ paths:
 
   /retentions/{id}/executions/{eid}/tasks:
     get:
-      summary: Get Retention job tasks
+      summary: Get Retention tasks
       operationId: listRetentionTasks
-      description: Get Retention job tasks, each repository as a task.
+      description: Get Retention tasks, each repository as a task.
       tags:
         - Retention
       parameters:

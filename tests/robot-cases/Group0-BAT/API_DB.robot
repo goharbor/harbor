@@ -85,6 +85,10 @@ Test Case - Project Level CVE Allowlist
     [Tags]  pro_cve
     Harbor API Test  ./tests/apitests/python/test_project_level_cve_allowlist.py
 
+Test Case - Tag Retention
+    [Tags]  tag_retention
+    Harbor API Test  ./tests/apitests/python/test_retention.py
+
 Test Case - Health Check
     [Tags]  health
     Harbor API Test  ./tests/apitests/python/test_health_check.py

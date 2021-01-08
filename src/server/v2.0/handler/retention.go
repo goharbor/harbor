@@ -12,7 +12,6 @@ import (
 	projectCtl "github.com/goharbor/harbor/src/controller/project"
 	retentionCtl "github.com/goharbor/harbor/src/controller/retention"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -29,7 +28,6 @@ func newRetentionAPI() *retentionAPI {
 	}
 }
 
-// RetentionAPI ...
 type retentionAPI struct {
 	BaseAPI
 	proMetaMgr   metadata.Manager
@@ -229,7 +227,7 @@ func (r *retentionAPI) checkRuleConflict(p *policy.Metadata) error {
 	return nil
 }
 
-func (r *retentionAPI) TriggerRetentionJob(ctx context.Context, params operation.TriggerRetentionJobParams) middleware.Responder {
+func (r *retentionAPI) TriggerRetentionExecution(ctx context.Context, params operation.TriggerRetentionExecutionParams) middleware.Responder {
 	p, err := r.retentionCtl.GetRetention(ctx, params.ID)
 	if err != nil {
 		return r.SendError(ctx, errors.BadRequestError((err)))
@@ -245,10 +243,10 @@ func (r *retentionAPI) TriggerRetentionJob(ctx context.Context, params operation
 	}
 
 	location := fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), eid)
-	return operation.NewTriggerRetentionJobCreated().WithLocation(location)
+	return operation.NewTriggerRetentionExecutionCreated().WithLocation(location)
 }
 
-func (r *retentionAPI) OperateRetentionJob(ctx context.Context, params operation.OperateRetentionJobParams) middleware.Responder {
+func (r *retentionAPI) OperateRetentionExecution(ctx context.Context, params operation.OperateRetentionExecutionParams) middleware.Responder {
 	if params.Body.Action != "stop" {
 		return r.SendError(ctx, errors.BadRequestError((fmt.Errorf("action should be 'stop'"))))
 	}
@@ -263,13 +261,13 @@ func (r *retentionAPI) OperateRetentionJob(ctx context.Context, params operation
 	if err = r.retentionCtl.OperateRetentionExec(ctx, params.Eid, params.Body.Action); err != nil {
 		return r.SendError(ctx, err)
 	}
-	return operation.NewOperateRetentionJobOK()
+	return operation.NewOperateRetentionExecutionOK()
 }
 
-func (r *retentionAPI) ListRetentionJob(ctx context.Context, params operation.ListRetentionJobParams) middleware.Responder {
-	query := &q.Query{
-		PageNumber: *params.Page,
-		PageSize:   *params.PageSize,
+func (r *retentionAPI) ListRetentionExecutions(ctx context.Context, params operation.ListRetentionExecutionsParams) middleware.Responder {
+	query, err := r.BuildQuery(ctx, nil, params.Page, params.PageSize)
+	if err != nil {
+		return r.SendError(ctx, err)
 	}
 	p, err := r.retentionCtl.GetRetention(ctx, params.ID)
 	if err != nil {
@@ -291,15 +289,15 @@ func (r *retentionAPI) ListRetentionJob(ctx context.Context, params operation.Li
 	for _, e := range execs {
 		payload = append(payload, model.NewRetentionExec(e).ToSwagger())
 	}
-	return operation.NewListRetentionJobOK().WithXTotalCount(total).
+	return operation.NewListRetentionExecutionsOK().WithXTotalCount(total).
 		WithLink(r.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(payload)
 }
 
 func (r *retentionAPI) ListRetentionTasks(ctx context.Context, params operation.ListRetentionTasksParams) middleware.Responder {
-	query := &q.Query{
-		PageNumber: *params.Page,
-		PageSize:   *params.PageSize,
+	query, err := r.BuildQuery(ctx, nil, params.Page, params.PageSize)
+	if err != nil {
+		return r.SendError(ctx, err)
 	}
 	p, err := r.retentionCtl.GetRetention(ctx, params.ID)
 	if err != nil {
