@@ -71,6 +71,13 @@ func (e *executionManagerTestSuite) TestCreate() {
 	e.ormCreator.AssertExpectations(e.T())
 }
 
+func (e *executionManagerTestSuite) TestUpdateExtraAttrs() {
+	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err := e.execMgr.UpdateExtraAttrs(nil, 1, map[string]interface{}{"key": "value"})
+	e.Require().Nil(err)
+	e.execDAO.AssertExpectations(e.T())
+}
+
 func (e *executionManagerTestSuite) TestMarkDone() {
 	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	err := e.execMgr.MarkDone(nil, 1, "success")
