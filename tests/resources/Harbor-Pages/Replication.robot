@@ -157,7 +157,7 @@ Rename Rule
 
 Select Rule
     [Arguments]  ${rule}
-    Retry Double Keywords When Error  Retry Element Click  //clr-dg-cell[contains(.,'${rule}')]  Retry Wait Element  ${replication_rule_exec_id}
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${rule}')]/div/div[2]/div//clr-radio-wrapper/label  Retry Wait Element  ${replication_rule_exec_id}
 
 Stop Jobs
     Retry Element Click  ${stop_jobs_button}
