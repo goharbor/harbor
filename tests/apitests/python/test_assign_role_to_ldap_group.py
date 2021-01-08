@@ -55,12 +55,13 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
             self.assertEqual(1, projects[0].current_user_role_id)
 
             repo_name_admin, tag_name_admin  = push_image_to_project(project_name, harbor_server, USER_ADMIN["username"], USER_ADMIN["password"], USER_ADMIN["repo"], "latest")
+            self.repo.repository_should_exist(project_id, project_name+"/"+USER_ADMIN["repo"], **USER_ADMIN)
             self.repo.image_should_exist(repo_name_admin, tag_name_admin, **USER_ADMIN)
             repo_name_dev, tag_name_dev = push_image_to_project(project_name, harbor_server, USER_DEV["username"], USER_DEV["password"], USER_DEV["repo"], "latest")
+            self.repo.repository_should_exist(project_id, project_name+"/"+USER_DEV["repo"], **USER_ADMIN)
             self.repo.image_should_exist(repo_name_dev, tag_name_dev, **USER_DEV)
-            repo_name_guest, tag_name_guest = push_image_to_project(project_name, harbor_server, USER_GUEST["username"], USER_GUEST["password"], USER_GUEST["repo"], "latest")
-            self.repo.image_should_not_exist(repo_name_guest, tag_name_guest, **USER_GUEST)
-
+            push_image_to_project(project_name, harbor_server, USER_GUEST["username"], USER_GUEST["password"], USER_GUEST["repo"], "latest", expected_error_message = "requested access to the resource is denied")
+            self.repo.repository_should_not_exist(project_id, project_name+"/"+USER_GUEST["repo"], **USER_ADMIN)
 
             self.assertTrue(self.project.query_user_logs(project_id, **USER_ADMIN)>0, "admin user can see logs")
             self.assertTrue(self.project.query_user_logs(project_id, **USER_DEV)>0, "dev user can see logs")

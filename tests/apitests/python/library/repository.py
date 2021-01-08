@@ -123,8 +123,15 @@ class Repository(base.Base):
 
     def repository_should_exist(self, project_id, repo_name, **kwargs):
         repositories = self.get_repository(project_id, **kwargs)
+        print("repositories:", repositories)
         if is_repo_exist_in_project(repositories, repo_name) == False:
             raise Exception("Repository {} is not exist.".format(repo_name))
+
+    def repository_should_not_exist(self, project_id, repo_name, **kwargs):
+        repositories = self.get_repository(project_id, **kwargs)
+        print("repositories:", repositories)
+        if is_repo_exist_in_project(repositories, repo_name) == True:
+            raise Exception("Repository {} should not exist.".format(repo_name))
 
     def signature_should_exist(self, repo_name, tag, **kwargs):
         signatures = self.get_repo_signatures(repo_name, **kwargs)
