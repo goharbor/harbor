@@ -1022,7 +1022,8 @@
             "COLUMN_DESCRIPTION": "Description",
             "FOOT_ITEMS": "Items",
             "FOOT_OF": "of",
-            "IN_ALLOW_LIST": "Listed In CVE Allowlist"
+            "IN_ALLOW_LIST": "Listed In CVE Allowlist",
+            "CVSS3": "CVSS3"
         },
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",
@@ -1048,7 +1049,10 @@
         "PLACEHOLDER": "Filter Vulnerabilities",
         "PACKAGE": "package",
         "PACKAGES": "packages",
-        "SCAN_NOW": "Scan"
+        "SCAN_NOW": "Scan",
+        "SCAN_BY": "SCAN BY {{scanner}}",
+        "REPORTED_BY": "Reported by {{scanner}}",
+        "NO_SCANNER": "NO SCANNER"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Command",

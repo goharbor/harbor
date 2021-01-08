@@ -92,7 +92,9 @@
             <clr-dg-action-bar>
                 <button [clrLoading]="scanBtnState" type="button" class="btn  btn-secondary scan-btn"
                     [disabled]="!(canScanNow() && selectedRowHasVul() && hasEnabledScanner && hasScanImagePermission )" (click)="scanNow()">
-                    <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}
+                    <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;
+                    <span *ngIf="projectScanner">{{'VULNERABILITY.SCAN_BY' | translate: {scanner: getScannerInfo()} }}</span>
+                    <span *ngIf="!projectScanner">{{'VULNERABILITY.NO_SCANNER' | translate}}</span>
                 </button>
 
                 <clr-dropdown class="btn  btn-link" *ngIf="!depth">

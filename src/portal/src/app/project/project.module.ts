@@ -39,7 +39,6 @@ import { ScannerComponent } from "./scanner/scanner.component";
 import { ConfigScannerService } from "../config/scanner/config-scanner.service";
 import { RepositoryGridviewComponent } from "./repository/repository-gridview.component";
 import { ResultTipHistogramComponent } from "./repository/vulnerability-scanning/result-tip-histogram/result-tip-histogram.component";
-import { ResultGridComponent } from "./repository/vulnerability-scanning/result-grid.component";
 import { ResultBarChartComponent } from "./repository/vulnerability-scanning/result-bar-chart.component";
 import { HistogramChartComponent } from "./repository/vulnerability-scanning/histogram-chart/histogram-chart.component";
 import { ResultTipComponent } from "./repository/vulnerability-scanning/result-tip.component";
@@ -100,7 +99,6 @@ import { P2pProviderComponent } from './p2p-provider/p2p-provider.component';
     HistogramChartComponent,
     ResultTipHistogramComponent,
     ResultBarChartComponent,
-    ResultGridComponent,
     ResultTipComponent,
     ArtifactListPageComponent,
     ArtifactListComponent,

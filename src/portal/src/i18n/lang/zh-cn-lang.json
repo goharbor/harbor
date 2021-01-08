@@ -1022,7 +1022,8 @@
             "COLUMN_DESCRIPTION": "简介",
             "FOOT_ITEMS": "项目",
             "FOOT_OF": "总共",
-            "IN_ALLOW_LIST": "已入特赦名单"
+            "IN_ALLOW_LIST": "已入特赦名单",
+            "CVSS3": "CVSS3"
         },
         "CHART": {
             "SCANNING_TIME": "扫描完成时间:",
@@ -1048,7 +1049,10 @@
         "PLACEHOLDER": "过滤漏洞",
         "PACKAGE": "组件",
         "PACKAGES": "组件",
-        "SCAN_NOW": "扫描"
+        "SCAN_NOW": "扫描",
+        "SCAN_BY": "使用 {{scanner}} 进行扫描",
+        "REPORTED_BY": "结果由 {{scanner}} 提供",
+        "NO_SCANNER": "无扫描器"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送命令",
