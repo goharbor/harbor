@@ -10,7 +10,7 @@ class Tag_Immutability(base.Base):
                                             selector_tag="**", expect_status_code = 201, **kwargs):
         #repoExcludes,excludes
         client = self._get_client(**kwargs)
-        retention_rule = swagger_client.RetentionRule(
+        immutable_rule = swagger_client.ImmutableRule(
                     action="immutable",
                     template="immutable_template",
                     priority = 0,
@@ -32,7 +32,7 @@ class Tag_Immutability(base.Base):
                     ]
                 )
         try:
-            _, status_code, header = client.projects_project_id_immutabletagrules_post_with_http_info(project_id, retention_rule)
+            _, status_code, header = client.projects_project_id_immutabletagrules_post_with_http_info(project_id, immutable_rule)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
         else:

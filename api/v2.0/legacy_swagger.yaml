@@ -2234,7 +2234,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/RetentionRule'
+              $ref: '#/definitions/ImmutableRule'
         '400':
           description: Illegal format of provided ID value.
         '401':
@@ -2254,11 +2254,11 @@ paths:
           format: int64
           required: true
           description: Relevant project ID.
-        - name: RetentionRule
+        - name: ImmutableRule
           in: body
           required: true
           schema:
-            $ref: '#/definitions/RetentionRule'
+            $ref: '#/definitions/ImmutableRule'
       tags:
         - Products
       responses:
@@ -2288,11 +2288,11 @@ paths:
           format: int64
           required: true
           description: Immutable tag rule ID.
-        - name: RetentionRule
+        - name: ImmutableRule
           in: body
           required: true
           schema:
-            $ref: '#/definitions/RetentionRule'
+            $ref: '#/definitions/ImmutableRule'
       tags:
         - Products
       responses:
@@ -4189,6 +4189,46 @@ definitions:
     type: string
     description: Webhook supportted notify type.
     example: 'http'
+  ImmutableRule:
+    type: object
+    properties:
+      id:
+        type: integer
+      priority:
+        type: integer
+      disabled:
+        type: boolean
+      action:
+        type: string
+      template:
+        type: string
+      params:
+        type: object
+        additionalProperties:
+          type: object
+      tag_selectors:
+        type: array
+        items:
+          $ref: '#/definitions/ImmutableSelector'
+      scope_selectors:
+        type: object
+        additionalProperties:
+          type: array
+          items:
+            $ref: '#/definitions/ImmutableSelector'
+
+  ImmutableSelector:
+    type: object
+    properties:
+      kind:
+        type: string
+      decoration:
+        type: string
+      pattern:
+        type: string
+      extras:
+        type: string
+
 parameters:
   query:
     name: q
