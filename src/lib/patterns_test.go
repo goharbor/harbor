@@ -81,11 +81,24 @@ func TestMatchCatalogURLPattern(t *testing.T) {
 			match: true,
 		},
 		{
+			url:   "/v2/_catalog////",
+			match: true,
+		},
+		{
 			url:   "/v2/_catalog/xxx",
-			match: false,
+			match: true,
+		},
+		{
+			url:   "/v2/_catalog////#",
+			match: true,
+		},
+		{
+			url:   "/v2/_catalog//#//",
+			match: true,
 		},
 	}
 	for _, c := range cases {
-		assert.Equal(t, c.match, len(V2CatalogURLRe.FindStringSubmatch(c.url)) == 1)
+
+		assert.Equal(t, c.match, V2CatalogURLRe.MatchString(c.url), "failed for %s", c.url)
 	}
 }
