@@ -153,8 +153,7 @@ Helm CLI Push Without Sign In Harbor
     Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}
     Go Into Project  project${d}  has_image=${false}
     Switch To Project Charts
-    Go Into Chart Version  ${harbor_chart_name}
-    Retry Wait Until Page Contains  ${harbor_chart_version}
+    Retry Double Keywords When Error  Go Into Chart Version  ${harbor_chart_name}  Retry Wait Until Page Contains  ${harbor_chart_version}
     Capture Page Screenshot
 
 Helm3 CLI Push Without Sign In Harbor
@@ -166,3 +165,31 @@ Helm3 CLI Push Without Sign In Harbor
     Switch To Project Charts
     Retry Double Keywords When Error  Go Into Chart Version  ${harbor_chart_name}  Retry Wait Until Page Contains  ${harbor_chart_version}
     Capture Page Screenshot
+
+Body Of Replication Of Push Images to Registry Triggered By Event
+    [Arguments]  ${provider}  ${endpoint}  ${username}  ${pwd}  ${dest_namespace}
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
+    ${image}=  Set Variable  test_push_repli
+    ${tag1}=  Set Variable  v1.1.0
+    @{tags}   Create List  ${tag1}
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project    project${d}
+    Switch To Registries
+    Create A New Endpoint    ${provider}    e${d}    ${endpoint}    ${username}    ${pwd}    Y
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    rule${d}    push    project${d}/*    image    e${d}    ${dest_namespace}  mode=Event Based  del_remote=${true}
+    Push Special Image To Project  project${d}  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${image}  tags=@{tags}  size=12
+    Filter Replication Rule  rule${d}
+    Select Rule  rule${d}
+    Run Keyword If  '${provider}'=='docker-hub'  Docker Image Can Be Pulled  ${dest_namespace}/${image}:${tag1}   times=3
+    Executions Result Count Should Be  Succeed  event_based  1
+    Go Into Project  project${d}
+    Delete Repo  project${d}
+    Run Keyword If  '${provider}'=='docker-hub'  Docker Image Can Not Be Pulled  ${dest_namespace}/${image}:${tag1}
+    Switch To Replication Manage
+    Filter Replication Rule  rule${d}
+    Select Rule  rule${d}
+    Executions Result Count Should Be  Succeed  event_based  2

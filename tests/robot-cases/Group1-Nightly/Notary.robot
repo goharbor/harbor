@@ -35,6 +35,7 @@ Test Case - Project Level Policy Content Trust
     Click Content Trust
     Save Project Config
     # Verify
+    Sleep  10
     Content Trust Should Be Selected
     Cannot Pull Unsigned Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
     Close Browser

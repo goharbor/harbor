@@ -112,8 +112,3 @@ Test Case - Ldap User Push An Image
 
 Test Case - Ldap User Can Not login
     Docker Login Fail  ${ip}  testerDeesExist  123456
-
-Test Case - Run LDAP Group Related API Test
-    Harbor API Test  ./tests/apitests/python/test_ldap_admin_role.py
-    Harbor API Test  ./tests/apitests/python/test_user_group.py
-    Harbor API Test  ./tests/apitests/python/test_assign_role_to_ldap_group.py

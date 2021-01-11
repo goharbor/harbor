@@ -39,6 +39,7 @@ Update User Comment
     Sleep  2
 
 Logout Harbor
+    Reload Page
     Retry Element Click  ${head_admin_xpath}
     Retry Link Click  Log Out
     Capture Page Screenshot  Logout.png
