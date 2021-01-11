@@ -15,8 +15,10 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -39,9 +41,9 @@ type UserAPI struct {
 	currentUserID    int
 	userID           int
 	SelfRegistration bool
-	IsAdmin          bool
 	AuthMode         string
 	secretKey        string
+	resource         types.Resource
 }
 
 type passwordReq struct {
@@ -137,12 +139,12 @@ func (ua *UserAPI) Prepare() {
 		}
 	}
 
-	ua.IsAdmin = ua.SecurityCtx.IsSysAdmin()
+	ua.resource = system.NewNamespace().Resource(rbac.ResourceUser)
 }
 
 // Get ...
 func (ua *UserAPI) Get() {
-	if ua.userID == ua.currentUserID || ua.IsAdmin {
+	if ua.userID == ua.currentUserID || ua.SecurityCtx.Can(ua.Context(), rbac.ActionRead, ua.resource) {
 		userQuery := models.User{UserID: ua.userID}
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
@@ -178,7 +180,7 @@ func (ua *UserAPI) Get() {
 
 // List ...
 func (ua *UserAPI) List() {
-	if !ua.IsAdmin {
+	if !ua.SecurityCtx.Can(ua.Context(), rbac.ActionList, ua.resource) {
 		log.Errorf("Current user, id: %d does not have admin role, can not list users", ua.currentUserID)
 		ua.SendForbiddenError(errors.New("user does not have admin role"))
 		return
@@ -262,7 +264,7 @@ func (ua *UserAPI) Search() {
 
 // Put ...
 func (ua *UserAPI) Put() {
-	if !ua.modifiable() {
+	if !ua.modifiable(ua.Context()) {
 		ua.SendForbiddenError(fmt.Errorf("User with ID %d cannot be modified", ua.userID))
 		return
 	}
@@ -318,13 +320,13 @@ func (ua *UserAPI) Post() {
 		return
 	}
 
-	if !(ua.SelfRegistration || ua.IsAdmin) {
+	if !(ua.SelfRegistration || ua.SecurityCtx.Can(ua.Context(), rbac.ActionCreate, ua.resource)) {
 		log.Warning("Registration can only be used by admin role user when self-registration is off.")
 		ua.SendForbiddenError(errors.New(""))
 		return
 	}
 
-	if !ua.IsAdmin && !lib.GetCarrySession(ua.Ctx.Request.Context()) {
+	if !ua.SecurityCtx.Can(ua.Context(), rbac.ActionCreate, ua.resource) && !lib.GetCarrySession(ua.Ctx.Request.Context()) {
 		ua.SendForbiddenError(errors.New("self-registration cannot be triggered via API"))
 		return
 	}
@@ -341,7 +343,7 @@ func (ua *UserAPI) Post() {
 		return
 	}
 
-	if !ua.IsAdmin && user.SysAdminFlag {
+	if !ua.SecurityCtx.Can(ua.Context(), rbac.ActionCreate, ua.resource) && user.SysAdminFlag {
 		msg := "Non-admin cannot create an admin user."
 		log.Errorf(msg)
 		ua.SendForbiddenError(errors.New(msg))
@@ -383,7 +385,7 @@ func (ua *UserAPI) Post() {
 
 // Delete ...
 func (ua *UserAPI) Delete() {
-	if !ua.IsAdmin || ua.AuthMode != common.DBAuth || ua.userID == 1 || ua.currentUserID == ua.userID {
+	if !ua.SecurityCtx.Can(ua.Context(), rbac.ActionDelete, ua.resource) || ua.AuthMode != common.DBAuth || ua.userID == 1 || ua.currentUserID == ua.userID {
 		ua.SendForbiddenError(fmt.Errorf("User with ID: %d cannot be removed, auth mode: %s, current user ID: %d", ua.userID, ua.AuthMode, ua.currentUserID))
 		return
 	}
@@ -399,7 +401,7 @@ func (ua *UserAPI) Delete() {
 
 // ChangePassword handles PUT to /api/users/{}/password
 func (ua *UserAPI) ChangePassword() {
-	if !ua.modifiable() {
+	if !ua.modifiable(ua.Context()) {
 		ua.SendForbiddenError(fmt.Errorf("User with ID: %d is not modifiable", ua.userID))
 		return
 	}
@@ -456,7 +458,7 @@ func (ua *UserAPI) ChangePassword() {
 
 // ToggleUserAdminRole handles PUT api/users/{}/sysadmin
 func (ua *UserAPI) ToggleUserAdminRole() {
-	if !ua.IsAdmin {
+	if !ua.SecurityCtx.Can(ua.Context(), rbac.ActionUpdate, ua.resource) {
 		log.Warningf("current user, id: %d does not have admin role, can not update other user's role", ua.currentUserID)
 		ua.RenderError(http.StatusForbidden, "User does not have admin role")
 		return
@@ -527,7 +529,7 @@ func (ua *UserAPI) SetCLISecret() {
 		ua.SendPreconditionFailedError(errors.New("the auth mode has to be oidc auth"))
 		return
 	}
-	if ua.userID != ua.currentUserID && !ua.IsAdmin {
+	if ua.userID != ua.currentUserID && !ua.SecurityCtx.Can(ua.Context(), rbac.ActionUpdate, ua.resource) {
 		ua.SendForbiddenError(errors.New(""))
 		return
 	}
@@ -584,10 +586,10 @@ func (ua *UserAPI) getOIDCUserInfo() (*models.OIDCUser, error) {
 }
 
 // modifiable returns whether the modify is allowed based on current auth mode and context
-func (ua *UserAPI) modifiable() bool {
+func (ua *UserAPI) modifiable(ctx context.Context) bool {
 	if ua.AuthMode == common.DBAuth {
 		// When the auth mode is local DB, admin can modify anyone, non-admin can modify himself.
-		return ua.IsAdmin || ua.userID == ua.currentUserID
+		return ua.SecurityCtx.Can(ctx, rbac.ActionUpdate, ua.resource) || ua.userID == ua.currentUserID
 	}
 	// When the auth mode is external IDM backend, only the super user can modify himself,
 	// because he's the only one whose information is stored in local DB.

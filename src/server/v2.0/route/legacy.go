@@ -74,15 +74,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/registries/:id/info", &api.RegistryAPI{}, "get:GetInfo")
 	beego.Router("/api/"+version+"/registries/:id/namespace", &api.RegistryAPI{}, "get:GetNamespace")
 
-	beego.Router("/api/"+version+"/retentions/metadatas", &api.RetentionAPI{}, "get:GetMetadatas")
-	beego.Router("/api/"+version+"/retentions/:id", &api.RetentionAPI{}, "get:GetRetention")
-	beego.Router("/api/"+version+"/retentions", &api.RetentionAPI{}, "post:CreateRetention")
-	beego.Router("/api/"+version+"/retentions/:id", &api.RetentionAPI{}, "put:UpdateRetention")
-	beego.Router("/api/"+version+"/retentions/:id/executions", &api.RetentionAPI{}, "post:TriggerRetentionExec")
-	beego.Router("/api/"+version+"/retentions/:id/executions/:eid", &api.RetentionAPI{}, "patch:OperateRetentionExec")
-	beego.Router("/api/"+version+"/retentions/:id/executions", &api.RetentionAPI{}, "get:ListRetentionExecs")
-	beego.Router("/api/"+version+"/retentions/:id/executions/:eid/tasks", &api.RetentionAPI{}, "get:ListRetentionExecTasks")
-	beego.Router("/api/"+version+"/retentions/:id/executions/:eid/tasks/:tid", &api.RetentionAPI{}, "get:GetRetentionExecTaskLog")
 	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/immutabletagrules", &api.ImmutableTagRuleAPI{}, "get:List;post:Post")
 	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &api.ImmutableTagRuleAPI{})
 

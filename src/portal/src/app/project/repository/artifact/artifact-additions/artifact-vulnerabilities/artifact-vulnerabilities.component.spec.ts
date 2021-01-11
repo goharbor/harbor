@@ -16,7 +16,6 @@ import {
 import { AdditionLink } from "../../../../../../../ng-swagger-gen/models/addition-link";
 import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
 import { ChannelService } from "../../../../../../lib/services/channel.service";
-import { DEFAULT_SUPPORTED_MIME_TYPE } from "../../../../../../lib/utils/utils";
 import {SessionService} from "../../../../../shared/session.service";
 import {SessionUser} from "../../../../../shared/session-user";
 import {delay} from "rxjs/operators";
@@ -46,8 +45,8 @@ describe('ArtifactVulnerabilitiesComponent', () => {
     },
   ];
   let scanOverview = {};
-  scanOverview[DEFAULT_SUPPORTED_MIME_TYPE] = {};
-  scanOverview[DEFAULT_SUPPORTED_MIME_TYPE].vulnerabilities = mockedVulnerabilities;
+  scanOverview["keyForTest"] = {};
+  scanOverview["keyForTest"].vulnerabilities = mockedVulnerabilities;
   const mockedLink: AdditionLink = {
     absolute: false,
     href: '/test'
@@ -156,7 +155,7 @@ describe('ArtifactVulnerabilitiesComponent', () => {
     await fixture.whenStable();
     const cols = fixture.nativeElement.querySelectorAll("clr-dg-column");
     expect(cols).toBeTruthy();
-    expect(cols.length).toEqual(6);
+    expect(cols.length).toEqual(7);
     const firstRow = fixture.nativeElement.querySelector("clr-dg-row");
     const cells = firstRow.querySelectorAll("clr-dg-cell");
     expect(cells[cells.length - 1].innerText).toEqual("TAG_RETENTION.YES");

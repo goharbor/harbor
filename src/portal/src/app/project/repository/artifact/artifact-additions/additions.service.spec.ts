@@ -17,7 +17,7 @@ describe('TagRetentionService', () => {
 
   it('should be created and get right data', inject([AdditionsService], (service: AdditionsService) => {
     expect(service).toBeTruthy();
-    service.getDetailByLink(testLink).subscribe(res => {
+    service.getDetailByLink(testLink, false, false).subscribe(res => {
         expect(res).toEqual(data);
       }
     );

@@ -16,11 +16,11 @@ package api
 
 import (
 	"fmt"
-
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/quota/models"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
@@ -32,7 +32,7 @@ type QuotaUpdateRequest struct {
 // QuotaAPI handles request to /api/quotas/
 type QuotaAPI struct {
 	BaseController
-	quota *models.Quota
+	id int64
 }
 
 // Prepare validates the URL and the user
@@ -41,11 +41,6 @@ func (qa *QuotaAPI) Prepare() {
 
 	if !qa.SecurityCtx.IsAuthenticated() {
 		qa.SendUnAuthorizedError(errors.New("Unauthorized"))
-		return
-	}
-
-	if !qa.SecurityCtx.IsSysAdmin() {
-		qa.SendForbiddenError(errors.New(qa.SecurityCtx.GetUsername()))
 		return
 	}
 
@@ -61,25 +56,32 @@ func (qa *QuotaAPI) Prepare() {
 			qa.SendBadRequestError(errors.New(text))
 			return
 		}
-
-		quota, err := quota.Ctl.Get(qa.Ctx.Request.Context(), id)
-		if err != nil {
-			qa.SendError(err)
-			return
-		}
-
-		qa.quota = quota
+		qa.id = id
 	}
 }
 
 // Get returns quota by id
 func (qa *QuotaAPI) Get() {
-	qa.Data["json"] = qa.quota
+	if !qa.SecurityCtx.Can(orm.Context(), rbac.ActionRead, rbac.ResourceQuota) {
+		qa.SendForbiddenError(errors.New(qa.SecurityCtx.GetUsername()))
+		return
+	}
+	quota, err := quota.Ctl.Get(qa.Ctx.Request.Context(), qa.id)
+	if err != nil {
+		qa.SendError(err)
+		return
+	}
+	qa.Data["json"] = quota
 	qa.ServeJSON()
 }
 
 // Put update the quota
 func (qa *QuotaAPI) Put() {
+	if !qa.SecurityCtx.Can(orm.Context(), rbac.ActionUpdate, rbac.ResourceQuota) {
+		qa.SendForbiddenError(errors.New(qa.SecurityCtx.GetUsername()))
+		return
+	}
+
 	var req *QuotaUpdateRequest
 	if err := qa.DecodeJSONReq(&req); err != nil {
 		qa.SendBadRequestError(err)
@@ -87,14 +89,19 @@ func (qa *QuotaAPI) Put() {
 	}
 
 	ctx := qa.Ctx.Request.Context()
-	if err := quota.Validate(ctx, qa.quota.Reference, req.Hard); err != nil {
+	q, err := quota.Ctl.Get(ctx, qa.id)
+	if err != nil {
+		qa.SendError(err)
+		return
+	}
+	if err := quota.Validate(ctx, q.Reference, req.Hard); err != nil {
 		qa.SendBadRequestError(err)
 		return
 	}
 
-	qa.quota.SetHard(req.Hard)
+	q.SetHard(req.Hard)
 
-	if err := quota.Ctl.Update(ctx, qa.quota); err != nil {
+	if err := quota.Ctl.Update(ctx, q); err != nil {
 		qa.SendInternalServerError(fmt.Errorf("failed to update hard limits of the quota, error: %v", err))
 		return
 	}
@@ -102,6 +109,10 @@ func (qa *QuotaAPI) Put() {
 
 // List returns quotas by query
 func (qa *QuotaAPI) List() {
+	if !qa.SecurityCtx.Can(orm.Context(), rbac.ActionList, rbac.ResourceQuota) {
+		qa.SendForbiddenError(errors.New(qa.SecurityCtx.GetUsername()))
+		return
+	}
 	page, size, err := qa.GetPaginationParams()
 	if err != nil {
 		qa.SendBadRequestError(err)

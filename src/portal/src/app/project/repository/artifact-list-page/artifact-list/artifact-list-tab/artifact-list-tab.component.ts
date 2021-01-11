@@ -26,15 +26,15 @@ import { ClrLoadingState, ClrDatagridStateInterface, ClrDatagridComparatorInterf
 
 import { ActivatedRoute, Router } from "@angular/router";
 import {
-  Comparator, Label, LabelService, ScanningResultService,
+  Comparator, Label, LabelService, ScannerVo, ScanningResultService,
   UserPermissionService, USERSTATICPERMISSION, VulnerabilitySummary
 } from "../../../../../../lib/services";
 import {
   calculatePage,
   clone,
   CustomComparator,
-  DEFAULT_PAGE_SIZE, DEFAULT_SUPPORTED_MIME_TYPE,
-  formatSize, VULNERABILITY_SCAN_STATUS, dbEncodeURIComponent, doSorting
+  DEFAULT_PAGE_SIZE,
+  formatSize, VULNERABILITY_SCAN_STATUS, dbEncodeURIComponent, doSorting, DEFAULT_SUPPORTED_MIME_TYPES
 } from "../../../../../../lib/utils/utils";
 import {
   ConfirmationAcknowledgement,
@@ -151,6 +151,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   hasDeleteImagePermission: boolean;
   hasScanImagePermission: boolean;
   hasEnabledScanner: boolean;
+  projectScanner: ScannerVo;
   scanBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   onSendingScanCommand: boolean;
 
@@ -341,7 +342,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           withImmutableStatus: true,
           withLabel: true,
           withScanOverview: true,
-          withTag: false
+          withTag: false,
+          XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES
         };
         this.newArtifactService.getArtifact(artifactParam).subscribe(
           res => {
@@ -357,7 +359,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                   withImmutableStatus: true,
                   withLabel: true,
                   withScanOverview: true,
-                  withTag: false
+                  withTag: false,
+                  XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES
                 };
                 platFormAttr.push({platform: child.platform});
                 observableLists.push(this.newArtifactService.getArtifact(childParams));
@@ -386,7 +389,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           repositoryName: dbEncodeURIComponent(this.repoName),
           withLabel: true,
           withScanOverview: true,
-          withTag: false
+          withTag: false,
+          XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES
         };
         Object.assign(listArtifactParams, params);
         this.newArtifactService.listArtifactsResponse(listArtifactParams)
@@ -914,6 +918,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         } else {
           this.scanBtnState = ClrLoadingState.ERROR;
         }
+        this.projectScanner = response;
       }, error => {
         this.scanBtnState = ClrLoadingState.ERROR;
       });
@@ -921,7 +926,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
   handleScanOverview(scanOverview: any): any {
     if (scanOverview) {
-      return scanOverview[DEFAULT_SUPPORTED_MIME_TYPE];
+      return Object.values(scanOverview)[0];
     }
     return null;
   }
@@ -1037,5 +1042,16 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         );
       });
     }
+  }
+  getScannerInfo(): string {
+    if (this.projectScanner) {
+      if (this.projectScanner.name && this.projectScanner.version) {
+        return `${this.projectScanner.name}@${this.projectScanner.version}`;
+      }
+      if (this.projectScanner.name && !this.projectScanner.version) {
+        return `${this.projectScanner.name}`;
+      }
+    }
+    return "";
   }
 }

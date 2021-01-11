@@ -478,6 +478,11 @@ Common vulnerability reporting schema.
 Github proposal link : https://github.com/goharbor/community/pull/145
 */
 
+/*
+The old scan_report not work well with report_vulnerability_record and vulnerability_record so delete them
+*/
+DELETE FROM scan_report;
+
 -- --------------------------------------------------
 --  Table Structure for `main.VulnerabilityRecord`
 -- --------------------------------------------------

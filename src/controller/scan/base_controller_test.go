@@ -479,14 +479,16 @@ func (suite *ControllerTestSuite) TestScanAll() {
 		executionID := int64(1)
 
 		suite.execMgr.On(
-			"Create", ctx, "IMAGE_SCAN_ALL", int64(0), "SCHEDULE", map[string]interface{}{},
+			"Create", ctx, "IMAGE_SCAN_ALL", int64(0), "SCHEDULE",
 		).Return(executionID, nil).Once()
 
 		mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{}, nil).Once()
 
 		suite.taskMgr.On("Count", ctx, q.New(q.KeyWords{"execution_id": executionID})).Return(int64(0), nil).Once()
 
-		suite.execMgr.On("MarkDone", ctx, executionID, "no artifact found").Return(nil).Once()
+		mock.OnAnything(suite.execMgr, "UpdateExtraAttrs").Return(nil).Once()
+
+		suite.execMgr.On("MarkDone", ctx, executionID, mock.Anything).Return(nil).Once()
 
 		_, err := suite.c.ScanAll(ctx, "SCHEDULE", false)
 		suite.NoError(err)
@@ -499,7 +501,7 @@ func (suite *ControllerTestSuite) TestScanAll() {
 		executionID := int64(1)
 
 		suite.execMgr.On(
-			"Create", ctx, "IMAGE_SCAN_ALL", int64(0), "SCHEDULE", map[string]interface{}{},
+			"Create", ctx, "IMAGE_SCAN_ALL", int64(0), "SCHEDULE",
 		).Return(executionID, nil).Once()
 
 		mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{suite.artifact}, nil).Once()
@@ -513,8 +515,8 @@ func (suite *ControllerTestSuite) TestScanAll() {
 		mock.OnAnything(suite.reportMgr, "Delete").Return(nil).Once()
 		mock.OnAnything(suite.reportMgr, "Create").Return("uuid", nil).Once()
 		mock.OnAnything(suite.taskMgr, "Create").Return(int64(0), fmt.Errorf("failed")).Once()
-
-		suite.execMgr.On("MarkDone", ctx, executionID, "no task found").Return(nil).Once()
+		mock.OnAnything(suite.execMgr, "UpdateExtraAttrs").Return(nil).Once()
+		suite.execMgr.On("MarkError", ctx, executionID, mock.Anything).Return(nil).Once()
 
 		_, err := suite.c.ScanAll(ctx, "SCHEDULE", false)
 		suite.NoError(err)

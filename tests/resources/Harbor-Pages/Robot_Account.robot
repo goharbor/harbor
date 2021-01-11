@@ -91,8 +91,8 @@ Create A New System Robot Account
     ...  Retry Element Click  xpath=${sys_robot_account_expiration_type_select}//option[@value='${expiration_type}']
     Run Keyword If  '${description}' != '${null}'  Retry Text Input  ${sys_robot_account_description_textarea}  ${description}
     Run Keyword If  '${is_cover_all}' == '${true}'  Retry Double Keywords When Error  Retry Element Click  ${sys_robot_account_coverall_chb}   Retry Checkbox Should Be Selected  ${sys_robot_account_coverall_chb_input}
-    #Clear Global Permissions
-    Clear Global Permissions By JaveScript
+    ...  ELSE  Clear Global Permissions By JaveScript
+
     # Select project
     FOR  ${project}  IN  @{project_permission_list}
         Log To Console  project: ${project}
@@ -118,5 +118,6 @@ System Robot Account Exist
     [Arguments]  ${name}  ${project_count}
     Retry Double Keywords When Error  Retry Element Click  ${filter_dist_btn}  Wait Until Element Is Visible And Enabled  ${filter_dist_input}
     Retry Text Input  ${filter_dist_input}  ${name}
-    Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,'${name}') and contains(.,'${project_count} PROJECT')]
+    ${projects}=  Set Variable If  '${project_count}' == 'all'  All projects with  ${project_count} PROJECT
+    Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,'${name}') and contains(.,'${projects}')]
 

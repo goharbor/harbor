@@ -246,7 +246,8 @@ export interface VulnerabilityItem extends VulnerabilityBase {
   links: string[];
   fix_version: string;
   layer?: string;
-  description: string;
+  description?: string;
+  preferred_cvss?: {[key: string]: string | number};
 }
 
 export interface VulnerabilitySummary {

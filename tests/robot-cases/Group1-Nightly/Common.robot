@@ -766,7 +766,7 @@ Test Case - System Robot Account Cover All Projects
     ${name}=  Create A New System Robot Account  is_cover_all=${true}
     Navigate To Projects
     Switch To Robot Account
-    System Robot Account Exist  ${name}  All
+    System Robot Account Exist  ${name}  all
     Close Browser
 
 Test Case - System Robot Account

@@ -36,7 +36,8 @@ import (
 )
 
 var (
-	retry int
+	retry      int
+	errStopped = errors.New("stopped")
 )
 
 func init() {
@@ -114,9 +115,6 @@ func (t *transfer) convert(resource *model.Resource) *repository {
 }
 
 func (t *transfer) initialize(src *model.Resource, dst *model.Resource) error {
-	if t.shouldStop() {
-		return nil
-	}
 	// create client for source registry
 	srcReg, err := createRegistry(src.Registry)
 	if err != nil {
@@ -172,6 +170,9 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 	var err error
 	for i := range src.tags {
 		if e := t.copyArtifact(srcRepo, src.tags[i], dstRepo, dst.tags[i], override); e != nil {
+			if e == errStopped {
+				return nil
+			}
 			t.logger.Errorf(e.Error())
 			err = e
 		}
@@ -267,7 +268,7 @@ func (t *transfer) copyBlobWithRetry(srcRepo, dstRepo, digest string, sizeFromDe
 			t.logger.Infof("copy the blob %s completed", digest)
 			return nil
 		}
-		if i == retry {
+		if i == retry || err == errStopped {
 			break
 		}
 		t.logger.Infof("will retry %v later", backoff)
@@ -280,7 +281,7 @@ func (t *transfer) copyBlobWithRetry(srcRepo, dstRepo, digest string, sizeFromDe
 // the size parameter is taken from manifests.
 func (t *transfer) copyBlob(srcRepo, dstRepo, digest string, sizeFromDescriptor int64) error {
 	if t.shouldStop() {
-		return nil
+		return errStopped
 	}
 	exist, err := t.dst.BlobExist(dstRepo, digest)
 	if err != nil {
@@ -314,7 +315,7 @@ func (t *transfer) copyBlob(srcRepo, dstRepo, digest string, sizeFromDescriptor 
 func (t *transfer) pullManifest(repository, reference string) (
 	distribution.Manifest, string, error) {
 	if t.shouldStop() {
-		return nil, "", nil
+		return nil, "", errStopped
 	}
 	t.logger.Infof("pulling the manifest of artifact %s:%s ...", repository, reference)
 	manifest, digest, err := t.src.PullManifest(repository, reference)
@@ -343,7 +344,7 @@ func (t *transfer) exist(repository, tag string) (bool, string, error) {
 
 func (t *transfer) pushManifest(manifest distribution.Manifest, repository, tag string) error {
 	if t.shouldStop() {
-		return nil
+		return errStopped
 	}
 	t.logger.Infof("pushing the manifest of artifact %s:%s ...", repository, tag)
 	mediaType, payload, err := manifest.Payload()

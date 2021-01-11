@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -50,18 +51,14 @@ type scanAllAPI struct {
 }
 
 func (s *scanAllAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
-	if err := s.RequireSysAdmin(ctx); err != nil {
-		return s.SendError(ctx, err)
-	}
-
-	if err := s.requireScanEnabled(ctx); err != nil {
-		return s.SendError(ctx, err)
-	}
-
 	return nil
 }
 
 func (s *scanAllAPI) CreateScanAllSchedule(ctx context.Context, params operation.CreateScanAllScheduleParams) middleware.Responder {
+	if err := s.requireAccess(ctx, rbac.ActionCreate); err != nil {
+		return s.SendError(ctx, err)
+	}
+
 	req := params.Schedule
 
 	if req.Schedule.Type == ScheduleNone {
@@ -102,6 +99,9 @@ func (s *scanAllAPI) CreateScanAllSchedule(ctx context.Context, params operation
 }
 
 func (s *scanAllAPI) UpdateScanAllSchedule(ctx context.Context, params operation.UpdateScanAllScheduleParams) middleware.Responder {
+	if err := s.requireAccess(ctx, rbac.ActionUpdate); err != nil {
+		return s.SendError(ctx, err)
+	}
 	req := params.Schedule
 
 	if req.Schedule.Type == ScheduleManual {
@@ -130,6 +130,9 @@ func (s *scanAllAPI) UpdateScanAllSchedule(ctx context.Context, params operation
 }
 
 func (s *scanAllAPI) GetScanAllSchedule(ctx context.Context, params operation.GetScanAllScheduleParams) middleware.Responder {
+	if err := s.requireAccess(ctx, rbac.ActionRead); err != nil {
+		return s.SendError(ctx, err)
+	}
 	schedule, err := s.getScanAllSchedule(ctx)
 	if err != nil {
 		return s.SendError(ctx, err)
@@ -139,6 +142,9 @@ func (s *scanAllAPI) GetScanAllSchedule(ctx context.Context, params operation.Ge
 }
 
 func (s *scanAllAPI) GetLatestScanAllMetrics(ctx context.Context, params operation.GetLatestScanAllMetricsParams) middleware.Responder {
+	if err := s.requireAccess(ctx, rbac.ActionRead); err != nil {
+		return s.SendError(ctx, err)
+	}
 	stats, err := s.getMetrics(ctx)
 	if err != nil {
 		return s.SendError(ctx, err)
@@ -148,6 +154,9 @@ func (s *scanAllAPI) GetLatestScanAllMetrics(ctx context.Context, params operati
 }
 
 func (s *scanAllAPI) GetLatestScheduledScanAllMetrics(ctx context.Context, params operation.GetLatestScheduledScanAllMetricsParams) middleware.Responder {
+	if err := s.requireAccess(ctx, rbac.ActionRead); err != nil {
+		return s.SendError(ctx, err)
+	}
 	stats, err := s.getMetrics(ctx, task.ExecutionTriggerSchedule)
 	if err != nil {
 		return s.SendError(ctx, err)
@@ -257,5 +266,15 @@ func (s *scanAllAPI) requireScanEnabled(ctx context.Context) error {
 		return errors.PreconditionFailedError(nil).WithMessage("no scanner is configured, it's not possible to scan")
 	}
 
+	return nil
+}
+
+func (s *scanAllAPI) requireAccess(ctx context.Context, action rbac.Action) error {
+	if err := s.RequireSystemAccess(ctx, action, rbac.ResourceScanAll); err != nil {
+		return err
+	}
+	if err := s.requireScanEnabled(ctx); err != nil {
+		return err
+	}
 	return nil
 }

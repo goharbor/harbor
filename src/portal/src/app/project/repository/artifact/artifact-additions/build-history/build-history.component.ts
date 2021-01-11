@@ -29,7 +29,7 @@ export class BuildHistoryComponent implements OnInit {
       && !this.buildHistoryLink.absolute
       && this.buildHistoryLink.href) {
       this.loading = true;
-      this.additionsService.getDetailByLink(this.buildHistoryLink.href)
+      this.additionsService.getDetailByLink(this.buildHistoryLink.href, false, false)
         .pipe(finalize(() => this.loading = false))
         .subscribe(
           res => {

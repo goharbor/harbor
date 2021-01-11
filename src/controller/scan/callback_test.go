@@ -22,7 +22,6 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	dscan "github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -165,7 +164,7 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 	{
 		// create execution failed
 		suite.execMgr.On(
-			"Create", context.TODO(), "IMAGE_SCAN_ALL", int64(0), "SCHEDULE", map[string]interface{}{},
+			"Create", context.TODO(), "IMAGE_SCAN_ALL", int64(0), "SCHEDULE",
 		).Return(int64(0), fmt.Errorf("failed")).Once()
 
 		suite.Error(scanAllCallback(context.TODO(), ""))
@@ -175,7 +174,7 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 		executionID := int64(1)
 
 		suite.execMgr.On(
-			"Create", context.TODO(), "IMAGE_SCAN_ALL", int64(0), "SCHEDULE", map[string]interface{}{},
+			"Create", context.TODO(), "IMAGE_SCAN_ALL", int64(0), "SCHEDULE",
 		).Return(executionID, nil).Once()
 
 		suite.execMgr.On(
@@ -184,9 +183,9 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 
 		mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{}, nil).Once()
 
-		suite.taskMgr.On("Count", context.TODO(), q.New(q.KeyWords{"execution_id": executionID})).Return(int64(0), nil).Once()
+		mock.OnAnything(suite.execMgr, "UpdateExtraAttrs").Return(nil).Once()
 
-		suite.execMgr.On("MarkDone", context.TODO(), executionID, "no artifact found").Return(nil).Once()
+		suite.execMgr.On("MarkDone", context.TODO(), executionID, mock.Anything).Return(nil).Once()
 
 		suite.NoError(scanAllCallback(context.TODO(), ""))
 	}

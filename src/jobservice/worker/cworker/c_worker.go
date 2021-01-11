@@ -336,7 +336,7 @@ func (w *basicWorker) StopJob(jobID string) error {
 	}
 
 	// General or scheduled job
-	if job.RunningStatus.Compare(job.Status(t.Job().Info.Status)) < 0 {
+	if job.RunningStatus.Before(job.Status(t.Job().Info.Status)) {
 		// Job has been in the final states
 		logger.Warningf("Trying to stop a(n) %s job: ID=%s, Kind=%s", t.Job().Info.Status, jobID, t.Job().Info.JobKind)
 		// Under this situation, the non-periodic job we're trying to stop has already been in the "non-running(stopped)" status.

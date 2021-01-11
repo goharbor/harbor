@@ -1017,7 +1017,8 @@
       "COLUMN_DESCRIPTION": "簡介",
       "FOOT_ITEMS": "項目",
       "FOOT_OF": "總共",
-      "IN_ALLOW_LIST": "Listed In CVE Allowlist"
+      "IN_ALLOW_LIST": "Listed In CVE Allowlist",
+      "CVSS3": "CVSS3"
     },
     "CHART":{
       "SCANNING_TIME": "掃描完成時間:",
@@ -1043,7 +1044,10 @@
     "PLACEHOLDER": "過濾漏洞",
     "PACKAGE": "組件",
     "PACKAGES": "組件",
-    "SCAN_NOW":"掃描"
+    "SCAN_NOW":"掃描",
+    "SCAN_BY": "SCAN BY {{scanner}}",
+    "REPORTED_BY": "Reported by {{scanner}}",
+    "NO_SCANNER": "NO SCANNER"
   },
   "PUSH_IMAGE":{
     "TITLE": "推送鏡像的Docker命令",

@@ -17,6 +17,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"net/http"
 	"strconv"
 
@@ -75,7 +76,8 @@ func (l *LabelAPI) requireAccess(label *models.Label, action rbac.Action, subres
 
 	switch label.Scope {
 	case common.LabelScopeGlobal:
-		hasPermission = l.SecurityCtx.IsSysAdmin()
+		resource := system.NewNamespace().Resource(rbac.ResourceLabel)
+		hasPermission = l.SecurityCtx.Can(l.Context(), action, resource)
 	case common.LabelScopeProject:
 		if len(subresources) == 0 {
 			subresources = append(subresources, rbac.ResourceLabel)
