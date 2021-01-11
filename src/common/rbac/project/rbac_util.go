@@ -12,37 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbac
+package project
 
 import (
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 var (
 	// subresource policies for public project
 	publicProjectPolicies = []*types.Policy{
-		{Resource: ResourceSelf, Action: ActionRead},
+		{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
 
-		{Resource: ResourceLabel, Action: ActionRead},
-		{Resource: ResourceLabel, Action: ActionList},
+		{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
 
-		{Resource: ResourceRepository, Action: ActionList},
-		{Resource: ResourceRepository, Action: ActionPull},
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
 
-		{Resource: ResourceHelmChart, Action: ActionRead},
-		{Resource: ResourceHelmChart, Action: ActionList},
+		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
 
-		{Resource: ResourceHelmChartVersion, Action: ActionRead},
-		{Resource: ResourceHelmChartVersion, Action: ActionList},
+		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
 
-		{Resource: ResourceScan, Action: ActionRead},
-		{Resource: ResourceScanner, Action: ActionRead},
+		{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 
-		{Resource: ResourceTag, Action: ActionList},
+		{Resource: rbac.ResourceTag, Action: rbac.ActionList},
 
-		{Resource: ResourceArtifact, Action: ActionRead},
-		{Resource: ResourceArtifact, Action: ActionList},
-		{Resource: ResourceArtifactAddition, Action: ActionRead},
+		{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
+		{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
 	}
 
 	// sub policies for the projects
@@ -52,7 +53,7 @@ var (
 func getPoliciesForPublicProject(projectID int64) []*types.Policy {
 	policies := []*types.Policy{}
 
-	namespace := NewProjectNamespace(projectID)
+	namespace := NewNamespace(projectID)
 	for _, policy := range publicProjectPolicies {
 		policies = append(policies, &types.Policy{
 			Resource: namespace.Resource(policy.Resource),
@@ -64,11 +65,11 @@ func getPoliciesForPublicProject(projectID int64) []*types.Policy {
 	return policies
 }
 
-// GetPoliciesOfProject returns all policies for namespace of the project
+// GetPoliciesOfProject returns all policies for projectNamespace of the project
 func GetPoliciesOfProject(projectID int64) []*types.Policy {
 	policies := []*types.Policy{}
 
-	namespace := NewProjectNamespace(projectID)
+	namespace := NewNamespace(projectID)
 	for _, policy := range subPoliciesForProject {
 		policies = append(policies, &types.Policy{
 			Resource: namespace.Resource(policy.Resource),

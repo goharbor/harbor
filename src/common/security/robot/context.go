@@ -16,6 +16,7 @@ package robot
 
 import (
 	"context"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"strings"
@@ -95,12 +96,12 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 			if len(sysPolicies) != 0 {
 				evaluators = evaluators.Add(system.NewEvaluator(s.GetUsername(), sysPolicies))
 			} else if len(proPolicies) != 0 {
-				evaluators = evaluators.Add(rbac.NewProjectEvaluator(s.ctl, rbac.NewBuilderForPolicies(s.GetUsername(), proPolicies)))
+				evaluators = evaluators.Add(rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForPolicies(s.GetUsername(), proPolicies)))
 			}
 			s.evaluator = evaluators
 
 		} else {
-			s.evaluator = rbac.NewProjectEvaluator(s.ctl, rbac.NewBuilderForPolicies(s.GetUsername(), s.policies, filterRobotPolicies))
+			s.evaluator = rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForPolicies(s.GetUsername(), s.policies, filterRobotPolicies))
 		}
 	})
 
@@ -108,7 +109,7 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 }
 
 func filterRobotPolicies(p *models.Project, policies []*types.Policy) []*types.Policy {
-	namespace := rbac.NewProjectNamespace(p.ProjectID)
+	namespace := rbac_project.NewNamespace(p.ProjectID)
 
 	var results []*types.Policy
 	for _, policy := range policies {

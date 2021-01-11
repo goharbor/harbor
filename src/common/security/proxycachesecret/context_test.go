@@ -17,6 +17,7 @@ package proxycachesecret
 import (
 	"context"
 	"errors"
+	"github.com/goharbor/harbor/src/common/rbac/project"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
@@ -63,7 +64,7 @@ func (p *proxyCacheSecretTestSuite) TestIsSolutionUser() {
 func (p *proxyCacheSecretTestSuite) TestCan() {
 	// the action isn't pull/push
 	action := rbac.ActionDelete
-	resource := rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository)
+	resource := project.NewNamespace(1).Resource(rbac.ResourceRepository)
 	p.False(p.sc.Can(context.TODO(), action, resource))
 
 	// the resource isn't repository
@@ -73,7 +74,7 @@ func (p *proxyCacheSecretTestSuite) TestCan() {
 
 	// the requested project not found
 	action = rbac.ActionPull
-	resource = rbac.NewProjectNamespace(2).Resource(rbac.ResourceRepository)
+	resource = project.NewNamespace(2).Resource(rbac.ResourceRepository)
 	p.ctl.On("Get", mock.Anything, mock.Anything).Return(nil, errors.New("not found"))
 	p.False(p.sc.Can(context.TODO(), action, resource))
 	p.ctl.AssertExpectations(p.T())
@@ -83,7 +84,7 @@ func (p *proxyCacheSecretTestSuite) TestCan() {
 
 	// pass for action pull
 	action = rbac.ActionPull
-	resource = rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository)
+	resource = project.NewNamespace(1).Resource(rbac.ResourceRepository)
 	p.ctl.On("Get", mock.Anything, mock.Anything).Return(&models.Project{
 		ProjectID: 1,
 		Name:      "library",
@@ -96,7 +97,7 @@ func (p *proxyCacheSecretTestSuite) TestCan() {
 
 	// pass for action push
 	action = rbac.ActionPush
-	resource = rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository)
+	resource = project.NewNamespace(1).Resource(rbac.ResourceRepository)
 	p.ctl.On("Get", mock.Anything, mock.Anything).Return(&models.Project{
 		ProjectID: 1,
 		Name:      "library",

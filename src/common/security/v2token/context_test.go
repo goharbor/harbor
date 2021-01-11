@@ -16,6 +16,7 @@ package v2token
 
 import (
 	"context"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"testing"
 
 	"github.com/docker/distribution/registry/auth/token"
@@ -71,42 +72,42 @@ func TestAll(t *testing.T) {
 		expect   bool
 	}{
 		{
-			resource: rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository),
+			resource: rbac_project.NewNamespace(1).Resource(rbac.ResourceRepository),
 			action:   rbac.ActionPush,
 			expect:   true,
 		},
 		{
-			resource: rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository),
+			resource: rbac_project.NewNamespace(1).Resource(rbac.ResourceRepository),
 			action:   rbac.ActionScannerPull,
 			expect:   true,
 		},
 		{
-			resource: rbac.NewProjectNamespace(2).Resource(rbac.ResourceRepository),
+			resource: rbac_project.NewNamespace(2).Resource(rbac.ResourceRepository),
 			action:   rbac.ActionPush,
 			expect:   true,
 		},
 		{
-			resource: rbac.NewProjectNamespace(2).Resource(rbac.ResourceRepository),
+			resource: rbac_project.NewNamespace(2).Resource(rbac.ResourceRepository),
 			action:   rbac.ActionDelete,
 			expect:   true,
 		},
 		{
-			resource: rbac.NewProjectNamespace(2).Resource(rbac.ResourceRepository),
+			resource: rbac_project.NewNamespace(2).Resource(rbac.ResourceRepository),
 			action:   rbac.ActionScannerPull,
 			expect:   false,
 		},
 		{
-			resource: rbac.NewProjectNamespace(3).Resource(rbac.ResourceRepository),
+			resource: rbac_project.NewNamespace(3).Resource(rbac.ResourceRepository),
 			action:   rbac.ActionPush,
 			expect:   false,
 		},
 		{
-			resource: rbac.NewProjectNamespace(2).Resource(rbac.ResourceArtifact),
+			resource: rbac_project.NewNamespace(2).Resource(rbac.ResourceArtifact),
 			action:   rbac.ActionPush,
 			expect:   false,
 		},
 		{
-			resource: rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository),
+			resource: rbac_project.NewNamespace(1).Resource(rbac.ResourceRepository),
 			action:   rbac.ActionCreate,
 			expect:   false,
 		},

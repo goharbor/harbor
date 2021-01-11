@@ -16,6 +16,7 @@ package proxycachesecret
 
 import (
 	"context"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -75,7 +76,7 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 		log.Debugf("unauthorized for action %s", action)
 		return false
 	}
-	namespace, ok := rbac.ProjectNamespaceParse(resource)
+	namespace, ok := rbac_project.NamespaceParse(resource)
 	if !ok {
 		log.Debugf("got no namespace from the resource %s", resource)
 		return false

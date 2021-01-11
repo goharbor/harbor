@@ -16,10 +16,10 @@ package local
 
 import (
 	"context"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator/admin"
@@ -88,7 +88,7 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 			evaluators = evaluators.Add(admin.New(s.GetUsername()))
 		}
 
-		evaluators = evaluators.Add(rbac.NewProjectEvaluator(s.ctl, rbac.NewBuilderForUser(s.user, s.ctl)))
+		evaluators = evaluators.Add(rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForUser(s.user, s.ctl)))
 
 		s.evaluator = evaluators
 	})

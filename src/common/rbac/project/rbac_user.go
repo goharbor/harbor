@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbac
+package project
 
 import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
-type projectRBACUser struct {
+type rbacUser struct {
 	project      *models.Project
 	username     string
 	projectRoles []int
@@ -27,12 +27,12 @@ type projectRBACUser struct {
 }
 
 // GetUserName returns username of the visitor
-func (pru *projectRBACUser) GetUserName() string {
+func (pru *rbacUser) GetUserName() string {
 	return pru.username
 }
 
 // GetPolicies returns policies of the visitor
-func (pru *projectRBACUser) GetPolicies() []*types.Policy {
+func (pru *rbacUser) GetPolicies() []*types.Policy {
 	policies := pru.policies
 
 	if pru.project.IsPublic() {
@@ -43,7 +43,7 @@ func (pru *projectRBACUser) GetPolicies() []*types.Policy {
 }
 
 // GetRoles returns roles of the visitor
-func (pru *projectRBACUser) GetRoles() []types.RBACRole {
+func (pru *rbacUser) GetRoles() []types.RBACRole {
 	roles := []types.RBACRole{}
 	for _, roleID := range pru.projectRoles {
 		roles = append(roles, &projectRBACRole{projectID: pru.project.ProjectID, roleID: roleID})

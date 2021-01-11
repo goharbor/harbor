@@ -19,6 +19,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac/project"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -302,10 +303,10 @@ func TestResourceScopes(t *testing.T) {
 	sctx := &fakeSecurityContext{
 		isAdmin: false,
 		rcActions: map[rbac.Resource][]rbac.Action{
-			rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull},
-			rbac.NewProjectNamespace(2).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull, rbac.ActionPush},
-			rbac.NewProjectNamespace(3).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull, rbac.ActionPush, rbac.ActionDelete},
-			rbac.NewProjectNamespace(4).Resource(rbac.ResourceRepository): {},
+			project.NewNamespace(1).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull},
+			project.NewNamespace(2).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull, rbac.ActionPush},
+			project.NewNamespace(3).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull, rbac.ActionPush, rbac.ActionDelete},
+			project.NewNamespace(4).Resource(rbac.ResourceRepository): {},
 		},
 	}
 	ctx := security.NewContext(context.TODO(), sctx)
@@ -314,14 +315,14 @@ func TestResourceScopes(t *testing.T) {
 		expect map[string]struct{}
 	}{
 		{
-			rc: rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository),
+			rc: project.NewNamespace(1).Resource(rbac.ResourceRepository),
 			expect: map[string]struct{}{
 				"pull":         {},
 				"scanner-pull": {},
 			},
 		},
 		{
-			rc: rbac.NewProjectNamespace(2).Resource(rbac.ResourceRepository),
+			rc: project.NewNamespace(2).Resource(rbac.ResourceRepository),
 			expect: map[string]struct{}{
 				"pull":         {},
 				"scanner-pull": {},
@@ -329,7 +330,7 @@ func TestResourceScopes(t *testing.T) {
 			},
 		},
 		{
-			rc: rbac.NewProjectNamespace(3).Resource(rbac.ResourceRepository),
+			rc: project.NewNamespace(3).Resource(rbac.ResourceRepository),
 			expect: map[string]struct{}{
 				"pull":         {},
 				"scanner-pull": {},
@@ -338,11 +339,11 @@ func TestResourceScopes(t *testing.T) {
 			},
 		},
 		{
-			rc:     rbac.NewProjectNamespace(4).Resource(rbac.ResourceRepository),
+			rc:     project.NewNamespace(4).Resource(rbac.ResourceRepository),
 			expect: map[string]struct{}{},
 		},
 		{
-			rc:     rbac.NewProjectNamespace(5).Resource(rbac.ResourceRepository),
+			rc:     project.NewNamespace(5).Resource(rbac.ResourceRepository),
 			expect: map[string]struct{}{},
 		},
 	}

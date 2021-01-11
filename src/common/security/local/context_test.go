@@ -16,6 +16,7 @@ package local
 
 import (
 	"context"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
@@ -116,7 +117,7 @@ func TestHasPullPerm(t *testing.T) {
 
 		ctx := NewSecurityContext(nil)
 		ctx.ctl = ctl
-		resource := rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository)
+		resource := rbac_project.NewNamespace(1).Resource(rbac.ResourceRepository)
 		assert.True(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
 	}
 
@@ -127,7 +128,7 @@ func TestHasPullPerm(t *testing.T) {
 
 		ctx := NewSecurityContext(nil)
 		ctx.ctl = ctl
-		resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+		resource := rbac_project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 		assert.False(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
 	}
 
@@ -139,7 +140,7 @@ func TestHasPullPerm(t *testing.T) {
 
 		ctx := NewSecurityContext(&models.User{Username: "test"})
 		ctx.ctl = ctl
-		resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+		resource := rbac_project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 		assert.False(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
 	}
 
@@ -151,7 +152,7 @@ func TestHasPullPerm(t *testing.T) {
 
 		ctx := NewSecurityContext(guestUser)
 		ctx.ctl = ctl
-		resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+		resource := rbac_project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 		assert.True(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
 	}
 
@@ -165,13 +166,13 @@ func TestHasPullPerm(t *testing.T) {
 			SysAdminFlag: true,
 		})
 		ctx.ctl = ctl
-		resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+		resource := rbac_project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 		assert.True(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
 	}
 }
 
 func TestHasPushPerm(t *testing.T) {
-	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+	resource := rbac_project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 
 	{
 		// unauthenticated
@@ -218,7 +219,7 @@ func TestHasPushPerm(t *testing.T) {
 }
 
 func TestHasPushPullPerm(t *testing.T) {
-	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+	resource := rbac_project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 
 	{
 		// unauthenticated
@@ -266,7 +267,7 @@ func TestSysadminPerms(t *testing.T) {
 		SysAdminFlag: true,
 	})
 	ctx.ctl = ctl
-	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+	resource := rbac_project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource) && ctx.Can(context.TODO(), rbac.ActionPull, resource))
 	assert.False(t, ctx.Can(context.TODO(), rbac.ActionScannerPull, resource))
 

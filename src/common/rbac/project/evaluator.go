@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbac
+package project
 
 import (
 	"context"
@@ -26,15 +26,15 @@ import (
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
-// ProjectRBACUserBuilder builder to make types.RBACUser for the project
-type ProjectRBACUserBuilder func(context.Context, *models.Project) types.RBACUser
+// RBACUserBuilder builder to make types.RBACUser for the project
+type RBACUserBuilder func(context.Context, *models.Project) types.RBACUser
 
 // NewBuilderForUser create a builder for the local user
-func NewBuilderForUser(user *models.User, ctl project.Controller) ProjectRBACUserBuilder {
+func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilder {
 	return func(ctx context.Context, p *models.Project) types.RBACUser {
 		if user == nil {
 			// anonymous access
-			return &projectRBACUser{
+			return &rbacUser{
 				project:  p,
 				username: "anonymous",
 			}
@@ -46,7 +46,7 @@ func NewBuilderForUser(user *models.User, ctl project.Controller) ProjectRBACUse
 			return nil
 		}
 
-		return &projectRBACUser{
+		return &rbacUser{
 			project:      p,
 			username:     user.Username,
 			projectRoles: roles,
@@ -56,14 +56,14 @@ func NewBuilderForUser(user *models.User, ctl project.Controller) ProjectRBACUse
 
 // NewBuilderForPolicies create a builder for the policies
 func NewBuilderForPolicies(username string, policies []*types.Policy,
-	filters ...func(*models.Project, []*types.Policy) []*types.Policy) ProjectRBACUserBuilder {
+	filters ...func(*models.Project, []*types.Policy) []*types.Policy) RBACUserBuilder {
 
 	return func(ctx context.Context, p *models.Project) types.RBACUser {
 		for _, filter := range filters {
 			policies = filter(p, policies)
 		}
 
-		return &projectRBACUser{
+		return &rbacUser{
 			project:  p,
 			username: username,
 			policies: policies,
@@ -71,9 +71,9 @@ func NewBuilderForPolicies(username string, policies []*types.Policy,
 	}
 }
 
-// NewProjectEvaluator create evaluator for the project by builders
-func NewProjectEvaluator(ctl project.Controller, builders ...ProjectRBACUserBuilder) evaluator.Evaluator {
-	return namespace.New(ProjectNamespaceKind, func(ctx context.Context, ns types.Namespace) evaluator.Evaluator {
+// NewEvaluator create evaluator for the project by builders
+func NewEvaluator(ctl project.Controller, builders ...RBACUserBuilder) evaluator.Evaluator {
+	return namespace.New(NamespaceKind, func(ctx context.Context, ns types.Namespace) evaluator.Evaluator {
 		p, err := ctl.Get(ctx, ns.Identity().(int64), project.Metadata(true))
 		if err != nil {
 			if err != nil {
