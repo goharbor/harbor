@@ -136,7 +136,7 @@ func (d *controller) Update(ctx context.Context, r *Robot, option *Option) error
 	if r == nil {
 		return errors.New("cannot update a nil robot").WithCode(errors.BadRequestCode)
 	}
-	if err := d.robotMgr.Update(ctx, &r.Robot, "secret", "description", "disabled", "duration"); err != nil {
+	if err := d.robotMgr.Update(ctx, &r.Robot, "secret", "description", "disabled", "duration", "expiresat"); err != nil {
 		return err
 	}
 	// update the permission
