@@ -122,23 +122,6 @@ func MakeToken(username, service string, access []*token.ResourceActions) (*mode
 	}, nil
 }
 
-func permToActions(p string) []string {
-	res := []string{}
-	if strings.Contains(p, "W") {
-		res = append(res, "push")
-	}
-	if strings.Contains(p, "M") {
-		res = append(res, "*")
-	}
-	if strings.Contains(p, "R") {
-		res = append(res, "pull")
-	}
-	if strings.Contains(p, "S") {
-		res = append(res, "scanner-pull")
-	}
-	return res
-}
-
 // make token core
 func makeTokenCore(issuer, subject, audience string, expiration int,
 	access []*token.ResourceActions, signingKey libtrust.PrivateKey) (t *token.Token, expiresIn int, issuedAt *time.Time, err error) {

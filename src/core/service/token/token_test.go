@@ -158,21 +158,6 @@ func TestMakeToken(t *testing.T) {
 	assert.Equal(t, claims.Audience, svc, "Audience mismatch")
 }
 
-func TestPermToActions(t *testing.T) {
-	perm1 := "RWM"
-	perm2 := "MRR"
-	perm3 := ""
-	expect1 := []string{"push", "*", "pull"}
-	expect2 := []string{"*", "pull"}
-	expect3 := []string{}
-	res1 := permToActions(perm1)
-	res2 := permToActions(perm2)
-	res3 := permToActions(perm3)
-	assert.Equal(t, res1, expect1, fmt.Sprintf("actions mismatch for permission: %s", perm1))
-	assert.Equal(t, res2, expect2, fmt.Sprintf("actions mismatch for permission: %s", perm2))
-	assert.Equal(t, res3, expect3, fmt.Sprintf("actions mismatch for permission: %s", perm3))
-}
-
 type parserTestRec struct {
 	input       string
 	expect      image
@@ -225,7 +210,8 @@ func TestEndpointParser(t *testing.T) {
 }
 
 type fakeSecurityContext struct {
-	isAdmin bool
+	isAdmin   bool
+	rcActions map[rbac.Resource][]rbac.Action
 }
 
 func (f *fakeSecurityContext) IsAuthenticated() bool {
@@ -243,6 +229,13 @@ func (f *fakeSecurityContext) IsSolutionUser() bool {
 	return false
 }
 func (f *fakeSecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
+	if actions, ok := f.rcActions[resource]; ok {
+		for _, a := range actions {
+			if a == action {
+				return true
+			}
+		}
+	}
 	return false
 }
 func (f *fakeSecurityContext) GetMyProjects() ([]*models.Project, error) {
@@ -295,4 +288,56 @@ func TestParseScopes(t *testing.T) {
 	r1, _ := url.Parse(u1)
 	l1 := parseScopes(r1)
 	assert.Equal([]string{"repository:library/registry:push,pull", "repository:hello-world/registry:pull"}, l1)
+}
+
+func TestResourceScopes(t *testing.T) {
+	sctx := &fakeSecurityContext{
+		isAdmin: false,
+		rcActions: map[rbac.Resource][]rbac.Action{
+			rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull},
+			rbac.NewProjectNamespace(2).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull, rbac.ActionPush},
+			rbac.NewProjectNamespace(3).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull, rbac.ActionPush, rbac.ActionDelete},
+			rbac.NewProjectNamespace(4).Resource(rbac.ResourceRepository): {},
+		},
+	}
+	cases := []struct {
+		rc     rbac.Resource
+		expect map[string]struct{}
+	}{
+		{
+			rc: rbac.NewProjectNamespace(1).Resource(rbac.ResourceRepository),
+			expect: map[string]struct{}{
+				"pull":         {},
+				"scanner-pull": {},
+			},
+		},
+		{
+			rc: rbac.NewProjectNamespace(2).Resource(rbac.ResourceRepository),
+			expect: map[string]struct{}{
+				"pull":         {},
+				"scanner-pull": {},
+				"push":         {},
+			},
+		},
+		{
+			rc: rbac.NewProjectNamespace(3).Resource(rbac.ResourceRepository),
+			expect: map[string]struct{}{
+				"pull":         {},
+				"scanner-pull": {},
+				"push":         {},
+				"delete":       {},
+			},
+		},
+		{
+			rc:     rbac.NewProjectNamespace(4).Resource(rbac.ResourceRepository),
+			expect: map[string]struct{}{},
+		},
+		{
+			rc:     rbac.NewProjectNamespace(5).Resource(rbac.ResourceRepository),
+			expect: map[string]struct{}{},
+		},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.expect, resourceScopes(sctx, c.rc))
+	}
 }
