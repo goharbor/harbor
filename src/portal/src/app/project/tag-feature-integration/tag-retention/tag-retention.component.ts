@@ -17,9 +17,6 @@ import { AddRuleComponent } from "./add-rule/add-rule.component";
 import {ClrDatagridStateInterface, ClrDatagridStringFilterInterface} from "@clr/angular";
 import { TagRetentionService } from "./tag-retention.service";
 import { Retention, Rule } from "./retention";
-
-import { Project } from "../../project";
-
 import { finalize } from "rxjs/operators";
 import { CronScheduleComponent } from "../../../../lib/components/cron-schedule";
 import { ErrorHandler } from "../../../../lib/utils/error-handler";

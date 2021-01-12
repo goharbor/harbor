@@ -137,7 +137,7 @@
                             <clr-dg-row *ngFor="let task of historyList" [clrDgItem]="task">
                                 <clr-dg-cell>{{task.repository}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.status}}</clr-dg-cell>
-                                <clr-dg-cell>{{task.retained}}/{{task.total}}</clr-dg-cell>
+                                <clr-dg-cell>{{task?.retained?task?.retained:0}}/{{task?.total?task?.total:0}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.start_time|date:'medium'}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.duration}}</clr-dg-cell>
                                 <clr-dg-cell><span (click)="seeLog(task.execution_id,task.id)"
