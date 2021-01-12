@@ -4314,6 +4314,7 @@ definitions:
         type: string
       status_code:
         type: integer
+        x-omitempty: false
       status_revision:
         type: integer
         format: int64
@@ -4323,5 +4324,7 @@ definitions:
         type: string
       total:
         type: integer
+        x-omitempty: false
       retained:
         type: integer
+        x-omitempty: false
