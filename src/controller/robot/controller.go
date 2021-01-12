@@ -211,9 +211,15 @@ func (d *controller) populate(ctx context.Context, r *model.Robot, option *Optio
 	robot := &Robot{
 		Robot: *r,
 	}
-	robot.Name = fmt.Sprintf("%s%s", config.RobotPrefix(), r.Name)
 	robot.setLevel()
 	robot.setEditable()
+	// for the v2 robots, add prefix to the robot name
+	// for the v1 legacy robots, keep the robot name
+	if robot.Editable {
+		robot.Name = fmt.Sprintf("%s%s", config.RobotPrefix(), r.Name)
+	} else {
+		robot.Name = r.Name
+	}
 	if option != nil && option.WithPermission {
 		if err := d.populatePermissions(ctx, robot); err != nil {
 			return nil, err
