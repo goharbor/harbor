@@ -97,7 +97,7 @@ jobs:
           uploader harbor-offline-installer-latest.tgz.asc  $harbor_target_bucket
           echo "BUILD_BUNDLE=$harbor_offline_build_bundle" >> $GITHUB_ENV
 
-          publishImage $target_branch $Harbor_Assets_Version
+          publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}"
 
       - name: Slack Notification
         uses: sonots/slack-notice-action@v3
