@@ -230,7 +230,7 @@ func (r *defaultController) TriggerRetentionExec(ctx context.Context, policyID i
 			"dry_run": dryRun,
 		},
 	)
-	if _, err = r.launcher.Launch(ctx, p, id, dryRun); err != nil {
+	if num, err := r.launcher.Launch(ctx, p, id, dryRun); err != nil {
 		if err1 := r.execMgr.StopAndWait(ctx, id, 10*time.Second); err1 != nil {
 			logger.Errorf("failed to stop the retention execution %d: %v", id, err1)
 		}
@@ -238,6 +238,11 @@ func (r *defaultController) TriggerRetentionExec(ctx context.Context, policyID i
 			logger.Errorf("failed to mark error for the retention execution %d: %v", id, err1)
 		}
 		return 0, err
+	} else if num == 0 {
+		// no candidates, mark the execution as done directly
+		if err := r.execMgr.MarkDone(ctx, id, "no resources for retention"); err != nil {
+			logger.Errorf("failed to mark done for the execution %d: %v", id, err)
+		}
 	}
 	return id, err
 
