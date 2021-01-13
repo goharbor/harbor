@@ -210,6 +210,7 @@ func (s *ControllerTestSuite) TestExecution() {
 			"dry_run": true,
 		},
 	}, nil)
+	execMgr.On("MarkDone", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 	execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{{
 		ID:     1,
 		Status: job.RunningStatus.String(),
