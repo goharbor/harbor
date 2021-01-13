@@ -15,6 +15,7 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/robot"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -254,11 +255,11 @@ func (rAPI *robotAPI) requireAccess(ctx context.Context, level string, projectID
 // more validation
 func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Permission) error {
 	if !isValidDuration(d) {
-		return errors.New(nil).WithMessage("bad request error duration input").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("bad request error duration input: %d", d).WithCode(errors.BadRequestCode)
 	}
 
 	if !isValidLevel(level) {
-		return errors.New(nil).WithMessage("bad request error level input").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("bad request error level input: %s", level).WithCode(errors.BadRequestCode)
 	}
 
 	if len(permissions) == 0 {
@@ -337,7 +338,7 @@ func isValidLevel(l string) bool {
 }
 
 func isValidDuration(d int64) bool {
-	return d >= int64(-1)
+	return d >= int64(-1) && d < math.MaxInt32
 }
 
 func isValidSec(sec string) bool {

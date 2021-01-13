@@ -28,10 +28,9 @@ func (r *robot2) Generate(req *http.Request) security.Context {
 	if !strings.HasPrefix(name, config.RobotPrefix()) {
 		return nil
 	}
-	name = strings.TrimPrefix(name, config.RobotPrefix())
 	// The robot name can be used as the unique identifier to locate robot as it contains the project name.
 	robots, err := robot_ctl.Ctl.List(req.Context(), q.New(q.KeyWords{
-		"name": name,
+		"name": strings.TrimPrefix(name, config.RobotPrefix()),
 	}), &robot_ctl.Option{
 		WithPermission: true,
 	})
