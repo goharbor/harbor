@@ -91,6 +91,8 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 		expiresAt = time.Now().AddDate(0, 0, int(r.Duration)).Unix()
 	}
 
+	r.appendMissingPullPolicy()
+
 	pwd := utils.GenerateRandomString()
 	salt := utils.GenerateRandomString()
 	secret := utils.Encrypt(pwd, salt, utils.SHA256)
@@ -144,6 +146,7 @@ func (d *controller) Update(ctx context.Context, r *Robot, option *Option) error
 		if err := d.rbacMgr.DeletePermissionsByRole(ctx, ROBOTTYPE, r.ID); err != nil {
 			return err
 		}
+		r.appendMissingPullPolicy()
 		if err := d.createPermission(ctx, r); err != nil {
 			return err
 		}

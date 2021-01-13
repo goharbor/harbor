@@ -1,6 +1,7 @@
 package robot
 
 import (
+	rbac_common "github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 )
@@ -46,6 +47,17 @@ func (r *Robot) setEditable() {
 		return
 	}
 	r.Editable = true
+}
+
+// append pull permission for the push
+func (r *Robot) appendMissingPullPolicy() {
+	for _, p := range r.Permissions {
+		for _, a := range p.Access {
+			if a.Action == rbac_common.ActionPush {
+				p.Access = append(p.Access, &types.Policy{Resource: a.Resource, Action: rbac_common.ActionPull})
+			}
+		}
+	}
 }
 
 // Permission ...
