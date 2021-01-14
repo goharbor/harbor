@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"math"
 	"testing"
 )
 
@@ -61,6 +62,18 @@ func TestValidDuration(t *testing.T) {
 		{"duration 9999",
 			9999,
 			true,
+		},
+		{"duration max",
+			math.MaxInt32 - 1,
+			true,
+		},
+		{"duration max",
+			math.MaxInt32,
+			false,
+		},
+		{"duration 999999999999",
+			999999999999,
+			false,
 		},
 	}
 	for _, tt := range tests {
