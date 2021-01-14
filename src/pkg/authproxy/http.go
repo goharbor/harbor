@@ -26,7 +26,6 @@ func TokenReview(rawToken string, authProxyConfig *models.HTTPAuthProxy) (k8s_ap
 			GroupVersion:         &schema.GroupVersion{},
 			NegotiatedSerializer: serializer.DirectCodecFactory{CodecFactory: scheme.Codecs},
 		},
-		BearerToken:     rawToken,
 		TLSClientConfig: getTLSConfig(authProxyConfig),
 	}
 	authClient, err := rest.RESTClientFor(authClientCfg)
