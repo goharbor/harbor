@@ -28,7 +28,7 @@ import { operateChanges, OperateInfo, OperationState } from "../../../lib/compon
 import { OperationService } from "../../../lib/components/operation/operation.service";
 import { errorHandler } from "../../../lib/utils/shared/shared.utils";
 
-const MINUETS_ONE_DAY: number = 60 * 24;
+const MINI_SECONDS_ONE_DAY: number = 60 * 24 * 60 * 1000;
 
 @Component({
   selector: 'new-robot',
@@ -435,5 +435,15 @@ export class NewRobotComponent implements OnInit, OnDestroy {
       }
     });
     return count;
+  }
+  calculateExpiresAt(): Date {
+    if (this.systemRobot && this.systemRobot.creation_time && this.systemRobot.duration > 0) {
+      return new Date(new Date(this.systemRobot.creation_time).getTime()
+      + this.systemRobot.duration * MINI_SECONDS_ONE_DAY);
+    }
+    return null;
+  }
+  shouldShowWarning(): boolean {
+    return new Date() >= this.calculateExpiresAt();
   }
 }

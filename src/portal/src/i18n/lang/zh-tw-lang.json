@@ -1203,6 +1203,7 @@
     "CUSTOM": "自定義",
     "CRON":"cron",
     "MANUAL": "手動",
+    "SCHEDULE": "Scheduled",
     "ON": " ",
     "AT": " ",
     "NOSCHEDULE": "獲取schedule時出現錯誤"
@@ -1649,6 +1650,8 @@
     "ARTIFACT_LABEL": "Artifact label",
     "SCAN": "Scan",
     "SCANNER_PULL": "Scanner Pull",
-    "SEARCH_BY_NAME": "Search by name(without prefix)"
+    "SEARCH_BY_NAME": "Search by name(without prefix)",
+    "FINAL_PROJECT_NAME_TIP": "The final project robot name consists of the prefix,the project name,a plus mark and the current input value",
+    "FINAL_SYSTEM_NAME_TIP": "The final system robot name consists of the prefix and the current input value"
   }
 }
