@@ -203,13 +203,11 @@ func (s *scanAllAPI) getMetrics(ctx context.Context, trigger ...string) (*models
 
 	sts := &models.Stats{}
 	if execution != nil {
-		metrics := execution.Metrics
-		sts.Total = metrics.TaskCount
-		sts.Completed = metrics.SuccessTaskCount
-		sts.Ongoing = !job.Status(execution.Status).Final() || sts.Total != sts.Completed
-		sts.Trigger = strings.Title(strings.ToLower(execution.Trigger))
-
 		if execution.Metrics != nil {
+			metrics := execution.Metrics
+
+			sts.Total = metrics.TaskCount
+			sts.Completed = metrics.SuccessTaskCount + metrics.ErrorTaskCount + metrics.StoppedTaskCount
 			sts.Metrics = map[string]int64{
 				"Pending": metrics.PendingTaskCount,
 				"Running": metrics.RunningTaskCount,
@@ -218,6 +216,8 @@ func (s *scanAllAPI) getMetrics(ctx context.Context, trigger ...string) (*models
 				"Stopped": metrics.StoppedTaskCount,
 			}
 		} else {
+			sts.Total = 0
+			sts.Completed = 0
 			sts.Metrics = map[string]int64{
 				"Pending": 0,
 				"Running": 0,
@@ -226,6 +226,9 @@ func (s *scanAllAPI) getMetrics(ctx context.Context, trigger ...string) (*models
 				"Stopped": 0,
 			}
 		}
+
+		sts.Ongoing = !job.Status(execution.Status).Final() || sts.Total != sts.Completed
+		sts.Trigger = strings.Title(strings.ToLower(execution.Trigger))
 	}
 
 	return sts, nil
