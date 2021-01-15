@@ -24,7 +24,7 @@
         <span>{{'MEMBER.ACTION' | translate}}<clr-icon shape="caret
             down"></clr-icon></span>
         <clr-dropdown-menu *clrIfOpen>
-          <button [disabled]="!hasRobotReadPermission || !(selectedRows && selectedRows.length === 1) || !selectedRows[0].editable" clrDropdownItem (click)="openTokenModal()">
+          <button [disabled]="!hasRobotUpdatePermission || !(selectedRows && selectedRows.length === 1) || !selectedRows[0].editable" clrDropdownItem (click)="openTokenModal()">
             <clr-icon shape="details" size="16"></clr-icon>&nbsp;
             <span id="system-robot-token">{{"SYSTEM_ROBOT.VIEW_SECRET" | translate}}</span>
           </button>
