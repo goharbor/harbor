@@ -96,7 +96,7 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
 ];
 
 export const ACTION_RESOURCE_I18N_MAP = {
-    'push': 'ROBOT_ACCOUNT.PUSH',
+    'push': 'SYSTEM_ROBOT.PUSH_AND_PULL', // push permission contains pull permission
     'pull': 'ROBOT_ACCOUNT.PULL',
     'read': 'SYSTEM_ROBOT.READ',
     'create': 'SYSTEM_ROBOT.CREATE',

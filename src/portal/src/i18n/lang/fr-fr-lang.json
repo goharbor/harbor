@@ -1636,6 +1636,7 @@
         "SCANNER_PULL": "Scanner Pull",
         "SEARCH_BY_NAME": "Search by name(without prefix)",
         "FINAL_PROJECT_NAME_TIP": "The final project robot name consists of the prefix,the project name,a plus mark and the current input value",
-        "FINAL_SYSTEM_NAME_TIP": "The final system robot name consists of the prefix and the current input value"
+        "FINAL_SYSTEM_NAME_TIP": "The final system robot name consists of the prefix and the current input value",
+        "PUSH_AND_PULL": "Push&Pull"
     }
 }

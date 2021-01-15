@@ -21,7 +21,7 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 Create A Random Permission Item List
-    ${permission_item_all_list}=  Create List  Push Artifact
+    ${permission_item_all_list}=  Create List  Push&Pull Artifact
     ...                                    Pull Artifact
     ...                                    Delete Artifact
     ...                                    Read Helm Chart
