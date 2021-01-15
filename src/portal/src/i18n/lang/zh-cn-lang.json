@@ -1215,6 +1215,7 @@
         "CUSTOM": "自定义",
         "CRON": "cron",
         "MANUAL": "手动",
+        "SCHEDULE": "定时",
         "ON": " ",
         "AT": " ",
         "NOSCHEDULE": "获取schedule时出现错误"
@@ -1662,6 +1663,8 @@
         "ARTIFACT_LABEL": "Artifact 标签",
         "SCAN": "扫描",
         "SCANNER_PULL": "扫描器拉取",
-        "SEARCH_BY_NAME": "按名称(不含前缀)搜索"
+        "SEARCH_BY_NAME": "按名称(不含前缀)搜索",
+        "FINAL_PROJECT_NAME_TIP": "项目级机器人的最终名称由前缀，项目名称，一个加号以及当前输入值组成",
+        "FINAL_SYSTEM_NAME_TIP": "系统级机器人的最终名称由前缀和当前输入值组成"
     }
 }

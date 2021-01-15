@@ -87,9 +87,12 @@
             </clr-dropdown>
           </div>
           <span *ngIf="!r.permissionScope || !r.permissionScope?.coverAll">
-            <a href="javascript:void(0)" (click)="openProjectModal(getProjects(r), r.name)">
-              {{getProjects(r)?.length?getProjects(r)?.length:""}} {{'SYSTEM_ROBOT.COVERED_PROJECTS' | translate}}
+            <a *ngIf="getProjects(r)?.length" href="javascript:void(0)" (click)="openProjectModal(getProjects(r), r.name)">
+              {{getProjects(r)?.length}} {{'SYSTEM_ROBOT.COVERED_PROJECTS' | translate}}
             </a>
+            <span *ngIf="!getProjects(r)?.length">
+              0 {{'SYSTEM_ROBOT.COVERED_PROJECTS' | translate}}
+            </span>
           </span>
         </clr-dg-cell>
         <clr-dg-cell>{{r.creation_time | date: 'short'}}</clr-dg-cell>

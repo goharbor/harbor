@@ -151,7 +151,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   hasDeleteImagePermission: boolean;
   hasScanImagePermission: boolean;
   hasEnabledScanner: boolean;
-  projectScanner: ScannerVo;
   scanBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   onSendingScanCommand: boolean;
 
@@ -918,7 +917,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         } else {
           this.scanBtnState = ClrLoadingState.ERROR;
         }
-        this.projectScanner = response;
       }, error => {
         this.scanBtnState = ClrLoadingState.ERROR;
       });
@@ -1042,16 +1040,5 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         );
       });
     }
-  }
-  getScannerInfo(): string {
-    if (this.projectScanner) {
-      if (this.projectScanner.name && this.projectScanner.version) {
-        return `${this.projectScanner.name}@${this.projectScanner.version}`;
-      }
-      if (this.projectScanner.name && !this.projectScanner.version) {
-        return `${this.projectScanner.name}`;
-      }
-    }
-    return "";
   }
 }

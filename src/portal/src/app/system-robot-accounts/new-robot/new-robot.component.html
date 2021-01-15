@@ -10,7 +10,14 @@
             <section class="form-block">
                 <!-- name -->
                 <div class="clr-form-control">
-                    <label for="name" class="clr-control-label required">{{'P2P_PROVIDER.NAME' | translate}}</label>
+                    <label for="name" class="clr-control-label required">{{'P2P_PROVIDER.NAME' | translate}}
+                        <clr-tooltip *ngIf="!isEditMode">
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                <span>{{"SYSTEM_ROBOT.FINAL_SYSTEM_NAME_TIP" | translate}}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
                     <div class="clr-control-container" [class.clr-error]="((name.dirty || name.touched) && name.invalid) || isNameExisting">
                         <div class="clr-input-wrapper">
                             <input class="clr-input input-width"
@@ -41,26 +48,34 @@
                             </clr-tooltip-content>
                         </clr-tooltip>
                     </label>
-                    <div class="clr-control-container input-width flex" [class.clr-error]="((expiration.dirty || expiration.touched) && expiration.invalid) || isExpirationInvalid()">
-                        <div class="clr-select-wrapper">
-                            <select [ngModelOptions]="{standalone: true}" (change)="changeExpirationType()"  [(ngModel)]="expirationType" id="expiration-type"  class="clr-select">
-                                <option value="default">{{systemExpirationDays}} {{"SYSTEM_ROBOT.EXPIRATION_DEFAULT" | translate}}</option>
-                                <option value="days">{{"SYSTEM_ROBOT.EXPIRATION_DAYS" | translate}}</option>
-                                <option value="never">{{"SYSTEM_ROBOT.EXPIRATION_NEVER" | translate}}</option>
-                            </select>
+                    <div class="clr-control-container input-width" [class.clr-error]="((expiration.dirty || expiration.touched) && expiration.invalid) || isExpirationInvalid()">
+                        <div class="flex">
+                            <div class="clr-select-wrapper">
+                                <select [ngModelOptions]="{standalone: true}" (change)="changeExpirationType()"  [(ngModel)]="expirationType" id="expiration-type"  class="clr-select">
+                                    <option *ngIf="!isEditMode" value="default">{{systemExpirationDays}} {{"SYSTEM_ROBOT.EXPIRATION_DEFAULT" | translate}}</option>
+                                    <option value="days">{{"SYSTEM_ROBOT.EXPIRATION_DAYS" | translate}}</option>
+                                    <option value="never">{{"SYSTEM_ROBOT.EXPIRATION_NEVER" | translate}}</option>
+                                </select>
+                            </div>
+                            <div class="clr-input-wrapper">
+                                <input (input)="inputExpiration()" [disabled]="loadingSystemConfig" class="clr-input expiration-width" name="expiration" type="text"
+                                       #expiration="ngModel"
+                                       autocomplete="off"
+                                       [(ngModel)]="systemRobot.duration" required
+                                       pattern="^[\-1-9]{1}[0-9]*$" id="robotTokenExpiration" size="20"/>
+                                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                                <span class="spinner spinner-inline" [hidden]="!loadingSystemConfig"></span>
+                                <clr-control-error *ngIf="((expiration.dirty || expiration.touched) && expiration.invalid)|| isExpirationInvalid()">
+                                    {{"SYSTEM_ROBOT.EXPIRATION_REQUIRED" | translate}}
+                                </clr-control-error>
+                            </div>
                         </div>
-                        <div class="clr-input-wrapper">
-                            <input (input)="inputExpiration()" [disabled]="loadingSystemConfig" class="clr-input expiration-width" name="expiration" type="text"
-                                    #expiration="ngModel"
-                                   autocomplete="off"
-                                   [(ngModel)]="systemRobot.duration" required
-                                   pattern="^[\-1-9]{1}[0-9]*$" id="robotTokenExpiration" size="20"/>
-                            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
-                            <span class="spinner spinner-inline" [hidden]="!loadingSystemConfig"></span>
-                            <clr-control-error *ngIf="((expiration.dirty || expiration.touched) && expiration.invalid)|| isExpirationInvalid()">
-                                {{"SYSTEM_ROBOT.EXPIRATION_REQUIRED" | translate}}
-                            </clr-control-error>
-                        </div>
+                        <clr-control-helper *ngIf="isEditMode && systemRobot?.duration > 0 && !((expiration.dirty || expiration.touched) && expiration.invalid)|| isExpirationInvalid()">
+                            <span [ngClass]="{showWarning: shouldShowWarning()}">
+                                <clr-icon *ngIf="shouldShowWarning()" class="alert-icon" shape="exclamation-triangle"></clr-icon><span>{{'SYSTEM_ROBOT.EXPIRES_AT' | translate}}</span>:
+                                <span>{{calculateExpiresAt() | date:'short'}}</span>
+                            </span>
+                        </clr-control-helper>
                     </div>
                 </div>
                 <!-- 3. description -->

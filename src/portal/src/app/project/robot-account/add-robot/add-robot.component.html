@@ -10,7 +10,14 @@
             <section class="form-block">
                 <!-- name -->
                 <div class="clr-form-control">
-                    <label for="name" class="clr-control-label required">{{'P2P_PROVIDER.NAME' | translate}}</label>
+                    <label for="name" class="clr-control-label required">{{'P2P_PROVIDER.NAME' | translate}}
+                        <clr-tooltip *ngIf="!isEditMode">
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                <span>{{"SYSTEM_ROBOT.FINAL_PROJECT_NAME_TIP" | translate}}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
                     <div class="clr-control-container" [class.clr-error]="((name.dirty || name.touched) && name.invalid) || isNameExisting">
                         <div class="clr-input-wrapper">
                             <input class="clr-input"
@@ -58,6 +65,12 @@
                                 <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                             </div>
                         </div>
+                        <clr-control-helper *ngIf="isEditMode && systemRobot?.duration > 0 && !((expiration.dirty || expiration.touched) && expiration.invalid)|| isExpirationInvalid()">
+                            <span [ngClass]="{showWarning: shouldShowWarning()}">
+                                <clr-icon *ngIf="shouldShowWarning()" class="alert-icon" shape="exclamation-triangle"></clr-icon><span>{{'SYSTEM_ROBOT.EXPIRES_AT' | translate}}</span>:
+                                <span>{{calculateExpiresAt() | date:'short'}}</span>
+                            </span>
+                        </clr-control-helper>
                         <clr-control-error *ngIf="((expiration.dirty || expiration.touched) && expiration.invalid)|| isExpirationInvalid()">
                             {{"SYSTEM_ROBOT.EXPIRATION_REQUIRED" | translate}}
                         </clr-control-error>
