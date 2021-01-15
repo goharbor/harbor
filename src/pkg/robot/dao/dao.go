@@ -119,6 +119,9 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*model.Robot, error) 
 	if err != nil {
 		return nil, err
 	}
+	if query.Sorting != "" {
+		qs = qs.OrderBy(query.Sorting)
+	}
 	if _, err = qs.All(&robots); err != nil {
 		return nil, err
 	}
