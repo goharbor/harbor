@@ -33,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gcreadonly"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/legacy"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
@@ -255,15 +256,20 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
 			job.ImageScanJob:           (*scan.Job)(nil),
-			job.ImageGC:                (*gc.GarbageCollector)(nil),
+			job.GarbageCollection:      (*gc.GarbageCollector)(nil),
 			job.ImageGCReadOnly:        (*gcreadonly.GarbageCollector)(nil),
 			job.Replication:            (*replication.Replication)(nil),
-			job.ReplicationScheduler:   (*replication.Scheduler)(nil),
 			job.Retention:              (*retention.Job)(nil),
 			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),
 			job.WebhookJob:             (*notification.WebhookJob)(nil),
 			job.SlackJob:               (*notification.SlackJob)(nil),
 			job.P2PPreheat:             (*preheat.Job)(nil),
+			// In v2.2 we migrate the scheduled replication, garbage collection and scan all to
+			// the scheduler mechanism, the following three jobs are kept for the legacy jobs
+			// and they can be removed after several releases
+			"IMAGE_REPLICATE": (*legacy.ReplicationScheduler)(nil),
+			"IMAGE_GC":        (*legacy.GarbageCollectionScheduler)(nil),
+			"IMAGE_SCAN_ALL":  (*legacy.ScanAllScheduler)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

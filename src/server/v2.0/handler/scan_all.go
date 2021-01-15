@@ -176,11 +176,11 @@ func (s *scanAllAPI) createOrUpdateScanAllSchedule(ctx context.Context, cronType
 		}
 	}
 
-	return s.scheduler.Schedule(ctx, job.ImageScanAllJob, 0, cronType, cron, scan.ScanAllCallback, nil, nil)
+	return s.scheduler.Schedule(ctx, scan.VendorTypeScanAll, 0, cronType, cron, scan.ScanAllCallback, nil, nil)
 }
 
 func (s *scanAllAPI) getScanAllSchedule(ctx context.Context) (*scheduler.Schedule, error) {
-	query := q.New(q.KeyWords{"vendor_type": job.ImageScanAllJob})
+	query := q.New(q.KeyWords{"vendor_type": scan.VendorTypeScanAll})
 	schedules, err := s.scheduler.ListSchedules(ctx, query.First("-creation_time"))
 	if err != nil {
 		return nil, err
@@ -235,7 +235,7 @@ func (s *scanAllAPI) getMetrics(ctx context.Context, trigger ...string) (*models
 }
 
 func (s *scanAllAPI) getLatestScanAllExecution(ctx context.Context, trigger ...string) (*task.Execution, error) {
-	query := q.New(q.KeyWords{"vendor_type": job.ImageScanAllJob})
+	query := q.New(q.KeyWords{"vendor_type": scan.VendorTypeScanAll})
 	if len(trigger) > 0 {
 		query.Keywords["trigger"] = trigger[0]
 	}

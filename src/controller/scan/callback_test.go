@@ -164,7 +164,7 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 	{
 		// create execution failed
 		suite.execMgr.On(
-			"Create", context.TODO(), "IMAGE_SCAN_ALL", int64(0), "SCHEDULE",
+			"Create", context.TODO(), "SCAN_ALL", int64(0), "SCHEDULE",
 		).Return(int64(0), fmt.Errorf("failed")).Once()
 
 		suite.Error(scanAllCallback(context.TODO(), ""))
@@ -174,7 +174,7 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 		executionID := int64(1)
 
 		suite.execMgr.On(
-			"Create", context.TODO(), "IMAGE_SCAN_ALL", int64(0), "SCHEDULE",
+			"Create", context.TODO(), "SCAN_ALL", int64(0), "SCHEDULE",
 		).Return(executionID, nil).Once()
 
 		suite.execMgr.On(
