@@ -39,10 +39,10 @@ class TestRobotAccount(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == True, "Test data won't be erased.")
     def do_01_tearDown(self):
         #1. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(self.project_ra_name_a, self.repo_name_in_project_a.split('/')[1], **self.USER_RA_CLIENT)
-        self.repo.delete_repoitory(self.project_ra_name_b, self.repo_name_in_project_b.split('/')[1], **self.USER_RA_CLIENT)
-        self.repo.delete_repoitory(self.project_ra_name_c, self.repo_name_in_project_c.split('/')[1], **self.USER_RA_CLIENT)
-        self.repo.delete_repoitory(self.project_ra_name_a, self.repo_name_pa.split('/')[1], **self.USER_RA_CLIENT)
+        self.repo.delete_repository(self.project_ra_name_a, self.repo_name_in_project_a.split('/')[1], **self.USER_RA_CLIENT)
+        self.repo.delete_repository(self.project_ra_name_b, self.repo_name_in_project_b.split('/')[1], **self.USER_RA_CLIENT)
+        self.repo.delete_repository(self.project_ra_name_c, self.repo_name_in_project_c.split('/')[1], **self.USER_RA_CLIENT)
+        self.repo.delete_repository(self.project_ra_name_a, self.repo_name_pa.split('/')[1], **self.USER_RA_CLIENT)
 
         #2. Delete project(PA);
         self.project.delete_project(self.project_ra_id_a, **self.USER_RA_CLIENT)

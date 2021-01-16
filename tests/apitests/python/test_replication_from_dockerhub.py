@@ -35,7 +35,7 @@ class TestProjects(unittest.TestCase):
         self.registry.delete_registry(TestProjects.registry_id, **ADMIN_CLIENT)
 
         #1. Delete repository(RA);
-        self.repo.delete_repoitory(TestProjects.project_name, self.image, **TestProjects.USER_add_rule_CLIENT)
+        self.repo.delete_repository(TestProjects.project_name, self.image, **TestProjects.USER_add_rule_CLIENT)
 
         #3. Delete project(PA);
         self.project.delete_project(TestProjects.project_add_rule_id, **TestProjects.USER_add_rule_CLIENT)

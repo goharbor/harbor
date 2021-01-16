@@ -61,7 +61,7 @@ class TestProjects(unittest.TestCase):
         _assert_status_code(repo_name, repo_data[0].name)
 
         #5. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(TestProjects.project_del_repo_name, repo_name.split('/')[1], **TestProjects.USER_del_repo_CLIENT)
+        self.repo.delete_repository(TestProjects.project_del_repo_name, repo_name.split('/')[1], **TestProjects.USER_del_repo_CLIENT)
 
         #6. Get repository by user(UA), it should get nothing;
         repo_data = self.repo.list_repositories(TestProjects.project_del_repo_name, **TestProjects.USER_del_repo_CLIENT)
