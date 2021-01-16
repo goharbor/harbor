@@ -95,6 +95,16 @@ func (c *controller) Start(ctx context.Context, policy *model.Policy, resource *
 		// may be submitted already when the process starts, so create a new context
 		// with orm populated
 		ctxx := orm.NewContext(context.Background(), c.ormCreator.Create())
+
+		// as we start a new transaction in the goroutine, the execution record may not
+		// be inserted yet, wait until it is ready before continue
+		if err := lib.RetryUntil(func() error {
+			_, err := c.execMgr.Get(ctxx, id)
+			return err
+		}); err != nil {
+			logger.Errorf("failed to wait the execution record to be inserted: %v", err)
+		}
+
 		err := c.flowCtl.Start(ctxx, id, policy, resource)
 		if err == nil {
 			// no err, return directly

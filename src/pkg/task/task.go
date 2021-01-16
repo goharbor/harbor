@@ -88,6 +88,10 @@ func (m *manager) Create(ctx context.Context, executionID int64, jb *Job, extraA
 	log.Debugf("the database record for task %d created", id)
 
 	// submit job to jobservice
+	// As all database operations are in a transaction which is committed until API returns,
+	// when the job is submitted to the jobservice and running, the task record may not
+	// insert yet, this will cause the status hook handler returning 404, and the jobservice
+	// will re-send the status hook again
 	jobID, err := m.submitJob(ctx, id, jb)
 	if err != nil {
 		// failed to submit job to jobservice, delete the task record
