@@ -36,6 +36,8 @@ func NewExporter(opt *Opt) *Exporter {
 	exporter.RegisterCollector(healthCollectorName, NewHealthCollect(hbrCli))
 	exporter.RegisterCollector(systemInfoCollectorName, NewSystemInfoCollector(hbrCli))
 	exporter.RegisterCollector(ProjectCollectorName, NewProjectCollector())
+	exporter.RegisterCollector(ArtifactCollectorName, NewArtifactCollector())
+
 	r := prometheus.NewRegistry()
 	r.MustRegister(exporter)
 	exporter.Server = newServer(opt, r)
