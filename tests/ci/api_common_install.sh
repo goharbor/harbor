@@ -22,6 +22,11 @@ then
     sed "s/# github_token: xxx/github_token: $GITHUB_TOKEN/" -i make/harbor.yml
 fi
 
+sed "s|# metric:|metric:|" -i make/harbor.yml
+sed "s|#   enabled: false|  enabled: true|" -i make/harbor.yml
+sed "s|#   port: 9090|  port: 9090|" -i make/harbor.yml
+sed "s|#   path: /metrics|  path: /metrics|" -i make/harbor.yml
+
 sudo make build_base_docker compile build prepare COMPILETAG=compile_golangimage GOBUILDTAGS="include_oss include_gcs" NOTARYFLAG=true TRIVYFLAG=true CHARTFLAG=true GEN_TLS=true
 
 # set the debugging env

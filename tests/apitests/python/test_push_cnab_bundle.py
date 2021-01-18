@@ -28,7 +28,7 @@ class TestCNAB(unittest.TestCase):
             3. Delete user(UA);
         """
         #1. Delete repository(RA) by user(UA);
-        TestCNAB.repo.delete_repoitory(TestCNAB.project_name, TestCNAB.cnab_repo_name, **TestCNAB.USER_CLIENT)
+        TestCNAB.repo.delete_repository(TestCNAB.project_name, TestCNAB.cnab_repo_name, **TestCNAB.USER_CLIENT)
 
         #2. Delete project(PA);
         TestCNAB.project.delete_project(TestCNAB.project_id, **TestCNAB.USER_CLIENT)

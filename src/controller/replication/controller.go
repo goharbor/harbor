@@ -116,12 +116,22 @@ func (c *controller) Stop(ctx context.Context, id int64) error {
 }
 
 func (c *controller) ExecutionCount(ctx context.Context, query *q.Query) (int64, error) {
-	query = q.MustClone(query)
-	query.Keywords["VendorType"] = job.Replication
-	return c.execMgr.Count(ctx, query)
+	return c.execMgr.Count(ctx, c.buildExecutionQuery(query))
 }
 
 func (c *controller) ListExecutions(ctx context.Context, query *q.Query) ([]*Execution, error) {
+	execs, err := c.execMgr.List(ctx, c.buildExecutionQuery(query))
+	if err != nil {
+		return nil, err
+	}
+	var executions []*Execution
+	for _, exec := range execs {
+		executions = append(executions, convertExecution(exec))
+	}
+	return executions, nil
+}
+
+func (c *controller) buildExecutionQuery(query *q.Query) *q.Query {
 	// as the following logic may change the content of the query, clone it first
 	query = q.MustClone(query)
 	query.Keywords["VendorType"] = job.Replication
@@ -134,16 +144,7 @@ func (c *controller) ListExecutions(ctx context.Context, query *q.Query) ([]*Exe
 		query.Keywords["VendorID"] = value
 		delete(query.Keywords, "policy_id")
 	}
-
-	execs, err := c.execMgr.List(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	var executions []*Execution
-	for _, exec := range execs {
-		executions = append(executions, convertExecution(exec))
-	}
-	return executions, nil
+	return query
 }
 
 func (c *controller) GetExecution(ctx context.Context, id int64) (*Execution, error) {

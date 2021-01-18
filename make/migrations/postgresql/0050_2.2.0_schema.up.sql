@@ -312,7 +312,7 @@ BEGIN
             VALUES ('GARBAGE_COLLECTION', -1,
                 (SELECT schd.cron_str::json->>'cron'),
                 'GARBAGE_COLLECTION',
-                (SELECT json_build_object('trigger', null, 'deleteuntagged', schd.job_parameters::json->'delete_untagged', 'dryrun', false, 'job_parameters', schd.job_parameters)),
+                (SELECT json_build_object('trigger', null, 'deleteuntagged', schd.job_parameters::json->'delete_untagged', 'dryrun', false, 'extra_attrs', schd.job_parameters::json)),
                 (SELECT schd.cron_str::json->>'type'),
                 (SELECT json_build_object('delete_untagged', schd.job_parameters::json->'delete_untagged')),
                 schd.creation_time, schd.update_time) RETURNING id INTO new_schd_id;
@@ -414,7 +414,7 @@ BEGIN
     LOOP
         INSERT INTO schedule (vendor_type, vendor_id, cron, callback_func_name,
             cron_type, creation_time, update_time)
-            VALUES ('IMAGE_SCAN_ALL', 0,
+            VALUES ('SCAN_ALL', 0,
                  (SELECT schd.cron_str::json->>'cron'),
                 'scanAll',
                 (SELECT schd.cron_str::json->>'type'),

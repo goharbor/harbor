@@ -48,7 +48,10 @@ import (
 // DefaultController is a default singleton scan API controller.
 var DefaultController = NewController()
 
+// const definitions
 const (
+	VendorTypeScanAll = "SCAN_ALL"
+
 	configRegistryEndpoint = "registryEndpoint"
 	configCoreInternalAddr = "coreInternalAddr"
 
@@ -62,7 +65,7 @@ const (
 
 func init() {
 	// keep only the latest created 5 scan all execution records
-	task.SetExecutionSweeperCount(job.ImageScanAllJob, 5)
+	task.SetExecutionSweeperCount(VendorTypeScanAll, 5)
 }
 
 // uuidGenerator is a func template which is for generating UUID.
@@ -277,7 +280,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 }
 
 func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bool) (int64, error) {
-	executionID, err := bc.execMgr.Create(ctx, job.ImageScanAllJob, 0, trigger)
+	executionID, err := bc.execMgr.Create(ctx, VendorTypeScanAll, 0, trigger)
 	if err != nil {
 		return 0, err
 	}
