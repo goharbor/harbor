@@ -3267,6 +3267,9 @@ definitions:
       email_username:
         type: string
         description: The username for authenticate against SMTP server.
+      email_password:
+        type: string
+        description: The password of the email user.
       email_ssl:
         type: boolean
         description: 'When it''s set to true the system will access Email server via TLS by default.  If it''s set to false, it still will handle "STARTTLS" from server side.'
@@ -3309,6 +3312,21 @@ definitions:
       ldap_group_admin_dn:
         type: string
         description: Specify the ldap group which have the same privilege with Harbor admin.
+      ldap_verify_cert:
+        type: boolean
+        description: Whether verify ldap server cert.
+      uaa_endpoint:
+        type: string
+        description: The endpoint of uaa server.
+      uaa_client_id:
+        type: string
+        description: The client id of uaa.
+      uaa_client_secret:
+        type: string
+        description: The client secret of uaa.
+      uaa_verify_cert:
+        type: boolean
+        description: Whether verify the uaa server cert.
       oidc_client_id:
         type: string
         description: The client id of the OIDC.
@@ -3345,6 +3363,9 @@ definitions:
       token_expiration:
         type: integer
         description: 'The expiration time of the token for internal Registry, in minutes.'
+      robot_token_duration:
+        type: integer
+        description: 'The expiration time of the robot account, in days.'
       verify_remote_cert:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access a remote Harbor instance for replication.
@@ -3361,6 +3382,9 @@ definitions:
                 type: integer
                 description: 'The offset in seconds of UTC 0 o''clock, only valid when the policy type is "daily"'
             description: 'The parameters of the policy, the values are dependant on the type of the policy.'
+      notification_enable:
+        type: boolean
+        description: 'The flag to indicate whether notification mechanism is enabled on Harbor instance.'
   ConfigurationsResponse:
     type: object
     properties:
@@ -3427,6 +3451,18 @@ definitions:
       ldap_group_admin_dn:
         $ref: '#/definitions/StringConfigItem'
         description: Specify the ldap group which have the same privilege with Harbor admin.
+      ldap_verify_cert:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Whether verify ldap server cert.
+      uaa_endpoint:
+        $ref: '#/definitions/StringConfigItem'
+        description: The endpoint of uaa server.
+      uaa_client_id:
+        $ref: '#/definitions/StringConfigItem'
+        description: The client id of uaa.
+      uaa_verify_cert:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Whether verify the uaa server cert.
       oidc_client_id:
         $ref: '#/definitions/StringConfigItem'
         description: The client id of the OIDC.
@@ -3460,6 +3496,9 @@ definitions:
       token_expiration:
         $ref: '#/definitions/IntegerConfigItem'
         description: 'The expiration time of the token for internal Registry, in minutes.'
+      robot_token_duration:
+        $ref: '#/definitions/IntegerConfigItem'
+        description: 'The expiration time of the robot account, in days.'
       verify_remote_cert:
         $ref: '#/definitions/BoolConfigItem'
         description: Whether or not the certificate will be verified when Harbor tries to access a remote Harbor instance for replication.
