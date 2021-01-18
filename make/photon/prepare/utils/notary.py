@@ -1,5 +1,5 @@
 import os, shutil, pathlib
-from g import templates_dir, config_dir, root_crt_path, secret_key_dir, secret_dir, DEFAULT_UID, DEFAULT_GID
+from g import templates_dir, config_dir, secret_key_dir, secret_dir, DEFAULT_UID, DEFAULT_GID
 from .cert import openssl_installed, create_cert, create_root_cert, get_alias, create_ext_file, san_existed
 from .jinja import render_jinja
 from .misc import mark_file, prepare_dir
@@ -20,7 +20,7 @@ notary_server_env_path = os.path.join(notary_config_dir, "server_env")
 
 
 def prepare_env_notary(nginx_config_dir):
-    notary_config_dir = prepare_dir(config_dir, "notary")
+    prepare_dir(notary_config_dir)
     old_signer_cert_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer.crt'))
     old_signer_key_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer.key'))
     old_signer_ca_cert_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer-ca.crt'))
@@ -30,16 +30,20 @@ def prepare_env_notary(nginx_config_dir):
     signer_key_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer.key'))
     signer_ca_cert_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer-ca.crt'))
 
-
-
     # If openssl installed, using it to check san existed in cert.
     # Remove cert file if it not contains san
     if signer_cert_secret_path.exists() and openssl_installed():
         if not san_existed(signer_cert_secret_path):
-            signer_cert_secret_path.unlink(missing_ok=True)
+            try:
+                signer_cert_secret_path.unlink()
+            except FileNotFoundError:
+                pass
     if old_signer_cert_secret_path.exists() and openssl_installed():
         if not san_existed(old_signer_cert_secret_path):
-            old_signer_cert_secret_path.unlink(missing_ok=True)
+            try:
+                old_signer_cert_secret_path.unlink()
+            except FileNotFoundError:
+                pass
 
     # In version 1.8 the secret path changed
     # If all cert, key and ca files are existed in new location don't do anything
