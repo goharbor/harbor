@@ -78,7 +78,7 @@ func (c *controller) Start(ctx context.Context, policy Policy, trigger string) (
 		return -1, err
 	}
 	_, err = c.taskMgr.Create(ctx, execID, &task.Job{
-		Name: job.ImageGC,
+		Name: job.GarbageCollection,
 		Metadata: &job.Metadata{
 			JobKind: job.KindGeneric,
 		},

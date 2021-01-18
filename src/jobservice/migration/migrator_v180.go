@@ -29,6 +29,12 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+const (
+	jobNameGarbageCollection    = "IMAGE_GC"
+	jobNameScanAll              = "IMAGE_SCAN_ALL"
+	jobNameReplicationScheduler = "IMAGE_REPLICATE"
+)
+
 // PolicyMigrator migrate the cron job policy to new schema
 type PolicyMigrator struct {
 	// namespace of rdb
@@ -299,9 +305,9 @@ func clearDuplicatedPolicies(conn redis.Conn, ns string) error {
 			continue
 		}
 
-		if p.JobName == job.ImageScanAllJob ||
-			p.JobName == job.ImageGC ||
-			p.JobName == job.ReplicationScheduler {
+		if p.JobName == jobNameScanAll ||
+			p.JobName == jobNameGarbageCollection ||
+			p.JobName == jobNameReplicationScheduler {
 			score, _ := strconv.ParseInt(string(bytes[i+1].([]byte)), 10, 64)
 
 			key := hashKey(p)

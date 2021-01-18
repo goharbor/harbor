@@ -47,7 +47,7 @@ func init() {
 	}
 
 	// NOTE: the vendor type of execution for the scan job trigger by the scan all is job.ImageScanAllJob
-	if err := task.RegisterCheckInProcessor(job.ImageScanAllJob, scanTaskCheckInProcessor); err != nil {
+	if err := task.RegisterCheckInProcessor(VendorTypeScanAll, scanTaskCheckInProcessor); err != nil {
 		log.Fatalf("failed to register the checkin processor for the scan all job, error %v", err)
 	}
 
