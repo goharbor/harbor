@@ -215,6 +215,11 @@ Test Case - Replication Of Push Chart from Self To Harbor
 Test Case - Replication Of Push Images from Self To Harbor By Push Event
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
+    ${image}=   Set Variable    test_large_image
+    ${image_size}=  Set Variable  4096
+    ${tag1}=  Set Variable  large_f
+    @{tags}   Create List  ${tag1}
+
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project    project${d}
@@ -227,8 +232,9 @@ Test Case - Replication Of Push Images from Self To Harbor By Push Event
     Logout Harbor
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project    project_dest${d}
-    Push Image    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    centos
-    Image Should Be Replicated To Project  project_dest${d}  centos
+    Push Special Image To Project  project${d}  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${image}  tags=@{tags}  size=${image_size}
+    # Use tag as identifier for this artifact
+    Image Should Be Replicated To Project  project_dest${d}  ${image}  tag=${tag1}  expected_image_size_in_regexp=4(\\\.\\d{1,2})*GB
     Close Browser
 
 Test Case - Replication Of Pull Images from AWS-ECR To Self

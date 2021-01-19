@@ -1,4 +1,4 @@
-f# Copyright Project Harbor Authors
+# Copyright Project Harbor Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -287,3 +287,8 @@ Run Curl And Return Json
     Create File  ${json_data_file}  ${output}
     ${json}=    Load Json From File    ${json_data_file}
     [Return]  ${json}
+
+Log All
+    [Arguments]  ${text}
+    Log To Console  ${text}
+    Log  ${text}

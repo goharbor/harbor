@@ -296,10 +296,21 @@ Delete A Label
 
 ## Garbage Collection
 Switch To Garbage Collection
+    Switch To Configure
     Sleep  1
     Retry Element Click  xpath=${gc_config_page}
     Wait Until Page Contains Element  ${garbage_collection_xpath}
     Retry Element Click  xpath=${garbage_collection_xpath}
+
+Set GC Schedule
+    [Arguments]  ${type}  ${value}=${null}
+    Switch To Garbage Collection
+    Retry Double Keywords When Error  Retry Element Click  ${GC_schedule_edit_btn}  Retry Wait Until Page Not Contains Element  ${GC_schedule_edit_btn}
+    Retry Element Click  ${GC_schedule_select}
+    Run Keyword If  '${type}'=='custom'  Run Keywords  Retry Element Click  ${vulnerability_dropdown_list_item_custom}  AND  Retry Text Input  ${targetCron_id}  ${value}
+    ...  ELSE  Retry Element Click  ${vulnerability_dropdown_list_item_none}
+    Retry Double Keywords When Error  Retry Element Click  ${GC_schedule_save_btn}  Retry Wait Until Page Not Contains Element  ${GC_schedule_save_btn}
+    Capture Page Screenshot
 
 Click GC Now
     Sleep  1
