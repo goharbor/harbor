@@ -264,6 +264,10 @@ func UserInfoFromToken(ctx context.Context, token *Token) (*UserInfo, error) {
 	if err != nil {
 		log.Warningf("Failed to get userInfo by calling remote userinfo endpoint, error: %v ", err)
 	}
+
+	if setting.UserClaim != "" && local.Username == "" && remote.Username == "" {
+		return nil, fmt.Errorf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
+	}
 	if remote != nil && local != nil {
 		if remote.Subject != local.Subject {
 			return nil, fmt.Errorf("the subject from userinfo: %s does not match the subject from ID token: %s, probably a security attack happened", remote.Subject, local.Subject)
@@ -338,11 +342,11 @@ func userInfoFromClaims(c claimsProvider, setting models.OIDCSetting) (*UserInfo
 			return nil, err
 		}
 
-		username, ok := allClaims[setting.UserClaim].(string)
-		if !ok {
-			return nil, fmt.Errorf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
+		if username, ok := allClaims[setting.UserClaim].(string); ok {
+			res.Username = username
+		} else {
+			log.Warningf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
 		}
-		res.Username = username
 	}
 	res.Groups, res.hasGroupClaim = groupsFromClaims(c, setting.GroupsClaim)
 	if len(setting.AdminGroup) > 0 {
