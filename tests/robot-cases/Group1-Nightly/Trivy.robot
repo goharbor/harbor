@@ -111,6 +111,7 @@ Test Case - Project Level Image Serverity Policy
 
 #Important Note: All CVE IDs in CVE Allowlist cases must unique!
 Test Case - Verfiy System Level CVE Allowlist
+    [Tags]  sys_cve
     Body Of Verfiy System Level CVE Allowlist  goharbor/harbor-portal  2cb6a1c24dd6b88f11fd44ccc6560cb7be969f8ac5f752802c99cae6bcd592bb  CVE-2019-19317\nCVE-2019-19646 \nCVE-2019-5188 \nCVE-2019-20387 \nCVE-2019-17498 \nCVE-2019-20372 \nCVE-2019-19244 \nCVE-2019-19603 \nCVE-2019-19880 \nCVE-2019-19923 \nCVE-2019-19925 \nCVE-2019-19926 \nCVE-2019-19959 \nCVE-2019-20218 \nCVE-2019-19232 \nCVE-2019-19234 \nCVE-2019-19645  CVE-2019-18276
 
 Test Case - Verfiy Project Level CVE Allowlist

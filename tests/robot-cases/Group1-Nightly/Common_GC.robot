@@ -33,7 +33,7 @@ Test Case - Garbage Collection
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  redis
     Sleep  2
     Go Into Project  project${d}
-    Delete Repo  project${d}
+    Delete Repo  project${d}  redis
     Sleep  2
     GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Retry GC Should Be Successful  1  7 blobs and 1 manifests eligible for deletion

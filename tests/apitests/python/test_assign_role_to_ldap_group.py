@@ -85,8 +85,8 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
             self.assertTrue(self.project.query_user_logs(project_name, **USER_GUEST)>0, "guest user can see logs")
             self.assertTrue(self.project.query_user_logs(project_name, status_code=403, **USER_TEST)==0, "test user can not see any logs")
 
-            self.repo.delete_repoitory(project_name, repo_name_admin.split('/')[1], **USER_ADMIN)
-            self.repo.delete_repoitory(project_name, repo_name_dev.split('/')[1], **USER_ADMIN)
+            self.repo.delete_repository(project_name, repo_name_admin.split('/')[1], **USER_ADMIN)
+            self.repo.delete_repository(project_name, repo_name_dev.split('/')[1], **USER_ADMIN)
 
 if __name__ == '__main__':
     unittest.main()

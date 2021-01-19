@@ -22,10 +22,10 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
         #1. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(TestProjects.project_ra_name_a, TestProjects.repo_name_in_project_a.split('/')[1], **TestProjects.USER_RA_CLIENT)
-        self.repo.delete_repoitory(TestProjects.project_ra_name_b, TestProjects.repo_name_in_project_b.split('/')[1], **TestProjects.USER_RA_CLIENT)
-        self.repo.delete_repoitory(TestProjects.project_ra_name_c, TestProjects.repo_name_in_project_c.split('/')[1], **TestProjects.USER_RA_CLIENT)
-        self.repo.delete_repoitory(TestProjects.project_ra_name_a, TestProjects.repo_name_pa.split('/')[1], **TestProjects.USER_RA_CLIENT)
+        self.repo.delete_repository(TestProjects.project_ra_name_a, TestProjects.repo_name_in_project_a.split('/')[1], **TestProjects.USER_RA_CLIENT)
+        self.repo.delete_repository(TestProjects.project_ra_name_b, TestProjects.repo_name_in_project_b.split('/')[1], **TestProjects.USER_RA_CLIENT)
+        self.repo.delete_repository(TestProjects.project_ra_name_c, TestProjects.repo_name_in_project_c.split('/')[1], **TestProjects.USER_RA_CLIENT)
+        self.repo.delete_repository(TestProjects.project_ra_name_a, TestProjects.repo_name_pa.split('/')[1], **TestProjects.USER_RA_CLIENT)
 
         #2. Delete project(PA);
         self.project.delete_project(TestProjects.project_ra_id_a, **TestProjects.USER_RA_CLIENT)

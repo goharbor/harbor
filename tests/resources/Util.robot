@@ -286,3 +286,8 @@ Run Curl And Return Json
     Create File  ${json_data_file}  ${output}
     ${json}=    Load Json From File    ${json_data_file}
     [Return]  ${json}
+
+Log All
+    [Arguments]  ${text}
+    Log To Console  ${text}
+    Log  ${text}

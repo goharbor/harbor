@@ -24,7 +24,7 @@ class TestProjects(unittest.TestCase):
     def tearDown(self):
         # remove the deletion as the signed image cannot be deleted.
         #1. Delete repository(RA) by user(UA);
-        #self.repo.delete_repoitory(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_sign_image_CLIENT)
+        #self.repo.delete_repository(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_sign_image_CLIENT)
 
         #2. Delete project(PA);
         #self.project.delete_project(TestProjects.project_sign_image_id, **TestProjects.USER_sign_image_CLIENT)
