@@ -226,7 +226,6 @@ Helm3 CLI Push Without Sign In Harbor
 #Important Note: All CVE IDs in CVE Allowlist cases must unique!
 Body Of Verfiy System Level CVE Allowlist
     [Arguments]  ${image_argument}  ${sha256_argument}  ${most_cve_list}  ${single_cve}
-    [Tags]  run-once
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    ${image_argument}
@@ -240,12 +239,14 @@ Body Of Verfiy System Level CVE Allowlist
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=current image without vulnerability scanning cannot be pulled due to configured policy
+    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image}
     Scan Repo  ${sha256}  Succeed
     Logout Harbor
+
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Check Listed In CVE Allowlist  project${d}  ${image}  ${sha256}  ${single_cve}  is_in=No
     Switch To Configure
     Switch To Configuration System Setting
     # Add Items To System CVE Allowlist    CVE-2019-19317\nCVE-2019-19646 \nCVE-2019-5188 \nCVE-2019-20387 \nCVE-2019-17498 \nCVE-2019-20372 \nCVE-2019-19244 \nCVE-2019-19603 \nCVE-2019-19880 \nCVE-2019-19923 \nCVE-2019-19925 \nCVE-2019-19926 \nCVE-2019-19959 \nCVE-2019-20218 \nCVE-2019-19232 \nCVE-2019-19234 \nCVE-2019-19645
@@ -256,6 +257,8 @@ Body Of Verfiy System Level CVE Allowlist
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Delete Top Item In System CVE Allowlist  count=16
     Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
+
+    Check Listed In CVE Allowlist  project${d}  ${image}  ${sha256}  ${single_cve}
     Close Browser
 
 Body Of Verfiy Project Level CVE Allowlist
@@ -347,19 +350,20 @@ Body Of Replication Of Push Images to Registry Triggered By Event
     Executions Result Count Should Be  Succeeded  event_based  2
 
 Body Of Replication Of Pull Images from Registry To Self
-    [Arguments]  ${provider}  ${endpoint}  ${username}  ${pwd}  ${project_name}  @{target_images}
+    [Arguments]  ${provider}  ${endpoint}  ${username}  ${pwd}  ${src_project_name}  ${des_project_name}  @{target_images}
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
+    ${_des_pro_name}=  Set Variable If  '${des_project_name}'=='${null}'  project${d}  ${des_project_name}
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project  project${d}
+    Run Keyword If  '${des_project_name}'=='${null}'  Create An New Project And Go Into Project  ${_des_pro_name}
     Switch To Registries
     Create A New Endpoint    ${provider}    e${d}    ${endpoint}    ${username}    ${pwd}    Y
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint    rule${d}    pull    ${project_name}    image    e${d}    project${d}
+    Create A Rule With Existing Endpoint  rule${d}  pull  ${src_project_name}  image  e${d}  ${_des_pro_name}
     Select Rule And Replicate  rule${d}
     FOR    ${item}    IN    @{target_images}
-        Log To Console  Check image replicated to Project project${d} ${item}
-        Image Should Be Replicated To Project  project${d}   ${item}  times=2
+        Log To Console  Check image replicated to Project ${_des_pro_name} ${item}
+        Image Should Be Replicated To Project  ${_des_pro_name}   ${item}  times=2
     END
     Close Browser

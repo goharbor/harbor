@@ -227,14 +227,25 @@ Test Case - User View Logs
     ${d}=   Get Current Date    result_format=%m%s
     ${img}=    Set Variable    kong
     ${tag}=    Set Variable    latest
+    ${replication_image}=    Set Variable    for_log_view
+    ${replication_tag}=      Set Variable    base
+    @{target_images}=  Create List  ${replication_image}
+    ${user}=    Set Variable    user002
+    ${pwd}=    Set Variable    Test1@34
 
-    Sign In Harbor  ${HARBOR_URL}  user002  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     Create An New Project And Go Into Project  project${d}
+    Logout Harbor
 
-    Push image  ${ip}  user002  Test1@34  project${d}  ${img}:${tag}
-    Pull image  ${ip}  user002  Test1@34  project${d}  ${img}:${tag}
+    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/${replication_image}  project${d}  @{target_images}
 
+    Push image  ${ip}  ${user}  ${pwd}  project${d}  ${img}:${tag}
+    Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${replication_image}:${replication_tag}
+
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     Go Into Project  project${d}
+    Delete Repo  project${d}  ${replication_image}
     Delete Repo  project${d}  ${img}
 
     Sleep  3
@@ -694,40 +705,6 @@ Test Case - Read Only Mode
     Disable Read Only
     Sleep  5
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
-    Close Browser
-
-Test Case - Proxy Cache
-    [Tags]  run-once  proxy_cache
-    ${d}=  Get Current Date    result_format=%m%s
-    ${registry}=  Set Variable  https://cicd.harbor.vmwarecna.net
-    ${user_namespace}=  Set Variable  nightly
-    ${image}=  Set Variable  for_proxy
-    ${tag}=  Set Variable  1.0
-    ${manifest_index}=  Set Variable  index081597864867
-    ${manifest_tag}=  Set Variable  index_tag081597864867
-    ${test_user}=  Set Variable  user010
-    ${test_pwd}=  Set Variable  Test1@34
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Registries
-    Create A New Endpoint  harbor  e1${d}  ${registry}  ${null}  ${null}
-    Create An New Project And Go Into Project  project${d}  proxy_cache=${true}  registry=e1${d}
-    Manage Project Member Without Sign In  project${d}  ${test_user}  Add  has_image=${false}
-    Go Into Project  project${d}  has_image=${false}
-    Change Member Role  ${test_user}  Developer
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
-    Cannot Push image  ${ip}  ${test_user}  ${test_pwd}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
-    Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${user_namespace}/${image}  tag=${tag}
-    Pull Image  ${ip}  ${test_user}  ${test_pwd}  project${d}  ${user_namespace}/${manifest_index}  tag=${manifest_tag}
-    Log To Console  Start to Sleep 3 minitues......
-    Sleep  180
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${user_namespace}/${image}
-    Log To Console  Start to Sleep 10 minitues......
-    Sleep  500
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${user_namespace}/${manifest_index}
-    Go Into Index And Contain Artifacts  ${manifest_tag}  limit=1
     Close Browser
 
 Test Case - Distribution CRUD

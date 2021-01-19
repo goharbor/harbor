@@ -21,7 +21,7 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 Create A Random Permission Item List
-    ${permission_item_all_list}=  Create List  Push&Pull Artifact
+    ${permission_item_all_list}=  Create List  Push Artifact
     ...                                    Pull Artifact
     ...                                    Delete Artifact
     ...                                    Read Helm Chart
@@ -42,6 +42,9 @@ Create A Random Permission Item List
         Run Keyword If  '${r}'=='1'  Append To List  ${tmp_list}  ${permission_item_all_list}[${i}]
     END
     Run Keyword If  ${tmp_list}==@{EMPTY}  Append To List  ${tmp_list}  ${permission_item_all_list}[${0}]
+    ${push_pos}=  Get Index From List  ${tmp_list}  ${permission_item_all_list}[${0}]
+    ${pull_pos}=  Get Index From List  ${tmp_list}  ${permission_item_all_list}[${1}]
+    Run Keyword If  '${push_pos}' >= '${0}' and '${pull_pos}'=='${-1}'  Append To List  ${tmp_list}  ${permission_item_all_list}[${1}]
     [Return]  ${tmp_list}
 
 Create A Random Project Permission List

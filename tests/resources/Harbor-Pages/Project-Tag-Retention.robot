@@ -85,6 +85,8 @@ Execute Result Should Be
         ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(., '${result}')]
         Exit For Loop If  '${out[0]}'=='PASS'
         Sleep  6
+        Retry Element Click  ${project_tag_retention_refresh_xpath}
+        Retry Wait Until Page Contains Element  xpath=${project_tag_retention_record_yes_xpath}
     END
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 

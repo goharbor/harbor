@@ -38,6 +38,11 @@ def docker_manifest_create(index, manifests):
     print( "Docker Manifest Command: ", command)
     base.run_command(command)
 
+def docker_images_all_list():
+    command = ["sudo", "docker","images","-a"]
+    print( "Docker images Command: ", command)
+    base.run_command(command)
+
 def docker_manifest_push(index):
     command = ["sudo", "docker","manifest","push",index]
     print( "Docker Manifest Command: ", command)
@@ -116,7 +121,15 @@ class DockerAPI(object):
                 if str(err_message).lower().find("error".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when login registry {}, return message is [{}]".format (registry, err_message))
 
-    def docker_image_pull(self, image, tag = None, expected_error_message = None):
+    def docker_image_remove(self, image, tag = "latest"):
+        docker_images_all_list()
+        try:
+            self.DCLIENT.remove_image(image+":"+tag, force=True, noprune=False)
+        except Exception as err:
+            print( "Docker image remove catch exception:", str(err))
+        docker_images_all_list()
+
+    def docker_image_pull(self, image, tag = None, expected_error_message = None, is_remove_image = True):
         ret = ""
         err_message = ""
         if tag is not None:
@@ -144,6 +157,8 @@ class DockerAPI(object):
             else:
                 if str(err_message).lower().find("error".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when pull image {}, return message is [{}]".format (image, err_message))
+            if is_remove_image:
+                self.docker_image_remove(image, _tag)
 
     def docker_image_tag(self, image, harbor_registry, tag = None):
         _tag = base._random_name("tag")
@@ -185,6 +200,7 @@ class DockerAPI(object):
     def docker_image_build(self, harbor_registry, tags=None, size=1, expected_error_message = None):
         ret = ""
         err_message = ""
+        docker_images_all_list()
         try:
             baseimage='busybox:latest'
             self.DCLIENT.login(username=DOCKER_USER, password=DOCKER_PWD)
@@ -208,7 +224,7 @@ class DockerAPI(object):
                 ret = self.DCLIENT.push(repo)
                 print("docker_image_push ret:", ret)
                 print("build image {} with size {}".format(repo, size))
-                self.DCLIENT.remove_image(repo)
+                self.DCLIENT.remove_image(repo, force=True, noprune=False)
             self.DCLIENT.remove_container(c)
             #self.DCLIENT.pull(repo)
             #image = self.DCLIENT2.images.get(repo)
@@ -229,3 +245,4 @@ class DockerAPI(object):
             else:
                 if str(err_message).lower().find("error".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when build image {}, return message is [{}]".format (harbor_registry, err_message))
+        docker_images_all_list()
