@@ -30,13 +30,10 @@ type basicAuthorizer struct {
 
 // Authorize requests
 func (ba *basicAuthorizer) Authorize(req *http.Request) error {
-	if len(ba.accessCred) == 0 {
-		return errors.Errorf("%s:%s", ba.typeID, "missing access credential")
-	}
-
 	if req != nil && len(ba.accessCred) > 0 {
 		data := base64.StdEncoding.EncodeToString([]byte(ba.accessCred))
 		req.Header.Add(authorization, fmt.Sprintf("%s %s", ba.typeID, data))
+		return nil
 	}
 
 	return errors.Errorf("%s: %s", ba.typeID, "missing data to authorize request")
