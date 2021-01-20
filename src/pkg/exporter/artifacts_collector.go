@@ -74,12 +74,8 @@ func (hc *ArtifactCollector) Describe(c chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector
 func (hc *ArtifactCollector) Collect(c chan<- prometheus.Metric) {
-	reportRecords, vulns, err := getVulnerabilitiesInfo()
+	reportRecords, err := getVulnerabilitiesStats()
 	if err != nil {
-		return
-	}
-
-	if err := computeVulnStats(reportRecords, vulns); err != nil {
 		return
 	}
 
@@ -234,4 +230,17 @@ func computeVulnStats(artifacts artifactReportRecords, vulns []vulnerabilityReco
 	}
 
 	return nil
+}
+
+func getVulnerabilitiesStats() (artifactReportRecords, error) {
+	reportRecords, vulns, err := getVulnerabilitiesInfo()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := computeVulnStats(reportRecords, vulns); err != nil {
+		return nil, err
+	}
+
+	return reportRecords, nil
 }
