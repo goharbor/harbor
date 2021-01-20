@@ -19,9 +19,7 @@ import (
 	"net/http"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib/errors"
 	libhttp "github.com/goharbor/harbor/src/lib/http"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
@@ -45,11 +43,17 @@ func (j *jobStatusHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := j.handler.Handle(r.Context(), sc); err != nil {
-		// ignore the not found error to avoid the jobservice re-sending the hook
-		if errors.IsNotFoundErr(err) {
-			log.Warningf("got not found error: %v, ignore it to avoid subsequent retrying webhooks from jobservice", err)
-			return
-		}
+		// When the status hook comes, the execution/task database record may not insert yet
+		// because of that the transaction isn't committed
+		// Do not ignore the NotFoundErr here to make jobservice resend the status hook
+		// again to avoid the status lost
+		/*
+			// ignore the not found error to avoid the jobservice re-sending the hook
+			if errors.IsNotFoundErr(err) {
+				log.Warningf("got not found error: %v, ignore it to avoid subsequent retrying webhooks from jobservice", err)
+				return
+			}
+		*/
 		libhttp.SendError(w, err)
 		return
 	}
