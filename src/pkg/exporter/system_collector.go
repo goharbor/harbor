@@ -17,10 +17,8 @@ var (
 	harborSysInfo = typedDesc{
 		desc: newDescWithLables("", "system_info", "Information of Harbor system",
 			"auth_mode",
-			"registry_url",
-			"external_url",
 			"harbor_version",
-			"registry_storage_provider"),
+			"self_registration"),
 		valueType: prometheus.GaugeValue,
 	}
 )
@@ -67,10 +65,8 @@ func (hc *SystemInfoCollector) getSysInfo() []prometheus.Metric {
 	json.NewDecoder(res.Body).Decode(&sysInfoResponse)
 	result = append(result, harborSysInfo.MustNewConstMetric(1,
 		sysInfoResponse.AuthMode,
-		sysInfoResponse.RegistryURL,
-		sysInfoResponse.ExternalURL,
 		sysInfoResponse.HarborVersion,
-		sysInfoResponse.StorageProvider))
+		sysInfoResponse.SelfRegistration))
 	if CacheEnabled() {
 		CachePut(systemInfoCollectorName, result)
 	}
@@ -78,9 +74,7 @@ func (hc *SystemInfoCollector) getSysInfo() []prometheus.Metric {
 }
 
 type responseSysInfo struct {
-	AuthMode        string `json:"auth_mode"`
-	RegistryURL     string `json:"registry_url"`
-	ExternalURL     string `json:"external_url"`
-	HarborVersion   string `json:"harbor_version"`
-	StorageProvider string `json:"registry_storage_provider_name"`
+	AuthMode         string `json:"auth_mode"`
+	HarborVersion    string `json:"harbor_version"`
+	SelfRegistration string `json:"self_registration"`
 }
