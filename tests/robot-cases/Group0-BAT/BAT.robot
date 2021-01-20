@@ -31,7 +31,7 @@ Test Case - Registry Basic Verfication
     Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Go Into Project  project${d}
-    Delete Repo  project${d}
+    Delete Repo  project${d}  busybox
 
     Close Browser
 

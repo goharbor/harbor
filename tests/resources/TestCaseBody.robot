@@ -174,19 +174,21 @@ Delete A Project Without Sign In Harbor
     [Arguments]  ${harbor_ip}=${ip}  ${username}=${HARBOR_ADMIN}  ${password}=${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s
     ${project_name}=  Set Variable  000${d}
+    ${image}=  Set Variable  hello-world
     Create An New Project And Go Into Project  ${project_name}
-    Push Image  ${harbor_ip}  ${username}  ${password}  ${project_name}  hello-world
+    Push Image  ${harbor_ip}  ${username}  ${password}  ${project_name}  ${image}
     Project Should Not Be Deleted  ${project_name}
     Go Into Project  ${project_name}
-    Delete Repo  ${project_name}
+    Delete Repo  ${project_name}  ${image}
     Navigate To Projects
     Project Should Be Deleted  ${project_name}
 
 Manage Project Member Without Sign In Harbor
     [Arguments]  ${sign_in_user}  ${sign_in_pwd}  ${test_user1}=user005  ${test_user2}=user006  ${is_oidc_mode}=${false}
     ${d}=    Get current Date  result_format=%m%s
+    ${image}=  Set Variable  hello-world
     Create An New Project And Go Into Project  project${d}
-    Push image  ${ip}  ${sign_in_user}  ${sign_in_pwd}  project${d}  hello-world
+    Push image  ${ip}  ${sign_in_user}  ${sign_in_pwd}  project${d}  ${image}
     Logout Harbor
 
     User Should Not Be A Member Of Project  ${test_user1}  ${sign_in_pwd}  project${d}  is_oidc_mode=${is_oidc_mode}
@@ -197,7 +199,7 @@ Manage Project Member Without Sign In Harbor
     Change User Role In Project  ${sign_in_user}  ${sign_in_pwd}  project${d}  ${test_user1}  Admin  is_oidc_mode=${is_oidc_mode}
     User Should Be Admin  ${test_user1}  ${sign_in_pwd}  project${d}  ${test_user2}  is_oidc_mode=${is_oidc_mode}
     Change User Role In Project  ${sign_in_user}  ${sign_in_pwd}  project${d}  ${test_user1}  Maintainer  is_oidc_mode=${is_oidc_mode}
-    User Should Be Maintainer  ${test_user1}  ${sign_in_pwd}  project${d}  is_oidc_mode=${is_oidc_mode}
+    User Should Be Maintainer  ${test_user1}  ${sign_in_pwd}  project${d}  ${image}  is_oidc_mode=${is_oidc_mode}
     Manage Project Member  ${sign_in_user}  ${sign_in_pwd}  project${d}  ${test_user1}  Remove  is_oidc_mode=${is_oidc_mode}
     User Should Not Be A Member Of Project  ${test_user1}  ${sign_in_pwd}  project${d}    is_oidc_mode=${is_oidc_mode}
     Push image  ${ip}  ${sign_in_user}  ${sign_in_pwd}  project${d}  hello-world
@@ -315,7 +317,7 @@ Body Of Verfiy Project Level CVE Allowlist By Quick Way of Add System
     Close Browser
 
 Body Of Replication Of Push Images to Registry Triggered By Event
-    [Arguments]  ${provider}  ${endpoint}  ${username}  ${pwd}  ${dest_namespace}
+    [Arguments]  ${provider}  ${endpoint}  ${username}  ${pwd}  ${dest_namespace}  ${image_size}=12
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
@@ -329,7 +331,7 @@ Body Of Replication Of Push Images to Registry Triggered By Event
     Create A New Endpoint    ${provider}    e${d}    ${endpoint}    ${username}    ${pwd}    Y
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    push    project${d}/*    image    e${d}    ${dest_namespace}  mode=Event Based  del_remote=${true}
-    Push Special Image To Project  project${d}  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${image}  tags=@{tags}  size=12
+    Push Special Image To Project  project${d}  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${image}  tags=@{tags}  size=${image_size}
     Filter Replication Rule  rule${d}
     Select Rule  rule${d}
     ${endpoint_body}=  Fetch From Right  ${endpoint}  //
@@ -337,7 +339,7 @@ Body Of Replication Of Push Images to Registry Triggered By Event
     Run Keyword If  '${provider}'=='docker-hub' or '${provider}'=='gitlab'  Docker Image Can Be Pulled  ${dest_namespace}/${image}:${tag1}   times=3
     Executions Result Count Should Be  Succeeded  event_based  1
     Go Into Project  project${d}
-    Delete Repo  project${d}
+    Delete Repo  project${d}  ${image}
     Run Keyword If  '${provider}'=='docker-hub' or '${provider}'=='gitlab'  Docker Image Can Not Be Pulled  ${dest_namespace}/${image}:${tag1}
     Switch To Replication Manage
     Filter Replication Rule  rule${d}

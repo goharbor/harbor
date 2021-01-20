@@ -24,7 +24,48 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
+Test Case - GC Schedule Job
+    [tags]  GC_schedule
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%M
+    Log To Console  GC Schedule Job ${d}
+    ${project_name}=  Set Variable  gc_schedule_proj${d}
+    ${image}=  Set Variable  redis
+    ${tag}=  Set Variable  latest
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  ${project_name}
+    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}:${tag}
+    Sleep  50
+    Go Into Repo  ${project_name}/${image}
+    Switch To Garbage Collection
+    Switch To GC History
+    Set GC Schedule  custom  value=0 */2 * * * *
+    Sleep  480
+    Set GC Schedule  none
+    Sleep  180
+    ${logs}=  Get GC Logs
+    ${logs}=  Should Match Regexp  ${logs}  \\\[(.+)\\\]
+    Log All  logs:${logs}[1]
+    ${logs} = 	Replace String 	${logs}[1] 	\\ 	${EMPTY} 	count=-1
+    ${logs} = 	Replace String 	${logs} 	"{ 	{ 	count=-1
+    ${logs} = 	Replace String 	${logs} 	}" 	} 	count=-1
+    Log All  str:${logs}
+    ${logs_list}=  Get Regexp Matches  ${logs}  {"creation_time.+?\\d{3}Z"}
+    Log All  logs_list:${logs_list}
+    ${len}=  Get Length  ${logs_list}
+    Log All  len:${len}
+    FOR  ${log}  IN  @{logs_list}
+        Log All  log:${log}
+        ${log_json}=  evaluate  json.loads('''${log}''')
+        Log All  log_json:${log_json}
+        Should Be Equal As Strings  ${log_json["job_kind"]}  SCHEDULE
+        Should Be Equal As Strings  '${log_json["job_name"]}'  'GARBAGE_COLLECTION'
+    END
+    #Only return latest 10 records for GC job
+    Should Be True  ${len} > 3 and ${len} < 6
+
 Test Case - Scan Schedule Job
+    [tags]  Scan_schedule
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%M
     Log To Console  ${d}
@@ -45,7 +86,7 @@ Test Case - Scan Schedule Job
         ${left} =  Evaluate 	${minite_int}%10
         Log To Console    ${i}/${left}
         Sleep  55
-        Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Set Scan Schedule  custom  value=* */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
+        Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Set Scan Schedule  custom  value=0 */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
         Exit For Loop If    '${flag}' == '${true}'
     END
     # After scan custom schedule is set, image should stay in unscanned status.
@@ -63,6 +104,7 @@ Test Case - Scan Schedule Job
     View Repo Scan Details  High  Medium
 
 Test Case - Replication Schedule Job
+    [tags]  Replication_schedule
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%M
     Log To Console  ${d}
@@ -82,7 +124,7 @@ Test Case - Replication Schedule Job
         ${minite_int} =  Convert To Integer  ${minite}
         ${left} =  Evaluate 	${minite_int}%10
         Log To Console    ${i}/${left}
-        Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Create A Rule With Existing Endpoint    rule${d}    pull    nightly/{mariadb,centos}    image    e${d}    ${project_name}  mode=Scheduled  cron=* */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
+        Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Create A Rule With Existing Endpoint    rule${d}    pull    nightly/{mariadb,centos}    image    e${d}    ${project_name}  mode=Scheduled  cron=0 */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
         Sleep  40
         Exit For Loop If    '${flag}' == '${true}'
     END
@@ -99,8 +141,8 @@ Test Case - Replication Schedule Job
 
     # Delete repository
     Go Into Project  ${project_name}
-    Delete Repo  ${project_name}/${image_a}
-    Delete Repo  ${project_name}/${image_b}
+    Delete Repo  ${project_name}  ${image_a}
+    Delete Repo  ${project_name}  ${image_b}
 
     # After replication schedule is set, project should contain 2 images.
     Log To Console  Sleep for 600 seconds......

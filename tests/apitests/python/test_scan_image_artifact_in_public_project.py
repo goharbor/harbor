@@ -55,7 +55,7 @@ class TestScanImageInPublicProject(unittest.TestCase):
                 self.scan.scan_artifact(project_name, repo_name, tag, username=username, password=password)
                 self.artifact.check_image_scan_result(project_name, image, tag, username=username, password=password, with_scan_overview=True)
 
-                self.repo.delete_repoitory(project_name, repo_name)
+                self.repo.delete_repository(project_name, repo_name)
 
 
 if __name__ == '__main__':

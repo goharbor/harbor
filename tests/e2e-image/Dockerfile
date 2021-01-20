@@ -2,7 +2,9 @@ FROM ubuntu:18.04
 ENV LANG C.UTF-8
 # V 2.0
 # V 2.0.1: upgrade docker to version 19.03.12
-# V 2.5 Add support for e2e py-test
+# V 2.5 Add support for e2e py-test (especially containerd)
+# V 2.6 upgrade helm2, helm3 and docker 20.10.0
+# V 2.6.1 upgrade helm2, helm3 and docker 20.10.1
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget curl gnupg2
 RUN apt-get install libseccomp2
@@ -87,8 +89,9 @@ RUN wget https://storage.googleapis.com/cri-containerd-release/cri-containerd-${
     tar --no-overwrite-dir -C / -xzf cri-containerd-${CONTAINERD_VERSION}.linux-amd64.tar.gz
 
 # Install docker, docker compose
-RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-19.03.12.tgz && \
-    tar --strip-components=1 -xvzf docker-19.03.12.tgz -C /usr/bin &&  \
+ENV DOCKER_VERSION 20.10.1
+RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz && \
+    tar --strip-components=1 -xvzf docker-$DOCKER_VERSION.tgz -C /usr/bin &&  \
     curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
 
@@ -104,14 +107,14 @@ RUN set -x \
 RUN curl -sSL https://github.com/vmware/govmomi/releases/download/v0.16.0/govc_linux_amd64.gz | gzip -d > /usr/local/bin/govc && \
     chmod +x /usr/local/bin/govc
 
-RUN wget https://get.helm.sh/helm-v2.14.1-linux-386.tar.gz && tar zxvf helm-v2.14.1-linux-386.tar.gz && \
-    cp linux-386/helm /usr/local/bin/helm && \
-    cp linux-386/helm /usr/local/bin/helm2 && \
-    helm init --client-only && \
+RUN wget https://get.helm.sh/helm-v2.16.12-linux-amd64.tar.gz && tar zxvf helm-v2.16.12-linux-amd64.tar.gz && \
+    cp linux-amd64/helm /usr/local/bin/helm && \
+    cp linux-amd64/helm /usr/local/bin/helm2 && \
+    helm init --stable-repo-url https://charts.helm.sh/stable --client-only && \
     helm plugin install https://github.com/chartmuseum/helm-push
 
-RUN wget https://get.helm.sh/helm-v3.0.0-linux-386.tar.gz && tar zxvf helm-v3.0.0-linux-386.tar.gz && \
-    mv linux-386/helm /usr/local/bin/helm3 && \
+RUN wget https://get.helm.sh/helm-v3.3.3-linux-amd64.tar.gz && tar zxvf helm-v3.3.3-linux-amd64.tar.gz && \
+    mv linux-amd64/helm /usr/local/bin/helm3 && \
     helm3 plugin install https://github.com/chartmuseum/helm-push
 
 RUN curl -LO https://github.com/deislabs/oras/releases/download/v0.8.1/oras_0.8.1_linux_amd64.tar.gz && \

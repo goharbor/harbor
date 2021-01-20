@@ -54,8 +54,10 @@ Push image
     Wait Unitl Command Success  docker push ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker logout ${ip}
     #Remove image for docker 20
-    Wait Unitl Command Success  docker rmi -f ${ip}/${project}/${image_in_use_with_tag}
-    Run Keyword If  ${need_pull_first}==${true}   Wait Unitl Command Success  docker rmi -f ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_in_use}
+    ${output}=  Wait Unitl Command Success  docker rmi -f ${ip}/${project}/${image_in_use_with_tag}
+    Log All  Docker rmi: ${output}
+    ${output}=  Run Keyword If  ${need_pull_first}==${true}   Wait Unitl Command Success  docker rmi -f ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_in_use}
+    Log All  Docker rmi: ${output}
     Sleep  1
 
 Push Image With Tag
@@ -193,8 +195,7 @@ Docker Login
 Docker Pull
     [Arguments]  ${image}
     ${output}=  Retry Keyword N Times When Error  2  Wait Unitl Command Success  docker pull ${image}
-    Log  ${output}
-    Log To Console  Docker Pull: ${output}
+    Log All  Docker Pull: ${output}
     [Return]  ${output}
 
 Docker Tag

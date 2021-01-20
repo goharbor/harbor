@@ -116,7 +116,7 @@ class TestTagImmutability(unittest.TestCase):
         self.artifact.delete_artifact(project_name, image_a["name"], image_a["tag1"], expect_status_code = 412,expect_response_body = "configured as immutable, cannot be deleted", **self.USER_CLIENT)
 
         #6. Repository is undeletable.
-        self.repo.delete_repoitory(project_name, image_a["name"], expect_status_code = 412, expect_response_body = "configured as immutable, cannot be deleted", **self.USER_CLIENT)
+        self.repo.delete_repository(project_name, image_a["name"], expect_status_code = 412, expect_response_body = "configured as immutable, cannot be deleted", **self.USER_CLIENT)
 
     def test_tag_is_undeletable(self):
         """

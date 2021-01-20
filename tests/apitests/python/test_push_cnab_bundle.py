@@ -28,7 +28,7 @@ class TestCNAB(unittest.TestCase):
             3. Delete user(UA);
         """
         #1. Delete repository(RA) by user(UA);
-        TestCNAB.repo.delete_repoitory(TestCNAB.project_name, TestCNAB.cnab_repo_name, **TestCNAB.USER_CLIENT)
+        TestCNAB.repo.delete_repository(TestCNAB.project_name, TestCNAB.cnab_repo_name, **TestCNAB.USER_CLIENT)
 
         #2. Delete project(PA);
         TestCNAB.project.delete_project(TestCNAB.project_id, **TestCNAB.USER_CLIENT)
@@ -71,7 +71,7 @@ class TestCNAB(unittest.TestCase):
 
         #3. Push bundle to harbor as repository(RA);
         target = harbor_server + "/" + TestCNAB.project_name  + "/" + TestCNAB.cnab_repo_name  + ":" + TestCNAB.cnab_tag
-        TestCNAB.reference_sha256 = library.cnab.push_cnab_bundle(harbor_server, TestCNAB.user_name, TestCNAB.user_push_cnab_password, "photon:latest", "kong:latest", target)
+        TestCNAB.reference_sha256 = library.cnab.push_cnab_bundle(harbor_server, TestCNAB.user_name, TestCNAB.user_push_cnab_password, "containrrr/watchtower:latest", "kong:latest", target)
 
         #4. Get repository from Harbor successfully;
         TestCNAB.cnab_bundle_data = TestCNAB.repo.get_repository(TestCNAB.project_name, TestCNAB.cnab_repo_name, **TestCNAB.USER_CLIENT)

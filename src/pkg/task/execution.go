@@ -123,8 +123,11 @@ func (e *executionManager) Create(ctx context.Context, vendorType string, vendor
 
 	// sweep the execution records to avoid the execution/task records explosion
 	go func() {
+		// as we start a new transaction here to do the sweep work, the current execution record
+		// may be not visible(when the transaction in which the current execution is created
+		// in isn't committed), this will cause that there are one more execution records than expected
 		ctx := orm.NewContext(context.Background(), e.ormCreator.Create())
-		if err := e.sweep(ctx, vendorType); err != nil {
+		if err := e.sweep(ctx, vendorType, vendorID); err != nil {
 			log.Errorf("failed to sweep the executions of %s: %v", vendorType, err)
 			return
 		}
@@ -133,7 +136,7 @@ func (e *executionManager) Create(ctx context.Context, vendorType string, vendor
 	return id, nil
 }
 
-func (e *executionManager) sweep(ctx context.Context, vendorType string) error {
+func (e *executionManager) sweep(ctx context.Context, vendorType string, vendorID int64) error {
 	count := executionSweeperCount[vendorType]
 	if count == 0 {
 		count = defaultExecutionSweeperCount
@@ -146,6 +149,7 @@ func (e *executionManager) sweep(ctx context.Context, vendorType string) error {
 		executions, err := e.List(ctx, &q.Query{
 			Keywords: map[string]interface{}{
 				"VendorType": vendorType,
+				"VendorID":   vendorID,
 			},
 			PageNumber: 2,
 			PageSize:   int64(count),

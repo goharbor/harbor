@@ -46,9 +46,13 @@ func init() {
 		log.Fatalf("failed to register the callback for the scan all schedule, error %v", err)
 	}
 
-	// NOTE: the vendor type of execution for the scan job trigger by the scan all is job.ImageScanAllJob
-	if err := task.RegisterCheckInProcessor(job.ImageScanAllJob, scanTaskCheckInProcessor); err != nil {
+	// NOTE: the vendor type of execution for the scan job trigger by the scan all is VendorTypeScanAll
+	if err := task.RegisterCheckInProcessor(VendorTypeScanAll, scanTaskCheckInProcessor); err != nil {
 		log.Fatalf("failed to register the checkin processor for the scan all job, error %v", err)
+	}
+
+	if err := task.RegisterTaskStatusChangePostFunc(VendorTypeScanAll, scanTaskStatusChange); err != nil {
+		log.Fatalf("failed to register the task status change post for the scan all job, error %v", err)
 	}
 
 	if err := task.RegisterCheckInProcessor(job.ImageScanJob, scanTaskCheckInProcessor); err != nil {
@@ -76,15 +80,13 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 			return err
 		}
 
-		if js == job.SuccessStatus {
-			robotID := getRobotID(t.ExtraAttrs)
-			if robotID > 0 {
-				if err := robotCtl.Delete(ctx, robotID); err != nil {
-					// Should not block the main flow, just logged
-					logger.WithFields(log.Fields{"robot_id": robotID, "error": err}).Error("delete robot account failed")
-				} else {
-					logger.WithField("robot_id", robotID).Debug("Robot account for the scan task is removed")
-				}
+		robotID := getRobotID(t.ExtraAttrs)
+		if robotID > 0 {
+			if err := robotCtl.Delete(ctx, robotID); err != nil {
+				// Should not block the main flow, just logged
+				logger.WithFields(log.Fields{"robot_id": robotID, "error": err}).Error("delete robot account failed")
+			} else {
+				logger.WithField("robot_id", robotID).Debug("Robot account for the scan task is removed")
 			}
 		}
 

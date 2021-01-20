@@ -38,7 +38,7 @@ class TestScan(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def do_tearDown(self):
         #1. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(self.project_name, self.repo_name1.split('/')[1], **self.USER_CLIENT)
+        self.repo.delete_repository(self.project_name, self.repo_name1.split('/')[1], **self.USER_CLIENT)
 
         #2. Delete project(PA);
         self.project.delete_project(self.project_id, **self.USER_CLIENT)

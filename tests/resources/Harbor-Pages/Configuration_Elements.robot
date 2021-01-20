@@ -62,4 +62,8 @@ ${distribution_edit_btn_id}  //*[@id='distribution-edit']
 ${filter_dist_btn}  //hbr-filter//clr-icon[contains(@class,'search-btn')]
 ${filter_dist_input}  //hbr-filter//input
 
+${GC_schedule_edit_btn}  //*[@id='editSchedule']
+${GC_schedule_select}  //*[@id='selectPolicy']
+${GC_schedule_save_btn}  //*[@id='config-save']
+
 
