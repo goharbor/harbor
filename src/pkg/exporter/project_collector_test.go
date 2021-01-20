@@ -12,7 +12,6 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/test"
 	proctl "github.com/goharbor/harbor/src/controller/project"
 	quotactl "github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -37,7 +36,7 @@ var (
 )
 
 func setupTest(t *testing.T) {
-	test.InitDatabaseFromEnv()
+	initDBOnce()
 
 	// register projAdmin and assign project admin role
 	aliceID, err := dao.Register(alice)
