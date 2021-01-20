@@ -547,6 +547,10 @@ services:
   {% if external_database == False %}
       - postgresql
   {% endif %}
+    volumes:
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
     logging:
       driver: "syslog"
       options:

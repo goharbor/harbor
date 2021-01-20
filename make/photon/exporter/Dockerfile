@@ -17,9 +17,15 @@ RUN tdnf install -y tzdata shadow >> /dev/null \
     && mkdir /harbor/
 
 COPY --from=build /out/harbor_exporter /harbor/harbor_exporter
-RUN chown harbor:harbor /harbor/harbor_exporter && chmod u+x /harbor/harbor_exporter
+COPY ./make/photon/exporter/entrypoint.sh ./make/photon/common/install_cert.sh /harbor/
+
+RUN chown -R harbor:harbor /etc/pki/tls/certs \
+    && chown -R harbor:harbor /harbor/ \
+    && chmod u+x /harbor/entrypoint.sh \
+    && chmod u+x /harbor/install_cert.sh \
+    && chmod u+x /harbor/harbor_exporter
 
 WORKDIR /harbor
 USER harbor
 
-ENTRYPOINT ["/harbor/harbor_exporter"]
+ENTRYPOINT ["/harbor/entrypoint.sh"]
