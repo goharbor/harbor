@@ -16,7 +16,7 @@ import { Access } from "../../../../ng-swagger-gen/models/access";
 import {
   ACTION_RESOURCE_I18N_MAP, ExpirationType,
   FrontAccess, INITIAL_ACCESSES,
-  NAMESPACE_ALL_PROJECTS,
+  NAMESPACE_ALL_PROJECTS, onlyHasPushPermission,
   PermissionsKinds,
 } from "../system-robot-util";
 import { clone } from "../../../lib/utils/utils";
@@ -344,7 +344,6 @@ export class NewRobotComponent implements OnInit, OnDestroy {
     return !flag1;
   }
   save() {
-    this.saveBtnState = ClrLoadingState.LOADING;
     const robot: Robot = clone(this.systemRobot);
     robot.disable = false;
     robot.level = PermissionsKinds.SYSTEM;
@@ -383,6 +382,16 @@ export class NewRobotComponent implements OnInit, OnDestroy {
         });
       });
     }
+    // Push permission must work with pull permission
+    if (robot.permissions && robot.permissions.length) {
+      for (let i = 0; i < robot.permissions.length; i++) {
+        if (onlyHasPushPermission(robot.permissions[i].access)) {
+          this.inlineAlertComponent.showInlineError('SYSTEM_ROBOT.PUSH_PERMISSION_TOOLTIP');
+          return;
+        }
+      }
+    }
+    this.saveBtnState = ClrLoadingState.LOADING;
     if (this.isEditMode) {
       robot.disable = this.systemRobot.disable;
       const opeMessage = new OperateInfo();

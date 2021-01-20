@@ -1669,6 +1669,7 @@
         "SEARCH_BY_NAME": "Robot-Account mittels Namen suchen (ohne Prefix)",
         "FINAL_PROJECT_NAME_TIP": "Der zusammengesetzte Robot-Account-Name besteht aus dem Prefix, dem Projektnamen, einem plus und dem Inhalt des Eingabefeldes.",
         "FINAL_SYSTEM_NAME_TIP": "Der zusammengesetzte systemweite Robot-Account-Name besteht aus dem Prefix und dem Inhalt des Eingabefeldes.",
-        "PUSH_AND_PULL": "Push&Pull"
+        "PUSH_AND_PULL": "Push",
+        "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission"
     }
 }

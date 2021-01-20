@@ -9,7 +9,7 @@ import { MessageHandlerService } from "../../../shared/message-handler/message-h
 import {
   ACTION_RESOURCE_I18N_MAP,
   ExpirationType,
-  FrontAccess, INITIAL_ACCESSES, PermissionsKinds
+  FrontAccess, INITIAL_ACCESSES, onlyHasPushPermission, PermissionsKinds
 } from "../../../system-robot-accounts/system-robot-util";
 import { Robot } from "../../../../../ng-swagger-gen/models/robot";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
@@ -81,7 +81,8 @@ export class AddRobotComponent implements OnInit, OnDestroy {
                 this.isNameExisting = false;
                 this.checkNameOnGoing = true;
                 return  this.robotService.ListRobot({
-                  q: encodeURIComponent(`Level=${PermissionsKinds.PROJECT},ProjectID=${this.projectId},name=${name}`)
+                  q: encodeURIComponent(
+                      `Level=${PermissionsKinds.PROJECT},ProjectID=${this.projectId},name=${this.projectName}+${name}`)
                 }).pipe(finalize(() => this.checkNameOnGoing = false));
               }))
           .subscribe(res => {
@@ -205,7 +206,6 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     return !flag;
   }
   save() {
-    this.saveBtnState = ClrLoadingState.LOADING;
     const robot: Robot = clone(this.systemRobot);
     robot.disable = false;
     robot.level = PermissionsKinds.PROJECT;
@@ -224,6 +224,12 @@ export class AddRobotComponent implements OnInit, OnDestroy {
       kind: PermissionsKinds.PROJECT,
       access: access
     }];
+    // Push permission must work with pull permission
+    if (onlyHasPushPermission(access)) {
+      this.inlineAlertComponent.showInlineError('SYSTEM_ROBOT.PUSH_PERMISSION_TOOLTIP');
+      return;
+    }
+    this.saveBtnState = ClrLoadingState.LOADING;
     if (this.isEditMode) {
       robot.disable = this.systemRobot.disable;
       const opeMessage = new OperateInfo();
