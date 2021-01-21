@@ -8,6 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// ArtifactCollectorName ...
 const ArtifactCollectorName = "ArtifactCollector"
 
 const (
@@ -60,10 +61,12 @@ var (
 	errUnknownSeverity = errors.New("unknown severity")
 )
 
+// NewArtifactCollector creates a new ArtifactCollector instance.
 func NewArtifactCollector() *ArtifactCollector {
 	return &ArtifactCollector{}
 }
 
+// ArtifactCollector defines a prometheus.Collector which returns Artifacts metrics.
 type ArtifactCollector struct{}
 
 // Describe implements prometheus.Collector
