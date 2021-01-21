@@ -117,3 +117,21 @@ export enum ExpirationType {
     NEVER = 'never'
 }
 
+export function onlyHasPushPermission(access: Access[]): boolean {
+    if (access && access.length) {
+        let hasPushPermission: boolean = false;
+        let hasPullPermission: boolean = false;
+        access.forEach( item => {
+            if (item.action === Action.PUSH && item.resource === Resource.ARTIFACT) {
+                hasPushPermission = true;
+            }
+            if (item.action === Action.PULL && item.resource === Resource.ARTIFACT) {
+                hasPullPermission = true;
+            }
+        });
+        if (hasPushPermission && !hasPullPermission) {
+            return true;
+        }
+    }
+    return false;
+}
