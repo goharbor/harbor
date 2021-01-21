@@ -222,7 +222,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
     this.projectService.getProject(this.projectId).subscribe(
         projectRes => {
           if (projectRes && projectRes.cve_allowlist
-              && projectRes.metadata && projectRes.metadata.reuse_sys_cve_allowlist !== "true"
+              && projectRes.metadata && projectRes.metadata.reuse_sys_cve_allowlist === "false"
           ) { // use project CVE allow list
             this.currentCVEList = projectRes.cve_allowlist['items'];
           } else { // use system CVE allow list
