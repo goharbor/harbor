@@ -151,6 +151,11 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 		{{ if .Authorized -}}
 		ctx = storeAuth(ctx, principal)
 		{{ end -}}
+		if api.BeforePrepare != nil {
+			if res := api.BeforePrepare(ctx, "{{pascalize .Name}}", &params); res != nil {
+				return res
+			}
+		}
 		if res := c.{{pascalize .Package}}API.Prepare(ctx, "{{pascalize .Name}}", &params); res != nil {
 			return res
 		}
