@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/blob"
 	"github.com/goharbor/harbor/src/server/middleware/contenttrust"
 	"github.com/goharbor/harbor/src/server/middleware/immutable"
+	"github.com/goharbor/harbor/src/server/middleware/metric"
 	"github.com/goharbor/harbor/src/server/middleware/quota"
 	"github.com/goharbor/harbor/src/server/middleware/repoproxy"
 	"github.com/goharbor/harbor/src/server/middleware/v2auth"
@@ -36,16 +37,19 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodGet).
 		Path("/_catalog").
+		Middleware(metric.InjectOpIDMiddleware(metric.CatalogOperationID)).
 		Handler(newRepositoryHandler())
 	// list tags
 	root.NewRoute().
 		Method(http.MethodGet).
 		Path("/*/tags/list").
+		Middleware(metric.InjectOpIDMiddleware(metric.ListTagOperationID)).
 		Handler(newTagHandler())
 	// manifest
 	root.NewRoute().
 		Method(http.MethodGet).
 		Path("/*/manifests/:reference").
+		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
 		Middleware(repoproxy.ManifestMiddleware()).
 		Middleware(contenttrust.Middleware()).
 		Middleware(vulnerable.Middleware()).
@@ -53,31 +57,43 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodHead).
 		Path("/*/manifests/:reference").
+		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
 		Middleware(repoproxy.ManifestMiddleware()).
 		HandlerFunc(getManifest)
 	root.NewRoute().
 		Method(http.MethodDelete).
 		Path("/*/manifests/:reference").
+		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
 		Middleware(quota.RefreshForProjectMiddleware()).
 		HandlerFunc(deleteManifest)
 	root.NewRoute().
 		Method(http.MethodPut).
 		Path("/*/manifests/:reference").
+		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
 		Middleware(repoproxy.DisableBlobAndManifestUploadMiddleware()).
 		Middleware(immutable.Middleware()).
 		Middleware(quota.PutManifestMiddleware()).
 		Middleware(blob.PutManifestMiddleware()).
 		HandlerFunc(putManifest)
+	// blob head
+	root.NewRoute().
+		Method(http.MethodHead).
+		Path("/*/blobs/:digest").
+		Middleware(metric.InjectOpIDMiddleware(metric.BlobsOperationID)).
+		Middleware(blob.HeadBlobMiddleware()).
+		Handler(proxy)
 	// blob get
 	root.NewRoute().
 		Method(http.MethodGet).
 		Path("/*/blobs/:digest").
+		Middleware(metric.InjectOpIDMiddleware(metric.BlobsOperationID)).
 		Middleware(repoproxy.BlobGetMiddleware()).
 		Handler(proxy)
 	// initiate blob upload
 	root.NewRoute().
 		Method(http.MethodPost).
 		Path("/*/blobs/uploads").
+		Middleware(metric.InjectOpIDMiddleware(metric.BlobsUploadOperationID)).
 		Middleware(repoproxy.DisableBlobAndManifestUploadMiddleware()).
 		Middleware(quota.PostInitiateBlobUploadMiddleware()).
 		Middleware(blob.PostInitiateBlobUploadMiddleware()).
@@ -86,19 +102,16 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodPatch).
 		Path("/*/blobs/uploads/:session_id").
+		Middleware(metric.InjectOpIDMiddleware(metric.BlobsUploadOperationID)).
 		Middleware(blob.PatchBlobUploadMiddleware()).
 		Handler(proxy)
 	root.NewRoute().
 		Method(http.MethodPut).
 		Path("/*/blobs/uploads/:session_id").
+		Middleware(metric.InjectOpIDMiddleware(metric.BlobsUploadOperationID)).
 		Middleware(quota.PutBlobUploadMiddleware()).
 		Middleware(blob.PutBlobUploadMiddleware()).
 		Handler(proxy)
-	root.NewRoute().
-		Method(http.MethodHead).
-		Path("/*/blobs/:digest").
-		Middleware(blob.HeadBlobMiddleware()).
-		Handler(proxy)
 	// others
-	root.NewRoute().Path("/*").Handler(proxy)
+	root.NewRoute().Path("/*").Middleware(metric.InjectOpIDMiddleware(metric.OthersOperationID)).Handler(proxy)
 }

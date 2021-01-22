@@ -10,8 +10,8 @@ class TestMetricsExist(unittest.TestCase):
     golang_basic_metrics = ["go_gc_duration_seconds", "go_goroutines", "go_info", "go_memstats_alloc_bytes"]
 
     eigen_metrics = {
-        'core': golang_basic_metrics + ["harbor_core_http_request", "harbor_core_http_request_duration_seconds",
-    "harbor_core_http_request_inflight"],
+        'core': golang_basic_metrics + ["harbor_core_http_request_total", "harbor_core_http_request_duration_seconds",
+    "harbor_core_http_inflight_requests"],
         'registry': golang_basic_metrics + ["registry_http_in_flight_requests"],
         'exporter': golang_basic_metrics + ["harbor_image_pulled",
     "harbor_project_artifact_total", "harbor_project_member_total", "harbor_project_quota_byte",
