@@ -110,17 +110,17 @@ func constructScanImagePayload(event *event.ScanImageEvent, project *models.Proj
 		Operator: event.Operator,
 	}
 
-	resURL, err := util.BuildImageResourceURL(event.Artifact.Repository, event.Artifact.Tag)
+	reference := event.Artifact.Digest
+	if reference == "" {
+		reference = event.Artifact.Tag
+	}
+
+	resURL, err := util.BuildImageResourceURL(event.Artifact.Repository, reference)
 	if err != nil {
 		return nil, errors.Wrap(err, "construct scan payload")
 	}
 
 	ctx := orm.NewContext(context.TODO(), o.NewOrm())
-
-	reference := event.Artifact.Digest
-	if reference == "" {
-		reference = event.Artifact.Tag
-	}
 
 	art, err := artifact.Ctl.GetByReference(ctx, event.Artifact.Repository, event.Artifact.Digest, nil)
 	if err != nil {
