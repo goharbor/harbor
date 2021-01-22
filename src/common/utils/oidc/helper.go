@@ -264,10 +264,6 @@ func UserInfoFromToken(ctx context.Context, token *Token) (*UserInfo, error) {
 	if err != nil {
 		log.Warningf("Failed to get userInfo by calling remote userinfo endpoint, error: %v ", err)
 	}
-
-	if setting.UserClaim != "" && local.Username == "" && remote.Username == "" {
-		return nil, fmt.Errorf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
-	}
 	if remote != nil && local != nil {
 		if remote.Subject != local.Subject {
 			return nil, fmt.Errorf("the subject from userinfo: %s does not match the subject from ID token: %s, probably a security attack happened", remote.Subject, local.Subject)
