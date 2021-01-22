@@ -90,6 +90,9 @@ type {{ pascalize .Name }}API struct {
   // operationMiddlewares middleware for operations
   operationMiddlewares map[string]middleware.Builder
 
+  // BeforePrepare is called before the Prepare of the operation
+  BeforePrepare func(context.Context, string, interface{}) middleware.Responder
+
   // BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
   // It has a default implementation in the security package, however you can replace it for your particular usage.
   BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
