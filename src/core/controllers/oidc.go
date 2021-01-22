@@ -137,6 +137,11 @@ func (oc *OIDCController) Callback() {
 		// If automatic onboard is enabled, skip the onboard page
 		if oidcSettings.AutoOnboard {
 			log.Debug("Doing automatic onboarding\n")
+			if username == "" {
+				oc.SendInternalServerError(fmt.Errorf("unable to recover username for auto onboard, username claim: %s",
+					oidcSettings.UserClaim))
+				return
+			}
 			user, onboarded := userOnboard(oc, info, username, tokenBytes)
 			if onboarded == false {
 				log.Error("User not onboarded\n")
