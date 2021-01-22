@@ -33,7 +33,7 @@ type EventData struct {
 // Resource describe infos of resource triggered notification
 type Resource struct {
 	Digest       string                 `json:"digest,omitempty"`
-	Tag          string                 `json:"tag"`
+	Tag          string                 `json:"tag,omitempty"`
 	ResourceURL  string                 `json:"resource_url,omitempty"`
 	ScanOverview map[string]interface{} `json:"scan_overview,omitempty"`
 }
