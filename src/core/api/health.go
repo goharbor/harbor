@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -77,6 +79,9 @@ func (h *HealthAPI) CheckHealth() {
 		}
 		components = append(components, componentStatus)
 	}
+
+	sort.Slice(components, func(i, j int) bool { return components[i].Name < components[j].Name })
+
 	status := &overallHealthStatus{}
 	status.Status = isHealthy.String()
 	status.Components = components
@@ -269,6 +274,14 @@ func redisHealthChecker() health.Checker {
 	return PeriodicHealthChecker(checker, period)
 }
 
+func trivyHealthChecker() health.Checker {
+	url := strings.TrimSuffix(config.TrivyAdapterURL(), "/") + "/probe/healthy"
+	timeout := 60 * time.Second
+	period := 10 * time.Second
+	checker := HTTPStatusCodeHealthChecker(http.MethodGet, url, nil, timeout, http.StatusOK)
+	return PeriodicHealthChecker(checker, period)
+}
+
 func registerHealthCheckers() {
 	HealthCheckerRegistry["core"] = coreHealthChecker()
 	HealthCheckerRegistry["portal"] = portalHealthChecker()
@@ -282,6 +295,9 @@ func registerHealthCheckers() {
 	}
 	if config.WithNotary() {
 		HealthCheckerRegistry["notary"] = notaryHealthChecker()
+	}
+	if config.WithTrivy() {
+		HealthCheckerRegistry["trivy"] = trivyHealthChecker()
 	}
 }
 
