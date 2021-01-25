@@ -1,11 +1,11 @@
 @import "../base";
-$refrsh-btn-color: #007CBB;
+$refresh-btn-color: #007CBB;
 .refresh-btn {
     @include refresh-button
 }
 
 .refresh-btn:hover {
-    @include refresh-button-hover($refrsh-btn-color);
+    @include refresh-button-hover($refresh-btn-color);
 }
 
 .filter-pos {
