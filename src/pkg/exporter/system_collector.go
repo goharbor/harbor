@@ -2,6 +2,7 @@ package exporter
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/prometheus/client_golang/prometheus"
@@ -66,7 +67,7 @@ func (hc *SystemInfoCollector) getSysInfo() []prometheus.Metric {
 	result = append(result, harborSysInfo.MustNewConstMetric(1,
 		sysInfoResponse.AuthMode,
 		sysInfoResponse.HarborVersion,
-		sysInfoResponse.SelfRegistration))
+		strconv.FormatBool(sysInfoResponse.SelfRegistration)))
 	if CacheEnabled() {
 		CachePut(systemInfoCollectorName, result)
 	}
@@ -76,5 +77,5 @@ func (hc *SystemInfoCollector) getSysInfo() []prometheus.Metric {
 type responseSysInfo struct {
 	AuthMode         string `json:"auth_mode"`
 	HarborVersion    string `json:"harbor_version"`
-	SelfRegistration string `json:"self_registration"`
+	SelfRegistration bool   `json:"self_registration"`
 }
