@@ -40,7 +40,7 @@ export class GaugeComponent implements AfterViewInit {
       _size: string = "small"; // Support small, medium, large
       _title: string = "UNKNOWN"; // Lang key
       _free: number = 0;
-      _threasHold: number = 0;
+      _thresHold: number = 0;
       posOne = 0;
       posTwo = 0;
       transition = '';
@@ -150,16 +150,16 @@ export class GaugeComponent implements AfterViewInit {
       }
 
       get used(): number {
-            return this._threasHold - this._free;
+            return this._thresHold - this._free;
       }
 
       @Input()
-      get threasHold(): number {
-            return this._threasHold;
+      get thresHold(): number {
+            return this._thresHold;
       }
 
-      set threasHold(th: number) {
-            this._threasHold = th;
+      set thresHold(th: number) {
+            this._thresHold = th;
             this.determineColors();
       }
 
@@ -174,12 +174,12 @@ export class GaugeComponent implements AfterViewInit {
 
       determineColors() {
             let percent: number = 0;
-            if (this._threasHold !== 0) {
-                  let used: number = this._threasHold - this._free;
+            if (this._thresHold !== 0) {
+                  let used: number = this._thresHold - this._free;
                   if (used < 0) {
                         used = 0;
                   }
-                  percent = (used / this._threasHold) * 100;
+                  percent = (used / this._thresHold) * 100;
             }
 
             while (percent > 100) {
