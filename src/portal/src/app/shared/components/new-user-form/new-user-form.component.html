@@ -19,7 +19,7 @@
             <label class="required clr-control-label">{{'PROFILE.EMAIL' | translate}}</label>
             <div class="clr-control-container" [class.clr-error]='getValidationState("email")'>
                 <div class="clr-input-wrapper">
-                    <input name="email" type="text" #eamilInput="ngModel" [(ngModel)]="newUser.email" required email id="email" size="30" (input)='handleValidation("email", false)'
+                    <input name="email" type="text" #emailInput="ngModel" [(ngModel)]="newUser.email" required email id="email" size="30" (input)='handleValidation("email", false)'
                         (blur)='handleValidation("email", true)' class="clr-input">
                     <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     <span class="spinner spinner-inline spinner-pos" [hidden]='isChecking("email")'></span>

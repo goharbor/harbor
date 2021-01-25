@@ -27,7 +27,7 @@
                     class="required clr-control-label">{{'PROFILE.EMAIL' | translate}}</label>
                 <div class="clr-control-container" [class.clr-error]="!getValidationState('account_settings_email')">
                     <div class="clr-input-wrapper">
-                        <input name="account_settings_email" type="text" #eamilInput="ngModel" class="clr-input"
+                        <input name="account_settings_email" type="text" #emailInput="ngModel" class="clr-input"
                             [(ngModel)]="account.email" required email id="account_settings_email" size="30"
                             (input)='handleValidation("account_settings_email", false)'
                             (blur)='handleValidation("account_settings_email", true)'>
