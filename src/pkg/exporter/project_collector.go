@@ -41,28 +41,28 @@ var (
 		valueType: prometheus.GaugeValue,
 	}
 	projectUsage = typedDesc{
-		desc:      newDescWithLables("", "project_usage_byte", "The used resource of a project", "project_id"),
+		desc:      newDescWithLables("", "project_usage_byte", "The used resource of a project", "project_name"),
 		valueType: prometheus.GaugeValue,
 	}
 	projectQuote = typedDesc{
-		desc:      newDescWithLables("", "project_quota_byte", "The quota of a project", "project_id"),
+		desc:      newDescWithLables("", "project_quota_byte", "The quota of a project", "project_name"),
 		valueType: prometheus.GaugeValue,
 	}
 	projectRepoTotal = typedDesc{
-		desc:      newDescWithLables("", "project_repo_total", "Total project repos number", "project_id", "public"),
+		desc:      newDescWithLables("", "project_repo_total", "Total project repos number", "project_name", "public"),
 		valueType: prometheus.GaugeValue,
 	}
 
 	projectMemberTotal = typedDesc{
-		desc:      newDescWithLables("", "project_member_total", "Total members number of a project", "project_id"),
+		desc:      newDescWithLables("", "project_member_total", "Total members number of a project", "project_name"),
 		valueType: prometheus.GaugeValue,
 	}
 	artifactPullTotal = typedDesc{
-		desc:      newDescWithLables("", "image_pulled", "The pull number of an image", "project_id"),
+		desc:      newDescWithLables("", "artifact_pulled", "The pull number of an artifact", "project_name"),
 		valueType: prometheus.GaugeValue,
 	}
 	projectArtifactTotal = typedDesc{
-		desc:      newDescWithLables("", "project_artifact_total", "Total project images number", "project_id", "public", "image_type"),
+		desc:      newDescWithLables("", "project_artifact_total", "Total project artifacts number", "project_name", "public", "artifact_type"),
 		valueType: prometheus.GaugeValue,
 	}
 )
