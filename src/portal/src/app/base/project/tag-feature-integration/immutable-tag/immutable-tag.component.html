@@ -35,7 +35,7 @@
                         <span>,</span>
                         <span>{{'IMMUTABLE_TAG.LOWER_TAGS' | translate}}</span> 
                         <span>{{getI18nKey(rule?.tag_selectors[0]?.decoration)|translate}}</span>
-                        <span id="{{'tag-selectors-patten'+i}}">{{formatPattern(rule?.tag_selectors[0]?.pattern)}}</span>
+                        <span id="{{'tag-selectors-pattern'+i}}">{{formatPattern(rule?.tag_selectors[0]?.pattern)}}</span>
                         <ng-container *ngIf="rule?.tag_selectors[1]?.pattern && rule?.tag_selectors[1]?.pattern">
                             <span class="color-97">{{'IMMUTABLE_TAG.AND' | translate}}</span>
                             <span>{{'IMMUTABLE_TAG.LOWER_LABELS' | translate}}</span>
