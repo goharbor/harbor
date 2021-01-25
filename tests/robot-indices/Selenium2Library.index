@@ -34,8 +34,8 @@ Element Should Contain
 Element Should Not Be Visible
 Element Should Not Contain
 Element Text Should Be
-Execute Async Javascript
-Execute Javascript
+Execute Async JavaScript
+Execute JavaScript
 Focus
 Frame Should Contain
 Get Alert Message
