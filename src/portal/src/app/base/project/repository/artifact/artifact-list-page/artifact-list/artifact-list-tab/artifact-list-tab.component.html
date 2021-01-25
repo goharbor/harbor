@@ -41,7 +41,7 @@
                         <div class="select filter-tag" [hidden]="!openSelectFilterPiece">
                             <clr-select-container>
                                 <select clrSelect [(ngModel)]="filterByType" (change)="selectFilterType()" >
-                                    <option *ngFor="let filter of mutipleFilter" value="{{filter.filterBy}}">{{ filter.filterByShowText | translate}}</option>
+                                    <option *ngFor="let filter of multipleFilter" value="{{filter.filterBy}}">{{ filter.filterByShowText | translate}}</option>
                                 </select>
                             </clr-select-container>
                         </div>
@@ -52,7 +52,7 @@
                             [currentValue]="lastFilteredTagName">
                         </hbr-filter>
                         <div [hidden]="!openSelectFilterPiece" class="label-filter-panel list-filter">
-                            <div *ngFor="let filter of mutipleFilter" >
+                            <div *ngFor="let filter of multipleFilter" >
                                 <ul class="list-unstyled" *ngIf="filterByType ===filter.filterBy">
                                     <li class="cursor-pointer" (click)="selectFilter(item.showItem, item.filterText)" *ngFor="let item of filter.listItem">{{item.showItem | translate}}</li>
                                 </ul>
