@@ -8,9 +8,13 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 set -e
 if [ -z "$1" ]; then echo no ip specified; exit 1;fi
+
+python --version
+cat /etc/issue
+cat /proc/version
 # prepare cert ...
 sudo ./tests/generateCerts.sh $1
-sudo wget https://bootstrap.pypa.io/get-pip.py && sudo python ./get-pip.py && sudo pip install --ignore-installed urllib3 chardet requests --upgrade
+sudo apt-get install -y python-pip && sudo pip install --ignore-installed urllib3 chardet requests --upgrade
 sudo ./tests/hostcfg.sh
 
 if [ "$2" = 'LDAP' ]; then
