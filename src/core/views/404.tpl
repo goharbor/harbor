@@ -6,7 +6,7 @@
 <style>
 
 *{
-	maring: 0;
+	margin: 0;
 	padding: 0;
 }
 
