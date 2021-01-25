@@ -51,27 +51,27 @@ Test Case - Repo Size
     Page Should Contain  1.92MB
     Close Browser
 
-Test Case - Staticsinfo
+Test Case - Statisticsinfo
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    ${privaterepocount1}=  Get Statics Private Repo
-    ${privateprojcount1}=  Get Statics Private Project
-    ${publicrepocount1}=  Get Statics Public Repo
-    ${publicprojcount1}=  Get Statics Public Project
-    ${totalrepocount1}=  Get Statics Total Repo
-    ${totalprojcount1}=  Get Statics Total Project
+    ${privaterepocount1}=  Get Statistics Private Repo
+    ${privateprojcount1}=  Get Statistics Private Project
+    ${publicrepocount1}=  Get Statistics Public Repo
+    ${publicprojcount1}=  Get Statistics Public Project
+    ${totalrepocount1}=  Get Statistics Total Repo
+    ${totalprojcount1}=  Get Statistics Total Project
     Create An New Project  private${d}
     Create An New Project  public${d}  true
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  private${d}  hello-world
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  public${d}  hello-world
     Reload Page
-    ${privaterepocount2}=  Get Statics Private Repo
-    ${privateprojcount2}=  get statics private project
-    ${publicrepocount2}=  get statics public repo
-    ${publicprojcount2}=  get statics public project
-    ${totalrepocount2}=  get statics total repo
-    ${totalprojcount2}=  get statics total project
+    ${privaterepocount2}=  Get Statistics Private Repo
+    ${privateprojcount2}=  get statistics private project
+    ${publicrepocount2}=  get statistics public repo
+    ${publicprojcount2}=  get statistics public project
+    ${totalrepocount2}=  get statistics total repo
+    ${totalprojcount2}=  get statistics total project
     ${privateprojcount}=  evaluate  ${privateprojcount1}+1
     ${privaterepocount}=  evaluate  ${privaterepocount1}+1
     ${publicprojcount}=  evaluate  ${publicprojcount1}+1

@@ -17,8 +17,8 @@ import { ProjectsComponent } from "./projects.component";
 import { ListProjectComponent } from "./list-project/list-project.component";
 import { CreateProjectComponent } from "./create-project/create-project.component";
 import { RouterModule, Routes } from "@angular/router";
-import { StatisticsPanelComponent } from "./statictics/statistics-panel.component";
-import { StatisticsComponent } from "./statictics/statistics.component";
+import { StatisticsPanelComponent } from "./statistics/statistics-panel.component";
+import { StatisticsComponent } from "./statistics/statistics.component";
 
 const routes: Routes = [
     {

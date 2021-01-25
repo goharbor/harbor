@@ -319,41 +319,41 @@ Filter Labels In Tags
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${labelName2}')]
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'${labelName1}')]
 
-Get Statics
+Get Statistics
     [Arguments]  ${locator}
     Reload Page
     Sleep  5
     ${privaterepo}=  Get Text  ${locator}
     [Return]  ${privaterepo}
 
-Retry Get Statics
+Retry Get Statistics
     [Arguments]  ${locator}
     @{param}  Create List  ${locator}
-    ${ret}=  Retry Keyword N Times When Error  3  Get Statics  @{param}
+    ${ret}=  Retry Keyword N Times When Error  3  Get Statistics  @{param}
     [Return]  ${ret}
 
-Get Statics Private Repo
-    ${privaterepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+Get Statistics Private Repo
+    ${privaterepo}=  Retry Get Statistics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
     [Return]  ${privaterepo}
 
-Get Statics Private Project
-    ${privateproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[1]/statistics/div/span[1]
+Get Statistics Private Project
+    ${privateproj}=  Retry Get Statistics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[1]/statistics/div/span[1]
     [Return]  ${privateproj}
 
-Get Statics Public Repo
-    ${publicrepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[2]/statistics/div/span[1]
+Get Statistics Public Repo
+    ${publicrepo}=  Retry Get Statistics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[2]/statistics/div/span[1]
     [Return]  ${publicrepo}
 
-Get Statics Public Project
-    ${publicproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[1]/statistics/div/span[1]
+Get Statistics Public Project
+    ${publicproj}=  Retry Get Statistics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[1]/statistics/div/span[1]
     [Return]  ${publicproj}
 
-Get Statics Total Repo
-    ${totalrepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[2]/statistics/div/span[1]
+Get Statistics Total Repo
+    ${totalrepo}=  Retry Get Statistics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[2]/statistics/div/span[1]
     [Return]  ${totalrepo}
 
-Get Statics Total Project
-    ${totalproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[1]/statistics/div/span[1]
+Get Statistics Total Project
+    ${totalproj}=  Retry Get Statistics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[1]/statistics/div/span[1]
     [Return]  ${totalproj}
 
 Input Count Quota

@@ -21,7 +21,7 @@ import { Router } from "@angular/router";
 import { Comparator, ProjectService, State } from "../../../../shared/services";
 import {TranslateService} from "@ngx-translate/core";
 import { SessionService } from "../../../../shared/services/session.service";
-import { StatisticHandler } from "../statictics/statistic-handler.service";
+import { StatisticHandler } from "../statistics/statistic-handler.service";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { SearchTriggerService } from "../../../../shared/components/global-search/search-trigger.service";
 import { AppConfigService } from "../../../../services/app-config.service";

@@ -9,7 +9,7 @@ import { AppConfigService } from "../../../../services/app-config.service";
 import { RouterTestingModule } from '@angular/router/testing';
 import { SearchTriggerService } from "../../../../shared/components/global-search/search-trigger.service";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
-import { StatisticHandler } from "../statictics/statistic-handler.service";
+import { StatisticHandler } from "../statistics/statistic-handler.service";
 import { of } from 'rxjs';
 import { BrowserAnimationsModule, NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { delay } from 'rxjs/operators';
