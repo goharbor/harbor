@@ -22,7 +22,7 @@ import { InlineAlertComponent } from "../../../shared/components/inline-alert/in
 @Component({
     selector: "new-user-modal",
     templateUrl: "new-user-modal.component.html",
-    styleUrls: ['../../../common.scss', "./new-user-madal.component.scss"]
+    styleUrls: ['../../../common.scss', "./new-user-modal.component.scss"]
 })
 
 export class NewUserModalComponent {
