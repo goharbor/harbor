@@ -81,7 +81,10 @@ func TestRaw(t *testing.T) {
 		return
 	}
 	token, err := New(defaultOpt, robot)
-	assert.Nil(t, err)
+	if err != nil {
+		assert.Nil(t, err)
+		return
+	}
 
 	rawTk, err := token.Raw()
 	assert.Nil(t, err)
