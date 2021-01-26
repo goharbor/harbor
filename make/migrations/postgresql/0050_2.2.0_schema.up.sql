@@ -519,6 +519,9 @@ CREATE TABLE IF NOT EXISTS "report_vulnerability_record" (
     CONSTRAINT fk_report_uuid FOREIGN  KEY(report_uuid) REFERENCES scan_report(uuid) ON DELETE CASCADE
 );
 
+/*make sure the revision of execution isn't null*/
+UPDATE execution SET revision=0 WHERE revision IS NULL;
+
 /*delete the retention execution records whose policy doesn't exist*/
 DELETE FROM retention_execution
 WHERE id IN (SELECT re.id FROM retention_execution re
