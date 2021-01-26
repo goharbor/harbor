@@ -17,14 +17,13 @@ func RegisterCollectors() {
 
 var (
 	// TotalInFlightGauge used to collect total in flight number
-	TotalInFlightGauge = prometheus.NewGaugeVec(
+	TotalInFlightGauge = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Namespace: os.Getenv(NamespaceEnvKey),
 			Subsystem: os.Getenv(SubsystemEnvKey),
-			Name:      "http_request_inflight",
+			Name:      "http_inflight_requests",
 			Help:      "The total number of requests",
 		},
-		[]string{"url"},
 	)
 
 	// TotalReqCnt used to collect total request counter
@@ -32,10 +31,10 @@ var (
 		prometheus.CounterOpts{
 			Namespace: os.Getenv(NamespaceEnvKey),
 			Subsystem: os.Getenv(SubsystemEnvKey),
-			Name:      "http_request",
+			Name:      "http_request_total",
 			Help:      "The total number of requests",
 		},
-		[]string{"method", "code", "url"},
+		[]string{"method", "code", "operation"},
 	)
 
 	// TotalReqDurSummary used to collect total request duration summaries
@@ -47,5 +46,5 @@ var (
 			Help:       "The time duration of the requests",
 			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		},
-		[]string{"method", "url"})
+		[]string{"method", "operation"})
 )

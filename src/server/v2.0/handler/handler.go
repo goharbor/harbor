@@ -23,6 +23,7 @@ import (
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/blob"
+	"github.com/goharbor/harbor/src/server/middleware/metric"
 	"github.com/goharbor/harbor/src/server/middleware/quota"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 )
@@ -62,6 +63,7 @@ func New() http.Handler {
 
 // function is called before the Prepare of the operation
 func beforePrepare(ctx context.Context, operation string, params interface{}) rmiddleware.Responder {
+	metric.SetMetricOpID(ctx, operation)
 	return nil
 }
 
