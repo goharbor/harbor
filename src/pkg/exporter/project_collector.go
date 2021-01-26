@@ -100,7 +100,9 @@ func (hc *ProjectCollector) Collect(c chan<- prometheus.Metric) {
 		c <- projectMemberTotal.MustNewConstMetric(p.MemberTotal, p.Name)
 		c <- projectRepoTotal.MustNewConstMetric(p.RepoTotal, p.Name, getPublicValue(p.Public))
 		c <- artifactPullTotal.MustNewConstMetric(p.PullTotal, p.Name)
-		c <- projectArtifactTotal.MustNewConstMetric(p.Artifact.ArtifactTotal, p.Name, getPublicValue(p.Public), p.Artifact.ArtifactType)
+		for _, a := range p.Artifact {
+			c <- projectArtifactTotal.MustNewConstMetric(a.ArtifactTotal, p.Name, getPublicValue(p.Public), a.ArtifactType)
+		}
 	}
 }
 
@@ -123,7 +125,7 @@ type projectInfo struct {
 	MemberTotal float64 `orm:"column(member_total)"`
 	RepoTotal   float64 `orm:"column(repo_total)"`
 	PullTotal   float64 `orm:"column(pull_total)"`
-	Artifact    artifactInfo
+	Artifact    map[string]artifactInfo
 }
 type artifactInfo struct {
 	ProjectID     int64   `orm:"column(project_id)"`
@@ -179,6 +181,7 @@ func updateProjectBasicInfo(projectMap map[int64]*projectInfo) {
 	_, err := dao.GetOrmer().Raw(projectBasicSQL).QueryRows(&pList)
 	checkErr(err, "get project from DB failure")
 	for _, p := range pList {
+		p.Artifact = make(map[string]artifactInfo)
 		projectMap[p.ProjectID] = p
 	}
 }
@@ -218,7 +221,7 @@ func updateProjectArtifactInfo(projectMap map[int64]*projectInfo) {
 	checkErr(err, "get data from DB failure")
 	for _, a := range aList {
 		if _, ok := projectMap[a.ProjectID]; ok {
-			projectMap[a.ProjectID].Artifact = a
+			projectMap[a.ProjectID].Artifact[a.ArtifactType] = a
 		} else {
 			log.Errorf("%v, ID %d", errProjectNotFound, a.ProjectID)
 		}
