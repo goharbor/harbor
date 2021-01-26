@@ -39,8 +39,12 @@ func (r *robot) Generate(req *http.Request) security.Context {
 		return nil
 	}
 	rClaims := &robot_claim.Claim{}
-	opt := pkg_token.DefaultTokenOptions()
-	rtk, err := pkg_token.Parse(opt, robotTk, rClaims)
+	defaultOpt := pkg_token.DefaultTokenOptions()
+	if defaultOpt == nil {
+		log.Error("failed to get default token options")
+		return nil
+	}
+	rtk, err := pkg_token.Parse(defaultOpt, robotTk, rClaims)
 	if err != nil {
 		log.Errorf("failed to decrypt robot token: %v", err)
 		return nil

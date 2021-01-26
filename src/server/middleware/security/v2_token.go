@@ -41,9 +41,13 @@ func (vt *v2Token) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
-	opt := token.DefaultTokenOptions()
+	defaultOpt := token.DefaultTokenOptions()
+	if defaultOpt == nil {
+		logger.Warningf("failed to get default options")
+		return nil
+	}
 	cl := &v2TokenClaims{}
-	t, err := token.Parse(opt, tokenStr, cl)
+	t, err := token.Parse(defaultOpt, tokenStr, cl)
 	if err != nil {
 		logger.Warningf("failed to decode bearer token: %v", err)
 		return nil
