@@ -286,7 +286,7 @@ func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bo
 	}
 
 	if async {
-		go func() {
+		go func(ctx context.Context) {
 			// if async, this is running in another goroutine ensure the execution exists in db
 			err := lib.RetryUntil(func() error {
 				_, err := bc.execMgr.Get(ctx, executionID)
@@ -297,8 +297,8 @@ func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bo
 				return
 			}
 
-			bc.startScanAll(bc.makeCtx(), executionID)
-		}()
+			bc.startScanAll(ctx, executionID)
+		}(bc.makeCtx())
 	} else {
 		if err := bc.startScanAll(ctx, executionID); err != nil {
 			return 0, err
