@@ -18,7 +18,7 @@
                     </div>
                     <div class="ml-1">
                         <div [hidden]="!shouldShowBar()">
-                            <hbr-vulnerability-bar [summary]="handleScanOverview(artifact?.scan_overview)" [scanner]="scanner"
+                            <hbr-vulnerability-bar [summary]="handleScanOverview(artifact?.scan_overview)" [inputScanner]="scanner"
                                                    (submitFinish)="submitFinish($event)" [projectName]="projectName" [repoName]="repoName"
                                                    [artifactDigest]="digest">
                             </hbr-vulnerability-bar>
