@@ -11,7 +11,18 @@ set -e
 if [ -z "$1" ]; then echo no ip specified; exit 1;fi
 # prepare cert ...
 sudo ./tests/generateCerts.sh $1
-sudo wget https://bootstrap.pypa.io/get-pip.py && sudo python ./get-pip.py && sudo pip install --ignore-installed urllib3 chardet requests --upgrade
+
+python --version
+pip -V
+cat /etc/issue
+cat /proc/version
+sudo apt-get update -y && sudo apt-get install -y zbar-tools libzbar-dev python-zbar python3.7
+sudo rm /usr/bin/python && sudo ln -s /usr/bin/python3.7 /usr/bin/python
+sudo apt-get install -y python3-pip
+pip -V
+sudo -H pip install --ignore-installed urllib3 chardet requests --upgrade
+python --version
+
 sudo ./tests/hostcfg.sh
 
 if [ "$2" = 'LDAP' ]; then
@@ -22,7 +33,7 @@ if [ $GITHUB_TOKEN ];
 then
     sed "s/# github_token: xxx/github_token: $GITHUB_TOKEN/" -i make/harbor.yml
 fi
-sudo make install COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true CLAIRFLAG=true TRIVYFLAG=true CHARTFLAG=true GEN_TLS=true
+sudo make install COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 BUILDBIN=true NOTARYFLAG=true CLAIRFLAG=true TRIVYFLAG=true CHARTFLAG=true GEN_TLS=true
 
 # waiting 5 minutes to start
 for((i=1;i<=30;i++)); do
