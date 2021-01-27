@@ -15,35 +15,41 @@
 package registry
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/repository"
+	"github.com/goharbor/harbor/src/controller/tag"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/server/registry/util"
 	"net/http"
 	"sort"
 	"strconv"
+	"sync"
 )
 
 func newRepositoryHandler() http.Handler {
 	return &repositoryHandler{
 		repoCtl: repository.Ctl,
-		artCtl:  artifact.Ctl,
+		tagCtl:  tag.Ctl,
+		wp:      lib.NewWorkerPool(20),
 	}
 }
 
 type repositoryHandler struct {
 	repoCtl repository.Controller
-	artCtl  artifact.Controller
+	tagCtl  tag.Controller
+	wp      *lib.WorkerPool
 }
 
 func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	var maxEntries int
 	var err error
+	var wg sync.WaitGroup
 
 	reqQ := req.URL.Query()
 	lastEntry := reqQ.Get("last")
@@ -68,16 +74,67 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		r.sendResponse(w, req, repoNames)
 		return
 	}
+
+	repoNamesChan := make(chan string)
+	done := make(chan bool, 1)
+	errChan := make(chan error, 1)
+	wg.Add(len(repoRecords))
+
+	go func() {
+		defer func() {
+			done <- true
+		}()
+
+		for {
+			select {
+			case str, ok := <-repoNamesChan:
+				if !ok {
+					return
+				}
+				repoNames = append(repoNames, str)
+
+			case e := <-errChan:
+				if err == nil {
+					err = errors.Wrap(e, "catalog API error")
+				} else {
+					err = errors.Wrap(e, err.Error())
+				}
+			}
+		}
+	}()
+
 	for _, repo := range repoRecords {
-		valid, err := r.validateRepo(req.Context(), repo.RepositoryID)
-		if err != nil {
-			lib_http.SendError(w, err)
-			return
-		}
-		if valid {
-			repoNames = append(repoNames, repo.Name)
-		}
+		r.wp.GetWorker()
+		go func(repo *models.RepoRecord) {
+			defer func() {
+				r.wp.ReleaseWorker()
+				wg.Done()
+			}()
+
+			total, err := r.tagCtl.Count(orm.Clone(req.Context()), &q.Query{
+				Keywords: map[string]interface{}{
+					"repository_id": repo.RepositoryID,
+				},
+			})
+			if err != nil {
+				errChan <- err
+				return
+			}
+			if total != 0 {
+				repoNamesChan <- repo.Name
+			}
+		}(repo)
 	}
+
+	wg.Wait()
+	close(repoNamesChan)
+	<-done
+
+	if err != nil {
+		lib_http.SendError(w, err)
+		return
+	}
+
 	sort.Strings(repoNames)
 	if !withN {
 		r.sendResponse(w, req, repoNames)
@@ -138,34 +195,6 @@ func (r *repositoryHandler) sendResponse(w http.ResponseWriter, req *http.Reques
 		lib_http.SendError(w, err)
 		return
 	}
-}
-
-// empty repo and all of artifacts are untagged should be filtered out.
-func (r *repositoryHandler) validateRepo(ctx context.Context, repositoryID int64) (bool, error) {
-	arts, err := r.artCtl.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
-			"RepositoryID": repositoryID,
-		},
-	}, &artifact.Option{
-		WithTag: true,
-	})
-	if err != nil {
-		return false, err
-	}
-
-	// empty repo
-	if len(arts) == 0 {
-		return false, nil
-	}
-
-	for _, art := range arts {
-		if len(art.Tags) != 0 {
-			return true, nil
-		}
-	}
-
-	// if all of artifact are untagged, filter out
-	return false, nil
 }
 
 type catalogAPIResponse struct {
