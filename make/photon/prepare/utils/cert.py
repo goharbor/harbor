@@ -58,9 +58,8 @@ def create_ext_file(cn, ext_filename):
 
 def san_existed(cert_path):
     try:
-        return len(subprocess.check_output(
-            ["/usr/bin/openssl", "x509", "-in",cert_path, "-noout", "-ext", "subjectAltName"]
-            )) > 0
+        return "Subject Alternative Name:" in str(subprocess.check_output(
+            ["/usr/bin/openssl", "x509", "-in", cert_path, "-text"]))
     except subprocess.CalledProcessError:
         pass
     return False
