@@ -182,9 +182,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     this.artifactService.createTag(createTagParams).subscribe(res => {
       this.newTagformShow = false;
       this.newTagName = new InitTag();
-      this.currentPage = 1;
-      let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
-      this.getCurrentArtifactTags(st);
+      this.refresh();
     }, error => {
       this.loading = false;
       this.errorHandlerService.error(error);
@@ -238,9 +236,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
           this.selectedRow = [];
           if (deleteSuccessList.length === deleteResult.length) {
             // all is success
-            this.currentPage = 1;
-            let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
-            this.getCurrentArtifactTags(st);
+            this.refresh();
           } else if (deleteErrorList.length === deleteResult.length) {
             // all is error
             this.loading = false;
@@ -322,6 +318,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   refresh() {
     this.loading = true;
     this.currentPage = 1;
+    this.selectedRow = [];
     let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
     this.getCurrentArtifactTags(st);
   }
