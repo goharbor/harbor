@@ -13,7 +13,7 @@ class TestMetricsExist(unittest.TestCase):
         'core': golang_basic_metrics + ["harbor_core_http_request_total", "harbor_core_http_request_duration_seconds",
     "harbor_core_http_inflight_requests"],
         'registry': golang_basic_metrics + ["registry_http_in_flight_requests"],
-        'exporter': golang_basic_metrics + ["harbor_image_pulled",
+        'exporter': golang_basic_metrics + ["artifact_pulled",
     "harbor_project_artifact_total", "harbor_project_member_total", "harbor_project_quota_byte",
     "harbor_project_repo_total", "harbor_project_total"
     ]
