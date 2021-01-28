@@ -40,6 +40,9 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 		return nil
 	}
 	token := bearerToken(req)
+	if len(token) == 0 {
+		return nil
+	}
 	claims, err := oidc.VerifyToken(ctx, token)
 	if err != nil {
 		log.Warningf("failed to verify token: %v", err)
