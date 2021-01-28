@@ -411,8 +411,14 @@ build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)
 
 build_base_docker:
+	if [ -n "$(REGISTRYUSER)" ] && [ "$(REGISTRYUSER)" != "user" ] && [ -n "$(REGISTRYPASSWORD)" ] && [ "$(REGISTRYPASSWORD)" != "default" ]; then \
+		docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
+	else \
+		echo "No docker credentials provided, please make sure enough priviledges to access docker hub!" ; \
+	fi
 	@for name in chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
 		echo $$name ; \
+		sleep 30 ; \
 		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . && \
 		if [ -n "$(PUSHBASEIMAGE)" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
