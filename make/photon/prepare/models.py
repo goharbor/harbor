@@ -5,7 +5,7 @@ from shutil import copytree, rmtree
 
 from g import internal_tls_dir, DEFAULT_GID, DEFAULT_UID, PG_GID, PG_UID
 from utils.misc import check_permission, owner_can_read, get_realpath, port_number_valid
-
+from utils.cert import san_existed
 
 class InternalTLS:
 
@@ -75,7 +75,7 @@ class InternalTLS:
 
     def _check(self, filename: str):
         """
-        Check the permission of cert and key is correct
+        Check cert and key files are correct
         """
 
         path = Path(os.path.join(internal_tls_dir, filename))
@@ -92,12 +92,21 @@ class InternalTLS:
         if filename.endswith('.key') and not check_permission(path, mode=0o600):
             raise Exception('key file {} permission is not 600'.format(filename))
 
-        # check owner can read cert file
-        if filename.endswith('.crt') and not owner_can_read(path.stat().st_mode):
+        # check certificate file
+        if filename.endswith('.crt'):
+            if not owner_can_read(path.stat().st_mode):
+                # check owner can read cert file
                 raise Exception('File {} should readable by owner'.format(filename))
+            if not san_existed(path):
+                # check SAN included
+                if filename == 'harbor_internal_ca.crt':
+                    return
+                raise Exception('cert file {} should include SAN'.format(filename))
+
 
     def validate(self) -> bool:
         if not self.enabled:
+            # pass the validation if not enabled
             return True
 
         if not internal_tls_dir.exists():
