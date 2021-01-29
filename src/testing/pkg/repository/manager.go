@@ -85,3 +85,13 @@ func (f *FakeManager) AddPullCount(ctx context.Context, id int64) error {
 	args := f.Called()
 	return args.Error(0)
 }
+
+// NonEmptyRepos ...
+func (f *FakeManager) NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error) {
+	args := f.Called()
+	var repository []*models.RepoRecord
+	if args.Get(0) != nil {
+		repository = args.Get(0).([]*models.RepoRecord)
+	}
+	return repository, args.Error(1)
+}

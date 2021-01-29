@@ -23,6 +23,10 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	af_dao "github.com/goharbor/harbor/src/pkg/artifact/dao"
+	tag_dao "github.com/goharbor/harbor/src/pkg/tag/dao"
+	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
@@ -34,13 +38,17 @@ var (
 
 type daoTestSuite struct {
 	suite.Suite
-	dao DAO
-	id  int64
-	ctx context.Context
+	dao    DAO
+	tagDao tag_dao.DAO
+	afDao  af_dao.DAO
+	id     int64
+	ctx    context.Context
 }
 
 func (d *daoTestSuite) SetupSuite() {
 	d.dao = New()
+	d.tagDao = tag_dao.New()
+	d.afDao = af_dao.New()
 	common_dao.PrepareTestForPostgresSQL()
 	d.ctx = orm.NewContext(nil, beegoorm.NewOrm())
 }
@@ -180,6 +188,57 @@ func (d *daoTestSuite) TestAddPullCount() {
 	d.Equal(int64(2), repository.PullCount)
 
 	d.dao.Delete(d.ctx, id)
+}
+
+func (d *daoTestSuite) TestEmptyRepos() {
+	repository := &models.RepoRecord{
+		Name:        "TestEmptyRepos",
+		ProjectID:   10,
+		Description: "test pull count",
+		PullCount:   1,
+	}
+	id, err := d.dao.Create(d.ctx, repository)
+	d.Require().Nil(err)
+
+	art := &af_dao.Artifact{
+		Type:              "IMAGE",
+		MediaType:         v1.MediaTypeImageConfig,
+		ManifestMediaType: v1.MediaTypeImageIndex,
+		ProjectID:         1,
+		RepositoryID:      1,
+		RepositoryName:    "library/hello-world",
+		Digest:            "parent_digest",
+		PushTime:          time.Now(),
+		PullTime:          time.Now(),
+		Annotations:       `{"anno1":"value1"}`,
+	}
+	afID, err := d.afDao.Create(d.ctx, art)
+	d.Require().Nil(err)
+
+	tag := &tag.Tag{
+		RepositoryID: id,
+		ArtifactID:   afID,
+		Name:         "latest",
+		PushTime:     time.Now(),
+		PullTime:     time.Now(),
+	}
+	_, err = d.tagDao.Create(d.ctx, tag)
+	d.Require().Nil(err)
+
+	repos, err := d.dao.NonEmptyRepos(d.ctx)
+	d.Require().Nil(err)
+
+	var success bool
+	for _, repo := range repos {
+		if repo.Name == "TestEmptyRepos" {
+			success = true
+			break
+		}
+	}
+
+	if !success {
+		d.Fail("TestEmptyRepos failure")
+	}
 }
 
 func TestDaoTestSuite(t *testing.T) {

@@ -17,14 +17,9 @@ package registry
 import (
 	"encoding/json"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/controller/artifact"
-	"github.com/goharbor/harbor/src/controller/repository"
-	"github.com/goharbor/harbor/src/controller/tag"
-	pkg_art "github.com/goharbor/harbor/src/pkg/artifact"
-	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
-	repotesting "github.com/goharbor/harbor/src/testing/controller/repository"
+	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/testing/mock"
+	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
@@ -33,37 +28,31 @@ import (
 
 type catalogTestSuite struct {
 	suite.Suite
-	originalRepoCtl repository.Controller
-	originalArtCtl  artifact.Controller
-	repoCtl         *repotesting.FakeController
-	artCtl          *artifacttesting.Controller
+	originalRepoMgr repository.Manager
+	repoMgr         *repotesting.FakeManager
 }
 
 func (c *catalogTestSuite) SetupSuite() {
-	c.originalRepoCtl = repository.Ctl
-	c.originalArtCtl = artifact.Ctl
+	c.originalRepoMgr = repository.Mgr
 }
 
 func (c *catalogTestSuite) SetupTest() {
-	c.repoCtl = &repotesting.FakeController{}
-	repository.Ctl = c.repoCtl
-	c.artCtl = &artifacttesting.Controller{}
-	artifact.Ctl = c.artCtl
+	c.repoMgr = &repotesting.FakeManager{}
+	repository.Mgr = c.repoMgr
 }
 
 func (c *catalogTestSuite) TearDownTest() {
 }
 
 func (c *catalogTestSuite) TearDownSuite() {
-	repository.Ctl = c.originalRepoCtl
-	artifact.Ctl = c.originalArtCtl
+	repository.Mgr = c.originalRepoMgr
 }
 
 func (c *catalogTestSuite) TestCatalog() {
 	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("List").Return([]*models.RepoRecord{
+	mock.OnAnything(c.repoMgr, "NonEmptyRepos").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",
@@ -73,22 +62,7 @@ func (c *catalogTestSuite) TestCatalog() {
 			Name:         "busybox",
 		},
 	}, nil)
-	mock.OnAnything(c.artCtl, "List").Return([]*artifact.Artifact{
-		{
-			Artifact: pkg_art.Artifact{
-				ProjectID:    1,
-				RepositoryID: 1,
-			},
-			Tags: []*tag.Tag{
-				{
-					Tag: model_tag.Tag{
-						RepositoryID: 1,
-						ArtifactID:   1,
-					},
-				},
-			},
-		},
-	}, nil)
+
 	w = httptest.NewRecorder()
 	newRepositoryHandler().ServeHTTP(w, req)
 	c.Equal(http.StatusOK, w.Code)
@@ -102,10 +76,9 @@ func (c *catalogTestSuite) TestCatalog() {
 }
 
 func (c *catalogTestSuite) TestCatalogPaginationN1() {
-	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog?n=1", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("List").Return([]*models.RepoRecord{
+	c.repoMgr.On("NonEmptyRepos").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",
@@ -113,22 +86,6 @@ func (c *catalogTestSuite) TestCatalogPaginationN1() {
 		{
 			RepositoryID: 2,
 			Name:         "busybox",
-		},
-	}, nil)
-	mock.OnAnything(c.artCtl, "List").Return([]*artifact.Artifact{
-		{
-			Artifact: pkg_art.Artifact{
-				ProjectID:    1,
-				RepositoryID: 1,
-			},
-			Tags: []*tag.Tag{
-				{
-					Tag: model_tag.Tag{
-						RepositoryID: 1,
-						ArtifactID:   1,
-					},
-				},
-			},
 		},
 	}, nil)
 	w = httptest.NewRecorder()
@@ -145,10 +102,9 @@ func (c *catalogTestSuite) TestCatalogPaginationN1() {
 }
 
 func (c *catalogTestSuite) TestCatalogPaginationN2() {
-	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog?n=3", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("List").Return([]*models.RepoRecord{
+	c.repoMgr.On("NonEmptyRepos").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",
@@ -156,22 +112,6 @@ func (c *catalogTestSuite) TestCatalogPaginationN2() {
 		{
 			RepositoryID: 2,
 			Name:         "busybox",
-		},
-	}, nil)
-	mock.OnAnything(c.artCtl, "List").Return([]*artifact.Artifact{
-		{
-			Artifact: pkg_art.Artifact{
-				ProjectID:    1,
-				RepositoryID: 1,
-			},
-			Tags: []*tag.Tag{
-				{
-					Tag: model_tag.Tag{
-						RepositoryID: 1,
-						ArtifactID:   1,
-					},
-				},
-			},
 		},
 	}, nil)
 	w = httptest.NewRecorder()
@@ -188,10 +128,9 @@ func (c *catalogTestSuite) TestCatalogPaginationN2() {
 }
 
 func (c *catalogTestSuite) TestCatalogPaginationN3() {
-	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog?last=busybox&n=1", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("List").Return([]*models.RepoRecord{
+	c.repoMgr.On("NonEmptyRepos").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",
@@ -199,22 +138,6 @@ func (c *catalogTestSuite) TestCatalogPaginationN3() {
 		{
 			RepositoryID: 2,
 			Name:         "busybox",
-		},
-	}, nil)
-	mock.OnAnything(c.artCtl, "List").Return([]*artifact.Artifact{
-		{
-			Artifact: pkg_art.Artifact{
-				ProjectID:    1,
-				RepositoryID: 1,
-			},
-			Tags: []*tag.Tag{
-				{
-					Tag: model_tag.Tag{
-						RepositoryID: 1,
-						ArtifactID:   1,
-					},
-				},
-			},
 		},
 	}, nil)
 	w = httptest.NewRecorder()
@@ -230,59 +153,10 @@ func (c *catalogTestSuite) TestCatalogPaginationN3() {
 	c.Equal("hello-world", ctlg.Repositories[0])
 }
 
-func (c *catalogTestSuite) TestCatalogUntaggedArtifact() {
-	c.SetupTest()
-	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog", nil)
-	var w *httptest.ResponseRecorder
-	c.repoCtl.On("List").Return([]*models.RepoRecord{
-		{
-			RepositoryID: 1,
-			Name:         "hello-world",
-		},
-		{
-			RepositoryID: 2,
-			Name:         "busybox",
-		},
-	}, nil)
-	// untagged artifact
-	mock.OnAnything(c.artCtl, "List").Return([]*artifact.Artifact{
-		{
-			Artifact: pkg_art.Artifact{
-				ProjectID:    1,
-				RepositoryID: 1,
-			},
-		},
-	}, nil)
-	w = httptest.NewRecorder()
-	newRepositoryHandler().ServeHTTP(w, req)
-	c.Equal(http.StatusOK, w.Code)
-	var ctlg struct {
-		Repositories []string `json:"repositories"`
-	}
-	decoder := json.NewDecoder(w.Body)
-	err := decoder.Decode(&ctlg)
-	c.Nil(err)
-	c.Equal(0, len(ctlg.Repositories))
-}
-
 func (c *catalogTestSuite) TestCatalogEmptyRepo() {
-	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("List").Return([]*models.RepoRecord{
-		{
-			RepositoryID: 1,
-			Name:         "hello-world",
-		},
-		{
-			RepositoryID: 2,
-			Name:         "busybox",
-		},
-	}, nil)
-	// empty repository
-	mock.OnAnything(c.artCtl, "List").Return([]*artifact.Artifact{
-		{},
-	}, nil)
+	c.repoMgr.On("NonEmptyRepos").Return([]*models.RepoRecord{}, nil)
 	w = httptest.NewRecorder()
 	newRepositoryHandler().ServeHTTP(w, req)
 	c.Equal(http.StatusOK, w.Code)
