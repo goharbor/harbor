@@ -41,7 +41,7 @@ var (
 		valueType: prometheus.GaugeValue,
 	}
 	projectUsage = typedDesc{
-		desc:      newDescWithLables("", "project_usage_byte", "The used resource of a project", "project_name"),
+		desc:      newDescWithLables("", "project_quota_usage_byte", "The used resource of a project", "project_name"),
 		valueType: prometheus.GaugeValue,
 	}
 	projectQuote = typedDesc{
