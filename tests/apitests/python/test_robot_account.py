@@ -77,7 +77,7 @@ class TestRobotAccount(unittest.TestCase):
             3. Delete user(UA).
         """
         image_project_a = "haproxy"
-        image_project_b = "hello-world"
+        image_project_b = "image_project_b"
         image_project_c = "httpd"
         image_robot_account = "alpine"
         tag = "latest"
@@ -186,7 +186,8 @@ class TestRobotAccount(unittest.TestCase):
         for i in range(2):
             base.run_command( ["curl", r"-o", "./tests/apitests/python/{}-{}.tgz".format(CHART_FILE_LIST[i]["name"], CHART_FILE_LIST[i]["version"]), "https://storage.googleapis.com/harbor-builds/helm-chart-test-files/{}-{}.tgz".format(CHART_FILE_LIST[i]["name"], CHART_FILE_LIST[i]["version"])])
 
-        #Make sure that whether 'True' or 'False' must be included in each line or row.
+        # In this priviledge check list, make sure that each of lines and rows must
+        #   contains both True and False value.
         check_list = [
             [True, True, True, True, True, True, False, True, False, True],
             [False, False, False, False, True, True, False, True, True, False],

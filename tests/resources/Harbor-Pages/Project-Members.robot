@@ -39,6 +39,7 @@ Clear Search Input And Go Into Project
     ${out}  Run Keyword If  ${has_image}==${false}  Run Keywords  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  AND  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]
     ...  ELSE  Run Keywords  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  AND  Wait Until Element Is Visible And Enabled  xpath=//project-detail//hbr-repository-gridview//clr-dg-cell[contains(.,'${project}/')]
     Sleep  1
+    Capture Page Screenshot
 
 Add User To Project Admin
     [Arguments]  ${project}  ${user}
