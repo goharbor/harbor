@@ -49,11 +49,13 @@ func instrumentHandler(next http.Handler) http.Handler {
 		now, rc, op := time.Now(), lib.NewResponseRecorder(w), ""
 		ctx := context.WithValue(r.Context(), contextOpIDKey{}, &op)
 		next.ServeHTTP(rc, r.WithContext(ctx))
-		if len(op) == 0 && isChartMuseumURL(r.URL.Path) {
-			op = "chartmuseum"
-		} else {
-			// From swagger's perspective the operation of this legacy URL is unknown
-			op = "unknown"
+		if len(op) == 0 {
+			if isChartMuseumURL(r.URL.Path) {
+				op = "chartmuseum"
+			} else {
+				// From swagger's perspective the operation of this legacy URL is unknown
+				op = "unknown"
+			}
 		}
 		metric.TotalReqDurSummary.WithLabelValues(r.Method, op).Observe(time.Since(now).Seconds())
 		metric.TotalReqCnt.WithLabelValues(r.Method, strconv.Itoa(rc.StatusCode), op).Inc()
