@@ -22,7 +22,12 @@ Resource  ../../resources/Util.robot
 Create An New Project And Go Into Project
     [Arguments]  ${projectname}  ${public}=false  ${count_quota}=${null}  ${storage_quota}=${null}  ${storage_quota_unit}=${null}  ${proxy_cache}=${false}  ${registry}=${null}
     Navigate To Projects
-    Retry Button Click  xpath=${create_project_button_xpath}
+    FOR  ${n}  IN RANGE  1  8
+        ${out}  Run Keyword And Ignore Error  Retry Button Click  xpath=${create_project_button_xpath}
+        Log All  Return value is ${out[0]}
+        Exit For Loop If  '${out[0]}'=='PASS'
+        Sleep  1
+    END
     Log To Console  Project Name: ${projectname}
     Retry Text Input  xpath=${project_name_xpath}  ${projectname}
     ${element_project_public}=  Set Variable  xpath=${project_public_xpath}
@@ -84,6 +89,7 @@ Switch To Project Tab Overflow
     Sleep  1
 
 Navigate To Projects
+    Reload Page
     Retry Element Click  xpath=${projects_xpath}
     Sleep  2
 
@@ -204,10 +210,10 @@ Do Log Advanced Search
     Retry Element Click  xpath=//audit-log//clr-dropdown/button
     Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Others')]
     Retry Element Click  xpath=//audit-log//hbr-filter//clr-icon
-    Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor
+    Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor-jobservice
     Sleep  1
     ${rc} =  Get Element Count  //audit-log//clr-dg-row
-    Should Be Equal As Integers  ${rc}  0
+    Should Be Equal As Integers  ${rc}  1
 
 Retry Click Repo Name
     [Arguments]  ${repo_name_element}

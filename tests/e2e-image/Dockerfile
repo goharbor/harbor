@@ -3,7 +3,7 @@ ENV LANG C.UTF-8
 # V 2.0
 # V 2.0.1: upgrade docker to version 19.03.12
 # V 2.5 Add support for e2e py-test (especially containerd)
-# V 2.6 upgrade helm2, helm3 and docker 20.10.0
+# V 2.6 docker 19.03.12
 # V 2.6.1 upgrade helm2, helm3 and docker 20.10.1
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget curl gnupg2
@@ -83,10 +83,9 @@ RUN apt-get update && apt install libnss3-tools && \
 
 RUN pip3 install pyasn1 google-apitools==0.5.31 gsutil robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot robotframework-JSONLibrary --upgrade
 
-
-ENV CONTAINERD_VERSION 1.3.4
-RUN wget https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CONTAINERD_VERSION}.linux-amd64.tar.gz && \
-    tar --no-overwrite-dir -C / -xzf cri-containerd-${CONTAINERD_VERSION}.linux-amd64.tar.gz
+ENV CRI_CONTAINERD_VERSION 1.3.4
+RUN wget https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz && \
+    tar --no-overwrite-dir -C / -xzf cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz
 
 # Install docker, docker compose
 ENV DOCKER_VERSION 20.10.1

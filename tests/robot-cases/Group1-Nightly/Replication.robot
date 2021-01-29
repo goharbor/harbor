@@ -150,7 +150,7 @@ Test Case - Replication Rule Delete
 
 Test Case - Replication Of Pull Images from DockerHub To Self
     @{target_images}=  Create List  mariadb  centos
-    Body Of Replication Of Pull Images from Registry To Self   docker-hub  https://hub.docker.com/  ${DOCKER_USER}    ${DOCKER_PWD}  ${DOCKER_USER}/{cent*,mariadb}  @{target_images}
+    Body Of Replication Of Pull Images from Registry To Self   docker-hub  https://hub.docker.com/  ${DOCKER_USER}    ${DOCKER_PWD}  ${DOCKER_USER}/{cent*,mariadb}  ${null}  @{target_images}
 
 Test Case - Replication Of Push Images from Self To Harbor
     Init Chrome Driver
@@ -281,7 +281,7 @@ Test Case - Replication Of Push Images to AWS-ECR Triggered By Event
 
 Test Case - Replication Of Pull Images from Gitlab To Self
     @{target_images}=  Create List  photon  alpine
-    Body Of Replication Of Pull Images from Registry To Self   gitlab   https://registry.gitlab.com    ${gitlab_id}    ${gitlab_key}    dannylunsa/test_replication/{photon,alpine}    @{target_images}
+    Body Of Replication Of Pull Images from Registry To Self   gitlab   https://registry.gitlab.com    ${gitlab_id}    ${gitlab_key}    dannylunsa/test_replication/{photon,alpine}  ${null}  @{target_images}
 
 Test Case - Replication Of Push Images to Gitlab Triggered By Event
     Body Of Replication Of Push Images to Registry Triggered By Event    gitlab   https://registry.gitlab.com    ${gitlab_id}    ${gitlab_key}    dannylunsa/test_replication

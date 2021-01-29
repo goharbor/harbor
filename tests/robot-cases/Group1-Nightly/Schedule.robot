@@ -24,6 +24,49 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
+# Due to Docker 20's new behavior, let 'Proxy Cache' be the 1st case to run
+#   and at the same time all images to be pull among all cases should be not exsit before pulling.
+Test Case - Proxy Cache
+    [Tags]  proxy_cache
+    ${d}=  Get Current Date    result_format=%m%s
+    ${registry}=  Set Variable  https://cicd.harbor.vmwarecna.net
+    ${user_namespace}=  Set Variable  nightly
+    ${image}=  Set Variable  for_proxy
+    ${tag}=  Set Variable  1.0
+    ${manifest_index}=  Set Variable  alpine
+    ${manifest_tag}=  Set Variable  3.12.0
+    ${test_user}=  Set Variable  user010
+    ${test_pwd}=  Set Variable  Test1@34
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Registries
+    Create A New Endpoint  harbor  e1${d}  ${registry}  ${null}  ${null}
+    Create An New Project And Go Into Project  project${d}  proxy_cache=${true}  registry=e1${d}
+    Manage Project Member Without Sign In  project${d}  ${test_user}  Add  has_image=${false}
+    Go Into Project  project${d}  has_image=${false}
+    Change Member Role  ${test_user}  Developer
+    Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${user_namespace}/${image}  tag=${tag}
+    Pull Image  ${ip}  ${test_user}  ${test_pwd}  project${d}  ${user_namespace}/${manifest_index}  tag=${manifest_tag}
+    Log To Console  Start to Sleep 3 minitues......
+    Sleep  180
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/${user_namespace}/${image}
+
+    FOR  ${idx}  IN RANGE  0  15
+        Log All  Checking manifest ${idx} round......
+        Sleep  60
+        Go Into Project  project${d}
+        ${repo_out}=  Run Keyword And Ignore Error  Go Into Repo  project${d}/${user_namespace}/${manifest_index}
+        Continue For Loop If  '${repo_out[0]}'=='FAIL'
+        ${artifact_out}=  Run Keyword And Ignore Error  Go Into Index And Contain Artifacts  ${manifest_tag}  limit=1
+        Exit For Loop If  '${artifact_out[0]}'=='PASS'
+    END
+    Should Be Equal As Strings  '${artifact_out[0]}'  'PASS'
+
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
+    Cannot Push image  ${ip}  ${test_user}  ${test_pwd}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
+    Close Browser
+
 Test Case - GC Schedule Job
     [tags]  GC_schedule
     Init Chrome Driver

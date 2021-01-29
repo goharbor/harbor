@@ -11,7 +11,6 @@ from library.user import User
 from library.repository import Repository
 from library.repository import push_self_build_image_to_project
 from library.repository import pull_harbor_image
-
 class TestProjects(unittest.TestCase):
     @suppress_urllib3_warning
     def setUp(self):
