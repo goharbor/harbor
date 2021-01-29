@@ -45,6 +45,7 @@ class TestProjects(unittest.TestCase):
             with created_project(metadata={"public": "false"}, user_id=user_id) as (project_id, project_name):
                 #4. Push an image to project(PA) by user(UA), then check the project quota usage; -- {"count": 1, "storage": 2791709}
                 image, tag = "goharbor/alpine", "3.10"
+                image_alias_name = "_alias"
                 push_image_to_project(project_name, harbor_server, user_name, user_001_password, image, tag)
 
                 #5. Get project quota
@@ -52,7 +53,7 @@ class TestProjects(unittest.TestCase):
                 self.assertEqual(quota[0].used["storage"], 2789002)
 
                 #6. Push the image with another tag to project(PA) by user(UA), the check the project quota usage; -- {"count": 1, "storage": 2791709}
-                push_image_to_project(project_name, harbor_server, user_name, user_001_password, image, tag)
+                push_image_to_project(project_name, harbor_server, user_name, user_001_password, image, tag, new_image=image+image_alias_name)
 
                 #7. Get project quota
                 quota = self.system.get_project_quota("project", project_id, **ADMIN_CLIENT)
@@ -60,6 +61,7 @@ class TestProjects(unittest.TestCase):
 
                 #8. Delete repository(RA) by user(UA);
                 self.repo.delete_repository(project_name, "goharbor%2Falpine", **ADMIN_CLIENT)
+                self.repo.delete_repository(project_name, "goharbor%2Falpine"+image_alias_name, **ADMIN_CLIENT)
 
                 #9. Quota should be 0
                 quota = self.system.get_project_quota("project", project_id, **ADMIN_CLIENT)

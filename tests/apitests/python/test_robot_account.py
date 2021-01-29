@@ -47,9 +47,11 @@ class TestRobotAccount(unittest.TestCase):
         self.project.delete_project(self.project_ra_id_a, **self.USER_RA_CLIENT)
         self.project.delete_project(self.project_ra_id_b, **self.USER_RA_CLIENT)
         self.project.delete_project(self.project_ra_id_c, **self.USER_RA_CLIENT)
+        self.project.delete_project(self.project_ra_id_d, **self.USER_RA_CLIENT)
 
         #3. Delete user(UA).
         self.user.delete_user(self.user_ra_id, **ADMIN_CLIENT)
+        self.user.delete_user(self.user_ra_id_b, **ADMIN_CLIENT)
 
     def test_01_ProjectlevelRobotAccount(self):
         """
@@ -70,14 +72,15 @@ class TestRobotAccount(unittest.TestCase):
 			12. Update action property of robot account(RA);
 			13. Pull image(ImagePA) from project(PA) by robot account(RA), it must be not successful;
 			14. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;
-			15. Delete robot account(RA), it must be not successful.
+			15. Delete robot account(RA).
+            16. Create user(UB), Create public project(PD) by user(UB), user(UA) can't create robot account for project(PD).
         Tear down:
             1. Delete repository(RA) by user(UA);
             2. Delete project(PA);
             3. Delete user(UA).
         """
         image_project_a = "haproxy"
-        image_project_b = "hello-world"
+        image_project_b = "image_project_b"
         image_project_c = "httpd"
         image_robot_account = "alpine"
         tag = "latest"
@@ -97,42 +100,50 @@ class TestRobotAccount(unittest.TestCase):
         self.repo_name_in_project_c, tag_c = push_self_build_image_to_project(self.project_ra_name_c, harbor_server, user_ra_name, TestRobotAccount.user_ra_password, image_project_c, tag)
 
         #4. Create a new robot account(RA) with pull and push privilege in project(PA) by user(UA);
-        robot_id, robot_account = self.robot.create_project_robot(self.project_ra_name_a,
+        robot_id_a, robot_account_a = self.robot.create_project_robot(self.project_ra_name_a,
+                                                                         30 ,**self.USER_RA_CLIENT)
+        robot_id_b, robot_account_b = self.robot.create_project_robot(self.project_ra_name_b,
                                                                          30 ,**self.USER_RA_CLIENT)
 
         #5. Check robot account info, it should has both pull and push privilege;
-        data = self.robot.get_robot_account_by_id(robot_id, **self.USER_RA_CLIENT)
-        _assert_status_code(robot_account.name, data.name)
+        data = self.robot.get_robot_account_by_id(robot_id_a, **self.USER_RA_CLIENT)
+        _assert_status_code(robot_account_a.name, data.name)
 
         #6. Pull image(ImagePA) from project(PA) by robot account(RA), it must be successful;
-        pull_harbor_image(harbor_server, robot_account.name, robot_account.secret, self.repo_name_in_project_a, tag_a)
+        pull_harbor_image(harbor_server, robot_account_a.name, robot_account_a.secret, self.repo_name_in_project_a, tag_a)
 
         #7. Push image(ImageRA) to project(PA) by robot account(RA), it must be successful;
-        self.repo_name_pa, _ = push_self_build_image_to_project(self.project_ra_name_a, harbor_server, robot_account.name, robot_account.secret, image_robot_account, tag)
+        self.repo_name_pa, _ = push_self_build_image_to_project(self.project_ra_name_a, harbor_server, robot_account_a.name, robot_account_a.secret, image_robot_account, tag)
 
         #8. Push image(ImageRA) to project(PB) by robot account(RA), it must be not successful;
-        push_self_build_image_to_project(self.project_ra_name_b, harbor_server, robot_account.name, robot_account.secret, image_robot_account, tag, expected_error_message = "unauthorized to access repository")
+        push_self_build_image_to_project(self.project_ra_name_b, harbor_server, robot_account_a.name, robot_account_a.secret, image_robot_account, tag, expected_error_message = "unauthorized to access repository")
 
         #9. Pull image(ImagePB) from project(PB) by robot account(RA), it must be not successful;
-        pull_harbor_image(harbor_server, robot_account.name, robot_account.secret, self.repo_name_in_project_b, tag_b, expected_error_message = "unauthorized to access repository")
+        pull_harbor_image(harbor_server, robot_account_a.name, robot_account_a.secret, self.repo_name_in_project_b, tag_b, expected_error_message = "unauthorized to access repository")
 
         #10. Pull image from project(PC), it must be successful;
-        pull_harbor_image(harbor_server, robot_account.name, robot_account.secret, self.repo_name_in_project_c, tag_c)
+        pull_harbor_image(harbor_server, robot_account_a.name, robot_account_a.secret, self.repo_name_in_project_c, tag_c)
 
         #11. Push image(ImageRA) to project(PC) by robot account(RA), it must be not successful;
-        push_self_build_image_to_project(self.project_ra_name_c, harbor_server, robot_account.name, robot_account.secret, image_robot_account, tag, expected_error_message = "unauthorized to access repository")
+        push_self_build_image_to_project(self.project_ra_name_c, harbor_server, robot_account_a.name, robot_account_a.secret, image_robot_account, tag, expected_error_message = "unauthorized to access repository")
 
         #12. Update action property of robot account(RA);"
-        self.robot.disable_robot_account(robot_id, True, **self.USER_RA_CLIENT)
+        self.robot.disable_robot_account(robot_id_a, True, **self.USER_RA_CLIENT)
 
         #13. Pull image(ImagePA) from project(PA) by robot account(RA), it must be not successful;
-        pull_harbor_image(harbor_server, robot_account.name, robot_account.secret, self.repo_name_in_project_a, tag_a, expected_login_error_message = "unauthorized: authentication required")
+        pull_harbor_image(harbor_server, robot_account_a.name, robot_account_a.secret, self.repo_name_in_project_a, tag_a, expected_login_error_message = "unauthorized: authentication required")
 
         #14. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;
-        push_self_build_image_to_project(self.project_ra_name_a, harbor_server, robot_account.name, robot_account.secret, image_robot_account, tag, expected_login_error_message = "unauthorized: authentication required")
+        push_self_build_image_to_project(self.project_ra_name_a, harbor_server, robot_account_a.name, robot_account_a.secret, image_robot_account, tag, expected_login_error_message = "unauthorized: authentication required")
 
-        #15. Delete robot account(RA), it must be not successful.
-        self.robot.delete_robot_account(robot_id, **self.USER_RA_CLIENT)
+        #15. Delete robot account(RA).
+        self.robot.delete_robot_account(robot_id_a, **self.USER_RA_CLIENT)
+
+        #16. Create user(UB), Create public project(PD) by user(UB), user(UA) can't create robot account for project(PD).
+        self.user_ra_id_b, user_ra_name_b = self.user.create_user(user_password = TestRobotAccount.user_ra_password, **ADMIN_CLIENT)
+        self.USER_RA_CLIENT_B=dict(endpoint = TestRobotAccount.url, username = user_ra_name_b, password = TestRobotAccount.user_ra_password)
+        self.project_ra_id_d, self.project_ra_name_d = self.project.create_project(metadata = {"public": "true"}, **self.USER_RA_CLIENT_B)
+        self.robot.create_project_robot(self.project_ra_name_d, 30 , expect_status_code = 403, **self.USER_RA_CLIENT)
 
         self.do_01_tearDown()
 
@@ -186,7 +197,8 @@ class TestRobotAccount(unittest.TestCase):
         for i in range(2):
             base.run_command( ["curl", r"-o", "./tests/apitests/python/{}-{}.tgz".format(CHART_FILE_LIST[i]["name"], CHART_FILE_LIST[i]["version"]), "https://storage.googleapis.com/harbor-builds/helm-chart-test-files/{}-{}.tgz".format(CHART_FILE_LIST[i]["name"], CHART_FILE_LIST[i]["version"])])
 
-        #Make sure that whether 'True' or 'False' must be included in each line or row.
+        # In this priviledge check list, make sure that each of lines and rows must
+        #   contains both True and False value.
         check_list = [
             [True, True, True, True, True, True, False, True, False, True],
             [False, False, False, False, True, True, False, True, True, False],

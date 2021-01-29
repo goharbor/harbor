@@ -134,7 +134,7 @@ Test Case - Scan Schedule Job
     END
     # After scan custom schedule is set, image should stay in unscanned status.
     Log To Console  Sleep for 300 seconds......
-    Sleep  300
+    Sleep  180
     Go Into Project  ${project_name}
     Go Into Repo  ${project_name}/${image}
     Retry Wait Until Page Contains Element  ${not_scanned_icon}

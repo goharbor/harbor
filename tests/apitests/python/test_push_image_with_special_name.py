@@ -65,7 +65,7 @@ class TestProjects(unittest.TestCase):
         self.project.projects_should_exist(dict(public=False), expected_count = 1,
             expected_project_id = TestProjects.project_sign_image_id, **TestProjects.USER_sign_image_CLIENT)
 
-        image = "hello-world"
+        image = "redis"
         src_tag = "latest"
         profix = "aaa/bbb"
 

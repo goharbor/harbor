@@ -219,7 +219,7 @@ Clear Field Of Characters
     END
 
 Wait Unitl Command Success
-    [Arguments]  ${cmd}  ${times}=2
+    [Arguments]  ${cmd}  ${times}=5
     FOR  ${n}  IN RANGE  1  ${times}
         Log  Trying ${cmd}: ${n} ...  console=True
         ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}

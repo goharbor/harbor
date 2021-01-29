@@ -25,7 +25,7 @@ class TestProjects(unittest.TestCase):
         self.repo= Repository()
         self.url = ADMIN_CLIENT["endpoint"]
         self.user_password = "Aa123456"
-        self.repo_name = "hello-world"
+        self.repo_name = "test_tag_crud"
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):

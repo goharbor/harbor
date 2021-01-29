@@ -91,6 +91,20 @@ def _get_string_from_unicode(udata):
         result = result + tmp.strip('\n\r\t')
     return result
 
+def run_command_with_popen(command):
+    print("Command: ", subprocess.list2cmdline(command))
+
+    try:
+        proc = subprocess.Popen(command, universal_newlines=True, shell=True,
+                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        output, errors = proc.communicate()
+    except Exception as e:
+        print("Error:", e)
+    else:
+        print(proc.returncode, errors, output)
+    finally:
+        proc.stdout.close()
+
 def run_command(command, expected_error_message = None):
     print("Command: ", subprocess.list2cmdline(command))
     try:
