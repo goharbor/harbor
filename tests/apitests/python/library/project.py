@@ -97,6 +97,7 @@ class Project(base.Base):
 
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
+        print("Project {} info: {}".format(project_id, data))
         return data
 
     def update_project(self, project_id, expect_status_code=200, metadata=None, cve_allowlist=None, **kwargs):

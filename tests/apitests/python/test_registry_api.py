@@ -27,7 +27,6 @@ class TestProjects(unittest.TestCase):
         self.user= User()
         self.artifact = Artifact()
         self.repo = Repository()
-        self.repo_name = "hello-world"
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
@@ -72,15 +71,15 @@ class TestProjects(unittest.TestCase):
         #3. Push 3 images to project_Alice and Add 3 tags to the 3rd image.
 
         src_tag = "latest"
-        image_a = "busybox"
+        image_a = "image_a"
         TestProjects.repo_a, tag_a = push_self_build_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_a, src_tag)
-        image_b = "alpine"
+        image_b = "image_b"
         TestProjects.repo_b, tag_b = push_self_build_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_b, src_tag)
-        image_c = "hello-world"
+        image_c = "image_c"
         TestProjects.repo_c, tag_c = push_self_build_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_c, src_tag)
         create_tags = ["1.0","2.0","3.0"]
         for tag in create_tags:
-            self.artifact.create_tag(TestProjects.project_Alice_name, self.repo_name, tag_c, tag, **USER_ALICE_CLIENT)
+            self.artifact.create_tag(TestProjects.project_Alice_name, image_c, tag_c, tag, **USER_ALICE_CLIENT)
         #4. Call the image_list_tags API
         tags = list_image_tags(harbor_server,TestProjects.repo_c,user_Alice_name,user_common_password)
         for tag in create_tags:

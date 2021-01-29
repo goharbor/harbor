@@ -54,7 +54,7 @@ Create An New P2P Preheat Policy
 Edit A P2P Preheat Policy
     [Arguments]    ${name}  ${repo}  ${trigger_type}=${null}
     Switch To P2P Preheat
-    Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  //clr-main-container//project-detail/p2p-provider/ng-component//h4[contains(.,'Executions')]
+    Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_edit_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
     Retry Text Input  ${p2p_preheat_repoinput_id}  ${repo}
@@ -64,7 +64,7 @@ Edit A P2P Preheat Policy
 Delete A P2P Preheat Policy
     [Arguments]    ${name}
     Switch To P2P Preheat
-    Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  //clr-main-container//project-detail/p2p-provider/ng-component//h4[contains(.,'Executions')]
+    Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_del_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_del_btn_id}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}

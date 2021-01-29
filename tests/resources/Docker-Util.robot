@@ -35,7 +35,7 @@ Pull image
     Should Contain  ${output}  Status:
     Should Not Contain  ${output}  No such image:
     #Remove image for docker 20
-    Wait Unitl Command Success  docker rmi -f ${ip}/${project}/${image_with_tag}
+    Clean All Local Images
 
 Push image
     # If no tag provided in $(image_with_or_without_tag}, latest will be the tag pulled from docker-hub or read from local
@@ -54,10 +54,7 @@ Push image
     Wait Unitl Command Success  docker push ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker logout ${ip}
     #Remove image for docker 20
-    ${output}=  Wait Unitl Command Success  docker rmi -f ${ip}/${project}/${image_in_use_with_tag}
-    Log All  Docker rmi: ${output}
-    ${output}=  Run Keyword If  ${need_pull_first}==${true}   Wait Unitl Command Success  docker rmi -f ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_in_use}
-    Log All  Docker rmi: ${output}
+    Clean All Local Images
     Sleep  1
 
 Push Image With Tag
@@ -70,8 +67,11 @@ Push Image With Tag
     Wait Unitl Command Success  docker push ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker logout ${ip}
     #Remove image for docker 20
-    Wait Unitl Command Success  docker rmi -f ${ip}/${project}/${image}:${tag}
-    Wait Unitl Command Success  docker rmi -f ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1}
+    Clean All Local Images
+
+Clean All Local Images
+    Wait Unitl Command Success  docker rmi -f $(docker images -a -q)
+    Wait Unitl Command Success  docker system prune -a -f
 
 Cannot Docker Login Harbor
     [Arguments]  ${ip}  ${user}  ${pwd}

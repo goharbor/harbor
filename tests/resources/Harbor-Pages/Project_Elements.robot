@@ -34,7 +34,7 @@ ${project_tag_immutability_switch}  //project-detail/app-tag-feature-integration
 ${create_project_CANCEL_button_xpath}  xpath=//button[contains(.,'CANCEL')]
 ${create_project_OK_button_xpath}  xpath=//button[contains(.,'OK')]
 ${delete_confirm_btn}  xpath=//button[contains(.,'DELETE')]
-${project_statistics_private_repository_icon}  xpath=//project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+${project_statistics_private_repository_icon}  xpath=//projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
 ${project_statistics_total_projects_icon}  xpath=//div[contains(@class, 'statistic-column-block') and contains(., 'TOTAL')]//div[1]/statistics//span[contains(@class, 'statistic-data')]
 ${repo_delete_confirm_btn}  xpath=//clr-modal//button[2]
 ${repo_retag_confirm_dlg}  css=${modal-dialog}

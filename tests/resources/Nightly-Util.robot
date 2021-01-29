@@ -34,7 +34,6 @@ Nightly Test Setup
     Run  wget ${prometheus_chart_file_url}
     #Prepare docker image for push special image keyword in replication test
     Run Keyword If  '${DOCKER_USER}' != '${EMPTY}'  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
-    Docker Pull  busybox:latest
 
 CA Setup
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt

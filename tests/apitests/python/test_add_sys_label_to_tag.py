@@ -72,7 +72,7 @@ class TestProjects(unittest.TestCase):
             expected_project_id = TestProjects.project_add_g_lbl_id, **TestProjects.USER_add_g_lbl_CLIENT)
 
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
-        TestProjects.repo_name, tag = push_self_build_image_to_project(TestProjects.project_add_g_lbl_name, harbor_server, user_add_g_lbl_name, user_001_password, "hello-world", "latest")
+        TestProjects.repo_name, tag = push_self_build_image_to_project(TestProjects.project_add_g_lbl_name, harbor_server, user_add_g_lbl_name, user_001_password, "test_sys_label", "latest")
 
         #6. Create a new label(LA) in project(PA) by admin;
         TestProjects.label_id, _ = self.label.create_label(**ADMIN_CLIENT)
