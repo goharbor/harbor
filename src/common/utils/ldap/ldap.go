@@ -315,7 +315,7 @@ func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []
 		nil,
 	)
 
-	result, err := session.ldapConn.SearchWithPaging(searchRequest, uint32(session.ldapConfig.LDAPPageSize))
+	result, err := session.ldapConn.SearchWithPaging(searchRequest, uint32(session.ldapConfig.LdapPageSize))
 	if result != nil {
 		log.Debugf("Found entries:%v\n", len(result.Entries))
 	} else {
