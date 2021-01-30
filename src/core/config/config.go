@@ -157,6 +157,7 @@ func LDAPConf() (*models.LdapConf, error) {
 		LdapUID:               cfgMgr.Get(common.LDAPUID).GetString(),
 		LdapFilter:            cfgMgr.Get(common.LDAPFilter).GetString(),
 		LdapScope:             cfgMgr.Get(common.LDAPScope).GetInt(),
+		LDAPPageSize:          cfgMgr.Get(common.LDAPPageSize).GetInt(),
 		LdapConnectionTimeout: cfgMgr.Get(common.LDAPTimeout).GetInt(),
 		LdapVerifyCert:        cfgMgr.Get(common.LDAPVerifyCert).GetBool(),
 	}, nil
