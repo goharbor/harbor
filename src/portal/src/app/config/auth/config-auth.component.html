@@ -260,10 +260,7 @@
                 [(ngModel)]="currentConfig.ldap_page_size.value" id="ldapPageSize" size="20" pattern="^[0-9]+$"
                 [disabled]="disabled(currentConfig.ldap_page_size)" />
             <clr-control-error>{{'TOOLTIP.NUMBER_REQUIRED' | translate}}</clr-control-error>
-<!-- 
-            <input clrInput name="tokenExpiration" type="text" #tokenExpirationInput="ngModel"
-                [(ngModel)]="systemSettings.token_expiration.value" required pattern="^[1-9]{1}[0-9]*$"
-                id="tokenExpiration" size="20" [disabled]="!editable" /> -->
+
         </clr-input-container>
 
         <clr-checkbox-container>
