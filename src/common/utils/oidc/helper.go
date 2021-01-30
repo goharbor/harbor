@@ -110,6 +110,7 @@ var insecureTransport = &http.Transport{
 	TLSClientConfig: &tls.Config{
 		InsecureSkipVerify: true,
 	},
+	Proxy: http.ProxyFromEnvironment,
 }
 
 // Token wraps the attributes of a oauth2 token plus the attribute of ID token
