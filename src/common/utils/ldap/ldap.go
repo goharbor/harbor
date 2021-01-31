@@ -317,7 +317,6 @@ func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []
 
 	var result *goldap.SearchResult
 	var err error
-
 	if session.ldapConfig.LdapPageSize > 0 {
 		result, err = session.ldapConn.SearchWithPaging(searchRequest, uint32(session.ldapConfig.LdapPageSize))
 	} else {
