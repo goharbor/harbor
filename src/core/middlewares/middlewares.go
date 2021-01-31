@@ -15,6 +15,7 @@
 package middlewares
 
 import (
+	"github.com/goharbor/harbor/src/lib"
 	"net/http"
 	"regexp"
 
@@ -51,6 +52,7 @@ var (
 		middleware.MethodAndPathSkipper(http.MethodGet, distribution.BlobURLRegexp),
 		middleware.MethodAndPathSkipper(http.MethodPatch, distribution.BlobUploadURLRegexp),
 		middleware.MethodAndPathSkipper(http.MethodPut, distribution.BlobUploadURLRegexp),
+		middleware.MethodAndPathSkipper(http.MethodGet, lib.V2CatalogURLRe),
 		pingSkipper,
 	}
 
