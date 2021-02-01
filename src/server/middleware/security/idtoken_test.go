@@ -15,12 +15,13 @@
 package security
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"testing"
 )
 
 func TestIDToken(t *testing.T) {
