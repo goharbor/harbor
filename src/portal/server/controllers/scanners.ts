@@ -1,4 +1,4 @@
-import { Scanner } from '../../src/app/config/scanner/scanner';
+import { Scanner } from '../../src/app/base/left-side-nav/interrogation-services/scanner/scanner';
 import { Request, Response } from "express";
 
 

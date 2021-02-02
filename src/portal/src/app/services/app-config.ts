@@ -13,7 +13,7 @@
 // limitations under the License.
 
 
-import { ClairDBStatus } from "../../lib/services";
+import { ClairDBStatus } from "../shared/services";
 
 export class AppConfig {
     with_notary: boolean;

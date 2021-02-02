@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, Output, ViewChild, EventEmitter } from '@angular/core';
-import { Modal } from '../../../lib/services/interface';
-
-import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
-import { User } from '../../user/user';
-import { SessionService } from '../../shared/session.service';
-import { UserService } from '../../user/user.service';
-import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
-
+import { Modal } from '../../shared/services/interface';
+import { NewUserFormComponent } from '../../shared/components/new-user-form/new-user-form.component';
+import { User } from '../../base/left-side-nav/user/user';
+import { SessionService } from '../../shared/services/session.service';
+import { UserService } from '../../base/left-side-nav/user/user.service';
+import { InlineAlertComponent } from "../../shared/components/inline-alert/inline-alert.component";
 
 @Component({
     selector: 'sign-up',
