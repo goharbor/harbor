@@ -26,3 +26,18 @@ The Harbor project maintains release branches for the three most recent minor re
 
 ### Next Release
 The activity for next release will be tracked in the [up-to-date project board](https://github.com/orgs/goharbor/projects/1). If your issue is not present in the corresponding release, please reach out to the maintainers to add the issue to the project board.
+
+### Publishing a New Release
+
+The following steps outline what to do when its time to plan for and publish a release. Depending on the release (major/minor/patch), not all the following items are needed.
+
+1. Prepare information about what's new in the release.
+  * For every release, update documentation for changes that have happened in the release. See the [goharbor/website](https://github.com/goharbor/website) repo for more details on how to create documentation for a release. All documentation for a release should be published by the time the release is out.
+  * For every release, write release notes. See [previous releases](https://github.com/goharbor/harbor/releases) for examples of what to included in release notes.
+  * For a major/minor release, write a blog post that highlights new features in the release. Plan to publish this the same day as the release. Highlight the themes, or areas of focus, for the release. Some examples of themes are security, bug fixes, feature improvements. If there are any new features or workflows introduced in a release, consider writing additional blog posts to help users learn about the new features. Plan to publish these after the release date (all blogs don’t have to be publish all at once).
+1. Release a new version. Make the new version, docs updates, and blog posts available.
+1. Announce the release and thank contributors. We should be doing the following for all releases.
+  * In all messages to the community include a brief list of highlights and links to the new release blog, release notes, or download location. Also include shoutouts to community member contribution included in the release.
+  * Send an email to the community via the [mailing list](https://lists.cncf.io/g/harbor-users)
+  * Post a message in the Harbor [slack channel](https://cloud-native.slack.com/archives/CC1E09J6S)
+  * Post to social media. Maintainers are encouraged to also post or repost from the Harbor account to help spread the word.
