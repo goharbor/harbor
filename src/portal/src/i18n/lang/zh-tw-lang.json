@@ -201,7 +201,9 @@
     "OF": "共計",
     "ITEMS": "條記錄",
     "RESET_OK": "成功修改用戶密碼",
-    "EXISTING_PASSWORD": "新密碼不能與舊密碼一致"
+    "EXISTING_PASSWORD": "新密碼不能與舊密碼一致",
+    "UNKNOWN": "Unknown",
+    "UNKNOWN_TIP": "Please verify whether the user has admin status through the Identity Provider System if the value is \"Unknown\""
   },
   "PROJECT": {
     "PROJECTS": "項目",

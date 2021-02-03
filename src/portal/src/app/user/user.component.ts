@@ -29,6 +29,7 @@ import { throwError as observableThrowError } from "rxjs";
 import { OperationService } from "../../lib/components/operation/operation.service";
 import { operateChanges, OperateInfo, OperationState } from "../../lib/components/operation/operate";
 import { errorHandler } from "../../lib/utils/shared/shared.utils";
+import { CONFIG_AUTH_MODE } from "../../lib/entities/shared.const";
 
 /**
  * NOTES:
@@ -137,6 +138,10 @@ export class UserComponent implements OnInit, OnDestroy {
             return "{{MISS}}";
         }
         let key: string = u.sysadmin_flag ? "USER.IS_ADMIN" : "USER.IS_NOT_ADMIN";
+        const appConfig = this.appConfigService.getConfig();
+        if (appConfig && appConfig.auth_mode !== CONFIG_AUTH_MODE.DB_AUTH && !u.sysadmin_flag) {
+            key = "USER.UNKNOWN";
+        }
         this.translate.get(key).subscribe((res: string) => this.adminColumn = res);
         return this.adminColumn;
     }
