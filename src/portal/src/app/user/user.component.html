@@ -29,7 +29,15 @@
                     </clr-dropdown>
                 </clr-dg-action-bar>
                 <clr-dg-column>{{'USER.COLUMN_NAME' | translate}}</clr-dg-column>
-                <clr-dg-column>{{'USER.COLUMN_ADMIN' | translate}}</clr-dg-column>
+                <clr-dg-column>
+                    <span>{{'USER.COLUMN_ADMIN' | translate}}</span>
+                    <clr-tooltip>
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                            <span>{{'USER.UNKNOWN_TIP' | translate }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </clr-dg-column>
                 <clr-dg-column>{{'USER.COLUMN_EMAIL' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'USER.COLUMN_REG_NAME' | translate}}</clr-dg-column>
                 <clr-dg-row *ngFor="let user of users" [clrDgItem]="user">

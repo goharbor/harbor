@@ -204,7 +204,9 @@
         "ITEMS": "elementos",
         "OF": "of",
         "RESET_OK": "Users password reset successfully",
-        "EXISTING_PASSWORD": "The new password can not be same with the old one"
+        "EXISTING_PASSWORD": "The new password can not be same with the old one",
+        "UNKNOWN": "Unknown",
+        "UNKNOWN_TIP": "Please verify whether the user has admin status through the Identity Provider System if the value is \"Unknown\""
     },
     "PROJECT": {
         "PROJECTS": "Proyectos",
