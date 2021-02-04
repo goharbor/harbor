@@ -604,22 +604,37 @@ UPDATE retention_execution SET new_execution_id=new_exec_id WHERE id=rep_exec.id
 END LOOP;
 END $$;
 
-/*move the replication task records into the new task table*/
+/*move the retention task records into the new task table*/
 DO $$
 DECLARE
     rep_task RECORD;
     status_code integer;
+    status_revision integer;
 BEGIN
 FOR rep_task IN SELECT * FROM retention_task
 LOOP
+IF rep_task.status = 'Pending' THEN
+        status_code=0;
+ELSIF rep_task.status = 'Scheduled' THEN
+        status_code=1;
+ELSIF rep_task.status = 'Running' THEN
+        status_code=2;
+ELSE
+        status_code=3;
+END IF;
+IF rep_task.status_revision is not null THEN
+    status_revision=rep_task.status_revision;
+ELSE
+    status_revision=0;
+END IF;
 INSERT INTO task (vendor_type, execution_id, job_id, status, status_code, status_revision,
                   run_count, extra_attrs, creation_time, start_time, update_time, end_time)
 VALUES ('RETENTION', (SELECT new_execution_id FROM retention_execution WHERE id=rep_task.execution_id),
-        rep_task.job_id, rep_task.status, rep_task.status_code, rep_task.status_revision,
+        rep_task.job_id, rep_task.status, status_code, status_revision,
         1, CONCAT('{"total":"', rep_task.total,'","retained":"', rep_task.retained,'"}')::json,
         rep_task.start_time, rep_task.start_time, rep_task.end_time, rep_task.end_time);
 END LOOP;
 END $$;
 
-DROP TABLE IF EXISTS replication_task;
-DROP TABLE IF EXISTS replication_execution;
+DROP TABLE IF EXISTS retention_task;
+DROP TABLE IF EXISTS retention_execution;
