@@ -253,7 +253,7 @@ func (rAPI *robotAPI) requireAccess(ctx context.Context, level string, projectID
 }
 
 // more validation
-func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Permission) error {
+func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.RobotPermission) error {
 	if !isValidDuration(d) {
 		return errors.New(nil).WithMessage("bad request error duration input: %d", d).WithCode(errors.BadRequestCode)
 	}

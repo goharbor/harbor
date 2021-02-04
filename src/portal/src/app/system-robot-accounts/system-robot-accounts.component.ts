@@ -14,7 +14,6 @@ import {
   PermissionsKinds
 } from "./system-robot-util";
 import { ProjectsModalComponent } from "./projects-modal/projects-modal.component";
-import { Permission } from "../../../ng-swagger-gen/models/permission";
 import { forkJoin, Observable, of, Subscription } from "rxjs";
 import { FilterComponent } from "../../lib/components/filter/filter.component";
 import { ProjectService } from "../../../ng-swagger-gen/services/project.service";
@@ -28,6 +27,7 @@ import { OperationService } from "../../lib/components/operation/operation.servi
 import { Project } from "../../../ng-swagger-gen/models/project";
 import { DomSanitizer } from "@angular/platform-browser";
 import { TranslateService } from "@ngx-translate/core";
+import { RobotPermission } from "../../../ng-swagger-gen/models";
 const FIRST_PROJECTS_PAGE_SIZE: number = 100;
 @Component({
   selector: 'system-robot-accounts',
@@ -236,7 +236,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
       }
     }
   }
-  getProjects(r: FrontRobot): Permission[] {
+  getProjects(r: FrontRobot): RobotPermission[] {
     const arr = [];
     if (r && r.permissions && r.permissions.length) {
       for (let i = 0 ; i < r.permissions.length; i++) {
@@ -248,7 +248,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
     }
     return arr;
   }
-  openProjectModal(permissions: Permission[], robotName: string) {
+  openProjectModal(permissions: RobotPermission[], robotName: string) {
     this.projectsModalComponent.projectsModalOpened = true;
     this.projectsModalComponent.robotName = robotName;
     this.projectsModalComponent.permissions = permissions;
