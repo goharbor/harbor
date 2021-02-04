@@ -70,6 +70,23 @@ type VulnerabilityRecord struct {
 	VendorAttributes string   `orm:"column(vendor_attributes);type(json);null"`
 }
 
+// TableName for VulnerabilityRecord
+func (vr *VulnerabilityRecord) TableName() string {
+	return "vulnerability_record"
+}
+
+// TableUnique for VulnerabilityRecord
+func (vr *VulnerabilityRecord) TableUnique() [][]string {
+	return [][]string{
+		{"cve_id", "registration_uuid", "package", "package_version"},
+	}
+}
+
+// GetID returns the ID of the record
+func (vr *VulnerabilityRecord) GetID() int64 {
+	return vr.ID
+}
+
 // ReportVulnerabilityRecord is relation table required to optimize data storage for both the
 // vulnerability records and the scan report.
 // identified by composite key (ID, Report)
@@ -83,18 +100,6 @@ type ReportVulnerabilityRecord struct {
 	VulnRecordID int64  `orm:"column(vuln_record_id);"`
 }
 
-// TableName for VulnerabilityRecord
-func (vr *VulnerabilityRecord) TableName() string {
-	return "vulnerability_record"
-}
-
-// TableUnique for VulnerabilityRecord
-func (vr *VulnerabilityRecord) TableUnique() [][]string {
-	return [][]string{
-		{"cve_id", "registration_uuid", "package", "package_version"},
-	}
-}
-
 // TableName for ReportVulnerabilityRecord
 func (rvr *ReportVulnerabilityRecord) TableName() string {
 	return "report_vulnerability_record"
@@ -105,4 +110,9 @@ func (rvr *ReportVulnerabilityRecord) TableUnique() [][]string {
 	return [][]string{
 		{"report_uuid", "vuln_record_id"},
 	}
+}
+
+// GetID returns the ID of the record
+func (rvr *ReportVulnerabilityRecord) GetID() int64 {
+	return rvr.ID
 }
