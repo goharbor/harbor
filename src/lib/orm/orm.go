@@ -17,6 +17,7 @@ package orm
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -86,4 +87,62 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 
 		return nil
 	}
+}
+
+// ReadOrCreate read or create instance to datebase, retry to read when met a duplicate key error after the creating
+func ReadOrCreate(ctx context.Context, md interface{}, col1 string, cols ...string) (created bool, id int64, err error) {
+	getter, ok := md.(interface {
+		GetID() int64
+	})
+
+	if !ok {
+		err = fmt.Errorf("missing GetID method for the model %T", md)
+		return
+	}
+
+	defer func() {
+		if !created && err == nil { // found in the database
+			id = getter.GetID()
+		}
+	}()
+
+	o, err := FromContext(ctx)
+	if err != nil {
+		return
+	}
+
+	cols = append([]string{col1}, cols...)
+
+	err = o.Read(md, cols...)
+	if err == nil { // found in the database
+		return
+	}
+
+	if !errors.Is(err, orm.ErrNoRows) { // met a error when read database
+		return
+	}
+
+	// not found in the database, try to create one
+	err = WithTransaction(func(ctx context.Context) error {
+		o, err := FromContext(ctx)
+		if err != nil {
+			return err
+		}
+
+		id, err = o.Insert(md)
+		return err
+	})(ctx)
+
+	if err == nil { // create success
+		created = true
+
+		return
+	}
+
+	// got a duplicate key error, try to read again
+	if isDuplicateKeyError(err) {
+		err = o.Read(md, cols...)
+	}
+
+	return
 }
