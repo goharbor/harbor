@@ -204,7 +204,9 @@
         "ITEMS": "Einträge",
         "OF": "von",
         "RESET_OK": "Passwort des Nutzers erfolgreich zurückgesetzt.",
-        "EXISTING_PASSWORD": "Das neue und das alte Passwort dürfen nicht übereinstimmen."
+        "EXISTING_PASSWORD": "Das neue und das alte Passwort dürfen nicht übereinstimmen.",
+        "UNKNOWN": "Unbekannt",
+        "UNKNOWN_TIP": "Bitte überprüfen Sie, ob der Benutzer über den Identity Provider den Status \"Admin\" hat, wenn der Wert \"Unknown\" lautet."
     },
     "PROJECT": {
         "PROJECTS": "Projekte",

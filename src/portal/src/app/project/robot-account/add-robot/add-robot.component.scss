@@ -49,3 +49,8 @@
 .showWarning {
   color: #b3a000;
 }
+.dropdown-item {
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+}
