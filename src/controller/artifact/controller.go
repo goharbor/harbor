@@ -356,7 +356,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 		return err
 	}
 
-	blobs, err := c.blobMgr.List(ctx, blob.ListParams{ArtifactDigest: art.Digest})
+	blobs, err := c.blobMgr.List(ctx, q.New(q.KeyWords{"artifactDigest": art.Digest}))
 	if err != nil {
 		return err
 	}
