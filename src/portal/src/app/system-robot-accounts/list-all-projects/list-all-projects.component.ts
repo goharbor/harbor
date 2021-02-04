@@ -3,13 +3,14 @@ import { Project } from "../../../../ng-swagger-gen/models/project";
 import { clone, CustomComparator } from "../../../lib/utils/utils";
 import { ClrDatagridComparatorInterface } from "@clr/angular";
 import { Router } from "@angular/router";
-import { Permission } from "../../../../ng-swagger-gen/models/permission";
+
 import {
   ACTION_RESOURCE_I18N_MAP,
   FrontAccess,
   FrontProjectForAdd, INITIAL_ACCESSES,
   PermissionsKinds
 } from "../system-robot-util";
+import { RobotPermission } from "../../../../ng-swagger-gen/models";
 
 @Component({
   selector: 'app-list-all-projects',
@@ -19,7 +20,7 @@ import {
 export class ListAllProjectsComponent implements OnInit {
   cachedAllProjects: Project[];
   i18nMap = ACTION_RESOURCE_I18N_MAP;
-  permissionsForAdd: Permission[] = [];
+  permissionsForAdd: RobotPermission[] = [];
   selectedRow: FrontProjectForAdd[] = [];
   timeComparator: ClrDatagridComparatorInterface<Project> = new CustomComparator<Project>("creation_time", "date");
   projects: FrontProjectForAdd[] = [];

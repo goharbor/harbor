@@ -3807,7 +3807,7 @@ definitions:
       permissions:
         type: array
         items:
-          $ref: '#/definitions/Permission'
+          $ref: '#/definitions/RobotPermission'
       creation_time:
         type: string
         format: date-time
@@ -3842,7 +3842,7 @@ definitions:
       permissions:
         type: array
         items:
-          $ref: '#/definitions/Permission'
+          $ref: '#/definitions/RobotPermission'
   RobotCreated:
     type: object
     description: The response for robot account creation.
@@ -3872,7 +3872,7 @@ definitions:
       secret:
         type: string
         description: The secret of the robot
-  Permission:
+  RobotPermission:
     type: object
     properties:
       kind:
