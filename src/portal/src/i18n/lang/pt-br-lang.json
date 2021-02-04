@@ -202,7 +202,9 @@
         "ITEMS": "itens",
         "OF": "de",
         "RESET_OK": "Senha do usuário redefinida com sucesso",
-        "EXISTING_PASSWORD": "A nova senha não deve ser igual à antiga"
+        "EXISTING_PASSWORD": "A nova senha não deve ser igual à antiga",
+        "UNKNOWN": "Unknown",
+        "UNKNOWN_TIP": "Please verify whether the user has admin status through the Identity Provider System if the value is \"Unknown\""
     },
     "PROJECT": {
         "PROJECTS": "Projetos",

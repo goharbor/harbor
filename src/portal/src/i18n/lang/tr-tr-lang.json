@@ -204,7 +204,9 @@
         "ITEMS": "ürün",
         "OF": "of",
         "RESET_OK": "Kullanıcılar parola başarıyla sıfırlandı",
-        "EXISTING_PASSWORD": "Yeni şifre eskisi ile aynı olamaz"
+        "EXISTING_PASSWORD": "Yeni şifre eskisi ile aynı olamaz",
+        "UNKNOWN": "Unknown",
+        "UNKNOWN_TIP": "Please verify whether the user has admin status through the Identity Provider System if the value is \"Unknown\""
     },
     "PROJECT": {
         "PROJECTS": "Projeler",

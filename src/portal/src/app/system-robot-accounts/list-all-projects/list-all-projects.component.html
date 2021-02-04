@@ -5,7 +5,7 @@
                 {{"SYSTEM_ROBOT.RESET_PERMISSION" | translate}}
                 <clr-icon shape="caret down"></clr-icon>
             </button>
-            <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+            <clr-dropdown-menu [style.height.px]="230" clrPosition="bottom-left" *clrIfOpen>
                 <div clrDropdownItem *ngFor="let item of defaultAccesses" (click)="chooseDefaultAccess(item)">
                     <clr-icon class="check" shape="check" [style.visibility]="item.checked ? 'visible' : 'hidden'"></clr-icon>
                     <span>{{i18nMap[item.action] | translate}} {{i18nMap[item.resource] | translate}}</span>

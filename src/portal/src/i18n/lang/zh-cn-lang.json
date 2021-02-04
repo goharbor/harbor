@@ -203,7 +203,9 @@
         "OF": "共计",
         "ITEMS": "条记录",
         "RESET_OK": "成功修改用户密码",
-        "EXISTING_PASSWORD": "新密码不能与旧密码一致"
+        "EXISTING_PASSWORD": "新密码不能与旧密码一致",
+        "UNKNOWN": "未知",
+        "UNKNOWN_TIP": "当此项的值为\"未知\"时，请根据该用户的源头身份提供系统来判定该用户是否为管理员"
     },
     "PROJECT": {
         "PROJECTS": "项目",
