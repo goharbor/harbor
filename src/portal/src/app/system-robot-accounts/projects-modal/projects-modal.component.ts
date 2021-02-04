@@ -1,8 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { Permission } from "../../../../ng-swagger-gen/models/permission";
+import { Component, OnInit } from '@angular/core';
 import { Project } from "../../../../ng-swagger-gen/models/project";
 import { Router } from "@angular/router";
 import { ACTION_RESOURCE_I18N_MAP } from "../system-robot-util";
+import { RobotPermission } from "../../../../ng-swagger-gen/models";
 
 @Component({
   selector: 'app-projects-modal',
@@ -13,7 +13,7 @@ export class ProjectsModalComponent implements OnInit {
   projectsModalOpened: boolean = false;
   robotName: string;
   cachedAllProjects: Project[];
-  permissions: Permission[] = [];
+  permissions: RobotPermission[] = [];
   i18nMap = ACTION_RESOURCE_I18N_MAP;
   constructor(private router: Router) { }
 
@@ -22,7 +22,7 @@ export class ProjectsModalComponent implements OnInit {
   close() {
     this.projectsModalOpened = false;
   }
-  getProject(p: Permission): Project {
+  getProject(p: RobotPermission): Project {
     if (this.cachedAllProjects && this.cachedAllProjects.length) {
       for (let i = 0; i < this.cachedAllProjects.length; i++) {
         if (p.namespace === this.cachedAllProjects[i].name) {
