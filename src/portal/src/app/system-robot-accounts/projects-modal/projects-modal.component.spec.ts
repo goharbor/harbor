@@ -5,8 +5,8 @@ import { ClarityModule } from "@clr/angular";
 import { TranslateModule } from "@ngx-translate/core";
 import { RouterTestingModule } from "@angular/router/testing";
 import { Project } from "../../../../ng-swagger-gen/models/project";
-import { Permission } from "../../../../ng-swagger-gen/models/permission";
 import { Action, PermissionsKinds, Resource } from "../system-robot-util";
+import { RobotPermission } from "../../../../ng-swagger-gen/models";
 
 describe('ProjectsModalComponent', () => {
   let component: ProjectsModalComponent;
@@ -19,7 +19,7 @@ describe('ProjectsModalComponent', () => {
     project_id: 2,
     name: 'project2'
   };
-  const permissions: Permission[] = [
+  const permissions: RobotPermission[] = [
     {
       kind: PermissionsKinds.PROJECT,
       namespace: project1.name,

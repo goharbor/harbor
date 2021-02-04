@@ -14,9 +14,9 @@ type Robot struct {
 
 // ToSwagger ...
 func (r *Robot) ToSwagger() *models.Robot {
-	perms := []*models.Permission{}
+	perms := []*models.RobotPermission{}
 	for _, p := range r.Permissions {
-		temp := &models.Permission{}
+		temp := &models.RobotPermission{}
 		lib.JSONCopy(temp, p)
 		perms = append(perms, temp)
 	}

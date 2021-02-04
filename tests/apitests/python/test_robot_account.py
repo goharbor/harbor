@@ -204,7 +204,7 @@ class TestRobotAccount(unittest.TestCase):
             with created_user(TestRobotAccount.user_ra_password, _teardown = False) as (user_id, username):
                 with created_project(metadata={"public": "false"}, user_id=user_id, _teardown = False) as (project_id, project_name):
                     project_access_list.append(dict(project_name = project_name, project_id = project_id, check_list = check_list[i]))
-                    robot_account_Permissions = v2_swagger_client.Permission(kind = "project", namespace = project_name, access = access_list_list[i])
+                    robot_account_Permissions = v2_swagger_client.RobotPermission(kind = "project", namespace = project_name, access = access_list_list[i])
                     robot_account_Permissions_list.append(robot_account_Permissions)
 
         #3. Create a system robot account has permission for those projects;
@@ -301,7 +301,7 @@ class TestRobotAccount(unittest.TestCase):
         #12. List system robot account, then add a new project to the system robot account project permission list;
         self.robot.list_robot(**ADMIN_CLIENT)
         project_for_del_id, project_for_del_name = self.project.create_project(metadata = {"public": "true"}, **ADMIN_CLIENT)
-        robot_account_Permissions = v2_swagger_client.Permission(kind = "project", namespace = project_for_del_name, access = access_list_list[0])
+        robot_account_Permissions = v2_swagger_client.RobotPermission(kind = "project", namespace = project_for_del_name, access = access_list_list[0])
         robot_account_Permissions_list.append(robot_account_Permissions)
         self.robot.update_system_robot_account(system_robot_account_id, system_robot_account.name, robot_account_Permissions_list, **ADMIN_CLIENT)
         self.robot.list_robot(**ADMIN_CLIENT)
@@ -339,7 +339,7 @@ class TestRobotAccount(unittest.TestCase):
         #20. Add a system robot account with all projects coverd;
         all_true_access_list= self.robot.create_access_list( [True] * 10 )
         robot_account_Permissions_list = []
-        robot_account_Permissions = v2_swagger_client.Permission(kind = "project", namespace = "*", access = all_true_access_list)
+        robot_account_Permissions = v2_swagger_client.RobotPermission(kind = "project", namespace = "*", access = all_true_access_list)
         robot_account_Permissions_list.append(robot_account_Permissions)
         _, system_robot_account_cover_all = self.robot.create_system_robot(robot_account_Permissions_list, 300)
 
