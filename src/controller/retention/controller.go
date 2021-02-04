@@ -85,7 +85,7 @@ type defaultController struct {
 const (
 	// SchedulerCallback ...
 	SchedulerCallback   = "RETENTION"
-	schedulerVendorType = "RETENTION"
+	schedulerVendorType = job.Retention
 )
 
 // TriggerParam ...
@@ -199,7 +199,7 @@ func (r *defaultController) DeleteRetention(ctx context.Context, id int64) error
 	if err != nil {
 		return err
 	}
-	return r.manager.DeletePolicyAndExec(id)
+	return r.manager.DeletePolicy(id)
 }
 
 // deleteExecs delete executions
@@ -251,7 +251,6 @@ func (r *defaultController) TriggerRetentionExec(ctx context.Context, policyID i
 		}
 	}
 	return id, err
-
 }
 
 // OperateRetentionExec Operate Retention Execution
