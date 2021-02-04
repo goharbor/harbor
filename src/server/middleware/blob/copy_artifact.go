@@ -29,13 +29,13 @@
 package blob
 
 import (
+	"github.com/goharbor/harbor/src/lib/q"
 	"net/http"
 	"strings"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/util"
@@ -91,7 +91,7 @@ func CopyArtifactMiddleware() func(http.Handler) http.Handler {
 			return err
 		}
 
-		allBlobs, err := blobController.List(ctx, blob.ListParams{ArtifactDigests: artifactDigests})
+		allBlobs, err := blobController.List(ctx, q.New(q.KeyWords{"artifactDigests": artifactDigests}))
 		if err != nil {
 			logger.Errorf("get blobs for artifacts %s failed, error: %v", strings.Join(artifactDigests, ", "), err)
 			return err

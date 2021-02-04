@@ -29,6 +29,7 @@
 package quota
 
 import (
+	"github.com/goharbor/harbor/src/lib/q"
 	"net/http"
 	"path"
 	"strconv"
@@ -39,7 +40,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
@@ -109,7 +109,7 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 		return nil, err
 	}
 
-	allBlobs, err := blobController.List(ctx, blob.ListParams{ArtifactDigests: artifactDigests})
+	allBlobs, err := blobController.List(ctx, q.New(q.KeyWords{"artifactDigests": artifactDigests}))
 	if err != nil {
 		logger.Errorf("get blobs for artifacts %s failed, error: %v", strings.Join(artifactDigests, ", "), err)
 		return nil, err

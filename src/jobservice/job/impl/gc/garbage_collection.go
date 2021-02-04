@@ -423,17 +423,33 @@ func (gc *GarbageCollector) removeUntaggedBlobs(ctx job.Context) {
 			continue
 		}
 		p := result.Data
-		all, err := gc.blobMgr.List(ctx.SystemContext(), blob.ListParams{
-			ProjectID:  p.ProjectID,
-			UpdateTime: time.Now().Add(-time.Duration(gc.timeWindowHours) * time.Hour),
-		})
-		if err != nil {
-			gc.logger.Errorf("failed to get blobs of project, %v", err)
-			continue
-		}
-		if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), p.ProjectID, all); err != nil {
-			gc.logger.Errorf("failed to clean untagged blobs of project, %v", err)
-			continue
+
+		pn := int64(1)
+		for {
+			rg := q.Range{
+				Max: time.Now().Add(-time.Duration(gc.timeWindowHours) * time.Hour).Format(time.RFC3339),
+			}
+			q := &q.Query{
+				Keywords: map[string]interface{}{
+					"update_time": &rg,
+					"projectID":   p.ProjectID,
+				},
+				PageNumber: pn,
+				PageSize:   10000,
+			}
+			all, err := gc.blobMgr.List(ctx.SystemContext(), q)
+			if err != nil {
+				gc.logger.Errorf("failed to get blobs of project, %v", err)
+				break
+			}
+			if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), p.ProjectID, all); err != nil {
+				gc.logger.Errorf("failed to clean untagged blobs of project, %v", err)
+				break
+			}
+			if len(all) < 10000 {
+				break
+			}
+			pn++
 		}
 	}
 }

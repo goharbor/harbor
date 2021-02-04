@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/q"
 
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
@@ -95,13 +96,13 @@ func (a *abstractor) abstractManifestV1Metadata(ctx context.Context, artifact *a
 		return err
 	}
 
-	digests := make([]string, len(manifest.FSLayers))
-	for i, fsLayer := range manifest.FSLayers {
-		digests[i] = fsLayer.BlobSum.String()
+	var ol q.OrList
+	for _, fsLayer := range manifest.FSLayers {
+		ol.Values = append(ol.Values, fsLayer.BlobSum.String())
 	}
 
 	// there is no layer size in v1 manifest, compute the artifact size from the blobs
-	blobs, err := a.blobMgr.List(ctx, blob.ListParams{BlobDigests: digests})
+	blobs, err := a.blobMgr.List(ctx, q.New(q.KeyWords{"digest": &ol}))
 	if err != nil {
 		log.G(ctx).Errorf("failed to get blobs of the artifact %s, error %v", artifact.Digest, err)
 		return err
