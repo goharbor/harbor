@@ -659,11 +659,21 @@ func (bc *basicController) UpdateReport(ctx context.Context, report *sca.CheckIn
 		return errors.Wrap(err, "scan controller: handle job hook")
 	}
 
+	logger := log.G(ctx)
+
 	if len(rpl) == 0 {
-		return errors.New("no report found to update data")
+		fields := log.Fields{
+			"report_digest":     report.Digest,
+			"registration_uuid": report.RegistrationUUID,
+			"mime_type":         report.MimeType,
+		}
+		logger.WithFields(fields).Warningf("no report found to update data")
+
+		return errors.NotFoundError(nil).WithMessage("no report found to update data")
 	}
 
-	log.Infof("Converting report ID %s to  the new V2 schema", rpl[0].UUID)
+	logger.Debugf("Converting report ID %s to  the new V2 schema", rpl[0].UUID)
+
 	_, reportData, err := bc.reportConverter.ToRelationalSchema(ctx, rpl[0].UUID, rpl[0].RegistrationUUID, rpl[0].Digest, report.RawReport)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to convert vulnerability data to new schema for report UUID : %s", rpl[0].UUID)
@@ -675,7 +685,9 @@ func (bc *basicController) UpdateReport(ctx context.Context, report *sca.CheckIn
 	if err := bc.manager.UpdateReportData(ctx, rpl[0].UUID, reportData); err != nil {
 		return errors.Wrap(err, "scan controller: handle job hook")
 	}
-	log.Infof("Converted report ID %s to the new V2 schema", rpl[0].UUID)
+
+	logger.Debugf("Converted report ID %s to the new V2 schema", rpl[0].UUID)
+
 	return nil
 }
 
