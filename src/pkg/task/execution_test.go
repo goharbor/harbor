@@ -58,6 +58,8 @@ func (e *executionManagerTestSuite) TestCount() {
 }
 
 func (e *executionManagerTestSuite) TestCreate() {
+	SetExecutionSweeperCount("vendor", 50)
+
 	e.execDAO.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	e.ormCreator.On("Create").Return(&orm.FakeOrmer{})
 	e.execDAO.On("List", mock.Anything, mock.Anything).Return(nil, nil)

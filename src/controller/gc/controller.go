@@ -2,12 +2,18 @@ package gc
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
+
+func init() {
+	// keep only the latest created 50 gc execution records
+	task.SetExecutionSweeperCount(GCVendorType, 50)
+}
 
 var (
 	// Ctl is a global garbage collection controller instance
