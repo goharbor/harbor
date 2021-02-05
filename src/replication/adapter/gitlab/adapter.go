@@ -22,7 +22,7 @@ type factory struct {
 
 // Create ...
 func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
-	return newAdapter(r), nil
+	return newAdapter(r)
 }
 
 // AdapterPattern ...
@@ -44,13 +44,17 @@ type adapter struct {
 	clientGitlabAPI *Client
 }
 
-func newAdapter(registry *model.Registry) *adapter {
+func newAdapter(registry *model.Registry) (*adapter, error) {
+	client, err := NewClient(registry)
+	if err != nil {
+		return nil, err
+	}
 	return &adapter{
 		registry:        registry,
 		url:             registry.URL,
-		clientGitlabAPI: NewClient(registry),
+		clientGitlabAPI: client,
 		Adapter:         native.NewAdapter(registry),
-	}
+	}, nil
 }
 
 func (a *adapter) Info() (info *model.RegistryInfo, err error) {
@@ -93,7 +97,10 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 		}
 	}
 
-	projects = a.getProjectsByPattern(nameFilter)
+	projects, err = a.getProjectsByPattern(nameFilter)
+	if err != nil {
+		return nil, err
+	}
 	if len(projects) == 0 {
 		projects, err = a.clientGitlabAPI.getProjects()
 		if err != nil {
@@ -156,7 +163,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	return resources, nil
 }
 
-func (a *adapter) getProjectsByPattern(pattern string) []*Project {
+func (a *adapter) getProjectsByPattern(pattern string) ([]*Project, error) {
 	var projects []*Project
 	projectset := make(map[string]bool)
 	var err error
@@ -175,7 +182,7 @@ func (a *adapter) getProjectsByPattern(pattern string) []*Project {
 				projectset[substrings[1]] = true
 				var projectsByName, err = a.clientGitlabAPI.getProjectsByName(substrings[1])
 				if err != nil {
-					return nil
+					return nil, err
 				}
 				if projectsByName == nil {
 					continue
@@ -185,24 +192,24 @@ func (a *adapter) getProjectsByPattern(pattern string) []*Project {
 		} else {
 			substrings := strings.Split(pattern, "/")
 			if len(substrings) < 2 {
-				return projects
+				return projects, nil
 			}
 			projectName := substrings[1]
 			if projectName == "*" {
-				return projects
+				return projects, nil
 			}
 			projectName = strings.Trim(projectName, "*")
 
 			if strings.Contains(projectName, "*") {
-				return projects
+				return projects, nil
 			}
 			projects, err = a.clientGitlabAPI.getProjectsByName(projectName)
 			if err != nil {
-				return projects
+				return nil, err
 			}
 		}
 	}
-	return projects
+	return projects, nil
 }
 
 func existPatterns(path string, patterns []string) bool {
