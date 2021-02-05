@@ -138,14 +138,28 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
     db_configs = configs.get('database')
     if db_configs:
         # harbor db
-        config_dict['harbor_db_host'] = 'postgresql'
-        config_dict['harbor_db_port'] = 5432
-        config_dict['harbor_db_name'] = 'registry'
-        config_dict['harbor_db_username'] = 'postgres'
-        config_dict['harbor_db_password'] = db_configs.get("password") or ''
-        config_dict['harbor_db_sslmode'] = 'disable'
-        config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_db_max_idle_conns
-        config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_db_max_open_conns
+        if configs.get("db_type") == 'postgresql':
+            config_dict['harbor_db_postgresql'] = True
+            config_dict['harbor_db_mysql'] = False
+            config_dict['harbor_db_host'] = 'postgresql'
+            config_dict['harbor_db_port'] = 5432
+            config_dict['harbor_db_name'] = 'registry'
+            config_dict['harbor_db_username'] = 'postgres'
+            config_dict['harbor_db_password'] = db_configs.get("password") or ''
+            config_dict['harbor_db_sslmode'] = 'disable'
+            config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_db_max_idle_conns
+            config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_db_max_open_conns
+        if configs.get("db_type") == 'mysql':
+            config_dict['harbor_db_postgresql'] = False
+            config_dict['harbor_db_mysql'] = True
+            config_dict['harbor_db_host'] = 'mysql'
+            config_dict['harbor_db_port'] = 3306
+            config_dict['harbor_db_name'] = 'registry'
+            config_dict['harbor_db_username'] = 'root'
+            config_dict['harbor_db_password'] = db_configs.get("password") or ''
+            config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_db_max_idle_conns
+            config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_db_max_open_conns
+
 
         if with_notary:
             # notary signer
@@ -266,12 +280,19 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
     if external_db_configs:
         config_dict['external_database'] = True
         # harbor db
+        if configs.get("db_type") == 'postgresql':
+            config_dict['harbor_db_postgresql'] = True
+            config_dict['harbor_db_mysql'] = False
+            config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
+        if configs.get("db_type") == 'postgresql':
+            config_dict['harbor_db_postgresql'] = False
+            config_dict['harbor_db_mysql'] = True
+
         config_dict['harbor_db_host'] = external_db_configs['harbor']['host']
         config_dict['harbor_db_port'] = external_db_configs['harbor']['port']
         config_dict['harbor_db_name'] = external_db_configs['harbor']['db_name']
         config_dict['harbor_db_username'] = external_db_configs['harbor']['username']
         config_dict['harbor_db_password'] = external_db_configs['harbor']['password']
-        config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
         config_dict['harbor_db_max_idle_conns'] = external_db_configs['harbor'].get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = external_db_configs['harbor'].get("max_open_conns") or default_db_max_open_conns
 

@@ -17,12 +17,13 @@ package dao
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"strings"
 	"time"
 
+	orm2 "github.com/astaxie/beego/orm"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
@@ -182,24 +183,44 @@ func (d *dao) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, e
 	}
 
 	var sql string
-	if blob.Status == models.StatusNone {
-		sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version >= ? AND status IN (%s) RETURNING version as new_version`
-	} else {
-		sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version = ? AND status IN (%s) RETURNING version as new_version`
-	}
-
 	var newVersion int64
 	params := []interface{}{time.Now(), blob.Status, blob.ID, blob.Version}
 	stats := models.StatusMap[blob.Status]
 	for _, stat := range stats {
 		params = append(params, stat)
 	}
-	if err := o.Raw(fmt.Sprintf(sql, orm.ParamPlaceholderForIn(len(models.StatusMap[blob.Status]))), params...).QueryRow(&newVersion); err != nil {
-		if e := orm.AsNotFoundError(err, "no blob is updated"); e != nil {
-			log.Warningf("no blob is updated according to query condition, id: %d, status_in, %v, err: %v", blob.ID, models.StatusMap[blob.Status], e)
+	if o.Driver().Type() == orm2.DRPostgres {
+		if blob.Status == models.StatusNone {
+			sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version >= ? AND status IN (%s) RETURNING version as new_version`
+		} else {
+			sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version = ? AND status IN (%s) RETURNING version as new_version`
+		}
+		if err := o.Raw(fmt.Sprintf(sql, orm.ParamPlaceholderForIn(len(models.StatusMap[blob.Status]))), params...).QueryRow(&newVersion); err != nil {
+			if e := orm.AsNotFoundError(err, "no blob is updated"); e != nil {
+				log.Warningf("no blob is updated according to query condition, id: %d, status_in, %v, err: %v", blob.ID, models.StatusMap[blob.Status], e)
+				return 0, nil
+			}
+			return -1, err
+		}
+	}
+	if o.Driver().Type() == orm2.DRMySQL {
+		if blob.Status == models.StatusNone {
+			sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version >= ? AND status IN (%s)`
+		} else {
+			sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version = ? AND status IN (%s)`
+		}
+		if _, err := o.Raw(fmt.Sprintf(sql, orm.ParamPlaceholderForIn(len(models.StatusMap[blob.Status]))), params...).Exec(); err != nil {
+			if e := orm.AsNotFoundError(err, "no blob is updated"); e != nil {
+				log.Warningf("no blob is updated according to query condition, id: %d, status_in, %v, err: %v", blob.ID, models.StatusMap[blob.Status], e)
+				return 0, nil
+			}
+			return -1, err
+		}
+
+		selectVersionSql := "SELECT version FROM blob WHERE id = ?"
+		if err := o.Raw(selectVersionSql, blob.ID).QueryRow(&newVersion); err != nil {
 			return 0, nil
 		}
-		return -1, err
 	}
 
 	blob.Version = newVersion

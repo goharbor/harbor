@@ -16,6 +16,7 @@ package project
 
 import (
 	"fmt"
+	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -111,10 +112,24 @@ func AddProjectMember(member models.Member) (int, error) {
 	}
 
 	var pmid int
-	sql := "insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?) RETURNING id"
-	err = o.Raw(sql, member.ProjectID, member.EntityID, member.Role, member.EntityType).QueryRow(&pmid)
-	if err != nil {
-		return 0, err
+	if o.Driver().Type() == orm.DRPostgres {
+		sql := "insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?) RETURNING id"
+		err = o.Raw(sql, member.ProjectID, member.EntityID, member.Role, member.EntityType).QueryRow(&pmid)
+		if err != nil {
+			return 0, err
+		}
+	}
+	if o.Driver().Type() == orm.DRMySQL {
+		sql := "insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?)"
+		res, err := o.Raw(sql, member.ProjectID, member.EntityID, member.Role, member.EntityType).Exec()
+		if err != nil {
+			return 0, err
+		}
+		insertId, err := res.LastInsertId()
+		if err != nil {
+			return 0, err
+		}
+		pmid = int(insertId)
 	}
 	return pmid, err
 }
