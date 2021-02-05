@@ -307,8 +307,9 @@ DECLARE
 BEGIN
     FOR schd IN SELECT * FROM admin_job where job_name='IMAGE_GC' and job_kind='Periodic' and deleted=FALSE
     LOOP
-        INSERT INTO schedule (vendor_type, vendor_id, cron, callback_func_name,
-            callback_func_param, cron_type, extra_attrs, creation_time, update_time)
+        IF schd.job_parameters != '' THEN
+            INSERT INTO schedule (vendor_type, vendor_id, cron, callback_func_name,
+                                  callback_func_param, cron_type, extra_attrs, creation_time, update_time)
             VALUES ('GARBAGE_COLLECTION', -1,
                 (SELECT schd.cron_str::json->>'cron'),
                 'GARBAGE_COLLECTION',
@@ -316,6 +317,17 @@ BEGIN
                 (SELECT schd.cron_str::json->>'type'),
                 (SELECT json_build_object('delete_untagged', schd.job_parameters::json->'delete_untagged')),
                 schd.creation_time, schd.update_time) RETURNING id INTO new_schd_id;
+        ELSE
+            INSERT INTO schedule (vendor_type, vendor_id, cron, callback_func_name,
+                                  callback_func_param, cron_type, extra_attrs, creation_time, update_time)
+            VALUES ('GARBAGE_COLLECTION', -1,
+                (SELECT schd.cron_str::json->>'cron'),
+                'GARBAGE_COLLECTION',
+                (SELECT json_build_object('trigger', null, 'deleteuntagged', true, 'dryrun', false, 'extra_attrs', '{}'::json)),
+                (SELECT schd.cron_str::json->>'type'),
+                (SELECT json_build_object('delete_untagged', true)),
+                schd.creation_time, schd.update_time) RETURNING id INTO new_schd_id;
+        END IF;
         IF schd.status = 'stopped' THEN
             exec_status = 'Stopped';
             task_status = 'Stopped';
@@ -392,12 +404,20 @@ BEGIN
             task_status = 'Pending';
             task_status_code = 0;
         END IF;
-        INSERT INTO execution (vendor_type, vendor_id, status, revision, extra_attrs, trigger, start_time, end_time)
-            VALUES ('GARBAGE_COLLECTION', -1, exec_status, 0, cast(aj.job_parameters as json),
-            'MANUAL', aj.creation_time, aj.update_time) RETURNING id INTO exec_id;
-        INSERT INTO task (vendor_type, execution_id, job_id, status, status_code, status_revision, run_count, extra_attrs, creation_time, start_time, update_time, end_time)
-            VALUES ('GARBAGE_COLLECTION',exec_id, aj.job_uuid, task_status, task_status_code, 0, 1, cast(aj.job_parameters as json), aj.creation_time, aj.creation_time, aj.update_time, aj.update_time);
-    END LOOP;
+        IF aj.job_parameters != '' THEN
+            INSERT INTO execution (vendor_type, vendor_id, status, revision, extra_attrs, trigger, start_time, end_time)
+                VALUES ('GARBAGE_COLLECTION', -1, exec_status, 0, cast(aj.job_parameters as json),
+                'MANUAL', aj.creation_time, aj.update_time) RETURNING id INTO exec_id;
+            INSERT INTO task (vendor_type, execution_id, job_id, status, status_code, status_revision, run_count, extra_attrs, creation_time, start_time, update_time, end_time)
+                VALUES ('GARBAGE_COLLECTION',exec_id, aj.job_uuid, task_status, task_status_code, 0, 1, cast(aj.job_parameters as json), aj.creation_time, aj.creation_time, aj.update_time, aj.update_time);
+        ELSE
+            INSERT INTO execution (vendor_type, vendor_id, status, revision, extra_attrs, trigger, start_time, end_time)
+                VALUES ('GARBAGE_COLLECTION', -1, exec_status, 0, cast('{}' as json),
+                'MANUAL', aj.creation_time, aj.update_time) RETURNING id INTO exec_id;
+            INSERT INTO task (vendor_type, execution_id, job_id, status, status_code, status_revision, run_count, extra_attrs, creation_time, start_time, update_time, end_time)
+                VALUES ('GARBAGE_COLLECTION',exec_id, aj.job_uuid, task_status, task_status_code, 0, 1, cast('{}' as json), aj.creation_time, aj.creation_time, aj.update_time, aj.update_time);
+        END IF;
+     END LOOP;
 END $$;
 
 /*move the scan all schedule records into the new schedule table*/
