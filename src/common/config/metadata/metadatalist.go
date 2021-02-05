@@ -112,6 +112,14 @@ var (
 		{Name: common.PostGreSQLMaxIdleConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_MAX_IDLE_CONNS", DefaultValue: "2", ItemType: &IntType{}, Editable: false},
 		{Name: common.PostGreSQLMaxOpenConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_MAX_OPEN_CONNS", DefaultValue: "0", ItemType: &IntType{}, Editable: false},
 
+		{Name: common.MySQLDatabase, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "MYSQL_DATABASE", DefaultValue: "registry", ItemType: &StringType{}, Editable: false},
+		{Name: common.MySQLHOST, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "MYSQL_HOST", DefaultValue: "mysql", ItemType: &StringType{}, Editable: false},
+		{Name: common.MySQLPassword, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "MYSQL_PASSWORD", DefaultValue: "root123", ItemType: &PasswordType{}, Editable: false},
+		{Name: common.MySQLPort, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "MYSQL_PORT", DefaultValue: "3306", ItemType: &PortType{}, Editable: false},
+		{Name: common.MySQLUsername, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "MYSQL_USERNAME", DefaultValue: "postgres", ItemType: &StringType{}, Editable: false},
+		{Name: common.MySQLMaxIdleConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "MYSQL_MAX_IDLE_CONNS", DefaultValue: "2", ItemType: &IntType{}, Editable: false},
+		{Name: common.MySQLMaxOpenConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "MYSQL_MAX_OPEN_CONNS", DefaultValue: "0", ItemType: &IntType{}, Editable: false},
+
 		{Name: common.ProjectCreationRestriction, Scope: UserScope, Group: BasicGroup, EnvKey: "PROJECT_CREATION_RESTRICTION", DefaultValue: common.ProCrtRestrEveryone, ItemType: &ProjectCreationRestrictionType{}, Editable: false},
 		{Name: common.ReadOnly, Scope: UserScope, Group: BasicGroup, EnvKey: "READ_ONLY", DefaultValue: "false", ItemType: &BoolType{}, Editable: false},
 

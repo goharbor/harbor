@@ -85,6 +85,16 @@ func getDatabase(database *models.Database) (db Database, err error) {
 			database.PostGreSQL.MaxIdleConns,
 			database.PostGreSQL.MaxOpenConns,
 		)
+	case "mysql":
+		db = NewMySQL(
+			database.MySQL.Host,
+			strconv.Itoa(database.MySQL.Port),
+			database.MySQL.Username,
+			database.MySQL.Password,
+			database.MySQL.Database,
+			database.MySQL.MaxIdleConns,
+			database.MySQL.MaxOpenConns,
+		)
 	default:
 		err = fmt.Errorf("invalid database: %s", database.Type)
 	}
