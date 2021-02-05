@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -27,13 +28,25 @@ import (
 func AddProject(project models.Project) (int64, error) {
 	o := GetOrmer()
 
-	sql := "insert into project (owner_id, name, registry_id, creation_time, update_time, deleted) values (?, ?, ?, ?, ?, ?) RETURNING project_id"
 	var projectID int64
 	now := time.Now()
-
-	err := o.Raw(sql, project.OwnerID, project.Name, project.RegistryID, now, now, project.Deleted).QueryRow(&projectID)
-	if err != nil {
-		return 0, err
+	if o.Driver().Type() == orm.DRPostgres {
+		sql := "insert into project (owner_id, name, registry_id, creation_time, update_time, deleted) values (?, ?, ?, ?, ?, ?) RETURNING project_id"
+		err := o.Raw(sql, project.OwnerID, project.Name, project.RegistryID, now, now, project.Deleted).QueryRow(&projectID)
+		if err != nil {
+			return 0, err
+		}
+	}
+	if o.Driver().Type() == orm.DRMySQL {
+		sql := "insert into project (owner_id, name, registry_id, creation_time, update_time, deleted) values (?, ?, ?, ?, ?, ?)"
+		res, err := o.Raw(sql, project.OwnerID, project.Name, project.RegistryID, now, now, project.Deleted).Exec()
+		if err != nil {
+			return 0, err
+		}
+		projectID, err = res.LastInsertId()
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	pmID, err := addProjectMember(models.Member{
@@ -66,12 +79,26 @@ func addProjectMember(member models.Member) (int, error) {
 	}
 
 	var pmID int
-	sql := "insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?) RETURNING id"
-	err := o.Raw(sql, member.ProjectID, member.EntityID, member.Role, member.EntityType).QueryRow(&pmID)
-	if err != nil {
-		return 0, err
+	if o.Driver().Type() == orm.DRPostgres {
+		sql := "insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?) RETURNING id"
+		err := o.Raw(sql, member.ProjectID, member.EntityID, member.Role, member.EntityType).QueryRow(&pmID)
+		if err != nil {
+			return 0, err
+		}
 	}
-	return pmID, err
+	if o.Driver().Type() == orm.DRMySQL {
+		sql := "insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?)"
+		res, err := o.Raw(sql, member.ProjectID, member.EntityID, member.Role, member.EntityType).Exec()
+		if err != nil {
+			return 0, err
+		}
+		insertId, err := res.LastInsertId()
+		if err != nil {
+			return 0, err
+		}
+		pmID = int(insertId)
+	}
+	return pmID, nil
 }
 
 // GetProjectByID ...

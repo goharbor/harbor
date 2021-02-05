@@ -15,6 +15,7 @@
 package group
 
 import (
+	"github.com/astaxie/beego/orm"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils"
@@ -39,13 +40,27 @@ func AddUserGroup(userGroup models.UserGroup) (int, error) {
 		return 0, ErrGroupNameDup
 	}
 	o := dao.GetOrmer()
-	sql := "insert into user_group (group_name, group_type, ldap_group_dn, creation_time, update_time) values (?, ?, ?, ?, ?) RETURNING id"
+
 	var id int
 	now := time.Now()
-
-	err = o.Raw(sql, userGroup.GroupName, userGroup.GroupType, utils.TrimLower(userGroup.LdapGroupDN), now, now).QueryRow(&id)
-	if err != nil {
-		return 0, err
+	if o.Driver().Type() == orm.DRPostgres {
+		sql := "insert into user_group (group_name, group_type, ldap_group_dn, creation_time, update_time) values (?, ?, ?, ?, ?) RETURNING id"
+		err = o.Raw(sql, userGroup.GroupName, userGroup.GroupType, utils.TrimLower(userGroup.LdapGroupDN), now, now).QueryRow(&id)
+		if err != nil {
+			return 0, err
+		}
+	}
+	if o.Driver().Type() == orm.DRMySQL {
+		sql := "insert into user_group (group_name, group_type, ldap_group_dn, creation_time, update_time) values (?, ?, ?, ?, ?)"
+		res, err := o.Raw(sql, userGroup.GroupName, userGroup.GroupType, utils.TrimLower(userGroup.LdapGroupDN), now, now).Exec()
+		if err != nil {
+			return 0, err
+		}
+		insertId, err := res.LastInsertId()
+		if err != nil {
+			return 0, err
+		}
+		id = int(insertId)
 	}
 
 	return id, nil

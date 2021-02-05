@@ -114,6 +114,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "registryctl"
 {% if external_database == False %}
+{% if harbor_db_postgresql %}
   postgresql:
     image: goharbor/harbor-db:{{version}}
     container_name: harbor-db
@@ -144,6 +145,18 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "postgresql"
+{% endif %}
+{% if harbor_db_mysql %}
+  mysql:
+    image: goharbor/harbor-db-mysql:{{version}}
+    container_name: harbor-db-mysql
+    restart: always
+    networks:
+      harbor:
+    dns_search: .
+    env_file:
+      - ./common/config/db/env
+{% endif %}
 {% endif %}
   core:
     image: goharbor/harbor-core:{{version}}
