@@ -44,6 +44,11 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
+func init() {
+	// keep only the latest created 50 p2p preheat execution records
+	task.SetExecutionSweeperCount(job.P2PPreheat, 50)
+}
+
 const (
 	defaultSeverityCode     = 99
 	extraAttrTotal          = "totalCount"

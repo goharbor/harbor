@@ -31,9 +31,8 @@ import (
 
 var (
 	// ExecMgr is a global execution manager instance
-	ExecMgr                            = NewExecutionManager()
-	executionSweeperCount              = map[string]uint8{}
-	defaultExecutionSweeperCount uint8 = 50
+	ExecMgr               = NewExecutionManager()
+	executionSweeperCount = map[string]uint8{}
 )
 
 // ExecutionManager manages executions.
@@ -139,8 +138,10 @@ func (e *executionManager) Create(ctx context.Context, vendorType string, vendor
 func (e *executionManager) sweep(ctx context.Context, vendorType string, vendorID int64) error {
 	count := executionSweeperCount[vendorType]
 	if count == 0 {
-		count = defaultExecutionSweeperCount
+		log.Debugf("the execution sweeper count doesn't set for %s, skip sweep", vendorType)
+		return nil
 	}
+
 	for {
 		// the function "List" of the execution manager returns the execution records
 		// ordered by start time. After the sorting is supported in query, we should

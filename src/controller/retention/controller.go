@@ -17,6 +17,8 @@ package retention
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -26,8 +28,12 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"time"
 )
+
+func init() {
+	// keep only the latest created 50 retention execution records
+	task.SetExecutionSweeperCount(job.Retention, 50)
+}
 
 // go:generate mockery -name Controller -case snake
 
