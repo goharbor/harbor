@@ -27,15 +27,18 @@ type Authentication struct {
 type Database struct {
 	Type       string      `json:"type"`
 	PostGreSQL *PostGreSQL `json:"postgresql,omitempty"`
+	MySQL      *MySQL
 }
 
 // MySQL ...
 type MySQL struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password,omitempty"`
-	Database string `json:"database"`
+	Host         string `json:"host"`
+	Port         int    `json:"port"`
+	Username     string `json:"username"`
+	Password     string `json:"password,omitempty"`
+	Database     string `json:"database"`
+	MaxIdleConns int    `json:"max_idle_conns"`
+	MaxOpenConns int    `json:"max_open_conns"`
 }
 
 // SQLite ...
