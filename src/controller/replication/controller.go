@@ -29,6 +29,11 @@ import (
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
+func init() {
+	// keep only the latest created 50 replication execution records
+	task.SetExecutionSweeperCount(job.Replication, 50)
+}
+
 // Controller defines the operations related with replication
 type Controller interface {
 	// Start the replication according to the policy
