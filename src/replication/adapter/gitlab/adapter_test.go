@@ -86,7 +86,7 @@ func getAdapter(t *testing.T) adp.Adapter {
 	assertions.Nil(err)
 	assertions.NotNil(factory)
 	server := getServer(t)
-	adapter := newAdapter(&model.Registry{
+	adapter, err := newAdapter(&model.Registry{
 		Type: model.RegistryTypeGitLab,
 		URL:  server.URL,
 		Credential: &model.Credential{
