@@ -1,9 +1,10 @@
 package logger
 
 import (
-	"github.com/goharbor/harbor/src/jobservice/logger/backend"
 	"reflect"
 	"strings"
+
+	"github.com/goharbor/harbor/src/jobservice/logger/backend"
 )
 
 const (
@@ -39,10 +40,10 @@ var knownLoggers = map[string]*Declaration{
 }
 
 // IsKnownLogger checks if the logger is supported with name.
-func IsKnownLogger(name string) bool {
-	_, ok := knownLoggers[name]
+func IsKnownLogger(name string) (*Declaration, bool) {
+	d, ok := knownLoggers[name]
 
-	return ok
+	return d, ok
 }
 
 // HasSweeper checks if the logger with the name provides a sweeper.
@@ -57,11 +58,6 @@ func HasGetter(name string) bool {
 	d, ok := knownLoggers[name]
 
 	return ok && d.Getter != nil
-}
-
-// KnownLoggers return the declaration by the name
-func KnownLoggers(name string) *Declaration {
-	return knownLoggers[name]
 }
 
 // All known levels which are supported.

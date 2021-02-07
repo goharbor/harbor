@@ -45,11 +45,11 @@ func GetLogger(loggerOptions ...Option) (Interface, error) {
 	// Create backends
 	loggers := make([]Interface, 0)
 	for name, ops := range lOptions.values {
-		if !IsKnownLogger(name) {
+		d, o := IsKnownLogger(name)
+		if !o {
 			return nil, fmt.Errorf("no logger registered for name '%s'", name)
 		}
 
-		d := KnownLoggers(name)
 		var (
 			l  Interface
 			ok bool
@@ -111,7 +111,7 @@ func GetSweeper(context context.Context, sweeperOptions ...Option) (sweeper.Inte
 			return nil, fmt.Errorf("no sweeper provided for the logger %s", name)
 		}
 
-		d := KnownLoggers(name)
+		d, _ := IsKnownLogger(name)
 		s, err := d.Sweeper(ops...)
 		if err != nil {
 			return nil, err
@@ -199,7 +199,10 @@ func Init(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	// Avoid data race issue
+	// Do not cache this system std logger with name `NameStdOutput` as caching causes conflict with job std logger.
+	singletons.Delete(NameStdOutput)
 	singletons.Store(systemKeyServiceLogger, lg)
 
 	jOptions := make([]Option, 0)
