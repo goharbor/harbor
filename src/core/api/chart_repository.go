@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"html/template"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -267,7 +268,7 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 	}
 
 	// Get other parameters
-	chartName := cra.GetStringFromPath(nameParam)
+	chartName := template.HTMLEscapeString(cra.GetStringFromPath(nameParam))
 	version := cra.GetStringFromPath(versionParam)
 
 	// Try to remove labels from deleting chart if existing
