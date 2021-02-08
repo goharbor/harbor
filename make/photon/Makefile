@@ -55,6 +55,10 @@ DOCKERFILEPATH_DB=$(DOCKERFILEPATH)/db
 DOCKERFILENAME_DB=Dockerfile
 DOCKERIMAGENAME_DB=goharbor/harbor-db
 
+DOCKERFILEPATH_DB_MYSQL=$(DOCKERFILEPATH)/db_mysql
+DOCKERFILENAME_DB_MYSQL=Dockerfile
+DOCKERIMAGENAME_DB_MYSQL=goharbor/harbor-db-mysql
+
 DOCKERFILEPATH_POSTGRESQL=$(DOCKERFILEPATH)/postgresql
 DOCKERFILENAME_POSTGRESQL=Dockerfile
 DOCKERIMAGENAME_POSTGRESQL=goharbor/postgresql-photon
@@ -107,6 +111,11 @@ _build_prepare:
 _build_db:
 	@echo "building db container for photon..."
 	@$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
+	@echo "Done."
+
+_build_db_mysql:
+	@echo "building db mysql container for photon..."
+	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_DB_MYSQL)/$(DOCKERFILENAME_DB_MYSQL) -t $(DOCKERIMAGENAME_DB_MYSQL):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_portal:
@@ -223,7 +232,7 @@ define _get_binary
 	$(CURL) --connect-timeout 30 -f -k -L $1 -o $2 || exit 1
 endef
 
-build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_trivy_adapter _build_redis _build_chart_server
+build: _build_prepare _build_db _build_db_mysql _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_trivy_adapter _build_redis _build_chart_server
 
 cleanimage:
 	@echo "cleaning image for photon..."

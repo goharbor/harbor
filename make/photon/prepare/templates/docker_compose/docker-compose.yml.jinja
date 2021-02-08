@@ -148,16 +148,16 @@ services:
 {% endif %}
 {% if harbor_db_mysql %}
   mysql:
-    image: mysql:5.7
+    image: harbor/harbor-db-mysql:{{version}}
     container_name: harbor-db-mysql
     restart: always
     networks:
       harbor:
     dns_search: .
     env_file:
-      - ./common/config/db/env
+      - ./common/config/db_mysql/env
     volumes:
-      - ./common/mysql:/docker-entrypoint-initdb.d/
+      - {{data_volume}}/mysql:/var/lib/mysql:z
     depends_on:
       - log
     logging:
