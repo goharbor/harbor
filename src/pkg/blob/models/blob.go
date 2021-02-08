@@ -22,7 +22,6 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/models"
-	lib_orm "github.com/goharbor/harbor/src/lib/orm"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"strings"
 	"time"
@@ -109,7 +108,7 @@ func (b *Blob) FilterByArtifactDigest(ctx context.Context, qs orm.QuerySeter, ke
 	if !ok {
 		return qs
 	}
-	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", `'`+lib_orm.Escape(v)+`'`)
+	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", `'`+v+`'`)
 	return qs.FilterRaw("digest", sql)
 }
 
@@ -121,7 +120,7 @@ func (b *Blob) FilterByArtifactDigests(ctx context.Context, qs orm.QuerySeter, k
 	}
 	var afs []string
 	for _, v := range artifactDigests {
-		afs = append(afs, `'`+lib_orm.Escape(v)+`'`)
+		afs = append(afs, `'`+v+`'`)
 	}
 
 	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", strings.Join(afs, ","))
