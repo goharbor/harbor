@@ -1,20 +1,23 @@
 package logger
 
 import (
-	"github.com/goharbor/harbor/src/jobservice/logger/backend"
-	"github.com/stretchr/testify/require"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/goharbor/harbor/src/jobservice/logger/backend"
+	"github.com/stretchr/testify/require"
 )
 
 // TestKnownLoggers
 func TestKnownLoggers(t *testing.T) {
-	b := IsKnownLogger("Unknown")
+	l, b := IsKnownLogger("Unknown")
 	require.False(t, b)
+	require.Nil(t, l)
 
-	b = IsKnownLogger(NameFile)
+	l, b = IsKnownLogger(NameFile)
 	require.True(t, b)
+	require.NotNil(t, l)
 
 	// no getter
 	b = HasGetter(NameStdOutput)
@@ -29,13 +32,6 @@ func TestKnownLoggers(t *testing.T) {
 	// has sweeper
 	b = HasSweeper(NameDB)
 	require.True(t, b)
-
-	// unknown logger
-	l := KnownLoggers("unknown")
-	require.Nil(t, l)
-	// known logger
-	l = KnownLoggers(NameDB)
-	require.NotNil(t, l)
 
 	// unknown level
 	b = IsKnownLevel("unknown")
