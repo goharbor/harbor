@@ -49,6 +49,7 @@ def prepare(conf, with_notary, with_trivy, with_chartmuseum):
     prepare_registry(config_dict)
     prepare_registry_ctl(config_dict)
     prepare_db(config_dict)
+    prepare_db_mysql(config_dict)
     prepare_job_service(config_dict)
     prepare_redis(config_dict)
     prepare_tls(config_dict)
