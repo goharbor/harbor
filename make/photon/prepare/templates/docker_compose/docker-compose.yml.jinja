@@ -148,7 +148,7 @@ services:
 {% endif %}
 {% if harbor_db_mysql %}
   mysql:
-    image: goharbor/harbor-db-mysql:{{version}}
+    image: mysql:5.7
     container_name: harbor-db-mysql
     restart: always
     networks:
@@ -156,6 +156,15 @@ services:
     dns_search: .
     env_file:
       - ./common/config/db/env
+    volumes:
+      - ./common/mysql:/docker-entrypoint-initdb.d/
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "mysql"
 {% endif %}
 {% endif %}
   core:

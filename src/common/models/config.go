@@ -27,7 +27,7 @@ type Authentication struct {
 type Database struct {
 	Type       string      `json:"type"`
 	PostGreSQL *PostGreSQL `json:"postgresql,omitempty"`
-	MySQL      *MySQL
+	MySQL      *MySQL      `json:"mysql,omitempty"`
 }
 
 // MySQL ...

@@ -35,7 +35,16 @@ const (
 // MigrateDB upgrades DB schema and do necessary transformation of the data in DB
 func MigrateDB(database *models.Database) error {
 	// check the database schema version
-	migrator, err := dao.NewMigrator(database.PostGreSQL)
+	var (
+		migrator *migrate.Migrate
+		err error
+	)
+	if database.Type == "postgresql" {
+		migrator, err = dao.NewMigrator(database.PostGreSQL)
+	} else if database.Type == "mysql" {
+		migrator, err = dao.NewMysqlMigrator(database.MySQL)
+	}
+
 	if err != nil {
 		return err
 	}

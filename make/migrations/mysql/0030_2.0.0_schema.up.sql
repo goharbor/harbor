@@ -27,7 +27,7 @@ ALTER TABLE artifact ADD COLUMN manifest_media_type varchar(255);
 ALTER TABLE artifact ADD COLUMN size bigint;
 ALTER TABLE artifact ADD COLUMN extra_attrs text;
 ALTER TABLE artifact ADD COLUMN annotations json;
-ALTER TABLE artifact RENAME COLUMN kind TO type;
+ALTER TABLE artifact CHANGE COLUMN kind type varchar(255) NOT NULL;
 ALTER TABLE artifact DROP COLUMN creation_time;
 
 /*set the media type*/
@@ -59,7 +59,7 @@ UPDATE artifact SET repository_id = 0-artifact.id, type='IMAGE', media_type='UNK
 ALTER TABLE artifact MODIFY COLUMN repository_id INT NOT NULL;
 ALTER TABLE artifact MODIFY COLUMN media_type varchar(255) NOT NULL;
 ALTER TABLE artifact MODIFY COLUMN manifest_media_type varchar(255) NOT NULL;
-ALTER TABLE artifact RENAME COLUMN repo TO repository_name;
+ALTER TABLE artifact CHANGE COLUMN repo repository_name varchar(255) NOT NULL;
 
 CREATE TABLE tag
 (
@@ -101,7 +101,8 @@ WHERE id NOT IN (
     FROM tag
 );
 
-ALTER TABLE artifact DROP CONSTRAINT unique_artifact;
+SET sql_mode = '';
+ALTER TABLE artifact DROP INDEX unique_artifact;
 ALTER TABLE artifact ADD CONSTRAINT unique_artifact UNIQUE (repository_id, digest);
 
 /*set artifact size*/
@@ -237,7 +238,7 @@ CALL PROC_UPDATE_AUDIT_LOG();
 DROP TABLE IF EXISTS access_log;
 
 /*remove the constraint for project_id in table 'notification_policy'*/
-ALTER TABLE notification_policy DROP CONSTRAINT unique_project_id;
+ALTER TABLE notification_policy DROP INDEX unique_project_id;
 
 /*the existing policy has no name, to make sure the unique constraint for name works, use the id as name*/
 /*if the name is set via API, it will be force to be changed with new pattern*/
