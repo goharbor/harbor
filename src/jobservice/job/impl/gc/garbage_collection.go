@@ -424,32 +424,39 @@ func (gc *GarbageCollector) removeUntaggedBlobs(ctx job.Context) {
 		}
 		p := result.Data
 
-		pn := int64(1)
+		ps := 1000
+		lastBlobID := int64(0)
+		timeRG := q.Range{
+			Max: time.Now().Add(-time.Duration(gc.timeWindowHours) * time.Hour).Format(time.RFC3339),
+		}
+
 		for {
-			rg := q.Range{
-				Max: time.Now().Add(-time.Duration(gc.timeWindowHours) * time.Hour).Format(time.RFC3339),
+			blobRG := q.Range{
+				Min: lastBlobID,
 			}
 			q := &q.Query{
 				Keywords: map[string]interface{}{
-					"update_time": &rg,
+					"update_time": &timeRG,
 					"projectID":   p.ProjectID,
+					"id":          &blobRG,
 				},
-				PageNumber: pn,
-				PageSize:   10000,
+				PageNumber: 1,
+				PageSize:   int64(ps),
+				Sorting:    "id",
 			}
-			all, err := gc.blobMgr.List(ctx.SystemContext(), q)
+			blobs, err := gc.blobMgr.List(ctx.SystemContext(), q)
 			if err != nil {
 				gc.logger.Errorf("failed to get blobs of project, %v", err)
 				break
 			}
-			if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), p.ProjectID, all); err != nil {
+			if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), p.ProjectID, blobs); err != nil {
 				gc.logger.Errorf("failed to clean untagged blobs of project, %v", err)
 				break
 			}
-			if len(all) < 10000 {
+			if len(blobs) < ps {
 				break
 			}
-			pn++
+			lastBlobID = blobs[len(blobs)-1].ID
 		}
 	}
 }
