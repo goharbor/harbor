@@ -210,11 +210,11 @@ http {
   }
   {% if metric.enabled %}
   upstream core_metrics {
-    server core:9090;
+    server core:{{ metric.port }};
   }
 
   upstream registry_metrics {
-    server registry:5001;
+    server registry:{{ metric.port }};
   }
 
   upstream harbor_exporter {
