@@ -32,6 +32,7 @@ CREATE TABLE project_blob (
  CONSTRAINT unique_project_blob UNIQUE (project_id, blob_id)
 );
 
+SET sql_mode = '';
 CREATE TABLE artifact
 (
   id            SERIAL PRIMARY KEY NOT NULL,

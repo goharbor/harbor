@@ -134,13 +134,18 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
             else:
                 config_dict['public_url'] = '{protocol}://{hostname}:{http_port}'.format(**config_dict)
 
+    if configs.get("db_type") == 'postgresql':
+        config_dict['harbor_db_postgresql'] = True
+        config_dict['harbor_db_mysql'] = False
+    if configs.get("db_type") == 'mysql':
+        config_dict['harbor_db_postgresql'] = False
+        config_dict['harbor_db_mysql'] = True
+
     # DB configs
     db_configs = configs.get('database')
     if db_configs:
         # harbor db
-        if configs.get("db_type") == 'postgresql':
-            config_dict['harbor_db_postgresql'] = True
-            config_dict['harbor_db_mysql'] = False
+        if config_dict['harbor_db_postgresql']:
             config_dict['harbor_db_host'] = 'postgresql'
             config_dict['harbor_db_port'] = 5432
             config_dict['harbor_db_name'] = 'registry'
@@ -149,9 +154,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
             config_dict['harbor_db_sslmode'] = 'disable'
             config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_db_max_idle_conns
             config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_db_max_open_conns
-        if configs.get("db_type") == 'mysql':
-            config_dict['harbor_db_postgresql'] = False
-            config_dict['harbor_db_mysql'] = True
+        if config_dict['harbor_db_mysql']:
             config_dict['harbor_db_host'] = 'mysql'
             config_dict['harbor_db_port'] = 3306
             config_dict['harbor_db_name'] = 'registry'
@@ -280,14 +283,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
     if external_db_configs:
         config_dict['external_database'] = True
         # harbor db
-        if configs.get("db_type") == 'postgresql':
-            config_dict['harbor_db_postgresql'] = True
-            config_dict['harbor_db_mysql'] = False
-            config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
-        if configs.get("db_type") == 'postgresql':
-            config_dict['harbor_db_postgresql'] = False
-            config_dict['harbor_db_mysql'] = True
-
         config_dict['harbor_db_host'] = external_db_configs['harbor']['host']
         config_dict['harbor_db_port'] = external_db_configs['harbor']['port']
         config_dict['harbor_db_name'] = external_db_configs['harbor']['db_name']
@@ -295,6 +290,8 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['harbor_db_password'] = external_db_configs['harbor']['password']
         config_dict['harbor_db_max_idle_conns'] = external_db_configs['harbor'].get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = external_db_configs['harbor'].get("max_open_conns") or default_db_max_open_conns
+        if config_dict['harbor_db_postgresql']:
+            config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
 
         if with_notary:
             # notary signer
@@ -303,14 +300,19 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
             config_dict['notary_signer_db_name'] = external_db_configs['notary_signer']['db_name']
             config_dict['notary_signer_db_username'] = external_db_configs['notary_signer']['username']
             config_dict['notary_signer_db_password'] = external_db_configs['notary_signer']['password']
-            config_dict['notary_signer_db_sslmode'] = external_db_configs['notary_signer']['ssl_mode']
+
+            if config_dict['harbor_db_postgresql']:
+                config_dict['notary_signer_db_sslmode'] = external_db_configs['notary_signer']['ssl_mode']
+
             # notary server
             config_dict['notary_server_db_host'] = external_db_configs['notary_server']['host']
             config_dict['notary_server_db_port'] = external_db_configs['notary_server']['port']
             config_dict['notary_server_db_name'] = external_db_configs['notary_server']['db_name']
             config_dict['notary_server_db_username'] = external_db_configs['notary_server']['username']
             config_dict['notary_server_db_password'] = external_db_configs['notary_server']['password']
-            config_dict['notary_server_db_sslmode'] = external_db_configs['notary_server']['ssl_mode']
+
+            if config_dict['harbor_db_postgresql']:
+                config_dict['notary_server_db_sslmode'] = external_db_configs['notary_server']['ssl_mode']
     else:
         config_dict['external_database'] = False
 

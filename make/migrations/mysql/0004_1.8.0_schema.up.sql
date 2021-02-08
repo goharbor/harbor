@@ -44,7 +44,7 @@ DELETE j FROM replication_job AS j, replication_policy AS p
 WHERE j.policy_id = p.id AND p.deleted = TRUE;
 
 /*delete replication policy which has been marked as "deleted"*/
-DELETE FROM replication_policy AS p
+DELETE p FROM replication_policy AS p
 WHERE p.deleted = TRUE;
 
 /*upgrade the replication_target to registry*/
@@ -52,8 +52,8 @@ ALTER TABLE replication_target MODIFY COLUMN update_time timestamp default CURRE
 ALTER TABLE replication_target RENAME registry;
 ALTER TABLE registry MODIFY COLUMN url varchar(256);
 ALTER TABLE registry ADD COLUMN credential_type varchar(16);
-ALTER TABLE registry RENAME COLUMN username TO access_key;
-ALTER TABLE registry RENAME COLUMN password TO access_secret;
+ALTER TABLE registry CHANGE COLUMN username access_key varchar(255) DEFAULT NULL;
+ALTER TABLE registry CHANGE COLUMN password access_secret varchar(128) DEFAULT NULL;
 ALTER TABLE registry MODIFY COLUMN access_secret varchar(4096);
 ALTER TABLE registry ADD COLUMN type varchar(32);
 ALTER TABLE registry DROP COLUMN target_type;
@@ -70,13 +70,13 @@ if harbor is integrated with the external project service, we cannot get the pro
 which means the repilcation policy will match all resources.*/
 UPDATE replication_policy SET filters='[]' WHERE filters='';
 UPDATE replication_policy r SET filters=json_array_append( r.filters,'$', (SELECT CONCAT('{"type":"name","value":"', p.name,'/**"}') FROM project p WHERE p.project_id=r.project_id));
-ALTER TABLE replication_policy RENAME COLUMN target_id TO dest_registry_id;
+ALTER TABLE replication_policy CHANGE COLUMN target_id dest_registry_id int NOT NULL;
 ALTER TABLE replication_policy MODIFY COLUMN dest_registry_id INT NULL;
 ALTER TABLE replication_policy ADD COLUMN dest_namespace varchar(256);
 ALTER TABLE replication_policy ADD COLUMN override boolean;
 UPDATE replication_policy SET override=TRUE;
 ALTER TABLE replication_policy DROP COLUMN project_id;
-ALTER TABLE replication_policy RENAME COLUMN cron_str TO `trigger`;
+ALTER TABLE replication_policy CHANGE COLUMN cron_str `trigger` varchar(256) DEFAULT NULL;
 
 ALTER TABLE replication_immediate_trigger MODIFY COLUMN update_time timestamp default CURRENT_TIMESTAMP;
 DROP TABLE replication_immediate_trigger;
@@ -158,7 +158,7 @@ UPDATE replication_task SET operation='deletion' WHERE operation='delete';
 
 /*upgrade the replication_job to replication_schedule_job*/
 DELETE FROM replication_job WHERE operation != 'schedule';
-ALTER TABLE replication_job RENAME COLUMN job_uuid TO job_id;
+ALTER TABLE replication_job CHANGE COLUMN job_uuid job_id varchar(64) DEFAULT NULL;
 ALTER TABLE replication_job DROP COLUMN repository;
 ALTER TABLE replication_job DROP COLUMN operation;
 ALTER TABLE replication_job DROP COLUMN tags;

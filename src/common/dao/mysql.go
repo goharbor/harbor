@@ -29,6 +29,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/mysql" // import mysql driver for migrator
 )
 
+const defaultMysqlMigrationPath = "migrations/mysql/"
+
 type mysql struct {
 	host         string
 	port         string
@@ -130,7 +132,7 @@ func NewMysqlMigrator(database *models.MySQL) (*migrate.Migrate, error) {
 	// For UT
 	path := os.Getenv("MYSQL_MIGRATION_SCRIPTS_PATH")
 	if len(path) == 0 {
-		path = defaultMigrationPath
+		path = defaultMysqlMigrationPath
 	}
 	srcURL := fmt.Sprintf("file://%s", path)
 	m, err := migrate.New(srcURL, dbURL)

@@ -2,6 +2,7 @@
 !/contrib/helm/harbor
 *.code-workspace
 make/harbor.yml
+make/input/
 make/docker-compose.yml
 make/common/config/*
 make/dev/adminserver/harbor_adminserver
