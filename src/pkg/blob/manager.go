@@ -17,15 +17,13 @@ package blob
 import (
 	"context"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob/dao"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 )
 
 // Blob alias `models.Blob` to make it natural to use the Manager
 type Blob = models.Blob
-
-// ListParams alias `models.ListParams` to make it natural to use the Manager
-type ListParams = models.ListParams
 
 var (
 	// Mgr default blob manager
@@ -62,7 +60,7 @@ type Manager interface {
 	UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, error)
 
 	// List returns blobs by params
-	List(ctx context.Context, params ListParams) ([]*Blob, error)
+	List(ctx context.Context, query *q.Query) ([]*Blob, error)
 
 	// DeleteBlob delete blob
 	Delete(ctx context.Context, id int64) (err error)
@@ -129,8 +127,8 @@ func (m *manager) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int6
 	return m.dao.UpdateBlobStatus(ctx, blob)
 }
 
-func (m *manager) List(ctx context.Context, params ListParams) ([]*Blob, error) {
-	return m.dao.ListBlobs(ctx, params)
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*Blob, error) {
+	return m.dao.ListBlobs(ctx, query)
 }
 
 func (m *manager) Delete(ctx context.Context, id int64) error {

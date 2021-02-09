@@ -16,6 +16,7 @@ package blob
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/lib/q"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -34,7 +35,12 @@ func (suite *ManagerTestSuite) SetupSuite() {
 }
 
 func (suite *ManagerTestSuite) isAssociatedWithArtifact(ctx context.Context, blobDigest, artifactDigest string) (bool, error) {
-	blobs, err := Mgr.List(ctx, ListParams{BlobDigests: []string{blobDigest}, ArtifactDigest: artifactDigest})
+	ol := q.OrList{
+		Values: []interface{}{
+			blobDigest,
+		},
+	}
+	blobs, err := Mgr.List(ctx, q.New(q.KeyWords{"digest": &ol, "artifactDigest": artifactDigest}))
 	if err != nil {
 		return false, err
 	}
@@ -43,7 +49,12 @@ func (suite *ManagerTestSuite) isAssociatedWithArtifact(ctx context.Context, blo
 }
 
 func (suite *ManagerTestSuite) isAssociatedWithProject(ctx context.Context, blobDigest string, projectID int64) (bool, error) {
-	blobs, err := Mgr.List(ctx, ListParams{BlobDigests: []string{blobDigest}, ProjectID: projectID})
+	ol := q.OrList{
+		Values: []interface{}{
+			blobDigest,
+		},
+	}
+	blobs, err := Mgr.List(ctx, q.New(q.KeyWords{"digest": &ol, "projectID": projectID}))
 	if err != nil {
 		return false, err
 	}
@@ -117,14 +128,15 @@ func (suite *ManagerTestSuite) TestCleanupAssociationsForProject() {
 		ctx := suite.Context()
 
 		blobDigests := []string{digest1, digest2, digest3, digest4, digest5}
+		var ol q.OrList
 		for _, digest := range blobDigests {
 			blobID, err := Mgr.Create(ctx, digest, "media type", 100)
 			if suite.Nil(err) {
 				Mgr.AssociateWithProject(ctx, blobID, projectID)
 			}
+			ol.Values = append(ol.Values, digest)
 		}
-
-		blobs, err := Mgr.List(ctx, ListParams{BlobDigests: blobDigests})
+		blobs, err := Mgr.List(ctx, q.New(q.KeyWords{"digest": &ol}))
 		suite.Nil(err)
 		suite.Len(blobs, 5)
 
@@ -213,18 +225,33 @@ func (suite *ManagerTestSuite) TestList() {
 	digest1 := suite.DigestString()
 	digest2 := suite.DigestString()
 
-	blobs, err := Mgr.List(ctx, ListParams{BlobDigests: []string{digest1, digest2}})
+	ol := q.OrList{
+		Values: []interface{}{
+			digest1,
+			digest2,
+		},
+	}
+	blobs, err := Mgr.List(ctx, q.New(q.KeyWords{"digest": &ol}))
 	suite.Nil(err)
 	suite.Len(blobs, 0)
 
 	Mgr.Create(ctx, digest1, "media type", 100)
 	Mgr.Create(ctx, digest2, "media type", 100)
 
-	blobs, err = Mgr.List(ctx, ListParams{BlobDigests: []string{digest1, digest2}})
+	ol = q.OrList{
+		Values: []interface{}{
+			digest1,
+			digest2,
+		},
+	}
+	blobs, err = Mgr.List(ctx, q.New(q.KeyWords{"digest": &ol}))
 	suite.Nil(err)
 	suite.Len(blobs, 2)
 
-	blobs, err = Mgr.List(ctx, models.ListParams{UpdateTime: time.Now().Add(-time.Hour)})
+	rg := q.Range{
+		Max: time.Now().Add(-time.Hour).Format(time.RFC3339),
+	}
+	blobs, err = Mgr.List(ctx, q.New(q.KeyWords{"update_time": &rg}))
 	if suite.Nil(err) {
 		suite.Len(blobs, 0)
 	}
@@ -255,11 +282,11 @@ func (suite *ManagerTestSuite) TestListByArtifact() {
 		}
 	}
 
-	blobs, err := Mgr.List(ctx, ListParams{ArtifactDigest: artifact1})
+	blobs, err := Mgr.List(ctx, q.New(q.KeyWords{"artifactDigest": artifact1}))
 	suite.Nil(err)
 	suite.Len(blobs, 5)
 
-	blobs, err = Mgr.List(ctx, ListParams{ArtifactDigest: artifact2})
+	blobs, err = Mgr.List(ctx, q.New(q.KeyWords{"artifactDigest": artifact2}))
 	suite.Nil(err)
 	suite.Len(blobs, 3)
 }
