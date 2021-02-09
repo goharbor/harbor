@@ -16,6 +16,7 @@ package token
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 
 	"github.com/astaxie/beego"
@@ -38,7 +39,7 @@ func (h *Handler) Get() {
 	if !ok {
 		errMsg := fmt.Sprintf("Unable to handle service: %s", service)
 		log.Errorf(errMsg)
-		h.CustomAbort(http.StatusBadRequest, errMsg)
+		h.CustomAbort(http.StatusBadRequest, template.HTMLEscapeString(errMsg))
 	}
 	token, err := tokenCreator.Create(request)
 	if err != nil {
