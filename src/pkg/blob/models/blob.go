@@ -15,12 +15,15 @@
 package models
 
 import (
+	"context"
+	"fmt"
 	"github.com/astaxie/beego/orm"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/models"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"strings"
 	"time"
 )
 
@@ -99,11 +102,37 @@ func (b *Blob) IsManifest() bool {
 // ProjectBlob alias ProjectBlob model
 type ProjectBlob = models.ProjectBlob
 
-// ListParams list params
-type ListParams struct {
-	ArtifactDigest  string    // list blobs which associated with the artifact
-	ArtifactDigests []string  // list blobs which associated with these artifacts
-	BlobDigests     []string  // list blobs which digest in the digests
-	ProjectID       int64     // list blobs which associated with the project
-	UpdateTime      time.Time // list blobs which update time less than updatetime
+// FilterByArtifactDigest returns orm.QuerySeter with artifact digest filter
+func (b *Blob) FilterByArtifactDigest(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	v, ok := value.(string)
+	if !ok {
+		return qs
+	}
+	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", `'`+v+`'`)
+	return qs.FilterRaw("digest", sql)
+}
+
+// FilterByArtifactDigests returns orm.QuerySeter with artifact digests filter
+func (b *Blob) FilterByArtifactDigests(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	artifactDigests, ok := value.([]string)
+	if !ok {
+		return qs
+	}
+	var afs []string
+	for _, v := range artifactDigests {
+		afs = append(afs, `'`+v+`'`)
+	}
+
+	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", strings.Join(afs, ","))
+	return qs.FilterRaw("digest", sql)
+}
+
+// FilterByProjectID returns orm.QuerySeter with project id filter
+func (b *Blob) FilterByProjectID(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	projectID, ok := value.(int64)
+	if !ok {
+		return qs
+	}
+
+	return qs.FilterRaw("id", fmt.Sprintf("IN (SELECT blob_id FROM project_blob WHERE project_id = %d)", projectID))
 }
