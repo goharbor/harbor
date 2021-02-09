@@ -17,6 +17,7 @@ package dao
 import (
 	"context"
 	"fmt"
+	"github.com/lib/pq"
 	"strings"
 	"time"
 
@@ -218,11 +219,13 @@ func (t *taskDAO) querySetter(ctx context.Context, query *q.Query) (orm.QuerySet
 	if query != nil && len(query.Keywords) > 0 {
 		for key, value := range query.Keywords {
 			if strings.HasPrefix(key, "ExtraAttrs.") {
-				qs = qs.FilterRaw("id", fmt.Sprintf("in (select id from task where extra_attrs->>'%s'='%s')", strings.TrimPrefix(key, "ExtraAttrs."), value))
+				qs = qs.FilterRaw("id", fmt.Sprintf("in (select id from task where extra_attrs->>%s=%s)",
+					pq.QuoteLiteral(strings.TrimPrefix(key, "ExtraAttrs.")), pq.QuoteLiteral(value.(string))))
 				break
 			}
 			if strings.HasPrefix(key, "extra_attrs.") {
-				qs = qs.FilterRaw("id", fmt.Sprintf("in (select id from task where extra_attrs->>'%s'='%s')", strings.TrimPrefix(key, "extra_attrs."), value))
+				qs = qs.FilterRaw("id", fmt.Sprintf("in (select id from task where extra_attrs->>%s=%s)",
+					strings.TrimPrefix(key, "extra_attrs."), pq.QuoteLiteral(value.(string))))
 				break
 			}
 		}
