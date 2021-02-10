@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/lib/pq"
 )
 
 // DAO is the data access object interface for artifact
@@ -336,14 +337,11 @@ func setTagQuery(ctx context.Context, qs beegoorm.QuerySeter, query *q.Query) (b
 			return qs, nil
 		}
 
-		// get the id list first to avoid the sql injection
-		inClause, err := orm.CreateInClause(ctx, `SELECT DISTINCT art.id FROM artifact art
-			JOIN tag ON art.id=tag.artifact_id
-			WHERE tag.name = ?`, s)
-		if err != nil {
-			return nil, err
-		}
-		qs = qs.FilterRaw("id", inClause)
+		sql := fmt.Sprintf(`IN (
+		SELECT DISTINCT art.id FROM artifact art
+		JOIN tag ON art.id=tag.artifact_id
+		WHERE tag.name = %s)`, pq.QuoteLiteral(s))
+		qs = qs.FilterRaw("id", sql)
 		return qs, nil
 	}
 	return qs, errors.New(nil).WithCode(errors.BadRequestCode).

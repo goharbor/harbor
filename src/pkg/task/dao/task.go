@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -23,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/lib/pq"
 )
 
 // TaskDAO is the data access object interface for task
@@ -233,12 +235,12 @@ func (t *taskDAO) querySetter(ctx context.Context, query *q.Query) (orm.QuerySet
 		if len(keyPrefix) == 0 {
 			return qs, nil
 		}
-		inClause, err := orm.CreateInClause(ctx, "select id from task where extra_attrs->>? = ?",
-			strings.TrimPrefix(key, keyPrefix), value)
-		if err != nil {
-			return nil, err
+		// avoid the sql injection
+		key = pq.QuoteLiteral(key)
+		if _, ok := value.(string); ok {
+			value = value.(string)
 		}
-		qs = qs.FilterRaw("id", inClause)
+		qs = qs.FilterRaw("id", fmt.Sprintf("in (select id from task where extra_attrs->>%s=%v)", key, value))
 	}
 
 	return qs, nil

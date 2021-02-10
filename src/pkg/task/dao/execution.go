@@ -25,6 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/lib/pq"
 )
 
 // ExecutionDAO is the data access object interface for execution
@@ -333,12 +334,12 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 		if len(keyPrefix) == 0 {
 			return qs, nil
 		}
-		inClause, err := orm.CreateInClause(ctx, "select id from execution where extra_attrs->>?=?",
-			strings.TrimPrefix(key, keyPrefix), value)
-		if err != nil {
-			return nil, err
+		// avoid the sql injection
+		key = pq.QuoteLiteral(strings.TrimPrefix(key, keyPrefix))
+		if _, ok := value.(string); ok {
+			value = pq.QuoteLiteral(value.(string))
 		}
-		qs = qs.FilterRaw("id", inClause)
+		qs = qs.FilterRaw("id", fmt.Sprintf("in (select id from execution where extra_attrs->>%s=%v)", key, value))
 	}
 
 	return qs, nil
