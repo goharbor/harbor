@@ -261,7 +261,7 @@ func querySetter(ctx context.Context, query *q.Query) (beegoorm.QuerySeter, erro
 	if err != nil {
 		return nil, err
 	}
-	qs, err = setTagQuery(qs, query)
+	qs, err = setTagQuery(ctx, qs, query)
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +296,7 @@ func setBaseQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, 
 }
 
 // handle query string: q=tags=value q=tags=~value
-func setTagQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, error) {
+func setTagQuery(ctx context.Context, qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, error) {
 	if query == nil || len(query.Keywords) == 0 {
 		return qs, nil
 	}
@@ -311,11 +311,14 @@ func setTagQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, e
 	// fuzzy match
 	f, ok := tags.(*q.FuzzyMatchValue)
 	if ok {
-		sql := fmt.Sprintf(`IN (
-		SELECT DISTINCT art.id FROM artifact art
-		JOIN tag ON art.id=tag.artifact_id
-		WHERE tag.name LIKE '%%%s%%')`, orm.Escape(f.Value))
-		qs = qs.FilterRaw("id", sql)
+		// get the id list first to avoid the sql injection
+		inClause, err := orm.CreateInClause(ctx, `SELECT DISTINCT art.id FROM artifact art
+			JOIN tag ON art.id=tag.artifact_id
+			WHERE tag.name LIKE ?`, "%"+orm.Escape(f.Value)+"%")
+		if err != nil {
+			return nil, err
+		}
+		qs = qs.FilterRaw("id", inClause)
 		return qs, nil
 	}
 	// exact match:
@@ -332,11 +335,15 @@ func setTagQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, e
 			qs = qs.FilterRaw("id", untagged)
 			return qs, nil
 		}
-		sql := fmt.Sprintf(`IN (
-		SELECT DISTINCT art.id FROM artifact art
-		JOIN tag ON art.id=tag.artifact_id
-		WHERE tag.name = '%s')`, s)
-		qs = qs.FilterRaw("id", sql)
+
+		// get the id list first to avoid the sql injection
+		inClause, err := orm.CreateInClause(ctx, `SELECT DISTINCT art.id FROM artifact art
+			JOIN tag ON art.id=tag.artifact_id
+			WHERE tag.name = ?`, s)
+		if err != nil {
+			return nil, err
+		}
+		qs = qs.FilterRaw("id", inClause)
 		return qs, nil
 	}
 	return qs, errors.New(nil).WithCode(errors.BadRequestCode).
@@ -367,6 +374,7 @@ func setLabelQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter,
 			return qs, errors.New(nil).WithCode(errors.BadRequestCode).
 				WithMessage(`the value of "labels" query can only be integer list with intersetion relationship`)
 		}
+		// param "labelID" is integer, no need to sanitize
 		collections = append(collections, fmt.Sprintf(`SELECT artifact_id FROM label_reference WHERE label_id=%d`, labelID))
 	}
 	qs = qs.FilterRaw("id", fmt.Sprintf(`IN (%s)`, strings.Join(collections, " INTERSECT ")))
