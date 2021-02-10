@@ -315,16 +315,30 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 
 	// append the filter for "extra attrs"
 	if query != nil && len(query.Keywords) > 0 {
-		for key, value := range query.Keywords {
+		var (
+			key       string
+			keyPrefix string
+			value     interface{}
+		)
+		for key, value = range query.Keywords {
 			if strings.HasPrefix(key, "ExtraAttrs.") {
-				qs = qs.FilterRaw("id", fmt.Sprintf("in (select id from execution where extra_attrs->>'%s'='%s')", strings.TrimPrefix(key, "ExtraAttrs."), value))
+				keyPrefix = "ExtraAttrs."
 				break
 			}
 			if strings.HasPrefix(key, "extra_attrs.") {
-				qs = qs.FilterRaw("id", fmt.Sprintf("in (select id from execution where extra_attrs->>'%s'='%s')", strings.TrimPrefix(key, "extra_attrs."), value))
+				keyPrefix = "extra_attrs."
 				break
 			}
 		}
+		if len(keyPrefix) == 0 {
+			return qs, nil
+		}
+		inClause, err := orm.CreateInClause(ctx, "select id from execution where extra_attrs->>?=?",
+			strings.TrimPrefix(key, keyPrefix), value)
+		if err != nil {
+			return nil, err
+		}
+		qs = qs.FilterRaw("id", inClause)
 	}
 
 	return qs, nil
