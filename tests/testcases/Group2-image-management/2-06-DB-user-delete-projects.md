@@ -36,7 +36,7 @@ User guide
 13. In user A's UI, recreate project X, 
 14. On a Docker client, log in as User A and run `docker push` to push an image to project X, e.g. projectX/anotherimage:v1. The image name should not be the same as those deleted in previous steps.
 15. Switch to the UI of admin user, view images under the re-created project X.
-16. As an admin user, view the log in dashboard and should see delete and create operaions of project X.
+16. As an admin user, view the log in dashboard and should see delete and create operations of project X.
 
 # Expected Outcome:
 * Step 6, deleting project X should fail because there are images under it.

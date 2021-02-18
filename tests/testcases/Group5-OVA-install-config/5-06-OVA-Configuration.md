@@ -16,7 +16,7 @@ User guide, Installation guide of Harbor OVA version.
 # Test Steps:
 
 To-Do:
-1. verify all setttings work at initial import
+1. verify all settings work at initial import
 2. verify all settings work after a hard power off followed by a power on
 3. Verify all settings can be changed as needed. (except networks, root password, Harbor password , mysql password)
 

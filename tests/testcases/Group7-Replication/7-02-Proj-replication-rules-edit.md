@@ -3,7 +3,7 @@ Test 7-02 - Edit replication rules
   
 # Purpose:  
   
-To verify admin user can edit repliciation rules.  
+To verify admin user can edit replication rules.  
   
 # References:  
 User guide  

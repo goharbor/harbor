@@ -14,7 +14,7 @@
 #
 # build:	build Harbor docker images from photon baseimage
 #
-# install:		include compile binarys, build images, prepare specific \
+# install:		include compile binaries, build images, prepare specific \
 #				version composefile and startup Harbor instance
 #
 # start:		startup Harbor instance
@@ -54,10 +54,10 @@
 # cleanpackage: remove online/offline install package
 #
 # other example:
-#	clean specific version binarys and images:
+#	clean specific version binaries and images:
 #				make clean -e VERSIONTAG=[TAG]
 #				note**: If commit new code to github, the git commit TAG will \
-#				change. Better use this commond clean previous images and \
+#				change. Better use this command clean previous images and \
 #				files with specific TAG.
 #   By default DEVFLAG=true, if you want to release new version of Harbor, \
 #		should setting the flag to false.

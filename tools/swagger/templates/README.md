@@ -189,7 +189,7 @@ type SwaggerPetstore {
 }
 ```
 
-Thos fields are objects, which implements interfaces declared in the [pet](./example/client/pet) and
+Those fields are objects, which implements interfaces declared in the [pet](./example/client/pet) and
 [store](./example/client/store) packages:
 
 For example:
@@ -242,7 +242,7 @@ Here we defined an apiKey, that is passed through the Cookie header.
 
 The `security` section defines the default security enforcement for the application. You can select
 different securityDefinitions, as the keys, and apply "scopes" as the values. Those default definitions
-can be overriden in each route by a section with the same name:
+can be overridden in each route by a section with the same name:
 
 ```yaml
 paths:
@@ -253,7 +253,7 @@ paths:
         - token: [admin]
 ```
 
-Here we overriden the scope of token in the POST /pets URL so that only admin can use this API.
+Here we overridden the scope of token in the POST /pets URL so that only admin can use this API.
 
 Let's see how we can use this functionality.
 
