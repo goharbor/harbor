@@ -46,6 +46,7 @@
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "buffer": "^5.2.1",
     "core-js": "^2.5.4",
+    "cron-validator": "^1.2.1",
     "intl": "^1.2.5",
     "jasmine-core": "^3.3.0",
     "mutationobserver-shim": "^0.3.2",
