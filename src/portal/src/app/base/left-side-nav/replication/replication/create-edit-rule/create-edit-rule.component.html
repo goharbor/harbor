@@ -176,15 +176,16 @@
               </select>
             </div>
             <div formGroupName="trigger_settings" class="clr-form-control">
-              <div [hidden]="isNotSchedule()">
-                <label class="required">Cron String</label>
-                <label for="targetCron" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm tooltip-top-right"
-                  [class.invalid]="!isNotSchedule() && cronTouched && !cronInputValid(ruleForm.value.trigger?.trigger_settings?.cron || '')">
-                  <input (input)="inputInvalid($event)" type="text" name=targetCron id="targetCron" required class="form-control cron-input clr-input" formControlName="cron">
-                  <span class="tooltip-content">
+              <div class="flex" [hidden]="isNotSchedule()">
+                <label for="targetCron" class="required">Cron String</label>
+                <div class="clr-control-container" [class.clr-error]="cronInputShouldShowError()">
+                  <div class="clr-input-wrapper">
+                    <input  autocomplete="off" (input)="inputInvalid($event)" type="text" name=targetCron id="targetCron" required class="form-control cron-input clr-input" formControlName="cron">
+                  </div>
+                  <clr-control-error *ngIf="cronInputShouldShowError()">
                     {{'TOOLTIP.CRON_REQUIRED' | translate }}
-                  </span>
-                </label>
+                  </clr-control-error>
+                </div>
                 <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-left top-7 cron-tooltip">
                   <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                   <div class="tooltip-content table-box">
