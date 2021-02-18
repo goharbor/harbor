@@ -5,7 +5,7 @@ Harbor supports two different ways to storage the chart data.
    1. stored in Harbor registry storage directly via OCI API.
    2. stored in Harbor hosted chartmuseum backend via chartmuseam's API
 
-There is an performance issue in chartmuseam. For example, on my 2 core 8G memory test environment, to get 10000 charts infomation needs about 10s to return, In 50000 charts situation, It will cause a timeout error.
+There is an performance issue in chartmuseam. For example, on my 2 core 8G memory test environment, to get 10000 charts information needs about 10s to return, In 50000 charts situation, It will cause a timeout error.
 
 After version 2.0, Harbor becomes to the OCI registry. So It can storage chart content directly without chartmuseum.
 

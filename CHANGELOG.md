@@ -17,7 +17,7 @@ API explorer integration. End users can now explore and trigger Harbor’s API v
 * Bumped up Clair to v2.0.8
 * Fixed issues in supporting windows images. #6992 #6369
 * Removed user-agent check-in notification handler. #5729
-* Fixed the issue global search not working if chartmusuem is not installed #6753
+* Fixed the issue global search not working if chartmuseum is not installed #6753
 
 ## v1.7.4 (2019-03-04)
 [Full list of issues fixed in v1.7.4](https://github.com/goharbor/harbor/issues?q=is%3Aissue+is%3Aclosed+label%3Atarget%2F1.7.4)
@@ -84,7 +84,7 @@ API explorer integration. End users can now explore and trigger Harbor’s API v
 
 ## v0.5.0 (2016-12-6)
 
-- Refactory for a new build process
+- Refactor for a new build process
 - Easier configuration for HTTPS in prepare script
 - Script to collect logs of a Harbor deployment
 - User can view the storage usage (default location) of Harbor.
@@ -100,7 +100,7 @@ For Harbor virtual appliance:
 ## v0.4.5 (2016-10-31)
 
 - Virtual appliance of Harbor for vSphere.
-- Refactory for new build process.
+- Refactor for new build process.
 - Easier configuration for HTTPS in prepare step.
 - Updated documents.
 - Various bug fixes.
@@ -149,6 +149,6 @@ Initial release, key features include
 - Role based access control (RBAC)
 - LDAP / AD integration
 - Graphical user interface (GUI)
-- Auditting and logging
+- Auditing and logging
 - RESTful API
 - Internationalization

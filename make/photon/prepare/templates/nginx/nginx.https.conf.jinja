@@ -69,7 +69,7 @@ http {
     add_header X-Frame-Options DENY;
     add_header Content-Security-Policy "frame-ancestors 'none'";
   
-    # costumized location config file can place to /etc/nginx dir with prefix harbor.https. and suffix .conf
+    # customized location config file can place to /etc/nginx dir with prefix harbor.https. and suffix .conf
     include /etc/nginx/conf.d/harbor.https.*.conf;
 
     location / {

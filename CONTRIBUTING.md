@@ -91,7 +91,7 @@ The folder graph below shows the structure of the source code folder `harbor/src
 │   ├── scanner
 │   ├── tag
 │   ├── task
-├── core                # Source code for the main busines logic. Contains rest apis and all service infomation.
+├── core                # Source code for the main business logic. Contains rest apis and all service information.
 │   ├── api
 │   ├── auth
 │   ├── config
@@ -336,7 +336,7 @@ Commit changes made in response to review comments to the same branch on your fo
 
 ## Reporting issues
 
-It is a great way to contribute to Harbor by reporting an issue. Well-written and complete bug reports are always welcome! Please open an issue on Github and follow the template to fill in required information.
+It is a great way to contribute to Harbor by reporting an issue. Well-written and complete bug reports are always welcome! Please open an issue on GitHub and follow the template to fill in required information.
 
 Before opening any issue, please look up the existing [issues](https://github.com/goharbor/harbor/issues) to avoid submitting a duplication.
 If you find a match, you can "subscribe" to it to get notified on updates. If you have additional helpful information about the issue, please leave a comment.

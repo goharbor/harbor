@@ -3,7 +3,7 @@ Test 7-13 Endpoints endpoints edit
 
 # Purpose
 
-To verify admin user can edit edpoints.
+To verify admin user can edit endpoints.
 
 # References:
 

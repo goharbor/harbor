@@ -22,7 +22,7 @@ User guide
 5. The user create two projects in the UI.
 6. On a Docker client host, use `docker login <harbor_host>` command to verify the user can log in.
 7. The admin user deletes the user from the UI.
-8. When clicking on any link on the page, the deleted user's session on the different browswer should be redirected to the login page and logged out.  
+8. When clicking on any link on the page, the deleted user's session on the different browser should be redirected to the login page and logged out.  
 9. On a Docker client host, use `docker login <harbor_host>` command to verify the user cannot log in.
 10. The admin user re-creates a user with the same username of the deleted user.
 11. On a different browser, log in as the re-created user.

@@ -24,7 +24,7 @@ User guide
 1. Create group  harbor_guest, harbor_dev, harbor_admin in LDAP.
 1. Create LDAP user guest_user, dev_user, admin_user in LDAP.
     Assign add group following members
-      * harbbor_guest --- guest_user, admin_user.
+      * harbor_guest --- guest_user, admin_user.
       * harbor_dev    --- dev_user.
       * harbor_admin  --- admin_user.
 

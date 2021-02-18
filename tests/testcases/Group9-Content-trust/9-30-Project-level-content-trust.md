@@ -10,20 +10,20 @@ User guide
 
 # Environment:
 
-* This test requires one Harbor instance is runnning and available.  
+* This test requires one Harbor instance is running and available.  
 * A Linux host with Docker CLI installed (Docker client).  
 
 # Test Steps:
 **NOTE:**  
 In below test, <harbor_ip> should be replaced by your harbor's ip or FQDN. If you are using a self-signed certificate,make sure to copy the CA root cert into ```/etc/docker/certs.d/<harbor_ip>``` and ```$HOME/.docker/tls/<harbor_ip>:4443/```  
-project a should be replaced by meaingful and longer name.  
+project a should be replaced by meaningful and longer name.  
 
 1. Login UI and create a project a.  
 2. Push an image to project a.  
-3. On Docker clinet, run  
+3. On Docker client, run  
 ```sh
 export DOCKER_CONTENT_TRUST=1
-export DOCKER_CONTNET_TRUST_SERVER=https://<harbor_ip>:4443
+export DOCKER_CONTENT_TRUST_SERVER=https://<harbor_ip>:4443
 ```
 and login Harbor.  
 4. Push an image to project a.  
