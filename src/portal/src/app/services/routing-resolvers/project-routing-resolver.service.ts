@@ -13,15 +13,12 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Router, Resolve, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
-import { Project } from '../../project/project';
-import { SessionService } from '../../shared/session.service';
+import { Project } from '../../base/project/project';
+import { SessionService } from '../../shared/services/session.service';
 import { Observable } from 'rxjs';
 import { map, catchError } from "rxjs/operators";
-import { RoleInfo } from '../../shared/shared.const';
-
-
-import { Roles } from '../../shared/shared.const';
-import { ProjectService } from "../../../lib/services";
+import { ProjectService } from "../../shared/services";
+import { RoleInfo, Roles } from "../../shared/entities/shared.const";
 
 @Injectable({
   providedIn: 'root'

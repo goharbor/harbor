@@ -14,11 +14,11 @@
 import { Component, ViewChild, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
-import { User } from '../../user/user';
-import { UserService } from '../../user/user.service';
-import { AlertType } from '../../shared/shared.const';
-import { MessageService } from '../../global-message/message.service';
+import { NewUserFormComponent } from '../../shared/components/new-user-form/new-user-form.component';
+import { User } from '../../base/left-side-nav/user/user';
+import { UserService } from '../../base/left-side-nav/user/user.service';
+import { MessageService } from '../../shared/components/global-message/message.service';
+import { AlertType } from "../../shared/entities/shared.const";
 
 @Component({
     selector: 'sign-up-page',

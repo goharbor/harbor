@@ -15,21 +15,19 @@ import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from "rxjs";
 import { AppConfigService } from '../../services/app-config.service';
-
 import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
-
-import { AccountSettingsModalComponent } from '../../account/account-settings/account-settings-modal.component';
-import { PasswordSettingComponent } from '../../account/password-setting/password-setting.component';
-import { NavigatorComponent } from '../navigator/navigator.component';
-import { SessionService } from '../../shared/session.service';
-import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
-import { SearchTriggerService } from '../global-search/search-trigger.service';
-import { CommonRoutes } from "../../../lib/entities/shared.const";
-import { ConfigScannerService, SCANNERS_DOC } from "../../config/scanner/config-scanner.service";
+import { PasswordSettingComponent } from '../password-setting/password-setting.component';
+import { NavigatorComponent } from '../../shared/components/navigator/navigator.component';
+import { SessionService } from '../../shared/services/session.service';
+import { AboutDialogComponent } from '../../shared/components/about-dialog/about-dialog.component';
+import { SearchTriggerService } from '../../shared/components/global-search/search-trigger.service';
+import { CommonRoutes } from "../../shared/entities/shared.const";
+import { ConfigScannerService, SCANNERS_DOC } from "../left-side-nav/interrogation-services/scanner/config-scanner.service";
 import { THEME_ARRAY, ThemeInterface } from "../../services/theme";
-import { clone } from "../../../lib/utils/utils";
+import { clone } from "../../shared/units/utils";
 import { ThemeService } from "../../services/theme.service";
+import { AccountSettingsModalComponent } from "../account-settings/account-settings-modal.component";
 
 const HAS_SHOWED_SCANNER_INFO: string = 'hasShowScannerInfo';
 const YES: string = 'yes';

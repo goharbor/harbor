@@ -1,25 +1,19 @@
 import { NgModule } from "@angular/core";
-import { RouterModule } from "@angular/router";
-import { CommonModule } from "@angular/common";
-import { ClarityModule } from '@clr/angular';
-import { SharedModule } from '../shared/shared.module';
 import { DevCenterComponent } from "./dev-center.component";
-import { DevCenterOtherComponent } from "./dev-center-other.component";
+import { RouterModule, Routes } from "@angular/router";
 
-
+const routes: Routes = [
+    {
+        path: '',
+        component: DevCenterComponent
+    }
+];
 @NgModule({
     imports: [
-        CommonModule,
-        SharedModule,
-        RouterModule.forChild([{
-            path: "**",
-            component: DevCenterComponent,
-        }]),
-        ClarityModule,
+        RouterModule.forChild(routes)
     ],
     declarations: [
         DevCenterComponent,
-        DevCenterOtherComponent,
     ],
 })
 export class DeveloperCenterModule {}

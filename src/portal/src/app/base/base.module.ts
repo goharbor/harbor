@@ -13,37 +13,127 @@
 // limitations under the License.
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
-import { RouterModule } from '@angular/router';
-import { ProjectModule } from '../project/project.module';
-import { UserModule } from '../user/user.module';
-import { AccountModule } from '../account/account.module';
-import { GroupModule } from '../group/group.module';
-import { NavigatorComponent } from './navigator/navigator.component';
-import { GlobalSearchComponent } from './global-search/global-search.component';
-import { FooterComponent } from './footer/footer.component';
+import { RouterModule, Routes } from '@angular/router';
 import { HarborShellComponent } from './harbor-shell/harbor-shell.component';
-import { SearchResultComponent } from './global-search/search-result.component';
+import { SystemAdminGuard } from "../shared/router-guard/system-admin-activate.service";
+import { MemberGuard } from "../shared/router-guard/member-guard-activate.service";
+import { ProjectRoutingResolver } from "../services/routing-resolvers/project-routing-resolver.service";
+import { PasswordSettingComponent } from "./password-setting/password-setting.component";
+import { AccountSettingsModalComponent } from "./account-settings/account-settings-modal.component";
+import { ForgotPasswordComponent } from "./password-setting/forgot-password/forgot-password.component";
+import { GlobalConfirmationDialogComponent } from "./global-confirmation-dialog/global-confirmation-dialog.component";
 
-import { SearchTriggerService } from './global-search/search-trigger.service';
-
+const routes: Routes = [
+  {
+    path: '',
+    component: HarborShellComponent,
+    children: [
+      { path: '', redirectTo: 'projects', pathMatch: 'full' },
+      {
+        path: 'projects',
+        loadChildren: () => import('./left-side-nav/projects/projects.module').then(m => m.ProjectsModule)
+      },
+      {
+        path: 'logs',
+        loadChildren: () => import('./left-side-nav/log/log.module').then(m => m.LogModule)
+      },
+      {
+        path: 'users',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () => import('./left-side-nav/user/user.module').then(m => m.UserModule)
+      },
+      {
+        path: 'robot-accounts',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () => import('./left-side-nav/system-robot-accounts/system-robot-accounts.module')
+            .then(m => m.SystemRobotAccountsModule)
+      },
+      {
+        path: 'groups',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () => import('./left-side-nav/group/group.module').then(m => m.GroupModule)
+      },
+      {
+        path: 'registries',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () => import('./left-side-nav/registries/endpoint.module').then(m => m.EndpointModule)
+      },
+      {
+        path: 'replications',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () => import('./left-side-nav/replication/replication.module').then(m => m.ReplicationModule)
+      },
+      {
+        path: 'distribution',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () => import('./left-side-nav/distribution/distribution.module').then(m => m.DistributionModule)
+      },
+      {
+        path: 'interrogation-services',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () =>
+            import('./left-side-nav/interrogation-services/interrogation-services.module')
+                .then(m => m.InterrogationServicesModule)
+      },
+      {
+        path: 'labels',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () => import('./left-side-nav/labels/labels.module').then(m => m.LabelsModule)
+      },
+      {
+        path: 'project-quotas',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () => import('./left-side-nav/project-quotas/project-quotas.module').then(m => m.ProjectQuotasModule)
+      },
+      {
+        path: 'gc',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () => import('./left-side-nav/gc-page/gc.module').then(m => m.GcModule)
+      },
+      {
+        path: 'configs',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () => import('./left-side-nav/config/config.module').then(m => m.ConfigurationModule)
+      },
+      {
+        path: 'projects/:id',
+        loadChildren: () => import('./project/project.module').then(m => m.ProjectModule),
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        }
+      },
+      {
+        path: 'projects/:id/repositories',
+        loadChildren: () => import('./project/repository/artifact/artifact.module').then(m => m.ArtifactModule),
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        }
+      },
+      {
+        path: 'projects/:id/helm-charts',
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        },
+        loadChildren: () => import('./project/helm-chart/helm-chart-detail/helm-chart-detail.module').then(m => m.HelmChartListModule),
+      },
+    ]
+  }
+];
 @NgModule({
   imports: [
     SharedModule,
-    ProjectModule,
-    UserModule,
-    AccountModule,
-    RouterModule,
-    GroupModule
+    RouterModule.forChild(routes),
   ],
   declarations: [
-    NavigatorComponent,
-    GlobalSearchComponent,
-    FooterComponent,
     HarborShellComponent,
-    SearchResultComponent,
-  ],
-  exports: [ HarborShellComponent, NavigatorComponent, SearchResultComponent ],
-  providers: [SearchTriggerService]
+    PasswordSettingComponent,
+    AccountSettingsModalComponent,
+    ForgotPasswordComponent,
+    GlobalConfirmationDialogComponent
+  ]
 })
 export class BaseModule {
 

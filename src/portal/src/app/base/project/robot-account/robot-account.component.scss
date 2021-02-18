@@ -1,0 +1,36 @@
+@import "../../../shared/mixin";
+
+.robot-space {
+  margin-top: 28px;
+  position: relative;
+
+  clr-icon.red-position {
+    margin-left: 2px;
+  }
+
+  .rightPos {
+    @include grid-right-top-pos;
+
+    .option-left {
+      padding-left: 16px;
+      position: relative;
+      top: 10px;
+    }
+
+    .option-right {
+      padding-right: 16px;
+
+      .refresh-btn {
+        cursor: pointer;
+      }
+    }
+  }
+}
+.permissions {
+  height: 16px;
+  display: flex;
+  align-items: center;
+}
+.datagrid-host {
+  position: inherit;
+}

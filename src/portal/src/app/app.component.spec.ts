@@ -18,7 +18,7 @@ import { Title } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CookieService } from 'ngx-cookie';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { SessionService } from './shared/session.service';
+import { SessionService } from './shared/services/session.service';
 import { AppConfigService } from './services/app-config.service';
 import { AppComponent } from './app.component';
 import { ClarityModule } from "@clr/angular";
