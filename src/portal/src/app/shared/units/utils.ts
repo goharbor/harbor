@@ -3,8 +3,9 @@ import { HttpHeaders } from '@angular/common/http';
 import { RequestQueryParams } from '../services';
 import { DebugElement } from '@angular/core';
 import { Comparator, State, HttpOptionInterface, HttpOptionTextInterface, QuotaUnitInterface } from '../services';
-import { QuotaUnits, StorageMultipleConstant, LimitCount } from '../entities/shared.const';
+import { QuotaUnits, StorageMultipleConstant } from '../entities/shared.const';
 import { AbstractControl } from "@angular/forms";
+import { isValidCron } from 'cron-validator';
 /**
  * Api levels
  */
@@ -463,17 +464,16 @@ export function getChanges(original: any, afterChange: any): { [key: string]: an
     return changes;
 }
 
+/**
+ * validate cron expressions
+ * @param testValue
+ */
 export function cronRegex(testValue: any): boolean {
-    const regSecond = "^((([0-9])*|(\\*))(\\-|\\,|\\/)?([0-9])*)*\\s+";
-    const regMinute = "((([0-9])*|(\\*))(\\-|\\,|\\/)?([0-9])*)*\\s+";
-    const regHour = "((([0-9])*|(\\*))(\\-|\\,|\\/)?([0-9])*)*\\s+";
-    const regDay = "((([0-9])*|(\\*|\\?))(\\-|\\,|\\/)?([0-9])*)*\\s+";
-    const regMonth = "((([0-9a-zA-Z])*|(\\*))(\\-|\\,|\\/)?([0-9a-zA-Z])*)*\\s+";
-    const regWeek = "(((([0-9a-zA-Z])*|(\\*|\\?))(\\-|\\,|\\/)?([0-9a-zA-Z])*))*(|\\s)+";
-    const regYear = "((([0-9])*|(\\*|\\?))(\\-|\\,|\\/)?([0-9])*)$";
-    const regEx = regSecond + regMinute + regHour + regDay + regMonth + regWeek + regYear;
-    let reg = new RegExp(regEx, "i");
-    return reg.test(testValue.trim());
+    // must have 6 fields
+    if (testValue && testValue.trim().split(/\s+/g).length < 6) {
+        return false;
+    }
+    return isValidCron(testValue, {seconds: true, alias: true, allowBlankDay: true});
 }
 
 /**

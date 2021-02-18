@@ -183,7 +183,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       !this.isRuleNameValid ||
       (!this.isPushMode && !sourceRegistry ||
         this.isPushMode && !destRegistry)
-      || !(!this.isNotSchedule() && cron && this.cronInputValid(this.ruleForm.value.trigger.trigger_settings.cron || '')
+      || !(!this.isNotSchedule() && cron && cronRegex(this.ruleForm.value.trigger.trigger_settings.cron || '')
         || this.isNotSchedule()));
   }
 
@@ -545,19 +545,13 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
     return filtersArray;
   }
-  cronInputValid(cronValue): boolean {
-    return cronRegex(cronValue);
-  }
-  get cronTouched(): boolean {
-    let triggerControl = this.ruleForm.controls.trigger as FormGroup;
-    if (!triggerControl) {
-      return false;
-    }
-    let trigger_settingsControls = triggerControl.controls.trigger_settings as FormGroup;
-    if (!trigger_settingsControls) {
-      return false;
-    }
-    return trigger_settingsControls.controls.cron.touched || trigger_settingsControls.controls.cron.dirty;
+  cronInputShouldShowError(): boolean {
+    return this.ruleForm && this.ruleForm.get('trigger')
+        && this.ruleForm.get('trigger').get('trigger_settings')
+        && this.ruleForm.get('trigger').get('trigger_settings').get('cron')
+        && (this.ruleForm.get('trigger').get('trigger_settings').get('cron').touched
+            || this.ruleForm.get('trigger').get('trigger_settings').get('cron').dirty)
+        && !cronRegex(this.ruleForm.get('trigger').get('trigger_settings').get('cron').value);
   }
   stickLabel(value, index) {
     value.select = !value.select;
@@ -581,6 +575,10 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       if (e && e.target) {
         if (!e.target.value || (e.target.value && e.target.value.indexOf(PREFIX)) !== 0) {
           e.target.value = PREFIX;
+        }
+        e.target.value = e.target.value.replace(/\s+/g, ' ');
+        if (e.target.value && e.target.value.split(/\s+/g).length > 6) {
+          e.target.value = e.target.value.trim();
         }
       }
     }
