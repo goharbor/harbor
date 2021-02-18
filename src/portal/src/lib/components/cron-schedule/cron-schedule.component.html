@@ -40,7 +40,7 @@
             <div class="height-1rem clr-input-wrapper">
                 <label for="targetCron" aria-haspopup="true" role="tooltip" [class.clr-error]="dateInvalid"
                        class="tooltip tooltip-validation tooltip-md tooltip-top-left cron-label">
-                    <input type="text" (blur)="blurInvalid()" (input)="inputInvalid($event)" name="targetCron" id="targetCron"
+                    <input autocomplete="off" type="text" (blur)="blurInvalid()" (input)="inputInvalid($event)" name="targetCron" id="targetCron"
                            #cronStringInput="ngModel" required class="clr-input form-control ml-1" [(ngModel)]="cronString">
                     <clr-tooltip>
                         <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
