@@ -216,8 +216,8 @@ func (d *dao) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, e
 			return -1, err
 		}
 
-		selectVersionSql := "SELECT version FROM blob WHERE id = ?"
-		if err := o.Raw(selectVersionSql, blob.ID).QueryRow(&newVersion); err != nil {
+		selectVersionSQL := "SELECT version FROM blob WHERE id = ?"
+		if err := o.Raw(selectVersionSQL, blob.ID).QueryRow(&newVersion); err != nil {
 			return 0, nil
 		}
 	}
