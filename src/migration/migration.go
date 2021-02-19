@@ -37,7 +37,7 @@ func MigrateDB(database *models.Database) error {
 	// check the database schema version
 	var (
 		migrator *migrate.Migrate
-		err error
+		err      error
 	)
 	if database.Type == "postgresql" {
 		migrator, err = dao.NewMigrator(database.PostGreSQL)
