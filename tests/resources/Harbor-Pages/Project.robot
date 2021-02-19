@@ -95,11 +95,11 @@ Navigate To Projects
 
 Project Should Display
     [Arguments]  ${projectname}
-    Retry Wait Element  xpath=//projects//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
+    Retry Wait Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
 
 Project Should Not Display
     [Arguments]  ${projectname}
-    Retry Wait Until Page Not Contains Element  xpath=//projects//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
+    Retry Wait Until Page Not Contains Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
 
 Search Private Projects
     Retry Element Click  xpath=//select
@@ -334,27 +334,27 @@ Retry Get Statics
     [Return]  ${ret}
 
 Get Statics Private Repo
-    ${privaterepo}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+    ${privaterepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
     [Return]  ${privaterepo}
 
 Get Statics Private Project
-    ${privateproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[1]/statistics/div/span[1]
+    ${privateproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[1]/statistics/div/span[1]
     [Return]  ${privateproj}
 
 Get Statics Public Repo
-    ${publicrepo}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[2]/statistics/div/span[1]
+    ${publicrepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[2]/statistics/div/span[1]
     [Return]  ${publicrepo}
 
 Get Statics Public Project
-    ${publicproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[1]/statistics/div/span[1]
+    ${publicproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[1]/statistics/div/span[1]
     [Return]  ${publicproj}
 
 Get Statics Total Repo
-    ${totalrepo}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[2]/statistics/div/span[1]
+    ${totalrepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[2]/statistics/div/span[1]
     [Return]  ${totalrepo}
 
 Get Statics Total Project
-    ${totalproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[1]/statistics/div/span[1]
+    ${totalproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[1]/statistics/div/span[1]
     [Return]  ${totalproj}
 
 Input Count Quota
