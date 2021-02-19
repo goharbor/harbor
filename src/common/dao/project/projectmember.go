@@ -125,11 +125,11 @@ func AddProjectMember(member models.Member) (int, error) {
 		if err != nil {
 			return 0, err
 		}
-		insertId, err := res.LastInsertId()
+		insertID, err := res.LastInsertId()
 		if err != nil {
 			return 0, err
 		}
-		pmid = int(insertId)
+		pmid = int(insertID)
 	}
 	return pmid, err
 }
