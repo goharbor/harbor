@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import unittest
+import time
 
 from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
@@ -50,8 +51,6 @@ class TestProjects(unittest.TestCase):
         """
         url = ADMIN_CLIENT["endpoint"]
         image = "test_content_trust"
-        admin_name = ADMIN_CLIENT["username"]
-        admin_password = ADMIN_CLIENT["password"]
         user_content_trust_password = "Aa123456"
 
         #1. Create a new user(UA);
@@ -63,7 +62,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_content_trust_id, TestProjects.project_content_trust_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_CONTENT_TRUST_CLIENT)
 
         #3. Push a new image(IA) in project(PA) by admin;
-        TestProjects.repo_name, tag = push_self_build_image_to_project(TestProjects.project_content_trust_name, harbor_server, admin_name, admin_password, image, "latest")
+        TestProjects.repo_name, tag = push_self_build_image_to_project(TestProjects.project_content_trust_name, harbor_server, ADMIN_CLIENT["username"], ADMIN_CLIENT["password"], image, "latest")
 
         #4. Image(IA) should exist;
         artifact = self.artifact.get_reference_info(TestProjects.project_content_trust_name, image, tag, **TestProjects.USER_CONTENT_TRUST_CLIENT)
@@ -71,7 +70,7 @@ class TestProjects(unittest.TestCase):
 
         docker_image_clean_all()
         #5. Pull image(IA) successfully;
-        pull_harbor_image(harbor_server, admin_name, admin_password, TestProjects.repo_name, tag)
+        pull_harbor_image(harbor_server, ADMIN_CLIENT["username"], ADMIN_CLIENT["password"], TestProjects.repo_name, tag)
 
         self.project.get_project(TestProjects.project_content_trust_id)
         #6. Enable content trust in project(PA) configuration;
@@ -79,8 +78,8 @@ class TestProjects(unittest.TestCase):
         self.project.get_project(TestProjects.project_content_trust_id)
 
         #7. Pull image(IA) failed and the reason is "The image is not signed in Notary".
-        docker_image_clean_all()
-        pull_harbor_image(harbor_server, admin_name, admin_password, TestProjects.repo_name, tag, expected_error_message = "The image is not signed in Notary")
+        time.sleep(30)
+        pull_harbor_image(harbor_server, ADMIN_CLIENT["username"], ADMIN_CLIENT["password"], TestProjects.repo_name, tag, expected_error_message = "The image is not signed in Notary")
 
 if __name__ == '__main__':
     unittest.main()

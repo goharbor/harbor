@@ -571,17 +571,21 @@ Test Case - Tag Retention
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s
+    ${image_sample_1}=    Set Variable  hello-world
+    ${image_sample_2}=    Set Variable  memcached
     Create An New Project And Go Into Project  project${d}
     Switch To Tag Retention
     Add A Tag Retention Rule
     Delete A Tag Retention Rule
     Add A Tag Retention Rule
     Edit A Tag Retention Rule    **   latest
-    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
-    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  memcached   123
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_sample_1}  latest
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_sample_2}   123
     Set Daily Schedule
-    Execute Dry Run
-    Execute Run
+    Execute Dry Run  ${image_sample_2}  0/1
+    Execute Run  ${image_sample_2}  0/1
+    Execute Dry Run  ${image_sample_1}  1/1
+    Execute Run  ${image_sample_1}  1/1
     Close Browser
 
 Test Case - Tag Immutability

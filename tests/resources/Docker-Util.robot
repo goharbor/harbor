@@ -148,6 +148,29 @@ Start Docker Daemon Locally
     Sleep  2s
     [Return]  ${handle}
 
+Restart Docker Daemon Locally
+    FOR  ${IDX}  IN RANGE  5
+        ${pid}=  Run  pidof dockerd
+        Exit For Loop If  '${pid}' == '${EMPTY}'
+        ${result}=  Run Process  kill ${pid}  shell=True
+        Log To Console  Kill docker process: ${result}
+        Sleep  2s
+    END
+    ${pid}=  Run  pidof dockerd
+    Should Be Equal As Strings  '${pid}'  '${EMPTY}'
+    OperatingSystem.File Should Exist  /usr/local/bin/dockerd-entrypoint.sh
+    ${result}=  Run Process  rm -rf /var/lib/docker/*  shell=True
+    Log To Console  Clear /var/lib/docker: ${result}
+    ${handle}=  Start Process  /usr/local/bin/dockerd-entrypoint.sh dockerd>./daemon-local.log 2>&1  shell=True
+    Process Should Be Running  ${handle}
+    FOR  ${IDX}  IN RANGE  5
+        ${pid}=  Run  pidof dockerd
+        Exit For Loop If  '${pid}' != '${EMPTY}'
+        Sleep  2s
+    END
+    Sleep  2s
+    [Return]  ${handle}
+
 Start Containerd Daemon Locally
     ${handle}=  Start Process  containerd > ./daemon-local.log 2>&1 &  shell=True
     FOR  ${IDX}  IN RANGE  5
