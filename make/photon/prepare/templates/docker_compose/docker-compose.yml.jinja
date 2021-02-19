@@ -225,7 +225,12 @@ services:
       - redis
 {% endif %}
 {% if external_database == False %}
+  {% if harbor_db_postgresql %}
       - postgresql
+  {% endif %}
+  {% if harbor_db_mysql %}
+      - mysql
+  {% endif %}
 {% endif %}
     logging:
       driver: "syslog"
@@ -419,7 +424,12 @@ services:
       - ./common/config/notary/server_env
     depends_on:
   {% if external_database == False %}
+    {% if harbor_db_postgresql %}
       - postgresql
+    {% endif %}
+    {% if harbor_db_mysql %}
+      - mysql
+    {% endif %}
   {% endif %}
       - notary-signer
     logging:
@@ -461,7 +471,12 @@ services:
     depends_on:
       - log
   {% if external_database == False %}
+    {% if harbor_db_postgresql %}
       - postgresql
+    {% endif %}
+    {% if harbor_db_mysql %}
+      - mysql
+    {% endif %}
   {% endif %}
     logging:
       driver: "syslog"
@@ -567,7 +582,12 @@ services:
     depends_on:
       - core
   {% if external_database == False %}
+    {% if harbor_db_postgresql %}
       - postgresql
+    {% endif %}
+    {% if harbor_db_mysql %}
+      - mysql
+    {% endif %}
   {% endif %}
     volumes:
       - type: bind
