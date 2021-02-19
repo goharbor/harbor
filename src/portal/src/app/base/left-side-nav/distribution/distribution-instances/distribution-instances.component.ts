@@ -4,7 +4,7 @@ import {
   Subscription,
   Observable,
   forkJoin,
-  throwError as observableThrowError
+  throwError as observableThrowError, of
 } from 'rxjs';
 import { DistributionSetupModalComponent } from '../distribution-setup-modal/distribution-setup-modal.component';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
@@ -25,6 +25,7 @@ import { ConfirmationDialogService } from "../../../global-confirmation-dialog/c
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../shared/entities/shared.const";
 import { errorHandler } from "../../../../shared/units/shared.utils";
 import { ConfirmationMessage } from "../../../global-confirmation-dialog/confirmation-message";
+import { HttpErrorResponse } from "@angular/common/http";
 
 interface MultiOperateData {
   operation: string;
@@ -203,7 +204,6 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
               this.translate.get(message).subscribe(errMsg => {
                 this.msgHandler.error(msg + ': ' + errMsg);
               });
-              this.msgHandler.handleErrorPopupUnauthorized(error);
             });
           }
         );
@@ -277,11 +277,37 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
           break;
       }
 
-      forkJoin(...observableLists).subscribe(item => {
-        this.selectedRow = [];
-        this.refresh();
+      forkJoin(...observableLists).subscribe(resArr => {
+        if (data.operation === 'delete') {
+          let error;
+          let errorCount: number = 0;
+          if (resArr && resArr.length) {
+            resArr.forEach(item => {// only record the last error
+              if (item instanceof HttpErrorResponse) {
+                error = errorHandler(item);
+                errorCount += 1;
+              }
+            });
+          }
+          if (errorCount === 0) {// All successful
+            this.translate.get('DISTRIBUTION.DELETED_SUCCESS').subscribe(msg => {
+              this.msgHandler.info(msg);
+            });
+            this.selectedRow = [];
+            this.refresh();
+          } else if (resArr && resArr.length === errorCount && error) {// All failed
+            this.msgHandler.handleError(error);
+          } else if (error) { // Partly failed
+            this.msgHandler.handleError(error);
+            this.selectedRow = [];
+            this.refresh();
+          }
+        } else {
+          this.selectedRow = [];
+          this.refresh();
+        }
       }, error => {
-        this.msgHandler.handleErrorPopupUnauthorized(error);
+        this.msgHandler.error(error);
       });
     }
   }
@@ -297,18 +323,16 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
       map(() => {
         this.translate.get('DISTRIBUTION.DELETED_SUCCESS').subscribe(msg => {
           operateChanges(operMessage, OperationState.success);
-          this.msgHandler.info(msg);
         });
       }),
       catchError(error => {
         const message = errorHandler(error);
         this.translate.get('DISTRIBUTION.DELETED_FAILED').subscribe(msg => {
-          operateChanges(operMessage, OperationState.failure, msg);
           this.translate.get(message).subscribe(errMsg => {
-            this.msgHandler.error(msg + ': ' + errMsg);
+            operateChanges(operMessage, OperationState.failure, msg + ': ' + errMsg);
           });
         });
-        return observableThrowError(error);
+        return of(error);
       })
     );
   }
