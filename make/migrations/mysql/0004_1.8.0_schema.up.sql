@@ -174,8 +174,7 @@ migrate scan all schedule
 
 If user set the scan all schedule, move it into table admin_job, and let the api the parse the json data.
 */
-CREATE PROCEDURE PROC_UPDATE_ADMIN_JOB()
-BEGIN
+CREATE PROCEDURE PROC_UPDATE_ADMIN_JOB ( ) BEGIN
     IF exists(select * FROM properties WHERE k = 'scan_all_policy') then
         /*
             In v1.7.0, it creates an record for scan all but without cron string, just update the record with the cron in properties.

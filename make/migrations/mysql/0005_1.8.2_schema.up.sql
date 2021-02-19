@@ -1,25 +1,32 @@
 /*
 Rename the duplicate names before adding "UNIQUE" constraint
 */
-DO $$
-BEGIN
-    WHILE EXISTS (SELECT count(*) FROM user_group GROUP BY group_name HAVING count(*) > 1) LOOP
-        UPDATE user_group AS r
-        SET group_name = (
-            /*
-            truncate the name if it is too long after appending the sequence number
-            */
-            CASE WHEN (length(group_name)+length(v.seq::text)+1) > 256
-            THEN
-                substring(group_name from 1 for (255-length(v.seq::text))) || '_' || v.seq
-            ELSE
-                group_name || '_' || v.seq
-            END
-        )
-        FROM (SELECT id, row_number() OVER (PARTITION BY group_name ORDER BY id) AS seq FROM user_group) AS v
-        WHERE r.id = v.id AND v.seq > 1;
-    END LOOP;
-END $$;
+UPDATE user_group AS r
+LEFT JOIN (
+SELECT
+	id,
+IF
+	( @gid = group_name, @idx := @idx + 1, 1 ) AS seq,
+	@gid := group_name AS gid
+FROM
+	user_group,
+	( SELECT @idx := 0, @gid = NULL ) t
+ORDER BY
+	group_name,
+	id
+	) v ON r.id = v.id
+	SET r.group_name = (
+/*
+	truncate the name if it is too long after appending the sequence number
+	*/
+CASE
+
+	WHEN ( length( group_name ) + length( concat( v.seq, '' ) ) + 1 ) > 256 THEN
+	concat( substring( group_name, 1, ( 255- length( concat( v.seq, '' ) ) ) ), '_', v.seq ) ELSE concat( group_name, '_', v.seq )
+END
+	)
+WHERE
+v.seq > 1;
 
 ALTER TABLE user_group ADD CONSTRAINT unique_group_name UNIQUE (group_name);
 

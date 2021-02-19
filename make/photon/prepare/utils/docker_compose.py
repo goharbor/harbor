@@ -25,6 +25,8 @@ def prepare_docker_compose(configs, with_trivy, with_notary, with_chartmuseum):
         'http_port': configs['http_port'],
         'external_redis': configs['external_redis'],
         'external_database': configs['external_database'],
+        'harbor_db_postgresql': configs['harbor_db_postgresql'],
+        'harbor_db_mysql': configs['harbor_db_mysql'],
         'with_notary': with_notary,
         'with_trivy': with_trivy,
         'with_chartmuseum': with_chartmuseum
