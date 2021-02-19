@@ -22,13 +22,12 @@ INSERT INTO repository (name, project_id)
     repository_name NOT IN (SELECT name from repository);
 
 /* Update the repository id of artifact records */
-UPDATE artifact AS art
-    SET repository_id=repo.repository_id
-    FROM repository AS repo
+UPDATE artifact AS art, repository AS repo
+    SET art.repository_id=repo.repository_id
     WHERE art.repository_name=repo.name AND art.repository_id!=repo.repository_id;
 
 /* Update the media type of artifact records */
-UPDATE artifact AS art
+UPDATE artifact AS art, `blob` AS `blob`
     SET manifest_media_type=blob.content_type,
     media_type=(
     CASE
@@ -43,13 +42,11 @@ UPDATE artifact AS art
             'application/vnd.docker.distribution.manifest.v1+prettyjws'
     END
     )
-    FROM blob AS blob
     WHERE art.media_type='UNKNOWN' AND art.digest=blob.digest;
 
 /* update tag records with negative repository id */
-UPDATE tag SET
-   repository_id=art.repository_id
-   FROM artifact as art
+UPDATE tag, artifact as art SET
+   tag.repository_id=art.repository_id
    WHERE tag.artifact_id=art.id AND tag.repository_id!=art.repository_id;
 
 

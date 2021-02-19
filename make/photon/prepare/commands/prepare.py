@@ -9,6 +9,7 @@ from utils.misc import delfile
 from utils.configs import validate, parse_yaml_config
 from utils.cert import prepare_registry_ca, SSL_CERT_KEY_PATH, SSL_CERT_PATH, get_secret_key, prepare_trust_ca
 from utils.db import prepare_db
+from utils.db_mysql import prepare_db_mysql
 from utils.jobservice import prepare_job_service
 from utils.registry import prepare_registry
 from utils.registry_ctl import prepare_registry_ctl
