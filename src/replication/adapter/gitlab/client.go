@@ -30,20 +30,20 @@ type Client struct {
 }
 
 // NewClient creates a new GitLab client.
-func NewClient(registry *model.Registry) *Client {
+func NewClient(registry *model.Registry) (*Client, error) {
 
 	realm, _, err := ping(&http.Client{
 		Transport: util.GetHTTPTransport(registry.Insecure),
 	}, registry.URL)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	if realm == "" {
-		return nil
+		return nil, fmt.Errorf("empty realm")
 	}
 	location, err := url.Parse(realm)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	client := &Client{
 		url:      location.Scheme + "://" + location.Host,
@@ -54,7 +54,7 @@ func NewClient(registry *model.Registry) *Client {
 				Transport: util.GetHTTPTransport(registry.Insecure),
 			}),
 	}
-	return client
+	return client, nil
 }
 
 // ping returns the realm, service and error

@@ -30,7 +30,7 @@ User guide
 7. Delete project X. (should fail with errors)
 8. Delete all images of project X. 
 9. Delete project X. 
-10. As an admin user, view the log in dashboard and should see delete operaion of project X and its images.
+10. As an admin user, view the log in dashboard and should see delete operation of project X and its images.
 
 # Expected Outcome:
 * Step 7, deleting project X should fail because there are images under it.

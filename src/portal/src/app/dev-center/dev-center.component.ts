@@ -6,8 +6,10 @@ import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from "ngx-cookie";
 import * as SwaggerUI from 'swagger-ui';
-import { mergeDeep } from "../../lib/utils/utils";
+import { mergeDeep } from "../shared/units/utils";
 import { DevCenterBase } from "./dev-center-base";
+// @ts-ignore
+window.Buffer = window.Buffer || require('buffer').Buffer; // this is for swagger UI
 
 enum SwaggerJsonUrls {
   SWAGGER1 = '/swagger.json',

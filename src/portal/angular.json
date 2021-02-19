@@ -11,10 +11,15 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "allowedCommonJsDependencies": [
+              "swagger-ui",
+              "js-yaml"
+            ],
             "outputPath": "dist",
             "index": "src/index.html",
             "main": "src/main.ts",
-            "tsConfig": "src/tsconfig.app.json",
+            "polyfills": "src/polyfills.ts",
+            "tsConfig": "tsconfig.app.json",
             "extractCss": true,
             "assets": [
               "src/images",
@@ -31,12 +36,12 @@
               {
                 "input": "src/css/dark-theme.scss",
                 "bundleName": "dark-theme",
-                "lazy": true
+                "inject": false
               },
               {
                 "input": "src/css/light-theme.scss",
                 "bundleName": "light-theme",
-                "lazy": true
+                "inject": false
               }
             ],
             "scripts": [
@@ -92,9 +97,10 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "tsConfig": "src/tsconfig.spec.json",
+            "tsConfig": "tsconfig.spec.json",
             "main": "src/test.ts",
-            "karmaConfig": "./karma.conf.js",
+            "polyfills": "src/polyfills.ts",
+            "karmaConfig": "karma.conf.js",
             "scripts": [
               "node_modules/core-js/client/shim.min.js",
               "node_modules/mutationobserver-shim/dist/mutationobserver.min.js",

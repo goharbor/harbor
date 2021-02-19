@@ -16,6 +16,7 @@ package replication
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/goharbor/harbor/src/controller/replication/flow"
@@ -28,6 +29,11 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/replication/model"
 )
+
+func init() {
+	// keep only the latest created 50 replication execution records
+	task.SetExecutionSweeperCount(job.Replication, 50)
+}
 
 // Controller defines the operations related with replication
 type Controller interface {
@@ -89,36 +95,49 @@ func (c *controller) Start(ctx context.Context, policy *model.Policy, resource *
 	}
 	c.wp.GetWorker()
 	// start the replication flow in background
-	go func() {
+	// as the process runs inside a goroutine, the transaction in the outer ctx
+	// may be submitted already when the process starts, so pass a new context
+	// with orm populated to the goroutine
+	go func(ctx context.Context) {
 		defer c.wp.ReleaseWorker()
-		// as the process runs inside a goroutine, the transaction in the outer ctx
-		// may be submitted already when the process starts, so create a new context
-		// with orm populated
-		ctxx := orm.NewContext(context.Background(), c.ormCreator.Create())
+		// recover in case panic during the adapter process
+		defer func() {
+			if err := recover(); err != nil {
+				logger.Errorf("recovered from the panic: %v", err)
+				c.markError(ctx, id, fmt.Errorf("panic during the process"))
+			}
+		}()
 
 		// as we start a new transaction in the goroutine, the execution record may not
 		// be inserted yet, wait until it is ready before continue
 		if err := lib.RetryUntil(func() error {
-			_, err := c.execMgr.Get(ctxx, id)
+			_, err := c.execMgr.Get(ctx, id)
 			return err
 		}); err != nil {
-			logger.Errorf("failed to wait the execution record to be inserted: %v", err)
+			c.markError(ctx, id, fmt.Errorf(
+				"failed to wait the execution record to be inserted: %v", err))
+			return
 		}
 
-		err := c.flowCtl.Start(ctxx, id, policy, resource)
+		err := c.flowCtl.Start(ctx, id, policy, resource)
 		if err == nil {
 			// no err, return directly
 			return
 		}
-		// got error, try to stop the execution first in case that some tasks are already created
-		if err := c.execMgr.StopAndWait(ctxx, id, 10*time.Second); err != nil {
-			logger.Errorf("failed to stop the execution %d: %v", id, err)
-		}
-		if err := c.execMgr.MarkError(ctxx, id, err.Error()); err != nil {
-			logger.Errorf("failed to mark error for the execution %d: %v", id, err)
-		}
-	}()
+		c.markError(ctx, id, err)
+	}(orm.NewContext(context.Background(), c.ormCreator.Create()))
 	return id, nil
+}
+
+func (c *controller) markError(ctx context.Context, executionID int64, err error) {
+	logger := log.GetLogger(ctx)
+	// try to stop the execution first in case that some tasks are already created
+	if err := c.execMgr.StopAndWait(ctx, executionID, 10*time.Second); err != nil {
+		logger.Errorf("failed to stop the execution %d: %v", executionID, err)
+	}
+	if err := c.execMgr.MarkError(ctx, executionID, err.Error()); err != nil {
+		logger.Errorf("failed to mark error for the execution %d: %v", executionID, err)
+	}
 }
 
 func (c *controller) Stop(ctx context.Context, id int64) error {

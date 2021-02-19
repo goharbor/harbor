@@ -1,0 +1,34 @@
+@import "../../../shared/mixin";
+.header-title {
+    margin-top: 34px;
+    margin-bottom: -34px;
+}
+
+.option-left {
+    padding-left: 16px;
+}
+
+.display-flex{
+    display: flex;
+    align-items: baseline;
+}
+
+.refresh-btn {
+    cursor: pointer;
+}
+
+.refresh-btn:hover {
+    color: #007CBB;
+}
+.rightPos {
+    @include grid-right-top-pos;
+    margin-top: 28px;
+}
+
+.projectPos {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+.position-r{
+    position: relative;
+}

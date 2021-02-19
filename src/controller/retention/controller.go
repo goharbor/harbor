@@ -17,6 +17,8 @@ package retention
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -26,8 +28,12 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"time"
 )
+
+func init() {
+	// keep only the latest created 50 retention execution records
+	task.SetExecutionSweeperCount(job.Retention, 50)
+}
 
 // go:generate mockery -name Controller -case snake
 
@@ -79,7 +85,7 @@ type defaultController struct {
 const (
 	// SchedulerCallback ...
 	SchedulerCallback   = "RETENTION"
-	schedulerVendorType = "RETENTION"
+	schedulerVendorType = job.Retention
 )
 
 // TriggerParam ...
@@ -193,7 +199,7 @@ func (r *defaultController) DeleteRetention(ctx context.Context, id int64) error
 	if err != nil {
 		return err
 	}
-	return r.manager.DeletePolicyAndExec(id)
+	return r.manager.DeletePolicy(id)
 }
 
 // deleteExecs delete executions
@@ -245,7 +251,6 @@ func (r *defaultController) TriggerRetentionExec(ctx context.Context, policyID i
 		}
 	}
 	return id, err
-
 }
 
 // OperateRetentionExec Operate Retention Execution

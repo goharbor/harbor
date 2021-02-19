@@ -230,7 +230,7 @@ func (cc *CommonController) SendResetEmail() {
 		60, settings.SSL,
 		settings.Insecure,
 		settings.From,
-		[]string{email},
+		[]string{u.Email},
 		"Reset Harbor user password",
 		message.String())
 	if err != nil {

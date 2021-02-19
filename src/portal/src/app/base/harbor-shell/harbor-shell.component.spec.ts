@@ -1,26 +1,26 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { SessionService } from '../../shared/session.service';
+import { SessionService } from '../../shared/services/session.service';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { SearchTriggerService } from '../global-search/search-trigger.service';
+import { SearchTriggerService } from '../../shared/components/global-search/search-trigger.service';
 import { HarborShellComponent } from './harbor-shell.component';
 import { ClarityModule } from "@clr/angular";
 import { of } from 'rxjs';
-import { ConfigScannerService } from "../../config/scanner/config-scanner.service";
+import { ConfigScannerService } from "../left-side-nav/interrogation-services/scanner/config-scanner.service";
 import { modalEvents } from '../modal-events.const';
-import { AccountSettingsModalComponent } from '../../account/account-settings/account-settings-modal.component';
-import { PasswordSettingComponent } from '../../account/password-setting/password-setting.component';
-import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
+import { PasswordSettingComponent } from '../password-setting/password-setting.component';
+import { AboutDialogComponent } from '../../shared/components/about-dialog/about-dialog.component';
 import { FormsModule } from '@angular/forms';
-import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { AccountSettingsModalService } from '../../account/account-settings/account-settings-modal-service.service';
-import { PasswordSettingService } from '../../account/password-setting/password-setting.service';
+import { MessageHandlerService } from '../../shared/services/message-handler.service';
+import { PasswordSettingService } from '../password-setting/password-setting.service';
 import { SkinableConfig } from '../../services/skinable-config.service';
-import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 import { AppConfigService } from "../../services/app-config.service";
-import { ErrorHandler } from '../../../lib/utils/error-handler';
+import { ErrorHandler } from '../../shared/units/error-handler';
+import { AccountSettingsModalComponent } from "../account-settings/account-settings-modal.component";
+import { InlineAlertComponent } from "../../shared/components/inline-alert/inline-alert.component";
+import { AccountSettingsModalService } from "../account-settings/account-settings-modal-service.service";
 
 describe('HarborShellComponent', () => {
     let component: HarborShellComponent;

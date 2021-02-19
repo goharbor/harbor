@@ -20,7 +20,7 @@ User guide
 3. Choose a project by clicking the icon on the right of `Projects`.  
 4. Add repository and tag filter.
 5. Choose an endpoint, create a new one if no endpoint exists.  
-6. Select a triggering condition: Immediate/Manaul/Scheduled, check/uncheck the `Delete remote images when locally deleted` if choosing `Immediate`.  
+6. Select a triggering condition: Immediate/Manual/Scheduled, check/uncheck the `Delete remote images when locally deleted` if choosing `Immediate`.  
 7. Check/uncheck the option `Replicate existing images immediately`.  
 8. Save the rule.  
 

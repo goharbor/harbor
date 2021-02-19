@@ -75,7 +75,7 @@ class Robot(base.Base, object):
             robotAccountAccess = v2_swagger_client.Access(resource = "helm-chart-version", action = action_create)
             access_list.append(robotAccountAccess)
 
-        robotaccountPermissions = v2_swagger_client.Permission(kind = "project", namespace = project_name, access = access_list)
+        robotaccountPermissions = v2_swagger_client.RobotPermission(kind = "project", namespace = project_name, access = access_list)
         permission_list = []
         permission_list.append(robotaccountPermissions)
         robotAccountCreate = v2_swagger_client.RobotCreate(name=robot_name, description=robot_desc, duration=duration, level="project", permissions = permission_list)

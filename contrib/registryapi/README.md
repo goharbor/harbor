@@ -18,7 +18,7 @@ res = api.deleteManifest('public/ubuntu', '23424545**4343')
 operations for repo, tag, manifest
 ```
 usage:
-./cli.py --username username --password passwrod --registry_endpoint http://www.your_registry_url.com/ target action params
+./cli.py --username username --password password --registry_endpoint http://www.your_registry_url.com/ target action params
 
 target can be: repo, tag, manifest
 action can be: list, get, delete

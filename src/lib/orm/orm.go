@@ -17,6 +17,9 @@ package orm
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -86,4 +89,88 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 
 		return nil
 	}
+}
+
+// ReadOrCreate read or create instance to datebase, retry to read when met a duplicate key error after the creating
+func ReadOrCreate(ctx context.Context, md interface{}, col1 string, cols ...string) (created bool, id int64, err error) {
+	getter, ok := md.(interface {
+		GetID() int64
+	})
+
+	if !ok {
+		err = fmt.Errorf("missing GetID method for the model %T", md)
+		return
+	}
+
+	defer func() {
+		if !created && err == nil { // found in the database
+			id = getter.GetID()
+		}
+	}()
+
+	o, err := FromContext(ctx)
+	if err != nil {
+		return
+	}
+
+	cols = append([]string{col1}, cols...)
+
+	err = o.Read(md, cols...)
+	if err == nil { // found in the database
+		return
+	}
+
+	if !errors.Is(err, orm.ErrNoRows) { // met a error when read database
+		return
+	}
+
+	// not found in the database, try to create one
+	err = WithTransaction(func(ctx context.Context) error {
+		o, err := FromContext(ctx)
+		if err != nil {
+			return err
+		}
+
+		id, err = o.Insert(md)
+		return err
+	})(ctx)
+
+	if err == nil { // create success
+		created = true
+
+		return
+	}
+
+	// got a duplicate key error, try to read again
+	if isDuplicateKeyError(err) {
+		err = o.Read(md, cols...)
+	}
+
+	return
+}
+
+// CreateInClause creates an IN clause with the provided sql and args to avoid the sql injection
+// The sql should return the ID list with the specific condition(e.g. select id from table1 where column1=?)
+// The sql runs as a prepare statement with the "?" be populated rather than concat string directly
+// The returning in clause is a string like "IN (id1, id2, id3, ...)"
+func CreateInClause(ctx context.Context, sql string, args ...interface{}) (string, error) {
+	ormer, err := FromContext(ctx)
+	if err != nil {
+		return "", err
+	}
+	ids := []int64{}
+	if _, err = ormer.Raw(sql, args...).QueryRows(&ids); err != nil {
+		return "", err
+	}
+	// no matching, append -1 as the id
+	if len(ids) == 0 {
+		ids = append(ids, -1)
+	}
+	var idStrs []string
+	for _, id := range ids {
+		idStrs = append(idStrs, strconv.FormatInt(id, 10))
+	}
+	// there is no too many arguments issue like https://github.com/goharbor/harbor/issues/12269
+	// when concat the in clause directly
+	return fmt.Sprintf(`IN (%s)`, strings.Join(idStrs, ",")), nil
 }

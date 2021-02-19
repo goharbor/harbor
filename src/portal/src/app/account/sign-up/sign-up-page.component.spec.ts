@@ -1,13 +1,13 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { UserService } from '../../user/user.service';
+import { UserService } from '../../base/left-side-nav/user/user.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MessageService } from '../../global-message/message.service';
+import { MessageService } from '../../shared/components/global-message/message.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SignUpPageComponent } from './sign-up-page.component';
 import { FormsModule } from '@angular/forms';
-import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
-import { SessionService } from '../../shared/session.service';
+import { NewUserFormComponent } from '../../shared/components/new-user-form/new-user-form.component';
+import { SessionService } from '../../shared/services/session.service';
 
 describe('SignUpPageComponent', () => {
     let component: SignUpPageComponent;

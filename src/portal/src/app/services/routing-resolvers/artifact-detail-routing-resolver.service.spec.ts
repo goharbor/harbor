@@ -1,6 +1,6 @@
 import { TestBed, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ProjectService } from "../../../lib/services";
+import { ProjectService } from "../../shared/services";
 import { ArtifactService } from "../../../../ng-swagger-gen/services/artifact.service";
 import { ArtifactDetailRoutingResolverService } from "./artifact-detail-routing-resolver.service";
 
