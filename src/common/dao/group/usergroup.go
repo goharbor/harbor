@@ -56,11 +56,11 @@ func AddUserGroup(userGroup models.UserGroup) (int, error) {
 		if err != nil {
 			return 0, err
 		}
-		insertId, err := res.LastInsertId()
+		insertID, err := res.LastInsertId()
 		if err != nil {
 			return 0, err
 		}
-		id = int(insertId)
+		id = int(insertID)
 	}
 
 	return id, nil
