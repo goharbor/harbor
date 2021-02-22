@@ -34,7 +34,7 @@ export class TotalReplicationPageComponent {
     }
   }
   goRegistry(): void {
-    this.router.navigate(['../registries'],  { relativeTo: this.activeRoute });
+    this.router.navigate(['harbor', 'registries']);
   }
 
   public get isSystemAdmin(): boolean {
