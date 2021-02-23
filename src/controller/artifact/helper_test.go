@@ -18,22 +18,24 @@ import (
 	"context"
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	artifacttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
 type IteratorTestSuite struct {
 	suite.Suite
 
-	artMgr *artifacttesting.FakeManager
+	artMgr *artifacttesting.Manager
 
 	ctl         *controller
 	originalCtl Controller
 }
 
 func (suite *IteratorTestSuite) SetupSuite() {
-	suite.artMgr = &artifacttesting.FakeManager{}
+	suite.artMgr = &artifacttesting.Manager{}
 
 	suite.originalCtl = Ctl
 	suite.ctl = &controller{artMgr: suite.artMgr}
@@ -45,10 +47,20 @@ func (suite *IteratorTestSuite) TeardownSuite() {
 }
 
 func (suite *IteratorTestSuite) TestIterator() {
-	suite.artMgr.On("List").Return([]*artifact.Artifact{
+	q1 := &q.Query{PageNumber: 1, PageSize: 5, Keywords: map[string]interface{}{}}
+	suite.artMgr.On("List", mock.Anything, q1).Return([]*artifact.Artifact{
 		{ID: 1},
 		{ID: 2},
 		{ID: 3},
+		{ID: 4},
+		{ID: 5},
+	}, nil)
+
+	q2 := &q.Query{PageNumber: 2, PageSize: 5, Keywords: map[string]interface{}{}}
+	suite.artMgr.On("List", mock.Anything, q2).Return([]*artifact.Artifact{
+		{ID: 6},
+		{ID: 7},
+		{ID: 8},
 	}, nil)
 
 	var artifacts []*Artifact
@@ -56,7 +68,7 @@ func (suite *IteratorTestSuite) TestIterator() {
 		artifacts = append(artifacts, art)
 	}
 
-	suite.Len(artifacts, 3)
+	suite.Len(artifacts, 8)
 }
 
 func TestIteratorTestSuite(t *testing.T) {
