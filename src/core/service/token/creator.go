@@ -173,6 +173,12 @@ func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManage
 		return err
 	}
 
+	if project == nil {
+		log.Debugf("project %s does not exist, set empty permission", projectName)
+		a.Actions = []string{}
+		return nil
+	}
+
 	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(rbac.ResourceRepository)
 	scopeList := make([]string, 0)
 	for s := range resourceScopes(ctx, resource) {
