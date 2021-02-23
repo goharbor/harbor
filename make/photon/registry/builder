@@ -26,7 +26,14 @@ git clone -b $VERSION https://github.com/docker/distribution.git $TEMP
 echo 'add patch https://github.com/docker/distribution/pull/2879 ...'
 cd $TEMP
 wget https://github.com/docker/distribution/pull/2879.patch
-git apply 2879.patch
+
+# add patch 3309
+echo 'add patch https://github.com/docker/distribution/pull/3309 ...'
+cd $TEMP
+wget https://github.com/docker/distribution/pull/3309.patch
+git apply 3309.patch
+
+# add patch redis
 git apply $cur/redis.patch
 cd $cur
 
