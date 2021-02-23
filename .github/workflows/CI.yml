@@ -27,7 +27,7 @@ jobs:
     runs-on:
       #- self-hosted
       - ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 100
     steps:
       - name: Set up Go 1.14
         uses: actions/setup-go@v1
@@ -93,7 +93,7 @@ jobs:
     runs-on:
       #- self-hosted
       - ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 100
     steps:
       - name: Set up Go 1.14
         uses: actions/setup-go@v1
@@ -153,7 +153,7 @@ jobs:
     runs-on:
       #- self-hosted
       - ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 100
     steps:
       - name: Set up Go 1.14
         uses: actions/setup-go@v1
@@ -213,7 +213,7 @@ jobs:
     runs-on:
       #- self-hosted
       - ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 100
     steps:
       - name: Set up Go 1.14
         uses: actions/setup-go@v1
@@ -271,7 +271,7 @@ jobs:
     runs-on:
       #- self-hosted
       - ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 100
     steps:
       - name: Set up Go 1.14
         uses: actions/setup-go@v1
@@ -328,7 +328,7 @@ jobs:
     runs-on:
       #- self-hosted
       - ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 100
     steps:
       - uses: actions/setup-node@v1
         with:
