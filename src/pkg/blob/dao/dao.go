@@ -204,9 +204,9 @@ func (d *dao) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, e
 	}
 	if o.Driver().Type() == orm2.DRMySQL {
 		if blob.Status == models.StatusNone {
-			sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version >= ? AND status IN (%s)`
+			sql = "UPDATE `blob` SET version = version + 1, update_time = ?, status = ? where id = ? AND version >= ? AND status IN (%s)"
 		} else {
-			sql = `UPDATE blob SET version = version + 1, update_time = ?, status = ? where id = ? AND version = ? AND status IN (%s)`
+			sql = "UPDATE `blob` SET version = version + 1, update_time = ?, status = ? where id = ? AND version = ? AND status IN (%s)"
 		}
 		if _, err := o.Raw(fmt.Sprintf(sql, orm.ParamPlaceholderForIn(len(models.StatusMap[blob.Status]))), params...).Exec(); err != nil {
 			if e := orm.AsNotFoundError(err, "no blob is updated"); e != nil {
@@ -216,7 +216,7 @@ func (d *dao) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, e
 			return -1, err
 		}
 
-		selectVersionSQL := "SELECT version FROM blob WHERE id = ?"
+		selectVersionSQL := "SELECT version FROM `blob` WHERE id = ?"
 		if err := o.Raw(selectVersionSQL, blob.ID).QueryRow(&newVersion); err != nil {
 			return 0, nil
 		}
@@ -295,7 +295,7 @@ func (d *dao) SumBlobsSizeByProject(ctx context.Context, projectID int64, exclud
 	}
 
 	params := []interface{}{projectID}
-	sql := `SELECT SUM(size) FROM blob JOIN project_blob ON blob.id = project_blob.blob_id AND project_id = ?`
+	sql := "SELECT SUM(size) FROM `blob` JOIN project_blob ON blob.id = project_blob.blob_id AND project_id = ?"
 	if excludeForeignLayer {
 		foreignLayerTypes := []interface{}{
 			schema2.MediaTypeForeignLayer,
@@ -387,7 +387,7 @@ func (d *dao) GetBlobsNotRefedByProjectBlob(ctx context.Context, timeWindowHours
 		return noneRefed, err
 	}
 
-	sql := fmt.Sprintf(`SELECT b.id, b.digest, b.content_type, b.status, b.version, b.size FROM blob AS b LEFT JOIN project_blob pb ON b.id = pb.blob_id WHERE pb.id IS NULL AND b.update_time <= now() - interval '%d hours';`, timeWindowHours)
+	sql := fmt.Sprintf("SELECT b.id, b.digest, b.content_type, b.status, b.version, b.size FROM `blob` AS b LEFT JOIN project_blob pb ON b.id = pb.blob_id WHERE pb.id IS NULL AND b.update_time <= now() - interval '%d hours';", timeWindowHours)
 	_, err = ormer.Raw(sql).QueryRows(&noneRefed)
 	if err != nil {
 		return noneRefed, err
