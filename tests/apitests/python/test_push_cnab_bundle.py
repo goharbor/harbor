@@ -28,7 +28,7 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
         #1. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(TestProjects.project_push_bundle_name, self.cnab_repo_name, **TestProjects.USER_CLIENT)
+        self.repo.delete_repository(TestProjects.project_push_bundle_name, self.cnab_repo_name, **TestProjects.USER_CLIENT)
 
         #2. Delete project(PA);
         self.project.delete_project(TestProjects.project_push_bundle_id, **TestProjects.USER_CLIENT)

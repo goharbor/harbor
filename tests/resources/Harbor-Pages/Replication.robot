@@ -73,7 +73,7 @@ Create A New Endpoint
     #input necessary info
     Select From List By Value  ${provider_selector}  ${provider}
     Retry Text Input  xpath=${destination_name_xpath}    ${name}
-    Run Keyword If  '${provider}' == 'harbor'  Run keyword  Retry Text Input  xpath=${destination_url_xpath}  ${url}
+    Run Keyword If  '${provider}' == 'harbor' or '${provider}' == 'gitlab'  Run keyword  Retry Text Input  xpath=${destination_url_xpath}  ${url}
     Run Keyword If  '${provider}' == 'aws-ecr' or '${provider}' == 'google-gcr'   Run keyword  Select Destination URL  ${url}
     Run Keyword If  '${provider}' != 'google-gcr' and '${username}' != '${null}'    Retry Text Input  xpath=${destination_username_xpath}  ${username}
     Run Keyword If  '${pwd}' != '${null}'  Retry Text Input  xpath=${destination_password_xpath}  ${pwd}
@@ -218,7 +218,7 @@ Select Rule And Replicate
     Retry Double Keywords When Error    Retry Element Click    xpath=${dialog_replicate}    Retry Wait Until Page Not Contains Element    xpath=${dialog_replicate}
 
 Image Should Be Replicated To Project
-    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=3
+    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=3  ${tag}=${null}  ${expected_image_size_in_regexp}=${null}
     FOR  ${n}  IN RANGE  0  ${times}
         Sleep  ${period}
         Go Into Project    ${project}
@@ -231,6 +231,9 @@ Image Should Be Replicated To Project
     END
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
+    Go Into Repo  ${project}/${image}
+    ${size}=  Run Keyword If  '${tag}'!='${null}' and '${expected_image_size_in_regexp}'!='${null}'  Get Text  //clr-dg-row[contains(., '${tag}')]//clr-dg-cell[4]/div
+    Run Keyword If  '${tag}'!='${null}' and '${expected_image_size_in_regexp}'!='${null}'  Should Match Regexp  '${size}'  '${expected_image_size_in_regexp}'
 
 Executions Result Count Should Be
     [Arguments]  ${expected_status}  ${expected_trigger_type}  ${expected_result_count}

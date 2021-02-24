@@ -24,7 +24,7 @@ class TestScan(unittest.TestCase):
 
         self.url = ADMIN_CLIENT["endpoint"]
         self.user_password = "Aa123456"
-        self.project_id, self.project_name, self.user_id, self.user_name, self.repo_name1, self.repo_name2 = [None] * 6
+        self.project_id, self.project_name, self.user_id, self.user_name, self.repo_name1 = [None] * 5
         self.user_id, self.user_name = self.user.create_user(user_password = self.user_password, **ADMIN_CLIENT)
         self.USER_CLIENT = dict(with_signature = True, with_immutable_status = True, endpoint = self.url, username = self.user_name, password = self.user_password, with_scan_overview = True)
 
@@ -35,11 +35,10 @@ class TestScan(unittest.TestCase):
         #3. Add user(UA) as a member of project(PA) with project-admin role;
         self.project.add_project_members(self.project_id, user_id = self.user_id, **ADMIN_CLIENT)
 
-    @unittest.skipIf(TEARDOWN == True, "Test data won't be erased.")
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def do_tearDown(self):
         #1. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(self.project_name, self.repo_name1.split('/')[1], **self.USER_CLIENT)
-        self.repo.delete_repoitory(self.project_name, self.repo_name2.split('/')[1], **self.USER_CLIENT)
+        self.repo.delete_repository(self.project_name, self.repo_name1.split('/')[1], **self.USER_CLIENT)
 
         #2. Delete project(PA);
         self.project.delete_project(self.project_id, **self.USER_CLIENT)

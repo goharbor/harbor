@@ -22,7 +22,12 @@ Resource  ../../resources/Util.robot
 Create An New Project And Go Into Project
     [Arguments]  ${projectname}  ${public}=false  ${count_quota}=${null}  ${storage_quota}=${null}  ${storage_quota_unit}=${null}  ${proxy_cache}=${false}  ${registry}=${null}
     Navigate To Projects
-    Retry Button Click  xpath=${create_project_button_xpath}
+    FOR  ${n}  IN RANGE  1  8
+        ${out}  Run Keyword And Ignore Error  Retry Button Click  xpath=${create_project_button_xpath}
+        Log All  Return value is ${out[0]}
+        Exit For Loop If  '${out[0]}'=='PASS'
+        Sleep  1
+    END
     Log To Console  Project Name: ${projectname}
     Retry Text Input  xpath=${project_name_xpath}  ${projectname}
     ${element_project_public}=  Set Variable  xpath=${project_public_xpath}
@@ -84,6 +89,7 @@ Switch To Project Tab Overflow
     Sleep  1
 
 Navigate To Projects
+    Reload Page
     Retry Element Click  xpath=${projects_xpath}
     Sleep  2
 
@@ -122,13 +128,31 @@ Make Project Public
     Switch To Project Configuration
     Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
 
+Repo Exist
+    [Arguments]  ${pro_name}  ${repo_name}
+    Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,'${pro_name}/${repo_name}')]
+
+Repo Not Exist
+    [Arguments]  ${pro_name}  ${repo_name}
+    Retry Wait Until Page Not Contains Element  //clr-dg-row[contains(.,'${pro_name}/${repo_name}')]
+
+Filter Repo
+    [Arguments]  ${pro_name}  ${repo_name}  ${exsit}=${true}
+    Retry Double Keywords When Error  Retry Element Click  ${filter_dist_btn}  Wait Until Element Is Visible And Enabled  ${filter_dist_input}
+    Retry Clear Element Text  ${filter_dist_input}
+    Retry Text Input  ${filter_dist_input}  ${pro_name}/${repo_name}
+    Run Keyword If  ${exsit}==${true}    Repo Exist  ${pro_name}  ${repo_name}
+    ...  ELSE  Repo Not Exist  ${pro_name}  ${repo_name}
+
 Delete Repo
-    [Arguments]  ${projectname}
-    ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${projectname}')]//clr-checkbox-wrapper//label
+    [Arguments]  ${pro_name}  ${repo_name}
+    ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${pro_name}/${repo_name}')]//clr-checkbox-wrapper//label
+    Filter Repo  ${pro_name}  ${repo_name}
     Retry Double Keywords When Error  Retry Element Click  ${element_repo_checkbox}  Wait Until Element Is Visible And Enabled  ${repo_delete_btn}
     Retry Double Keywords When Error  Retry Element Click  ${repo_delete_btn}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
     Retry Wait Until Page Not Contains Element  ${element_repo_checkbox}
+    Filter Repo  ${pro_name}  ${repo_name}  exsit=${false}
 
 Delete Repo on CardView
     [Arguments]  ${reponame}
@@ -186,10 +210,10 @@ Do Log Advanced Search
     Retry Element Click  xpath=//audit-log//clr-dropdown/button
     Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Others')]
     Retry Element Click  xpath=//audit-log//hbr-filter//clr-icon
-    Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor
+    Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor-jobservice
     Sleep  1
     ${rc} =  Get Element Count  //audit-log//clr-dg-row
-    Should Be Equal As Integers  ${rc}  0
+    Should Be Equal As Integers  ${rc}  1
 
 Retry Click Repo Name
     [Arguments]  ${repo_name_element}
@@ -217,11 +241,11 @@ Go Into Repo
         ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  ${repo_name_element}
         Sleep  2
         Continue For Loop If  '${out[0]}'=='FAIL'
-        ${out}  Retry Click Repo Name  ${repo_name_element}
+        Retry Click Repo Name  ${repo_name_element}
         Sleep  2
         Exit For Loop
     END
-
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
 
 Click Index Achieve
     [Arguments]  ${tag_name}
@@ -295,34 +319,41 @@ Filter Labels In Tags
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${labelName2}')]
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'${labelName1}')]
 
+Get Statics
+    [Arguments]  ${locator}
+    Reload Page
+    Sleep  5
+    ${privaterepo}=  Get Text  ${locator}
+    [Return]  ${privaterepo}
+
+Retry Get Statics
+    [Arguments]  ${locator}
+    @{param}  Create List  ${locator}
+    ${ret}=  Retry Keyword N Times When Error  3  Get Statics  @{param}
+    [Return]  ${ret}
+
 Get Statics Private Repo
-    ${privaterepo}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
-    Convert To Integer  ${privaterepo}
+    ${privaterepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
     [Return]  ${privaterepo}
 
 Get Statics Private Project
-    ${privateproj}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[1]/statistics/div/span[1]
-    Convert To Integer  ${privateproj}
+    ${privateproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[1]/statistics/div/span[1]
     [Return]  ${privateproj}
 
 Get Statics Public Repo
-    ${publicrepo}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[2]/statistics/div/span[1]
-    Convert To Integer  ${publicrepo}
+    ${publicrepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[2]/statistics/div/span[1]
     [Return]  ${publicrepo}
 
 Get Statics Public Project
-    ${publicproj}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[1]/statistics/div/span[1]
-    Convert To Integer  ${publicproj}
+    ${publicproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[1]/statistics/div/span[1]
     [Return]  ${publicproj}
 
 Get Statics Total Repo
-    ${totalrepo}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[2]/statistics/div/span[1]
-     Convert To Integer  ${totalrepo}
+    ${totalrepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[2]/statistics/div/span[1]
     [Return]  ${totalrepo}
 
 Get Statics Total Project
-    ${totalproj}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[1]/statistics/div/span[1]
-    Convert To Integer  ${totalproj}
+    ${totalproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[1]/statistics/div/span[1]
     [Return]  ${totalproj}
 
 Input Count Quota

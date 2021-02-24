@@ -76,7 +76,7 @@ class TestProjects(unittest.TestCase):
             test_result.add_test_result("2 - Failed to get log with user:{}, resource:{}, resource_type:{} and operation:{}, expect count 1, but actual is {}.".
                                              format(user_user_view_logs_name, project_user_view_logs_name, "artifact", operation, log_count))
         #4.1 Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(project_user_view_logs_name, repo_name.split('/')[1], **TestProjects.USER_USER_VIEW_LOGS_CLIENT)
+        self.repo.delete_repository(project_user_view_logs_name, repo_name.split('/')[1], **TestProjects.USER_USER_VIEW_LOGS_CLIENT)
         time.sleep(6)
 
         #4.2 In project(PA), there should be 1 'delete' log record;
