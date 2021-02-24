@@ -17,6 +17,9 @@ package orm
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -86,4 +89,30 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 
 		return nil
 	}
+}
+
+// CreateInClause creates an IN clause with the provided sql and args to avoid the sql injection
+// The sql should return the ID list with the specific condition(e.g. select id from table1 where column1=?)
+// The sql runs as a prepare statement with the "?" be populated rather than concat string directly
+// The returning in clause is a string like "IN (id1, id2, id3, ...)"
+func CreateInClause(ctx context.Context, sql string, args ...interface{}) (string, error) {
+	ormer, err := FromContext(ctx)
+	if err != nil {
+		return "", err
+	}
+	ids := []int64{}
+	if _, err = ormer.Raw(sql, args...).QueryRows(&ids); err != nil {
+		return "", err
+	}
+	// no matching, append -1 as the id
+	if len(ids) == 0 {
+		ids = append(ids, -1)
+	}
+	var idStrs []string
+	for _, id := range ids {
+		idStrs = append(idStrs, strconv.FormatInt(id, 10))
+	}
+	// there is no too many arguments issue like https://github.com/goharbor/harbor/issues/12269
+	// when concat the in clause directly
+	return fmt.Sprintf(`IN (%s)`, strings.Join(idStrs, ",")), nil
 }
