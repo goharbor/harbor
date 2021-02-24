@@ -45,10 +45,6 @@ Test Case - Manage Project Member
     [Tags]  member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
 
-Test Case - Project Level Policy Content Trust
-    [Tags]  content_trust
-    Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
-
 Test Case - User View Logs
     [Tags]  view_logs
     Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
@@ -160,3 +156,8 @@ Test Case - P2P
 Test Case - Metrics
     [Tags]  metrics
     Harbor API Test  ./tests/apitests/python/test_verify_metrics_enabled.py
+
+Test Case - Project Level Policy Content Trust
+    [Tags]  content_trust
+    Restart Docker Daemon Locally
+    Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py

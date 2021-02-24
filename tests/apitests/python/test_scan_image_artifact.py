@@ -4,7 +4,7 @@ import sys
 
 from testutils import harbor_server, suppress_urllib3_warning
 from testutils import TEARDOWN
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, BASE_IMAGE, BASE_IMAGE_ABS_PATH_NAME
 from library.project import Project
 from library.user import User
 from library.repository import Repository
@@ -103,12 +103,11 @@ class TestScan(unittest.TestCase):
 
         #Note: Please make sure that this Image has never been pulled before by any other cases,
         #      so it is a not-scanned image right after repository creation.
-        #Note:busybox is pulled in setup phase, and setup is a essential phase.
-        image = "busybox"
-        tag = "latest"
+        #Note:busybox is pulled in setup phase, and setup is an essential phase before scripts execution.
+        image = BASE_IMAGE['name']
+        tag = BASE_IMAGE['tag']
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
-        #TestScan.repo_name_1, tag = push_self_build_image_to_project(self.project_name, harbor_server, self.user_name, self.user_password, image, tag)
-
+        # Push base image in function sign_image.
         sign_image(harbor_server, self.project_name, image, tag)
 
         #6. Send scan image command and get tag(TA) information to check scan result, it should be finished;

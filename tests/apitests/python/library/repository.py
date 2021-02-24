@@ -3,6 +3,7 @@
 import time
 import base
 import swagger_client
+import docker_api
 from docker_api import DockerAPI
 from swagger_client.rest import ApiException
 from testutils import DOCKER_USER, DOCKER_PWD
@@ -19,7 +20,7 @@ def push_image_to_project(project_name, registry, username, password, image, tag
     print("Start to push image {}/{}/{}:{}".format(registry, project_name, image, tag) )
     _docker_api = DockerAPI()
     _docker_api.docker_login("docker", DOCKER_USER, DOCKER_PWD)
-    _docker_api.docker_image_pull(image, tag = tag, is_remove_image  = False)
+    _docker_api.docker_image_pull(image, tag = tag, is_clean_all_img  = False)
     _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
     time.sleep(2)
     if expected_login_error_message != None:
@@ -35,8 +36,7 @@ def push_image_to_project(project_name, registry, username, password, image, tag
     new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(original_name, tag), target_image, tag = tag)
     time.sleep(2)
     _docker_api.docker_image_push(new_harbor_registry, new_tag, expected_error_message = expected_error_message)
-    _docker_api.docker_image_remove(target_image, tag=tag)
-    _docker_api.docker_image_remove(original_name, tag=tag)
+    docker_api.docker_image_clean_all()
     return r'{}/{}'.format(project_name, image), new_tag
 
 def push_self_build_image_to_project(project_name, registry, username, password, image, tag, size=2, expected_login_error_message = None, expected_error_message = None):

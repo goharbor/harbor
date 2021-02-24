@@ -3,7 +3,7 @@
 import base
 import subprocess
 import json
-from testutils import DOCKER_USER, DOCKER_PWD
+from testutils import DOCKER_USER, DOCKER_PWD, BASE_IMAGE, BASE_IMAGE_ABS_PATH_NAME
 
 try:
     import docker
@@ -40,8 +40,19 @@ def docker_manifest_create(index, manifests):
 
 def docker_images_all_list():
     command = ["sudo", "docker","images","-a"]
-    print( "Docker images Command: ", command)
     base.run_command(command)
+
+def docker_load_image(image):
+    command = ["sudo", "docker","load","-i", image]
+    base.run_command(command)
+
+def docker_image_clean_all():
+    docker_images_all_list()
+    command = ["sudo docker rmi -f $(docker images -a -q)"]
+    base.run_command_with_popen(command)
+    command = ["sudo", "docker","system", "prune", "-a", "-f"]
+    base.run_command(command)
+    docker_images_all_list()
 
 def docker_manifest_push(index):
     command = ["sudo", "docker","manifest","push",index]
@@ -121,15 +132,7 @@ class DockerAPI(object):
                 if str(err_message).lower().find("error".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when login registry {}, return message is [{}]".format (registry, err_message))
 
-    def docker_image_remove(self, image, tag = "latest"):
-        docker_images_all_list()
-        try:
-            self.DCLIENT.remove_image(image+":"+tag, force=True, noprune=False)
-        except Exception as err:
-            print( "Docker image remove catch exception:", str(err))
-        docker_images_all_list()
-
-    def docker_image_pull(self, image, tag = None, expected_error_message = None, is_remove_image = True):
+    def docker_image_pull(self, image, tag = None, expected_error_message = None, is_clean_all_img = True):
         ret = ""
         err_message = ""
         if tag is not None:
@@ -157,8 +160,8 @@ class DockerAPI(object):
             else:
                 if str(err_message).lower().find("error".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when pull image {}, return message is [{}]".format (image, err_message))
-            if is_remove_image:
-                self.docker_image_remove(image, _tag)
+            if is_clean_all_img:
+                docker_image_clean_all()
 
     def docker_image_tag(self, image, harbor_registry, tag = None):
         _tag = base._random_name("tag")
@@ -175,6 +178,7 @@ class DockerAPI(object):
     def docker_image_push(self, harbor_registry, tag, expected_error_message = None):
         ret = ""
         err_message = ""
+        docker_images_all_list()
         if expected_error_message is "":
             expected_error_message = None
         try:
@@ -196,18 +200,19 @@ class DockerAPI(object):
             else:
                 if str(err_message).lower().find("error".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".format (harbor_registry, err_message))
+        docker_images_all_list()
 
     def docker_image_build(self, harbor_registry, tags=None, size=1, expected_error_message = None):
         ret = ""
         err_message = ""
         docker_images_all_list()
         try:
-            baseimage='busybox:latest'
-            self.DCLIENT.login(username=DOCKER_USER, password=DOCKER_PWD)
+            baseimage = BASE_IMAGE['name'] + ":" + BASE_IMAGE['tag']
             if not self.DCLIENT.images(name=baseimage):
-                print( "Docker pull is triggered when building {}".format(harbor_registry))
-                self.DCLIENT.pull(baseimage)
-            c=self.DCLIENT.create_container(image='busybox:latest',
+                print( "Docker load is triggered when building {}".format(harbor_registry))
+                docker_load_image(BASE_IMAGE_ABS_PATH_NAME)
+                docker_images_all_list()
+            c = self.DCLIENT.create_container(image=baseimage,
                 command='dd if=/dev/urandom of=test bs=1M count={}'.format(size))
             self.DCLIENT.start(c)
             self.DCLIENT.wait(c)
@@ -224,10 +229,7 @@ class DockerAPI(object):
                 ret = self.DCLIENT.push(repo)
                 print("docker_image_push ret:", ret)
                 print("build image {} with size {}".format(repo, size))
-                self.DCLIENT.remove_image(repo, force=True, noprune=False)
             self.DCLIENT.remove_container(c)
-            #self.DCLIENT.pull(repo)
-            #image = self.DCLIENT2.images.get(repo)
         except Exception as err:
             print( "Docker image build catch exception:", str(err))
             err_message = str(err)
@@ -245,4 +247,4 @@ class DockerAPI(object):
             else:
                 if str(err_message).lower().find("error".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when build image {}, return message is [{}]".format (harbor_registry, err_message))
-        docker_images_all_list()
+            docker_image_clean_all()

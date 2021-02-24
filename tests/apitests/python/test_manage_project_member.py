@@ -70,7 +70,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_alice_id, TestProjects.project_alice_name = self.project.create_project(metadata = {"public": "false"}, **USER_ALICE_CLIENT)
 
         #2.2 Add a repository to project(PA) by Alice
-        TestProjects.repo_name, _ = push_self_build_image_to_project(TestProjects.project_alice_name, harbor_server, user_alice_name, user_alice_password, "hello-world", "latest")
+        TestProjects.repo_name, _ = push_self_build_image_to_project(TestProjects.project_alice_name, harbor_server, user_alice_name, user_alice_password, "test_member", "latest")
 
         #3. Bob is not a member of project(PA);
         self.project.check_project_member_not_exist(TestProjects.project_alice_id, user_bob_name, **USER_ALICE_CLIENT)

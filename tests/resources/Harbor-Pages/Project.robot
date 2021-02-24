@@ -95,11 +95,11 @@ Navigate To Projects
 
 Project Should Display
     [Arguments]  ${projectname}
-    Retry Wait Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
+    Retry Wait Element  xpath=//projects//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
 
 Project Should Not Display
     [Arguments]  ${projectname}
-    Retry Wait Until Page Not Contains Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
+    Retry Wait Until Page Not Contains Element  xpath=//projects//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
 
 Search Private Projects
     Retry Element Click  xpath=//select
@@ -217,13 +217,13 @@ Do Log Advanced Search
 
 Retry Click Repo Name
     [Arguments]  ${repo_name_element}
-    FOR  ${n}  IN RANGE  1  10
+    FOR  ${n}  IN RANGE  1  2
         ${out}  Run Keyword And Ignore Error  Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}   Retry Wait Element  ${tag_table_column_vulnerabilities}
         Exit For Loop If  '${out[0]}'=='PASS'
     END
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
-    FOR  ${n}  IN RANGE  1  10
+    FOR  ${n}  IN RANGE  1  2
         ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
         Exit For Loop If  '${out[0]}'=='PASS'
     END
@@ -234,8 +234,9 @@ Go Into Repo
     Sleep  2
     Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
     ${repo_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${repoName}')]/a
-    Retry Element Click  ${repo_search_icon}
-    FOR  ${n}  IN RANGE  1  10
+    FOR  ${n}  IN RANGE  1  3
+        Reload Page
+        Retry Element Click  ${repo_search_icon}
         Retry Clear Element Text  ${repo_search_input}
         Retry Text Input  ${repo_search_input}  ${repoName}
         ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  ${repo_name_element}
@@ -333,27 +334,27 @@ Retry Get Statics
     [Return]  ${ret}
 
 Get Statics Private Repo
-    ${privaterepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+    ${privaterepo}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
     [Return]  ${privaterepo}
 
 Get Statics Private Project
-    ${privateproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[1]/statistics/div/span[1]
+    ${privateproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[1]/statistics/div/span[1]
     [Return]  ${privateproj}
 
 Get Statics Public Repo
-    ${publicrepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[2]/statistics/div/span[1]
+    ${publicrepo}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[2]/statistics/div/span[1]
     [Return]  ${publicrepo}
 
 Get Statics Public Project
-    ${publicproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[1]/statistics/div/span[1]
+    ${publicproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[1]/statistics/div/span[1]
     [Return]  ${publicproj}
 
 Get Statics Total Repo
-    ${totalrepo}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[2]/statistics/div/span[1]
+    ${totalrepo}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[2]/statistics/div/span[1]
     [Return]  ${totalrepo}
 
 Get Statics Total Project
-    ${totalproj}=  Retry Get Statics  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[1]/statistics/div/span[1]
+    ${totalproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[1]/statistics/div/span[1]
     [Return]  ${totalproj}
 
 Input Count Quota
