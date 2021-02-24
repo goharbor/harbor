@@ -21,14 +21,16 @@ Resource  ../../resources/Util.robot
 *** Keywords ***
 
 Sign In Harbor With OIDC User
-    [Arguments]  ${url}  ${username}=${OIDC_USERNAME}  ${is_onboard}=${false}  ${username_claim}=${null}
-    ${full_name}=   Set Variable  ${username}@example.com
+    [Arguments]  ${url}  ${username}=${OIDC_USERNAME}  ${password}=password  ${is_onboard}=${false}  ${username_claim}=${null}  ${login_with_provider}=email
+    ${full_name}=   Set Variable If  '${login_with_provider}' == 'email'  ${username}@example.com  ${username}
     ${head_username}=   Set Variable If  '${username_claim}' == 'email'  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//button[contains(.,'${full_name}')]  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//button[contains(.,'${username}')]
     Init Chrome Driver
     Go To    ${url}
     Retry Element Click    ${log_oidc_provider_btn}
+    Run Keyword If  '${login_with_provider}' == 'email'  Retry Element Click  ${login_with_email_btn}
+    Run Keyword If  '${login_with_provider}' == 'ldap'   Retry Element Click  ${login_with_ldap_btn}
     Retry Text Input    ${dex_login_btn}    ${full_name}
-    Retry Text Input    ${dex_pwd_btn}    password
+    Retry Text Input    ${dex_pwd_btn}    ${password}
     Retry Element Click    ${submit_login_btn}
     Retry Element Click    ${grant_btn}
 
@@ -39,6 +41,7 @@ Sign In Harbor With OIDC User
     Run Keyword If  ${is_onboard} == ${true}  Should Not Be True  ${isVisible}
     Run Keyword If  '${isVisible}' == 'True'  Run Keywords  Retry Text Input    ${oidc_username_input}    ${username}  AND  Retry Element Click    ${save_btn}
     Retry Wait Element  ${head_username}
+    Capture Page Screenshot
     ${name_display}=  Get Text  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown[2]//button/span
     Run Keyword If  '${username_claim}' == 'email'  Should Be Equal As Strings  ${name_display}  ${full_name}
     ...  ELSE    Should Be Equal As Strings  ${name_display}  ${username}

@@ -217,13 +217,13 @@ Do Log Advanced Search
 
 Retry Click Repo Name
     [Arguments]  ${repo_name_element}
-    FOR  ${n}  IN RANGE  1  10
+    FOR  ${n}  IN RANGE  1  2
         ${out}  Run Keyword And Ignore Error  Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}   Retry Wait Element  ${tag_table_column_vulnerabilities}
         Exit For Loop If  '${out[0]}'=='PASS'
     END
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
-    FOR  ${n}  IN RANGE  1  10
+    FOR  ${n}  IN RANGE  1  2
         ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
         Exit For Loop If  '${out[0]}'=='PASS'
     END
@@ -234,8 +234,9 @@ Go Into Repo
     Sleep  2
     Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
     ${repo_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${repoName}')]/a
-    Retry Element Click  ${repo_search_icon}
-    FOR  ${n}  IN RANGE  1  10
+    FOR  ${n}  IN RANGE  1  3
+        Reload Page
+        Retry Element Click  ${repo_search_icon}
         Retry Clear Element Text  ${repo_search_input}
         Retry Text Input  ${repo_search_input}  ${repoName}
         ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  ${repo_name_element}

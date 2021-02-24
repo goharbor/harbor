@@ -25,6 +25,7 @@ ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
 Test Case - Project Level Policy Content Trust
+    Restart Docker Daemon Locally
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}

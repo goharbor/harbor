@@ -50,7 +50,10 @@ class Robot(base.Base, object):
                 access_list.append(robotAccountAccess)
         return access_list
 
-    def create_project_robot(self, project_name, duration, robot_name = None, robot_desc = None, has_pull_right = True,  has_push_right = True, has_chart_read_right = True,  has_chart_create_right = True, expect_status_code = 201, **kwargs):
+    def create_project_robot(self, project_name, duration, robot_name = None, robot_desc = None,
+            has_pull_right = True,  has_push_right = True, has_chart_read_right = True,
+            has_chart_create_right = True, expect_status_code = 201, expect_response_body = None,
+            **kwargs):
         if robot_name is None:
             robot_name = base._random_name("robot")
         if robot_desc is None:
@@ -82,10 +85,16 @@ class Robot(base.Base, object):
 
         client = self._get_client(**kwargs)
         data = []
-        data, status_code, header = client.create_robot_with_http_info(robotAccountCreate)
-        base._assert_status_code(expect_status_code, status_code)
-        base._assert_status_code(201, status_code)
-        return base._get_id_from_header(header), data
+        try:
+            data, status_code, header = client.create_robot_with_http_info(robotAccountCreate)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            base._assert_status_code(201, status_code)
+            return base._get_id_from_header(header), data
 
     def get_robot_account_by_id(self, robot_id, **kwargs):
         client = self._get_client(**kwargs)

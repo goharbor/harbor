@@ -46,7 +46,7 @@
          "is_src_registry":true,
          "dest_namespace":"rule2-namespace",
          "trigger_type":"scheduled",
-         "cron":"6 7 8 * * *",
+         "cron":"0 0 */8 * * *",
          "deletion":false,
          "enabled":true,
          "override":true,

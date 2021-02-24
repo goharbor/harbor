@@ -21,6 +21,11 @@ Test Case - Garbage Collection
     [Tags]  gc
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 
+Test Case - Project Level Policy Content Trust
+    [Tags]  content_trust
+    Restart Docker Daemon Locally
+    Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
+
 Test Case - Add Private Project Member and Check User Can See It
     [Tags]  private_member
     Harbor API Test  ./tests/apitests/python/test_add_member_to_private_project.py
@@ -44,10 +49,6 @@ Test Case - Edit Project Creation
 Test Case - Manage Project Member
     [Tags]  member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
-
-Test Case - Project Level Policy Content Trust
-    [Tags]  content_trust
-    Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
 
 Test Case - User View Logs
     [Tags]  view_logs

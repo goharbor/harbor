@@ -113,6 +113,7 @@ Test Case - Staticsinfo
     Should be equal as integers  ${publicrepocount2}  ${publicrepocount}
     Should be equal as integers  ${totalprojcount2}  ${totalprojcount}
     Should be equal as integers  ${totalrepocount2}  ${totalrepocount}
+    Close Browser
 
 Test Case - Push Image
     Init Chrome Driver
@@ -123,6 +124,7 @@ Test Case - Push Image
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  test${d}  hello-world:latest
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/hello-world
+    Close Browser
 
 Test Case - Project Level Policy Public
     Init Chrome Driver
@@ -241,6 +243,7 @@ Test Case - User View Logs
 
     Push image  ${ip}  ${user}  ${pwd}  project${d}  ${img}:${tag}
     Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${replication_image}:${replication_tag}
+    Close Browser
 
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
@@ -484,14 +487,14 @@ Test Case - Project Storage Quotas Dispaly And Control
     ${image_a}=  Set Variable  one_layer
     ${image_b}=  Set Variable  redis
     ${image_a_size}=    Set Variable   330.83MB
-    ${image_b_size}=    Set Variable   34.15MB
+    ${image_b_size}=    Set Variable   34.1\\dMB
     ${image_a_ver}=  Set Variable  1.0
     ${image_b_ver}=  Set Variable  donotremove5.0
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
-    Should Be Equal As Strings  ${storage_quota_ret}  ${image_b_size} of ${storage_quota}${storage_quota_unit}
+    Should Match Regexp  ${storage_quota_ret}  ${image_b_size} of ${storage_quota}${storage_quota_unit}
     Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=adding 330.1 MiB of storage resource, which when updated to current usage of   err_msg_2=MiB will exceed the configured upper limit of ${storage_quota}.0 MiB
     Go Into Project  project${d}
     Delete Repo  project${d}  ${image_b}
@@ -568,17 +571,21 @@ Test Case - Tag Retention
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s
+    ${image_sample_1}=    Set Variable  hello-world
+    ${image_sample_2}=    Set Variable  memcached
     Create An New Project And Go Into Project  project${d}
     Switch To Tag Retention
     Add A Tag Retention Rule
     Delete A Tag Retention Rule
     Add A Tag Retention Rule
     Edit A Tag Retention Rule    **   latest
-    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
-    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  memcached   123
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_sample_1}  latest
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_sample_2}   123
     Set Daily Schedule
-    Execute Dry Run
-    Execute Run
+    Execute Dry Run  ${image_sample_2}  0/1
+    Execute Run  ${image_sample_2}  0/1
+    Execute Dry Run  ${image_sample_1}  1/1
+    Execute Run  ${image_sample_1}  1/1
     Close Browser
 
 Test Case - Tag Immutability
@@ -587,9 +594,11 @@ Test Case - Tag Immutability
     ${d}=    Get Current Date    result_format=%m%s
     Create An New Project And Go Into Project  project${d}
     Switch To Tag Immutability
-    Add A Tag Immutability Rule  1212  3434
+    @{param}  Create List  1212  3434
+    Retry Add A Tag Immutability Rule  @{param}
     Delete A Tag Immutability Rule
-    Add A Tag Immutability Rule  5566  7788
+    @{param}  Create List  5566  7788
+    Retry Add A Tag Immutability Rule  @{param}
     Edit A Tag Immutability Rule  hello-world  latest
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox  latest
@@ -612,6 +621,7 @@ Test Case - Tag Immutability
 #    Log    ${token}
 #    Push image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
 #    Pull image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
+#    Close Browser
 
 Test Case - Push Docker Manifest Index and Display
     Init Chrome Driver
