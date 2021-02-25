@@ -90,8 +90,9 @@ Switch To Project Tab Overflow
 
 Navigate To Projects
     Reload Page
+    Sleep  3
     Retry Element Click  xpath=${projects_xpath}
-    Sleep  2
+    Sleep  1
 
 Project Should Display
     [Arguments]  ${projectname}
@@ -234,12 +235,13 @@ Go Into Repo
     Sleep  2
     Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
     ${repo_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${repoName}')]/a
-    Retry Element Click  ${repo_search_icon}
-    FOR  ${n}  IN RANGE  1  10
+    FOR  ${n}  IN RANGE  1  3
+        Retry Element Click  ${repo_search_icon}
         Retry Clear Element Text  ${repo_search_input}
         Retry Text Input  ${repo_search_input}  ${repoName}
         ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  ${repo_name_element}
         Sleep  2
+        Run Keyword If  '${out[0]}'=='FAIL'  Reload Page
         Continue For Loop If  '${out[0]}'=='FAIL'
         Retry Click Repo Name  ${repo_name_element}
         Sleep  2
@@ -329,7 +331,7 @@ Get Statics
 Retry Get Statics
     [Arguments]  ${locator}
     @{param}  Create List  ${locator}
-    ${ret}=  Retry Keyword N Times When Error  3  Get Statics  @{param}
+    ${ret}=  Retry Keyword N Times When Error  5  Get Statics  @{param}
     [Return]  ${ret}
 
 Get Statics Private Repo

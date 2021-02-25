@@ -19,8 +19,8 @@ from os import path
 sys.path.append(args.libpath)
 sys.path.append(args.libpath + "/library")
 from library.docker_api import docker_manifest_push_to_harbor
-from library.repository import push_image_to_project
 from library.repository import Repository
+from library.repository import push_self_build_image_to_project
 
 url = "https://"+args.endpoint+"/api/"
 endpoint_url = "https://"+args.endpoint
@@ -58,14 +58,12 @@ class HarborAPI:
     @get_feature_branch
     def populate_projects(self, **kwargs):
         for project in data["projects"]:
-            if kwargs["branch"] == 1:
-                if project["registry_name"] is not None:
-                    continue
-            elif kwargs["branch"] == 2:
-                if project["registry_name"] is not None:
-                    continue
+            if kwargs["branch"] in [1,2]:
+                if "registry_name" in project:
+                    print("Populate proxy project...")
+                #    continue
             elif kwargs["branch"] == 3:
-                print("Populate all projects")
+                print("Populate all projects...")
             else:
                 raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
             self.create_project(project, version=args.version)
@@ -90,6 +88,12 @@ class HarborAPI:
             time.sleep(30)
 
     @get_feature_branch
+    def populate_quotas(self, **kwargs):
+        for quotas in data["quotas"]:
+            self.create_project(quotas, version=args.version)
+            push_self_build_image_to_project(quotas["name"], args.endpoint, 'admin', 'Harbor12345', quotas["name"], "latest", size=quotas["size"])
+
+    @get_feature_branch
     def create_project(self, project, **kwargs):
         if kwargs["branch"] == 1:
                 body=dict(body={"project_name": project["name"], "metadata": {"public": "true"}})
@@ -98,7 +102,7 @@ class HarborAPI:
                 body=dict(body={"project_name": project["name"], "metadata": {"public": "true"},"count_limit":project["count_limit"],"storage_limit":project["storage_limit"]})
                 request(url+"projects", 'post', **body)
         elif kwargs["branch"] == 3:
-            if project["registry_name"] is not None:
+            if project.get("registry_name") is not None:
                 r = request(url+"registries?name="+project["registry_name"]+"", 'get')
                 registry_id = int(str(r.json()[0]['id']))
             else:
@@ -106,8 +110,8 @@ class HarborAPI:
             body=dict(body={"project_name": project["name"], "registry_id":registry_id, "metadata": {"public": "true"},"storage_limit":project["storage_limit"]})
             request(url+"projects", 'post', **body)
 
-            #Project with registry_name must have repo and to verify repo can be pulled.
-            if project["registry_name"] is not None:
+            #Project with registry_name is a proxy project, there should be images can be pulled.
+            if project.get("registry_name") is not None:
                 USER_ADMIN=dict(endpoint = "https://"+args.endpoint+"/api/v2.0" , username = "admin", password = "Harbor12345")
                 repo = Repository()
                 for _repo in project["repo"]:
@@ -577,8 +581,8 @@ class HarborAPI:
     def push_artifact_index(self, project, name, tag, **kwargs):
         image_a = "alpine"
         image_b = "busybox"
-        repo_name_a, tag_a = push_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_a, "latest")
-        repo_name_b, tag_b = push_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_b, "latest")
+        repo_name_a, tag_a = push_self_build_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_a, "latest")
+        repo_name_b, tag_b = push_self_build_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_b, "latest")
         manifests = [args.endpoint+"/"+repo_name_a+":"+tag_a, args.endpoint+"/"+repo_name_b+":"+tag_b]
         index = args.endpoint+"/"+project+"/"+name+":"+tag
         docker_manifest_push_to_harbor(index, manifests, args.endpoint, 'admin', 'Harbor12345', cfg_file = args.libpath + "/update_docker_cfg.sh")
@@ -644,10 +648,11 @@ def do_data_creation():
         harborAPI.add_distribution(distribution, version=args.version)
 
     harborAPI.populate_projects(version=args.version)
+    harborAPI.populate_quotas(version=args.version)
 
     harborAPI.push_artifact_index(data["projects"][0]["name"], data["projects"][0]["artifact_index"]["name"], data["projects"][0]["artifact_index"]["tag"], version=args.version)
     #pull_image("busybox", "redis", "haproxy", "alpine", "httpd:2")
-    push_image_to_project(data["projects"][0]["name"], args.endpoint, 'admin', 'Harbor12345', "busybox", "latest")
+    push_self_build_image_to_project(data["projects"][0]["name"], args.endpoint, 'admin', 'Harbor12345', "busybox", "latest")
     push_signed_image("alpine", data["projects"][0]["name"], "latest")
 
     for replicationrule in data["replicationrule"]:

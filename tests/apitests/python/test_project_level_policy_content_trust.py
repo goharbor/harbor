@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import unittest
+import time
 
 from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
@@ -11,6 +12,9 @@ from library.user import User
 from library.repository import Repository
 from library.repository import push_self_build_image_to_project
 from library.repository import pull_harbor_image
+from library.docker_api import docker_image_clean_all
+from library.base import  restart_process
+
 class TestProjects(unittest.TestCase):
     @suppress_urllib3_warning
     def setUp(self):
@@ -75,7 +79,11 @@ class TestProjects(unittest.TestCase):
         self.project.update_project(TestProjects.project_content_trust_id, metadata = {"enable_content_trust": "true"}, **TestProjects.USER_CONTENT_TRUST_CLIENT)
 
         #7. Pull image(IA) failed and the reason is "The image is not signed in Notary".
-        pull_harbor_image(harbor_server, admin_name, admin_password, TestProjects.repo_name, tag, expected_error_message = "The image is not signed in Notary")
+        docker_image_clean_all()
+        restart_process("containerd")
+        restart_process("dockerd")
+        time.sleep(30)
+        pull_harbor_image(harbor_server, ADMIN_CLIENT["username"], ADMIN_CLIENT["password"], TestProjects.repo_name, tag, expected_error_message = "The image is not signed in Notary")
 
 if __name__ == '__main__':
     unittest.main()

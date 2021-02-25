@@ -1,4 +1,5 @@
 *** settings ***
+Library  ../../robot-cases/Group3-Upgrade/util.py
 Resource  ../../resources/Util.robot
 
 *** Keywords ***
@@ -544,3 +545,26 @@ Loop P2P Preheat Policys
         ${provider_name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].p2p_preheat_policy[?(@.name=${policy})].provider_name
         Retry Wait Until Page Contains Element   //clr-dg-row[contains(.,'${policy}') and contains(.,'${provider_name}[0]')]
     END
+
+Verify Quotas Display
+    [Arguments]    ${json}
+    Log To Console  "Verify Quotas Display..."
+    @{project}=  Get Value From Json  ${json}  $.quotas.[*].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    FOR    ${project}    IN    @{project}
+        ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  ${project}
+        ${storage_limit}=  Get Value From Json  ${json}  $.quotas[?(@.name=${project})].storage_limit
+        ${size}=  Get Value From Json  ${json}  $.quotas[?(@.name=${project})].size
+        ${size_in_mb}=  Evaluate  ${size}[0] * 1024 * 1024
+        ${storage_usage}=  Convert Int To Readable File Size  ${size_in_mb}
+        ${storage_usage_without_unit}=  Get Substring  ${storage_usage}  0  -2
+        ${storage_usage_unit}=  Get Substring  ${storage_usage}  -2
+        ${storage_total_size}=  Convert Int To Readable File Size  ${storage_limit}[0]
+        Log All  storage_usage_without_unit:${storage_usage_without_unit}
+        Log All  storage_usage_unit:${storage_usage_unit}
+        Log All  storage_total_size:${storage_total_size}
+        Log All  storage_quota_ret:${storage_quota_ret}
+        Should Match Regexp  ${storage_quota_ret}  ${storage_usage_without_unit}(\\\.\\d{1,2})*${storage_usage_unit} of ${storage_total_size}
+    END
+    Close Browser

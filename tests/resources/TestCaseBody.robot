@@ -153,22 +153,34 @@ Body Of List Helm Charts
     Multi-delete Chart Files  ${prometheus_chart_name}  ${harbor_chart_name}
     Close Browser
 
+Body Of Push Signed Image
+    Init Chrome Driver
+    ${d}=  Get Current Date    result_format=%m%s
+    ${user}=  Set Variable  user010
+    ${pwd}=   Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Create An New Project And Go Into Project  project${d}
+    Body Of Admin Push Signed Image  project${d}  tomcat  latest  ${user}  ${pwd}
+    Body Of Admin Push Signed Image  project${d}  alpine  latest  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Close Browser
+
 Body Of Admin Push Signed Image
-    [Arguments]  ${image}=tomcat  ${project}=library  ${with_remove}=${false}
+    [Arguments]  ${project}  ${image}  ${tag}  ${user}  ${pwd}  ${with_remove}=${false}
     Enable Notary Client
 
     Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${project} ${image} latest ${notaryServerEndpoint} ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:latest
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${project} ${image} ${tag} ${notaryServerEndpoint} ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag} ${user} ${pwd}
+    Clean All Local Images
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/${project}/repositories/${image}/artifacts/latest?with_signature=true"
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/${project}/repositories/${image}/artifacts/${tag}?with_signature=true"
 
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  "signed":true
 
-    Run Keyword If  ${with_remove} == ${true}  Remove Notary Signature  ${ip}  ${image}
+    Run Keyword If  ${with_remove} == ${true}  Notary Remove Signature  ${ip}  ${project}  ${image}  ${tag}  ${user}  ${pwd}
 
 Delete A Project Without Sign In Harbor
     [Arguments]  ${harbor_ip}=${ip}  ${username}=${HARBOR_ADMIN}  ${password}=${HARBOR_PASSWORD}
