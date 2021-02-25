@@ -350,7 +350,7 @@ external_redis:
   # host for redis: <host_redis>:<port_redis>
   # host for redis+sentinel:
   #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
-  host: {{ external_redis.host }}:{{ external_redis.port }}
+  host: {{ external_redis.host }}
   password: {{ external_redis.password }}
   # sentinel_master_set must be set to support redis+sentinel
   #sentinel_master_set:
