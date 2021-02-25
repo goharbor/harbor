@@ -92,6 +92,32 @@ def _get_string_from_unicode(udata):
         result = result + tmp.strip('\n\r\t')
     return result
 
+def restart_process(process):
+    if process == "dockerd":
+        full_process_name = process
+    elif process == "containerd":
+        full_process_name = "/usr/local/bin/containerd"
+    else:
+        raise Exception("Please input dockerd or containerd for process retarting.")
+    run_command_with_popen("ps aux |grep " + full_process_name)
+    for i in range(10):
+        pid = run_command_with_popen(["pidof " + full_process_name])
+        if pid in [None, ""]:
+            break
+        run_command_with_popen(["kill " + str(pid)])
+        time.sleep(3)
+
+    run_command_with_popen("ps aux |grep " + full_process_name)
+    run_command_with_popen("rm -rf /var/lib/" + process + "/*")
+    run_command_with_popen(full_process_name + " > ./daemon-local.log 2>&1 &")
+    time.sleep(3)
+    pid = run_command_with_popen(["pidof " + full_process_name])
+    if pid in [None, ""]:
+        raise Exception("Failed to start process {}.".format(full_process_name))
+    run_command_with_popen("ps aux |grep " + full_process_name)
+
+
+
 def run_command_with_popen(command):
     print("Command: ", subprocess.list2cmdline(command))
 
@@ -100,11 +126,14 @@ def run_command_with_popen(command):
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         output, errors = proc.communicate()
     except Exception as e:
-        print("Error:", e)
+        print("Run command caught exception:", e)
+        output = None
     else:
         print(proc.returncode, errors, output)
     finally:
         proc.stdout.close()
+        print("output: ", output)
+        return output
 
 def run_command(command, expected_error_message = None):
     print("Command: ", subprocess.list2cmdline(command))

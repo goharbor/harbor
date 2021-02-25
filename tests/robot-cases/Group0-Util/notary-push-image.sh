@@ -3,7 +3,9 @@
 #docker pull $3:$4
 
 IP=$1
-PASSHRASE='Harbor12345'
+USER=$7
+PWD=$8
+PASSHRASE=$8
 notaryServerEndpoint=$5
 tag_src=$6
 echo $IP
@@ -28,6 +30,6 @@ export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=$PASSHRASE
 export DOCKER_CONTENT_TRUST_OFFLINE_PASSPHRASE=$PASSHRASE
 export DOCKER_CONTENT_TRUST_TAGGING_PASSPHRASE=$PASSHRASE
 
-docker login -u admin -p Harbor12345 $IP
+docker login -u $USER -p $PWD $IP
 docker tag $tag_src $IP/$2/$3:$4
 docker push $IP/$2/$3:$4

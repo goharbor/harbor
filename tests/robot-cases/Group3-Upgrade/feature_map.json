@@ -490,5 +490,23 @@
             "branch":2,
             "version":"2.2"
         }
+    ],
+    "populate_quotas":[
+        {
+            "branch":1,
+            "version":"1.10"
+        },
+        {
+            "branch":1,
+            "version":"2.0"
+        },
+        {
+            "branch":1,
+            "version":"2.1"
+        },
+        {
+            "branch":1,
+            "version":"2.2"
+        }
     ]
  }

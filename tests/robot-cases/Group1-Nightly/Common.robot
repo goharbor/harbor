@@ -610,18 +610,18 @@ Test Case - Tag Immutability
     Delete Success  busybox
     Close Browser
 
-#TODO in 2.2: Modify this case when new robot account feature is ready.
-#Test Case - Robot Account
-#    Init Chrome Driver
-#    ${d}=    Get Current Date    result_format=%m%s
-#    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-#    Create An New Project And Go Into Project    project${d}
-#    ${token}=    Create A Robot Account And Return Token    project${d}    robot${d}
-#    Log To Console    ${token}
-#    Log    ${token}
-#    Push image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
-#    Pull image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
-#    Close Browser
+Test Case - Robot Account
+    [tags]  robot_account
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project${d}
+    ${token}=    Create A Robot Account And Return Token    project${d}    robot${d}
+    Log To Console    ${token}
+    Log    ${token}
+    Push image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
+    Pull image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
+    Close Browser
 
 Test Case - Push Docker Manifest Index and Display
     Init Chrome Driver
