@@ -17,7 +17,6 @@ import {
   EventEmitter,
   ViewChild,
   AfterViewChecked,
-  ChangeDetectorRef,
   OnDestroy,
   OnInit
 } from "@angular/core";
@@ -78,7 +77,6 @@ export class CreateEditEndpointComponent
     private endpointService: EndpointService,
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
-    private ref: ChangeDetectorRef,
     private http: HttpClient,
     private appConfigService: AppConfigService,
   ) {}
@@ -201,22 +199,6 @@ export class CreateEditEndpointComponent
     this.endpointId = "";
     this.inlineAlert.close();
   }
-
-  // Forcely refresh the view
-  forceRefreshView(duration: number): void {
-    // Reset timer
-    if (this.timerHandler) {
-      clearInterval(this.timerHandler);
-    }
-    this.timerHandler = setInterval(() => this.ref.markForCheck(), 100);
-    setTimeout(() => {
-      if (this.timerHandler) {
-        clearInterval(this.timerHandler);
-        this.timerHandler = null;
-      }
-    }, duration);
-  }
-
   openCreateEditTarget(editable: boolean, targetId?: number | string) {
     this.editable = editable;
     // reset
@@ -238,7 +220,6 @@ export class CreateEditEndpointComponent
           // Open the modal now
           this.open();
           this.editDisabled = true;
-          this.forceRefreshView(2000);
         },
         error => this.errorHandler.error(error)
       );
@@ -308,12 +289,10 @@ export class CreateEditEndpointComponent
         this.inlineAlert.showInlineSuccess({
           message: "DESTINATION.TEST_CONNECTION_SUCCESS"
         });
-        this.forceRefreshView(2000);
         this.testOngoing = false;
       },
       error => {
         this.inlineAlert.showInlineError("DESTINATION.TEST_CONNECTION_FAILURE");
-        this.forceRefreshView(2000);
         this.testOngoing = false;
       }
     );
@@ -340,12 +319,10 @@ export class CreateEditEndpointComponent
         this.reload.emit(true);
         this.onGoing = false;
         this.close();
-        this.forceRefreshView(2000);
       },
       error => {
         this.onGoing = false;
         this.inlineAlert.showInlineError(error);
-        this.forceRefreshView(2000);
       }
     );
   }
@@ -383,12 +360,10 @@ export class CreateEditEndpointComponent
         this.reload.emit(true);
         this.close();
         this.onGoing = false;
-        this.forceRefreshView(2000);
       },
       error => {
         this.inlineAlert.showInlineError(error);
         this.onGoing = false;
-        this.forceRefreshView(2000);
       }
     );
   }

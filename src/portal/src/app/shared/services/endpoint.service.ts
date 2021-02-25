@@ -10,7 +10,7 @@ import { RequestQueryParams } from "./index";
 import { Endpoint, ReplicationRule, PingEndpoint } from "./index";
 import { catchError, map } from "rxjs/operators";
 
-const ADAPTERS_MAP = {
+export const ADAPTERS_MAP = {
   "ali-acr": "Alibaba ACR",
   "aws-ecr": "Aws ECR",
   "azure-acr": "Azure ACR",
