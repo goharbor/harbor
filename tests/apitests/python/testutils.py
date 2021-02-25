@@ -32,6 +32,8 @@ TEARDOWN = os.environ.get('TEARDOWN', 'true').lower() in ('true', 'yes')
 notary_url = os.environ.get('NOTARY_URL', 'https://'+harbor_server+':4443')
 DOCKER_USER = os.environ.get('DOCKER_USER', '')
 DOCKER_PWD = os.environ.get('DOCKER_PWD', '')
+BASE_IMAGE = dict(name='busybox', tag='latest')
+BASE_IMAGE_ABS_PATH_NAME = '/' + BASE_IMAGE['name'] + '.tar'
 
 def GetProductApi(username, password, harbor_server= os.environ.get("HARBOR_HOST", '')):
 
