@@ -97,9 +97,16 @@ Enable Notary Client
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
-Remove Notary Signature
-    [Arguments]  ${ip}  ${image}
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-remove-image-signature.expect ${ip} library ${image} ${notaryServerEndpoint}
+Notary Remove Signature
+    [Arguments]  ${ip}  ${project}  ${image}  ${tag}  ${user}  ${pwd}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-util.sh remove ${ip} ${project} ${image} ${tag} ${notaryServerEndpoint} ${user} ${pwd}
+    Log To Console  ${output}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
+
+Notary Key Rotate
+    [Arguments]  ${ip}  ${project}  ${image}  ${tag}  ${user}  ${pwd}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-util.sh key_rotate ${ip} ${project} ${image} ${tag} ${notaryServerEndpoint} ${user} ${pwd}
     Log To Console  ${output}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0

@@ -20,7 +20,7 @@ pip -V
 sudo -H pip install --ignore-installed urllib3 chardet requests --upgrade
 python --version
 
-#---------------Set DNS for docker v20----------------------#
+#---------------Set DNS for docker v20-------------------#
 # In docker v20, it fixed an issue named  "Wrong resolv.conf
 # used on Ubuntu 19", this fix caused DNS solve problem
 # in container. So the current work round is read DNS server
@@ -42,10 +42,9 @@ if [ $(cat /etc/docker/daemon.json |grep \"dns\" |wc -l) -eq 0 ];then
 fi
 
 cat /etc/docker/daemon.json
-sudo systemctl daemon-reload
 sudo systemctl restart docker
 sudo systemctl status docker
-#-------------------------------------------------------------#
+#--------------------------------------------------------#
 
 sudo ./tests/hostcfg.sh
 
