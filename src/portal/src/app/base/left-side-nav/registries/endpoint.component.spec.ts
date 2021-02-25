@@ -1,22 +1,17 @@
 import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
-import { By } from "@angular/platform-browser";
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
-import { DebugElement } from "@angular/core";
+import { NO_ERRORS_SCHEMA } from "@angular/core";
 import { EndpointComponent } from "./endpoint.component";
-import { FilterComponent } from "../../../shared/components/filter/filter.component";
-import { ConfirmationDialogComponent } from "../../../shared/components/confirmation-dialog/confirmation-dialog.component";
 import { CreateEditEndpointComponent } from "./create-edit-endpoint/create-edit-endpoint.component";
-import { InlineAlertComponent } from "../../../shared/components/inline-alert/inline-alert.component";
 import { ErrorHandler } from "../../../shared/units/error-handler";
 import { Endpoint } from "../../../shared/services";
 import { OperationService } from "../../../shared/components/operation/operation.service";
 import { click } from "../../../shared/units/utils";
 import { of } from "rxjs";
-import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { HttpClient } from "@angular/common/http";
 import { AppConfigService } from '../../../services/app-config.service';
 import { SharedTestingModule } from "../../../shared/shared.module";
-import { EndpointDefaultService, EndpointService } from "../../../shared/services/endpoint.service";
+import { ADAPTERS_MAP, EndpointService } from "../../../shared/services/endpoint.service";
+import { delay } from "rxjs/operators";
 
 describe("EndpointComponent (inline template)", () => {
   let adapterInfoMockData = {
@@ -237,7 +232,7 @@ describe("EndpointComponent (inline template)", () => {
   };
   let fakedHttp = {
     get() {
-      return of(adapterInfoMockData);
+      return of(adapterInfoMockData).pipe(delay(0));
     }
   };
   let mockData: Endpoint[] = [
@@ -294,21 +289,6 @@ describe("EndpointComponent (inline template)", () => {
       url: "https://4.4.4.4"
     }
   ];
-  let mockOne: Endpoint[] = [
-    {
-      id: 1,
-      credential: {
-        access_key: "admin",
-        access_secret: "",
-        type: "basic"
-      },
-      description: "test",
-      insecure: false,
-      name: "target_01",
-      type: "Harbor",
-      url: "https://10.117.4.151"
-    }
-  ];
   let mockAdapters = ['harbor', 'docker hub'];
   let comp: EndpointComponent;
   let fixture: ComponentFixture<EndpointComponent>;
@@ -320,119 +300,109 @@ describe("EndpointComponent (inline template)", () => {
       };
     }
   };
-
-  let endpointService: EndpointService;
-  let spy: jasmine.Spy;
-  let spyAdapter: jasmine.Spy;
-  let spyOnRules: jasmine.Spy;
-  let spyOne: jasmine.Spy;
+  const mockedEndpointService = {
+    getEndpoints(targetName: string) {
+      if (targetName) {
+        const endpoints: Endpoint[] = [];
+        mockData.forEach( item => {
+          if (item.name.indexOf(targetName) !== -1) {
+            endpoints.push(item);
+          }
+        });
+        return of(endpoints).pipe(delay(0));
+      }
+      return of(mockData).pipe(delay(0));
+    },
+    getAdapters() {
+      return of(mockAdapters).pipe(delay(0));
+    },
+    getEndpointWithReplicationRules() {
+      return of([]).pipe(delay(0));
+    },
+    getEndpoint(endPointId: number | string) {
+      if (endPointId) {
+        let endpoint: Endpoint;
+        mockData.forEach( item => {
+          if (item.id === endPointId) {
+            endpoint = item;
+          }
+        });
+        return of(endpoint).pipe(delay(0));
+      }
+      return of(mockData[0]).pipe(delay(0));
+    },
+    getAdapterText(adapter: string): string {
+      if (ADAPTERS_MAP && ADAPTERS_MAP[adapter]) {
+        return ADAPTERS_MAP[adapter];
+      }
+      return adapter;
+    }
+  };
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [SharedTestingModule, NoopAnimationsModule, HttpClientTestingModule],
+      imports: [SharedTestingModule],
       declarations: [
-        FilterComponent,
-        ConfirmationDialogComponent,
         CreateEditEndpointComponent,
-        InlineAlertComponent,
         EndpointComponent
       ],
       providers: [
         ErrorHandler,
-        { provide: EndpointService, useClass: EndpointDefaultService },
+        { provide: EndpointService, useValue: mockedEndpointService },
         { provide: OperationService },
         { provide: HttpClient, useValue: fakedHttp },
-        { provide: AppConfigService, useValue: mockAppConfigService }
+        { provide: AppConfigService, useValue: mockAppConfigService },
+      ],
+      schemas: [
+          NO_ERRORS_SCHEMA
       ]
-    });
+    }).compileComponents();
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(EndpointComponent);
     comp = fixture.componentInstance;
-    endpointService = fixture.debugElement.injector.get(EndpointService);
-    spy = spyOn(endpointService, "getEndpoints").and.returnValues(
-      of(mockData)
-    );
-
-    spyAdapter = spyOn(endpointService, "getAdapters").and.returnValue(
-      of(mockAdapters)
-    );
-
-    spyOnRules = spyOn(
-      endpointService,
-      "getEndpointWithReplicationRules"
-    ).and.returnValue(of([]));
-    spyOne = spyOn(endpointService, "getEndpoint").and.returnValue(
-      of(mockOne[0])
-    );
-    fixture.detectChanges();
+    fixture.autoDetectChanges(true);
   });
 
-  it("should retrieve endpoint data", () => {
-    fixture.detectChanges();
-    expect(spy.calls.any()).toBeTruthy();
+  it("should retrieve endpoint data", async () => {
+    await fixture.whenStable();
+    const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');
+    expect(rows.length).toEqual(4);
   });
-  it("should open create endpoint modal", waitForAsync(() => {
-    fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      comp.editTargets(mockOne);
-      fixture.detectChanges();
-      expect(comp.target.name).toEqual("target_01");
-    });
-  }));
+  it("should open edit endpoint modal", async () => {
+    await fixture.whenStable();
+    const editButton: HTMLButtonElement = fixture.nativeElement.querySelector("#edit");
+    comp.selectedRow = [mockData[0]] ;
+    await fixture.whenStable();
+    expect(editButton).toBeTruthy();
+    editButton.click();
+    editButton.dispatchEvent(new Event('click'));
+    await fixture.whenStable();
+    const nameInput: HTMLInputElement = fixture.nativeElement.querySelector("#destination_name");
+    expect(nameInput.value).toEqual('target_01');
+  });
 
-  it("should filter endpoints by keyword", waitForAsync(() => {
-    fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      comp.doSearchTargets("target_02");
-      fixture.detectChanges();
-      expect(comp.targets.length).toEqual(1);
-    });
-  }));
-
-  it("should render data", waitForAsync(() => {
-    fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      let de: DebugElement = fixture.debugElement.query(
-        By.css("datagrid-cell")
-      );
-      expect(de).toBeTruthy();
-      let el: HTMLElement = de.nativeElement;
-      expect(el.textContent).toEqual("target_01");
-    });
-  }));
-
-  it("should open creation endpoint", waitForAsync(() => {
-    fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      let de: DebugElement = fixture.debugElement.query(By.css("btn-link"));
-      expect(de).toBeTruthy();
-      fixture.detectChanges();
-      click(de);
-      fixture.detectChanges();
-      let deInput: DebugElement = fixture.debugElement.query(By.css("input"));
-      expect(deInput).toBeTruthy();
-    });
-  }));
-
-  it("should open to edit existing endpoint", waitForAsync(() => {
-    fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      let de: DebugElement = fixture.debugElement.query(
-        del => del.classes["action-item"]
-      );
-      expect(de).toBeTruthy();
-      fixture.detectChanges();
-      click(de);
-      fixture.detectChanges();
-      let deInput: DebugElement = fixture.debugElement.query(By.css("input"));
-      expect(deInput).toBeTruthy();
-      let elInput: HTMLElement = deInput.nativeElement;
-      expect(elInput).toBeTruthy();
-      expect(elInput.textContent).toEqual("target_01");
-    });
-  }));
+  it("should filter endpoints by keyword", async () => {
+    await fixture.whenStable();
+    comp.doSearchTargets("target_02");
+    await fixture.whenStable();
+    const editButton: HTMLButtonElement = fixture.nativeElement.querySelector("#edit");
+    comp.selectedRow = [mockData[0]] ;
+    await fixture.whenStable();
+    editButton.click();
+    editButton.dispatchEvent(new Event('click'));
+    await fixture.whenStable();
+    expect(comp.targets.length).toEqual(1);
+    expect(comp.targets[0].name).toEqual('target_02');
+  });
+  it("should open creation endpoint", async () => {
+    await fixture.whenStable();
+    const addButton: HTMLButtonElement = fixture.nativeElement.querySelector("#add");
+    expect(addButton).toBeTruthy();
+    addButton.click();
+    addButton.dispatchEvent(new Event('click'));
+    await fixture.whenStable();
+    const nameInput: HTMLInputElement = fixture.nativeElement.querySelector("#destination_name");
+    expect(nameInput).toBeTruthy();
+  });
 });

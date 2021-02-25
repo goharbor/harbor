@@ -16,8 +16,6 @@ import {
     OnInit,
     OnDestroy,
     ViewChild,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef
 } from "@angular/core";
 import { Subscription, Observable, forkJoin, throwError as observableThrowError } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
@@ -45,7 +43,6 @@ import { EndpointService, HELM_HUB } from "../../../shared/services/endpoint.ser
     selector: "hbr-endpoint",
     templateUrl: "./endpoint.component.html",
     styleUrls: ["./endpoint.component.scss"],
-    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EndpointComponent implements OnInit, OnDestroy {
     @ViewChild(CreateEditEndpointComponent)
@@ -88,8 +85,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
     constructor(private endpointService: EndpointService,
         private errorHandlerEntity: ErrorHandler,
         private translateService: TranslateService,
-        private operationService: OperationService,
-        private ref: ChangeDetectorRef) {
+        private operationService: OperationService) {
     }
 
     ngOnInit(): void {
@@ -102,17 +98,11 @@ export class EndpointComponent implements OnInit, OnDestroy {
             this.subscription.unsubscribe();
         }
     }
-
-    selectedChange(): void {
-        this.forceRefreshView(5000);
-    }
-
     retrieve(): void {
         this.loading = true;
         this.selectedRow = [];
         this.endpointService.getEndpoints(this.targetName).pipe(finalize(() => {
             this.loading = false;
-            this.forceRefreshView(1000);
         }))
             .subscribe(targets => {
                 this.targets = targets || [];
@@ -183,7 +173,6 @@ export class EndpointComponent implements OnInit, OnDestroy {
                 .pipe(finalize(() => {
                     this.selectedRow = [];
                     this.reload(true);
-                    this.forceRefreshView(2000);
                 }))
                 .subscribe((item) => {
                 }, error => {
@@ -219,22 +208,6 @@ export class EndpointComponent implements OnInit, OnDestroy {
                 }
                 ));
     }
-
-    // Forcely refresh the view
-    forceRefreshView(duration: number): void {
-        // Reset timer
-        if (this.timerHandler) {
-            clearInterval(this.timerHandler);
-        }
-        this.timerHandler = setInterval(() => this.ref.markForCheck(), 100);
-        setTimeout(() => {
-            if (this.timerHandler) {
-                clearInterval(this.timerHandler);
-                this.timerHandler = null;
-            }
-        }, duration);
-    }
-
     getAdapterText(adapter: string): string {
         return this.endpointService.getAdapterText(adapter);
     }
