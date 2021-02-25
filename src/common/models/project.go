@@ -22,8 +22,6 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/pkg/quota/types"
-	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/lib/pq"
 )
 
@@ -262,25 +260,4 @@ type ProjectQueryResult struct {
 // TableName is required by beego orm to map Project to table project
 func (p *Project) TableName() string {
 	return ProjectTable
-}
-
-// QuotaSummary ...
-type QuotaSummary struct {
-	Hard types.ResourceList `json:"hard"`
-	Used types.ResourceList `json:"used"`
-}
-
-// ProjectSummary ...
-type ProjectSummary struct {
-	RepoCount  int64  `json:"repo_count"`
-	ChartCount uint64 `json:"chart_count"`
-
-	ProjectAdminCount int64 `json:"project_admin_count"`
-	MaintainerCount   int64 `json:"maintainer_count"`
-	DeveloperCount    int64 `json:"developer_count"`
-	GuestCount        int64 `json:"guest_count"`
-	LimitedGuestCount int64 `json:"limited_guest_count"`
-
-	Quota    *QuotaSummary   `json:"quota,omitempty"`
-	Registry *model.Registry `json:"registry"`
 }

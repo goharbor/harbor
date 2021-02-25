@@ -45,6 +45,7 @@ func New() http.Handler {
 		SysteminfoAPI:  newSystemInfoAPI(),
 		PingAPI:        newPingAPI(),
 		GCAPI:          newGCAPI(),
+		QuotaAPI:       newQuotaAPI(),
 		RetentionAPI:   newRetentionAPI(),
 	})
 	if err != nil {

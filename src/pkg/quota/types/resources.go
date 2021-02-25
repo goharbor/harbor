@@ -17,6 +17,8 @@ package types
 import (
 	"encoding/json"
 	"strconv"
+
+	"github.com/go-openapi/strfmt"
 )
 
 const (
@@ -42,6 +44,11 @@ func (resource ResourceName) FormatValue(value int64) string {
 
 // ResourceList is a set of (resource name, value) pairs.
 type ResourceList map[ResourceName]int64
+
+// Validate validates this resource list
+func (resources ResourceList) Validate(formats strfmt.Registry) error {
+	return nil
+}
 
 func (resources ResourceList) String() string {
 	bytes, _ := json.Marshal(resources)
