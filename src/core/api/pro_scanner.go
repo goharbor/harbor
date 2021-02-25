@@ -131,7 +131,7 @@ func (sa *ProjectScannerAPI) GetProScannerCandidates() {
 		PageNumber: p,
 	}
 
-	all, err := sa.c.ListRegistrations(query)
+	all, err := sa.c.ListRegistrations(sa.Context(), query)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: get project scanner candidates"))
 		return

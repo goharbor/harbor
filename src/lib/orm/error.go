@@ -20,6 +20,11 @@ import (
 	"github.com/lib/pq"
 )
 
+var (
+	// ErrNoRows error from the beego orm
+	ErrNoRows = orm.ErrNoRows
+)
+
 // WrapNotFoundError wrap error as NotFoundError when it is orm.ErrNoRows otherwise return err
 func WrapNotFoundError(err error, format string, args ...interface{}) error {
 	if e := AsNotFoundError(err, format, args...); e != nil {

@@ -56,8 +56,8 @@ type basicController struct {
 }
 
 // ListRegistrations ...
-func (bc *basicController) ListRegistrations(query *q.Query) ([]*scanner.Registration, error) {
-	l, err := bc.manager.List(query)
+func (bc *basicController) ListRegistrations(ctx context.Context, query *q.Query) ([]*scanner.Registration, error) {
+	l, err := bc.manager.List(ctx, query)
 	if err != nil {
 		return nil, errors.Wrap(err, "api controller: list registrations")
 	}
@@ -66,18 +66,18 @@ func (bc *basicController) ListRegistrations(query *q.Query) ([]*scanner.Registr
 }
 
 // CreateRegistration ...
-func (bc *basicController) CreateRegistration(registration *scanner.Registration) (string, error) {
+func (bc *basicController) CreateRegistration(ctx context.Context, registration *scanner.Registration) (string, error) {
 	if isReservedName(registration.Name) {
 		return "", errors.BadRequestError(nil).WithMessage(`name "%s" is reserved, please try a different name`, registration.Name)
 	}
 
 	// Check if the registration is available
-	if _, err := bc.Ping(registration); err != nil {
+	if _, err := bc.Ping(ctx, registration); err != nil {
 		return "", errors.Wrap(err, "api controller: create registration")
 	}
 
 	// Check if there are any registrations already existing.
-	l, err := bc.manager.List(&q.Query{
+	l, err := bc.manager.List(ctx, &q.Query{
 		PageSize:   1,
 		PageNumber: 1,
 	})
@@ -90,12 +90,12 @@ func (bc *basicController) CreateRegistration(registration *scanner.Registration
 		registration.IsDefault = true
 	}
 
-	return bc.manager.Create(registration)
+	return bc.manager.Create(ctx, registration)
 }
 
 // GetRegistration ...
-func (bc *basicController) GetRegistration(registrationUUID string) (*scanner.Registration, error) {
-	r, err := bc.manager.Get(registrationUUID)
+func (bc *basicController) GetRegistration(ctx context.Context, registrationUUID string) (*scanner.Registration, error) {
+	r, err := bc.manager.Get(ctx, registrationUUID)
 	if err != nil {
 		return nil, errors.Wrap(err, "api controller: get registration")
 	}
@@ -104,8 +104,8 @@ func (bc *basicController) GetRegistration(registrationUUID string) (*scanner.Re
 }
 
 // RegistrationExists ...
-func (bc *basicController) RegistrationExists(registrationUUID string) bool {
-	registration, err := bc.manager.Get(registrationUUID)
+func (bc *basicController) RegistrationExists(ctx context.Context, registrationUUID string) bool {
+	registration, err := bc.manager.Get(ctx, registrationUUID)
 
 	// Just logged when an error occurred
 	if err != nil {
@@ -116,7 +116,7 @@ func (bc *basicController) RegistrationExists(registrationUUID string) bool {
 }
 
 // UpdateRegistration ...
-func (bc *basicController) UpdateRegistration(registration *scanner.Registration) error {
+func (bc *basicController) UpdateRegistration(ctx context.Context, registration *scanner.Registration) error {
 	if registration.IsDefault && registration.Disabled {
 		return errors.Errorf("default registration %s can not be marked to disabled", registration.UUID)
 	}
@@ -125,12 +125,12 @@ func (bc *basicController) UpdateRegistration(registration *scanner.Registration
 		return errors.BadRequestError(nil).WithMessage(`name "%s" is reserved, please try a different name`, registration.Name)
 	}
 
-	return bc.manager.Update(registration)
+	return bc.manager.Update(ctx, registration)
 }
 
 // SetDefaultRegistration ...
-func (bc *basicController) DeleteRegistration(registrationUUID string) (*scanner.Registration, error) {
-	registration, err := bc.manager.Get(registrationUUID)
+func (bc *basicController) DeleteRegistration(ctx context.Context, registrationUUID string) (*scanner.Registration, error) {
+	registration, err := bc.manager.Get(ctx, registrationUUID)
 	if err != nil {
 		return nil, errors.Wrap(err, "api controller: delete registration")
 	}
@@ -140,7 +140,7 @@ func (bc *basicController) DeleteRegistration(registrationUUID string) (*scanner
 		return nil, nil
 	}
 
-	if err := bc.manager.Delete(registrationUUID); err != nil {
+	if err := bc.manager.Delete(ctx, registrationUUID); err != nil {
 		return nil, errors.Wrap(err, "api controller: delete registration")
 	}
 
@@ -148,8 +148,8 @@ func (bc *basicController) DeleteRegistration(registrationUUID string) (*scanner
 }
 
 // SetDefaultRegistration ...
-func (bc *basicController) SetDefaultRegistration(registrationUUID string) error {
-	return bc.manager.SetAsDefault(registrationUUID)
+func (bc *basicController) SetDefaultRegistration(ctx context.Context, registrationUUID string) error {
+	return bc.manager.SetAsDefault(ctx, registrationUUID)
 }
 
 // SetRegistrationByProject ...
@@ -204,7 +204,7 @@ func (bc *basicController) GetRegistrationByProject(ctx context.Context, project
 	var registration *scanner.Registration
 	if len(m) > 0 {
 		if registrationID, ok := m[proScannerMetaKey]; ok && len(registrationID) > 0 {
-			registration, err = bc.manager.Get(registrationID)
+			registration, err = bc.manager.Get(ctx, registrationID)
 			if err != nil {
 				return nil, errors.Wrap(err, "api controller: get project scanner")
 			}
@@ -221,7 +221,7 @@ func (bc *basicController) GetRegistrationByProject(ctx context.Context, project
 
 	if registration == nil {
 		// Second, get the default one
-		registration, err = bc.manager.GetDefault()
+		registration, err = bc.manager.GetDefault(ctx)
 		if err != nil {
 			return nil, errors.Wrap(err, "api controller: get project scanner")
 		}
@@ -236,7 +236,7 @@ func (bc *basicController) GetRegistrationByProject(ctx context.Context, project
 
 	if opts.Ping {
 		// Get metadata of the configured registration
-		meta, err := bc.Ping(registration)
+		meta, err := bc.Ping(ctx, registration)
 		if err != nil {
 			// Not blocked, just logged it
 			log.Error(errors.Wrap(err, "api controller: get project scanner"))
@@ -256,7 +256,7 @@ func (bc *basicController) GetRegistrationByProject(ctx context.Context, project
 }
 
 // Ping ...
-func (bc *basicController) Ping(registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error) {
+func (bc *basicController) Ping(ctx context.Context, registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error) {
 	if registration == nil {
 		return nil, errors.New("nil registration to ping")
 	}
@@ -314,17 +314,17 @@ func (bc *basicController) Ping(registration *scanner.Registration) (*v1.Scanner
 }
 
 // GetMetadata ...
-func (bc *basicController) GetMetadata(registrationUUID string) (*v1.ScannerAdapterMetadata, error) {
+func (bc *basicController) GetMetadata(ctx context.Context, registrationUUID string) (*v1.ScannerAdapterMetadata, error) {
 	if len(registrationUUID) == 0 {
 		return nil, errors.New("empty registration uuid")
 	}
 
-	r, err := bc.manager.Get(registrationUUID)
+	r, err := bc.manager.Get(ctx, registrationUUID)
 	if err != nil {
 		return nil, errors.Wrap(err, "scanner controller: get metadata")
 	}
 
-	return bc.Ping(r)
+	return bc.Ping(ctx, r)
 }
 
 var (

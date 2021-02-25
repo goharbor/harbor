@@ -29,71 +29,78 @@ type Controller interface {
 	// Query parameters are optional
 	//
 	//  Arguments:
+	//    ctx context.Context : the context for this method
 	//    query *q.Query : query parameters
 	//
 	//  Returns:
 	//    []*scanner.Registration : scanner list of all the matched ones
 	//    error                   : non nil error if any errors occurred
-	ListRegistrations(query *q.Query) ([]*scanner.Registration, error)
+	ListRegistrations(ctx context.Context, query *q.Query) ([]*scanner.Registration, error)
 
 	// CreateRegistration creates a new scanner registration with the given data.
 	// Returns the scanner registration identifier.
 	//
 	//  Arguments:
+	//    ctx context.Context : the context for this method
 	//    registration *scanner.Registration : scanner registration to create
 	//
 	//  Returns:
 	//    string : the generated UUID of the new scanner
 	//    error  : non nil error if any errors occurred
-	CreateRegistration(registration *scanner.Registration) (string, error)
+	CreateRegistration(ctx context.Context, registration *scanner.Registration) (string, error)
 
 	// GetRegistration returns the details of the specified scanner registration.
 	//
 	//  Arguments:
+	//    ctx context.Context : the context for this method
 	//    registrationUUID string : the UUID of the given scanner
 	//
 	//  Returns:
 	//    *scanner.Registration : the required scanner
 	//    error                 : non nil error if any errors occurred
-	GetRegistration(registrationUUID string) (*scanner.Registration, error)
+	GetRegistration(ctx context.Context, registrationUUID string) (*scanner.Registration, error)
 
 	// RegistrationExists checks if the provided registration is there.
 	//
 	//  Arguments:
+	//    ctx context.Context : the context for this method
 	//    registrationUUID string : the UUID of the given scanner
 	//
 	//  Returns:
 	//    true for existing or false for not existing
-	RegistrationExists(registrationUUID string) bool
+	RegistrationExists(ctx context.Context, registrationUUID string) bool
 
 	// UpdateRegistration updates the specified scanner registration.
 	//
 	//  Arguments:
+	//    ctx context.Context : the context for this method
 	//    registration *scanner.Registration : scanner registration to update
 	//
 	//  Returns:
 	//    error  : non nil error if any errors occurred
-	UpdateRegistration(registration *scanner.Registration) error
+	UpdateRegistration(ctx context.Context, registration *scanner.Registration) error
 
 	// DeleteRegistration deletes the specified scanner registration.
 	//
 	//  Arguments:
+	//    ctx context.Context : the context for this method
 	//    registrationUUID string : the UUID of the given scanner which is going to be deleted
 	//
 	//  Returns:
 	//    *scanner.Registration : the deleted scanner
 	//    error                 : non nil error if any errors occurred
-	DeleteRegistration(registrationUUID string) (*scanner.Registration, error)
+	DeleteRegistration(ctx context.Context, registrationUUID string) (*scanner.Registration, error)
 
 	// SetDefaultRegistration marks the specified scanner registration as default.
 	// The implementation is supposed to unset any registration previously set as default.
 	//
 	//  Arguments:
+	//    ctx context.Context : the context for this method
 	//    registrationUUID string : the UUID of the given scanner which is marked as default
 	//
 	//  Returns:
 	//    error : non nil error if any errors occurred
-	SetDefaultRegistration(registrationUUID string) error
+	SetDefaultRegistration(ctx context.Context, registrationUUID string) error
 
 	// SetRegistrationByProject sets scanner for the given project.
 	//
@@ -123,20 +130,22 @@ type Controller interface {
 	// Returns `nil` if connection succeeded, a non `nil` error otherwise.
 	//
 	//  Arguments:
+	//    ctx context.Context : the context for this method
 	//    registration *scanner.Registration : scanner registration to ping
 	//
 	//  Returns:
 	//    *v1.ScannerAdapterMetadata : metadata returned by the scanner if successfully ping
 	//    error                      : non nil error if any errors occurred
-	Ping(registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error)
+	Ping(ctx context.Context, registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error)
 
 	// GetMetadata returns the metadata of the given scanner.
 	//
 	//  Arguments:
+	//    ctx context.Context : the context for this method
 	//    registrationUUID string : the UUID of the given scanner which is marked as default
 	//
 	//  Returns:
 	//    *v1.ScannerAdapterMetadata : metadata returned by the scanner if successfully ping
 	//    error                      : non nil error if any errors occurred
-	GetMetadata(registrationUUID string) (*v1.ScannerAdapterMetadata, error)
+	GetMetadata(ctx context.Context, registrationUUID string) (*v1.ScannerAdapterMetadata, error)
 }
