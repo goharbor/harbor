@@ -158,7 +158,6 @@ var (
 		{Name: common.MetricPath, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_PATH", DefaultValue: "/metrics", ItemType: &StringType{}, Editable: true},
 
 		{Name: common.QuotaPerProjectEnable, Scope: UserScope, Group: QuotaGroup, EnvKey: "QUOTA_PER_PROJECT_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true},
-		{Name: common.CountPerProject, Scope: UserScope, Group: QuotaGroup, EnvKey: "COUNT_PER_PROJECT", DefaultValue: "-1", ItemType: &QuotaType{}, Editable: true},
 		{Name: common.StoragePerProject, Scope: UserScope, Group: QuotaGroup, EnvKey: "STORAGE_PER_PROJECT", DefaultValue: "-1", ItemType: &QuotaType{}, Editable: true},
 	}
 )

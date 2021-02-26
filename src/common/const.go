@@ -156,7 +156,6 @@ const (
 
 	// Quota setting items for project
 	QuotaPerProjectEnable = "quota_per_project_enable"
-	CountPerProject       = "count_per_project"
 	StoragePerProject     = "storage_per_project"
 
 	// DefaultGCTimeWindowHours is the reserve blob time window used by GC, default is 2 hours

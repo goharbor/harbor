@@ -1700,6 +1700,114 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  '/quotas':
+    get:
+      summary: List quotas
+      description: List quotas
+      tags:
+        - quota
+      operationId: listQuotas
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: reference
+          in: query
+          description: The reference type of quota.
+          required: false
+          type: string
+        - name: reference_id
+          in: query
+          description: The reference id of quota.
+          required: false
+          type: string
+        - name: sort
+          in: query
+          type: string
+          required: false
+          description: |
+            Sort method, valid values include:
+            'hard.resource_name', '-hard.resource_name', 'used.resource_name', '-used.resource_name'.
+            Here '-' stands for descending order, resource_name should be the real resource name of the quota.
+      responses:
+        '200':
+          description: Successfully retrieved the quotas.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Quota'
+          headers:
+            X-Total-Count:
+              description: The total count of access logs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/quotas/{id}':
+    get:
+      summary: Get the specified quota
+      description: Get the specified quota
+      tags:
+        - quota
+      operationId: getQuota
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Quota ID
+      responses:
+        '200':
+          description: Successfully retrieved the quota.
+          schema:
+            $ref: '#/definitions/Quota'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update the specified quota
+      description: Update hard limits of the specified quota
+      tags:
+        - quota
+      operationId: updateQuota
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Quota ID
+        - name: hard
+          in: body
+          required: true
+          description: The new hard limits for the quota
+          schema:
+            $ref: '#/definitions/QuotaUpdateReq'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /robots/{robot_id}:
     get:
       summary: Get a robot account
@@ -3585,16 +3693,18 @@ definitions:
         type: integer
         description: The total number of limited guest members.
       quota:
-        type: object
-        properties:
-          hard:
-            $ref: "#/definitions/ResourceList"
-            description: The hard limits of the quota
-          used:
-            $ref: "#/definitions/ResourceList"
-            description: The used status of the quota
+        $ref: "#/definitions/ProjectSummaryQuota"
       registry:
         $ref: "#/definitions/Registry"
+  ProjectSummaryQuota:
+    type: object
+    properties:
+      hard:
+        $ref: "#/definitions/ResourceList"
+        description: The hard limits of the quota
+      used:
+        $ref: "#/definitions/ResourceList"
+        description: The used status of the quota
   CVEAllowlist:
     type: object
     description: The CVE Allowlist for system or project
@@ -3678,6 +3788,10 @@ definitions:
     additionalProperties:
       type: integer
       format: int64
+    x-go-type:
+      type: ResourceList
+      import:
+        package: "github.com/goharbor/harbor/src/pkg/quota/types"
   ReplicationExecution:
     type: object
     description: The replication execution
@@ -4328,3 +4442,38 @@ definitions:
       retained:
         type: integer
         x-omitempty: false
+  QuotaUpdateReq:
+    type: object
+    properties:
+      hard:
+        $ref: "#/definitions/ResourceList"
+        description: The new hard limits for the quota
+  QuotaRefObject:
+    type: object
+    additionalProperties: {}
+  Quota:
+    type: object
+    description: The quota object
+    properties:
+      id:
+        type: integer
+        description: ID of the quota
+      ref:
+        $ref: "#/definitions/QuotaRefObject"
+        description: The reference object of the quota
+      hard:
+        $ref: "#/definitions/ResourceList"
+        description: The hard limits of the quota
+        x-omitempty: false
+      used:
+        $ref: "#/definitions/ResourceList"
+        description: The used status of the quota
+        x-omitempty: false
+      creation_time:
+        type: string
+        format: date-time
+        description: the creation time of the quota
+      update_time:
+        type: string
+        format: date-time
+        description: the update time of the quota

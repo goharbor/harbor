@@ -137,7 +137,7 @@ class System(base.Base):
         params['reference'] = reference
         params['reference_id'] = reference_id
 
-        client = self._get_client(**kwargs)
-        data, status_code, _ = client.quotas_get_with_http_info(**params)
+        client = self._get_client(api_type='quota', **kwargs)
+        data, status_code, _ = client.list_quotas_with_http_info(**params)
         base._assert_status_code(200, status_code)
         return data
