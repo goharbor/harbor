@@ -116,6 +116,11 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	}
 
 	for _, project := range projects {
+		if !project.RegistryEnabled {
+			log.Debugf("Skipping project %s: Registry is not enabled", project.Name)
+			continue
+		}
+
 		repositories, err := a.clientGitlabAPI.getRepositories(project.ID)
 		if err != nil {
 			return nil, err
