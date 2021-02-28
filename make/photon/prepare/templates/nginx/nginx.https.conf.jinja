@@ -42,6 +42,11 @@ http {
 
   access_log /dev/stdout timed_combined;
 
+  map $http_x_forwarded_proto $x_forwarded_proto {
+    default $http_x_forwarded_proto;
+    ""      $scheme;
+  }
+
   include /etc/nginx/conf.d/*.server.conf;
 
   server {
@@ -88,9 +93,7 @@ http {
       proxy_set_header Host $http_host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      
-      # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
 
       proxy_cookie_path / "/; HttpOnly; Secure";
 
@@ -114,9 +117,7 @@ http {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-      # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
 
       proxy_cookie_path / "/; Secure";
 
@@ -140,9 +141,7 @@ http {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-      # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
 
       proxy_cookie_path / "/; Secure";
       
@@ -166,9 +165,7 @@ http {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-      # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
 
       proxy_cookie_path / "/; Secure";
       
@@ -196,9 +193,7 @@ http {
       proxy_set_header Host $http_host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      
-      # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
       proxy_buffering off;
       proxy_request_buffering off;
       proxy_send_timeout 900;
@@ -221,9 +216,7 @@ http {
       proxy_set_header Host $http_host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      
-      # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
 
       proxy_cookie_path / "/; Secure";
 
