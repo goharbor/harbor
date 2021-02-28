@@ -19,6 +19,129 @@ security:
   - basic: []
   - {}
 paths:
+  /ldap/ping:
+    post:
+      operationId: pingLdap
+      summary: Ping available ldap service.
+      description: |
+        This endpoint ping the available ldap service for test related configuration parameters.
+      parameters:
+        - name: ldapconf
+          in: body
+          description: 'ldap configuration. support input ldap service configuration. If it is a empty request, will load current configuration from the system.'
+          required: false
+          schema:
+            $ref: '#/definitions/LdapConf'
+      tags:
+        - Ldap
+      responses:
+        '200':
+          description: Ping ldap service successfully.
+          schema:
+            $ref: '#/definitions/LdapPingResult'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /ldap/users/search:
+    get:
+      operationId: searchLdapUser
+      summary: Search available ldap users.
+      description: |
+        This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ladp configuration, load configuration from the system and specific filter.
+      parameters:
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Registered user ID
+      tags:
+        - Ldap
+      responses:
+        '200':
+          description: Search ldap users successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LdapUser'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /ldap/users/import:
+    post:
+      operationId: importLdapUser
+      summary: Import selected available ldap users.
+      description: |
+        This endpoint adds the selected available ldap users to harbor based on related configuration parameters from the system. System will try to guess the user email address and realname, add to harbor user information. If have errors when import user, will return the list of importing failed uid and the failed reason.
+      parameters:
+        - name: uid_list
+          in: body
+          description: The uid listed for importing. This list will check users validity of ldap service based on configuration from the system.
+          required: true
+          schema:
+            $ref: '#/definitions/LdapImportUsers'
+      tags:
+        - Ldap
+      responses:
+        '200':
+          description: Add ldap users successfully.
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          description: Failed import some users.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LdapFailedImportUser'
+        '500':
+          $ref: '#/responses/500'
+  /ldap/groups/search:
+    get:
+      summary: Search available ldap groups.
+      operationId: searchLdapGroup
+      description: |
+        This endpoint searches the available ldap groups based on related configuration parameters. support to search by groupname or groupdn.
+      parameters:
+        - name: groupname
+          in: query
+          type: string
+          required: false
+          description: Ldap group name
+        - name: groupdn
+          in: query
+          type: string
+          required: false
+          description: The LDAP group DN
+      tags:
+        - Ldap
+      responses:
+        '200':
+          description: Search ldap group successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserGroup'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /projects:
     get:
       summary: List projects
@@ -5207,3 +5330,72 @@ definitions:
         type: string
       extras:
         type: string
+  LdapConf:
+    type: object
+    description: The ldap configure properties
+    properties:
+      ldap_url:
+        type: string
+        description: The url of ldap service.
+      ldap_search_dn:
+        type: string
+        description: The search dn of ldap service.
+      ldap_search_password:
+        type: string
+        description: The search password of ldap service.
+      ldap_base_dn:
+        type: string
+        description: The base dn of ldap service.
+      ldap_filter:
+        type: string
+        description: The serach filter of ldap service.
+      ldap_uid:
+        type: string
+        description: The serach uid from ldap service attributes.
+      ldap_scope:
+        type: integer
+        format: int64
+        description: The serach scope of ldap service.
+      ldap_connection_timeout:
+        type: integer
+        format: int64
+        description: The connect timeout of ldap service(second).
+      ldap_verify_cert:
+        type: boolean
+        description: Verify Ldap server certificate.
+  LdapPingResult:
+    type: object
+    description: The ldap ping result
+    properties:
+      success:
+        type: boolean
+        description: Test success
+      message:
+        type: string
+        description: The ping operation output message.
+  LdapImportUsers:
+    type: object
+    properties:
+      ldap_uid_list:
+        type: array
+        description: selected uid list
+        items:
+          type: string
+  LdapFailedImportUser:
+    type: object
+    x-go-type:
+      type: FailedImportUser
+      import:
+        package: "github.com/goharbor/harbor/src/pkg/ldap/model"
+  LdapUser:
+    type: object
+    x-go-type:
+      type: User
+      import:
+        package: "github.com/goharbor/harbor/src/pkg/ldap/model"
+  UserGroup:
+    type: object
+    x-go-type:
+      type: Group
+      import:
+        package: "github.com/goharbor/harbor/src/pkg/ldap/model"

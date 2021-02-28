@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/ldap/model"
 )
 
 const (
@@ -132,37 +133,37 @@ func TokenPrivateKeyPath() string {
 }
 
 // LDAPConf returns the setting of ldap server
-func LDAPConf() (*models.LdapConf, error) {
+func LDAPConf() (*model.LdapConf, error) {
 	err := cfgMgr.Load()
 	if err != nil {
 		return nil, err
 	}
-	return &models.LdapConf{
-		LdapURL:               cfgMgr.Get(common.LDAPURL).GetString(),
-		LdapSearchDn:          cfgMgr.Get(common.LDAPSearchDN).GetString(),
-		LdapSearchPassword:    cfgMgr.Get(common.LDAPSearchPwd).GetString(),
-		LdapBaseDn:            cfgMgr.Get(common.LDAPBaseDN).GetString(),
-		LdapUID:               cfgMgr.Get(common.LDAPUID).GetString(),
-		LdapFilter:            cfgMgr.Get(common.LDAPFilter).GetString(),
-		LdapScope:             cfgMgr.Get(common.LDAPScope).GetInt(),
-		LdapConnectionTimeout: cfgMgr.Get(common.LDAPTimeout).GetInt(),
-		LdapVerifyCert:        cfgMgr.Get(common.LDAPVerifyCert).GetBool(),
+	return &model.LdapConf{
+		URL:               cfgMgr.Get(common.LDAPURL).GetString(),
+		SearchDn:          cfgMgr.Get(common.LDAPSearchDN).GetString(),
+		SearchPassword:    cfgMgr.Get(common.LDAPSearchPwd).GetString(),
+		BaseDn:            cfgMgr.Get(common.LDAPBaseDN).GetString(),
+		UID:               cfgMgr.Get(common.LDAPUID).GetString(),
+		Filter:            cfgMgr.Get(common.LDAPFilter).GetString(),
+		Scope:             cfgMgr.Get(common.LDAPScope).GetInt(),
+		ConnectionTimeout: cfgMgr.Get(common.LDAPTimeout).GetInt(),
+		VerifyCert:        cfgMgr.Get(common.LDAPVerifyCert).GetBool(),
 	}, nil
 }
 
 // LDAPGroupConf returns the setting of ldap group search
-func LDAPGroupConf() (*models.LdapGroupConf, error) {
+func LDAPGroupConf() (*model.GroupConf, error) {
 	err := cfgMgr.Load()
 	if err != nil {
 		return nil, err
 	}
-	return &models.LdapGroupConf{
-		LdapGroupBaseDN:              cfgMgr.Get(common.LDAPGroupBaseDN).GetString(),
-		LdapGroupFilter:              cfgMgr.Get(common.LDAPGroupSearchFilter).GetString(),
-		LdapGroupNameAttribute:       cfgMgr.Get(common.LDAPGroupAttributeName).GetString(),
-		LdapGroupSearchScope:         cfgMgr.Get(common.LDAPGroupSearchScope).GetInt(),
-		LdapGroupAdminDN:             cfgMgr.Get(common.LDAPGroupAdminDn).GetString(),
-		LdapGroupMembershipAttribute: cfgMgr.Get(common.LDAPGroupMembershipAttribute).GetString(),
+	return &model.GroupConf{
+		BaseDN:              cfgMgr.Get(common.LDAPGroupBaseDN).GetString(),
+		Filter:              cfgMgr.Get(common.LDAPGroupSearchFilter).GetString(),
+		NameAttribute:       cfgMgr.Get(common.LDAPGroupAttributeName).GetString(),
+		SearchScope:         cfgMgr.Get(common.LDAPGroupSearchScope).GetInt(),
+		AdminDN:             cfgMgr.Get(common.LDAPGroupAdminDn).GetString(),
+		MembershipAttribute: cfgMgr.Get(common.LDAPGroupMembershipAttribute).GetString(),
 	}, nil
 }
 

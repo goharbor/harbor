@@ -45,6 +45,7 @@ func New() http.Handler {
 		ReplicationAPI: newReplicationAPI(),
 		SysteminfoAPI:  newSystemInfoAPI(),
 		PingAPI:        newPingAPI(),
+		LdapAPI:        newLdapAPI(),
 		GCAPI:          newGCAPI(),
 		QuotaAPI:       newQuotaAPI(),
 		RetentionAPI:   newRetentionAPI(),

@@ -63,5 +63,7 @@ var (
 
 		{Resource: rbac.ResourceOIDCEndpoint, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceOIDCEndpoint, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceLdapUser, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceLdapUser, Action: rbac.ActionList},
 	}
 )
