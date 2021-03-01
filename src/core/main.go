@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"encoding/gob"
 	"fmt"
 	"net/url"
@@ -47,6 +48,7 @@ import (
 	_ "github.com/goharbor/harbor/src/lib/cache/redis"  // redis cache
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/metric"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/migration"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
@@ -204,7 +206,7 @@ func main() {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
 	}
 
-	registerScanners()
+	registerScanners(orm.Context())
 
 	closing := make(chan struct{})
 	done := make(chan struct{})
@@ -240,7 +242,7 @@ const (
 	trivyScanner = "Trivy"
 )
 
-func registerScanners() {
+func registerScanners(ctx context.Context) {
 	wantedScanners := make([]scanner.Registration, 0)
 	uninstallScannerNames := make([]string, 0)
 
@@ -258,17 +260,17 @@ func registerScanners() {
 		uninstallScannerNames = append(uninstallScannerNames, trivyScanner)
 	}
 
-	if err := scan.RemoveImmutableScanners(uninstallScannerNames); err != nil {
+	if err := scan.RemoveImmutableScanners(ctx, uninstallScannerNames); err != nil {
 		log.Warningf("failed to remove scanners: %v", err)
 	}
 
-	if err := scan.EnsureScanners(wantedScanners); err != nil {
+	if err := scan.EnsureScanners(ctx, wantedScanners); err != nil {
 		log.Fatalf("failed to register scanners: %v", err)
 	}
 
 	if defaultScannerName := getDefaultScannerName(); defaultScannerName != "" {
 		log.Infof("Setting %s as default scanner", defaultScannerName)
-		if err := scan.EnsureDefaultScanner(defaultScannerName); err != nil {
+		if err := scan.EnsureDefaultScanner(ctx, defaultScannerName); err != nil {
 			log.Fatalf("failed to set default scanner: %v", err)
 		}
 	}

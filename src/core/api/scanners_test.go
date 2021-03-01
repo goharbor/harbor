@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -107,7 +108,7 @@ func (suite *ScannerAPITestSuite) TestScannerAPIGet() {
 		Description: "JUST FOR TEST",
 		URL:         "https://a.b.c",
 	}
-	suite.mockC.On("GetRegistration", "uuid").Return(res, nil)
+	suite.mockC.On("GetRegistration", mock.Anything, "uuid").Return(res, nil)
 
 	// Get
 	rr := &scanner.Registration{}
@@ -131,7 +132,7 @@ func (suite *ScannerAPITestSuite) TestScannerAPICreate() {
 	}
 
 	suite.mockQuery(r)
-	suite.mockC.On("CreateRegistration", r).Return("uuid", nil)
+	suite.mockC.On("CreateRegistration", mock.Anything, r).Return("uuid", nil)
 
 	// Create
 	res := make(map[string]string, 1)
@@ -163,7 +164,7 @@ func (suite *ScannerAPITestSuite) TestScannerAPIList() {
 			Description: "JUST FOR TEST",
 			URL:         "https://a.b.c",
 		}}
-	suite.mockC.On("ListRegistrations", query).Return(ll, nil)
+	suite.mockC.On("ListRegistrations", mock.Anything, query).Return(ll, nil)
 
 	// List
 	l := make([]*scanner.Registration, 0)
@@ -198,8 +199,8 @@ func (suite *ScannerAPITestSuite) TestScannerAPIUpdate() {
 	}
 
 	suite.mockQuery(updated)
-	suite.mockC.On("UpdateRegistration", updated).Return(nil)
-	suite.mockC.On("GetRegistration", "uuid").Return(before, nil)
+	suite.mockC.On("UpdateRegistration", mock.Anything, updated).Return(nil)
+	suite.mockC.On("GetRegistration", mock.Anything, "uuid").Return(before, nil)
 
 	rr := &scanner.Registration{}
 	err := handleAndParse(&testingRequest{
@@ -225,8 +226,8 @@ func (suite *ScannerAPITestSuite) TestScannerAPIDelete() {
 		URL:         "https://a.b.c",
 	}
 
-	suite.mockC.On("GetRegistration", "uuid").Return(r, nil)
-	suite.mockC.On("DeleteRegistration", "uuid").Return(r, nil)
+	suite.mockC.On("GetRegistration", mock.Anything, "uuid").Return(r, nil)
+	suite.mockC.On("DeleteRegistration", mock.Anything, "uuid").Return(r, nil)
 
 	deleted := &scanner.Registration{}
 	err := handleAndParse(&testingRequest{
@@ -242,7 +243,7 @@ func (suite *ScannerAPITestSuite) TestScannerAPIDelete() {
 
 // TestScannerAPISetDefault tests the set default
 func (suite *ScannerAPITestSuite) TestScannerAPISetDefault() {
-	suite.mockC.On("SetDefaultRegistration", "uuid").Return(nil)
+	suite.mockC.On("SetDefaultRegistration", mock.Anything, "uuid").Return(nil)
 
 	body := make(map[string]interface{}, 1)
 	body["is_default"] = true
@@ -264,12 +265,12 @@ func (suite *ScannerAPITestSuite) mockQuery(r *scanner.Registration) {
 		Keywords: kw,
 	}
 	emptyL := make([]*scanner.Registration, 0)
-	suite.mockC.On("ListRegistrations", query).Return(emptyL, nil)
+	suite.mockC.On("ListRegistrations", mock.Anything, query).Return(emptyL, nil)
 
 	kw2 := make(map[string]interface{}, 1)
 	kw2["url"] = r.URL
 	query2 := &q.Query{
 		Keywords: kw2,
 	}
-	suite.mockC.On("ListRegistrations", query2).Return(emptyL, nil)
+	suite.mockC.On("ListRegistrations", mock.Anything, query2).Return(emptyL, nil)
 }

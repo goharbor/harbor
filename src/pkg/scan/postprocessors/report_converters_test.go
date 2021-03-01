@@ -1,7 +1,24 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package postprocessors
 
 import (
 	"encoding/json"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -14,8 +31,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 const sampleReport = `{
@@ -133,7 +148,7 @@ const sampleReportWithCompleteVulnData = `{
 			"vector_v3": "CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
 			"vector_v2": "AV:L/AC:M/Au:N/C:P/I:N/A:N"
 		},
-		"vendor_attributes":{ 
+		"vendor_attributes":{
 			"CVSS":{
 				"nvd" : {
 					"V2Score": 7.1,
@@ -185,7 +200,7 @@ const sampleReportWithMixedSeverity = `{
 			"vector_v3": "CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
 			"vector_v2": "AV:L/AC:M/Au:N/C:P/I:N/A:N"
 		},
-		"vendor_attributes":{ 
+		"vendor_attributes":{
 			"CVSS":{
 				"nvd" : {
 					"V2Score": 7.1,
@@ -220,7 +235,7 @@ const sampleReportWithMixedSeverity = `{
 			"vector_v3": "CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
 			"vector_v2": "AV:L/AC:M/Au:N/C:P/I:N/A:N"
 		},
-		"vendor_attributes":{ 
+		"vendor_attributes":{
 			"CVSS":{
 				"nvd" : {
 					"V2Score": 7.1,
@@ -255,7 +270,7 @@ const sampleReportWithMixedSeverity = `{
 			"vector_v3": "CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
 			"vector_v2": "AV:L/AC:M/Au:N/C:P/I:N/A:N"
 		},
-		"vendor_attributes":{ 
+		"vendor_attributes":{
 			"CVSS":{
 				"nvd" : {
 					"V2Score": 7.1,
@@ -291,7 +306,7 @@ func (suite *TestReportConverterSuite) SetupTest() {
 		URL:         "https://sample.scanner.com",
 	}
 
-	_, err := scanner.AddRegistration(r)
+	_, err := scanner.AddRegistration(suite.Context(), r)
 	require.NoError(suite.T(), err, "add new registration")
 }
 
@@ -312,7 +327,7 @@ func (suite *TestReportConverterSuite) SetupSuite() {
 func (suite *TestReportConverterSuite) TearDownTest() {
 	// No delete method defined in manager as no requirement,
 	// so, to clear env, call dao method here
-	scanner.DeleteRegistration(suite.registrationID)
+	scanner.DeleteRegistration(suite.Context(), suite.registrationID)
 	reports, err := suite.reportDao.List(orm.Context(), &q.Query{})
 	require.True(suite.T(), err == nil, "Failed to delete vulnerability records")
 	for _, report := range reports {

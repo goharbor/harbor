@@ -15,13 +15,12 @@
 package scanner
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
-	liborm "github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 )
 
@@ -30,26 +29,32 @@ func init() {
 }
 
 // AddRegistration adds a new registration
-func AddRegistration(r *Registration) (int64, error) {
-	o := dao.GetOrmer()
+func AddRegistration(ctx context.Context, r *Registration) (int64, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
 
 	id, err := o.Insert(r)
 	if err != nil {
-		return 0, liborm.WrapConflictError(err, "registration name or url already exists")
+		return 0, orm.WrapConflictError(err, "registration name or url already exists")
 	}
 
 	return id, nil
 }
 
 // GetRegistration gets the specified registration
-func GetRegistration(UUID string) (*Registration, error) {
-	e := &Registration{}
+func GetRegistration(ctx context.Context, UUID string) (*Registration, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	o := dao.GetOrmer()
+	e := &Registration{}
 	qs := o.QueryTable(new(Registration))
 
 	if err := qs.Filter("uuid", UUID).One(e); err != nil {
-		if err == orm.ErrNoRows {
+		if errors.Is(err, orm.ErrNoRows) {
 			// Not existing case
 			return nil, nil
 		}
@@ -60,8 +65,12 @@ func GetRegistration(UUID string) (*Registration, error) {
 }
 
 // UpdateRegistration update the specified registration
-func UpdateRegistration(r *Registration, cols ...string) error {
-	o := dao.GetOrmer()
+func UpdateRegistration(ctx context.Context, r *Registration, cols ...string) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+
 	count, err := o.Update(r, cols...)
 	if err != nil {
 		return err
@@ -75,8 +84,12 @@ func UpdateRegistration(r *Registration, cols ...string) error {
 }
 
 // DeleteRegistration deletes the registration with the specified UUID
-func DeleteRegistration(UUID string) error {
-	o := dao.GetOrmer()
+func DeleteRegistration(ctx context.Context, UUID string) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+
 	qt := o.QueryTable(new(Registration))
 
 	// delete with query way
@@ -94,8 +107,12 @@ func DeleteRegistration(UUID string) error {
 }
 
 // ListRegistrations lists all the existing registrations
-func ListRegistrations(query *q.Query) ([]*Registration, error) {
-	o := dao.GetOrmer()
+func ListRegistrations(ctx context.Context, query *q.Query) ([]*Registration, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	qt := o.QueryTable(new(Registration))
 
 	if query != nil {
@@ -107,7 +124,7 @@ func ListRegistrations(query *q.Query) ([]*Registration, error) {
 					continue
 				}
 				if s, ok := v.(string); ok {
-					v = liborm.Escape(s)
+					v = orm.Escape(s)
 				}
 
 				qt = qt.Filter(fmt.Sprintf("%s__icontains", k), v)
@@ -123,58 +140,58 @@ func ListRegistrations(query *q.Query) ([]*Registration, error) {
 	qt = qt.OrderBy("-is_default", "-create_time")
 
 	l := make([]*Registration, 0)
-	_, err := qt.All(&l)
+	_, err = qt.All(&l)
 
 	return l, err
 }
 
 // SetDefaultRegistration sets the specified registration as default one
-func SetDefaultRegistration(UUID string) error {
-	o := orm.NewOrm()
-	err := o.Begin()
-	if err != nil {
-		return err
-	}
+func SetDefaultRegistration(ctx context.Context, UUID string) error {
+	f := func(ctx context.Context) error {
+		o, err := orm.FromContext(ctx)
+		if err != nil {
+			return err
+		}
 
-	var count int64
-	qt := o.QueryTable(new(Registration))
-	count, err = qt.Filter("uuid", UUID).
-		Filter("disabled", false).
-		Update(orm.Params{
-			"is_default": true,
-		})
-	if err == nil && count == 0 {
-		err = errors.Errorf("set default for %s failed", UUID)
-	}
+		var count int64
+		qt := o.QueryTable(new(Registration))
+		count, err = qt.Filter("uuid", UUID).
+			Filter("disabled", false).
+			Update(orm.Params{
+				"is_default": true,
+			})
+		if err != nil {
+			return err
+		}
+		if count == 0 {
+			return errors.Errorf("set default for %s failed", UUID)
+		}
 
-	if err == nil {
 		qt2 := o.QueryTable(new(Registration))
 		_, err = qt2.Exclude("uuid__exact", UUID).
 			Filter("is_default", true).
 			Update(orm.Params{
 				"is_default": false,
 			})
+
+		return err
 	}
 
-	if err != nil {
-		if e := o.Rollback(); e != nil {
-			err = errors.Wrap(e, err.Error())
-		}
-	} else {
-		err = o.Commit()
-	}
-
-	return err
+	return orm.WithTransaction(f)(ctx)
 }
 
 // GetDefaultRegistration gets the default registration
-func GetDefaultRegistration() (*Registration, error) {
-	o := dao.GetOrmer()
+func GetDefaultRegistration(ctx context.Context) (*Registration, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	qt := o.QueryTable(new(Registration))
 
 	e := &Registration{}
 	if err := qt.Filter("is_default", true).One(e); err != nil {
-		if err == orm.ErrNoRows {
+		if errors.Is(err, orm.ErrNoRows) {
 			return nil, nil
 		}
 

@@ -111,7 +111,7 @@ func (suite *ProScannerAPITestSuite) TestScannerAPIGetScannerCandidates() {
 			Description: "JUST FOR TEST",
 			URL:         "https://a.b.c",
 		}}
-	suite.mockC.On("ListRegistrations", query).Return(ll, nil)
+	suite.mockC.On("ListRegistrations", mock.Anything, query).Return(ll, nil)
 
 	// Get
 	l := make([]*scanner.Registration, 0)

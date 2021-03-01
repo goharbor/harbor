@@ -16,10 +16,11 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	"net/http"
 
 	s "github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -76,7 +77,7 @@ func (sa *ScannerAPI) Metadata() {
 	}
 	uuid := sa.GetStringFromPath(":uuid")
 
-	meta, err := sa.c.GetMetadata(uuid)
+	meta, err := sa.c.GetMetadata(sa.Context(), uuid)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: get metadata"))
 		return
@@ -118,7 +119,7 @@ func (sa *ScannerAPI) List() {
 		query.Keywords = kws
 	}
 
-	all, err := sa.c.ListRegistrations(query)
+	all, err := sa.c.ListRegistrations(sa.Context(), query)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: list all"))
 		return
@@ -156,7 +157,7 @@ func (sa *ScannerAPI) Create() {
 	// All newly created should be non default one except the 1st one
 	r.IsDefault = false
 
-	uuid, err := sa.c.CreateRegistration(r)
+	uuid, err := sa.c.CreateRegistration(sa.Context(), r)
 	if err != nil {
 		sa.SendError(errors.Wrap(err, "scanner API: create"))
 		return
@@ -220,7 +221,7 @@ func (sa *ScannerAPI) Update() {
 
 	getChanges(r, rr)
 
-	if err := sa.c.UpdateRegistration(r); err != nil {
+	if err := sa.c.UpdateRegistration(sa.Context(), r); err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: update"))
 		return
 	}
@@ -251,7 +252,7 @@ func (sa *ScannerAPI) Delete() {
 		return
 	}
 
-	deleted, err := sa.c.DeleteRegistration(r.UUID)
+	deleted, err := sa.c.DeleteRegistration(sa.Context(), r.UUID)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: delete"))
 		return
@@ -277,7 +278,7 @@ func (sa *ScannerAPI) SetAsDefault() {
 
 	if v, ok := m["is_default"]; ok {
 		if isDefault, y := v.(bool); y && isDefault {
-			if err := sa.c.SetDefaultRegistration(uid); err != nil {
+			if err := sa.c.SetDefaultRegistration(sa.Context(), uid); err != nil {
 				sa.SendInternalServerError(errors.Wrap(err, "scanner API: set as default"))
 			}
 
@@ -307,7 +308,7 @@ func (sa *ScannerAPI) Ping() {
 		return
 	}
 
-	if _, err := sa.c.Ping(r); err != nil {
+	if _, err := sa.c.Ping(sa.Context(), r); err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: ping"))
 		return
 	}
@@ -317,7 +318,7 @@ func (sa *ScannerAPI) Ping() {
 func (sa *ScannerAPI) get() *scanner.Registration {
 	uid := sa.GetStringFromPath(":uuid")
 
-	r, err := sa.c.GetRegistration(uid)
+	r, err := sa.c.GetRegistration(sa.Context(), uid)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: get"))
 		return nil
@@ -341,7 +342,7 @@ func (sa *ScannerAPI) checkDuplicated(property, value string) bool {
 		Keywords: kw,
 	}
 
-	l, err := sa.c.ListRegistrations(query)
+	l, err := sa.c.ListRegistrations(sa.Context(), query)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: check existence"))
 		return false

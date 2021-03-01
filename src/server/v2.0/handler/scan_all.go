@@ -260,7 +260,7 @@ func (s *scanAllAPI) requireScanEnabled(ctx context.Context) error {
 		Keywords: kws,
 	}
 
-	l, err := s.scannerCtl.ListRegistrations(query)
+	l, err := s.scannerCtl.ListRegistrations(ctx, query)
 	if err != nil {
 		return errors.Wrap(err, "check if scan is enabled")
 	}
