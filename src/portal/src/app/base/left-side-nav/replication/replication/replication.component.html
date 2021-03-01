@@ -73,7 +73,7 @@
             </clr-tooltip>
           </clr-dg-cell>
           <clr-dg-cell>{{j.trigger}}</clr-dg-cell>
-          <clr-dg-cell>{{j.start_time | date: 'short'}}</clr-dg-cell>
+          <clr-dg-cell>{{j.start_time | harborDatetime: 'short'}}</clr-dg-cell>
           <clr-dg-cell>{{getDuration(j)}}</clr-dg-cell>
           <clr-dg-cell>
             {{((j.status === 'InProgress' || j.status === 'Failed')? (j.total > 0 ? j.succeed / j.total : 0): j.total > 0 ? j.succeed / j.total : 1)| percent }}

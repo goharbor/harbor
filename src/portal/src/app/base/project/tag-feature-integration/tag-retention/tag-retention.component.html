@@ -121,7 +121,7 @@
                     <clr-dg-cell class="hand"
                                  (click)="openDetail(i,execution.id)">{{execution.trigger}}</clr-dg-cell>
                     <clr-dg-cell class="hand"
-                                 (click)="openDetail(i,execution.id)">{{execution.start_time|date:'medium'}}</clr-dg-cell>
+                                 (click)="openDetail(i,execution.id)">{{execution.start_time| harborDatetime:'medium'}}</clr-dg-cell>
                     <clr-dg-cell class="hand" (click)="openDetail(i,execution.id)">{{execution.duration}}</clr-dg-cell>
                     <clr-dg-row-detail *ngIf="index===i">
                         <clr-datagrid (clrDgRefresh)="loadLog()" [clrDgLoading]="loadingHistories" class="w-100">
@@ -138,7 +138,7 @@
                                 <clr-dg-cell>{{task.repository}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.status}}</clr-dg-cell>
                                 <clr-dg-cell>{{task?.retained?task?.retained:0}}/{{task?.total?task?.total:0}}</clr-dg-cell>
-                                <clr-dg-cell>{{task.start_time|date:'medium'}}</clr-dg-cell>
+                                <clr-dg-cell>{{task.start_time| harborDatetime:'medium'}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.duration}}</clr-dg-cell>
                                 <clr-dg-cell><span (click)="seeLog(task.execution_id,task.id)"
                                                    class="hand color-79b">{{'TAG_RETENTION.LOG' | translate}}</span>

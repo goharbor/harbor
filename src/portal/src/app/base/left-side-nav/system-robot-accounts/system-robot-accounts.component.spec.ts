@@ -1,7 +1,4 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { ClarityModule } from "@clr/angular";
-import { TranslateModule } from "@ngx-translate/core";
 import {  NO_ERRORS_SCHEMA } from "@angular/core";
 import { SystemRobotAccountsComponent } from './system-robot-accounts.component';
 import { RobotService } from "../../../../../ng-swagger-gen/services/robot.service";
@@ -14,8 +11,8 @@ import { Project } from "../../../../../ng-swagger-gen/models/project";
 import { ProjectService } from "../../../../../ng-swagger-gen/services/project.service";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
 import { OperationService } from "../../../shared/components/operation/operation.service";
-import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
+import { SharedTestingModule } from "../../../shared/shared.module";
 
 describe('SystemRobotAccountsComponent', () => {
   let component: SystemRobotAccountsComponent;
@@ -122,10 +119,7 @@ describe('SystemRobotAccountsComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        BrowserAnimationsModule,
-        ClarityModule,
-        TranslateModule.forRoot(),
-        HttpClientTestingModule
+        SharedTestingModule
       ],
       declarations: [ SystemRobotAccountsComponent ],
       providers: [

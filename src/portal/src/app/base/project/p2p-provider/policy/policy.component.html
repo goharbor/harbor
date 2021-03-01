@@ -140,7 +140,7 @@
                     </clr-signpost-content>
                 </clr-signpost>
             </clr-dg-cell>
-            <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>
+            <clr-dg-cell>{{p.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
             <clr-dg-cell>{{p.description}}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
@@ -198,7 +198,7 @@
                 </clr-tooltip>
             </clr-dg-cell>
             <clr-dg-cell>{{getTriggerTypeI18nForExecution(execution.trigger) | translate}}</clr-dg-cell>
-            <clr-dg-cell>{{execution.start_time | date: 'short'}}</clr-dg-cell>
+            <clr-dg-cell>{{execution.start_time | harborDatetime: 'short'}}</clr-dg-cell>
             <clr-dg-cell>{{getDuration(execution)}}</clr-dg-cell>
             <clr-dg-cell>{{getSuccessRate(execution.metrics) | percent}}</clr-dg-cell>
             <clr-dg-cell>{{execution.vendor_type}}</clr-dg-cell>

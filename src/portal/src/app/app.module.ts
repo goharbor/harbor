@@ -51,9 +51,6 @@ class MyMissingTranslationHandler implements MissingTranslationHandler {
     }
 }
 
-
-
-
 @NgModule({
     declarations: [
         AppComponent,

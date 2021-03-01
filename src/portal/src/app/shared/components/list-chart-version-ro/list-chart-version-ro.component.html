@@ -12,7 +12,7 @@
       <clr-dg-cell>{{ chart.Chart.version }}</clr-dg-cell>
       <clr-dg-cell>{{ getStatusString(chart.Chart) | translate }}</clr-dg-cell>
       <clr-dg-cell>{{ getMaintainerString(chart.Chart.maintainers) | translate : getMaintainerTranslateInfo(chart.Chart.maintainers) }}</clr-dg-cell>
-      <clr-dg-cell>{{ chart.Chart.created | date}}</clr-dg-cell>
+      <clr-dg-cell>{{ chart.Chart.created | harborDatetime}}</clr-dg-cell>
   </clr-dg-row>
   <clr-dg-footer>
       <clr-dg-pagination #pagination [clrDgPageSize]="5" [clrDgTotalItems]="charts?.length">

@@ -1,14 +1,12 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from "@angular/core";
-import { ClarityModule } from "@clr/angular";
 import { AdditionsService } from "../additions.service";
 import { of } from "rxjs";
-import { TranslateFakeLoader, TranslateLoader, TranslateModule } from "@ngx-translate/core";
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { BuildHistoryComponent } from "./build-history.component";
 import { ArtifactBuildHistory } from "../models";
 import { AdditionLink } from "../../../../../../../../ng-swagger-gen/models/addition-link";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
+import { SharedTestingModule } from "../../../../../../shared/shared.module";
 
 describe('BuildHistoryComponent', () => {
   let component: BuildHistoryComponent;
@@ -36,14 +34,7 @@ describe('BuildHistoryComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        BrowserAnimationsModule,
-        ClarityModule,
-        TranslateModule.forRoot({
-          loader: {
-            provide: TranslateLoader,
-            useClass: TranslateFakeLoader,
-          }
-        })
+        SharedTestingModule
       ],
       declarations: [BuildHistoryComponent],
       providers: [

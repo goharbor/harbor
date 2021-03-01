@@ -66,8 +66,8 @@
                 </a>
             </div>
         </clr-dg-cell>
-        <clr-dg-cell>{{tag.pull_time !== availableTime? (tag.pull_time | date: 'short') : ""}}</clr-dg-cell>
-        <clr-dg-cell>{{tag.push_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{tag.pull_time !== availableTime? (tag.pull_time | harborDatetime: 'short') : ""}}</clr-dg-cell>
+        <clr-dg-cell>{{tag.push_time | harborDatetime: 'short'}}</clr-dg-cell>
     </clr-dg-row>
 
     <clr-dg-footer>

@@ -1,13 +1,12 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 import { ChartDetailSummaryComponent } from './chart-detail-summary.component';
-import { ClarityModule } from '@clr/angular';
 import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { MarkedOptions, MarkdownModule } from 'ngx-markdown';
 import { HelmChartService } from '../helm-chart.service';
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
 import { MessageHandlerService } from "../../../../../shared/services/message-handler.service";
+import { SharedTestingModule } from "../../../../../shared/shared.module";
 describe('ChartDetailSummaryComponent', () => {
     let component: ChartDetailSummaryComponent;
     let fixture: ComponentFixture<ChartDetailSummaryComponent>;
@@ -19,9 +18,7 @@ describe('ChartDetailSummaryComponent', () => {
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
-                TranslateModule.forRoot(),
-                ClarityModule,
-                FormsModule,
+                SharedTestingModule,
                 MarkdownModule.forRoot({ sanitize: SecurityContext.HTML }),
             ],
             schemas: [

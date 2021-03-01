@@ -90,7 +90,7 @@
                     <clr-dg-cell>{{ getStatusString(v) | translate }}</clr-dg-cell>
                     <clr-dg-cell>{{ v.engine }}</clr-dg-cell>
                     <clr-dg-cell>{{ getMaintainerString(v.maintainers) }}</clr-dg-cell>
-                    <clr-dg-cell>{{ v.created | date}}</clr-dg-cell>
+                    <clr-dg-cell>{{ v.created | harborDatetime}}</clr-dg-cell>
                     <clr-dg-cell>
                         <div>
                             <hbr-label-piece *ngIf="v.labels?.length" [label]="v.labels[0]" [labelWidth]="130"> </hbr-label-piece>

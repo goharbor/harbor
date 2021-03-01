@@ -1,12 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ListAllProjectsComponent } from './list-all-projects.component';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { ClarityModule } from "@clr/angular";
-import { RouterTestingModule } from "@angular/router/testing";
-import { TranslateModule } from "@ngx-translate/core";
 import { clone } from "../../../../shared/units/utils";
 import { INITIAL_ACCESSES } from "../system-robot-util";
 import { Project } from "../../../../../../ng-swagger-gen/models/project";
+import { SharedTestingModule } from "../../../../shared/shared.module";
 
 describe('ListAllProjectsComponent', () => {
   let component: ListAllProjectsComponent;
@@ -26,10 +23,7 @@ describe('ListAllProjectsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        BrowserAnimationsModule,
-        ClarityModule,
-        RouterTestingModule,
-        TranslateModule.forRoot(),
+       SharedTestingModule
       ],
       declarations: [ ListAllProjectsComponent ]
     })

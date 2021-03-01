@@ -1,11 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { P2pProviderService } from '../p2p-provider.service';
 import { PreheatService } from '../../../../../../ng-swagger-gen/services/preheat.service';
 import { ActivatedRoute } from '@angular/router';
@@ -18,6 +13,7 @@ import { MessageHandlerService } from '../../../../shared/services/message-handl
 import { UserPermissionService } from '../../../../shared/services';
 import { Task } from '../../../../../../ng-swagger-gen/models/task';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
+import { SharedTestingModule } from "../../../../shared/shared.module";
 describe('TaskListComponent', () => {
   let component: TaskListComponent;
   let fixture: ComponentFixture<TaskListComponent>;
@@ -93,13 +89,7 @@ describe('TaskListComponent', () => {
         NO_ERRORS_SCHEMA
       ],
       imports: [
-        BrowserAnimationsModule,
-        ClarityModule,
-        TranslateModule.forRoot(),
-        FormsModule,
-        RouterTestingModule,
-        NoopAnimationsModule,
-        HttpClientTestingModule
+        SharedTestingModule
       ],
       declarations: [TaskListComponent],
       providers: [

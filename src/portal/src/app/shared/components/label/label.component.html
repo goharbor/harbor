@@ -27,7 +27,7 @@
                         <hbr-label-piece [label]="label"></hbr-label-piece>
                     </clr-dg-cell>
                     <clr-dg-cell>{{label.description}}</clr-dg-cell>
-                    <clr-dg-cell>{{label.creation_time | date: 'short'}}</clr-dg-cell>
+                    <clr-dg-cell>{{label.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="15">

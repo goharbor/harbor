@@ -13,6 +13,7 @@ import { delay } from "rxjs/operators";
 import { HttpHeaders, HttpResponse } from "@angular/common/http";
 import { ClarityModule } from "@clr/angular";
 import { ReplicationTask } from "../../../../../../../ng-swagger-gen/models/replication-task";
+import { SharedTestingModule } from "../../../../../shared/shared.module";
 
 
 describe('ReplicationTasksComponent', () => {
@@ -74,10 +75,7 @@ describe('ReplicationTasksComponent', () => {
             schemas: [CUSTOM_ELEMENTS_SCHEMA,
                 NO_ERRORS_SCHEMA],
             imports: [
-                NoopAnimationsModule,
-                RouterTestingModule,
-                ClarityModule,
-                TranslateModule.forRoot()
+                SharedTestingModule
             ],
             declarations: [
                 ReplicationTasksComponent,

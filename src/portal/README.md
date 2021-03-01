@@ -74,8 +74,7 @@ Start
   "/i18n/lang/*.json": {
     "target": "https://hostname",
     "secure": false,
-    "logLevel": "debug",
-    "pathRewrite": { "^/src$": "" }
+    "logLevel": "debug"
   },
   "/swagger.json": {
     "target": "https://hostname",

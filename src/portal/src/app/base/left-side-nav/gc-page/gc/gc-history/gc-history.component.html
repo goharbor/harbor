@@ -15,8 +15,8 @@
     <clr-dg-cell>{{(job.type ? 'SCHEDULE.'+ job.type.toUpperCase() : '') | translate }}</clr-dg-cell>
     <clr-dg-cell>{{isDryRun(job?.parameters) | translate}}</clr-dg-cell>
     <clr-dg-cell>{{job.status.toUpperCase() | translate}}</clr-dg-cell>
-    <clr-dg-cell>{{job.createTime | date:'medium'}}</clr-dg-cell>
-    <clr-dg-cell>{{job.updateTime | date:'medium'}}</clr-dg-cell>
+    <clr-dg-cell>{{job.createTime | harborDatetime:'medium'}}</clr-dg-cell>
+    <clr-dg-cell>{{job.updateTime | harborDatetime:'medium'}}</clr-dg-cell>
     <clr-dg-cell>
       <a *ngIf="job.status.toLowerCase() === 'success' || job.status.toLowerCase() === 'error'" target="_blank" [href]="getLogLink(job.id)"><clr-icon shape="list"></clr-icon></a>
     </clr-dg-cell>
