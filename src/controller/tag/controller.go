@@ -23,8 +23,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
-	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
+	"github.com/goharbor/harbor/src/pkg/immutable/match"
+	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
@@ -221,7 +221,7 @@ func (c *controller) populateImmutableStatus(ctx context.Context, tag *Tag) {
 		return
 	}
 	_, repoName := utils.ParseRepository(artifact.RepositoryName)
-	matched, err := c.immutableMtr.Match(artifact.ProjectID, selector.Candidate{
+	matched, err := c.immutableMtr.Match(ctx, artifact.ProjectID, selector.Candidate{
 		Repository:  repoName,
 		Tags:        []string{tag.Name},
 		NamespaceID: artifact.ProjectID,

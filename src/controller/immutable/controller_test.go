@@ -1,19 +1,22 @@
-package immutabletag
+package immutable
 
 import (
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
+	"github.com/goharbor/harbor/src/pkg/immutable/model"
+	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
 type ControllerTestSuite struct {
-	suite.Suite
+	htesting.Suite
 	ctr     Controller
 	t       *testing.T
 	assert  *assert.Assertions
@@ -28,7 +31,7 @@ func (s *ControllerTestSuite) SetupSuite() {
 	s.t = s.T()
 	s.assert = assert.New(s.t)
 	s.require = require.New(s.t)
-	s.ctr = ImmuCtr
+	s.ctr = Ctr
 }
 
 func (s *ControllerTestSuite) TestImmutableRule() {
@@ -65,7 +68,7 @@ func (s *ControllerTestSuite) TestImmutableRule() {
 			},
 		},
 	}
-	s.ruleID, err = s.ctr.CreateImmutableRule(rule)
+	s.ruleID, err = s.ctr.CreateImmutableRule(orm.Context(), rule)
 	s.require.Nil(err)
 
 	update := &model.Metadata{
@@ -92,10 +95,10 @@ func (s *ControllerTestSuite) TestImmutableRule() {
 		},
 		Disabled: false,
 	}
-	err = s.ctr.UpdateImmutableRule(projectID, update)
+	err = s.ctr.UpdateImmutableRule(orm.Context(), projectID, update)
 	s.require.Nil(err)
 
-	getRule, err := s.ctr.GetImmutableRule(s.ruleID)
+	getRule, err := s.ctr.GetImmutableRule(orm.Context(), s.ruleID)
 	s.require.Nil(err)
 	s.require.Equal("postgres", getRule.ScopeSelectors["repository"][0].Pattern)
 
@@ -123,9 +126,9 @@ func (s *ControllerTestSuite) TestImmutableRule() {
 		},
 		Disabled: true,
 	}
-	err = s.ctr.UpdateImmutableRule(projectID, update2)
+	err = s.ctr.UpdateImmutableRule(orm.Context(), projectID, update2)
 	s.require.Nil(err)
-	getRule, err = s.ctr.GetImmutableRule(s.ruleID)
+	getRule, err = s.ctr.GetImmutableRule(orm.Context(), s.ruleID)
 	s.require.Nil(err)
 	s.require.True(getRule.Disabled)
 
@@ -151,10 +154,10 @@ func (s *ControllerTestSuite) TestImmutableRule() {
 			},
 		},
 	}
-	s.ruleID, err = s.ctr.CreateImmutableRule(rule2)
+	s.ruleID, err = s.ctr.CreateImmutableRule(orm.Context(), rule2)
 	s.require.Nil(err)
 
-	rules, err := s.ctr.ListImmutableRules(projectID)
+	rules, err := s.ctr.ListImmutableRules(orm.Context(), q.New(q.KeyWords{"ProjectID": projectID}))
 	s.require.Nil(err)
 	s.require.Equal(2, len(rules))
 
@@ -162,7 +165,7 @@ func (s *ControllerTestSuite) TestImmutableRule() {
 
 // TearDownSuite clears env for test suite
 func (s *ControllerTestSuite) TearDownSuite() {
-	err := s.ctr.DeleteImmutableRule(s.ruleID)
+	err := s.ctr.DeleteImmutableRule(orm.Context(), s.ruleID)
 	require.NoError(s.T(), err, "delete immutable rule")
 }
 

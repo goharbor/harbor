@@ -111,7 +111,7 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	}
 
 	// Run the flow
-	results, err := processor.Process(allCandidates)
+	results, err := processor.Process(ctx.SystemContext(), allCandidates)
 	if err != nil {
 		return logError(myLogger, err)
 	}

@@ -48,6 +48,7 @@ func New() http.Handler {
 		GCAPI:          newGCAPI(),
 		QuotaAPI:       newQuotaAPI(),
 		RetentionAPI:   newRetentionAPI(),
+		ImmutableAPI:   newImmutableAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

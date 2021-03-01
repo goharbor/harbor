@@ -3,6 +3,7 @@ package immutable
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/immutable"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -15,8 +16,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	internal_orm "github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/immutabletag"
-	immu_model "github.com/goharbor/harbor/src/pkg/immutabletag/model"
+	immu_model "github.com/goharbor/harbor/src/pkg/immutable/model"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	tag_model "github.com/goharbor/harbor/src/pkg/tag/model/tag"
@@ -141,7 +141,7 @@ func (suite *HandlerSuite) addImmutableRule(pid int64) int64 {
 			},
 		},
 	}
-	id, err := immutabletag.ImmuCtr.CreateImmutableRule(metadata)
+	id, err := immutable.Ctr.CreateImmutableRule(internal_orm.Context(), metadata)
 	require.NoError(suite.T(), err, "nil error expected but got %s", err)
 	return id
 }
@@ -163,7 +163,7 @@ func (suite *HandlerSuite) TestPutDeleteManifestCreated() {
 		artifact.Mgr.Delete(ctx, afID)
 		repository.Mgr.Delete(ctx, repoID)
 		tag.Mgr.Delete(ctx, tagID)
-		immutabletag.ImmuCtr.DeleteImmutableRule(immuRuleID)
+		immutable.Ctr.DeleteImmutableRule(internal_orm.Context(), immuRuleID)
 	}()
 
 	code1 := doPutManifestRequest(projectID, projectName, "photon", "release-1.10", dgt)
