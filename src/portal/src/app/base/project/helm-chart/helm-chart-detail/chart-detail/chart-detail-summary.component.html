@@ -30,7 +30,7 @@
                     </tr>
                     <tr>
                         <td class="left">{{'HELM_CHART.CREATED' | translate }}</td>
-                        <td class="left">{{summary.created | date}}</td>
+                        <td class="left">{{summary.created | harborDatetime}}</td>
                     </tr>
                     <tr *ngFor="let maintainer of summary.maintainers; let i = index">
                         <td class="left" *ngIf="i === 0">{{'HELM_CHART.MAINTAINERS' | translate }}</td>

@@ -7,7 +7,7 @@
         <clr-dg-cell><a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a></clr-dg-cell>
         <clr-dg-cell>{{ (p.metadata.public === 'true' ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
         <clr-dg-cell>{{p.repo_count}}</clr-dg-cell>
-        <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{p.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
         <span *ngIf="projects?.length">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'PROJECT.OF' | translate}} </span> {{projects?.length}} {{'PROJECT.ITEMS' | translate}}

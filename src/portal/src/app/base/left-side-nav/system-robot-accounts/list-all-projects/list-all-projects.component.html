@@ -24,7 +24,7 @@
         <clr-dg-cell>
             <a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a>
         </clr-dg-cell>
-        <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{p.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
             <div class="permissions">
                 <clr-dropdown  [clrCloseMenuOnItemClick]="false">

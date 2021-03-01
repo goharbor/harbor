@@ -94,7 +94,7 @@
                     </div>
                 </div>
             </clr-dg-cell>
-            <clr-dg-cell>{{w.creation_time | date: 'short'}}</clr-dg-cell>
+            <clr-dg-cell>{{w.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
             <clr-dg-cell>{{w.description}}</clr-dg-cell>
             <clr-dg-row-detail *clrIfExpanded>
                 <last-trigger class="w-100" [webhookName]="w.name" *clrIfExpanded [inputLastTriggers]="lastTriggers"></last-trigger>

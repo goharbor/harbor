@@ -1,3 +1,7 @@
+/***************************************************************************************************
+ * Load `$localize` onto the global scope - used if i18n tags appear in Angular templates.
+ */
+import '@angular/localize/init';
 // Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

@@ -70,6 +70,26 @@ import { MessageHandlerService } from "./services/message-handler.service";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { HarborDatetimePipe } from './pipes/harbor-datetime.pipe';
+
+import { registerLocaleData } from "@angular/common";
+import zh_cn from '@angular/common/locales/zh-Hans';
+import zh_tw from '@angular/common/locales/zh-Hans-HK';
+import es from '@angular/common/locales/es';
+import localeFr from '@angular/common/locales/fr';
+import localePt from '@angular/common/locales/pt-PT';
+import localeTr from '@angular/common/locales/tr';
+import localeDe from '@angular/common/locales/de';
+// add locale data for supported languages  ['en-us', 'zh-cn', 'zh-tw', 'es-es', 'fr-fr', 'pt-br', 'tr-tr', 'de-de'];
+// en-us defaulted supported
+registerLocaleData(zh_cn, 'zh-cn');
+registerLocaleData(zh_tw, 'zh-tw');
+registerLocaleData(es, 'es-es');
+registerLocaleData(localeFr, 'fr-fr');
+registerLocaleData(localePt, 'pt-br');
+registerLocaleData(localeTr, 'tr-tr');
+registerLocaleData(localeDe, 'de-de');
+
 
 // ClarityIcons is publicly accessible from the browser's window object.
 declare const ClarityIcons: ClarityIconsApi;
@@ -134,7 +154,8 @@ ClarityIcons.add({"robot-head": `
     CronScheduleComponent,
     ListChartVersionRoComponent,
     DatePickerComponent,
-    ImageNameInputComponent
+    ImageNameInputComponent,
+    HarborDatetimePipe
   ],
   exports: [
     TranslateModule,
@@ -171,7 +192,8 @@ ClarityIcons.add({"robot-head": `
     CronScheduleComponent,
     ListChartVersionRoComponent,
     DatePickerComponent,
-    ImageNameInputComponent
+    ImageNameInputComponent,
+    HarborDatetimePipe
   ],
   providers: [
     {provide: EndpointService, useClass: EndpointDefaultService },

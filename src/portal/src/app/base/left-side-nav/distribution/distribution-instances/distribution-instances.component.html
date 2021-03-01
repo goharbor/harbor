@@ -105,7 +105,7 @@
                         </div>
                     </clr-dg-cell>
                     <clr-dg-cell>{{ instance.auth_mode }}</clr-dg-cell>
-                    <clr-dg-cell>{{fmtTime(instance.setup_timestamp) | date: 'short'}}</clr-dg-cell>
+                    <clr-dg-cell>{{fmtTime(instance.setup_timestamp) | harborDatetime: 'short'}}</clr-dg-cell>
                     <clr-dg-cell>{{ instance.description }}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>

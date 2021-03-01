@@ -235,8 +235,8 @@
                                                     </a>
                                                 </div>
                                             </td>
-                                            <td class="left tag-body-color">{{tag.pull_time === availableTime ? '':(tag.pull_time | date: 'short')}}</td>
-                                            <td class="left tag-body-color">{{tag.push_time | date: 'short'}}</td>
+                                            <td class="left tag-body-color">{{tag.pull_time === availableTime ? '':(tag.pull_time | harborDatetime: 'short')}}</td>
+                                            <td class="left tag-body-color">{{tag.push_time | harborDatetime: 'short'}}</td>
                                         </tr>
                                         <tr *ngIf="artifact?.tagNumber > 8">...</tr>
                                     </tbody>
@@ -304,11 +304,11 @@
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell>
-                    <div class="cell">{{artifact.push_time | date: 'short'}}</div>
+                    <div class="cell">{{artifact.push_time | harborDatetime: 'short'}}</div>
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
-                        {{artifact.pull_time === availableTime ? "" : (artifact.pull_time| date: 'short')}}</div>
+                        {{artifact.pull_time === availableTime ? "" : (artifact.pull_time| harborDatetime: 'short')}}</div>
                 </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>

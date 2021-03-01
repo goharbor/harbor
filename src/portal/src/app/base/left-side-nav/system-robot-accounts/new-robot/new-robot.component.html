@@ -73,7 +73,7 @@
                         <clr-control-helper *ngIf="isEditMode && systemRobot?.duration > 0 && !((expiration.dirty || expiration.touched) && expiration.invalid)|| isExpirationInvalid()">
                             <span [ngClass]="{showWarning: shouldShowWarning()}">
                                 <clr-icon *ngIf="shouldShowWarning()" class="alert-icon" shape="exclamation-triangle"></clr-icon><span>{{'SYSTEM_ROBOT.EXPIRES_AT' | translate}}</span>:
-                                <span>{{calculateExpiresAt() | date:'short'}}</span>
+                                <span>{{calculateExpiresAt() | harborDatetime:'short'}}</span>
                             </span>
                         </clr-control-helper>
                     </div>

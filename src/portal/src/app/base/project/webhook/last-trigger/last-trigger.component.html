@@ -15,7 +15,7 @@
                 <span>{{'WEBHOOK.DISABLED' | translate}}</span>
             </div>
         </clr-dg-cell>
-        <clr-dg-cell>{{item.last_trigger_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{item.last_trigger_time | harborDatetime: 'short'}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-placeholder>
         {{'WEBHOOK.NO_TRIGGER' | translate}}

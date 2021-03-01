@@ -1,14 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute } from '@angular/router';
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { delay } from "rxjs/operators";
 import { ConfirmationDialogComponent } from "../../../../shared/components/confirmation-dialog";
 import { ProjectService, UserPermissionService } from '../../../../shared/services';
@@ -23,6 +17,7 @@ import { SessionService } from '../../../../shared/services/session.service';
 import { AppConfigService } from '../../../../services/app-config.service';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
+import { SharedTestingModule } from "../../../../shared/shared.module";
 
 describe('PolicyComponent', () => {
     let component: PolicyComponent;
@@ -131,13 +126,7 @@ describe('PolicyComponent', () => {
                 CUSTOM_ELEMENTS_SCHEMA
             ],
             imports: [
-                BrowserAnimationsModule,
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule,
-                RouterTestingModule,
-                NoopAnimationsModule,
-                HttpClientTestingModule
+                SharedTestingModule
             ],
             declarations: [PolicyComponent,
                 AddP2pPolicyComponent,

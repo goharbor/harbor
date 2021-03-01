@@ -50,7 +50,7 @@
                         {{!t.insecure}}
                     </clr-dg-cell>
                     <clr-dg-cell>{{t.credential.type}}</clr-dg-cell>
-                    <clr-dg-cell>{{t.creation_time | date: 'short'}}</clr-dg-cell>
+                    <clr-dg-cell>{{t.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="15">

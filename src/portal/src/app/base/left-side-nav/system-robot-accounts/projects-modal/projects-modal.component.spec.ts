@@ -1,12 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProjectsModalComponent } from './projects-modal.component';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { ClarityModule } from "@clr/angular";
-import { TranslateModule } from "@ngx-translate/core";
-import { RouterTestingModule } from "@angular/router/testing";
 import { Project } from "../../../../../../ng-swagger-gen/models/project";
 import { Action, PermissionsKinds, Resource } from "../system-robot-util";
 import { RobotPermission } from "../../../../../../ng-swagger-gen/models/robot-permission";
+import { SharedTestingModule } from "../../../../shared/shared.module";
 
 describe('ProjectsModalComponent', () => {
   let component: ProjectsModalComponent;
@@ -44,10 +41,7 @@ describe('ProjectsModalComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        BrowserAnimationsModule,
-        ClarityModule,
-        RouterTestingModule,
-        TranslateModule.forRoot(),
+        SharedTestingModule
       ],
       declarations: [ ProjectsModalComponent ]
     })
