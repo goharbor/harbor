@@ -10,7 +10,6 @@ from library.user import User
 from library.repository import Repository
 from library.repository import push_image_to_project
 from library.artifact import Artifact
-from library.scanner import Scanner
 from library.configurations import Configurations
 from library.projectV2 import ProjectV2
 

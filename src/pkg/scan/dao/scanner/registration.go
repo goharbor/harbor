@@ -16,8 +16,6 @@ package scanner
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -26,6 +24,20 @@ import (
 
 func init() {
 	orm.RegisterModel(new(Registration))
+}
+
+// GetTotalOfRegistrations returns the total count of scanner registrations according to the query.
+func GetTotalOfRegistrations(ctx context.Context, query *q.Query) (int64, error) {
+	query = q.MustClone(query)
+	query.Sorting = ""
+	query.PageNumber = 0
+	query.PageSize = 0
+
+	qs, err := orm.QuerySetter(ctx, &Registration{}, query)
+	if err != nil {
+		return 0, err
+	}
+	return qs.Count()
 }
 
 // AddRegistration adds a new registration
@@ -108,39 +120,22 @@ func DeleteRegistration(ctx context.Context, UUID string) error {
 
 // ListRegistrations lists all the existing registrations
 func ListRegistrations(ctx context.Context, query *q.Query) ([]*Registration, error) {
-	o, err := orm.FromContext(ctx)
+	query = q.MustClone(query)
+
+	qs, err := orm.QuerySetter(ctx, &Registration{}, query)
 	if err != nil {
 		return nil, err
 	}
 
-	qt := o.QueryTable(new(Registration))
-
-	if query != nil {
-		if len(query.Keywords) > 0 {
-			for k, v := range query.Keywords {
-				if strings.HasPrefix(k, "ex_") {
-					kk := strings.TrimPrefix(k, "ex_")
-					qt = qt.Filter(kk, v)
-					continue
-				}
-				if s, ok := v.(string); ok {
-					v = orm.Escape(s)
-				}
-
-				qt = qt.Filter(fmt.Sprintf("%s__icontains", k), v)
-			}
-		}
-
-		if query.PageNumber > 0 && query.PageSize > 0 {
-			qt = qt.Limit(query.PageSize, (query.PageNumber-1)*query.PageSize)
-		}
+	// Order the list
+	if query.Sorting != "" {
+		qs = qs.OrderBy(query.Sorting)
+	} else {
+		qs = qs.OrderBy("-is_default", "-create_time")
 	}
 
-	// Order the list
-	qt = qt.OrderBy("-is_default", "-create_time")
-
 	l := make([]*Registration, 0)
-	_, err = qt.All(&l)
+	_, err = qs.All(&l)
 
 	return l, err
 }
@@ -164,7 +159,7 @@ func SetDefaultRegistration(ctx context.Context, UUID string) error {
 			return err
 		}
 		if count == 0 {
-			return errors.Errorf("set default for %s failed", UUID)
+			return errors.NotFoundError(nil).WithMessage("registration %s not found", UUID)
 		}
 
 		qt2 := o.QueryTable(new(Registration))

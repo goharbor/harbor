@@ -28,7 +28,7 @@ def get_endpoint():
 
 def _create_client(server, credential, debug, api_type="products"):
     cfg = None
-    if api_type in ('projectv2', 'artifact', 'repository', 'scan', 'scanall', 'preheat', 'quota', 'replication', 'robot', 'gc', 'retention'):
+    if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota', 'replication', 'robot', 'gc', 'retention'):
         cfg = v2_swagger_client.Configuration()
     else:
         cfg = swagger_client.Configuration()
@@ -60,7 +60,7 @@ def _create_client(server, credential, debug, api_type="products"):
         "repository": v2_swagger_client.RepositoryApi(v2_swagger_client.ApiClient(cfg)),
         "scan": v2_swagger_client.ScanApi(v2_swagger_client.ApiClient(cfg)),
         "scanall": v2_swagger_client.ScanAllApi(v2_swagger_client.ApiClient(cfg)),
-        "scanner": swagger_client.ScannersApi(swagger_client.ApiClient(cfg)),
+        "scanner": v2_swagger_client.ScannerApi(v2_swagger_client.ApiClient(cfg)),
         "replication": v2_swagger_client.ReplicationApi(v2_swagger_client.ApiClient(cfg)),
         "robot": v2_swagger_client.RobotApi(v2_swagger_client.ApiClient(cfg)),
         "gc":   v2_swagger_client.GcApi(v2_swagger_client.ApiClient(cfg)),

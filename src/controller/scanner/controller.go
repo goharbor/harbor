@@ -22,6 +22,9 @@ import (
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
+// Registration ...
+type Registration = scanner.Registration
+
 // Controller provides the related operations of scanner for the upper API.
 // All the capabilities of the scanner are defined here.
 type Controller interface {
@@ -36,6 +39,9 @@ type Controller interface {
 	//    []*scanner.Registration : scanner list of all the matched ones
 	//    error                   : non nil error if any errors occurred
 	ListRegistrations(ctx context.Context, query *q.Query) ([]*scanner.Registration, error)
+
+	// GetTotalOfRegistrations returns the total count of scanner registrations according to the query.
+	GetTotalOfRegistrations(ctx context.Context, query *q.Query) (int64, error)
 
 	// CreateRegistration creates a new scanner registration with the given data.
 	// Returns the scanner registration identifier.

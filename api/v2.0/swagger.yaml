@@ -834,6 +834,97 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/scanner':
+    get:
+      summary: Get project level scanner
+      description: Get the scanner registration of the specified project. If no scanner registration is configured for the specified project, the system default scanner registration will be returned.
+      tags:
+        - project
+      operationId: getScannerOfProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+      responses:
+        '200':
+          description: The details of the scanner registration.
+          schema:
+            $ref: '#/definitions/ScannerRegistration'
+        '400':
+          description: Bad project ID
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed
+        '404':
+          description: The requested object is not found
+        '500':
+          description: Internal server error happened
+    put:
+      summary: Configure scanner for the specified project
+      description: Set one of the system configured scanner registration as the indepndent scanner of the specified project.
+      tags:
+        - project
+      operationId: setScannerOfProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - name: payload
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProjectScanner'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/scanner/candidates':
+    get:
+      summary: Get scanner registration candidates for configurating project level scanner
+      description: Retrieve the system configured scanner registrations as candidates of setting project level scanner.
+      tags:
+        - project
+      operationId: listScannerCandidatesOfProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: A list of scanner registrations.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ScannerRegistration'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /audit-logs:
     get:
       summary: Get recent logs of the projects which the user is a member of
@@ -2764,6 +2855,239 @@ paths:
         '500':
           $ref: '#/responses/500'
 
+  '/scanners':
+    get:
+      summary: List scanner registrations
+      description: |
+        Returns a list of currently configured scanner registrations.
+      tags:
+        - scanner
+      operationId: listScanners
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: A list of scanner registrations.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ScannerRegistration'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a scanner registration
+      description: |
+        Creats a new scanner registration with the given data.
+      tags:
+        - scanner
+      operationId: createScanner
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registration
+          in: body
+          description: A scanner registration to be created.
+          required: true
+          schema:
+            $ref: '#/definitions/ScannerRegistrationReq'
+      responses:
+        '201':
+          description: Created successfully
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/scanners/ping':
+    post:
+      summary: Tests scanner registration settings
+      description: |
+        Pings scanner adapter to test endpoint URL and authorization settings.
+      tags:
+        - scanner
+      operationId: pingScanner
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: settings
+          in: body
+          description: A scanner registration settings to be tested.
+          required: true
+          schema:
+            $ref: '#/definitions/ScannerRegistrationSettings'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/scanners/{registration_id}':
+    get:
+      summary: Get a scanner registration details
+      description: |
+        Retruns the details of the specified scanner registration.
+      tags:
+        - scanner
+      operationId: getScanner
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registration_id
+          in: path
+          description: The scanner registration identifer.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: The details of the scanner registration.
+          schema:
+            $ref: '#/definitions/ScannerRegistration'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update a scanner registration
+      description: |
+        Updates the specified scanner registration.
+      tags:
+        - scanner
+      operationId: updateScanner
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registration_id
+          in: path
+          description: The scanner registration identifier.
+          required: true
+          type: string
+        - name: registration
+          in: body
+          required: true
+          description: A scanner registraiton to be updated.
+          schema:
+            $ref: '#/definitions/ScannerRegistrationReq'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a scanner registration
+      description: |
+        Deletes the specified scanner registration.
+      tags:
+        - scanner
+      operationId: deleteScanner
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registration_id
+          in: path
+          description: The scanner registration identifier.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Deleted successfully and return the deleted registration
+          schema:
+            $ref: '#/definitions/ScannerRegistration'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    patch:
+      summary: Set system default scanner registration
+      description: |
+        Set the specified scanner registration as the system default one.
+      tags:
+        - scanner
+      operationId: setScannerAsDefault
+      parameters:
+        - name: registration_id
+          in: path
+          description: The scanner registration identifier.
+          required: true
+          type: string
+        - name: payload
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/IsDefault'
+      responses:
+        '200':
+          description: Successfully set the specified scanner registration as system default
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/scanners/{registration_id}/metadata':
+    get:
+      summary: Get the metadata of the specified scanner registration
+      description: |
+        Get the metadata of the specified scanner registration, including the capabilities and customized properties.
+      tags:
+        - scanner
+      operationId: getScannerMetadata
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registration_id
+          in: path
+          required: true
+          description: The scanner registration identifier.
+          type: string
+      responses:
+        '200':
+          description: The metadata of the specified scanner adapter
+          schema:
+            $ref: '#/definitions/ScannerAdapterMetadata'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
 parameters:
   query:
     name: q
@@ -2853,6 +3177,12 @@ parameters:
     description: The size of per page
     default: 10
     maximum: 100
+  sort:
+    name: sort
+    in: query
+    type: string
+    required: false
+    description: The order by fields of the query, the format is '+field1,-field2'.
   instanceName:
     name: preheat_instance_name
     in: path
@@ -3705,6 +4035,14 @@ definitions:
       used:
         $ref: "#/definitions/ResourceList"
         description: The used status of the quota
+  ProjectScanner:
+    type: object
+    required:
+      - uuid
+    properties:
+      uuid:
+        type: string
+        description: The identifier of the scanner registration
   CVEAllowlist:
     type: object
     description: The CVE Allowlist for system or project
@@ -4442,15 +4780,18 @@ definitions:
       retained:
         type: integer
         x-omitempty: false
+
   QuotaUpdateReq:
     type: object
     properties:
       hard:
         $ref: "#/definitions/ResourceList"
         description: The new hard limits for the quota
+
   QuotaRefObject:
     type: object
     additionalProperties: {}
+
   Quota:
     type: object
     description: The quota object
@@ -4477,3 +4818,200 @@ definitions:
         type: string
         format: date-time
         description: the update time of the quota
+
+  ScannerRegistration:
+    type: object
+    description: |
+      Registration represents a named configuration for invoking a scanner via its adapter.
+    properties:
+      uuid:
+        type: string
+        description: The unique identifier of this registration.
+      name:
+        type: string
+        example: Trivy
+        description: The name of this registration.
+      description:
+        type: string
+        description: An optional description of this registration.
+        example: |
+          A free-to-use tool that scans container images for package vulnerabilities.
+        x-omitempty: false
+      url:
+        type: string
+        format: url
+        description: A base URL of the scanner adapter
+        example: http://harbor-scanner-trivy:8080
+      disabled:
+        type: boolean
+        default: false
+        description: Indicate whether the registration is enabled or not
+        x-omitempty: false
+      is_default:
+        type: boolean
+        default: false
+        description: Indicate if the registration is set as the system default one
+        x-omitempty: false
+      auth:
+        type: string
+        default: ""
+        description: |
+          Specify what authentication approach is adopted for the HTTP communications.
+          Supported types Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key"
+        example: "Bearer"
+        x-omitempty: false
+      access_credential:
+        type: string
+        description: |
+          An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.
+        example: "Bearer: JWTTOKENGOESHERE"
+        x-omitempty: false
+      skip_certVerify:
+        type: boolean
+        default: false
+        description: Indicate if skip the certificate verification when sending HTTP requests
+        x-omitempty: false
+      use_internal_addr:
+        type: boolean
+        default: false
+        description: Indicate whether use internal registry addr for the scanner to pull content or not
+        x-omitempty: false
+      create_time:
+        type: string
+        format: date-time
+        description: The creation time of this registration
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of this registration
+      adapter:
+        type: string
+        description: Optional property to describe the name of the scanner registration
+        example: "Clair"
+      vendor:
+        type: string
+        description: Optional property to describe the vendor of the scanner registration
+        example: "CentOS"
+      version:
+        type: string
+        description: Optional property to describe the version of the scanner registration
+        example: "1.0.1"
+      health:
+        type: string
+        default: ""
+        description: Indicate the healthy of the registration
+        example: "healthy"
+
+  ScannerRegistrationReq:
+    type: object
+    required:
+      - name
+      - url
+    properties:
+      name:
+        type: string
+        description: The name of this registration
+        example: Trivy
+      description:
+        type: string
+        description: An optional description of this registration.
+        example: |
+          A free-to-use tool that scans container images for package vulnerabilities.
+      url:
+        type: string
+        format: uri
+        description: A base URL of the scanner adapter.
+        example: http://harbor-scanner-trivy:8080
+      auth:
+        type: string
+        description: |
+          Specify what authentication approach is adopted for the HTTP communications.
+          Supported types Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key"
+        example: "Bearer"
+      access_credential:
+        type: string
+        description: |
+          An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.
+        example: "Bearer: JWTTOKENGOESHERE"
+      skip_certVerify:
+        type: boolean
+        default: false
+        description: Indicate if skip the certificate verification when sending HTTP requests
+      use_internal_addr:
+        type: boolean
+        default: false
+        description: Indicate whether use internal registry addr for the scanner to pull content or not
+      disabled:
+        type: boolean
+        default: false
+        description: Indicate whether the registration is enabled or not
+
+  ScannerRegistrationSettings:
+    type: object
+    required:
+      - name
+      - url
+    properties:
+      name:
+        type: string
+        description: The name of this registration
+        example: Trivy
+      url:
+        type: string
+        format: uri
+        description: A base URL of the scanner adapter.
+        example: http://harbor-scanner-trivy:8080
+      auth:
+        type: string
+        default: ""
+        description: |
+          Specify what authentication approach is adopted for the HTTP communications.
+          Supported types Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key"
+      access_credential:
+        type: string
+        description: |
+          An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.
+        example: "Bearer: JWTTOKENGOESHERE"
+
+  IsDefault:
+    type: object
+    properties:
+      is_default:
+        type: boolean
+        description: A flag indicating whether a scanner registration is default.
+
+  ScannerCapability:
+    type: object
+    properties:
+      consumes_mime_types:
+        type: array
+        items:
+          type: string
+          example: "application/vnd.docker.distribution.manifest.v2+json"
+      produces_mime_types:
+        type: array
+        items:
+          type: string
+          example: "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"
+
+  ScannerAdapterMetadata:
+    type: object
+    description: The metadata info of the scanner adapter
+    properties:
+      scanner:
+        $ref: '#/definitions/Scanner'
+      capabilities:
+        type: array
+        items:
+          $ref: '#/definitions/ScannerCapability'
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+        example:
+          'harbor.scanner-adapter/registry-authorization-type': 'Bearer'
+    x-go-type:
+      type: ScannerAdapterMetadata
+      import:
+        package: "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+        alias: v1

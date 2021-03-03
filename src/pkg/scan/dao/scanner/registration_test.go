@@ -108,7 +108,7 @@ func (suite *RegistrationDAOTestSuite) TestList() {
 
 	// with query and found items
 	keywords := make(map[string]interface{})
-	keywords["description"] = "sample"
+	keywords["description"] = &q.FuzzyMatchValue{Value: "sample"}
 	l, err = ListRegistrations(suite.Context(), &q.Query{
 		PageSize:   5,
 		PageNumber: 1,
@@ -118,7 +118,7 @@ func (suite *RegistrationDAOTestSuite) TestList() {
 	require.Equal(suite.T(), 1, len(l))
 
 	// With query and not found items
-	keywords["description"] = "not_exist"
+	keywords["description"] = &q.FuzzyMatchValue{Value: "not_exist"}
 	l, err = ListRegistrations(suite.Context(), &q.Query{
 		Keywords: keywords,
 	})
@@ -127,14 +127,14 @@ func (suite *RegistrationDAOTestSuite) TestList() {
 
 	// Exact match
 	exactKeywords := make(map[string]interface{})
-	exactKeywords["ex_name"] = "forUT"
+	exactKeywords["name"] = "forUT"
 	l, err = ListRegistrations(suite.Context(), &q.Query{
 		Keywords: exactKeywords,
 	})
 	require.NoError(suite.T(), err)
 	require.Equal(suite.T(), 1, len(l))
 
-	exactKeywords["ex_name"] = "forU"
+	exactKeywords["name"] = "forU"
 	l, err = ListRegistrations(suite.Context(), &q.Query{
 		Keywords: exactKeywords,
 	})

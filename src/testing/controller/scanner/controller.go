@@ -140,6 +140,27 @@ func (_m *Controller) GetRegistrationByProject(ctx context.Context, projectID in
 	return r0, r1
 }
 
+// GetTotalOfRegistrations provides a mock function with given fields: ctx, query
+func (_m *Controller) GetTotalOfRegistrations(ctx context.Context, query *q.Query) (int64, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) int64); ok {
+		r0 = rf(ctx, query)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *q.Query) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ListRegistrations provides a mock function with given fields: ctx, query
 func (_m *Controller) ListRegistrations(ctx context.Context, query *q.Query) ([]*scanner.Registration, error) {
 	ret := _m.Called(ctx, query)

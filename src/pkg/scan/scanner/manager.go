@@ -25,6 +25,9 @@ import (
 
 // Manager defines the related scanner API endpoints
 type Manager interface {
+	// Count returns the total count of scanner registrations according to the query.
+	Count(ctx context.Context, query *q.Query) (int64, error)
+
 	// List returns a list of currently configured scanner registrations.
 	// Query parameters are optional
 	List(ctx context.Context, query *q.Query) ([]*scanner.Registration, error)
@@ -56,6 +59,10 @@ type basicManager struct{}
 // New a basic manager
 func New() Manager {
 	return &basicManager{}
+}
+
+func (bm *basicManager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return scanner.GetTotalOfRegistrations(ctx, query)
 }
 
 // Create ...

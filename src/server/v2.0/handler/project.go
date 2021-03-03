@@ -33,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/retention"
+	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
@@ -66,6 +67,7 @@ func newProjectAPI() *projectAPI {
 		robotMgr:      robot.Mgr,
 		preheatCtl:    preheat.Ctl,
 		retentionCtl:  retention.Ctl,
+		scannerCtl:    scanner.DefaultController,
 	}
 }
 
@@ -80,6 +82,7 @@ type projectAPI struct {
 	robotMgr      robot.Manager
 	preheatCtl    preheat.Controller
 	retentionCtl  retention.Controller
+	scannerCtl    scanner.Controller
 }
 
 func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateProjectParams) middleware.Responder {
@@ -500,6 +503,75 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	}
 
 	return operation.NewUpdateProjectOK()
+}
+
+func (a *projectAPI) GetScannerOfProject(ctx context.Context, params operation.GetScannerOfProjectParams) middleware.Responder {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead, rbac.ResourceScanner); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	p, err := a.projectCtl.Get(ctx, projectNameOrID, project.Metadata(false))
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	scanner, err := a.scannerCtl.GetRegistrationByProject(ctx, p.ProjectID)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	return operation.NewGetScannerOfProjectOK().WithPayload(model.NewScannerRegistration(scanner).ToSwagger(ctx))
+}
+
+func (a *projectAPI) ListScannerCandidatesOfProject(ctx context.Context, params operation.ListScannerCandidatesOfProjectParams) middleware.Responder {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionCreate, rbac.ResourceScanner); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	query, err := a.BuildQuery(ctx, params.Q, params.Page, params.PageSize, params.Sort)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	total, err := a.scannerCtl.GetTotalOfRegistrations(ctx, query)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	scanners, err := a.scannerCtl.ListRegistrations(ctx, query)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	payload := make([]*models.ScannerRegistration, len(scanners))
+	for i, scanner := range scanners {
+		payload[i] = model.NewScannerRegistration(scanner).ToSwagger(ctx)
+	}
+
+	return operation.NewListScannerCandidatesOfProjectOK().
+		WithXTotalCount(total).
+		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
+		WithPayload(payload)
+}
+
+func (a *projectAPI) SetScannerOfProject(ctx context.Context, params operation.SetScannerOfProjectParams) middleware.Responder {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionCreate, rbac.ResourceScanner); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	p, err := a.projectCtl.Get(ctx, projectNameOrID, project.Metadata(false))
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	if err := a.scannerCtl.SetRegistrationByProject(ctx, p.ProjectID, *params.Payload.UUID); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	return operation.NewSetScannerOfProjectOK()
 }
 
 func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{}) (*project.Project, *models.ProjectDeletable, error) {
