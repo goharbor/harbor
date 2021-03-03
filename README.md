@@ -69,11 +69,11 @@ Check the OCI distribution conformance tests [report](https://storage.googleapis
 
 ## Compatibility
 
-The [compatibility list](https://goharbor.io/docs/2.0.0/install-config/harbor-compatibility-list/) document provides compatibility information for the Harbor components.
+The [compatibility list](https://goharbor.io/docs/edge/install-config/harbor-compatibility-list/) document provides compatibility information for the Harbor components.
 
-* [Replication adapters](https://goharbor.io/docs/2.0.0/install-config/harbor-compatibility-list/#replication-adapters)
-* [OIDC adapters](https://goharbor.io/docs/2.0.0/install-config/harbor-compatibility-list/#oidc-adapters)
-* [Scanner adapters](https://goharbor.io/docs/2.0.0/install-config/harbor-compatibility-list/#scanner-adapters)
+* [Replication adapters](https://goharbor.io/docs/edge/install-config/harbor-compatibility-list/#replication-adapters)
+* [OIDC adapters](https://goharbor.io/docs/edge/install-config/harbor-compatibility-list/#oidc-adapters)
+* [Scanner adapters](https://goharbor.io/docs/edge/install-config/harbor-compatibility-list/#scanner-adapters)
 
 ## Community
 
