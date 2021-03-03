@@ -45,13 +45,7 @@ type dao struct{}
 
 // Count ...
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
-	if query != nil {
-		// ignore the page number and size
-		query = &q.Query{
-			Keywords: query.Keywords,
-		}
-	}
-	qs, err := orm.QuerySetter(ctx, &model.AuditLog{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &model.AuditLog{}, query)
 	if err != nil {
 		return 0, err
 	}
@@ -65,7 +59,6 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*model.AuditLog, erro
 	if err != nil {
 		return nil, err
 	}
-	qs = qs.OrderBy("-op_time")
 	if _, err = qs.All(&audit); err != nil {
 		return nil, err
 	}

@@ -83,7 +83,6 @@ func (e *executionDAO) List(ctx context.Context, query *q.Query) ([]*Execution, 
 	if err != nil {
 		return nil, err
 	}
-	qs = qs.OrderBy("-StartTime")
 	if _, err = qs.All(&executions); err != nil {
 		return nil, err
 	}

@@ -18,12 +18,28 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/dao"
 	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/lib/log"
 )
+
+// NewCondition alias function of orm.NewCondition
+var NewCondition = orm.NewCondition
+
+// Condition alias to orm.Condition
+type Condition = orm.Condition
+
+// Params alias to orm.Params
+type Params = orm.Params
+
+// ParamsList alias to orm.ParamsList
+type ParamsList = orm.ParamsList
+
+// QuerySeter alias to orm.QuerySeter
+type QuerySeter = orm.QuerySeter
 
 // RegisterModel ...
 func RegisterModel(models ...interface{}) {
@@ -173,4 +189,19 @@ func CreateInClause(ctx context.Context, sql string, args ...interface{}) (strin
 	// there is no too many arguments issue like https://github.com/goharbor/harbor/issues/12269
 	// when concat the in clause directly
 	return fmt.Sprintf(`IN (%s)`, strings.Join(idStrs, ",")), nil
+}
+
+// Escape special characters
+func Escape(str string) string {
+	return dao.Escape(str)
+}
+
+// ParamPlaceholderForIn returns a string that contains placeholders for sql keyword "in"
+// e.g. n=3, returns "?,?,?"
+func ParamPlaceholderForIn(n int) string {
+	placeholders := []string{}
+	for i := 0; i < n; i++ {
+		placeholders = append(placeholders, "?")
+	}
+	return strings.Join(placeholders, ",")
 }

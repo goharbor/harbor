@@ -178,7 +178,7 @@ func (t *RegistryAPI) List() {
 			queryStr = fmt.Sprintf("name=~%s", name)
 		}
 	}
-	query, err := q.Build(queryStr, 0, 0)
+	query, err := q.Build(queryStr, "", 0, 0)
 	if err != nil {
 		t.SendError(err)
 		return

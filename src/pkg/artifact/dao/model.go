@@ -37,7 +37,7 @@ type Artifact struct {
 	Digest            string    `orm:"column(digest)"`
 	Size              int64     `orm:"column(size)"`
 	Icon              string    `orm:"column(icon)"`
-	PushTime          time.Time `orm:"column(push_time)"`
+	PushTime          time.Time `orm:"column(push_time)" sort:"default:desc"`
 	PullTime          time.Time `orm:"column(pull_time)"`
 	ExtraAttrs        string    `orm:"column(extra_attrs)"`             // json string
 	Annotations       string    `orm:"column(annotations);type(jsonb)"` // json string

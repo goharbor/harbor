@@ -16,29 +16,41 @@ package q
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
-// Build query sting and pagination information into the Query model
+// Build query sting, sort and pagination information into the Query model
 // query string format: q=k=v,k=~v,k=[min~max],k={v1 v2 v3},k=(v1 v2 v3)
 // exact match: k=v
 // fuzzy match: k=~v
 // range: k=[min~max]
 // or list: k={v1 v2 v3}
 // and list: k=(v1 v2 v3)
-func Build(q string, pageNumber, pageSize int64) (*Query, error) {
-	query := &Query{
+// sort format: sort=k1,-k2
+func Build(q, sort string, pageNumber, pageSize int64) (*Query, error) {
+	keywords, err := parseKeywords(q)
+	if err != nil {
+		return nil, err
+	}
+	sorts := parseSorting(sort)
+	return &Query{
+		Keywords:   keywords,
+		Sorts:      sorts,
 		PageNumber: pageNumber,
 		PageSize:   pageSize,
-		Keywords:   map[string]interface{}{},
-	}
+	}, nil
+}
+
+func parseKeywords(q string) (map[string]interface{}, error) {
+	keywords := map[string]interface{}{}
 	if len(q) == 0 {
-		return query, nil
+		return keywords, nil
 	}
 	// try to escaped the 'q=tags%3Dnil' when to filter tags.
 	if unescapedQuery, err := url.QueryUnescape(q); err == nil {
@@ -60,9 +72,26 @@ func Build(q string, pageNumber, pageSize int64) (*Query, error) {
 				WithCode(errors.BadRequestCode).
 				WithMessage("invalid query string value: %s", strs[1])
 		}
-		query.Keywords[strs[0]] = value
+		keywords[strs[0]] = value
 	}
-	return query, nil
+	return keywords, nil
+}
+
+func parseSorting(sort string) []*Sort {
+	var sorts []*Sort
+	for _, sorting := range strings.Split(sort, ",") {
+		key := sorting
+		desc := false
+		if strings.HasPrefix(sorting, "-") {
+			key = strings.TrimPrefix(sorting, "-")
+			desc = true
+		}
+		sorts = append(sorts, &Sort{
+			Key:  key,
+			DESC: desc,
+		})
+	}
+	return sorts
 }
 
 func parsePattern(value string) (interface{}, error) {

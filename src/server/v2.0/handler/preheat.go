@@ -119,7 +119,7 @@ func (api *preheatAPI) ListInstances(ctx context.Context, params operation.ListI
 
 	var payload []*models.Instance
 
-	query, err := api.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := api.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
@@ -320,7 +320,7 @@ func (api *preheatAPI) ListPolicies(ctx context.Context, params operation.ListPo
 		return api.SendError(ctx, err)
 	}
 
-	query, err := api.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := api.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
@@ -600,7 +600,7 @@ func (api *preheatAPI) ListExecutions(ctx context.Context, params operation.List
 		return api.SendError(ctx, err)
 	}
 
-	query, err := api.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := api.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
@@ -677,7 +677,7 @@ func (api *preheatAPI) ListTasks(ctx context.Context, params operation.ListTasks
 		return api.SendError(ctx, err)
 	}
 
-	query, err := api.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := api.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}

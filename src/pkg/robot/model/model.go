@@ -15,7 +15,7 @@ func init() {
 // Robot holds the details of a robot.
 type Robot struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
-	Name         string    `orm:"column(name)" json:"name"`
+	Name         string    `orm:"column(name)" json:"name" sort:"default"`
 	Description  string    `orm:"column(description)" json:"description"`
 	Secret       string    `orm:"column(secret)" json:"secret"`
 	Salt         string    `orm:"column(salt)" json:"-"`

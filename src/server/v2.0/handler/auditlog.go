@@ -38,7 +38,7 @@ func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAud
 	if !secCtx.IsAuthenticated() {
 		return a.SendError(ctx, errors.UnauthorizedError(nil).WithMessage(secCtx.GetUsername()))
 	}
-	query, err := a.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}

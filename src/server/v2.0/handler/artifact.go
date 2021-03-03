@@ -77,7 +77,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	}
 
 	// set query
-	query, err := a.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -292,7 +292,7 @@ func (a *artifactAPI) ListTags(ctx context.Context, params operation.ListTagsPar
 		return a.SendError(ctx, err)
 	}
 	// set query
-	query, err := a.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}

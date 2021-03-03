@@ -19,22 +19,24 @@ type KeyWords = map[string]interface{}
 
 // Query parameters
 type Query struct {
+	// Filter list
+	Keywords KeyWords
+	// Sort list
+	Sorts []*Sort
 	// Page number
 	PageNumber int64
 	// Page size
 	PageSize int64
-	// List of key words
-	Keywords KeyWords
-	// Sorting
+	// Deprecate, use "Sorts" instead
 	Sorting string
 }
 
 // First make the query only fetch the first one record in the sorting order
-func (q *Query) First(sorting ...string) *Query {
+func (q *Query) First(sorting ...*Sort) *Query {
 	q.PageNumber = 1
 	q.PageSize = 1
 	if len(sorting) > 0 {
-		q.Sorting = sorting[0]
+		q.Sorts = append(q.Sorts, sorting...)
 	}
 
 	return q
@@ -54,12 +56,24 @@ func MustClone(query *Query) *Query {
 	if query != nil {
 		q.PageNumber = query.PageNumber
 		q.PageSize = query.PageSize
-		q.Sorting = query.Sorting
+		q.Sorts = query.Sorts
 		for k, v := range query.Keywords {
 			q.Keywords[k] = v
 		}
+		for _, sort := range query.Sorts {
+			q.Sorts = append(q.Sorts, &Sort{
+				Key:  sort.Key,
+				DESC: sort.DESC,
+			})
+		}
 	}
 	return q
+}
+
+// Sort specifies the order information
+type Sort struct {
+	Key  string
+	DESC bool
 }
 
 // Range query
@@ -81,4 +95,41 @@ type OrList struct {
 // FuzzyMatchValue query
 type FuzzyMatchValue struct {
 	Value string
+}
+
+// NewSort creates new sort
+func NewSort(key string, desc bool) *Sort {
+	return &Sort{
+		Key:  key,
+		DESC: desc,
+	}
+}
+
+// NewRange creates a new range
+func NewRange(min, max interface{}) *Range {
+	return &Range{
+		Min: min,
+		Max: max,
+	}
+}
+
+// NewAndList creates a new and list
+func NewAndList(values ...interface{}) *AndList {
+	return &AndList{
+		Values: values,
+	}
+}
+
+// NewOrList creates a new or list
+func NewOrList(values ...interface{}) *OrList {
+	return &OrList{
+		Values: values,
+	}
+}
+
+// NewFuzzyMatchValue creates a new fuzzy match
+func NewFuzzyMatchValue(value string) *FuzzyMatchValue {
+	return &FuzzyMatchValue{
+		Value: value,
+	}
 }

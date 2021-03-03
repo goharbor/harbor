@@ -51,8 +51,6 @@ func (s *SearchAPI) Get() {
 	keyword := s.GetString("q")
 
 	query := q.New(q.KeyWords{})
-	query.Sorting = "name"
-
 	if keyword != "" {
 		query.Keywords["name"] = &q.FuzzyMatchValue{Value: keyword}
 	}

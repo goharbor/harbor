@@ -38,36 +38,44 @@ func (b *baseHandlerTestSuite) SetupSuite() {
 }
 
 func (b *baseHandlerTestSuite) TestBuildQuery() {
-	// nil query string and pagination pointer
+	// nil input
 	var (
 		query      *string
+		sort       *string
 		pageNumber *int64
 		pageSize   *int64
 	)
-	q, err := b.base.BuildQuery(nil, query, pageNumber, pageSize)
+	q, err := b.base.BuildQuery(nil, query, sort, pageNumber, pageSize)
 	b.Require().Nil(err)
 	b.Require().NotNil(q)
 	b.NotNil(q.Keywords)
 
-	// not nil query string and pagination pointer
+	// not nil input
 	var (
 		qs       = "q=a=b"
+		st       = "a,-c"
 		pn int64 = 1
 		ps int64 = 10
 	)
-	q, err = b.base.BuildQuery(nil, &qs, &pn, &ps)
+	q, err = b.base.BuildQuery(nil, &qs, &st, &pn, &ps)
 	b.Require().Nil(err)
 	b.Require().NotNil(q)
 	b.Equal(int64(1), q.PageNumber)
 	b.Equal(int64(10), q.PageSize)
 	b.NotNil(q.Keywords)
+	b.Require().Len(q.Sorts, 2)
+	b.Equal("a", q.Sorts[0].Key)
+	b.False(q.Sorts[0].DESC)
+	b.Equal("c", q.Sorts[1].Key)
+	b.True(q.Sorts[1].DESC)
 
 	var (
 		qs1       = "q=a%3Db"
+		st1       = ""
 		pn1 int64 = 1
 		ps1 int64 = 10
 	)
-	q, err = b.base.BuildQuery(nil, &qs1, &pn1, &ps1)
+	q, err = b.base.BuildQuery(nil, &qs1, &st1, &pn1, &ps1)
 	b.Require().Nil(err)
 	b.Require().NotNil(q)
 	b.Equal(int64(1), q.PageNumber)

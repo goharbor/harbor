@@ -38,7 +38,7 @@ const (
 type Project struct {
 	ProjectID    int64             `orm:"pk;auto;column(project_id)" json:"project_id"`
 	OwnerID      int               `orm:"column(owner_id)" json:"owner_id"`
-	Name         string            `orm:"column(name)" json:"name"`
+	Name         string            `orm:"column(name)" json:"name" sort:"default"`
 	CreationTime time.Time         `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time         `orm:"column(update_time);auto_now" json:"update_time"`
 	Deleted      bool              `orm:"column(deleted)" json:"deleted"`

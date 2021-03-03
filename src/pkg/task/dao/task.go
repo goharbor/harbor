@@ -76,7 +76,6 @@ func (t *taskDAO) List(ctx context.Context, query *q.Query) ([]*Task, error) {
 	if err != nil {
 		return nil, err
 	}
-	qs = qs.OrderBy("-StartTime")
 	if _, err = qs.All(&tasks); err != nil {
 		return nil, err
 	}

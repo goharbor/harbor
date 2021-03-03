@@ -260,7 +260,7 @@ func (a *projectAPI) GetLogs(ctx context.Context, params operation.GetLogsParams
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	query, err := a.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -379,7 +379,6 @@ func (a *projectAPI) HeadProject(ctx context.Context, params operation.HeadProje
 
 func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProjectsParams) middleware.Responder {
 	query := q.New(q.KeyWords{})
-	query.Sorting = "name"
 	query.PageNumber = *params.Page
 	query.PageSize = *params.PageSize
 
@@ -530,7 +529,7 @@ func (a *projectAPI) ListScannerCandidatesOfProject(ctx context.Context, params 
 		return a.SendError(ctx, err)
 	}
 
-	query, err := a.BuildQuery(ctx, params.Q, params.Page, params.PageSize, params.Sort)
+	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}

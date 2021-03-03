@@ -83,12 +83,7 @@ func (d *dao) Get(ctx context.Context, id int64) (*model.Robot, error) {
 }
 
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
-	query = q.MustClone(query)
-	query.Sorting = ""
-	query.PageNumber = 0
-	query.PageSize = 0
-
-	qs, err := orm.QuerySetter(ctx, &model.Robot{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &model.Robot{}, query)
 	if err != nil {
 		return 0, err
 	}
@@ -118,9 +113,6 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*model.Robot, error) 
 	qs, err := orm.QuerySetter(ctx, &model.Robot{}, query)
 	if err != nil {
 		return nil, err
-	}
-	if query.Sorting != "" {
-		qs = qs.OrderBy(query.Sorting)
 	}
 	if _, err = qs.All(&robots); err != nil {
 		return nil, err

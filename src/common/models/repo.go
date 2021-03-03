@@ -34,7 +34,7 @@ type RepoRecord struct {
 	Description  string    `orm:"column(description)" json:"description"`
 	PullCount    int64     `orm:"column(pull_count)" json:"pull_count"`
 	StarCount    int64     `orm:"column(star_count)" json:"star_count"`
-	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time" sort:"default:desc"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 

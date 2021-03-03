@@ -99,7 +99,7 @@ func (r *replicationAPI) ListReplicationExecutions(ctx context.Context, params o
 	if err := r.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceReplication); err != nil {
 		return r.SendError(ctx, err)
 	}
-	query, err := r.BuildQuery(ctx, nil, params.Page, params.PageSize)
+	query, err := r.BuildQuery(ctx, nil, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
@@ -172,7 +172,7 @@ func (r *replicationAPI) ListReplicationTasks(ctx context.Context, params operat
 	if err := r.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceReplication); err != nil {
 		return r.SendError(ctx, err)
 	}
-	query, err := r.BuildQuery(ctx, nil, params.Page, params.PageSize)
+	query, err := r.BuildQuery(ctx, nil, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
