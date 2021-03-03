@@ -200,6 +200,16 @@ func resourceScopes(ctx context.Context, rc rbac.Resource) map[string]struct{} {
 			res[s] = struct{}{}
 		}
 	}
+
+	// "*" is needed in the token for some API in notary server
+	// see https://github.com/goharbor/harbor/issues/14303#issuecomment-788010900
+	// and https://github.com/theupdateframework/notary/blob/84287fd8df4f172c9a8289641cdfa355fc86989d/server/server.go#L200
+	_, ok1 := res["push"]
+	_, ok2 := res["pull"]
+	_, ok3 := res["delete"]
+	if ok1 && ok2 && ok3 {
+		res["*"] = struct{}{}
+	}
 	return res
 }
 
