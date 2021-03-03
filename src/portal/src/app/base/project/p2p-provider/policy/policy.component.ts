@@ -258,6 +258,9 @@ export class PolicyComponent implements OnInit, OnDestroy {
   }
   editPolicy() {
     if (this.selectedRow) {
+      this.addP2pPolicyComponent.repos = null;
+      this.addP2pPolicyComponent.tags = null;
+      this.addP2pPolicyComponent.labels = null;
       this.addP2pPolicyComponent.isOpen = true;
       this.addP2pPolicyComponent.isEdit = true;
       this.addP2pPolicyComponent.inlineAlert.close();
@@ -266,13 +269,25 @@ export class PolicyComponent implements OnInit, OnDestroy {
       if (filter && filter.length) {
         filter.forEach(item => {
           if (item.type === FILTER_TYPE.REPOS && item.value) {
-            this.addP2pPolicyComponent.repos = item.value.replace(/[{}]/g, "");
+              let str: string = item.value;
+              if (/^{\S+}$/.test(str)) {
+                  return str.slice(1, str.length - 1);
+              }
+              this.addP2pPolicyComponent.repos = str;
           }
           if (item.type === FILTER_TYPE.TAG && item.value) {
-            this.addP2pPolicyComponent.tags = item.value.replace(/[{}]/g, "");
+              let str: string = item.value;
+              if (/^{\S+}$/.test(str)) {
+                  return str.slice(1, str.length - 1);
+              }
+              this.addP2pPolicyComponent.tags = str;
           }
           if (item.type === FILTER_TYPE.LABEL && item.value) {
-            this.addP2pPolicyComponent.labels = item.value.replace(/[{}]/g, "");
+              let str: string = item.value;
+              if (/^{\S+}$/.test(str)) {
+                  return str.slice(1, str.length - 1);
+              }
+              this.addP2pPolicyComponent.labels = str;
           }
         });
       }
@@ -433,7 +448,11 @@ export class PolicyComponent implements OnInit, OnDestroy {
     if (arr && arr.length) {
       for (let i = 0; i < arr.length; i++) {
         if (arr[i].type === type && arr[i].value) {
-          return (arr[i].value + "").replace(/[{}]/g, "");
+            let str: string = arr[i].value;
+            if (/^{\S+}$/.test(str)) {
+                return str.slice(1, str.length - 1);
+            }
+            return str;
         }
       }
     }

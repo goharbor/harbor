@@ -92,7 +92,8 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     set repositories(repositories) {
-        if (repositories.indexOf(",") !== -1) {
+        if (repositories.indexOf(",") !== -1
+        && repositories.indexOf("{") === -1 && repositories.indexOf("}") === -1) {
             this.rule.scope_selectors.repository[0].pattern = "{" + repositories + "}";
         } else {
             this.rule.scope_selectors.repository[0].pattern = repositories;
@@ -100,7 +101,11 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     get repositories() {
-        return this.rule.scope_selectors.repository[0].pattern.replace(/[{}]/g, "");
+        let str: string = this.rule.scope_selectors.repository[0].pattern;
+        if (/^{\S+}$/.test(str)) {
+            return str.slice(1, str.length - 1);
+        }
+        return str;
     }
 
     get tagsSelect() {
@@ -112,7 +117,8 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     set tagsInput(tagsInput) {
-        if (tagsInput.indexOf(",") !== -1) {
+        if (tagsInput.indexOf(",") !== -1
+            && tagsInput.indexOf("{") === -1 && tagsInput.indexOf("}") === -1) {
             this.rule.tag_selectors[0].pattern = "{" + tagsInput + "}";
         } else {
             this.rule.tag_selectors[0].pattern = tagsInput;
@@ -120,7 +126,11 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     get tagsInput() {
-        return this.rule.tag_selectors[0].pattern.replace(/[{}]/g, "");
+        let str: string = this.rule.tag_selectors[0].pattern;
+        if (/^{\S+}$/.test(str)) {
+            return str.slice(1, str.length - 1);
+        }
+        return str;
     }
     set untagged(untagged) {
         let extras = JSON.parse(this.rule.tag_selectors[0].extras);
