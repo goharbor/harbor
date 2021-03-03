@@ -85,7 +85,7 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 		return nil, nil, err
 	}
 
-	rpPolicy, err := rep.PolicyCtl.Get(execution.PolicyID)
+	rpPolicy, err := replication.Ctl.GetPolicy(ctx, execution.PolicyID)
 	if err != nil {
 		log.Errorf("failed to get replication policy %d: error: %v", execution.PolicyID, err)
 		return nil, nil, err

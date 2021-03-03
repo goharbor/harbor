@@ -26,6 +26,9 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/reg"
+	"github.com/goharbor/harbor/src/pkg/replication"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -35,10 +38,25 @@ func init() {
 	task.SetExecutionSweeperCount(job.Replication, 50)
 }
 
+// Ctl is a global replication controller instance
+var Ctl = NewController()
+
 // Controller defines the operations related with replication
 type Controller interface {
+	// PolicyCount returns the total count of policies according to the query
+	PolicyCount(ctx context.Context, query *q.Query) (count int64, err error)
+	// ListPolicies lists the policies according to the query
+	ListPolicies(ctx context.Context, query *q.Query) (policies []*replication.Policy, err error)
+	// GetPolicy gets the specific policy
+	GetPolicy(ctx context.Context, id int64) (policy *replication.Policy, err error)
+	// CreatePolicy creates a policy
+	CreatePolicy(ctx context.Context, policy *replication.Policy) (id int64, err error)
+	// UpdatePolicy updates the specific policy
+	UpdatePolicy(ctx context.Context, policy *replication.Policy, props ...string) (err error)
+	// DeletePolicy deletes the specific policy
+	DeletePolicy(ctx context.Context, id int64) (err error)
 	// Start the replication according to the policy
-	Start(ctx context.Context, policy *model.Policy, resource *model.Resource, trigger string) (executionID int64, err error)
+	Start(ctx context.Context, policy *replication.Policy, resource *model.Resource, trigger string) (executionID int64, err error)
 	// Stop the replication specified by the execution ID
 	Stop(ctx context.Context, executionID int64) (err error)
 	// ExecutionCount returns the total count of executions according to the query
@@ -57,17 +75,14 @@ type Controller interface {
 	GetTaskLog(ctx context.Context, taskID int64) (log []byte, err error)
 }
 
-var (
-	// Ctl is a global replication controller instance
-	Ctl            = NewController()
-	_   Controller = &controller{}
-)
-
 // NewController creates a new instance of the replication controller
 func NewController() Controller {
 	return &controller{
+		repMgr:     replication.Mgr,
 		execMgr:    task.ExecMgr,
 		taskMgr:    task.Mgr,
+		regMgr:     reg.Mgr,
+		scheduler:  scheduler.Sched,
 		flowCtl:    flow.NewController(),
 		ormCreator: orm.Crt,
 		wp:         lib.NewWorkerPool(1024),
@@ -75,14 +90,17 @@ func NewController() Controller {
 }
 
 type controller struct {
+	repMgr     replication.Manager
 	execMgr    task.ExecutionManager
 	taskMgr    task.Manager
+	regMgr     reg.Manager
+	scheduler  scheduler.Scheduler
 	flowCtl    flow.Controller
 	ormCreator orm.Creator
 	wp         *lib.WorkerPool
 }
 
-func (c *controller) Start(ctx context.Context, policy *model.Policy, resource *model.Resource, trigger string) (int64, error) {
+func (c *controller) Start(ctx context.Context, policy *replication.Policy, resource *model.Resource, trigger string) (int64, error) {
 	logger := log.GetLogger(ctx)
 	if !policy.Enabled {
 		return 0, errors.New(nil).WithCode(errors.PreconditionCode).

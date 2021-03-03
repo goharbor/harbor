@@ -63,6 +63,9 @@ type ExecutionManager interface {
 	StopAndWait(ctx context.Context, id int64, timeout time.Duration) (err error)
 	// Delete the specified execution and its tasks
 	Delete(ctx context.Context, id int64) (err error)
+	// Delete all executions and tasks of the specific vendor. They can be deleted only when all the executions/tasks
+	// of the vendor are in final status
+	DeleteByVendor(ctx context.Context, vendorType string, vendorID int64) (err error)
 	// Get the specified execution
 	Get(ctx context.Context, id int64) (execution *Execution, err error)
 	// List executions according to the query
@@ -332,6 +335,34 @@ func (e *executionManager) Delete(ctx context.Context, id int64) error {
 	}
 
 	return e.executionDAO.Delete(ctx, id)
+}
+
+func (e *executionManager) DeleteByVendor(ctx context.Context, vendorType string, vendorID int64) error {
+	executions, err := e.executionDAO.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"VendorType": vendorType,
+			"VendorID":   vendorID,
+		}})
+	if err != nil {
+		return err
+	}
+	// check the status
+	for _, execution := range executions {
+		if !job.Status(execution.Status).Final() {
+			return errors.New(nil).WithCode(errors.PreconditionCode).
+				WithMessage("contains executions that aren't in final status, stop the execution first")
+		}
+	}
+	// delete the executions
+	for _, execution := range executions {
+		if err = e.Delete(ctx, execution.ID); err != nil {
+			if errors.IsNotFoundErr(err) {
+				continue
+			}
+			return err
+		}
+	}
+	return nil
 }
 
 func (e *executionManager) Get(ctx context.Context, id int64) (*Execution, error) {

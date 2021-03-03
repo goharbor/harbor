@@ -13,6 +13,7 @@ package flow
 import (
 	"context"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -60,7 +61,7 @@ func (c *copyFlowTestSuite) TestRun() {
 
 	taskMgr := &testingTask.Manager{}
 	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
-	policy := &model.Policy{
+	policy := &replication.Policy{
 		SrcRegistry: &model.Registry{
 			Type: "TEST_FOR_COPY_FLOW",
 		},

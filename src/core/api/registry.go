@@ -11,23 +11,21 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/utils"
+	rep "github.com/goharbor/harbor/src/controller/replication"
 	"github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
-	"github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/registry"
 )
 
 // RegistryAPI handles requests to /api/registries/{}. It manages registries integrated to Harbor.
 type RegistryAPI struct {
 	BaseController
-	manager   registry.Manager
-	policyCtl policy.Controller
-	resource  types.Resource
+	manager  registry.Manager
+	resource types.Resource
 }
 
 // Prepare validates the user
@@ -40,7 +38,6 @@ func (t *RegistryAPI) Prepare() {
 	t.resource = system.NewNamespace().Resource(rbac.ResourceRegistry)
 
 	t.manager = replication.RegistryMgr
-	t.policyCtl = replication.PolicyCtl
 }
 
 // Ping checks health status of a registry
@@ -368,11 +365,11 @@ func (t *RegistryAPI) Delete() {
 	}
 
 	// Check whether there are replication policies that use this registry as source registry.
-	total, _, err := t.policyCtl.List([]*model.PolicyQuery{
-		{
-			SrcRegistry: id,
+	total, err := rep.Ctl.PolicyCount(orm.Context(), &q.Query{
+		Keywords: map[string]interface{}{
+			"SrcRegistryID": id,
 		},
-	}...)
+	})
 	if err != nil {
 		t.SendInternalServerError(fmt.Errorf("List replication policies with source registry %d error: %v", id, err))
 		return
@@ -385,11 +382,11 @@ func (t *RegistryAPI) Delete() {
 	}
 
 	// Check whether there are replication policies that use this registry as destination registry.
-	total, _, err = t.policyCtl.List([]*model.PolicyQuery{
-		{
-			DestRegistry: id,
+	total, err = rep.Ctl.PolicyCount(orm.Context(), &q.Query{
+		Keywords: map[string]interface{}{
+			"DestRegistryID": id,
 		},
-	}...)
+	})
 	if err != nil {
 		t.SendInternalServerError(fmt.Errorf("List replication policies with destination registry %d error: %v", id, err))
 		return
@@ -434,7 +431,7 @@ func (t *RegistryAPI) GetInfo() {
 	}
 	var registry *model.Registry
 	if id == 0 {
-		registry = event.GetLocalRegistry()
+		registry = rep.GetLocalRegistry()
 	} else {
 		registry, err = t.manager.Get(id)
 		if err != nil {

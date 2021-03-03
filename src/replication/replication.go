@@ -15,20 +15,12 @@
 package replication
 
 import (
-	"context"
-	"fmt"
-	"strconv"
 	"time"
 
-	"github.com/goharbor/harbor/src/controller/replication"
 	cfg "github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/scheduler"
-	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/event"
-	"github.com/goharbor/harbor/src/replication/policy"
-	"github.com/goharbor/harbor/src/replication/policy/controller"
 	"github.com/goharbor/harbor/src/replication/registry"
 
 	// register the Harbor adapter
@@ -66,40 +58,11 @@ import (
 )
 
 var (
-	// PolicyCtl is a global policy controller
-	PolicyCtl policy.Controller
 	// RegistryMgr is a global registry manager
 	RegistryMgr registry.Manager
 	// EventHandler handles images/chart pull/push events
 	EventHandler event.Handler
 )
-
-func init() {
-	callbackFunc := func(ctx context.Context, param string) error {
-		policyID, err := strconv.ParseInt(param, 10, 64)
-		if err != nil {
-			return err
-		}
-
-		policy, err := PolicyCtl.Get(policyID)
-		if err != nil {
-			return err
-		}
-		if policy == nil {
-			return fmt.Errorf("policy %d not found", policyID)
-		}
-		if err = event.PopulateRegistries(RegistryMgr, policy); err != nil {
-			return err
-		}
-
-		_, err = replication.Ctl.Start(ctx, policy, nil, task.ExecutionTriggerSchedule)
-		return err
-	}
-	err := scheduler.RegisterCallbackFunc(controller.CallbackFuncName, callbackFunc)
-	if err != nil {
-		log.Errorf("failed to register the callback function for replication: %v", err)
-	}
-}
 
 // Init the global variables and configurations
 func Init(closing, done chan struct{}) error {
@@ -116,10 +79,8 @@ func Init(closing, done chan struct{}) error {
 	}
 	// init registry manager
 	RegistryMgr = registry.NewDefaultManager()
-	// init policy controller
-	PolicyCtl = controller.NewController()
 	// init event handler
-	EventHandler = event.NewHandler(PolicyCtl, RegistryMgr)
+	EventHandler = event.NewHandler(RegistryMgr)
 	log.Debug("the replication initialization completed")
 
 	// Start health checker for registries
