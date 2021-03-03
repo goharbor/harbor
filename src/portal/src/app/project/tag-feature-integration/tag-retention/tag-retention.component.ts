@@ -467,7 +467,11 @@ export class TagRetentionComponent implements OnInit {
     }
 
     formatPattern(pattern: string): string {
-        return pattern.replace(/[{}]/g, "");
+        let str: string = pattern;
+        if (/^{\S+}$/.test(str)) {
+            return str.slice(1, str.length - 1);
+        }
+        return str;
     }
 
     getI18nKey(str: string) {

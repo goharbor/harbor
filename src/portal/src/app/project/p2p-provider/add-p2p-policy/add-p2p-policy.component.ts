@@ -208,21 +208,27 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     policy.provider_id = +policy.provider_id;
     const filters: any[] = [];
     if (this.repos) {
-      if (this.repos.indexOf(",") !== -1) {
+      if (this.repos.indexOf(",") !== -1
+          && this.repos.indexOf('{') === -1
+          && this.repos.indexOf('}') === -1) {
         filters.push({type: FILTER_TYPE.REPOS, value: `{${this.repos}}`});
       } else {
         filters.push({type: FILTER_TYPE.REPOS, value: this.repos});
       }
     }
     if (this.tags) {
-      if (this.tags.indexOf(",") !== -1) {
+      if (this.tags.indexOf(",") !== -1
+          && this.tags.indexOf('{') === -1
+          && this.tags.indexOf('}') === -1) {
         filters.push({type: FILTER_TYPE.TAG, value: `{${this.tags}}`});
       } else {
         filters.push({type: FILTER_TYPE.TAG, value: this.tags});
       }
     }
     if (this.labels) {
-      if (this.labels.indexOf(",") !== -1) {
+      if (this.labels.indexOf(",") !== -1
+          && this.labels.indexOf('{') === -1
+          && this.labels.indexOf('}') === -1) {
         filters.push({type: FILTER_TYPE.LABEL, value: `{${this.labels}}`});
       } else {
         filters.push({type: FILTER_TYPE.LABEL, value: this.labels});
