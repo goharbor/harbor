@@ -61,9 +61,9 @@ def _create_client(server, credential, debug, api_type="products"):
         "scanner": swagger_client.ScannersApi(swagger_client.ApiClient(cfg)),
     }.get(api_type,'Error: Wrong API type')
 
-def _assert_status_code(expect_code, return_code):
+def _assert_status_code(expect_code, return_code, err_msg = r"HTTPS status code s not as we expected. Expected {}, while actual HTTPS status code is {}."):
     if str(return_code) != str(expect_code):
-        raise Exception(r"HTTPS status code s not as we expected. Expected {}, while actual HTTPS status code is {}.".format(expect_code, return_code))
+        raise Exception(err_msg.format(expect_code, return_code))
 
 def _assert_status_body(expect_status_body, returned_status_body):
     if str(returned_status_body.strip()).lower().find(expect_status_body.lower()) < 0:
@@ -86,15 +86,37 @@ def _get_string_from_unicode(udata):
         result = result + tmp.strip('\n\r\t')
     return result
 
-def run_command(command):
+def run_command_with_popen(command):
+    print("Command: ", subprocess.list2cmdline(command))
+
+    try:
+        proc = subprocess.Popen(command, universal_newlines=True, shell=True,
+                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        output, errors = proc.communicate()
+    except Exception as e:
+        print("Error:", e)
+    else:
+        print(proc.returncode, errors, output)
+    finally:
+        proc.stdout.close()
+
+def run_command(command, expected_error_message = None):
     print("Command: ", subprocess.list2cmdline(command))
     try:
         output = subprocess.check_output(command,
                                          stderr=subprocess.STDOUT,
                                          universal_newlines=True)
     except subprocess.CalledProcessError as e:
-        raise Exception('Error: Exited with error code: %s. Output:%s'% (e.returncode, e.output))
-    return output
+        print("Run command error:", str(e))
+        print("expected_error_message:", expected_error_message)
+        if expected_error_message is not None:
+            if str(e.output).lower().find(expected_error_message.lower()) < 0:
+                raise Exception(r"Error message {} is not as expected {}".format(str(e.output), expected_error_message))
+        else:
+            raise Exception('Error: Exited with error code: %s. Output:%s'% (e.returncode, e.output))
+    else:
+        print("output:", output)
+        return output
 
 class Base(object):
     def __init__(self, server=None, credential=None, debug=True, api_type="products"):

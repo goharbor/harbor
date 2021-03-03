@@ -32,6 +32,8 @@ Nightly Test Setup
     Run Keyword  Start Containerd Daemon Locally
     Log To Console  wget mariadb ...
     Run  wget ${prometheus_chart_file_url}
+    #Prepare docker image for push special image keyword in replication test
+    Run Keyword If  '${DOCKER_USER}' != '${EMPTY}'  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
 
 CA Setup
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt

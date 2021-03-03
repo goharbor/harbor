@@ -24,7 +24,44 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
+# Due to Docker 20's new behavior, let 'Proxy Cache' be the 1st case to run
+#   and at the same time all images to be pull among all cases should be not exsit before pulling.
+Test Case - Proxy Cache
+    [Tags]  proxy_cache
+    ${d}=  Get Current Date    result_format=%m%s
+    ${registry}=  Set Variable  https://cicd.harbor.vmwarecna.net
+    ${user_namespace}=  Set Variable  nightly
+    ${image}=  Set Variable  for_proxy
+    ${tag}=  Set Variable  1.0
+    ${manifest_index}=  Set Variable  alpine
+    ${manifest_tag}=  Set Variable  3.12.0
+    ${test_user}=  Set Variable  user010
+    ${test_pwd}=  Set Variable  Test1@34
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Registries
+    Create A New Endpoint  harbor  e1${d}  ${registry}  ${null}  ${null}
+    Create An New Project And Go Into Project  project${d}  proxy_cache=${true}  registry=e1${d}
+    Manage Project Member Without Sign In  project${d}  ${test_user}  Add  has_image=${false}
+    Go Into Project  project${d}  has_image=${false}
+    Change Member Role  ${test_user}  Developer
+    Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${user_namespace}/${image}  tag=${tag}
+    Pull Image  ${ip}  ${test_user}  ${test_pwd}  project${d}  ${user_namespace}/${manifest_index}  tag=${manifest_tag}
+    Log To Console  Start to Sleep 3 minitues......
+    Sleep  180
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/${user_namespace}/${image}
+    Log To Console  Start to Sleep 10 minitues......
+    Sleep  500
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/${user_namespace}/${manifest_index}
+    Go Into Index And Contain Artifacts  ${manifest_tag}  limit=1
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
+    Cannot Push image  ${ip}  ${test_user}  ${test_pwd}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
+    Close Browser
+
 Test Case - Scan Schedule Job
+    [tags]  Scan_schedule
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%M
     Log To Console  ${d}
@@ -45,7 +82,7 @@ Test Case - Scan Schedule Job
         ${left} =  Evaluate 	${minite_int}%10
         Log To Console    ${i}/${left}
         Sleep  55
-        Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Set Scan Schedule  custom  value=* */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
+        Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Set Scan Schedule  custom  value=0 */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
         Exit For Loop If    '${flag}' == '${true}'
     END
     # After scan custom schedule is set, image should stay in unscanned status.
@@ -63,6 +100,7 @@ Test Case - Scan Schedule Job
     View Repo Scan Details  High  Medium
 
 Test Case - Replication Schedule Job
+    [tags]  Replication_schedule
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%M
     Log To Console  ${d}
@@ -82,7 +120,7 @@ Test Case - Replication Schedule Job
         ${minite_int} =  Convert To Integer  ${minite}
         ${left} =  Evaluate 	${minite_int}%10
         Log To Console    ${i}/${left}
-        Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Create A Rule With Existing Endpoint    rule${d}    pull    nightly/{mariadb,centos}    image    e${d}    ${project_name}  mode=Scheduled  cron=* */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
+        Run Keyword If  ${left} <= 3 and ${left} != 0   Run Keywords  Create A Rule With Existing Endpoint    rule${d}    pull    nightly/{mariadb,centos}    image    e${d}    ${project_name}  mode=Scheduled  cron=0 */10 * * * *  AND  Set Suite Variable  ${flag}  ${true}
         Sleep  40
         Exit For Loop If    '${flag}' == '${true}'
     END
@@ -99,8 +137,8 @@ Test Case - Replication Schedule Job
 
     # Delete repository
     Go Into Project  ${project_name}
-    Delete Repo  ${project_name}/${image_a}
-    Delete Repo  ${project_name}/${image_b}
+    Delete Repo  ${project_name}  ${image_a}
+    Delete Repo  ${project_name}  ${image_b}
 
     # After replication schedule is set, project should contain 2 images.
     Log To Console  Sleep for 600 seconds......

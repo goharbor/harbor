@@ -11,7 +11,6 @@ from library.user import User
 from library.repository import Repository
 from library.repository import push_self_build_image_to_project
 from library.repository import pull_harbor_image
-
 class TestProjects(unittest.TestCase):
     @suppress_urllib3_warning
     def setUp(self):
@@ -23,7 +22,7 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
         #1. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(TestProjects.project_content_trust_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_CONTENT_TRUST_CLIENT)
+        self.repo.delete_repository(TestProjects.project_content_trust_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_CONTENT_TRUST_CLIENT)
 
         #2. Delete project(PA);
         self.project.delete_project(TestProjects.project_content_trust_id, **TestProjects.USER_CONTENT_TRUST_CLIENT)

@@ -32,9 +32,9 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
         #1. Delete Alice's repository and Luca's repository;
-        self.repo.delete_repoitory(TestProjects.project_Alice_name, TestProjects.repo_a.split('/')[1], **ADMIN_CLIENT)
-        self.repo.delete_repoitory(TestProjects.project_Alice_name, TestProjects.repo_b.split('/')[1], **ADMIN_CLIENT)
-        self.repo.delete_repoitory(TestProjects.project_Alice_name, TestProjects.repo_c.split('/')[1], **ADMIN_CLIENT)
+        self.repo.delete_repository(TestProjects.project_Alice_name, TestProjects.repo_a.split('/')[1], **ADMIN_CLIENT)
+        self.repo.delete_repository(TestProjects.project_Alice_name, TestProjects.repo_b.split('/')[1], **ADMIN_CLIENT)
+        self.repo.delete_repository(TestProjects.project_Alice_name, TestProjects.repo_c.split('/')[1], **ADMIN_CLIENT)
 
         #2. Delete Alice's project and Luca's project;
         self.project.delete_project(TestProjects.project_Alice_id, **ADMIN_CLIENT)

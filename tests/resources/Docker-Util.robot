@@ -34,6 +34,8 @@ Pull image
     Should Contain  ${output}  Digest:
     Should Contain  ${output}  Status:
     Should Not Contain  ${output}  No such image:
+    #Remove image for docker 20
+    Clean All Local Images
 
 Push image
     # If no tag provided in $(image_with_or_without_tag}, latest will be the tag pulled from docker-hub or read from local
@@ -51,6 +53,8 @@ Push image
     ...  ELSE  Wait Unitl Command Success  docker tag ${image_in_use} ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker logout ${ip}
+    #Remove image for docker 20
+    Clean All Local Images
     Sleep  1
 
 Push Image With Tag
@@ -62,6 +66,12 @@ Push Image With Tag
     Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1} ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker logout ${ip}
+    #Remove image for docker 20
+    Clean All Local Images
+
+Clean All Local Images
+    Wait Unitl Command Success  docker rmi -f $(docker images -a -q)
+    Wait Unitl Command Success  docker system prune -a -f
 
 Cannot Docker Login Harbor
     [Arguments]  ${ip}  ${user}  ${pwd}
@@ -149,6 +159,29 @@ Start Containerd Daemon Locally
     Sleep  2s
     [Return]  ${handle}
 
+Restart Docker Daemon Locally
+    FOR  ${IDX}  IN RANGE  5
+        ${pid}=  Run  pidof dockerd
+        Exit For Loop If  '${pid}' == '${EMPTY}'
+        ${result}=  Run Process  kill ${pid}  shell=True
+        Log To Console  Kill docker process: ${result}
+        Sleep  2s
+    END
+    ${pid}=  Run  pidof dockerd
+    Should Be Equal As Strings  '${pid}'  '${EMPTY}'
+    OperatingSystem.File Should Exist  /usr/local/bin/dockerd-entrypoint.sh
+    ${result}=  Run Process  rm -rf /var/lib/docker/*  shell=True
+    Log To Console  Clear /var/lib/docker: ${result}
+    ${handle}=  Start Process  /usr/local/bin/dockerd-entrypoint.sh dockerd>./daemon-local.log 2>&1  shell=True
+    Process Should Be Running  ${handle}
+    FOR  ${IDX}  IN RANGE  5
+        ${pid}=  Run  pidof dockerd
+        Exit For Loop If  '${pid}' != '${EMPTY}'
+        Sleep  2s
+    END
+    Sleep  2s
+    [Return]  ${handle}
+
 Prepare Docker Cert
     [Arguments]  ${ip}
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
@@ -183,8 +216,7 @@ Docker Login
 Docker Pull
     [Arguments]  ${image}
     ${output}=  Retry Keyword N Times When Error  2  Wait Unitl Command Success  docker pull ${image}
-    Log  ${output}
-    Log To Console  Docker Pull: ${output}
+    Log All  Docker Pull: ${output}
     [Return]  ${output}
 
 Docker Tag

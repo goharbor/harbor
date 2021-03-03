@@ -56,10 +56,17 @@ class Artifact(base.Base, object):
         client = self._get_client(**kwargs)
         return client.get_addition_with_http_info(project_name, repo_name, reference, addition)
 
-    def add_label_to_reference(self, project_name, repo_name, reference, label_id, **kwargs):
+    def add_label_to_reference(self, project_name, repo_name, reference, label_id, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         label = v2_swagger_client.Label(id = label_id)
-        return client.add_label_with_http_info(project_name, repo_name, reference, label)
+        try:
+            body, status_code, _ = client.add_label_with_http_info(project_name, repo_name, reference, label)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            base._assert_status_code(200, status_code)
+            return body
 
     def copy_artifact(self, project_name, repo_name, _from, expect_status_code = 201, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
@@ -84,10 +91,11 @@ class Artifact(base.Base, object):
         except ApiException as e:
             if e.status == 409 and ignore_conflict == True:
                 return
-            else:
-                raise Exception("Create tag error, {}.".format(e.body))
+            base._assert_status_code(expect_status_code, e.status)
+
         else:
             base._assert_status_code(expect_status_code, status_code)
+            base._assert_status_code(201, status_code)
 
     def delete_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
@@ -97,6 +105,7 @@ class Artifact(base.Base, object):
             base._assert_status_code(expect_status_code, e.status)
         else:
             base._assert_status_code(expect_status_code, status_code)
+            base._assert_status_code(200, status_code)
 
     def check_image_scan_result(self, project_name, repo_name, reference, expected_scan_status = "Success", **kwargs):
         timeout_count = 30
@@ -107,6 +116,15 @@ class Artifact(base.Base, object):
             if (timeout_count == 0):
                 break
             artifact = self.get_reference_info(project_name, repo_name, reference, **kwargs)
+            if expected_scan_status in ["Not Scanned", "No Scan Overview"]:
+                if artifact.scan_overview is None:
+                    if (timeout_count > 24):
+                        continue
+                    print("artifact is not scanned.")
+                    return
+                else:
+                    raise Exception("Artifact should not be scanned {}.".format(artifact.scan_overview))
+
             scan_status = artifact.scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'].scan_status
             if scan_status == expected_scan_status:
                 return

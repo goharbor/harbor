@@ -291,6 +291,7 @@ Delete A Label
 
 ## Garbage Collection
 Switch To Garbage Collection
+    Switch To Configure
     Sleep  1
     Retry Element Click  xpath=${gc_config_page}
     Wait Until Page Contains Element  ${garbage_collection_xpath}
@@ -337,12 +338,16 @@ Get Project Storage Quota Text From Project Quotas List
     [Return]  ${storage_quota}
 
 Check Automatic Onboarding And Save
+    Switch To Configure
     Retry Element Click  ${cfg_auth_automatic_onboarding_checkbox}
     Retry Element Click  xpath=${config_auth_save_button_xpath}
 
 Set User Name Claim And Save
     [Arguments]    ${type}
-    Retry Text Input  ${cfg_auth_user_name_claim_input}  ${type}
+    Switch To Configure
+    Retry Clear Element Text  ${cfg_auth_user_name_claim_input}
+    Run Keyword If  '${type}'=='${null}'  Retry Text Input  ${cfg_auth_user_name_claim_input}  anytext
+    ...  ELSE  Retry Text Input  ${cfg_auth_user_name_claim_input}  ${type}
     Retry Element Click  xpath=${config_auth_save_button_xpath}
 
 Select Distribution
