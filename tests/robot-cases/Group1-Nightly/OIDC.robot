@@ -79,24 +79,27 @@ Test Case - Generate User CLI Secret
     Cannot Docker Login Harbor  ${ip}  ${OIDC_USERNAME}  ${secret_old}
     Pull image  ${ip}  ${OIDC_USERNAME}  ${secret_new}  project${d}  ${image}
     Push image  ${ip}  ${OIDC_USERNAME}  ${secret_new}  project${d}  ${image}
+    Close Browser
 
 Test Case - Helm CLI Push
     Init Chrome Driver
     Sign In Harbor With OIDC User  ${HARBOR_URL}
     ${secret}=  Get Secrete By API  ${HARBOR_URL}
     Helm CLI Push Without Sign In Harbor  ${OIDC_USERNAME}  ${secret}
+    Close Browser
 
 Test Case - Onboard OIDC User Sign In
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
     Check Automatic Onboarding And Save
     Logout Harbor
     Sign In Harbor With OIDC User  ${HARBOR_URL}  test8  is_onboard=${true}
     Logout Harbor
-	Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Set User Name Claim And Save  email
     Logout Harbor
     Sign In Harbor With OIDC User  ${HARBOR_URL}  test9  is_onboard=${true}  username_claim=email
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Set User Name Claim And Save  ${null}
     Sleep  2

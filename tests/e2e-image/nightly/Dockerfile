@@ -1,8 +1,14 @@
-FROM golang:1.11.13
+FROM ubuntu:18.04
+ENV LANG C.UTF-8
+# V 2.0
+# V 2.0.1: upgrade docker to version 19.03.12
+# V 2.5 Add support for e2e py-test (especially containerd)
+# V 2.6 docker 19.03.12
+# V 2.6.1 upgrade helm2, helm3 and docker 20.10.1
 
-#docker build -f drone/Dockerfile -t goharbor/harbor-e2e-engine:2.4 .
-# V2.4.1: Upgrade docker engine
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+RUN apt-get update && apt-get install -y --no-install-recommends wget curl gnupg2
+RUN apt-get install libseccomp2
+RUN wget  --no-check-certificate -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
 
 #RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && apt install ./google-chrome-stable_current_amd64.deb
@@ -72,9 +78,11 @@ RUN apt-get update && apt install libnss3-tools && \
     echo Harbor12345 > password.ca && \
     certutil -d sql:$HOME/.pki/nssdb -N -f password.ca
 
-RUN wget https://bootstrap.pypa.io/get-pip.py && \
-    python ./get-pip.py  && \
-    pip install pyasn1 google-apitools==0.5.15 gsutil robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot robotframework-JSONLibrary --upgrade
+RUN pip3 install pyasn1 google-apitools==0.5.31 gsutil robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot robotframework-JSONLibrary --upgrade
+
+ENV CRI_CONTAINERD_VERSION 1.3.4
+RUN wget https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz && \
+    tar --no-overwrite-dir -C / -xzf cri-containerd-${CRI_CONTAINERD_VERSION}.linux-amd64.tar.gz
 
 # Install docker, docker compose
 RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-19.03.12.tgz && \

@@ -2,6 +2,7 @@
 IP=$1
 NOTARY_URL=$5
 PASSHRASE='Harbor12345'
+IMAGE=$IP/$2/$3:$4
 
 echo $IP
 
@@ -17,6 +18,8 @@ export DOCKER_CONTENT_TRUST_OFFLINE_PASSPHRASE=$PASSHRASE
 export DOCKER_CONTENT_TRUST_TAGGING_PASSPHRASE=$PASSHRASE
 
 docker login -u admin -p Harbor12345 $IP
-docker tag $3:$4 $IP/$2/$3:$4
-docker push $IP/$2/$3:$4
+
+docker tag $3:$4 $IMAGE
+docker push $IMAGE
+docker rmi -f $IMAGE
 

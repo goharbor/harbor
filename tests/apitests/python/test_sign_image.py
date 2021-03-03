@@ -24,7 +24,7 @@ class TestProjects(unittest.TestCase):
     def tearDown(self):
         # remove the deletion as the signed image cannot be deleted.
         #1. Delete repository(RA) by user(UA);
-        #self.repo.delete_repoitory(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_sign_image_CLIENT)
+        #self.repo.delete_repository(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_sign_image_CLIENT)
 
         #2. Delete project(PA);
         #self.project.delete_project(TestProjects.project_sign_image_id, **TestProjects.USER_sign_image_CLIENT)
@@ -79,9 +79,9 @@ class TestProjects(unittest.TestCase):
         self.assertEqual(artifact.tags[0].signed, True)
 
         push_special_image_to_project(TestProjects.project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, self.repo_name_1, ['1.0'])
-        self.repo.delete_repoitory(TestProjects.project_sign_image_name, self.repo_name_1, **TestProjects.USER_sign_image_CLIENT)
+        self.repo.delete_repository(TestProjects.project_sign_image_name, self.repo_name_1, **TestProjects.USER_sign_image_CLIENT)
 
-        self.repo.delete_repoitory(TestProjects.project_sign_image_name, image, expect_status_code=412, expect_response_body = "with signature cannot be deleted", **TestProjects.USER_sign_image_CLIENT)
+        self.repo.delete_repository(TestProjects.project_sign_image_name, image, expect_status_code=412, expect_response_body = "with signature cannot be deleted", **TestProjects.USER_sign_image_CLIENT)
 
 if __name__ == '__main__':
     unittest.main()

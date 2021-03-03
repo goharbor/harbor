@@ -21,10 +21,6 @@ Test Case - Garbage Collection
     [Tags]  gc
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 
-Test Case - Proxy Cache
-    [Tags]  proxy_cache
-    Harbor API Test  ./tests/apitests/python/test_proxy_cache.py
-
 Test Case - Add Private Project Member and Check User Can See It
     [Tags]  private_member
     Harbor API Test  ./tests/apitests/python/test_add_member_to_private_project.py
@@ -51,6 +47,7 @@ Test Case - Manage Project Member
 
 Test Case - Project Level Policy Content Trust
     [Tags]  content_trust
+    Restart Docker Daemon Locally
     Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
 
 Test Case - User View Logs
@@ -148,6 +145,10 @@ Test Case - Push Chart File To Chart Repository By Helm V2 With Robot Account
 Test Case - Replication From Dockerhub
     [Tags]  replic_dockerhub
     Harbor API Test  ./tests/apitests/python/test_replication_from_dockerhub.py
+
+Test Case - Proxy Cache
+    [Tags]  proxy_cache
+    Harbor API Test  ./tests/apitests/python/test_proxy_cache.py
 
 Test Case - Tag Immutability
     [Tags]  tag_immutability
