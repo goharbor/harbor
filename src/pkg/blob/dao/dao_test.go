@@ -16,6 +16,7 @@ package dao
 
 import (
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
@@ -202,27 +203,42 @@ func (suite *DaoTestSuite) TestListBlobs() {
 	digest2 := suite.DigestString()
 	suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest2})
 
-	blobs, err := suite.dao.ListBlobs(ctx, models.ListParams{BlobDigests: []string{digest1}})
+	ol := q.OrList{
+		Values: []interface{}{
+			digest1,
+		},
+	}
+	blobs, err := suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"digest": &ol}))
 	if suite.Nil(err) {
 		suite.Len(blobs, 1)
 	}
 
-	blobs, err = suite.dao.ListBlobs(ctx, models.ListParams{BlobDigests: []string{digest1, digest2}})
+	ol = q.OrList{
+		Values: []interface{}{
+			digest1,
+			digest2,
+		},
+	}
+	blobs, err = suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"digest": &ol}))
 	if suite.Nil(err) {
 		suite.Len(blobs, 2)
 	}
 
-	blobs, err = suite.dao.ListBlobs(ctx, models.ListParams{UpdateTime: time.Now().Add(-time.Hour)})
+	rg := q.Range{
+		Max: time.Now().Add(-time.Hour).Format(time.RFC3339),
+	}
+	blobs, err = suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"update_time": &rg}))
 	if suite.Nil(err) {
 		suite.Len(blobs, 0)
 	}
 
 	digest3 := suite.DigestString()
 	suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest3, UpdateTime: time.Now().Add(-time.Hour * 2)})
-	blobs, err = suite.dao.ListBlobs(ctx, models.ListParams{UpdateTime: time.Now().Add(-time.Hour)})
+	blobs, err = suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"update_time": &rg}))
 	if suite.Nil(err) {
 		suite.Len(blobs, 1)
 	}
+
 }
 
 func (suite *DaoTestSuite) TestListBlobsAssociatedWithArtifact() {
@@ -248,15 +264,17 @@ func (suite *DaoTestSuite) TestFindBlobsShouldUnassociatedWithProject() {
 		digest4 := suite.DigestString()
 		digest5 := suite.DigestString()
 
+		var ol q.OrList
 		blobDigests := []string{digest1, digest2, digest3, digest4, digest5}
 		for _, digest := range blobDigests {
 			blobID, err := suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest})
 			if suite.Nil(err) {
 				suite.dao.CreateProjectBlob(ctx, projectID, blobID)
 			}
+			ol.Values = append(ol.Values, digest)
 		}
 
-		blobs, err := suite.dao.ListBlobs(ctx, models.ListParams{BlobDigests: blobDigests})
+		blobs, err := suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"digest": &ol}))
 		suite.Nil(err)
 		suite.Len(blobs, 5)
 
