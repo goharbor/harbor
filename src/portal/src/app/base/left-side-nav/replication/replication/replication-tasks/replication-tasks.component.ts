@@ -230,4 +230,8 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     return status;
   }
 
+  canStop() {
+    return this.execution && this.execution.status === 'InProgress';
+  }
+
 }

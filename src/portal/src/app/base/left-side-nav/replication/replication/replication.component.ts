@@ -401,6 +401,10 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     );
     this.StopConfirmDialog.open(StopExecutionsMessage);
   }
+  canStop() {
+    return this.selectedRow && this.selectedRow[0]
+        && this.selectedRow[0].status === 'InProgress';
+  }
 
   confirmStop(message: ConfirmationAcknowledgement) {
     if (

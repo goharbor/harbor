@@ -13,7 +13,7 @@
                     width: 250px;
                 }
                 >div:nth-child(2) {
-                    width: 140px;
+                    width: 150px;
                     span {
                         color: #007cbb;
                         font-size: 12px;
@@ -25,7 +25,7 @@
                     height: 25px;
                     width: 2px;
                     background-color: #cccccc;
-                    margin: 0 20px;
+                    margin: 0 20px -2px 20px;
                 }
                 .h2-style {
                     display: inline-block;
@@ -109,4 +109,7 @@
             }
         }
     }
+}
+.margin-top-16px {
+    margin-top: 16px;
 }
