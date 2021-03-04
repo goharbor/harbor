@@ -61,11 +61,6 @@ data_volume: /data
 #   redirect:
 #     disabled: false
 
-# Clair configuration
-clair:
-  # The interval of clair updaters, the unit is hour, set to 0 to disable the updaters.
-  updaters_interval: 12
-
 # Trivy configuration
 #
 # Trivy DB contains vulnerability information from NVD, Red Hat, and many other upstream vulnerability databases.
@@ -134,7 +129,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 2.0.0
+_version: 2.2.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -147,13 +142,6 @@ _version: 2.0.0
 #     ssl_mode: disable
 #     max_idle_conns: 2
 #     max_open_conns: 0
-#   clair:
-#     host: clair_db_host
-#     port: clair_db_port
-#     db_name: clair_db_name
-#     username: clair_db_username
-#     password: clair_db_password
-#     ssl_mode: disable
 #   notary_signer:
 #     host: notary_signer_db_host
 #     port: notary_signer_db_port
@@ -183,7 +171,6 @@ _version: 2.0.0
 #   registry_db_index: 1
 #   jobservice_db_index: 2
 #   chartmuseum_db_index: 3
-#   clair_db_index: 4
 #   trivy_db_index: 5
 #   idle_timeout_seconds: 30
 
@@ -206,5 +193,9 @@ proxy:
   components:
     - core
     - jobservice
-    - clair
     - trivy
+
+# metric:
+#   enabled: false
+#   port: 9090
+#   path: /metrics

@@ -1,0 +1,144 @@
+<clr-modal clrModalSize="lg" [(clrModalOpen)]="addRobotOpened"
+           [clrModalStaticBackdrop]="true" [clrModalClosable]="true">
+    <h3 *ngIf="!isEditMode" class="modal-title">{{"SYSTEM_ROBOT.CREATE_ROBOT" | translate}}</h3>
+    <h3 *ngIf="isEditMode" class="modal-title">{{"SYSTEM_ROBOT.EDIT_ROBOT" | translate}}</h3>
+    <div class="modal-body">
+        <inline-alert class="modal-title"></inline-alert>
+        <p *ngIf="!isEditMode" class="mt-0">{{"SYSTEM_ROBOT.CREATE_ROBOT_SUMMARY" | translate}}</p>
+        <p *ngIf="isEditMode" class="mt-0">{{"SYSTEM_ROBOT.EDIT_ROBOT_SUMMARY" | translate}}</p>
+        <form #robotForm="ngForm" class="clr-form clr-form-horizontal mt-1">
+            <section class="form-block">
+                <!-- name -->
+                <div class="clr-form-control">
+                    <label for="name" class="clr-control-label required">{{'P2P_PROVIDER.NAME' | translate}}
+                        <clr-tooltip *ngIf="!isEditMode">
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                <span>{{"SYSTEM_ROBOT.FINAL_SYSTEM_NAME_TIP" | translate}}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                    <div class="clr-control-container" [class.clr-error]="((name.dirty || name.touched) && name.invalid) || isNameExisting">
+                        <div class="clr-input-wrapper">
+                            <input class="clr-input input-width"
+                                   [disabled]="loading || isEditMode"
+                                   type="text" id="name"
+                                   [(ngModel)]="systemRobot.name"
+                                   required
+                                   pattern='^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
+                                   maxLengthExt="255"
+                                   autocomplete="off"
+                                   size="30" name="name" #name="ngModel"  (input)="inputName()">
+                            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                            <span class="spinner spinner-inline" [hidden]="!checkNameOnGoing"></span>
+                        </div>
+                        <clr-control-error *ngIf="((name.dirty || name.touched) && name.invalid) || isNameExisting">
+                            <span *ngIf="!((name.dirty || name.touched) && name.invalid) && isNameExisting">{{'ROBOT_ACCOUNT.ACCOUNT_EXISTING' | translate}}</span>
+                            <span *ngIf="(name.dirty || name.touched) && name.invalid">{{ 'SYSTEM_ROBOT.NAME_TOOLTIP' | translate }}</span>
+                        </clr-control-error>
+                    </div>
+                </div>
+                <!-- expiration -->
+                <div class="clr-form-control">
+                    <label class="clr-control-label required">{{"SYSTEM_ROBOT.EXPIRATION_TIME" | translate}}
+                        <clr-tooltip>
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                <span>{{"SYSTEM_ROBOT.EXPIRATION_TIME_EXPLAIN" | translate}}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                    <div class="clr-control-container input-width" [class.clr-error]="((expiration.dirty || expiration.touched) && expiration.invalid) || isExpirationInvalid()">
+                        <div class="flex">
+                            <div class="clr-select-wrapper">
+                                <select [ngModelOptions]="{standalone: true}" (change)="changeExpirationType()"  [(ngModel)]="expirationType" id="expiration-type"  class="clr-select">
+                                    <option *ngIf="!isEditMode" value="default">{{systemExpirationDays}} {{"SYSTEM_ROBOT.EXPIRATION_DEFAULT" | translate}}</option>
+                                    <option value="days">{{"SYSTEM_ROBOT.EXPIRATION_DAYS" | translate}}</option>
+                                    <option value="never">{{"SYSTEM_ROBOT.EXPIRATION_NEVER" | translate}}</option>
+                                </select>
+                            </div>
+                            <div class="clr-input-wrapper">
+                                <input (input)="inputExpiration()" [disabled]="loadingSystemConfig" class="clr-input expiration-width" name="expiration" type="text"
+                                       #expiration="ngModel"
+                                       autocomplete="off"
+                                       [(ngModel)]="systemRobot.duration" required
+                                       pattern="^[\-1-9]{1}[0-9]*$" id="robotTokenExpiration" size="20"/>
+                                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                                <span class="spinner spinner-inline" [hidden]="!loadingSystemConfig"></span>
+                                <clr-control-error *ngIf="((expiration.dirty || expiration.touched) && expiration.invalid)|| isExpirationInvalid()">
+                                    {{"SYSTEM_ROBOT.EXPIRATION_REQUIRED" | translate}}
+                                </clr-control-error>
+                            </div>
+                        </div>
+                        <clr-control-helper *ngIf="isEditMode && systemRobot?.duration > 0 && !((expiration.dirty || expiration.touched) && expiration.invalid)|| isExpirationInvalid()">
+                            <span [ngClass]="{showWarning: shouldShowWarning()}">
+                                <clr-icon *ngIf="shouldShowWarning()" class="alert-icon" shape="exclamation-triangle"></clr-icon><span>{{'SYSTEM_ROBOT.EXPIRES_AT' | translate}}</span>:
+                                <span>{{calculateExpiresAt() | harborDatetime:'short'}}</span>
+                            </span>
+                        </clr-control-helper>
+                    </div>
+                </div>
+                <!-- 3. description -->
+                <clr-textarea-container class="mt-description">
+                    <label>{{ 'DISTRIBUTION.DESCRIPTION' | translate }}</label>
+                    <textarea class="input-width"
+                            clrTextarea
+                            type="text"
+                            id="description"
+                            name="description"
+                            [(ngModel)]="systemRobot.description"
+                    ></textarea>
+                </clr-textarea-container>
+                <div class="clr-form-control">
+                    <label class="clr-control-label mt-8px">{{"SYSTEM_ROBOT.COVER_ALL" | translate}}</label>
+                    <div class="clr-control-container padding-top-3 flex">
+                        <clr-checkbox-wrapper>
+                            <input
+                                    clrCheckbox
+                                    id="coverAll"
+                                    name="coverAll"
+                                    type="checkbox"
+                                    [(ngModel)]="coverAll"
+                            />
+                            <label>
+                                <clr-tooltip>
+                                    <clr-icon class="opacity-07" clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                        <span>{{"SYSTEM_ROBOT.COVER_ALL_EXPLAIN" | translate}}</span>
+                                    </clr-tooltip-content>
+                                </clr-tooltip>
+                            </label>
+                        </clr-checkbox-wrapper>
+                        <clr-dropdown [style.visibility]="coverAll? 'visible' : 'hidden'" class="dropdown-per" [clrCloseMenuOnItemClick]="false">
+                            <button class="btn btn-link" clrDropdownTrigger>
+                                {{getPermissions()}} {{"SYSTEM_ROBOT.PERMISSIONS" | translate}}
+                                <clr-icon shape="caret down"></clr-icon>
+                            </button>
+                            <clr-dropdown-menu [style.height.px]="230" clrPosition="bottom-left" *clrIfOpen>
+                                <div clrDropdownItem *ngFor="let item of defaultAccesses" (click)="chooseAccess(item)">
+                                    <clr-icon class="check" shape="check" [style.visibility]="item.checked ? 'visible' : 'hidden'"></clr-icon>
+                                    <span>{{i18nMap[item.action] | translate}} {{i18nMap[item.resource] | translate}}</span>
+                                </div>
+                            </clr-dropdown-menu>
+                        </clr-dropdown>
+                    </div>
+                </div>
+            </section>
+            <div class="clr-form-control" [class.clr-form-control-disabled]="coverAll" >
+                <app-list-all-projects [coverAll]="coverAll" [class.disabled]="coverAll" class="all-projects"></app-list-all-projects>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <span class="message" [style.visibility]="coverAll? 'visible' : 'hidden'">{{"SYSTEM_ROBOT.COVER_ALL_SUMMARY" | translate}}</span>
+        <span>
+            <button (click)="cancel()" id="system-robot-cancel" type="button" class="btn btn-outline">{{'BUTTON.CANCEL'
+                | translate}}</button>
+        <button [disabled]="disabled() || checkNameOnGoing"  [clrLoading]="saveBtnState" (click)="save()" id="system-robot-save" type="button"
+                class="btn btn-primary">
+            <span *ngIf="isEditMode">{{'BUTTON.SAVE'| translate}}</span>
+            <span *ngIf="!isEditMode">{{'BUTTON.ADD'| translate}}</span>
+            </button>
+        </span>
+    </div>
+</clr-modal>

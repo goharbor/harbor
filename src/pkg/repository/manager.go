@@ -43,6 +43,8 @@ type Manager interface {
 	Update(ctx context.Context, repository *models.RepoRecord, props ...string) (err error)
 	// AddPullCount increase one pull count for the specified repository
 	AddPullCount(ctx context.Context, id int64) error
+	// NonEmptyRepos returns the repositories without any artifact or all the artifacts are untagged.
+	NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error)
 }
 
 // New returns a default implementation of Manager
@@ -101,4 +103,8 @@ func (m *manager) Update(ctx context.Context, repository *models.RepoRecord, pro
 
 func (m *manager) AddPullCount(ctx context.Context, id int64) error {
 	return m.dao.AddPullCount(ctx, id)
+}
+
+func (m *manager) NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error) {
+	return m.dao.NonEmptyRepos(ctx)
 }

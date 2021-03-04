@@ -4,7 +4,7 @@ import unittest
 import swagger_client
 import time
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, TEARDOWN, suppress_urllib3_warning
 from library.user import User
 from library.system import System
 
@@ -27,6 +27,7 @@ class TestSysCVEAllowlist(unittest.TestCase):
         1. Clear the system level CVE allowlist.
         2. Delete User(RA)
     """
+    @suppress_urllib3_warning
     def setUp(self):
         self.user = User()
         self.system = System()
@@ -38,6 +39,13 @@ class TestSysCVEAllowlist(unittest.TestCase):
                                    username=user_ra_name,
                                    password=user_ra_password)
         self.user_ra_id = int(user_ra_id)
+
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
+    def tearDown(self):
+        print("TearDown: Clearing the Allowlist")
+        self.system.set_cve_allowlist(**ADMIN_CLIENT)
+        print("TearDown: Deleting user: %d" % self.user_ra_id)
+        self.user.delete_user(self.user_ra_id, **ADMIN_CLIENT)
 
     def testSysCVEAllowlist(self):
         # 1. User(RA) reads the system level CVE allowlist and it's empty.
@@ -61,13 +69,6 @@ class TestSysCVEAllowlist(unittest.TestCase):
         # 7. User(RA) reads the system level CVE allowlist, verify the expiration date is updated.
         wl = self.system.get_cve_allowlist(**self.USER_RA_CLIENT)
         self.assertEqual(exp, wl.expires_at)
-
-    def tearDown(self):
-        print("TearDown: Clearing the Allowlist")
-        self.system.set_cve_allowlist(**ADMIN_CLIENT)
-        print("TearDown: Deleting user: %d" % self.user_ra_id)
-        self.user.delete_user(self.user_ra_id, **ADMIN_CLIENT)
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,0 +1,121 @@
+<ng-container *ngIf="!isInlineModel">
+    <div class="normal-wrapper-box" *ngIf="!isEditMode">
+        <span class="font-style" [style.width]="labelWidth">{{ labelCurrent | translate }}</span>
+        <span>{{(originScheduleType ? 'SCHEDULE.'+ originScheduleType.toUpperCase(): "") | translate}}</span>
+        <a [hidden]="originScheduleType!==SCHEDULE_TYPE.HOURLY" href="javascript:void(0)" role="tooltip"
+           aria-haspopup="true" class="tooltip tooltip-top-right">
+            <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+            <span class="tooltip-content">{{'CONFIG.TOOLTIP.HOURLY_CRON' | translate}}</span>
+        </a>
+        <a [hidden]="originScheduleType!==SCHEDULE_TYPE.WEEKLY" href="javascript:void(0)" role="tooltip"
+           aria-haspopup="true" class="tooltip tooltip-top-right">
+            <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+            <span class="tooltip-content">{{'CONFIG.TOOLTIP.WEEKLY_CRON' | translate}}</span>
+        </a>
+        <a [hidden]="originScheduleType!==SCHEDULE_TYPE.DAILY" href="javascript:void(0)" role="tooltip" aria-haspopup="true"
+           class="tooltip tooltip-top-right">
+            <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+            <span class="tooltip-content">{{'CONFIG.TOOLTIP.DAILY_CRON' | translate}}</span>
+        </a>
+        <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">&nbsp;{{ "SCHEDULE.CRON" | translate }} :</span>
+        <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ oriCron }}</span>
+        <button  [disabled]="disabled" class="btn btn-link" (click)="editSchedule()"
+                 id="editSchedule">
+            {{ "BUTTON.EDIT" | translate }}
+        </button>
+    </div>
+    <div class="normal-wrapper-box" *ngIf="isEditMode"  [ngClass]="{'mb-05' : dateInvalid}">
+        <span class="font-style" [style.width]="labelWidth">{{ labelEdit | translate }}</span>
+        <div class="select select-schedule clr-select-wrapper">
+            <select name="selectPolicy" id="selectPolicy" [(ngModel)]="scheduleType">
+                <option [value]="SCHEDULE_TYPE.NONE">{{'SCHEDULE.NONE' | translate}}</option>
+                <option [value]="SCHEDULE_TYPE.HOURLY">{{'SCHEDULE.HOURLY' | translate}}</option>
+                <option [value]="SCHEDULE_TYPE.DAILY">{{'SCHEDULE.DAILY' | translate}}</option>
+                <option [value]="SCHEDULE_TYPE.WEEKLY">{{'SCHEDULE.WEEKLY' | translate}}</option>
+                <option [value]="SCHEDULE_TYPE.CUSTOM">{{'SCHEDULE.CUSTOM' | translate}}</option>
+            </select>
+        </div>
+        <span class="required" [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">&nbsp;{{ "SCHEDULE.CRON" | translate }}</span>
+        <div [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM" class="cron-input">
+            <div class="height-1rem clr-input-wrapper">
+                <label for="targetCron" aria-haspopup="true" role="tooltip" [class.clr-error]="dateInvalid"
+                       class="tooltip tooltip-validation tooltip-md tooltip-top-left cron-label">
+                    <input autocomplete="off" type="text" (blur)="blurInvalid()" (input)="inputInvalid($event)" name="targetCron" id="targetCron"
+                           #cronStringInput="ngModel" required class="clr-input form-control ml-1" [(ngModel)]="cronString">
+                    <clr-tooltip>
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        <clr-tooltip-content clrPosition="bottom-right" clrSize="lg" *clrIfOpen>
+                            <cron-tooltip></cron-tooltip>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                    <clr-control-error class="ml-1" *ngIf="dateInvalid">{{'TOOLTIP.CRON_REQUIRED' | translate}}</clr-control-error>
+                </label>
+            </div>
+        </div>
+        <button class="btn btn-link " (click)="save()" id="config-save">
+            {{ "BUTTON.SAVE" | translate }}
+        </button>
+        <button class="btn btn-link " (click)="isEditMode=false">
+            {{ "BUTTON.CANCEL" | translate }}
+        </button>
+    </div>
+</ng-container>
+<ng-container *ngIf="isInlineModel">
+    <div class="normal-wrapper-box height-1rem" *ngIf="!isEditMode">
+        <span>{{(originScheduleType ? 'SCHEDULE.'+ originScheduleType.toUpperCase(): "") | translate}}</span>
+        <a *ngIf="originScheduleType===SCHEDULE_TYPE.HOURLY" href="javascript:void(0)" role="tooltip"
+           aria-haspopup="true" class="tooltip tooltip-top-right">
+            <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+            <span class="tooltip-content">{{'CONFIG.TOOLTIP.HOURLY_CRON' | translate}}</span>
+        </a>
+        <a *ngIf="originScheduleType===SCHEDULE_TYPE.WEEKLY" href="javascript:void(0)" role="tooltip"
+           aria-haspopup="true" class="tooltip tooltip-top-right">
+            <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+            <span class="tooltip-content">{{'CONFIG.TOOLTIP.WEEKLY_CRON' | translate}}</span>
+        </a>
+        <a *ngIf="originScheduleType===SCHEDULE_TYPE.DAILY" href="javascript:void(0)" role="tooltip" aria-haspopup="true"
+           class="tooltip tooltip-top-right">
+            <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+            <span class="tooltip-content">{{'CONFIG.TOOLTIP.DAILY_CRON' | translate}}</span>
+        </a>
+        <span *ngIf="originScheduleType===SCHEDULE_TYPE.CUSTOM">&nbsp;{{ "SCHEDULE.CRON" | translate }} :</span>
+        <span *ngIf="originScheduleType===SCHEDULE_TYPE.CUSTOM">{{ oriCron }}</span>
+        <button  [disabled]="disabled" class="btn btn-link" (click)="editSchedule()"
+                 id="inline-edit">
+            {{ "BUTTON.EDIT" | translate }}
+        </button>
+    </div>
+    <div class="normal-wrapper-box height-1rem" *ngIf="isEditMode">
+        <div class="select select-schedule clr-select-wrapper">
+            <select name="selectPolicy" id="inline-select" [(ngModel)]="scheduleType">
+                <option [value]="SCHEDULE_TYPE.NONE">{{'SCHEDULE.NONE' | translate}}</option>
+                <option [value]="SCHEDULE_TYPE.HOURLY">{{'SCHEDULE.HOURLY' | translate}}</option>
+                <option [value]="SCHEDULE_TYPE.DAILY">{{'SCHEDULE.DAILY' | translate}}</option>
+                <option [value]="SCHEDULE_TYPE.WEEKLY">{{'SCHEDULE.WEEKLY' | translate}}</option>
+                <option [value]="SCHEDULE_TYPE.CUSTOM">{{'SCHEDULE.CUSTOM' | translate}}</option>
+            </select>
+        </div>
+        <div [ngClass]="{'mt-1': dateInvalid}" *ngIf="scheduleType===SCHEDULE_TYPE.CUSTOM" class="clr-control-container" [class.clr-error]="dateInvalid">
+            <div class="clr-input-wrapper">
+                <label class="required ml-1">{{ "SCHEDULE.CRON" | translate }}</label>
+                <input autocomplete="off" type="text" (blur)="blurInvalid()" (input)="inputInvalid($event)" name="targetCron" id="inline-target"
+                       #cronStringInput="ngModel" required class="clr-input" [(ngModel)]="cronString">
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <cron-tooltip></cron-tooltip>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </div>
+            <clr-control-error class="ml-1" *ngIf="dateInvalid">{{'TOOLTIP.CRON_REQUIRED' | translate}}</clr-control-error>
+        </div>
+    </div>
+    <div *ngIf="isEditMode" class="mt-05">
+        <button class="btn btn-link margin-left-minus-075" (click)="save()" id="inline-config-save">
+            {{ "BUTTON.SAVE" | translate }}
+        </button>
+        <button class="btn btn-link" (click)="isEditMode=false">
+            {{ "BUTTON.CANCEL" | translate }}
+        </button>
+    </div>
+</ng-container>

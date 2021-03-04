@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"encoding/gob"
 	"fmt"
 	"net/url"
@@ -42,7 +43,12 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/lib/cache"
+	_ "github.com/goharbor/harbor/src/lib/cache/memory" // memory cache
+	_ "github.com/goharbor/harbor/src/lib/cache/redis"  // redis cache
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/metric"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/migration"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
@@ -156,12 +162,22 @@ func main() {
 			beego.BConfig.WebConfig.Session.SessionProvider = "redis"
 			beego.BConfig.WebConfig.Session.SessionProviderConfig = strings.Join(ss, ",")
 		}
+
+		log.Info("initializing cache ...")
+		if err := cache.Initialize(u.Scheme, redisURL); err != nil {
+			log.Fatalf("failed to initialize cache: %v", err)
+		}
 	}
 	beego.AddTemplateExt("htm")
 
 	log.Info("initializing configurations...")
 	config.Init()
 	log.Info("configurations initialization completed")
+	metricCfg := config.Metric()
+	if metricCfg.Enabled {
+		metric.RegisterCollectors()
+		go metric.ServeProm(metricCfg.Path, metricCfg.Port)
+	}
 	token.InitCreators()
 	database, err := config.Database()
 	if err != nil {
@@ -190,7 +206,7 @@ func main() {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
 	}
 
-	registerScanners()
+	registerScanners(orm.Context())
 
 	closing := make(chan struct{})
 	done := make(chan struct{})
@@ -223,11 +239,10 @@ func main() {
 }
 
 const (
-	clairScanner = "Clair"
 	trivyScanner = "Trivy"
 )
 
-func registerScanners() {
+func registerScanners(ctx context.Context) {
 	wantedScanners := make([]scanner.Registration, 0)
 	uninstallScannerNames := make([]string, 0)
 
@@ -245,31 +260,17 @@ func registerScanners() {
 		uninstallScannerNames = append(uninstallScannerNames, trivyScanner)
 	}
 
-	if config.WithClair() {
-		log.Info("Registering Clair scanner")
-		wantedScanners = append(wantedScanners, scanner.Registration{
-			Name:            clairScanner,
-			Description:     "The Clair scanner adapter",
-			URL:             config.ClairAdapterEndpoint(),
-			UseInternalAddr: true,
-			Immutable:       true,
-		})
-	} else {
-		log.Info("Removing Clair scanner")
-		uninstallScannerNames = append(uninstallScannerNames, clairScanner)
-	}
-
-	if err := scan.RemoveImmutableScanners(uninstallScannerNames); err != nil {
+	if err := scan.RemoveImmutableScanners(ctx, uninstallScannerNames); err != nil {
 		log.Warningf("failed to remove scanners: %v", err)
 	}
 
-	if err := scan.EnsureScanners(wantedScanners); err != nil {
+	if err := scan.EnsureScanners(ctx, wantedScanners); err != nil {
 		log.Fatalf("failed to register scanners: %v", err)
 	}
 
 	if defaultScannerName := getDefaultScannerName(); defaultScannerName != "" {
 		log.Infof("Setting %s as default scanner", defaultScannerName)
-		if err := scan.EnsureDefaultScanner(defaultScannerName); err != nil {
+		if err := scan.EnsureDefaultScanner(ctx, defaultScannerName); err != nil {
 			log.Fatalf("failed to set default scanner: %v", err)
 		}
 	}
@@ -278,9 +279,6 @@ func registerScanners() {
 func getDefaultScannerName() string {
 	if config.WithTrivy() {
 		return trivyScanner
-	}
-	if config.WithClair() {
-		return clairScanner
 	}
 	return ""
 }

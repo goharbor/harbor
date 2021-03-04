@@ -88,7 +88,7 @@ func mergeScanStatus(s1, s2 string) string {
 		return job.SuccessStatus.String()
 	}
 
-	if j1.Compare(j2) > 0 {
+	if j1.After(j2) {
 		return s1
 	}
 

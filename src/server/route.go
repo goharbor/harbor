@@ -15,19 +15,22 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/controllers"
-	"github.com/goharbor/harbor/src/core/service/notifications/admin"
 	"github.com/goharbor/harbor/src/core/service/notifications/jobs"
-	"github.com/goharbor/harbor/src/core/service/notifications/scheduler"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/server/handler"
 	"github.com/goharbor/harbor/src/server/router"
-	"net/http"
 )
+
+func ignoreNotification(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
 
 func registerRoutes() {
 	// API version
@@ -40,19 +43,20 @@ func registerRoutes() {
 	beego.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
 	beego.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
 	beego.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
+	beego.Router(common.AuthProxyRediretPath, &controllers.AuthProxyController{}, "get:HandleRedirect")
 
 	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig;put:Put")
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
 	beego.Router("/api/internal/switchquota", &api.InternalAPI{}, "put:SwitchQuota")
 	beego.Router("/api/internal/syncquota", &api.InternalAPI{}, "post:SyncQuota")
 
-	beego.Router("/service/notifications/jobs/adminjob/:id([0-9]+)", &admin.Handler{}, "post:HandleAdminJob")
-	beego.Router("/service/notifications/jobs/replication/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationScheduleJob")
-	beego.Router("/service/notifications/jobs/replication/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationTask")
 	beego.Router("/service/notifications/jobs/webhook/:id([0-9]+)", &jobs.Handler{}, "post:HandleNotificationJob")
-	beego.Router("/service/notifications/jobs/retention/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleRetentionTask")
-	beego.Router("/service/notifications/schedules/:id([0-9]+)", &scheduler.Handler{}, "post:Handle")
-	beego.Router("/service/notifications/jobs/scan/:uuid", &jobs.Handler{}, "post:HandleScan")
+	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/adminjob/:id([0-9]+)").Handler(handler.NewJobStatusHandler())         // legacy job status hook endpoint for adminjob
+	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/scan/:uuid").HandlerFunc(ignoreNotification)                          // ignore legacy scan job notifaction
+	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/schedules/:id([0-9]+)").Handler(handler.NewJobStatusHandler())             // legacy job status hook endpoint for scheduler
+	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/replication/:id([0-9]+)").Handler(handler.NewJobStatusHandler())      // legacy job status hook endpoint for replication scheduler
+	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/replication/task/:id([0-9]+)").Handler(handler.NewJobStatusHandler()) // legacy job status hook endpoint for replication task
+	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/retention/task/:id([0-9]+)").Handler(handler.NewJobStatusHandler())
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/tasks/:id").Handler(handler.NewJobStatusHandler())
 
 	beego.Router("/service/token", &token.Handler{})

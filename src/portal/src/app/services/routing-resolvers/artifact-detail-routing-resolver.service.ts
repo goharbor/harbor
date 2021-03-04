@@ -17,9 +17,9 @@ import { forkJoin, Observable, of } from 'rxjs';
 import { map, catchError, mergeMap } from "rxjs/operators";
 import { Artifact } from "../../../../ng-swagger-gen/models/artifact";
 import { ArtifactService } from "../../../../ng-swagger-gen/services/artifact.service";
-import { Project } from "../../project/project";
-import { ProjectService } from "../../../lib/services";
-import { dbEncodeURIComponent } from '../../../lib/utils/utils';
+import { Project } from "../../base/project/project";
+import { ProjectService } from "../../shared/services";
+import { dbEncodeURIComponent } from '../../shared/units/utils';
 
 @Injectable({
   providedIn: 'root'
@@ -44,7 +44,7 @@ export class ArtifactDetailRoutingResolverService implements Resolve<Artifact> {
               projectName: project.name,
               withLabel: true,
               withScanOverview: true,
-              withSignature: true,
+              withTag: false,
               withImmutableStatus: true
             }), of(project)]);
           }),

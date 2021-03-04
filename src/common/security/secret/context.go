@@ -15,6 +15,8 @@
 package secret
 
 import (
+	"context"
+
 	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -75,7 +77,7 @@ func (s *SecurityContext) IsSolutionUser() bool {
 // Can returns whether the user can do action on resource
 // returns true if the corresponding user of the secret
 // is jobservice or core service, otherwise returns false
-func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool {
+func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
 	if s.store == nil {
 		return false
 	}

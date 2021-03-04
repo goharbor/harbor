@@ -141,6 +141,11 @@ func (l *Logger) WithFields(fields Fields) *Logger {
 	return r
 }
 
+// WithField returns cloned logger which fields merged with field key=value
+func (l *Logger) WithField(key string, value interface{}) *Logger {
+	return l.WithFields(Fields{key: value})
+}
+
 // setOutput sets the output of Logger l
 func (l *Logger) setOutput(out io.Writer) {
 	l.mu.Lock()

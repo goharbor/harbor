@@ -1,6 +1,6 @@
 import os, shutil, pathlib
-from g import templates_dir, config_dir, root_crt_path, secret_key_dir, secret_dir, DEFAULT_UID, DEFAULT_GID
-from .cert import openssl_installed, create_cert, create_root_cert, get_alias
+from g import templates_dir, config_dir, secret_key_dir, secret_dir, DEFAULT_UID, DEFAULT_GID
+from .cert import openssl_installed, create_cert, create_root_cert, get_alias, create_ext_file, san_existed
 from .jinja import render_jinja
 from .misc import mark_file, prepare_dir
 
@@ -20,7 +20,7 @@ notary_server_env_path = os.path.join(notary_config_dir, "server_env")
 
 
 def prepare_env_notary(nginx_config_dir):
-    notary_config_dir = prepare_dir(config_dir, "notary")
+    prepare_dir(notary_config_dir)
     old_signer_cert_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer.crt'))
     old_signer_key_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer.key'))
     old_signer_ca_cert_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer-ca.crt'))
@@ -30,20 +30,36 @@ def prepare_env_notary(nginx_config_dir):
     signer_key_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer.key'))
     signer_ca_cert_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer-ca.crt'))
 
+    # If openssl installed, using it to check san existed in cert.
+    # Remove cert file if it not contains san
+    if signer_cert_secret_path.exists() and openssl_installed():
+        if not san_existed(signer_cert_secret_path):
+            try:
+                signer_cert_secret_path.unlink()
+            except FileNotFoundError:
+                pass
+    if old_signer_cert_secret_path.exists() and openssl_installed():
+        if not san_existed(old_signer_cert_secret_path):
+            try:
+                old_signer_cert_secret_path.unlink()
+            except FileNotFoundError:
+                pass
+
     # In version 1.8 the secret path changed
-    # If cert, key , ca all are exist in new place don't do anything
+    # If all cert, key and ca files are existed in new location don't do anything
+    # Or we should do the following logic
     if not(
         signer_cert_secret_path.exists() and
         signer_key_secret_path.exists() and
         signer_ca_cert_secret_path.exists()
         ):
-        # If the certs are exist in old place, move it to new place
+        # If the certs are exist in old localtion, move them to new location
         if old_signer_ca_cert_secret_path.exists() and old_signer_cert_secret_path.exists() and old_signer_key_secret_path.exists():
             print("Copying certs for notary signer")
             shutil.copy2(old_signer_ca_cert_secret_path, signer_ca_cert_secret_path)
             shutil.copy2(old_signer_key_secret_path, signer_key_secret_path)
             shutil.copy2(old_signer_cert_secret_path, signer_cert_secret_path)
-        # If certs neither exist in new place nor in the old place, create it and move it to new place
+        # If certs neither existed in new location nor in the old place, create it and move it to new location
         elif openssl_installed():
             try:
                 temp_cert_dir = os.path.join('/tmp', "cert_tmp")
@@ -56,6 +72,7 @@ def prepare_env_notary(nginx_config_dir):
                 signer_cert_path = os.path.join(temp_cert_dir, "notary-signer.crt")
                 signer_key_path = os.path.join(temp_cert_dir, "notary-signer.key")
                 create_root_cert(ca_subj, key_path=signer_ca_key, cert_path=signer_ca_cert)
+                create_ext_file('notarysigner', 'extfile.cnf')
                 create_cert(cert_subj, signer_ca_key, signer_ca_cert, key_path=signer_key_path, cert_path=signer_cert_path)
                 print("Copying certs for notary signer")
                 shutil.copy2(signer_cert_path, signer_cert_secret_path)

@@ -149,7 +149,7 @@ func TestDownloadChart(t *testing.T) {
 	}
 	adapter, err := New(registry)
 	require.Nil(t, err)
-	_, err = adapter.DownloadChart("library/harbor", "1.0")
+	_, err = adapter.DownloadChart("library/harbor", "1.0", "")
 	require.Nil(t, err)
 }
 

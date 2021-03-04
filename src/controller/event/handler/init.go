@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/auditlog"
 	"github.com/goharbor/harbor/src/controller/event/handler/internal"
@@ -10,8 +12,12 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/chart"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/quota"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/scan"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier"
+	"github.com/goharbor/harbor/src/pkg/task"
 )
 
 func init() {
@@ -19,16 +25,16 @@ func init() {
 	notifier.Subscribe(event.TopicPushArtifact, &artifact.Handler{})
 	notifier.Subscribe(event.TopicPullArtifact, &artifact.Handler{})
 	notifier.Subscribe(event.TopicDeleteArtifact, &artifact.Handler{})
-	notifier.Subscribe(event.TopicUploadChart, &chart.Handler{})
-	notifier.Subscribe(event.TopicDeleteChart, &chart.Handler{})
-	notifier.Subscribe(event.TopicDownloadChart, &chart.Handler{})
+	notifier.Subscribe(event.TopicUploadChart, &chart.Handler{Context: orm.Context})
+	notifier.Subscribe(event.TopicDeleteChart, &chart.Handler{Context: orm.Context})
+	notifier.Subscribe(event.TopicDownloadChart, &chart.Handler{Context: orm.Context})
 	notifier.Subscribe(event.TopicQuotaExceed, &quota.Handler{})
 	notifier.Subscribe(event.TopicQuotaWarning, &quota.Handler{})
 	notifier.Subscribe(event.TopicScanningFailed, &scan.Handler{})
 	notifier.Subscribe(event.TopicScanningCompleted, &scan.Handler{})
-	notifier.Subscribe(event.TopicDeleteArtifact, &scan.DelArtHandler{})
+	notifier.Subscribe(event.TopicDeleteArtifact, &scan.DelArtHandler{Context: orm.Context})
 	notifier.Subscribe(event.TopicReplication, &artifact.ReplicationHandler{})
-	notifier.Subscribe(event.TopicTagRetention, &artifact.RetentionHandler{RetentionController: artifact.DefaultRetentionControllerFunc})
+	notifier.Subscribe(event.TopicTagRetention, &artifact.RetentionHandler{})
 
 	// replication
 	notifier.Subscribe(event.TopicPushArtifact, &replication.Handler{})
@@ -54,4 +60,12 @@ func init() {
 	// internal
 	notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{Context: orm.Context})
 	notifier.Subscribe(event.TopicPushArtifact, &internal.Handler{Context: orm.Context})
+
+	task.RegisterTaskStatusChangePostFunc(job.Replication, func(ctx context.Context, taskID int64, status string) error {
+		notification.AddEvent(ctx, &metadata.ReplicationMetaData{
+			ReplicationTaskID: taskID,
+			Status:            status,
+		})
+		return nil
+	})
 }

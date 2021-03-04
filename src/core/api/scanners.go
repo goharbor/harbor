@@ -18,6 +18,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/system"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
+
 	s "github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -31,6 +35,8 @@ type ScannerAPI struct {
 
 	// Controller for the plug scanners
 	c s.Controller
+
+	resource types.Resource
 }
 
 // Prepare sth. for the subsequent actions
@@ -44,10 +50,7 @@ func (sa *ScannerAPI) Prepare() {
 		return
 	}
 
-	if !sa.SecurityCtx.IsSysAdmin() {
-		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
-		return
-	}
+	sa.resource = system.NewNamespace().Resource(rbac.ResourceScanner)
 
 	// Use the default controller
 	sa.c = s.DefaultController
@@ -55,6 +58,10 @@ func (sa *ScannerAPI) Prepare() {
 
 // Get the specified scanner
 func (sa *ScannerAPI) Get() {
+	if !sa.SecurityCtx.Can(sa.Context(), rbac.ActionRead, sa.resource) {
+		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+		return
+	}
 	if r := sa.get(); r != nil {
 		// Response to the client
 		sa.Data["json"] = r
@@ -64,9 +71,13 @@ func (sa *ScannerAPI) Get() {
 
 // Metadata returns the metadata of the given scanner.
 func (sa *ScannerAPI) Metadata() {
+	if !sa.SecurityCtx.Can(sa.Context(), rbac.ActionRead, sa.resource) {
+		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+		return
+	}
 	uuid := sa.GetStringFromPath(":uuid")
 
-	meta, err := sa.c.GetMetadata(uuid)
+	meta, err := sa.c.GetMetadata(sa.Context(), uuid)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: get metadata"))
 		return
@@ -79,6 +90,10 @@ func (sa *ScannerAPI) Metadata() {
 
 // List all the scanners
 func (sa *ScannerAPI) List() {
+	if !sa.SecurityCtx.Can(sa.Context(), rbac.ActionList, sa.resource) {
+		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+		return
+	}
 	p, pz, err := sa.GetPaginationParams()
 	if err != nil {
 		sa.SendBadRequestError(errors.Wrap(err, "scanner API: list all"))
@@ -104,7 +119,7 @@ func (sa *ScannerAPI) List() {
 		query.Keywords = kws
 	}
 
-	all, err := sa.c.ListRegistrations(query)
+	all, err := sa.c.ListRegistrations(sa.Context(), query)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: list all"))
 		return
@@ -117,6 +132,10 @@ func (sa *ScannerAPI) List() {
 
 // Create a new scanner
 func (sa *ScannerAPI) Create() {
+	if !sa.SecurityCtx.Can(sa.Context(), rbac.ActionCreate, sa.resource) {
+		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+		return
+	}
 	r := &scanner.Registration{}
 
 	if err := sa.DecodeJSONReq(r); err != nil {
@@ -138,7 +157,7 @@ func (sa *ScannerAPI) Create() {
 	// All newly created should be non default one except the 1st one
 	r.IsDefault = false
 
-	uuid, err := sa.c.CreateRegistration(r)
+	uuid, err := sa.c.CreateRegistration(sa.Context(), r)
 	if err != nil {
 		sa.SendError(errors.Wrap(err, "scanner API: create"))
 		return
@@ -158,6 +177,10 @@ func (sa *ScannerAPI) Create() {
 
 // Update a scanner
 func (sa *ScannerAPI) Update() {
+	if !sa.SecurityCtx.Can(sa.Context(), rbac.ActionUpdate, sa.resource) {
+		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+		return
+	}
 	r := sa.get()
 	if r == nil {
 		// meet error
@@ -198,7 +221,7 @@ func (sa *ScannerAPI) Update() {
 
 	getChanges(r, rr)
 
-	if err := sa.c.UpdateRegistration(r); err != nil {
+	if err := sa.c.UpdateRegistration(sa.Context(), r); err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: update"))
 		return
 	}
@@ -213,6 +236,10 @@ func (sa *ScannerAPI) Update() {
 
 // Delete the scanner
 func (sa *ScannerAPI) Delete() {
+	if !sa.SecurityCtx.Can(sa.Context(), rbac.ActionDelete, sa.resource) {
+		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+		return
+	}
 	r := sa.get()
 	if r == nil {
 		// meet error
@@ -225,7 +252,7 @@ func (sa *ScannerAPI) Delete() {
 		return
 	}
 
-	deleted, err := sa.c.DeleteRegistration(r.UUID)
+	deleted, err := sa.c.DeleteRegistration(sa.Context(), r.UUID)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: delete"))
 		return
@@ -237,6 +264,10 @@ func (sa *ScannerAPI) Delete() {
 
 // SetAsDefault sets the given registration as default one
 func (sa *ScannerAPI) SetAsDefault() {
+	if !sa.SecurityCtx.Can(sa.Context(), rbac.ActionCreate, sa.resource) {
+		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+		return
+	}
 	uid := sa.GetStringFromPath(":uuid")
 
 	m := make(map[string]interface{})
@@ -247,7 +278,7 @@ func (sa *ScannerAPI) SetAsDefault() {
 
 	if v, ok := m["is_default"]; ok {
 		if isDefault, y := v.(bool); y && isDefault {
-			if err := sa.c.SetDefaultRegistration(uid); err != nil {
+			if err := sa.c.SetDefaultRegistration(sa.Context(), uid); err != nil {
 				sa.SendInternalServerError(errors.Wrap(err, "scanner API: set as default"))
 			}
 
@@ -261,6 +292,10 @@ func (sa *ScannerAPI) SetAsDefault() {
 
 // Ping the registration.
 func (sa *ScannerAPI) Ping() {
+	if !sa.SecurityCtx.Can(sa.Context(), rbac.ActionRead, sa.resource) {
+		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+		return
+	}
 	r := &scanner.Registration{}
 
 	if err := sa.DecodeJSONReq(r); err != nil {
@@ -273,7 +308,7 @@ func (sa *ScannerAPI) Ping() {
 		return
 	}
 
-	if _, err := sa.c.Ping(r); err != nil {
+	if _, err := sa.c.Ping(sa.Context(), r); err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: ping"))
 		return
 	}
@@ -283,7 +318,7 @@ func (sa *ScannerAPI) Ping() {
 func (sa *ScannerAPI) get() *scanner.Registration {
 	uid := sa.GetStringFromPath(":uuid")
 
-	r, err := sa.c.GetRegistration(uid)
+	r, err := sa.c.GetRegistration(sa.Context(), uid)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: get"))
 		return nil
@@ -307,7 +342,7 @@ func (sa *ScannerAPI) checkDuplicated(property, value string) bool {
 		Keywords: kw,
 	}
 
-	l, err := sa.c.ListRegistrations(query)
+	l, err := sa.c.ListRegistrations(sa.Context(), query)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: check existence"))
 		return false

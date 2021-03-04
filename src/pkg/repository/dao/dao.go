@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	o "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -40,6 +41,8 @@ type DAO interface {
 	Update(ctx context.Context, repository *models.RepoRecord, props ...string) (err error)
 	// AddPullCount increase one pull count for the specified repository
 	AddPullCount(ctx context.Context, id int64) error
+	// NonEmptyRepos returns the repositories without any artifact or all the artifacts are untagged.
+	NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error)
 }
 
 // New returns an instance of the default DAO
@@ -154,4 +157,20 @@ func (d *dao) AddPullCount(ctx context.Context, id int64) error {
 
 	}
 	return nil
+}
+
+func (d *dao) NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error) {
+	var repos []*models.RepoRecord
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	sql := fmt.Sprintf(`select r.* from repository as r LEFT JOIN tag as t on r.repository_id = t.repository_id where t.repository_id is not null;`)
+	_, err = ormer.Raw(sql).QueryRows(&repos)
+	if err != nil {
+		return repos, err
+	}
+
+	return repos, nil
 }

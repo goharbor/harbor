@@ -17,20 +17,16 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib/errors"
 	libhttp "github.com/goharbor/harbor/src/lib/http"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/goharbor/harbor/src/server/router"
 )
 
 // NewJobStatusHandler creates a handler to handle the job status changing
 func NewJobStatusHandler() http.Handler {
 	return &jobStatusHandler{
-		handler: task.NewHookHandler(),
+		handler: task.HkHandler,
 	}
 }
 
@@ -40,25 +36,24 @@ type jobStatusHandler struct {
 
 func (j *jobStatusHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	taskIDParam := router.Param(r.Context(), ":id")
-	taskID, err := strconv.ParseInt(taskIDParam, 10, 64)
-	if err != nil {
-		libhttp.SendError(w, err)
-		return
-	}
 
 	sc := &job.StatusChange{}
-	if err = json.NewDecoder(r.Body).Decode(sc); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(sc); err != nil {
 		libhttp.SendError(w, err)
 		return
 	}
-
-	if err = j.handler.Handle(r.Context(), taskID, sc); err != nil {
-		// ignore the not found error to avoid the jobservice re-sending the hook
-		if errors.IsNotFoundErr(err) {
-			log.Warningf("task %d does not exist, ignore the not found error to avoid subsequent retrying webhooks from jobservice", taskID)
-			return
-		}
+	if err := j.handler.Handle(r.Context(), sc); err != nil {
+		// When the status hook comes, the execution/task database record may not insert yet
+		// because of that the transaction isn't committed
+		// Do not ignore the NotFoundErr here to make jobservice resend the status hook
+		// again to avoid the status lost
+		/*
+			// ignore the not found error to avoid the jobservice re-sending the hook
+			if errors.IsNotFoundErr(err) {
+				log.Warningf("got not found error: %v, ignore it to avoid subsequent retrying webhooks from jobservice", err)
+				return
+			}
+		*/
 		libhttp.SendError(w, err)
 		return
 	}

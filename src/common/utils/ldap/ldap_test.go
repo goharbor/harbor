@@ -5,12 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	goldap "github.com/go-ldap/ldap/v3"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	uiConfig "github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	goldap "gopkg.in/ldap.v2"
 )
 
 var ldapTestConfig = map[string]interface{}{
@@ -67,7 +67,6 @@ var defaultConfigWithVerifyCert = map[string]interface{}{
 	common.TokenExpiration:            30,
 	common.AdminInitialPassword:       "password",
 	common.WithNotary:                 false,
-	common.WithClair:                  false,
 }
 
 func TestMain(m *testing.M) {
@@ -368,7 +367,7 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 		{"search non-exist group",
 			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
 			args{groupDN: "cn=harbor_non_users,ou=groups,dc=example,dc=com"},
-			[]models.LdapGroup{}, false},
+			nil, true},
 		{"search invalid group dn",
 			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
 			args{groupDN: "random string"},
@@ -423,6 +422,104 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 	}
 }
 
+func TestSession_SearchGroupByName(t *testing.T) {
+	ldapConfig := models.LdapConf{
+		LdapURL:            ldapTestConfig[common.LDAPURL].(string) + ":389",
+		LdapSearchDn:       ldapTestConfig[common.LDAPSearchDN].(string),
+		LdapScope:          2,
+		LdapSearchPassword: ldapTestConfig[common.LDAPSearchPwd].(string),
+		LdapBaseDn:         ldapTestConfig[common.LDAPBaseDN].(string),
+	}
+	ldapGroupConfig := models.LdapGroupConf{
+		LdapGroupBaseDN:        "dc=example,dc=com",
+		LdapGroupFilter:        "objectclass=groupOfNames",
+		LdapGroupNameAttribute: "cn",
+		LdapGroupSearchScope:   2,
+	}
+	ldapGroupConfig2 := models.LdapGroupConf{
+		LdapGroupBaseDN:        "dc=example,dc=com",
+		LdapGroupFilter:        "objectclass=groupOfNames",
+		LdapGroupNameAttribute: "o",
+		LdapGroupSearchScope:   2,
+	}
+	groupConfigWithFilter := models.LdapGroupConf{
+		LdapGroupBaseDN:        "dc=example,dc=com",
+		LdapGroupFilter:        "(cn=*admin*)",
+		LdapGroupNameAttribute: "cn",
+		LdapGroupSearchScope:   2,
+	}
+	groupConfigWithDifferentGroupDN := models.LdapGroupConf{
+		LdapGroupBaseDN:        "dc=harbor,dc=example,dc=com",
+		LdapGroupFilter:        "(objectclass=groupOfNames)",
+		LdapGroupNameAttribute: "cn",
+		LdapGroupSearchScope:   2,
+	}
+
+	type fields struct {
+		ldapConfig      models.LdapConf
+		ldapGroupConfig models.LdapGroupConf
+		ldapConn        *goldap.Conn
+	}
+	type args struct {
+		groupName string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []models.LdapGroup
+		wantErr bool
+	}{
+		{"normal search",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
+			args{groupName: "harbor_users"},
+			[]models.LdapGroup{{GroupName: "harbor_users", GroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com"}}, false},
+		{"search non-exist group",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
+			args{groupName: "harbor_non_users"},
+			[]models.LdapGroup{}, false},
+		{"search with gid = o",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig2},
+			args{groupName: "hgroup"},
+			[]models.LdapGroup{{GroupName: "hgroup", GroupDN: "cn=harbor_group,ou=groups,dc=example,dc=com"}}, false},
+		{"search with group filter success",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithFilter},
+			args{groupName: "harbor_admin"},
+			[]models.LdapGroup{{GroupName: "harbor_admin", GroupDN: "cn=harbor_admin,ou=groups,dc=example,dc=com"}}, false},
+		{"search with group filter fail",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithFilter},
+			args{groupName: "harbor_users"},
+			[]models.LdapGroup{}, false},
+		{"search with different group base dn success",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithDifferentGroupDN},
+			args{groupName: "harbor_root"},
+			[]models.LdapGroup{{GroupName: "harbor_root", GroupDN: "cn=harbor_root,dc=harbor,dc=example,dc=com"}}, false},
+		{"search with different group base dn fail",
+			fields{ldapConfig: ldapConfig, ldapGroupConfig: groupConfigWithDifferentGroupDN},
+			args{groupName: "harbor_guest"},
+			[]models.LdapGroup{}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			session := &Session{
+				ldapConfig:      tt.fields.ldapConfig,
+				ldapGroupConfig: tt.fields.ldapGroupConfig,
+				ldapConn:        tt.fields.ldapConn,
+			}
+			session.Open()
+			defer session.Close()
+			got, err := session.SearchGroupByName(tt.args.groupName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Session.SearchGroupByName() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Session.SearchGroupByName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestCreateUserSearchFilter(t *testing.T) {
 	type args struct {
 		origFilter string
@@ -471,6 +568,68 @@ func TestNormalizeFilter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := normalizeFilter(tt.args.filter); got != tt.want {
 				t.Errorf("normalizeFilter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUnderBaseDN(t *testing.T) {
+	type args struct {
+		baseDN  string
+		childDN string
+	}
+	cases := []struct {
+		name      string
+		in        args
+		wantError bool
+		want      bool
+	}{
+		{
+			name:      `normal`,
+			in:        args{"dc=example,dc=com", "cn=admin,dc=example,dc=com"},
+			wantError: false,
+			want:      true,
+		},
+		{
+			name:      `false`,
+			in:        args{"dc=vmware,dc=com", "cn=admin,dc=example,dc=com"},
+			wantError: false,
+			want:      false,
+		},
+		{
+			name:      `same dn`,
+			in:        args{"cn=admin,dc=example,dc=com", "cn=admin,dc=example,dc=com"},
+			wantError: false,
+			want:      true,
+		},
+		{
+			name:      `error format in base`,
+			in:        args{"abc", "cn=admin,dc=example,dc=com"},
+			wantError: true,
+			want:      false,
+		},
+		{
+			name:      `error format in child`,
+			in:        args{"dc=vmware,dc=com", "wrong format"},
+			wantError: true,
+			want:      false,
+		},
+		{
+			name:      `should be case-insensitive`,
+			in:        args{"CN=Users,CN=harbor,DC=com", "cn=harbor_group_1,cn=users,cn=harbor,dc=com"},
+			wantError: false,
+			want:      true,
+		},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := UnderBaseDN(tt.in.baseDN, tt.in.childDN)
+			if (err != nil) != tt.wantError {
+				t.Errorf("UnderBaseDN error = %v, wantErr %v", err, tt.wantError)
+				return
+			}
+			if got != tt.want {
+				t.Errorf(`(%v) = %v; want "%v"`, tt.in, got, tt.want)
 			}
 		})
 	}

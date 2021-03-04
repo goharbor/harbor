@@ -17,9 +17,6 @@ package repoproxy
 import (
 	"context"
 	"fmt"
-	"io"
-	"net/http"
-
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
@@ -29,12 +26,25 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/registry"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"io"
+	"net/http"
+	"time"
 )
 
 var registryMgr = registry.NewDefaultManager()
+
+const (
+	contentLength       = "Content-Length"
+	contentType         = "Content-Type"
+	dockerContentDigest = "Docker-Content-Digest"
+	etag                = "Etag"
+	ensureTagInterval   = 10 * time.Second
+	ensureTagMaxRetry   = 60
+)
 
 // BlobGetMiddleware handle get blob request
 func BlobGetMiddleware() func(http.Handler) http.Handler {
@@ -83,8 +93,8 @@ func preCheck(ctx context.Context) (art lib.ArtifactInfo, p *models.Project, ctl
 	return
 }
 
-// ManifestGetMiddleware middleware handle request for get manifest
-func ManifestGetMiddleware() func(http.Handler) http.Handler {
+// ManifestMiddleware middleware handle request for get or head manifest
+func ManifestMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		if err := handleManifest(w, r, next); err != nil {
 			httpLib.SendError(w, err)
@@ -102,16 +112,38 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		next.ServeHTTP(w, r)
 		return nil
 	}
-	useLocal, err := proxyCtl.UseLocalManifest(ctx, art)
+	remote, err := proxy.NewRemoteHelper(p.RegistryID)
+	if err != nil {
+		return err
+	}
+	useLocal, man, err := proxyCtl.UseLocalManifest(ctx, art, remote)
+
 	if err != nil {
 		return err
 	}
 	if useLocal {
+		if man != nil {
+			w.Header().Set(contentLength, fmt.Sprintf("%v", len(man.Content)))
+			w.Header().Set(contentType, man.ContentType)
+			w.Header().Set(dockerContentDigest, man.Digest)
+			w.Header().Set(etag, man.Digest)
+			if r.Method == http.MethodGet {
+				w.Write(man.Content)
+			}
+			return nil
+		}
 		next.ServeHTTP(w, r)
 		return nil
 	}
+
+	log.Warningf("Artifact: %v:%v, digest:%v is not found in proxy cache, fetch it from remote repo", art.Repository, art.Tag, art.Digest)
+
 	log.Debugf("the tag is %v, digest is %v", art.Tag, art.Digest)
-	err = proxyManifest(ctx, w, r, next, proxyCtl, p, art)
+	if r.Method == http.MethodHead {
+		err = proxyManifestHead(ctx, w, proxyCtl, p, art, remote)
+	} else if r.Method == http.MethodGet {
+		err = proxyManifestGet(ctx, w, proxyCtl, p, art, remote)
+	}
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
 			return err
@@ -122,8 +154,8 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	return nil
 }
 
-func proxyManifest(ctx context.Context, w http.ResponseWriter, r *http.Request, next http.Handler, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo) error {
-	man, err := ctl.ProxyManifest(ctx, p, art)
+func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+	man, err := ctl.ProxyManifest(ctx, art, remote)
 	if err != nil {
 		return err
 	}
@@ -155,12 +187,12 @@ func canProxy(p *models.Project) bool {
 
 func setHeaders(w http.ResponseWriter, size int64, mediaType string, dig string) {
 	h := w.Header()
-	h.Set("Content-Length", fmt.Sprintf("%v", size))
+	h.Set(contentLength, fmt.Sprintf("%v", size))
 	if len(mediaType) > 0 {
-		h.Set("Content-Type", mediaType)
+		h.Set(contentType, mediaType)
 	}
-	h.Set("Docker-Content-Digest", dig)
-	h.Set("Etag", dig)
+	h.Set(dockerContentDigest, dig)
+	h.Set(etag, dig)
 }
 
 // isProxySession check if current security context is proxy session
@@ -195,4 +227,35 @@ func DisableBlobAndManifestUploadMiddleware() func(http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 		return
 	})
+}
+
+func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+	exist, desc, err := ctl.HeadManifest(ctx, art, remote)
+	if err != nil {
+		return err
+	}
+	if !exist || desc == nil {
+		return errors.NotFoundError(fmt.Errorf("The tag %v:%v is not found", art.Repository, art.Tag))
+	}
+	go func(art lib.ArtifactInfo) {
+		// After docker 20.10 or containerd, the client heads the tag first,
+		// Then GET the image by digest, in order to associate the tag with the digest
+		// Ensure tag after head request, make sure tags in proxy cache keep update
+		bCtx := orm.Context()
+		for i := 0; i < ensureTagMaxRetry; i++ {
+			time.Sleep(ensureTagInterval)
+			bArt := lib.ArtifactInfo{ProjectName: art.ProjectName, Repository: art.Repository, Digest: string(desc.Digest)}
+			err := ctl.EnsureTag(bCtx, bArt, art.Tag)
+			if err == nil {
+				return
+			}
+			log.Debugf("Failed to ensure tag %+v , error %v", art, err)
+		}
+	}(art)
+
+	w.Header().Set(contentType, desc.MediaType)
+	w.Header().Set(contentLength, fmt.Sprintf("%v", desc.Size))
+	w.Header().Set(dockerContentDigest, string(desc.Digest))
+	w.Header().Set(etag, string(desc.Digest))
+	return nil
 }

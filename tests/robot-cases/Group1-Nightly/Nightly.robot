@@ -28,12 +28,6 @@ ${HARBOR_ADMIN}  admin
 Test Case - Get Harbor Version
 #Just get harbor version and log it
     Get Harbor Version
-Test Case - Clair Is Default Scanner And It Is immutable
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Scanners Page
-    Should Display The Default Clair Scanner
-    Clair Is Immutable Scanner
 
 Test Case - Read Only Mode
     Init Chrome Driver
@@ -133,7 +127,6 @@ Test Case - User View Projects
     Create An New Project  test${d}2
     Create An New Project  test${d}3
     Switch To Log
-    Capture Page Screenshot  UserViewProjects.png
     Wait Until Page Contains  test${d}1
     Wait Until Page Contains  test${d}2
     Wait Until Page Contains  test${d}3
@@ -368,9 +361,7 @@ TestCase - Project Admin Add Labels To Repo
     # Add labels
     Switch To Project Label
     Create New Labels  label111
-    Capture Page Screenshot  CreateLabel1.png
     Create New Labels  label22
-    Capture Page Screenshot  CreateLabel2.png
     Sleep  2
     Switch To Project Repo
     Go Into Repo  project${d}/redis

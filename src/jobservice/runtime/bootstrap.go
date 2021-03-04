@@ -17,7 +17,6 @@ package runtime
 import (
 	"context"
 	"fmt"
-	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"os"
 	"os/signal"
 	"sync"
@@ -34,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gcreadonly"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/legacy"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
@@ -44,10 +44,10 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
 	"github.com/goharbor/harbor/src/lib/errors"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
 	"github.com/goharbor/harbor/src/pkg/retention"
-	sc "github.com/goharbor/harbor/src/pkg/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/all"
+	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/gomodule/redigo/redis"
 )
@@ -63,13 +63,13 @@ var JobService = &Bootstrap{}
 
 // Bootstrap is coordinating process to help load and start the other components to serve.
 type Bootstrap struct {
-	jobConextInitializer job.ContextInitializer
+	jobContextInitializer job.ContextInitializer
 }
 
 // SetJobContextInitializer set the job context initializer
 func (bs *Bootstrap) SetJobContextInitializer(initializer job.ContextInitializer) {
 	if initializer != nil {
-		bs.jobConextInitializer = initializer
+		bs.jobContextInitializer = initializer
 	}
 }
 
@@ -83,8 +83,8 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	}
 
 	// Build specified job context
-	if bs.jobConextInitializer != nil {
-		rootContext.JobContext, err = bs.jobConextInitializer(ctx)
+	if bs.jobContextInitializer != nil {
+		rootContext.JobContext, err = bs.jobContextInitializer(ctx)
 		if err != nil {
 			return errors.Errorf("initialize job context error: %s", err)
 		}
@@ -255,17 +255,21 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			// Only for debugging and testing purpose
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
-			job.ImageScanJob:           (*sc.Job)(nil),
-			job.ImageScanAllJob:        (*all.Job)(nil),
-			job.ImageGC:                (*gc.GarbageCollector)(nil),
+			job.ImageScanJob:           (*scan.Job)(nil),
+			job.GarbageCollection:      (*gc.GarbageCollector)(nil),
 			job.ImageGCReadOnly:        (*gcreadonly.GarbageCollector)(nil),
 			job.Replication:            (*replication.Replication)(nil),
-			job.ReplicationScheduler:   (*replication.Scheduler)(nil),
 			job.Retention:              (*retention.Job)(nil),
 			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),
 			job.WebhookJob:             (*notification.WebhookJob)(nil),
 			job.SlackJob:               (*notification.SlackJob)(nil),
 			job.P2PPreheat:             (*preheat.Job)(nil),
+			// In v2.2 we migrate the scheduled replication, garbage collection and scan all to
+			// the scheduler mechanism, the following three jobs are kept for the legacy jobs
+			// and they can be removed after several releases
+			"IMAGE_REPLICATE": (*legacy.ReplicationScheduler)(nil),
+			"IMAGE_GC":        (*legacy.GarbageCollectionScheduler)(nil),
+			"IMAGE_SCAN_ALL":  (*legacy.ScanAllScheduler)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

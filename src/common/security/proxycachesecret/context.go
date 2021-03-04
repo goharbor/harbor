@@ -16,13 +16,13 @@ package proxycachesecret
 
 import (
 	"context"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	"github.com/goharbor/harbor/src/pkg/project"
 )
 
 // const definition
@@ -34,16 +34,14 @@ const (
 // SecurityContext is the security context for proxy cache secret
 type SecurityContext struct {
 	repository string
-	getProject func(interface{}) (*models.Project, error)
+	ctl        project.Controller
 }
 
 // NewSecurityContext returns an instance of the proxy cache secret security context
-func NewSecurityContext(ctx context.Context, repository string) *SecurityContext {
+func NewSecurityContext(repository string) *SecurityContext {
 	return &SecurityContext{
 		repository: repository,
-		getProject: func(i interface{}) (*models.Project, error) {
-			return project.Mgr.Get(ctx, i)
-		},
+		ctl:        project.Ctl,
 	}
 }
 
@@ -73,28 +71,26 @@ func (s *SecurityContext) IsSolutionUser() bool {
 }
 
 // Can returns true only when requesting pull/push operation against the specific project
-func (s *SecurityContext) Can(action types.Action, resource types.Resource) bool {
+func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
 	if !(action == rbac.ActionPull || action == rbac.ActionPush) {
 		log.Debugf("unauthorized for action %s", action)
 		return false
 	}
-	namespace, ok := rbac.ProjectNamespaceParse(resource)
+	namespace, ok := rbac_project.NamespaceParse(resource)
 	if !ok {
 		log.Debugf("got no namespace from the resource %s", resource)
 		return false
 	}
-	project, err := s.getProject(namespace.Identity())
+
+	p, err := s.ctl.Get(ctx, namespace.Identity().(int64))
 	if err != nil {
 		log.Errorf("failed to get project %v: %v", namespace.Identity(), err)
 		return false
 	}
-	if project == nil {
-		log.Debugf("project not found %v", namespace.Identity())
-		return false
-	}
+
 	pro, _ := utils.ParseRepository(s.repository)
-	if project.Name != pro {
-		log.Debugf("unauthorized for project %s", project.Name)
+	if p.Name != pro {
+		log.Debugf("unauthorized for project %s", p.Name)
 		return false
 	}
 	return true

@@ -2,14 +2,15 @@ package v2token
 
 import (
 	"context"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"strings"
 
 	registry_token "github.com/docker/distribution/registry/auth/token"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 )
 
@@ -17,10 +18,10 @@ import (
 // The intention for this guy is only for support CLI push/pull.  It should not be used in other scenario without careful review
 // Each request should have a different instance of tokenSecurityCtx
 type tokenSecurityCtx struct {
-	logger     *log.Logger
-	name       string
-	accessMap  map[string]map[types.Action]struct{}
-	getProject func(int64) (*models.Project, error)
+	logger    *log.Logger
+	name      string
+	accessMap map[string]map[types.Action]struct{}
+	ctl       project.Controller
 }
 
 func (t *tokenSecurityCtx) Name() string {
@@ -51,11 +52,11 @@ func (t *tokenSecurityCtx) GetProjectRoles(projectIDOrName interface{}) []int {
 	return []int{}
 }
 
-func (t *tokenSecurityCtx) Can(action types.Action, resource types.Resource) bool {
+func (t *tokenSecurityCtx) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
 	if !strings.HasSuffix(resource.String(), rbac.ResourceRepository.String()) {
 		return false
 	}
-	ns, ok := rbac.ProjectNamespaceParse(resource)
+	ns, ok := rbac_project.NamespaceParse(resource)
 	if !ok {
 		t.logger.Warningf("Failed to get namespace from resource: %s", resource)
 		return false
@@ -65,7 +66,7 @@ func (t *tokenSecurityCtx) Can(action types.Action, resource types.Resource) boo
 		t.logger.Warningf("Failed to get project id from namespace: %s", ns)
 		return false
 	}
-	p, err := t.getProject(pid)
+	p, err := t.ctl.Get(ctx, pid)
 	if err != nil {
 		t.logger.Warningf("Failed to get project, id: %d, error: %v", pid, err)
 		return false
@@ -99,12 +100,14 @@ func New(ctx context.Context, name string, access []*registry_token.ResourceActi
 				actionMap[rbac.ActionPull] = struct{}{}
 			case "push":
 				actionMap[rbac.ActionPush] = struct{}{}
+			case "delete":
+				actionMap[rbac.ActionDelete] = struct{}{}
+			case "scanner-pull":
+				actionMap[rbac.ActionScannerPull] = struct{}{}
 			case "*":
 				actionMap[rbac.ActionPull] = struct{}{}
 				actionMap[rbac.ActionPush] = struct{}{}
 				actionMap[rbac.ActionDelete] = struct{}{}
-			case "scanner-pull":
-				actionMap[rbac.ActionScannerPull] = struct{}{}
 			}
 		}
 		m[l[0]] = actionMap
@@ -114,8 +117,6 @@ func New(ctx context.Context, name string, access []*registry_token.ResourceActi
 		logger:    logger,
 		name:      name,
 		accessMap: m,
-		getProject: func(id int64) (*models.Project, error) {
-			return project.Mgr.Get(ctx, id)
-		},
+		ctl:       project.Ctl,
 	}
 }

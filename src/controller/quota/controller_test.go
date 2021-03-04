@@ -85,7 +85,7 @@ func (suite *ControllerTestSuite) TestGetReservedResources() {
 		suite.Len(resources, 1)
 	}
 
-	time.Sleep(reservedExpiration)
+	time.Sleep(reservedExpiration * 2)
 
 	{
 		resources, err := ctl.getReservedResources(context.TODO(), reference, referenceID)

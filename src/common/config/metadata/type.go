@@ -189,6 +189,22 @@ func (t *MapType) get(str string) (interface{}, error) {
 	return result, err
 }
 
+// StringToStringMapType ...
+type StringToStringMapType struct {
+}
+
+func (t *StringToStringMapType) validate(str string) error {
+	result := map[string]string{}
+	err := json.Unmarshal([]byte(str), &result)
+	return err
+}
+
+func (t *StringToStringMapType) get(str string) (interface{}, error) {
+	result := map[string]string{}
+	err := json.Unmarshal([]byte(str), &result)
+	return result, err
+}
+
 // QuotaType ...
 type QuotaType struct {
 	Int64Type

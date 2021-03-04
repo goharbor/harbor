@@ -95,7 +95,7 @@
     "EMPTY": "名稱為必填項",
     "NONEMPTY": "不能為空",
     "ENDPOINT_FORMAT": "Endpoint必須以http://或https://開頭。",
-    "OIDC_ENDPOIT_FORMAT": "Endpoint必須以https://開頭。",
+    "OIDC_ENDPOINT_FORMAT": "Endpoint必須以https://開頭。",
     "OIDC_NAME": "OIDC提供商的名稱。",
     "OIDC_ENDPOINT": "OIDC服務器的地址。",
     "OIDC_SCOPE": "在身份驗證期間發送到OIDC服務器的scope。它必須包含“openid”和“offline_access”。如果您使用Google,請從此字段中刪除“脫機訪問”。",
@@ -132,8 +132,8 @@
     "CLI_PASSWORD_TIP": "使用docker/helm cli訪問Harbor時,可以使用此cli密碼作為密碼。",
     "COPY_SUCCESS": "複製成功",
     "COPY_ERROR": "複製失敗",
-    "ADMIN_CIL_SECRET_BUTTON": "生成新的CLI密碼",
-    "ADMIN_CIL_SECRET_RESET_BUTTON": "輸入你自己的CLI密碼",
+    "ADMIN_CLI_SECRET_BUTTON": "生成新的CLI密碼",
+    "ADMIN_CLI_SECRET_RESET_BUTTON": "輸入你自己的CLI密碼",
     "NEW_SECRET": "密碼",
     "CONFIRM_SECRET": "重複出入密碼",
     "GENERATE_SUCCESS": "成功設置新的CLI密碼",
@@ -200,8 +200,10 @@
     "DELETE_SUCCESS": "成功刪除用戶。",
     "OF": "共計",
     "ITEMS": "條記錄",
-    "RESET_Ok": "成功修改用戶密碼",
-    "EXISTING_PASSWORD": "新密碼不能與舊密碼一致"
+    "RESET_OK": "成功修改用戶密碼",
+    "EXISTING_PASSWORD": "新密碼不能與舊密碼一致",
+    "UNKNOWN": "Unknown",
+    "UNKNOWN_TIP": "Please verify whether the user has admin status through the Identity Provider System if the value is \"Unknown\""
   },
   "PROJECT": {
     "PROJECTS": "項目",
@@ -245,7 +247,7 @@
     "QUOTA_UNLIMIT_TIP": "如果你想要對存儲不設置上限,請輸入-1。",
     "TYPE": "Type",
     "PROXY_CACHE": "Proxy Cache",
-    "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub and Harbor registries.",
+    "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Harbor, Aws ECR, Azure ACR, Quay and Google GCR registries.",
     "ENDPOINT": "Endpoint",
     "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
   },
@@ -364,7 +366,9 @@
     "EXPIRES_AT": "到期日",
     "EXPIRATION_TOOLTIP": "如不設置,將會使用系統設置中的過期時間。",
     "INVALID_VALUE": "無效的過期日期",
-    "NEVER_EXPIRED": "永不過期"
+    "NEVER_EXPIRED": "永不過期",
+    "NAME_PREFIX": "Robot Name Prefix",
+    "NAME_PREFIX_REQUIRED": "Robot name prefix is required"
   },
   "WEBHOOK":{
     "EDIT_BUTTON": "編輯",
@@ -613,7 +617,15 @@
     "NAMESPACE_TOOLTIP": "Namespace名稱由小寫字符、數字和._-組成且至少2個字符並以字符或者數字開頭。",
     "TAG":"標籤",
     "LABEL": "標籤",
-    "RESOURCE": "資源"
+    "RESOURCE": "資源",
+    "ENABLE_TITLE": "Enable rule",
+    "ENABLE_SUMMARY": "Do you want to enable rule {{param}}?",
+    "DISABLE_TITLE": "Disable rule",
+    "DISABLE_SUMMARY": "Do you want to disable rule {{param}}?",
+    "ENABLE_SUCCESS": "Enabled rule successfully",
+    "ENABLE_FAILED": "Enabling rule failed",
+    "DISABLE_SUCCESS": "Disabled rule successfully",
+    "DISABLE_FAILED": "Disabling rule failed"
   },
   "DESTINATION":{
     "NEW_ENDPOINT": "新建目標",
@@ -647,7 +659,8 @@
     "DELETED_FAILED": "刪除目標失敗。",
     "CANNOT_EDIT": "當複制規則啟用時目標無法修改。",
     "FAILED_TO_DELETE_TARGET_IN_USED": "無法刪除正在使用的目標。",
-    "PLACEHOLDER": "未發現任何復制目標!"
+    "PLACEHOLDER": "未發現任何復制目標!",
+    "DEPRECATED": "Helm Hub is moving to Artifact Hub"
   },
   "REPOSITORY":{
     "COPY_DIGEST_ID": "複製摘要",
@@ -677,7 +690,8 @@
     "TAGS_NO_DELETE": "在只讀模式下刪除是被禁止的",
     "FILTER_FOR_REPOSITORIES": "過濾鏡像倉庫",
     "TAG":"標籤",
-    "ARTIFACT":"Aarifact",
+    "ARTIFACT": "Aarifact",
+    "ARTIFACTS": "Artifacts",
     "工件":"工件",
     "SIZE": "大小",
     "VULNERABILITY": "漏洞",
@@ -835,7 +849,7 @@
     "AUTH_MODE_DB": "數據庫",
     "AUTH_MODE_LDAP":"LDAP",
     "AUTH_MODE_UAA":"UAA",
-    "AUTH_MODE_HTTP":"http_auth",
+    "AUTH_MODE_HTTP":"Http Auth",
     "AUTH_MODE_OIDC":"OIDC",
     "SCOPE_BASE":"本層",
     "SCOPE_ONE_LEVEL": "下一層",
@@ -856,6 +870,7 @@
       "LDAP_UID": "在搜索中用來匹配用戶的屬性,可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服務器支持的屬性。",
       "LDAP_SCOPE": "搜索用戶的範圍。",
       "TOKEN_EXPIRATION": "由令牌服務創建的令牌的過期時間（分鐘）,默認為30分鐘。",
+      "ROBOT_NAME_PREFIX": "Prefixed string for each robot name,and default value is 'robot$'",
       "ROBOT_TOKEN_EXPIRATION": "機器人帳戶的令牌的過期時間（天）,默認為30天,顯示的結果為分鐘轉化的天數並向下取整。",
       "PRO_CREATION_RESTRICTION": "用來確定哪些用戶有權限創建項目,默認為'所有人',設置為'僅管理員'則只有管理員可以創建項目。",
       "ROOT_CERT_DOWNLOAD": "下載鏡像庫根證書。",
@@ -899,7 +914,8 @@
       "ENDPOINT":"服務器端點",
       "TOKEN_REVIEW":"令牌審查端點",
       "SKIP_SEARCH":"跳過搜索",
-      "VERIFY_CERT": "Authentication驗證證書"
+      "VERIFY_CERT": "Authentication驗證證書",
+      "ADMIN_GROUPS": "Admin Groups"
     },
     "OIDC":{
       "OIDC_PROVIDER": "OIDC 供應商",
@@ -914,7 +930,9 @@
       "OIDC_SETNAME": "設置OIDC用戶名",
       "OIDC_SETNAMECONTENT": "在通過第三方（OIDC）進行身份驗證時,您必須第一次創建一個Harbor用戶名。這將在端口中用於與項目、角色等關聯。",
       "OIDC_USERNAME": "用戶名",
-      "GROUP_CLAIM_NAME": "組名稱"
+      "GROUP_CLAIM_NAME": "組名稱",
+      "OIDC_ADMIN_GROUP": "OIDC Admin Group",
+      "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
     },
     "SCANNING":{
       "TRIGGER_SCAN_ALL_SUCCESS": "啟動掃描所有鏡像任務成功!",
@@ -1001,7 +1019,9 @@
       "COLUMN_FIXED": "修復版本",
       "COLUMN_DESCRIPTION": "簡介",
       "FOOT_ITEMS": "項目",
-      "FOOT_OF": "總共"
+      "FOOT_OF": "總共",
+      "IN_ALLOW_LIST": "Listed In CVE Allowlist",
+      "CVSS3": "CVSS3"
     },
     "CHART":{
       "SCANNING_TIME": "掃描完成時間:",
@@ -1027,7 +1047,10 @@
     "PLACEHOLDER": "過濾漏洞",
     "PACKAGE": "組件",
     "PACKAGES": "組件",
-    "SCAN_NOW":"掃描"
+    "SCAN_NOW":"掃描",
+    "SCAN_BY": "SCAN BY {{scanner}}",
+    "REPORTED_BY": "Reported by {{scanner}}",
+    "NO_SCANNER": "NO SCANNER"
   },
   "PUSH_IMAGE":{
     "TITLE": "推送鏡像的Docker命令",
@@ -1183,6 +1206,7 @@
     "CUSTOM": "自定義",
     "CRON":"cron",
     "MANUAL": "手動",
+    "SCHEDULE": "Scheduled",
     "ON": " ",
     "AT": " ",
     "NOSCHEDULE": "獲取schedule時出現錯誤"
@@ -1431,7 +1455,7 @@
     "ENABLE_ACTION": "Enable",
     "DISABLE_ACTION": "Disable",
     "DELETE_ACTION": "Delete",
-    "NOT_FOUND": "Not found",
+    "NOT_FOUND": "We couldn't find any instance!",
     "NAME": "Name",
     "ENDPOINT": "Endpoint",
     "STATUS": "Status",
@@ -1558,5 +1582,81 @@
     "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote provider uses a self-signed or untrusted certificate.",
     "NAME_TOOLTIP": "Policy name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
     "NEED_HELP": "Please ask your system admin to add a provider first"
+  },
+  "PAGINATION": {
+    "PAGE_SIZE": "Page size"
+  },
+  "SYSTEM_ROBOT": {
+    "READ": "Read",
+    "CREATE": "Create",
+    "ARTIFACT": "Artifact",
+    "HELM": "Helm Chart",
+    "HELM_VERSION": "Helm Chart Version",
+    "ADD_ROBOT": "Add Robot",
+    "UPDATE_ROBOT": "Update Robot",
+    "UPDATE_ROBOT_SUCCESSFULLY": "Updated robot successfully",
+    "PLACEHOLDER": "Input new secret",
+    "SECRET": "Secret should be 8-20 characters long with at least 1 uppercase, 1 lowercase and 1 number.",
+    "REFRESH_SECRET": "Refresh Secret",
+    "REFRESH_SECRET_SUCCESS": "Refreshed secret successfully",
+    "DELETE_ROBOT": "Delete Robot",
+    "DELETE_ROBOT_SUCCESS": "Deleted robot(s) successfully",
+    "ENABLE_TITLE": "Enable Robot",
+    "ENABLE_SUMMARY": "Do you want to enable robot {{param}}?",
+    "DISABLE_TITLE": "Disable Robot",
+    "DISABLE_SUMMARY": "Do you want to disable robot {{param}}?",
+    "ENABLE_ROBOT_SUCCESSFULLY": "Enabled robot successfully",
+    "DISABLE_ROBOT_SUCCESSFULLY": "Disabled robot successfully",
+    "ROBOT_ACCOUNT": "Robot account",
+    "PROJECTS": "Projects",
+    "ALL_PROJECTS": "All projects with",
+    "PERMISSIONS": "PERMISSION(S)",
+    "REFRESH_SECRET_SUMMARY": "Refresh the robot account secret automatically, or optionally open the details to manually specify a new secret",
+    "TOKEN": "Secret",
+    "NEW_TOKEN": "New Secret",
+    "REFRESH": "REFRESH",
+    "PROJECTS_MODAL_TITLE": "Projects for Robot Account",
+    "PROJECTS_MODAL_SUMMARY": "There are the projects covered by this robot account.",
+    "CREATE_ROBOT": "Create System Robot Account",
+    "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover specific projects. Choose \"Cover all projects\" to be applied to all existing and future projects",
+    "EDIT_ROBOT": "Edit System Robot Account",
+    "EDIT_ROBOT_SUMMARY": "Edit a system Robot Account. Choose \"Cover all projects\" to be applied to all exiting and future projects",
+    "EXPIRATION_TIME": "Expiration time",
+    "EXPIRATION_TIME_EXPLAIN": "The expiration time(in days and the starting point is creation time) of the token of the robot account. For being never expired, please enter \"-1\".",
+    "EXPIRATION_DEFAULT": "days(default)",
+    "EXPIRATION_DAYS": "Specify # of days",
+    "EXPIRATION_NEVER": "Never",
+    "EXPIRATION_REQUIRED": "Valid expiration time is required",
+    "COVER_ALL": "Cover all projects",
+    "COVER_ALL_EXPLAIN": "Check to be applied to all existing and future projects",
+    "COVER_ALL_SUMMARY": "All current and future projects selected.",
+    "RESET_PERMISSION": "RESET PERMISSIONS",
+    "PERMISSION_COLUMN": "Permissions",
+    "EXPIRES_AT": "Expires at",
+    "VIEW_SECRET": "REFRESH SECRET",
+    "LEGACY": "Legacy",
+    "CREATE_PROJECT_ROBOT": "Create Robot Account",
+    "CREATE_PROJECT_ROBOT_SUMMARY": "Create a robot account for this project",
+    "EDIT_PROJECT_ROBOT": "Edit Robot Account",
+    "EDIT_PROJECT_ROBOT_SUMMARY": "Edit a robot account for this project",
+    "NOT_FOUND": "We couldn't find any robots!",
+    "SELECT_ALL": "SELECT ALL",
+    "UNSELECT_ALL": "UNSELECT ALL",
+    "ROBOT_ACCOUNT_NAV": "Robot Accounts",
+    "COVERED_PROJECTS": "PROJECT(S)",
+    "CONFIRM_SECRET": "Confirm Secret",
+    "SECRET_AGAIN": "Input secret again",
+    "INCONSISTENT": "Two secrets are inconsistent",
+    "NAME_TOOLTIP": "Robot name should be 1~255 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+    "ENABLE_NEW_SECRET": "Enable this option to manually specify a new secret",
+    "DELETE": "Delete",
+    "ARTIFACT_LABEL": "Artifact label",
+    "SCAN": "Scan",
+    "SCANNER_PULL": "Scanner Pull",
+    "SEARCH_BY_NAME": "Search by name(without prefix)",
+    "FINAL_PROJECT_NAME_TIP": "The final project robot name consists of the prefix,the project name,a plus mark and the current input value",
+    "FINAL_SYSTEM_NAME_TIP": "The final system robot name consists of the prefix and the current input value",
+    "PUSH_AND_PULL": "Push",
+    "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission"
   }
 }

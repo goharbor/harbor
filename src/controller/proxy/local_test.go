@@ -17,13 +17,9 @@ package proxy
 import (
 	"context"
 	distribution2 "github.com/docker/distribution"
-	"github.com/docker/distribution/manifest"
-	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/pkg/distribution"
-	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/mock"
 	"testing"
 
@@ -110,52 +106,6 @@ func (lh *localHelperTestSuite) TestPushManifest() {
 	ct = schema2.MediaTypeManifest
 	err := lh.local.PushManifest("library/hello-world", "", manifest)
 	lh.Require().Nil(err)
-}
-
-func (lh *localHelperTestSuite) TestUpdateManifestList() {
-	ctx := context.Background()
-	amdDig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
-	armDig := "sha256:92c7f9c92844bbbb5d0a101b22f7c2a7949e40f8ea90c8b3bc396879d95e899a"
-	manifestList := manifestlist.ManifestList{
-		Versioned: manifest.Versioned{
-			SchemaVersion: 2,
-			MediaType:     manifestlist.MediaTypeManifestList,
-		},
-		Manifests: []manifestlist.ManifestDescriptor{
-			{
-				Descriptor: distribution.Descriptor{
-					Digest:    digest.Digest(amdDig),
-					Size:      3253,
-					MediaType: schema2.MediaTypeManifest,
-				},
-				Platform: manifestlist.PlatformSpec{
-					Architecture: "amd64",
-					OS:           "linux",
-				},
-			}, {
-				Descriptor: distribution.Descriptor{
-					Digest:    digest.Digest(armDig),
-					Size:      3253,
-					MediaType: schema2.MediaTypeManifest,
-				},
-				Platform: manifestlist.PlatformSpec{
-					Architecture: "arm",
-					OS:           "linux",
-				},
-			},
-		},
-	}
-	manList := &manifestlist.DeserializedManifestList{
-		ManifestList: manifestList,
-	}
-	ar := &artifact.Artifact{}
-	var emptyArtifact *artifact.Artifact
-	var opt *artifact.Option
-	lh.artCtl.On("GetByReference", ctx, "library/hello-world", amdDig, opt).Return(ar, nil)
-	lh.artCtl.On("GetByReference", ctx, "library/hello-world", armDig, opt).Return(emptyArtifact, nil)
-	newMan, err := lh.local.updateManifestList(ctx, "library/hello-world", manList)
-	lh.Require().Nil(err)
-	lh.Assert().Equal(len(newMan.References()), 1)
 }
 
 func (lh *localHelperTestSuite) TestCheckDependencies_Fail() {

@@ -227,12 +227,33 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 			return errors.New("the name of the namespace cannot be nil")
 		}
 
-		err := a.createRepository(resource.Metadata.Repository.Name)
+		exist, err := a.checkRepository(resource.Metadata.Repository.Name)
+		if err != nil {
+			return err
+		}
+		if exist {
+			log.Infof("Namespace %s already exist in AWS ECR, skip it.", resource.Metadata.Repository.Name)
+			continue
+		}
+		err = a.createRepository(resource.Metadata.Repository.Name)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (a *adapter) checkRepository(repository string) (exists bool, err error) {
+	out, err := a.cacheSvc.DescribeRepositories(&awsecrapi.DescribeRepositoriesInput{
+		RepositoryNames: []*string{&repository},
+	})
+	if err != nil {
+		return false, err
+	}
+	if len(out.Repositories) > 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
 func (a *adapter) createRepository(repository string) error {

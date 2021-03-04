@@ -75,7 +75,7 @@ func (suite *ManagerTestSuite) SetupTest() {
 		"id",
 		id,
 		"name",
-		job.ImageGC,
+		jobNameGarbageCollection,
 		"kind",
 		job.KindPeriodic,
 		"unique",
@@ -104,7 +104,7 @@ func (suite *ManagerTestSuite) SetupTest() {
 	params["redis_url_reg"] = "redis://redis:6379/1"
 
 	policy := make(map[string]interface{})
-	policy["job_name"] = job.ImageGC
+	policy["job_name"] = jobNameGarbageCollection
 	policy["job_params"] = params
 	policy["cron_spec"] = "0 0 17 * * *"
 

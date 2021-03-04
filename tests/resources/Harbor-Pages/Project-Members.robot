@@ -39,6 +39,7 @@ Clear Search Input And Go Into Project
     ${out}  Run Keyword If  ${has_image}==${false}  Run Keywords  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  AND  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]
     ...  ELSE  Run Keywords  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  AND  Wait Until Element Is Visible And Enabled  xpath=//project-detail//hbr-repository-gridview//clr-dg-cell[contains(.,'${project}/')]
     Sleep  1
+    Capture Page Screenshot
 
 Add User To Project Admin
     [Arguments]  ${project}  ${user}
@@ -63,6 +64,10 @@ Search Project Member
 Change Project Member Role
     [Arguments]  ${project}  ${user}  ${role}
     Retry Element Click  xpath=//clr-dg-cell//a[contains(.,'${project}')]
+    Change Member Role  ${user}  ${role}
+
+Change Member Role
+    [Arguments]  ${user}  ${role}
     Retry Element Click  xpath=${project_member_tag_xpath}
     Retry Element Click  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//clr-checkbox-wrapper
     #change role
@@ -133,12 +138,16 @@ Manage Project Member
     [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${op}  ${has_image}=${true}  ${is_oidc_mode}=${false}
     Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor  ${HARBOR_URL}  ${admin}  ${pwd}
     ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${admin}
+    Manage Project Member Without Sign In  ${project}  ${user}  ${op}  has_image=${has_image}
+    Logout Harbor
+
+Manage Project Member Without Sign In
+    [Arguments]  ${project}  ${user}  ${op}  ${has_image}=${true}
     Go Into Project  ${project}  ${has_image}
     Switch To Member
     Run Keyword If  '${op}' == 'Add'  Add Guest Member To Project  ${user}
     ...    ELSE IF  '${op}' == 'Remove'  Delete Project Member  ${user}
     ...    ELSE  Change Project Member Role  ${project}  ${user}  ${role}
-    Logout Harbor
 
 Change User Role In Project
     [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${role}  ${is_oidc_mode}=${false}
@@ -193,14 +202,14 @@ User Should Be Admin
     Push Image With Tag  ${ip}  ${user}  ${password}  ${project}  hello-world  v2
 
 User Should Be Maintainer
-    [Arguments]  ${user}  ${pwd}  ${project}  ${is_oidc_mode}=${false}
+    [Arguments]  ${user}  ${pwd}  ${project}  ${image}  ${is_oidc_mode}=${false}
     Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor   ${HARBOR_URL}  ${user}  ${pwd}
     ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${user}
     ${pwd_oidc}=  Run Keyword And Return If  ${is_oidc_mode} == ${true}  Get Secrete By API  ${HARBOR_URL}
     ${password}=  Set Variable If  ${is_oidc_mode} == ${true}  ${pwd_oidc}  ${pwd}
     Project Should Display  ${project}
     Go Into Project  ${project}
-    Delete Repo  ${project}
+    Delete Repo  ${project}  ${image}
     Switch To Member
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Maintainer')]
     Logout Harbor

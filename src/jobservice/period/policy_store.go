@@ -35,6 +35,7 @@ type Policy struct {
 	CronSpec      string                 `json:"cron_spec"`
 	JobParameters map[string]interface{} `json:"job_params,omitempty"`
 	WebHookURL    string                 `json:"web_hook_url,omitempty"`
+	NumericID     int64                  `json:"numeric_id,omitempty"`
 }
 
 // Serialize the policy to raw data.
@@ -70,22 +71,31 @@ func (p *Policy) Validate() error {
 	return nil
 }
 
+type policyWithScore struct {
+	RawData []byte
+	Score   int64
+}
+
 // Load all the policies from the backend storage.
 func Load(namespace string, conn redis.Conn) ([]*Policy, error) {
-	bytes, err := redis.Values(conn.Do("ZRANGE", rds.KeyPeriodicPolicy(namespace), 0, -1))
+	bytes, err := redis.Values(conn.Do("ZRANGE", rds.KeyPeriodicPolicy(namespace), 0, -1, "WITHSCORES"))
 	if err != nil {
 		return nil, err
 	}
 
+	policyWithScores := make([]policyWithScore, 0)
+	if err := redis.ScanSlice(bytes, &policyWithScores); err != nil {
+		return nil, err
+	}
+
 	policies := make([]*Policy, 0)
-	for i, l := 0, len(bytes); i < l; i++ {
-		rawPolicy := bytes[i].([]byte)
+	for _, pw := range policyWithScores {
 		p := &Policy{}
 
-		if err := p.DeSerialize(rawPolicy); err != nil {
+		if err := p.DeSerialize(pw.RawData); err != nil {
 			// Ignore error which means the policy data is not valid
 			// Only logged
-			logger.Errorf("Malformed policy: %s; error: %s", rawPolicy, err)
+			logger.Errorf("Malformed policy: %s; error: %s", pw.RawData, err)
 			continue
 		}
 
@@ -95,9 +105,10 @@ func Load(namespace string, conn redis.Conn) ([]*Policy, error) {
 			continue
 		}
 
+		p.NumericID = pw.Score
 		policies = append(policies, p)
 
-		logger.Debugf("Load periodic job policy: %s", string(rawPolicy))
+		logger.Debugf("Load periodic job policy: %s", string(pw.RawData))
 	}
 
 	logger.Debugf("Load %d periodic job policies", len(policies))

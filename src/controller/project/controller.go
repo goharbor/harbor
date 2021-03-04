@@ -50,14 +50,18 @@ type Controller interface {
 	Count(ctx context.Context, query *q.Query) (int64, error)
 	// Delete delete the project by project id
 	Delete(ctx context.Context, id int64) error
-	// Get get the project by project id
-	Get(ctx context.Context, projectID int64, options ...Option) (*models.Project, error)
+	// Exists returns true when the specific project exists
+	Exists(ctx context.Context, projectIDOrName interface{}) (bool, error)
+	// Get get the project by project id or name
+	Get(ctx context.Context, projectIDOrName interface{}, options ...Option) (*models.Project, error)
 	// GetByName get the project by project name
 	GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error)
 	// List list projects
 	List(ctx context.Context, query *q.Query, options ...Option) ([]*models.Project, error)
 	// Update update the project
 	Update(ctx context.Context, project *models.Project) error
+	// ListRoles lists the roles of user for the specific project
+	ListRoles(ctx context.Context, projectID int64, u *user.User) ([]int, error)
 }
 
 // NewController creates an instance of the default project controller
@@ -138,8 +142,19 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (c *controller) Get(ctx context.Context, projectID int64, options ...Option) (*models.Project, error) {
-	p, err := c.projectMgr.Get(ctx, projectID)
+func (c *controller) Exists(ctx context.Context, projectIDOrName interface{}) (bool, error) {
+	_, err := c.projectMgr.Get(ctx, projectIDOrName)
+	if err == nil {
+		return true, nil
+	} else if errors.IsNotFoundErr(err) {
+		return false, nil
+	} else {
+		return false, err
+	}
+}
+
+func (c *controller) Get(ctx context.Context, projectIDOrName interface{}, options ...Option) (*models.Project, error) {
+	p, err := c.projectMgr.Get(ctx, projectIDOrName)
 	if err != nil {
 		return nil, err
 	}
@@ -226,8 +241,19 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 	return nil
 }
 
+func (c *controller) ListRoles(ctx context.Context, projectID int64, u *user.User) ([]int, error) {
+	if u == nil {
+		return nil, nil
+	}
+
+	return c.projectMgr.ListRoles(ctx, projectID, u.UserID, u.GroupIDs...)
+}
+
 func (c *controller) assembleProjects(ctx context.Context, projects models.Projects, options ...Option) error {
 	opts := newOptions(options...)
+	if !opts.WithDetail {
+		return nil
+	}
 	if opts.WithMetadata {
 		if err := c.loadMetadatas(ctx, projects); err != nil {
 			return err

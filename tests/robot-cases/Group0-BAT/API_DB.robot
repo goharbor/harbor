@@ -45,10 +45,6 @@ Test Case - Manage Project Member
     [Tags]  member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
 
-Test Case - Project Level Policy Content Trust
-    [Tags]  content_trust
-    Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
-
 Test Case - User View Logs
     [Tags]  view_logs
     Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
@@ -105,16 +101,16 @@ Test Case - Push Cnab Bundle
     [Tags]  push_cnab
     Harbor API Test  ./tests/apitests/python/test_push_cnab_bundle.py
 
-Test Case - Create/Delete tag
-    [Tags]  tag_cuid
-    Harbor API Test  ./tests/apitests/python/test_create_delete_tag.py
+Test Case - Tag CRUD
+    [Tags]  tag_crud
+    Harbor API Test  ./tests/apitests/python/test_tag_crud.py
 
 Test Case - Scan Image
     [Tags]  scan
     Harbor API Test  ./tests/apitests/python/test_scan_image_artifact.py
 
 Test Case - Scan Image In Public Project
-    [Tags]  scan
+    [Tags]  scan_public_project
     Harbor API Test  ./tests/apitests/python/test_scan_image_artifact_in_public_project.py
 
 Test Case - Scan All Images
@@ -144,3 +140,24 @@ Test Case - Push Chart File To Chart Repository By Helm V2 With Robot Account
 Test Case - Replication From Dockerhub
     [Tags]  replic_dockerhub
     Harbor API Test  ./tests/apitests/python/test_replication_from_dockerhub.py
+
+Test Case - Proxy Cache
+    [Tags]  proxy_cache
+    Harbor API Test  ./tests/apitests/python/test_proxy_cache.py
+
+Test Case - Tag Immutability
+    [Tags]  tag_immutability
+    Harbor API Test  ./tests/apitests/python/test_tag_immutability.py
+
+Test Case - P2P
+    [Tags]  p2p
+    Harbor API Test  ./tests/apitests/python/test_p2p.py
+
+Test Case - Metrics
+    [Tags]  metrics
+    Harbor API Test  ./tests/apitests/python/test_verify_metrics_enabled.py
+
+Test Case - Project Level Policy Content Trust
+    [Tags]  content_trust
+    Restart Docker Daemon Locally
+    Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py

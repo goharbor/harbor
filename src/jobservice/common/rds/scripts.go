@@ -37,19 +37,17 @@ end
 
 // luaFuncCompareText is common lua script function
 var luaFuncCompareText = `
-local function compare(status, revision, checkInT)
+local function compare(status, revision)
   local sCode = stCode(status)
   local aCode = stCode(ARGV[1])
   local aRev = tonumber(ARGV[2]) or 0
   local aCheckInT = tonumber(ARGV[3]) or 0
-
   if revision < aRev or 
-    ( revision == aRev and sCode < aCode ) or
-    ( revision == aRev and sCode == aCode and (not checkInT or checkInT < aCheckInT))
+    ( revision == aRev and sCode <= aCode ) or
+    ( revision == aRev and aCheckInT ~= 0 )
   then
      return 'ok'
   end
-
   return 'no'
 end
 `
@@ -129,7 +127,7 @@ if res then
   checkInAt = tonumber(res[3]) or 0
   ack = res[4]
 
-  local reply = compare(st, rev, checkInAt)
+  local reply = compare(st, rev)
 
   if reply == 'ok' then
     if not ack then
@@ -142,7 +140,7 @@ if res then
     rev = a['revision']
     checkInAt = a['check_in_at']
 
-    local reply2 = compare(st, rev, checkInAt)
+    local reply2 = compare(st, rev)
     if reply2 == 'ok' then
       return 'ok'
     end
@@ -178,7 +176,7 @@ local function canSetAck(jk, nrev)
     if ackv then
       -- ack existing
       local ack = cjson.decode(ackv)
-      local cmp = compare(ack['status'], ack['revision'], ack['check_in_at'])
+      local cmp = compare(ack['status'], ack['revision'])
       if cmp == 'ok' then
         return 'ok'
       end

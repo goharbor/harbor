@@ -130,7 +130,7 @@ func getCacheConfig() (*ChartCacheConfig, error) {
 		return nil, fmt.Errorf("failed to parse redis configurations from '%s' with error: %s", redisCfg, err)
 	}
 	if _, isSet := redisCfg["masterName"]; isSet {
-		driver = "redis_sentinel"
+		driver = cacheDriverRedisSentinel
 	}
 
 	// Convert config map to string

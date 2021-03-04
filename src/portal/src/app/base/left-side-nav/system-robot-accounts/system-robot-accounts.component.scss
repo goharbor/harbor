@@ -1,0 +1,35 @@
+.robot-space {
+  margin-top: 28px;
+  position: relative;
+
+  clr-icon.red-position {
+    margin-left: 2px;
+  }
+
+  .rightPos {
+    position: absolute;
+    z-index: 100;
+    right: 35px;
+    margin-top: 4px;
+
+    .option-left {
+      padding-left: 16px;
+      position: relative;
+      top: 10px;
+    }
+
+    .option-right {
+      padding-right: 16px;
+
+      .refresh-btn {
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.all-projects {
+  display: flex;
+  align-items: center;
+  height: 16px;
+}

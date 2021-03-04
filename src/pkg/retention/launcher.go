@@ -15,21 +15,16 @@
 package retention
 
 import (
+	"context"
 	"fmt"
-	"time"
-
-	beegoorm "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/pkg/task"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 
 	cjob "github.com/goharbor/harbor/src/common/job"
-	"github.com/goharbor/harbor/src/common/job/models"
-	cmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	pq "github.com/goharbor/harbor/src/lib/q"
@@ -37,7 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
-	"github.com/goharbor/harbor/src/pkg/retention/q"
 )
 
 const (
@@ -62,7 +56,7 @@ type Launcher interface {
 	//  Returns:
 	//   int64               : the count of tasks
 	//   error               : common error if any errors occurred
-	Launch(policy *policy.Metadata, executionID int64, isDryRun bool) (int64, error)
+	Launch(ctx context.Context, policy *policy.Metadata, executionID int64, isDryRun bool) (int64, error)
 	// Stop the jobs for one execution
 	//
 	//  Arguments:
@@ -70,19 +64,19 @@ type Launcher interface {
 	//
 	//  Returns:
 	//   error : common error if any errors occurred
-	Stop(executionID int64) error
+	Stop(ctx context.Context, executionID int64) error
 }
 
 // NewLauncher returns an instance of Launcher
 func NewLauncher(projectMgr project.Manager, repositoryMgr repository.Manager,
-	retentionMgr Manager) Launcher {
+	retentionMgr Manager, execMgr task.ExecutionManager, taskMgr task.Manager) Launcher {
 	return &launcher{
-		projectMgr:         projectMgr,
-		repositoryMgr:      repositoryMgr,
-		retentionMgr:       retentionMgr,
-		jobserviceClient:   cjob.GlobalClient,
-		internalCoreURL:    config.InternalCoreURL(),
-		chartServerEnabled: config.WithChartMuseum(),
+		projectMgr:       projectMgr,
+		repositoryMgr:    repositoryMgr,
+		retentionMgr:     retentionMgr,
+		execMgr:          execMgr,
+		taskMgr:          taskMgr,
+		jobserviceClient: cjob.GlobalClient,
 	}
 }
 
@@ -94,15 +88,15 @@ type jobData struct {
 }
 
 type launcher struct {
-	retentionMgr       Manager
-	projectMgr         project.Manager
-	repositoryMgr      repository.Manager
-	jobserviceClient   cjob.Client
-	internalCoreURL    string
-	chartServerEnabled bool
+	retentionMgr     Manager
+	taskMgr          task.Manager
+	execMgr          task.ExecutionManager
+	projectMgr       project.Manager
+	repositoryMgr    repository.Manager
+	jobserviceClient cjob.Client
 }
 
-func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool) (int64, error) {
+func (l *launcher) Launch(ctx context.Context, ply *policy.Metadata, executionID int64, isDryRun bool) (int64, error) {
 	if ply == nil {
 		return 0, launcherError(fmt.Errorf("the policy is nil"))
 	}
@@ -121,7 +115,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 	var err error
 	if level == "system" {
 		// get projects
-		allProjects, err = getProjects(l.projectMgr)
+		allProjects, err = getProjects(ctx, l.projectMgr)
 		if err != nil {
 			return 0, launcherError(err)
 		}
@@ -156,7 +150,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 		var repositoryCandidates []*selector.Candidate
 		// get repositories of projects
 		for _, projectCandidate := range projectCandidates {
-			repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, projectCandidate.NamespaceID, l.chartServerEnabled)
+			repositories, err := getRepositories(ctx, l.projectMgr, l.repositoryMgr, projectCandidate.NamespaceID)
 			if err != nil {
 				return 0, launcherError(err)
 			}
@@ -206,13 +200,8 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 		return 0, nil
 	}
 
-	// create task records in database
-	if err = l.createTasks(executionID, jobDatas); err != nil {
-		return 0, launcherError(err)
-	}
-
-	// submit jobs to jobservice
-	if err = l.submitJobs(jobDatas); err != nil {
+	// submit tasks to jobservice
+	if err = l.submitTasks(ctx, executionID, jobDatas); err != nil {
 		return 0, launcherError(err)
 	}
 
@@ -246,87 +235,39 @@ func createJobs(repositoryRules map[selector.Repository]*lwp.Metadata, isDryRun 
 	return jobDatas, nil
 }
 
-// create task records in database
-func (l *launcher) createTasks(executionID int64, jobDatas []*jobData) error {
-	now := time.Now()
+func (l *launcher) submitTasks(ctx context.Context, executionID int64, jobDatas []*jobData) error {
 	for _, jobData := range jobDatas {
-		taskID, err := l.retentionMgr.CreateTask(&Task{
-			ExecutionID: executionID,
-			Repository:  jobData.Repository.Name,
-			StartTime:   now.Truncate(time.Second),
-		})
+		_, err := l.taskMgr.Create(ctx, executionID, &task.Job{
+			Name:       jobData.JobName,
+			Parameters: jobData.JobParams,
+			Metadata: &job.Metadata{
+				JobKind: job.KindGeneric,
+			},
+		},
+			map[string]interface{}{
+				"repository": jobData.Repository.Name,
+				"dry_run":    jobData.JobParams[ParamDryRun],
+			})
 		if err != nil {
 			return err
 		}
-		jobData.TaskID = taskID
 	}
 	return nil
 }
 
-// create task records in database
-func (l *launcher) submitJobs(jobDatas []*jobData) error {
-	allFailed := true
-	for _, jobData := range jobDatas {
-		task := &Task{
-			ID: jobData.TaskID,
-		}
-		props := []string{"Status"}
-		j := &models.JobData{
-			Name: jobData.JobName,
-			Metadata: &models.JobMetadata{
-				JobKind: job.KindGeneric,
-			},
-			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/retention/task/%d", l.internalCoreURL, jobData.TaskID),
-			Parameters: jobData.JobParams,
-		}
-		// Submit job
-		jobID, err := l.jobserviceClient.SubmitJob(j)
-		if err != nil {
-			log.Error(launcherError(fmt.Errorf("failed to submit task %d: %v", jobData.TaskID, err)))
-			task.Status = cmodels.JobError
-			task.EndTime = time.Now()
-			props = append(props, "EndTime")
-		} else {
-			allFailed = false
-			task.JobID = jobID
-			task.Status = cmodels.JobPending
-			props = append(props, "JobID")
-		}
-		if err = l.retentionMgr.UpdateTask(task, props...); err != nil {
-			log.Errorf("failed to update the status of task %d: %v", task.ID, err)
-		}
-	}
-	if allFailed {
-		return launcherError(fmt.Errorf("all tasks failed"))
-	}
-	return nil
-}
-
-func (l *launcher) Stop(executionID int64) error {
+func (l *launcher) Stop(ctx context.Context, executionID int64) error {
 	if executionID <= 0 {
 		return launcherError(fmt.Errorf("invalid execution ID: %d", executionID))
 	}
-	tasks, err := l.retentionMgr.ListTasks(&q.TaskQuery{
-		ExecutionID: executionID,
-	})
-	if err != nil {
-		return err
-	}
-	for _, task := range tasks {
-		if err = l.jobserviceClient.PostAction(task.JobID, cjob.JobActionStop); err != nil {
-			log.Errorf("failed to stop task %d, job ID: %s : %v", task.ID, task.JobID, err)
-			continue
-		}
-	}
-	return nil
+	return l.execMgr.Stop(ctx, executionID)
 }
 
 func launcherError(err error) error {
 	return errors.Wrap(err, "launcher")
 }
 
-func getProjects(projectMgr project.Manager) ([]*selector.Candidate, error) {
-	projects, err := projectMgr.List(orm.Context(), nil)
+func getProjects(ctx context.Context, projectMgr project.Manager) ([]*selector.Candidate, error) {
+	projects, err := projectMgr.List(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -340,8 +281,7 @@ func getProjects(projectMgr project.Manager) ([]*selector.Candidate, error) {
 	return candidates, nil
 }
 
-func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manager,
-	projectID int64, chartServerEnabled bool) ([]*selector.Candidate, error) {
+func getRepositories(ctx context.Context, projectMgr project.Manager, repositoryMgr repository.Manager, projectID int64) ([]*selector.Candidate, error) {
 	var candidates []*selector.Candidate
 	/*
 		pro, err := projectMgr.Get(projectID)
@@ -350,8 +290,7 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 		}
 	*/
 	// get image repositories
-	// TODO set the context which contains the ORM
-	imageRepositories, err := repositoryMgr.List(orm.NewContext(nil, beegoorm.NewOrm()), &pq.Query{
+	imageRepositories, err := repositoryMgr.List(ctx, &pq.Query{
 		Keywords: map[string]interface{}{
 			"ProjectID": projectID,
 		},
@@ -368,23 +307,6 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 			Kind:        "image",
 		})
 	}
-	// currently, doesn't support retention for chart
-	/*
-		if chartServerEnabled {
-			// get chart repositories when chart server is enabled
-			chartRepositories, err := repositoryMgr.ListChartRepositories(projectID)
-			if err != nil {
-				return nil, err
-			}
-			for _, r := range chartRepositories {
-				candidates = append(candidates, &art.Candidate{
-					Namespace:  pro.Name,
-					Repository: r.Name,
-					Kind:       "chart",
-				})
-			}
-		}
-	*/
 
 	return candidates, nil
 }

@@ -16,17 +16,13 @@ package retention
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	cjob "github.com/goharbor/harbor/src/common/job"
-	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
-	"github.com/goharbor/harbor/src/pkg/retention/policy"
-	"github.com/goharbor/harbor/src/pkg/retention/q"
 )
 
 // Manager defines operations of managing policy
@@ -38,35 +34,9 @@ type Manager interface {
 	UpdatePolicy(p *policy.Metadata) error
 	// Delete the specified policy
 	// No actual use so far
-	DeletePolicyAndExec(ID int64) error
+	DeletePolicy(ID int64) error
 	// Get the specified policy
 	GetPolicy(ID int64) (*policy.Metadata, error)
-	// Create a new retention execution
-	CreateExecution(execution *Execution) (int64, error)
-	// Delete a new retention execution
-	DeleteExecution(int64) error
-	// Get the specified execution
-	GetExecution(eid int64) (*Execution, error)
-	// List executions
-	ListExecutions(policyID int64, query *q.Query) ([]*Execution, error)
-	// GetTotalOfRetentionExecs Count Retention Executions
-	GetTotalOfRetentionExecs(policyID int64) (int64, error)
-	// List tasks histories
-	ListTasks(query ...*q.TaskQuery) ([]*Task, error)
-	// GetTotalOfTasks Count Tasks
-	GetTotalOfTasks(executionID int64) (int64, error)
-	// Create a new retention task
-	CreateTask(task *Task) (int64, error)
-	// Update the specified task
-	UpdateTask(task *Task, cols ...string) error
-	// Update the status of the specified task
-	// The status is updated only when (the statusRevision > the current revision)
-	// or (the the statusRevision = the current revision and status > the current status)
-	UpdateTaskStatus(taskID int64, status string, statusRevision int64) error
-	// Get the task specified by the task ID
-	GetTask(taskID int64) (*Task, error)
-	// Get the log of the specified task
-	GetTaskLog(taskID int64) ([]byte, error)
 }
 
 // DefaultManager ...
@@ -101,9 +71,9 @@ func (d *DefaultManager) UpdatePolicy(p *policy.Metadata) error {
 	return dao.UpdatePolicy(p1, "scope_level", "trigger_kind", "data", "update_time")
 }
 
-// DeletePolicyAndExec Delete Policy
-func (d *DefaultManager) DeletePolicyAndExec(id int64) error {
-	return dao.DeletePolicyAndExec(id)
+// DeletePolicy Delete Policy
+func (d *DefaultManager) DeletePolicy(id int64) error {
+	return dao.DeletePolicy(id)
 }
 
 // GetPolicy Get Policy
@@ -121,188 +91,6 @@ func (d *DefaultManager) GetPolicy(id int64) (*policy.Metadata, error) {
 	}
 	p.ID = id
 	return p, nil
-}
-
-// CreateExecution Create Execution
-func (d *DefaultManager) CreateExecution(execution *Execution) (int64, error) {
-	exec := &models.RetentionExecution{}
-	exec.PolicyID = execution.PolicyID
-	exec.StartTime = execution.StartTime
-	exec.DryRun = execution.DryRun
-	exec.Trigger = execution.Trigger
-	return dao.CreateExecution(exec)
-}
-
-// DeleteExecution Delete Execution
-func (d *DefaultManager) DeleteExecution(eid int64) error {
-	return dao.DeleteExecution(eid)
-}
-
-// ListExecutions List Executions
-func (d *DefaultManager) ListExecutions(policyID int64, query *q.Query) ([]*Execution, error) {
-	execs, err := dao.ListExecutions(policyID, query)
-	if err != nil {
-		if err == orm.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
-	}
-	var execs1 []*Execution
-	for _, e := range execs {
-		e1 := &Execution{}
-		e1.ID = e.ID
-		e1.PolicyID = e.PolicyID
-		e1.Status = e.Status
-		e1.StartTime = e.StartTime
-		e1.EndTime = e.EndTime
-		e1.Trigger = e.Trigger
-		e1.DryRun = e.DryRun
-		execs1 = append(execs1, e1)
-	}
-	return execs1, nil
-}
-
-// GetTotalOfRetentionExecs Count Executions
-func (d *DefaultManager) GetTotalOfRetentionExecs(policyID int64) (int64, error) {
-	return dao.GetTotalOfRetentionExecs(policyID)
-}
-
-// GetExecution Get Execution
-func (d *DefaultManager) GetExecution(eid int64) (*Execution, error) {
-	e, err := dao.GetExecution(eid)
-	if err != nil {
-		return nil, err
-	}
-	e1 := &Execution{}
-	e1.ID = e.ID
-	e1.PolicyID = e.PolicyID
-	e1.Status = e.Status
-	e1.StartTime = e.StartTime
-	e1.EndTime = e.EndTime
-	e1.Trigger = e.Trigger
-	e1.DryRun = e.DryRun
-	return e1, nil
-}
-
-// CreateTask creates task record
-func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
-	if task == nil {
-		return 0, errors.New("nil task")
-	}
-	t := &models.RetentionTask{
-		ExecutionID:    task.ExecutionID,
-		Repository:     task.Repository,
-		JobID:          task.JobID,
-		Status:         task.Status,
-		StatusCode:     task.StatusCode,
-		StatusRevision: task.StatusRevision,
-		StartTime:      task.StartTime,
-		EndTime:        task.EndTime,
-		Total:          task.Total,
-		Retained:       task.Retained,
-	}
-	return dao.CreateTask(t)
-}
-
-// ListTasks lists tasks according to the query
-func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
-	ts, err := dao.ListTask(query...)
-	if err != nil {
-		if err == orm.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
-	}
-	tasks := make([]*Task, 0)
-	for _, t := range ts {
-		tasks = append(tasks, &Task{
-			ID:             t.ID,
-			ExecutionID:    t.ExecutionID,
-			Repository:     t.Repository,
-			JobID:          t.JobID,
-			Status:         t.Status,
-			StatusCode:     t.StatusCode,
-			StatusRevision: t.StatusRevision,
-			StartTime:      t.StartTime,
-			EndTime:        t.EndTime,
-			Total:          t.Total,
-			Retained:       t.Retained,
-		})
-	}
-	return tasks, nil
-}
-
-// GetTotalOfTasks Count tasks
-func (d *DefaultManager) GetTotalOfTasks(executionID int64) (int64, error) {
-	return dao.GetTotalOfTasks(executionID)
-}
-
-// UpdateTask updates the task
-func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
-	if task == nil {
-		return errors.New("nil task")
-	}
-	if task.ID <= 0 {
-		return fmt.Errorf("invalid task ID: %d", task.ID)
-	}
-	return dao.UpdateTask(&models.RetentionTask{
-		ID:             task.ID,
-		ExecutionID:    task.ExecutionID,
-		Repository:     task.Repository,
-		JobID:          task.JobID,
-		Status:         task.Status,
-		StatusCode:     task.StatusCode,
-		StatusRevision: task.StatusRevision,
-		StartTime:      task.StartTime,
-		EndTime:        task.EndTime,
-		Total:          task.Total,
-		Retained:       task.Retained,
-	}, cols...)
-}
-
-// UpdateTaskStatus updates the status of the specified task
-func (d *DefaultManager) UpdateTaskStatus(taskID int64, status string, statusRevision int64) error {
-	if taskID <= 0 {
-		return fmt.Errorf("invalid task ID: %d", taskID)
-	}
-	st := job.Status(status)
-	return dao.UpdateTaskStatus(taskID, status, st.Code(), statusRevision)
-}
-
-// GetTask returns the task specified by task ID
-func (d *DefaultManager) GetTask(taskID int64) (*Task, error) {
-	if taskID <= 0 {
-		return nil, fmt.Errorf("invalid task ID: %d", taskID)
-	}
-	task, err := dao.GetTask(taskID)
-	if err != nil {
-		return nil, err
-	}
-	return &Task{
-		ID:             task.ID,
-		ExecutionID:    task.ExecutionID,
-		Repository:     task.Repository,
-		JobID:          task.JobID,
-		Status:         task.Status,
-		StatusCode:     task.StatusCode,
-		StatusRevision: task.StatusRevision,
-		StartTime:      task.StartTime,
-		EndTime:        task.EndTime,
-		Total:          task.Total,
-		Retained:       task.Retained,
-	}, nil
-}
-
-// GetTaskLog gets the logs of task
-func (d *DefaultManager) GetTaskLog(taskID int64) ([]byte, error) {
-	task, err := d.GetTask(taskID)
-	if err != nil {
-		return nil, err
-	}
-	if task == nil {
-		return nil, fmt.Errorf("task %d not found", taskID)
-	}
-	return cjob.GlobalClient.GetJobLog(task.JobID)
 }
 
 // NewManager ...

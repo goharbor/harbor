@@ -95,7 +95,7 @@
         "EMPTY": "名称为必填项",
         "NONEMPTY": "不能为空",
         "ENDPOINT_FORMAT": "Endpoint必须以http://或https://开头。",
-        "OIDC_ENDPOIT_FORMAT": "Endpoint必须以https://开头。",
+        "OIDC_ENDPOINT_FORMAT": "Endpoint必须以https://开头。",
         "OIDC_NAME": "OIDC提供商的名称。",
         "OIDC_ENDPOINT": "OIDC服务器的地址。",
         "OIDC_SCOPE": "在身份验证期间发送到OIDC服务器的scope。它必须包含“openid”和“offline_access”。如果您使用Google，请从此字段中删除“脱机访问”。",
@@ -132,8 +132,8 @@
         "CLI_PASSWORD_TIP": "使用docker/helm cli访问Harbor时，可以使用此cli密码作为密码。",
         "COPY_SUCCESS": "复制成功",
         "COPY_ERROR": "复制失败",
-        "ADMIN_CIL_SECRET_BUTTON": "生成新的CLI密码",
-        "ADMIN_CIL_SECRET_RESET_BUTTON": "输入你自己的CLI密码",
+        "ADMIN_CLI_SECRET_BUTTON": "生成新的CLI密码",
+        "ADMIN_CLI_SECRET_RESET_BUTTON": "输入你自己的CLI密码",
         "NEW_SECRET": "密码",
         "CONFIRM_SECRET": "重复出入密码",
         "GENERATE_SUCCESS": "成功设置新的CLI密码",
@@ -202,8 +202,10 @@
         "DELETE_SUCCESS": "成功删除用户。",
         "OF": "共计",
         "ITEMS": "条记录",
-        "RESET_Ok": "成功修改用户密码",
-        "EXISTING_PASSWORD": "新密码不能与旧密码一致"
+        "RESET_OK": "成功修改用户密码",
+        "EXISTING_PASSWORD": "新密码不能与旧密码一致",
+        "UNKNOWN": "未知",
+        "UNKNOWN_TIP": "当此项的值为\"未知\"时，请根据该用户的源头身份提供系统来判定该用户是否为管理员"
     },
     "PROJECT": {
         "PROJECTS": "项目",
@@ -247,7 +249,7 @@
         "QUOTA_UNLIMIT_TIP": "如果你想要对存储不设置上限，请输入-1。",
         "TYPE": "类型",
         "PROXY_CACHE": "镜像代理",
-        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 Docker Hub 和 Harbor 类型的仓库",
+        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Harbor, Aws ECR, Azure ACR, Quay 和 Google GCR 类型的仓库",
         "ENDPOINT": "地址",
         "PROXY_CACHE_ENDPOINT": "镜像代理地址"
     },
@@ -356,7 +358,7 @@
         "FILTER_PLACEHOLDER": "过滤机器人账户",
         "ROBOT_NAME": "不能包含特殊字符(~#$%)且长度不能超过255。",
         "ACCOUNT_EXISTING": "机器人账户已经存在。",
-        "ALERT_TEXT": "这是唯一一次复制您的个人访问令牌的机会",
+        "ALERT_TEXT": "这是唯一一次复制当前令牌的机会",
         "CREATED_SUCCESS": "创建账户 '{{param}}' 成功。",
         "COPY_SUCCESS": "成功复制 '{{param}}' 的令牌",
         "DELETION_TITLE": "删除账户确认",
@@ -366,7 +368,9 @@
         "EXPIRES_AT": "到期日",
         "EXPIRATION_TOOLTIP": "如不设置，将会使用系统设置中的过期时间。",
         "INVALID_VALUE": "无效的过期日期",
-        "NEVER_EXPIRED": "永不过期"
+        "NEVER_EXPIRED": "永不过期",
+        "NAME_PREFIX": "机器人账户名称前缀",
+        "NAME_PREFIX_REQUIRED": "机器人账户名称前缀为必填项"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "编辑",
@@ -617,7 +621,15 @@
         "NAMESPACE_TOOLTIP": "Namespace名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
         "TAG": "Tag",
         "LABEL": "标签",
-        "RESOURCE": "资源"
+        "RESOURCE": "资源",
+        "ENABLE_TITLE": "启用规则",
+        "ENABLE_SUMMARY": "确定启用规则 {{param}}?",
+        "DISABLE_TITLE": "禁用规则",
+        "DISABLE_SUMMARY": "确认禁用规则 {{param}}?",
+        "ENABLE_SUCCESS": "启用规则成功",
+        "ENABLE_FAILED": "启用规则失败",
+        "DISABLE_SUCCESS": "禁用规则成功",
+        "DISABLE_FAILED": "禁用规则失败"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -651,7 +663,8 @@
         "DELETED_FAILED": "删除目标失败。",
         "CANNOT_EDIT": "当复制规则启用时目标无法修改。",
         "FAILED_TO_DELETE_TARGET_IN_USED": "无法删除正在使用的目标。",
-        "PLACEHOLDER": "未发现任何复制目标!"
+        "PLACEHOLDER": "未发现任何复制目标!",
+        "DEPRECATED": "Helm Hub 正被移至 Artifact Hub"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "复制摘要",
@@ -840,7 +853,7 @@
         "AUTH_MODE_DB": "数据库",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
-        "AUTH_MODE_HTTP": "http_auth",
+        "AUTH_MODE_HTTP": "Http Auth",
         "AUTH_MODE_OIDC": "OIDC",
         "SCOPE_BASE": "本层",
         "SCOPE_ONE_LEVEL": "下一层",
@@ -861,6 +874,7 @@
             "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
             "LDAP_SCOPE": "搜索用户的范围。",
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
+            "ROBOT_NAME_PREFIX": "每个机器人账户名称的前缀字符串,默认值为 'robot$'",
             "ROBOT_TOKEN_EXPIRATION": "机器人账户的令牌的过期时间（天），默认为30天,显示的结果为分钟转化的天数并向下取整。",
             "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
             "ROOT_CERT_DOWNLOAD": "下载镜像库根证书。",
@@ -904,7 +918,8 @@
             "ENDPOINT": "Server Endpoint",
             "TOKEN_REVIEW": "Token Review Endpoint",
             "SKIP_SEARCH": "Skip Search",
-            "VERIFY_CERT": "Authentication验证证书"
+            "VERIFY_CERT": "Verify Certificate",
+            "ADMIN_GROUPS": "Admin Groups"
         },
         "OIDC": {
             "OIDC_PROVIDER": "OIDC 供应商",
@@ -919,7 +934,9 @@
             "OIDC_SETNAME": "设置OIDC用户名",
             "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在Harbor中用于与项目、角色等关联。",
             "OIDC_USERNAME": "用户名",
-            "GROUP_CLAIM_NAME": "组名称"
+            "GROUP_CLAIM_NAME": "组名称",
+            "OIDC_ADMIN_GROUP": "OIDC管理员组",
+            "OIDC_ADMIN_GROUP_INFO": "OIDC管理员组名称。所有该组内用户都会有管理员权限，此属性可以为空。"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
@@ -1006,7 +1023,9 @@
             "COLUMN_FIXED": "修复版本",
             "COLUMN_DESCRIPTION": "简介",
             "FOOT_ITEMS": "项目",
-            "FOOT_OF": "总共"
+            "FOOT_OF": "总共",
+            "IN_ALLOW_LIST": "已入特赦名单",
+            "CVSS3": "CVSS3"
         },
         "CHART": {
             "SCANNING_TIME": "扫描完成时间:",
@@ -1032,7 +1051,10 @@
         "PLACEHOLDER": "过滤漏洞",
         "PACKAGE": "组件",
         "PACKAGES": "组件",
-        "SCAN_NOW": "扫描"
+        "SCAN_NOW": "扫描",
+        "SCAN_BY": "使用 {{scanner}} 进行扫描",
+        "REPORTED_BY": "结果由 {{scanner}} 提供",
+        "NO_SCANNER": "无扫描器"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送命令",
@@ -1195,6 +1217,7 @@
         "CUSTOM": "自定义",
         "CRON": "cron",
         "MANUAL": "手动",
+        "SCHEDULE": "定时",
         "ON": " ",
         "AT": " ",
         "NOSCHEDULE": "获取schedule时出现错误"
@@ -1444,7 +1467,7 @@
         "ENABLE_ACTION": "启用",
         "DISABLE_ACTION": "禁用",
         "DELETE_ACTION": "删除",
-        "NOT_FOUND": "未发现任何记录",
+        "NOT_FOUND": "未发现任何实例",
         "NAME": "名称",
         "ENDPOINT": "端点",
         "STATUS": "状态",
@@ -1571,5 +1594,81 @@
         "SKIP_CERT_VERIFY": "当远端服务使用自签或不可信证书时可勾选此项以跳过证书认证。",
         "DESTINATION_NAME_TOOLTIP": "策略名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
         "NEED_HELP": "请先让您的系统管理员添加提供商"
+    },
+    "PAGINATION": {
+        "PAGE_SIZE": "页面大小"
+    },
+    "SYSTEM_ROBOT": {
+        "READ": "读取",
+        "CREATE": "创建",
+        "ARTIFACT": "Artifact",
+        "HELM": "Helm Chart",
+        "HELM_VERSION": "Helm Chart Version",
+        "ADD_ROBOT": "添加机器人",
+        "UPDATE_ROBOT": "更新机器人",
+        "UPDATE_ROBOT_SUCCESSFULLY": "更新机器人成功",
+        "PLACEHOLDER": "请输入新令牌",
+        "SECRET": "令牌长度在8到20之间且需包含至少一个大写字符，一个小写字符和一个数字。",
+        "REFRESH_SECRET": "刷新令牌",
+        "REFRESH_SECRET_SUCCESS": "刷新令牌成功",
+        "DELETE_ROBOT": "删除机器人",
+        "DELETE_ROBOT_SUCCESS": "删除机器人成功",
+        "ENABLE_TITLE": "启用机器人",
+        "ENABLE_SUMMARY": "您想启用机器人 {{param}}?",
+        "DISABLE_TITLE": "禁用机器人",
+        "DISABLE_SUMMARY": "你想禁用机器人 {{param}}?",
+        "ENABLE_ROBOT_SUCCESSFULLY": "启用机器人成功",
+        "DISABLE_ROBOT_SUCCESSFULLY": "禁用机器人成功",
+        "ROBOT_ACCOUNT": "机器人账户",
+        "PROJECTS": "覆盖项目数",
+        "ALL_PROJECTS": "全部项目且具有",
+        "PERMISSIONS": "项权限",
+        "REFRESH_SECRET_SUMMARY": "您可以直接点击刷新按钮来随机生成新的令牌，或者手动为其指定一个新的令牌",
+        "TOKEN": "令牌",
+        "NEW_TOKEN": "新令牌",
+        "REFRESH": "刷新",
+        "PROJECTS_MODAL_TITLE": "当前机器人账户覆盖的项目",
+        "PROJECTS_MODAL_SUMMARY": "以下为当前机器人账户覆盖的项目列表",
+        "CREATE_ROBOT": "创建系统级机器人账户",
+        "CREATE_ROBOT_SUMMARY": "创建机器人账户。您可以选中\"覆盖全部项目\"项来覆盖当前所有项目以及未来新增的项目",
+        "EDIT_ROBOT": "编辑系统级机器人账户",
+        "EDIT_ROBOT_SUMMARY": "编辑机器人账户。您可以选中\"覆盖全部项目\"项来覆盖当前所有项目以及未来新增的项目",
+        "EXPIRATION_TIME": "过期时间",
+        "EXPIRATION_TIME_EXPLAIN": "当前机器人账户的令牌有效时间(单位为天且起始点为创建时间)。如想设置为永不过期, 请输入\"-1\"。",
+        "EXPIRATION_DEFAULT": "天(默认)",
+        "EXPIRATION_DAYS": "指定天数",
+        "EXPIRATION_NEVER": "永不过期",
+        "EXPIRATION_REQUIRED": "请输入有效的过期时间",
+        "COVER_ALL": "覆盖全部项目",
+        "COVER_ALL_EXPLAIN": "选中此项来覆盖当前所有项目以及未来新增的项目",
+        "COVER_ALL_SUMMARY": "已选中当前所有项目以及未来新增的项目",
+        "RESET_PERMISSION": "重置初始权限",
+        "PERMISSION_COLUMN": "权限",
+        "EXPIRES_AT": "有效期至",
+        "VIEW_SECRET": "刷新令牌",
+        "LEGACY": "旧",
+        "CREATE_PROJECT_ROBOT": "创建机器人账号",
+        "CREATE_PROJECT_ROBOT_SUMMARY": "为当前项目创建机器人账号",
+        "EDIT_PROJECT_ROBOT": "编辑机器人账号",
+        "EDIT_PROJECT_ROBOT_SUMMARY": "为当前项目编辑机器人账号",
+        "NOT_FOUND": "未发现任何机器人账户!",
+        "SELECT_ALL": "全选",
+        "UNSELECT_ALL": "全不选",
+        "ROBOT_ACCOUNT_NAV": "机器人账户",
+        "COVERED_PROJECTS": "个项目",
+        "CONFIRM_SECRET": "确认令牌",
+        "SECRET_AGAIN": "请再次输入令牌",
+        "INCONSISTENT": "两次输入不一致",
+        "NAME_TOOLTIP": "机器人名称由小写字符、数字和._-组成且至少1个字符并以字符或者数字开头。",
+        "ENABLE_NEW_SECRET": "开启此项以便手动指定新令牌",
+        "DELETE": "删除",
+        "ARTIFACT_LABEL": "Artifact 标签",
+        "SCAN": "扫描",
+        "SCANNER_PULL": "扫描器拉取",
+        "SEARCH_BY_NAME": "按名称(不含前缀)搜索",
+        "FINAL_PROJECT_NAME_TIP": "项目级机器人的最终名称由前缀，项目名称，一个加号以及当前输入值组成",
+        "FINAL_SYSTEM_NAME_TIP": "系统级机器人的最终名称由前缀和当前输入值组成",
+        "PUSH_AND_PULL": "推送",
+        "PUSH_PERMISSION_TOOLTIP": "推送权限无法单独工作，请在选择推送权限的时，确保已经勾选了拉取权限"
     }
 }

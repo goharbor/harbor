@@ -17,6 +17,7 @@ package orm
 import (
 	"context"
 	"errors"
+	"sync"
 	"testing"
 
 	"github.com/astaxie/beego/orm"
@@ -29,8 +30,12 @@ type Foo struct {
 	Name string `orm:"column(name)"`
 }
 
-func (*Foo) TableName() string {
+func (foo *Foo) TableName() string {
 	return "foo"
+}
+
+func (foo *Foo) GetID() int64 {
+	return foo.ID
 }
 
 func addFoo(ctx context.Context, foo Foo) (int64, error) {
@@ -347,6 +352,61 @@ func (suite *OrmSuite) TestNestedSavepoint() {
 	// Ensure nt1 and nt2 created failed
 	suite.False(existFoo(ctx, id1))
 	suite.False(existFoo(ctx, id2))
+}
+
+func (suite *OrmSuite) TestReadOrCreate() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	var id int64
+	f1 := func(ctx context.Context) (err error) {
+		created1, id1, err := ReadOrCreate(ctx, &Foo{Name: "n1"}, "name")
+		suite.NoError(err)
+		suite.True(created1)
+
+		created2, id2, err := ReadOrCreate(ctx, &Foo{Name: "n1"}, "name")
+		suite.NoError(err)
+		suite.False(created2)
+
+		suite.Equal(id2, id1)
+
+		id = id1
+
+		return nil
+	}
+
+	suite.NoError(WithTransaction(f1)(ctx))
+	suite.True(existFoo(ctx, id))
+}
+
+func (suite *OrmSuite) TestReadOrCreateParallel() {
+	count := 500
+
+	arr := make([]int, count)
+
+	var wg sync.WaitGroup
+	for i := 0; i < count; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+
+			ctx := NewContext(context.TODO(), orm.NewOrm())
+			created, _, err := ReadOrCreate(ctx, &Foo{Name: "n2"}, "name")
+			suite.NoError(err)
+
+			if created {
+				arr[i] = 1
+			}
+		}(i)
+	}
+
+	wg.Wait()
+
+	sum := 0
+	for _, v := range arr {
+		sum += v
+	}
+
+	suite.Equal(1, sum)
 }
 
 func TestRunOrmSuite(t *testing.T) {

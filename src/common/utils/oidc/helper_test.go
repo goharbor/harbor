@@ -16,16 +16,17 @@ package oidc
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/common"
-	config2 "github.com/goharbor/harbor/src/common/config"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/stretchr/testify/assert"
 	"net/url"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/goharbor/harbor/src/common"
+	config2 "github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
@@ -89,12 +90,24 @@ func TestHelperGet(t *testing.T) {
 }
 
 func TestAuthCodeURL(t *testing.T) {
+	conf := map[string]interface{}{
+		common.OIDCName:               "test",
+		common.OIDCEndpoint:           "https://accounts.google.com",
+		common.OIDCVerifyCert:         "true",
+		common.OIDCScope:              "openid, profile, offline_access",
+		common.OIDCCLientID:           "client",
+		common.OIDCClientSecret:       "secret",
+		common.ExtEndpoint:            "https://harbor.test",
+		common.OIDCExtraRedirectParms: `{"test_key":"test_value"}`,
+	}
+	config.GetCfgManager().UpdateConfig(conf)
 	res, err := AuthCodeURL("random")
 	assert.Nil(t, err)
 	u, err := url.ParseRequestURI(res)
 	assert.Nil(t, err)
 	q, err := url.ParseQuery(u.RawQuery)
 	assert.Nil(t, err)
+	assert.Equal(t, "test_value", q.Get("test_key"))
 	assert.Equal(t, "offline", q.Get("access_type"))
 	assert.False(t, strings.Contains(q.Get("scope"), "offline_access"))
 }
@@ -165,7 +178,7 @@ func TestGroupsFromClaim(t *testing.T) {
 
 	for _, tc := range m {
 
-		r, ok := GroupsFromClaims(&fakeClaims{tc.input}, tc.key)
+		r, ok := groupsFromClaims(&fakeClaims{tc.input}, tc.key)
 		assert.Equal(t, tc.expect, r)
 		assert.Equal(t, tc.ok, ok)
 	}
@@ -173,10 +186,9 @@ func TestGroupsFromClaim(t *testing.T) {
 
 func TestUserInfoFromClaims(t *testing.T) {
 	s := []struct {
-		input      map[string]interface{}
-		groupClaim string
-		userClaim  string
-		expect     *UserInfo
+		input   map[string]interface{}
+		setting models.OIDCSetting
+		expect  *UserInfo
 	}{
 		{
 			input: map[string]interface{}{
@@ -184,8 +196,12 @@ func TestUserInfoFromClaims(t *testing.T) {
 				"email":  "daniel@gmail.com",
 				"groups": []interface{}{"g1", "g2"},
 			},
-			groupClaim: "grouplist",
-			userClaim:  "",
+			setting: models.OIDCSetting{
+				Name:        "t1",
+				GroupsClaim: "grouplist",
+				UserClaim:   "",
+				AdminGroup:  "g1",
+			},
 			expect: &UserInfo{
 				Issuer:        "",
 				Subject:       "",
@@ -201,15 +217,20 @@ func TestUserInfoFromClaims(t *testing.T) {
 				"email":  "daniel@gmail.com",
 				"groups": []interface{}{"g1", "g2"},
 			},
-			groupClaim: "groups",
-			userClaim:  "",
+			setting: models.OIDCSetting{
+				Name:        "t2",
+				GroupsClaim: "groups",
+				UserClaim:   "",
+				AdminGroup:  "g1",
+			},
 			expect: &UserInfo{
-				Issuer:        "",
-				Subject:       "",
-				Username:      "Daniel",
-				Email:         "daniel@gmail.com",
-				Groups:        []string{"g1", "g2"},
-				hasGroupClaim: true,
+				Issuer:           "",
+				Subject:          "",
+				Username:         "Daniel",
+				Email:            "daniel@gmail.com",
+				Groups:           []string{"g1", "g2"},
+				AdminGroupMember: true,
+				hasGroupClaim:    true,
 			},
 		},
 		{
@@ -220,15 +241,20 @@ func TestUserInfoFromClaims(t *testing.T) {
 				"email":      "jack@gmail.com",
 				"groupclaim": []interface{}{},
 			},
-			groupClaim: "groupclaim",
-			userClaim:  "",
+			setting: models.OIDCSetting{
+				Name:        "t3",
+				GroupsClaim: "groupclaim",
+				UserClaim:   "",
+				AdminGroup:  "g1",
+			},
 			expect: &UserInfo{
-				Issuer:        "issuer",
-				Subject:       "subject000",
-				Username:      "jack",
-				Email:         "jack@gmail.com",
-				Groups:        []string{},
-				hasGroupClaim: true,
+				Issuer:           "issuer",
+				Subject:          "subject000",
+				Username:         "jack",
+				Email:            "jack@gmail.com",
+				Groups:           []string{},
+				hasGroupClaim:    true,
+				AdminGroupMember: false,
 			},
 		},
 		{
@@ -237,20 +263,25 @@ func TestUserInfoFromClaims(t *testing.T) {
 				"email":  "airadier@gmail.com",
 				"groups": []interface{}{"g1", "g2"},
 			},
-			groupClaim: "grouplist",
-			userClaim:  "email",
+			setting: models.OIDCSetting{
+				Name:        "t4",
+				GroupsClaim: "grouplist",
+				UserClaim:   "email",
+				AdminGroup:  "g1",
+			},
 			expect: &UserInfo{
-				Issuer:        "",
-				Subject:       "",
-				Username:      "airadier@gmail.com",
-				Email:         "airadier@gmail.com",
-				Groups:        []string{},
-				hasGroupClaim: false,
+				Issuer:           "",
+				Subject:          "",
+				Username:         "airadier@gmail.com",
+				Email:            "airadier@gmail.com",
+				Groups:           []string{},
+				hasGroupClaim:    false,
+				AdminGroupMember: false,
 			},
 		},
 	}
 	for _, tc := range s {
-		out, err := userInfoFromClaims(&fakeClaims{tc.input}, tc.groupClaim, tc.userClaim)
+		out, err := userInfoFromClaims(&fakeClaims{tc.input}, tc.setting)
 		assert.Nil(t, err)
 		assert.Equal(t, *tc.expect, *out)
 	}
@@ -345,5 +376,88 @@ func TestMergeUserInfo(t *testing.T) {
 	for _, tc := range s {
 		m := mergeUserInfo(tc.fromInfo, tc.fromIDToken)
 		assert.Equal(t, *tc.expected, *m)
+	}
+}
+
+func TestInjectGroupsToUser(t *testing.T) {
+	cases := []struct {
+		userInfo *UserInfo
+		old      *models.User
+		new      *models.User
+	}{
+		{
+			userInfo: &UserInfo{
+				Issuer:           "issuer-yahoo",
+				Subject:          "subject-jim",
+				Username:         "jim",
+				Email:            "jim@gmail.com",
+				Groups:           []string{},
+				hasGroupClaim:    true,
+				AdminGroupMember: false,
+			},
+			old: &models.User{
+				Username:        "jim",
+				Email:           "jim@gmail.com",
+				GroupIDs:        []int{},
+				AdminRoleInAuth: false,
+			},
+			new: &models.User{
+				Username:        "jim",
+				Email:           "jim@gmail.com",
+				GroupIDs:        []int{},
+				AdminRoleInAuth: false,
+			},
+		},
+		{
+			userInfo: &UserInfo{
+				Issuer:           "issuer-yahoo",
+				Subject:          "subject-jim",
+				Username:         "jim",
+				Email:            "jim@gmail.com",
+				Groups:           []string{"1", "abc"},
+				hasGroupClaim:    true,
+				AdminGroupMember: true,
+			},
+			old: &models.User{
+				Username:        "jim",
+				Email:           "jim@gmail.com",
+				GroupIDs:        []int{},
+				AdminRoleInAuth: false,
+			},
+			new: &models.User{
+				Username:        "jim",
+				Email:           "jim@gmail.com",
+				GroupIDs:        []int{},
+				AdminRoleInAuth: true,
+			},
+		},
+		{
+			userInfo: &UserInfo{
+				Issuer:           "issuer-yahoo",
+				Subject:          "subject-jim",
+				Username:         "jim",
+				Email:            "jim@gmail.com",
+				Groups:           []string{"1", "2"},
+				hasGroupClaim:    true,
+				AdminGroupMember: true,
+			},
+			old: &models.User{
+				Username:        "jim",
+				Email:           "jim@gmail.com",
+				GroupIDs:        []int{},
+				AdminRoleInAuth: false,
+			},
+			new: &models.User{
+				Username:        "jim",
+				Email:           "jim@gmail.com",
+				GroupIDs:        []int{1, 2},
+				AdminRoleInAuth: true,
+			},
+		},
+	}
+	for _, c := range cases {
+		u := c.old
+		InjectGroupsToUser(c.userInfo, u, mockPopulateGroups)
+		assert.Equal(t, *c.new, *u)
 	}
 }

@@ -17,18 +17,22 @@ package task
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"sync"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
 )
 
 var (
 	// ExecMgr is a global execution manager instance
-	ExecMgr = NewExecutionManager()
+	ExecMgr               = NewExecutionManager()
+	executionSweeperCount = map[string]uint8{}
 )
 
 // ExecutionManager manages executions.
@@ -40,6 +44,8 @@ type ExecutionManager interface {
 	// The "extraAttrs" can be used to set the customized attributes
 	Create(ctx context.Context, vendorType string, vendorID int64, trigger string,
 		extraAttrs ...map[string]interface{}) (id int64, err error)
+	// Update the extra attributes of the specified execution
+	UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) (err error)
 	// MarkDone marks the status of the specified execution as success.
 	// It must be called to update the execution status if the created execution contains no tasks.
 	// In other cases, the execution status can be calculated from the referenced tasks automatically
@@ -52,13 +58,18 @@ type ExecutionManager interface {
 	MarkError(ctx context.Context, id int64, message string) (err error)
 	// Stop all linked tasks of the specified execution
 	Stop(ctx context.Context, id int64) (err error)
+	// StopAndWait stops all linked tasks of the specified execution and waits until all tasks are stopped
+	// or get an error
+	StopAndWait(ctx context.Context, id int64, timeout time.Duration) (err error)
 	// Delete the specified execution and its tasks
 	Delete(ctx context.Context, id int64) (err error)
 	// Get the specified execution
 	Get(ctx context.Context, id int64) (execution *Execution, err error)
 	// List executions according to the query
+	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	List(ctx context.Context, query *q.Query) (executions []*Execution, err error)
-	// Count counts total.
+	// Count counts total of executions according to the query.
+	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	Count(ctx context.Context, query *q.Query) (int64, error)
 }
 
@@ -68,6 +79,7 @@ func NewExecutionManager() ExecutionManager {
 		executionDAO: dao.NewExecutionDAO(),
 		taskMgr:      Mgr,
 		taskDAO:      dao.NewTaskDAO(),
+		ormCreator:   orm.Crt,
 	}
 }
 
@@ -75,6 +87,7 @@ type executionManager struct {
 	executionDAO dao.ExecutionDAO
 	taskMgr      Manager
 	taskDAO      dao.TaskDAO
+	ormCreator   orm.Creator
 }
 
 func (e *executionManager) Count(ctx context.Context, query *q.Query) (int64, error) {
@@ -92,35 +105,124 @@ func (e *executionManager) Create(ctx context.Context, vendorType string, vendor
 		return 0, err
 	}
 
+	now := time.Now()
 	execution := &dao.Execution{
 		VendorType: vendorType,
 		VendorID:   vendorID,
+		Status:     job.RunningStatus.String(),
 		Trigger:    trigger,
 		ExtraAttrs: string(data),
-		StartTime:  time.Now(),
+		StartTime:  now,
+		UpdateTime: now,
 	}
-	return e.executionDAO.Create(ctx, execution)
+	id, err := e.executionDAO.Create(ctx, execution)
+	if err != nil {
+		return 0, err
+	}
+
+	// sweep the execution records to avoid the execution/task records explosion
+	go func() {
+		// as we start a new transaction here to do the sweep work, the current execution record
+		// may be not visible(when the transaction in which the current execution is created
+		// in isn't committed), this will cause that there are one more execution records than expected
+		ctx := orm.NewContext(context.Background(), e.ormCreator.Create())
+		if err := e.sweep(ctx, vendorType, vendorID); err != nil {
+			log.Errorf("failed to sweep the executions of %s: %v", vendorType, err)
+			return
+		}
+	}()
+
+	return id, nil
+}
+
+func (e *executionManager) sweep(ctx context.Context, vendorType string, vendorID int64) error {
+	count := executionSweeperCount[vendorType]
+	if count == 0 {
+		log.Debugf("the execution sweeper count doesn't set for %s, skip sweep", vendorType)
+		return nil
+	}
+
+	for {
+		// the function "List" of the execution manager returns the execution records
+		// ordered by start time. After the sorting is supported in query, we should
+		// specify the sorting explicitly
+		// the execution records in second page are always the candidates should to be swept
+		executions, err := e.List(ctx, &q.Query{
+			Keywords: map[string]interface{}{
+				"VendorType": vendorType,
+				"VendorID":   vendorID,
+			},
+			PageNumber: 2,
+			PageSize:   int64(count),
+		})
+		if err != nil {
+			return err
+		}
+		// no execution records need to be swept, return directly
+		if len(executions) == 0 {
+			return nil
+		}
+		for _, execution := range executions {
+			// if the status of the execution isn't final, skip
+			if !job.Status(execution.Status).Final() {
+				continue
+			}
+			if err = e.Delete(ctx, execution.ID); err != nil {
+				// the execution may be deleted by the other sweep operation, ignore the not found error
+				if errors.IsNotFoundErr(err) {
+					continue
+				}
+				log.Errorf("failed to delete the execution %d: %v", execution.ID, err)
+			}
+		}
+	}
+}
+
+func (e *executionManager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) error {
+	data, err := json.Marshal(extraAttrs)
+	if err != nil {
+		return err
+	}
+
+	execution := &dao.Execution{
+		ID:         id,
+		ExtraAttrs: string(data),
+		UpdateTime: time.Now(),
+	}
+
+	return e.executionDAO.Update(ctx, execution, "ExtraAttrs", "UpdateTime")
 }
 
 func (e *executionManager) MarkDone(ctx context.Context, id int64, message string) error {
+	now := time.Now()
 	return e.executionDAO.Update(ctx, &dao.Execution{
 		ID:            id,
 		Status:        job.SuccessStatus.String(),
 		StatusMessage: message,
-		EndTime:       time.Now(),
-	}, "Status", "StatusMessage", "EndTime")
+		UpdateTime:    now,
+		EndTime:       now,
+	}, "Status", "StatusMessage", "UpdateTime", "EndTime")
 }
 
 func (e *executionManager) MarkError(ctx context.Context, id int64, message string) error {
+	now := time.Now()
 	return e.executionDAO.Update(ctx, &dao.Execution{
 		ID:            id,
 		Status:        job.ErrorStatus.String(),
 		StatusMessage: message,
-		EndTime:       time.Now(),
-	}, "Status", "StatusMessage", "EndTime")
+		UpdateTime:    now,
+		EndTime:       now,
+	}, "Status", "StatusMessage", "UpdateTime", "EndTime")
 }
 
 func (e *executionManager) Stop(ctx context.Context, id int64) error {
+	execution, err := e.executionDAO.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// when an execution is in final status, if it contains task that is a periodic or retrying job it will
+	// run again in the near future, so we must operate the stop action
 	tasks, err := e.taskDAO.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"ExecutionID": id,
@@ -129,13 +231,75 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
+	// contains no task and the status isn't final, update the status to stop directly
+	if len(tasks) == 0 && !job.Status(execution.Status).Final() {
+		now := time.Now()
+		return e.executionDAO.Update(ctx, &dao.Execution{
+			ID:         id,
+			Status:     job.StoppedStatus.String(),
+			UpdateTime: now,
+			EndTime:    now,
+		}, "Status", "UpdateTime", "EndTime")
+	}
+
 	for _, task := range tasks {
 		if err = e.taskMgr.Stop(ctx, task.ID); err != nil {
 			log.Errorf("failed to stop task %d: %v", task.ID, err)
 			continue
 		}
 	}
-	return nil
+
+	// refresh the status explicitly in case that the execution status
+	// isn't refreshed by task status change hook
+	_, _, err = e.executionDAO.RefreshStatus(ctx, id)
+	return err
+}
+
+func (e *executionManager) StopAndWait(ctx context.Context, id int64, timeout time.Duration) error {
+	var (
+		overtime bool
+		errChan  = make(chan error)
+		lock     = sync.RWMutex{}
+	)
+	go func() {
+		// stop the execution
+		if err := e.Stop(ctx, id); err != nil {
+			errChan <- err
+			return
+		}
+		// check the status of the execution
+		interval := 100 * time.Millisecond
+		stop := false
+		for !stop {
+			execution, err := e.executionDAO.Get(ctx, id)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			// if the status is final, return
+			if job.Status(execution.Status).Final() {
+				errChan <- nil
+				return
+			}
+			time.Sleep(interval)
+			if interval < 1*time.Second {
+				interval = interval * 2
+			}
+			lock.RLock()
+			stop = overtime
+			lock.RUnlock()
+		}
+	}()
+
+	select {
+	case <-time.After(timeout):
+		lock.Lock()
+		overtime = true
+		lock.Unlock()
+		return fmt.Errorf("stopping the execution %d timeout", id)
+	case err := <-errChan:
+		return err
+	}
 }
 
 func (e *executionManager) Delete(ctx context.Context, id int64) error {
@@ -154,6 +318,11 @@ func (e *executionManager) Delete(ctx context.Context, id int64) error {
 				WithMessage("the execution %d has tasks that aren't in final status, stop the tasks first", id)
 		}
 		if err = e.taskDAO.Delete(ctx, task.ID); err != nil {
+			// the tasks may be deleted by the other execution deletion operation in the same time(e.g. execution sweeper),
+			// ignore the not found error for the tasks
+			if errors.IsNotFoundErr(err) {
+				continue
+			}
 			return err
 		}
 	}
@@ -191,6 +360,7 @@ func (e *executionManager) populateExecution(ctx context.Context, execution *dao
 		Metrics:       nil,
 		Trigger:       execution.Trigger,
 		StartTime:     execution.StartTime,
+		UpdateTime:    execution.UpdateTime,
 		EndTime:       execution.EndTime,
 	}
 
@@ -212,4 +382,11 @@ func (e *executionManager) populateExecution(ctx context.Context, execution *dao
 	}
 
 	return exec
+}
+
+// SetExecutionSweeperCount sets the count of execution records retained by the sweeper
+// If no count is set for the specified vendor, the default value will be used
+// The sweeper retains the latest created #count execution records for the specified vendor
+func SetExecutionSweeperCount(vendorType string, count uint8) {
+	executionSweeperCount[vendorType] = count
 }

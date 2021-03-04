@@ -17,6 +17,8 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"net/http"
 	"strconv"
 	"strings"
@@ -58,11 +60,6 @@ func (uga *UserGroupAPI) Prepare() {
 		return
 	}
 	uga.id = int(ugid)
-	// Common user can create/update, only harbor admin can delete user group.
-	if uga.Ctx.Input.IsDelete() && !uga.SecurityCtx.IsSysAdmin() {
-		uga.SendForbiddenError(errors.New(uga.SecurityCtx.GetUsername()))
-		return
-	}
 	authMode, err := config.AuthMode()
 	if err != nil {
 		uga.SendInternalServerError(errors.New("failed to get authentication mode"))
@@ -192,6 +189,11 @@ func (uga *UserGroupAPI) Put() {
 
 // Delete ...
 func (uga *UserGroupAPI) Delete() {
+	resource := system.NewNamespace().Resource(rbac.ResourceUserGroup)
+	if !uga.SecurityCtx.Can(uga.Context(), rbac.ActionDelete, resource) {
+		uga.SendForbiddenError(errors.New(uga.SecurityCtx.GetUsername()))
+		return
+	}
 	err := group.DeleteUserGroup(uga.id)
 	if err != nil {
 		uga.SendInternalServerError(fmt.Errorf("Error occurred in update user group, error: %v", err))

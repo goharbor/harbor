@@ -163,3 +163,6 @@ def get_realpath(path: str) -> Path:
     if os.path.isdir(host_root_dir):
         return host_root_dir.joinpath(path.lstrip('/'))
     return Path(path)
+
+def port_number_valid(port:int):
+    return 0 < port < 65535

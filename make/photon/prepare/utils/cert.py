@@ -52,8 +52,20 @@ def create_root_cert(subj, key_path="./k.key", cert_path="./cert.crt"):
    return subprocess.call(["/usr/bin/openssl", "req", "-new", "-x509", "-key", key_path,\
         "-out", cert_path, "-days", "3650", "-subj", subj], stdout=DEVNULL, stderr=subprocess.STDOUT)
 
+def create_ext_file(cn, ext_filename):
+    with open(ext_filename, 'w') as f:
+        f.write("subjectAltName = DNS.1:{}".format(cn))
+
+def san_existed(cert_path):
+    try:
+        return "Subject Alternative Name:" in str(subprocess.check_output(
+            ["/usr/bin/openssl", "x509", "-in", cert_path, "-text"]))
+    except subprocess.CalledProcessError:
+        pass
+    return False
+
 @stat_decorator
-def create_cert(subj, ca_key, ca_cert, key_path="./k.key", cert_path="./cert.crt"):
+def create_cert(subj, ca_key, ca_cert, key_path="./k.key", cert_path="./cert.crt", extfile='extfile.cnf'):
     cert_dir = os.path.dirname(cert_path)
     csr_path = os.path.join(cert_dir, "tmp.csr")
     rc = subprocess.call(["/usr/bin/openssl", "req", "-newkey", "rsa:4096", "-nodes","-sha256","-keyout", key_path,\
@@ -61,7 +73,8 @@ def create_cert(subj, ca_key, ca_cert, key_path="./k.key", cert_path="./cert.crt
     if rc != 0:
         return rc
     return subprocess.call(["/usr/bin/openssl", "x509", "-req", "-days", "3650", "-in", csr_path, "-CA", \
-        ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path], stdout=DEVNULL, stderr=subprocess.STDOUT)
+        ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-extfile", extfile ,"-out", cert_path],
+        stdout=DEVNULL, stderr=subprocess.STDOUT)
 
 
 def openssl_installed():

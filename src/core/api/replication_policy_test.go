@@ -54,6 +54,50 @@ func (f *fakedRegistryManager) HealthCheck() error {
 	return nil
 }
 
+type fakedPolicyManager struct{}
+
+func (f *fakedPolicyManager) Create(*model.Policy) (int64, error) {
+	return 0, nil
+}
+func (f *fakedPolicyManager) List(...*model.PolicyQuery) (int64, []*model.Policy, error) {
+	return 0, nil, nil
+}
+func (f *fakedPolicyManager) Get(id int64) (*model.Policy, error) {
+	if id == 1 {
+		return &model.Policy{
+			ID:      1,
+			Enabled: true,
+			SrcRegistry: &model.Registry{
+				ID: 1,
+			},
+		}, nil
+	}
+	if id == 2 {
+		return &model.Policy{
+			ID:      2,
+			Enabled: false,
+			SrcRegistry: &model.Registry{
+				ID: 1,
+			},
+		}, nil
+	}
+	return nil, nil
+}
+func (f *fakedPolicyManager) GetByName(name string) (*model.Policy, error) {
+	if name == "duplicate_name" {
+		return &model.Policy{
+			Name: "duplicate_name",
+		}, nil
+	}
+	return nil, nil
+}
+func (f *fakedPolicyManager) Update(*model.Policy) error {
+	return nil
+}
+func (f *fakedPolicyManager) Remove(int64) error {
+	return nil
+}
+
 func TestReplicationPolicyAPIList(t *testing.T) {
 	policyMgr := replication.PolicyCtl
 	defer func() {

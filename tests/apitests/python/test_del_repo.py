@@ -3,28 +3,24 @@ from __future__ import absolute_import
 
 import unittest
 
-from testutils import ADMIN_CLIENT
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
 from library.base import _assert_status_code
 from library.project import Project
 from library.user import User
 from library.repository import Repository
-from library.repository import push_image_to_project
+from library.repository import push_self_build_image_to_project
 
 class TestProjects(unittest.TestCase):
-    @classmethod
-    def setUpClass(self):
+    @suppress_urllib3_warning
+    def setUp(self):
         self.project= Project()
         self.user= User()
         self.repo= Repository()
 
-    @classmethod
-    def tearDownClass(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete project(PA);
         self.project.delete_project(TestProjects.project_del_repo_id, **TestProjects.USER_del_repo_CLIENT)
 
@@ -58,14 +54,14 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_del_repo_id, TestProjects.project_del_repo_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_del_repo_CLIENT)
 
         #3. Create a new repository(RA) in project(PA) by user(UA);
-        repo_name, _ = push_image_to_project(TestProjects.project_del_repo_name, harbor_server, 'admin', 'Harbor12345', "hello-world", "latest")
+        repo_name, _ = push_self_build_image_to_project(TestProjects.project_del_repo_name, harbor_server, 'admin', 'Harbor12345', "test_del_repo", "latest")
 
         #4. Get repository in project(PA), there should be one repository which was created by user(UA);
         repo_data = self.repo.list_repositories(TestProjects.project_del_repo_name, **TestProjects.USER_del_repo_CLIENT)
         _assert_status_code(repo_name, repo_data[0].name)
 
         #5. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(TestProjects.project_del_repo_name, repo_name.split('/')[1], **TestProjects.USER_del_repo_CLIENT)
+        self.repo.delete_repository(TestProjects.project_del_repo_name, repo_name.split('/')[1], **TestProjects.USER_del_repo_CLIENT)
 
         #6. Get repository by user(UA), it should get nothing;
         repo_data = self.repo.list_repositories(TestProjects.project_del_repo_name, **TestProjects.USER_del_repo_CLIENT)

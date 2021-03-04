@@ -28,7 +28,9 @@ const (
 	// Bearer ...
 	Bearer = "Bearer"
 	// APIKey ...
-	APIKey = "X-ScannerAdapter-API-Key"
+	APIKey = "APIKey"
+	// APIKeyScannerAdapter ...
+	APIKeyScannerAdapter = "X-ScannerAdapter-API-Key"
 )
 
 // Authorizer defines operation for authorizing the requests
@@ -47,7 +49,7 @@ func GetAuthorizer(auth, cred string) (Authorizer, error) {
 	case Bearer:
 		return NewBearerAuth(cred), nil
 	case APIKey:
-		return NewAPIKeyAuthorizer(cred), nil
+		return NewAPIKeyAuthorizer(APIKeyScannerAdapter, cred), nil
 	default:
 		return nil, errors.Errorf("auth type %s is not supported", auth)
 	}

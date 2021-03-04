@@ -59,11 +59,11 @@ func NewChartCache(config *ChartCacheConfig) *ChartCache {
 		return chartCache
 	}
 
-	if config.DriverType != cacheDriverMem && config.DriverType != cacheDriverRedis {
+	if config.DriverType != cacheDriverMem && config.DriverType != cacheDriverRedis && config.DriverType != cacheDriverRedisSentinel {
 		return chartCache
 	}
 
-	if config.DriverType == cacheDriverRedis {
+	if config.DriverType == cacheDriverRedis || config.DriverType == cacheDriverRedisSentinel {
 		if len(config.Config) == 0 {
 			return chartCache
 		}
@@ -107,7 +107,7 @@ func (chc *ChartCache) PutChart(chart *ChartVersionDetails) {
 		case cacheDriverMem:
 			// Directly put object in
 			err = chc.cache.Put(chart.Metadata.Digest, chart, standardExpireTime)
-		case cacheDriverRedis:
+		case cacheDriverRedis, cacheDriverRedisSentinel:
 			// Marshal to json data before saving
 			var jsonData []byte
 			if jsonData, err = json.Marshal(chart); err == nil {
@@ -193,7 +193,7 @@ func initCacheDriver(cacheConfig *ChartCacheConfig) beego_cache.Cache {
 			redisCache, err := beego_cache.NewCache(cacheDriverRedisSentinel, cacheConfig.Config)
 			if err != nil {
 				// Just logged
-				hlog.Errorf("Failed to initialize redis cache: %s", err)
+				hlog.Errorf("Failed to initialize redis sentinel cache: %s", err)
 
 				if count < maxTry {
 					<-time.After(time.Duration(backoff(count)) * time.Second)
@@ -203,7 +203,7 @@ func initCacheDriver(cacheConfig *ChartCacheConfig) beego_cache.Cache {
 				return nil
 			}
 
-			hlog.Info("Enable redis cache for chart caching")
+			hlog.Info("Enable redis sentinel cache for chart caching")
 			return redisCache
 		}
 	default:

@@ -27,8 +27,14 @@ Add A Tag Retention Rule
     Retry Element Click  xpath=${project_tag_retention_save_add_button_xpath}
     Retry Wait Until Page Contains Element   xpath=${project_tag_retention_rule_name_xpath}
 
+Retry Add A Tag Immutability Rule
+    [Arguments]  @{param}
+    Retry Keyword N Times When Error  5  Add A Tag Immutability Rule  @{param}
+
 Add A Tag Immutability Rule
     [Arguments]  ${scope}  ${tag}
+    Reload Page
+    Sleep  3
     Retry Double Keywords When Error  Retry Element Click  xpath=${project_tag_retention_add_rule_xpath}  Retry Wait Until Page Contains Element  xpath=${project_tag_immutability_save_add_button_xpath}
     Retry Clear Element Text  ${project_tag_immutability_scope_input_xpath}
     Retry Text Input  ${project_tag_immutability_scope_input_xpath}  ${scope}
@@ -80,29 +86,34 @@ Set Daily Schedule
     Retry Wait Until Page Contains Element  xpath=${project_tag_retention_span_daily_xpath}
 
 Execute Result Should Be
-    [Arguments]  ${result}
+    [Arguments]  ${image}  ${result}
     FOR  ${idx}  IN RANGE  0  20
-        ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(., '${result}')]
+        ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  xpath=//div[contains(@role, 'grid')]//div[contains(@class, 'datagrid-row-master') and contains(@role, 'row')]//clr-datagrid//div[contains(@role, 'grid')]//div[contains(@class, 'datagrid-row-master') and contains(@role, 'row')]//div[contains(@class, 'datagrid-row-scrollable') and contains(., '${result}') and contains(., '${image}')]
         Exit For Loop If  '${out[0]}'=='PASS'
-        Sleep  6
+        Sleep  1
+        Retry Element Click  ${project_tag_retention_refresh_xpath}
+        Sleep  5
+        Retry Wait Until Page Contains Element  xpath=${project_tag_retention_record_yes_xpath}
+        Retry Element Click  ${project_tag_retention_list_expand_icon_xpath}
     END
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
 Execute Dry Run
+    [Arguments]  ${image}  ${result}
     Retry Element Click  xpath=${project_tag_retention_dry_run_xpath}
     Retry Wait Until Page Contains Element  xpath=${project_tag_retention_record_yes_xpath}
     Sleep    5
     Retry Element Click  xpath=${project_tag_retention_record_yes_xpath}
     # memcached:123 should be deleted and hello-world:latest should be retained
-    Execute Result Should Be  0/1
-
+    Execute Result Should Be  ${image}  ${result}
 
 Execute Run
+    [Arguments]  ${image}  ${result}
     Retry Element Click  xpath=${project_tag_retention_run_now_xpath}
     Retry Element Click  xpath=${project_tag_retention_execute_run_xpath}
     Retry Wait Until Page Contains Element  xpath=${project_tag_retention_record_no_xpath}
     Sleep    5
     Retry Element Click  xpath=${project_tag_retention_record_no_xpath}
     # memcached:123 should be deleted and hello-world:latest should be retained
-    Execute Result Should Be  0/1
+    Execute Result Should Be  ${image}  ${result}
 

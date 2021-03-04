@@ -78,7 +78,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		mock.AnythingOfType("*q.Query"),
 	).Return(fakePolicies, nil)
 
-	fakeExecManager := &task.FakeExecutionManager{}
+	fakeExecManager := &task.ExecutionManager{}
 	fakeExecManager.On("Create",
 		context.TODO(),
 		mock.AnythingOfType("string"),
@@ -87,7 +87,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		mock.AnythingOfType("map[string]interface {}"),
 	).Return(time.Now().Unix(), nil)
 
-	fakeTaskManager := &task.FakeManager{}
+	fakeTaskManager := &task.Manager{}
 	fakeTaskManager.On("Create",
 		context.TODO(),
 		mock.AnythingOfType("int64"),
@@ -106,7 +106,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 	fakeScanCtl.On("GetSummary",
 		context.TODO(),
 		mock.AnythingOfType("*artifact.Artifact"),
-		[]string{v1.MimeTypeNativeReport},
+		[]string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport},
 		mock.AnythingOfType("report.Option"),
 	).Return(mockVulnerabilitySummary(), nil)
 
@@ -308,6 +308,9 @@ func mockVulnerabilitySummary() map[string]interface{} {
 	// skip all unused properties
 	return map[string]interface{}{
 		v1.MimeTypeNativeReport: &vuln.NativeReportSummary{
+			Severity: vuln.Low,
+		},
+		v1.MimeTypeGenericVulnerabilityReport: &vuln.NativeReportSummary{
 			Severity: vuln.Low,
 		},
 	}

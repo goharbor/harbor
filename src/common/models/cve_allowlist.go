@@ -59,9 +59,26 @@ func (c *CVEAllowlist) IsExpired() bool {
 // CVESet defines the CVE allowlist with a hash set way for easy query.
 type CVESet map[string]struct{}
 
+// Add add cve to the set
+func (cs CVESet) Add(cve string) {
+	cs[cve] = struct{}{}
+}
+
 // Contains checks whether the specified CVE is in the set or not.
 func (cs CVESet) Contains(cve string) bool {
 	_, ok := cs[cve]
 
 	return ok
+}
+
+// NewCVESet returns CVESet from cveSets
+func NewCVESet(cveSets ...CVESet) CVESet {
+	s := CVESet{}
+	for _, cveSet := range cveSets {
+		for cve := range cveSet {
+			s.Add(cve)
+		}
+	}
+
+	return s
 }

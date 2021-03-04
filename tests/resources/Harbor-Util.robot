@@ -38,35 +38,35 @@ Install Harbor to Test Server
     Generate Certificate Authority For Chrome
 
 Up Harbor
-    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true
-    ${rc}  ${output}=  Run And Return Rc And Output  make start -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum}
+    [Arguments]  ${with_notary}=true  ${with_chartmuseum}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  make start -e NOTARYFLAG=${with_notary} CHARTFLAG=${with_chartmuseum}
     Log  ${rc}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
 Down Harbor
-    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true
-    ${rc}  ${output}=  Run And Return Rc And Output  echo "Y" | make down -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum}
+    [Arguments]  ${with_notary}=true  ${with_chartmuseum}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  echo "Y" | make down -e NOTARYFLAG=${with_notary} CHARTFLAG=${with_chartmuseum}
     Log  ${rc}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Offline
-    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true  ${with_trivy}=true
+    [Arguments]  ${with_notary}=true  ${with_chartmuseum}=true  ${with_trivy}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
-    Log To Console  make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
-    ${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    Log To Console  make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
     Log To Console  ${rc}
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Online
-    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true  ${with_trivy}=true
+    [Arguments]  ${with_notary}=true  ${with_chartmuseum}=true  ${with_trivy}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
-    Log To Console  \nmake package_online GOBUILDTAGS="include_oss include_gcs"  VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
-    ${rc}  ${output}=  Run And Return Rc And Output  make package_online GOBUILDTAGS="include_oss include_gcs" VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    Log To Console  \nmake package_online GOBUILDTAGS="include_oss include_gcs"  VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_online GOBUILDTAGS="include_oss include_gcs" VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
     Log  ${rc}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
@@ -93,7 +93,7 @@ Switch To LDAP
 Enable Notary Client
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
     Log  ${rc}
-    ${rc}  ${output}=  Run And Return Rc and Output  curl -o /notary_ca.crt -s -k -X GET --header 'Accept: application/json' -u 'admin:Harbor12345' 'https://${ip}/api/v2.0/systeminfo/getcert'
+    ${rc}  ${output}=  Run And Return Rc and Output  curl -o /notary_ca.crt -s -k -X GET -u 'admin:Harbor12345' 'https://${ip}/api/v2.0/systeminfo/getcert'
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
@@ -105,8 +105,8 @@ Remove Notary Signature
     Should Be Equal As Integers  ${rc}  0
 
 Prepare
-    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true
-    ${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum}
+    [Arguments]  ${with_notary}=true  ${with_chartmuseum}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary} CHARTFLAG=${with_chartmuseum}
     Log  ${rc}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
@@ -139,8 +139,8 @@ Prepare Cert
     Should Be Equal As Integers  ${rc}  0
 
 Compile and Up Harbor With Source Code
-    [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true
-    ${rc}  ${output}=  Run And Return Rc And Output  make install swagger_client NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
+    [Arguments]  ${with_notary}=true  ${with_chartmuseum}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  make install swagger_client NOTARYFLAG=${with_notary} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     Sleep  20

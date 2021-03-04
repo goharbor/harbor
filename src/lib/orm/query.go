@@ -27,10 +27,19 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 )
 
-// Params ...
+// NewCondition alias function of orm.NewCondition
+var NewCondition = orm.NewCondition
+
+// Condition alias to orm.Condition
+type Condition = orm.Condition
+
+// Params alias to orm.Params
 type Params = orm.Params
 
-// QuerySeter ...
+// ParamsList alias to orm.ParamsList
+type ParamsList = orm.ParamsList
+
+// QuerySeter alias to orm.QuerySeter
 type QuerySeter = orm.QuerySeter
 
 // Escape special characters
@@ -134,7 +143,7 @@ func snakeCase(str string) string {
 func queryByColumn(qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
 	// fuzzy match
 	if f, ok := value.(*q.FuzzyMatchValue); ok {
-		return qs.Filter(key+"__icontains", f.Value)
+		return qs.Filter(key+"__icontains", Escape(f.Value))
 	}
 
 	// range

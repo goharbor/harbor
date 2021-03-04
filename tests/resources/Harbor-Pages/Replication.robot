@@ -20,12 +20,15 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 Filter Replication Rule
-    [Arguments]  ${ruleName}
+    [Arguments]  ${ruleName}  ${exist}=${true}
     ${rule_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${ruleName}')]
     Retry Element Click  ${filter_rules_btn}
+    Retry Clear Element Text  ${filter_rules_input}
     Retry Text Input  ${filter_rules_input}  ${ruleName}
-    Retry Wait Until Page Contains Element   ${rule_name_element}
-    Capture Page Screenshot  filter_replic_${ruleName}.png
+    Run Keyword If  ${exist}==${true}  Retry Wait Until Page Contains Element   ${rule_name_element}
+    ...  ELSE  Retry Wait Element  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any replication rules!\")]
+
+
 
 Filter Registry
     [Arguments]  ${registry_name}
@@ -35,7 +38,6 @@ Filter Registry
     Retry Element Click  ${filter_registry_btn}
     Retry Text Input  ${filter_registry_input}  ${registry_name}
     Retry Wait Until Page Contains Element   ${registry_name_element}
-    Capture Page Screenshot  filter_repistry_${registry_name}.png
 
 Select Dest Registry
     [Arguments]    ${endpoint}
@@ -71,10 +73,10 @@ Create A New Endpoint
     #input necessary info
     Select From List By Value  ${provider_selector}  ${provider}
     Retry Text Input  xpath=${destination_name_xpath}    ${name}
-    Run Keyword If  '${provider}' == 'harbor'  Run keyword  Retry Text Input  xpath=${destination_url_xpath}  ${url}
+    Run Keyword If  '${provider}' == 'harbor' or '${provider}' == 'gitlab'  Run keyword  Retry Text Input  xpath=${destination_url_xpath}  ${url}
     Run Keyword If  '${provider}' == 'aws-ecr' or '${provider}' == 'google-gcr'   Run keyword  Select Destination URL  ${url}
-    Run Keyword If  '${provider}' != 'google-gcr'   Retry Text Input  xpath=${destination_username_xpath}  ${username}
-    Retry Text Input  xpath=${destination_password_xpath}  ${pwd}
+    Run Keyword If  '${provider}' != 'google-gcr' and '${username}' != '${null}'    Retry Text Input  xpath=${destination_username_xpath}  ${username}
+    Run Keyword If  '${pwd}' != '${null}'  Retry Text Input  xpath=${destination_password_xpath}  ${pwd}
     #cancel verify cert since we use a selfsigned cert
     Retry Element Click  ${destination_insecure_xpath}
     Run Keyword If  '${save}' == 'Y'  Run keyword  Retry Double Keywords When Error  Retry Element Click  ${replication_save_xpath}  Retry Wait Until Page Not Contains Element  ${replication_save_xpath}
@@ -149,25 +151,14 @@ Rename Rule
     Retry Element Click  ${rule_filter_search}
     Retry Text Input  ${rule_filter_input}  ${rule}
     Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
-    Retry Element Click  ${action_bar_edit}
+    Retry Element Click  ${replication_rule_action}
+    Retry Element Click  ${replication_rule_action_bar_edit}
     Retry Text Input  ${rule_name}  ${newname}
     Retry Element Click  ${rule_save_button}
 
-Delete Rule
-    [Arguments]  ${rule}
-    Retry Element Click  ${rule_filter_search}
-    Retry Text Input   ${rule_filter_input}  ${rule}
-    Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
-    Retry Element Click  ${action_bar_delete}
-    Retry Wait Until Page Contains Element  ${dialog_delete}
-    #change from click to mouse down and up
-    Mouse Down  ${dialog_delete}
-    Mouse Up  ${dialog_delete}
-    Sleep  2
-
 Select Rule
     [Arguments]  ${rule}
-    Retry Double Keywords When Error  Retry Element Click  //clr-dg-cell[contains(.,'${rule}')]  Retry Wait Element  ${replication_exec_id}
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${rule}')]/div/div[1]/div  Retry Wait Element  ${replication_rule_exec_id}
 
 Stop Jobs
     Retry Element Click  ${stop_jobs_button}
@@ -178,42 +169,45 @@ View Job Log
     Retry Text Input  ${job_filter_input}  ${job}
     Retry Link Click  //clr-dg-row[contains(.,'${job}')]//a
 
-Find Item And Click Edit Button
+Find Registry And Click Edit Button
     [Arguments]    ${name}
     Filter Object    ${name}
     Retry Select Object    ${name}
-    Retry Element Click    ${action_bar_edit}
-
-Find Item And Click Delete Button
-    [Arguments]    ${name}
-    Filter Object    ${name}
-    Retry Select Object    ${name}
-    Retry Element Click    ${action_bar_delete}
+    Retry Element Click    ${registry_edit_btn}
 
 Switch To Replication Manage Page
-    [Arguments]    ${name}
     Switch To Registries
     Switch To Replication Manage
 
-Edit Replication Rule By Name
-    [Arguments]    ${name}
-    Retry Double Keywords When Error  Switch To Replication Manage Page  "NULL"  Find Item And Click Edit Button  ${name}
+Click Edit Button
+    Retry Element Click    ${replication_rule_action}
+    Retry Element Click    ${replication_rule_action_bar_edit}
 
-Delete Replication Rule By Name
-    [Arguments]    ${name}
-    Switch To Registries
-    Switch To Replication Manage
-    Find Item And Click Delete Button  ${name}
+Click Delete Button
+    Retry Element Click    ${replication_rule_action}
+    Retry Element Click    ${replication_rule_action_bar_delete}
 
-Ensure Delete Replication Rule By Name
+Edit Replication Rule
     [Arguments]    ${name}
-    Delete Replication Rule By Name    ${name}
-    Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
-    Retry Wait Element  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any replication rules!\")]
+    Switch To Replication Manage Page
+    Filter Replication Rule  ${name}
+    Select Rule  ${name}
+    Click Edit Button
+    Retry Wait Until Page Contains  Edit Replication Rule
+
+Delete Replication Rule
+    [Arguments]  ${name}
+    Switch To Replication Manage Page
+    Filter Replication Rule  ${name}
+    Select Rule  ${name}
+    Click Delete Button
+    Wait Until Page Contains Element  ${dialog_delete}
+    Retry Double Keywords When Error  Retry Element Click  ${dialog_delete}  Retry Wait Until Page Not Contains Element  ${dialog_delete}
+    Filter Replication Rule  ${name}  exist=${false}
 
 Rename Endpoint
     [arguments]  ${name}  ${newname}
-    Find Item And Click Edit Button  ${name}
+    Find Registry And Click Edit Button  ${name}
     Retry Wait Until Page Contains Element  ${destination_name_xpath}
     Retry Text Input  ${destination_name_xpath}  ${newname}
     Retry Element Click  ${replication_save_xpath}
@@ -223,34 +217,19 @@ Delete Endpoint
     Retry Element Click  ${endpoint_filter_search}
     Retry Text Input   ${endpoint_filter_input}  ${name}
     #click checkbox before target endpoint
-    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${name}')]//clr-checkbox-wrapper  Retry Wait Element  ${action_bar_delete}
-    Retry Element Click  ${action_bar_delete}
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${name}')]//clr-checkbox-wrapper  Retry Wait Element  ${registry_del_btn}
+    Retry Element Click  ${registry_del_btn}
     Wait Until Page Contains Element  ${dialog_delete}
     Retry Element Click  ${dialog_delete}
 
 Select Rule And Replicate
     [Arguments]  ${rule_name}
     Select Rule  ${rule_name}
-    Retry Element Click    ${replication_exec_id}
+    Retry Element Click    ${replication_rule_exec_id}
     Retry Double Keywords When Error    Retry Element Click    xpath=${dialog_replicate}    Retry Wait Until Page Not Contains Element    xpath=${dialog_replicate}
 
-Select Rule And Click Edit Button
-    [Arguments]  ${rule_name}
-    Retry Element Click  //clr-dg-row[contains(.,'${rule_name}')]//clr-radio-wrapper/label
-    Retry Element Click  ${edit_replication_rule_id}
-
-Delete Replication Rule
-    [Arguments]  ${name}
-    Retry Element Click  ${endpoint_filter_search}
-    Retry Text Input   ${endpoint_filter_input}  ${name}
-    #click checkbox before target endpoint
-    Retry Element Click  //clr-dg-row[contains(.,'${name}')]//label
-    Retry Element Click  ${action_bar_delete}
-    Wait Until Page Contains Element  ${dialog_delete}
-    Retry Element Click  ${dialog_delete}
-
 Image Should Be Replicated To Project
-    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=3
+    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=3  ${tag}=${null}  ${expected_image_size_in_regexp}=${null}
     FOR  ${n}  IN RANGE  0  ${times}
         Sleep  ${period}
         Go Into Project    ${project}
@@ -263,12 +242,13 @@ Image Should Be Replicated To Project
     END
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
+    Go Into Repo  ${project}/${image}
+    ${size}=  Run Keyword If  '${tag}'!='${null}' and '${expected_image_size_in_regexp}'!='${null}'  Get Text  //clr-dg-row[contains(., '${tag}')]//clr-dg-cell[4]/div
+    Run Keyword If  '${tag}'!='${null}' and '${expected_image_size_in_regexp}'!='${null}'  Should Match Regexp  '${size}'  '${expected_image_size_in_regexp}'
 
 Executions Result Count Should Be
     [Arguments]  ${expected_status}  ${expected_trigger_type}  ${expected_result_count}
     Sleep  10
     ${count}=  Get Element Count  xpath=//clr-dg-row[contains(.,'${expected_status}') and contains(.,'${expected_trigger_type}')]
-    Capture Page Screenshot
     Should Be Equal As Integers  ${count}  ${expected_result_count}
-    Capture Page Screenshot
 

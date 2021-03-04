@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -58,7 +59,7 @@ func (suite *ProScannerAPITestSuite) TearDownTest() {
 
 // TestScannerAPIProjectScanner tests the API of getting/setting project level scanner
 func (suite *ProScannerAPITestSuite) TestScannerAPIProjectScanner() {
-	suite.mockC.On("SetRegistrationByProject", int64(1), "uuid").Return(nil)
+	suite.mockC.On("SetRegistrationByProject", mock.Anything, int64(1), "uuid").Return(nil)
 
 	// Set
 	body := make(map[string]interface{}, 1)
@@ -80,7 +81,7 @@ func (suite *ProScannerAPITestSuite) TestScannerAPIProjectScanner() {
 		Description: "JUST FOR TEST",
 		URL:         "https://a.b.c",
 	}
-	suite.mockC.On("GetRegistrationByProject", int64(1)).Return(r, nil)
+	suite.mockC.On("GetRegistrationByProject", mock.Anything, int64(1)).Return(r, nil)
 
 	// Get
 	rr := &scanner.Registration{}
@@ -110,7 +111,7 @@ func (suite *ProScannerAPITestSuite) TestScannerAPIGetScannerCandidates() {
 			Description: "JUST FOR TEST",
 			URL:         "https://a.b.c",
 		}}
-	suite.mockC.On("ListRegistrations", query).Return(ll, nil)
+	suite.mockC.On("ListRegistrations", mock.Anything, query).Return(ll, nil)
 
 	// Get
 	l := make([]*scanner.Registration, 0)

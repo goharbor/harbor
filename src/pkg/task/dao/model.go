@@ -38,6 +38,7 @@ type Execution struct {
 	Trigger       string    `orm:"column(trigger)"`
 	ExtraAttrs    string    `orm:"column(extra_attrs)"` // json string
 	StartTime     time.Time `orm:"column(start_time)"`
+	UpdateTime    time.Time `orm:"column(update_time)"`
 	EndTime       time.Time `orm:"column(end_time)"`
 	Revision      int64     `orm:"column(revision)"`
 }
@@ -56,13 +57,14 @@ type Metrics struct {
 // Task database model
 type Task struct {
 	ID             int64     `orm:"pk;auto;column(id)"`
+	VendorType     string    `orm:"column(vendor_type)"`
 	ExecutionID    int64     `orm:"column(execution_id)"`
 	JobID          string    `orm:"column(job_id)"`
 	Status         string    `orm:"column(status)"`
 	StatusCode     int       `orm:"column(status_code)"`
 	StatusRevision int64     `orm:"column(status_revision)"`
 	StatusMessage  string    `orm:"column(status_message)"`
-	RunCount       int       `orm:"column(run_count)"`
+	RunCount       int32     `orm:"column(run_count)"`
 	ExtraAttrs     string    `orm:"column(extra_attrs)"` // json string
 	CreationTime   time.Time `orm:"column(creation_time)"`
 	StartTime      time.Time `orm:"column(start_time)"`

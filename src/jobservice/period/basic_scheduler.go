@@ -18,6 +18,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/goharbor/harbor/src/jobservice/errs"
+
 	"github.com/gocraft/work"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -100,28 +102,15 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 		return errors.New("bad periodic job ID: nil")
 	}
 
-	// Handle the corresponding job stats of the given periodic job first.
-	tracker, err := bs.ctl.Track(policyID)
-	if err != nil {
-		return errors.Wrap(err, "unschedule periodic job error")
-	}
-
-	// Try to get the numeric ID from the stats of the given periodic job.
-	numericID, err := tracker.NumericID()
-	if err != nil {
-		return errors.Wrap(err, "unschedule periodic job error")
-	}
-
-	// Switch the job stats to stopped
-	// Should not block the next clear action
-	if err := tracker.Stop(); err != nil {
-		logger.Errorf("Stop periodic job %s failed with error: %s", policyID, err)
-	}
-
 	conn := bs.pool.Get()
 	defer func() {
 		_ = conn.Close()
 	}()
+
+	numericID, err := bs.locatePolicy(policyID, conn)
+	if err != nil {
+		return err
+	}
 
 	// Get downstream executions of the periodic job
 	// And clear these executions
@@ -134,6 +123,7 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 		if len(eIDs) == 0 {
 			logger.Debugf("no stopped executions: %s", policyID)
 		}
+
 		for _, eID := range eIDs {
 			eTracker, err := bs.ctl.Track(eID)
 			if err != nil {
@@ -155,7 +145,7 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 			// Mark job status to stopped to block execution.
 			// The executions here should not be in the final states,
 			// double confirmation: only stop the can-stop ones.
-			if job.RunningStatus.Compare(job.Status(e.Info.Status)) >= 0 {
+			if job.RunningStatus.After(job.Status(e.Info.Status)) || job.RunningStatus.Equal(job.Status(e.Info.Status)) {
 				if err := eTracker.Stop(); err != nil {
 					logger.Errorf("Stop execution %s error: %s", eID, err)
 				} else {
@@ -177,6 +167,41 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 	}
 
 	return nil
+}
+
+// Locate the policy and return the numeric ID.
+// First locate policy by tracker, then locate by looping the policy list in case the job stats data is lost
+func (bs *basicScheduler) locatePolicy(policyID string, conn redis.Conn) (int64, error) {
+	// Handle the corresponding job stats of the given periodic job first.
+	tracker, err := bs.ctl.Track(policyID)
+	if err != nil {
+		// If error is not found error, then switch to the backup approach
+		if errs.IsObjectNotFoundError(err) {
+			// Loop the policy list to get the policy data
+			pl, err := Load(bs.namespace, conn)
+			if err != nil {
+				return -1, err
+			}
+
+			for _, p := range pl {
+				if p.ID == policyID && p.NumericID > 0 {
+					// Found the policy in the queue and return the numeric ID
+					return p.NumericID, nil
+				}
+			}
+		}
+
+		// Still not found or other errors
+		return -1, err
+	}
+
+	// Switch the job stats to stopped if the job stats existing
+	// Should not block the next clear action
+	if err := tracker.Stop(); err != nil {
+		logger.Errorf("Stop periodic job %s failed with error: %s", policyID, err)
+	}
+
+	return tracker.NumericID()
 }
 
 // Clear all the dirty jobs

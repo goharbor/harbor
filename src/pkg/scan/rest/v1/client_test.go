@@ -57,7 +57,7 @@ func (suite *ClientTestSuite) TestClientMetadata() {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), m)
 
-	assert.Equal(suite.T(), m.Scanner.Name, "Clair")
+	assert.Equal(suite.T(), m.Scanner.Name, "Trivy")
 }
 
 // TestClientSubmitScan tests the scan submission of client
@@ -114,7 +114,7 @@ func (mh *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		m := &ScannerAdapterMetadata{
 			Scanner: &Scanner{
-				Name:    "Clair",
+				Name:    "Trivy",
 				Vendor:  "Harbor",
 				Version: "0.1.0",
 			},
@@ -126,6 +126,7 @@ func (mh *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				ProducesMimeTypes: []string{
 					MimeTypeNativeReport,
 					MimeTypeRawReport,
+					MimeTypeGenericVulnerabilityReport,
 				},
 			}},
 			Properties: ScannerProperties{

@@ -17,6 +17,7 @@ package blob
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/q"
 	"time"
 
 	"github.com/docker/distribution"
@@ -65,7 +66,7 @@ type Controller interface {
 	Get(ctx context.Context, digest string, options ...Option) (*blob.Blob, error)
 
 	// List list blobs
-	List(ctx context.Context, params blob.ListParams) ([]*blob.Blob, error)
+	List(ctx context.Context, query *q.Query) ([]*blob.Blob, error)
 
 	// Sync create blobs from `References` when they are not exist
 	// and update the blob content type when they are exist,
@@ -178,12 +179,12 @@ func (c *controller) FindMissingAssociationsForProject(ctx context.Context, proj
 		return nil, nil
 	}
 
-	var digests []string
+	var ol q.OrList
 	for _, blob := range blobs {
-		digests = append(digests, blob.Digest)
+		ol.Values = append(ol.Values, blob.Digest)
 	}
 
-	associatedBlobs, err := c.blobMgr.List(ctx, blob.ListParams{BlobDigests: digests, ProjectID: projectID})
+	associatedBlobs, err := c.blobMgr.List(ctx, q.New(q.KeyWords{"digest": &ol, "projectID": projectID}))
 	if err != nil {
 		return nil, err
 	}
@@ -216,13 +217,26 @@ func (c *controller) Get(ctx context.Context, digest string, options ...Option) 
 
 	opts := newOptions(options...)
 
-	params := blob.ListParams{
-		ArtifactDigest: opts.ArtifactDigest,
-		BlobDigests:    []string{digest},
-		ProjectID:      opts.ProjectID,
+	keywords := make(map[string]interface{})
+	if digest != "" {
+		ol := q.OrList{
+			Values: []interface{}{
+				digest,
+			},
+		}
+		keywords["digest"] = &ol
+	}
+	if opts.ProjectID != 0 {
+		keywords["projectID"] = opts.ProjectID
+	}
+	if opts.ArtifactDigest != "" {
+		keywords["artifactDigest"] = opts.ArtifactDigest
+	}
+	query := &q.Query{
+		Keywords: keywords,
 	}
 
-	blobs, err := c.blobMgr.List(ctx, params)
+	blobs, err := c.blobMgr.List(ctx, query)
 	if err != nil {
 		return nil, err
 	} else if len(blobs) == 0 {
@@ -232,8 +246,8 @@ func (c *controller) Get(ctx context.Context, digest string, options ...Option) 
 	return blobs[0], nil
 }
 
-func (c *controller) List(ctx context.Context, params blob.ListParams) ([]*blob.Blob, error) {
-	return c.blobMgr.List(ctx, params)
+func (c *controller) List(ctx context.Context, query *q.Query) ([]*blob.Blob, error) {
+	return c.blobMgr.List(ctx, query)
 }
 
 func (c *controller) Sync(ctx context.Context, references []distribution.Descriptor) error {
@@ -241,12 +255,12 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 		return nil
 	}
 
-	var digests []string
+	var ol q.OrList
 	for _, reference := range references {
-		digests = append(digests, reference.Digest.String())
+		ol.Values = append(ol.Values, reference.Digest.String())
 	}
 
-	blobs, err := c.blobMgr.List(ctx, blob.ListParams{BlobDigests: digests})
+	blobs, err := c.blobMgr.List(ctx, q.New(q.KeyWords{"digest": &ol}))
 	if err != nil {
 		return err
 	}

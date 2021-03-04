@@ -27,8 +27,6 @@ import (
 	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/secret"
-	"github.com/goharbor/harbor/src/core/promgr"
-	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -43,9 +41,7 @@ const (
 var (
 	// SecretStore manages secrets
 	SecretStore *secret.Store
-	// GlobalProjectMgr is initialized based on the deploy mode
-	GlobalProjectMgr promgr.ProjectManager
-	keyProvider      comcfg.KeyProvider
+	keyProvider comcfg.KeyProvider
 	// defined as a var for testing.
 	defaultCACertPath = "/etc/core/ca/ca.crt"
 	cfgMgr            *comcfg.CfgManager
@@ -61,9 +57,6 @@ func Init() {
 	log.Info("init secret store")
 	// init secret store
 	initSecretStore()
-	log.Info("init project manager")
-	// init project manager
-	initProjectManager()
 }
 
 // InitWithSettings init config with predefined configs, and optionally overwrite the keyprovider
@@ -90,11 +83,6 @@ func initSecretStore() {
 	m := map[string]string{}
 	m[JobserviceSecret()] = secret.JobserviceUser
 	SecretStore = secret.NewStore(m)
-}
-
-func initProjectManager() {
-	log.Info("initializing the project manager based on local database...")
-	GlobalProjectMgr = promgr.NewDefaultProjectManager(local.NewDriver(), true)
 }
 
 // GetCfgManager return the current config manager
@@ -326,16 +314,6 @@ func WithNotary() bool {
 	return cfgMgr.Get(common.WithNotary).GetBool()
 }
 
-// WithClair returns a bool value to indicate if Harbor's deployed with Clair
-func WithClair() bool {
-	return cfgMgr.Get(common.WithClair).GetBool()
-}
-
-// ClairAdapterEndpoint returns the endpoint of clair adapter instance, by default it's the one deployed within Harbor.
-func ClairAdapterEndpoint() string {
-	return cfgMgr.Get(common.ClairAdapterURL).GetString()
-}
-
 // WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.
 func WithTrivy() bool {
 	return cfgMgr.Get(common.WithTrivy).GetBool()
@@ -413,6 +391,7 @@ func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
 	return &models.HTTPAuthProxy{
 		Endpoint:            cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
 		TokenReviewEndpoint: cfgMgr.Get(common.HTTPAuthProxyTokenReviewEndpoint).GetString(),
+		AdminGroups:         splitAndTrim(cfgMgr.Get(common.HTTPAuthProxyAdminGroups).GetString(), ","),
 		VerifyCert:          cfgMgr.Get(common.HTTPAuthProxyVerifyCert).GetBool(),
 		SkipSearch:          cfgMgr.Get(common.HTTPAuthProxySkipSearch).GetBool(),
 		ServerCertificate:   cfgMgr.Get(common.HTTPAuthProxyServerCertificate).GetString(),
@@ -427,22 +406,20 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 	}
 	scopeStr := cfgMgr.Get(common.OIDCScope).GetString()
 	extEndpoint := strings.TrimSuffix(cfgMgr.Get(common.ExtEndpoint).GetString(), "/")
-	scope := []string{}
-	for _, s := range strings.Split(scopeStr, ",") {
-		scope = append(scope, strings.TrimSpace(s))
-	}
-
+	scope := splitAndTrim(scopeStr, ",")
 	return &models.OIDCSetting{
-		Name:         cfgMgr.Get(common.OIDCName).GetString(),
-		Endpoint:     cfgMgr.Get(common.OIDCEndpoint).GetString(),
-		VerifyCert:   cfgMgr.Get(common.OIDCVerifyCert).GetBool(),
-		AutoOnboard:  cfgMgr.Get(common.OIDCAutoOnboard).GetBool(),
-		ClientID:     cfgMgr.Get(common.OIDCCLientID).GetString(),
-		ClientSecret: cfgMgr.Get(common.OIDCClientSecret).GetString(),
-		GroupsClaim:  cfgMgr.Get(common.OIDCGroupsClaim).GetString(),
-		RedirectURL:  extEndpoint + common.OIDCCallbackPath,
-		Scope:        scope,
-		UserClaim:    cfgMgr.Get(common.OIDCUserClaim).GetString(),
+		Name:               cfgMgr.Get(common.OIDCName).GetString(),
+		Endpoint:           cfgMgr.Get(common.OIDCEndpoint).GetString(),
+		VerifyCert:         cfgMgr.Get(common.OIDCVerifyCert).GetBool(),
+		AutoOnboard:        cfgMgr.Get(common.OIDCAutoOnboard).GetBool(),
+		ClientID:           cfgMgr.Get(common.OIDCCLientID).GetString(),
+		ClientSecret:       cfgMgr.Get(common.OIDCClientSecret).GetString(),
+		GroupsClaim:        cfgMgr.Get(common.OIDCGroupsClaim).GetString(),
+		AdminGroup:         cfgMgr.Get(common.OIDCAdminGroup).GetString(),
+		RedirectURL:        extEndpoint + common.OIDCCallbackPath,
+		Scope:              scope,
+		UserClaim:          cfgMgr.Get(common.OIDCUserClaim).GetString(),
+		ExtraRedirectParms: cfgMgr.Get(common.OIDCExtraRedirectParms).GetStringToStringMap(),
 	}, nil
 }
 
@@ -485,4 +462,28 @@ func GetGCTimeWindow() int64 {
 		}
 	}
 	return common.DefaultGCTimeWindowHours
+}
+
+// RobotPrefix user defined robot name prefix.
+func RobotPrefix() string {
+	return cfgMgr.Get(common.RobotNamePrefix).GetString()
+}
+
+// Metric returns the overall metric settings
+func Metric() *models.Metric {
+	return &models.Metric{
+		Enabled: cfgMgr.Get(common.MetricEnable).GetBool(),
+		Port:    cfgMgr.Get(common.MetricPort).GetInt(),
+		Path:    cfgMgr.Get(common.MetricPath).GetString(),
+	}
+}
+
+func splitAndTrim(s, sep string) []string {
+	res := make([]string, 0)
+	for _, s := range strings.Split(s, sep) {
+		if e := strings.TrimSpace(s); len(e) > 0 {
+			res = append(res, e)
+		}
+	}
+	return res
 }

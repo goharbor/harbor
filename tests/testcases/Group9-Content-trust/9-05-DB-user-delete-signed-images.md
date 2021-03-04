@@ -10,7 +10,7 @@ User guide
 
 # Environment:
 
-* This test requires one Harbor instance is running and avialable.  
+* This test requires one Harbor instance is running and available.  
 * A Linux host with Docker CLI(Docker client) installed.  
 
 # Test Steps:

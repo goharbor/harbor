@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"strings"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema2"
@@ -55,7 +54,7 @@ type DAO interface {
 	UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, error)
 
 	// ListBlobs list blobs by query
-	ListBlobs(ctx context.Context, params models.ListParams) ([]*models.Blob, error)
+	ListBlobs(ctx context.Context, query *q.Query) ([]*models.Blob, error)
 
 	// FindBlobsShouldUnassociatedWithProject filter the blobs which should not be associated with the project
 	FindBlobsShouldUnassociatedWithProject(ctx context.Context, projectID int64, blobs []*models.Blob) ([]*models.Blob, error)
@@ -218,38 +217,15 @@ func (d *dao) UpdateBlob(ctx context.Context, blob *models.Blob) error {
 	return err
 }
 
-func (d *dao) ListBlobs(ctx context.Context, params models.ListParams) ([]*models.Blob, error) {
-	qs, err := orm.QuerySetter(ctx, &models.Blob{}, nil)
+func (d *dao) ListBlobs(ctx context.Context, query *q.Query) ([]*models.Blob, error) {
+	qs, err := orm.QuerySetter(ctx, &models.Blob{}, query)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(params.BlobDigests) > 0 {
-		qs = qs.Filter("digest__in", params.BlobDigests)
+	if query.Sorting != "" {
+		qs = qs.OrderBy(query.Sorting)
 	}
-
-	if !params.UpdateTime.IsZero() {
-		qs = qs.Filter("update_time__lte", params.UpdateTime)
-	}
-
-	if params.ArtifactDigest != "" {
-		params.ArtifactDigests = append(params.ArtifactDigests, params.ArtifactDigest)
-	}
-
-	if len(params.ArtifactDigests) > 0 {
-		var p []string
-		for _, digest := range params.ArtifactDigests {
-			p = append(p, `'`+orm.Escape(digest)+`'`)
-		}
-		sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", strings.Join(p, ","))
-		qs = qs.FilterRaw("digest", sql)
-	}
-
-	if params.ProjectID != 0 {
-		sql := fmt.Sprintf("IN (SELECT blob_id FROM project_blob WHERE project_id = %d)", params.ProjectID)
-		qs = qs.FilterRaw("id", sql)
-	}
-
 	blobs := []*models.Blob{}
 	if _, err = qs.All(&blobs); err != nil {
 		return nil, err

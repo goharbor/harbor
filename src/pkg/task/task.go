@@ -47,10 +47,14 @@ type Manager interface {
 	// Get the specified task
 	Get(ctx context.Context, id int64) (task *Task, err error)
 	// List the tasks according to the query
+	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	List(ctx context.Context, query *q.Query) (tasks []*Task, err error)
+	// Update the extra attributes of the specified task
+	UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) (err error)
 	// Get the log of the specified task
 	GetLog(ctx context.Context, id int64) (log []byte, err error)
-	// Count counts total.
+	// Count counts total of tasks according to the query.
+	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	Count(ctx context.Context, query *q.Query) (int64, error)
 }
 
@@ -58,6 +62,7 @@ type Manager interface {
 func NewManager() Manager {
 	return &manager{
 		dao:      dao.NewTaskDAO(),
+		execDAO:  dao.NewExecutionDAO(),
 		jsClient: cjob.GlobalClient,
 		coreURL:  config.GetCoreURL(),
 	}
@@ -65,6 +70,7 @@ func NewManager() Manager {
 
 type manager struct {
 	dao      dao.TaskDAO
+	execDAO  dao.ExecutionDAO
 	jsClient cjob.Client
 	coreURL  string
 }
@@ -82,24 +88,17 @@ func (m *manager) Create(ctx context.Context, executionID int64, jb *Job, extraA
 	log.Debugf("the database record for task %d created", id)
 
 	// submit job to jobservice
+	// As all database operations are in a transaction which is committed until API returns,
+	// when the job is submitted to the jobservice and running, the task record may not
+	// insert yet, this will cause the status hook handler returning 404, and the jobservice
+	// will re-send the status hook again
 	jobID, err := m.submitJob(ctx, id, jb)
 	if err != nil {
-		// failed to submit job to jobservice, update the status of task to error
-		err = fmt.Errorf("failed to submit job to jobservice: %v", err)
-		log.Error(err)
-		now := time.Now()
-		err = m.dao.Update(ctx, &dao.Task{
-			ID:            id,
-			Status:        job.ErrorStatus.String(),
-			StatusCode:    job.ErrorStatus.Code(),
-			StatusMessage: err.Error(),
-			UpdateTime:    now,
-			EndTime:       now,
-		}, "Status", "StatusCode", "StatusMessage", "UpdateTime", "EndTime")
-		if err != nil {
-			log.Errorf("failed to update task %d: %v", id, err)
+		// failed to submit job to jobservice, delete the task record
+		if err := m.dao.Delete(ctx, id); err != nil {
+			log.Errorf("failed to delete the task %d: %v", id, err)
 		}
-		return id, nil
+		return 0, err
 	}
 
 	log.Debugf("the task %d is submitted to jobservice, the job ID is %s", id, jobID)
@@ -116,6 +115,10 @@ func (m *manager) Create(ctx context.Context, executionID int64, jb *Job, extraA
 }
 
 func (m *manager) createTaskRecord(ctx context.Context, executionID int64, extraAttrs ...map[string]interface{}) (int64, error) {
+	exec, err := m.execDAO.Get(ctx, executionID)
+	if err != nil {
+		return 0, err
+	}
 	extras := map[string]interface{}{}
 	if len(extraAttrs) > 0 && extraAttrs[0] != nil {
 		extras = extraAttrs[0]
@@ -127,6 +130,7 @@ func (m *manager) createTaskRecord(ctx context.Context, executionID int64, extra
 
 	now := time.Now()
 	return m.dao.Create(ctx, &dao.Task{
+		VendorType:   exec.VendorType,
 		ExecutionID:  executionID,
 		Status:       job.PendingStatus.String(),
 		StatusCode:   job.PendingStatus.Code(),
@@ -210,6 +214,18 @@ func (m *manager) List(ctx context.Context, query *q.Query) ([]*Task, error) {
 		ts = append(ts, t)
 	}
 	return ts, nil
+}
+
+func (m *manager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) error {
+	data, err := json.Marshal(extraAttrs)
+	if err != nil {
+		return err
+	}
+	return m.dao.Update(ctx, &dao.Task{
+		ID:         id,
+		ExtraAttrs: string(data),
+		UpdateTime: time.Time{},
+	}, "ExtraAttrs", "UpdateTime")
 }
 
 func (m *manager) GetLog(ctx context.Context, id int64) ([]byte, error) {

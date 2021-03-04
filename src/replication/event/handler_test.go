@@ -15,42 +15,17 @@
 package event
 
 import (
-	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/testing/controller/replication"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/replication/config"
-	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-type fakedOperationController struct{}
-
-func (f *fakedOperationController) StartReplication(policy *model.Policy, resource *model.Resource, trigger model.TriggerType) (int64, error) {
-	return 1, nil
-}
-func (f *fakedOperationController) StopReplication(int64) error {
-	return nil
-}
-func (f *fakedOperationController) ListExecutions(...*models.ExecutionQuery) (int64, []*models.Execution, error) {
-	return 0, nil, nil
-}
-func (f *fakedOperationController) GetExecution(id int64) (*models.Execution, error) {
-	return nil, nil
-}
-func (f *fakedOperationController) ListTasks(...*models.TaskQuery) (int64, []*models.Task, error) {
-	return 0, nil, nil
-}
-func (f *fakedOperationController) GetTask(id int64) (*models.Task, error) {
-	return nil, nil
-}
-func (f *fakedOperationController) UpdateTaskStatus(id int64, status string, statusRevision int64, statusCondition ...string) error {
-	return nil
-}
-func (f *fakedOperationController) GetTaskLog(int64) ([]byte, error) {
-	return nil, nil
-}
 
 type fakedPolicyController struct{}
 
@@ -215,6 +190,13 @@ func TestGetRelatedPolicies(t *testing.T) {
 			Repository: &model.Repository{
 				Name: "library/hello-world",
 			},
+			Artifacts: []*model.Artifact{
+				{
+					Type:   "image",
+					Digest: "sha256:90659bf80b44ce6be8234e6ff90a1ac34acbeb826903b02cfa0da11c82cbc042",
+					Tags:   []string{"latest"},
+				},
+			},
 		},
 	})
 	require.Nil(t, err)
@@ -227,6 +209,13 @@ func TestGetRelatedPolicies(t *testing.T) {
 			Repository: &model.Repository{
 				Name: "library/hello-world",
 			},
+			Artifacts: []*model.Artifact{
+				{
+					Type:   "image",
+					Digest: "sha256:90659bf80b44ce6be8234e6ff90a1ac34acbeb826903b02cfa0da11c82cbc042",
+					Tags:   []string{"latest"},
+				},
+			},
 		},
 		Deleted: true,
 	})
@@ -236,10 +225,16 @@ func TestGetRelatedPolicies(t *testing.T) {
 }
 
 func TestHandle(t *testing.T) {
+	dao.PrepareTestForPostgresSQL()
 	config.Config = &config.Configuration{}
-	handler := NewHandler(&fakedPolicyController{},
-		&fakedRegistryManager{},
-		&fakedOperationController{})
+	ctl := &replication.Controller{}
+	ctl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	handler := &handler{
+		policyCtl:   &fakedPolicyController{},
+		registryMgr: &fakedRegistryManager{},
+		ctl:         ctl,
+	}
+
 	// nil event
 	err := handler.Handle(nil)
 	require.NotNil(t, err)

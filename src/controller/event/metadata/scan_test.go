@@ -15,11 +15,13 @@
 package metadata
 
 import (
+	"testing"
+
 	event2 "github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type scanEventTestSuite struct {
@@ -36,7 +38,7 @@ func (r *scanEventTestSuite) TestResolveOfScanImageEventMetadata() {
 			Digest:      "sha256:absdfd87123",
 			MimeType:    "docker.chart",
 		},
-		Status: "finished",
+		Status: job.SuccessStatus.String(),
 	}
 	err := metadata.Resolve(e)
 	r.Require().Nil(err)

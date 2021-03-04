@@ -288,9 +288,8 @@ func (gc *GarbageCollector) removeUntaggedBlobs(ctx job.Context) {
 			continue
 		}
 		p := result.Data
-		all, err := gc.blobMgr.List(ctx.SystemContext(), blob.ListParams{
-			ProjectID: p.ProjectID,
-		})
+
+		all, err := gc.blobMgr.List(ctx.SystemContext(), q.New(q.KeyWords{"projectID": p.ProjectID}))
 		if err != nil {
 			gc.logger.Errorf("failed to get blobs of project, %v", err)
 			continue

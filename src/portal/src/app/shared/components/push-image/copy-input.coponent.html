@@ -1,0 +1,17 @@
+<div>
+    <div class="command-title" *ngIf="!iconMode">
+        {{headerTitle}}
+    </div>
+    <div>
+        <span  [class.hide]="iconMode">
+            <input type="text" class="command-input" size="{{inputSize}}" [(ngModel)]="defaultValue" #inputTarget readonly/>
+        </span>
+        <span>
+            <textarea  name="inputTarget1" [(ngModel)]="defaultValue" class="inputTarget" #inputTarget1 rows="1" cols="{{inputSize}}">
+            </textarea >
+        </span>
+        <span>
+            <clr-icon shape="copy" [class.is-success]="isCopied" [class.is-error]="hasCopyError" class="info-tips-icon" size="24" [ngxClipboard]="inputTarget1" (cbOnSuccess)="onSuccess($event)" (cbOnError)="onError($event)"></clr-icon>
+        </span>
+    </div>
+</div>

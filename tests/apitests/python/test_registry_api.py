@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest
 
-from testutils import harbor_server
+from testutils import harbor_server, suppress_urllib3_warning
 from testutils import admin_user
 from testutils import admin_pwd
 from testutils import TEARDOWN
@@ -10,7 +10,7 @@ from library.system import System
 from library.project import Project
 from library.user import User
 from library.repository import Repository
-from library.repository import push_image_to_project
+from library.repository import push_self_build_image_to_project
 from library.artifact import Artifact
 from library.scanner import Scanner
 from library.docker_api import list_image_tags
@@ -20,25 +20,20 @@ import library.base
 import json
 
 class TestProjects(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.system = System()
         self.project= Project()
         self.user= User()
         self.artifact = Artifact()
         self.repo = Repository()
-        self.repo_name = "hello-world"
-
-    @classmethod
-    def tearDown(self):
-        print("Case completed")
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         #1. Delete Alice's repository and Luca's repository;
-        self.repo.delete_repoitory(TestProjects.project_Alice_name, TestProjects.repo_a.split('/')[1], **ADMIN_CLIENT)
-        self.repo.delete_repoitory(TestProjects.project_Alice_name, TestProjects.repo_b.split('/')[1], **ADMIN_CLIENT)
-        self.repo.delete_repoitory(TestProjects.project_Alice_name, TestProjects.repo_c.split('/')[1], **ADMIN_CLIENT)
+        self.repo.delete_repository(TestProjects.project_Alice_name, TestProjects.repo_a.split('/')[1], **ADMIN_CLIENT)
+        self.repo.delete_repository(TestProjects.project_Alice_name, TestProjects.repo_b.split('/')[1], **ADMIN_CLIENT)
+        self.repo.delete_repository(TestProjects.project_Alice_name, TestProjects.repo_c.split('/')[1], **ADMIN_CLIENT)
 
         #2. Delete Alice's project and Luca's project;
         self.project.delete_project(TestProjects.project_Alice_id, **ADMIN_CLIENT)
@@ -76,15 +71,15 @@ class TestProjects(unittest.TestCase):
         #3. Push 3 images to project_Alice and Add 3 tags to the 3rd image.
 
         src_tag = "latest"
-        image_a = "busybox"
-        TestProjects.repo_a, tag_a = push_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_a, src_tag)
-        image_b = "alpine"
-        TestProjects.repo_b, tag_b = push_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_b, src_tag)
-        image_c = "hello-world"
-        TestProjects.repo_c, tag_c = push_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_c, src_tag)
+        image_a = "image_a"
+        TestProjects.repo_a, tag_a = push_self_build_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_a, src_tag)
+        image_b = "image_b"
+        TestProjects.repo_b, tag_b = push_self_build_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_b, src_tag)
+        image_c = "image_c"
+        TestProjects.repo_c, tag_c = push_self_build_image_to_project(TestProjects.project_Alice_name, harbor_server, user_Alice_name, user_common_password, image_c, src_tag)
         create_tags = ["1.0","2.0","3.0"]
         for tag in create_tags:
-            self.artifact.create_tag(TestProjects.project_Alice_name, self.repo_name, tag_c, tag, **USER_ALICE_CLIENT)
+            self.artifact.create_tag(TestProjects.project_Alice_name, image_c, tag_c, tag, **USER_ALICE_CLIENT)
         #4. Call the image_list_tags API
         tags = list_image_tags(harbor_server,TestProjects.repo_c,user_Alice_name,user_common_password)
         for tag in create_tags:

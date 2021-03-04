@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -36,7 +37,14 @@ type CfgManager struct {
 
 // NewDBCfgManager - create DB config manager
 func NewDBCfgManager() *CfgManager {
-	manager := &CfgManager{store: store.NewConfigStore(&driver.Database{})}
+	cfgDriver := (driver.Driver)(&driver.Database{})
+
+	if cache.Default() != nil {
+		log.Debug("create DB config manager with cache enabled")
+		cfgDriver = driver.NewCacheDriver(cache.Default(), cfgDriver)
+	}
+
+	manager := &CfgManager{store: store.NewConfigStore(cfgDriver)}
 	// load default value
 	manager.loadDefault()
 	// load system config from env

@@ -37,9 +37,9 @@ func (eff Effect) String() string {
 
 // Policy the type of policy
 type Policy struct {
-	Resource
-	Action
-	Effect
+	Resource `json:"resource,omitempty"`
+	Action   `json:"action,omitempty"`
+	Effect   `json:"effect,omitempty"`
 }
 
 // GetEffect returns effect of resource, default is allow

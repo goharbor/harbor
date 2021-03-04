@@ -21,15 +21,13 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	securitySecret "github.com/goharbor/harbor/src/common/security/secret"
-	"github.com/goharbor/harbor/src/core/config"
 )
 
 func TestIsProxySession(t *testing.T) {
-	config.Init()
-	sc1 := securitySecret.NewSecurityContext("123456789", config.SecretStore)
+	sc1 := securitySecret.NewSecurityContext("123456789", nil)
 	otherCtx := security.NewContext(context.Background(), sc1)
 
-	sc2 := proxycachesecret.NewSecurityContext(context.Background(), "library/hello-world")
+	sc2 := proxycachesecret.NewSecurityContext("library/hello-world")
 	proxyCtx := security.NewContext(context.Background(), sc2)
 	cases := []struct {
 		name string

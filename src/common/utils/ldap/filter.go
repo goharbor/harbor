@@ -15,9 +15,10 @@
 package ldap
 
 import (
-	ber "gopkg.in/asn1-ber.v1"
-	goldap "gopkg.in/ldap.v2"
 	"strings"
+
+	ber "github.com/go-asn1-ber/asn1-ber"
+	goldap "github.com/go-ldap/ldap/v3"
 )
 
 // FilterBuilder build filter for ldap search

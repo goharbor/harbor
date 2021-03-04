@@ -10,7 +10,18 @@ set -e
 if [ -z "$1" ]; then echo no ip specified; exit 1;fi
 # prepare cert ...
 sudo ./tests/generateCerts.sh $1
-sudo wget https://bootstrap.pypa.io/get-pip.py && sudo python ./get-pip.py && sudo pip install --ignore-installed urllib3 chardet requests --upgrade
+
+python --version
+pip -V
+cat /etc/issue
+cat /proc/version
+sudo apt-get update -y && sudo apt-get install -y zbar-tools libzbar-dev python-zbar python3.7
+sudo rm /usr/bin/python && sudo ln -s /usr/bin/python3.7 /usr/bin/python
+sudo apt-get install -y python3-pip
+pip -V
+sudo -H pip install --ignore-installed urllib3 chardet requests --upgrade
+python --version
+
 sudo ./tests/hostcfg.sh
 
 if [ "$2" = 'LDAP' ]; then
@@ -22,7 +33,12 @@ then
     sed "s/# github_token: xxx/github_token: $GITHUB_TOKEN/" -i make/harbor.yml
 fi
 
-sudo make build_base_docker compile build prepare COMPILETAG=compile_golangimage GOBUILDTAGS="include_oss include_gcs" NOTARYFLAG=true CLAIRFLAG=true TRIVYFLAG=true CHARTFLAG=true GEN_TLS=true
+sed "s|# metric:|metric:|" -i make/harbor.yml
+sed "s|#   enabled: false|  enabled: true|" -i make/harbor.yml
+sed "s|#   port: 9090|  port: 9090|" -i make/harbor.yml
+sed "s|#   path: /metrics|  path: /metrics|" -i make/harbor.yml
+
+sudo make build_base_docker compile build prepare COMPILETAG=compile_golangimage GOBUILDTAGS="include_oss include_gcs" BUILDBIN=true NOTARYFLAG=true TRIVYFLAG=true CHARTFLAG=true GEN_TLS=true
 
 # set the debugging env
 echo "GC_TIME_WINDOW_HOURS=0" | sudo tee -a ./make/common/config/core/env

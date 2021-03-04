@@ -282,7 +282,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 		repo := r
 		runner.AddTask(func() error {
 			name := fmt.Sprintf("%s/%s", repo.Namespace, repo.Name)
-			log.Infof("Routine started to collect tags for repo: %s", name)
+			log.Debugf("Routine started to collect tags for repo: %s", name)
 
 			// If name filter set, skip repos that don't match the filter pattern.
 			if len(nameFilter) != 0 {

@@ -17,11 +17,18 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/system"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"net/http"
 	"strconv"
 
+	replica "github.com/goharbor/harbor/src/controller/replication"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/replication"
-	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/registry"
@@ -32,23 +39,25 @@ import (
 // ReplicationPolicyAPI handles the replication policy requests
 type ReplicationPolicyAPI struct {
 	BaseController
+	resource types.Resource
 }
 
 // Prepare ...
 func (r *ReplicationPolicyAPI) Prepare() {
 	r.BaseController.Prepare()
-	if !r.SecurityCtx.IsSysAdmin() {
-		if !r.SecurityCtx.IsAuthenticated() {
-			r.SendUnAuthorizedError(errors.New("UnAuthorized"))
-			return
-		}
-		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+	if !r.SecurityCtx.IsAuthenticated() {
+		r.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
+	r.resource = system.NewNamespace().Resource(rbac.ResourceReplicationPolicy)
 }
 
 // List the replication policies
 func (r *ReplicationPolicyAPI) List() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionList, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	page, size, err := r.GetPaginationParams()
 	if err != nil {
 		r.SendInternalServerError(err)
@@ -78,6 +87,10 @@ func (r *ReplicationPolicyAPI) List() {
 
 // Create the replication policy
 func (r *ReplicationPolicyAPI) Create() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionCreate, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	policy := &model.Policy{}
 	isValid, err := r.DecodeJSONReqAndValidate(policy)
 	if !isValid {
@@ -137,6 +150,10 @@ func (r *ReplicationPolicyAPI) validateRegistry(policy *model.Policy) bool {
 
 // Get the specified replication policy
 func (r *ReplicationPolicyAPI) Get() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionRead, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	id, err := r.GetInt64FromPath(":id")
 	if id <= 0 || err != nil {
 		r.SendBadRequestError(errors.New("invalid policy ID"))
@@ -162,6 +179,10 @@ func (r *ReplicationPolicyAPI) Get() {
 
 // Update the replication policy
 func (r *ReplicationPolicyAPI) Update() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionUpdate, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	id, err := r.GetInt64FromPath(":id")
 	if id <= 0 || err != nil {
 		r.SendBadRequestError(errors.New("invalid policy ID"))
@@ -203,6 +224,10 @@ func (r *ReplicationPolicyAPI) Update() {
 
 // Delete the replication policy
 func (r *ReplicationPolicyAPI) Delete() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionDelete, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	id, err := r.GetInt64FromPath(":id")
 	if id <= 0 || err != nil {
 		r.SendBadRequestError(errors.New("invalid policy ID"))
@@ -219,37 +244,34 @@ func (r *ReplicationPolicyAPI) Delete() {
 		return
 	}
 
-	isRunning, err := hasRunningExecutions(id)
+	ctx := orm.Context()
+	executions, err := replica.Ctl.ListExecutions(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"PolicyID": id,
+		},
+	})
 	if err != nil {
-		r.SendInternalServerError(fmt.Errorf("failed to check the execution status of policy %d: %v", id, err))
+		r.SendInternalServerError(err)
 		return
 	}
-
-	if isRunning {
+	for _, execution := range executions {
+		if execution.Status != job.RunningStatus.String() {
+			continue
+		}
 		r.SendPreconditionFailedError(fmt.Errorf("the policy %d has running executions, can not be deleted", id))
 		return
+	}
+	for _, execution := range executions {
+		if err = task.ExecMgr.Delete(ctx, execution.ID); err != nil {
+			r.SendInternalServerError(err)
+			return
+		}
 	}
 
 	if err := replication.PolicyCtl.Remove(id); err != nil {
 		r.SendInternalServerError(fmt.Errorf("failed to delete the policy %d: %v", id, err))
 		return
 	}
-}
-
-func hasRunningExecutions(policyID int64) (bool, error) {
-	_, executions, err := replication.OperationCtl.ListExecutions(&models.ExecutionQuery{
-		PolicyID: policyID,
-	})
-	if err != nil {
-		return false, err
-	}
-	for _, execution := range executions {
-		if execution.Status != models.ExecutionStatusInProgress {
-			continue
-		}
-		return true, nil
-	}
-	return false, nil
 }
 
 // ignore the credential for the registries

@@ -19,8 +19,8 @@ from os import path
 sys.path.append(args.libpath)
 sys.path.append(args.libpath + "/library")
 from library.docker_api import docker_manifest_push_to_harbor
-from library.repository import push_image_to_project
 from library.repository import Repository
+from library.repository import push_self_build_image_to_project
 
 url = "https://"+args.endpoint+"/api/"
 endpoint_url = "https://"+args.endpoint
@@ -56,19 +56,57 @@ def get_feature_branch(func):
 
 class HarborAPI:
     @get_feature_branch
+    def populate_projects(self, **kwargs):
+        for project in data["projects"]:
+            if kwargs["branch"] == 1:
+                if project["registry_name"] is not None:
+                    continue
+            elif kwargs["branch"] == 2:
+                if project["registry_name"] is not None:
+                    continue
+            elif kwargs["branch"] == 3:
+                print("Populate all projects")
+            else:
+                raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
+            self.create_project(project, version=args.version)
+            for member in project["member"]:
+                self.add_member(project["name"], member["name"], member["role"], version=args.version)
+            for robot_account in project["robot_account"]:
+                self.add_project_robot_account(project["name"], robot_account, version=args.version)
+            self.add_p2p_preheat_policy(project, version=args.version)
+            self.add_webhook(project["name"], project["webhook"], version=args.version)
+            if project["tag_retention_rule"] is not None:
+                self.add_tag_retention_rule(project["name"], project["tag_retention_rule"], version=args.version)
+            self.add_tag_immutability_rule(project["name"], project["tag_immutability_rule"], version=args.version)
+            self.update_project_setting_metadata(project["name"],
+                                        project["configuration"]["public"],
+                                        project["configuration"]["enable_content_trust"],
+                                        project["configuration"]["prevent_vul"],
+                                        project["configuration"]["severity"],
+                                        project["configuration"]["auto_scan"])
+            self.update_project_setting_allowlist(project["name"],
+                                    project["configuration"]["reuse_sys_cve_allowlist"],
+                                    project["configuration"]["deployment_security"], version=args.version)
+            time.sleep(30)
+
+    @get_feature_branch
     def create_project(self, project, **kwargs):
         if kwargs["branch"] == 1:
-            body=dict(body={"project_name": project["name"], "metadata": {"public": "true"}})
+                body=dict(body={"project_name": project["name"], "metadata": {"public": "true"}})
+                request(url+"projects", 'post', **body)
         elif kwargs["branch"] == 2:
-            body=dict(body={"project_name": project["name"], "metadata": {"public": "true"},"count_limit":project["count_limit"],"storage_limit":project["storage_limit"]})
+                body=dict(body={"project_name": project["name"], "metadata": {"public": "true"},"count_limit":project["count_limit"],"storage_limit":project["storage_limit"]})
+                request(url+"projects", 'post', **body)
         elif kwargs["branch"] == 3:
             if project["registry_name"] is not None:
                 r = request(url+"registries?name="+project["registry_name"]+"", 'get')
                 registry_id = int(str(r.json()[0]['id']))
             else:
-                registry_id=None
+                registry_id = None
             body=dict(body={"project_name": project["name"], "registry_id":registry_id, "metadata": {"public": "true"},"storage_limit":project["storage_limit"]})
             request(url+"projects", 'post', **body)
+
+            #Project with registry_name must have repo and to verify repo can be pulled.
             if project["registry_name"] is not None:
                 USER_ADMIN=dict(endpoint = "https://"+args.endpoint+"/api/v2.0" , username = "admin", password = "Harbor12345")
                 repo = Repository()
@@ -77,11 +115,9 @@ class HarborAPI:
                     time.sleep(180)
                     repo_name = urllib.parse.quote(_repo["cache_image_namespace"]+"/"+_repo["cache_image"],'utf-8')
                     repo_data = repo.get_repository(project["name"], repo_name, **USER_ADMIN)
-                    print("=========repo_data:",repo_data)
             return
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
-        request(url+"projects", 'post', **body)
 
     def create_user(self, username):
         payload = {"username":username, "email":username+"@vmware.com", "password":"Harbor12345", "realname":username, "comment":"string"}
@@ -156,8 +192,6 @@ class HarborAPI:
             body=dict(body=payload)
             request(url+"targets", 'post', **body)
         elif kwargs["branch"] == 2:
-            if registry_type == "harbor":
-                endpointurl = endpoint_url
             payload = {
                 "credential":{
                     "access_key":""+username+"",
@@ -187,6 +221,7 @@ class HarborAPI:
             request(url+"policies/replication", 'post', **body)
         elif kwargs["branch"] == 2:
             r = request(url+"registries?name="+replicationrule["endpoint"]+"", 'get')
+            print("response:", r)
             targetid = r.json()[0]['id']
             if replicationrule["is_src_registry"] is True:
                 registry = r'"src_registry": { "id": '+str(targetid)+r'},'
@@ -542,11 +577,11 @@ class HarborAPI:
     def push_artifact_index(self, project, name, tag, **kwargs):
         image_a = "alpine"
         image_b = "busybox"
-        repo_name_a, tag_a = push_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_a, "latest")
-        repo_name_b, tag_b = push_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_b, "latest")
+        repo_name_a, tag_a = push_self_build_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_a, "latest")
+        repo_name_b, tag_b = push_self_build_image_to_project(project, args.endpoint, 'admin', 'Harbor12345', image_b, "latest")
         manifests = [args.endpoint+"/"+repo_name_a+":"+tag_a, args.endpoint+"/"+repo_name_b+":"+tag_b]
         index = args.endpoint+"/"+project+"/"+name+":"+tag
-        docker_manifest_push_to_harbor(index, manifests, args.endpoint, 'admin', 'Harbor12345', cfg_file = args.libpath + "/update_docker_cfg.sh"
+        docker_manifest_push_to_harbor(index, manifests, args.endpoint, 'admin', 'Harbor12345', cfg_file = args.libpath + "/update_docker_cfg.sh")
 
 def request(url, method, user = None, userp = None, **kwargs):
     if user is None:
@@ -602,44 +637,22 @@ def do_data_creation():
 
     # Make sure to create endpoint first, it's for proxy cache project creation.
     for endpoint in data["endpoint"]:
+        print("endpoint:", endpoint)
         harborAPI.add_endpoint(endpoint["url"], endpoint["name"], endpoint["user"], endpoint["pass"], endpoint["insecure"], endpoint["type"], version=args.version)
 
     for distribution in data["distributions"]:
         harborAPI.add_distribution(distribution, version=args.version)
 
-    for project in data["projects"]:
-        harborAPI.create_project(project, version=args.version)
-        for member in project["member"]:
-            harborAPI.add_member(project["name"], member["name"], member["role"], version=args.version)
-        for robot_account in project["robot_account"]:
-            harborAPI.add_project_robot_account(project["name"], robot_account, version=args.version)
-        harborAPI.add_p2p_preheat_policy(project, version=args.version)
-        harborAPI.add_webhook(project["name"], project["webhook"], version=args.version)
-        if project["tag_retention_rule"] in not None:
-            harborAPI.add_tag_retention_rule(project["name"], project["tag_retention_rule"], version=args.version)
-        harborAPI.add_tag_immutability_rule(project["name"], project["tag_immutability_rule"], version=args.version)
-        time.sleep(30)
+    harborAPI.populate_projects(version=args.version)
 
     harborAPI.push_artifact_index(data["projects"][0]["name"], data["projects"][0]["artifact_index"]["name"], data["projects"][0]["artifact_index"]["tag"], version=args.version)
-    pull_image("busybox", "redis", "haproxy", "alpine", "httpd:2")
-    push_image("busybox", data["projects"][0]["name"])
+    #pull_image("busybox", "redis", "haproxy", "alpine", "httpd:2")
+    push_self_build_image_to_project(data["projects"][0]["name"], args.endpoint, 'admin', 'Harbor12345', "busybox", "latest")
     push_signed_image("alpine", data["projects"][0]["name"], "latest")
 
     for replicationrule in data["replicationrule"]:
         harborAPI.add_replication_rule(replicationrule, version=args.version)
 
-    for project in data["projects"]:
-        harborAPI.update_project_setting_metadata(project["name"],
-                                        project["configuration"]["public"],
-                                        project["configuration"]["enable_content_trust"],
-                                        project["configuration"]["prevent_vul"],
-                                        project["configuration"]["severity"],
-                                        project["configuration"]["auto_scan"])
-
-    for project in data["projects"]:
-        harborAPI.update_project_setting_allowlist(project["name"],
-                                    project["configuration"]["reuse_sys_cve_allowlist"],
-                                    project["configuration"]["deployment_security"], version=args.version)
 
     harborAPI.update_interrogation_services(data["interrogation_services"]["cron"], version=args.version)
 

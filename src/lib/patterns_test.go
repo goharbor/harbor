@@ -66,3 +66,39 @@ func TestMatchBlobUploadURLPattern(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "library/hello-world", repository)
 }
+
+func TestMatchCatalogURLPattern(t *testing.T) {
+	cases := []struct {
+		url   string
+		match bool
+	}{
+		{
+			url:   "/v2/_catalog",
+			match: true,
+		},
+		{
+			url:   "/v2/_catalog/",
+			match: true,
+		},
+		{
+			url:   "/v2/_catalog////",
+			match: true,
+		},
+		{
+			url:   "/v2/_catalog/xxx",
+			match: true,
+		},
+		{
+			url:   "/v2/_catalog////#",
+			match: true,
+		},
+		{
+			url:   "/v2/_catalog//#//",
+			match: true,
+		},
+	}
+	for _, c := range cases {
+
+		assert.Equal(t, c.match, V2CatalogURLRe.MatchString(c.url), "failed for %s", c.url)
+	}
+}

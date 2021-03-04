@@ -34,6 +34,8 @@ Pull image
     Should Contain  ${output}  Digest:
     Should Contain  ${output}  Status:
     Should Not Contain  ${output}  No such image:
+    #Remove image for docker 20
+    Clean All Local Images
 
 Push image
     # If no tag provided in $(image_with_or_without_tag}, latest will be the tag pulled from docker-hub or read from local
@@ -51,6 +53,8 @@ Push image
     ...  ELSE  Wait Unitl Command Success  docker tag ${image_in_use} ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker logout ${ip}
+    #Remove image for docker 20
+    Clean All Local Images
     Sleep  1
 
 Push Image With Tag
@@ -62,6 +66,12 @@ Push Image With Tag
     Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1} ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker logout ${ip}
+    #Remove image for docker 20
+    Clean All Local Images
+
+Clean All Local Images
+    Wait Unitl Command Success  docker rmi -f $(docker images -a -q)
+    Wait Unitl Command Success  docker system prune -a -f
 
 Cannot Docker Login Harbor
     [Arguments]  ${ip}  ${user}  ${pwd}
@@ -138,11 +148,54 @@ Start Docker Daemon Locally
     Sleep  2s
     [Return]  ${handle}
 
+Start Containerd Daemon Locally
+    ${handle}=  Start Process  containerd > ./daemon-local.log 2>&1 &  shell=True
+    FOR  ${IDX}  IN RANGE  5
+        ${pid}=  Run  pidof containerd
+        Log To Console  pid: ${pid}
+        Exit For Loop If  '${pid}' != '${EMPTY}'
+        Sleep  2s
+    END
+    Sleep  2s
+    [Return]  ${handle}
+
+Restart Docker Daemon Locally
+    FOR  ${IDX}  IN RANGE  5
+        ${pid}=  Run  pidof dockerd
+        Exit For Loop If  '${pid}' == '${EMPTY}'
+        ${result}=  Run Process  kill ${pid}  shell=True
+        Log To Console  Kill docker process: ${result}
+        Sleep  2s
+    END
+    ${pid}=  Run  pidof dockerd
+    Should Be Equal As Strings  '${pid}'  '${EMPTY}'
+    OperatingSystem.File Should Exist  /usr/local/bin/dockerd-entrypoint.sh
+    ${result}=  Run Process  rm -rf /var/lib/docker/*  shell=True
+    Log To Console  Clear /var/lib/docker: ${result}
+    ${handle}=  Start Process  /usr/local/bin/dockerd-entrypoint.sh dockerd>./daemon-local.log 2>&1  shell=True
+    Process Should Be Running  ${handle}
+    FOR  ${IDX}  IN RANGE  5
+        ${pid}=  Run  pidof dockerd
+        Exit For Loop If  '${pid}' != '${EMPTY}'
+        Sleep  2s
+    END
+    Sleep  2s
+    [Return]  ${handle}
+
 Prepare Docker Cert
     [Arguments]  ${ip}
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
     Wait Unitl Command Success  cp harbor_ca.crt /etc/docker/certs.d/${ip}
     Wait Unitl Command Success  cp harbor_ca.crt /usr/local/share/ca-certificates/
+    Wait Unitl Command Success  update-ca-certificates
+
+Prepare Docker Cert For Nightly
+    [Arguments]  ${ip}
+    Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
+    Wait Unitl Command Success  cp harbor_ca.crt /etc/docker/certs.d/${ip}
+    Wait Unitl Command Success  cp harbor_ca.crt /usr/local/share/ca-certificates/
+    #Add pivotal ecs cert for docker manifest push test.
+    Wait Unitl Command Success  cp /ecs_ca/vmwarecert.crt /usr/local/share/ca-certificates/
     Wait Unitl Command Success  update-ca-certificates
 
 Kill Local Docker Daemon
@@ -164,9 +217,8 @@ Docker Login
 
 Docker Pull
     [Arguments]  ${image}
-    ${output}=  Retry Keyword N Times When Error  10  Wait Unitl Command Success  docker pull ${image}
-    Log  ${output}
-    Log To Console  Docker Pull: ${output}
+    ${output}=  Retry Keyword N Times When Error  2  Wait Unitl Command Success  docker pull ${image}
+    Log All  Docker Pull: ${output}
     [Return]  ${output}
 
 Docker Tag
@@ -186,17 +238,22 @@ Docker Push Index
 Docker Image Can Not Be Pulled
     [Arguments]  ${image}
     FOR  ${idx}  IN RANGE  0  30
+        ${out}=  Run Keyword And Ignore Error  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
+        Log To Console  Return value is ${out}
         ${out}=  Run Keyword And Ignore Error  Command Should be Failed  docker pull ${image}
         Exit For Loop If  '${out[0]}'=='PASS'
+        Log To Console  Docker pull return value is ${out}
         Sleep  3
     END
     Log To Console  Cannot Pull Image From Docker - Pull Log: ${out[1]}
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
 Docker Image Can Be Pulled
-    [Arguments]  ${image}  ${period}=60  ${times}=10
+    [Arguments]  ${image}  ${period}=60  ${times}=2
     FOR  ${n}  IN RANGE  1  ${times}
         Sleep  ${period}
+        ${out}=  Run Keyword And Ignore Error  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
+        Log To Console  Return value is ${out}
         ${out}=  Run Keyword And Ignore Error  Docker Pull  ${image}
         Log To Console  Return value is ${out[0]}
         Exit For Loop If  '${out[0]}'=='PASS'

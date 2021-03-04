@@ -1,3 +1,17 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package handler
 
 import (
@@ -18,6 +32,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/controller/repository"
+	"github.com/goharbor/harbor/src/controller/retention"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
@@ -50,6 +65,7 @@ func newProjectAPI() *projectAPI {
 		quotaCtl:      quota.Ctl,
 		robotMgr:      robot.Mgr,
 		preheatCtl:    preheat.Ctl,
+		retentionCtl:  retention.Ctl,
 	}
 }
 
@@ -63,6 +79,7 @@ type projectAPI struct {
 	quotaCtl      quota.Controller
 	robotMgr      robot.Manager
 	preheatCtl    preheat.Controller
+	retentionCtl  retention.Controller
 }
 
 func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateProjectParams) middleware.Responder {
@@ -76,22 +93,21 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	}
 
 	secCtx, _ := security.FromContext(ctx)
-	if onlyAdmin && !(secCtx.IsSysAdmin() || secCtx.IsSolutionUser()) {
+	if onlyAdmin && !(a.isSysAdmin(ctx, rbac.ActionCreate) || secCtx.IsSolutionUser()) {
 		log.Errorf("Only sys admin can create project")
 		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create project"))
 	}
 
 	req := params.Project
 
-	if req.RegistryID != nil && !secCtx.IsSysAdmin() {
-		// only system admin can create the proxy cache project
+	if req.RegistryID != nil && !a.isSysAdmin(ctx, rbac.ActionCreate) {
 		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create proxy cache project"))
 	}
 
 	// populate storage limit
 	if config.QuotaPerProjectEnable() {
 		// the security context is not sys admin, set the StorageLimit the global StoragePerProject
-		if req.StorageLimit == nil || *req.StorageLimit == 0 || !secCtx.IsSysAdmin() {
+		if req.StorageLimit == nil || *req.StorageLimit == 0 || !a.isSysAdmin(ctx, rbac.ActionCreate) {
 			setting, err := config.QuotaSetting()
 			if err != nil {
 				log.Errorf("failed to get quota setting: %v", err)
@@ -171,9 +187,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// create a default retention policy for proxy project
 	if req.RegistryID != nil {
 		plc := policy.WithNDaysSinceLastPull(projectID, defaultDaysToRetentionForProxyCacheProject)
-		// TODO: move the retention controller to `src/controller/retention` and
-		// change to use the default retention controller in `src/controller/retention`
-		retentionID, err := api.GetRetentionController().CreateRetention(plc)
+		retentionID, err := a.retentionCtl.CreateRetention(ctx, plc)
 		if err != nil {
 			return a.SendError(ctx, err)
 		}
@@ -181,19 +195,25 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		if err := a.metadataMgr.Add(ctx, projectID, md); err != nil {
 			return a.SendError(ctx, err)
 		}
-		return nil
 	}
 
-	location := fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), projectID)
+	var location string
+	if lib.BoolValue(params.XResourceNameInLocation) {
+		location = fmt.Sprintf("%s/%s", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), req.ProjectName)
+	} else {
+		location = fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), projectID)
+	}
+
 	return operation.NewCreateProjectCreated().WithLocation(location)
 }
 
 func (a *projectAPI) DeleteProject(ctx context.Context, params operation.DeleteProjectParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectID, rbac.ActionDelete); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionDelete); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	result, err := a.deletable(ctx, params.ProjectID)
+	p, result, err := a.deletable(ctx, projectNameOrID)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -202,19 +222,19 @@ func (a *projectAPI) DeleteProject(ctx context.Context, params operation.DeleteP
 		return a.SendError(ctx, errors.PreconditionFailedError(errors.New(result.Message)))
 	}
 
-	if err := a.projectCtl.Delete(ctx, params.ProjectID); err != nil {
+	if err := a.projectCtl.Delete(ctx, p.ProjectID); err != nil {
 		return a.SendError(ctx, err)
 	}
 
 	// remove the robot associated with the project
-	if err := a.robotMgr.DeleteByProjectID(ctx, params.ProjectID); err != nil {
+	if err := a.robotMgr.DeleteByProjectID(ctx, p.ProjectID); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	referenceID := quota.ReferenceID(params.ProjectID)
+	referenceID := quota.ReferenceID(p.ProjectID)
 	q, err := a.quotaCtl.GetByRef(ctx, quota.ProjectReference, referenceID)
 	if err != nil {
-		log.Warningf("failed to get quota for project %d, error: %v", params.ProjectID, err)
+		log.Warningf("failed to get quota for project %s, error: %v", projectNameOrID, err)
 	} else {
 		if err := a.quotaCtl.Delete(ctx, q.ID); err != nil {
 			return a.SendError(ctx, fmt.Errorf("failed to delete quota for project: %v", err))
@@ -222,7 +242,7 @@ func (a *projectAPI) DeleteProject(ctx context.Context, params operation.DeleteP
 	}
 
 	// preheat policies under the project should be deleted after deleting the project
-	if err = a.preheatCtl.DeletePoliciesOfProject(ctx, params.ProjectID); err != nil {
+	if err = a.preheatCtl.DeletePoliciesOfProject(ctx, p.ProjectID); err != nil {
 		return a.SendError(ctx, err)
 	}
 
@@ -270,11 +290,12 @@ func (a *projectAPI) GetLogs(ctx context.Context, params operation.GetLogsParams
 }
 
 func (a *projectAPI) GetProject(ctx context.Context, params operation.GetProjectParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectID, rbac.ActionRead); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	p, err := a.getProject(ctx, params.ProjectID, project.WithCVEAllowlist(), project.WithOwner())
+	p, err := a.getProject(ctx, projectNameOrID, project.WithCVEAllowlist(), project.WithOwner())
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -283,11 +304,12 @@ func (a *projectAPI) GetProject(ctx context.Context, params operation.GetProject
 }
 
 func (a *projectAPI) GetProjectDeletable(ctx context.Context, params operation.GetProjectDeletableParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectID, rbac.ActionDelete); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionDelete); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	result, err := a.deletable(ctx, params.ProjectID)
+	_, result, err := a.deletable(ctx, projectNameOrID)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -296,11 +318,12 @@ func (a *projectAPI) GetProjectDeletable(ctx context.Context, params operation.G
 }
 
 func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.GetProjectSummaryParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectID, rbac.ActionRead); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	p, err := a.getProject(ctx, params.ProjectID)
+	p, err := a.getProject(ctx, projectNameOrID)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -369,7 +392,7 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 
 	secCtx, ok := security.FromContext(ctx)
 	if ok && secCtx.IsAuthenticated() {
-		if !secCtx.IsSysAdmin() && !secCtx.IsSolutionUser() {
+		if !a.isSysAdmin(ctx, rbac.ActionList) && !secCtx.IsSolutionUser() {
 			// authenticated but not system admin or solution user,
 			// return public projects and projects that the user is member of
 			if l, ok := secCtx.(*local.SecurityContext); ok {
@@ -410,7 +433,7 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 		return operation.NewListProjectsOK().WithXTotalCount(0).WithPayload([]*models.Project{})
 	}
 
-	projects, err := a.projectCtl.List(ctx, query, project.WithCVEAllowlist(), project.WithOwner())
+	projects, err := a.projectCtl.List(ctx, query, project.Detail(lib.BoolValue(params.WithDetail)), project.WithCVEAllowlist(), project.WithOwner())
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -441,11 +464,12 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 }
 
 func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateProjectParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectID, rbac.ActionUpdate); err != nil {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionUpdate); err != nil {
 		return a.SendError(ctx, err)
 	}
 
-	p, err := a.projectCtl.Get(ctx, params.ProjectID, project.Metadata(false))
+	p, err := a.projectCtl.Get(ctx, projectNameOrID, project.Metadata(false))
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -453,10 +477,10 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	if params.Project.CVEAllowlist != nil {
 		if params.Project.CVEAllowlist.ProjectID == 0 {
 			// project_id in cve_allowlist not provided or provided as 0, let it to be the id of the project which will be updating
-			params.Project.CVEAllowlist.ProjectID = params.ProjectID
-		} else if params.Project.CVEAllowlist.ProjectID != params.ProjectID {
+			params.Project.CVEAllowlist.ProjectID = p.ProjectID
+		} else if params.Project.CVEAllowlist.ProjectID != p.ProjectID {
 			return a.SendError(ctx, errors.BadRequestError(nil).
-				WithMessage("project_id in cve_allowlist must be %d but it's %d", params.ProjectID, params.Project.CVEAllowlist.ProjectID))
+				WithMessage("project_id in cve_allowlist must be %d but it's %d", p.ProjectID, params.Project.CVEAllowlist.ProjectID))
 		}
 
 		if err := lib.JSONCopy(&p.CVEAllowlist, params.Project.CVEAllowlist); err != nil {
@@ -478,26 +502,26 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	return operation.NewUpdateProjectOK()
 }
 
-func (a *projectAPI) deletable(ctx context.Context, projectID int64) (*models.ProjectDeletable, error) {
-	proj, err := a.getProject(ctx, projectID)
+func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{}) (*project.Project, *models.ProjectDeletable, error) {
+	p, err := a.getProject(ctx, projectNameOrID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	result := &models.ProjectDeletable{Deletable: true}
-	if proj.RepoCount > 0 {
+	if p.RepoCount > 0 {
 		result.Deletable = false
 		result.Message = "the project contains repositories, can not be deleted"
-	} else if proj.ChartCount > 0 {
+	} else if p.ChartCount > 0 {
 		result.Deletable = false
 		result.Message = "the project contains helm charts, can not be deleted"
 	}
 
-	return result, nil
+	return p, result, nil
 }
 
-func (a *projectAPI) getProject(ctx context.Context, projectID int64, options ...project.Option) (*project.Project, error) {
-	p, err := a.projectCtl.Get(ctx, projectID, options...)
+func (a *projectAPI) getProject(ctx context.Context, projectNameOrID interface{}, options ...project.Option) (*project.Project, error) {
+	p, err := a.projectCtl.Get(ctx, projectNameOrID, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -575,6 +599,13 @@ func (a *projectAPI) populateProperties(ctx context.Context, p *project.Project)
 	return nil
 }
 
+func (a *projectAPI) isSysAdmin(ctx context.Context, action rbac.Action) bool {
+	if err := a.RequireSystemAccess(ctx, action, rbac.ResourceProject); err != nil {
+		return false
+	}
+	return true
+}
+
 func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *models.ProjectSummary) {
 	if !config.QuotaPerProjectEnable() {
 		log.Debug("Quota per project disabled")
@@ -589,10 +620,10 @@ func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *mo
 
 	summary.Quota = &models.ProjectSummaryQuota{}
 	if hard, err := q.GetHard(); err == nil {
-		lib.JSONCopy(&summary.Quota.Hard, hard)
+		summary.Quota.Hard = hard
 	}
 	if used, err := q.GetUsed(); err == nil {
-		lib.JSONCopy(&summary.Quota.Used, used)
+		summary.Quota.Used = used
 	}
 }
 

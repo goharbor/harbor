@@ -38,6 +38,5 @@ func TestInit(t *testing.T) {
 	require.Nil(t, err)
 	assert.NotNil(t, PolicyCtl)
 	assert.NotNil(t, RegistryMgr)
-	assert.NotNil(t, OperationCtl)
 	assert.NotNil(t, EventHandler)
 }

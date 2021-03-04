@@ -117,3 +117,33 @@ func (_m *Manager) List(ctx context.Context, query *q.Query) ([]*models.Project,
 
 	return r0, r1
 }
+
+// ListRoles provides a mock function with given fields: ctx, projectID, userID, groupIDs
+func (_m *Manager) ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error) {
+	_va := make([]interface{}, len(groupIDs))
+	for _i := range groupIDs {
+		_va[_i] = groupIDs[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, projectID, userID)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int, ...int) []int); ok {
+		r0 = rf(ctx, projectID, userID, groupIDs...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int64, int, ...int) error); ok {
+		r1 = rf(ctx, projectID, userID, groupIDs...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

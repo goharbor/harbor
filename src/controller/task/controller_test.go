@@ -28,7 +28,7 @@ import (
 type controllerTestSuite struct {
 	suite.Suite
 	ctl *controller
-	mgr *task.FakeManager
+	mgr *task.Manager
 }
 
 // TestControllerTestSuite tests controller.
@@ -38,7 +38,7 @@ func TestControllerTestSuite(t *testing.T) {
 
 // SetupTest setups the testing env.
 func (c *controllerTestSuite) SetupTest() {
-	c.mgr = &task.FakeManager{}
+	c.mgr = &task.Manager{}
 	c.ctl = &controller{mgr: c.mgr}
 }
 

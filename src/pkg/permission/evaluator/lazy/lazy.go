@@ -15,6 +15,7 @@
 package lazy
 
 import (
+	"context"
 	"sync"
 
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
@@ -34,12 +35,12 @@ type Evaluator struct {
 }
 
 // HasPermission returns true when user has action permission for the resource
-func (l *Evaluator) HasPermission(resource types.Resource, action types.Action) bool {
+func (l *Evaluator) HasPermission(ctx context.Context, resource types.Resource, action types.Action) bool {
 	l.once.Do(func() {
 		l.evaluator = l.factory()
 	})
 
-	return l.evaluator != nil && l.evaluator.HasPermission(resource, action)
+	return l.evaluator != nil && l.evaluator.HasPermission(ctx, resource, action)
 }
 
 // New returns lazy evaluator

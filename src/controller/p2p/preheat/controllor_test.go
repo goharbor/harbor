@@ -34,7 +34,7 @@ type preheatSuite struct {
 	fakePolicyMgr      *pmocks.FakeManager
 	fakeScheduler      *smocks.Scheduler
 	mockInstanceServer *httptest.Server
-	fakeExecutionMgr   *tmocks.FakeExecutionManager
+	fakeExecutionMgr   *tmocks.ExecutionManager
 }
 
 func TestPreheatSuite(t *testing.T) {
@@ -42,7 +42,7 @@ func TestPreheatSuite(t *testing.T) {
 	fakeInstanceMgr := &instance.FakeManager{}
 	fakePolicyMgr := &pmocks.FakeManager{}
 	fakeScheduler := &smocks.Scheduler{}
-	fakeExecutionMgr := &tmocks.FakeExecutionManager{}
+	fakeExecutionMgr := &tmocks.ExecutionManager{}
 
 	var c = &controller{
 		iManager:     fakeInstanceMgr,
@@ -241,7 +241,7 @@ func (s *preheatSuite) TestCreatePolicy() {
 		FiltersStr: `[{"type":"repository","value":"harbor*"},{"type":"tag","value":"2*"}]`,
 		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"* * * * */1"}}`, policy.TriggerTypeScheduled),
 	}
-	s.fakeScheduler.On("Schedule", s.ctx, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.fakeScheduler.On("Schedule", s.ctx, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.fakePolicyMgr.On("Create", s.ctx, policy).Return(int64(1), nil)
 	s.fakePolicyMgr.On("Update", s.ctx, mock.Anything, mock.Anything).Return(nil)
 	s.fakeScheduler.On("UnScheduleByVendor", s.ctx, mock.Anything, mock.Anything).Return(nil)

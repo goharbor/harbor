@@ -15,12 +15,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie';
 import { AppConfig } from './app-config';
-import { CookieKeyOfAdmiral, HarborQueryParamKey } from '../shared/shared.const';
-import { maintainUrlQueryParmas } from '../shared/shared.utils';
+import { maintainUrlQueryParmas } from '../shared/units/shared.utils';
 import { map } from "rxjs/operators";
 import { Observable } from "rxjs";
-import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from "../../lib/utils/utils";
-import { CONFIG_AUTH_MODE } from "../../lib/entities/shared.const";
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from "../shared/units/utils";
+import { CONFIG_AUTH_MODE, CookieKeyOfAdmiral, HarborQueryParamKey } from "../shared/entities/shared.const";
 export const systemInfoEndpoint = CURRENT_BASE_HREF + "/systeminfo";
 /**
  * Declare service to handle the bootstrap options

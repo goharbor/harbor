@@ -1,0 +1,124 @@
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <h2 class="custom-h2">
+            {{ 'SIDE_NAV.DISTRIBUTIONS.INSTANCES' | translate }}
+        </h2>
+        <div>
+            <clr-datagrid (clrDgRefresh)="loadData($event)" [clrDgLoading]="inProgress" [(clrDgSelected)]="selectedRow">
+                <clr-dg-action-bar>
+                    <div class="clr-row">
+                        <div class="clr-col-7">
+                            <button id="new-instance"
+                                    type="button"
+                                    class="btn  btn-secondary"
+                                    (click)="addInstance()"
+                            >
+                                <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{
+                              'DISTRIBUTION.ADD_ACTION' | translate
+                                }}
+                            </button>
+                            <clr-dropdown
+                                    [clrCloseMenuOnItemClick]="false"
+                                    class="btn  btn-link"
+                                    clrDropdownTrigger>
+                                 <span id="member-action">{{ 'BUTTON.ACTIONS' | translate}}<clr-icon shape="caret down"></clr-icon></span>
+                                 <clr-dropdown-menu *clrIfOpen>
+                                    <clr-dropdown>
+                                        <button type="button" class="btn  btn-secondary" (click)="editInstance()"
+                                                [disabled]="!(selectedRow && selectedRow.length === 1)">
+                                            <clr-icon shape="edit" size="16"></clr-icon>&nbsp;
+                                            <span id="distribution-edit">{{'BUTTON.EDIT' | translate}}</span>
+                                        </button>
+                                        <button *ngIf="selectedRow && selectedRow.length === 1 && !selectedRow[0].enabled" type="button" class="btn  btn-secondary" (click)="operateInstances('enable', selectedRow)"
+                                                [disabled]="!(selectedRow && selectedRow.length === 1 && !selectedRow[0].enabled)">
+                                            <clr-icon shape="connect" size="16"></clr-icon>&nbsp;
+                                            <span id="distribution-enable">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</span>
+                                        </button>
+                                        <button *ngIf="!(selectedRow && selectedRow.length === 1 && !selectedRow[0].enabled)"
+                                                type="button"
+                                                class="btn btn-secondary"
+                                                (click)="operateInstances('disable', selectedRow)"
+                                                [disabled]="!(selectedRow && selectedRow.length === 1 && selectedRow[0].enabled)">
+                                            <clr-icon shape="disconnect" size="16"></clr-icon>&nbsp;
+                                            <span id="distribution-disable">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
+                                        </button>
+                                        <div class="dropdown-divider"></div>
+                                        <button
+                                                type="button"
+                                                class="btn btn-secondary"
+                                                (click)="operateInstances('delete', selectedRow)"
+                                                [disabled]="selectedRow.length < 1">
+                                            <clr-icon shape="window-close" size="16"></clr-icon>&nbsp;
+                                            <span id="distribution-delete">{{'BUTTON.DELETE' | translate}}</span>
+                                        </button>
+                                    </clr-dropdown>
+                                </clr-dropdown-menu>
+                            </clr-dropdown>
+                        </div>
+                        <div class="clr-col-5">
+                            <div class="action-head-pos">
+                                <hbr-filter [withDivider]="true" filterPlaceholder="{{'DISTRIBUTION.FILTER_INSTANCE_PLACEHOLDER' | translate}}" (filterEvt)="doFilter($event)"></hbr-filter>
+                                <span class="refresh-btn">
+                                  <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress" (click)="refresh()"></clr-icon>
+                                  <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </clr-dg-action-bar>
+                <clr-dg-column>{{ 'DISTRIBUTION.NAME' | translate }}</clr-dg-column>
+                <clr-dg-column>{{ 'DISTRIBUTION.ENDPOINT' | translate }}</clr-dg-column>
+                <clr-dg-column>{{ 'DISTRIBUTION.PROVIDER' | translate }}</clr-dg-column>
+                <clr-dg-column>{{ 'DISTRIBUTION.STATUS' | translate }}</clr-dg-column>
+                <clr-dg-column>{{ 'DISTRIBUTION.ENABLED' | translate }}</clr-dg-column>
+                <clr-dg-column>{{'SCANNER.AUTH' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'DISTRIBUTION.SETUP_TIMESTAMP' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'DISTRIBUTION.DESCRIPTION' | translate}}</clr-dg-column>
+                <clr-dg-placeholder>{{
+                  'DISTRIBUTION.NOT_FOUND' | translate
+                    }}</clr-dg-placeholder>
+                <clr-dg-row *ngFor="let instance of instances" [clrDgItem]="instance">
+                    <clr-dg-cell>
+                        <span>{{ instance.name }}</span>
+                    </clr-dg-cell>
+                    <clr-dg-cell>{{ instance.endpoint }}</clr-dg-cell>
+                    <clr-dg-cell class="no-wrapper">
+                      <span>{{ instance.vendor }}</span>
+                    </clr-dg-cell>
+                    <clr-dg-cell>
+                        <span *ngIf="!instance.hasCheckHealth;else elseBlockLoading" class="spinner spinner-inline ml-2"></span>
+                        <ng-template #elseBlockLoading>
+                            <span *ngIf="instance.pingStatus === 'Healthy';else elseBlock" class="label label-success">{{'SCANNER.HEALTHY' | translate}}</span>
+                            <ng-template #elseBlock>
+                                <span class="label label-danger">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                            </ng-template>
+                        </ng-template>
+                    </clr-dg-cell>
+                    <clr-dg-cell>
+                        <div *ngIf="instance.enabled" class="icon-wrap">
+                            <clr-icon shape="check-circle" size="20" class="is-success enabled-icon"></clr-icon>
+                            <span class="margin-left-5px">{{'WEBHOOK.ENABLED' | translate}}</span>
+                        </div>
+                        <div *ngIf="!instance.enabled" class="icon-wrap">
+                            <clr-icon shape="exclamation-triangle" size="20" class="is-warning"></clr-icon>
+                            <span class="margin-left-5px">{{'WEBHOOK.DISABLED' | translate}}</span>
+                        </div>
+                    </clr-dg-cell>
+                    <clr-dg-cell>{{ instance.auth_mode }}</clr-dg-cell>
+                    <clr-dg-cell>{{fmtTime(instance.setup_timestamp) | harborDatetime: 'short'}}</clr-dg-cell>
+                    <clr-dg-cell>{{ instance.description }}</clr-dg-cell>
+                </clr-dg-row>
+                <clr-dg-footer>
+                    <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount" [(clrDgPage)]="currentPage">
+                        <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+                        <span *ngIf="totalCount">{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }} {{ 'HELM_CHART.OF' | translate }} </span>
+                        <span>{{ totalCount }} {{ 'HELM_CHART.ITEMS' | translate }}</span>
+                    </clr-dg-pagination>
+                </clr-dg-footer>
+            </clr-datagrid>
+        </div>
+    </div>
+</div>
+<div>
+    <dist-setup-modal (refresh)="refresh()" [providers]="providers" #setupModal></dist-setup-modal>
+</div>

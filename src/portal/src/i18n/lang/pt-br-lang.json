@@ -94,7 +94,7 @@
         "RULE_USER_EXISTING": "Nome já em uso.",
         "EMPTY": "Nome é obrigatório",
         "ENDPOINT_FORMAT": "Avaliação deve começar por HTTP:// Ou HTTPS://.",
-        "OIDC_ENDPOIT_FORMAT": "Avaliação deve começar por HTTPS://.",
+        "OIDC_ENDPOINT_FORMAT": "Avaliação deve começar por HTTPS://.",
         "OIDC_NAME": "O Nome do prestador de oidc.",
         "OIDC_ENDPOINT": "A URL de um servidor oidc denúncia.",
         "OIDC_SCOPE": "O âmbito de aplicação enviada Ao servidor oidc Durante a autenticação.TEM que conter 'openid' e 'offline_access'.Se você está usando o Google, por favor remova 'offline_access' desse Campo.",
@@ -131,8 +131,8 @@
         "CLI_PASSWORD_TIP": "Você Pode USAR este Segredo de clitóris Como senha Ao USAR clitóris de estivador /leme para acessar Harbor.",
         "COPY_SUCCESS": "SUCESSO de cópia",
         "COPY_ERROR": "Cópia falhou",
-        "ADMIN_CIL_SECRET_BUTTON": "GENERATE SECRET",
-        "ADMIN_CIL_SECRET_RESET_BUTTON": "Upload Your Own Secret",
+        "ADMIN_CLI_SECRET_BUTTON": "GENERATE SECRET",
+        "ADMIN_CLI_SECRET_RESET_BUTTON": "Upload Your Own Secret",
         "NEW_SECRET": "Secret",
         "CONFIRM_SECRET": "Re-enter Secret",
         "GENERATE_SUCCESS": "Cli secret setting is successful",
@@ -201,8 +201,10 @@
         "DELETE_SUCCESS": "Usários removidos com sucesso.",
         "ITEMS": "itens",
         "OF": "de",
-        "RESET_Ok": "Senha do usuário redefinida com sucesso",
-        "EXISTING_PASSWORD": "A nova senha não deve ser igual à antiga"
+        "RESET_OK": "Senha do usuário redefinida com sucesso",
+        "EXISTING_PASSWORD": "A nova senha não deve ser igual à antiga",
+        "UNKNOWN": "Unknown",
+        "UNKNOWN_TIP": "Please verify whether the user has admin status through the Identity Provider System if the value is \"Unknown\""
     },
     "PROJECT": {
         "PROJECTS": "Projetos",
@@ -246,7 +248,7 @@
         "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub and Harbor registries.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Harbor, Aws ECR, Azure ACR, Quay and Google GCR registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
     },
@@ -357,7 +359,7 @@
         "ACCOUNT_EXISTING": "Robô conta já existe.",
         "ALERT_TEXT": "É só copiar o token de acesso Pessoal não VAI ter outra oportunidade.",
         "CREATED_SUCCESS": "Created '{{param}}' successfully.",
-        "COPY_SUCCESS": "Copy token successfully of '{{param}}'",
+        "COPY_SUCCESS": "Copy secret successfully of '{{param}}'",
         "DELETION_TITLE": "Confirmar a remoção do robô Contas",
         "DELETION_SUMMARY": "Você quer remover a regra {{param}}?",
         "PULL_IS_MUST": "Pull permission is checked by default and can not be modified.",
@@ -365,7 +367,9 @@
         "EXPIRES_AT": "Expires At",
         "EXPIRATION_TOOLTIP": "If not set, the expiration time of system configuration will be used",
         "INVALID_VALUE": "The value of the expiration time is invalid",
-        "NEVER_EXPIRED": "Never Expired"
+        "NEVER_EXPIRED": "Never Expired",
+        "NAME_PREFIX": "Robot Name Prefix",
+        "NAME_PREFIX_REQUIRED": "Robot name prefix is required"
     },
     "GROUP": {
         "GROUP": "Grupo",
@@ -616,7 +620,15 @@
         "NAMESPACE_TOOLTIP": "Namespace name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "TAG": "Tag",
         "LABEL": "Label",
-        "RESOURCE": "Resource"
+        "RESOURCE": "Resource",
+        "ENABLE_TITLE": "Enable rule",
+        "ENABLE_SUMMARY": "Do you want to enable rule {{param}}?",
+        "DISABLE_TITLE": "Disable rule",
+        "DISABLE_SUMMARY": "Do you want to disable rule {{param}}?",
+        "ENABLE_SUCCESS": "Enabled rule successfully",
+        "ENABLE_FAILED": "Enabling rule failed",
+        "DISABLE_SUCCESS": "Disabled rule successfully",
+        "DISABLE_FAILED": "Disabling rule failed"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Novo Endpoint",
@@ -650,7 +662,8 @@
         "DELETED_FAILED": "Falha em endpoints removidos.",
         "CANNOT_EDIT": "Endpoint não pode ser alterado enquando a regra de replicação estiver ativa.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Falha ao remover endpoint em uso.",
-        "PLACEHOLDER": "Não foi possível encontrar nenhum endpoint!"
+        "PLACEHOLDER": "Não foi possível encontrar nenhum endpoint!",
+        "DEPRECATED": "Helm Hub is moving to Artifact Hub"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copiar Digest",
@@ -835,7 +848,7 @@
         "AUTH_MODE_DB": "Banco de Dados",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
-        "AUTH_MODE_HTTP": "http_auth",
+        "AUTH_MODE_HTTP": "Http Auth",
         "AUTH_MODE_OIDC": "OIDC",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "OneLevel",
@@ -856,6 +869,7 @@
             "LDAP_UID": "O atributo utilizado na busca de um uusário. Pode ser uid, cn, email, sAMAccountName ou outro atributo dependendo LDAP/AD.",
             "LDAP_SCOPE": "O escopo de busca de usuários.",
             "TOKEN_EXPIRATION": "O tempo de expiração (em minutos) de um token criado pelo serviço de token. O padrão é 30 minutos.",
+            "ROBOT_NAME_PREFIX": "Prefixed string for each robot name,and default value is 'robot$'",
             "ROBOT_TOKEN_EXPIRATION": "O tempo de expiração (dias) do token da conta do robô, o padrão é 30 dias. Mostra o número de dias convertidos de minutos e arredonda para baixo",
             "PRO_CREATION_RESTRICTION": "A opção para definir quais usuários possuem permissão de criar projetos. Por padrão, qualquer um pode criar projetos. Configure para 'Apenas Administradores' para que apenas Administradores possam criar projetos.",
             "ROOT_CERT_DOWNLOAD": "Baixar o certificado raiz do registry.",
@@ -900,7 +914,8 @@
             "ENDPOINT": "Server endpoint",
             "TOKEN_REVIEW": "Ponto final do Token Review",
             "SKIP_SEARCH": "Skip Search",
-            "VERIFY_CERT": "Verificar certificado de Authentication"
+            "VERIFY_CERT": "Verificar certificado de Authentication",
+            "ADMIN_GROUPS": "Admin Groups"
         },
         "OIDC": {
             "OIDC_PROVIDER": "OIDC Fornecedor",
@@ -915,7 +930,9 @@
             "OIDC_SETNAME": "Definir o Utilizador OIDC",
             "OIDC_SETNAMECONTENT": "Você deve Criar um Nome de usuário do Porto a primeira vez que autenticar através de um terceiro (OIDC). Isto será usado Dentro de Harbor para ser associado a projetos, papéis, etc.",
             "OIDC_USERNAME": "Utilizador",
-            "GROUP_CLAIM_NAME": "Group Claim Name"
+            "GROUP_CLAIM_NAME": "Group Claim Name",
+            "OIDC_ADMIN_GROUP": "OIDC Admin Group",
+            "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Disparo de análise geral efetuado com sucesso!",
@@ -1002,7 +1019,9 @@
             "COLUMN_FIXED": "Corrigido na versão",
             "COLUMN_DESCRIPTION": "Descrição",
             "FOOT_ITEMS": "Itens",
-            "FOOT_OF": "de"
+            "FOOT_OF": "de",
+            "IN_ALLOW_LIST": "Listed In CVE Allowlist",
+            "CVSS3": "CVSS3"
         },
         "CHART": {
             "SCANNING_TIME": "Tempo de conclusão da análise:",
@@ -1028,7 +1047,10 @@
         "PLACEHOLDER": "Filtrar Vulnerabilidades",
         "PACKAGE": "pacote",
         "PACKAGES": "pacotes",
-        "SCAN_NOW": "Analisar"
+        "SCAN_NOW": "Analisar",
+        "SCAN_BY": "SCAN BY {{scanner}}",
+        "REPORTED_BY": "Reported by {{scanner}}",
+        "NO_SCANNER": "NO SCANNER"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Command",
@@ -1189,6 +1211,7 @@
         "HOURLY": "Hourly",
         "CUSTOM": "Custom",
         "MANUAL": "Manual",
+        "SCHEDULE": "Scheduled",
         "CRON": "cron",
         "ON": "on",
         "AT": "at",
@@ -1443,7 +1466,7 @@
         "ENABLE_ACTION": "Enable",
         "DISABLE_ACTION": "Disable",
         "DELETE_ACTION": "Delete",
-        "NOT_FOUND": "Not found",
+        "NOT_FOUND": "We couldn't find any instance!",
         "NAME": "Name",
         "ENDPOINT": "Endpoint",
         "STATUS": "Status",
@@ -1570,6 +1593,82 @@
         "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote provider uses a self-signed or untrusted certificate.",
         "NAME_TOOLTIP": "Policy name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "NEED_HELP": "Please ask your system admin to add a provider first"
+    },
+    "PAGINATION": {
+        "PAGE_SIZE": "Page size"
+    },
+    "SYSTEM_ROBOT": {
+        "READ": "Read",
+        "CREATE": "Create",
+        "ARTIFACT": "Artifact",
+        "HELM": "Helm Chart",
+        "HELM_VERSION": "Helm Chart Version",
+        "ADD_ROBOT": "Add Robot",
+        "UPDATE_ROBOT": "Update Robot",
+        "UPDATE_ROBOT_SUCCESSFULLY": "Updated robot successfully",
+        "PLACEHOLDER": "Input new secret",
+        "SECRET": "Secret should be 8-20 characters long with at least 1 uppercase, 1 lowercase and 1 number.",
+        "REFRESH_SECRET": "Refresh Secret",
+        "REFRESH_SECRET_SUCCESS": "Refreshed secret successfully",
+        "DELETE_ROBOT": "Delete Robot",
+        "DELETE_ROBOT_SUCCESS": "Deleted robot(s) successfully",
+        "ENABLE_TITLE": "Enable Robot",
+        "ENABLE_SUMMARY": "Do you want to enable robot {{param}}?",
+        "DISABLE_TITLE": "Disable Robot",
+        "DISABLE_SUMMARY": "Do you want to disable robot {{param}}?",
+        "ENABLE_ROBOT_SUCCESSFULLY": "Enabled robot successfully",
+        "DISABLE_ROBOT_SUCCESSFULLY": "Disabled robot successfully",
+        "ROBOT_ACCOUNT": "Robot account",
+        "PROJECTS": "Projects",
+        "ALL_PROJECTS": "All projects with",
+        "PERMISSIONS": "PERMISSION(S)",
+        "REFRESH_SECRET_SUMMARY": "Refresh the robot account secret automatically, or optionally open the details to manually specify a new secret",
+        "TOKEN": "Secret",
+        "NEW_TOKEN": "New Secret",
+        "REFRESH": "REFRESH",
+        "PROJECTS_MODAL_TITLE": "Projects for Robot Account",
+        "PROJECTS_MODAL_SUMMARY": "There are the projects covered by this robot account.",
+        "CREATE_ROBOT": "Create System Robot Account",
+        "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover specific projects. Choose \"Cover all projects\" to be applied to all existing and future projects",
+        "EDIT_ROBOT": "Edit System Robot Account",
+        "EDIT_ROBOT_SUMMARY": "Edit a system Robot Account. Choose \"Cover all projects\" to be applied to all exiting and future projects",
+        "EXPIRATION_TIME": "Expiration time",
+        "EXPIRATION_TIME_EXPLAIN": "The expiration time(in days and the starting point is creation time) of the token of the robot account. For being never expired, please enter \"-1\".",
+        "EXPIRATION_DEFAULT": "days(default)",
+        "EXPIRATION_DAYS": "Specify # of days",
+        "EXPIRATION_NEVER": "Never",
+        "EXPIRATION_REQUIRED": "Valid expiration time is required",
+        "COVER_ALL": "Cover all projects",
+        "COVER_ALL_EXPLAIN": "Check to be applied to all existing and future projects",
+        "COVER_ALL_SUMMARY": "All current and future projects selected.",
+        "RESET_PERMISSION": "RESET PERMISSIONS",
+        "PERMISSION_COLUMN": "Permissions",
+        "EXPIRES_AT": "Expires at",
+        "VIEW_SECRET": "REFRESH SECRET",
+        "LEGACY": "Legacy",
+        "CREATE_PROJECT_ROBOT": "Create Robot Account",
+        "CREATE_PROJECT_ROBOT_SUMMARY": "Create a robot account for this project",
+        "EDIT_PROJECT_ROBOT": "Edit Robot Account",
+        "EDIT_PROJECT_ROBOT_SUMMARY": "Edit a robot account for this project",
+        "NOT_FOUND": "We couldn't find any robots!",
+        "SELECT_ALL": "SELECT ALL",
+        "UNSELECT_ALL": "UNSELECT ALL",
+        "ROBOT_ACCOUNT_NAV": "Robot Accounts",
+        "COVERED_PROJECTS": "PROJECT(S)",
+        "CONFIRM_SECRET": "Confirm Secret",
+        "SECRET_AGAIN": "Input secret again",
+        "INCONSISTENT": "Two secrets are inconsistent",
+        "NAME_TOOLTIP": "Robot name should be 1~255 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "ENABLE_NEW_SECRET": "Enable this option to manually specify a new secret",
+        "DELETE": "Delete",
+        "ARTIFACT_LABEL": "Artifact label",
+        "SCAN": "Scan",
+        "SCANNER_PULL": "Scanner Pull",
+        "SEARCH_BY_NAME": "Search by name(without prefix)",
+        "FINAL_PROJECT_NAME_TIP": "The final project robot name consists of the prefix,the project name,a plus mark and the current input value",
+        "FINAL_SYSTEM_NAME_TIP": "The final system robot name consists of the prefix and the current input value",
+        "PUSH_AND_PULL": "Push",
+        "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission"
     }
 
 }

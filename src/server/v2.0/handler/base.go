@@ -18,6 +18,8 @@ package handler
 
 import (
 	"context"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -34,6 +36,10 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
+)
+
+var (
+	baseProjectCtl = project.Ctl
 )
 
 // BaseAPI base API handler
@@ -57,7 +63,7 @@ func (*BaseAPI) HasPermission(ctx context.Context, action rbac.Action, resource 
 		return false
 	}
 
-	return s.Can(action, resource)
+	return s.Can(ctx, action, resource)
 }
 
 // HasProjectPermission returns true when the request has action permission on project subresource
@@ -68,7 +74,7 @@ func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName inte
 	}
 
 	if projectName != "" {
-		p, err := project.Ctl.GetByName(ctx, projectName)
+		p, err := baseProjectCtl.GetByName(ctx, projectName)
 		if err != nil {
 			log.Errorf("failed to get project %s: %v", projectName, err)
 			return false
@@ -81,7 +87,7 @@ func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName inte
 		projectID = p.ProjectID
 	}
 
-	resource := rbac.NewProjectNamespace(projectID).Resource(subresource...)
+	resource := rbac_project.NewNamespace(projectID).Resource(subresource...)
 	return b.HasPermission(ctx, action, resource)
 }
 
@@ -101,8 +107,8 @@ func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName inte
 	return errors.ForbiddenError(nil)
 }
 
-// RequireSysAdmin checks the system admin permission according to the security context
-func (b *BaseAPI) RequireSysAdmin(ctx context.Context) error {
+// RequireSystemAccess checks the system admin permission according to the security context
+func (b *BaseAPI) RequireSystemAccess(ctx context.Context, action rbac.Action, subresource ...rbac.Resource) error {
 	secCtx, ok := security.FromContext(ctx)
 	if !ok {
 		return errors.UnauthorizedError(errors.New("security context not found"))
@@ -110,7 +116,8 @@ func (b *BaseAPI) RequireSysAdmin(ctx context.Context) error {
 	if !secCtx.IsAuthenticated() {
 		return errors.UnauthorizedError(nil)
 	}
-	if !secCtx.IsSysAdmin() {
+	resource := system.NewNamespace().Resource(subresource...)
+	if !secCtx.Can(ctx, action, resource) {
 		return errors.ForbiddenError(nil).WithMessage(secCtx.GetUsername())
 	}
 	return nil

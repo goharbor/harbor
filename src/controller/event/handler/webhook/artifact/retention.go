@@ -2,31 +2,22 @@ package artifact
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/retention"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"strings"
 
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	evtModel "github.com/goharbor/harbor/src/controller/event/model"
-	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
-	"github.com/goharbor/harbor/src/pkg/retention"
 )
 
 // RetentionHandler preprocess tag retention event data
 type RetentionHandler struct {
-	RetentionController func() retention.APIController
-}
-
-// DefaultRetentionControllerFunc ...
-var DefaultRetentionControllerFunc = NewRetentionController
-
-// NewRetentionController ...
-func NewRetentionController() retention.APIController {
-	return api.GetRetentionController()
 }
 
 // Name ...
@@ -85,7 +76,8 @@ func (r *RetentionHandler) IsStateful() bool {
 }
 
 func (r *RetentionHandler) constructRetentionPayload(event *event.RetentionEvent) (*model.Payload, bool, int64, error) {
-	task, err := r.RetentionController().GetRetentionExecTask(event.TaskID)
+	ctx := orm.Context()
+	task, err := retention.Ctl.GetRetentionExecTask(ctx, event.TaskID)
 	if err != nil {
 		log.Errorf("failed to get retention task %d: error: %v", event.TaskID, err)
 		return nil, false, 0, err
@@ -94,7 +86,7 @@ func (r *RetentionHandler) constructRetentionPayload(event *event.RetentionEvent
 		return nil, false, 0, fmt.Errorf("task %d not found with retention event", event.TaskID)
 	}
 
-	execution, err := r.RetentionController().GetRetentionExec(task.ExecutionID)
+	execution, err := retention.Ctl.GetRetentionExec(ctx, task.ExecutionID)
 	if err != nil {
 		log.Errorf("failed to get retention execution %d: error: %v", task.ExecutionID, err)
 		return nil, false, 0, err
@@ -107,7 +99,7 @@ func (r *RetentionHandler) constructRetentionPayload(event *event.RetentionEvent
 		return nil, true, 0, nil
 	}
 
-	md, err := r.RetentionController().GetRetention(execution.PolicyID)
+	md, err := retention.Ctl.GetRetention(ctx, execution.PolicyID)
 	if err != nil {
 		log.Errorf("failed to get tag retention policy %d: error: %v", execution.PolicyID, err)
 		return nil, false, 0, err

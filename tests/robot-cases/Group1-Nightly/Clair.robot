@@ -24,13 +24,6 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
-Test Case - Clair Is Default Scanner And It Is Immutable
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Scanners Page
-    Should Display The Default Clair Scanner
-    Clair Is Immutable Scanner
-
 Test Case - Disable Scan Schedule
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
