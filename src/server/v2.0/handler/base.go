@@ -18,11 +18,12 @@ package handler
 
 import (
 	"context"
-	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
-	"github.com/goharbor/harbor/src/common/rbac/system"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 
 	"github.com/go-openapi/runtime"
 	"github.com/goharbor/harbor/src/lib"
@@ -136,7 +137,7 @@ func (b *BaseAPI) RequireAuthenticated(ctx context.Context) error {
 }
 
 // BuildQuery builds the query model according to the query string
-func (b *BaseAPI) BuildQuery(ctx context.Context, query *string, pageNumber, pageSize *int64) (*q.Query, error) {
+func (b *BaseAPI) BuildQuery(ctx context.Context, query *string, pageNumber, pageSize *int64, sorts ...*string) (*q.Query, error) {
 	var (
 		qs string
 		pn int64
@@ -151,7 +152,17 @@ func (b *BaseAPI) BuildQuery(ctx context.Context, query *string, pageNumber, pag
 	if pageSize != nil {
 		ps = *pageSize
 	}
-	return q.Build(qs, pn, ps)
+
+	r, err := q.Build(qs, pn, ps)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(sorts) > 0 {
+		r.Sorting = lib.StringValue(sorts[0])
+	}
+
+	return r, nil
 }
 
 // Links return Links based on the provided pagination information

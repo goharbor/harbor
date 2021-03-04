@@ -65,6 +65,11 @@ func (bc *basicController) ListRegistrations(ctx context.Context, query *q.Query
 	return l, nil
 }
 
+// Count returns the total count of scanner registrations according to the query.
+func (bc *basicController) GetTotalOfRegistrations(ctx context.Context, query *q.Query) (int64, error) {
+	return bc.manager.Count(ctx, query)
+}
+
 // CreateRegistration ...
 func (bc *basicController) CreateRegistration(ctx context.Context, registration *scanner.Registration) (string, error) {
 	if isReservedName(registration.Name) {
@@ -322,6 +327,10 @@ func (bc *basicController) GetMetadata(ctx context.Context, registrationUUID str
 	r, err := bc.manager.Get(ctx, registrationUUID)
 	if err != nil {
 		return nil, errors.Wrap(err, "scanner controller: get metadata")
+	}
+
+	if r == nil {
+		return nil, errors.NotFoundError(nil).WithMessage("registration %s not found", registrationUUID)
 	}
 
 	return bc.Ping(ctx, r)

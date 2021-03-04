@@ -160,18 +160,6 @@ func init() {
 	beego.Router("/api/internal/switchquota", &InternalAPI{}, "put:SwitchQuota")
 	beego.Router("/api/internal/syncquota", &InternalAPI{}, "post:SyncQuota")
 
-	// Add routes for plugin scanner management
-	scannerAPI := &ScannerAPI{}
-	beego.Router("/api/scanners", scannerAPI, "post:Create;get:List")
-	beego.Router("/api/scanners/:uuid", scannerAPI, "get:Get;delete:Delete;put:Update;patch:SetAsDefault")
-	beego.Router("/api/scanners/:uuid/metadata", scannerAPI, "get:Metadata")
-	beego.Router("/api/scanners/ping", scannerAPI, "post:Ping")
-
-	// Add routes for project level scanner
-	proScannerAPI := &ProjectScannerAPI{}
-	beego.Router("/api/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
-	beego.Router("/api/projects/:pid([0-9]+)/scanner/candidates", proScannerAPI, "get:GetProScannerCandidates")
-
 	// Init user Info
 	admin = &usrInfo{adminName, adminPwd}
 	unknownUsr = &usrInfo{"unknown", "unknown"}

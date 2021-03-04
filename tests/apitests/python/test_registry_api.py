@@ -12,7 +12,6 @@ from library.user import User
 from library.repository import Repository
 from library.repository import push_self_build_image_to_project
 from library.artifact import Artifact
-from library.scanner import Scanner
 from library.docker_api import list_image_tags
 from library.docker_api import list_repositories
 import os

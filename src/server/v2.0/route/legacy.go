@@ -81,16 +81,4 @@ func registerLegacyRoutes() {
 		beego.Router("/api/"+version+"/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
 		beego.Router("/api/"+version+"/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 	}
-
-	// Add routes for plugin scanner management
-	scannerAPI := &api.ScannerAPI{}
-	beego.Router("/api/"+version+"/scanners", scannerAPI, "post:Create;get:List")
-	beego.Router("/api/"+version+"/scanners/:uuid", scannerAPI, "get:Get;delete:Delete;put:Update;patch:SetAsDefault")
-	beego.Router("/api/"+version+"/scanners/:uuid/metadata", scannerAPI, "get:Metadata")
-	beego.Router("/api/"+version+"/scanners/ping", scannerAPI, "post:Ping")
-
-	// Add routes for project level scanner
-	proScannerAPI := &api.ProjectScannerAPI{}
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/scanner/candidates", proScannerAPI, "get:GetProScannerCandidates")
 }

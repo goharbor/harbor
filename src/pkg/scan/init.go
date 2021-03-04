@@ -38,7 +38,7 @@ func EnsureScanners(ctx context.Context, wantedScanners []scanner.Registration) 
 		names[i] = ws.Name
 	}
 
-	list, err := scannerManager.List(ctx, q.New(q.KeyWords{"ex_name__in": names}))
+	list, err := scannerManager.List(ctx, q.New(q.KeyWords{"name__in": names}))
 	if err != nil {
 		return errors.Errorf("listing scanners: %v", err)
 	}
@@ -79,7 +79,7 @@ func EnsureDefaultScanner(ctx context.Context, scannerName string) (err error) {
 		log.Infof("Skipped setting %s as the default scanner. The default scanner is already set to %s", scannerName, defaultScanner.URL)
 		return
 	}
-	scanners, err := scannerManager.List(ctx, q.New(q.KeyWords{"ex_name": scannerName}))
+	scanners, err := scannerManager.List(ctx, q.New(q.KeyWords{"name": scannerName}))
 	if err != nil {
 		err = errors.Errorf("listing scanners: %v", err)
 		return
@@ -99,7 +99,7 @@ func RemoveImmutableScanners(ctx context.Context, names []string) error {
 	if len(names) == 0 {
 		return nil
 	}
-	query := q.New(q.KeyWords{"ex_immutable": true, "ex_name__in": names})
+	query := q.New(q.KeyWords{"immutable": true, "name__in": names})
 
 	// TODO Instead of executing 1 to N SQL queries we might want to delete multiple rows with scannerManager.DeleteByImmutableAndURLIn(true, []string{})
 	registrations, err := scannerManager.List(ctx, query)

@@ -39,7 +39,7 @@ func TestEnsureScanners(t *testing.T) {
 
 		mgr.On("List", mock.Anything, &q.Query{
 			Keywords: map[string]interface{}{
-				"ex_name__in": []string{"scanner"},
+				"name__in": []string{"scanner"},
 			},
 		}).Return(nil, errors.New("DB error"))
 
@@ -57,7 +57,7 @@ func TestEnsureScanners(t *testing.T) {
 
 		mgr.On("List", mock.Anything, &q.Query{
 			Keywords: map[string]interface{}{
-				"ex_name__in": []string{
+				"name__in": []string{
 					"trivy",
 				},
 			},
@@ -81,7 +81,7 @@ func TestEnsureScanners(t *testing.T) {
 
 		mgr.On("List", mock.Anything, &q.Query{
 			Keywords: map[string]interface{}{
-				"ex_name__in": []string{
+				"name__in": []string{
 					"trivy",
 				},
 			},
@@ -135,7 +135,7 @@ func TestEnsureDefaultScanner(t *testing.T) {
 
 		mgr.On("GetDefault", mock.Anything).Return(nil, nil)
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{"ex_name": "trivy"},
+			Keywords: map[string]interface{}{"name": "trivy"},
 		}).Return(nil, errors.New("DB error"))
 
 		err := EnsureDefaultScanner(context.TODO(), "trivy")
@@ -149,7 +149,7 @@ func TestEnsureDefaultScanner(t *testing.T) {
 
 		mgr.On("GetDefault", mock.Anything).Return(nil, nil)
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{"ex_name": "trivy"},
+			Keywords: map[string]interface{}{"name": "trivy"},
 		}).Return([]*scanner.Registration{
 			{Name: "trivy"},
 			{Name: "trivy"},
@@ -166,7 +166,7 @@ func TestEnsureDefaultScanner(t *testing.T) {
 
 		mgr.On("GetDefault", mock.Anything).Return(nil, nil)
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{"ex_name": "trivy"},
+			Keywords: map[string]interface{}{"name": "trivy"},
 		}).Return([]*scanner.Registration{
 			{
 				Name: "trivy",
@@ -187,7 +187,7 @@ func TestEnsureDefaultScanner(t *testing.T) {
 
 		mgr.On("GetDefault", mock.Anything).Return(nil, nil)
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{"ex_name": "trivy"},
+			Keywords: map[string]interface{}{"name": "trivy"},
 		}).Return([]*scanner.Registration{
 			{
 				Name: "trivy",
@@ -221,8 +221,8 @@ func TestRemoveImmutableScanners(t *testing.T) {
 
 		mgr.On("List", mock.Anything, &q.Query{
 			Keywords: map[string]interface{}{
-				"ex_immutable": true,
-				"ex_name__in":  []string{"scanner"},
+				"immutable": true,
+				"name__in":  []string{"scanner"},
 			},
 		}).Return(nil, errors.New("DB error"))
 
@@ -249,8 +249,8 @@ func TestRemoveImmutableScanners(t *testing.T) {
 
 		mgr.On("List", mock.Anything, &q.Query{
 			Keywords: map[string]interface{}{
-				"ex_immutable": true,
-				"ex_name__in": []string{
+				"immutable": true,
+				"name__in": []string{
 					"scanner-1",
 					"scanner-2",
 				},
@@ -285,8 +285,8 @@ func TestRemoveImmutableScanners(t *testing.T) {
 
 		mgr.On("List", mock.Anything, &q.Query{
 			Keywords: map[string]interface{}{
-				"ex_immutable": true,
-				"ex_name__in": []string{
+				"immutable": true,
+				"name__in": []string{
 					"scanner-1",
 					"scanner-2",
 				},
