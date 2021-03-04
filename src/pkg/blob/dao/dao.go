@@ -223,6 +223,9 @@ func (d *dao) ListBlobs(ctx context.Context, query *q.Query) ([]*models.Blob, er
 		return nil, err
 	}
 
+	if query.Sorting != "" {
+		qs = qs.OrderBy(query.Sorting)
+	}
 	blobs := []*models.Blob{}
 	if _, err = qs.All(&blobs); err != nil {
 		return nil, err
