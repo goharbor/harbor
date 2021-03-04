@@ -2,36 +2,34 @@
   <section class="overview-section">
     <div class="title-wrapper">
       <div>
+        <a (click)="onBack()" class="onback"><{{'PROJECT_DETAIL.REPLICATION'|
+                translate}}</a>
+      </div>
+      <div class="title-block">
         <div>
-          <a (click)="onBack()" class="onback"><{{'PROJECT_DETAIL.REPLICATION'|
-              translate}}</a>
+          <h2 class="custom-h2 h2-style">{{'REPLICATION.REPLICATION_EXECUTION'|
+                  translate}}</h2>
+          <span class="id-divider"></span>
+          <h2 class="custom-h2 h2-style">{{executionId}}</h2>
         </div>
-        <div class="title-block">
-          <div>
-            <h2 class="custom-h2 h2-style">{{'REPLICATION.REPLICATION_EXECUTION'|
-              translate}}</h2>
-            <span class="id-divider"></span>
-            <h2 class="custom-h2 h2-style">{{executionId}}</h2>
+        <div class="margin-top-16px">
+          <div class="status-progress" *ngIf="execution && execution['status'] === 'InProgress'">
+            <span class="spinner spinner-inline"></span>
+            <span>{{'REPLICATION.IN_PROGRESS'| translate}}</span>
           </div>
-          <div>
-            <div class="status-progress" *ngIf="execution && execution['status'] === 'InProgress'">
-              <span class="spinner spinner-inline"></span>
-              <span>{{'REPLICATION.IN_PROGRESS'| translate}}</span>
-            </div>
-            <div class="status-success" *ngIf="execution && execution['status'] === 'Succeed'">
-              <clr-icon size="18" shape="success-standard" class="color-green"></clr-icon>
-              <span>{{'REPLICATION.SUCCESS'| translate}}</span>
-            </div>
-            <div class="status-failed" *ngIf="execution && execution['status'] === 'Failed'">
-              <clr-icon size="18" shape="error-standard" class="color-red"></clr-icon>
-              <span>{{'REPLICATION.FAILURE'| translate}}</span>
-            </div>
+          <div class="status-success" *ngIf="execution && execution['status'] === 'Succeed'">
+            <clr-icon size="18" shape="success-standard" class="color-green"></clr-icon>
+            <span>{{'REPLICATION.SUCCESS'| translate}}</span>
           </div>
-          <div>
-            <button class="btn btn-primary " (click)="stopJob()"
-              [disabled]="stopOnGoing">{{'REPLICATION.STOPJOB' | translate}}</button>
-            <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
+          <div class="status-failed" *ngIf="execution && execution['status'] === 'Failed'">
+            <clr-icon size="18" shape="error-standard" class="color-red"></clr-icon>
+            <span>{{'REPLICATION.FAILURE'| translate}}</span>
           </div>
+        </div>
+        <div class="margin-top-16px">
+          <button class="btn btn-primary " (click)="stopJob()"
+                  [disabled]="stopOnGoing || !canStop()">{{'REPLICATION.STOPJOB' | translate}}</button>
+          <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
         </div>
       </div>
 
