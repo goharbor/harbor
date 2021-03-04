@@ -54,7 +54,8 @@ export class AddImmutableRuleComponent implements OnInit, OnDestroy {
     set repositories(repositories) {
         if (this.rule && this.rule.scope_selectors && this.rule.scope_selectors.repository
             && this.rule.scope_selectors.repository[0]) {
-            if (repositories.indexOf(",") !== -1) {
+            if (repositories.indexOf(",") !== -1
+                && repositories.indexOf("{") === -1 && repositories.indexOf("}") === -1) {
                 this.rule.scope_selectors.repository[0].pattern = "{" + repositories + "}";
             } else {
                 this.rule.scope_selectors.repository[0].pattern = repositories;
@@ -65,7 +66,11 @@ export class AddImmutableRuleComponent implements OnInit, OnDestroy {
     get repositories() {
         if (this.rule && this.rule.scope_selectors && this.rule.scope_selectors.repository
             && this.rule.scope_selectors.repository[0] && this.rule.scope_selectors.repository[0].pattern) {
-            return this.rule.scope_selectors.repository[0].pattern.replace(/[{}]/g, "");
+            let str: string = this.rule.scope_selectors.repository[0].pattern;
+            if (/^{\S+}$/.test(str)) {
+                return str.slice(1, str.length - 1);
+            }
+            return str;
         }
         return "";
     }
@@ -85,7 +90,8 @@ export class AddImmutableRuleComponent implements OnInit, OnDestroy {
 
     set tagsInput(tagsInput) {
         if (this.rule && this.rule.tag_selectors && this.rule.tag_selectors[0]) {
-            if (tagsInput.indexOf(",") !== -1) {
+            if (tagsInput.indexOf(",") !== -1
+                && tagsInput.indexOf("{") === -1 && tagsInput.indexOf("}") === -1) {
                 this.rule.tag_selectors[0].pattern = "{" + tagsInput + "}";
             } else {
                 this.rule.tag_selectors[0].pattern = tagsInput;
@@ -95,7 +101,11 @@ export class AddImmutableRuleComponent implements OnInit, OnDestroy {
 
     get tagsInput() {
         if (this.rule && this.rule.tag_selectors && this.rule.tag_selectors[0] && this.rule.tag_selectors[0].pattern) {
-            return this.rule.tag_selectors[0].pattern.replace(/[{}]/g, "");
+            let str: string = this.rule.tag_selectors[0].pattern;
+            if (/^{\S+}$/.test(str)) {
+                return str.slice(1, str.length - 1);
+            }
+            return str;
         }
         return "";
     }
