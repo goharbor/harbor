@@ -20,13 +20,21 @@ cur=$PWD
 
 # the temp folder to store distribution source code...
 TEMP=`mktemp -d ${TMPDIR-/tmp}/distribution.XXXXXX`
-git clone -b $VERSION https://github.com/docker/distribution.git $TEMP
+git clone -b $VERSION https://github.com/distribution/distribution.git $TEMP
 
 # add patch 2879
-echo 'add patch https://github.com/docker/distribution/pull/2879 ...'
+echo 'add patch https://github.com/distribution/distribution/pull/2879 ...'
 cd $TEMP
-wget https://github.com/docker/distribution/pull/2879.patch
+wget https://github.com/distribution/distribution/pull/2879.patch
 git apply 2879.patch
+
+# add patch 3370
+echo 'add patch https://github.com/distribution/distribution/pull/3370 ...'
+cd $TEMP
+wget https://github.com/distribution/distribution/pull/3370.patch
+git apply 3370.patch
+
+# add patch redis
 git apply $cur/redis.patch
 cd $cur
 
