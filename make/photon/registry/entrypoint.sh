@@ -10,4 +10,4 @@ set -e
 
 /home/harbor/install_cert.sh
 
-/usr/bin/registry_DO_NOT_USE_GC serve /etc/registry/config.yml
+exec /usr/bin/registry_DO_NOT_USE_GC serve /etc/registry/config.yml
