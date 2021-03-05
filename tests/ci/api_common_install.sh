@@ -17,6 +17,8 @@ if [ "$2" = 'LDAP' ]; then
     cd tests && sudo ./ldapprepare.sh && cd ..
 fi
 
+sudo apt-get update -y && sudo apt-get install -y python3.6
+sudo rm /usr/bin/python && sudo ln -s /usr/bin/python3.6 /usr/bin/python
 
 
 # prepare a chart file for API_DB test...
