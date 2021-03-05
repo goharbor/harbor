@@ -4,4 +4,4 @@ set -e
 
 /home/scanner/install_cert.sh
 
-/home/scanner/bin/scanner-trivy
+exec /home/scanner/bin/scanner-trivy
