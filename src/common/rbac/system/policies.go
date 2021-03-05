@@ -60,5 +60,8 @@ var (
 		{Resource: rbac.ResourceScanAll, Action: rbac.ActionList},
 
 		{Resource: rbac.ResourceSystemVolumes, Action: rbac.ActionRead},
+
+		{Resource: rbac.ResourceOIDCEndpoint, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceOIDCEndpoint, Action: rbac.ActionRead},
 	}
 )

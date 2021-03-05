@@ -16,13 +16,14 @@ package security
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/utils/oidc"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/pkg/oidc"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestOIDCCli(t *testing.T) {

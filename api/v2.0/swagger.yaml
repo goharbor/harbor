@@ -2306,6 +2306,37 @@ paths:
           description: Not found the default root certificate.
         '500':
           $ref: '#/responses/500'
+  /system/oidc/ping:
+    post:
+      summary: Test the OIDC endpoint.
+      description: |
+        Test the OIDC endpoint, the setting of the endpoint is provided in the request.  This API can only be called by system admin.
+      tags:
+        - oidc
+      operationId: pingOIDC
+      parameters:
+        - name: endpoint
+          in: body
+          description: Request body for OIDC endpoint to be tested.
+          required: true
+          schema:
+            type: object
+            properties:
+              url:
+                type: string
+                description: The URL of OIDC endpoint to be tested.
+              verify_cert:
+                type: boolean
+                description: Whether the certificate should be verified
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
   /system/gc:
     get:
       summary: Get gc results.
