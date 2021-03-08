@@ -21,7 +21,7 @@
                             [class.borderSty]="i.color == '#FFFFFF'"   [ngStyle]="{'background-color': i.color, 'color': i.textColor }">Aa</label>
                     </clr-dropdown-menu>
                 </clr-dropdown>
-                <input clrInput type="text" id="color" size="8" name="color" disabled [(ngModel)]="labelModel.color" #color="ngModel">
+                <input class="label-color-input" clrInput type="text" id="color" size="8" name="color" disabled [(ngModel)]="labelModel.color" #color="ngModel">
             </label>
             <label>
                 <label for="description">{{'LABEL.DESCRIPTION' | translate}}</label>
