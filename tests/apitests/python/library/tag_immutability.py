@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import base
-import swagger_client
-from swagger_client.rest import ApiException
+import v2_swagger_client
+from v2_swagger_client.rest import ApiException
 
-class Tag_Immutability(base.Base):
+class Tag_Immutability(base.Base, object):
+    def __init__(self):
+        super(Tag_Immutability,self).__init__(api_type = "immutable")
+
     def create_tag_immutability_policy_rule(self, project_id, selector_repository_decoration = "repoMatches",
                                             selector_repository="**", selector_tag_decoration = "matches",
                                             selector_tag="**", expect_status_code = 201, **kwargs):
         #repoExcludes,excludes
         client = self._get_client(**kwargs)
-        immutable_rule = swagger_client.ImmutableRule(
+        immutable_rule = v2_swagger_client.ImmutableRule(
                     action="immutable",
                     template="immutable_template",
                     priority = 0,
@@ -32,7 +35,7 @@ class Tag_Immutability(base.Base):
                     ]
                 )
         try:
-            _, status_code, header = client.projects_project_id_immutabletagrules_post_with_http_info(project_id, immutable_rule)
+            _, status_code, header = client.create_immu_rule_with_http_info(project_id, immutable_rule)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
         else:
@@ -42,11 +45,13 @@ class Tag_Immutability(base.Base):
 
     def list_tag_immutability_policy_rules(self, project_id, **kwargs):
         client = self._get_client(**kwargs)
-        return client.projects_project_id_immutabletagrules_get(project_id)
+        return client.list_immu_rules_with_http_info(project_id)
 
     def get_rule(self, project_id, rule_id, **kwargs):
         rules = self.list_tag_immutability_policy_rules(project_id, **kwargs)
-        for r in rules:
+        if len(rules) <= 0:
+            return None
+        for r in rules[0]:
             if r.id == rule_id:
                 return r
         return None
@@ -67,7 +72,7 @@ class Tag_Immutability(base.Base):
             rule.disabled = disabled
         client = self._get_client(**kwargs)
         try:
-            _, status_code, header = client.projects_project_id_immutabletagrules_id_put_with_http_info(project_id, rule_id, rule)
+            _, status_code, header = client.update_immu_rule_with_http_info(project_id, rule_id, rule)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:

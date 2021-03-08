@@ -48,6 +48,7 @@ func New() http.Handler {
 		GCAPI:          newGCAPI(),
 		QuotaAPI:       newQuotaAPI(),
 		RetentionAPI:   newRetentionAPI(),
+		ImmutableAPI:   newImmutableAPI(),
 		OidcAPI:        newOIDCAPI(),
 	})
 	if err != nil {

@@ -1702,6 +1702,120 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/immutabletagrules':
+    get:
+      summary: List all immutable tag rules of current project
+      description: |
+        This endpoint returns the immutable tag rules of a project
+      tags:
+        - immutable
+      operationId: ListImmuRules
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of immutable tag
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImmutableRule'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Add an immutable tag rule to current project
+      description: |
+        This endpoint add an immutable tag rule to the project
+      tags:
+        - immutable
+      operationId: CreateImmuRule
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - name: ImmutableRule
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImmutableRule'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/immutabletagrules/{immutable_rule_id}':
+    put:
+      summary: Update the immutable tag rule or enable or disable the rule
+      tags:
+        - immutable
+      operationId: UpdateImmuRule
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/immutableRuleId'
+        - name: ImmutableRule
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImmutableRule'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete the immutable tag rule.
+      tags:
+        - immutable
+      operationId: DeleteImmuRule
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/immutableRuleId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /icons/{digest}:
     get:
       summary: Get artifact icon
@@ -3251,6 +3365,14 @@ parameters:
     required: true
     type: integer
     format: int64
+  immutableRuleId:
+    name: immutable_rule_id
+    in: path
+    description: The ID of the immutable rule
+    required: true
+    type: integer
+    format: int64
+
 responses:
   '200':
     description: Success
@@ -5046,3 +5168,42 @@ definitions:
       import:
         package: "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
         alias: v1
+
+  ImmutableRule:
+    type: object
+    properties:
+      id:
+        type: integer
+      priority:
+        type: integer
+      disabled:
+        type: boolean
+      action:
+        type: string
+      template:
+        type: string
+      params:
+        type: object
+        additionalProperties:
+          type: object
+      tag_selectors:
+        type: array
+        items:
+          $ref: '#/definitions/ImmutableSelector'
+      scope_selectors:
+        type: object
+        additionalProperties:
+          type: array
+          items:
+            $ref: '#/definitions/ImmutableSelector'
+  ImmutableSelector:
+    type: object
+    properties:
+      kind:
+        type: string
+      decoration:
+        type: string
+      pattern:
+        type: string
+      extras:
+        type: string

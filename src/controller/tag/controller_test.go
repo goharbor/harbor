@@ -23,7 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/pkg/artifact"
-	immutesting "github.com/goharbor/harbor/src/testing/pkg/immutabletag"
+	"github.com/goharbor/harbor/src/testing/pkg/immutable"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	tagtesting "github.com/goharbor/harbor/src/testing/pkg/tag"
 	"github.com/stretchr/testify/suite"
@@ -37,14 +37,14 @@ type controllerTestSuite struct {
 	repoMgr      *repository.FakeManager
 	artMgr       *artifact.FakeManager
 	tagMgr       *tagtesting.FakeManager
-	immutableMtr *immutesting.FakeMatcher
+	immutableMtr *immutable.FakeMatcher
 }
 
 func (c *controllerTestSuite) SetupTest() {
 	c.repoMgr = &repository.FakeManager{}
 	c.artMgr = &artifact.FakeManager{}
 	c.tagMgr = &tagtesting.FakeManager{}
-	c.immutableMtr = &immutesting.FakeMatcher{}
+	c.immutableMtr = &immutable.FakeMatcher{}
 	c.ctl = &controller{
 		tagMgr:       c.tagMgr,
 		artMgr:       c.artMgr,

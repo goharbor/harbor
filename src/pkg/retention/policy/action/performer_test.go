@@ -16,13 +16,14 @@ package action
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/controller/immutable"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/selector"
-	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	"testing"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/errors"
-	immumodel "github.com/goharbor/harbor/src/pkg/immutabletag/model"
+	immumodel "github.com/goharbor/harbor/src/pkg/immutable/model"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -93,7 +94,7 @@ func (suite *TestPerformerSuite) TestPerform() {
 		},
 	}
 
-	results, err := p.Perform(candidates)
+	results, err := p.Perform(orm.Context(), candidates)
 	require.NoError(suite.T(), err)
 	require.Equal(suite.T(), 1, len(results))
 	require.NotNil(suite.T(), results[0].Target)
@@ -171,10 +172,10 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 			},
 		},
 	}
-	imid, e := immutabletag.ImmuCtr.CreateImmutableRule(rule)
+	imid, e := immutable.Ctr.CreateImmutableRule(orm.Context(), rule)
 	assert.NoError(suite.T(), e)
 	defer func() {
-		assert.NoError(suite.T(), immutabletag.ImmuCtr.DeleteImmutableRule(imid))
+		assert.NoError(suite.T(), immutable.Ctr.DeleteImmutableRule(orm.Context(), imid))
 	}()
 
 	candidates := []*selector.Candidate{
@@ -190,7 +191,7 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 		},
 	}
 
-	results, err := p.Perform(candidates)
+	results, err := p.Perform(orm.Context(), candidates)
 	require.NoError(suite.T(), err)
 	require.Equal(suite.T(), 3, len(results))
 	for _, r := range results {

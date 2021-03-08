@@ -2,9 +2,10 @@ package rule
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/controller/immutable"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/selector"
-	"github.com/goharbor/harbor/src/pkg/immutabletag"
-	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
+	"github.com/goharbor/harbor/src/pkg/immutable/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -18,7 +19,7 @@ type MatchTestSuite struct {
 	t       *testing.T
 	assert  *assert.Assertions
 	require *require.Assertions
-	ctr     immutabletag.Controller
+	ctr     immutable.Controller
 	ruleID  int64
 	ruleID2 int64
 }
@@ -28,7 +29,7 @@ func (s *MatchTestSuite) SetupSuite() {
 	s.t = s.T()
 	s.assert = assert.New(s.t)
 	s.require = require.New(s.t)
-	s.ctr = immutabletag.ImmuCtr
+	s.ctr = immutable.Ctr
 }
 
 func (s *MatchTestSuite) TestImmuMatch() {
@@ -77,11 +78,11 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		},
 	}
 
-	id, err := s.ctr.CreateImmutableRule(rule)
+	id, err := s.ctr.CreateImmutableRule(orm.Context(), rule)
 	s.ruleID = id
 	s.require.Nil(err)
 
-	id, err = s.ctr.CreateImmutableRule(rule2)
+	id, err = s.ctr.CreateImmutableRule(orm.Context(), rule2)
 	s.ruleID2 = id
 	s.require.Nil(err)
 
@@ -93,7 +94,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		Repository:  "redis",
 		Tags:        []string{"release-1.10"},
 	}
-	isMatch, err := match.Match(1, c1)
+	isMatch, err := match.Match(orm.Context(), 1, c1)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
@@ -104,7 +105,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		Tags:        []string{"1.10"},
 		Kind:        selector.Image,
 	}
-	isMatch, err = match.Match(1, c2)
+	isMatch, err = match.Match(orm.Context(), 1, c2)
 	s.require.Equal(isMatch, false)
 	s.require.Nil(err)
 
@@ -115,7 +116,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		Tags:        []string{"9.4.8"},
 		Kind:        selector.Image,
 	}
-	isMatch, err = match.Match(1, c3)
+	isMatch, err = match.Match(orm.Context(), 1, c3)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
@@ -126,17 +127,17 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		Tags:        []string{"world"},
 		Kind:        selector.Image,
 	}
-	isMatch, err = match.Match(1, c4)
+	isMatch, err = match.Match(orm.Context(), 1, c4)
 	s.require.Equal(isMatch, false)
 	s.require.Nil(err)
 }
 
 // TearDownSuite clears env for test suite
 func (s *MatchTestSuite) TearDownSuite() {
-	err := s.ctr.DeleteImmutableRule(s.ruleID)
+	err := s.ctr.DeleteImmutableRule(orm.Context(), s.ruleID)
 	require.NoError(s.T(), err, "delete immutable")
 
-	err = s.ctr.DeleteImmutableRule(s.ruleID2)
+	err = s.ctr.DeleteImmutableRule(orm.Context(), s.ruleID2)
 	require.NoError(s.T(), err, "delete immutable")
 }
 

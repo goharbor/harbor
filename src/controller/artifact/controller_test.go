@@ -16,6 +16,7 @@ package artifact
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/testing/pkg/immutable"
 	"testing"
 	"time"
 
@@ -36,7 +37,6 @@ import (
 	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	artrashtesting "github.com/goharbor/harbor/src/testing/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/testing/pkg/blob"
-	immutesting "github.com/goharbor/harbor/src/testing/pkg/immutabletag"
 	"github.com/goharbor/harbor/src/testing/pkg/label"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
@@ -66,7 +66,7 @@ type controllerTestSuite struct {
 	tagCtl       *tagtesting.FakeController
 	labelMgr     *label.FakeManager
 	abstractor   *fakeAbstractor
-	immutableMtr *immutesting.FakeMatcher
+	immutableMtr *immutable.FakeMatcher
 	regCli       *registry.FakeClient
 }
 
@@ -78,7 +78,7 @@ func (c *controllerTestSuite) SetupTest() {
 	c.tagCtl = &tagtesting.FakeController{}
 	c.labelMgr = &label.FakeManager{}
 	c.abstractor = &fakeAbstractor{}
-	c.immutableMtr = &immutesting.FakeMatcher{}
+	c.immutableMtr = &immutable.FakeMatcher{}
 	c.regCli = &registry.FakeClient{}
 	c.ctl = &controller{
 		repoMgr:      c.repoMgr,

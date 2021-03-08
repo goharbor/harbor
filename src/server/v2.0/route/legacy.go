@@ -55,9 +55,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/webhook/events", &api.NotificationPolicyAPI{}, "get:GetSupportedEventTypes")
 	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/webhook/jobs/", &api.NotificationJobAPI{}, "get:List")
 
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/immutabletagrules", &api.ImmutableTagRuleAPI{}, "get:List;post:Post")
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &api.ImmutableTagRuleAPI{})
-
 	beego.Router("/api/"+version+"/configurations", &api.ConfigAPI{}, "get:Get;put:Put")
 	beego.Router("/api/"+version+"/statistics", &api.StatisticAPI{})
 	beego.Router("/api/"+version+"/labels", &api.LabelAPI{}, "post:Post;get:List")
@@ -69,9 +66,6 @@ func registerLegacyRoutes() {
 	// we use "0" as the ID of the local Harbor registry, so don't add "([0-9]+)" in the path
 	beego.Router("/api/"+version+"/registries/:id/info", &api.RegistryAPI{}, "get:GetInfo")
 	beego.Router("/api/"+version+"/registries/:id/namespace", &api.RegistryAPI{}, "get:GetNamespace")
-
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/immutabletagrules", &api.ImmutableTagRuleAPI{}, "get:List;post:Post")
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &api.ImmutableTagRuleAPI{})
 
 	// APIs for chart repository
 	if config.WithChartMuseum() {

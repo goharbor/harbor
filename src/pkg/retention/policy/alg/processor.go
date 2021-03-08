@@ -15,6 +15,7 @@
 package alg
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -32,7 +33,7 @@ type Processor interface {
 	//  Returns:
 	//    []*art.Result : the processed results
 	//    error         : common error object if any errors occurred
-	Process(artifacts []*selector.Candidate) ([]*selector.Result, error)
+	Process(ctx context.Context, artifacts []*selector.Candidate) ([]*selector.Result, error)
 }
 
 // Parameter for constructing a processor

@@ -1,21 +1,23 @@
 package rule
 
 import (
+	"context"
+	"github.com/goharbor/harbor/src/controller/immutable"
+	"github.com/goharbor/harbor/src/lib/q"
 	iselector "github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
-	"github.com/goharbor/harbor/src/pkg/immutabletag"
-	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
-	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
+	"github.com/goharbor/harbor/src/pkg/immutable/match"
+	"github.com/goharbor/harbor/src/pkg/immutable/model"
 )
 
 // Matcher ...
 type Matcher struct {
-	rules []model.Metadata
+	rules []*model.Metadata
 }
 
 // Match ...
-func (rm *Matcher) Match(pid int64, c iselector.Candidate) (bool, error) {
-	if err := rm.getImmutableRules(pid); err != nil {
+func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) (bool, error) {
+	if err := rm.getImmutableRules(ctx, pid); err != nil {
 		return false, err
 	}
 
@@ -70,8 +72,8 @@ func (rm *Matcher) Match(pid int64, c iselector.Candidate) (bool, error) {
 	return false, nil
 }
 
-func (rm *Matcher) getImmutableRules(pid int64) error {
-	rules, err := immutabletag.ImmuCtr.ListImmutableRules(pid)
+func (rm *Matcher) getImmutableRules(ctx context.Context, pid int64) error {
+	rules, err := immutable.Ctr.ListImmutableRules(ctx, q.New(q.KeyWords{"ProjectID": pid}))
 	if err != nil {
 		return err
 	}
