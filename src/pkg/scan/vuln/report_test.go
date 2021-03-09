@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
+	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/stretchr/testify/assert"
 )
@@ -108,7 +108,7 @@ func TestGetSummarySeverityAndByPassed(t *testing.T) {
 			Medium: 1,
 		}
 
-		severity, sum, byPassed := l.GetSeveritySummaryAndByPassed(models.CVESet{})
+		severity, sum, byPassed := l.GetSeveritySummaryAndByPassed(models2.CVESet{})
 		assert.Equal(3, sum.Total)
 		assert.Equal(1, sum.Fixable)
 		assert.Equal(s, sum.Summary)
@@ -121,7 +121,7 @@ func TestGetSummarySeverityAndByPassed(t *testing.T) {
 			Low: 2,
 		}
 
-		cveSet := models.CVESet{}
+		cveSet := models2.CVESet{}
 		cveSet.Add("cve3")
 
 		severity, sum, byPassed := l.GetSeveritySummaryAndByPassed(cveSet)

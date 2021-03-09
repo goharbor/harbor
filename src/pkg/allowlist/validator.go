@@ -16,7 +16,8 @@ package allowlist
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/models"
+
+	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 )
 
 type invalidErr struct {
@@ -43,7 +44,7 @@ func IsInvalidErr(err error) bool {
 const cveIDPattern = `^CVE-\d{4}-\d+$`
 
 // Validate help validates the CVE allowlist, to ensure the CVE ID is valid and there's no duplication
-func Validate(wl models.CVEAllowlist) error {
+func Validate(wl models2.CVEAllowlist) error {
 	m := map[string]struct{}{}
 	//	re := regexp.MustCompile(cveIDPattern)
 	for _, it := range wl.Items {

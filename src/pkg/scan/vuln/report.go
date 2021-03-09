@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/common/models"
+	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -150,7 +150,7 @@ func (l *VulnerabilityItemList) Add(items ...*VulnerabilityItem) {
 }
 
 // GetSeveritySummaryAndByPassed returns the Severity Summary and ByPassed by allowlist for the l
-func (l *VulnerabilityItemList) GetSeveritySummaryAndByPassed(allowlist models.CVESet) (Severity, *VulnerabilitySummary, []string) {
+func (l *VulnerabilityItemList) GetSeveritySummaryAndByPassed(allowlist models2.CVESet) (Severity, *VulnerabilitySummary, []string) {
 	sum := &VulnerabilitySummary{
 		Total:   len(l.Items()),
 		Summary: make(SeveritySummary),

@@ -21,7 +21,6 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/project/metadata --name Manager --output ./project/metadata --outpkg metadata
 //go:generate mockery --case snake --dir ../../pkg/quota --name Manager --output ./quota --outpkg quota
 //go:generate mockery --case snake --dir ../../pkg/quota/driver --name Driver --output ./quota/driver --outpkg driver
-//go:generate mockery --case snake --dir ../../pkg/scan/allowlist --name Manager --output ./scan/allowlist --outpkg allowlist
 //go:generate mockery --case snake --dir ../../pkg/scan/report --name Manager --output ./scan/report --outpkg report
 //go:generate mockery --case snake --dir ../../pkg/scan/rest/v1 --all --output ./scan/rest/v1 --outpkg v1
 //go:generate mockery --case snake --dir ../../pkg/scan/scanner --all --output ./scan/scanner --outpkg scanner
@@ -36,3 +35,5 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/repository/dao --name DAO --output ./repository/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/immutable/dao --name DAO --output ./immutable/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/ldap --name Manager --output ./ldap --outpkg ldap
+//go:generate mockery --case snake --dir ../../pkg/allowlist --name Manager --output ./allowlist --outpkg robot
+//go:generate mockery --case snake --dir ../../pkg/allowlist/dao --name DAO --output ./allowlist/dao --outpkg dao

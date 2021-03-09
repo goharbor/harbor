@@ -2739,6 +2739,44 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  /system/CVEAllowlist:
+    get:
+      summary: Get the system level allowlist of CVE.
+      description: Get the system level allowlist of CVE.  This API can be called by all authenticated users.
+      operationId: getSystemCVEAllowlist
+      tags:
+        - SystemCVEAllowlist
+      responses:
+        '200':
+          description: Successfully retrieved the CVE allowlist.
+          schema:
+            $ref: "#/definitions/CVEAllowlist"
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update the system level allowlist of CVE.
+      description: This API overwrites the system level allowlist of CVE with the list in request body.  Only system Admin
+        has permission to call this API.
+      operationId: putSystemCVEAllowlist
+      tags:
+        - SystemCVEAllowlist
+      parameters:
+        - in: body
+          name: allowlist
+          description: The allowlist with new content
+          schema:
+            $ref: "#/definitions/CVEAllowlist"
+      responses:
+        '200':
+          description: Successfully updated the CVE allowlist.
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /system/scanAll/schedule:
     get:
       summary: Get scan all's schedule.

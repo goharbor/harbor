@@ -17,8 +17,8 @@ package vuln
 import (
 	"time"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -39,11 +39,11 @@ type NativeReportSummary struct {
 	TotalCount            int                    `json:"-"`
 	CompleteCount         int                    `json:"-"`
 	VulnerabilityItemList *VulnerabilityItemList `json:"-"`
-	CVESet                models.CVESet          `json:"-"`
+	CVESet                models2.CVESet         `json:"-"`
 }
 
 // UpdateSeveritySummaryAndByPassed update the Severity, Summary and CVEBypassed of the sum from l and s
-func (sum *NativeReportSummary) UpdateSeveritySummaryAndByPassed(l *VulnerabilityItemList, s models.CVESet) {
+func (sum *NativeReportSummary) UpdateSeveritySummaryAndByPassed(l *VulnerabilityItemList, s models2.CVESet) {
 	sum.VulnerabilityItemList = l
 	sum.CVESet = s
 
@@ -88,7 +88,7 @@ func (sum *NativeReportSummary) Merge(another *NativeReportSummary) *NativeRepor
 
 	r.UpdateSeveritySummaryAndByPassed(
 		NewVulnerabilityItemList(sum.VulnerabilityItemList, another.VulnerabilityItemList),
-		models.NewCVESet(sum.CVESet, another.CVESet),
+		models2.NewCVESet(sum.CVESet, another.CVESet),
 	)
 
 	return r

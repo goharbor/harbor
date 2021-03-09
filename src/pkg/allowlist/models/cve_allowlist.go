@@ -20,13 +20,13 @@ import (
 
 // CVEAllowlist defines the data model for a CVE allowlist
 type CVEAllowlist struct {
-	ID           int64              `orm:"pk;auto;column(id)" json:"id"`
+	ID           int64              `orm:"pk;auto;column(id)" json:"id,omitempty"`
 	ProjectID    int64              `orm:"column(project_id)" json:"project_id"`
 	ExpiresAt    *int64             `orm:"column(expires_at)" json:"expires_at,omitempty"`
 	Items        []CVEAllowlistItem `orm:"-" json:"items"`
 	ItemsText    string             `orm:"column(items)" json:"-"`
-	CreationTime time.Time          `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime   time.Time          `orm:"column(update_time);auto_now" json:"update_time"`
+	CreationTime time.Time          `orm:"column(creation_time);auto_now_add"`
+	UpdateTime   time.Time          `orm:"column(update_time);auto_now"`
 }
 
 // CVEAllowlistItem defines one item in the CVE allowlist

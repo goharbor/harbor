@@ -17,9 +17,9 @@ package report
 import (
 	"reflect"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
+	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -30,14 +30,14 @@ type Options struct {
 	// If it is set, the returned report will contains artifact digest for the vulnerabilities
 	ArtifactDigest string
 	// If it is set, the returned summary will not count the CVEs in the list in.
-	CVEAllowlist models.CVESet
+	CVEAllowlist models2.CVESet
 }
 
 // Option for getting the report w/ summary with func template way.
 type Option func(options *Options)
 
 // WithCVEAllowlist is an option of setting CVE allowlist.
-func WithCVEAllowlist(set *models.CVESet) Option {
+func WithCVEAllowlist(set *models2.CVESet) Option {
 	return func(options *Options) {
 		options.CVEAllowlist = *set
 	}

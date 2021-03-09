@@ -19,17 +19,17 @@ import (
 	"fmt"
 	"testing"
 
-	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	usermodels "github.com/goharbor/harbor/src/pkg/user/models"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
+	allowlisttesting "github.com/goharbor/harbor/src/testing/pkg/allowlist"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/project/metadata"
-	"github.com/goharbor/harbor/src/testing/pkg/scan/allowlist"
 	"github.com/goharbor/harbor/src/testing/pkg/user"
 	"github.com/stretchr/testify/suite"
 )
@@ -42,8 +42,8 @@ func (suite *ControllerTestSuite) TestCreate() {
 	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 	mgr := &project.Manager{}
 
-	allowlistMgr := &allowlist.Manager{}
-	allowlistMgr.On("CreateEmpty", mock.Anything).Return(nil)
+	allowlistMgr := &allowlisttesting.Manager{}
+	allowlistMgr.On("CreateEmpty", mock.Anything, mock.Anything).Return(nil)
 
 	metadataMgr := &metadata.Manager{}
 
@@ -74,7 +74,7 @@ func (suite *ControllerTestSuite) TestGetByName() {
 	mgr.On("Get", ctx, "test").Return(nil, errors.NotFoundError(nil))
 	mgr.On("Get", ctx, "oops").Return(nil, fmt.Errorf("oops"))
 
-	allowlistMgr := &allowlist.Manager{}
+	allowlistMgr := &allowlisttesting.Manager{}
 
 	metadataMgr := &metadata.Manager{}
 	metadataMgr.On("Get", ctx, mock.Anything).Return(map[string]string{"public": "true"}, nil)
@@ -103,7 +103,7 @@ func (suite *ControllerTestSuite) TestGetByName() {
 	}
 
 	{
-		allowlistMgr.On("Get", mock.Anything).Return(&commonmodels.CVEAllowlist{ProjectID: 1}, nil)
+		allowlistMgr.On("Get", mock.Anything, mock.Anything).Return(&models2.CVEAllowlist{ProjectID: 1}, nil)
 		p, err := c.GetByName(ctx, "library", WithCVEAllowlist())
 		suite.Nil(err)
 		suite.Equal("library", p.Name)

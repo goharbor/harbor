@@ -74,4 +74,5 @@ const (
 	ResourceScanAll            = Resource("scan-all")
 	ResourceSystemVolumes      = Resource("system-volumes")
 	ResourceOIDCEndpoint       = Resource("oidc-endpoint")
+	ResourceSystemCVEAllowList = Resource("system-cve-allowlist")
 )
