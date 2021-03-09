@@ -15,12 +15,30 @@ python --version
 pip -V
 cat /etc/issue
 cat /proc/version
-sudo apt-get update -y && sudo apt-get install -y  python3.6
-sudo rm /usr/bin/python && sudo ln -s /usr/bin/python3.6 /usr/bin/python
-sudo apt-get install -y python3-pip
-pip -V
 sudo -H pip install --ignore-installed urllib3 chardet requests --upgrade
 python --version
+
+ip addr
+dns_ip=$(netplan ip leases eth0 | grep -i dns | awk -F = '{print $2}')
+dns_ip_list=$(echo $dns_ip | tr " " "\n")
+dns_cfg=""
+for ip in $dns_ip_list
+do
+    dns_cfg="$dns_cfg,\"$ip\""
+done
+
+cat /etc/docker/daemon.json
+
+if [ $(cat /etc/docker/daemon.json |grep \"dns\" |wc -l) -eq 0 ];then
+    sudo sed "s/}/,\n   \"dns\": [${dns_cfg:1}]\n}/" -i /etc/docker/daemon.json
+fi
+
+cat /etc/docker/daemon.json
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+sudo systemctl status docker
+
+
 
 sudo ./tests/hostcfg.sh
 
