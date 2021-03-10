@@ -74,3 +74,15 @@ func NewFilterBuilder(filter string) (*FilterBuilder, error) {
 	}
 	return &FilterBuilder{packet: p}, nil
 }
+
+// normalizeFilter - add '(' and ')' in ldap filter if it doesn't exist
+func normalizeFilter(filter string) string {
+	norFilter := strings.TrimSpace(filter)
+	if len(norFilter) == 0 {
+		return norFilter
+	}
+	if strings.HasPrefix(norFilter, "(") && strings.HasSuffix(norFilter, ")") {
+		return norFilter
+	}
+	return "(" + norFilter + ")"
+}
