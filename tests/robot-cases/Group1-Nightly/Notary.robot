@@ -25,7 +25,6 @@ ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
 Test Case - Project Level Policy Content Trust
-    Restart Docker Daemon Locally
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -40,12 +39,34 @@ Test Case - Project Level Policy Content Trust
     Content Trust Should Be Selected
     Cannot Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest  err_msg=The image is not signed in Notary
     # Signed image can be pulled
-    Body Of Admin Push Signed Image  image=redis  project=project${d}
+    Body Of Admin Push Signed Image  project${d}  redis  latest  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  redis  tag=latest
     Close Browser
 
 Test Case - Admin Push Signed Image
-    Body Of Admin Push Signed Image
+    [tags]  sign_image
+    Body Of Push Signed Image
 
 Test Case - Admin Push Signed Image And Remove Signature
-    Body Of Admin Push Signed Image  image=alpine  with_remove=${true}
+    [tags]  rm_signature
+    Init Chrome Driver
+    ${d}=  Get Current Date    result_format=%m%s
+    ${user}=  Set Variable  user012
+    ${pwd}=   Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Create An New Project And Go Into Project  project${d}
+    Body Of Admin Push Signed Image  project${d}  alpine  latest  ${user}  ${pwd}  with_remove=${true}
+    Body Of Admin Push Signed Image  project${d}  busybox  latest  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  with_remove=${true}
+
+Test Case - Key Rotate
+    [tags]  key_rotate
+    Init Chrome Driver
+    ${d}=  Get Current Date    result_format=%m%s
+    ${user}=  Set Variable  user012
+    ${pwd}=   Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Create An New Project And Go Into Project  project${d}
+    Body Of Admin Push Signed Image  project${d}  busybox  latest  ${user}  ${pwd}
+    Notary Key Rotate   ${ip}  project${d}  busybox  latest  ${user}  ${pwd}
+    Body Of Admin Push Signed Image  project${d}  alpine  latest  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Notary Key Rotate   ${ip}  project${d}  alpine  latest  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}

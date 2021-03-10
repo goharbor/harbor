@@ -1,11 +1,14 @@
 FROM ubuntu:18.04
 ENV LANG C.UTF-8
 # V 2.0
-# V 2.0.1: upgrade docker to version 19.03.12.
+# V 2.0.1: Upgrade docker to version 19.03.12.
 # V 2.5 Add support for e2e py-test (especially containerd).
-# V 2.6 docker 19.03.12.
-# V 2.6.1 upgrade containerd(ctr) to v1.4.3, docker 20.10.3.
-# V 2.6.2 package busybox into E2E image.
+# V 2.6 Upgrade docker 19.03.12.
+# V 2.6.1 Upgrade containerd(ctr) to v1.4.3, docker 20.10.3.
+# V 2.6.2 Package busybox into E2E image.
+# V 2.6.3 a. Swith python version from 3.7 to 3.6;
+#         b. Upgrade and fix cnab-to-oci build issue;
+#         c. Install hurry.filesize tool in python.
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget curl gnupg2
 RUN apt-get install libseccomp2
@@ -66,8 +69,8 @@ RUN apt-get update && apt-get install -y software-properties-common && \
 RUN apt-get update && \
     apt-get install -y  golang-go
 
-RUN apt-get update -y ; apt-get install -y zbar-tools libzbar-dev python-zbar python3.7
-RUN rm /usr/bin/python ; ln -s /usr/bin/python3.7 /usr/bin/python ; apt-get install -y python3-pip
+RUN apt-get update -y ; apt-get install -y zbar-tools libzbar-dev python-zbar python3.6
+RUN rm /usr/bin/python ; ln -s /usr/bin/python3.6 /usr/bin/python ; apt-get install -y python3-pip
 RUN python -m pip install --upgrade pip
 
 RUN wget -N http://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip && \
@@ -82,7 +85,7 @@ RUN apt-get update && apt install libnss3-tools && \
     echo Harbor12345 > password.ca && \
     certutil -d sql:$HOME/.pki/nssdb -N -f password.ca
 
-RUN pip3 install pyasn1 google-apitools==0.5.31 gsutil robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot robotframework-JSONLibrary --upgrade
+RUN pip3 install pyasn1 google-apitools==0.5.31 gsutil robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot robotframework-JSONLibrary hurry.filesize --upgrade
 
 ENV CONTAINERD_VERSION 1.4.3
 RUN wget https://github.com/containerd/containerd/releases/download/v1.4.3/containerd-$CONTAINERD_VERSION-linux-amd64.tar.gz && \
@@ -147,8 +150,8 @@ RUN wget http://nchc.dl.sourceforge.net/sourceforge/tcl/tcl8.4.11-src.tar.gz && 
     cd /ixdba.net/bin && \
     mv  expect /usr/local/bin/expect
 
-RUN CNAB_PATH=$(go env GOPATH)/src/github.com/docker && mkdir -p $CNAB_PATH && cd $CNAB_PATH && git clone https://github.com/cnabio/cnab-to-oci.git && \
-    cd cnab-to-oci && git checkout v0.3.0-beta4 && \
+RUN CNAB_PATH=$(go env GOPATH)/src/github.com/cnabio && mkdir -p $CNAB_PATH && cd $CNAB_PATH && git clone https://github.com/cnabio/cnab-to-oci.git && \
+    cd cnab-to-oci && git checkout v0.3.1-beta1 && \
     go list && \
     make build && \
     mv bin/cnab-to-oci /usr/local/bin

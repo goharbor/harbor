@@ -27,7 +27,7 @@ Pull image
     Log To Console  \nRunning docker pull ${image}...
     ${image_with_tag}=  Set Variable If  '${tag}'=='${null}'  ${image}  ${image}:${tag}
     Run Keyword If  ${is_robot}==${false}  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
-    ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${user} -p ${pwd} ${ip}
+    ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${project}+${user} -p ${pwd} ${ip}
     ${output}=  Docker Pull  ${ip}/${project}/${image_with_tag}
     Log  ${output}
     Log To Console  ${output}
@@ -48,7 +48,7 @@ Push image
     ${image_in_use}=   Set Variable If  ${need_pull_first}==${true}  ${image_in_use}  ${image_with_or_without_tag}
     Run Keyword If  ${need_pull_first}==${true}   Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_in_use}
     Run Keyword If  ${is_robot}==${false}  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
-    ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${user} -p ${pwd} ${ip}
+    ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${project}+${user} -p ${pwd} ${ip}
     Run Keyword If  ${need_pull_first}==${true}  Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_in_use} ${ip}/${project}/${image_in_use_with_tag}
     ...  ELSE  Wait Unitl Command Success  docker tag ${image_in_use} ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image_in_use_with_tag}
@@ -70,8 +70,10 @@ Push Image With Tag
     Clean All Local Images
 
 Clean All Local Images
-    Wait Unitl Command Success  docker rmi -f $(docker images -a -q)
-    Wait Unitl Command Success  docker system prune -a -f
+    ${rc}  ${out}=  Run Keyword And Ignore Error  Run  docker rmi -f $(docker images -a -q)
+    Log All  ${out}
+    ${rc}  ${out}=  Run Keyword And Ignore Error  Run  docker system prune -a -f
+    Log All  ${out}
 
 Cannot Docker Login Harbor
     [Arguments]  ${ip}  ${user}  ${pwd}
@@ -79,6 +81,8 @@ Cannot Docker Login Harbor
 
 Cannot Pull Image
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}=${null}  ${err_msg}=${null}
+    Restart Process Locally  containerd
+    Restart Process Locally  dockerd
     ${image_with_tag}=  Set Variable If  '${tag}'=='${null}'  ${image}  ${image}:${tag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     FOR  ${idx}  IN RANGE  0  30
@@ -86,16 +90,10 @@ Cannot Pull Image
         Exit For Loop If  '${out[0]}'=='PASS'
         Sleep  3
     END
+    Clean All Local Images
     Log To Console  Cannot Pull Image - Pull Log: ${out[1]}
     Should Be Equal As Strings  '${out[0]}'  'PASS'
     Run Keyword If  '${err_msg}' != '${null}'  Should Contain  ${out[1]}  ${err_msg}
-
-Cannot Pull Unsigned Image
-    [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}
-    Wait Unitl Command Success  docker login -u ${user} -p ${pass} ${ip}
-    ${output}=  Command Should be Failed  docker pull ${ip}/${proj}/${imagewithtag}
-    Log To Console  ${output}
-    Should Contain  ${output}  The image is not signed in Notary
 
 Cannot Push image
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${err_msg}=${null}  ${err_msg_2}=${null}
@@ -108,6 +106,7 @@ Cannot Push image
     Run Keyword If  '${err_msg}' != '${null}'  Should Contain  ${output}  ${err_msg}
     Run Keyword If  '${err_msg_2}' != '${null}'  Should Contain  ${output}  ${err_msg_2}
     Wait Unitl Command Success  docker logout ${ip}
+    Clean All Local Images
 
 Wait Until Container Stops
     [Arguments]  ${container}
@@ -149,9 +148,9 @@ Start Docker Daemon Locally
     [Return]  ${handle}
 
 Start Containerd Daemon Locally
-    ${handle}=  Start Process  containerd > ./daemon-local.log 2>&1 &  shell=True
+    ${handle}=  Start Process  /usr/local/bin/containerd > ./daemon-local.log 2>&1 &  shell=True
     FOR  ${IDX}  IN RANGE  5
-        ${pid}=  Run  pidof containerd
+        ${pid}=  Run  pidof /usr/local/bin/containerd
         Log To Console  pid: ${pid}
         Exit For Loop If  '${pid}' != '${EMPTY}'
         Sleep  2s
@@ -159,27 +158,40 @@ Start Containerd Daemon Locally
     Sleep  2s
     [Return]  ${handle}
 
-Restart Docker Daemon Locally
+Restart Process Locally
+    [Arguments]  ${process}
+    ${full_process}=  Set Variable If
+    ...  '${process}'=='containerd'  /usr/local/bin/containerd  dockerd
+    ${start_process_cmd}=  Set Variable If
+    ...  '${process}'=='dockerd'  /usr/local/bin/dockerd-entrypoint.sh dockerd>./daemon-local.log 2>&1
+    ...  '${process}'=='containerd'  ${full_process} > ./daemon-local.log 2>&1 &
+    Should Be True  '${start_process_cmd}' != '${EMPTY}'
+    Run Keyword If  '${process}'=='dockerd'  OperatingSystem.File Should Exist  /usr/local/bin/dockerd-entrypoint.sh
+
     FOR  ${IDX}  IN RANGE  5
-        ${pid}=  Run  pidof dockerd
+        ${pid}=  Run  pidof ${full_process}
         Exit For Loop If  '${pid}' == '${EMPTY}'
-        ${result}=  Run Process  kill ${pid}  shell=True
+        ${result}=  Run  kill ${pid}
         Log To Console  Kill docker process: ${result}
         Sleep  2s
     END
-    ${pid}=  Run  pidof dockerd
+    ${pid}=  Run  pidof ${full_process}
     Should Be Equal As Strings  '${pid}'  '${EMPTY}'
-    OperatingSystem.File Should Exist  /usr/local/bin/dockerd-entrypoint.sh
-    ${result}=  Run Process  rm -rf /var/lib/docker/*  shell=True
-    Log To Console  Clear /var/lib/docker: ${result}
-    ${handle}=  Start Process  /usr/local/bin/dockerd-entrypoint.sh dockerd>./daemon-local.log 2>&1  shell=True
-    Process Should Be Running  ${handle}
+
+    ${result}=  Run  rm -rf /var/lib/${process}/*
+    Log All  Clear /var/lib/${process}: ${result}
+    ${handle}=  Start Process  ${start_process_cmd}  shell=True
+    Log All  handle : ${handle}
     FOR  ${IDX}  IN RANGE  5
-        ${pid}=  Run  pidof dockerd
+        ${pid}=  Run  pidof ${full_process}
+        Log All  pid : ${pid}
         Exit For Loop If  '${pid}' != '${EMPTY}'
         Sleep  2s
     END
     Sleep  2s
+    #Process Should Be Running  ${handle}
+    ${result}=  Run  ps aux |grep ${full_process}
+    Log All  result : ${result}
     [Return]  ${handle}
 
 Prepare Docker Cert
@@ -217,7 +229,7 @@ Docker Login
 
 Docker Pull
     [Arguments]  ${image}
-    ${output}=  Retry Keyword N Times When Error  2  Wait Unitl Command Success  docker pull ${image}
+    ${output}=  Retry Keyword N Times When Error  6  Wait Unitl Command Success  docker pull ${image}
     Log All  Docker Pull: ${output}
     [Return]  ${output}
 
@@ -245,6 +257,7 @@ Docker Image Can Not Be Pulled
         Log To Console  Docker pull return value is ${out}
         Sleep  3
     END
+    Clean All Local Images
     Log To Console  Cannot Pull Image From Docker - Pull Log: ${out[1]}
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
@@ -259,5 +272,6 @@ Docker Image Can Be Pulled
         Exit For Loop If  '${out[0]}'=='PASS'
         Sleep  5
     END
+    Clean All Local Images
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'

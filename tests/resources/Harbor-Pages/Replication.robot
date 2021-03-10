@@ -229,7 +229,7 @@ Select Rule And Replicate
     Retry Double Keywords When Error    Retry Element Click    xpath=${dialog_replicate}    Retry Wait Until Page Not Contains Element    xpath=${dialog_replicate}
 
 Image Should Be Replicated To Project
-    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=3  ${tag}=${null}  ${expected_image_size_in_regexp}=${null}
+    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=20  ${tag}=${null}  ${expected_image_size_in_regexp}=${null}
     FOR  ${n}  IN RANGE  0  ${times}
         Sleep  ${period}
         Go Into Project    ${project}
