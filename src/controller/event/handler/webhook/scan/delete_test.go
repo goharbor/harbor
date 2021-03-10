@@ -54,11 +54,11 @@ func (suite *DelArtHandlerTestSuite) TeardownSuite() {
 }
 
 func (suite *DelArtHandlerTestSuite) TestHandle() {
-	o := DelArtHandler{Context: context.TODO}
+	o := DelArtHandler{}
 
-	suite.Error(o.Handle(nil))
+	suite.Error(o.Handle(context.TODO(), nil))
 
-	suite.Error(o.Handle("string"))
+	suite.Error(o.Handle(context.TODO(), "string"))
 
 	art := &artifact.Artifact{}
 	art.Digest = "digest"
@@ -67,18 +67,18 @@ func (suite *DelArtHandlerTestSuite) TestHandle() {
 	value := &event.DeleteArtifactEvent{ArtifactEvent: ev}
 
 	suite.artifactCtl.On("Count", context.TODO(), q.New(q.KeyWords{"digest": "digest"})).Return(int64(0), fmt.Errorf("failed")).Once()
-	suite.Require().NoError(o.Handle(value))
+	suite.Require().NoError(o.Handle(context.TODO(), value))
 
 	suite.artifactCtl.On("Count", context.TODO(), q.New(q.KeyWords{"digest": "digest"})).Return(int64(1), nil).Once()
-	suite.Require().NoError(o.Handle(value))
+	suite.Require().NoError(o.Handle(context.TODO(), value))
 
 	suite.artifactCtl.On("Count", context.TODO(), q.New(q.KeyWords{"digest": "digest"})).Return(int64(0), nil).Once()
 	suite.scanCtl.On("DeleteReports", context.TODO(), "digest").Return(fmt.Errorf("failed")).Once()
-	suite.Require().Error(o.Handle(value))
+	suite.Require().Error(o.Handle(context.TODO(), value))
 
 	suite.artifactCtl.On("Count", context.TODO(), q.New(q.KeyWords{"digest": "digest"})).Return(int64(0), nil).Once()
 	suite.scanCtl.On("DeleteReports", context.TODO(), "digest").Return(nil).Once()
-	suite.Require().NoError(o.Handle(value))
+	suite.Require().NoError(o.Handle(context.TODO(), value))
 }
 
 func TestDelArtHandlerTestSuite(t *testing.T) {

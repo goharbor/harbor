@@ -1,14 +1,15 @@
 package notification
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common/job/models"
-	cModels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/stretchr/testify/require"
@@ -17,7 +18,7 @@ import (
 type fakedHookManager struct {
 }
 
-func (f *fakedHookManager) StartHook(event *model.HookEvent, job *models.JobData) error {
+func (f *fakedHookManager) StartHook(ctx context.Context, event *model.HookEvent, job *models.JobData) error {
 	return nil
 }
 
@@ -66,7 +67,7 @@ func TestHTTPHandler_Handle(t *testing.T) {
 					Data: &model.HookEvent{
 						PolicyID:  1,
 						EventType: "pushImage",
-						Target: &cModels.EventTarget{
+						Target: &policy_model.EventTarget{
 							Type:    "http",
 							Address: "http://127.0.0.1:8080",
 						},
@@ -82,7 +83,7 @@ func TestHTTPHandler_Handle(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := handler.Handle(tt.args.event.Data)
+			err := handler.Handle(context.TODO(), tt.args.event.Data)
 			if tt.wantErr {
 				require.NotNil(t, err, "Error: %s", err)
 				return

@@ -3,15 +3,14 @@ package notification
 import (
 	"container/list"
 	"context"
+	"github.com/goharbor/harbor/src/controller/event"
+	notifier_model "github.com/goharbor/harbor/src/pkg/notifier/model"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification/hook"
 	"github.com/goharbor/harbor/src/pkg/notification/job"
-	jobMgr "github.com/goharbor/harbor/src/pkg/notification/job/manager"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
-	"github.com/goharbor/harbor/src/pkg/notification/policy/manager"
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
-	"github.com/goharbor/harbor/src/pkg/notifier/model"
 )
 
 var (
@@ -34,20 +33,40 @@ var (
 // Init ...
 func Init() {
 	// init notification policy manager
-	PolicyMgr = manager.NewDefaultManger()
+	PolicyMgr = policy.Mgr
 	// init hook manager
 	HookManager = hook.NewHookManager()
 	// init notification job manager
-	JobMgr = jobMgr.NewDefaultManager()
+	JobMgr = job.Mgr
 
-	SupportedNotifyTypes = make(map[string]struct{})
-
-	initSupportedNotifyType(model.NotifyTypeHTTP, model.NotifyTypeSlack)
+	initSupportedNotifyType()
 
 	log.Info("notification initialization completed")
 }
 
-func initSupportedNotifyType(notifyTypes ...string) {
+func initSupportedNotifyType() {
+	SupportedEventTypes = make(map[string]struct{}, 0)
+	SupportedNotifyTypes = make(map[string]struct{}, 0)
+
+	eventTypes := []string{
+		event.TopicPushArtifact,
+		event.TopicPullArtifact,
+		event.TopicDeleteArtifact,
+		event.TopicUploadChart,
+		event.TopicDeleteChart,
+		event.TopicDownloadChart,
+		event.TopicQuotaExceed,
+		event.TopicQuotaWarning,
+		event.TopicScanningFailed,
+		event.TopicScanningCompleted,
+		event.TopicReplication,
+		event.TopicTagRetention,
+	}
+	for _, eventType := range eventTypes {
+		SupportedEventTypes[eventType] = struct{}{}
+	}
+
+	notifyTypes := []string{notifier_model.NotifyTypeHTTP, notifier_model.NotifyTypeSlack}
 	for _, notifyType := range notifyTypes {
 		SupportedNotifyTypes[notifyType] = struct{}{}
 	}

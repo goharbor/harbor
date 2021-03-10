@@ -41,14 +41,14 @@ func (a *Handler) Name() string {
 }
 
 // Handle preprocess artifact event data and then publish hook event
-func (a *Handler) Handle(value interface{}) error {
+func (a *Handler) Handle(ctx context.Context, value interface{}) error {
 	switch v := value.(type) {
 	case *event.PushArtifactEvent:
-		return a.handle(v.ArtifactEvent)
+		return a.handle(ctx, v.ArtifactEvent)
 	case *event.PullArtifactEvent:
-		return a.handle(v.ArtifactEvent)
+		return a.handle(ctx, v.ArtifactEvent)
 	case *event.DeleteArtifactEvent:
-		return a.handle(v.ArtifactEvent)
+		return a.handle(ctx, v.ArtifactEvent)
 	default:
 		log.Errorf("Can not handler this event type! %#v", v)
 	}
@@ -60,18 +60,19 @@ func (a *Handler) IsStateful() bool {
 	return false
 }
 
-func (a *Handler) handle(event *event.ArtifactEvent) error {
-	prj, err := project.Ctl.Get(orm.Context(), event.Artifact.ProjectID, project.Metadata(true))
+func (a *Handler) handle(ctx context.Context, event *event.ArtifactEvent) error {
+	prj, err := project.Ctl.Get(ctx, event.Artifact.ProjectID, project.Metadata(true))
 	if err != nil {
 		log.Errorf("failed to get project: %d, error: %v", event.Artifact.ProjectID, err)
 		return err
 	}
 
-	policies, err := notification.PolicyMgr.GetRelatedPolices(prj.ProjectID, event.EventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, prj.ProjectID, event.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", event.EventType, err)
 		return err
 	}
+	log.Info(policies)
 	if len(policies) == 0 {
 		log.Debugf("cannot find policy for %s event: %v", event.EventType, event)
 		return nil

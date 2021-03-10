@@ -49,6 +49,8 @@ func New() http.Handler {
 		GCAPI:                 newGCAPI(),
 		QuotaAPI:              newQuotaAPI(),
 		RetentionAPI:          newRetentionAPI(),
+		WebhookAPI:            newNotificationPolicyAPI(),
+		WebhookjobAPI:         newNotificationJobAPI(),
 		ImmutableAPI:          newImmutableAPI(),
 		OidcAPI:               newOIDCAPI(),
 		SystemCVEAllowlistAPI: newSystemCVEAllowListAPI(),

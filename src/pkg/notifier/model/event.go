@@ -1,15 +1,15 @@
 package model
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event/model"
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 )
 
 // HookEvent is hook related event data to publish
 type HookEvent struct {
 	PolicyID  int64
 	EventType string
-	Target    *models.EventTarget
+	Target    *policy_model.EventTarget
 	Payload   *Payload
 }
 

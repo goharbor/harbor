@@ -1,6 +1,7 @@
 package hook
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -12,13 +13,13 @@ import (
 	"github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification/job"
-	"github.com/goharbor/harbor/src/pkg/notification/job/manager"
+	job_model "github.com/goharbor/harbor/src/pkg/notification/job/model"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 )
 
 // Manager send hook
 type Manager interface {
-	StartHook(*model.HookEvent, *models.JobData) error
+	StartHook(context.Context, *model.HookEvent, *models.JobData) error
 }
 
 // DefaultManager ...
@@ -30,20 +31,20 @@ type DefaultManager struct {
 // NewHookManager ...
 func NewHookManager() *DefaultManager {
 	return &DefaultManager{
-		jobMgr: manager.NewDefaultManager(),
+		jobMgr: job.NewManager(),
 		client: utils.GetJobServiceClient(),
 	}
 }
 
 // StartHook create a notification job record in database, and submit it to jobservice
-func (hm *DefaultManager) StartHook(event *model.HookEvent, data *models.JobData) error {
+func (hm *DefaultManager) StartHook(ctx context.Context, event *model.HookEvent, data *models.JobData) error {
 	payload, err := json.Marshal(event.Payload)
 	if err != nil {
 		return err
 	}
 
 	t := time.Now()
-	id, err := hm.jobMgr.Create(&cModels.NotificationJob{
+	id, err := hm.jobMgr.Create(ctx, &job_model.Job{
 		PolicyID:     event.PolicyID,
 		EventType:    event.EventType,
 		NotifyType:   event.Target.Type,
@@ -64,7 +65,7 @@ func (hm *DefaultManager) StartHook(event *model.HookEvent, data *models.JobData
 	jobUUID, err := hm.client.SubmitJob(data)
 	if err != nil {
 		log.Errorf("failed to submit job with notification event: %v", err)
-		e := hm.jobMgr.Update(&cModels.NotificationJob{
+		e := hm.jobMgr.Update(ctx, &job_model.Job{
 			ID:     id,
 			Status: cModels.JobError,
 		}, "Status")
@@ -74,7 +75,7 @@ func (hm *DefaultManager) StartHook(event *model.HookEvent, data *models.JobData
 		return err
 	}
 
-	if err = hm.jobMgr.Update(&cModels.NotificationJob{
+	if err = hm.jobMgr.Update(ctx, &job_model.Job{
 		ID:   id,
 		UUID: jobUUID,
 	}, "UUID"); err != nil {

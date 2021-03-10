@@ -1,6 +1,7 @@
 package artifact
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -31,7 +32,7 @@ func (r *ReplicationHandler) Name() string {
 }
 
 // Handle ...
-func (r *ReplicationHandler) Handle(value interface{}) error {
+func (r *ReplicationHandler) Handle(ctx context.Context, value interface{}) error {
 	if !config.NotificationEnable() {
 		log.Debug("notification feature is not enabled")
 		return nil
@@ -50,7 +51,7 @@ func (r *ReplicationHandler) Handle(value interface{}) error {
 		return err
 	}
 
-	policies, err := notification.PolicyMgr.GetRelatedPolices(project.ProjectID, rpEvent.EventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(orm.Context(), project.ProjectID, rpEvent.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", rpEvent.EventType, err)
 		return err

@@ -15,8 +15,11 @@
 package quota
 
 import (
+	"context"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/event"
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"testing"
 	"time"
 
@@ -27,7 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
-	testing_notification "github.com/goharbor/harbor/src/testing/pkg/notification"
+	testing_notification "github.com/goharbor/harbor/src/testing/pkg/notification/policy"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -69,8 +72,13 @@ func (suite *QuotaPreprocessHandlerSuite) SetupSuite() {
 	}
 
 	suite.om = notification.PolicyMgr
-	mp := &testing_notification.FakedPolicyMgr{}
+	mp := &testing_notification.Manager{}
 	notification.PolicyMgr = mp
+	mp.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything).Return([]*policy_model.Policy{
+		{
+			ID: 1,
+		},
+	}, nil)
 
 	h := &MockHandler{}
 
@@ -86,7 +94,7 @@ func (suite *QuotaPreprocessHandlerSuite) TearDownSuite() {
 // TestHandle ...
 func (suite *QuotaPreprocessHandlerSuite) TestHandle() {
 	handler := &Handler{}
-	err := handler.Handle(suite.evt)
+	err := handler.Handle(context.TODO(), suite.evt)
 	suite.NoError(err)
 }
 
@@ -99,7 +107,7 @@ func (m *MockHandler) Name() string {
 }
 
 // Handle ...
-func (m *MockHandler) Handle(value interface{}) error {
+func (m *MockHandler) Handle(ctx context.Context, value interface{}) error {
 	return nil
 }
 

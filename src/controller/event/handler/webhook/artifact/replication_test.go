@@ -15,9 +15,7 @@
 package artifact
 
 import (
-	"testing"
-	"time"
-
+	"context"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
@@ -26,65 +24,23 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	replicationtesting "github.com/goharbor/harbor/src/testing/controller/replication"
 	"github.com/goharbor/harbor/src/testing/mock"
+	testingnotification "github.com/goharbor/harbor/src/testing/pkg/notification/policy"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	"time"
 )
-
-type fakedNotificationPolicyMgr struct {
-}
 
 type fakedReplicationPolicyMgr struct {
 }
 
 type fakedReplicationRegistryMgr struct {
-}
-
-func (f *fakedNotificationPolicyMgr) Create(*models.NotificationPolicy) (int64, error) {
-	return 0, nil
-}
-
-// List the policies, returns the policy list and error
-func (f *fakedNotificationPolicyMgr) List(int64) ([]*models.NotificationPolicy, error) {
-	return nil, nil
-}
-
-// Get policy with specified ID
-func (f *fakedNotificationPolicyMgr) Get(int64) (*models.NotificationPolicy, error) {
-	return nil, nil
-}
-
-// GetByNameAndProjectID get policy by the name and projectID
-func (f *fakedNotificationPolicyMgr) GetByNameAndProjectID(string, int64) (*models.NotificationPolicy, error) {
-	return nil, nil
-}
-
-// Update the specified policy
-func (f *fakedNotificationPolicyMgr) Update(*models.NotificationPolicy) error {
-	return nil
-}
-
-// Delete the specified policy
-func (f *fakedNotificationPolicyMgr) Delete(int64) error {
-	return nil
-}
-
-// Test the specified policy
-func (f *fakedNotificationPolicyMgr) Test(*models.NotificationPolicy) error {
-	return nil
-}
-
-// GetRelatedPolices get event type related policies in project
-func (f *fakedNotificationPolicyMgr) GetRelatedPolices(int64, string) ([]*models.NotificationPolicy, error) {
-	return []*models.NotificationPolicy{
-		{
-			ID: 0,
-		},
-	}, nil
 }
 
 // Create new policy
@@ -183,7 +139,8 @@ func TestReplicationHandler_Handle(t *testing.T) {
 		project.Ctl = prj
 		rep.Ctl = repCtl
 	}()
-	notification.PolicyMgr = &fakedNotificationPolicyMgr{}
+	policyMgrMock := &testingnotification.Manager{}
+	notification.PolicyMgr = policyMgrMock
 	replication.PolicyCtl = &fakedReplicationPolicyMgr{}
 	replication.RegistryMgr = &fakedReplicationRegistryMgr{}
 	projectCtl := &projecttesting.Controller{}
@@ -192,6 +149,11 @@ func TestReplicationHandler_Handle(t *testing.T) {
 	rep.Ctl = mockRepCtl
 	mockRepCtl.On("GetTask", mock.Anything, mock.Anything).Return(&rep.Task{}, nil)
 	mockRepCtl.On("GetExecution", mock.Anything, mock.Anything).Return(&rep.Execution{}, nil)
+	policyMgrMock.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything).Return([]*policy_model.Policy{
+		{
+			ID: 0,
+		},
+	}, nil)
 
 	mock.OnAnything(projectCtl, "GetByName").Return(&models.Project{ProjectID: 1}, nil)
 
@@ -234,7 +196,7 @@ func TestReplicationHandler_Handle(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := handler.Handle(tt.args.data)
+			err := handler.Handle(context.TODO(), tt.args.data)
 			if tt.wantErr {
 				require.NotNil(t, err, "Error: %s", err)
 				return

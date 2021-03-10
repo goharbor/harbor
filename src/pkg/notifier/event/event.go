@@ -1,9 +1,9 @@
 package event
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 )
@@ -40,7 +40,7 @@ type Metadata interface {
 type HookMetaData struct {
 	PolicyID  int64
 	EventType string
-	Target    *models.EventTarget
+	Target    *policy_model.EventTarget
 	Payload   *model.Payload
 }
 

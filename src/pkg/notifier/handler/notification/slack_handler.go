@@ -1,8 +1,10 @@
 package notification
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/orm"
 
 	"bytes"
 	"encoding/json"
@@ -70,7 +72,7 @@ func (s *SlackHandler) Name() string {
 }
 
 // Handle handles event to slack
-func (s *SlackHandler) Handle(value interface{}) error {
+func (s *SlackHandler) Handle(ctx context.Context, value interface{}) error {
 	if value == nil {
 		return errors.New("SlackHandler cannot handle nil value")
 	}
@@ -108,7 +110,7 @@ func (s *SlackHandler) process(event *model.HookEvent) error {
 		"address":          event.Target.Address,
 		"skip_cert_verify": event.Target.SkipCertVerify,
 	}
-	return notification.HookManager.StartHook(event, j)
+	return notification.HookManager.StartHook(orm.Context(), event, j)
 }
 
 func (s *SlackHandler) convert(payLoad *model.Payload) (string, error) {

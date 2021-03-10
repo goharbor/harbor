@@ -15,13 +15,16 @@
 package handler
 
 import (
+	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/project"
 	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
@@ -112,4 +115,20 @@ func parseProjectNameOrID(str string, isResourceName *bool) interface{} {
 	}
 
 	return v // projectID
+}
+
+func getProjectID(ctx context.Context, projectNameOrID interface{}) (int64, error) {
+	projectName, ok := projectNameOrID.(string)
+	if ok {
+		p, err := project.Ctl.Get(ctx, projectName, project.Metadata(false))
+		if err != nil {
+			return 0, err
+		}
+		return p.ProjectID, nil
+	}
+	projectID, ok := projectNameOrID.(int64)
+	if ok {
+		return projectID, nil
+	}
+	return 0, errors.New("unknown project identifier type")
 }

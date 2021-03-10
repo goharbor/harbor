@@ -1,40 +1,39 @@
-package models
+package model
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
-func TestNotificationPolicy_ConvertFromDBModel(t *testing.T) {
+func TestPolicy_ConvertFromDBModel(t *testing.T) {
 	tests := []struct {
 		name    string
-		policy  *NotificationPolicy
-		want    *NotificationPolicy
+		policy  *Policy
+		want    *Policy
 		wantErr bool
 	}{
 		{
 			name: "ConvertFromDBModel want error 1",
-			policy: &NotificationPolicy{
+			policy: &Policy{
 				TargetsDB: "[{{\"type\":\"http\",\"address\":\"http://10.173.32.58:9009\"}]",
 			},
 			wantErr: true,
 		},
 		{
 			name: "ConvertFromDBModel want error 2",
-			policy: &NotificationPolicy{
+			policy: &Policy{
 				EventTypesDB: "[{\"pushImage\",\"pullImage\",\"deleteImage\"]",
 			},
 			wantErr: true,
 		},
 		{
 			name: "ConvertFromDBModel 1",
-			policy: &NotificationPolicy{
+			policy: &Policy{
 				TargetsDB:    "[{\"type\":\"http\",\"address\":\"http://10.173.32.58:9009\"}]",
 				EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\"]",
 			},
-			want: &NotificationPolicy{
+			want: &Policy{
 				Targets: []EventTarget{
 					{
 						Type:    "http",
@@ -60,16 +59,16 @@ func TestNotificationPolicy_ConvertFromDBModel(t *testing.T) {
 	}
 }
 
-func TestNotificationPolicy_ConvertToDBModel(t *testing.T) {
+func TestPolicy_ConvertToDBModel(t *testing.T) {
 	tests := []struct {
 		name    string
-		policy  *NotificationPolicy
-		want    *NotificationPolicy
+		policy  *Policy
+		want    *Policy
 		wantErr bool
 	}{
 		{
 			name: "ConvertToDBModel 1",
-			policy: &NotificationPolicy{
+			policy: &Policy{
 				Targets: []EventTarget{
 					{
 						Type:           "http",
@@ -79,7 +78,7 @@ func TestNotificationPolicy_ConvertToDBModel(t *testing.T) {
 				},
 				EventTypes: []string{"pushImage", "pullImage", "deleteImage"},
 			},
-			want: &NotificationPolicy{
+			want: &Policy{
 				TargetsDB:    "[{\"type\":\"http\",\"address\":\"http://127.0.0.1\",\"skip_cert_verify\":false}]",
 				EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\"]",
 			},
@@ -98,17 +97,4 @@ func TestNotificationPolicy_ConvertToDBModel(t *testing.T) {
 			assert.Equal(t, tt.want.EventTypesDB, tt.policy.EventTypesDB)
 		})
 	}
-}
-
-func TestNotificationJob_TableName(t *testing.T) {
-	job := &NotificationJob{}
-	got := job.TableName()
-	assert.Equal(t, NotificationJobTable, got)
-}
-
-func TestNotificationPolicy_TableName(t *testing.T) {
-	policy := &NotificationPolicy{}
-	got := policy.TableName()
-	assert.Equal(t, NotificationPolicyTable, got)
-
 }

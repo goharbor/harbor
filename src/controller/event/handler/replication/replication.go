@@ -15,6 +15,7 @@
 package replication
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/controller/event"
@@ -36,7 +37,7 @@ func (r *Handler) Name() string {
 }
 
 // Handle ...
-func (r *Handler) Handle(value interface{}) error {
+func (r *Handler) Handle(ctx context.Context, value interface{}) error {
 	pushArtEvent, ok := value.(*event.PushArtifactEvent)
 	if ok {
 		return r.handlePushArtifact(pushArtEvent)

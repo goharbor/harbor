@@ -15,6 +15,7 @@
 package quota
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -39,7 +40,7 @@ func (qp *Handler) Name() string {
 }
 
 // Handle ...
-func (qp *Handler) Handle(value interface{}) error {
+func (qp *Handler) Handle(ctx context.Context, value interface{}) error {
 	quotaEvent, ok := value.(*event.QuotaEvent)
 	if !ok {
 		return errors.New("invalid quota event type")
@@ -54,7 +55,7 @@ func (qp *Handler) Handle(value interface{}) error {
 		return err
 	}
 
-	policies, err := notification.PolicyMgr.GetRelatedPolices(prj.ProjectID, quotaEvent.EventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, prj.ProjectID, quotaEvent.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", quotaEvent.EventType, err)
 		return err
