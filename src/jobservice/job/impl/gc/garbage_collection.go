@@ -442,7 +442,9 @@ func (gc *GarbageCollector) removeUntaggedBlobs(ctx job.Context) {
 				},
 				PageNumber: 1,
 				PageSize:   int64(ps),
-				Sorting:    "id",
+				Sorts: []*q.Sort{
+					q.NewSort("id", false),
+				},
 			}
 			blobs, err := gc.blobMgr.List(ctx.SystemContext(), q)
 			if err != nil {

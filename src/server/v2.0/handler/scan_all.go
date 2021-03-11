@@ -181,7 +181,7 @@ func (s *scanAllAPI) createOrUpdateScanAllSchedule(ctx context.Context, cronType
 
 func (s *scanAllAPI) getScanAllSchedule(ctx context.Context) (*scheduler.Schedule, error) {
 	query := q.New(q.KeyWords{"vendor_type": scan.VendorTypeScanAll})
-	schedules, err := s.scheduler.ListSchedules(ctx, query.First("-creation_time"))
+	schedules, err := s.scheduler.ListSchedules(ctx, query.First(q.NewSort("creation_time", true)))
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +240,7 @@ func (s *scanAllAPI) getLatestScanAllExecution(ctx context.Context, trigger ...s
 		query.Keywords["trigger"] = trigger[0]
 	}
 
-	executions, err := s.execMgr.List(ctx, query.First("-start_time"))
+	executions, err := s.execMgr.List(ctx, query.First(q.NewSort("start_time", true)))
 	if err != nil {
 		return nil, err
 	}

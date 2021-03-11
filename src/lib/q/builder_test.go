@@ -241,32 +241,26 @@ func TestParsePattern(t *testing.T) {
 	assert.True(t, ok)
 }
 
-func TestBuild(t *testing.T) {
+func TestParseKeywords(t *testing.T) {
 	// empty string
 	q := ``
-	query, err := Build(q, 1, 10)
+	keywords, err := parseKeywords(q)
 	require.Nil(t, err)
-	require.NotNil(t, query)
-	assert.Equal(t, int64(1), query.PageNumber)
-	assert.Equal(t, int64(10), query.PageSize)
+	require.NotNil(t, keywords)
 
 	// contains only ","
 	q = `,`
-	query, err = Build(q, 1, 10)
+	keywords, err = parseKeywords(q)
 	require.NotNil(t, err)
 
 	// valid query string
 	q = `k=v`
-	query, err = Build(q, 1, 10)
+	keywords, err = parseKeywords(q)
 	require.Nil(t, err)
-	assert.Equal(t, int64(1), query.PageNumber)
-	assert.Equal(t, int64(10), query.PageSize)
-	assert.Equal(t, "v", query.Keywords["k"].(string))
+	assert.Equal(t, "v", keywords["k"].(string))
 
 	q = `q=tags%3Dnil`
-	query, err = Build(q, 1, 10)
+	keywords, err = parseKeywords(q)
 	require.Nil(t, err)
-	assert.Equal(t, int64(1), query.PageNumber)
-	assert.Equal(t, int64(10), query.PageSize)
-	assert.Equal(t, "tags=nil", query.Keywords["q"].(string))
+	assert.Equal(t, "tags=nil", keywords["q"].(string))
 }

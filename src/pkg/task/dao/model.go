@@ -37,7 +37,7 @@ type Execution struct {
 	StatusMessage string    `orm:"column(status_message)"`
 	Trigger       string    `orm:"column(trigger)"`
 	ExtraAttrs    string    `orm:"column(extra_attrs)"` // json string
-	StartTime     time.Time `orm:"column(start_time)"`
+	StartTime     time.Time `orm:"column(start_time)" sort:"default:desc"`
 	UpdateTime    time.Time `orm:"column(update_time)"`
 	EndTime       time.Time `orm:"column(end_time)"`
 	Revision      int64     `orm:"column(revision)"`
@@ -67,7 +67,7 @@ type Task struct {
 	RunCount       int32     `orm:"column(run_count)"`
 	ExtraAttrs     string    `orm:"column(extra_attrs)"` // json string
 	CreationTime   time.Time `orm:"column(creation_time)"`
-	StartTime      time.Time `orm:"column(start_time)"`
+	StartTime      time.Time `orm:"column(start_time)" sort:"default:desc"`
 	UpdateTime     time.Time `orm:"column(update_time)"`
 	EndTime        time.Time `orm:"column(end_time)"`
 }

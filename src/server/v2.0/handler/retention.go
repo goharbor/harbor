@@ -265,7 +265,7 @@ func (r *retentionAPI) OperateRetentionExecution(ctx context.Context, params ope
 }
 
 func (r *retentionAPI) ListRetentionExecutions(ctx context.Context, params operation.ListRetentionExecutionsParams) middleware.Responder {
-	query, err := r.BuildQuery(ctx, nil, params.Page, params.PageSize)
+	query, err := r.BuildQuery(ctx, nil, nil, params.Page, params.PageSize)
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
@@ -295,7 +295,7 @@ func (r *retentionAPI) ListRetentionExecutions(ctx context.Context, params opera
 }
 
 func (r *retentionAPI) ListRetentionTasks(ctx context.Context, params operation.ListRetentionTasksParams) middleware.Responder {
-	query, err := r.BuildQuery(ctx, nil, params.Page, params.PageSize)
+	query, err := r.BuildQuery(ctx, nil, nil, params.Page, params.PageSize)
 	if err != nil {
 		return r.SendError(ctx, err)
 	}

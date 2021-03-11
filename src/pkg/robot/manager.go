@@ -81,9 +81,5 @@ func (m *manager) Update(ctx context.Context, r *model.Robot, props ...string) e
 
 // List ...
 func (m *manager) List(ctx context.Context, query *q.Query) ([]*model.Robot, error) {
-	query = q.MustClone(query)
-	if query.Sorting == "" {
-		query.Sorting = "name"
-	}
 	return m.dao.List(ctx, query)
 }

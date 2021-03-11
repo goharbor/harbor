@@ -100,9 +100,6 @@ func (i *iDao) ListImmutableRules(ctx context.Context, query *q.Query) ([]*model
 	if err != nil {
 		return nil, err
 	}
-	if query.Sorting != "" {
-		qs = qs.OrderBy(query.Sorting)
-	}
 	if _, err = qs.All(&rules); err != nil {
 		return nil, err
 	}
@@ -111,12 +108,7 @@ func (i *iDao) ListImmutableRules(ctx context.Context, query *q.Query) ([]*model
 
 // Count ...
 func (i *iDao) Count(ctx context.Context, query *q.Query) (int64, error) {
-	query = q.MustClone(query)
-	query.Sorting = ""
-	query.PageNumber = 0
-	query.PageSize = 0
-
-	qs, err := orm.QuerySetter(ctx, &model.ImmutableRule{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &model.ImmutableRule{}, query)
 	if err != nil {
 		return 0, err
 	}

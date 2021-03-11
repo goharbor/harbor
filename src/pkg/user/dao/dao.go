@@ -45,10 +45,6 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.User, error) 
 		return nil, err
 	}
 
-	if query.Sorting != "" {
-		qs = qs.OrderBy(query.Sorting)
-	}
-
 	var users []*models.User
 	if _, err := qs.All(&users); err != nil {
 		return nil, err

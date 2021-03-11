@@ -28,12 +28,7 @@ func init() {
 
 // GetTotalOfRegistrations returns the total count of scanner registrations according to the query.
 func GetTotalOfRegistrations(ctx context.Context, query *q.Query) (int64, error) {
-	query = q.MustClone(query)
-	query.Sorting = ""
-	query.PageNumber = 0
-	query.PageSize = 0
-
-	qs, err := orm.QuerySetter(ctx, &Registration{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &Registration{}, query)
 	if err != nil {
 		return 0, err
 	}

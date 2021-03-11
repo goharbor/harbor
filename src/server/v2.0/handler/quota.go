@@ -57,14 +57,14 @@ func (qa *quotaAPI) ListQuotas(ctx context.Context, params operation.ListQuotasP
 		return qa.SendError(ctx, err)
 	}
 
-	query := &q.Query{
-		Keywords: q.KeyWords{
-			"reference":    lib.StringValue(params.Reference),
-			"reference_id": lib.StringValue(params.ReferenceID),
-		},
-		PageNumber: *params.Page,
-		PageSize:   *params.PageSize,
-		Sorting:    lib.StringValue(params.Sort),
+	query, err := qa.BuildQuery(ctx, nil, params.Sort, params.Page, params.PageSize)
+	if err != nil {
+		return qa.SendError(ctx, err)
+	}
+
+	query.Keywords = q.KeyWords{
+		"reference":    lib.StringValue(params.Reference),
+		"reference_id": lib.StringValue(params.ReferenceID),
 	}
 
 	total, err := qa.quotaCtl.Count(ctx, query)

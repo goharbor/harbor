@@ -136,7 +136,7 @@ func (g *gcAPI) GetGCHistory(ctx context.Context, params operation.GetGCHistoryP
 	if err := g.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceGarbageCollection); err != nil {
 		return g.SendError(ctx, err)
 	}
-	query, err := g.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := g.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return g.SendError(ctx, err)
 	}

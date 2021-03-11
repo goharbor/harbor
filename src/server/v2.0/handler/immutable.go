@@ -94,7 +94,7 @@ func (ia *immutableAPI) ListImmuRules(ctx context.Context, params operation.List
 		return ia.SendError(ctx, err)
 	}
 
-	query, err := ia.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := ia.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return ia.SendError(ctx, err)
 	}

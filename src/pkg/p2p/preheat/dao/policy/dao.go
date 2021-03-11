@@ -51,14 +51,7 @@ type dao struct{}
 
 // Count returns the total count of policies according to the query
 func (d *dao) Count(ctx context.Context, query *q.Query) (total int64, err error) {
-	if query != nil {
-		// ignore the page number and size
-		query = &q.Query{
-			Keywords: query.Keywords,
-		}
-	}
-
-	qs, err := orm.QuerySetter(ctx, &policy.Schema{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &policy.Schema{}, query)
 	if err != nil {
 		return 0, err
 	}
@@ -172,11 +165,8 @@ func (d *dao) List(ctx context.Context, query *q.Query) (schemas []*policy.Schem
 	if err != nil {
 		return
 	}
-
-	qs = qs.OrderBy("UpdatedTime", "ID")
 	if _, err = qs.All(&schemas); err != nil {
 		return
 	}
-
 	return schemas, nil
 }

@@ -123,13 +123,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 
 // List count instances by query params.
 func (d *dao) Count(ctx context.Context, query *q.Query) (total int64, err error) {
-	if query != nil {
-		// ignore the page number and size
-		query = &q.Query{
-			Keywords: query.Keywords,
-		}
-	}
-	qs, err := orm.QuerySetter(ctx, &provider.Instance{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &provider.Instance{}, query)
 	if err != nil {
 		return 0, err
 	}

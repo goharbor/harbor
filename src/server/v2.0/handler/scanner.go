@@ -125,7 +125,7 @@ func (s *scannerAPI) ListScanners(ctx context.Context, params operation.ListScan
 		return s.SendError(ctx, err)
 	}
 
-	query, err := s.BuildQuery(ctx, params.Q, params.Page, params.PageSize, params.Sort)
+	query, err := s.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return s.SendError(ctx, err)
 	}

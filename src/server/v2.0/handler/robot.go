@@ -106,7 +106,7 @@ func (rAPI *robotAPI) ListRobot(ctx context.Context, params operation.ListRobotP
 		return rAPI.SendError(ctx, err)
 	}
 
-	query, err := rAPI.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := rAPI.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
