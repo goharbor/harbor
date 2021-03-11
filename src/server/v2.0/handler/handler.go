@@ -37,6 +37,7 @@ func New() http.Handler {
 		ScannerAPI:            newScannerAPI(),
 		ScanAPI:               newScanAPI(),
 		ScanAllAPI:            newScanAllAPI(),
+		SearchAPI:             newSearchAPI(),
 		ProjectAPI:            newProjectAPI(),
 		PreheatAPI:            newPreheatAPI(),
 		IconAPI:               newIconAPI(),

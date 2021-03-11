@@ -31,28 +31,6 @@ paths:
           description: The system health status.
           schema:
             $ref: '#/definitions/OverallHealthStatus'
-  /search:
-    get:
-      summary: 'Search for projects, repositories and helm charts'
-      description: |
-        The Search endpoint returns information about the projects ,repositories  and helm charts offered at public status or related to the current logged in user. The response includes the project, repository list and charts in a proper display order.
-      parameters:
-        - name: q
-          in: query
-          description: Search parameter for project and repository name.
-          required: true
-          type: string
-      tags:
-        - Products
-      responses:
-        '200':
-          description: An array of search results
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Search'
-        '500':
-          description: Unexpected internal errors.
   '/projects/{project_id}/metadatas':
     get:
       summary: Get project metadata.
@@ -1981,99 +1959,6 @@ responses:
   InternalServerError:
     description: 'Internal Server Error'
 definitions:
-  Search:
-    type: object
-    properties:
-      project:
-        description: Search results of the projects that matched the filter keywords.
-        type: array
-        items:
-          $ref: '#/definitions/Project'
-      repository:
-        description: Search results of the repositories that matched the filter keywords.
-        type: array
-        items:
-          $ref: '#/definitions/SearchRepository'
-      chart:
-        description: Search results of the charts that macthed the filter keywords.
-        type: array
-        items:
-          $ref: '#/definitions/SearchResult'
-  SearchRepository:
-    type: object
-    properties:
-      project_id:
-        type: integer
-        description: The ID of the project that the repository belongs to
-      project_name:
-        type: string
-        description: The name of the project that the repository belongs to
-      project_public:
-        type: boolean
-        description: 'The flag to indicate the publicity of the project that the repository belongs to (1 is public, 0 is not)'
-      repository_name:
-        type: string
-        description: The name of the repository
-      pull_count:
-        type: integer
-        description: The count how many times the repository is pulled
-      artifact_count:
-        type: integer
-        description: The count of artifacts in the repository
-  Project:
-    type: object
-    properties:
-      project_id:
-        type: integer
-        format: int32
-        description: Project ID
-      owner_id:
-        type: integer
-        format: int32
-        description: The owner ID of the project always means the creator of the project.
-      name:
-        type: string
-        description: The name of the project.
-      registry_id:
-        type: integer
-        format: int64
-        description: The ID of referenced registry when the project is a proxy cache project.
-      creation_time:
-        type: string
-        description: The creation time of the project.
-      update_time:
-        type: string
-        description: The update time of the project.
-      deleted:
-        type: boolean
-        description: A deletion mark of the project.
-      owner_name:
-        type: string
-        description: The owner name of the project.
-      togglable:
-        type: boolean
-        description: Correspond to the UI about whether the project's publicity is  updatable (for UI)
-      current_user_role_id:
-        type: integer
-        description: The role ID with highest permission of the current user who triggered the API (for UI).  This attribute is deprecated and will be removed in future versions.
-      current_user_role_ids:
-        type: array
-        items:
-          type: integer
-          format: int32
-        description: The list of role ID of the current user who triggered the API (for UI)
-      repo_count:
-        type: integer
-        description: The number of the repositories under this project.
-      chart_count:
-        type: integer
-        description: The total number of charts under this project.
-      metadata:
-        description: The metadata of the project.
-        $ref: '#/definitions/ProjectMetadata'
-      cve_allowlist:
-        description: The CVE allowlist of this project.
-        $ref: '#/definitions/CVEAllowlist'
   ProjectMetadata:
     type: object
     properties:
@@ -2941,18 +2826,6 @@ definitions:
     properties:
       labels:
         $ref: '#/definitions/Labels'
-  SearchResult:
-    type: object
-    description: The chart search result item
-    properties:
-      name:
-        type: string
-        description: The chart name with repo name
-      score:
-        type: integer
-        description: The matched level
-      chart:
-        $ref: '#/definitions/ChartVersion'
   Labels:
     type: array
     description: A list of label
