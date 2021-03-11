@@ -1,4 +1,3 @@
-import time
 import os
 import sys
 import warnings
@@ -15,9 +14,7 @@ path=os.getcwd() + "/tests/apitests/python/"
 sys.path.insert(0, path)
 print(sys.path)
 import v2_swagger_client
-from swagger_client.rest import ApiException
 import swagger_client.models
-from pprint import pprint
 
 admin_user = "admin"
 admin_pwd = "Harbor12345"
@@ -59,6 +56,19 @@ def GetRepositoryApi(username, password, harbor_server= os.environ.get("HARBOR_H
     api_client = v2_swagger_client.ApiClient(cfg)
     api_instance = v2_swagger_client.RepositoryApi(api_client)
     return api_instance
+
+def GetConfigureApi(username, password, harbor_server= os.environ.get("HARBOR_HOST", '')):
+
+    cfg = v2_swagger_client.Configuration()
+    cfg.host = "https://"+harbor_server+"/api/v2.0"
+    cfg.username = username
+    cfg.password = password
+    cfg.verify_ssl = False
+    cfg.debug = True
+    api_client = v2_swagger_client.ApiClient(cfg)
+    api_instance = v2_swagger_client.Configuration(api_client)
+    return api_instance
+
 
 class TestResult(object):
     def __init__(self):

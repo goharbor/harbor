@@ -371,6 +371,8 @@ func (s *Session) searchGroup(groupDN, filter, gName, groupNameAttribute string)
 	groupName := ""
 	if len(result.Entries[0].Attributes) > 0 {
 		groupName = result.Entries[0].Attributes[0].Values[0]
+	} else {
+		groupName = groupDN
 	}
 	group := model.Group{
 		Dn:   result.Entries[0].DN,

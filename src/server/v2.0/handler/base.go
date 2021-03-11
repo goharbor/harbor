@@ -144,6 +144,15 @@ func (b *BaseAPI) RequireAuthenticated(ctx context.Context) error {
 	return nil
 }
 
+// RequireSolutionUserAccess check if current user is internal service
+func (b *BaseAPI) RequireSolutionUserAccess(ctx context.Context) error {
+	sec, exist := security.FromContext(ctx)
+	if !exist || !sec.IsSolutionUser() {
+		return errors.UnauthorizedError(nil).WithMessage("only internal service is allowed to call this API")
+	}
+	return nil
+}
+
 // BuildQuery builds the query model according to the query string
 func (b *BaseAPI) BuildQuery(ctx context.Context, query, sort *string, pageNumber, pageSize *int64) (*q.Query, error) {
 	var (

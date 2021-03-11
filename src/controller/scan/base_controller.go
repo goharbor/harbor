@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
 	"strings"
 	"sync"
 
@@ -25,7 +26,6 @@ import (
 	ar "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/robot"
 	sc "github.com/goharbor/harbor/src/controller/scanner"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"

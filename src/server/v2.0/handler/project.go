@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
 	"strconv"
 	"strings"
 	"sync"
@@ -36,7 +37,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/retention"
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/core/api"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -90,7 +90,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		return a.SendError(ctx, err)
 	}
 
-	onlyAdmin, err := config.OnlyAdminCreateProject()
+	onlyAdmin, err := config.OnlyAdminCreateProject(ctx)
 	if err != nil {
 		return a.SendError(ctx, fmt.Errorf("failed to determine whether only admin can create projects: %v", err))
 	}
@@ -108,10 +108,10 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	}
 
 	// populate storage limit
-	if config.QuotaPerProjectEnable() {
+	if config.QuotaPerProjectEnable(ctx) {
 		// the security context is not sys admin, set the StorageLimit the global StoragePerProject
 		if req.StorageLimit == nil || *req.StorageLimit == 0 || !a.isSysAdmin(ctx, rbac.ActionCreate) {
-			setting, err := config.QuotaSetting()
+			setting, err := config.QuotaSetting(ctx)
 			if err != nil {
 				log.Errorf("failed to get quota setting: %v", err)
 				return a.SendError(ctx, fmt.Errorf("failed to get quota setting: %v", err))
@@ -676,7 +676,7 @@ func (a *projectAPI) isSysAdmin(ctx context.Context, action rbac.Action) bool {
 }
 
 func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *models.ProjectSummary) {
-	if !config.QuotaPerProjectEnable() {
+	if !config.QuotaPerProjectEnable(ctx) {
 		log.Debug("Quota per project disabled")
 		return
 	}

@@ -3,7 +3,7 @@ package authproxy
 import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/group"
-	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/api/authentication/v1beta1"
 	"k8s.io/client-go/rest"

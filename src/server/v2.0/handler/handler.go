@@ -56,6 +56,7 @@ func New() http.Handler {
 		ImmutableAPI:          newImmutableAPI(),
 		OidcAPI:               newOIDCAPI(),
 		SystemCVEAllowlistAPI: newSystemCVEAllowListAPI(),
+		ConfigureAPI:          newConfigAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

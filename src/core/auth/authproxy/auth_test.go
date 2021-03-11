@@ -20,9 +20,10 @@ import (
 	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	cut "github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/auth/authproxy/test"
-	"github.com/goharbor/harbor/src/core/config"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/stretchr/testify/assert"
 	"net/http/httptest"
 	"os"
@@ -214,11 +215,11 @@ func TestGetTLSConfig(t *testing.T) {
 		nilRootCA bool
 	}
 	cases := []struct {
-		input  *models.HTTPAuthProxy
+		input  *cfgModels.HTTPAuthProxy
 		expect result
 	}{
 		{
-			input: &models.HTTPAuthProxy{
+			input: &cfgModels.HTTPAuthProxy{
 				Endpoint:            "https://127.0.0.1/login",
 				TokenReviewEndpoint: "https://127.0.0.1/tokenreview",
 				VerifyCert:          false,
@@ -232,7 +233,7 @@ func TestGetTLSConfig(t *testing.T) {
 			},
 		},
 		{
-			input: &models.HTTPAuthProxy{
+			input: &cfgModels.HTTPAuthProxy{
 				Endpoint:            "https://127.0.0.1/login",
 				TokenReviewEndpoint: "https://127.0.0.1/tokenreview",
 				VerifyCert:          false,
@@ -246,7 +247,7 @@ func TestGetTLSConfig(t *testing.T) {
 			},
 		},
 		{
-			input: &models.HTTPAuthProxy{
+			input: &cfgModels.HTTPAuthProxy{
 				Endpoint:            "https://127.0.0.1/login",
 				TokenReviewEndpoint: "https://127.0.0.1/tokenreview",
 				VerifyCert:          true,
@@ -258,7 +259,7 @@ func TestGetTLSConfig(t *testing.T) {
 			},
 		},
 		{
-			input: &models.HTTPAuthProxy{
+			input: &cfgModels.HTTPAuthProxy{
 				Endpoint:            "https://127.0.0.1/login",
 				TokenReviewEndpoint: "https://127.0.0.1/tokenreview",
 				VerifyCert:          true,
@@ -272,7 +273,7 @@ func TestGetTLSConfig(t *testing.T) {
 			},
 		},
 		{
-			input: &models.HTTPAuthProxy{
+			input: &cfgModels.HTTPAuthProxy{
 				Endpoint:            "https://127.0.0.1/login",
 				TokenReviewEndpoint: "https://127.0.0.1/tokenreview",
 				VerifyCert:          true,

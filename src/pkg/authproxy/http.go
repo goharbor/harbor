@@ -6,6 +6,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	k8s_api_v1beta1 "k8s.io/api/authentication/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +17,7 @@ import (
 )
 
 // TokenReview ...
-func TokenReview(rawToken string, authProxyConfig *models.HTTPAuthProxy) (k8s_api_v1beta1.TokenReviewStatus, error) {
+func TokenReview(rawToken string, authProxyConfig *cfgModels.HTTPAuthProxy) (k8s_api_v1beta1.TokenReviewStatus, error) {
 
 	emptyStatus := k8s_api_v1beta1.TokenReviewStatus{}
 	// Init auth client with the auth proxy endpoint.
@@ -65,7 +66,7 @@ func TokenReview(rawToken string, authProxyConfig *models.HTTPAuthProxy) (k8s_ap
 
 }
 
-func getTLSConfig(config *models.HTTPAuthProxy) rest.TLSClientConfig {
+func getTLSConfig(config *cfgModels.HTTPAuthProxy) rest.TLSClientConfig {
 	if config.VerifyCert && len(config.ServerCertificate) > 0 {
 		return rest.TLSClientConfig{
 			CAData: []byte(config.ServerCertificate),

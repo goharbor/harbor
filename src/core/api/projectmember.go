@@ -16,6 +16,8 @@ package api
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"strconv"
 	"strings"
@@ -27,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
@@ -98,7 +99,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 		pma.member = members[0]
 	}
 
-	authMode, err := config.AuthMode()
+	authMode, err := config.AuthMode(orm.Context())
 	if err != nil {
 		pma.SendInternalServerError(fmt.Errorf("failed to get authentication mode"))
 	}

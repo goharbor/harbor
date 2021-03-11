@@ -14,6 +14,7 @@
 package ldap
 
 import (
+	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/stretchr/testify/assert"
 	// "fmt"
 	// "strings"
@@ -30,7 +31,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/core/auth"
-	coreConfig "github.com/goharbor/harbor/src/core/config"
 )
 
 var ldapTestConfig = map[string]interface{}{
@@ -61,7 +61,7 @@ var ldapTestConfig = map[string]interface{}{
 
 func TestMain(m *testing.M) {
 	test.InitDatabaseFromEnv()
-	coreConfig.InitWithSettings(ldapTestConfig)
+	config.InitWithSettings(ldapTestConfig)
 
 	secretKeyPath := "/tmp/secretkey"
 	_, err := test.GenerateKey(secretKeyPath)

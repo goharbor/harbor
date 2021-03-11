@@ -15,19 +15,21 @@
 package dao
 
 import (
+	"github.com/goharbor/harbor/src/lib/orm"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
 )
 
 func TestAuthModeCanBeModified(t *testing.T) {
+	ctx := orm.Context()
 	c, err := GetOrmer().QueryTable(&models.User{}).Count()
 	if err != nil {
 		t.Fatalf("failed to count users: %v", err)
 	}
 
 	if c == 2 {
-		flag, err := AuthModeCanBeModified()
+		flag, err := AuthModeCanBeModified(ctx)
 		if err != nil {
 			t.Fatalf("failed to determine whether auth mode can be modified: %v", err)
 		}
@@ -51,7 +53,7 @@ func TestAuthModeCanBeModified(t *testing.T) {
 			}
 		}(id)
 
-		flag, err = AuthModeCanBeModified()
+		flag, err = AuthModeCanBeModified(ctx)
 		if err != nil {
 			t.Fatalf("failed to determine whether auth mode can be modified: %v", err)
 		}
@@ -60,7 +62,7 @@ func TestAuthModeCanBeModified(t *testing.T) {
 		}
 
 	} else {
-		flag, err := AuthModeCanBeModified()
+		flag, err := AuthModeCanBeModified(ctx)
 		if err != nil {
 			t.Fatalf("failed to determine whether auth mode can be modified: %v", err)
 		}

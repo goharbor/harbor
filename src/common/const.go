@@ -23,6 +23,9 @@ const (
 	UAAAuth             = "uaa_auth"
 	HTTPAuth            = "http_auth"
 	OIDCAuth            = "oidc_auth"
+	DBCfgManager        = "db_cfg_manager"
+	InMemoryCfgManager  = "in_memory_manager"
+	RestCfgManager      = "rest_config_manager"
 	ProCrtRestrEveryone = "everyone"
 	ProCrtRestrAdmOnly  = "adminonly"
 	LDAPScopeBase       = 0
@@ -141,7 +144,7 @@ const (
 	RobotNamePrefix = "robot_name_prefix"
 	// Use this prefix to index user who tries to login with web hook token.
 	AuthProxyUserNamePrefix = "tokenreview$"
-	CoreConfigPath          = "/api/internal/configurations"
+	CoreConfigPath          = "/api/v2.0/internalconfig"
 	RobotTokenDuration      = "robot_token_duration"
 
 	OIDCCallbackPath = "/c/oidc/callback"

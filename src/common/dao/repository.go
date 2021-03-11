@@ -16,6 +16,8 @@ package dao
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common/utils"
+	libOrm "github.com/goharbor/harbor/src/lib/orm"
 	"time"
 
 	"github.com/astaxie/beego/orm"
@@ -102,12 +104,12 @@ func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []inte
 
 	if len(q.Name) > 0 {
 		sql += `and r.name like ? `
-		params = append(params, "%"+Escape(q.Name)+"%")
+		params = append(params, "%"+libOrm.Escape(q.Name)+"%")
 	}
 
 	if len(q.ProjectIDs) > 0 {
 		sql += fmt.Sprintf(`and r.project_id in ( %s ) `,
-			ParamPlaceholderForIn(len(q.ProjectIDs)))
+			utils.ParamPlaceholderForIn(len(q.ProjectIDs)))
 		params = append(params, q.ProjectIDs)
 	}
 

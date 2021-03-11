@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
 	"net/url"
 	"os"
 	"os/signal"
@@ -41,7 +42,6 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	_ "github.com/goharbor/harbor/src/core/auth/oidc"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib/cache"
@@ -189,7 +189,7 @@ func main() {
 	if err = migration.Migrate(database); err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}
-	if err := config.Load(); err != nil {
+	if err := config.Load(orm.Context()); err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
 

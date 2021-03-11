@@ -17,7 +17,9 @@ package dao
 import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
+	libOrm "github.com/goharbor/harbor/src/lib/orm"
 
 	"fmt"
 	"time"
@@ -234,7 +236,7 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 
 	if len(query.Name) != 0 {
 		sql += ` and p.name like ?`
-		params = append(params, "%"+Escape(query.Name)+"%")
+		params = append(params, "%"+libOrm.Escape(query.Name)+"%")
 	}
 
 	if query.RegistryID > 0 {
@@ -266,7 +268,7 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 	}
 	if len(query.ProjectIDs) > 0 {
 		sql += fmt.Sprintf(` and p.project_id in ( %s )`,
-			ParamPlaceholderForIn(len(query.ProjectIDs)))
+			utils.ParamPlaceholderForIn(len(query.ProjectIDs)))
 		params = append(params, query.ProjectIDs)
 	}
 	return sql, params

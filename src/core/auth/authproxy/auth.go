@@ -20,7 +20,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -33,7 +36,6 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/authproxy"
 )
@@ -108,7 +110,7 @@ func (a *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 }
 
 func (a *Auth) tokenReview(sessionID string) (*models.User, error) {
-	httpAuthProxySetting, err := config.HTTPAuthProxySetting()
+	httpAuthProxySetting, err := config.HTTPAuthProxySetting(orm.Context())
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +218,7 @@ func (a *Auth) ensure() error {
 		a.client = &http.Client{}
 	}
 	if time.Now().Sub(a.settingTimeStamp) >= refreshDuration {
-		setting, err := config.HTTPAuthProxySetting()
+		setting, err := config.HTTPAuthProxySetting(orm.Context())
 		if err != nil {
 			return err
 		}
@@ -233,7 +235,7 @@ func (a *Auth) ensure() error {
 	return nil
 }
 
-func getTLSConfig(setting *models.HTTPAuthProxy) (*tls.Config, error) {
+func getTLSConfig(setting *cfgModels.HTTPAuthProxy) (*tls.Config, error) {
 	c := setting.ServerCertificate
 	if setting.VerifyCert && len(c) > 0 {
 		certs := x509.NewCertPool()

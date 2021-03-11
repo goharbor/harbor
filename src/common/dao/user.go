@@ -15,8 +15,10 @@
 package dao
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	libOrm "github.com/goharbor/harbor/src/lib/orm"
 	"time"
 
 	"github.com/astaxie/beego/orm"
@@ -129,11 +131,11 @@ func userQueryConditions(query *models.UserQuery) orm.QuerySeter {
 	}
 
 	if len(query.Username) > 0 {
-		qs = qs.Filter("username__contains", Escape(query.Username))
+		qs = qs.Filter("username__contains", libOrm.Escape(query.Username))
 	}
 
 	if len(query.Email) > 0 {
-		qs = qs.Filter("email__contains", Escape(query.Email))
+		qs = qs.Filter("email__contains", libOrm.Escape(query.Email))
 	}
 
 	return qs
@@ -291,4 +293,20 @@ func CleanUser(id int64) error {
 // MatchPassword returns true is password matched
 func matchPassword(u *models.User, password string) bool {
 	return utils.Encrypt(password, u.Salt, u.PasswordVersion) == u.Password
+}
+
+// AuthModeCanBeModified determines whether auth mode can be
+// modified or not. Auth mode can modified when there is only admin
+// user in database.
+func AuthModeCanBeModified(ctx context.Context) (bool, error) {
+	o, err := libOrm.FromContext(ctx)
+	if err != nil {
+		return false, err
+	}
+	c, err := o.QueryTable(&models.User{}).Count()
+	if err != nil {
+		return false, err
+	}
+	// admin and anonymous
+	return c == 2, nil
 }

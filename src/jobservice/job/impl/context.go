@@ -23,12 +23,12 @@ import (
 	"time"
 
 	o "github.com/astaxie/beego/orm"
-	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/logger/sweeper"
+	libCfg "github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 )
 
@@ -45,7 +45,7 @@ type Context struct {
 	// other required information
 	properties map[string]interface{}
 	// admin server client
-	cfgMgr comcfg.CfgManager
+	cfgMgr libCfg.Manager
 	// job life cycle tracker
 	tracker job.Tracker
 	// job logger configs settings map lock
@@ -53,10 +53,10 @@ type Context struct {
 }
 
 // NewContext ...
-func NewContext(sysCtx context.Context, cfgMgr *comcfg.CfgManager) *Context {
+func NewContext(sysCtx context.Context, cfgMgr libCfg.Manager) *Context {
 	return &Context{
-		sysContext: comcfg.NewContext(sysCtx, cfgMgr),
-		cfgMgr:     *cfgMgr,
+		sysContext: libCfg.NewContext(sysCtx, cfgMgr),
+		cfgMgr:     cfgMgr,
 		properties: make(map[string]interface{}),
 	}
 }
@@ -70,7 +70,7 @@ func (c *Context) Init() error {
 
 	for counter == 0 || err != nil {
 		counter++
-		err = c.cfgMgr.Load()
+		err = c.cfgMgr.Load(c.sysContext)
 		if err != nil {
 			logger.Errorf("Job context initialization error: %s\n", err.Error())
 			if counter < maxRetryTimes {
@@ -117,12 +117,12 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 	}
 
 	// Refresh config properties
-	err := c.cfgMgr.Load()
+	err := c.cfgMgr.Load(c.sysContext)
 	if err != nil {
 		return nil, err
 	}
 
-	props := c.cfgMgr.GetAll()
+	props := c.cfgMgr.GetAll(c.sysContext)
 	for k, v := range props {
 		jContext.properties[k] = v
 	}

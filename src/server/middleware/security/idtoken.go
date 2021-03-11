@@ -15,6 +15,7 @@
 package security
 
 import (
+	"github.com/goharbor/harbor/src/controller/config"
 	"net/http"
 	"strings"
 
@@ -22,7 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/oidc"
@@ -57,7 +57,7 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 		log.Warning("user matches token's claims is not onboarded.")
 		return nil
 	}
-	setting, err := config.OIDCSetting()
+	setting, err := config.OIDCSetting(ctx)
 	if err != nil {
 		log.Errorf("failed to get OIDC settings: %v", err)
 		return nil

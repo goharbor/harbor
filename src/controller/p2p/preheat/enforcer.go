@@ -17,6 +17,8 @@ package preheat
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"strings"
 
 	tk "github.com/docker/distribution/registry/auth/token"
@@ -25,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/tag"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -170,7 +171,7 @@ func NewEnforcer() Enforcer {
 					Actions: []string{resourcePullAction},
 				},
 			}
-			t, err := token.MakeToken("distributor", token.Registry, ac)
+			t, err := token.MakeToken(orm.Context(), "distributor", token.Registry, ac)
 			if err != nil {
 				return "", err
 			}

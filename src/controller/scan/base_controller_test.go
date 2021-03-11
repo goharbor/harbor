@@ -19,6 +19,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
 	"testing"
 	"time"
 
@@ -26,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/robot"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/permission/types"

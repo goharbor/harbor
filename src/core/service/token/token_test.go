@@ -20,6 +20,9 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -32,11 +35,11 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
+	test.InitDatabaseFromEnv()
 	config.Init()
 	InitCreators()
 	result := m.Run()
@@ -133,7 +136,7 @@ func TestMakeToken(t *testing.T) {
 	}}
 	svc := "harbor-registry"
 	u := "tester"
-	tokenJSON, err := MakeToken(u, svc, ra)
+	tokenJSON, err := MakeToken(orm.Context(), u, svc, ra)
 	if err != nil {
 		t.Errorf("Error while making token: %v", err)
 	}

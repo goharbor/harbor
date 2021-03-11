@@ -17,6 +17,8 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"strings"
 
@@ -25,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/api"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/oidc"
@@ -47,7 +48,7 @@ type onboardReq struct {
 
 // Prepare include public code path for call request handler of OIDCController
 func (oc *OIDCController) Prepare() {
-	if mode, _ := config.AuthMode(); mode != common.OIDCAuth {
+	if mode, _ := config.AuthMode(orm.Context()); mode != common.OIDCAuth {
 		oc.SendPreconditionFailedError(fmt.Errorf("auth mode: %s is not OIDC based", mode))
 		return
 	}
@@ -121,7 +122,7 @@ func (oc *OIDCController) Callback() {
 	}
 	oc.SetSession(tokenKey, tokenBytes)
 
-	oidcSettings, err := config.OIDCSetting()
+	oidcSettings, err := config.OIDCSetting(ctx)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return

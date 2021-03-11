@@ -15,7 +15,7 @@
 package session
 
 import (
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/lib"
 	"net/http"
 )

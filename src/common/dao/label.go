@@ -20,6 +20,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
+	libOrm "github.com/goharbor/harbor/src/lib/orm"
 )
 
 // AddLabel creates a label
@@ -71,7 +72,7 @@ func getLabelQuerySetter(query *models.LabelQuery) orm.QuerySeter {
 	qs := GetOrmer().QueryTable(&models.Label{})
 	if len(query.Name) > 0 {
 		if query.FuzzyMatchName {
-			qs = qs.Filter("Name__icontains", Escape(query.Name))
+			qs = qs.Filter("Name__icontains", libOrm.Escape(query.Name))
 		} else {
 			qs = qs.Filter("Name", query.Name)
 		}

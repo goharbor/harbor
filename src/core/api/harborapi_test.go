@@ -35,10 +35,11 @@ import (
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/controller/config"
 	apimodels "github.com/goharbor/harbor/src/core/api/models"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
-	"github.com/goharbor/harbor/src/core/config"
+	libOrm "github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/orm"
 	"github.com/goharbor/harbor/src/server/middleware/security"
@@ -77,12 +78,12 @@ type usrInfo struct {
 }
 
 func init() {
-	config.Init()
 	testutils.InitDatabaseFromEnv()
+	config.Init()
 	dao.PrepareTestData([]string{"delete from harbor_user where user_id >2", "delete from project where owner_id >2"}, []string{})
 	config.Upload(testutils.GetUnitTestConfig())
 
-	allCfgs, _ := config.GetSystemCfg()
+	allCfgs, _ := config.GetSystemCfg(libOrm.Context())
 	testutils.TraceCfgMap(allCfgs)
 
 	_, file, _, _ := runtime.Caller(0)
@@ -106,8 +107,6 @@ func init() {
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/usergroups/?:ugid([0-9]+)", &UserGroupAPI{})
-	beego.Router("/api/configurations", &ConfigAPI{})
-	beego.Router("/api/configs", &ConfigAPI{}, "get:GetInternalConfig")
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
 	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
@@ -675,82 +674,6 @@ func (a testapi) UsersDelete(userID int, authInfo usrInfo) (int, error) {
 	_sling = _sling.Path(path)
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, err
-}
-
-// Post ldap test
-func (a testapi) LdapPost(authInfo usrInfo, ldapConf apilib.LdapConf) (int, error) {
-
-	_sling := sling.New().Post(a.basePath)
-
-	// create path and map variables
-	path := "/api/ldap/ping"
-
-	_sling = _sling.Path(path)
-
-	// body params
-	_sling = _sling.BodyJSON(ldapConf)
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
-}
-
-// Search Ldap Groups
-func (a testapi) LdapGroupsSearch(groupName, groupDN string, authInfo ...usrInfo) (int, []apilib.LdapGroupsSearch, error) {
-	_sling := sling.New().Get(a.basePath)
-	// create path and map variables
-	path := "/api/ldap/groups/search"
-	_sling = _sling.Path(path)
-	// body params
-	type QueryParams struct {
-		GroupName string `url:"groupname, omitempty"`
-		GroupDN   string `url:"groupdn, omitempty"`
-	}
-	_sling = _sling.QueryStruct(&QueryParams{GroupName: groupName, GroupDN: groupDN})
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo...)
-	var successPayLoad []apilib.LdapGroupsSearch
-	if 200 == httpStatusCode && nil == err {
-		err = json.Unmarshal(body, &successPayLoad)
-	}
-	return httpStatusCode, successPayLoad, err
-}
-
-func (a testapi) GetConfig(authInfo usrInfo) (int, map[string]*value, error) {
-	_sling := sling.New().Base(a.basePath).Get("/api/configurations")
-
-	cfg := map[string]*value{}
-
-	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err == nil && code == 200 {
-		err = json.Unmarshal(body, &cfg)
-	}
-	return code, cfg, err
-}
-
-func (a testapi) GetInternalConfig(authInfo usrInfo) (int, map[string]interface{}, error) {
-	_sling := sling.New().Base(a.basePath).Get("/api/configs")
-
-	cfg := map[string]interface{}{}
-
-	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err == nil && code == 200 {
-		err = json.Unmarshal(body, &cfg)
-	}
-	return code, cfg, err
-}
-
-func (a testapi) PutConfig(authInfo usrInfo, cfg map[string]interface{}) (int, error) {
-	_sling := sling.New().Base(a.basePath).Put("/api/configurations").BodyJSON(cfg)
-
-	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
-
-	return code, err
-}
-
-func (a testapi) ResetConfig(authInfo usrInfo) (int, error) {
-	_sling := sling.New().Base(a.basePath).Post("/api/configurations/reset")
-
-	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
-
-	return code, err
 }
 
 func (a testapi) PingEmail(authInfo usrInfo, settings []byte) (int, string, error) {

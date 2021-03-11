@@ -18,11 +18,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/controller/config"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -50,7 +51,7 @@ func TestAuthProxy(t *testing.T) {
 		common.AUTHMode:                         common.HTTPAuth,
 	}
 	config.Upload(c)
-	v, e := config.HTTPAuthProxySetting()
+	v, e := config.HTTPAuthProxySetting(orm.Context())
 	require.Nil(t, e)
 	assert.Equal(t, *v, models.HTTPAuthProxy{
 		Endpoint:            "https://auth.proxy/suffix",

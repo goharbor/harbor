@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/goharbor/harbor/src/controller/config"
+
 	commonModels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	ctlModel "github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/replication"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -33,7 +34,7 @@ func (r *ReplicationHandler) Name() string {
 
 // Handle ...
 func (r *ReplicationHandler) Handle(ctx context.Context, value interface{}) error {
-	if !config.NotificationEnable() {
+	if !config.NotificationEnable(ctx) {
 		log.Debug("notification feature is not enabled")
 		return nil
 	}

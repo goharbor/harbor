@@ -16,11 +16,12 @@ package gcreadonly
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"os"
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/registryctl"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -36,19 +37,21 @@ import (
 var (
 	regCtlInit = registryctl.Init
 
-	getReadOnly = func(cfgMgr *config.CfgManager) (bool, error) {
-		if err := cfgMgr.Load(); err != nil {
+	getReadOnly = func(cfgMgr config.Manager) (bool, error) {
+		cxt := orm.Context()
+		if err := cfgMgr.Load(cxt); err != nil {
 			return false, err
 		}
-		return cfgMgr.Get(common.ReadOnly).GetBool(), nil
+		return cfgMgr.Get(cxt, common.ReadOnly).GetBool(), nil
 	}
 
-	setReadOnly = func(cfgMgr *config.CfgManager, switcher bool) error {
+	setReadOnly = func(cfgMgr config.Manager, switcher bool) error {
+		cxt := orm.Context()
 		cfg := map[string]interface{}{
 			common.ReadOnly: switcher,
 		}
-		cfgMgr.UpdateConfig(cfg)
-		return cfgMgr.Save()
+		cfgMgr.UpdateConfig(cxt, cfg)
+		return cfgMgr.Save(cxt)
 	}
 )
 
@@ -69,7 +72,7 @@ type GarbageCollector struct {
 	projectCtl        project.Controller
 	registryCtlClient client.Client
 	logger            logger.Interface
-	cfgMgr            *config.CfgManager
+	cfgMgr            config.Manager
 	CoreURL           string
 	redisURL          string
 	deleteUntagged    bool
@@ -164,15 +167,11 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 		return err
 	}
 
-	errTpl := "failed to get required property: %s"
-	if v, ok := ctx.Get(common.CoreURL); ok && len(v.(string)) > 0 {
-		gc.CoreURL = v.(string)
-	} else {
-		return fmt.Errorf(errTpl, common.CoreURL)
+	mgr, err := config.GetManager(common.RestCfgManager)
+	if err != nil {
+		return err
 	}
-	secret := os.Getenv("JOBSERVICE_SECRET")
-	configURL := gc.CoreURL + common.CoreConfigPath
-	gc.cfgMgr = config.NewRESTCfgManager(configURL, secret)
+	gc.cfgMgr = mgr
 	gc.redisURL = params["redis_url_reg"].(string)
 
 	// default is to delete the untagged artifact

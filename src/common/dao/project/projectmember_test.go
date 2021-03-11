@@ -16,6 +16,7 @@ package project
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
 	"os"
 	"testing"
 
@@ -28,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
-	cfg "github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -71,7 +71,7 @@ func TestMain(m *testing.M) {
 			"delete from project_member where id > 1",
 		}
 		dao.PrepareTestData(clearSqls, initSqls)
-		cfg.Init()
+		config.Init()
 		result = m.Run()
 
 		if result != 0 {

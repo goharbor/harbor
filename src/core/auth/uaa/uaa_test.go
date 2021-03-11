@@ -15,6 +15,7 @@
 package uaa
 
 import (
+	"github.com/goharbor/harbor/src/controller/config"
 	"os"
 	"testing"
 
@@ -22,7 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/common/utils/uaa"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 )
 

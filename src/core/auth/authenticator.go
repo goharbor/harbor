@@ -17,12 +17,13 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -129,7 +130,7 @@ func Register(name string, h AuthenticateHelper) {
 // Login authenticates user credentials based on setting.
 func Login(m models.AuthModel) (*models.User, error) {
 
-	authMode, err := config.AuthMode()
+	authMode, err := config.AuthMode(orm.Context())
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +161,7 @@ func Login(m models.AuthModel) (*models.User, error) {
 }
 
 func getHelper() (AuthenticateHelper, error) {
-	authMode, err := config.AuthMode()
+	authMode, err := config.AuthMode(orm.Context())
 	if err != nil {
 		return nil, err
 	}

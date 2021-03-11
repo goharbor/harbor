@@ -16,6 +16,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"net/http"
@@ -31,7 +32,6 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/config"
 )
 
 var testUser0002ID, testUser0003ID int

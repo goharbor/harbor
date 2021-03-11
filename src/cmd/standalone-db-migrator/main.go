@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/goharbor/harbor/src/common/models"
 	"os"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/migration"
 )

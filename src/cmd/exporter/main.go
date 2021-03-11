@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/goharbor/harbor/src/common/models"
 	"net/http"
 	"os"
 	"strings"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	commonthttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/exporter"
 )

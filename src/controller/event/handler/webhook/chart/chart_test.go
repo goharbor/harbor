@@ -16,12 +16,14 @@ package chart
 
 import (
 	"context"
+	testutils "github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/controller/config"
+	"os"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
@@ -30,6 +32,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestMain(m *testing.M) {
+	// do some initialization
+	testutils.InitDatabaseFromEnv()
+	os.Exit(m.Run())
+}
 
 func TestChartPreprocessHandler_Handle(t *testing.T) {
 	PolicyMgr := notification.PolicyMgr

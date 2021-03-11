@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/dao"
 	"strconv"
 	"strings"
 
@@ -158,7 +157,7 @@ func ReadOrCreate(ctx context.Context, md interface{}, col1 string, cols ...stri
 	}
 
 	// got a duplicate key error, try to read again
-	if isDuplicateKeyError(err) {
+	if IsDuplicateKeyError(err) {
 		err = o.Read(md, cols...)
 	}
 
@@ -191,9 +190,12 @@ func CreateInClause(ctx context.Context, sql string, args ...interface{}) (strin
 	return fmt.Sprintf(`IN (%s)`, strings.Join(idStrs, ",")), nil
 }
 
-// Escape special characters
+// Escape ..
 func Escape(str string) string {
-	return dao.Escape(str)
+	str = strings.Replace(str, `\`, `\\`, -1)
+	str = strings.Replace(str, `%`, `\%`, -1)
+	str = strings.Replace(str, `_`, `\_`, -1)
+	return str
 }
 
 // ParamPlaceholderForIn returns a string that contains placeholders for sql keyword "in"
