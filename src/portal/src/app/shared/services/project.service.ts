@@ -64,7 +64,8 @@ export abstract class ProjectService {
     name: string,
     isPublic?: number,
     page?: number,
-    pageSize?: number
+    pageSize?: number,
+    sort?: string
   ): Observable<HttpResponse<Project[]>>;
   abstract createProject(name: string, metadata: any, storageLimit: number, registryId: number): Observable<any>;
   abstract deleteProject(projectId: number): Observable<any>;
@@ -125,7 +126,8 @@ export class ProjectDefaultService extends ProjectService {
       )
       .pipe(catchError(error => observableThrowError(error)));
   }
-  public listProjects(name: string, isPublic?: number, page?: number, pageSize?: number): Observable<HttpResponse<Project[]>> {
+  public listProjects(name: string, isPublic?: number,
+                      page?: number, pageSize?: number, sort?: string): Observable<HttpResponse<Project[]>> {
     let params = new HttpParams();
     if (page && pageSize) {
       params = params.set('page', page + '').set('page_size', pageSize + '');
@@ -135,6 +137,9 @@ export class ProjectDefaultService extends ProjectService {
     }
     if (isPublic !== undefined) {
       params = params.set('public', '' + isPublic);
+    }
+    if (sort) {
+      params = params.set('sort', sort);
     }
     return this.http
                .get<HttpResponse<Project[]>>(`${ CURRENT_BASE_HREF }/projects`, buildHttpRequestOptionsWithObserveResponse(params)).pipe(

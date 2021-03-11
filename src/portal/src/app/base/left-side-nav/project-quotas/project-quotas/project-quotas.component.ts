@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ViewChild, SimpleChanges, OnChanges } from '@angular/core';
 import { Configuration } from '../../config/config';
 import {
-  Quota, State, Comparator, ClrDatagridComparatorInterface, QuotaHardLimitInterface, QuotaHard
+  Quota, State, QuotaHardLimitInterface,
 } from '../../../../shared/services';
 import {
   clone, isEmpty, getChanges, getSuitableUnit, calculatePage, CustomComparator
@@ -12,11 +12,12 @@ import { QuotaUnits, QuotaUnlimited, QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COE
 import { EditProjectQuotasComponent } from './edit-project-quotas/edit-project-quotas.component';
 import { TranslateService } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
-import { QuotaService } from "../../../../shared/services";
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { ConfigurationService } from "../../../../services/config.service";
+import { QuotaService } from "../../../../../../ng-swagger-gen/services/quota.service";
+import { QuotaUpdateReq } from "../../../../../../ng-swagger-gen/models/quota-update-req";
 const quotaSort = {
   storage: "used.storage",
   sortType: 'string'
@@ -54,7 +55,6 @@ export class ProjectQuotasComponent implements OnChanges {
     this.config = cfg;
     this.configChange.emit(this.config);
   }
-  storageComparator: Comparator<Quota> = new CustomComparator<Quota>(quotaSort.storage, quotaSort.sortType);
   selectedRow: Quota[] = [];
 
   constructor(
@@ -151,9 +151,9 @@ export class ProjectQuotasComponent implements OnChanges {
   saveCurrentQuota(event) {
     let storage = +event.formValue.storage === QuotaUnlimited ?
       +event.formValue.storage : getByte(+event.formValue.storage, event.formValue.storageUnit);
-    let rep: QuotaHard = { hard: { storage } };
+    let rep: QuotaUpdateReq = { hard: { storage } };
     this.loading = true;
-    this.quotaService.updateQuota(event.id, rep).subscribe(res => {
+    this.quotaService.updateQuota({id: event.id, hard: rep}).subscribe(res => {
       this.editQuotaDialog.openEditQuota = false;
       this.getQuotaList(this.currentState);
       this.errorHandler.info('QUOTA.SAVE_SUCCESS');
@@ -179,15 +179,12 @@ export class ProjectQuotasComponent implements OnChanges {
 
     let pageNumber: number = calculatePage(state);
     if (pageNumber <= 0) { pageNumber = 1; }
-    let sortBy: any = '';
-    if (state.sort) {
-      sortBy = state.sort.by as string | ClrDatagridComparatorInterface<any>;
-      sortBy = sortBy.fieldName ? sortBy.fieldName : sortBy;
-      sortBy = state.sort.reverse ? `-${sortBy}` : sortBy;
-    }
     this.loading = true;
-
-    this.quotaService.getQuotaList(QuotaType, pageNumber, this.pageSize, sortBy).pipe(finalize(() => {
+    this.quotaService.listQuotasResponse({
+      reference: QuotaType,
+      page: pageNumber,
+      pageSize: this.pageSize
+    }).pipe(finalize(() => {
       this.loading = false;
       this.selectedRow = [];
     })).subscribe(res => {

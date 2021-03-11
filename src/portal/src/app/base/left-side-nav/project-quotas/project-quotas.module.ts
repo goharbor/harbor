@@ -18,7 +18,6 @@ import { RouterModule, Routes } from "@angular/router";
 import { ProjectQuotasContainerComponent } from "./project-quotas-container.component";
 import { ProjectQuotasComponent } from "./project-quotas/project-quotas.component";
 import { EditProjectQuotasComponent } from "./project-quotas/edit-project-quotas/edit-project-quotas.component";
-import { QuotaService } from "../../../shared/services";
 
 
 const routes: Routes = [

@@ -36,8 +36,6 @@ import { AboutDialogComponent } from "./components/about-dialog/about-dialog.com
 import {
   LabelDefaultService,
   LabelService, ProjectDefaultService, ProjectService,
-  QuotaDefaultService,
-  QuotaService,
   ReplicationDefaultService,
   ReplicationService, ScanningResultDefaultService,
   ScanningResultService,
@@ -199,7 +197,6 @@ ClarityIcons.add({"robot-head": `
     {provide: EndpointService, useClass: EndpointDefaultService },
     {provide: ReplicationService, useClass: ReplicationDefaultService },
     {provide: LabelService, useClass: LabelDefaultService },
-    {provide: QuotaService, useClass: QuotaDefaultService },
     {provide: SystemInfoService, useClass: SystemInfoDefaultService },
     {provide: ScanningResultService, useClass: ScanningResultDefaultService },
     {provide: HelmChartService, useClass: HelmChartDefaultService },

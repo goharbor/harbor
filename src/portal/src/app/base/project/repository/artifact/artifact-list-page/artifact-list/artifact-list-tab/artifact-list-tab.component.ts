@@ -26,15 +26,20 @@ import { ClrLoadingState, ClrDatagridStateInterface, ClrDatagridComparatorInterf
 
 import { ActivatedRoute, Router } from "@angular/router";
 import {
-  Comparator, Label, LabelService, ScannerVo, ScanningResultService,
-  UserPermissionService, USERSTATICPERMISSION, VulnerabilitySummary
+  Comparator, Label, LabelService, ScanningResultService,
+  UserPermissionService, USERSTATICPERMISSION,
 } from "../../../../../../../shared/services";
 import {
   calculatePage,
   clone,
   CustomComparator,
   DEFAULT_PAGE_SIZE,
-  formatSize, VULNERABILITY_SCAN_STATUS, dbEncodeURIComponent, doSorting, DEFAULT_SUPPORTED_MIME_TYPES
+  formatSize,
+  VULNERABILITY_SCAN_STATUS,
+  dbEncodeURIComponent,
+  doSorting,
+  DEFAULT_SUPPORTED_MIME_TYPES,
+  getSortingString
 } from "../../../../../../../shared/units/utils";
 import { ImageNameInputComponent } from "../../../../../../../shared/components/image-name-input/image-name-input.component";
 import { CopyInputComponent } from "../../../../../../../shared/components/push-image/copy-input.component";
@@ -367,6 +372,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               this.loading = false;
             })).subscribe(artifacts => {
               this.artifactList = artifacts;
+              this.artifactList = doSorting<ArtifactFront>(this.artifactList, state);
               this.artifactList.forEach((artifact, index) => {
                 artifact.platform = clone(platFormAttr[index].platform);
               });
@@ -387,6 +393,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           withLabel: true,
           withScanOverview: true,
           withTag: false,
+          sort: getSortingString(state),
           XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES
         };
         Object.assign(listArtifactParams, params);

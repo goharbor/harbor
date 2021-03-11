@@ -1,21 +1,18 @@
 import { waitForAsync, ComponentFixture, TestBed, ComponentFixtureAutoDetect } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 import { ListProjectComponent } from './list-project.component';
 import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
 import { SessionService } from "../../../../shared/services/session.service";
 import { AppConfigService } from "../../../../services/app-config.service";
-import { RouterTestingModule } from '@angular/router/testing';
 import { SearchTriggerService } from "../../../../shared/components/global-search/search-trigger.service";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { StatisticHandler } from "../statictics/statistic-handler.service";
 import { of } from 'rxjs';
-import { BrowserAnimationsModule, NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { delay } from 'rxjs/operators';
 import { ProjectService } from "../../../../shared/services";
 import { OperationService } from "../../../../shared/components/operation/operation.service";
 import { ConfirmationDialogService } from "../../../global-confirmation-dialog/confirmation-dialog.service";
+import { SharedTestingModule } from "../../../../shared/shared.module";
 describe('ListProjectComponent', () => {
     let component: ListProjectComponent;
     let fixture: ComponentFixture<ListProjectComponent>;
@@ -68,12 +65,7 @@ describe('ListProjectComponent', () => {
                 CUSTOM_ELEMENTS_SCHEMA
             ],
             imports: [
-                BrowserAnimationsModule,
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule,
-                RouterTestingModule,
-                NoopAnimationsModule
+              SharedTestingModule
             ],
             declarations: [ListProjectComponent],
             providers: [

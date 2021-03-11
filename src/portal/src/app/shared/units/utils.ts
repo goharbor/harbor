@@ -6,6 +6,7 @@ import { Comparator, State, HttpOptionInterface, HttpOptionTextInterface, QuotaU
 import { QuotaUnits, StorageMultipleConstant } from '../entities/shared.const';
 import { AbstractControl } from "@angular/forms";
 import { isValidCron } from 'cron-validator';
+import { ClrDatagridStateInterface } from "@clr/angular";
 /**
  * Api levels
  */
@@ -628,4 +629,20 @@ export function deleteEmptyKey(obj: Object): void {
             delete obj[key];
         }
     }
+}
+
+export function getSortingString(state: ClrDatagridStateInterface): string {
+    if (state && state.sort && state.sort.by) {
+        let sortString: string;
+        if (typeof state.sort.by === 'string') {
+            sortString = state.sort.by;
+        } else {
+            sortString = (state.sort.by as any).fieldName;
+        }
+        if (state.sort.reverse) {
+            sortString = `-${sortString}`;
+        }
+        return sortString;
+    }
+    return null;
 }
