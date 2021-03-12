@@ -151,6 +151,7 @@ paths:
       operationId: listProjects
       parameters:
         - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/sort'
