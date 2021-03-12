@@ -95,14 +95,28 @@ func (e *executionManagerTestSuite) TestMarkError() {
 }
 
 func (e *executionManagerTestSuite) TestStop() {
+	// the execution contains no tasks and the status is final
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.SuccessStatus.String(),
+	}, nil)
+	e.taskDAO.On("List", mock.Anything, mock.Anything).Return(nil, nil)
+	err := e.execMgr.Stop(nil, 1)
+	e.Require().Nil(err)
+	e.taskDAO.AssertExpectations(e.T())
+	e.execDAO.AssertExpectations(e.T())
+
+	// reset the mocks
+	e.SetupTest()
+
 	// the execution contains no tasks and the status isn't final
 	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
 		ID:     1,
 		Status: job.RunningStatus.String(),
 	}, nil)
 	e.taskDAO.On("List", mock.Anything, mock.Anything).Return(nil, nil)
-	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	err := e.execMgr.Stop(nil, 1)
+	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err = e.execMgr.Stop(nil, 1)
 	e.Require().Nil(err)
 	e.taskDAO.AssertExpectations(e.T())
 	e.execDAO.AssertExpectations(e.T())
@@ -122,7 +136,6 @@ func (e *executionManagerTestSuite) TestStop() {
 		},
 	}, nil)
 	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
-	e.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(false, "", nil)
 	err = e.execMgr.Stop(nil, 1)
 	e.Require().Nil(err)
 	e.taskDAO.AssertExpectations(e.T())
@@ -143,7 +156,6 @@ func (e *executionManagerTestSuite) TestStopAndWait() {
 		},
 	}, nil)
 	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
-	e.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(false, "", nil)
 	err := e.execMgr.StopAndWait(nil, 1, 1*time.Second)
 	e.Require().NotNil(err)
 	e.taskDAO.AssertExpectations(e.T())
@@ -165,7 +177,6 @@ func (e *executionManagerTestSuite) TestStopAndWait() {
 		},
 	}, nil)
 	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
-	e.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(false, "", nil)
 	err = e.execMgr.StopAndWait(nil, 1, 1*time.Second)
 	e.Require().Nil(err)
 	e.taskDAO.AssertExpectations(e.T())
