@@ -15,35 +15,39 @@
 package allowlist
 
 import (
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
+	"context"
+
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/allowlist/dao"
+	"github.com/goharbor/harbor/src/pkg/allowlist/models"
 )
 
 // Manager defines the interface of CVE allowlist manager, it support both system level and project level allowlists
 type Manager interface {
 	// CreateEmpty creates empty allowlist for given project
-	CreateEmpty(projectID int64) error
+	CreateEmpty(ctx context.Context, projectID int64) error
 	// Set sets the allowlist for given project (create or update)
-	Set(projectID int64, list models.CVEAllowlist) error
+	Set(ctx context.Context, projectID int64, list models.CVEAllowlist) error
 	// Get gets the allowlist for given project
-	Get(projectID int64) (*models.CVEAllowlist, error)
+	Get(ctx context.Context, projectID int64) (*models.CVEAllowlist, error)
 	// SetSys sets system level allowlist
-	SetSys(list models.CVEAllowlist) error
+	SetSys(ctx context.Context, list models.CVEAllowlist) error
 	// GetSys gets system level allowlist
-	GetSys() (*models.CVEAllowlist, error)
+	GetSys(ctx context.Context) (*models.CVEAllowlist, error)
 }
 
-type defaultManager struct{}
+type defaultManager struct {
+	dao dao.DAO
+}
 
 // CreateEmpty creates empty allowlist for given project
-func (d *defaultManager) CreateEmpty(projectID int64) error {
+func (d *defaultManager) CreateEmpty(ctx context.Context, projectID int64) error {
 	l := models.CVEAllowlist{
 		ProjectID: projectID,
 		Items:     []models.CVEAllowlistItem{},
 	}
-	_, err := dao.CreateCVEAllowlist(l)
+	_, err := d.dao.Set(ctx, l)
 	if err != nil {
 		logger.Errorf("Failed to create empty CVE allowlist for project: %d, error: %v", projectID, err)
 	}
@@ -51,18 +55,18 @@ func (d *defaultManager) CreateEmpty(projectID int64) error {
 }
 
 // Set sets the allowlist for given project (create or update)
-func (d *defaultManager) Set(projectID int64, list models.CVEAllowlist) error {
+func (d *defaultManager) Set(ctx context.Context, projectID int64, list models.CVEAllowlist) error {
 	list.ProjectID = projectID
 	if err := Validate(list); err != nil {
 		return err
 	}
-	_, err := dao.UpdateCVEAllowlist(list)
+	_, err := d.dao.Set(ctx, list)
 	return err
 }
 
 // Get gets the allowlist for given project
-func (d *defaultManager) Get(projectID int64) (*models.CVEAllowlist, error) {
-	wl, err := dao.GetCVEAllowlist(projectID)
+func (d *defaultManager) Get(ctx context.Context, projectID int64) (*models.CVEAllowlist, error) {
+	wl, err := d.dao.QueryByProjectID(ctx, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -77,16 +81,16 @@ func (d *defaultManager) Get(projectID int64) (*models.CVEAllowlist, error) {
 }
 
 // SetSys sets the system level allowlist
-func (d *defaultManager) SetSys(list models.CVEAllowlist) error {
-	return d.Set(0, list)
+func (d *defaultManager) SetSys(ctx context.Context, list models.CVEAllowlist) error {
+	return d.Set(ctx, 0, list)
 }
 
 // GetSys gets the system level allowlist
-func (d *defaultManager) GetSys() (*models.CVEAllowlist, error) {
-	return d.Get(0)
+func (d *defaultManager) GetSys(ctx context.Context) (*models.CVEAllowlist, error) {
+	return d.Get(ctx, 0)
 }
 
 // NewDefaultManager return a new instance of defaultManager
 func NewDefaultManager() Manager {
-	return &defaultManager{}
+	return &defaultManager{dao: dao.New()}
 }

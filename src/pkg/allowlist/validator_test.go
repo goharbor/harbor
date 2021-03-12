@@ -16,9 +16,10 @@ package allowlist
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIsInvalidErr(t *testing.T) {
@@ -48,24 +49,24 @@ func TestIsInvalidErr(t *testing.T) {
 
 func TestValidate(t *testing.T) {
 	cases := []struct {
-		l       models.CVEAllowlist
+		l       models2.CVEAllowlist
 		noError bool
 	}{
 		{
-			l: models.CVEAllowlist{
+			l: models2.CVEAllowlist{
 				Items: nil,
 			},
 			noError: true,
 		},
 		{
-			l: models.CVEAllowlist{
-				Items: []models.CVEAllowlistItem{},
+			l: models2.CVEAllowlist{
+				Items: []models2.CVEAllowlistItem{},
 			},
 			noError: true,
 		},
 		{
-			l: models.CVEAllowlist{
-				Items: []models.CVEAllowlistItem{
+			l: models2.CVEAllowlist{
+				Items: []models2.CVEAllowlistItem{
 					{CVEID: "breakit"},
 					{CVEID: "breakit"},
 				},
@@ -73,8 +74,8 @@ func TestValidate(t *testing.T) {
 			noError: false,
 		},
 		{
-			l: models.CVEAllowlist{
-				Items: []models.CVEAllowlistItem{
+			l: models2.CVEAllowlist{
+				Items: []models2.CVEAllowlistItem{
 					{CVEID: "CVE-2014-456132"},
 					{CVEID: "CVE-2014-7654321"},
 				},
@@ -82,8 +83,8 @@ func TestValidate(t *testing.T) {
 			noError: true,
 		},
 		{
-			l: models.CVEAllowlist{
-				Items: []models.CVEAllowlistItem{
+			l: models2.CVEAllowlist{
+				Items: []models2.CVEAllowlistItem{
 					{CVEID: "CVE-2014-456132"},
 					{CVEID: "CVE-2014-456132"},
 					{CVEID: "CVE-2014-7654321"},

@@ -26,6 +26,7 @@ import (
 	car "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/selector"
+	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	ar "github.com/goharbor/harbor/src/pkg/artifact"
 	po "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	pr "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
@@ -119,7 +120,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 	).Return(&models.Project{
 		ProjectID:    1,
 		Name:         "library",
-		CVEAllowlist: models.CVEAllowlist{},
+		CVEAllowlist: models2.CVEAllowlist{},
 		Metadata: map[string]string{
 			proMetaKeyContentTrust:  "true",
 			proMetaKeyVulnerability: "true",

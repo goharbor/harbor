@@ -23,11 +23,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/allowlist"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/project/models"
-	"github.com/goharbor/harbor/src/pkg/scan/allowlist"
 	"github.com/goharbor/harbor/src/pkg/user"
 )
 
@@ -89,7 +89,7 @@ func (c *controller) Create(ctx context.Context, project *models.Project) (int64
 			return err
 		}
 
-		if err := c.allowlistMgr.CreateEmpty(projectID); err != nil {
+		if err := c.allowlistMgr.CreateEmpty(ctx, projectID); err != nil {
 			log.Errorf("failed to create CVE allowlist for project %s: %v", project.Name, err)
 			return err
 		}
@@ -233,7 +233,7 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 	}
 
 	if p.CVEAllowlist.ProjectID == p.ProjectID {
-		if err := c.allowlistMgr.Set(p.ProjectID, p.CVEAllowlist); err != nil {
+		if err := c.allowlistMgr.Set(ctx, p.ProjectID, p.CVEAllowlist); err != nil {
 			return err
 		}
 	}
@@ -285,7 +285,7 @@ func (c *controller) loadCVEAllowlists(ctx context.Context, projects models.Proj
 	}
 
 	for _, p := range projects {
-		wl, err := c.allowlistMgr.Get(p.ProjectID)
+		wl, err := c.allowlistMgr.Get(ctx, p.ProjectID)
 		if err != nil {
 			return err
 		}
@@ -303,7 +303,7 @@ func (c *controller) loadEffectCVEAllowlists(ctx context.Context, projects model
 
 	for _, p := range projects {
 		if p.ReuseSysCVEAllowlist() {
-			wl, err := c.allowlistMgr.GetSys()
+			wl, err := c.allowlistMgr.GetSys(ctx)
 			if err != nil {
 				log.Errorf("get system CVE allowlist failed, error: %v", err)
 				return err
@@ -312,7 +312,7 @@ func (c *controller) loadEffectCVEAllowlists(ctx context.Context, projects model
 			wl.ProjectID = p.ProjectID
 			p.CVEAllowlist = *wl
 		} else {
-			wl, err := c.allowlistMgr.Get(p.ProjectID)
+			wl, err := c.allowlistMgr.Get(ctx, p.ProjectID)
 			if err != nil {
 				return err
 			}
