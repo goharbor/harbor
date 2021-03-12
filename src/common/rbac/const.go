@@ -52,6 +52,7 @@ const (
 	ResourceNotificationPolicy    = Resource("notification-policy")
 	ResourceScan                  = Resource("scan")
 	ResourceScanner               = Resource("scanner")
+	ResourceConvert               = Resource("convert")
 	ResourceArtifact              = Resource("artifact")
 	ResourceTag                   = Resource("tag")
 	ResourceArtifactAddition      = Resource("artifact-addition")

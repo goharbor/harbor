@@ -25,6 +25,7 @@ const (
 	ProMetaPreventVul           = "prevent_vul" // prevent vulnerable images from being pulled
 	ProMetaSeverity             = "severity"
 	ProMetaAutoScan             = "auto_scan"
+	ProMetaAutoConvert          = "auto_convert"
 	ProMetaReuseSysCVEAllowlist = "reuse_sys_cve_allowlist"
 )
 

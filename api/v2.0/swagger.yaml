@@ -687,6 +687,31 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/nydusify:
+    post:
+      summary: Convert the artifact to a nydus image
+      description: Convert the specified artifact
+      tags:
+        - nydus
+      operationId: convertArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
     get:
       summary: Get the log of the scan report
@@ -4320,6 +4345,10 @@ definitions:
         type: string
         description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'
         x-nullable: true
+      auto_convert:
+        type: string
+        description: 'Whether convert images to nydus automatically when pushing. The valid values are "true", "false".'
+        x-nullable: false
       reuse_sys_cve_allowlist:
         type: string
         description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".

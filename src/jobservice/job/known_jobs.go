@@ -36,4 +36,6 @@ const (
 	Retention = "RETENTION"
 	// P2PPreheat : the name of the P2P preheat job
 	P2PPreheat = "P2P_PREHEAT"
+	// Nydus : the name of the Nydus job
+	Nydus = "NUDYS"
 )

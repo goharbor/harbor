@@ -250,12 +250,7 @@ services:
     env_file:
       - ./common/config/jobservice/env
     restart: always
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETGID
-      - SETUID
+    user: "0:0"
     volumes:
       - {{data_volume}}/job_logs:/var/log/jobs:z
       - type: bind

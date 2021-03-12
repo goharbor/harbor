@@ -56,6 +56,18 @@
             <clr-control-helper class="config-subtext"> {{ 'PROJECT_CONFIG.AUTOSCAN_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
+
+        <clr-checkbox-container>
+            <label for="auto-convert"></label>
+            <clr-checkbox-wrapper>
+                <input id="auto-convert" type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.AutoConvert"
+                       [disabled]="!hasChangeConfigRole" name="auto-convert" />
+                <label>Automatically convert images on push</label>
+            </clr-checkbox-wrapper>
+            <clr-control-helper class="config-subtext">Automatically convert images on push
+            </clr-control-helper>
+        </clr-checkbox-container>
+
         <div *ngIf="systemInfo" class="clr-form-control" [class.clr-form-control-disabled]="!hasChangeConfigRole">
             <label for="systemAllowlist" class="clr-control-label">{{'CVE_ALLOWLIST.CVE_ALLOWLIST'|translate}}</label>
             <div class="w-100 clr-control-container">

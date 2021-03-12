@@ -17,6 +17,7 @@ package runtime
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/legacy"
 	"os"
 	"os/signal"
 	"sync"
@@ -33,8 +34,8 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gcreadonly"
-	"github.com/goharbor/harbor/src/jobservice/job/impl/legacy"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/nydus"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
@@ -264,6 +265,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.WebhookJob:             (*notification.WebhookJob)(nil),
 			job.SlackJob:               (*notification.SlackJob)(nil),
 			job.P2PPreheat:             (*preheat.Job)(nil),
+			job.Nydus:                  (*nydus.NydusifyConverter)(nil),
 			// In v2.2 we migrate the scheduled replication, garbage collection and scan all to
 			// the scheduler mechanism, the following three jobs are kept for the legacy jobs
 			// and they can be removed after several releases

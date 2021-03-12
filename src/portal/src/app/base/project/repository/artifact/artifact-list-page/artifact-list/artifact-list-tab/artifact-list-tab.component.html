@@ -95,6 +95,11 @@
                     <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;
                     <span>{{'VULNERABILITY.SCAN_NOW' | translate}}</span>
                 </button>
+                <button id="nydusify" type="button" class="btn  btn-secondary scan-btn"
+                        [disabled]="!(selectedRow && selectedRow.length)" (click)="nydusify()">
+                    <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;
+                    <span>Nydusify</span>
+                </button>
 
                 <clr-dropdown class="btn  btn-link" *ngIf="!depth">
                     <span clrDropdownTrigger id="artifact-list-action" class="btn pl-0">

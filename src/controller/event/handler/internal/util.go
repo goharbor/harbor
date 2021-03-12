@@ -16,6 +16,8 @@ package internal
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/controller/nydus"
+	"github.com/goharbor/harbor/src/pkg/task"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -36,5 +38,20 @@ func autoScan(ctx context.Context, a *artifact.Artifact) error {
 	// transaction here to work with the image index
 	return orm.WithTransaction(func(ctx context.Context) error {
 		return scan.DefaultController.Scan(ctx, a)
+	})(ctx)
+}
+
+// autoConvert convert to nydus image when the project of the artifact enable auto convert
+func autoConvert(ctx context.Context, a *artifact.Artifact) error {
+	proj, err := project.Ctl.Get(ctx, a.ProjectID)
+	if err != nil {
+		return err
+	}
+	if !proj.AutoConvert() {
+		return nil
+	}
+
+	return orm.WithTransaction(func(ctx context.Context) error {
+		return nydus.DefaultController.Convert(ctx, a, task.ExecutionTriggerManual)
 	})(ctx)
 }

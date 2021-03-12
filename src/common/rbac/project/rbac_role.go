@@ -99,6 +99,9 @@ var (
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
 
+			{Resource: rbac.ResourceConvert, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceConvert, Action: rbac.ActionRead},
+
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionCreate},
 

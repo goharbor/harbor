@@ -5,13 +5,15 @@ FROM ${harbor_base_namespace}/harbor-jobservice-base:${harbor_base_image_version
 COPY ./make/photon/common/install_cert.sh /harbor/
 COPY ./make/photon/jobservice/entrypoint.sh /harbor/
 COPY ./make/photon/jobservice/harbor_jobservice /harbor/
+COPY ./make/photon/jobservice/nydus-image /harbor/
 
 
 RUN chown -R harbor:harbor /etc/pki/tls/certs \
     && chown -R harbor:harbor /harbor/ \
     && chmod u+x /harbor/entrypoint.sh \
     && chmod u+x /harbor/install_cert.sh \
-    && chmod u+x /harbor/harbor_jobservice
+    && chmod u+x /harbor/harbor_jobservice \
+    && chmod u+x /harbor/nydus-image
 
 WORKDIR /harbor/
 

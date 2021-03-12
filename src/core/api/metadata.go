@@ -206,7 +206,8 @@ func validateProjectMetadata(metas map[string]string) (map[string]string, error)
 		models.ProMetaPublic,
 		models.ProMetaEnableContentTrust,
 		models.ProMetaPreventVul,
-		models.ProMetaAutoScan}
+		models.ProMetaAutoScan,
+		models.ProMetaAutoConvert}
 
 	for _, boolMeta := range boolMetas {
 		value, exist := metas[boolMeta]

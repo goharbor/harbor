@@ -68,6 +68,7 @@ import { errorHandler } from "../../../../../../../shared/units/shared.utils";
 import { ConfirmationDialogComponent } from "../../../../../../../shared/components/confirmation-dialog";
 import { ConfirmationMessage } from "../../../../../../global-confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../../../../../../global-confirmation-dialog/confirmation-state-message";
+import {HttpClient} from "@angular/common/http";
 
 export interface LabelState {
   iconsShow: boolean;
@@ -184,6 +185,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private scanningService: ScanningResultService,
     private router:  Router,
+    private http: HttpClient
   ) {
   }
   ngOnInit() {
@@ -1061,5 +1063,17 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         );
       });
     }
+  }
+
+  nydusify() {
+    const arr = [];
+    this.selectedRow.forEach(item => {
+      arr.push(this.http.post(`api/v2.0/projects/${this.projectName}/repositories/${this.repoName}/artifacts/${item.digest}/nydusify`, null));
+    });
+    forkJoin(arr).subscribe(res => {
+      this.errorHandlerService.info('Nydusify Successfully');
+    }, error => {
+      this.errorHandlerService.error(error);
+    });
   }
 }

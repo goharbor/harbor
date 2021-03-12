@@ -6,6 +6,10 @@
 //
 // This package is intended to be a more powerful and safer alternative to
 // reflect.DeepEqual for comparing whether two values are semantically equal.
+// It is intended to only be used in tests, as performance is not a goal and
+// it may panic if it cannot compare the values. Its propensity towards
+// panicking means that its unsuitable for production environments where a
+// spurious panic may be fatal.
 //
 // The primary features of cmp are:
 //

@@ -130,6 +130,15 @@ func (p *Project) AutoScan() bool {
 	return isTrue(auto)
 }
 
+// AutoConvert ...
+func (p *Project) AutoConvert() bool {
+	auto, exist := p.GetMetadata(ProMetaAutoConvert)
+	if !exist {
+		return false
+	}
+	return isTrue(auto)
+}
+
 // FilterByPublic returns orm.QuerySeter with public filter
 func (p *Project) FilterByPublic(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
 	subQuery := `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = '%s'`

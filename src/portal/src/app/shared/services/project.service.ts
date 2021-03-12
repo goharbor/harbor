@@ -118,6 +118,7 @@ export class ProjectDefaultService extends ProjectService {
               prevent_vul: projectPolicy.PreventVulImg ? "true" : "false",
               severity: projectPolicy.PreventVulImgSeverity,
               auto_scan: projectPolicy.ScanImgOnPush ? "true" : "false",
+              auto_convert: projectPolicy.AutoConvert ? "true" : "false",
               reuse_sys_cve_allowlist: reuseSysCVEVAllowlist
           },
             cve_allowlist: projectAllowlist
