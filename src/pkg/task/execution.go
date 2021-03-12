@@ -121,6 +121,11 @@ func (e *executionManager) MarkError(ctx context.Context, id int64, message stri
 }
 
 func (e *executionManager) Stop(ctx context.Context, id int64) error {
+	execution, err := e.executionDAO.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+
 	tasks, err := e.taskDAO.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"ExecutionID": id,
@@ -128,6 +133,20 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 	})
 	if err != nil {
 		return err
+	}
+	if len(tasks) == 0 {
+		// in final status, return directly
+		if job.Status(execution.Status).Final() {
+			return nil
+		}
+		// isn't in final status, update directly.
+		// as this is used for the corner case(the case that the execution exists but all tasks are disappeared. In normal
+		// cases, if the execution contains no tasks, it is already set as "success" by the upper level caller directly),
+		// no need to handle concurrency
+		execution.Status = job.StoppedStatus.String()
+		execution.Revision = execution.Revision + 1
+		execution.EndTime = time.Now()
+		return e.executionDAO.Update(ctx, execution, "Status", "Revision", "EndTime")
 	}
 	for _, task := range tasks {
 		if err = e.taskMgr.Stop(ctx, task.ID); err != nil {

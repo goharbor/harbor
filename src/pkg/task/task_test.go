@@ -31,14 +31,17 @@ type taskManagerTestSuite struct {
 	suite.Suite
 	mgr      *manager
 	dao      *mockTaskDAO
+	execDao  *mockExecutionDAO
 	jsClient *mockJobserviceClient
 }
 
 func (t *taskManagerTestSuite) SetupTest() {
 	t.dao = &mockTaskDAO{}
+	t.execDao = &mockExecutionDAO{}
 	t.jsClient = &mockJobserviceClient{}
 	t.mgr = &manager{
 		dao:      t.dao,
+		execDao:  t.execDao,
 		jsClient: t.jsClient,
 	}
 }
@@ -89,9 +92,11 @@ func (t *taskManagerTestSuite) TestStop() {
 	t.jsClient.On("PostAction", mock.Anything, mock.Anything).Return(cjob.ErrJobNotFound)
 	t.dao.On("Update", mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	t.execDao.On("RefreshStatus", mock.Anything, mock.Anything).Return(nil)
 	err := t.mgr.Stop(nil, 1)
 	t.Require().Nil(err)
 	t.dao.AssertExpectations(t.T())
+	t.execDao.AssertExpectations(t.T())
 	t.jsClient.AssertExpectations(t.T())
 
 	// reset mock

@@ -76,6 +76,11 @@ func (e *executionManagerTestSuite) TestMarkError() {
 }
 
 func (e *executionManagerTestSuite) TestStop() {
+	// the execution contains tasks
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.SuccessStatus.String(),
+	}, nil)
 	e.taskDAO.On("List", mock.Anything, mock.Anything).Return([]*dao.Task{
 		{
 			ID:          1,
@@ -86,6 +91,37 @@ func (e *executionManagerTestSuite) TestStop() {
 	err := e.execMgr.Stop(nil, 1)
 	e.Require().Nil(err)
 	e.taskDAO.AssertExpectations(e.T())
+	e.taskMgr.AssertExpectations(e.T())
+
+	// reset mocks
+	e.SetupTest()
+
+	// the execution contains no tasks and is in final status
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.SuccessStatus.String(),
+	}, nil)
+	e.taskDAO.On("List", mock.Anything, mock.Anything).Return(nil, nil)
+	err = e.execMgr.Stop(nil, 1)
+	e.Require().Nil(err)
+	e.taskDAO.AssertExpectations(e.T())
+	e.execDAO.AssertExpectations(e.T())
+	e.taskMgr.AssertExpectations(e.T())
+
+	// reset mocks
+	e.SetupTest()
+
+	// the execution contains no tasks and isn't in final status
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:     1,
+		Status: job.RunningStatus.String(),
+	}, nil)
+	e.taskDAO.On("List", mock.Anything, mock.Anything).Return(nil, nil)
+	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err = e.execMgr.Stop(nil, 1)
+	e.Require().Nil(err)
+	e.taskDAO.AssertExpectations(e.T())
+	e.execDAO.AssertExpectations(e.T())
 	e.taskMgr.AssertExpectations(e.T())
 }
 
