@@ -13,6 +13,11 @@
   
     # disable any limits to avoid http 413 for large image uploads
     client_max_body_size 0;
+
+    # increase header and buffer limits to avoid http 414 for URI too large
+    client_body_buffer_size 128k;
+    client_header_buffer_size 5120k;
+    large_client_header_buffers 16 5120k;
   
     # required to avoid http 411: see issue #1486 (https://github.com/docker/docker/issues/1486)
     chunked_transfer_encoding on;
