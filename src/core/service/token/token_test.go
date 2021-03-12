@@ -336,6 +336,7 @@ func TestResourceScopes(t *testing.T) {
 				"scanner-pull": {},
 				"push":         {},
 				"delete":       {},
+				"*":            {},
 			},
 		},
 		{
