@@ -11,9 +11,8 @@ class Robot(base.Base, object):
         super(Robot,self).__init__(api_type = "robot")
 
     def list_robot(self, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
         try:
-            body, status_code, _ = client.list_robot_with_http_info()
+            body, status_code, _ = self._get_client(**kwargs).list_robot_with_http_info()
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             return []
@@ -83,10 +82,9 @@ class Robot(base.Base, object):
         permission_list.append(robotaccountPermissions)
         robotAccountCreate = v2_swagger_client.RobotCreate(name=robot_name, description=robot_desc, duration=duration, level="project", permissions = permission_list)
 
-        client = self._get_client(**kwargs)
         data = []
         try:
-            data, status_code, header = client.create_robot_with_http_info(robotAccountCreate)
+            data, status_code, header = self._get_client(**kwargs).create_robot_with_http_info(robotAccountCreate)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
@@ -97,22 +95,19 @@ class Robot(base.Base, object):
             return base._get_id_from_header(header), data
 
     def get_robot_account_by_id(self, robot_id, **kwargs):
-        client = self._get_client(**kwargs)
-        data, status_code, _ = client.get_robot_by_id_with_http_info(robot_id)
+        data, status_code, _ = self._get_client(**kwargs).get_robot_by_id_with_http_info(robot_id)
         return data
 
     def disable_robot_account(self, robot_id, disable, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
         data = self.get_robot_account_by_id(robot_id, **kwargs)
         robotAccountUpdate = v2_swagger_client.RobotCreate(name=data.name, description=data.description, duration=data.duration, level=data.level, permissions = data.permissions, disable = disable)
 
-        _, status_code, _ = client.update_robot_with_http_info(robot_id, robotAccountUpdate)
+        _, status_code, _ = self._get_client(**kwargs).update_robot_with_http_info(robot_id, robotAccountUpdate)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
 
     def delete_robot_account(self, robot_id, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
-        _, status_code, _ = client.delete_robot_with_http_info(robot_id)
+        _, status_code, _ = self._get_client(**kwargs).delete_robot_with_http_info(robot_id)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
 
@@ -124,16 +119,14 @@ class Robot(base.Base, object):
 
         robotAccountCreate = v2_swagger_client.RobotCreate(name=robot_name, description=robot_desc, duration=duration, level="system", disable = False, permissions = permission_list)
         print("robotAccountCreate:", robotAccountCreate)
-        client = self._get_client(**kwargs)
         data = []
-        data, status_code, header = client.create_robot_with_http_info(robotAccountCreate)
+        data, status_code, header = self._get_client(**kwargs).create_robot_with_http_info(robotAccountCreate)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(201, status_code)
         return base._get_id_from_header(header), data
 
     def update_robot_account(self, robot_id, robot, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
-        _, status_code, _ = client.update_robot_with_http_info(robot_id, robot)
+        _, status_code, _ = self._get_client(**kwargs).update_robot_with_http_info(robot_id, robot)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
 
@@ -145,8 +138,7 @@ class Robot(base.Base, object):
 
     def refresh_robot_account_secret(self, robot_id, robot_new_sec, expect_status_code = 200, **kwargs):
         robot_sec = v2_swagger_client.RobotSec(secret = robot_new_sec)
-        client = self._get_client(**kwargs)
-        data, status_code, _ = client.refresh_sec_with_http_info(robot_id, robot_sec)
+        data, status_code, _ = self._get_client(**kwargs).refresh_sec_with_http_info(robot_id, robot_sec)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
         print("Refresh new secret:", data)

@@ -10,11 +10,9 @@ class Artifact(base.Base, object):
         super(Artifact,self).__init__(api_type = "artifact")
 
     def list_artifacts(self, project_name, repo_name, **kwargs):
-        client = self._get_client(**kwargs)
-        return client.list_artifacts(project_name, repo_name)
+        return self._get_client(**kwargs).list_artifacts(project_name, repo_name)
 
     def get_reference_info(self, project_name, repo_name, reference, expect_status_code = 200, ignore_not_found = False,**kwargs):
-        client = self._get_client(**kwargs)
         params = {}
         if "with_signature" in kwargs:
             params["with_signature"] = kwargs["with_signature"]
@@ -26,7 +24,7 @@ class Artifact(base.Base, object):
             params["with_immutable_status"] = kwargs["with_immutable_status"]
 
         try:
-            data, status_code, _ = client.get_artifact_with_http_info(project_name, repo_name, reference, **params)
+            data, status_code, _ = self._get_client(**kwargs).get_artifact_with_http_info(project_name, repo_name, reference, **params)
             return data
         except ApiException as e:
             if e.status == 404 and ignore_not_found == True:
@@ -39,10 +37,8 @@ class Artifact(base.Base, object):
             return None
 
     def delete_artifact(self, project_name, repo_name, reference, expect_status_code = 200, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
-
         try:
-             _, status_code, _ = client.delete_artifact_with_http_info(project_name, repo_name, reference)
+             _, status_code, _ = self._get_client(**kwargs).delete_artifact_with_http_info(project_name, repo_name, reference)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
@@ -53,14 +49,12 @@ class Artifact(base.Base, object):
             base._assert_status_code(200, status_code)
 
     def get_addition(self, project_name, repo_name, reference, addition, **kwargs):
-        client = self._get_client(**kwargs)
-        return client.get_addition_with_http_info(project_name, repo_name, reference, addition)
+        return self._get_client(**kwargs).get_addition_with_http_info(project_name, repo_name, reference, addition)
 
     def add_label_to_reference(self, project_name, repo_name, reference, label_id, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
         label = v2_swagger_client.Label(id = label_id)
         try:
-            body, status_code, _ = client.add_label_with_http_info(project_name, repo_name, reference, label)
+            body, status_code, _ = self._get_client(**kwargs).add_label_with_http_info(project_name, repo_name, reference, label)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
         else:
@@ -69,10 +63,8 @@ class Artifact(base.Base, object):
             return body
 
     def copy_artifact(self, project_name, repo_name, _from, expect_status_code = 201, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
-
         try:
-            data, status_code, _ = client.copy_artifact_with_http_info(project_name, repo_name, _from)
+            data, status_code, _ = self._get_client(**kwargs).copy_artifact_with_http_info(project_name, repo_name, _from)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
@@ -84,10 +76,9 @@ class Artifact(base.Base, object):
             return data
 
     def create_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 201, ignore_conflict = False, **kwargs):
-        client = self._get_client(**kwargs)
         tag = v2_swagger_client.Tag(name = tag_name)
         try:
-            _, status_code, _ = client.create_tag_with_http_info(project_name, repo_name, reference, tag)
+            _, status_code, _ = self._get_client(**kwargs).create_tag_with_http_info(project_name, repo_name, reference, tag)
         except ApiException as e:
             if e.status == 409 and ignore_conflict == True:
                 return
@@ -98,9 +89,8 @@ class Artifact(base.Base, object):
             base._assert_status_code(201, status_code)
 
     def delete_tag(self, project_name, repo_name, reference, tag_name, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
         try:
-            _, status_code, _ = client.delete_tag_with_http_info(project_name, repo_name, reference, tag_name)
+            _, status_code, _ = self._get_client(**kwargs).delete_tag_with_http_info(project_name, repo_name, reference, tag_name)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
         else:

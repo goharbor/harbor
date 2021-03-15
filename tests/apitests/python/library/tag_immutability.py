@@ -12,7 +12,6 @@ class Tag_Immutability(base.Base, object):
                                             selector_repository="**", selector_tag_decoration = "matches",
                                             selector_tag="**", expect_status_code = 201, **kwargs):
         #repoExcludes,excludes
-        client = self._get_client(**kwargs)
         immutable_rule = v2_swagger_client.ImmutableRule(
                     action="immutable",
                     template="immutable_template",
@@ -35,7 +34,7 @@ class Tag_Immutability(base.Base, object):
                     ]
                 )
         try:
-            _, status_code, header = client.create_immu_rule_with_http_info(project_id, immutable_rule)
+            _, status_code, header = self._get_client(**kwargs).create_immu_rule_with_http_info(project_id, immutable_rule)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
         else:
@@ -44,8 +43,7 @@ class Tag_Immutability(base.Base, object):
             return base._get_id_from_header(header)
 
     def list_tag_immutability_policy_rules(self, project_id, **kwargs):
-        client = self._get_client(**kwargs)
-        return client.list_immu_rules_with_http_info(project_id)
+        return self._get_client(**kwargs).list_immu_rules_with_http_info(project_id)
 
     def get_rule(self, project_id, rule_id, **kwargs):
         rules = self.list_tag_immutability_policy_rules(project_id, **kwargs)
@@ -70,9 +68,8 @@ class Tag_Immutability(base.Base, object):
             rule.tag_selectors[0].pattern = selector_tag
         if disabled is not None:
             rule.disabled = disabled
-        client = self._get_client(**kwargs)
         try:
-            _, status_code, header = client.update_immu_rule_with_http_info(project_id, rule_id, rule)
+            _, status_code, header = self._get_client(**kwargs).update_immu_rule_with_http_info(project_id, rule_id, rule)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
