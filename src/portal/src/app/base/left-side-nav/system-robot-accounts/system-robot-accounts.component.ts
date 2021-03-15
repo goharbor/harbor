@@ -3,7 +3,7 @@ import { NewRobotComponent } from './new-robot/new-robot.component';
 import { ViewTokenComponent } from '../../../shared/components/view-token/view-token.component';
 import { RobotService } from "../../../../../ng-swagger-gen/services/robot.service";
 import { Robot } from "../../../../../ng-swagger-gen/models/robot";
-import { clone, DEFAULT_PAGE_SIZE } from "../../../shared/units/utils";
+import { clone, DEFAULT_PAGE_SIZE, getSortingString } from "../../../shared/units/utils";
 import { ClrDatagridStateInterface, ClrLoadingState } from "@clr/angular";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
@@ -45,7 +45,6 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   loadingData: boolean = false;
   addBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
-  hasGetAllProjects: boolean = false;
   @ViewChild(NewRobotComponent, {static: true})
   newRobotComponent: NewRobotComponent;
   @ViewChild(ViewTokenComponent)
@@ -189,6 +188,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
     const queryParam: RobotService.ListRobotParams = {
       page: this.currentPage,
       pageSize: this.pageSize,
+      sort: getSortingString(state)
     };
     if (this.searchKey) {
       queryParam.q = encodeURIComponent(`name=~${this.searchKey}`);

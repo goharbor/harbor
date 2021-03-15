@@ -7,7 +7,7 @@ import {
   ACTION_RESOURCE_I18N_MAP,
   PermissionsKinds
 } from "../../left-side-nav/system-robot-accounts/system-robot-util";
-import { clone, DEFAULT_PAGE_SIZE } from "../../../shared/units/utils";
+import { clone, DEFAULT_PAGE_SIZE, getSortingString } from "../../../shared/units/utils";
 import { ViewTokenComponent } from "../../../shared/components/view-token/view-token.component";
 import { FilterComponent } from "../../../shared/components/filter/filter.component";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
@@ -157,6 +157,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
     const queryParam: RobotService.ListRobotParams = {
       page: this.currentPage,
       pageSize: this.pageSize,
+      sort: getSortingString(state),
       q: encodeURIComponent(`Level=${PermissionsKinds.PROJECT},ProjectID=${this.projectId}`)
     };
     if (this.searchKey) {

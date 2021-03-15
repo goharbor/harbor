@@ -2,8 +2,7 @@ import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProjectQuotasComponent } from './project-quotas.component';
 import { Router } from '@angular/router';
 import {
-  QuotaService
-  , QuotaDefaultService, Quota, RequestQueryParams
+  Quota, RequestQueryParams
 } from '../../../../shared/services';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { of } from 'rxjs';
@@ -11,6 +10,7 @@ import { delay } from 'rxjs/operators';
 import { APP_BASE_HREF } from '@angular/common';
 import { SharedTestingModule } from "../../../../shared/shared.module";
 import { EditProjectQuotasComponent } from "./edit-project-quotas/edit-project-quotas.component";
+import { QuotaService } from "../../../../../../ng-swagger-gen/services/quota.service";
 
 
 describe('ProjectQuotasComponent', () => {
@@ -64,7 +64,6 @@ describe('ProjectQuotasComponent', () => {
       ],
       providers: [
         { provide: ErrorHandler, useValue: fakedErrorHandler },
-        { provide: QuotaService, useClass: QuotaDefaultService },
         { provide: APP_BASE_HREF, useValue : '/' },
         { provide: Router, useValue: fakedRouter }
       ]
@@ -82,7 +81,7 @@ describe('ProjectQuotasComponent', () => {
     };
     component.loading = true;
     quotaService = fixture.debugElement.injector.get(QuotaService);
-    spy = spyOn(quotaService, 'getQuotaList')
+    spy = spyOn(quotaService, 'listQuotasResponse')
       .and.callFake(function (params: RequestQueryParams) {
         let header = new Map();
         header.set("X-Total-Count", 123);

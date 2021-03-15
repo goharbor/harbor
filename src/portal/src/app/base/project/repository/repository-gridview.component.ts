@@ -30,7 +30,7 @@ import {
   DEFAULT_PAGE_SIZE,
   dbEncodeURIComponent,
   doFiltering,
-  doSorting, CURRENT_BASE_HREF
+  doSorting, CURRENT_BASE_HREF, getSortingString
 } from "../../../shared/units/utils";
 import { ErrorHandler } from "../../../shared/units/error-handler";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../shared/entities/shared.const";
@@ -379,7 +379,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
       });
     }
     if (state.sort && state.sort.by) {
-      // params = params.set(`sort`, `${(state.sort.reverse ? `-` : ``)}${state.sort.by as string}`);
+      params.sort = getSortingString(state);
     }
     this.loading = true;
 
@@ -392,7 +392,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         this.repositories = repo.body;
         // Do customising filtering and sorting
         this.repositories = doFiltering<NewRepository>(this.repositories, state);
-        this.repositories = doSorting<NewRepository>(this.repositories, state);
         this.signedCon = {};
         this.loading = false;
       }, error => {

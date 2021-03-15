@@ -5,7 +5,14 @@ import { finalize } from "rxjs/operators";
 import { Subscription, timer } from "rxjs";
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
 import { ClrDatagridComparatorInterface, ReplicationJob, ReplicationTasks } from "../../../../../shared/services";
-import { CURRENT_BASE_HREF, CustomComparator, DEFAULT_PAGE_SIZE, doFiltering, doSorting } from "../../../../../shared/units/utils";
+import {
+  CURRENT_BASE_HREF,
+  CustomComparator,
+  DEFAULT_PAGE_SIZE,
+  doFiltering,
+  doSorting,
+  getSortingString
+} from "../../../../../shared/units/utils";
 import { REFRESH_TIME_DIFFERENCE } from '../../../../../shared/entities/shared.const';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { ReplicationExecution } from "../../../../../../../ng-swagger-gen/models/replication-execution";
@@ -163,6 +170,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
         id: +this.executionId,
         page: this.currentPage,
         pageSize: this.pageSize,
+        sort: getSortingString(state)
       };
       if (this.searchTask && this.searchTask !== "") {
         if (this.searchTask === STATUS_MAP.Succeed && this.defaultFilter === 'status') {// convert 'Succeeded' to 'Succeed'

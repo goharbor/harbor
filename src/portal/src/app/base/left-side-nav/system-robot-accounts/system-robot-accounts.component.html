@@ -56,10 +56,10 @@
       </clr-dropdown>
     </clr-dg-action-bar>
     <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRows">
-      <clr-dg-column>{{'ROBOT_ACCOUNT.NAME' | translate}}</clr-dg-column>
+      <clr-dg-column [clrDgSortBy]="'name'">{{'ROBOT_ACCOUNT.NAME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'ROBOT_ACCOUNT.ENABLED_STATE' | translate}}</clr-dg-column>
       <clr-dg-column>{{"SYSTEM_ROBOT.PROJECTS" | translate}}</clr-dg-column>
-      <clr-dg-column>{{'ROBOT_ACCOUNT.CREATETION' | translate}}</clr-dg-column>
+      <clr-dg-column [clrDgSortBy]="'creation_time'">{{'ROBOT_ACCOUNT.CREATETION' | translate}}</clr-dg-column>
       <clr-dg-column>{{'SYSTEM_ROBOT.EXPIRES_AT' | translate}}</clr-dg-column>
       <clr-dg-column>{{'ROBOT_ACCOUNT.DESCRIPTION' | translate}}</clr-dg-column>
       <clr-dg-placeholder>{{

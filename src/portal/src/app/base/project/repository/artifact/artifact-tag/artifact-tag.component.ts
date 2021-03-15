@@ -20,7 +20,7 @@ import {
   calculatePage,
   dbEncodeURIComponent,
   doFiltering,
-  doSorting
+  doSorting, getSortingString
 } from '../../../../../shared/units/utils';
 import { AppConfigService } from "../../../../../services/app-config.service";
 import { errorHandler } from "../../../../../shared/units/shared.utils";
@@ -129,8 +129,10 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
       page: pageNumber,
       withSignature: true,
       withImmutableStatus: true,
-      pageSize: this.pageSize
+      pageSize: this.pageSize,
+      sort: getSortingString(state)
     };
+    this.loading = true;
     this.artifactService.listTagsResponse(params).pipe(finalize(() => {
       this.loading = false;
     })).subscribe(res => {

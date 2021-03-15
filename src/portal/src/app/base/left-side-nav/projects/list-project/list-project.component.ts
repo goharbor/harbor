@@ -27,7 +27,13 @@ import { SearchTriggerService } from "../../../../shared/components/global-searc
 import { AppConfigService } from "../../../../services/app-config.service";
 import { Project } from "../../../project/project";
 import { map, catchError, finalize } from "rxjs/operators";
-import { calculatePage, CustomComparator, doFiltering, doSorting } from "../../../../shared/units/utils";
+import {
+    calculatePage,
+    CustomComparator,
+    doFiltering,
+    doSorting,
+    getSortingString
+} from "../../../../shared/units/utils";
 import { OperationService } from "../../../../shared/components/operation/operation.service";
 import { operateChanges, OperateInfo, OperationState } from "../../../../shared/components/operation/operate";
 import {HttpErrorResponse} from "@angular/common/http";
@@ -159,7 +165,7 @@ export class ListProjectComponent implements OnDestroy {
         if (this.filteredType > 0) {
             passInFilteredType = this.filteredType - 1;
         }
-        this.proService.listProjects(this.searchKeyword, passInFilteredType, pageNumber, this.pageSize)
+        this.proService.listProjects(this.searchKeyword, passInFilteredType, pageNumber, this.pageSize, getSortingString(state))
         .pipe(finalize(() => {
             this.loading = false;
           }))
