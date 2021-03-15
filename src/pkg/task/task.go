@@ -58,6 +58,7 @@ type Manager interface {
 func NewManager() Manager {
 	return &manager{
 		dao:      dao.NewTaskDAO(),
+		execDao:  dao.NewExecutionDAO(),
 		jsClient: cjob.GlobalClient,
 		coreURL:  config.GetCoreURL(),
 	}
@@ -65,6 +66,7 @@ func NewManager() Manager {
 
 type manager struct {
 	dao      dao.TaskDAO
+	execDao  dao.ExecutionDAO
 	jsClient cjob.Client
 	coreURL  string
 }
@@ -180,7 +182,8 @@ func (m *manager) Stop(ctx context.Context, id int64) error {
 				return err
 			}
 			log.Debugf("got job not found error for task %d, update it's status to stop directly", task.ID)
-			return nil
+			// as in this case no status hook will be sent, here refresh the execution status directly
+			return m.execDao.RefreshStatus(ctx, task.ExecutionID)
 		}
 		return err
 	}
