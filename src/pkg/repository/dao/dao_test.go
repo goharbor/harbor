@@ -17,6 +17,9 @@ package dao
 import (
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
 	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -28,8 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 var (
@@ -215,18 +216,30 @@ func (d *daoTestSuite) TestEmptyRepos() {
 	afID, err := d.afDao.Create(d.ctx, art)
 	d.Require().Nil(err)
 
-	tag := &tag.Tag{
+	tag1 := &tag.Tag{
 		RepositoryID: id,
 		ArtifactID:   afID,
 		Name:         "latest",
 		PushTime:     time.Now(),
 		PullTime:     time.Now(),
 	}
-	_, err = d.tagDao.Create(d.ctx, tag)
+	_, err = d.tagDao.Create(d.ctx, tag1)
+	d.Require().Nil(err)
+
+	tag2 := &tag.Tag{
+		RepositoryID: id,
+		ArtifactID:   afID,
+		Name:         "v123",
+		PushTime:     time.Now(),
+		PullTime:     time.Now(),
+	}
+	_, err = d.tagDao.Create(d.ctx, tag2)
 	d.Require().Nil(err)
 
 	repos, err := d.dao.NonEmptyRepos(d.ctx)
 	d.Require().Nil(err)
+
+	d.Require().Equal(1, len(repos))
 
 	var success bool
 	for _, repo := range repos {
