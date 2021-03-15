@@ -32,6 +32,12 @@ type Interface interface {
 	//  error if failed to register
 	RegisterJobs(jobs map[string]interface{}) error
 
+	// Get the worker pool ID
+	//
+	// Return:
+	//  string : the pool ID
+	GetPoolID() string
+
 	// Enqueue job
 	//
 	// jobName string        : the name of enqueuing job

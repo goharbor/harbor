@@ -44,6 +44,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/metric"
 	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -60,6 +61,9 @@ const (
 
 // JobService ...
 var JobService = &Bootstrap{}
+
+// workerPoolID
+var workerPoolID string
 
 // Bootstrap is coordinating process to help load and start the other components to serve.
 type Bootstrap struct {
@@ -174,6 +178,8 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 
 	// Initialize controller
 	ctl := core.NewController(backendWorker, manager)
+	// Initialize Prometheus backend
+	go bs.createMetricServer(cfg)
 	// Start the API server
 	apiServer := bs.createAPIServer(ctx, cfg, ctl)
 
@@ -205,6 +211,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	node := ctx.Value(utils.NodeID)
 	// Blocking here
 	logger.Infof("API server is serving at %d with [%s] mode at node [%s]", cfg.Port, cfg.Protocol, node)
+	metric.JobserviceInfo.WithLabelValues(node.(string), workerPoolID, fmt.Sprint(cfg.PoolConfig.WorkerCount)).Set(1)
 	if er := apiServer.Start(); er != nil {
 		if !terminated {
 			// Tell the listening goroutine
@@ -219,6 +226,14 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	rootContext.WG.Wait()
 
 	return
+}
+
+func (bs *Bootstrap) createMetricServer(cfg *config.Configuration) {
+	if cfg.Metric != nil && cfg.Metric.Enabled {
+		metric.RegisterJobServiceCollectors()
+		metric.ServeProm(cfg.Metric.Path, cfg.Metric.Port)
+		logger.Infof("Prom backend is serving at %s:%d", cfg.Metric.Path, cfg.Metric.Port)
+	}
 }
 
 // Load and run the API server.
@@ -249,6 +264,8 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 	lcmCtl lcm.Controller,
 ) (worker.Interface, error) {
 	redisWorker := cworker.NewWorker(ctx, ns, workers, redisPool, lcmCtl)
+	workerPoolID = redisWorker.GetPoolID()
+
 	// Register jobs here
 	if err := redisWorker.RegisterJobs(
 		map[string]interface{}{
@@ -274,11 +291,9 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 		// exit
 		return nil, err
 	}
-
 	if err := redisWorker.Start(); err != nil {
 		return nil, err
 	}
-
 	return redisWorker, nil
 }
 

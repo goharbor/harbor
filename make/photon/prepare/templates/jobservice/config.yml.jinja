@@ -44,3 +44,10 @@ job_loggers:
 loggers:
   - name: "STD_OUTPUT" # Same with above
     level: "{{level}}"
+
+{% if metric.enabled %}
+metric:
+  enabled: true
+  path: {{ metric.path }}
+  port: {{ metric.port }}
+{% endif %}

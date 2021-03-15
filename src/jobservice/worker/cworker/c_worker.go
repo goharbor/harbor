@@ -163,6 +163,12 @@ func (w *basicWorker) Start() error {
 	return nil
 }
 
+// GetPoolID returns the worker pool id
+func (w *basicWorker) GetPoolID() string {
+	v := reflect.ValueOf(*w.pool)
+	return v.FieldByName("workerPoolID").String()
+}
+
 // RegisterJobs is used to register multiple jobs to worker.
 func (w *basicWorker) RegisterJobs(jobs map[string]interface{}) error {
 	if jobs == nil || len(jobs) == 0 {

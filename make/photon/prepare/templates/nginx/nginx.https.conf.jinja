@@ -238,6 +238,10 @@ http {
     server core:{{ metric.port }};
   }
 
+  upstream js_metrics {
+    server jobservice:{{ metric.port }};
+  }
+
   upstream registry_metrics {
     server registry:{{ metric.port }};
   }
@@ -250,6 +254,7 @@ http {
     listen 9090;
     location = {{ metric.path }} {
       if ($arg_comp = core) { proxy_pass http://core_metrics; }
+      if ($arg_comp = jobservice) { proxy_pass http://js_metrics; }
       if ($arg_comp = registry) { proxy_pass http://registry_metrics; }
       proxy_pass http://harbor_exporter;
     }
