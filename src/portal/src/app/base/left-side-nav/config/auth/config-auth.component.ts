@@ -24,6 +24,7 @@ import { clone, isEmpty, getChanges as getChangesFunc } from "../../../../shared
 import { CONFIG_AUTH_MODE } from "../../../../shared/entities/shared.const";
 import { errorHandler } from "../../../../shared/units/shared.utils";
 import { Configuration } from "../config";
+import { finalize } from "rxjs/operators";
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 
 @Component({
@@ -138,11 +139,14 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
             settings['ldap_scope'] = +settings['ldap_scope'];
 
             this.configService.testLDAPServer(settings)
-                .subscribe(respone => {
-                    this.testingOnGoing = false;
-                    this.msgHandler.showSuccess('CONFIG.TEST_LDAP_SUCCESS');
+                .pipe(finalize(() => this.testingOnGoing = false))
+                .subscribe(res => {
+                    if (res && res.success) {
+                        this.msgHandler.showSuccess('CONFIG.TEST_LDAP_SUCCESS');
+                    } else if (res && res.message) {
+                        this.msgHandler.showError('CONFIG.TEST_LDAP_FAILED', { 'param': res.message });
+                    }
                 }, error => {
-                    this.testingOnGoing = false;
                     let err = errorHandler(error);
                     if (!err || !err.trim()) {
                         err = 'UNKNOWN';
