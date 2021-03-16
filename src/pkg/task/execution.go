@@ -222,7 +222,7 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 	}
 
 	// when an execution is in final status, if it contains task that is a periodic or retrying job it will
-	// run again in the near future, so we must operate the stop action
+	// run again in the near future, so we must operate the stop action no matter the status is final or not
 	tasks, err := e.taskDAO.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"ExecutionID": id,
@@ -231,15 +231,23 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	// contains no task and the status isn't final, update the status to stop directly
-	if len(tasks) == 0 && !job.Status(execution.Status).Final() {
+	if len(tasks) == 0 {
+		// in final status, return directly
+		if job.Status(execution.Status).Final() {
+			return nil
+		}
+		// isn't in final status, update directly.
+		// as this is used for the corner case(the case that the execution exists but all tasks are disappeared. In normal
+		// cases, if the execution contains no tasks, it is already set as "success" by the upper level caller directly),
+		// no need to handle concurrency
 		now := time.Now()
 		return e.executionDAO.Update(ctx, &dao.Execution{
 			ID:         id,
 			Status:     job.StoppedStatus.String(),
+			Revision:   execution.Revision + 1,
 			UpdateTime: now,
 			EndTime:    now,
-		}, "Status", "UpdateTime", "EndTime")
+		}, "Status", "Revision", "UpdateTime", "EndTime")
 	}
 
 	for _, task := range tasks {
@@ -248,10 +256,6 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 			continue
 		}
 	}
-
-	// refresh the status explicitly in case that the execution status
-	// isn't refreshed by task status change hook
-	_, _, err = e.executionDAO.RefreshStatus(ctx, id)
 	return err
 }
 
