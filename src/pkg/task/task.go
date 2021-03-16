@@ -184,7 +184,9 @@ func (m *manager) Stop(ctx context.Context, id int64) error {
 				return err
 			}
 			log.Debugf("got job not found error for task %d, update it's status to stop directly", task.ID)
-			return nil
+			// as in this case no status hook will be sent, here refresh the execution status directly
+			_, _, err = m.execDAO.RefreshStatus(ctx, task.ExecutionID)
+			return err
 		}
 		return err
 	}
