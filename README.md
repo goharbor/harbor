@@ -82,6 +82,20 @@ The [compatibility list](https://goharbor.io/docs/edge/install-config/harbor-com
 * **Developer Group:** Join Harbor developer group: [harbor-dev@lists.cncf.io](https://lists.cncf.io/g/harbor-dev) for discussion on Harbor development and contribution.
 * **Slack:** Join Harbor's community for discussion and ask questions: [Cloud Native Computing Foundation](https://slack.cncf.io/), channel: [#harbor](https://cloud-native.slack.com/messages/harbor/) and [#harbor-dev](https://cloud-native.slack.com/messages/harbor-dev/)
 
+## Community contributed CLI and SDK
+
+### Harbor Java SDK
+
+A community contributed [Harbor SDK for Java](https://github.com/hinyinlam-pivotal/harbor-client-java) outside mainstream repo is available as a general wrapper for both legacy and new OpenAPI definiation.
+The `harbor-client-java` project is built using the Harbor OpenAPI definitation in OpenSource reop.
+
+### Harbor CLI
+
+A community contributed [Unofficial Harbor CLI](https://github.com/hinyinlam-pivotal/harbor-cli) can be downloaded to interact with Harbor in system level and repo level.
+The `harbor-cli` is built on top of `harbor-client-java`, tutorial and usage examples also included in the author's repo.
+
+For any feedback, improvement and issues in Java SDK and CLI, please contact the [author](https://github.com/hinyinlam-pivotal).
+
 ## Demos
 
 * **[Live Demo](https://demo.goharbor.io)** - A demo environment with the latest Harbor stable build installed. For additional information please refer to [this page](https://goharbor.io/docs/2.0.0/install-config/demo-server/).
