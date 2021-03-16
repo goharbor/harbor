@@ -24,6 +24,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/user/models"
 )
 
+// User alias to models.User
+type User = models.User
+
 var (
 	// Mgr is the global project manager
 	Mgr = New()
@@ -79,10 +82,6 @@ func (m *manager) GetByName(ctx context.Context, username string) (*models.User,
 // List users according to the query
 func (m *manager) List(ctx context.Context, query *q.Query) (models.Users, error) {
 	query = q.MustClone(query)
-	if query.Sorting == "" {
-		query.Sorting = "username"
-	}
-
 	excludeAdmin := true
 	for key := range query.Keywords {
 		str := strings.ToLower(key)

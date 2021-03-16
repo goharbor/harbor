@@ -35,13 +35,11 @@ Init LDAP
     Sleep  1
     Input Text  xpath=//*[@id='ldapUid']  cn
     Sleep  1
-    Capture Page Screenshot
     Disable Ldap Verify Cert Checkbox
     Retry Element Click  xpath=${config_auth_save_button_xpath}
     Sleep  2
     Retry Element Click  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[3]
     Sleep  1
-    Capture Page Screenshot
 
 Switch To Configure
     Retry Element Click  xpath=${configuration_xpath}
@@ -72,7 +70,6 @@ Test Ldap Connection
     # ldap checkbox unchecked, click test connection to verify success.
     Sleep  1
     Retry Element Click  xpath=${test_ldap_xpath}
-    Capture Page Screenshot
     Wait Until Page Contains  Connection to LDAP server is verified  timeout=15
 
 Test LDAP Server Success
@@ -83,7 +80,6 @@ Disable Ldap Verify Cert Checkbox
     Mouse Down  xpath=//*[@id='clr-checkbox-ldapVerifyCert']
     Mouse Up  xpath=//*[@id='clr-checkbox-ldapVerifyCert']
     Sleep  2
-    Capture Page Screenshot
     Ldap Verify Cert Checkbox Should Be Disabled
 
 Ldap Verify Cert Checkbox Should Be Disabled
@@ -99,7 +95,6 @@ Set Pro Create Admin Only
     Retry Element Click  xpath=//select[@id='proCreation']//option[@value='adminonly']
     Sleep  1
     Retry Element Click  xpath=${config_system_save_button_xpath}
-    Capture Page Screenshot  AdminCreateOnly.png
 
 Set Pro Create Every One
     Retry Element Click  xpath=${configuration_xpath}
@@ -112,7 +107,6 @@ Set Pro Create Every One
     Sleep  1
     Retry Element Click  xpath=${config_system_save_button_xpath}
     Sleep  2
-    Capture Page Screenshot  EveryoneCreate.png
 
 Disable Self Reg
     Retry Element Click  xpath=${configuration_xpath}
@@ -121,7 +115,6 @@ Disable Self Reg
     Sleep  1
     Self Reg Should Be Disabled
     Retry Element Click  xpath=${config_auth_save_button_xpath}
-    Capture Page Screenshot  DisableSelfReg.png
     Sleep  1
 
 Enable Self Reg
@@ -130,7 +123,6 @@ Enable Self Reg
     Sleep  1
     Self Reg Should Be Enabled
     Retry Element Click  xpath=${config_auth_save_button_xpath}
-    Capture Page Screenshot  EnableSelfReg.png
     Sleep  1
 
 Self Reg Should Be Disabled
@@ -164,6 +156,11 @@ Switch To Distribution
     Retry Element Click  xpath=//clr-main-container//clr-vertical-nav-group//span[contains(.,'Distributions')]
     Sleep  1
 
+Switch To Robot Account
+    Sleep  1
+    Retry Element Click  xpath=//clr-main-container//clr-vertical-nav-group//span[contains(.,'Robot Accounts')]
+    Sleep  1
+
 Modify Token Expiration
     [Arguments]  ${minutes}
     Input Text  xpath=//*[@id='tokenExpiration']  ${minutes}
@@ -183,7 +180,6 @@ Check Verify Remote Cert
     Mouse Down  xpath=//*[@id='clr-checkbox-verifyRemoteCert']
     Mouse Up  xpath=//*[@id='clr-checkbox-verifyRemoteCert']
     Retry Element Click  xpath=${config_save_button_xpath}
-    Capture Page Screenshot  RemoteCert.png
     Sleep  1
 
 Switch To System Replication
@@ -276,7 +272,6 @@ Create New Labels
     Sleep  1
     Input Text  xpath=//*[@id='description']  global
     Retry Element Click  xpath=//div/form/section/label[4]/button[2]
-    Capture Page Screenshot
     Wait Until Page Contains  ${labelname}
 
 Update A Label
@@ -288,7 +283,6 @@ Update A Label
     Input Text  xpath=//*[@id='name']  ${labelname}1
     Sleep  1
     Retry Element Click  xpath=//hbr-create-edit-label//form/section//button[2]
-    Capture Page Screenshot
     Wait Until Page Contains  ${labelname}1
 
 Delete A Label
@@ -297,16 +291,26 @@ Delete A Label
     Sleep  1
     Retry Element Click  xpath=//button[contains(.,'Delete')]
     Sleep  3
-    Capture Page Screenshot
     Retry Element Click  xpath=//clr-modal//div//button[contains(.,'DELETE')]
     Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${labelname}')]/../div/clr-icon[@shape='success-standard']
 
 ## Garbage Collection
 Switch To Garbage Collection
+    Switch To Configure
     Sleep  1
     Retry Element Click  xpath=${gc_config_page}
     Wait Until Page Contains Element  ${garbage_collection_xpath}
     Retry Element Click  xpath=${garbage_collection_xpath}
+
+Set GC Schedule
+    [Arguments]  ${type}  ${value}=${null}
+    Switch To Garbage Collection
+    Retry Double Keywords When Error  Retry Element Click  ${GC_schedule_edit_btn}  Retry Wait Until Page Not Contains Element  ${GC_schedule_edit_btn}
+    Retry Element Click  ${GC_schedule_select}
+    Run Keyword If  '${type}'=='custom'  Run Keywords  Retry Element Click  ${vulnerability_dropdown_list_item_custom}  AND  Retry Text Input  ${targetCron_id}  ${value}
+    ...  ELSE  Retry Element Click  ${vulnerability_dropdown_list_item_none}
+    Retry Double Keywords When Error  Retry Element Click  ${GC_schedule_save_btn}  Retry Wait Until Page Not Contains Element  ${GC_schedule_save_btn}
+    Capture Page Screenshot
 
 Click GC Now
     Sleep  1
@@ -334,7 +338,6 @@ Delete Top Item In System CVE Allowlist
         Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}
     END
     Retry Element Click    ${config_system_save_button_xpath}
-    Capture Page Screenshot
 
 Get Project Count Quota Text From Project Quotas List
     [Arguments]    ${project_name}
@@ -350,27 +353,29 @@ Get Project Storage Quota Text From Project Quotas List
     [Return]  ${storage_quota}
 
 Check Automatic Onboarding And Save
+    Switch To Configure
     Retry Element Click  ${cfg_auth_automatic_onboarding_checkbox}
     Retry Element Click  xpath=${config_auth_save_button_xpath}
-    Capture Page Screenshot
 
 Set User Name Claim And Save
     [Arguments]    ${type}
-    Retry Text Input  ${cfg_auth_user_name_claim_input}  ${type}
+    Switch To Configure
+    Retry Clear Element Text  ${cfg_auth_user_name_claim_input}
+    Run Keyword If  '${type}'=='${null}'  Retry Text Input  ${cfg_auth_user_name_claim_input}  anytext
+    ...  ELSE  Retry Text Input  ${cfg_auth_user_name_claim_input}  ${type}
     Retry Element Click  xpath=${config_auth_save_button_xpath}
-    Capture Page Screenshot
 
 Select Distribution
     [Arguments]    ${name}
-    Retry Element Click    //div[@class='datagrid-scrolling-cells' and contains(.,'${name}')]//clr-checkbox-wrapper/label
+    Retry Element Click    //clr-dg-row[contains(.,'${name}')]//clr-checkbox-wrapper/label
 
 Distribution Exist
     [Arguments]  ${name}  ${endpoint}
-    Retry Wait Until Page Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}')]
+    Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,'${name}') and contains(.,'${endpoint}')]
 
 Distribution Not Exist
     [Arguments]  ${name}  ${endpoint}
-    Retry Wait Until Page Not Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${endpoint}')]
+    Retry Wait Until Page Not Contains Element  //clr-dg-row[contains(.,'${name}') and contains(.,'${endpoint}')]
 
 Filter Distribution List
     [Arguments]  ${name}  ${endpoint}  ${exsit}=${true}
@@ -399,7 +404,7 @@ Delete A Distribution
     ${is_exsit}    evaluate    not ${deletable}
     Switch To Distribution
     Filter Distribution List  ${name}  ${endpoint}
-    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid/clr-dg-footer//clr-checkbox-wrapper/label
+    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid//clr-dg-footer//clr-checkbox-wrapper/label
     Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_del_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${distribution_del_btn_id}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
@@ -410,7 +415,7 @@ Edit A Distribution
     [Arguments]    ${name}  ${endpoint}  ${new_endpoint}=${null}
     Switch To Distribution
     Filter Distribution List  ${name}  ${endpoint}
-    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid/clr-dg-footer//clr-checkbox-wrapper/label
+    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid//clr-dg-footer//clr-checkbox-wrapper/label  times=9
     Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_edit_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${distribution_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_name_input_id}
     Retry Text Input  ${distribution_endpoint_id}  ${new_endpoint}

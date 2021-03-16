@@ -1,0 +1,49 @@
+<clr-modal clrModalSize="lg" [(clrModalOpen)]="projectsModalOpened"
+           [clrModalStaticBackdrop]="true" [clrModalClosable]="true">
+    <h3 class="modal-title">
+        <span>{{"SYSTEM_ROBOT.PROJECTS_MODAL_TITLE" | translate}}</span>
+        <div class="nav-divider"></div>
+        <span class="name">{{robotName}}</span>
+    </h3>
+    <div class="modal-body">
+        <p class="mt-0">{{"SYSTEM_ROBOT.PROJECTS_MODAL_SUMMARY" | translate}}</p>
+        <clr-datagrid>
+            <clr-dg-column>{{'PROJECT.NAME' | translate}}</clr-dg-column>
+            <clr-dg-column>{{"SYSTEM_ROBOT.PERMISSION_COLUMN" | translate}}</clr-dg-column>
+            <clr-dg-column>{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
+            <clr-dg-row *clrDgItems="let p of permissions" [clrDgItem]="p">
+                <clr-dg-cell>
+                    <a href="javascript:void(0)" (click)="goToLink(getProject(p)?.project_id)">{{p.namespace}}</a>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="permissions">
+                        <clr-dropdown [clrCloseMenuOnItemClick]="false">
+                            <button class="btn btn-link" clrDropdownTrigger>
+                                {{p.access?.length}} {{"SYSTEM_ROBOT.PERMISSIONS" | translate}}
+                                <clr-icon shape="caret down"></clr-icon>
+                            </button>
+                            <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+                                <div clrDropdownItem *ngFor="let item of p.access">
+                                    <span>{{i18nMap[item.action] | translate}} {{i18nMap[item.resource] | translate}}</span>
+                                </div>
+                            </clr-dropdown-menu>
+                        </clr-dropdown>
+                    </div>
+                </clr-dg-cell>
+                <clr-dg-cell>{{getProject(p)?.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
+            </clr-dg-row>
+            <clr-dg-footer>
+                <clr-dg-pagination #pagination  [clrDgPageSize]="10">
+                    <clr-dg-page-size [clrPageSizeOptions]="[10,20,30]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+                    <span>{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'PROJECT.OF' | translate}} </span> {{permissions?.length
+                    }} {{'PROJECT.ITEMS' | translate}}
+                </clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
+    <div class="modal-footer">
+        <button type="button" (click)="close()"  class="btn btn-primary">{{'BUTTON.CLOSE'
+            | translate}}</button>
+    </div>
+</clr-modal>
+

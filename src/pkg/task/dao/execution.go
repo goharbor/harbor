@@ -17,10 +17,12 @@ package dao
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/log"
+	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 )
@@ -28,8 +30,10 @@ import (
 // ExecutionDAO is the data access object interface for execution
 type ExecutionDAO interface {
 	// Count returns the total count of executions according to the query
+	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	Count(ctx context.Context, query *q.Query) (count int64, err error)
 	// List the executions according to the query
+	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	List(ctx context.Context, query *q.Query) (executions []*Execution, err error)
 	// Get the specified execution
 	Get(ctx context.Context, id int64) (execution *Execution, err error)
@@ -43,7 +47,9 @@ type ExecutionDAO interface {
 	GetMetrics(ctx context.Context, id int64) (metrics *Metrics, err error)
 	// RefreshStatus refreshes the status of the specified execution according to it's tasks. If it's status
 	// is final, update the end time as well
-	RefreshStatus(ctx context.Context, id int64) (err error)
+	// If the status is changed, the returning "statusChanged" is set as "true" and the current status indicates
+	// the changed status
+	RefreshStatus(ctx context.Context, id int64) (statusChanged bool, currentStatus string, err error)
 }
 
 // NewExecutionDAO returns an instance of ExecutionDAO
@@ -64,7 +70,7 @@ func (e *executionDAO) Count(ctx context.Context, query *q.Query) (int64, error)
 			Keywords: query.Keywords,
 		}
 	}
-	qs, err := orm.QuerySetter(ctx, &Execution{}, query)
+	qs, err := e.querySetter(ctx, query)
 	if err != nil {
 		return 0, err
 	}
@@ -73,11 +79,10 @@ func (e *executionDAO) Count(ctx context.Context, query *q.Query) (int64, error)
 
 func (e *executionDAO) List(ctx context.Context, query *q.Query) ([]*Execution, error) {
 	executions := []*Execution{}
-	qs, err := orm.QuerySetter(ctx, &Execution{}, query)
+	qs, err := e.querySetter(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	qs = qs.OrderBy("-StartTime")
 	if _, err = qs.All(&executions); err != nil {
 		return nil, err
 	}
@@ -178,33 +183,39 @@ func (e *executionDAO) GetMetrics(ctx context.Context, id int64) (*Metrics, erro
 		metrics.ScheduledTaskCount + metrics.StoppedTaskCount
 	return metrics, nil
 }
-func (e *executionDAO) RefreshStatus(ctx context.Context, id int64) error {
+
+func (e *executionDAO) RefreshStatus(ctx context.Context, id int64) (bool, string, error) {
 	// as the status of the execution can be refreshed by multiple operators concurrently
 	// we use the optimistic locking to avoid the conflict and retry 5 times at most
 	for i := 0; i < 5; i++ {
-		retry, err := e.refreshStatus(ctx, id)
+		statusChanged, currentStatus, retry, err := e.refreshStatus(ctx, id)
 		if err != nil {
-			return err
+			return false, "", err
 		}
 		if !retry {
-			return nil
+			return statusChanged, currentStatus, nil
 		}
 	}
-	return fmt.Errorf("failed to refresh the status of the execution %d after %d retries", id, 5)
+	return false, "", fmt.Errorf("failed to refresh the status of the execution %d after %d retries", id, 5)
 }
 
-func (e *executionDAO) refreshStatus(ctx context.Context, id int64) (bool, error) {
+// the returning values:
+// 1. bool: is the status changed
+// 2. string: the current status if changed
+// 3. bool: whether a retry is needed
+// 4. error: the error
+func (e *executionDAO) refreshStatus(ctx context.Context, id int64) (bool, string, bool, error) {
 	execution, err := e.Get(ctx, id)
 	if err != nil {
-		return false, err
+		return false, "", false, err
 	}
 	metrics, err := e.GetMetrics(ctx, id)
 	if err != nil {
-		return false, err
+		return false, "", false, err
 	}
 	// no task, return directly
 	if metrics.TaskCount == 0 {
-		return false, nil
+		return false, "", false, nil
 	}
 
 	var status string
@@ -220,20 +231,22 @@ func (e *executionDAO) refreshStatus(ctx context.Context, id int64) (bool, error
 
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
-		return false, err
+		return false, "", false, err
 	}
-	sql := `update execution set status = ?, revision = revision+1 where id = ? and revision = ?`
-	result, err := ormer.Raw(sql, status, id, execution.Revision).Exec()
+
+	sql := `update execution set status = ?, revision = revision+1, update_time = ? where id = ? and revision = ?`
+	result, err := ormer.Raw(sql, status, time.Now(), id, execution.Revision).Exec()
 	if err != nil {
-		return false, err
+		return false, "", false, err
 	}
 	n, err := result.RowsAffected()
 	if err != nil {
-		return false, err
+		return false, "", false, err
 	}
+
 	// if the count of affected rows is 0, that means the execution is updating by others, retry
 	if n == 0 {
-		return true, nil
+		return false, "", true, nil
 	}
 
 	/* this is another solution to solve the concurrency issue for refreshing the execution status
@@ -290,5 +303,42 @@ func (e *executionDAO) refreshStatus(ctx context.Context, id int64) (bool, error
 			where id=?`
 	sql = fmt.Sprintf(sql, job.ErrorStatus.String(), job.StoppedStatus.String(), job.SuccessStatus.String())
 	_, err = ormer.Raw(sql, id, id).Exec()
-	return false, err
+	return status != execution.Status, status, false, err
+}
+
+func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.QuerySeter, error) {
+	qs, err := orm.QuerySetter(ctx, &Execution{}, query)
+	if err != nil {
+		return nil, err
+	}
+
+	// append the filter for "extra attrs"
+	if query != nil && len(query.Keywords) > 0 {
+		var (
+			key       string
+			keyPrefix string
+			value     interface{}
+		)
+		for key, value = range query.Keywords {
+			if strings.HasPrefix(key, "ExtraAttrs.") {
+				keyPrefix = "ExtraAttrs."
+				break
+			}
+			if strings.HasPrefix(key, "extra_attrs.") {
+				keyPrefix = "extra_attrs."
+				break
+			}
+		}
+		if len(keyPrefix) == 0 {
+			return qs, nil
+		}
+		inClause, err := orm.CreateInClause(ctx, "select id from execution where extra_attrs->>?=?",
+			strings.TrimPrefix(key, keyPrefix), value)
+		if err != nil {
+			return nil, err
+		}
+		qs = qs.FilterRaw("id", inClause)
+	}
+
+	return qs, nil
 }

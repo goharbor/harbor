@@ -1,0 +1,88 @@
+@mixin cus-font {
+  font-size: .541667rem;
+  font-weight: 400;
+}
+
+:host::ng-deep.modal-dialog {
+  width: 30rem;
+}
+.display-none {
+  display: none;
+}
+.icon-tooltip {
+  margin-top: 4px;
+}
+.padding-top-3 {
+  padding-top: 3px;
+}
+.bottom-btn {
+  text-align: right;
+}
+.width-380 {
+  width: 380px;
+}
+.width-290 {
+  width: 290px
+}
+.width-6rem {
+  width: 6rem!important;
+}
+.clr-control-label {
+  width: 8rem;
+}
+.sub-label {
+  display: inline-block;
+  width: 90px;
+  @include cus-font;
+}
+
+.sub-text {
+  @include cus-font;
+}
+
+.flex {
+  display: flex;
+}
+.margin-top-06 {
+  margin-top: 0.6rem;
+}
+
+.margin-left-90px{
+  margin-left: 90px;
+}
+.opacity-08 {
+  opacity: 0.8;
+}
+.space-between {
+  display: flex;
+  font-size: 12px;
+  justify-content: space-between;
+}
+.go-link {
+  line-height: 1rem;
+  cursor: pointer;
+}
+.alert-label {
+  color:#f9392e;
+}
+.warning {
+  width: 320px;
+  line-height: 0.5rem;
+  white-space: normal;
+  height: auto;
+}
+.cri-tooltip {
+  margin-top: -2px;
+}
+.cri-tooltip:focus {
+  outline: none;
+}
+.baseline {
+  align-items: baseline;
+}
+.opacity-054 {
+  opacity: 0.54;
+}
+.font-size-12 {
+  font-size: 12px;
+}

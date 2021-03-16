@@ -31,14 +31,17 @@ type taskManagerTestSuite struct {
 	suite.Suite
 	mgr      *manager
 	dao      *mockTaskDAO
+	execDAO  *mockExecutionDAO
 	jsClient *mockJobserviceClient
 }
 
 func (t *taskManagerTestSuite) SetupTest() {
 	t.dao = &mockTaskDAO{}
+	t.execDAO = &mockExecutionDAO{}
 	t.jsClient = &mockJobserviceClient{}
 	t.mgr = &manager{
 		dao:      t.dao,
+		execDAO:  t.execDAO,
 		jsClient: t.jsClient,
 	}
 }
@@ -53,6 +56,7 @@ func (t *taskManagerTestSuite) TestCount() {
 
 func (t *taskManagerTestSuite) TestCreate() {
 	// success to submit job to jobservice
+	t.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{}, nil)
 	t.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	t.jsClient.On("SubmitJob", mock.Anything).Return("1", nil)
 	t.dao.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -61,21 +65,22 @@ func (t *taskManagerTestSuite) TestCreate() {
 	t.Require().Nil(err)
 	t.Equal(int64(1), id)
 	t.dao.AssertExpectations(t.T())
+	t.execDAO.AssertExpectations(t.T())
 	t.jsClient.AssertExpectations(t.T())
 
 	// reset mock
 	t.SetupTest()
 
 	// failed to submit job to jobservice
+	t.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{}, nil)
 	t.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	t.jsClient.On("SubmitJob", mock.Anything).Return("", errors.New("error"))
-	t.dao.On("Update", mock.Anything, mock.Anything, mock.Anything,
-		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	t.dao.On("Delete", mock.Anything, mock.Anything).Return(nil)
 
 	id, err = t.mgr.Create(nil, 1, &Job{}, map[string]interface{}{"a": "b"})
-	t.Require().Nil(err)
-	t.Equal(int64(1), id)
+	t.Require().NotNil(err)
 	t.dao.AssertExpectations(t.T())
+	t.execDAO.AssertExpectations(t.T())
 	t.jsClient.AssertExpectations(t.T())
 }
 
@@ -89,10 +94,12 @@ func (t *taskManagerTestSuite) TestStop() {
 	t.jsClient.On("PostAction", mock.Anything, mock.Anything).Return(cjob.ErrJobNotFound)
 	t.dao.On("Update", mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	t.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(true, "", nil)
 	err := t.mgr.Stop(nil, 1)
 	t.Require().Nil(err)
 	t.dao.AssertExpectations(t.T())
 	t.jsClient.AssertExpectations(t.T())
+	t.execDAO.AssertExpectations(t.T())
 
 	// reset mock
 	t.SetupTest()
@@ -117,6 +124,13 @@ func (t *taskManagerTestSuite) TestGet() {
 	task, err := t.mgr.Get(nil, 1)
 	t.Require().Nil(err)
 	t.Equal(int64(1), task.ID)
+	t.dao.AssertExpectations(t.T())
+}
+
+func (t *taskManagerTestSuite) TestUpdateExtraAttrs() {
+	t.dao.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err := t.mgr.UpdateExtraAttrs(nil, 1, map[string]interface{}{})
+	t.Require().Nil(err)
 	t.dao.AssertExpectations(t.T())
 }
 

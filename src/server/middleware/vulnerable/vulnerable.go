@@ -92,7 +92,7 @@ func Middleware() func(http.Handler) http.Handler {
 		}
 
 		allowlist := proj.CVEAllowlist.CVESet()
-		summaries, err := scanController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport}, report.WithCVEAllowlist(&allowlist))
+		summaries, err := scanController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport}, report.WithCVEAllowlist(&allowlist))
 		if err != nil {
 			logger.Errorf("get vulnerability summary of the artifact %s@%s failed, error: %v", art.RepositoryName, art.Digest, err)
 			return err
@@ -102,10 +102,13 @@ func Middleware() func(http.Handler) http.Handler {
 
 		rawSummary, ok := summaries[v1.MimeTypeNativeReport]
 		if !ok {
-			// No report yet?
-			msg := fmt.Sprintf(`current image without vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
-				`To continue with pull, please contact your project administrator for help.`, projectSeverity)
-			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
+			rawSummary, ok = summaries[v1.MimeTypeGenericVulnerabilityReport]
+			if !ok {
+				// No report yet?
+				msg := fmt.Sprintf(`current image without vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
+					`To continue with pull, please contact your project administrator for help.`, projectSeverity)
+				return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
+			}
 		}
 
 		summary, ok := rawSummary.(*vuln.NativeReportSummary)

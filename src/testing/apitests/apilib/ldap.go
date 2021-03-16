@@ -32,3 +32,9 @@ type LdapConf struct {
 	LdapScope             int    `json:"ldap_scope"`
 	LdapConnectionTimeout int    `json:"ldap_connection_timeout"`
 }
+
+// LdapGroupsSearch the ldap group search type
+type LdapGroupsSearch struct {
+	GroupName string `json:"group_name,omitempty"`
+	GroupDN   string `json:"ldap_group_dn,omitempty"`
+}

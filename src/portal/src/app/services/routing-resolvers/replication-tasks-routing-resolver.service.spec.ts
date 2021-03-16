@@ -1,7 +1,7 @@
 import { TestBed, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ReplicationService } from "../../../lib/services";
 import { ReplicationTasksRoutingResolverService } from "./replication-tasks-routing-resolver.service";
+import { ReplicationService } from "../../../../ng-swagger-gen/services";
 
 describe('ReplicationTasksRoutingResolverService', () => {
   beforeEach(() => {

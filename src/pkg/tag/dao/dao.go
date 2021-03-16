@@ -53,13 +53,7 @@ func New() DAO {
 type dao struct{}
 
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
-	if query != nil {
-		// ignore the page number and size
-		query = &q.Query{
-			Keywords: query.Keywords,
-		}
-	}
-	qs, err := orm.QuerySetter(ctx, &tag.Tag{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &tag.Tag{}, query)
 	if err != nil {
 		return 0, err
 	}
@@ -71,7 +65,6 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*tag.Tag, error) {
 	if err != nil {
 		return nil, err
 	}
-	qs = qs.OrderBy("-PushTime", "ID")
 	if _, err = qs.All(&tags); err != nil {
 		return nil, err
 	}

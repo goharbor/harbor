@@ -219,3 +219,35 @@ hbr-result-tip-histogram {
 clr-header {
   background-color: $header-color;
 }
+.clr-page-size-select {
+  z-index: 0!important;
+}
+hbr-copy-input {
+  .command-input {
+    color: $command-input-color;
+    background-color: $command-input-bg-color;
+  }
+}
+artifact-list-tab {
+  .labelBtn {
+     .pull-left {
+       color: $mode-font-color1
+     }
+  }
+  .labelBtn:hover {
+    background-color: $label-hover-bg-color;
+  }
+  .list-filter {
+    li:hover {
+      background-color: $label-hover-bg-color;
+    }
+  }
+}
+
+.nav-divider {
+  background-color: $nav-divider-bg-color;
+}
+
+.label-color-input {
+  color: $label-color-input !important;
+}

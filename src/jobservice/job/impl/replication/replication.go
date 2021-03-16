@@ -50,6 +50,14 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/helmhub"
 	// register the GitLab adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/gitlab"
+	// register the DTR adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/dtr"
+	// register the Artifact Hub adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/artifacthub"
+	// register the TencentCloud TCR adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/tencentcr"
+	// register the Github Container Registry adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/githubcr"
 )
 
 // Replication implements the job interface

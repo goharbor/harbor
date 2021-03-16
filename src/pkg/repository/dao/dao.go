@@ -16,12 +16,14 @@ package dao
 
 import (
 	"context"
+	"fmt"
+	"time"
+
 	o "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"time"
 )
 
 // DAO is the data access object interface for repository
@@ -40,6 +42,8 @@ type DAO interface {
 	Update(ctx context.Context, repository *models.RepoRecord, props ...string) (err error)
 	// AddPullCount increase one pull count for the specified repository
 	AddPullCount(ctx context.Context, id int64) error
+	// NonEmptyRepos returns the repositories without any artifact or all the artifacts are untagged.
+	NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error)
 }
 
 // New returns an instance of the default DAO
@@ -50,13 +54,7 @@ func New() DAO {
 type dao struct{}
 
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
-	if query != nil {
-		// ignore the page number and size
-		query = &q.Query{
-			Keywords: query.Keywords,
-		}
-	}
-	qs, err := orm.QuerySetter(ctx, &models.RepoRecord{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &models.RepoRecord{}, query)
 	if err != nil {
 		return 0, err
 	}
@@ -68,7 +66,6 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, e
 	if err != nil {
 		return nil, err
 	}
-	qs = qs.OrderBy("-CreationTime", "RepositoryID")
 	if _, err = qs.All(&repositories); err != nil {
 		return nil, err
 	}
@@ -154,4 +151,20 @@ func (d *dao) AddPullCount(ctx context.Context, id int64) error {
 
 	}
 	return nil
+}
+
+func (d *dao) NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error) {
+	var repos []*models.RepoRecord
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	sql := fmt.Sprintf(`select r.* from repository as r LEFT JOIN tag as t on r.repository_id = t.repository_id where t.repository_id is not null;`)
+	_, err = ormer.Raw(sql).QueryRows(&repos)
+	if err != nil {
+		return repos, err
+	}
+
+	return repos, nil
 }

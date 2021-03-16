@@ -3,10 +3,13 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/system"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"net/http"
 	"strconv"
 
-	common_models "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -24,6 +27,7 @@ type RegistryAPI struct {
 	BaseController
 	manager   registry.Manager
 	policyCtl policy.Controller
+	resource  types.Resource
 }
 
 // Prepare validates the user
@@ -33,11 +37,7 @@ func (t *RegistryAPI) Prepare() {
 		t.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
-
-	if !t.SecurityCtx.IsSysAdmin() {
-		t.SendForbiddenError(errors.New(t.SecurityCtx.GetUsername()))
-		return
-	}
+	t.resource = system.NewNamespace().Resource(rbac.ResourceRegistry)
 
 	t.manager = replication.RegistryMgr
 	t.policyCtl = replication.PolicyCtl
@@ -45,6 +45,10 @@ func (t *RegistryAPI) Prepare() {
 
 // Ping checks health status of a registry
 func (t *RegistryAPI) Ping() {
+	if !t.SecurityCtx.Can(orm.Context(), rbac.ActionRead, t.resource) {
+		t.SendForbiddenError(errors.New(t.SecurityCtx.GetUsername()))
+		return
+	}
 	req := struct {
 		ID             *int64  `json:"id"`
 		Type           *string `json:"type"`
@@ -121,6 +125,10 @@ func (t *RegistryAPI) Ping() {
 
 // Get gets a registry by id.
 func (t *RegistryAPI) Get() {
+	if !t.SecurityCtx.Can(orm.Context(), rbac.ActionRead, t.resource) {
+		t.SendForbiddenError(errors.New(t.SecurityCtx.GetUsername()))
+		return
+	}
 	id, err := t.GetIDFromURL()
 	if err != nil {
 		t.SendBadRequestError(err)
@@ -158,6 +166,10 @@ func hideAccessSecret(credential *model.Credential) {
 
 // List lists all registries
 func (t *RegistryAPI) List() {
+	if !t.SecurityCtx.Can(orm.Context(), rbac.ActionList, rbac.ResourceRegistry) {
+		t.SendForbiddenError(errors.New(t.SecurityCtx.GetUsername()))
+		return
+	}
 	queryStr := t.GetString("q")
 	// keep backward compatibility for the "name" query
 	if len(queryStr) == 0 {
@@ -166,7 +178,7 @@ func (t *RegistryAPI) List() {
 			queryStr = fmt.Sprintf("name=~%s", name)
 		}
 	}
-	query, err := q.Build(queryStr, 0, 0)
+	query, err := q.Build(queryStr, "", 0, 0)
 	if err != nil {
 		t.SendError(err)
 		return
@@ -190,6 +202,10 @@ func (t *RegistryAPI) List() {
 
 // Post creates a registry
 func (t *RegistryAPI) Post() {
+	if !t.SecurityCtx.Can(orm.Context(), rbac.ActionCreate, t.resource) {
+		t.SendForbiddenError(errors.New(t.SecurityCtx.GetUsername()))
+		return
+	}
 	r := &model.Registry{}
 	isValid, err := t.DecodeJSONReqAndValidate(r)
 	if !isValid {
@@ -244,6 +260,10 @@ func (t *RegistryAPI) getHealthStatus(r *model.Registry) string {
 
 // Put updates a registry
 func (t *RegistryAPI) Put() {
+	if !t.SecurityCtx.Can(t.Context(), rbac.ActionUpdate, t.resource) {
+		t.SendForbiddenError(errors.New(t.SecurityCtx.GetUsername()))
+		return
+	}
 	id, err := t.GetIDFromURL()
 	if err != nil {
 		t.SendBadRequestError(err)
@@ -324,6 +344,10 @@ func (t *RegistryAPI) Put() {
 
 // Delete deletes a registry
 func (t *RegistryAPI) Delete() {
+	if !t.SecurityCtx.Can(orm.Context(), rbac.ActionDelete, t.resource) {
+		t.SendForbiddenError(errors.New(t.SecurityCtx.GetUsername()))
+		return
+	}
 	id, err := t.GetIDFromURL()
 	if err != nil {
 		t.SendBadRequestError(err)
@@ -378,13 +402,13 @@ func (t *RegistryAPI) Delete() {
 	}
 
 	// check whether the registry is referenced by any proxy cache projects
-	result, err := t.ProjectMgr.List(&common_models.ProjectQueryParam{RegistryID: id})
+	count, err := t.ProjectCtl.Count(t.Context(), q.New(q.KeyWords{"registry_id": id}))
 	if err != nil {
 		t.SendInternalServerError(fmt.Errorf("failed to list projects: %v", err))
 		return
 	}
-	if result != nil && result.Total > 0 {
-		t.SendPreconditionFailedError(fmt.Errorf("Can't delete registry %d,  %d proxy cache projects referennce it", id, result.Total))
+	if count > 0 {
+		t.SendPreconditionFailedError(fmt.Errorf("Can't delete registry %d,  %d proxy cache projects referennce it", id, count))
 		return
 	}
 
@@ -398,6 +422,10 @@ func (t *RegistryAPI) Delete() {
 
 // GetInfo returns the base info and capability declarations of the registry
 func (t *RegistryAPI) GetInfo() {
+	if !t.SecurityCtx.Can(orm.Context(), rbac.ActionRead, t.resource) {
+		t.SendForbiddenError(errors.New(t.SecurityCtx.GetUsername()))
+		return
+	}
 	id, err := t.GetInt64FromPath(":id")
 	// "0" is used for the ID of the local Harbor registry
 	if err != nil || id < 0 {

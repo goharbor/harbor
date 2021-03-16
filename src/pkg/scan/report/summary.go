@@ -17,9 +17,9 @@ package report
 import (
 	"reflect"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
+	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -30,14 +30,14 @@ type Options struct {
 	// If it is set, the returned report will contains artifact digest for the vulnerabilities
 	ArtifactDigest string
 	// If it is set, the returned summary will not count the CVEs in the list in.
-	CVEAllowlist models.CVESet
+	CVEAllowlist models2.CVESet
 }
 
 // Option for getting the report w/ summary with func template way.
 type Option func(options *Options)
 
 // WithCVEAllowlist is an option of setting CVE allowlist.
-func WithCVEAllowlist(set *models.CVESet) Option {
+func WithCVEAllowlist(set *models2.CVESet) Option {
 	return func(options *Options) {
 		options.CVEAllowlist = *set
 	}
@@ -55,7 +55,8 @@ type SummaryMerger func(s1, s2 interface{}) (interface{}, error)
 
 // SupportedSummaryMergers declares mappings between mime type and summary merger func.
 var SupportedSummaryMergers = map[string]SummaryMerger{
-	v1.MimeTypeNativeReport: MergeNativeSummary,
+	v1.MimeTypeNativeReport:               MergeNativeSummary,
+	v1.MimeTypeGenericVulnerabilityReport: MergeNativeSummary,
 }
 
 // MergeSummary merge summary s1 and s2
@@ -85,7 +86,8 @@ func MergeNativeSummary(s1, s2 interface{}) (interface{}, error) {
 
 // SupportedGenerators declares mappings between mime type and summary generator func.
 var SupportedGenerators = map[string]SummaryGenerator{
-	v1.MimeTypeNativeReport: GenerateNativeSummary,
+	v1.MimeTypeNativeReport:               GenerateNativeSummary,
+	v1.MimeTypeGenericVulnerabilityReport: GenerateNativeSummary,
 }
 
 // GenerateSummary is a helper function to generate report
@@ -152,49 +154,10 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 
 	sum.CompleteCount = 1
 	sum.CompletePercent = 100
-
 	sum.Severity = rp.Severity
-	vsum := &vuln.VulnerabilitySummary{
-		Total:   len(rp.Vulnerabilities),
-		Summary: make(vuln.SeveritySummary),
-	}
-
-	overallSev := vuln.None
-	for _, v := range rp.Vulnerabilities {
-		if len(ops.CVEAllowlist) > 0 && ops.CVEAllowlist.Contains(v.ID) {
-			// If allowlist is set, then check if we need to bypass it
-			// Reduce the total
-			vsum.Total--
-			// Append the by passed CVEs specified in the allowlist
-			sum.CVEBypassed = append(sum.CVEBypassed, v.ID)
-
-			continue
-		}
-
-		if num, ok := vsum.Summary[v.Severity]; ok {
-			vsum.Summary[v.Severity] = num + 1
-		} else {
-			vsum.Summary[v.Severity] = 1
-		}
-
-		// Update the overall severity if necessary
-		if v.Severity.Code() > overallSev.Code() {
-			overallSev = v.Severity
-		}
-
-		// If the CVE item has a fixable version
-		if len(v.FixVersion) > 0 {
-			vsum.Fixable++
-		}
-	}
-	sum.Summary = vsum
-
-	// Override the overall severity of the filtered list if needed.
-	if len(ops.CVEAllowlist) > 0 {
-		sum.Severity = overallSev
-	}
-
 	sum.Scanner = rp.Scanner
+
+	sum.UpdateSeveritySummaryAndByPassed(rp.GetVulnerabilityItemList(), ops.CVEAllowlist)
 
 	return sum, nil
 }

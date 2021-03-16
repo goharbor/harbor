@@ -15,6 +15,7 @@
 package index
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
@@ -57,7 +58,7 @@ func (suite *IndexTestSuite) TestGet() {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), p)
 
-	results, err := p.Perform(suite.candidates)
+	results, err := p.Perform(context.TODO(), suite.candidates)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(results))
 	assert.Condition(suite.T(), func() (success bool) {
@@ -77,7 +78,7 @@ type fakePerformer struct {
 }
 
 // Perform the artifacts
-func (p *fakePerformer) Perform(candidates []*selector.Candidate) (results []*selector.Result, err error) {
+func (p *fakePerformer) Perform(ctx context.Context, candidates []*selector.Candidate) (results []*selector.Result, err error) {
 	for _, c := range candidates {
 		results = append(results, &selector.Result{
 			Target: c,

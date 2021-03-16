@@ -1,14 +1,17 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	bcontext "github.com/astaxie/beego/context"
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/promgr/metamgr"
+	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
+	"github.com/goharbor/harbor/src/testing/mock"
 )
 
 var (
@@ -17,10 +20,8 @@ var (
 )
 
 func TestIsMultipartFormData(t *testing.T) {
-	req, err := createRequest(http.MethodPost, "/api/chartrepo/charts")
-	if err != nil {
-		t.Fatal(err)
-	}
+	req := httptest.NewRequest(http.MethodPost, "/api/chartrepo/charts", nil)
+
 	req.Header.Set(headerContentType, "application/json")
 	if isMultipartFormData(req) {
 		t.Fatal("expect false result but got true")
@@ -35,7 +36,45 @@ func TestIsMultipartFormData(t *testing.T) {
 // Test namespace cheking
 func TestRequireNamespace(t *testing.T) {
 	chartAPI := &ChartRepositoryAPI{}
-	chartAPI.ProjectMgr = &mockProjectManager{}
+	chartAPI.Ctx = bcontext.NewContext()
+	chartAPI.Ctx.Request = httptest.NewRequest("GET", "/", nil)
+
+	projectCtl := &projecttesting.Controller{}
+	chartAPI.ProjectCtl = projectCtl
+
+	mock.OnAnything(projectCtl, "List").Return([]*models.Project{
+		{ProjectID: 0, Name: "library"},
+		{ProjectID: 1, Name: "repo2"},
+	}, nil)
+
+	mock.OnAnything(projectCtl, "Exists").Return(
+		func(ctx context.Context, projectIDOrName interface{}) bool {
+			if projectIDOrName == nil {
+				return false
+			}
+
+			if ns, ok := projectIDOrName.(string); ok {
+				if ns == "library" {
+					return true
+				}
+
+				return false
+			}
+
+			return false
+		},
+		func(ctx context.Context, projectIDOrName interface{}) error {
+			if projectIDOrName == nil {
+				return errors.New("nil projectIDOrName")
+			}
+
+			if _, ok := projectIDOrName.(string); ok {
+				return nil
+			}
+
+			return errors.New("unknown type of projectIDOrName")
+		},
+	)
 
 	if !chartAPI.requireNamespace("library") {
 		t.Fatal("expect namespace 'library' existing but got false")
@@ -191,78 +230,4 @@ func TestDeleteChart(t *testing.T) {
 func TestClearEnv(t *testing.T) {
 	crMockServer.Close()
 	chartController = crOldController
-}
-
-func createRequest(method string, url string) (*http.Request, error) {
-	req, err := http.NewRequest(method, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.RequestURI = url
-
-	return req, nil
-}
-
-// Mock project manager
-type mockProjectManager struct{}
-
-func (mpm *mockProjectManager) Get(projectIDOrName interface{}) (*models.Project, error) {
-	return nil, errors.New("Not implemented")
-}
-
-func (mpm *mockProjectManager) Create(*models.Project) (int64, error) {
-	return -1, errors.New("Not implemented")
-}
-
-func (mpm *mockProjectManager) Delete(projectIDOrName interface{}) error {
-	return errors.New("Not implemented")
-}
-
-func (mpm *mockProjectManager) Update(projectIDOrName interface{}, project *models.Project) error {
-	return errors.New("Not implemented")
-}
-func (mpm *mockProjectManager) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
-	results := &models.ProjectQueryResult{
-		Total:    2,
-		Projects: make([]*models.Project, 0),
-	}
-
-	results.Projects = append(results.Projects, &models.Project{ProjectID: 0, Name: "library"})
-	results.Projects = append(results.Projects, &models.Project{ProjectID: 1, Name: "repo2"})
-
-	return results, nil
-}
-
-func (mpm *mockProjectManager) IsPublic(projectIDOrName interface{}) (bool, error) {
-	return false, errors.New("Not implemented")
-}
-
-func (mpm *mockProjectManager) Exists(projectIDOrName interface{}) (bool, error) {
-	if projectIDOrName == nil {
-		return false, errors.New("nil projectIDOrName")
-	}
-
-	if ns, ok := projectIDOrName.(string); ok {
-		if ns == "library" {
-			return true, nil
-		}
-
-		return false, nil
-	}
-
-	return false, errors.New("unknown type of projectIDOrName")
-}
-
-// get all public project
-func (mpm *mockProjectManager) GetPublic() ([]*models.Project, error) {
-	return nil, errors.New("Not implemented")
-}
-
-func (mpm *mockProjectManager) GetAuthorized(user *models.User) ([]*models.Project, error) {
-	return nil, nil
-}
-
-// if the project manager uses a metadata manager, return it, otherwise return nil
-func (mpm *mockProjectManager) GetMetadataManager() metamgr.ProjectMetadataManager {
-	return nil
 }

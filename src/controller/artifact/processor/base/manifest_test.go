@@ -21,6 +21,7 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
+	"github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -151,6 +152,15 @@ func (m *manifestTestSuite) TestAbstractMetadata() {
 	m.processor.AbstractMetadata(nil, art, []byte(manifest))
 	m.Require().Len(art.ExtraAttrs, 1)
 	m.Equal("linux", art.ExtraAttrs["os"])
+}
+
+func (m *manifestTestSuite) TestUnmarshalConfig() {
+	m.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
+	config := &v1.Image{}
+	err := m.processor.UnmarshalConfig(nil, "library/hello-world", []byte(manifest), config)
+	m.Require().Nil(err)
+	m.Equal("amd64", config.Architecture)
+	m.regCli.AssertExpectations(m.T())
 }
 
 func TestManifestSuite(t *testing.T) {

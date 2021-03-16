@@ -1,5 +1,6 @@
-!/contrib/helm/harbor
 
+!/contrib/helm/harbor
+*.code-workspace
 make/harbor.yml
 make/docker-compose.yml
 make/common/config/*

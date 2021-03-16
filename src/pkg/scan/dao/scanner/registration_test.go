@@ -17,8 +17,8 @@ package scanner
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/q"
+	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -27,7 +27,7 @@ import (
 
 // RegistrationDAOTestSuite is test suite of testing registration DAO
 type RegistrationDAOTestSuite struct {
-	suite.Suite
+	htesting.Suite
 
 	registrationID string
 }
@@ -39,7 +39,7 @@ func TestRegistrationDAO(t *testing.T) {
 
 // SetupSuite prepare testing env for the suite
 func (suite *RegistrationDAOTestSuite) SetupSuite() {
-	dao.PrepareTestForPostgresSQL()
+	suite.Suite.SetupSuite()
 }
 
 // SetupTest prepare stuff for test cases
@@ -52,34 +52,34 @@ func (suite *RegistrationDAOTestSuite) SetupTest() {
 		URL:         "https://sample.scanner.com",
 	}
 
-	_, err := AddRegistration(r)
+	_, err := AddRegistration(suite.Context(), r)
 	require.NoError(suite.T(), err, "add new registration")
 
 }
 
 // TearDownTest clears all the stuff of test cases
 func (suite *RegistrationDAOTestSuite) TearDownTest() {
-	err := DeleteRegistration(suite.registrationID)
+	err := DeleteRegistration(suite.Context(), suite.registrationID)
 	require.NoError(suite.T(), err, "clear registration")
 }
 
 // TestGet tests get registration
 func (suite *RegistrationDAOTestSuite) TestGet() {
 	// Found
-	r, err := GetRegistration(suite.registrationID)
+	r, err := GetRegistration(suite.Context(), suite.registrationID)
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), r)
 	assert.Equal(suite.T(), r.Name, "forUT")
 
 	// Not found
-	re, err := GetRegistration("not_found")
+	re, err := GetRegistration(suite.Context(), "not_found")
 	require.NoError(suite.T(), err)
 	require.Nil(suite.T(), re)
 }
 
 // TestUpdate tests update registration
 func (suite *RegistrationDAOTestSuite) TestUpdate() {
-	r, err := GetRegistration(suite.registrationID)
+	r, err := GetRegistration(suite.Context(), suite.registrationID)
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), r)
 
@@ -87,10 +87,10 @@ func (suite *RegistrationDAOTestSuite) TestUpdate() {
 	r.IsDefault = true
 	r.URL = "http://updated.registration.com"
 
-	err = UpdateRegistration(r)
+	err = UpdateRegistration(suite.Context(), r)
 	require.NoError(suite.T(), err, "update registration")
 
-	r, err = GetRegistration(suite.registrationID)
+	r, err = GetRegistration(suite.Context(), suite.registrationID)
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), r)
 
@@ -102,14 +102,14 @@ func (suite *RegistrationDAOTestSuite) TestUpdate() {
 // TestList tests list registrations
 func (suite *RegistrationDAOTestSuite) TestList() {
 	// no query
-	l, err := ListRegistrations(nil)
+	l, err := ListRegistrations(suite.Context(), nil)
 	require.NoError(suite.T(), err)
 	require.Equal(suite.T(), 1, len(l))
 
 	// with query and found items
 	keywords := make(map[string]interface{})
-	keywords["description"] = "sample"
-	l, err = ListRegistrations(&q.Query{
+	keywords["description"] = &q.FuzzyMatchValue{Value: "sample"}
+	l, err = ListRegistrations(suite.Context(), &q.Query{
 		PageSize:   5,
 		PageNumber: 1,
 		Keywords:   keywords,
@@ -118,8 +118,8 @@ func (suite *RegistrationDAOTestSuite) TestList() {
 	require.Equal(suite.T(), 1, len(l))
 
 	// With query and not found items
-	keywords["description"] = "not_exist"
-	l, err = ListRegistrations(&q.Query{
+	keywords["description"] = &q.FuzzyMatchValue{Value: "not_exist"}
+	l, err = ListRegistrations(suite.Context(), &q.Query{
 		Keywords: keywords,
 	})
 	require.NoError(suite.T(), err)
@@ -127,15 +127,15 @@ func (suite *RegistrationDAOTestSuite) TestList() {
 
 	// Exact match
 	exactKeywords := make(map[string]interface{})
-	exactKeywords["ex_name"] = "forUT"
-	l, err = ListRegistrations(&q.Query{
+	exactKeywords["name"] = "forUT"
+	l, err = ListRegistrations(suite.Context(), &q.Query{
 		Keywords: exactKeywords,
 	})
 	require.NoError(suite.T(), err)
 	require.Equal(suite.T(), 1, len(l))
 
-	exactKeywords["ex_name"] = "forU"
-	l, err = ListRegistrations(&q.Query{
+	exactKeywords["name"] = "forU"
+	l, err = ListRegistrations(suite.Context(), &q.Query{
 		Keywords: exactKeywords,
 	})
 	require.NoError(suite.T(), err)
@@ -144,21 +144,21 @@ func (suite *RegistrationDAOTestSuite) TestList() {
 
 // TestDefault tests set/get default
 func (suite *RegistrationDAOTestSuite) TestDefault() {
-	dr, err := GetDefaultRegistration()
+	dr, err := GetDefaultRegistration(suite.Context())
 	require.NoError(suite.T(), err, "not found")
 	require.Nil(suite.T(), dr)
 
-	err = SetDefaultRegistration(suite.registrationID)
+	err = SetDefaultRegistration(suite.Context(), suite.registrationID)
 	require.NoError(suite.T(), err)
 
-	dr, err = GetDefaultRegistration()
+	dr, err = GetDefaultRegistration(suite.Context())
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), dr)
 
 	dr.Disabled = true
-	err = UpdateRegistration(dr, "disabled")
+	err = UpdateRegistration(suite.Context(), dr, "disabled")
 	require.NoError(suite.T(), err)
 
-	err = SetDefaultRegistration(suite.registrationID)
+	err = SetDefaultRegistration(suite.Context(), suite.registrationID)
 	require.Error(suite.T(), err)
 }

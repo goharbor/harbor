@@ -17,7 +17,7 @@ type AuditLog struct {
 	ResourceType string    `orm:"column(resource_type)"  json:"resource_type"`
 	Resource     string    `orm:"column(resource)" json:"resource"`
 	Username     string    `orm:"column(username)"  json:"username"`
-	OpTime       time.Time `orm:"column(op_time)" json:"op_time"`
+	OpTime       time.Time `orm:"column(op_time)" json:"op_time" sort:"default:desc"`
 }
 
 // TableName for audit log

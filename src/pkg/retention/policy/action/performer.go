@@ -15,10 +15,11 @@
 package action
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/selector"
-	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
+	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 )
 
@@ -37,7 +38,7 @@ type Performer interface {
 	//  Returns:
 	//    []*art.Result : result infos
 	//    error     : common error if any errors occurred
-	Perform(candidates []*selector.Candidate) ([]*selector.Result, error)
+	Perform(ctx context.Context, candidates []*selector.Candidate) ([]*selector.Result, error)
 }
 
 // PerformerFactory is factory method for creating Performer
@@ -51,7 +52,7 @@ type retainAction struct {
 }
 
 // Perform the action
-func (ra *retainAction) Perform(candidates []*selector.Candidate) (results []*selector.Result, err error) {
+func (ra *retainAction) Perform(ctx context.Context, candidates []*selector.Candidate) (results []*selector.Result, err error) {
 	retainedShare := make(map[string]bool)
 	immutableShare := make(map[string]bool)
 	for _, c := range candidates {
@@ -62,7 +63,7 @@ func (ra *retainAction) Perform(candidates []*selector.Candidate) (results []*se
 		if _, ok := retainedShare[c.Hash()]; ok {
 			continue
 		}
-		if isImmutable(c) {
+		if isImmutable(ctx, c) {
 			immutableShare[c.Hash()] = true
 		}
 	}
@@ -91,11 +92,11 @@ func (ra *retainAction) Perform(candidates []*selector.Candidate) (results []*se
 	return
 }
 
-func isImmutable(c *selector.Candidate) bool {
+func isImmutable(ctx context.Context, c *selector.Candidate) bool {
 	projectID := c.NamespaceID
 	repo := c.Repository
 	_, repoName := utils.ParseRepository(repo)
-	matched, err := rule.NewRuleMatcher().Match(projectID, selector.Candidate{
+	matched, err := rule.NewRuleMatcher().Match(ctx, projectID, selector.Candidate{
 		Repository:  repoName,
 		Tags:        c.Tags,
 		NamespaceID: projectID,

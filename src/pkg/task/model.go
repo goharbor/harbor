@@ -25,13 +25,6 @@ import (
 
 // const definitions
 const (
-	ExecutionVendorTypeReplication       = "REPLICATION"
-	ExecutionVendorTypeGarbageCollection = "GARBAGE_COLLECTION"
-	ExecutionVendorTypeRetention         = "RETENTION"
-	ExecutionVendorTypeScan              = "SCAN"
-	ExecutionVendorTypeScanAll           = "SCAN_ALL"
-	ExecutionVendorTypeScheduler         = "SCHEDULER"
-
 	ExecutionTriggerManual   = "MANUAL"
 	ExecutionTriggerSchedule = "SCHEDULE"
 	ExecutionTriggerEvent    = "EVENT"
@@ -56,19 +49,34 @@ type Execution struct {
 	// the customized attributes for different kinds of consumers
 	ExtraAttrs map[string]interface{} `json:"extra_attrs"`
 	StartTime  time.Time              `json:"start_time"`
+	UpdateTime time.Time              `json:"update_time"`
 	EndTime    time.Time              `json:"end_time"`
+}
+
+// IsOnGoing returns true when the execution is running
+func (exec *Execution) IsOnGoing() bool {
+	switch job.Status(exec.Status) {
+	case job.RunningStatus:
+		return true
+	default:
+		return false
+	}
 }
 
 // Task is the unit for running. It stores the jobservice job records and related information
 type Task struct {
-	ID          int64  `json:"id"`
+	ID int64 `json:"id"`
+	// indicate the task type: replication/GC/retention/scan/etc.
+	VendorType  string `json:"vendor_type"`
 	ExecutionID int64  `json:"execution_id"`
 	Status      string `json:"status"`
 	// the detail message to explain the status in some cases. e.g.
 	// When the job is failed to submit to jobservice, this field can be used to explain the reason
 	StatusMessage string `json:"status_message"`
 	// the underlying job may retry several times
-	RunCount int `json:"run_count"`
+	RunCount int32 `json:"run_count"`
+	// the ID of jobservice job
+	JobID string `json:"job_id"`
 	// the customized attributes for different kinds of consumers
 	ExtraAttrs map[string]interface{} `json:"extra_attrs"`
 	// the time that the task record created
@@ -82,10 +90,12 @@ type Task struct {
 // From constructs a task from DAO model
 func (t *Task) From(task *dao.Task) {
 	t.ID = task.ID
+	t.VendorType = task.VendorType
 	t.ExecutionID = task.ExecutionID
 	t.Status = task.Status
 	t.StatusMessage = task.StatusMessage
 	t.RunCount = task.RunCount
+	t.JobID = task.JobID
 	t.CreationTime = task.CreationTime
 	t.StartTime = task.StartTime
 	t.UpdateTime = task.UpdateTime
@@ -98,6 +108,54 @@ func (t *Task) From(task *dao.Task) {
 		}
 		t.ExtraAttrs = extras
 	}
+}
+
+// GetStringFromExtraAttrs returns the string value specified by key
+func (t *Task) GetStringFromExtraAttrs(key string) string {
+	if len(t.ExtraAttrs) == 0 {
+		return ""
+	}
+	rt, exist := t.ExtraAttrs[key]
+	if !exist {
+		return ""
+	}
+	str, ok := rt.(string)
+	if !ok {
+		return ""
+	}
+	return str
+}
+
+// GetBoolFromExtraAttrs returns the bool value specified by key
+func (t *Task) GetBoolFromExtraAttrs(key string) bool {
+	if len(t.ExtraAttrs) == 0 {
+		return false
+	}
+	rt, exist := t.ExtraAttrs[key]
+	if !exist {
+		return false
+	}
+	b, ok := rt.(bool)
+	if !ok {
+		return false
+	}
+	return b
+}
+
+// GetNumFromExtraAttrs returns the num value specified by key
+func (t *Task) GetNumFromExtraAttrs(key string) float64 {
+	if len(t.ExtraAttrs) == 0 {
+		return 0
+	}
+	rt, exist := t.ExtraAttrs[key]
+	if !exist {
+		return 0
+	}
+	v, ok := rt.(float64)
+	if !ok {
+		return 0
+	}
+	return v
 }
 
 // Job is the model represents the requested jobservice job

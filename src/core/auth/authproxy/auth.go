@@ -116,11 +116,19 @@ func (a *Auth) tokenReview(sessionID string) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	u, err := authproxy.UserFromReviewStatus(reviewStatus)
+	u, err := authproxy.UserFromReviewStatus(reviewStatus, httpAuthProxySetting.AdminGroups)
 	if err != nil {
 		return nil, err
 	}
 	return u, nil
+}
+
+// VerifyToken reviews the token to generate the user model
+func (a *Auth) VerifyToken(token string) (*models.User, error) {
+	if err := a.ensure(); err != nil {
+		return nil, err
+	}
+	return a.tokenReview(token)
 }
 
 // OnBoardUser delegates to dao pkg to insert/update data in DB.

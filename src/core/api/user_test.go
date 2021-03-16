@@ -14,7 +14,10 @@
 package api
 
 import (
+	"context"
 	"fmt"
+	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"net/http"
 	"testing"
 
@@ -617,46 +620,50 @@ func TestModifiable(t *testing.T) {
 		BaseAPI: api.BaseAPI{
 			Controller: beego.Controller{},
 		},
-		SecurityCtx: nil,
-		ProjectMgr:  nil,
 	}
+
+	security := &securitytesting.Context{}
+	security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(false).Once()
+	base.SecurityCtx = security
 
 	ua1 := &UserAPI{
 		BaseController:   base,
 		currentUserID:    3,
 		userID:           4,
 		SelfRegistration: false,
-		IsAdmin:          false,
 		AuthMode:         "db_auth",
 	}
-	assert.False(ua1.modifiable())
+	assert.False(ua1.modifiable(context.TODO()))
+
+	security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
 	ua2 := &UserAPI{
 		BaseController:   base,
 		currentUserID:    3,
 		userID:           4,
 		SelfRegistration: false,
-		IsAdmin:          true,
 		AuthMode:         "db_auth",
 	}
-	assert.True(ua2.modifiable())
+	assert.True(ua2.modifiable(context.TODO()))
+
+	security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(false).Once()
 	ua3 := &UserAPI{
 		BaseController:   base,
 		currentUserID:    3,
 		userID:           4,
 		SelfRegistration: false,
-		IsAdmin:          true,
 		AuthMode:         "ldap_auth",
 	}
-	assert.False(ua3.modifiable())
+	assert.False(ua3.modifiable(context.TODO()))
+
+	security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
 	ua4 := &UserAPI{
 		BaseController:   base,
 		currentUserID:    1,
 		userID:           1,
 		SelfRegistration: false,
-		IsAdmin:          true,
 		AuthMode:         "ldap_auth",
 	}
-	assert.True(ua4.modifiable())
+	assert.True(ua4.modifiable(context.TODO()))
 }
 
 func TestUsersCurrentPermissions(t *testing.T) {

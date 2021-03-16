@@ -28,7 +28,6 @@ ${destination_password_xpath}  //*[@id='destination_password']
 ${replication_save_xpath}  //button[contains(.,'OK')]
 ${replication_xpath}  //clr-vertical-nav-group-children/a[contains(.,'Replication')]
 ${destination_insecure_xpath}  //label[@id='destination_insecure_checkbox']
-
 ${new_replication-rule_button}  //button[contains(.,'New Replication Rule')]
 ${link_to_registries}  //clr-modal//span[contains(.,'Endpoint')]
 ${new_endpoint_button}  //hbr-endpoint//button[contains(.,'New Endpoint')]
@@ -42,6 +41,7 @@ ${schedule_type_select}  //select[@name='scheduleType']
 ${schedule_day_select}  //select[@name='scheduleDay']
 ${shcedule_time}  //input[@type='time']
 ${destination_insecure_checkbox}  //hbr-create-edit-endpoint/clr-modal//input[@id='destination_insecure']
+#${destination_insecure_checkbox}  //clr-checkbox-wrapper/label[contains(@for, 'destination_insecure')]
 ${ping_test_button}  //button[contains(.,'Test')]
 ${nav_to_registries}  //clr-vertical-nav//span[contains(.,'Registries')]
 ${nav_to_replications}  //clr-vertical-nav//span[contains(.,'Replications')]
@@ -51,8 +51,7 @@ ${job_filter_search}  //hbr-replication/div/div[3]//hbr-filter/span/clr-icon
 ${job_filter_input}  //hbr-replication/div/div[3]//hbr-filter/span//input
 ${endpoint_filter_search}  //hbr-filter/span/clr-icon
 ${endpoint_filter_input}  //hbr-filter/span//input
-${action_bar_edit}  //button[contains(.,'Edit')]
-${action_bar_delete}  //button[contains(.,'Delete')]
+
 ${stop_jobs_button}  //button[contains(.,'Stop Jobs')]
 ${dialog_close}  //clr-modal//button[contains(.,'CLOSE')]
 ${dialog_delete}  //clr-modal//button[contains(.,'DELETE')]
@@ -68,9 +67,14 @@ ${rule_resource_selector}  //*[@id='select_resource']
 ${trigger_mode_selector}  //*[@id='ruleTrigger']
 ${dest_namespace_xpath}  //*[@id='dest_namespace']
 ${new_replication_rule_id}  //*[@id='new_replication_rule_id']
-${edit_replication_rule_id}  //*[@id='edit_replication_rule_id']
-${delete_replication_rule_id}  //*[@id='delete_replication_rule_id']
-${replication_exec_id}  //*[@id='replication_exe_id']
+
+${registry_edit_btn}  //button[contains(.,'Edit')]
+${registry_del_btn}   //button[contains(.,'Delete')]
+
+${replication_rule_action}              //*[@id='rule-action']
+${replication_rule_action_bar_edit}     //*[@id='edit_replication_rule_id']
+${replication_rule_action_bar_delete}   //*[@id='delete_replication_rule_id']
+${replication_rule_exec_id}             //*[@id='replication_exe_id']
 ${replication_task_line_1}  //clr-datagrid//clr-dg-row/div/div[2]//clr-checkbox-wrapper/label[1]
 ${is_overide_xpath}  //label[contains(.,'Replace the destination resources if name exists')]
 ${enable_rule_xpath}  //label[contains(.,'Enable rule')]

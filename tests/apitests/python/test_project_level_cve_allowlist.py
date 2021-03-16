@@ -4,7 +4,7 @@ import unittest
 import v2_swagger_client
 import time
 
-from testutils import ADMIN_CLIENT, TEARDOWN
+from testutils import ADMIN_CLIENT, TEARDOWN, suppress_urllib3_warning
 from library.project import Project
 from library.user import User
 
@@ -32,7 +32,7 @@ class TestProjectCVEAllowlist(unittest.TestCase):
         2. Delete project(PA)
         3. Delete User(RA)
     """
-
+    @suppress_urllib3_warning
     def setUp(self):
         self.user = User()
         self.project = Project()
@@ -49,11 +49,8 @@ class TestProjectCVEAllowlist(unittest.TestCase):
         m_id = self.project.add_project_members(self.project_pa_id, user_id=self.user_ra_id, member_role_id=3, **ADMIN_CLIENT)
         self.member_id = int(m_id)
 
-    def tearDown(self):
-        print("Case completed")
-
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
-    def test_ClearData(self):
+    def tearDown(self):
         print("Tearing down...")
         self.project.delete_project_member(self.project_pa_id, self.member_id, **ADMIN_CLIENT)
         self.project.delete_project(self.project_pa_id,**ADMIN_CLIENT)

@@ -88,7 +88,6 @@ const (
 	TokenExpiration                  = "token_expiration"
 	AdminInitialPassword             = "admin_initial_password"
 	WithNotary                       = "with_notary"
-	WithClair                        = "with_clair"
 	WithTrivy                        = "with_trivy"
 	ScanAllPolicy                    = "scan_all_policy"
 	UAAEndpoint                      = "uaa_endpoint"
@@ -97,6 +96,7 @@ const (
 	UAAVerifyCert                    = "uaa_verify_cert"
 	HTTPAuthProxyEndpoint            = "http_authproxy_endpoint"
 	HTTPAuthProxyTokenReviewEndpoint = "http_authproxy_tokenreview_endpoint"
+	HTTPAuthProxyAdminGroups         = "http_authproxy_admin_groups"
 	HTTPAuthProxyVerifyCert          = "http_authproxy_verify_cert"
 	HTTPAuthProxySkipSearch          = "http_authproxy_skip_search"
 	HTTPAuthProxyServerCertificate   = "http_authproxy_server_certificate"
@@ -105,8 +105,10 @@ const (
 	OIDCCLientID                     = "oidc_client_id"
 	OIDCClientSecret                 = "oidc_client_secret"
 	OIDCVerifyCert                   = "oidc_verify_cert"
+	OIDCAdminGroup                   = "oidc_admin_group"
 	OIDCGroupsClaim                  = "oidc_groups_claim"
 	OIDCAutoOnboard                  = "oidc_auto_onboard"
+	OIDCExtraRedirectParms           = "oidc_extra_redirect_parms"
 	OIDCScope                        = "oidc_scope"
 	OIDCUserClaim                    = "oidc_user_claim"
 
@@ -118,7 +120,6 @@ const (
 	GroupMember                       = "g"
 	ReadOnly                          = "read_only"
 	AllowAnonymous                    = "allow_anonymous"
-	ClairAdapterURL                   = "clair_adapter_url"
 	TrivyAdapterURL                   = "trivy_adapter_url"
 	NotaryURL                         = "notary_url"
 	DefaultCoreEndpoint               = "http://core:8080"
@@ -136,6 +137,8 @@ const (
 	DefaultRegistryCtlURL             = "http://registryctl:8080"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
 	RobotPrefix = "robot$"
+	// System admin defined the robot name prefix.
+	RobotNamePrefix = "robot_name_prefix"
 	// Use this prefix to index user who tries to login with web hook token.
 	AuthProxyUserNamePrefix = "tokenreview$"
 	CoreConfigPath          = "/api/internal/configurations"
@@ -143,6 +146,8 @@ const (
 
 	OIDCCallbackPath = "/c/oidc/callback"
 	OIDCLoginPath    = "/c/oidc/login"
+
+	AuthProxyRediretPath = "/c/authproxy/redirect"
 
 	ChartUploadCtxKey   = contextKey("chart_upload_event")
 	ChartDownloadCtxKey = contextKey("chart_download_event")
@@ -152,9 +157,13 @@ const (
 
 	// Quota setting items for project
 	QuotaPerProjectEnable = "quota_per_project_enable"
-	CountPerProject       = "count_per_project"
 	StoragePerProject     = "storage_per_project"
 
 	// DefaultGCTimeWindowHours is the reserve blob time window used by GC, default is 2 hours
 	DefaultGCTimeWindowHours = int64(2)
+
+	// Metric setting items
+	MetricEnable = "metric_enable"
+	MetricPort   = "metric_port"
+	MetricPath   = "metric_path"
 )

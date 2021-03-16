@@ -15,9 +15,10 @@
 package v2auth
 
 import (
+	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"net/http"
 	"net/url"
 	"strings"
@@ -25,10 +26,12 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -37,7 +40,7 @@ const (
 )
 
 type reqChecker struct {
-	pm promgr.ProjectManager
+	ctl project.Controller
 }
 
 func (rc *reqChecker) check(req *http.Request) (string, error) {
@@ -51,19 +54,22 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 		if a.target == login && !securityCtx.IsAuthenticated() {
 			return getChallenge(req, al), errors.New("unauthorized")
 		}
-		if a.target == catalog && !securityCtx.IsSysAdmin() {
-			return getChallenge(req, al), fmt.Errorf("unauthorized to list catalog")
+		if a.target == catalog {
+			resource := system.NewNamespace().Resource(rbac.ResourceCatalog)
+			if !securityCtx.Can(req.Context(), rbac.ActionRead, resource) {
+				return getChallenge(req, al), fmt.Errorf("unauthorized to list catalog")
+			}
 		}
 		if a.target == repository && req.Header.Get(authHeader) == "" && req.Method == http.MethodHead { // make sure 401 is returned for CLI HEAD, see #11271
 			return getChallenge(req, al), fmt.Errorf("authorize header needed to send HEAD to repository")
 		} else if a.target == repository {
 			pn := strings.Split(a.name, "/")[0]
-			pid, err := rc.projectID(pn)
+			pid, err := rc.projectID(req.Context(), pn)
 			if err != nil {
 				return "", err
 			}
-			resource := rbac.NewProjectNamespace(pid).Resource(rbac.ResourceRepository)
-			if !securityCtx.Can(a.action, resource) {
+			resource := rbac_project.NewNamespace(pid).Resource(rbac.ResourceRepository)
+			if !securityCtx.Can(req.Context(), a.action, resource) {
 				return getChallenge(req, al), fmt.Errorf("unauthorized to access repository: %s, action: %s", a.name, a.action)
 			}
 		}
@@ -71,22 +77,19 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 	return "", nil
 }
 
-func (rc *reqChecker) projectID(name string) (int64, error) {
-	p, err := rc.pm.Get(name)
+func (rc *reqChecker) projectID(ctx context.Context, name string) (int64, error) {
+	p, err := rc.ctl.Get(ctx, name)
 	if err != nil {
 		return 0, err
 	}
-	if p == nil {
-		return 0, fmt.Errorf("project not found, name: %s", name)
-	}
+
 	return p.ProjectID, nil
 }
 
 func getChallenge(req *http.Request, accessList []access) string {
 	logger := log.G(req.Context())
 	auth := req.Header.Get(authHeader)
-	if len(auth) > 0 ||
-		len(lib.V2CatalogURLRe.FindStringSubmatch(req.URL.Path)) == 1 {
+	if len(auth) > 0 || lib.V2CatalogURLRe.MatchString(req.URL.Path) {
 		// Return basic auth challenge by default, incl. request to '/v2/_catalog'
 		return `Basic realm="harbor"`
 	}
@@ -111,16 +114,31 @@ func getChallenge(req *http.Request, accessList []access) string {
 }
 
 func tokenSvcEndpoint(req *http.Request) (string, error) {
-	logger := log.G(req.Context())
 	rawCoreURL := config.InternalCoreURL()
-	if coreURL, err := url.Parse(rawCoreURL); err == nil {
-		if req.Host == coreURL.Host {
-			return rawCoreURL, nil
-		}
-	} else {
-		logger.Errorf("Failed to parse core url, error: %v, fallback to external endpoint", err)
+	if match(req.Context(), req.Host, rawCoreURL) {
+		return rawCoreURL, nil
 	}
 	return config.ExtEndpoint()
+}
+
+func match(ctx context.Context, reqHost, rawURL string) bool {
+	logger := log.G(ctx)
+	cfgURL, err := url.Parse(rawURL)
+	if err != nil {
+		logger.Errorf("Failed to parse url: %s, error: %v", rawURL, err)
+		return false
+	}
+	if cfgURL.Scheme == "http" && cfgURL.Port() == "80" ||
+		cfgURL.Scheme == "https" && cfgURL.Port() == "443" {
+		cfgURL.Host = cfgURL.Hostname()
+	}
+	if cfgURL.Scheme == "http" && strings.HasSuffix(reqHost, ":80") {
+		reqHost = strings.TrimSuffix(reqHost, ":80")
+	}
+	if cfgURL.Scheme == "https" && strings.HasSuffix(reqHost, ":443") {
+		reqHost = strings.TrimSuffix(reqHost, ":443")
+	}
+	return reqHost == cfgURL.Host
 }
 
 var (
@@ -131,9 +149,9 @@ var (
 // Middleware checks the permission of the request to access the artifact
 func Middleware() func(http.Handler) http.Handler {
 	once.Do(func() {
-		if checker.pm == nil { // for UT, where pm has been set to a mock value
+		if checker.ctl == nil { // for UT, where ctl has been set to a mock value
 			checker = reqChecker{
-				pm: config.GlobalProjectMgr,
+				ctl: project.Ctl,
 			}
 		}
 	})

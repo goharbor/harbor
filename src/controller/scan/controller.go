@@ -18,8 +18,7 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/scan/all"
+	sca "github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 )
@@ -31,6 +30,7 @@ type Controller interface {
 	// Scan the given artifact
 	//
 	//   Arguments:
+	//     ctx context.Context : the context for this method
 	//     artifact *artifact.Artifact : artifact to be scanned
 	//     options ...Option     : options for triggering a scan
 	//
@@ -41,6 +41,7 @@ type Controller interface {
 	// GetReport gets the reports for the given artifact identified by the digest
 	//
 	//   Arguments:
+	//     ctx context.Context : the context for this method
 	//     artifact *v1.Artifact : the scanned artifact
 	//     mimeTypes []string    : the mime types of the reports
 	//
@@ -52,6 +53,7 @@ type Controller interface {
 	// GetSummary gets the summaries of the reports with given types.
 	//
 	//   Arguments:
+	//     ctx context.Context : the context for this method
 	//     artifact *artifact.Artifact    : the scanned artifact
 	//     mimeTypes []string       : the mime types of the reports
 	//     options ...report.Option : optional report options, specify if needed
@@ -64,23 +66,13 @@ type Controller interface {
 	// Get the scan log for the specified artifact with the given digest
 	//
 	//   Arguments:
+	//     ctx context.Context : the context for this method
 	//     uuid string : the UUID of the scan report
 	//
 	//   Returns:
 	//     []byte : the log text stream
 	//     error  : non nil error if any errors occurred
-	GetScanLog(uuid string) ([]byte, error)
-
-	// HandleJobHooks handle the hook events from the job service
-	// e.g : status change of the scan job or scan result
-	//
-	//   Arguments:
-	//     trackID string           : UUID for the report record
-	//     change *job.StatusChange : change event from the job service
-	//
-	//   Returns:
-	//     error  : non nil error if any errors occurred
-	HandleJobHooks(trackID string, change *job.StatusChange) error
+	GetScanLog(ctx context.Context, uuid string) ([]byte, error)
 
 	// Delete the reports related with the specified digests
 	//
@@ -89,15 +81,26 @@ type Controller interface {
 	//
 	//  Returns:
 	//    error        : non nil error if any errors occurred
-	DeleteReports(digests ...string) error
+	DeleteReports(ctx context.Context, digests ...string) error
 
-	// Get the stats of the scan reports requested by the given requester.
+	// UpdateReport update the report
 	//
-	//  Arguments:
-	//    requester string : requester identity
+	//   Arguments:
+	//     ctx context.Context : the context for this method
+	//     report *sca.CheckInReport : the scan report
 	//
-	//  Returns:
-	//    *all.AllStats: stats object including the related metric data
-	//    error        : non nil error if any errors occurred
-	GetStats(requester string) (*all.Stats, error)
+	//   Returns:
+	//     error  : non nil error if any errors occurred
+	UpdateReport(ctx context.Context, report *sca.CheckInReport) error
+
+	// Scan all the artifacts
+	//
+	//   Arguments:
+	//     ctx context.Context : the context for this method
+	//     trigger string      : the trigger mode to start the scan all job
+	//     async bool          : scan all the artifacts in background
+	//
+	//   Returns:
+	//     error  : non nil error if any errors occurred
+	ScanAll(ctx context.Context, trigger string, async bool) (int64, error)
 }

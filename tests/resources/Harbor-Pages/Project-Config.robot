@@ -8,7 +8,9 @@ Resource  ../../resources/Util.robot
 
 Goto Project Config
     Sleep  3
-    Retry Element Click  //project-detail//ul/li[contains(.,'Configuration')]
+    Retry Element Click  //project-detail//ul/li[contains(.,'Summary')]
+    Sleep  3
+    Retry Double Keywords When Error  Retry Element Click  //project-detail//ul/li[contains(.,'Configuration')]  Retry Wait Element  //clr-checkbox-wrapper/label[contains(.,'Enable content trust')]
     Sleep  2
 
 Click Project Public

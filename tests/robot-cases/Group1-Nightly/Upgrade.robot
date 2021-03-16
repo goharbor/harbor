@@ -27,10 +27,6 @@ Test Case - Manage project publicity
     Body Of Manage project publicity
 
 Test Case - Scan A Tag In The Repo
-    [Tags]  clair
-    Body Of Scan A Tag In The Repo  hello-world  latest  is_no_vulerabilty=${true}
-
-Test Case - Scan A Tag In The Repo
     [Tags]  trivy
     Body Of Scan A Tag In The Repo  vmware/photon  1.0
 
@@ -38,4 +34,5 @@ Test Case - List Helm Charts
     Body Of List Helm Charts
 
 Test Case - Admin Push Signed Image
-    Body Of Admin Push Signed Image
+    [tags]  sign_image
+    Body Of Push Signed Image

@@ -14,14 +14,12 @@
 package token
 
 import (
-	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/docker/distribution/registry/auth/token"
-	"github.com/stretchr/testify/assert"
-
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac/project"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -29,9 +27,13 @@ import (
 	"runtime"
 	"testing"
 
+	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/docker/distribution/registry/auth/token"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
@@ -136,14 +138,13 @@ func TestMakeToken(t *testing.T) {
 		t.Errorf("Error while making token: %v", err)
 	}
 	tokenString := tokenJSON.Token
-	// t.Logf("privatekey: %s, crt: %s", tokenString, crt)
 	pubKey, err := getPublicKey(crt)
 	if err != nil {
 		t.Errorf("Error while getting public key from cert: %s", crt)
 	}
 	tok, err := jwt.ParseWithClaims(tokenString, &harborClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", t.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
 		return pubKey, nil
 	})
@@ -154,21 +155,6 @@ func TestMakeToken(t *testing.T) {
 	claims := tok.Claims.(*harborClaims)
 	assert.Equal(t, *(claims.Access[0]), *(ra[0]), "Access mismatch")
 	assert.Equal(t, claims.Audience, svc, "Audience mismatch")
-}
-
-func TestPermToActions(t *testing.T) {
-	perm1 := "RWM"
-	perm2 := "MRR"
-	perm3 := ""
-	expect1 := []string{"push", "*", "pull"}
-	expect2 := []string{"*", "pull"}
-	expect3 := []string{}
-	res1 := permToActions(perm1)
-	res2 := permToActions(perm2)
-	res3 := permToActions(perm3)
-	assert.Equal(t, res1, expect1, fmt.Sprintf("actions mismatch for permission: %s", perm1))
-	assert.Equal(t, res2, expect2, fmt.Sprintf("actions mismatch for permission: %s", perm2))
-	assert.Equal(t, res3, expect3, fmt.Sprintf("actions mismatch for permission: %s", perm3))
 }
 
 type parserTestRec struct {
@@ -223,7 +209,8 @@ func TestEndpointParser(t *testing.T) {
 }
 
 type fakeSecurityContext struct {
-	isAdmin bool
+	isAdmin   bool
+	rcActions map[rbac.Resource][]rbac.Action
 }
 
 func (f *fakeSecurityContext) Name() string {
@@ -244,9 +231,17 @@ func (f *fakeSecurityContext) IsSysAdmin() bool {
 func (f *fakeSecurityContext) IsSolutionUser() bool {
 	return false
 }
-func (f *fakeSecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
+func (f *fakeSecurityContext) Can(ctx context.Context, action rbac.Action, resource rbac.Resource) bool {
+	if actions, ok := f.rcActions[resource]; ok {
+		for _, a := range actions {
+			if a == action {
+				return true
+			}
+		}
+	}
 	return false
 }
+
 func (f *fakeSecurityContext) GetMyProjects() ([]*models.Project, error) {
 	return nil, nil
 }
@@ -272,21 +267,26 @@ func TestFilterAccess(t *testing.T) {
 		Name:    "catalog",
 		Actions: []string{},
 	}
-	err = filterAccess(a1, &fakeSecurityContext{
+
+	ctx := func(secCtx security.Context) context.Context {
+		return security.NewContext(context.TODO(), secCtx)
+	}
+
+	err = filterAccess(ctx(&fakeSecurityContext{
 		isAdmin: true,
-	}, nil, registryFilterMap)
+	}), a1, nil, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra1, *a1[0], "Mismatch after registry filter Map")
 
-	err = filterAccess(a2, &fakeSecurityContext{
+	err = filterAccess(ctx(&fakeSecurityContext{
 		isAdmin: true,
-	}, nil, notaryFilterMap)
+	}), a2, nil, notaryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a2[0], "Mismatch after notary filter Map")
 
-	err = filterAccess(a3, &fakeSecurityContext{
+	err = filterAccess(ctx(&fakeSecurityContext{
 		isAdmin: false,
-	}, nil, registryFilterMap)
+	}), a3, nil, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a3[0], "Mismatch after registry filter Map")
 }
@@ -297,4 +297,58 @@ func TestParseScopes(t *testing.T) {
 	r1, _ := url.Parse(u1)
 	l1 := parseScopes(r1)
 	assert.Equal([]string{"repository:library/registry:push,pull", "repository:hello-world/registry:pull"}, l1)
+}
+
+func TestResourceScopes(t *testing.T) {
+	sctx := &fakeSecurityContext{
+		isAdmin: false,
+		rcActions: map[rbac.Resource][]rbac.Action{
+			project.NewNamespace(1).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull},
+			project.NewNamespace(2).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull, rbac.ActionPush},
+			project.NewNamespace(3).Resource(rbac.ResourceRepository): {rbac.ActionPull, rbac.ActionScannerPull, rbac.ActionPush, rbac.ActionDelete},
+			project.NewNamespace(4).Resource(rbac.ResourceRepository): {},
+		},
+	}
+	ctx := security.NewContext(context.TODO(), sctx)
+	cases := []struct {
+		rc     rbac.Resource
+		expect map[string]struct{}
+	}{
+		{
+			rc: project.NewNamespace(1).Resource(rbac.ResourceRepository),
+			expect: map[string]struct{}{
+				"pull":         {},
+				"scanner-pull": {},
+			},
+		},
+		{
+			rc: project.NewNamespace(2).Resource(rbac.ResourceRepository),
+			expect: map[string]struct{}{
+				"pull":         {},
+				"scanner-pull": {},
+				"push":         {},
+			},
+		},
+		{
+			rc: project.NewNamespace(3).Resource(rbac.ResourceRepository),
+			expect: map[string]struct{}{
+				"pull":         {},
+				"scanner-pull": {},
+				"push":         {},
+				"delete":       {},
+				"*":            {},
+			},
+		},
+		{
+			rc:     project.NewNamespace(4).Resource(rbac.ResourceRepository),
+			expect: map[string]struct{}{},
+		},
+		{
+			rc:     project.NewNamespace(5).Resource(rbac.ResourceRepository),
+			expect: map[string]struct{}{},
+		},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.expect, resourceScopes(ctx, c.rc))
+	}
 }

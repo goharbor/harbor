@@ -2,12 +2,15 @@
 package store
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/config/metadata"
 	"github.com/goharbor/harbor/src/common/config/store/driver"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
+	"reflect"
+	"strconv"
 	"sync"
 )
 
@@ -60,8 +63,12 @@ func (c *ConfigStore) Load() error {
 		return err
 	}
 	for key, value := range cfgs {
+		strValue, err := toString(value)
+		if err != nil {
+			log.Errorf("failed to transform the value from driver to string, key: %s, value: %v, error: %v", key, value, err)
+			continue
+		}
 		cfgValue := metadata.ConfigureValue{}
-		strValue := fmt.Sprintf("%v", value)
 		err = cfgValue.Set(key, strValue)
 		if err != nil {
 			log.Errorf("error when loading data item, key %v, value %v, error %v", key, value, err)
@@ -109,4 +116,27 @@ func (c *ConfigStore) Update(cfgMap map[string]interface{}) error {
 	}
 	// Update to driver
 	return c.cfgDriver.Save(cfgMap)
+}
+
+func toString(value interface{}) (string, error) {
+	if value == nil {
+		return "nil", nil
+	}
+	v := reflect.ValueOf(value)
+	switch v.Kind() {
+	case reflect.Map, reflect.Array, reflect.Slice, reflect.Struct:
+		d, err := json.Marshal(value)
+		if err != nil {
+			return "", err
+		}
+		return string(d), nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return strconv.FormatInt(v.Int(), 10), nil
+	case reflect.Bool:
+		return strconv.FormatBool(v.Bool()), nil
+	case reflect.String:
+		return value.(string), nil
+	default:
+		return fmt.Sprintf("%v", value), nil
+	}
 }

@@ -15,14 +15,16 @@
 package vuln
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
+	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestReport_Merge(t *testing.T) {
-	emptyVulnerabilities := []*VulnerabilityItem{}
 	a := []*VulnerabilityItem{
 		{ID: "CVE-2017-8283"},
 		{ID: "CVE-2017-8284"},
@@ -46,9 +48,6 @@ func TestReport_Merge(t *testing.T) {
 		want   *Report
 	}{
 		{"GeneratedAt", fields{GeneratedAt: "2020-04-06T18:38:34.791086859Z"}, args{&Report{GeneratedAt: "2020-04-06T18:38:34.791086860Z"}}, &Report{GeneratedAt: "2020-04-06T18:38:34.791086860Z"}},
-		{"Vulnerabilities nil & nil", fields{Vulnerabilities: nil}, args{&Report{Vulnerabilities: nil}}, &Report{Vulnerabilities: nil}},
-		{"Vulnerabilities nil & not nil", fields{Vulnerabilities: nil}, args{&Report{Vulnerabilities: emptyVulnerabilities}}, &Report{Vulnerabilities: emptyVulnerabilities}},
-		{"Vulnerabilities not nil & nil", fields{Vulnerabilities: emptyVulnerabilities}, args{&Report{Vulnerabilities: nil}}, &Report{Vulnerabilities: emptyVulnerabilities}},
 		{"Vulnerabilities nil & a", fields{Vulnerabilities: nil}, args{&Report{Vulnerabilities: a}}, &Report{Vulnerabilities: a}},
 		{"Vulnerabilities a & nil", fields{Vulnerabilities: a}, args{&Report{Vulnerabilities: nil}}, &Report{Vulnerabilities: a}},
 		{"Vulnerabilities a & b", fields{Vulnerabilities: a}, args{&Report{Vulnerabilities: b}}, &Report{Vulnerabilities: append(a, b...)}},
@@ -61,9 +60,76 @@ func TestReport_Merge(t *testing.T) {
 				Severity:        tt.fields.Severity,
 				Vulnerabilities: tt.fields.Vulnerabilities,
 			}
-			if got := report.Merge(tt.args.another); !reflect.DeepEqual(got, tt.want) {
+			got := report.Merge(tt.args.another)
+			got.vulnerabilityItemList = nil
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Report.Merge() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestReportMarshalJSON(t *testing.T) {
+	assert := assert.New(t)
+
+	report := &Report{
+		GeneratedAt: "GeneratedAt",
+	}
+
+	b, _ := json.Marshal(report)
+	assert.Contains(string(b), "vulnerabilities")
+}
+
+func TestGetSummarySeverityAndByPassed(t *testing.T) {
+	assert := assert.New(t)
+
+	vul1 := &VulnerabilityItem{
+		ID:         "cve1",
+		Severity:   Low,
+		FixVersion: "1.3",
+	}
+
+	vul2 := &VulnerabilityItem{
+		ID:       "cve2",
+		Severity: Low,
+	}
+
+	vul3 := &VulnerabilityItem{
+		ID:       "cve3",
+		Severity: Medium,
+	}
+
+	l := VulnerabilityItemList{}
+	l.Add(vul1, vul2, vul3)
+
+	{
+		s := SeveritySummary{
+			Low:    2,
+			Medium: 1,
+		}
+
+		severity, sum, byPassed := l.GetSeveritySummaryAndByPassed(models2.CVESet{})
+		assert.Equal(3, sum.Total)
+		assert.Equal(1, sum.Fixable)
+		assert.Equal(s, sum.Summary)
+		assert.Equal(Medium, severity)
+		assert.Empty(byPassed)
+	}
+
+	{
+		s := SeveritySummary{
+			Low: 2,
+		}
+
+		cveSet := models2.CVESet{}
+		cveSet.Add("cve3")
+
+		severity, sum, byPassed := l.GetSeveritySummaryAndByPassed(cveSet)
+		assert.Equal(2, sum.Total)
+		assert.Equal(1, sum.Fixable)
+		assert.Equal(s, sum.Summary)
+		assert.Equal(Low, severity)
+		assert.NotEmpty(byPassed)
+		assert.Equal([]string{"cve3"}, byPassed)
 	}
 }

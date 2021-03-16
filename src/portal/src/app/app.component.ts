@@ -13,15 +13,13 @@
 // limitations under the License.
 import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-
 import { TranslateService } from '@ngx-translate/core';
-import { CookieService } from 'ngx-cookie';
-
-import { SessionService } from './shared/session.service';
 import { AppConfigService } from './services/app-config.service';
 import { ThemeService } from './services/theme.service';
 import { THEME_ARRAY, ThemeInterface } from './services/theme';
-import { clone } from '../lib/utils/utils';
+import { clone } from './shared/units/utils';
+import { DEFAULT_LANG_LOCALSTORAGE_KEY, DeFaultLang, supportedLangs } from "./shared/entities/shared.const";
+import { forkJoin, Observable } from "rxjs";
 
 const HAS_STYLE_MODE: string = 'styleModeLocal';
 
@@ -31,17 +29,16 @@ const HAS_STYLE_MODE: string = 'styleModeLocal';
 })
 export class AppComponent {
     themeArray: ThemeInterface[] = clone(THEME_ARRAY);
-
     styleMode: string = this.themeArray[0].showStyle;
     constructor(
         private translate: TranslateService,
-        private cookie: CookieService,
-        private session: SessionService,
         private appConfigService: AppConfigService,
         private titleService: Title,
         public theme: ThemeService
 
         ) {
+         // init language
+        this.initLanguage();
         // Override page title
         let key: string = "APP_TITLE.HARBOR";
         if (this.appConfigService.isIntegrationMode()) {
@@ -66,5 +63,38 @@ export class AppComponent {
                 this.theme.loadStyle(themeItem.currentFileName);
             }
         });
+    }
+    initLanguage() {
+        /**
+         * due to the bug(https://github.com/ngx-translate/core/issues/1258) of translate module
+         *  we have to call use method for all supported languages
+         *  use method will load related language json from backend server
+         */
+        const usedLangs: Array<Observable<any>> = [];
+        supportedLangs.forEach(lang => {
+            usedLangs.push(this.translate.use(lang));
+        });
+        forkJoin(usedLangs).subscribe(() => { // use target lang after all langs json loaded
+            this.translate.addLangs(supportedLangs);
+            this.translate.setDefaultLang(DeFaultLang);
+            let selectedLang: string = DeFaultLang;
+            if (localStorage && localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY)) {// If user has selected lang, then directly use it
+                selectedLang = localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY);
+            } else {// If user has not selected lang, then use browser language(if contained in supportedLangs)
+                const browserCultureLang: string = this.translate
+                    .getBrowserCultureLang()
+                    .toLowerCase();
+                if (browserCultureLang && browserCultureLang.trim() !== "") {
+                    if (supportedLangs && supportedLangs.length > 0) {
+                        if (supportedLangs.find(lang => lang === browserCultureLang)) {
+                            selectedLang = browserCultureLang;
+                        }
+                    }
+                }
+            }
+            localStorage.setItem(DEFAULT_LANG_LOCALSTORAGE_KEY, selectedLang);
+            this.translate.use(selectedLang);
+            }
+        );
     }
 }

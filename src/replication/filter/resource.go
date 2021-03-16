@@ -56,5 +56,34 @@ func DoFilterResources(resources []*model.Resource, filters []*model.Filter) ([]
 			Override:     resource.Override,
 		})
 	}
+
+	// remove this after we deprecate chart museum
+	return filterByResourceType(result, filters)
+}
+
+// After we deprecated chart museum, the resource types model.ResourceTypeArtifact and model.ResourceTypeChart
+// are useless, this function should be removed as well
+func filterByResourceType(resources []*model.Resource, filters []*model.Filter) ([]*model.Resource, error) {
+	var resourceType model.ResourceType
+	for _, filter := range filters {
+		if filter.Type == model.FilterTypeResource {
+			// model.ResourceTypeImage is handled by artifact filters in function "DoFilterResources"
+			if filter.Value.(model.ResourceType) == model.ResourceTypeArtifact || filter.Value.(model.ResourceType) == model.ResourceTypeChart {
+				resourceType = filter.Value.(model.ResourceType)
+			}
+			break
+		}
+	}
+	// no resource type, return the candidates directly
+	if len(resourceType) == 0 {
+		return resources, nil
+	}
+
+	var result []*model.Resource
+	for _, resource := range resources {
+		if resource.Type == resourceType {
+			result = append(result, resource)
+		}
+	}
 	return result, nil
 }

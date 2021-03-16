@@ -15,6 +15,8 @@
 package scanner
 
 import (
+	"context"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
@@ -23,29 +25,32 @@ import (
 
 // Manager defines the related scanner API endpoints
 type Manager interface {
+	// Count returns the total count of scanner registrations according to the query.
+	Count(ctx context.Context, query *q.Query) (int64, error)
+
 	// List returns a list of currently configured scanner registrations.
 	// Query parameters are optional
-	List(query *q.Query) ([]*scanner.Registration, error)
+	List(ctx context.Context, query *q.Query) ([]*scanner.Registration, error)
 
 	// Create creates a new scanner registration with the given data.
 	// Returns the scanner registration identifier.
-	Create(registration *scanner.Registration) (string, error)
+	Create(ctx context.Context, registration *scanner.Registration) (string, error)
 
 	// Get returns the details of the specified scanner registration.
-	Get(registrationUUID string) (*scanner.Registration, error)
+	Get(ctx context.Context, registrationUUID string) (*scanner.Registration, error)
 
 	// Update updates the specified scanner registration.
-	Update(registration *scanner.Registration) error
+	Update(ctx context.Context, registration *scanner.Registration) error
 
 	// Delete deletes the specified scanner registration.
-	Delete(registrationUUID string) error
+	Delete(ctx context.Context, registrationUUID string) error
 
 	// SetAsDefault marks the specified scanner registration as default.
 	// The implementation is supposed to unset any registration previously set as default.
-	SetAsDefault(registrationUUID string) error
+	SetAsDefault(ctx context.Context, registrationUUID string) error
 
 	// GetDefault returns the default scanner registration or `nil` if there are no registrations configured.
-	GetDefault() (*scanner.Registration, error)
+	GetDefault(ctx context.Context) (*scanner.Registration, error)
 }
 
 // basicManager is the default implementation of Manager
@@ -56,8 +61,12 @@ func New() Manager {
 	return &basicManager{}
 }
 
+func (bm *basicManager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return scanner.GetTotalOfRegistrations(ctx, query)
+}
+
 // Create ...
-func (bm *basicManager) Create(registration *scanner.Registration) (string, error) {
+func (bm *basicManager) Create(ctx context.Context, registration *scanner.Registration) (string, error) {
 	if registration == nil {
 		return "", errors.New("nil registration to create")
 	}
@@ -73,7 +82,7 @@ func (bm *basicManager) Create(registration *scanner.Registration) (string, erro
 		return "", errors.Wrap(err, "create registration")
 	}
 
-	if _, err := scanner.AddRegistration(registration); err != nil {
+	if _, err := scanner.AddRegistration(ctx, registration); err != nil {
 		return "", errors.Wrap(err, "dao: create registration")
 	}
 
@@ -81,16 +90,16 @@ func (bm *basicManager) Create(registration *scanner.Registration) (string, erro
 }
 
 // Get ...
-func (bm *basicManager) Get(registrationUUID string) (*scanner.Registration, error) {
+func (bm *basicManager) Get(ctx context.Context, registrationUUID string) (*scanner.Registration, error) {
 	if len(registrationUUID) == 0 {
 		return nil, errors.New("empty uuid of registration")
 	}
 
-	return scanner.GetRegistration(registrationUUID)
+	return scanner.GetRegistration(ctx, registrationUUID)
 }
 
 // Update ...
-func (bm *basicManager) Update(registration *scanner.Registration) error {
+func (bm *basicManager) Update(ctx context.Context, registration *scanner.Registration) error {
 	if registration == nil {
 		return errors.New("nil registration to update")
 	}
@@ -99,33 +108,33 @@ func (bm *basicManager) Update(registration *scanner.Registration) error {
 		return errors.Wrap(err, "update registration")
 	}
 
-	return scanner.UpdateRegistration(registration)
+	return scanner.UpdateRegistration(ctx, registration)
 }
 
 // Delete ...
-func (bm *basicManager) Delete(registrationUUID string) error {
+func (bm *basicManager) Delete(ctx context.Context, registrationUUID string) error {
 	if len(registrationUUID) == 0 {
 		return errors.New("empty UUID to delete")
 	}
 
-	return scanner.DeleteRegistration(registrationUUID)
+	return scanner.DeleteRegistration(ctx, registrationUUID)
 }
 
 // List ...
-func (bm *basicManager) List(query *q.Query) ([]*scanner.Registration, error) {
-	return scanner.ListRegistrations(query)
+func (bm *basicManager) List(ctx context.Context, query *q.Query) ([]*scanner.Registration, error) {
+	return scanner.ListRegistrations(ctx, query)
 }
 
 // SetAsDefault ...
-func (bm *basicManager) SetAsDefault(registrationUUID string) error {
+func (bm *basicManager) SetAsDefault(ctx context.Context, registrationUUID string) error {
 	if len(registrationUUID) == 0 {
 		return errors.New("empty UUID to set default")
 	}
 
-	return scanner.SetDefaultRegistration(registrationUUID)
+	return scanner.SetDefaultRegistration(ctx, registrationUUID)
 }
 
 // GetDefault ...
-func (bm *basicManager) GetDefault() (*scanner.Registration, error) {
-	return scanner.GetDefaultRegistration()
+func (bm *basicManager) GetDefault(ctx context.Context) (*scanner.Registration, error) {
+	return scanner.GetDefaultRegistration(ctx)
 }

@@ -3,16 +3,15 @@
 package scan
 
 import (
-	artifact "github.com/goharbor/harbor/src/controller/artifact"
-	all "github.com/goharbor/harbor/src/pkg/scan/all"
-
 	context "context"
+
+	artifact "github.com/goharbor/harbor/src/controller/artifact"
 
 	daoscan "github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 
-	job "github.com/goharbor/harbor/src/jobservice/job"
-
 	mock "github.com/stretchr/testify/mock"
+
+	pkgscan "github.com/goharbor/harbor/src/pkg/scan"
 
 	report "github.com/goharbor/harbor/src/pkg/scan/report"
 
@@ -24,19 +23,20 @@ type Controller struct {
 	mock.Mock
 }
 
-// DeleteReports provides a mock function with given fields: digests
-func (_m *Controller) DeleteReports(digests ...string) error {
+// DeleteReports provides a mock function with given fields: ctx, digests
+func (_m *Controller) DeleteReports(ctx context.Context, digests ...string) error {
 	_va := make([]interface{}, len(digests))
 	for _i := range digests {
 		_va[_i] = digests[_i]
 	}
 	var _ca []interface{}
+	_ca = append(_ca, ctx)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(...string) error); ok {
-		r0 = rf(digests...)
+	if rf, ok := ret.Get(0).(func(context.Context, ...string) error); ok {
+		r0 = rf(ctx, digests...)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -67,13 +67,13 @@ func (_m *Controller) GetReport(ctx context.Context, _a1 *artifact.Artifact, mim
 	return r0, r1
 }
 
-// GetScanLog provides a mock function with given fields: uuid
-func (_m *Controller) GetScanLog(uuid string) ([]byte, error) {
-	ret := _m.Called(uuid)
+// GetScanLog provides a mock function with given fields: ctx, uuid
+func (_m *Controller) GetScanLog(ctx context.Context, uuid string) ([]byte, error) {
+	ret := _m.Called(ctx, uuid)
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func(string) []byte); ok {
-		r0 = rf(uuid)
+	if rf, ok := ret.Get(0).(func(context.Context, string) []byte); ok {
+		r0 = rf(ctx, uuid)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -81,31 +81,8 @@ func (_m *Controller) GetScanLog(uuid string) ([]byte, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(uuid)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetStats provides a mock function with given fields: requester
-func (_m *Controller) GetStats(requester string) (*all.Stats, error) {
-	ret := _m.Called(requester)
-
-	var r0 *all.Stats
-	if rf, ok := ret.Get(0).(func(string) *all.Stats); ok {
-		r0 = rf(requester)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*all.Stats)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(requester)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, uuid)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -143,20 +120,6 @@ func (_m *Controller) GetSummary(ctx context.Context, _a1 *artifact.Artifact, mi
 	return r0, r1
 }
 
-// HandleJobHooks provides a mock function with given fields: trackID, change
-func (_m *Controller) HandleJobHooks(trackID string, change *job.StatusChange) error {
-	ret := _m.Called(trackID, change)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, *job.StatusChange) error); ok {
-		r0 = rf(trackID, change)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // Scan provides a mock function with given fields: ctx, _a1, options
 func (_m *Controller) Scan(ctx context.Context, _a1 *artifact.Artifact, options ...scan.Option) error {
 	_va := make([]interface{}, len(options))
@@ -171,6 +134,41 @@ func (_m *Controller) Scan(ctx context.Context, _a1 *artifact.Artifact, options 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, *artifact.Artifact, ...scan.Option) error); ok {
 		r0 = rf(ctx, _a1, options...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// ScanAll provides a mock function with given fields: ctx, trigger, async
+func (_m *Controller) ScanAll(ctx context.Context, trigger string, async bool) (int64, error) {
+	ret := _m.Called(ctx, trigger, async)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) int64); ok {
+		r0 = rf(ctx, trigger, async)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, bool) error); ok {
+		r1 = rf(ctx, trigger, async)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateReport provides a mock function with given fields: ctx, _a1
+func (_m *Controller) UpdateReport(ctx context.Context, _a1 *pkgscan.CheckInReport) error {
+	ret := _m.Called(ctx, _a1)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *pkgscan.CheckInReport) error); ok {
+		r0 = rf(ctx, _a1)
 	} else {
 		r0 = ret.Error(0)
 	}

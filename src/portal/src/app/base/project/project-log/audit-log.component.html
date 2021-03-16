@@ -1,0 +1,55 @@
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 reverse-row log-top">
+        <div class="row flex-items-xs-right option-right display-f">
+            <div class="flex-xs-middle">
+                <button class="btn btn-link" (click)="toggleOptionalName(currentOption)">{{toggleName[currentOption] | translate}}</button>
+                <hbr-filter [withDivider]="true" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doSearchAuditLogs($event)"></hbr-filter>
+                <span class="refresh-btn" (click)="refresh()">
+                    <clr-icon shape="refresh"></clr-icon>
+                </span>
+            </div>
+        </div>
+        <div class="row flex-items-xs-right row-right" [hidden]="currentOption === 0">
+            <clr-dropdown>
+                <button class="btn btn-link" clrDropdownToggle>
+                    {{'AUDIT_LOG.OPERATIONS' | translate}}
+                  <clr-icon shape="caret down"></clr-icon>
+                </button>
+                <clr-dropdown-menu [clrPosition]="'bottom-left'" *clrIfOpen>
+                    <a href="javascript:void(0)" clrDropdownItem *ngFor="let f of filterOptions" (click)="toggleFilterOption(f.key)">
+                        <clr-icon shape="check" [hidden]="!f.checked"></clr-icon>
+                        <ng-template [ngIf]="!f.checked"><span class="check-span"></span></ng-template>
+                        {{f.description | translate}}
+                    </a>
+                </clr-dropdown-menu>
+            </clr-dropdown>
+            <div class="flex-xs-middle">
+                <hbr-datetime [dateInput]="search.startTime" (search)="doSearchByStartTime($event)"></hbr-datetime>
+                <hbr-datetime [dateInput]="search.endTime" [oneDayOffset]="true" (search)="doSearchByEndTime($event)"></hbr-datetime>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 datagrid-margin-top ">
+        <clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="retrieve($event)">
+            <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.RESOURCE' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.RESOURCE_TYPE' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
+            <clr-dg-row *ngFor="let l of auditLogs">
+                <clr-dg-cell>{{l.username}}</clr-dg-cell>
+                <clr-dg-cell>{{l.resource}}</clr-dg-cell>
+                <clr-dg-cell>{{l.resource_type}}</clr-dg-cell>
+                <clr-dg-cell>{{l.operation}}</clr-dg-cell>
+                <clr-dg-cell>{{l.op_time | harborDatetime: 'short'}}</clr-dg-cell>
+            </clr-dg-row>
+            <clr-dg-footer>
+
+                <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalRecordCount">
+                    <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+                    <span *ngIf="showPaginationIndex">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'AUDIT_LOG.OF' | translate}} </span> {{totalRecordCount }} {{'AUDIT_LOG.ITEMS' | translate}}
+                </clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
+</div>

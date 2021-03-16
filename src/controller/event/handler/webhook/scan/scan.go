@@ -110,17 +110,17 @@ func constructScanImagePayload(event *event.ScanImageEvent, project *models.Proj
 		Operator: event.Operator,
 	}
 
-	resURL, err := util.BuildImageResourceURL(event.Artifact.Repository, event.Artifact.Tag)
+	reference := event.Artifact.Digest
+	if reference == "" {
+		reference = event.Artifact.Tag
+	}
+
+	resURL, err := util.BuildImageResourceURL(event.Artifact.Repository, reference)
 	if err != nil {
 		return nil, errors.Wrap(err, "construct scan payload")
 	}
 
 	ctx := orm.NewContext(context.TODO(), o.NewOrm())
-
-	reference := event.Artifact.Digest
-	if reference == "" {
-		reference = event.Artifact.Tag
-	}
 
 	art, err := artifact.Ctl.GetByReference(ctx, event.Artifact.Repository, event.Artifact.Digest, nil)
 	if err != nil {
@@ -131,7 +131,7 @@ func constructScanImagePayload(event *event.ScanImageEvent, project *models.Proj
 	// If the report is still not ready in the total time, then failed at then
 	for i := 0; i < 10; i++ {
 		// First check in case it is ready
-		if re, err := scan.DefaultController.GetReport(ctx, art, []string{v1.MimeTypeNativeReport}); err == nil {
+		if re, err := scan.DefaultController.GetReport(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport}); err == nil {
 			if len(re) > 0 && len(re[0].Report) > 0 {
 				break
 			}
@@ -143,7 +143,7 @@ func constructScanImagePayload(event *event.ScanImageEvent, project *models.Proj
 	}
 
 	// Add scan overview
-	summaries, err := scan.DefaultController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport})
+	summaries, err := scan.DefaultController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport})
 	if err != nil {
 		return nil, errors.Wrap(err, "construct scan payload")
 	}

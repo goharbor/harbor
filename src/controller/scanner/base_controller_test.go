@@ -15,14 +15,15 @@
 package scanner
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	mocktesting "github.com/goharbor/harbor/src/testing/mock"
+	metadatatesting "github.com/goharbor/harbor/src/testing/pkg/project/metadata"
 	v1testing "github.com/goharbor/harbor/src/testing/pkg/scan/rest/v1"
 	scannertesting "github.com/goharbor/harbor/src/testing/pkg/scan/scanner"
 	"github.com/stretchr/testify/assert"
@@ -37,7 +38,7 @@ type ControllerTestSuite struct {
 
 	c     *basicController
 	mMgr  *scannertesting.Manager
-	mMeta *MockProMetaManager
+	mMeta *metadatatesting.Manager
 
 	sample *scanner.Registration
 }
@@ -50,11 +51,11 @@ func TestController(t *testing.T) {
 // SetupTest prepares env for the controller test suite
 func (suite *ControllerTestSuite) SetupTest() {
 	suite.mMgr = &scannertesting.Manager{}
-	suite.mMeta = new(MockProMetaManager)
+	suite.mMeta = &metadatatesting.Manager{}
 
 	m := &v1.ScannerAdapterMetadata{
 		Scanner: &v1.Scanner{
-			Name:    "Clair",
+			Name:    "Trivy",
 			Vendor:  "Harbor",
 			Version: "0.1.0",
 		},
@@ -66,6 +67,7 @@ func (suite *ControllerTestSuite) SetupTest() {
 			ProducesMimeTypes: []string{
 				v1.MimeTypeNativeReport,
 				v1.MimeTypeRawReport,
+				v1.MimeTypeGenericVulnerabilityReport,
 			},
 		}},
 		Properties: v1.ScannerProperties{
@@ -106,18 +108,18 @@ func (suite *ControllerTestSuite) TestListRegistrations() {
 	suite.sample.UUID = "uuid"
 	l := []*scanner.Registration{suite.sample}
 
-	suite.mMgr.On("List", query).Return(l, nil)
+	suite.mMgr.On("List", mock.Anything, query).Return(l, nil)
 
-	rl, err := suite.c.ListRegistrations(query)
+	rl, err := suite.c.ListRegistrations(context.TODO(), query)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(rl))
 }
 
 // TestCreateRegistration tests CreateRegistration
 func (suite *ControllerTestSuite) TestCreateRegistration() {
-	suite.mMgr.On("Create", suite.sample).Return("uuid", nil)
+	suite.mMgr.On("Create", mock.Anything, suite.sample).Return("uuid", nil)
 
-	uid, err := suite.mMgr.Create(suite.sample)
+	uid, err := suite.mMgr.Create(context.TODO(), suite.sample)
 
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), uid, "uuid")
@@ -126,9 +128,9 @@ func (suite *ControllerTestSuite) TestCreateRegistration() {
 // TestGetRegistration tests GetRegistration
 func (suite *ControllerTestSuite) TestGetRegistration() {
 	suite.sample.UUID = "uuid"
-	suite.mMgr.On("Get", "uuid").Return(suite.sample, nil)
+	suite.mMgr.On("Get", mock.Anything, "uuid").Return(suite.sample, nil)
 
-	rr, err := suite.c.GetRegistration("uuid")
+	rr, err := suite.c.GetRegistration(context.TODO(), "uuid")
 	require.NoError(suite.T(), err)
 	assert.NotNil(suite.T(), rr)
 	assert.Equal(suite.T(), "forUT", rr.Name)
@@ -137,33 +139,33 @@ func (suite *ControllerTestSuite) TestGetRegistration() {
 // TestRegistrationExists tests RegistrationExists
 func (suite *ControllerTestSuite) TestRegistrationExists() {
 	suite.sample.UUID = "uuid"
-	suite.mMgr.On("Get", "uuid").Return(suite.sample, nil)
+	suite.mMgr.On("Get", mock.Anything, "uuid").Return(suite.sample, nil)
 
-	exists := suite.c.RegistrationExists("uuid")
+	exists := suite.c.RegistrationExists(context.TODO(), "uuid")
 	assert.Equal(suite.T(), true, exists)
 
-	suite.mMgr.On("Get", "uuid2").Return(nil, nil)
+	suite.mMgr.On("Get", mock.Anything, "uuid2").Return(nil, nil)
 
-	exists = suite.c.RegistrationExists("uuid2")
+	exists = suite.c.RegistrationExists(context.TODO(), "uuid2")
 	assert.Equal(suite.T(), false, exists)
 }
 
 // TestUpdateRegistration tests UpdateRegistration
 func (suite *ControllerTestSuite) TestUpdateRegistration() {
 	suite.sample.UUID = "uuid"
-	suite.mMgr.On("Update", suite.sample).Return(nil)
+	suite.mMgr.On("Update", mock.Anything, suite.sample).Return(nil)
 
-	err := suite.c.UpdateRegistration(suite.sample)
+	err := suite.c.UpdateRegistration(context.TODO(), suite.sample)
 	require.NoError(suite.T(), err)
 }
 
 // TestDeleteRegistration tests DeleteRegistration
 func (suite *ControllerTestSuite) TestDeleteRegistration() {
 	suite.sample.UUID = "uuid"
-	suite.mMgr.On("Get", "uuid").Return(suite.sample, nil)
-	suite.mMgr.On("Delete", "uuid").Return(nil)
+	suite.mMgr.On("Get", mock.Anything, "uuid").Return(suite.sample, nil)
+	suite.mMgr.On("Delete", mock.Anything, "uuid").Return(nil)
 
-	r, err := suite.c.DeleteRegistration("uuid")
+	r, err := suite.c.DeleteRegistration(context.TODO(), "uuid")
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), r)
 	assert.Equal(suite.T(), "forUT", r.Name)
@@ -171,9 +173,9 @@ func (suite *ControllerTestSuite) TestDeleteRegistration() {
 
 // TestSetDefaultRegistration tests SetDefaultRegistration
 func (suite *ControllerTestSuite) TestSetDefaultRegistration() {
-	suite.mMgr.On("SetAsDefault", "uuid").Return(nil)
+	suite.mMgr.On("SetAsDefault", mock.Anything, "uuid").Return(nil)
 
-	err := suite.c.SetDefaultRegistration("uuid")
+	err := suite.c.SetDefaultRegistration(context.TODO(), "uuid")
 	require.NoError(suite.T(), err)
 }
 
@@ -188,17 +190,17 @@ func (suite *ControllerTestSuite) TestSetRegistrationByProject() {
 	var pid, pid2 int64 = 1, 2
 
 	// not set before
-	suite.mMeta.On("Get", pid, []string{proScannerMetaKey}).Return(m, nil)
-	suite.mMeta.On("Add", pid, mm).Return(nil)
+	suite.mMeta.On("Get", mock.Anything, pid, proScannerMetaKey).Return(m, nil)
+	suite.mMeta.On("Add", mock.Anything, pid, mm).Return(nil)
 
-	err := suite.c.SetRegistrationByProject(pid, "uuid")
+	err := suite.c.SetRegistrationByProject(context.TODO(), pid, "uuid")
 	require.NoError(suite.T(), err)
 
 	// Set before
-	suite.mMeta.On("Get", pid2, []string{proScannerMetaKey}).Return(mm, nil)
-	suite.mMeta.On("Update", pid2, mmm).Return(nil)
+	suite.mMeta.On("Get", mock.Anything, pid2, proScannerMetaKey).Return(mm, nil)
+	suite.mMeta.On("Update", mock.Anything, pid2, mmm).Return(nil)
 
-	err = suite.c.SetRegistrationByProject(pid2, "uuid2")
+	err = suite.c.SetRegistrationByProject(context.TODO(), pid2, "uuid2")
 	require.NoError(suite.T(), err)
 }
 
@@ -211,18 +213,18 @@ func (suite *ControllerTestSuite) TestGetRegistrationByProject() {
 	var pid int64 = 1
 	suite.sample.UUID = "uuid"
 
-	suite.mMeta.On("Get", pid, []string{proScannerMetaKey}).Return(m, nil)
-	suite.mMgr.On("Get", "uuid").Return(suite.sample, nil)
+	suite.mMeta.On("Get", mock.Anything, pid, proScannerMetaKey).Return(m, nil)
+	suite.mMgr.On("Get", mock.Anything, "uuid").Return(suite.sample, nil)
 
-	r, err := suite.c.GetRegistrationByProject(pid)
+	r, err := suite.c.GetRegistrationByProject(context.TODO(), pid)
 	require.NoError(suite.T(), err)
 	require.Equal(suite.T(), "forUT", r.Name)
 
 	// Not configured at project level, return system default
-	suite.mMeta.On("Get", pid, []string{proScannerMetaKey}).Return(nil, nil)
-	suite.mMgr.On("GetDefault").Return(suite.sample, nil)
+	suite.mMeta.On("Get", mock.Anything, pid, proScannerMetaKey).Return(nil, nil)
+	suite.mMgr.On("GetDefault", mock.Anything).Return(suite.sample, nil)
 
-	r, err = suite.c.GetRegistrationByProject(pid)
+	r, err = suite.c.GetRegistrationByProject(context.TODO(), pid)
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), r)
 	assert.Equal(suite.T(), "forUT", r.Name)
@@ -237,8 +239,8 @@ func (suite *ControllerTestSuite) TestGetRegistrationByProjectWhenPingError() {
 	var pid int64 = 1
 	suite.sample.UUID = "uuid"
 
-	suite.mMeta.On("Get", pid, []string{proScannerMetaKey}).Return(m, nil)
-	suite.mMgr.On("Get", "uuid").Return(suite.sample, nil)
+	suite.mMeta.On("Get", mock.Anything, pid, proScannerMetaKey).Return(m, nil)
+	suite.mMgr.On("Get", mock.Anything, "uuid").Return(suite.sample, nil)
 
 	// Ping error
 	mc := &v1testing.Client{}
@@ -248,14 +250,51 @@ func (suite *ControllerTestSuite) TestGetRegistrationByProjectWhenPingError() {
 	mocktesting.OnAnything(mcp, "Get").Return(mc, nil)
 	suite.c.clientPool = mcp
 
-	r, err := suite.c.GetRegistrationByProject(pid)
+	r, err := suite.c.GetRegistrationByProject(context.TODO(), pid)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), "unhealthy", r.Health)
 }
 
 // TestPing ...
 func (suite *ControllerTestSuite) TestPing() {
-	meta, err := suite.c.Ping(suite.sample)
+	meta, err := suite.c.Ping(context.TODO(), suite.sample)
+	require.NoError(suite.T(), err)
+	suite.NotNil(meta)
+}
+
+// TestPingWithGenericMimeType tests ping for scanners supporting MIME type MimeTypeGenericVulnerabilityReport
+func (suite *ControllerTestSuite) TestPingWithGenericMimeType() {
+	m := &v1.ScannerAdapterMetadata{
+		Scanner: &v1.Scanner{
+			Name:    "Trivy",
+			Vendor:  "Harbor",
+			Version: "0.1.0",
+		},
+		Capabilities: []*v1.ScannerCapability{{
+			ConsumesMimeTypes: []string{
+				v1.MimeTypeOCIArtifact,
+				v1.MimeTypeDockerArtifact,
+			},
+			ProducesMimeTypes: []string{
+				v1.MimeTypeGenericVulnerabilityReport,
+				v1.MimeTypeRawReport,
+			},
+		}},
+		Properties: v1.ScannerProperties{
+			"extra": "testing",
+		},
+	}
+	mc := &v1testing.Client{}
+	mc.On("GetMetadata").Return(m, nil)
+
+	mcp := &v1testing.ClientPool{}
+	mocktesting.OnAnything(mcp, "Get").Return(mc, nil)
+	suite.c = &basicController{
+		manager:    suite.mMgr,
+		proMetaMgr: suite.mMeta,
+		clientPool: mcp,
+	}
+	meta, err := suite.c.Ping(context.TODO(), suite.sample)
 	require.NoError(suite.T(), err)
 	suite.NotNil(meta)
 }
@@ -263,45 +302,10 @@ func (suite *ControllerTestSuite) TestPing() {
 // TestGetMetadata ...
 func (suite *ControllerTestSuite) TestGetMetadata() {
 	suite.sample.UUID = "uuid"
-	suite.mMgr.On("Get", "uuid").Return(suite.sample, nil)
+	suite.mMgr.On("Get", mock.Anything, "uuid").Return(suite.sample, nil)
 
-	meta, err := suite.c.GetMetadata(suite.sample.UUID)
+	meta, err := suite.c.GetMetadata(context.TODO(), suite.sample.UUID)
 	require.NoError(suite.T(), err)
 	suite.NotNil(meta)
 	suite.Equal(1, len(meta.Capabilities))
-}
-
-// MockProMetaManager is the mock of the ProjectMetadataManager
-type MockProMetaManager struct {
-	mock.Mock
-}
-
-// Add ...
-func (m *MockProMetaManager) Add(projectID int64, meta map[string]string) error {
-	args := m.Called(projectID, meta)
-	return args.Error(0)
-}
-
-// Delete ...
-func (m *MockProMetaManager) Delete(projecdtID int64, meta ...string) error {
-	args := m.Called(projecdtID, meta)
-	return args.Error(0)
-}
-
-// Update ...
-func (m *MockProMetaManager) Update(projectID int64, meta map[string]string) error {
-	args := m.Called(projectID, meta)
-	return args.Error(0)
-}
-
-// Get ...
-func (m *MockProMetaManager) Get(projectID int64, meta ...string) (map[string]string, error) {
-	args := m.Called(projectID, meta)
-	return args.Get(0).(map[string]string), args.Error(1)
-}
-
-// List ...
-func (m *MockProMetaManager) List(name, value string) ([]*models.ProjectMetadata, error) {
-	args := m.Called(name, value)
-	return args.Get(0).([]*models.ProjectMetadata), args.Error(1)
 }

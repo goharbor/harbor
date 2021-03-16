@@ -50,3 +50,44 @@ func TestConfigStore_Load(t *testing.T) {
 	assert.Equal(t, "ldap://ldap.vmware.com", cfgValue.GetString())
 
 }
+
+func TestToString(t *testing.T) {
+	cases := []struct {
+		name   string
+		value  interface{}
+		expect string
+	}{
+		{
+			name:   "transform int",
+			value:  999,
+			expect: "999",
+		},
+		{
+			name:   "transform slice",
+			value:  []int{0, 1, 2},
+			expect: "[0,1,2]",
+		},
+		{
+			name:   "transform map",
+			value:  map[string]string{"k": "v"},
+			expect: "{\"k\":\"v\"}",
+		},
+		{
+			name:   "transform bool",
+			value:  false,
+			expect: "false",
+		},
+		{
+			name:   "transform nil",
+			value:  nil,
+			expect: "nil",
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			s, err := toString(c.value)
+			assert.Nil(t, err)
+			assert.Equal(t, c.expect, s)
+		})
+	}
+}

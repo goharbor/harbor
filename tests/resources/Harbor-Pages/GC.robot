@@ -22,9 +22,7 @@ Resource  ../../resources/Util.robot
 GC Now
     [Arguments]  ${harbor_url}  ${login_user}  ${login_pwd}  ${untag}=${false}
     Switch To Garbage Collection
-    Capture Page Screenshot
     Run Keyword If  '${untag}' == '${true}'  Retry Element Click  xpath=${checkbox_delete_untagged_artifacts}
-    Capture Page Screenshot
     Click GC Now
     Logout Harbor
     Sleep  2
@@ -41,7 +39,15 @@ Retry GC Should Be Successful
 GC Should Be Successful
     [Arguments]  ${history_id}  ${expected_msg}
     ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -i --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/system/gc/${history_id}/log"
-    Log To Console  ${output}
+    Log All  ${output}
     Should Be Equal As Integers  ${rc}  0
     Run Keyword If  '${expected_msg}' != '${null}'  Should Contain  ${output}  ${expected_msg}
     Should Contain  ${output}  success to run gc in job.
+
+Get GC Logs
+    [Arguments]
+    ${cmd}=  Set Variable  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/system/gc"
+    Log All  cmd:${cmd}
+    ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
+    Log All  ${output}
+    [Return]  ${output}

@@ -16,6 +16,7 @@ package policy
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
@@ -148,7 +149,7 @@ func (suite *TestBuilderSuite) TestBuild() {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), p)
 
-	results, err := p.Process(suite.all)
+	results, err := p.Process(orm.Context(), suite.all)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(results))
 	assert.Condition(suite.T(), func() (success bool) {

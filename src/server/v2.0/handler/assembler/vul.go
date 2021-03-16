@@ -20,7 +20,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 )
 
@@ -29,12 +28,13 @@ const (
 )
 
 // NewVulAssembler returns vul assembler
-func NewVulAssembler(withScanOverview bool) *VulAssembler {
+func NewVulAssembler(withScanOverview bool, mimeTypes []string) *VulAssembler {
 	return &VulAssembler{
 		scanChecker: scan.NewChecker(),
 		scanCtl:     scan.DefaultController,
 
 		withScanOverview: withScanOverview,
+		mimeTypes:        mimeTypes,
 	}
 }
 
@@ -45,6 +45,7 @@ type VulAssembler struct {
 
 	artifacts        []*model.Artifact
 	withScanOverview bool
+	mimeTypes        []string
 }
 
 // WithArtifacts set artifacts for the assembler
@@ -72,11 +73,14 @@ func (assembler *VulAssembler) Assemble(ctx context.Context) error {
 		artifact.SetAdditionLink(vulnerabilitiesAddition, version)
 
 		if assembler.withScanOverview {
-			overview, err := assembler.scanCtl.GetSummary(ctx, &artifact.Artifact, []string{v1.MimeTypeNativeReport})
-			if err != nil {
-				log.Warningf("get scan summary of artifact %s@%s failed, error:%v", artifact.RepositoryName, artifact.Digest, err)
-			} else if len(overview) > 0 {
-				artifact.ScanOverview = overview
+			for _, mimeType := range assembler.mimeTypes {
+				overview, err := assembler.scanCtl.GetSummary(ctx, &artifact.Artifact, []string{mimeType})
+				if err != nil {
+					log.Warningf("get scan summary of artifact %s@%s for %s failed, error:%v", artifact.RepositoryName, artifact.Digest, mimeType, err)
+				} else if len(overview) > 0 {
+					artifact.ScanOverview = overview
+					break
+				}
 			}
 		}
 	}

@@ -96,7 +96,7 @@
         "NONEMPTY": "Boş olamaz",
         "REPO_TOOLTIP": "Kullanıcılar bu moddaki görüntülerde hiçbir işlem yapamazlar.",
         "ENDPOINT_FORMAT": "Bitiş noktası HTTP: // veya HTTPS: // ile başlamalıdır.",
-        "OIDC_ENDPOIT_FORMAT": "Bitiş noktası HTTPS: // ile başlamalıdır.",
+        "OIDC_ENDPOINT_FORMAT": "Bitiş noktası HTTPS: // ile başlamalıdır.",
         "OIDC_NAME": "OIDC sağlayıcısının adı.",
         "OIDC_ENDPOINT": "Bir OIDC şikayet sunucusunun URL'si.",
         "OIDC_SCOPE": "Kapsam, kimlik doğrulama sırasında OIDC sunucusuna gönderildi. “Openid” ve “offline_access” içermelidir. Google kullanıyorsanız, lütfen “offline_access“'i bu alandan kaldırın.",
@@ -133,8 +133,8 @@
         "CLI_PASSWORD_TIP": "Harbour'a erişmek için docker / helm cli kullanırken bu cli sırrını şifre olarak kullanabilirsiniz.",
         "COPY_SUCCESS": "kopyalama başarılı",
         "COPY_ERROR": "kopyalama başarısız",
-        "ADMIN_CIL_SECRET_BUTTON": "ŞİFRE OLUŞTUR",
-        "ADMIN_CIL_SECRET_RESET_BUTTON": "Upload Your Own Secret",
+        "ADMIN_CLI_SECRET_BUTTON": "ŞİFRE OLUŞTUR",
+        "ADMIN_CLI_SECRET_RESET_BUTTON": "Upload Your Own Secret",
         "NEW_SECRET": "Secret",
         "CONFIRM_SECRET": "Re-enter Secret",
         "GENERATE_SUCCESS": "Cli secret setting is successful",
@@ -203,8 +203,10 @@
         "DELETE_SUCCESS": "Kullanıcılar başarıyla silindi.",
         "ITEMS": "ürün",
         "OF": "of",
-        "RESET_Ok": "Kullanıcılar parola başarıyla sıfırlandı",
-        "EXISTING_PASSWORD": "Yeni şifre eskisi ile aynı olamaz"
+        "RESET_OK": "Kullanıcılar parola başarıyla sıfırlandı",
+        "EXISTING_PASSWORD": "Yeni şifre eskisi ile aynı olamaz",
+        "UNKNOWN": "Unknown",
+        "UNKNOWN_TIP": "Please verify whether the user has admin status through the Identity Provider System if the value is \"Unknown\""
     },
     "PROJECT": {
         "PROJECTS": "Projeler",
@@ -248,7 +250,7 @@
         "QUOTA_UNLIMIT_TIP": "Bu kotayı sınırsız istiyorsanız, lütfen -1 girin.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub and Harbor registries.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Harbor, Aws ECR, Azure ACR, Quay and Google GCR registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
     },
@@ -367,7 +369,9 @@
         "EXPIRES_AT": "Expires At",
         "EXPIRATION_TOOLTIP": "If not set, the expiration time of system configuration will be used",
         "INVALID_VALUE": "The value of the expiration time is invalid",
-        "NEVER_EXPIRED": "Never Expired"
+        "NEVER_EXPIRED": "Never Expired",
+        "NAME_PREFIX": "Robot Name Prefix",
+        "NAME_PREFIX_REQUIRED": "Robot name prefix is required"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "DÜZENLE",
@@ -616,7 +620,15 @@
         "NAMESPACE_TOOLTIP": "İsim alanı ismi en az 2 karakter uzunluğunda, küçük harfli karakterler, sayılar ve ._- ile başlamalı ve karakter veya sayılarla başlamalıdır. Ad alanı adı en az 2 karakter uzunluğunda, küçük harf, rakam ve ._- ile başlamalı ve karakter veya rakamlarla başlamalıdır.",
         "TAG": "Etiketlemek",
         "LABEL": "Etiket",
-        "RESOURCE": "Kaynak"
+        "RESOURCE": "Kaynak",
+        "ENABLE_TITLE": "Enable rule",
+        "ENABLE_SUMMARY": "Do you want to enable rule {{param}}?",
+        "DISABLE_TITLE": "Disable rule",
+        "DISABLE_SUMMARY": "Do you want to disable rule {{param}}?",
+        "ENABLE_SUCCESS": "Enabled rule successfully",
+        "ENABLE_FAILED": "Enabling rule failed",
+        "DISABLE_SUCCESS": "Disabled rule successfully",
+        "DISABLE_FAILED": "Disabling rule failed"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Yeni Uç Nokta",
@@ -650,7 +662,8 @@
         "DELETED_FAILED": "Silinen uç noktalar başarısız oldu.",
         "CANNOT_EDIT": "Çoğaltma kuralı etkinken uç noktası değiştirilemez.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Kullanılan uç nokta silinemedi.",
-        "PLACEHOLDER": "Uç noktaları bulamadık!"
+        "PLACEHOLDER": "Uç noktaları bulamadık!",
+        "DEPRECATED": "Helm Hub is moving to Artifact Hub"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Özet Kopyala",
@@ -839,7 +852,7 @@
         "AUTH_MODE_DB": "Veritabanı",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
-        "AUTH_MODE_HTTP": "http_auth",
+        "AUTH_MODE_HTTP": "Http Auth",
         "AUTH_MODE_OIDC": "OIDC",
         "SCOPE_BASE": "Temel",
         "SCOPE_ONE_LEVEL": "İlk Seviye",
@@ -860,6 +873,7 @@
             "LDAP_UID": "Bir kullanıcıyla eşleşmek için aramada kullanılan özellik. LDAP / AD'nize bağlı olarak, kullanıcı kimliği, cn, e-posta, sAMAccountName veya diğer özellikler olabilir.",
             "LDAP_SCOPE": "Kullanıcıları aramak için kapsam.",
             "TOKEN_EXPIRATION": "Token servisi tarafından oluşturulan bir tokenın sona erme süresi (dakika cinsinden). Varsayılan 30 dakikadır.",
+            "ROBOT_NAME_PREFIX": "Prefixed string for each robot name,and default value is 'robot$'",
             "ROBOT_TOKEN_EXPIRATION": "Robot hesabının token son kullanma süresi (gün olarak), Varsayılan 30 gündür. Dakika ve yuvarlamadan dönüştürülen gün sayısını göster",
             "PRO_CREATION_RESTRICTION": "Hangi kullanıcıların proje oluşturma iznine sahip olduğunu belirten bayrak. Varsayılan olarak, herkes bir proje oluşturabilir. 'Yalnızca Yönetici' olarak ayarlayın, böylece yalnızca bir yönetici bir proje oluşturabilir.",
             "ROOT_CERT_DOWNLOAD": "Kayıt defteri kök sertifikasını indirin.",
@@ -904,7 +918,8 @@
             "ENDPOINT": "Sunucu Uç Noktası",
             "TOKEN_REVIEW": "Token Uç Noktasını İnceleyin",
             "SKIP_SEARCH": "Aramayı Atla",
-            "VERIFY_CERT": "Sertifikayı Doğrula"
+            "VERIFY_CERT": "Sertifikayı Doğrula",
+            "ADMIN_GROUPS": "Admin Groups"
         },
         "OIDC": {
             "OIDC_PROVIDER": "OIDC Sağlayıcı Adı",
@@ -919,7 +934,9 @@
             "OIDC_SETNAME": "OIDC Kullanıcı Adını Ayarla",
             "OIDC_SETNAMECONTENT": "Üçüncü tarafla (OIDC) kimlik doğrulaması yaparken ilk kez bir Harbor kullanıcı adı oluşturmalısınız. Bu, harbor projeler, roller vb. ile ilişkilendirilmek üzere kullanılacaktır.",
             "OIDC_USERNAME": "Kullanıcı Adı",
-            "GROUP_CLAIM_NAME": "Group Claim Name"
+            "GROUP_CLAIM_NAME": "Group Claim Name",
+            "OIDC_ADMIN_GROUP": "OIDC Admin Group",
+            "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Tümünü başarılı bir şekilde tara!",
@@ -1006,7 +1023,9 @@
             "COLUMN_FIXED": "Sürümde düzeltildi",
             "COLUMN_DESCRIPTION": "Açıklama",
             "FOOT_ITEMS": "Öğeler",
-            "FOOT_OF": "of"
+            "FOOT_OF": "of",
+            "IN_ALLOW_LIST": "Listed In CVE Allowlist",
+            "CVSS3": "CVSS3"
         },
         "CHART": {
             "SCANNING_TIME": "Tarama tamamlanma zamanı:",
@@ -1032,7 +1051,10 @@
         "PLACEHOLDER": "Güvenlik Açıklarını Filtrele",
         "PACKAGE": "paket",
         "PACKAGES": "paketler",
-        "SCAN_NOW": "Tara"
+        "SCAN_NOW": "Tara",
+        "SCAN_BY": "SCAN BY {{scanner}}",
+        "REPORTED_BY": "Reported by {{scanner}}",
+        "NO_SCANNER": "NO SCANNER"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Command",
@@ -1197,6 +1219,7 @@
         "HOURLY": "Saatlik",
         "CUSTOM": "Özel",
         "MANUAL": "Manuel",
+        "SCHEDULE": "Scheduled",
         "CRON": "cron",
         "ON": "on",
         "AT": "at",
@@ -1447,7 +1470,7 @@
         "ENABLE_ACTION": "Enable",
         "DISABLE_ACTION": "Disable",
         "DELETE_ACTION": "Delete",
-        "NOT_FOUND": "Not found",
+        "NOT_FOUND": "We couldn't find any instance!",
         "NAME": "Name",
         "ENDPOINT": "Endpoint",
         "STATUS": "Status",
@@ -1574,5 +1597,81 @@
         "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote provider uses a self-signed or untrusted certificate.",
         "NAME_TOOLTIP": "Policy name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "NEED_HELP": "Please ask your system admin to add a provider first"
+    },
+    "PAGINATION": {
+        "PAGE_SIZE": "Page size"
+    },
+    "SYSTEM_ROBOT": {
+        "READ": "Read",
+        "CREATE": "Create",
+        "ARTIFACT": "Artifact",
+        "HELM": "Helm Chart",
+        "HELM_VERSION": "Helm Chart Version",
+        "ADD_ROBOT": "Add Robot",
+        "UPDATE_ROBOT": "Update Robot",
+        "UPDATE_ROBOT_SUCCESSFULLY": "Updated robot successfully",
+        "PLACEHOLDER": "Input new secret",
+        "SECRET": "Secret should be 8-20 characters long with at least 1 uppercase, 1 lowercase and 1 number.",
+        "REFRESH_SECRET": "Refresh Secret",
+        "REFRESH_SECRET_SUCCESS": "Refreshed secret successfully",
+        "DELETE_ROBOT": "Delete Robot",
+        "DELETE_ROBOT_SUCCESS": "Deleted robot(s) successfully",
+        "ENABLE_TITLE": "Enable Robot",
+        "ENABLE_SUMMARY": "Do you want to enable robot {{param}}?",
+        "DISABLE_TITLE": "Disable Robot",
+        "DISABLE_SUMMARY": "Do you want to disable robot {{param}}?",
+        "ENABLE_ROBOT_SUCCESSFULLY": "Enabled robot successfully",
+        "DISABLE_ROBOT_SUCCESSFULLY": "Disabled robot successfully",
+        "ROBOT_ACCOUNT": "Robot account",
+        "PROJECTS": "Projects",
+        "ALL_PROJECTS": "All projects with",
+        "PERMISSIONS": "PERMISSION(S)",
+        "REFRESH_SECRET_SUMMARY": "Refresh the robot account secret automatically, or optionally open the details to manually specify a new secret",
+        "TOKEN": "Secret",
+        "NEW_TOKEN": "New Secret",
+        "REFRESH": "REFRESH",
+        "PROJECTS_MODAL_TITLE": "Projects for Robot Account",
+        "PROJECTS_MODAL_SUMMARY": "There are the projects covered by this robot account.",
+        "CREATE_ROBOT": "Create System Robot Account",
+        "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover specific projects. Choose \"Cover all projects\" to be applied to all existing and future projects",
+        "EDIT_ROBOT": "Edit System Robot Account",
+        "EDIT_ROBOT_SUMMARY": "Edit a system Robot Account. Choose \"Cover all projects\" to be applied to all exiting and future projects",
+        "EXPIRATION_TIME": "Expiration time",
+        "EXPIRATION_TIME_EXPLAIN": "The expiration time(in days and the starting point is creation time) of the token of the robot account. For being never expired, please enter \"-1\".",
+        "EXPIRATION_DEFAULT": "days(default)",
+        "EXPIRATION_DAYS": "Specify # of days",
+        "EXPIRATION_NEVER": "Never",
+        "EXPIRATION_REQUIRED": "Valid expiration time is required",
+        "COVER_ALL": "Cover all projects",
+        "COVER_ALL_EXPLAIN": "Check to be applied to all existing and future projects",
+        "COVER_ALL_SUMMARY": "All current and future projects selected.",
+        "RESET_PERMISSION": "RESET PERMISSIONS",
+        "PERMISSION_COLUMN": "Permissions",
+        "EXPIRES_AT": "Expires at",
+        "VIEW_SECRET": "REFRESH SECRET",
+        "LEGACY": "Legacy",
+        "CREATE_PROJECT_ROBOT": "Create Robot Account",
+        "CREATE_PROJECT_ROBOT_SUMMARY": "Create a robot account for this project",
+        "EDIT_PROJECT_ROBOT": "Edit Robot Account",
+        "EDIT_PROJECT_ROBOT_SUMMARY": "Edit a robot account for this project",
+        "NOT_FOUND": "We couldn't find any robots!",
+        "SELECT_ALL": "SELECT ALL",
+        "UNSELECT_ALL": "UNSELECT ALL",
+        "ROBOT_ACCOUNT_NAV": "Robot Accounts",
+        "COVERED_PROJECTS": "PROJECT(S)",
+        "CONFIRM_SECRET": "Confirm Secret",
+        "SECRET_AGAIN": "Input secret again",
+        "INCONSISTENT": "Two secrets are inconsistent",
+        "NAME_TOOLTIP": "Robot name should be 1~255 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "ENABLE_NEW_SECRET": "Enable this option to manually specify a new secret",
+        "DELETE": "Delete",
+        "ARTIFACT_LABEL": "Artifact label",
+        "SCAN": "Scan",
+        "SCANNER_PULL": "Scanner Pull",
+        "SEARCH_BY_NAME": "Search by name(without prefix)",
+        "FINAL_PROJECT_NAME_TIP": "The final project robot name consists of the prefix,the project name,a plus mark and the current input value",
+        "FINAL_SYSTEM_NAME_TIP": "The final system robot name consists of the prefix and the current input value",
+        "PUSH_AND_PULL": "Push",
+        "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission"
     }
 }

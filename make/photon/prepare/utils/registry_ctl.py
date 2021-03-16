@@ -10,6 +10,14 @@ registryctl_conf = os.path.join(config_dir, "registryctl", "config.yml")
 registryctl_env_template_path = os.path.join(templates_dir, "registryctl", "env.jinja")
 registryctl_conf_env = os.path.join(config_dir, "registryctl", "env")
 
+levels_map = {
+    'debug': 'debug',
+    'info': 'info',
+    'warning': 'warn',
+    'error': 'error',
+    'fatal': 'fatal'
+}
+
 def prepare_registry_ctl(config_dict):
     # prepare dir
     prepare_dir(registryctl_config_dir)
@@ -26,4 +34,5 @@ def prepare_registry_ctl(config_dict):
         registryctl_conf,
         uid=DEFAULT_UID,
         gid=DEFAULT_GID,
+        level=levels_map[config_dict['log_level']],
         **config_dict)

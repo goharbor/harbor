@@ -16,11 +16,12 @@ package scan
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"testing"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -69,7 +70,7 @@ func (suite *JobTestSuite) TestJob() {
 		ID:   0,
 		UUID: "uuid",
 		Name: "TestJob",
-		URL:  "https://clair.com:8080",
+		URL:  "https://trivy.com:8080",
 	}
 
 	rData, err := r.ToJSON()
@@ -90,16 +91,19 @@ func (suite *JobTestSuite) TestJob() {
 	sData, err := sr.ToJSON()
 	require.NoError(suite.T(), err)
 
-	robot := &model.Robot{
-		ID:    1,
-		Name:  "robot",
-		Token: "token",
+	robot := &robot.Robot{
+		Robot: model.Robot{
+			ID:     1,
+			Name:   "robot",
+			Secret: "token",
+		},
+		Level: "project",
 	}
 
 	robotData, err := robot.ToJSON()
 	require.NoError(suite.T(), err)
 
-	mimeTypes := []string{v1.MimeTypeNativeReport}
+	mimeTypes := []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport}
 
 	jp := make(job.Parameters)
 	jp[JobParamRegistration] = rData
@@ -117,7 +121,7 @@ func (suite *JobTestSuite) TestJob() {
 	rp := vuln.Report{
 		GeneratedAt: time.Now().UTC().String(),
 		Scanner: &v1.Scanner{
-			Name:    "Clair",
+			Name:    "Trivy",
 			Vendor:  "Harbor",
 			Version: "0.1.0",
 		},
@@ -138,7 +142,7 @@ func (suite *JobTestSuite) TestJob() {
 	jRep, err := json.Marshal(rp)
 	require.NoError(suite.T(), err)
 
-	mc.On("GetScanReport", "scan_id", v1.MimeTypeNativeReport).Return(string(jRep), nil)
+	mc.On("GetScanReport", "scan_id", v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport).Return(string(jRep), nil)
 	mocktesting.OnAnything(suite.mcp, "Get").Return(mc, nil)
 
 	crp := &CheckInReport{

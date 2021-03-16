@@ -73,7 +73,7 @@ type Schema struct {
 	TriggerStr  string    `orm:"column(trigger)" json:"-"`
 	Enabled     bool      `orm:"column(enabled)" json:"enabled"`
 	CreatedAt   time.Time `orm:"column(creation_time)" json:"creation_time"`
-	UpdatedTime time.Time `orm:"column(update_time)" json:"update_time"`
+	UpdatedTime time.Time `orm:"column(update_time)" json:"update_time" sort:"default"`
 }
 
 // TableName specifies the policy schema table name.

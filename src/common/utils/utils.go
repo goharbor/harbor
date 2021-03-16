@@ -89,8 +89,8 @@ func GenerateRandomString() string {
 // with the connection, in second
 // interval: the interval time for retring after failure, in second
 func TestTCPConn(addr string, timeout, interval int) error {
-	success := make(chan int)
-	cancel := make(chan int)
+	success := make(chan int, 1)
+	cancel := make(chan int, 1)
 
 	go func() {
 		n := 1

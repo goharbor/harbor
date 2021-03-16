@@ -1,0 +1,221 @@
+<div class="row">
+    <h4 class="mt-1">
+        <span>{{'P2P_PROVIDER.POLICIES' | translate}}</span>
+        <clr-tooltip>
+            <clr-icon class="color-57" clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                {{'P2P_PROVIDER.PREHEAT_EXPLAIN' | translate}}
+            </clr-tooltip-content>
+        </clr-tooltip>
+    </h4>
+    <clr-datagrid (clrDgSingleSelectedChange)="refreshJobs($event)" [clrDgLoading]="loading" [(clrDgSingleSelected)]="selectedRow">
+        <clr-dg-action-bar>
+            <div class="clr-row">
+                <div class="clr-col-7">
+                    <button (click)="newPolicy()" [disabled]="!hasCreatPermission || !hasAddModalInit" [clrLoading]="addBtnState"
+                            id="new-policy" type="button" class="btn  btn-secondary">
+                        <clr-icon shape="plus" size="16"></clr-icon>
+                        {{'P2P_PROVIDER.NEW_POLICY' | translate}}
+                    </button>
+                    <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn  btn-link" clrDropdownTrigger>
+                        <span id="action-policy">{{'MEMBER.ACTION' | translate}}
+                            <clr-icon class="clr-icon" shape="caret down"></clr-icon></span>
+                        <clr-dropdown-menu *clrIfOpen>
+                            <button clrDropdownItem
+                                    class="btn  btn-secondary"
+                                    [disabled]="!(selectedRow && selectedRow.enabled) || !hasUpdatePermission || executing"
+                                    (click)="executePolicy()">
+                                <span>
+                                     <clr-icon class="margin-top-0" size="16" shape="play"></clr-icon>
+                                     <span id="execute-policy"
+                                           class="margin-left-5px">{{'P2P_PROVIDER.EXECUTE' | translate}}</span>
+                                </span>
+                            </button>
+                            <button clrDropdownItem
+                                    class="btn  btn-secondary"
+                                    [disabled]="!selectedRow  || !hasUpdatePermission"
+                                    (click)="editPolicy()">
+                                <span>
+                                    <clr-icon class="margin-top-0" size="16" shape="pencil"></clr-icon>
+                                    <span id="edit-policy" class="margin-left-5px">{{'BUTTON.EDIT' | translate}}</span>
+                                </span>
+                            </button>
+                            <button class="btn  btn-secondary" clrDropdownItem (click)="switchStatus()"
+                                    [disabled]="!selectedRow || !hasUpdatePermission">
+                                  <span id="toggle-policy">
+                                       <span *ngIf="selectedRow && !selectedRow.enabled">
+                                           <clr-icon class="margin-top-2" size="16" shape="success-standard"></clr-icon>
+                                           <span class="margin-left-5px">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</span>
+                                       </span>
+                                       <span *ngIf="!(selectedRow && !selectedRow.enabled)">
+                                           <clr-icon class="margin-top-2" size="16" shape="ban"></clr-icon>
+                                          <span class="margin-left-5px">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
+                                       </span>
+                                  </span>
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button clrDropdownItem (click)="deletePolicy()"
+                                    class="btn  btn-secondary"
+                                    [disabled]="!selectedRow || !hasDeletePermission">
+                                <span>
+                                    <clr-icon class="margin-top-0" size="16" shape="times"></clr-icon>
+                                    <span id="delete-policy"
+                                          class="margin-left-5px">{{'BUTTON.DELETE' | translate}}</span>
+                                </span>
+                            </button>
+                        </clr-dropdown-menu>
+                    </clr-dropdown>
+                </div>
+                <div class="clr-col-5">
+                    <div class="action-head-pos">
+                            <span class="refresh-btn">
+                                 <clr-icon shape="refresh" (click)="refresh()" [hidden]="loading"></clr-icon>
+                            </span>
+                    </div>
+                </div>
+            </div>
+        </clr-dg-action-bar>
+        <clr-dg-column [clrDgField]="'name'">{{'P2P_PROVIDER.NAME' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'P2P_PROVIDER.ENABLED' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'provider_name'">{{'P2P_PROVIDER.PROVIDER' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'P2P_PROVIDER.FILTERS' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'P2P_PROVIDER.TRIGGER' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'P2P_PROVIDER.CREATED' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'P2P_PROVIDER.DESCRIPTION' | translate}}</clr-dg-column>
+        <clr-dg-placeholder>
+            {{'P2P_PROVIDER.NO_POLICY' | translate}}
+        </clr-dg-placeholder>
+        <clr-dg-row *clrDgItems="let p of policyList" [clrDgItem]="p">
+            <clr-dg-cell>{{p.name}}</clr-dg-cell>
+            <clr-dg-cell>
+                <div *ngIf="p.enabled" class="icon-wrap">
+                    <clr-icon shape="check-circle" size="20" class="is-success enabled-icon"></clr-icon>
+                    <span class="margin-left-5px">{{'WEBHOOK.ENABLED' | translate}}</span>
+                </div>
+                <div *ngIf="!p.enabled" class="icon-wrap">
+                    <clr-icon shape="exclamation-triangle" size="20" class="is-warning"></clr-icon>
+                    <span class="margin-left-5px">{{'WEBHOOK.DISABLED' | translate}}</span>
+                </div>
+            </clr-dg-cell>
+            <clr-dg-cell>{{p.provider_name}}</clr-dg-cell>
+            <clr-dg-cell>
+                <div>
+                    <span *ngIf="getValue(p.filters, 'repository')">
+                        <span class="filter-title">{{'P2P_PROVIDER.REPOS' | translate}}</span>
+                        <span class="opacity08">: {{getValue(p.filters, 'repository')}}</span>
+                    </span>
+                    <span *ngIf="getValue(p.filters, 'tag')"
+                          class="margin-left-10px">
+                        <span class="filter-title">{{'P2P_PROVIDER.TAGS' | translate}}</span>
+                        <span class="opacity08">: {{getValue(p.filters, 'tag')}}</span>
+                    </span>
+                    <span *ngIf="getValue(p.filters, 'label')"
+                          class="margin-left-10px">
+                        <span class="filter-title">{{'P2P_PROVIDER.LABELS' | translate}}</span>
+                        <span class="opacity08">: {{getValue(p.filters, 'label')}}</span>
+                    </span>
+                </div>
+                <div class="margin-top-5px" *ngIf="getValue(p.filters, 'signature')">
+                    <span class="filter-title">{{'P2P_PROVIDER.ONLY_SIGNED' | translate}}</span>
+                </div>
+                <div class="margin-top-5px" *ngIf="getValue(p.filters, 'vulnerability')">
+                    <span>{{'P2P_PROVIDER.START_TEXT' | translate}}&nbsp;</span>
+                    <span class="opacity08">{{severity_map[getValue(p.filters, 'vulnerability')]}}</span>
+                    <span>&nbsp;{{'P2P_PROVIDER.EDN_TEXT' | translate}}</span>
+                </div>
+            </clr-dg-cell>
+            <clr-dg-cell  class="no-wrapper">
+                {{getTriggerTypeI18n(p.trigger) | translate}}
+                <clr-signpost *ngIf="isScheduled(p.trigger)">
+                    <clr-signpost-content *clrIfOpen>
+                       {{getScheduledCron(p.trigger)}}
+                    </clr-signpost-content>
+                </clr-signpost>
+                <clr-signpost *ngIf="isEventBased(p.trigger)">
+                    <clr-signpost-content *clrIfOpen>
+                        <div>{{'P2P_PROVIDER.EVENT_BASED_EXPLAIN_LINE1' | translate}}</div>
+                        <div>{{'P2P_PROVIDER.EVENT_BASED_EXPLAIN_LINE2' | translate}}</div>
+                        <div>{{'P2P_PROVIDER.EVENT_BASED_EXPLAIN_LINE3' | translate}}</div>
+                        <div>{{'P2P_PROVIDER.EVENT_BASED_EXPLAIN_LINE4' | translate}}</div>
+                    </clr-signpost-content>
+                </clr-signpost>
+            </clr-dg-cell>
+            <clr-dg-cell>{{p.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
+            <clr-dg-cell>{{p.description}}</clr-dg-cell>
+        </clr-dg-row>
+        <clr-dg-footer>
+            <clr-dg-pagination [clrDgPageSize]="10">
+                <clr-dg-page-size [clrPageSizeOptions]="[10,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+                <span *ngIf="policyList?.length > 0">1 - {{policyList?.length}} {{'WEBHOOK.OF' | translate}} </span> {{policyList?.length}} {{'WEBHOOK.ITEMS' | translate}}
+            </clr-dg-pagination>
+        </clr-dg-footer>
+    </clr-datagrid>
+</div>
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 " *ngIf="selectedRow">
+    <h4 class="mt-2">{{'P2P_PROVIDER.EXECUTIONS' | translate}}</h4>
+    <clr-datagrid [(clrDgSingleSelected)]="selectedExecutionRow" [clrDgLoading]="jobsLoading"
+                  (clrDgRefresh)="clrLoadJobs(null,true, $event)">
+        <clr-dg-action-bar>
+            <div class="clr-row">
+                <div class="clr-col-7">
+                    <button type="button" class="btn  btn-secondary" [disabled]="!hasUpdatePermission || !selectedExecutionRow || jobsLoading || stopLoading || !canStop()"
+                            (click)="openStopExecutionsDialog()">{{'REPLICATION.STOPJOB' | translate}}</button>
+                </div>
+                <div class="clr-col-5 flex-end">
+                    <div class="select filter-tag clr-select-wrapper" [hidden]="!isOpenFilterTag">
+                        <select id="selectKey" (change)="selectFilterKey($event)">
+                            <option value="id">{{"P2P_PROVIDER.ID" | translate | lowercase}}</option>
+                            <option value="status">{{"REPLICATION.STATUS" | translate | lowercase}}</option>
+                        </select>
+                    </div>
+                    <hbr-filter (filterEvt)="doFilter($event)" [currentValue]="searchString" id="filter-executions" [withDivider]="true"
+                                (openFlag)="openFilter($event)" filterPlaceholder='{{"REPLICATION.FILTER_EXECUTIONS_PLACEHOLDER" | translate}}'></hbr-filter>
+                    <span class="refresh-btn">
+                                 <clr-icon shape="refresh" (click)="refreshJobs()" [hidden]="loading"></clr-icon>
+                            </span>
+                </div>
+            </div>
+        </clr-dg-action-bar>
+        <clr-dg-column>{{'REPLICATION.ID' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'P2P_PROVIDER.TRIGGER' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPLICATION.DURATION' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPLICATION.SUCCESS_RATE' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'P2P_PROVIDER.PROVIDER_TYPE' | translate}}</clr-dg-column>
+        <clr-dg-placeholder>{{'P2P_PROVIDER.JOB_PLACEHOLDER' | translate }}</clr-dg-placeholder>
+        <clr-dg-row *ngFor="let execution of executionList" [clrDgItem]="execution">
+            <clr-dg-cell>
+                <a href="javascript:void(0)" (click)="goToLink(execution.id)">{{execution.id}}</a>
+            </clr-dg-cell>
+            <clr-dg-cell>
+                {{execution.status}}
+                <clr-tooltip>
+                    <clr-icon *ngIf="execution.status_message" clrTooltipTrigger shape="info-circle" size="20"></clr-icon>
+                    <clr-tooltip-content [clrPosition]="'left'" clrSize="md" *clrIfOpen>
+                        <span>{{execution.status_message}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </clr-dg-cell>
+            <clr-dg-cell>{{getTriggerTypeI18nForExecution(execution.trigger) | translate}}</clr-dg-cell>
+            <clr-dg-cell>{{execution.start_time | harborDatetime: 'short'}}</clr-dg-cell>
+            <clr-dg-cell>{{getDuration(execution)}}</clr-dg-cell>
+            <clr-dg-cell>{{getSuccessRate(execution.metrics) | percent}}</clr-dg-cell>
+            <clr-dg-cell>{{execution.vendor_type}}</clr-dg-cell>
+        </clr-dg-row>
+        <clr-dg-footer>
+
+            <clr-dg-pagination #pagination [(clrDgPage)]="currentExecutionPage" [clrDgPageSize]="pageSize"
+                               [clrDgTotalItems]="totalExecutionCount">
+                <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+                <span *ngIf="totalExecutionCount">{{pagination.firstItem + 1}}
+                    - {{pagination.lastItem + 1}} {{'REPLICATION.OF' | translate}}</span>
+                {{totalExecutionCount}} {{'REPLICATION.ITEMS' | translate}}
+            </clr-dg-pagination>
+        </clr-dg-footer>
+    </clr-datagrid>
+</div>
+<add-p2p-policy (hasInit)="addModalInit()" [providers]="providers" (notify)="success($event)"></add-p2p-policy>
+<confirmation-dialog (confirmAction)="confirmSwitch($event)" #confirmationDialogComponent></confirmation-dialog>
+
+

@@ -353,9 +353,11 @@ func compare(j *job.StatsInfo) int {
 	}
 
 	// Revision is same, then compare the status
-	st := job.Status(j.Status).Compare(job.Status(j.HookAck.Status))
-	if st != 0 {
-		return st
+	switch {
+	case job.Status(j.Status).Before(job.Status(j.HookAck.Status)):
+		return -1
+	case job.Status(j.Status).After(job.Status(j.HookAck.Status)):
+		return 1
 	}
 
 	// Revision and status are same, then compare the checkin

@@ -1,0 +1,54 @@
+<clr-datagrid [clrDgPreserveSelection]="true" [(clrDgSelected)]="selectedRow">
+    <clr-dg-action-bar>
+        <clr-dropdown [clrCloseMenuOnItemClick]="false">
+            <button [disabled]="coverAll" class="btn btn-secondary btn-sm" clrDropdownTrigger>
+                {{"SYSTEM_ROBOT.RESET_PERMISSION" | translate}}
+                <clr-icon shape="caret down"></clr-icon>
+            </button>
+            <clr-dropdown-menu [style.height.px]="230" clrPosition="bottom-left" *clrIfOpen>
+                <div clrDropdownItem *ngFor="let item of defaultAccesses" (click)="chooseDefaultAccess(item)">
+                    <clr-icon class="check" shape="check" [style.visibility]="item.checked ? 'visible' : 'hidden'"></clr-icon>
+                    <span>{{i18nMap[item.action] | translate}} {{i18nMap[item.resource] | translate}}</span>
+                </div>
+            </clr-dropdown-menu>
+        </clr-dropdown>
+        <button (click)="selectAllOrUnselectAll()" [disabled]="coverAll" class="btn btn-secondary btn-sm ml-1">
+            <span *ngIf="showSelectAll">{{"SYSTEM_ROBOT.SELECT_ALL" | translate}}</span>
+            <span *ngIf="!showSelectAll">{{"SYSTEM_ROBOT.UNSELECT_ALL" | translate}}</span>
+        </button>
+    </clr-dg-action-bar>
+    <clr-dg-column [clrDgField]="'name'" [(clrFilterValue)]="myNameFilterValue">{{'PROJECT.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="timeComparator">{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{"SYSTEM_ROBOT.PERMISSION_COLUMN" | translate}}</clr-dg-column>
+    <clr-dg-row *clrDgItems="let p of projects; let projectIndex = index;" [clrDgItem]="p">
+        <clr-dg-cell>
+            <a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a>
+        </clr-dg-cell>
+        <clr-dg-cell>{{p.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>
+            <div class="permissions">
+                <clr-dropdown  [clrCloseMenuOnItemClick]="false">
+                    <button [disabled]="coverAll" class="btn btn-link" clrDropdownTrigger>
+                        {{getPermissions(p.permissions[0].access)}} {{"SYSTEM_ROBOT.PERMISSIONS" | translate}}
+                        <clr-icon shape="caret down"></clr-icon>
+                    </button>
+                    <clr-dropdown-menu [style.height.px]="140" clrPosition="bottom-left" *clrIfOpen>
+                        <div clrDropdownItem *ngFor="let item of p.permissions[0].access" (click)="chooseAccess(item)">
+                            <clr-icon class="check" shape="check" [style.visibility]="item.checked ? 'visible' : 'hidden'"></clr-icon>
+                            <span>{{i18nMap[item.action] | translate}} {{i18nMap[item.resource] | translate}}</span>
+                        </div>
+                    </clr-dropdown-menu>
+                </clr-dropdown>
+            </div>
+        </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+        <clr-dg-pagination #pagination [(clrDgPage)]="currentPage"  [clrDgPageSize]="pageSize">
+            <clr-dg-page-size [clrPageSizeOptions]="[5,15,25]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+            <span>{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'PROJECT.OF' | translate}} </span> {{projects?.length
+            }} {{'PROJECT.ITEMS' | translate}}
+        </clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>
+
+

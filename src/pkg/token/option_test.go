@@ -1,10 +1,10 @@
 package token
 
 import (
+	"testing"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestNewOptions(t *testing.T) {
@@ -12,7 +12,6 @@ func TestNewOptions(t *testing.T) {
 	assert.NotNil(t, defaultOpt)
 	assert.Equal(t, defaultOpt.SignMethod, jwt.GetSigningMethod("RS256"))
 	assert.Equal(t, defaultOpt.Issuer, "harbor-token-defaultIssuer")
-	assert.Equal(t, defaultOpt.TTL, 60*time.Minute)
 }
 
 func TestGetKey(t *testing.T) {

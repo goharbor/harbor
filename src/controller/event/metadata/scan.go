@@ -1,12 +1,13 @@
 package metadata
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
+	"fmt"
+	"time"
+
 	event2 "github.com/goharbor/harbor/src/controller/event"
-	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	"time"
 )
 
 const (
@@ -24,15 +25,15 @@ func (si *ScanImageMetaData) Resolve(evt *event.Event) error {
 	var eventType string
 	var topic string
 
-	switch si.Status {
-	case models.JobFinished:
+	switch job.Status(si.Status) {
+	case job.SuccessStatus:
 		eventType = event2.TopicScanningCompleted
 		topic = event2.TopicScanningCompleted
-	case models.JobError, models.JobStopped:
+	case job.ErrorStatus, job.StoppedStatus:
 		eventType = event2.TopicScanningFailed
 		topic = event2.TopicScanningFailed
 	default:
-		return errors.New("not supported scan hook status")
+		return fmt.Errorf("not supported scan hook status %s", si.Status)
 	}
 
 	data := &event2.ScanImageEvent{

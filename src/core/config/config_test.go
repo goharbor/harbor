@@ -32,7 +32,7 @@ func TestConfig(t *testing.T) {
 	dao.PrepareTestData([]string{"delete from properties where k='scan_all_policy'"}, []string{})
 	defaultCACertPath = path.Join(currPath(), "test", "ca.crt")
 	c := map[string]interface{}{
-		common.WithClair:       false,
+		common.WithTrivy:       false,
 		common.WithChartMuseum: false,
 		common.WithNotary:      false,
 	}
@@ -96,7 +96,7 @@ func TestConfig(t *testing.T) {
 	}
 
 	tkExp := RobotTokenDuration()
-	assert.Equal(tkExp, 43200)
+	assert.Equal(tkExp, 30)
 
 	if _, err := ExtEndpoint(); err != nil {
 		t.Fatalf("failed to get domain name: %v", err)
@@ -147,8 +147,8 @@ func TestConfig(t *testing.T) {
 	if WithNotary() {
 		t.Errorf("Withnotary should be false")
 	}
-	if WithClair() {
-		t.Errorf("WithClair should be false")
+	if WithTrivy() {
+		t.Errorf("WithTrivy should be false")
 	}
 	if ReadOnly() {
 		t.Errorf("ReadOnly should be false")
@@ -190,6 +190,7 @@ func TestConfig(t *testing.T) {
 
 	assert.True(NotificationEnable())
 	assert.Equal(int64(0), GetGCTimeWindow())
+	assert.Equal("robot$", RobotPrefix())
 
 }
 
@@ -237,6 +238,7 @@ y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 	m := map[string]interface{}{
 		common.HTTPAuthProxySkipSearch:        "true",
 		common.HTTPAuthProxyVerifyCert:        "true",
+		common.HTTPAuthProxyAdminGroups:       "group1, group2",
 		common.HTTPAuthProxyEndpoint:          "https://auth.proxy/suffix",
 		common.HTTPAuthProxyServerCertificate: certificate,
 	}
@@ -245,6 +247,7 @@ y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 	assert.Nil(t, e)
 	assert.Equal(t, *v, models.HTTPAuthProxy{
 		Endpoint:          "https://auth.proxy/suffix",
+		AdminGroups:       []string{"group1", "group2"},
 		SkipSearch:        true,
 		VerifyCert:        true,
 		ServerCertificate: certificate,
@@ -277,4 +280,36 @@ func TestOIDCSetting(t *testing.T) {
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)
 	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
 	assert.Equal(t, "username", v.UserClaim)
+}
+
+func TestSplitAndTrim(t *testing.T) {
+	cases := []struct {
+		s      string
+		sep    string
+		expect []string
+	}{
+		{
+			s:      "abc",
+			sep:    ",",
+			expect: []string{"abc"},
+		},
+		{
+			s:      "a,   b, c",
+			sep:    ",",
+			expect: []string{"a", "b", "c"},
+		},
+		{
+			s:      "a,b,c    ",
+			sep:    ".",
+			expect: []string{"a,b,c"},
+		},
+		{
+			s:      "",
+			sep:    ",",
+			expect: []string{},
+		},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.expect, splitAndTrim(c.s, c.sep))
+	}
 }

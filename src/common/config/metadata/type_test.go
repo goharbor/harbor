@@ -98,6 +98,18 @@ func TestMapType_get(t *testing.T) {
 	assert.Equal(t, map[string]interface{}{"sample": "abc", "another": "welcome"}, result)
 }
 
+func TestStringToStringMapType_validate(t *testing.T) {
+	test := &StringToStringMapType{}
+	assert.Nil(t, test.validate(`{"sample":"abc", "another":"welcome"}`))
+	assert.NotNil(t, test.validate(`{"sample":"abc", "another":123}`))
+}
+
+func TestStringToStringMapType_get(t *testing.T) {
+	test := &StringToStringMapType{}
+	result, _ := test.get(`{"sample":"abc", "another":"welcome"}`)
+	assert.Equal(t, map[string]string{"sample": "abc", "another": "welcome"}, result)
+}
+
 func Test_parseInt64(t *testing.T) {
 	type args struct {
 		str string

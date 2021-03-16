@@ -17,6 +17,7 @@ package util
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac/project"
 	"net/http"
 	"path"
 	"strings"
@@ -61,7 +62,7 @@ func SkipPolicyChecking(ctx context.Context, projectID int64) bool {
 
 	// only scanner pull access can bypass.
 	if ok && secCtx.Name() == "v2token" &&
-		secCtx.Can(rbac.ActionScannerPull, rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceRepository)) {
+		secCtx.Can(ctx, rbac.ActionScannerPull, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) {
 		return true
 	}
 

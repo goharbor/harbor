@@ -20,6 +20,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/jobservice/common/rds"
+
+	"github.com/gocraft/work"
+
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -62,6 +66,8 @@ func (suite *BasicSchedulerTestSuite) SetupSuite() {
 		suite.pool,
 		func(hookURL string, change *job.StatusChange) error { return nil },
 	)
+
+	suite.setupDirtyJobs()
 
 	suite.scheduler = NewScheduler(ctx, suite.namespace, suite.pool, suite.lcmCtl)
 	suite.scheduler.Start()
@@ -120,4 +126,46 @@ func (suite *BasicSchedulerTestSuite) TestScheduler() {
 
 	err = suite.scheduler.UnSchedule(p.ID)
 	require.NoError(suite.T(), err, "unschedule: nil error expected but got %s", err)
+}
+
+// TestUnSchedule tests un-scheduling a periodic job without job stats
+func (suite *BasicSchedulerTestSuite) TestUnSchedule() {
+	p := &Policy{
+		ID:       "job_id_without_stats",
+		JobName:  job.SampleJob,
+		CronSpec: "0 10 10 5 * *",
+	}
+
+	pid, err := suite.scheduler.Schedule(p)
+	require.NoError(suite.T(), err, "schedule: nil error expected but got %s", err)
+	assert.Condition(suite.T(), func() bool {
+		return pid > 0
+	}, "schedule: returned pid should >0")
+
+	// No job stats saved
+	err = suite.scheduler.UnSchedule(p.ID)
+	require.NoError(suite.T(), err, "unschedule: nil error expected but got %s", err)
+}
+
+// setupDirtyJobs adds dirty jobs for testing dirty jobs clear method in the Start()
+func (suite *BasicSchedulerTestSuite) setupDirtyJobs() {
+	// Add one fake job for next testing
+	j := &work.Job{
+		Name: job.SampleJob,
+		ID:   "jid",
+		// Already expired
+		EnqueuedAt: time.Now().Unix() - 86400,
+		Args:       map[string]interface{}{"image": "sample:latest"},
+	}
+
+	rawJSON, err := utils.SerializeJob(j)
+	suite.NoError(err, "serialize job model")
+
+	conn := suite.pool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	_, err = conn.Do("ZADD", rds.RedisKeyScheduled(suite.namespace), j.EnqueuedAt, rawJSON)
+	suite.NoError(err, "add faked dirty scheduled job")
 }

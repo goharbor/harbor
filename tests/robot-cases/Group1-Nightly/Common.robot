@@ -29,6 +29,28 @@ Test Case - Sign With Admin
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Close Browser
 
+Test Case - Push CNAB Bundle and Display
+    [Tags]  run-once
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+
+    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
+    Create An New Project And Go Into Project  test${d}
+
+    ${target}=  Set Variable  ${ip}/test${d}/cnab${d}:cnab_tag${d}
+    Retry Keyword N Times When Error  5  CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json  ${DOCKER_USER}  ${DOCKER_PWD}
+
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/cnab${d}
+
+    Go Into Repo  test${d}/cnab${d}
+    Wait Until Page Contains  cnab_tag${d}
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/cnab${d}
+    Go Into Repo  test${d}/cnab${d}
+    Go Into Index And Contain Artifacts  cnab_tag${d}  limit=3
+    Close Browser
+
 Test Case - Create An New Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -91,6 +113,7 @@ Test Case - Staticsinfo
     Should be equal as integers  ${publicrepocount2}  ${publicrepocount}
     Should be equal as integers  ${totalprojcount2}  ${totalprojcount}
     Should be equal as integers  ${totalrepocount2}  ${totalrepocount}
+    Close Browser
 
 Test Case - Push Image
     Init Chrome Driver
@@ -101,6 +124,7 @@ Test Case - Push Image
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  test${d}  hello-world:latest
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/hello-world
+    Close Browser
 
 Test Case - Project Level Policy Public
     Init Chrome Driver
@@ -200,17 +224,32 @@ Test Case - User View Projects
     Close Browser
 
 Test Case - User View Logs
+    [tags]  user_view_logs
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
+    ${img}=    Set Variable    kong
+    ${tag}=    Set Variable    latest
+    ${replication_image}=    Set Variable    for_log_view
+    ${replication_tag}=      Set Variable    base
+    @{target_images}=  Create List  ${replication_image}
+    ${user}=    Set Variable    user002
+    ${pwd}=    Set Variable    Test1@34
 
-    Sign In Harbor  ${HARBOR_URL}  user002  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     Create An New Project And Go Into Project  project${d}
+    Logout Harbor
 
-    Push image  ${ip}  user002  Test1@34  project${d}  busybox:latest
-    Pull image  ${ip}  user002  Test1@34  project${d}  busybox:latest
+    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/${replication_image}  project${d}  @{target_images}
 
+    Push image  ${ip}  ${user}  ${pwd}  project${d}  ${img}:${tag}
+    Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${replication_image}:${replication_tag}
+    Close Browser
+
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     Go Into Project  project${d}
-    Delete Repo  project${d}
+    Delete Repo  project${d}  ${replication_image}
+    Delete Repo  project${d}  ${img}
 
     Sleep  3
 
@@ -448,17 +487,17 @@ Test Case - Project Storage Quotas Dispaly And Control
     ${image_a}=  Set Variable  one_layer
     ${image_b}=  Set Variable  redis
     ${image_a_size}=    Set Variable   330.83MB
-    ${image_b_size}=    Set Variable   34.15MB
+    ${image_b_size}=    Set Variable   34.1\\dMB
     ${image_a_ver}=  Set Variable  1.0
     ${image_b_ver}=  Set Variable  donotremove5.0
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
-    Should Be Equal As Strings  ${storage_quota_ret}  ${image_b_size} of ${storage_quota}${storage_quota_unit}
+    Should Match Regexp  ${storage_quota_ret}  ${image_b_size} of ${storage_quota}${storage_quota_unit}
     Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=adding 330.1 MiB of storage resource, which when updated to current usage of   err_msg_2=MiB will exceed the configured upper limit of ${storage_quota}.0 MiB
     Go Into Project  project${d}
-    Delete Repo  project${d}/${image_b}
+    Delete Repo  project${d}  ${image_b}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}  tag=${image_a_ver}  tag1=${image_a_ver}
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
     ${storage_quota_ret_str_left}  Fetch From Left  ${storage_quota_ret}  25.
@@ -494,10 +533,8 @@ Test Case - Project Quotas Control Under Copy
     Sleep  2
     Go Into Project  project_b_${d}
     Sleep  2
-    Capture Page Screenshot
     Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(.,'${image_a}')]/a
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-cell[contains(.,'${image_b}')]/a
-    Capture Page Screenshot
     Close Browser
 
 Test Case - Webhook CRUD
@@ -534,17 +571,21 @@ Test Case - Tag Retention
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s
+    ${image_sample_1}=    Set Variable  hello-world
+    ${image_sample_2}=    Set Variable  memcached
     Create An New Project And Go Into Project  project${d}
     Switch To Tag Retention
     Add A Tag Retention Rule
     Delete A Tag Retention Rule
     Add A Tag Retention Rule
     Edit A Tag Retention Rule    **   latest
-    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
-    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  memcached   123
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_sample_1}  latest
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_sample_2}   123
     Set Daily Schedule
-    Execute Dry Run
-    Execute Run
+    Execute Dry Run  ${image_sample_2}  0/1
+    Execute Run  ${image_sample_2}  0/1
+    Execute Dry Run  ${image_sample_1}  1/1
+    Execute Run  ${image_sample_1}  1/1
     Close Browser
 
 Test Case - Tag Immutability
@@ -553,9 +594,11 @@ Test Case - Tag Immutability
     ${d}=    Get Current Date    result_format=%m%s
     Create An New Project And Go Into Project  project${d}
     Switch To Tag Immutability
-    Add A Tag Immutability Rule  1212  3434
+    @{param}  Create List  1212  3434
+    Retry Add A Tag Immutability Rule  @{param}
     Delete A Tag Immutability Rule
-    Add A Tag Immutability Rule  5566  7788
+    @{param}  Create List  5566  7788
+    Retry Add A Tag Immutability Rule  @{param}
     Edit A Tag Immutability Rule  hello-world  latest
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox  latest
@@ -568,6 +611,7 @@ Test Case - Tag Immutability
     Close Browser
 
 Test Case - Robot Account
+    [tags]  robot_account
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
@@ -577,6 +621,7 @@ Test Case - Robot Account
     Log    ${token}
     Push image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
     Pull image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
+    Close Browser
 
 Test Case - Push Docker Manifest Index and Display
     Init Chrome Driver
@@ -609,27 +654,6 @@ Test Case - Push Docker Manifest Index and Display
     Wait Until Page Contains  test${d}/index${d}
     Go Into Repo  test${d}/index${d}
     Go Into Index And Contain Artifacts  index_tag${d}  limit=2
-    Close Browser
-
-Test Case - Push CNAB Bundle and Display
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
-    Create An New Project And Go Into Project  test${d}
-
-    ${target}=  Set Variable  ${ip}/test${d}/cnab${d}:cnab_tag${d}
-    CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json
-
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/cnab${d}
-
-    Go Into Repo  test${d}/cnab${d}
-    Wait Until Page Contains  cnab_tag${d}
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/cnab${d}
-    Go Into Repo  test${d}/cnab${d}
-    Go Into Index And Contain Artifacts  cnab_tag${d}  limit=3
     Close Browser
 
 Test Case - Push Helm Chart and Display
@@ -693,37 +717,10 @@ Test Case - Read Only Mode
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
     Close Browser
 
-Test Case - Proxy Cache
-    ${d}=  Get Current Date    result_format=%m%s
-    ${registry}=  Set Variable  https://hub.docker.com/
-    ${user_namespace}=  Set Variable  danfengliu
-    ${image}=  Set Variable  for_proxy
-    ${tag}=  Set Variable  1.0
-    ${manifest_index}=  Set Variable  index081597864867
-    ${manifest_tag}=  Set Variable  index_tag081597864867
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Registries
-    Create A New Endpoint  docker-hub  e1${d}  ${registry}  ${user_namespace}    Aa123456
-    Create An New Project And Go Into Project  project${d}  proxy_cache=${true}  registry=e1${d}
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
-    Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${user_namespace}/${image}  tag=${tag}
-    Log To Console  Start to Sleep 3 minitues......
-    Sleep  180
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${user_namespace}/${image}
-    Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${user_namespace}/${manifest_index}  tag=${manifest_tag}
-    Log To Console  Start to Sleep 10 minitues......
-    Sleep  600
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${user_namespace}/${manifest_index}
-    Go Into Index And Contain Artifacts  ${manifest_tag}  limit=1
-    Close Browser
-
 Test Case - Distribution CRUD
     ${d}=    Get Current Date    result_format=%m%s
     ${name}=  Set Variable  distribution${d}
-    ${endpoint}=  Set Variable  https://1.1.1.2
+    ${endpoint}=  Set Variable  https://32.1.1.2
     ${endpoint_new}=  Set Variable  https://10.65.65.42
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -732,11 +729,11 @@ Test Case - Distribution CRUD
     Delete A Distribution  ${name}  ${endpoint_new}
     Close Browser
 
-Test Case - P2P Peheat Policy CRUD
+Test Case - P2P Preheat Policy CRUD
     ${d}=    Get Current Date    result_format=%m%s
     ${pro_name}=  Set Variable  project_p2p${d}
     ${dist_name}=  Set Variable  distribution${d}
-    ${endpoint}=  Set Variable  https://1.1.1.2
+    ${endpoint}=  Set Variable  https://20.76.1.2
     ${policy_name}=  Set Variable  policy${d}
     ${repo}=  Set Variable  alpine
     ${repo_new}=  Set Variable  redis*
@@ -753,3 +750,27 @@ Test Case - P2P Peheat Policy CRUD
     Delete A Distribution  ${dist_name}  ${endpoint}
     Close Browser
 
+Test Case - System Robot Account Cover All Projects
+    [Tags]  sys_robot_account_cover
+    ${d}=  Get Current Date    result_format=%m%s
+    ${pro_name}=  Set Variable  project_${d}
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  ${pro_name}
+    ${name}=  Create A New System Robot Account  is_cover_all=${true}
+    Navigate To Projects
+    Switch To Robot Account
+    System Robot Account Exist  ${name}  all
+    Close Browser
+
+Test Case - System Robot Account
+    [Tags]  sys_robot_account
+    ${d}=  Get Current Date    result_format=%m%s
+    ${project_count}=  Evaluate  random.randint(3, 5)
+    ${pro_name}=  Set Variable  project_${d}
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${project_permission_list}=  Create A Random Project Permission List  ${project_count}
+    ${name}=  Create A New System Robot Account  project_permission_list=${project_permission_list}
+    System Robot Account Exist  ${name}  ${project_count}
+    Close Browser

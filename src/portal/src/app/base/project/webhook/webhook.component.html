@@ -1,0 +1,114 @@
+<div class="row">
+    <h4 class="mt-1">{{'WEBHOOK.WEBHOOKS' | translate}}</h4>
+    <clr-datagrid [clrDgLoading]="loadingWebhookList || loadingMetadata" [(clrDgSelected)]="selectedRow">
+        <clr-dg-action-bar>
+            <div class="clr-row">
+                <div class="clr-col-7">
+                    <button [disabled]="!hasCreatPermission" [clrLoading]="addBtnState" id="new-webhook" type="button" class="btn  btn-secondary" (click)="newWebhook()">
+                        <clr-icon shape="plus" size="16"></clr-icon>
+                        {{'WEBHOOK.NEW_WEBHOOK' | translate}}
+                    </button>
+                    <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn  btn-link" clrDropdownTrigger>
+                        <span id="action-webhook">{{'MEMBER.ACTION' | translate}}
+                            <clr-icon class="clr-icon" shape="caret down"></clr-icon></span>
+                        <clr-dropdown-menu *clrIfOpen>
+                            <button clrDropdownItem (click)="switchWebhookStatus()"
+                                    [disabled]="!(selectedRow && selectedRow.length === 1) || !hasUpdatePermission">
+                                  <span id="toggle-webhook">
+                                       <span *ngIf="selectedRow[0] && !selectedRow[0].enabled">
+                                           <clr-icon class="margin-top-2" size="16" shape="success-standard"></clr-icon>
+                                           <span class="margin-left-10">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</span>
+                                       </span>
+                                       <span *ngIf="!(selectedRow[0] && !selectedRow[0].enabled)">
+                                           <clr-icon class="margin-top-2" size="16" shape="ban"></clr-icon>
+                                          <span class="margin-left-10">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
+                                       </span>
+                                  </span>
+                            </button>
+                            <button clrDropdownItem (click)="editWebhook()"
+                                    class="btn  btn-secondary" [disabled]="!(selectedRow && selectedRow.length === 1) || !hasUpdatePermission">
+                                <clr-icon class="margin-top-0" size="16" shape="pencil"></clr-icon>
+                                <span id="edit-webhook" class="margin-left-10">{{'BUTTON.EDIT' | translate}}</span>
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button clrDropdownItem (click)="deleteWebhook()"
+                                    class="btn  btn-secondary" [disabled]="!(selectedRow && selectedRow.length >= 1) || !hasUpdatePermission">
+                                <clr-icon class="margin-top-0" size="16" shape="times"></clr-icon>
+                                <span id="delete-webhook"
+                                      class="margin-left-10">{{'BUTTON.DELETE' | translate}}</span>
+                            </button>
+                        </clr-dropdown-menu>
+                    </clr-dropdown>
+                </div>
+                <div class="clr-col-5">
+                    <div class="action-head-pos">
+                            <span class="refresh-btn">
+                                 <clr-icon shape="refresh" (click)="success()" [hidden]="loadingWebhookList || loadingMetadata"></clr-icon>
+                            </span>
+                    </div>
+                </div>
+            </div>
+        </clr-dg-action-bar>
+        <clr-dg-column  [clrDgField]="'name'">{{'WEBHOOK.NAME' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'WEBHOOK.ENABLED' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'WEBHOOK.NOTIFY_TYPE' | translate}}</clr-dg-column>
+        <clr-dg-column class="min-width-340">{{'WEBHOOK.TARGET' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'WEBHOOK.EVENT_TYPES' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'WEBHOOK.CREATED' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'WEBHOOK.DESCRIPTION' | translate}}</clr-dg-column>
+        <clr-dg-placeholder>
+            {{'WEBHOOK.NO_WEBHOOK' | translate}}
+        </clr-dg-placeholder>
+        <clr-dg-row *clrDgItems="let w of webhookList" [clrDgItem]="w">
+            <clr-dg-cell>{{w.name}}</clr-dg-cell>
+            <clr-dg-cell [ngSwitch]="w.enabled">
+                <div *ngSwitchCase="true" class="icon-wrap">
+                    <clr-icon shape="check-circle" size="20" class="is-success enabled-icon"></clr-icon>
+                    <span>{{'WEBHOOK.ENABLED' | translate}}</span>
+                </div>
+                <div *ngSwitchCase="false" class="icon-wrap">
+                    <clr-icon shape="exclamation-triangle" size="20" class="is-warning"></clr-icon>
+                    <span>{{'WEBHOOK.DISABLED' | translate}}</span>
+                </div>
+            </clr-dg-cell>
+            <clr-dg-cell>{{w?.targets[0].type}}</clr-dg-cell>
+            <clr-dg-cell>{{w?.targets[0].address}}</clr-dg-cell>
+            <clr-dg-cell class="event-types">
+                <div class="cell" *ngIf="w?.event_types?.length">
+                    <div  class="bar-state">
+                        <span class="label-flex" *ngIf="w?.event_types[0]">{{eventTypeToText(w?.event_types[0])}}</span>
+                    </div>
+                    <div class="signpost-item" [hidden]="w?.event_types?.length<=1">
+                        <div class="trigger-item">
+                            <clr-signpost>
+                                <button class="btn btn-link ellipsis-btn font-size-20" clrSignpostTrigger>...</button>
+                                <clr-signpost-content [clrPosition]="'top-middle'" *clrIfOpen>
+                                    <div>
+                                        <div  *ngFor="let e of w?.event_types" class="bar-state">
+                                            <span class="label not-scan">{{eventTypeToText(e)}}</span>
+                                        </div>
+                                    </div>
+                                </clr-signpost-content>
+                            </clr-signpost>
+                        </div>
+                    </div>
+                </div>
+            </clr-dg-cell>
+            <clr-dg-cell>{{w.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
+            <clr-dg-cell>{{w.description}}</clr-dg-cell>
+            <clr-dg-row-detail *clrIfExpanded>
+                <last-trigger class="w-100" [webhookName]="w.name" *clrIfExpanded [inputLastTriggers]="lastTriggers"></last-trigger>
+            </clr-dg-row-detail>
+        </clr-dg-row>
+        <clr-dg-footer>
+            <clr-dg-pagination [clrDgPageSize]="15">
+                <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+                <span *ngIf="webhookList?.length > 0">1 - {{webhookList?.length}} {{'WEBHOOK.OF' | translate}} </span> {{webhookList?.length}} {{'WEBHOOK.ITEMS' | translate}}
+            </clr-dg-pagination>
+        </clr-dg-footer>
+    </clr-datagrid>
+</div>
+<add-webhook (notify)="success()" [metadata]="metadata" [projectId]="projectId"></add-webhook>
+<confirmation-dialog #confirmationDialogComponent (confirmAction)="confirmSwitch($event)"></confirmation-dialog>
+
+

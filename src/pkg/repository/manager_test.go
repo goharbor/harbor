@@ -17,63 +17,31 @@ package repository
 import (
 	"context"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/testing/pkg/repository/dao"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
-type fakeDao struct {
-	mock.Mock
-}
-
-func (f *fakeDao) Count(ctx context.Context, query *q.Query) (int64, error) {
-	args := f.Called()
-	return int64(args.Int(0)), args.Error(1)
-}
-func (f *fakeDao) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, error) {
-	args := f.Called()
-	return args.Get(0).([]*models.RepoRecord), args.Error(1)
-}
-func (f *fakeDao) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
-	args := f.Called()
-	return args.Get(0).(*models.RepoRecord), args.Error(1)
-}
-func (f *fakeDao) Create(ctx context.Context, repository *models.RepoRecord) (int64, error) {
-	args := f.Called()
-	return int64(args.Int(0)), args.Error(1)
-}
-func (f *fakeDao) Delete(ctx context.Context, id int64) error {
-	args := f.Called()
-	return args.Error(0)
-}
-func (f *fakeDao) Update(ctx context.Context, repository *models.RepoRecord, props ...string) error {
-	args := f.Called()
-	return args.Error(0)
-}
-func (f *fakeDao) AddPullCount(ctx context.Context, id int64) error {
-	args := f.Called()
-	return args.Error(0)
-}
-
 type managerTestSuite struct {
 	suite.Suite
 	mgr *manager
-	dao *fakeDao
+	dao *dao.DAO
 }
 
 func (m *managerTestSuite) SetupTest() {
-	m.dao = &fakeDao{}
+	m.dao = &dao.DAO{}
 	m.mgr = &manager{
 		dao: m.dao,
 	}
 }
 
 func (m *managerTestSuite) TestCount() {
-	m.dao.On("Count", mock.Anything).Return(1, nil)
-	total, err := m.mgr.Count(nil, nil)
-	m.Require().Nil(err)
-	m.Equal(int64(1), total)
+	m.dao.On("Count", mock.Anything, mock.Anything).Return(int64(1), nil)
+	n, err := m.mgr.Count(context.Background(), nil)
+	m.Nil(err)
+	m.Equal(int64(1), n)
+	m.dao.AssertExpectations(m.T())
 }
 
 func (m *managerTestSuite) TestList() {
@@ -82,11 +50,11 @@ func (m *managerTestSuite) TestList() {
 		ProjectID:    1,
 		Name:         "library/hello-world",
 	}
-	m.dao.On("List", mock.Anything).Return([]*models.RepoRecord{repository}, nil)
-	repositories, err := m.mgr.List(nil, nil)
-	m.Require().Nil(err)
-	m.Equal(1, len(repositories))
-	m.Equal(repository.RepositoryID, repositories[0].RepositoryID)
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*models.RepoRecord{repository}, nil)
+	rpers, err := m.mgr.List(context.Background(), nil)
+	m.Nil(err)
+	m.Equal(1, len(rpers))
+	m.dao.AssertExpectations(m.T())
 }
 
 func (m *managerTestSuite) TestGet() {
@@ -95,8 +63,8 @@ func (m *managerTestSuite) TestGet() {
 		ProjectID:    1,
 		Name:         "library/hello-world",
 	}
-	m.dao.On("Get", mock.Anything).Return(repository, nil)
-	repo, err := m.mgr.Get(nil, 1)
+	m.dao.On("Get", mock.Anything, mock.Anything).Return(repository, nil)
+	repo, err := m.mgr.Get(context.Background(), 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 	m.Require().NotNil(repo)
@@ -109,8 +77,8 @@ func (m *managerTestSuite) TestGetByName() {
 		ProjectID:    1,
 		Name:         "library/hello-world",
 	}
-	m.dao.On("List", mock.Anything).Return([]*models.RepoRecord{repository}, nil)
-	repo, err := m.mgr.GetByName(nil, "library/hello-world")
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*models.RepoRecord{repository}, nil)
+	repo, err := m.mgr.GetByName(context.Background(), "library/hello-world")
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 	m.Require().NotNil(repo)
@@ -118,37 +86,44 @@ func (m *managerTestSuite) TestGetByName() {
 }
 
 func (m *managerTestSuite) TestCreate() {
-	m.dao.On("Create", mock.Anything).Return(1, nil)
-	id, err := m.mgr.Create(nil, &models.RepoRecord{
-		ProjectID: 1,
-		Name:      "library/hello-world",
-	})
-	m.Require().Nil(err)
+	m.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
+	_, err := m.mgr.Create(context.Background(), &models.RepoRecord{})
+	m.Nil(err)
 	m.dao.AssertExpectations(m.T())
-	m.Equal(int64(1), id)
 }
 
 func (m *managerTestSuite) TestDelete() {
-	m.dao.On("Delete", mock.Anything).Return(nil)
-	err := m.mgr.Delete(nil, 1)
-	m.Require().Nil(err)
+	m.dao.On("Delete", mock.Anything, mock.Anything).Return(nil)
+	err := m.mgr.Delete(context.Background(), 1)
+	m.Nil(err)
 	m.dao.AssertExpectations(m.T())
 }
 
 func (m *managerTestSuite) TestUpdate() {
-	m.dao.On("Update", mock.Anything).Return(nil)
-	err := m.mgr.Update(nil, &models.RepoRecord{
-		RepositoryID: 1,
-	})
-	m.Require().Nil(err)
+	m.dao.On("Update", mock.Anything, mock.Anything).Return(nil)
+	err := m.mgr.Update(context.Background(), &models.RepoRecord{})
+	m.Nil(err)
 	m.dao.AssertExpectations(m.T())
 }
 
 func (m *managerTestSuite) TestAddPullCount() {
-	m.dao.On("AddPullCount", mock.Anything).Return(nil)
-	err := m.mgr.AddPullCount(nil, 1)
+	m.dao.On("AddPullCount", mock.Anything, mock.Anything).Return(nil)
+	err := m.mgr.AddPullCount(context.Background(), 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestNonEmptyRepos() {
+	repository := &models.RepoRecord{
+		RepositoryID: 1,
+		ProjectID:    1,
+		Name:         "library/hello-world",
+	}
+	m.dao.On("NonEmptyRepos", mock.Anything).Return([]*models.RepoRecord{repository}, nil)
+	repo, err := m.mgr.NonEmptyRepos(nil)
+	m.Require().Nil(err)
+	m.dao.AssertExpectations(m.T())
+	m.Equal(repository.RepositoryID, repo[0].RepositoryID)
 }
 
 func TestManager(t *testing.T) {

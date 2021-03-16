@@ -1,0 +1,12 @@
+[plugins]
+  [plugins.cri]
+    stream_server_address = ""
+    stream_server_port = "10010"
+    enable_selinux = false
+    sandbox_image = ""
+    stats_collect_period = 10
+    systemd_cgroup = false
+    [plugins.cri.containerd]
+      snapshotter = "native"
+      [plugins.cri.containerd.default_runtime]
+        runtime_type = "io.containerd.runtime.v1.linux"

@@ -53,7 +53,7 @@ func (t *taskDAOTestSuite) SetupTest() {
 		ExecutionID: t.executionID,
 		Status:      "success",
 		StatusCode:  1,
-		ExtraAttrs:  "{}",
+		ExtraAttrs:  `{"key":"value"}`,
 	})
 	t.Require().Nil(err)
 	t.taskID = id
@@ -70,22 +70,42 @@ func (t *taskDAOTestSuite) TearDownTest() {
 func (t *taskDAOTestSuite) TestCount() {
 	count, err := t.taskDAO.Count(t.ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"ExecutionID": t.executionID,
+			"ExecutionID":    t.executionID,
+			"ExtraAttrs.key": "value",
 		},
 	})
 	t.Require().Nil(err)
 	t.Equal(int64(1), count)
+
+	count, err = t.taskDAO.Count(t.ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"ExecutionID":    t.executionID,
+			"ExtraAttrs.key": "incorrect-value",
+		},
+	})
+	t.Require().Nil(err)
+	t.Equal(int64(0), count)
 }
 
 func (t *taskDAOTestSuite) TestList() {
 	tasks, err := t.taskDAO.List(t.ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"ExecutionID": t.executionID,
+			"ExecutionID":    t.executionID,
+			"ExtraAttrs.key": "value",
 		},
 	})
 	t.Require().Nil(err)
 	t.Require().Len(tasks, 1)
 	t.Equal(t.taskID, tasks[0].ID)
+
+	tasks, err = t.taskDAO.List(t.ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"ExecutionID":    t.executionID,
+			"ExtraAttrs.key": "incorrect-value",
+		},
+	})
+	t.Require().Nil(err)
+	t.Require().Len(tasks, 0)
 }
 
 func (t *taskDAOTestSuite) TestGet() {
@@ -140,7 +160,7 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 
 	task, err := t.taskDAO.Get(t.ctx, t.taskID)
 	t.Require().Nil(err)
-	t.Equal(1, task.RunCount)
+	t.Equal(int32(1), task.RunCount)
 	t.True(time.Unix(statusRevision, 0).Equal(task.StartTime))
 	t.Equal(status, task.Status)
 	t.Equal(job.RunningStatus.Code(), task.StatusCode)
@@ -155,7 +175,7 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 
 	task, err = t.taskDAO.Get(t.ctx, t.taskID)
 	t.Require().Nil(err)
-	t.Equal(1, task.RunCount)
+	t.Equal(int32(1), task.RunCount)
 	t.True(time.Unix(statusRevision, 0).Equal(task.StartTime))
 	t.Equal(status, task.Status)
 	t.Equal(job.SuccessStatus.Code(), task.StatusCode)
@@ -170,7 +190,7 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 
 	task, err = t.taskDAO.Get(t.ctx, t.taskID)
 	t.Require().Nil(err)
-	t.Equal(2, task.RunCount)
+	t.Equal(int32(2), task.RunCount)
 	t.True(time.Unix(statusRevision, 0).Equal(task.StartTime))
 	t.Equal(status, task.Status)
 	t.Equal(job.RunningStatus.Code(), task.StatusCode)

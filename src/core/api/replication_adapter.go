@@ -16,6 +16,9 @@ package api
 
 import (
 	"errors"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/system"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -23,23 +26,25 @@ import (
 // ReplicationAdapterAPI handles the replication adapter requests
 type ReplicationAdapterAPI struct {
 	BaseController
+	resource types.Resource
 }
 
 // Prepare ...
 func (r *ReplicationAdapterAPI) Prepare() {
 	r.BaseController.Prepare()
-	if !r.SecurityCtx.IsSysAdmin() {
-		if !r.SecurityCtx.IsAuthenticated() {
-			r.SendUnAuthorizedError(errors.New("UnAuthorized"))
-			return
-		}
-		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+	if !r.SecurityCtx.IsAuthenticated() {
+		r.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
+	r.resource = system.NewNamespace().Resource(rbac.ResourceReplicationAdapter)
 }
 
 // List the replication adapters
 func (r *ReplicationAdapterAPI) List() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionList, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	types := []model.RegistryType{}
 	types = append(types, adapter.ListRegisteredAdapterTypes()...)
 	r.WriteJSONData(types)
@@ -47,5 +52,9 @@ func (r *ReplicationAdapterAPI) List() {
 
 // ListAdapterInfos the replication adapter infos
 func (r *ReplicationAdapterAPI) ListAdapterInfos() {
+	if !r.SecurityCtx.Can(r.Context(), rbac.ActionList, r.resource) {
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		return
+	}
 	r.WriteJSONData(adapter.ListAdapterInfos())
 }

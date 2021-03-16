@@ -1,21 +1,21 @@
 from __future__ import absolute_import
 import unittest
 
-from testutils import harbor_server
+from testutils import harbor_server, TEARDOWN, suppress_urllib3_warning
 from testutils import created_user, created_project
 from library.artifact import Artifact
-from library.repository import Repository, push_image_to_project
+from library.repository import Repository, push_self_build_image_to_project
 from library.scan import Scan
 
 
 class TestScanImageInPublicProject(unittest.TestCase):
-    @classmethod
+    @suppress_urllib3_warning
     def setUp(self):
         self.artifact = Artifact()
         self.repo = Repository()
         self.scan = Scan()
 
-    @classmethod
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
         print("Case completed")
 
@@ -41,7 +41,7 @@ class TestScanImageInPublicProject(unittest.TestCase):
         with created_user(password) as (user_id, username):
             with created_project(metadata={"public": "true"}, user_id=user_id) as (_, project_name):
                 image, src_tag = "docker", "1.13"
-                full_name, tag = push_image_to_project(project_name, harbor_server, username, password, image, src_tag)
+                full_name, tag = push_self_build_image_to_project(project_name, harbor_server, username, password, image, src_tag)
 
                 repo_name = full_name.split('/')[1]
 
@@ -55,7 +55,7 @@ class TestScanImageInPublicProject(unittest.TestCase):
                 self.scan.scan_artifact(project_name, repo_name, tag, username=username, password=password)
                 self.artifact.check_image_scan_result(project_name, image, tag, username=username, password=password, with_scan_overview=True)
 
-                self.repo.delete_repoitory(project_name, repo_name)
+                self.repo.delete_repository(project_name, repo_name)
 
 
 if __name__ == '__main__':

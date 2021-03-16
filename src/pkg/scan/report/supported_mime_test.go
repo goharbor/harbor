@@ -42,7 +42,7 @@ func (suite *SupportedMimesSuite) SetupSuite() {
 	rp := vuln.Report{
 		GeneratedAt: time.Now().UTC().String(),
 		Scanner: &v1.Scanner{
-			Name:    "Clair",
+			Name:    "Trivy",
 			Vendor:  "Harbor",
 			Version: "0.1.0",
 		},
@@ -68,6 +68,19 @@ func (suite *SupportedMimesSuite) SetupSuite() {
 // TestResolveData tests the ResolveData.
 func (suite *SupportedMimesSuite) TestResolveData() {
 	obj, err := ResolveData(v1.MimeTypeNativeReport, suite.mockData)
+	require.NoError(suite.T(), err)
+	require.NotNil(suite.T(), obj)
+	require.Condition(suite.T(), func() (success bool) {
+		rp, ok := obj.(*vuln.Report)
+		success = ok && rp != nil && rp.Severity == vuln.High
+
+		return
+	})
+}
+
+// TestResolveDataForGenericMimeType tests the ResolveData.
+func (suite *SupportedMimesSuite) TestResolveDataForGenericMimeType() {
+	obj, err := ResolveData(v1.MimeTypeGenericVulnerabilityReport, suite.mockData)
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), obj)
 	require.Condition(suite.T(), func() (success bool) {

@@ -1,10 +1,17 @@
 FROM ubuntu:18.04
 ENV LANG C.UTF-8
 # V 2.0
-# V 2.0.1: upgrade docker to version 19.03.12
-# V 2.5 Add support for e2e py-test 
+# V 2.0.1: Upgrade docker to version 19.03.12.
+# V 2.5 Add support for e2e py-test (especially containerd).
+# V 2.6 Upgrade docker 19.03.12.
+# V 2.6.1 Upgrade containerd(ctr) to v1.4.3, docker 20.10.3.
+# V 2.6.2 Package busybox into E2E image.
+# V 2.6.3 a. Swith python version from 3.7 to 3.6;
+#         b. Upgrade and fix cnab-to-oci build issue;
+#         c. Install hurry.filesize tool in python.
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget curl gnupg2
+RUN apt-get install libseccomp2
 RUN wget  --no-check-certificate -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
 
@@ -62,8 +69,8 @@ RUN apt-get update && apt-get install -y software-properties-common && \
 RUN apt-get update && \
     apt-get install -y  golang-go
 
-RUN apt-get update -y ; apt-get install -y zbar-tools libzbar-dev python-zbar python3.7
-RUN rm /usr/bin/python ; ln -s /usr/bin/python3.7 /usr/bin/python ; apt-get install -y python3-pip
+RUN apt-get update -y ; apt-get install -y zbar-tools libzbar-dev python-zbar python3.6
+RUN rm /usr/bin/python ; ln -s /usr/bin/python3.6 /usr/bin/python ; apt-get install -y python3-pip
 RUN python -m pip install --upgrade pip
 
 RUN wget -N http://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip && \
@@ -78,11 +85,17 @@ RUN apt-get update && apt install libnss3-tools && \
     echo Harbor12345 > password.ca && \
     certutil -d sql:$HOME/.pki/nssdb -N -f password.ca
 
-RUN pip3 install pyasn1 google-apitools==0.5.31 gsutil robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot robotframework-JSONLibrary --upgrade
+RUN pip3 install pyasn1 google-apitools==0.5.31 gsutil robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot robotframework-JSONLibrary hurry.filesize --upgrade
+
+ENV CONTAINERD_VERSION 1.4.3
+RUN wget https://github.com/containerd/containerd/releases/download/v1.4.3/containerd-$CONTAINERD_VERSION-linux-amd64.tar.gz && \
+    tar zxvf containerd-$CONTAINERD_VERSION-linux-amd64.tar.gz && \
+    cd bin && cp -f containerd ctr /usr/bin/ && cp -f containerd ctr /usr/local/bin/
 
 # Install docker, docker compose
-RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-19.03.12.tgz && \
-    tar --strip-components=1 -xvzf docker-19.03.12.tgz -C /usr/bin &&  \
+ENV DOCKER_VERSION 20.10.3
+RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz && \
+    tar --strip-components=1 -xvzf docker-$DOCKER_VERSION.tgz -C /usr/bin &&  \
     curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
 
@@ -98,19 +111,19 @@ RUN set -x \
 RUN curl -sSL https://github.com/vmware/govmomi/releases/download/v0.16.0/govc_linux_amd64.gz | gzip -d > /usr/local/bin/govc && \
     chmod +x /usr/local/bin/govc
 
-RUN wget https://get.helm.sh/helm-v2.14.1-linux-386.tar.gz && tar zxvf helm-v2.14.1-linux-386.tar.gz && \
-    cp linux-386/helm /usr/local/bin/helm && \
-    cp linux-386/helm /usr/local/bin/helm2 && \
-    helm init --client-only && \
+RUN wget https://get.helm.sh/helm-v2.16.12-linux-amd64.tar.gz && tar zxvf helm-v2.16.12-linux-amd64.tar.gz && \
+    cp linux-amd64/helm /usr/local/bin/helm && \
+    cp linux-amd64/helm /usr/local/bin/helm2 && \
+    helm init --stable-repo-url https://charts.helm.sh/stable --client-only && \
     helm plugin install https://github.com/chartmuseum/helm-push
 
-RUN wget https://get.helm.sh/helm-v3.0.0-linux-386.tar.gz && tar zxvf helm-v3.0.0-linux-386.tar.gz && \
-    mv linux-386/helm /usr/local/bin/helm3 && \
+RUN wget https://get.helm.sh/helm-v3.3.3-linux-amd64.tar.gz && tar zxvf helm-v3.3.3-linux-amd64.tar.gz && \
+    mv linux-amd64/helm /usr/local/bin/helm3 && \
     helm3 plugin install https://github.com/chartmuseum/helm-push
 
-RUN curl -LO https://github.com/deislabs/oras/releases/download/v0.8.1/oras_0.8.1_linux_amd64.tar.gz && \
+RUN curl -LO https://github.com/deislabs/oras/releases/download/v0.9.0/oras_0.9.0_linux_amd64.tar.gz && \
     mkdir -p oras-install/  && \
-    tar -zxf oras_0.8.1_*.tar.gz -C oras-install/  && \
+    tar -zxf oras_0.9.0_*.tar.gz -C oras-install/  && \
     mv oras-install/oras /usr/local/bin/
 
 RUN wget https://github.com/theupdateframework/notary/releases/download/v0.6.1/notary-Linux-amd64 && \
@@ -137,8 +150,8 @@ RUN wget http://nchc.dl.sourceforge.net/sourceforge/tcl/tcl8.4.11-src.tar.gz && 
     cd /ixdba.net/bin && \
     mv  expect /usr/local/bin/expect
 
-RUN CNAB_PATH=$(go env GOPATH)/src/github.com/docker && mkdir -p $CNAB_PATH && cd $CNAB_PATH && git clone https://github.com/cnabio/cnab-to-oci.git && \
-    cd cnab-to-oci && git checkout v0.3.0-beta4 && \
+RUN CNAB_PATH=$(go env GOPATH)/src/github.com/cnabio && mkdir -p $CNAB_PATH && cd $CNAB_PATH && git clone https://github.com/cnabio/cnab-to-oci.git && \
+    cd cnab-to-oci && git checkout v0.3.1-beta1 && \
     go list && \
     make build && \
     mv bin/cnab-to-oci /usr/local/bin
@@ -157,8 +170,13 @@ ENV DIND_COMMIT 3b5fac462d21ca164b3778647420016315289034
 RUN wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
     && chmod +x /usr/local/bin/dind
 
+COPY containerd_config.toml /etc/containerd/config.toml
+
+COPY busybox.tar /
+
 # This container needs to be run in privileged mode(run with --privileged option) to make it work
 COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
+
 RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
 
 VOLUME /var/lib/docker

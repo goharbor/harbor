@@ -15,7 +15,6 @@
 package chart
 
 import (
-	"bytes"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -25,7 +24,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	chartserver "github.com/goharbor/harbor/src/pkg/chart"
-	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/chart"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -74,14 +72,6 @@ func (p *processorTestSuite) SetupTest() {
 		chartOperator: p.chartOptr,
 	}
 	p.processor.ManifestProcessor = &base.ManifestProcessor{RegCli: p.regCli}
-}
-
-func (p *processorTestSuite) TestAbstractMetadata() {
-	artifact := &artifact.Artifact{}
-	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(0, ioutil.NopCloser(bytes.NewReader([]byte(chartYaml))), nil)
-	err := p.processor.AbstractMetadata(nil, artifact, []byte(chartManifest))
-	p.Require().Nil(err)
-	p.regCli.AssertExpectations(p.T())
 }
 
 func (p *processorTestSuite) TestAbstractAddition() {

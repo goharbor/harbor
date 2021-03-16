@@ -171,15 +171,15 @@ func (c *clientTestSuite) TestManifestExist() {
 
 	client := NewClient(server.URL, "", "", true)
 	// doesn't exist
-	exist, digest, err := client.ManifestExist("library/alpine", "latest")
+	exist, desc, err := client.ManifestExist("library/alpine", "latest")
 	c.Require().Nil(err)
 	c.False(exist)
 
 	// exist
-	exist, digest, err = client.ManifestExist("library/hello-world", "latest")
+	exist, desc, err = client.ManifestExist("library/hello-world", "latest")
 	c.Require().Nil(err)
 	c.True(exist)
-	c.Equal("digest", digest)
+	c.Equal("digest", string(desc.Digest))
 }
 
 func (c *clientTestSuite) TestPullManifest() {

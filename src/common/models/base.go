@@ -29,13 +29,11 @@ func init() {
 		new(Label),
 		new(ResourceLabel),
 		new(UserGroup),
-		new(AdminJob),
 		new(JobLog),
 		new(OIDCUser),
 		new(NotificationPolicy),
 		new(NotificationJob),
 		new(ProjectBlob),
 		new(ArtifactAndBlob),
-		new(CVEAllowlist),
 	)
 }

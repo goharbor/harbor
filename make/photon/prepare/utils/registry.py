@@ -20,7 +20,6 @@ levels_map = {
     'fatal': 'fatal'
 }
 
-
 def prepare_registry(config_dict):
     prepare_dir(registry_data_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
     prepare_dir(registry_config_dir)
@@ -41,7 +40,6 @@ def prepare_registry(config_dict):
         level=levels_map[config_dict['log_level']],
         storage_provider_info=storage_provider_info,
         **config_dict, **redis_ops)
-
 
 def parse_redis(redis_url):
     u = urlsplit(redis_url)
@@ -80,7 +78,6 @@ def get_storage_provider_info(provider_name, provider_config):
         storage_provider_conf_list.append('{}: {}'.format(config[0], value))
     storage_provider_info = ('\n' + ' ' * 4).join(storage_provider_conf_list)
     return storage_provider_info
-
 
 def gen_passwd_file(config_dict):
     return subprocess.call(["/usr/bin/htpasswd", "-bcB", registry_passwd_path, config_dict['registry_username'],

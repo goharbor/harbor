@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -27,8 +28,10 @@ import (
 // TaskDAO is the data access object interface for task
 type TaskDAO interface {
 	// Count returns the total count of tasks according to the query
+	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	Count(ctx context.Context, query *q.Query) (count int64, err error)
 	// List the tasks according to the query
+	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	List(ctx context.Context, query *q.Query) (tasks []*Task, err error)
 	// Get the specified task
 	Get(ctx context.Context, id int64) (task *Task, err error)
@@ -60,7 +63,7 @@ func (t *taskDAO) Count(ctx context.Context, query *q.Query) (int64, error) {
 			Keywords: query.Keywords,
 		}
 	}
-	qs, err := orm.QuerySetter(ctx, &Task{}, query)
+	qs, err := t.querySetter(ctx, query)
 	if err != nil {
 		return 0, err
 	}
@@ -69,11 +72,10 @@ func (t *taskDAO) Count(ctx context.Context, query *q.Query) (int64, error) {
 
 func (t *taskDAO) List(ctx context.Context, query *q.Query) ([]*Task, error) {
 	tasks := []*Task{}
-	qs, err := orm.QuerySetter(ctx, &Task{}, query)
+	qs, err := t.querySetter(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	qs = qs.OrderBy("-StartTime")
 	if _, err = qs.All(&tasks); err != nil {
 		return nil, err
 	}
@@ -202,4 +204,41 @@ func (t *taskDAO) GetMaxEndTime(ctx context.Context, executionID int64) (time.Ti
 	err = ormer.Raw("select max(end_time) from task where execution_id = ?", executionID).
 		QueryRow(&endTime)
 	return endTime, nil
+}
+
+func (t *taskDAO) querySetter(ctx context.Context, query *q.Query) (orm.QuerySeter, error) {
+	qs, err := orm.QuerySetter(ctx, &Task{}, query)
+	if err != nil {
+		return nil, err
+	}
+
+	// append the filter for "extra attrs"
+	if query != nil && len(query.Keywords) > 0 {
+		var (
+			key       string
+			keyPrefix string
+			value     interface{}
+		)
+		for key, value = range query.Keywords {
+			if strings.HasPrefix(key, "ExtraAttrs.") {
+				keyPrefix = "ExtraAttrs."
+				break
+			}
+			if strings.HasPrefix(key, "extra_attrs.") {
+				keyPrefix = "extra_attrs."
+				break
+			}
+		}
+		if len(keyPrefix) == 0 {
+			return qs, nil
+		}
+		inClause, err := orm.CreateInClause(ctx, "select id from task where extra_attrs->>? = ?",
+			strings.TrimPrefix(key, keyPrefix), value)
+		if err != nil {
+			return nil, err
+		}
+		qs = qs.FilterRaw("id", inClause)
+	}
+
+	return qs, nil
 }

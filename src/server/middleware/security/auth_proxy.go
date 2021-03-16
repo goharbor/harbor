@@ -86,14 +86,15 @@ func (a *authProxy) Generate(req *http.Request) security.Context {
 			return nil
 		}
 	}
-	u2, err := authproxy.UserFromReviewStatus(tokenReviewStatus)
+	u2, err := authproxy.UserFromReviewStatus(tokenReviewStatus, httpAuthProxyConf.AdminGroups)
 	if err != nil {
 		log.Errorf("failed to get user information from token review status: %v", err)
 		return nil
 	}
 	user.GroupIDs = u2.GroupIDs
+	user.AdminRoleInAuth = u2.AdminRoleInAuth
 	log.Debugf("an auth proxy security context generated for request %s %s", req.Method, req.URL.Path)
-	return local.NewSecurityContext(user, config.GlobalProjectMgr)
+	return local.NewSecurityContext(user)
 }
 
 func (a *authProxy) matchAuthProxyUserName(name string) (string, bool) {

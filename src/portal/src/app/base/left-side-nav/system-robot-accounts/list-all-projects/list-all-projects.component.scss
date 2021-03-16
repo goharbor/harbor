@@ -1,0 +1,20 @@
+.check {
+    margin-right: 5px;
+    color: green;
+}
+.permissions {
+    height: 16px;
+    display: flex;
+    align-items: center;
+}
+.datagrid-host {
+    position: inherit;
+}
+.dropdown-menu {
+    overflow-y: auto;
+}
+.dropdown-item {
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+}

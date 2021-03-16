@@ -9,7 +9,7 @@ To verify rule filter works correctly.
 User guide
 
 # Environment:
-* This test requires that two Harbor instance are running and avaiable.  
+* This test requires that two Harbor instance are running and available.  
 
 # Test Steps:
 

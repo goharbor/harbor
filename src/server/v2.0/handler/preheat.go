@@ -3,9 +3,9 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -15,6 +15,7 @@ import (
 	projectCtl "github.com/goharbor/harbor/src/controller/project"
 	taskCtl "github.com/goharbor/harbor/src/controller/task"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
@@ -55,7 +56,7 @@ func (api *preheatAPI) Prepare(ctx context.Context, operation string, params int
 }
 
 func (api *preheatAPI) CreateInstance(ctx context.Context, params operation.CreateInstanceParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionCreate, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -68,11 +69,13 @@ func (api *preheatAPI) CreateInstance(ctx context.Context, params operation.Crea
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
-	return operation.NewCreateInstanceCreated()
+
+	location := fmt.Sprintf("%s/%s", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), instance.Name)
+	return operation.NewCreateInstanceCreated().WithLocation(location)
 }
 
 func (api *preheatAPI) DeleteInstance(ctx context.Context, params operation.DeleteInstanceParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionDelete, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -90,7 +93,7 @@ func (api *preheatAPI) DeleteInstance(ctx context.Context, params operation.Dele
 }
 
 func (api *preheatAPI) GetInstance(ctx context.Context, params operation.GetInstanceParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -110,13 +113,13 @@ func (api *preheatAPI) GetInstance(ctx context.Context, params operation.GetInst
 
 // ListInstances is List p2p instances
 func (api *preheatAPI) ListInstances(ctx context.Context, params operation.ListInstancesParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
 	var payload []*models.Instance
 
-	query, err := api.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := api.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
@@ -144,7 +147,7 @@ func (api *preheatAPI) ListInstances(ctx context.Context, params operation.ListI
 }
 
 func (api *preheatAPI) ListProviders(ctx context.Context, params operation.ListProvidersParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -159,7 +162,7 @@ func (api *preheatAPI) ListProviders(ctx context.Context, params operation.ListP
 
 // UpdateInstance is Update instance
 func (api *preheatAPI) UpdateInstance(ctx context.Context, params operation.UpdateInstanceParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -238,7 +241,9 @@ func (api *preheatAPI) CreatePolicy(ctx context.Context, params operation.Create
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
-	return operation.NewCreatePolicyCreated()
+
+	location := fmt.Sprintf("%s/%s", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), policy.Name)
+	return operation.NewCreatePolicyCreated().WithLocation(location)
 }
 
 // UpdatePolicy is Update preheat policy
@@ -315,7 +320,7 @@ func (api *preheatAPI) ListPolicies(ctx context.Context, params operation.ListPo
 		return api.SendError(ctx, err)
 	}
 
-	query, err := api.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := api.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
@@ -382,7 +387,7 @@ func (api *preheatAPI) ManualPreheat(ctx context.Context, params operation.Manua
 }
 
 func (api *preheatAPI) PingInstances(ctx context.Context, params operation.PingInstancesParams) middleware.Responder {
-	if err := api.RequireSysAdmin(ctx); err != nil {
+	if err := api.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -595,7 +600,7 @@ func (api *preheatAPI) ListExecutions(ctx context.Context, params operation.List
 		return api.SendError(ctx, err)
 	}
 
-	query, err := api.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := api.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
@@ -658,7 +663,7 @@ func convertTaskToPayload(model *task.Task) (*models.Task, error) {
 		ExecutionID:   model.ExecutionID,
 		ExtraAttrs:    model.ExtraAttrs,
 		ID:            model.ID,
-		RunCount:      int64(model.RunCount),
+		RunCount:      model.RunCount,
 		StartTime:     model.StartTime.String(),
 		Status:        model.Status,
 		StatusMessage: model.StatusMessage,
@@ -672,7 +677,7 @@ func (api *preheatAPI) ListTasks(ctx context.Context, params operation.ListTasks
 		return api.SendError(ctx, err)
 	}
 
-	query, err := api.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
+	query, err := api.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}

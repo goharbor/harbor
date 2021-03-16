@@ -72,8 +72,24 @@ func (s Status) Code() int {
 // if < 0, s before another status
 // if == 0, same status
 // if > 0, s after another status
+// Deprecated
 func (s Status) Compare(another Status) int {
 	return s.Code() - another.Code()
+}
+
+// Before return true if the status s is before another
+func (s Status) Before(another Status) bool {
+	return s.Code()-another.Code() < 0
+}
+
+// After return true if the status s is after another
+func (s Status) After(another Status) bool {
+	return s.Code()-another.Code() > 0
+}
+
+// Equal return true if the status s is the same of another
+func (s Status) Equal(another Status) bool {
+	return s.Code()-another.Code() == 0
 }
 
 // String returns the raw string value of the status

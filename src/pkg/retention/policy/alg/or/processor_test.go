@@ -17,6 +17,7 @@ package or
 import (
 	"errors"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
@@ -111,7 +112,7 @@ func (suite *ProcessorTestSuite) TestProcess() {
 
 	p := New(params)
 
-	results, err := p.Process(suite.all)
+	results, err := p.Process(orm.Context(), suite.all)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(results))
 	assert.Condition(suite.T(), func() bool {
@@ -142,7 +143,7 @@ func (suite *ProcessorTestSuite) TestProcess2() {
 
 	p := New(params)
 
-	results, err := p.Process(suite.all)
+	results, err := p.Process(orm.Context(), suite.all)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(results))
 	assert.Condition(suite.T(), func() bool {

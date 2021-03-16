@@ -1,4 +1,4 @@
-f# Copyright Project Harbor Authors
+# Copyright Project Harbor Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -69,6 +69,8 @@ Resource  Harbor-Pages/Vulnerability_Elements.robot
 Resource  Harbor-Pages/LDAP-Mode.robot
 Resource  Harbor-Pages/OIDC_Auth.robot
 Resource  Harbor-Pages/OIDC_Auth_Elements.robot
+Resource  Harbor-Pages/Robot_Account.robot
+Resource  Harbor-Pages/Robot_Account_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
 Resource  CNAB_Util.robot
@@ -88,7 +90,7 @@ Wait Until Element Is Visible And Enabled
 
 Retry Action Keyword
     [Arguments]  ${keyword}  @{param}
-    Retry Keyword N Times When Error  3  ${keyword}  @{param}
+    Retry Keyword N Times When Error  4  ${keyword}  @{param}
 
 Retry Wait Element
     [Arguments]  ${element_xpath}
@@ -149,6 +151,10 @@ Retry Wait Until Page Contains
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Page Contains  @{param}
+Retry Wait Until Page Does Not Contains
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Wait Until Page Does Not Contain  @{param}
 
 Retry Wait Until Page Contains Element
     [Arguments]  ${element_xpath}
@@ -213,7 +219,7 @@ Clear Field Of Characters
     END
 
 Wait Unitl Command Success
-    [Arguments]  ${cmd}  ${times}=8
+    [Arguments]  ${cmd}  ${times}=5
     FOR  ${n}  IN RANGE  1  ${times}
         Log  Trying ${cmd}: ${n} ...  console=True
         ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
@@ -237,7 +243,6 @@ Retry Keyword N Times When Error
         Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
         ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
         Log To Console  Return value is ${out} and ${out[0]}
-        Capture Page Screenshot  record.png
         Run Keyword If  '${keyword}'=='Make Swagger Client'  Exit For Loop If  '${out[0]}'=='PASS' and '${out[1]}'=='0'
         ...  ELSE  Exit For Loop If  '${out[0]}'=='PASS'
         Sleep  10
@@ -264,14 +269,13 @@ Retry Double Keywords When Error
     FOR  ${n}  IN RANGE  1  ${times}
         Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
         ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
-        Capture Page Screenshot
         Sleep  1
         ${out2}  Run Keyword And Ignore Error  ${keyword2}  ${element2}
-        Capture Page Screenshot
         Log To Console  Return value is ${out1[0]} ${out2[0]}
         Exit For Loop If  '${out2[0]}'=='PASS'
         Sleep  1
     END
+    Capture Page Screenshot
     Return From Keyword If  ${DoAssert} == ${false}  '${out2[0]}'
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
 
@@ -283,3 +287,8 @@ Run Curl And Return Json
     Create File  ${json_data_file}  ${output}
     ${json}=    Load Json From File    ${json_data_file}
     [Return]  ${json}
+
+Log All
+    [Arguments]  ${text}
+    Log To Console  ${text}
+    Log  ${text}

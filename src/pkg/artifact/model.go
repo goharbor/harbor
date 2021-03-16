@@ -16,6 +16,7 @@ package artifact
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/docker/distribution/manifest/manifestlist"
@@ -43,6 +44,10 @@ type Artifact struct {
 	ExtraAttrs        map[string]interface{} `json:"extra_attrs"` // only contains the simple attributes specific for the different artifact type, most of them should come from the config layer
 	Annotations       map[string]string      `json:"annotations"`
 	References        []*Reference           `json:"references"` // child artifacts referenced by the parent artifact if the artifact is an index
+}
+
+func (a *Artifact) String() string {
+	return fmt.Sprintf("%s@%s", a.RepositoryName, a.Digest)
 }
 
 // IsImageIndex returns true when artifact is image index

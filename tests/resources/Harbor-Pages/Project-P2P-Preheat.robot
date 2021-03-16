@@ -29,16 +29,16 @@ Select Distribution For P2P Preheat
 
 Select P2P Preheat Policy
     [Arguments]    ${name}
-    Retry Element Click    //div[@class='datagrid-scrolling-cells' and contains(.,'${name}')]//clr-radio-wrapper/label
+    Retry Element Click    //clr-dg-row[contains(.,'${name}')]//clr-radio-wrapper/label
 
 P2P Preheat Policy Exist
     [Arguments]  ${name}  ${repo}=${null}
-    ${policy_row_xpath}=  Set Variable If  '${repo}'=='${null}'  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}')]  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}') and contains(.,'${repo}')]
+    ${policy_row_xpath}=  Set Variable If  '${repo}'=='${null}'  //clr-dg-row[contains(.,'${name}')]  //clr-dg-row[contains(.,'${name}') and contains(.,'${repo}')]
     Retry Wait Until Page Contains Element  ${policy_row_xpath}
 
 P2P Preheat Policy Not Exist
     [Arguments]  ${name}
-    Retry Wait Until Page Not Contains Element  //div[@class='datagrid-scrolling-cells' and contains(.,'${name}')]
+    Retry Wait Until Page Not Contains Element  //clr-dg-row[contains(.,'${name}')]
 
 Create An New P2P Preheat Policy
     [Arguments]    ${policy_name}  ${dist_name}  ${repo}  ${tag}  ${trigger_type}=${null}
@@ -54,7 +54,7 @@ Create An New P2P Preheat Policy
 Edit A P2P Preheat Policy
     [Arguments]    ${name}  ${repo}  ${trigger_type}=${null}
     Switch To P2P Preheat
-    Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  //clr-main-container//project-detail/p2p-provider/ng-component//h4[contains(.,'Executions')]
+    Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_edit_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
     Retry Text Input  ${p2p_preheat_repoinput_id}  ${repo}
@@ -64,7 +64,7 @@ Edit A P2P Preheat Policy
 Delete A P2P Preheat Policy
     [Arguments]    ${name}
     Switch To P2P Preheat
-    Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  //clr-main-container//project-detail/p2p-provider/ng-component//h4[contains(.,'Executions')]
+    Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_del_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_del_btn_id}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}

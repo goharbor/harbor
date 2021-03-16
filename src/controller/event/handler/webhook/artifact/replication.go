@@ -10,13 +10,14 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	ctlModel "github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/replication"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
-	"github.com/goharbor/harbor/src/replication"
+	rep "github.com/goharbor/harbor/src/replication"
 	rpModel "github.com/goharbor/harbor/src/replication/model"
 )
 
@@ -71,25 +72,20 @@ func (r *ReplicationHandler) IsStateful() bool {
 }
 
 func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload, *commonModels.Project, error) {
-	task, err := replication.OperationCtl.GetTask(event.ReplicationTaskID)
+	ctx := orm.Context()
+	task, err := replication.Ctl.GetTask(ctx, event.ReplicationTaskID)
 	if err != nil {
 		log.Errorf("failed to get replication task %d: error: %v", event.ReplicationTaskID, err)
 		return nil, nil, err
 	}
-	if task == nil {
-		return nil, nil, fmt.Errorf("task %d not found with replication event", event.ReplicationTaskID)
-	}
 
-	execution, err := replication.OperationCtl.GetExecution(task.ExecutionID)
+	execution, err := replication.Ctl.GetExecution(ctx, task.ExecutionID)
 	if err != nil {
 		log.Errorf("failed to get replication execution %d: error: %v", task.ExecutionID, err)
 		return nil, nil, err
 	}
-	if execution == nil {
-		return nil, nil, fmt.Errorf("execution %d not found with replication event", task.ExecutionID)
-	}
 
-	rpPolicy, err := replication.PolicyCtl.Get(execution.PolicyID)
+	rpPolicy, err := rep.PolicyCtl.Get(execution.PolicyID)
 	if err != nil {
 		log.Errorf("failed to get replication policy %d: error: %v", execution.PolicyID, err)
 		return nil, nil, err
@@ -107,7 +103,7 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 		remoteRegID = rpPolicy.DestRegistry.ID
 	}
 
-	remoteRegistry, err := replication.RegistryMgr.Get(remoteRegID)
+	remoteRegistry, err := rep.RegistryMgr.Get(remoteRegID)
 	if err != nil {
 		log.Errorf("failed to get replication remoteRegistry registry %d: error: %v", remoteRegID, err)
 		return nil, nil, err
@@ -116,8 +112,8 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 		return nil, nil, fmt.Errorf("registry %d not found with replication event", remoteRegID)
 	}
 
-	srcNamespace, srcNameAndTag := getMetadataFromResource(task.SrcResource)
-	destNamespace, destNameAndTag := getMetadataFromResource(task.DstResource)
+	srcNamespace, srcNameAndTag := getMetadataFromResource(task.SourceResource)
+	destNamespace, destNameAndTag := getMetadataFromResource(task.DestinationResource)
 
 	extURL, err := config.ExtURL()
 	if err != nil {

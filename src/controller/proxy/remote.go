@@ -23,12 +23,14 @@ import (
 	"io"
 )
 
-// remoteInterface defines operations related to remote repository under proxy
-type remoteInterface interface {
+// RemoteInterface defines operations related to remote repository under proxy
+type RemoteInterface interface {
 	// BlobReader create a reader for remote blob
 	BlobReader(repo, dig string) (int64, io.ReadCloser, error)
 	// Manifest get manifest by reference
 	Manifest(repo string, ref string) (distribution.Manifest, string, error)
+	// ManifestExist checks manifest exist, if exist, return digest
+	ManifestExist(repo string, ref string) (bool, *distribution.Descriptor, error)
 }
 
 // remoteHelper defines operations related to remote repository under proxy
@@ -38,8 +40,8 @@ type remoteHelper struct {
 	registryMgr registry.Manager
 }
 
-// newRemoteHelper create a remoteHelper interface
-func newRemoteHelper(regID int64) (*remoteHelper, error) {
+// NewRemoteHelper create a remote interface
+func NewRemoteHelper(regID int64) (RemoteInterface, error) {
 	r := &remoteHelper{
 		regID:       regID,
 		registryMgr: registry.NewDefaultManager()}
@@ -82,4 +84,8 @@ func (r *remoteHelper) BlobReader(repo, dig string) (int64, io.ReadCloser, error
 
 func (r *remoteHelper) Manifest(repo string, ref string) (distribution.Manifest, string, error) {
 	return r.registry.PullManifest(repo, ref)
+}
+
+func (r *remoteHelper) ManifestExist(repo string, ref string) (bool, *distribution.Descriptor, error) {
+	return r.registry.ManifestExist(repo, ref)
 }

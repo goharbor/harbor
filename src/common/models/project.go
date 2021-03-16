@@ -22,8 +22,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/pkg/quota/types"
-	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/lib/pq"
 )
 
@@ -38,20 +37,20 @@ const (
 
 // Project holds the details of a project.
 type Project struct {
-	ProjectID    int64             `orm:"pk;auto;column(project_id)" json:"project_id"`
-	OwnerID      int               `orm:"column(owner_id)" json:"owner_id"`
-	Name         string            `orm:"column(name)" json:"name"`
-	CreationTime time.Time         `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime   time.Time         `orm:"column(update_time);auto_now" json:"update_time"`
-	Deleted      bool              `orm:"column(deleted)" json:"deleted"`
-	OwnerName    string            `orm:"-" json:"owner_name"`
-	Role         int               `orm:"-" json:"current_user_role_id"`
-	RoleList     []int             `orm:"-" json:"current_user_role_ids"`
-	RepoCount    int64             `orm:"-" json:"repo_count"`
-	ChartCount   uint64            `orm:"-" json:"chart_count"`
-	Metadata     map[string]string `orm:"-" json:"metadata"`
-	CVEAllowlist CVEAllowlist      `orm:"-" json:"cve_allowlist"`
-	RegistryID   int64             `orm:"column(registry_id)" json:"registry_id"`
+	ProjectID    int64               `orm:"pk;auto;column(project_id)" json:"project_id"`
+	OwnerID      int                 `orm:"column(owner_id)" json:"owner_id"`
+	Name         string              `orm:"column(name)" json:"name" sort:"default"`
+	CreationTime time.Time           `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime   time.Time           `orm:"column(update_time);auto_now" json:"update_time"`
+	Deleted      bool                `orm:"column(deleted)" json:"deleted"`
+	OwnerName    string              `orm:"-" json:"owner_name"`
+	Role         int                 `orm:"-" json:"current_user_role_id"`
+	RoleList     []int               `orm:"-" json:"current_user_role_ids"`
+	RepoCount    int64               `orm:"-" json:"repo_count"`
+	ChartCount   uint64              `orm:"-" json:"chart_count"`
+	Metadata     map[string]string   `orm:"-" json:"metadata"`
+	CVEAllowlist models.CVEAllowlist `orm:"-" json:"cve_allowlist"`
+	RegistryID   int64               `orm:"column(registry_id)" json:"registry_id"`
 }
 
 // GetMetadata ...
@@ -244,10 +243,10 @@ type BaseProjectCollection struct {
 
 // ProjectRequest holds informations that need for creating project API
 type ProjectRequest struct {
-	Name         string            `json:"project_name"`
-	Public       *int              `json:"public"` // deprecated, reserved for project creation in replication
-	Metadata     map[string]string `json:"metadata"`
-	CVEAllowlist CVEAllowlist      `json:"cve_allowlist"`
+	Name         string              `json:"project_name"`
+	Public       *int                `json:"public"` // deprecated, reserved for project creation in replication
+	Metadata     map[string]string   `json:"metadata"`
+	CVEAllowlist models.CVEAllowlist `json:"cve_allowlist"`
 
 	StorageLimit *int64 `json:"storage_limit,omitempty"`
 	RegistryID   int64  `json:"registry_id"`
@@ -262,25 +261,4 @@ type ProjectQueryResult struct {
 // TableName is required by beego orm to map Project to table project
 func (p *Project) TableName() string {
 	return ProjectTable
-}
-
-// QuotaSummary ...
-type QuotaSummary struct {
-	Hard types.ResourceList `json:"hard"`
-	Used types.ResourceList `json:"used"`
-}
-
-// ProjectSummary ...
-type ProjectSummary struct {
-	RepoCount  int64  `json:"repo_count"`
-	ChartCount uint64 `json:"chart_count"`
-
-	ProjectAdminCount int64 `json:"project_admin_count"`
-	MaintainerCount   int64 `json:"maintainer_count"`
-	DeveloperCount    int64 `json:"developer_count"`
-	GuestCount        int64 `json:"guest_count"`
-	LimitedGuestCount int64 `json:"limited_guest_count"`
-
-	Quota    *QuotaSummary   `json:"quota,omitempty"`
-	Registry *model.Registry `json:"registry"`
 }

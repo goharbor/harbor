@@ -91,7 +91,7 @@ The folder graph below shows the structure of the source code folder `harbor/src
 │   ├── scanner
 │   ├── tag
 │   ├── task
-├── core                # Source code for the main busines logic. Contains rest apis and all service infomation.
+├── core                # Source code for the main business logic. Contains rest apis and all service information.
 │   ├── api
 │   ├── auth
 │   ├── config
@@ -158,7 +158,7 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   1.9    |    1.12.12    |
 |   1.10   |    1.12.12    |
 |   2.0    |    1.13.15    |
-|   2.1    |    1.14.7     |
+|   2.1    |    1.15.6     |
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
@@ -317,7 +317,7 @@ Once your pull request has been opened, harbor will run two CI pipelines against
 * If the coverage dramatic decline, you need to commit unit test to coverage your code.
 2. In the drone CI, the E2E test will be triggered against the pull request. Also, the source code will be checked via `gosec`, and the result is stored in google storage for later analysis. The pipeline is about to build and install harbor from source code, then to run four very basic E2E tests to validate the basic functionalities of harbor, like:
 * Registry Basic Verification, to validate the image can be pulled and pushed successful.
-* Clair Basic Verification, to validate the image can be scanned successful.
+* Trivy Basic Verification, to validate the image can be scanned successful.
 * Notary Basic Verification, to validate the image can be signed successful.
 * Ldap Basic Verification, to validate harbor can work in LDAP environment.
 
@@ -336,7 +336,7 @@ Commit changes made in response to review comments to the same branch on your fo
 
 ## Reporting issues
 
-It is a great way to contribute to Harbor by reporting an issue. Well-written and complete bug reports are always welcome! Please open an issue on Github and follow the template to fill in required information.
+It is a great way to contribute to Harbor by reporting an issue. Well-written and complete bug reports are always welcome! Please open an issue on GitHub and follow the template to fill in required information.
 
 Before opening any issue, please look up the existing [issues](https://github.com/goharbor/harbor/issues) to avoid submitting a duplication.
 If you find a match, you can "subscribe" to it to get notified on updates. If you have additional helpful information about the issue, please leave a comment.

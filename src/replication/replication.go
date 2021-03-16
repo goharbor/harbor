@@ -15,14 +15,18 @@
 package replication
 
 import (
+	"context"
+	"fmt"
+	"strconv"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/controller/replication"
 	cfg "github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/event"
-	"github.com/goharbor/harbor/src/replication/operation"
 	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/policy/controller"
 	"github.com/goharbor/harbor/src/replication/registry"
@@ -51,6 +55,14 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/helmhub"
 	// register the GitLab adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/gitlab"
+	// register the DTR adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/dtr"
+	// register the Artifact Hub adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/artifacthub"
+	// register the TencentCloud TCR adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/tencentcr"
+	// register the Github Container Registry adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/githubcr"
 )
 
 var (
@@ -58,11 +70,36 @@ var (
 	PolicyCtl policy.Controller
 	// RegistryMgr is a global registry manager
 	RegistryMgr registry.Manager
-	// OperationCtl is a global operation controller
-	OperationCtl operation.Controller
 	// EventHandler handles images/chart pull/push events
 	EventHandler event.Handler
 )
+
+func init() {
+	callbackFunc := func(ctx context.Context, param string) error {
+		policyID, err := strconv.ParseInt(param, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		policy, err := PolicyCtl.Get(policyID)
+		if err != nil {
+			return err
+		}
+		if policy == nil {
+			return fmt.Errorf("policy %d not found", policyID)
+		}
+		if err = event.PopulateRegistries(RegistryMgr, policy); err != nil {
+			return err
+		}
+
+		_, err = replication.Ctl.Start(ctx, policy, nil, task.ExecutionTriggerSchedule)
+		return err
+	}
+	err := scheduler.RegisterCallbackFunc(controller.CallbackFuncName, callbackFunc)
+	if err != nil {
+		log.Errorf("failed to register the callback function for replication: %v", err)
+	}
+}
 
 // Init the global variables and configurations
 func Init(closing, done chan struct{}) error {
@@ -74,21 +111,15 @@ func Init(closing, done chan struct{}) error {
 	config.Config = &config.Configuration{
 		CoreURL:          cfg.InternalCoreURL(),
 		TokenServiceURL:  cfg.InternalTokenServiceEndpoint(),
-		JobserviceURL:    cfg.InternalJobServiceURL(),
 		SecretKey:        secretKey,
-		CoreSecret:       cfg.CoreSecret(),
 		JobserviceSecret: cfg.JobserviceSecret(),
 	}
-	// TODO use a global http transport
-	js := job.NewDefaultClient(config.Config.JobserviceURL, config.Config.CoreSecret)
 	// init registry manager
 	RegistryMgr = registry.NewDefaultManager()
 	// init policy controller
-	PolicyCtl = controller.NewController(js)
-	// init operation controller
-	OperationCtl = operation.NewController(js)
+	PolicyCtl = controller.NewController()
 	// init event handler
-	EventHandler = event.NewHandler(PolicyCtl, RegistryMgr, OperationCtl)
+	EventHandler = event.NewHandler(PolicyCtl, RegistryMgr)
 	log.Debug("the replication initialization completed")
 
 	// Start health checker for registries

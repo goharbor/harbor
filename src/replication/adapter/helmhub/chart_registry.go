@@ -101,7 +101,7 @@ func (a *adapter) ChartExist(name, version string) (bool, error) {
 	return false, nil
 }
 
-func (a *adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
+func (a *adapter) DownloadChart(name, version, contentURL string) (io.ReadCloser, error) {
 	versionList, err := a.client.fetchChartDetail(name)
 	if err != nil {
 		return nil, err

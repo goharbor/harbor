@@ -1,0 +1,87 @@
+.refresh-btn {
+    cursor: pointer;
+}
+
+.refresh-btn:hover {
+    color: #007CBB;
+}
+
+.option-left {
+  padding-left: 16px;
+}
+.option-right {
+  padding-right: 16px;
+}
+
+.execution-select {
+  padding-right: 50px;
+  height: 24px;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 25px;
+  .filter-tag {
+      float: left;
+      margin-top: 8px;
+      .clr-form-control {
+        margin-top: 0;
+      }
+  }
+  .refresh-btn {
+      cursor: pointer;
+      margin-top: 7px;
+      &:hover {
+        color: #007CBB;
+    }
+  }
+}
+
+ .rightPos{
+    position: absolute;
+    right: 35px;
+    margin-top: 20px;
+    z-index: 100;
+    height: 32px;
+}
+
+.select-status {
+  float: left;
+  margin-top: 6px;
+  margin-right: 5px;
+}
+
+.row-right {
+  margin-left: 564px;
+}
+.fiter-task {
+  margin-left: .4rem;
+  margin-top: .05rem;
+}
+.replication-row {
+  position: relative;
+}
+
+.jobList {
+  padding-left: 0;
+  .jobsRow {
+    height: 60px;
+    display: flex;
+    .option-left-down {
+      margin-top: 36px;
+    }
+    .option-right-down {
+      padding-right: 16px;
+      margin-top: 24px;
+    }
+  }
+}
+
+clr-datagrid {
+  ::ng-deep .datagrid-table {
+    position: static;
+  }
+}
+
+.flex-items-xs-between {
+  display: flex;
+  justify-content: space-between;
+}

@@ -15,6 +15,7 @@
 package evaluator
 
 import (
+	"context"
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -25,7 +26,7 @@ type mockEvaluator struct {
 	name string
 }
 
-func (e *mockEvaluator) HasPermission(resource types.Resource, action types.Action) bool {
+func (e *mockEvaluator) HasPermission(ctx context.Context, resource types.Resource, action types.Action) bool {
 	return true
 }
 

@@ -3,12 +3,14 @@ package util
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
-	"strings"
 )
 
 // SendHookWithPolicies send hook by publishing topic of specified target type(notify type)
@@ -56,11 +58,15 @@ func GetNameFromImgRepoFullName(repo string) string {
 }
 
 // BuildImageResourceURL ...
-func BuildImageResourceURL(repoName, tag string) (string, error) {
+func BuildImageResourceURL(repoName, reference string) (string, error) {
 	extURL, err := config.ExtURL()
 	if err != nil {
 		return "", fmt.Errorf("get external endpoint failed: %v", err)
 	}
-	resURL := fmt.Sprintf("%s/%s:%s", extURL, repoName, tag)
-	return resURL, nil
+
+	if distribution.IsDigest(reference) {
+		return fmt.Sprintf("%s/%s@%s", extURL, repoName, reference), nil
+	}
+
+	return fmt.Sprintf("%s/%s:%s", extURL, repoName, reference), nil
 }

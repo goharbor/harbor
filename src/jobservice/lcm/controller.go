@@ -31,12 +31,8 @@ import (
 )
 
 const (
-	// Waiting a short while if any errors occurred
-	shortLoopInterval = 5 * time.Second
 	// Waiting for long while if no retrying elements found
 	longLoopInterval = 5 * time.Minute
-	// loopInterval is the interval for the loop of restoring dead status
-	loopInterval = 2 * time.Minute
 	// shortInterval is initial interval and be as based to give random buffer to loopInterval
 	shortInterval = 10
 )

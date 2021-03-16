@@ -50,7 +50,7 @@ func (d *Database) Load() (map[string]interface{}, error) {
 			if decryptPassword, err := encrypt.Instance().Decrypt(item.Value); err == nil {
 				item.Value = decryptPassword
 			} else {
-				log.Errorf("decrypt password failed, error %v", err)
+				log.Errorf("decrypt password failed, key: %s, error %v,", item.Key, err)
 			}
 		}
 		resultMap[itemMetadata.Name] = item.Value
@@ -72,6 +72,8 @@ func (d *Database) Save(cfgs map[string]interface{}) error {
 			if _, ok := item.ItemType.(*metadata.PasswordType); ok {
 				if encryptPassword, err := encrypt.Instance().Encrypt(strValue); err == nil {
 					entry.Value = encryptPassword
+				} else {
+					log.Errorf("encrypt password failed, error: %v", err)
 				}
 			}
 			configEntries = append(configEntries, *entry)

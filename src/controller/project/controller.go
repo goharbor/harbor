@@ -23,11 +23,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/allowlist"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/project/models"
-	"github.com/goharbor/harbor/src/pkg/scan/allowlist"
 	"github.com/goharbor/harbor/src/pkg/user"
 )
 
@@ -50,14 +50,18 @@ type Controller interface {
 	Count(ctx context.Context, query *q.Query) (int64, error)
 	// Delete delete the project by project id
 	Delete(ctx context.Context, id int64) error
-	// Get get the project by project id
-	Get(ctx context.Context, projectID int64, options ...Option) (*models.Project, error)
+	// Exists returns true when the specific project exists
+	Exists(ctx context.Context, projectIDOrName interface{}) (bool, error)
+	// Get get the project by project id or name
+	Get(ctx context.Context, projectIDOrName interface{}, options ...Option) (*models.Project, error)
 	// GetByName get the project by project name
 	GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error)
 	// List list projects
 	List(ctx context.Context, query *q.Query, options ...Option) ([]*models.Project, error)
 	// Update update the project
 	Update(ctx context.Context, project *models.Project) error
+	// ListRoles lists the roles of user for the specific project
+	ListRoles(ctx context.Context, projectID int64, u *user.User) ([]int, error)
 }
 
 // NewController creates an instance of the default project controller
@@ -85,7 +89,7 @@ func (c *controller) Create(ctx context.Context, project *models.Project) (int64
 			return err
 		}
 
-		if err := c.allowlistMgr.CreateEmpty(projectID); err != nil {
+		if err := c.allowlistMgr.CreateEmpty(ctx, projectID); err != nil {
 			log.Errorf("failed to create CVE allowlist for project %s: %v", project.Name, err)
 			return err
 		}
@@ -138,8 +142,19 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (c *controller) Get(ctx context.Context, projectID int64, options ...Option) (*models.Project, error) {
-	p, err := c.projectMgr.Get(ctx, projectID)
+func (c *controller) Exists(ctx context.Context, projectIDOrName interface{}) (bool, error) {
+	_, err := c.projectMgr.Get(ctx, projectIDOrName)
+	if err == nil {
+		return true, nil
+	} else if errors.IsNotFoundErr(err) {
+		return false, nil
+	} else {
+		return false, err
+	}
+}
+
+func (c *controller) Get(ctx context.Context, projectIDOrName interface{}, options ...Option) (*models.Project, error) {
+	p, err := c.projectMgr.Get(ctx, projectIDOrName)
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +233,7 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 	}
 
 	if p.CVEAllowlist.ProjectID == p.ProjectID {
-		if err := c.allowlistMgr.Set(p.ProjectID, p.CVEAllowlist); err != nil {
+		if err := c.allowlistMgr.Set(ctx, p.ProjectID, p.CVEAllowlist); err != nil {
 			return err
 		}
 	}
@@ -226,8 +241,19 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 	return nil
 }
 
+func (c *controller) ListRoles(ctx context.Context, projectID int64, u *user.User) ([]int, error) {
+	if u == nil {
+		return nil, nil
+	}
+
+	return c.projectMgr.ListRoles(ctx, projectID, u.UserID, u.GroupIDs...)
+}
+
 func (c *controller) assembleProjects(ctx context.Context, projects models.Projects, options ...Option) error {
 	opts := newOptions(options...)
+	if !opts.WithDetail {
+		return nil
+	}
 	if opts.WithMetadata {
 		if err := c.loadMetadatas(ctx, projects); err != nil {
 			return err
@@ -259,7 +285,7 @@ func (c *controller) loadCVEAllowlists(ctx context.Context, projects models.Proj
 	}
 
 	for _, p := range projects {
-		wl, err := c.allowlistMgr.Get(p.ProjectID)
+		wl, err := c.allowlistMgr.Get(ctx, p.ProjectID)
 		if err != nil {
 			return err
 		}
@@ -277,7 +303,7 @@ func (c *controller) loadEffectCVEAllowlists(ctx context.Context, projects model
 
 	for _, p := range projects {
 		if p.ReuseSysCVEAllowlist() {
-			wl, err := c.allowlistMgr.GetSys()
+			wl, err := c.allowlistMgr.GetSys(ctx)
 			if err != nil {
 				log.Errorf("get system CVE allowlist failed, error: %v", err)
 				return err
@@ -286,7 +312,7 @@ func (c *controller) loadEffectCVEAllowlists(ctx context.Context, projects model
 			wl.ProjectID = p.ProjectID
 			p.CVEAllowlist = *wl
 		} else {
-			wl, err := c.allowlistMgr.Get(p.ProjectID)
+			wl, err := c.allowlistMgr.Get(ctx, p.ProjectID)
 			if err != nil {
 				return err
 			}
