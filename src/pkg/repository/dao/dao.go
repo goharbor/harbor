@@ -160,7 +160,7 @@ func (d *dao) NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error) {
 		return nil, err
 	}
 
-	sql := fmt.Sprintf(`select r.* from repository as r LEFT JOIN tag as t on r.repository_id = t.repository_id where t.repository_id is not null;`)
+	sql := fmt.Sprintf(`select distinct r.* from repository as r LEFT JOIN tag as t on r.repository_id = t.repository_id where t.repository_id is not null;`)
 	_, err = ormer.Raw(sql).QueryRows(&repos)
 	if err != nil {
 		return repos, err

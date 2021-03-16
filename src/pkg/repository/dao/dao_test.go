@@ -190,9 +190,9 @@ func (d *daoTestSuite) TestAddPullCount() {
 	d.dao.Delete(d.ctx, id)
 }
 
-func (d *daoTestSuite) TestEmptyRepos() {
+func (d *daoTestSuite) TestNonEmptyRepos() {
 	repository := &models.RepoRecord{
-		Name:        "TestEmptyRepos",
+		Name:        "TestNonEmptyRepos",
 		ProjectID:   10,
 		Description: "test pull count",
 		PullCount:   1,
@@ -215,30 +215,45 @@ func (d *daoTestSuite) TestEmptyRepos() {
 	afID, err := d.afDao.Create(d.ctx, art)
 	d.Require().Nil(err)
 
-	tag := &tag.Tag{
+	// Same repository with two tags, the result should only contain one repository record.
+	tag1 := &tag.Tag{
 		RepositoryID: id,
 		ArtifactID:   afID,
-		Name:         "latest",
+		Name:         "tag1",
 		PushTime:     time.Now(),
 		PullTime:     time.Now(),
 	}
-	_, err = d.tagDao.Create(d.ctx, tag)
+	_, err = d.tagDao.Create(d.ctx, tag1)
+	d.Require().Nil(err)
+	tag2 := &tag.Tag{
+		RepositoryID: id,
+		ArtifactID:   afID,
+		Name:         "tag2",
+		PushTime:     time.Now(),
+		PullTime:     time.Now(),
+	}
+	_, err = d.tagDao.Create(d.ctx, tag2)
 	d.Require().Nil(err)
 
 	repos, err := d.dao.NonEmptyRepos(d.ctx)
 	d.Require().Nil(err)
 
 	var success bool
+	var count int
 	for _, repo := range repos {
-		if repo.Name == "TestEmptyRepos" {
+		if repo.Name == "TestNonEmptyRepos" {
 			success = true
-			break
+			count++
 		}
 	}
-
 	if !success {
-		d.Fail("TestEmptyRepos failure")
+		d.Fail("TestNonEmptyRepos failure: no NonEmpty repository found")
 	}
+
+	if count != 1 {
+		d.Fail("TestNonEmptyRepos failure: duplicate repository record")
+	}
+
 }
 
 func TestDaoTestSuite(t *testing.T) {
