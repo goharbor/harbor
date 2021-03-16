@@ -14,12 +14,11 @@ class Preheat(base.Base, object):
                         expect_status_code = 201, expect_response_body = None, **kwargs):
         if name is None:
             name = base._random_name("instance")
-        client = self._get_client(**kwargs)
         instance = v2_swagger_client.Instance(name=name, description=description,vendor=vendor,
             endpoint=endpoint_url, auth_mode=auth_mode, enabled=enabled)
         print("instance:",instance)
         try:
-            _, status_code, header = client.create_instance_with_http_info(instance)
+            _, status_code, header = self._get_client(**kwargs).create_instance_with_http_info(instance)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
@@ -34,13 +33,12 @@ class Preheat(base.Base, object):
                         expect_status_code = 201, expect_response_body = None, **kwargs):
         if name is None:
             name = base._random_name("policy")
-        client = self._get_client(**kwargs)
         policy = v2_swagger_client.PreheatPolicy(name=name, project_id=project_id, provider_id=provider_id,
                                                    description=description,filters=filters,
                                                    trigger=trigger, enabled=enabled)
         print("policy:",policy)
         try:
-            data, status_code, header = client.create_policy_with_http_info(project_name, policy)
+            data, status_code, header = self._get_client(**kwargs).create_policy_with_http_info(project_name, policy)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
@@ -51,21 +49,17 @@ class Preheat(base.Base, object):
         return base._get_id_from_header(header), name
 
     def get_instance(self, instance_name, **kwargs):
-        client = self._get_client(**kwargs)
-        return client.get_instance(instance_name)
+        return self._get_client(**kwargs).get_instance(instance_name)
 
     def get_policy(self, project_name, preheat_policy_name, **kwargs):
-        client = self._get_client(**kwargs)
-        return client.get_policy(project_name, preheat_policy_name)
+        return self._get_client(**kwargs).get_policy(project_name, preheat_policy_name)
 
     def update_policy(self, project_name, preheat_policy_name, policy, **kwargs):
-        client = self._get_client(**kwargs)
-        return client.update_policy(project_name, preheat_policy_name, policy)
+        return self._get_client(**kwargs).update_policy(project_name, preheat_policy_name, policy)
 
     def delete_instance(self, preheat_instance_name, expect_status_code = 200, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
         try:
-            _, status_code, header = _, status_code, _ = client.delete_instance_with_http_info(preheat_instance_name)
+            _, status_code, header = _, status_code, _ = self._get_client(**kwargs).delete_instance_with_http_info(preheat_instance_name)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:

@@ -37,11 +37,9 @@ class Project(base.Base):
             metadata = {}
         if registry_id is None:
             registry_id = registry_id
-
-        client = self._get_client(**kwargs)
-
+        project = v2_swagger_client.ProjectReq(project_name=name, registry_id = registry_id, metadata=metadata)
         try:
-            _, status_code, header = client.create_project_with_http_info(v2_swagger_client.ProjectReq(project_name=name, registry_id = registry_id, metadata=metadata))
+            _, status_code, header = self._get_client(**kwargs).create_project_with_http_info(project)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
@@ -52,9 +50,8 @@ class Project(base.Base):
         return base._get_id_from_header(header), name
 
     def get_projects(self, params, **kwargs):
-        client = self._get_client(**kwargs)
         data = []
-        data, status_code, _ = client.list_projects_with_http_info(**params)
+        data, status_code, _ = self._get_client(**kwargs).list_projects_with_http_info(**params)
         base._assert_status_code(200, status_code)
         return data
 
@@ -75,9 +72,8 @@ class Project(base.Base):
             raise Exception(r"Project-id check failed, expect {} but got {}, please check this test case.".format(str(expected_project_id), str(project_data[0].project_id)))
 
     def check_project_name_exist(self, name=None, **kwargs):
-        client = self._get_client(**kwargs)
         try:
-            _, status_code, _ = client.head_project_with_http_info(name)
+            _, status_code, _ = self._get_client(**kwargs).head_project_with_http_info(name)
         except ApiException as e:
             status_code = -1
         return {
@@ -86,9 +82,8 @@ class Project(base.Base):
         }.get(status_code,False)
 
     def get_project(self, project_id, expect_status_code = 200, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
         try:
-            data, status_code, _ = client.get_project_with_http_info(project_id)
+            data, status_code, _ = self._get_client(**kwargs).get_project_with_http_info(project_id)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
@@ -101,23 +96,20 @@ class Project(base.Base):
         return data
 
     def update_project(self, project_id, expect_status_code=200, metadata=None, cve_allowlist=None, **kwargs):
-        client = self._get_client(**kwargs)
         project = v2_swagger_client.ProjectReq(metadata=metadata, cve_allowlist=cve_allowlist)
         try:
-            _, sc, _ = client.update_project_with_http_info(project_id, project)
+            _, sc, _ = self._get_client(**kwargs).update_project_with_http_info(project_id, project)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
         else:
             base._assert_status_code(expect_status_code, sc)
 
     def delete_project(self, project_id, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
-        _, status_code, _ = client.delete_project_with_http_info(project_id)
+        _, status_code, _ = self._get_client(**kwargs).delete_project_with_http_info(project_id)
         base._assert_status_code(expect_status_code, status_code)
 
     def get_project_log(self, project_name, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
-        body, status_code, _ = client.get_logs_with_http_info(project_name)
+        body, status_code, _ = self._get_client(**kwargs).get_logs_with_http_info(project_name)
         base._assert_status_code(expect_status_code, status_code)
         return body
 
@@ -134,16 +126,14 @@ class Project(base.Base):
 
     def get_project_members(self, project_id, **kwargs):
         kwargs['api_type'] = 'products'
-        client = self._get_client(**kwargs)
-        return client.projects_project_id_members_get(project_id)
+        return self._get_client(**kwargs).projects_project_id_members_get(project_id)
 
     def get_project_member(self, project_id, member_id, expect_status_code = 200, expect_response_body = None, **kwargs):
         from swagger_client.rest import ApiException
         kwargs['api_type'] = 'products'
-        client = self._get_client(**kwargs)
         data = []
         try:
-            data, status_code, _ = client.projects_project_id_members_mid_get_with_http_info(project_id, member_id,)
+            data, status_code, _ = self._get_client(**kwargs).projects_project_id_members_mid_get_with_http_info(project_id, member_id,)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
@@ -179,17 +169,15 @@ class Project(base.Base):
 
     def update_project_member_role(self, project_id, member_id, member_role_id, expect_status_code = 200, **kwargs):
         kwargs['api_type'] = 'products'
-        client = self._get_client(**kwargs)
         role = swagger_client.Role(role_id = member_role_id)
-        data, status_code, _ = client.projects_project_id_members_mid_put_with_http_info(project_id, member_id, role = role)
+        data, status_code, _ = self._get_client(**kwargs).projects_project_id_members_mid_put_with_http_info(project_id, member_id, role = role)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
         return data
 
     def delete_project_member(self, project_id, member_id, expect_status_code = 200, **kwargs):
         kwargs['api_type'] = 'products'
-        client = self._get_client(**kwargs)
-        _, status_code, _ = client.projects_project_id_members_mid_delete_with_http_info(project_id, member_id)
+        _, status_code, _ = self._get_client(**kwargs).projects_project_id_members_mid_delete_with_http_info(project_id, member_id)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
 
@@ -205,10 +193,9 @@ class Project(base.Base):
         if _ldap_group_dn is not None:
             projectMember.member_group = swagger_client.UserGroup(ldap_group_dn=_ldap_group_dn)
 
-        client = self._get_client(**kwargs)
         data = []
         try:
-            data, status_code, header = client.projects_project_id_members_post_with_http_info(project_id, project_member = projectMember)
+            data, status_code, header = self._get_client(**kwargs).projects_project_id_members_post_with_http_info(project_id, project_member = projectMember)
         except swagger_client.rest.ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
         else:

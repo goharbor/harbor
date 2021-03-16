@@ -121,7 +121,7 @@ def restart_process(process):
 
 
 def run_command_with_popen(command):
-    print("Command: ", subprocess.list2cmdline(command))
+    print("Command: ", command)
 
     try:
         proc = subprocess.Popen(command, universal_newlines=True, shell=True,

@@ -10,8 +10,7 @@ class ProjectV2(base.Base, object):
         super(ProjectV2,self).__init__(api_type = "projectv2")
 
     def get_project_log(self, project_name, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
-        body, status_code, _ = client.get_logs_with_http_info(project_name)
+        body, status_code, _ = self._get_client(**kwargs).get_logs_with_http_info(project_name)
         base._assert_status_code(expect_status_code, status_code)
         return body
 

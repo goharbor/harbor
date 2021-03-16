@@ -11,10 +11,8 @@ class GC(base.Base, object):
         super(GC,self).__init__(api_type = "gc")
 
     def get_gc_history(self, expect_status_code = 200, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
-
         try:
-            data, status_code, _ = client.get_gc_history_with_http_info()
+            data, status_code, _ = self._get_client(**kwargs).get_gc_history_with_http_info()
         except ApiException as e:
             if e.status == expect_status_code:
                 if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
@@ -27,10 +25,8 @@ class GC(base.Base, object):
         return data
 
     def get_gc_status_by_id(self, job_id, expect_status_code = 200, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
-
         try:
-            data, status_code, _ = client.get_gc_with_http_info(job_id)
+            data, status_code, _ = self._get_client(**kwargs).get_gc_with_http_info(job_id)
         except ApiException as e:
             if e.status == expect_status_code:
                 if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
@@ -43,10 +39,8 @@ class GC(base.Base, object):
         return data
 
     def get_gc_log_by_id(self, job_id, expect_status_code = 200, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
-
         try:
-            data, status_code, _ = client.get_gc_log_with_http_info(job_id)
+            data, status_code, _ = self._get_client(**kwargs).get_gc_log_with_http_info(job_id)
         except ApiException as e:
             if e.status == expect_status_code:
                 if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
@@ -59,10 +53,8 @@ class GC(base.Base, object):
         return data
 
     def get_gc_schedule(self, expect_status_code = 200, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
-
         try:
-            data, status_code, _ = client.get_gc_schedule_with_http_info()
+            data, status_code, _ = self._get_client(**kwargs).get_gc_schedule_with_http_info()
         except ApiException as e:
             if e.status == expect_status_code:
                 if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
@@ -75,8 +67,6 @@ class GC(base.Base, object):
         return data
 
     def create_gc_schedule(self, schedule_type, is_delete_untagged, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
-
         gc_parameters = {'delete_untagged':is_delete_untagged}
 
         gc_schedule = v2_swagger_client.ScheduleObj()
@@ -89,7 +79,7 @@ class GC(base.Base, object):
         gc_job.parameters = gc_parameters
 
         try:
-            _, status_code, header = client.create_gc_schedule_with_http_info(gc_job)
+            _, status_code, header = self._get_client(**kwargs).create_gc_schedule_with_http_info(gc_job)
         except ApiException as e:
             if e.status == expect_status_code:
                 if expect_response_body is not None and e.body.strip() != expect_response_body.strip():

@@ -23,13 +23,11 @@ class ReplicationV2(base.Base, object):
             raise Exception("The jobs not Succeed")
 
     def trigger_replication_executions(self, rule_id, expect_status_code = 201, **kwargs):
-        client = self._get_client(**kwargs)
-        _, status_code, _ = client.start_replication_with_http_info({"policy_id":rule_id})
+        _, status_code, _ = self._get_client(**kwargs).start_replication_with_http_info({"policy_id":rule_id})
         base._assert_status_code(expect_status_code, status_code)
 
     def get_replication_executions(self, rule_id, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
-        data, status_code, _ = client.list_replication_executions_with_http_info(policy_id=rule_id)
+        data, status_code, _ = self._get_client(**kwargs).list_replication_executions_with_http_info(policy_id=rule_id)
         base._assert_status_code(expect_status_code, status_code)
         return data
 

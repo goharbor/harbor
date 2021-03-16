@@ -19,11 +19,10 @@ class User(base.Base):
         if role_id is None:
             role_id = 0
 
-        client = self._get_client(**kwargs)
         user = swagger_client.User(username = name, email = email, password = user_password, realname = realname, role_id = role_id)
 
         try:
-            _, status_code, header = client.users_post_with_http_info(user)
+            _, status_code, header = self._get_client(**kwargs).users_post_with_http_info(user)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
         else:
@@ -31,7 +30,6 @@ class User(base.Base):
             return base._get_id_from_header(header), name
 
     def get_users(self, user_name=None, email=None, page=None, page_size=None, expect_status_code=200, **kwargs):
-        client = self._get_client(**kwargs)
         params={}
         if user_name is not None:
             params["username"] = user_name
@@ -42,7 +40,7 @@ class User(base.Base):
         if page_size is not None:
             params["page_size"] = page_size
         try:
-            data, status_code, _ = client.users_get_with_http_info(**params)
+            data, status_code, _ = self._get_client(**kwargs).users_get_with_http_info(**params)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
         else:
@@ -50,8 +48,7 @@ class User(base.Base):
             return data
 
     def get_user_by_id(self, user_id, **kwargs):
-        client = self._get_client(**kwargs)
-        data, status_code, _ = client.users_user_id_get_with_http_info(user_id)
+        data, status_code, _ = self._get_client(**kwargs).users_user_id_get_with_http_info(user_id)
         base._assert_status_code(200, status_code)
         return data
 
@@ -64,14 +61,12 @@ class User(base.Base):
 
 
     def get_user_current(self, **kwargs):
-        client = self._get_client(**kwargs)
-        data, status_code, _ = client.users_current_get_with_http_info()
+        data, status_code, _ = self._get_client(**kwargs).users_current_get_with_http_info()
         base._assert_status_code(200, status_code)
         return data
 
     def delete_user(self, user_id, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
-        _, status_code, _ = client.users_user_id_delete_with_http_info(user_id)
+        _, status_code, _ = self._get_client(**kwargs).users_user_id_delete_with_http_info(user_id)
         base._assert_status_code(expect_status_code, status_code)
         return user_id
 
@@ -79,21 +74,18 @@ class User(base.Base):
         if old_password is None:
             old_password  = ""
         password = swagger_client.Password(old_password, new_password)
-        client = self._get_client(**kwargs)
-        _, status_code, _ = client.users_user_id_password_put_with_http_info(user_id, password)
+        _, status_code, _ = self._get_client(**kwargs).users_user_id_password_put_with_http_info(user_id, password)
         base._assert_status_code(200, status_code)
         return user_id
 
     def update_user_profile(self, user_id, email=None, realname=None, comment=None, **kwargs):
-        client = self._get_client(**kwargs)
         user_rofile = swagger_client.UserProfile(email, realname, comment)
-        _, status_code, _ = client.users_user_id_put_with_http_info(user_id, user_rofile)
+        _, status_code, _ = self._get_client(**kwargs).users_user_id_put_with_http_info(user_id, user_rofile)
         base._assert_status_code(200, status_code)
         return user_id
 
     def update_user_role_as_sysadmin(self, user_id, IsAdmin, **kwargs):
-        client = self._get_client(**kwargs)
         sysadmin_flag = swagger_client.SysAdminFlag(IsAdmin)
-        _, status_code, _ = client.users_user_id_sysadmin_put_with_http_info(user_id, sysadmin_flag)
+        _, status_code, _ = self._get_client(**kwargs).users_user_id_sysadmin_put_with_http_info(user_id, sysadmin_flag)
         base._assert_status_code(200, status_code)
         return user_id
