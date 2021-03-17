@@ -196,6 +196,7 @@ Restart Process Locally
 
 Prepare Docker Cert In Ubuntu
     [Arguments]  ${ip}  ${cert}
+    Wait Unitl Command Success  rm -rf ~/.docker/
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
     Wait Unitl Command Success  cp ${cert} /etc/docker/certs.d/${ip}
     Wait Unitl Command Success  cp ${cert} /usr/local/share/ca-certificates/
