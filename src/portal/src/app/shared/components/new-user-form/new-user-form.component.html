@@ -59,7 +59,7 @@
         </clr-input-container>
         <clr-input-container>
             <label>{{'PROFILE.COMMENT' | translate}}</label>
-            <input clrInput type="text" #commentInput="ngModel" name="comment" [(ngModel)]="newUser.comment" maxLengthExt="20" id="comment" size="30"
+            <input clrInput type="text" #commentInput="ngModel" name="comment" [(ngModel)]="newUser.comment" maxLengthExt="30" id="comment" size="30"
                 (input)='handleValidation("comment", false)' (blur)='handleValidation("comment", true)'>
             <clr-control-error *ngIf='getValidationState("comment")'>
                 {{'TOOLTIP.COMMENT' | translate}}

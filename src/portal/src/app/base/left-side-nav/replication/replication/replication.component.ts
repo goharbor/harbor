@@ -168,7 +168,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
           switchMap( ruleName => {
             this.listReplicationRule.loading = true;
             this.listReplicationRule.page = 1;
-            return this.replicationService.getReplicationRulesResponse(ruleName);
+            return this.replicationService
+                .getReplicationRulesResponse(ruleName, this.listReplicationRule.page, this.listReplicationRule.pageSize);
           })
       ).subscribe(response => {
               this.hideJobs();
@@ -176,7 +177,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
               if (response.headers) {
                   let xHeader: string = response.headers.get("x-total-count");
                   if (xHeader) {
-                      this.totalCount = parseInt(xHeader, 0);
+                    this.listReplicationRule.totalCount = parseInt(xHeader, 0);
                   }
               }
               this.listReplicationRule.selectedRow = null; // Clear selection
