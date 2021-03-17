@@ -150,7 +150,14 @@ Test Case - Replication Rule Delete
 
 Test Case - Replication Of Pull Images from DockerHub To Self
     @{target_images}=  Create List  mariadb  centos
-    Body Of Replication Of Pull Images from Registry To Self   docker-hub  https://hub.docker.com/  ${DOCKER_USER}    ${DOCKER_PWD}  ${DOCKER_USER}/{cent*,mariadb}  ${null}  @{target_images}
+    &{image1_with_tag}=	 Create Dictionary  image=centos  tag=1.0
+    &{image2_with_tag}=	 Create Dictionary  image=mariadb  tag=latest
+    ${image1}=  Get From Dictionary  ${image1_with_tag}  image
+    ${image1}=  Get Substring  ${image1}  0  -2
+    Log All  image1:${image1}
+    ${image2}=  Get From Dictionary  ${image2_with_tag}  image
+    @{target_images}=  Create List  '&{image1_with_tag}'  '&{image2_with_tag}'
+    Body Of Replication Of Pull Images from Registry To Self   docker-hub  https://hub.docker.com/  ${DOCKER_USER}    ${DOCKER_PWD}  ${DOCKER_USER}/{${image1}*,${image2}}  ${null}  N  @{target_images}
 
 Test Case - Replication Of Push Images from Self To Harbor
     Init Chrome Driver
@@ -280,8 +287,22 @@ Test Case - Replication Of Push Images to AWS-ECR Triggered By Event
     Body Of Replication Of Push Images to Registry Triggered By Event  aws-ecr  us-east-2  ${ecr_ac_id}  ${ecr_ac_key}  harbor-nightly-replication
 
 Test Case - Replication Of Pull Images from Gitlab To Self
-    @{target_images}=  Create List  photon  alpine
-    Body Of Replication Of Pull Images from Registry To Self   gitlab   https://registry.gitlab.com    ${gitlab_id}    ${gitlab_key}    dannylunsa/test_replication/{photon,alpine}  ${null}  @{target_images}
+    &{image1_with_tag}=	 Create Dictionary  image=photon  tag=1.0
+    &{image2_with_tag}=	 Create Dictionary  image=alpine  tag=latest
+    ${image1}=  Get From Dictionary  ${image1_with_tag}  image
+    ${image2}=  Get From Dictionary  ${image2_with_tag}  image
+    @{target_images}=  Create List  '&{image1_with_tag}'  '&{image2_with_tag}'
+    Body Of Replication Of Pull Images from Registry To Self   gitlab   https://registry.gitlab.com    ${gitlab_id}    ${gitlab_key}    dannylunsa/test_replication/{${image1},${image2}}  ${null}  N  @{target_images}
 
 Test Case - Replication Of Push Images to Gitlab Triggered By Event
     Body Of Replication Of Push Images to Registry Triggered By Event    gitlab   https://registry.gitlab.com    ${gitlab_id}    ${gitlab_key}    dannylunsa/test_replication
+
+Test Case - Replication Of Pull Manifest List and CNAB from Harbor To Self
+    &{image1_with_tag}=	 Create Dictionary  image=busybox  tag=1.32.0  total_artifact_count=9  archive_count=0
+    &{image2_with_tag}=	 Create Dictionary  image=index101603308079  tag=index_tag101603308079  total_artifact_count=2  archive_count=0
+    &{image3_with_tag}=	 Create Dictionary  image=cnab011609785126  tag=cnab_tag011609785126  total_artifact_count=3  archive_count=2
+    ${image1}=  Get From Dictionary  ${image1_with_tag}  image
+    ${image2}=  Get From Dictionary  ${image2_with_tag}  image
+    ${image3}=  Get From Dictionary  ${image3_with_tag}  image
+    @{target_images}=  Create List  '&{image1_with_tag}'  '&{image2_with_tag}'  '&{image3_with_tag}'
+    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  admin  qA5ZgV  nightly/{${image1},${image2},${image3}}  ${null}  Y  @{target_images}

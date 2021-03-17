@@ -15,9 +15,9 @@ docker login $IP -u $USER -p $PWD
 cat /$HOME/.docker/config.json
 
 if [ $(cat /$HOME/.docker/config.json |grep experimental |wc -l) -eq 0 ];then
-    sudo sed -i '$d' /$HOME/.docker/config.json
-    sudo sed -i '$d' /$HOME/.docker/config.json
-    sudo echo -e "},\n        \"experimental\": \"enabled\"\n}" >> /$HOME/.docker/config.json
+    sed -i '$d' /$HOME/.docker/config.json
+    sed -i '$d' /$HOME/.docker/config.json
+    echo -e "},\n        \"experimental\": \"enabled\"\n}" >> /$HOME/.docker/config.json
 fi
 
 cat /$HOME/.docker/config.json

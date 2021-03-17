@@ -58,7 +58,7 @@ Test Case - Proxy Cache
         Go Into Project  project${d}
         ${repo_out}=  Run Keyword And Ignore Error  Go Into Repo  project${d}/${user_namespace}/${manifest_index}
         Continue For Loop If  '${repo_out[0]}'=='FAIL'
-        ${artifact_out}=  Run Keyword And Ignore Error  Go Into Index And Contain Artifacts  ${manifest_tag}  limit=1
+        ${artifact_out}=  Run Keyword And Ignore Error  Go Into Index And Contain Artifacts  ${manifest_tag}  total_artifact_count=1
         Exit For Loop If  '${artifact_out[0]}'=='PASS'
     END
     Should Be Equal As Strings  '${artifact_out[0]}'  'PASS'

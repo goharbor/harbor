@@ -19,7 +19,8 @@ Default Tags  Nightly
 
 *** Test Cases ***
 Test Suites Setup For UI Test
-    Nightly Test Setup For Nightly  ${ip}  ${HARBOR_PASSWORD}  ${ip1}
+    [Tags]  setup
+    Nightly Test Setup In Ubuntu  ${ip}  ${HARBOR_PASSWORD}  ${ip1}
     Setup API Test
 
 Test Case - Get Harbor Version

@@ -1,0 +1,60 @@
+
+#ubuntm based image
+FROM ubuntu:18.04
+ENV LANG C.UTF-8
+RUN apt-get update && apt-get install -y --no-install-recommends wget curl gnupg2
+RUN apt-get install libseccomp2
+RUN wget  --no-check-certificate -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+
+COPY --from=tool_builder /tool/tools.tar.gz /usr/local/bin
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    openjdk-8-jdk \
+    iproute2 \
+    iptables \
+    build-essential \
+    sed \
+    libssl-dev \
+    tar \
+    unzip \
+    gzip \
+    # certutil
+    libnss3-tools \
+    google-chrome-stable
+
+RUN apt-get update -y ; apt-get install -y python3.6 && \
+    rm /usr/bin/python ; ln -s /usr/bin/python3.6 /usr/bin/python ; apt-get install -y python3-pip && \
+    python -m pip install --upgrade pip
+
+RUN pip3 install --upgrade pip pyasn1 google-apitools==0.5.31 gsutil \
+    robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary \
+    requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot \
+    robotframework-JSONLibrary hurry.filesize --upgrade && \
+    apt-get clean all
+
+RUN wget -N http://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip && \
+    unzip chromedriver_linux64.zip && \
+    chmod +x chromedriver && \
+    mv -f chromedriver /usr/local/share/chromedriver && \
+    ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver && \
+    ln -s /usr/local/share/chromedriver /usr/bin/chromedriver
+
+RUN pwd && ls && \
+    # Install docker
+    DOCKER_VERSION=20.10.3 && wget https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz && \
+    tar --strip-components=1 -xvzf docker-$DOCKER_VERSION.tgz -C /usr/bin &&  \
+    rm docker-$DOCKER_VERSION.tgz
+
+COPY containerd_config.toml /etc/containerd/config.toml
+COPY busybox.tar /
+# This container needs to be run in privileged mode(run with --privileged option) to make it work
+COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
+
+RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh && \
+    mkdir -p $HOME/.pki/nssdb && \
+    echo Harbor12345 > password.ca && \
+    certutil -d sql:$HOME/.pki/nssdb -N -f password.ca
+
+VOLUME /var/lib/docker

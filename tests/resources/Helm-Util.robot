@@ -18,21 +18,23 @@ Library  OperatingSystem
 Library  Process
 
 *** Keywords ***
-Prepare Helm Cert
-    Wait Unitl Command Success  cp harbor_ca.crt /ca/server.crt
+Prepare Helm Plugin
+    Wait Unitl Command Success  helm init --stable-repo-url https://charts.helm.sh/stable --client-only
+    Wait Unitl Command Success  helm plugin install https://github.com/chartmuseum/helm-push
+    Wait Unitl Command Success  helm3 plugin install https://github.com/chartmuseum/helm-push
 
 Helm Repo Add
     [Arguments]  ${harbor_url}  ${user}  ${pwd}  ${project_name}=library  ${helm_repo_name}=myrepo
     ${rc}  ${output}=  Run And Return Rc And Output  helm repo remove ${project_name}
     Log To Console  ${output}
-    Wait Unitl Command Success  helm repo add --ca-file /ca/server.crt --username=${user} --password=${pwd} ${helm_repo_name} ${harbor_url}/chartrepo/${project_name}
+    Wait Unitl Command Success  helm repo add --ca-file /ca/ca.crt --username=${user} --password=${pwd} ${helm_repo_name} ${harbor_url}/chartrepo/${project_name}
 
 Helm Repo Push
     [Arguments]  ${user}  ${pwd}  ${chart_filename}  ${helm_repo_name}=myrepo  ${helm_cmd}=helm
     ${current_dir}=  Run  pwd
     Run  cd ${current_dir}
     Run  wget ${harbor_chart_file_url}
-    Wait Unitl Command Success  ${helm_cmd} push --ca-file=/ca/server.crt --username=${user} --password=${pwd} ${chart_filename} ${helm_repo_name}
+    Wait Unitl Command Success  ${helm_cmd} push --ca-file=/ca/ca.crt --username=${user} --password=${pwd} ${chart_filename} ${helm_repo_name}
 
 Helm Chart Push
     [Arguments]  ${ip}  ${user}  ${pwd}  ${chart_file}  ${archive}  ${project}  ${repo_name}  ${verion}

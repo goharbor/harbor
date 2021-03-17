@@ -8,10 +8,10 @@ from testutils import created_user, created_project
 from library.project import Project
 from library.user import User
 from library.repository import Repository
-from library.repository import push_image_to_project
 from library.artifact import Artifact
 from library.configurations import Configurations
 from library.projectV2 import ProjectV2
+from library.repository import push_self_build_image_to_project
 
 
 class TestAssignRoleToLdapGroup(unittest.TestCase):
@@ -69,13 +69,13 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
             self.project.add_project_members(project_id, user_id=mike.user_id, member_role_id = 3, expect_status_code=403, **USER_DEV)
             self.project.add_project_members(project_id, user_id=mike.user_id, member_role_id = 3, expect_status_code=403, **USER_GUEST)
 
-            repo_name_admin, _  = push_image_to_project(project_name, harbor_server, USER_ADMIN["username"], USER_ADMIN["password"], USER_ADMIN["repo"], "latest")
+            repo_name_admin, _  = push_self_build_image_to_project(project_name, harbor_server, USER_ADMIN["username"], USER_ADMIN["password"], USER_ADMIN["repo"], "latest")
             artifacts = self.artifact.list_artifacts(project_name, USER_ADMIN["repo"], **USER_ADMIN)
             self.assertTrue(len(artifacts) == 1)
-            repo_name_dev, _ = push_image_to_project(project_name, harbor_server, USER_DEV["username"], USER_DEV["password"], USER_DEV["repo"], "latest")
+            repo_name_dev, _ = push_self_build_image_to_project(project_name, harbor_server, USER_DEV["username"], USER_DEV["password"], USER_DEV["repo"], "latest")
             artifacts = self.artifact.list_artifacts(project_name, USER_DEV["repo"], **USER_DEV)
             self.assertTrue(len(artifacts) == 1)
-            push_image_to_project(project_name, harbor_server, USER_GUEST["username"], USER_GUEST["password"], USER_GUEST["repo"], "latest", expected_error_message = "unauthorized to access repository")
+            push_self_build_image_to_project(project_name, harbor_server, USER_GUEST["username"], USER_GUEST["password"], USER_GUEST["repo"], "latest", expected_error_message = "unauthorized to access repository")
             artifacts = self.artifact.list_artifacts(project_name, USER_GUEST["repo"], **USER_GUEST)
             self.assertTrue(len(artifacts) == 0)
 

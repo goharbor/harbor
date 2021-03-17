@@ -1,0 +1,45 @@
+
+# photon based image
+FROM photon:4.0
+ENV LANG C.UTF-8
+
+COPY --from=tool_builder /tool/tools.tar.gz /usr/local/bin
+
+RUN tdnf install -y \
+    wget \
+    git \
+    openjdk8 \
+    iproute2 \
+    iptables \
+    build-essential \
+    sed \
+    openssl-devel \
+    tar \
+    which \
+    procps-ng \
+    gzip && \
+    tdnf erase -y toybox && \
+    tdnf install -y python3 python3-pip python3-setuptools httpd && \
+    pip3 install --upgrade pip pyasn1 google-apitools==0.5.31 gsutil \
+    robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary \
+    requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot \
+    robotframework-JSONLibrary hurry.filesize --upgrade && \
+    tdnf clean all
+
+RUN pwd && ls && \
+    # Install docker
+    DOCKER_VERSION=20.10.3 && wget https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz && \
+    tar --strip-components=1 -xvzf docker-$DOCKER_VERSION.tgz -C /usr/bin &&  \
+    rm docker-$DOCKER_VERSION.tgz
+
+COPY containerd_config.toml /etc/containerd/config.toml
+COPY busybox.tar /
+# This container needs to be run in privileged mode(run with --privileged option) to make it work
+COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
+
+RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh && \
+    mkdir -p $HOME/.pki/nssdb && \
+    echo Harbor12345 > password.ca && \
+    certutil -d sql:$HOME/.pki/nssdb -N -f password.ca
+
+VOLUME /var/lib/docker

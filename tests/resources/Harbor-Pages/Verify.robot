@@ -477,7 +477,7 @@ Verify Artifact Index
         ${tag}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].artifact_index.tag
         Go Into Project  ${project}  has_image=${true}
         Go Into Repo  ${project}/${name}[0]
-        Go Into Index And Contain Artifacts  ${tag}[0]  limit=2
+        Go Into Index And Contain Artifacts  ${tag}[0]  total_artifact_count=2
         Pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project}  ${name}[0]:${tag}[0]
         Navigate To Projects
     END

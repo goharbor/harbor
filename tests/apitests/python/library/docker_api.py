@@ -22,7 +22,7 @@ def docker_login_cmd(harbor_host, username, password, cfg_file = "./tests/apites
     if  username == "" or password == "":
         print("[Warnig]: No docker credential was provided.")
         return
-    command = ["sudo", "docker", "login", harbor_host, "-u", username, "-p", password]
+    command = ["docker", "login", harbor_host, "-u", username, "-p", password]
     print( "Docker Login Command: ", command)
     base.run_command(command)
     if enable_manifest == True:
@@ -33,29 +33,29 @@ def docker_login_cmd(harbor_host, username, password, cfg_file = "./tests/apites
             raise Exception("Failed to update docker config, error is {} {}.".format(exc.returncode, exc.output))
 
 def docker_manifest_create(index, manifests):
-    command = ["sudo", "docker","manifest","create", "--amend", index]
+    command = ["docker","manifest","create", "--amend", index]
     command.extend(manifests)
     print( "Docker Manifest Command: ", command)
     base.run_command(command)
 
 def docker_images_all_list():
-    command = ["sudo", "docker","images","-a"]
+    command = ["docker","images","-a"]
     base.run_command(command)
 
 def docker_load_image(image):
-    command = ["sudo", "docker","load","-i", image]
+    command = ["docker","load","-i", image]
     base.run_command(command)
 
 def docker_image_clean_all():
     docker_images_all_list()
-    command = ["sudo docker rmi -f $(docker images -a -q)"]
+    command = ["docker rmi -f $(docker images -a -q)"]
     base.run_command_with_popen(command)
-    command = ["sudo", "docker","system", "prune", "-a", "-f"]
+    command = ["docker","system", "prune", "-a", "-f"]
     base.run_command(command)
     docker_images_all_list()
 
 def docker_manifest_push(index):
-    command = ["sudo", "docker","manifest","push",index]
+    command = ["docker","manifest","push",index]
     print( "Docker Manifest Command: ", command)
     ret = base.run_command(command)
     index_sha256=""
@@ -139,7 +139,7 @@ class DockerAPI(object):
             _tag = tag
         else:
             _tag = "latest"
-        if expected_error_message is "":
+        if expected_error_message == "":
             expected_error_message = None
         try:
             ret = self.DCLIENT.pull(r'{}:{}'.format(image, _tag))
@@ -179,7 +179,7 @@ class DockerAPI(object):
         ret = ""
         err_message = ""
         docker_images_all_list()
-        if expected_error_message is "":
+        if expected_error_message == "":
             expected_error_message = None
         try:
             ret = self.DCLIENT.push(harbor_registry, tag)

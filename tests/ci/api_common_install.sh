@@ -18,32 +18,31 @@ cat /proc/version
 sudo -H pip install --ignore-installed urllib3 chardet requests --upgrade
 python --version
 
-#---------------Set DNS for docker v20-------------------#
+#---------------Set DNS for docker v20-----------------------#
 # In docker v20, it fixed an issue named  "Wrong resolv.conf
-# used on Ubuntu 19", this fix caused DNS solve problem 
+# used on Ubuntu 19", this fix caused DNS solve problem
 # in container. So the current work round is read DNS server
 # from system and set the value in /etc/docker/daemon.json.
 
 ip addr
-dns_ip=$(netplan ip leases eth0 | grep -i dns | awk -F = '{print $2}')
-dns_ip_list=$(echo $dns_ip | tr " " "\n")
-dns_cfg=""
-for ip in $dns_ip_list
-do
-    dns_cfg="$dns_cfg,\"$ip\""
-done
+docker_config_file="/etc/docker/daemon.json"
+dns_ip_string=$(netplan ip leases eth0 | grep -i dns | awk -F = '{print $2}' | tr " " "\n" | sed 's/,/","/g')
+dns=[\"${dns_ip_string}\"]
+echo dns=${dns}
 
-cat /etc/docker/daemon.json
-
-if [ $(cat /etc/docker/daemon.json |grep \"dns\" |wc -l) -eq 0 ];then
-    sudo sed "s/}/,\n   \"dns\": [${dns_cfg:1}]\n}/" -i /etc/docker/daemon.json
+cat $docker_config_file
+if [ -f $docker_config_file ];then
+    if [ $(cat /etc/docker/daemon.json |grep \"dns\" |wc -l) -eq 0 ];then
+        sudo sed "s/}/,\n   \"dns\": $dns\n}/" -i $docker_config_file
+    fi
+else
+    echo "{\"dns\": $dns}" > $docker_config_file
 fi
-
-cat /etc/docker/daemon.json
-sudo systemctl daemon-reload
-sudo systemctl restart docker
-sudo systemctl status docker
-#--------------------------------------------------------#
+cat $docker_config_file
+sudo systemctl stop docker
+sudo systemctl start docker
+sleep 2
+#------------------------------------------------------------#
 
 sudo ./tests/hostcfg.sh
 
