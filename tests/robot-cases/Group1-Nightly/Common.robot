@@ -15,6 +15,9 @@
 
 *** Settings ***
 Documentation  Harbor BATs
+Library  ../../apitests/python/testutils.py
+Library  ../../apitests/python/library/oras.py
+Library  ../../apitests/python/library/singularity.py
 Resource  ../../resources/Util.robot
 Default Tags  Nightly
 
@@ -25,12 +28,55 @@ ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
 Test Case - Sign With Admin
+    [tags]  admin
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Close Browser
 
+Test Case - Push ORAS and Display
+    [Tags]  push_oras
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+
+    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
+    Create An New Project And Go Into Project  test${d}
+
+    ${repo_name}=  Set Variable  hello-oras-artifact
+    ${tag}=  Set Variable  1.0.0
+    Retry Keyword N Times When Error  5  Oras Push  ${ip}  user010  Test1@34  test${d}  ${repo_name}  ${tag}
+
+    Go Into Project  test${d}
+    Wait Until Page Contains  test${d}/${repo_name}
+
+    Go Into Repo  test${d}/${repo_name}
+    Wait Until Page Contains  ${tag}
+    Close Browser
+
+# Test Case - Push SIF and Display
+#     [Tags]  push_sif
+#     Init Chrome Driver
+#     ${d}=    Get Current Date    result_format=%m%s
+#     ${user}=  Set Variable  user010
+#     ${pwd}=  Set Variable  Test1@34
+
+#     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+#     Create An New Project And Go Into Project  test${d}
+
+#     Clean All Local Images
+
+#     ${repo_name}=  Set Variable  busybox
+#     ${tag}=  Set Variable  1.28
+#     Retry Keyword N Times When Error  5  Push Singularity To Harbor  library:  library/default/  ${ip}  ${user}  ${pwd}  test${d}  ${repo_name}  ${tag}
+
+#     Go Into Project  test${d}
+#     Wait Until Page Contains  test${d}/${repo_name}
+
+#     Go Into Repo  test${d}/${repo_name}
+#     Wait Until Page Contains  ${tag}
+#     Close Browser
+
 Test Case - Push CNAB Bundle and Display
-    [Tags]  run-once
+    [Tags]  push_cnab
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
 
@@ -48,7 +94,7 @@ Test Case - Push CNAB Bundle and Display
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/cnab${d}
     Go Into Repo  test${d}/cnab${d}
-    Go Into Index And Contain Artifacts  cnab_tag${d}  limit=3
+    Go Into Index And Contain Artifacts  cnab_tag${d}  total_artifact_count=3  archive_count=2
     Close Browser
 
 Test Case - Create An New Project
@@ -229,17 +275,18 @@ Test Case - User View Logs
     ${d}=   Get Current Date    result_format=%m%s
     ${img}=    Set Variable    kong
     ${tag}=    Set Variable    latest
-    ${replication_image}=    Set Variable    for_log_view
-    ${replication_tag}=      Set Variable    base
-    @{target_images}=  Create List  ${replication_image}
     ${user}=    Set Variable    user002
     ${pwd}=    Set Variable    Test1@34
+    &{image_with_tag}=	 Create Dictionary  image=for_log_view  tag=base
+    ${replication_image}=  Get From Dictionary  ${image_with_tag}  image
+    ${replication_tag}=  Get From Dictionary  ${image_with_tag}  tag
+    @{target_images}=  Create List  '&{image_with_tag}'
 
     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     Create An New Project And Go Into Project  project${d}
     Logout Harbor
 
-    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/${replication_image}  project${d}  @{target_images}
+    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/${replication_image}  project${d}  N  @{target_images}
 
     Push image  ${ip}  ${user}  ${pwd}  project${d}  ${img}:${tag}
     Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${replication_image}:${replication_tag}
@@ -653,7 +700,7 @@ Test Case - Push Docker Manifest Index and Display
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/index${d}
     Go Into Repo  test${d}/index${d}
-    Go Into Index And Contain Artifacts  index_tag${d}  limit=2
+    Go Into Index And Contain Artifacts  index_tag${d}  total_artifact_count=2
     Close Browser
 
 Test Case - Push Helm Chart and Display

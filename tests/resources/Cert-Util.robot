@@ -18,14 +18,14 @@ Documentation  This resource contains keywords related to creating and using cer
 *** Keywords ***
 Generate Certificate Authority For Chrome
     #  add the ca to chrome trust list to enable https testing.
-    [Arguments]  ${password}=%{HARBOR_PASSWORD}
+    [Arguments]  ${password}=%{HARBOR_PASSWORD}  ${cert}=harbor_ca.crt
     ${rand}=  Evaluate  random.randint(0, 100000)  modules=random
     Log To Console  Generate Certificate Authority For Chrome
     ${rc}  ${out}=  Run And Return Rc And Output  echo ${password} > password${rand}.ca
-    Log  ${out}
+    Log ALL  ${out}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${out}=  Run And Return Rc And Output  certutil -d sql:$HOME/.pki/nssdb -A -t TC -f password${rand}.ca -n "Harbor${rand}" -i ./harbor_ca.crt
-    Log  ${out}
+    Log ALL  ${out}
     Should Be Equal As Integers  ${rc}  0
 
 Generate Certificate Authority

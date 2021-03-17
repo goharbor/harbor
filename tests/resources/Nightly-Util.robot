@@ -20,46 +20,51 @@ Resource  Util.robot
 ${SSH_USER}  root
 
 *** Keywords ***
-Nightly Test Setup
+Prepare Test Tools
+    Wait Unitl Command Success  tar zxvf /usr/local/bin/tools.tar.gz -C /usr/local/bin/
+
+Get And Setup Harbor CA
+    [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${ca_setup_keyword}  ${ip1}==${EMPTY}
+    Run Keyword If  '${ip1}' != '${EMPTY}'  Run Keywords
+    ...  Get Harbor CA  ${ip1}  /drone/harbor_ca1.crt
+    ...  AND  Run Keyword  ${ca_setup_keyword}  ${ip1}  ${HARBOR_PASSWORD}  /drone/harbor_ca1.crt
+    Get Harbor CA  ${ip}  /drone/harbor_ca.crt
+    Log To Console  ${ca_setup_keyword} ...
+    Run Keyword  ${ca_setup_keyword}  ${ip}  ${HARBOR_PASSWORD}  /drone/harbor_ca.crt
+
+Nightly Test Setup In Photon
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${ip1}==${EMPTY}
-    Run Keyword If  '${ip1}' != '${EMPTY}'  CA setup  ${ip1}  ${HARBOR_PASSWORD}  /ca/ca1.crt
-    Run Keyword If  '${ip1}' != '${EMPTY}'  Run  rm -rf ./harbor_ca.crt
-    Log To Console  CA setup ...
-    Run Keyword  CA setup  ${ip}  ${HARBOR_PASSWORD}
+    Get And Setup Harbor CA  ${ip}  ${HARBOR_PASSWORD}  CA Setup In Photon  ip1=${ip1}
+    Prepare Test Tools
     Log To Console  Start Docker Daemon Locally ...
-    Run Keyword  Start Docker Daemon Locally
+    Start Docker Daemon Locally
     Log To Console  Start Containerd Daemon Locally ...
-    Run Keyword  Start Containerd Daemon Locally
+    Start Containerd Daemon Locally
     Log To Console  wget mariadb ...
     Run  wget ${prometheus_chart_file_url}
+    Prepare Helm Plugin
     #Prepare docker image for push special image keyword in replication test
     Run Keyword If  '${DOCKER_USER}' != '${EMPTY}'  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
 
-CA Setup
-    [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt
-    Log To Console  cp /ca/harbor_ca.crt harbor_ca.crt ...
-    Run  cp /ca/harbor_ca.crt harbor_ca.crt
-    Log To Console  Generate Certificate Authority For Chrome ...
-    Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}
-    Log To Console  Prepare Docker Cert ...
-    Prepare Docker Cert  ${ip}
-
-Nightly Test Setup For Nightly
+Nightly Test Setup In Ubuntu
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${ip1}==${EMPTY}
-    Run Keyword If  '${ip1}' != '${EMPTY}'  CA setup For Nightly  ${ip1}  ${HARBOR_PASSWORD}  /ca/ca1.crt
-    Run Keyword If  '${ip1}' != '${EMPTY}'  Run  rm -rf ./harbor_ca.crt
-    Run Keyword  CA setup For Nightly  ${ip}  ${HARBOR_PASSWORD}
+    Get And Setup Harbor CA  ${ip}  ${HARBOR_PASSWORD}  CA Setup In ubuntu  ip1=${ip1}
+    Prepare Test Tools
     Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
     Log To Console  Start Containerd Daemon Locally ...
     Run Keyword  Start Containerd Daemon Locally
+    Prepare Helm Plugin
+    Run Keyword If  '${DOCKER_USER}' != '${EMPTY}'  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
 
-CA Setup For Nightly
-    [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt
-    Run  cp ${cert} harbor_ca.crt
-    Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}
-    Prepare Docker Cert For Nightly  ${ip}
-    Prepare Helm Cert
+CA Setup In ubuntu
+    [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}
+    Prepare Docker Cert In Ubuntu  ${ip}  ${cert}
+    #Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}
+
+CA Setup In Photon
+    [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}
+    Prepare Docker Cert In Photon  ${ip}  ${cert}
 
 Collect Nightly Logs
     [Arguments]  ${ip}  ${SSH_PWD}  ${ip1}==${EMPTY}
