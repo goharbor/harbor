@@ -52,6 +52,7 @@ export class ListReplicationRuleComponent  {
     @Input() hasUpdateReplicationPermission: boolean;
     @Input() hasDeleteReplicationPermission: boolean;
     @Input() hasExecuteReplicationPermission: boolean;
+    @Input() searchString: string;
     @Output() selectOne = new EventEmitter<ReplicationRule>();
     @Output() editOne = new EventEmitter<ReplicationRule>();
     @Output() toggleOne = new EventEmitter<ReplicationRule>();
@@ -68,7 +69,6 @@ export class ListReplicationRuleComponent  {
     page: number = 1;
     pageSize: number = 5;
     totalCount: number = 0;
-    ruleName: string = "";
     loading: boolean = true;
 
     constructor(private replicationService: ReplicationService,
@@ -232,7 +232,7 @@ export class ListReplicationRuleComponent  {
         }
         this.loading = true;
         this.replicationService.getReplicationRulesResponse(
-            this.ruleName,
+            this.searchString,
             this.page,
             this.pageSize)
             .pipe(finalize(() => this.loading = false))
@@ -255,7 +255,7 @@ export class ListReplicationRuleComponent  {
         this.page = 1;
         this.totalCount = 0;
         this.selectedRow = null;
-        this.ruleName = "";
+        this.searchString = null;
         this.clrLoad();
     }
     isHelmHub(srcRegistry: any): boolean {
