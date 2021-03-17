@@ -16,6 +16,7 @@ package api
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -53,10 +54,6 @@ func (s *SearchAPI) Get() {
 	query := q.New(q.KeyWords{})
 	query.Sorting = "name"
 
-	if keyword != "" {
-		query.Keywords["name"] = &q.FuzzyMatchValue{Value: keyword}
-	}
-
 	if !s.SecurityCtx.IsSysAdmin() {
 		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {
 			user := sc.User()
@@ -81,6 +78,10 @@ func (s *SearchAPI) Get() {
 	proNames := []string{}
 	for _, p := range projects {
 		proNames = append(proNames, p.Name)
+
+		if keyword != "" && !strings.Contains(p.Name, keyword) {
+			continue
+		}
 
 		if sc, ok := s.SecurityCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {
 			roles, err := s.ProjectCtl.ListRoles(s.Context(), p.ProjectID, sc.User())
