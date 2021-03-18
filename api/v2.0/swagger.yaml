@@ -447,6 +447,37 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /repositories:
+    get:
+      summary: List all authorized repositories
+      description: List all authorized repositories
+      tags:
+        - repository
+      operationId: listAllRepositories
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of repositories
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Repository'
+        '400':
+          $ref: '#/responses/400'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/repositories:
     get:
       summary: List repositories

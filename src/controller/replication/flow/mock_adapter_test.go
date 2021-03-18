@@ -38,6 +38,34 @@ func (_m *mockAdapter) BlobExist(repository string, digest string) (bool, error)
 	return r0, r1
 }
 
+// CanBeMount provides a mock function with given fields: digest
+func (_m *mockAdapter) CanBeMount(digest string) (bool, string, error) {
+	ret := _m.Called(digest)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(string) bool); ok {
+		r0 = rf(digest)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 string
+	if rf, ok := ret.Get(1).(func(string) string); ok {
+		r1 = rf(digest)
+	} else {
+		r1 = ret.Get(1).(string)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(string) error); ok {
+		r2 = rf(digest)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // DeleteManifest provides a mock function with given fields: repository, reference
 func (_m *mockAdapter) DeleteManifest(repository string, reference string) error {
 	ret := _m.Called(repository, reference)
@@ -161,6 +189,20 @@ func (_m *mockAdapter) ManifestExist(repository string, reference string) (bool,
 	}
 
 	return r0, r1, r2
+}
+
+// MountBlob provides a mock function with given fields: srcRepository, digest, dstRepository
+func (_m *mockAdapter) MountBlob(srcRepository string, digest string, dstRepository string) error {
+	ret := _m.Called(srcRepository, digest, dstRepository)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, string, string) error); ok {
+		r0 = rf(srcRepository, digest, dstRepository)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // PrepareForPush provides a mock function with given fields: _a0

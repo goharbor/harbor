@@ -77,3 +77,15 @@ func (c *client) deleteTag(repo, tag string) error {
 		c.BasePath(), project, repo, tag, tag)
 	return c.C.Delete(url)
 }
+
+func (c *client) getRepositoryByBlobDigest(digest string) (string, error) {
+	repositories := []*models.RepoRecord{}
+	url := fmt.Sprintf("%s/repositories?q=blob_digest=%s&page_size=1&page_number=1", c.BasePath(), digest)
+	if err := c.C.Get(url, &repositories); err != nil {
+		return "", err
+	}
+	if len(repositories) == 0 {
+		return "", nil
+	}
+	return repositories[0].Name, nil
+}

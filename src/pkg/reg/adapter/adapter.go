@@ -60,6 +60,8 @@ type ArtifactRegistry interface {
 	BlobExist(repository, digest string) (exist bool, err error)
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
 	PushBlob(repository, digest string, size int64, blob io.Reader) error
+	MountBlob(srcRepository, digest, dstRepository string) (err error)
+	CanBeMount(digest string) (mount bool, repository string, err error) // check whether the blob can be mounted from the remote registry
 	DeleteTag(repository, tag string) error
 }
 
