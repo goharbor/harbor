@@ -68,7 +68,7 @@ describe('PasswordSettingComponent', () => {
         await fixture.whenStable();
         const newPasswordInputError: any = fixture.nativeElement.querySelector("#newPassword-error");
         expect(newPasswordInputError.innerText)
-            .toEqual(' TOOLTIP.PASSWORD ');
+            .toEqual('TOOLTIP.PASSWORD');
     });
     it('should verify new Password valid', async () => {
         await fixture.whenStable();
@@ -94,7 +94,7 @@ describe('PasswordSettingComponent', () => {
         await fixture.whenStable();
         const reNewPasswordInputError: any = fixture.nativeElement.querySelector("#reNewPassword-error");
         expect(reNewPasswordInputError.innerText)
-            .toEqual(' TOOLTIP.CONFIRM_PWD ');
+            .toEqual('TOOLTIP.CONFIRM_PWD');
     });
     it('should verify comfirm Password valid', async () => {
         await fixture.whenStable();

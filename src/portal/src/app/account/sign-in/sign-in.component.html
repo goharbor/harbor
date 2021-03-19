@@ -17,11 +17,20 @@
                            placeholder='{{"PLACEHOLDER.SIGN_IN_NAME" | translate}}' #userNameInput='ngModel'>
                     <clr-control-error>{{ 'TOOLTIP.SIGN_IN_USERNAME' | translate }}</clr-control-error>
                 </clr-input-container>
-                <clr-input-container>
-                    <input clrInput class="password" type="password" required [(ngModel)]="signInCredential.password" name="login_password" id="login_password"
-                           placeholder='{{"PLACEHOLDER.SIGN_IN_PWD" | translate}}' #passwordInput="ngModel">
-                    <clr-control-error>{{ 'TOOLTIP.SIGN_IN_PWD' | translate }}</clr-control-error>
-                </clr-input-container>
+                <div class="clr-form-control">
+                    <div class="clr-control-container" [class.clr-error] ="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
+                        <div class="clr-input-wrapper">
+                            <input class="clr-input pwd-input" [type]="showPwd?'text':'password'" required [(ngModel)]="signInCredential.password" name="login_password" id="login_password"
+                                   placeholder='{{"PLACEHOLDER.SIGN_IN_PWD" | translate}}' #passwordInput="ngModel">
+                            <clr-icon *ngIf="!showPwd" shape="eye" class="pw-eye" (click)="showPwd =!showPwd"></clr-icon>
+                            <clr-icon *ngIf="showPwd" shape="eye-hide" class="pw-eye" (click)="showPwd =!showPwd"></clr-icon>
+                            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                        </div>
+                        <clr-control-error *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
+                            {{ 'TOOLTIP.SIGN_IN_PWD' | translate }}
+                        </clr-control-error>
+                    </div>
+                </div>
                 <div class="display-flex">
                     <clr-checkbox-wrapper>
                         <input clrCheckbox type="checkbox" id="rememberme" #rememberMeBox (click)="clickRememberMe($event)" [checked]="rememberMe">

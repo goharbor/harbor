@@ -24,6 +24,8 @@ import { InlineAlertComponent } from "../../../../shared/components/inline-alert
     styleUrls: ['./change-password.component.scss', '../../../../common.scss']
 })
 export class ChangePasswordComponent {
+    showNewPwd: boolean = false;
+    showConfirmPwd: boolean = false;
     opened: boolean = false;
     onGoing: boolean = false;
     password: string = "";
@@ -62,6 +64,8 @@ export class ChangePasswordComponent {
     }
 
     public open(userId: number): void {
+        this.showConfirmPwd = false;
+        this.showNewPwd = false;
         this.onGoing = false;
         this.validationState = {
             "newPassword": true,

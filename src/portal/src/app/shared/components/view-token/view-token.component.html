@@ -19,14 +19,17 @@
                     <label for="new-token" class="clr-control-label">{{"SYSTEM_ROBOT.NEW_TOKEN" | translate}}</label>
                     <div class="clr-control-container" [class.clr-error]="(newToken.dirty || newToken.touched) && newToken.invalid">
                         <div class="clr-input-wrapper">
-                            <input class="clr-input"
-                                   type="password" id="new-token"
+                            <input class="clr-input pwd-input"
+                                   [type]="showNewPwd?'text':'password'" id="new-token"
                                    name="newToken"
                                    autocomplete="off"
                                    #newToken = "ngModel"
                                    [(ngModel)]="newSecret"
                                    pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,128}$"
                                    placeholder="{{'SYSTEM_ROBOT.PLACEHOLDER'| translate}}">
+                            <clr-icon *ngIf="!showNewPwd" shape="eye" class="pw-eye" (click)="showNewPwd =!showNewPwd"></clr-icon>
+                            <clr-icon *ngIf="showNewPwd" shape="eye-hide" class="pw-eye" (click)="showNewPwd =!showNewPwd"></clr-icon>
+                            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                         </div>
                         <clr-control-error *ngIf="(newToken.dirty || newToken.touched) && newToken.invalid">
                             {{'SYSTEM_ROBOT.SECRET' | translate}}
@@ -37,14 +40,17 @@
                     <label for="confirm-token" class="clr-control-label">{{"SYSTEM_ROBOT.CONFIRM_SECRET" | translate}}</label>
                     <div class="clr-control-container" [class.clr-error]="notSame() || (confirmToken.dirty || confirmToken.touched) && confirmToken.invalid">
                         <div class="clr-input-wrapper">
-                            <input class="clr-input"
-                                   type="password" id="confirm-token"
+                            <input class="clr-input pwd-input"
+                                   [type]="showConfirmPwd?'text':'password'" id="confirm-token"
                                    name="confirmToken"
                                    autocomplete="off"
                                    #confirmToken = "ngModel"
                                    [(ngModel)]="confirmSecret"
                                    pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,128}$"
                                    placeholder="{{'SYSTEM_ROBOT.SECRET_AGAIN'| translate}}">
+                            <clr-icon *ngIf="!showConfirmPwd" shape="eye" class="pw-eye" (click)="showConfirmPwd =!showConfirmPwd"></clr-icon>
+                            <clr-icon *ngIf="showConfirmPwd" shape="eye-hide" class="pw-eye" (click)="showConfirmPwd =!showConfirmPwd"></clr-icon>
+                            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                         </div>
                         <clr-control-error *ngIf="notSame() || ((confirmToken.dirty || confirmToken.touched) && confirmToken.invalid)">
                             <span *ngIf="!notSame()">{{'SYSTEM_ROBOT.SECRET' | translate}}</span>
