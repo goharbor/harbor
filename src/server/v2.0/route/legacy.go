@@ -40,12 +40,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/replication/adapters", &api.ReplicationAdapterAPI{}, "get:List")
 	beego.Router("/api/"+version+"/replication/adapterinfos", &api.ReplicationAdapterAPI{}, "get:ListAdapterInfos")
 
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/webhook/policies", &api.NotificationPolicyAPI{}, "get:List;post:Post")
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/webhook/policies/:id([0-9]+)", &api.NotificationPolicyAPI{})
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/webhook/lasttrigger", &api.NotificationPolicyAPI{}, "get:ListGroupByEventType")
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/webhook/events", &api.NotificationPolicyAPI{}, "get:GetSupportedEventTypes")
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/webhook/jobs/", &api.NotificationJobAPI{}, "get:List")
-
 	beego.Router("/api/"+version+"/configurations", &api.ConfigAPI{}, "get:Get;put:Put")
 	beego.Router("/api/"+version+"/statistics", &api.StatisticAPI{})
 	beego.Router("/api/"+version+"/labels", &api.LabelAPI{}, "post:Post;get:List")

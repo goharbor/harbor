@@ -58,9 +58,7 @@ func (suite *PreheatTestSuite) SetupSuite() {
 	artifact.Ctl = fakeArtifactCtl
 	suite.preheatEnf = preheat.Enf
 	preheat.Enf = fakeEnforcer
-	suite.handler = &Handler{
-		Context: context.TODO,
-	}
+	suite.handler = &Handler{}
 }
 
 // TearDownSuite cleans the testing env
@@ -138,7 +136,7 @@ func (suite *PreheatTestSuite) TestHandle() {
 		},
 	}
 	for _, tt := range tests {
-		err := suite.handler.Handle(tt.args.data)
+		err := suite.handler.Handle(context.TODO(), tt.args.data)
 		if tt.wantErr {
 			suite.Error(err, tt.name)
 		} else {

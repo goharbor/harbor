@@ -1,21 +1,23 @@
 package artifact
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/controller/retention"
-	ret "github.com/goharbor/harbor/src/pkg/retention"
-	"github.com/stretchr/testify/mock"
-	"os"
-	"testing"
-	"time"
-
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/controller/retention"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
+	ret "github.com/goharbor/harbor/src/pkg/retention"
 	retentiontesting "github.com/goharbor/harbor/src/testing/controller/retention"
+	testingnotification "github.com/goharbor/harbor/src/testing/pkg/notification/policy"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"os"
+	"testing"
+	"time"
 )
 
 func TestRetentionHandler_Handle(t *testing.T) {
@@ -29,7 +31,8 @@ func TestRetentionHandler_Handle(t *testing.T) {
 		notification.PolicyMgr = policyMgr
 		retention.Ctl = oldretentionCtl
 	}()
-	notification.PolicyMgr = &fakedNotificationPolicyMgr{}
+	policyMgrMock := &testingnotification.Manager{}
+	notification.PolicyMgr = policyMgrMock
 	retentionCtl := &retentiontesting.Controller{}
 	retention.Ctl = retentionCtl
 	retentionCtl.On("GetRetentionExecTask", mock.Anything, mock.Anything).
@@ -48,6 +51,11 @@ func TestRetentionHandler_Handle(t *testing.T) {
 		DryRun:    true,
 		StartTime: time.Now(),
 		EndTime:   time.Now(),
+	}, nil)
+	policyMgrMock.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything).Return([]*policy_model.Policy{
+		{
+			ID: 0,
+		},
 	}, nil)
 
 	type args struct {
@@ -87,7 +95,7 @@ func TestRetentionHandler_Handle(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := handler.Handle(tt.args.data)
+			err := handler.Handle(context.TODO(), tt.args.data)
 			if tt.wantErr {
 				require.NotNil(t, err, "Error: %s", err)
 				return

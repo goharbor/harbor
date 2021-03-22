@@ -43,7 +43,7 @@ func (si *Handler) Name() string {
 }
 
 // Handle preprocess chart event data and then publish hook event
-func (si *Handler) Handle(value interface{}) error {
+func (si *Handler) Handle(ctx context.Context, value interface{}) error {
 	if value == nil {
 		return errors.New("empty scan artifact event")
 	}
@@ -53,7 +53,7 @@ func (si *Handler) Handle(value interface{}) error {
 		return errors.New("invalid scan artifact event type")
 	}
 
-	policies, err := notification.PolicyMgr.GetRelatedPolices(e.Artifact.NamespaceID, e.EventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, e.Artifact.NamespaceID, e.EventType)
 	if err != nil {
 		return errors.Wrap(err, "scan preprocess handler")
 	}

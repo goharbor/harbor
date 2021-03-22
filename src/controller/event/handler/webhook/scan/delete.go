@@ -27,7 +27,6 @@ import (
 
 // DelArtHandler is a handler to listen to the internal delete image event.
 type DelArtHandler struct {
-	Context func() context.Context
 }
 
 // Name ...
@@ -36,7 +35,7 @@ func (o *DelArtHandler) Name() string {
 }
 
 // Handle ...
-func (o *DelArtHandler) Handle(value interface{}) error {
+func (o *DelArtHandler) Handle(ctx context.Context, value interface{}) error {
 	if value == nil {
 		return errors.New("delete image event handler: nil value ")
 	}
@@ -48,7 +47,6 @@ func (o *DelArtHandler) Handle(value interface{}) error {
 
 	log.Debugf("clear the scan reports as receiving event %s", evt.EventType)
 
-	ctx := o.Context()
 	// Check if it is safe to delete the reports.
 	count, err := artifact.Ctl.Count(ctx, q.New(q.KeyWords{"digest": evt.Artifact.Digest}))
 	if err != nil {

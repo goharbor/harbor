@@ -1,7 +1,7 @@
 package event
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	notifierModel "github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,7 +25,7 @@ func TestHookEvent_Build(t *testing.T) {
 				hookMetadata: &HookMetaData{
 					PolicyID:  1,
 					EventType: "pushImage",
-					Target: &models.EventTarget{
+					Target: &policy_model.EventTarget{
 						Type:    "http",
 						Address: "http://127.0.0.1",
 					},

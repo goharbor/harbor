@@ -16,6 +16,7 @@ package jobs
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
@@ -24,6 +25,7 @@ import (
 	jjob "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notification/job/model"
 )
 
 var statusMap = map[string]string{
@@ -87,7 +89,7 @@ func (h *Handler) Prepare() {
 // HandleNotificationJob handles the hook of notification job
 func (h *Handler) HandleNotificationJob() {
 	log.Debugf("received notification job status update event: job-%d, status-%s", h.id, h.status)
-	if err := notification.JobMgr.Update(&models.NotificationJob{
+	if err := notification.JobMgr.Update(orm.Context(), &model.Job{
 		ID:         h.id,
 		Status:     h.status,
 		UpdateTime: time.Now(),

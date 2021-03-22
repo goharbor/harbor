@@ -1,6 +1,7 @@
 package artifact
 
 import (
+	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/controller/retention"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -26,7 +27,7 @@ func (r *RetentionHandler) Name() string {
 }
 
 // Handle ...
-func (r *RetentionHandler) Handle(value interface{}) error {
+func (r *RetentionHandler) Handle(ctx context.Context, value interface{}) error {
 	if !config.NotificationEnable() {
 		log.Debug("notification feature is not enabled")
 		return nil
@@ -54,7 +55,7 @@ func (r *RetentionHandler) Handle(value interface{}) error {
 		return nil
 	}
 
-	policies, err := notification.PolicyMgr.GetRelatedPolices(project, trEvent.EventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, project, trEvent.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", trEvent.EventType, err)
 		return err

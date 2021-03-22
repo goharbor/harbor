@@ -1,10 +1,10 @@
 package notification
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notification"
@@ -21,7 +21,7 @@ func (h *HTTPHandler) Name() string {
 }
 
 // Handle handles http event
-func (h *HTTPHandler) Handle(value interface{}) error {
+func (h *HTTPHandler) Handle(ctx context.Context, value interface{}) error {
 	if value == nil {
 		return errors.New("HTTPHandler cannot handle nil value")
 	}
@@ -30,8 +30,7 @@ func (h *HTTPHandler) Handle(value interface{}) error {
 	if !ok || event == nil {
 		return errors.New("invalid notification http event")
 	}
-
-	return h.process(event)
+	return h.process(ctx, event)
 }
 
 // IsStateful ...
@@ -39,7 +38,7 @@ func (h *HTTPHandler) IsStateful() bool {
 	return false
 }
 
-func (h *HTTPHandler) process(event *model.HookEvent) error {
+func (h *HTTPHandler) process(ctx context.Context, event *model.HookEvent) error {
 	j := &models.JobData{
 		Metadata: &models.JobMetadata{
 			JobKind: job.KindGeneric,
@@ -60,5 +59,5 @@ func (h *HTTPHandler) process(event *model.HookEvent) error {
 		"auth_header":      event.Target.AuthHeader,
 		"skip_cert_verify": event.Target.SkipCertVerify,
 	}
-	return notification.HookManager.StartHook(event, j)
+	return notification.HookManager.StartHook(ctx, event, j)
 }

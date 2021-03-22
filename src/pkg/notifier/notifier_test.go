@@ -1,6 +1,8 @@
 package notifier
 
 import (
+	"context"
+	"github.com/goharbor/harbor/src/common/dao"
 	"reflect"
 	"sync/atomic"
 	"testing"
@@ -21,7 +23,7 @@ func (fsh *fakeStatefulHandler) IsStateful() bool {
 	return true
 }
 
-func (fsh *fakeStatefulHandler) Handle(v interface{}) error {
+func (fsh *fakeStatefulHandler) Handle(ctx context.Context, v interface{}) error {
 	increment := 0
 	if v != nil && reflect.TypeOf(v).Kind() == reflect.Int {
 		increment = v.(int)
@@ -40,7 +42,7 @@ func (fsh *fakeStatelessHandler) Name() string {
 	return "fakeStateless"
 }
 
-func (fsh *fakeStatelessHandler) Handle(v interface{}) error {
+func (fsh *fakeStatelessHandler) Handle(ctx context.Context, v interface{}) error {
 	return nil
 }
 
@@ -116,6 +118,7 @@ func TestSubscribeAndUnSubscribe(t *testing.T) {
 }
 
 func TestPublish(t *testing.T) {
+	dao.PrepareTestForPostgresSQL()
 	count := len(notificationWatcher.handlers)
 	err := Subscribe("topic1", &fakeStatefulHandler{0})
 	if err != nil {
@@ -157,6 +160,7 @@ func TestPublish(t *testing.T) {
 }
 
 func TestConcurrentPublish(t *testing.T) {
+	dao.PrepareTestForPostgresSQL()
 	count := len(notificationWatcher.handlers)
 	err := Subscribe("topic1", &fakeStatefulHandler{0})
 	if err != nil {

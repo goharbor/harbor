@@ -15,8 +15,10 @@
 package scan
 
 import (
+	"context"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/event"
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"testing"
 	"time"
 
@@ -34,7 +36,7 @@ import (
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	scantesting "github.com/goharbor/harbor/src/testing/controller/scan"
 	"github.com/goharbor/harbor/src/testing/mock"
-	notificationtesting "github.com/goharbor/harbor/src/testing/pkg/notification"
+	notificationtesting "github.com/goharbor/harbor/src/testing/pkg/notification/policy"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -108,8 +110,13 @@ func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
 	artifact.Ctl = artifactCtl
 
 	suite.om = notification.PolicyMgr
-	mp := &notificationtesting.FakedPolicyMgr{}
+	mp := &notificationtesting.Manager{}
 	notification.PolicyMgr = mp
+	mp.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything).Return([]*policy_model.Policy{
+		{
+			ID: 1,
+		},
+	}, nil)
 
 	h := &MockHTTPHandler{}
 
@@ -128,7 +135,7 @@ func (suite *ScanImagePreprocessHandlerSuite) TearDownSuite() {
 func (suite *ScanImagePreprocessHandlerSuite) TestHandle() {
 	handler := &Handler{}
 
-	err := handler.Handle(suite.evt)
+	err := handler.Handle(context.TODO(), suite.evt)
 	suite.NoError(err)
 }
 
@@ -143,7 +150,7 @@ func (m *MockHTTPHandler) Name() string {
 }
 
 // Handle ...
-func (m *MockHTTPHandler) Handle(value interface{}) error {
+func (m *MockHTTPHandler) Handle(ctx context.Context, value interface{}) error {
 	return nil
 }
 

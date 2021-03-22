@@ -29,7 +29,6 @@ import (
 
 // Handler ...
 type Handler struct {
-	Context func() context.Context
 }
 
 // Name ...
@@ -38,17 +37,17 @@ func (p *Handler) Name() string {
 }
 
 // Handle ...
-func (p *Handler) Handle(value interface{}) error {
+func (p *Handler) Handle(ctx context.Context, value interface{}) error {
 	switch value.(type) {
 	case *event.PushArtifactEvent:
 		pushArtEvent, _ := value.(*event.PushArtifactEvent)
-		return p.handlePushArtifact(pushArtEvent)
+		return p.handlePushArtifact(ctx, pushArtEvent)
 	case *event.ScanImageEvent:
 		scanImageEvent, _ := value.(*event.ScanImageEvent)
-		return p.handleImageScanned(scanImageEvent)
+		return p.handleImageScanned(ctx, scanImageEvent)
 	case *event.ArtifactLabeledEvent:
 		artifactLabeledEvent, _ := value.(*event.ArtifactLabeledEvent)
-		return p.handleArtifactLabeled(artifactLabeledEvent)
+		return p.handleArtifactLabeled(ctx, artifactLabeledEvent)
 	default:
 		return errors.New("unsupported type")
 	}
@@ -59,7 +58,7 @@ func (p *Handler) IsStateful() bool {
 	return false
 }
 
-func (p *Handler) handlePushArtifact(event *event.PushArtifactEvent) error {
+func (p *Handler) handlePushArtifact(ctx context.Context, event *event.PushArtifactEvent) error {
 	if event.Artifact.Type != image.ArtifactTypeImage {
 		return nil
 	}
@@ -71,7 +70,7 @@ func (p *Handler) handlePushArtifact(event *event.PushArtifactEvent) error {
 
 	log.Debugf("preheat: artifact pushed %s:%s@%s", event.Artifact.RepositoryName, event.Tags, event.Artifact.Digest)
 
-	art, err := artifact.Ctl.Get(p.Context(), event.Artifact.ID, &artifact.Option{
+	art, err := artifact.Ctl.Get(ctx, event.Artifact.ID, &artifact.Option{
 		WithTag:   true,
 		WithLabel: true,
 	})
@@ -89,16 +88,16 @@ func (p *Handler) handlePushArtifact(event *event.PushArtifactEvent) error {
 	}
 	art.Tags = pt
 
-	_, err = preheat.Enf.PreheatArtifact(p.Context(), art)
+	_, err = preheat.Enf.PreheatArtifact(ctx, art)
 	return err
 }
 
-func (p *Handler) handleImageScanned(event *event.ScanImageEvent) error {
+func (p *Handler) handleImageScanned(ctx context.Context, event *event.ScanImageEvent) error {
 	// TODO: If the scan is targeting an manifest list, here the artifacts we get are all the children
 	//  artifacts of the manifest list. The children artifacts are high probably untagged ones that
 	//  will be definitely ignored by the tag filter. We need to find a way to resolve this issue.
 	log.Debugf("preheat: image scanned %s:%s", event.Artifact.Repository, event.Artifact.Tag)
-	art, err := artifact.Ctl.GetByReference(p.Context(), event.Artifact.Repository, event.Artifact.Digest,
+	art, err := artifact.Ctl.GetByReference(ctx, event.Artifact.Repository, event.Artifact.Digest,
 		&artifact.Option{
 			WithTag:   true,
 			WithLabel: true,
@@ -106,12 +105,12 @@ func (p *Handler) handleImageScanned(event *event.ScanImageEvent) error {
 	if err != nil {
 		return err
 	}
-	_, err = preheat.Enf.PreheatArtifact(p.Context(), art)
+	_, err = preheat.Enf.PreheatArtifact(ctx, art)
 	return err
 }
 
-func (p *Handler) handleArtifactLabeled(event *event.ArtifactLabeledEvent) error {
-	art, err := artifact.Ctl.Get(p.Context(), event.ArtifactID, &artifact.Option{
+func (p *Handler) handleArtifactLabeled(ctx context.Context, event *event.ArtifactLabeledEvent) error {
+	art, err := artifact.Ctl.Get(ctx, event.ArtifactID, &artifact.Option{
 		WithTag:   true,
 		WithLabel: true,
 	})
@@ -126,6 +125,6 @@ func (p *Handler) handleArtifactLabeled(event *event.ArtifactLabeledEvent) error
 	}
 	log.Debugf("preheat: artifact labeled %s:%s", art.Artifact.RepositoryName, art.Artifact.Digest)
 
-	_, err = preheat.Enf.PreheatArtifact(p.Context(), art)
+	_, err = preheat.Enf.PreheatArtifact(ctx, art)
 	return err
 }

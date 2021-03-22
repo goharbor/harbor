@@ -3,18 +3,17 @@ package util
 import (
 	"errors"
 	"fmt"
-	"strings"
-
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/distribution"
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
+	"strings"
 )
 
 // SendHookWithPolicies send hook by publishing topic of specified target type(notify type)
-func SendHookWithPolicies(policies []*models.NotificationPolicy, payload *notifyModel.Payload, eventType string) error {
+func SendHookWithPolicies(policies []*policy_model.Policy, payload *notifyModel.Payload, eventType string) error {
 	// if global notification configured disabled, return directly
 	if !config.NotificationEnable() {
 		log.Debug("notification feature is not enabled")

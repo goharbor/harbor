@@ -39,7 +39,6 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/orm"
@@ -119,11 +118,6 @@ func init() {
 
 	beego.Router("/api/replication/adapters", &ReplicationAdapterAPI{}, "get:List")
 
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies", &NotificationPolicyAPI{}, "get:List;post:Post")
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/:id([0-9]+)", &NotificationPolicyAPI{})
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/test", &NotificationPolicyAPI{}, "post:Test")
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/lasttrigger", &NotificationPolicyAPI{}, "get:ListGroupByEventType")
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/", &NotificationJobAPI{}, "get:List")
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
 	beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
@@ -152,9 +146,6 @@ func init() {
 	admin = &usrInfo{adminName, adminPwd}
 	unknownUsr = &usrInfo{"unknown", "unknown"}
 	testUser = &usrInfo{TestUserName, TestUserPwd}
-
-	// Init notification related check map
-	notification.Init()
 
 	// Init mock jobservice
 	mockServer := test.NewJobServiceServer()
