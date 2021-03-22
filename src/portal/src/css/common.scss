@@ -251,3 +251,7 @@ artifact-list-tab {
 .label-color-input {
   color: $label-color-input !important;
 }
+// for repos page grid view
+.central-block-loading {
+  background-color: $central-block-loading-bg-color;
+}

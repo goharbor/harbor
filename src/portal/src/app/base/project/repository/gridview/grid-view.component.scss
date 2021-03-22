@@ -31,18 +31,18 @@
   right: 0;
   bottom: 0;
   text-align: center;
-  background-color: rgba(255, 255, 255, 0.5);
 }
 
 .central-block-loading-more {
-  position: relative;
-  z-index: 10;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   text-align: center;
-  background-color: rgba(255, 255, 255, 0.5);
+  .spinner {
+    width: 1rem;
+    height: 1rem;
+  }
 }
 
 .vertical-helper {

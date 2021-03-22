@@ -10,7 +10,7 @@ import {
   OnDestroy
 } from "@angular/core";
 import {forkJoin, of, Subscription} from "rxjs";
-import { debounceTime, distinctUntilChanged, switchMap } from "rxjs/operators";
+import {debounceTime, distinctUntilChanged, finalize, switchMap} from "rxjs/operators";
 import { TranslateService } from "@ngx-translate/core";
 import { map, catchError } from "rxjs/operators";
 import { Observable } from "rxjs";
@@ -29,11 +29,15 @@ import {
   clone,
   DEFAULT_PAGE_SIZE,
   dbEncodeURIComponent,
-  doFiltering,
-  doSorting, CURRENT_BASE_HREF, getSortingString
+  doFiltering, CURRENT_BASE_HREF, getSortingString
 } from "../../../shared/units/utils";
 import { ErrorHandler } from "../../../shared/units/error-handler";
-import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../shared/entities/shared.const";
+import {
+  CARD_VIEW_LOCALSTORAGE_KEY,
+  ConfirmationButtons,
+  ConfirmationState,
+  ConfirmationTargets
+} from "../../../shared/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../shared/components/operation/operate";
 import {
   ConfirmationDialogComponent,
@@ -45,18 +49,20 @@ import { SessionService } from "../../../shared/services/session.service";
 import { GridViewComponent } from "./gridview/grid-view.component";
 import { Repository as NewRepository } from "../../../../../ng-swagger-gen/models/repository";
 import { StrictHttpResponse as __StrictHttpResponse } from '../../../../../ng-swagger-gen/strict-http-response';
-import {HttpErrorResponse} from "@angular/common/http";
+import { HttpErrorResponse } from "@angular/common/http";
 import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationAcknowledgement } from "../../global-confirmation-dialog/confirmation-state-message";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
 
-
+const TRUE_STR: string = 'true';
+const FALSE_STR: string = 'false';
 @Component({
   selector: "hbr-repository-gridview",
   templateUrl: "./repository-gridview.component.html",
   styleUrls: ["./repository-gridview.component.scss"],
 })
 export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy {
+  isFirstLoadingGridView: boolean = false;
   signedCon: { [key: string]: any | string[] } = {};
   downloadLink: string;
   @Input() urlPrefix: string;
@@ -106,6 +112,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
               private session: SessionService,
               private router: Router,
   ) {
+    if (localStorage) {
+      this.isCardView =  localStorage.getItem(CARD_VIEW_LOCALSTORAGE_KEY) === TRUE_STR;
+    }
     this.downloadLink = CURRENT_BASE_HREF + "/systeminfo/getcert";
   }
 
@@ -145,7 +154,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     this.hasSignedIn = this.session.getCurrentUser() !== null;
     // Get system info for tag views
    this.getSystemInfo();
-    this.isCardView = this.mode === "admiral";
+    if (this.isCardView) {
+      this.doSearchRepoNames('', true);
+    }
     this.lastFilteredRepoName = "";
     this.getHelmChartVersionPermission(this.projectId);
     if (!this.searchSub) {
@@ -153,7 +164,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         debounceTime(500),
         distinctUntilChanged(),
         switchMap(repoName => {
-          this.lastFilteredRepoName = repoName;
+          this.lastFilteredRepoName = repoName as string;
           this.currentPage = 1;
           // Pagination
           let params: NewRepositoryService.ListRepositoriesParams = {
@@ -167,12 +178,11 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
           this.loading = true;
           return this.newRepoService.listRepositoriesResponse(params);
         })
-      ).subscribe((repo: __StrictHttpResponse<Array<NewRepository>>) => {
+      ).pipe(finalize(() => this.loading = false))
+          .subscribe((repo: __StrictHttpResponse<Array<NewRepository>>) => {
         this.totalCount = +repo.headers.get('x-total-count');
         this.repositories = repo.body;
-        this.loading = false;
       }, error => {
-        this.loading = false;
         this.errorHandlerService.error(error);
       });
     }
@@ -256,7 +266,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
       }));
   }
 
-  doSearchRepoNames(repoName: string) {
+  doSearchRepoNames(repoName: string, isFirstLoadingGridView?: boolean) {
     this.lastFilteredRepoName = repoName;
     this.currentPage = 1;
     let st: ClrDatagridStateInterface = this.currentState;
@@ -266,7 +276,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     st.page.size = this.pageSize;
     st.page.from = 0;
     st.page.to = this.pageSize - 1;
-    this.clrLoad(st);
+    this.clrLoad(st, isFirstLoadingGridView);
   }
 
   deleteRepos(repoLists: NewRepository[]) {
@@ -334,23 +344,20 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     if (this.lastFilteredRepoName) {
       params.q = encodeURIComponent(`name=~${this.lastFilteredRepoName}`);
     }
-
     this.loading = true;
     this.newRepoService.listRepositoriesResponse(
       params
-    )
+    ).pipe(finalize(() => this.loading = false))
       .subscribe((repo: __StrictHttpResponse<Array<NewRepository>>) => {
         this.totalCount = +repo.headers.get('x-total-count');
         this.repositoriesCopy = repo.body;
         this.repositories = this.repositories.concat(this.repositoriesCopy);
-        this.loading = false;
       }, error => {
-        this.loading = false;
         this.errorHandlerService.error(error);
       });
   }
 
-  clrLoad(state: ClrDatagridStateInterface): void {
+  clrLoad(state: ClrDatagridStateInterface, isFirstLoadingGridView?: boolean): void {
     if (!state || !state.page) {
       return;
     }
@@ -382,20 +389,22 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
       params.sort = getSortingString(state);
     }
     this.loading = true;
-
+    if (isFirstLoadingGridView) {
+      this.isFirstLoadingGridView = true;
+    }
     this.newRepoService.listRepositoriesResponse(
       params
-    )
-      .subscribe((repo: __StrictHttpResponse<Array<NewRepository>>) => {
+    ).pipe(finalize(() => {
+      this.loading = false;
+      this.isFirstLoadingGridView = false;
+    })).subscribe((repo: __StrictHttpResponse<Array<NewRepository>>) => {
 
         this.totalCount = +repo.headers.get('x-total-count');
         this.repositories = repo.body;
         // Do customising filtering and sorting
         this.repositories = doFiltering<NewRepository>(this.repositories, state);
         this.signedCon = {};
-        this.loading = false;
       }, error => {
-        this.loading = false;
         this.errorHandlerService.error(error);
       });
   }
@@ -432,7 +441,16 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
       return;
     }
     this.isCardView = cardView;
-    this.refresh();
+    if (localStorage) {
+      if (this.isCardView) {
+        localStorage.setItem(CARD_VIEW_LOCALSTORAGE_KEY, TRUE_STR);
+      } else {
+        localStorage.setItem(CARD_VIEW_LOCALSTORAGE_KEY, FALSE_STR);
+      }
+    }
+    if (this.isCardView) {
+      this.refresh();
+    }
   }
 
   mouseEnter(itemName: string) {
