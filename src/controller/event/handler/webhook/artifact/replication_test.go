@@ -22,10 +22,11 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/project"
-	rep "github.com/goharbor/harbor/src/controller/replication"
+	repctl "github.com/goharbor/harbor/src/controller/replication"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	reppkg "github.com/goharbor/harbor/src/pkg/replication"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
@@ -36,9 +37,6 @@ import (
 )
 
 type fakedNotificationPolicyMgr struct {
-}
-
-type fakedReplicationPolicyMgr struct {
 }
 
 type fakedReplicationRegistryMgr struct {
@@ -87,44 +85,6 @@ func (f *fakedNotificationPolicyMgr) GetRelatedPolices(int64, string) ([]*models
 	}, nil
 }
 
-// Create new policy
-func (f *fakedReplicationPolicyMgr) Create(*model.Policy) (int64, error) {
-	return 0, nil
-}
-
-// List the policies, returns the total count, policy list and error
-func (f *fakedReplicationPolicyMgr) List(...*model.PolicyQuery) (int64, []*model.Policy, error) {
-	return 0, nil, nil
-}
-
-// Get policy with specified ID
-func (f *fakedReplicationPolicyMgr) Get(int64) (*model.Policy, error) {
-	return &model.Policy{
-		ID: 1,
-		SrcRegistry: &model.Registry{
-			ID: 0,
-		},
-		DestRegistry: &model.Registry{
-			ID: 0,
-		},
-	}, nil
-}
-
-// Get policy by the name
-func (f *fakedReplicationPolicyMgr) GetByName(string) (*model.Policy, error) {
-	return nil, nil
-}
-
-// Update the specified policy
-func (f *fakedReplicationPolicyMgr) Update(policy *model.Policy) error {
-	return nil
-}
-
-// Remove the specified policy
-func (f *fakedReplicationPolicyMgr) Remove(int64) error {
-	return nil
-}
-
 // Add new registry
 func (f *fakedReplicationRegistryMgr) Add(*model.Registry) (int64, error) {
 	return 0, nil
@@ -171,27 +131,25 @@ func TestReplicationHandler_Handle(t *testing.T) {
 	config.Init()
 
 	PolicyMgr := notification.PolicyMgr
-	rpPolicy := replication.PolicyCtl
 	rpRegistry := replication.RegistryMgr
 	prj := project.Ctl
-	repCtl := rep.Ctl
+	repCtl := repctl.Ctl
 
 	defer func() {
 		notification.PolicyMgr = PolicyMgr
-		replication.PolicyCtl = rpPolicy
 		replication.RegistryMgr = rpRegistry
 		project.Ctl = prj
-		rep.Ctl = repCtl
+		repctl.Ctl = repCtl
 	}()
 	notification.PolicyMgr = &fakedNotificationPolicyMgr{}
-	replication.PolicyCtl = &fakedReplicationPolicyMgr{}
 	replication.RegistryMgr = &fakedReplicationRegistryMgr{}
 	projectCtl := &projecttesting.Controller{}
 	project.Ctl = projectCtl
 	mockRepCtl := &replicationtesting.Controller{}
-	rep.Ctl = mockRepCtl
-	mockRepCtl.On("GetTask", mock.Anything, mock.Anything).Return(&rep.Task{}, nil)
-	mockRepCtl.On("GetExecution", mock.Anything, mock.Anything).Return(&rep.Execution{}, nil)
+	repctl.Ctl = mockRepCtl
+	mockRepCtl.On("GetPolicy", mock.Anything, mock.Anything).Return(&reppkg.Policy{ID: 1}, nil)
+	mockRepCtl.On("GetTask", mock.Anything, mock.Anything).Return(&repctl.Task{}, nil)
+	mockRepCtl.On("GetExecution", mock.Anything, mock.Anything).Return(&repctl.Execution{}, nil)
 
 	mock.OnAnything(projectCtl, "GetByName").Return(&models.Project{ProjectID: 1}, nil)
 

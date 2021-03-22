@@ -9,8 +9,8 @@ from library.replication import Replication
 from library.registry import Registry
 from library.artifact import Artifact
 from library.repository import Repository
-from library.replication_v2 import ReplicationV2
 import swagger_client
+import v2_swagger_client
 from testutils import DOCKER_USER, DOCKER_PWD
 
 class TestProjects(unittest.TestCase):
@@ -19,7 +19,6 @@ class TestProjects(unittest.TestCase):
         self.project = Project()
         self.user = User()
         self.replication = Replication()
-        self.replication_v2 = ReplicationV2()
         self.registry = Registry()
         self.artifact = Artifact()
         self.repo = Repository()
@@ -83,17 +82,17 @@ class TestProjects(unittest.TestCase):
         #4. Create a pull-based rule for this registry;
         TestProjects.rule_id, rule_name = self.replication.create_replication_policy(src_registry=swagger_client.Registry(id=int(TestProjects.registry_id)),
                                             dest_namespace=TestProjects.project_name,
-                                            filters=[swagger_client.ReplicationFilter(type="name",value="library/"+self.image),swagger_client.ReplicationFilter(type="tag",value=self.tag)],
+                                            filters=[v2_swagger_client.ReplicationFilter(type="name",value="library/"+self.image),v2_swagger_client.ReplicationFilter(type="tag",value=self.tag)],
                                             **ADMIN_CLIENT)
 
         #5. Check rule should be exist;
         self.replication.check_replication_rule_should_exist(TestProjects.rule_id, rule_name, **ADMIN_CLIENT)
 
         #6. Trigger the rule;
-        self.replication_v2.trigger_replication_executions(TestProjects.rule_id, **ADMIN_CLIENT)
+        self.replication.trigger_replication_executions(TestProjects.rule_id, **ADMIN_CLIENT)
 
         #7. Wait for completion of this replication job;
-        self.replication_v2.wait_until_jobs_finish(TestProjects.rule_id,interval=30, **ADMIN_CLIENT)
+        self.replication.wait_until_jobs_finish(TestProjects.rule_id,interval=30, **ADMIN_CLIENT)
 
         #8. Check image is replicated into target project successfully.
         artifact = self.artifact.get_reference_info(TestProjects.project_name, self.image, self.tag, **ADMIN_CLIENT)

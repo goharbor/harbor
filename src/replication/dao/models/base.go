@@ -6,6 +6,5 @@ import (
 
 func init() {
 	orm.RegisterModel(
-		new(Registry),
-		new(RepPolicy))
+		new(Registry))
 }

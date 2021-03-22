@@ -15,6 +15,7 @@
 package flow
 
 import (
+	"github.com/goharbor/harbor/src/pkg/replication"
 	"testing"
 
 	"github.com/goharbor/harbor/src/replication/adapter"
@@ -35,7 +36,7 @@ func (s *stageTestSuite) TestInitialize() {
 	factory.On("AdapterPattern").Return(nil)
 	adapter.RegisterFactory(model.RegistryTypeHarbor, factory)
 
-	policy := &model.Policy{
+	policy := &replication.Policy{
 		SrcRegistry: &model.Registry{
 			Type: model.RegistryTypeHarbor,
 		},
@@ -60,7 +61,7 @@ func (s *stageTestSuite) TestFetchResources() {
 		{},
 		{},
 	}, nil)
-	policy := &model.Policy{}
+	policy := &replication.Policy{}
 	resources, err := fetchResources(adapter, policy)
 	s.Require().Nil(err)
 	s.Len(resources, 2)
@@ -80,7 +81,7 @@ func (s *stageTestSuite) TestAssembleSourceResources() {
 			Override: false,
 		},
 	}
-	policy := &model.Policy{
+	policy := &replication.Policy{
 		SrcRegistry: &model.Registry{
 			ID: 1,
 		},
@@ -103,7 +104,7 @@ func (s *stageTestSuite) TestAssembleDestinationResources() {
 			Override: false,
 		},
 	}
-	policy := &model.Policy{
+	policy := &replication.Policy{
 		DestRegistry:  &model.Registry{},
 		DestNamespace: "test",
 		Override:      true,

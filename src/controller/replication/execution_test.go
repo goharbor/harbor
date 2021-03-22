@@ -22,11 +22,14 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/pkg/replication"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
-	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
+	testingreg "github.com/goharbor/harbor/src/testing/pkg/reg"
+	testingrep "github.com/goharbor/harbor/src/testing/pkg/replication"
+	testingscheduler "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
 	"github.com/stretchr/testify/suite"
 )
@@ -34,18 +37,27 @@ import (
 type replicationTestSuite struct {
 	suite.Suite
 	ctl        *controller
+	repMgr     *testingrep.Manager
+	regMgr     *testingreg.Manager
 	execMgr    *testingTask.ExecutionManager
 	taskMgr    *testingTask.Manager
+	scheduler  *testingscheduler.Scheduler
 	flowCtl    *flowController
 	ormCreator *orm.Creator
 }
 
-func (r *replicationTestSuite) SetupSuite() {
+func (r *replicationTestSuite) SetupTest() {
+	r.repMgr = &testingrep.Manager{}
+	r.regMgr = &testingreg.Manager{}
 	r.execMgr = &testingTask.ExecutionManager{}
 	r.taskMgr = &testingTask.Manager{}
+	r.scheduler = &testingscheduler.Scheduler{}
 	r.flowCtl = &flowController{}
 	r.ormCreator = &orm.Creator{}
 	r.ctl = &controller{
+		repMgr:     r.repMgr,
+		regMgr:     r.regMgr,
+		scheduler:  r.scheduler,
 		execMgr:    r.execMgr,
 		taskMgr:    r.taskMgr,
 		flowCtl:    r.flowCtl,
@@ -56,7 +68,7 @@ func (r *replicationTestSuite) SetupSuite() {
 
 func (r *replicationTestSuite) TestStart() {
 	// policy is disabled
-	id, err := r.ctl.Start(context.Background(), &model.Policy{Enabled: false}, nil, task.ExecutionTriggerManual)
+	id, err := r.ctl.Start(context.Background(), &replication.Policy{Enabled: false}, nil, task.ExecutionTriggerManual)
 	r.Require().NotNil(err)
 
 	// got error when running the replication flow
@@ -66,7 +78,7 @@ func (r *replicationTestSuite) TestStart() {
 	r.execMgr.On("MarkError", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("error"))
 	r.ormCreator.On("Create").Return(nil)
-	id, err = r.ctl.Start(context.Background(), &model.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
+	id, err = r.ctl.Start(context.Background(), &replication.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
 	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
@@ -75,14 +87,14 @@ func (r *replicationTestSuite) TestStart() {
 	r.ormCreator.AssertExpectations(r.T())
 
 	// reset the mocks
-	r.SetupSuite()
+	r.SetupTest()
 
 	// got no error when running the replication flow
 	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	r.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{}, nil)
 	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	r.ormCreator.On("Create").Return(nil)
-	id, err = r.ctl.Start(context.Background(), &model.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
+	id, err = r.ctl.Start(context.Background(), &replication.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
 	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
@@ -213,6 +225,11 @@ func (r *replicationTestSuite) TestGetTask() {
 }
 
 func (r *replicationTestSuite) TestGetTaskLog() {
+	r.taskMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Task{
+		{
+			ID: 1,
+		},
+	}, nil)
 	r.taskMgr.On("GetLog", mock.Anything, mock.Anything).Return([]byte{'a'}, nil)
 	data, err := r.ctl.GetTaskLog(nil, 1)
 	r.Require().Nil(err)

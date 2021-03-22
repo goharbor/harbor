@@ -16,59 +16,198 @@ package handler
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/rbac"
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/replication"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
+	rep "github.com/goharbor/harbor/src/pkg/replication"
 	"github.com/goharbor/harbor/src/pkg/task"
-	replica "github.com/goharbor/harbor/src/replication"
-	"github.com/goharbor/harbor/src/replication/event"
-	"github.com/goharbor/harbor/src/replication/policy"
-	"github.com/goharbor/harbor/src/replication/policy/manager"
+	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/replication"
 )
 
 func newReplicationAPI() *replicationAPI {
 	return &replicationAPI{
-		ctl:       replication.Ctl,
-		policyMgr: manager.NewDefaultManager(),
+		ctl: replication.Ctl,
 	}
 }
 
 type replicationAPI struct {
 	BaseAPI
-	ctl       replication.Controller
-	policyMgr policy.Controller
+	ctl replication.Controller
 }
 
 func (r *replicationAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
 	return nil
 }
 
-func (r *replicationAPI) StartReplication(ctx context.Context, params operation.StartReplicationParams) middleware.Responder {
-	// TODO move the following logic to the replication controller after refactoring the policy management part with the new programming model
-	if err := r.RequireSystemAccess(ctx, rbac.ActionCreate, rbac.ResourceReplication); err != nil {
+func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params operation.CreateReplicationPolicyParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionCreate, rbac.ResourceReplicationPolicy); err != nil {
 		return r.SendError(ctx, err)
 	}
-	policy, err := r.policyMgr.Get(params.Execution.PolicyID)
+	sc, err := r.GetSecurityContext(ctx)
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
-	if policy == nil {
-		return r.SendError(ctx, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("the replication policy %d not found", params.Execution.PolicyID))
+	policy := &rep.Policy{
+		Name:              params.Policy.Name,
+		Description:       params.Policy.Description,
+		Creator:           sc.GetUsername(),
+		DestNamespace:     params.Policy.DestNamespace,
+		ReplicateDeletion: params.Policy.Deletion,
+		Override:          params.Policy.Override,
+		Enabled:           params.Policy.Enabled,
 	}
-	if err = event.PopulateRegistries(replica.RegistryMgr, policy); err != nil {
+	if params.Policy.SrcRegistry != nil {
+		policy.SrcRegistry = &model.Registry{
+			ID: params.Policy.SrcRegistry.ID,
+		}
+	}
+	if params.Policy.DestRegistry != nil {
+		policy.DestRegistry = &model.Registry{
+			ID: params.Policy.DestRegistry.ID,
+		}
+	}
+	if len(params.Policy.Filters) > 0 {
+		for _, filter := range params.Policy.Filters {
+			policy.Filters = append(policy.Filters, &model.Filter{
+				Type:  model.FilterType(filter.Type),
+				Value: filter.Value,
+			})
+		}
+	}
+	if params.Policy.Trigger != nil {
+		policy.Trigger = &model.Trigger{
+			Type: model.TriggerType(params.Policy.Trigger.Type),
+		}
+		if params.Policy.Trigger.TriggerSettings != nil {
+			policy.Trigger.Settings = &model.TriggerSettings{
+				Cron: params.Policy.Trigger.TriggerSettings.Cron,
+			}
+		}
+	}
+	id, err := r.ctl.CreatePolicy(ctx, policy)
+	if err != nil {
 		return r.SendError(ctx, err)
 	}
+	location := fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), id)
+	return operation.NewCreateReplicationPolicyCreated().WithLocation(location)
+}
 
+func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params operation.UpdateReplicationPolicyParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceReplicationPolicy); err != nil {
+		return r.SendError(ctx, err)
+	}
+	policy := &rep.Policy{
+		ID:                params.ID,
+		Name:              params.Policy.Name,
+		Description:       params.Policy.Description,
+		ReplicateDeletion: params.Policy.Deletion,
+		Override:          params.Policy.Override,
+		Enabled:           params.Policy.Enabled,
+	}
+	if params.Policy.SrcRegistry != nil {
+		policy.SrcRegistry = &model.Registry{
+			ID: params.Policy.SrcRegistry.ID,
+		}
+	}
+	if params.Policy.DestRegistry != nil {
+		policy.DestRegistry = &model.Registry{
+			ID: params.Policy.DestRegistry.ID,
+		}
+	}
+	if len(params.Policy.Filters) > 0 {
+		for _, filter := range params.Policy.Filters {
+			policy.Filters = append(policy.Filters, &model.Filter{
+				Type:  model.FilterType(filter.Type),
+				Value: filter.Value,
+			})
+		}
+	}
+	if params.Policy.Trigger != nil {
+		policy.Trigger = &model.Trigger{
+			Type: model.TriggerType(params.Policy.Trigger.Type),
+		}
+		if params.Policy.Trigger.TriggerSettings != nil {
+			policy.Trigger.Settings = &model.TriggerSettings{
+				Cron: params.Policy.Trigger.TriggerSettings.Cron,
+			}
+		}
+	}
+	if err := r.ctl.UpdatePolicy(ctx, policy); err != nil {
+		return r.SendError(ctx, err)
+	}
+	return operation.NewUpdateReplicationPolicyOK()
+}
+
+func (r *replicationAPI) ListReplicationPolicies(ctx context.Context, params operation.ListReplicationPoliciesParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceReplicationPolicy); err != nil {
+		return r.SendError(ctx, err)
+	}
+	query, err := r.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+	if params.Name != nil {
+		query.Keywords["Name"] = &q.FuzzyMatchValue{
+			Value: *params.Name,
+		}
+	}
+	total, err := r.ctl.PolicyCount(ctx, query)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+	policies, err := r.ctl.ListPolicies(ctx, query)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+	var result []*models.ReplicationPolicy
+	for _, policy := range policies {
+		result = append(result, convertReplicationPolicy(policy))
+	}
+	return operation.NewListReplicationPoliciesOK().
+		WithXTotalCount(total).
+		WithLink(r.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
+		WithPayload(result)
+}
+
+func (r *replicationAPI) GetReplicationPolicy(ctx context.Context, params operation.GetReplicationPolicyParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceReplicationPolicy); err != nil {
+		return r.SendError(ctx, err)
+	}
+	policy, err := r.ctl.GetPolicy(ctx, params.ID)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+	return operation.NewGetReplicationPolicyOK().WithPayload(convertReplicationPolicy(policy))
+}
+
+func (r *replicationAPI) DeleteReplicationPolicy(ctx context.Context, params operation.DeleteReplicationPolicyParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionDelete, rbac.ResourceReplicationPolicy); err != nil {
+		return r.SendError(ctx, err)
+	}
+	if err := r.ctl.DeletePolicy(ctx, params.ID); err != nil {
+		return r.SendError(ctx, err)
+	}
+	return operation.NewDeleteReplicationPolicyOK()
+}
+
+func (r *replicationAPI) StartReplication(ctx context.Context, params operation.StartReplicationParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionCreate, rbac.ResourceReplication); err != nil {
+		return r.SendError(ctx, err)
+	}
+	policy, err := r.ctl.GetPolicy(ctx, params.Execution.PolicyID)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
 	// the legacy replication scheduler job("src/jobservice/job/impl/replication/scheduler.go") calls the start replication API
 	// to trigger the scheduled replication, a query string "trigger" is added when sending the request
 	// here is the logic to cover this part
@@ -245,6 +384,73 @@ func (r *replicationAPI) GetReplicationLog(ctx context.Context, params operation
 	}
 	return operation.NewGetReplicationLogOK().WithContentType("text/plain").WithPayload(string(log))
 }
+
+func convertReplicationPolicy(policy *rep.Policy) *models.ReplicationPolicy {
+	p := &models.ReplicationPolicy{
+		CreationTime:      strfmt.DateTime(policy.CreationTime),
+		Deletion:          policy.ReplicateDeletion,
+		Description:       policy.Description,
+		DestNamespace:     policy.DestNamespace,
+		Enabled:           policy.Enabled,
+		ID:                policy.ID,
+		Name:              policy.Name,
+		Override:          policy.Override,
+		ReplicateDeletion: policy.ReplicateDeletion,
+		UpdateTime:        strfmt.DateTime(policy.UpdateTime),
+	}
+	if policy.SrcRegistry != nil {
+		p.SrcRegistry = convertRegistry(policy.SrcRegistry)
+	}
+	if policy.DestRegistry != nil {
+		p.DestRegistry = convertRegistry(policy.DestRegistry)
+	}
+	if len(policy.Filters) > 0 {
+		for _, filter := range policy.Filters {
+			p.Filters = append(p.Filters, &models.ReplicationFilter{
+				Type:  string(filter.Type),
+				Value: filter.Value,
+			})
+		}
+	}
+	if policy.Trigger != nil {
+		trigger := &models.ReplicationTrigger{
+			Type: string(policy.Trigger.Type),
+		}
+		if policy.Trigger.Settings != nil {
+			trigger.TriggerSettings = &models.ReplicationTriggerSettings{
+				Cron: policy.Trigger.Settings.Cron,
+			}
+		}
+		p.Trigger = trigger
+	}
+	return p
+}
+
+func convertRegistry(registry *model.Registry) *models.Registry {
+	r := &models.Registry{
+		CreationTime: strfmt.DateTime(registry.CreationTime),
+		Description:  registry.Description,
+		ID:           registry.ID,
+		Insecure:     registry.Insecure,
+		Name:         registry.Name,
+		Status:       registry.Status,
+		Type:         string(registry.Type),
+		UpdateTime:   strfmt.DateTime(registry.UpdateTime),
+		URL:          registry.URL,
+	}
+	if registry.Credential != nil {
+		credential := &models.RegistryCredential{
+			AccessKey: registry.Credential.AccessKey,
+			Type:      string(registry.Credential.Type),
+		}
+		if len(registry.Credential.AccessSecret) > 0 {
+			credential.AccessSecret = "*****"
+		}
+		r.Credential = credential
+	}
+	return r
+}
+
 func convertExecution(execution *replication.Execution) *models.ReplicationExecution {
 	exec := &models.ReplicationExecution{
 		ID:         execution.ID,

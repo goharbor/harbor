@@ -18,15 +18,13 @@ import (
 	"errors"
 	"fmt"
 
-	commonthttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/controller/replication"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	rep "github.com/goharbor/harbor/src/pkg/replication"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/registry"
 )
 
@@ -36,16 +34,14 @@ type Handler interface {
 }
 
 // NewHandler ...
-func NewHandler(policyCtl policy.Controller, registryMgr registry.Manager) Handler {
+func NewHandler(registryMgr registry.Manager) Handler {
 	return &handler{
-		policyCtl:   policyCtl,
 		registryMgr: registryMgr,
 		ctl:         replication.Ctl,
 	}
 }
 
 type handler struct {
-	policyCtl   policy.Controller
 	registryMgr registry.Manager
 	ctl         replication.Controller
 }
@@ -56,7 +52,7 @@ func (h *handler) Handle(event *Event) error {
 		len(event.Resource.Metadata.Artifacts) == 0 {
 		return errors.New("invalid event")
 	}
-	var policies []*model.Policy
+	var policies []*rep.Policy
 	var err error
 	switch event.Type {
 	case EventTypeArtifactPush, EventTypeChartUpload, EventTypeTagDelete,
@@ -75,9 +71,6 @@ func (h *handler) Handle(event *Event) error {
 	}
 
 	for _, policy := range policies {
-		if err := PopulateRegistries(h.registryMgr, policy); err != nil {
-			return err
-		}
 		id, err := h.ctl.Start(orm.Context(), policy, event.Resource, task.ExecutionTriggerEvent)
 		if err != nil {
 			return err
@@ -87,12 +80,12 @@ func (h *handler) Handle(event *Event) error {
 	return nil
 }
 
-func (h *handler) getRelatedPolicies(resource *model.Resource) ([]*model.Policy, error) {
-	_, policies, err := h.policyCtl.List()
+func (h *handler) getRelatedPolicies(resource *model.Resource) ([]*rep.Policy, error) {
+	policies, err := replication.Ctl.ListPolicies(orm.Context(), nil)
 	if err != nil {
 		return nil, err
 	}
-	result := []*model.Policy{}
+	result := []*rep.Policy{}
 	for _, policy := range policies {
 		// disabled
 		if !policy.Enabled {
@@ -112,7 +105,7 @@ func (h *handler) getRelatedPolicies(resource *model.Resource) ([]*model.Policy,
 			continue
 		}
 		// doesn't replicate deletion
-		if resource.Deleted && !policy.Deletion {
+		if resource.Deleted && !policy.ReplicateDeletion {
 			continue
 		}
 
@@ -128,53 +121,4 @@ func (h *handler) getRelatedPolicies(resource *model.Resource) ([]*model.Policy,
 		result = append(result, policy)
 	}
 	return result, nil
-}
-
-// PopulateRegistries populates the source registry and destination registry properties for policy
-func PopulateRegistries(registryMgr registry.Manager, policy *model.Policy) error {
-	if policy == nil {
-		return nil
-	}
-	registry, err := getRegistry(registryMgr, policy.SrcRegistry)
-	if err != nil {
-		return err
-	}
-	policy.SrcRegistry = registry
-	registry, err = getRegistry(registryMgr, policy.DestRegistry)
-	if err != nil {
-		return err
-	}
-	policy.DestRegistry = registry
-	return nil
-}
-
-func getRegistry(registryMgr registry.Manager, registry *model.Registry) (*model.Registry, error) {
-	if registry == nil || registry.ID == 0 {
-		return GetLocalRegistry(), nil
-	}
-	reg, err := registryMgr.Get(registry.ID)
-	if err != nil {
-		return nil, err
-	}
-	if reg == nil {
-		return nil, fmt.Errorf("registry %d not found", registry.ID)
-	}
-	return reg, nil
-}
-
-// GetLocalRegistry returns the info of the local Harbor registry
-func GetLocalRegistry() *model.Registry {
-	return &model.Registry{
-		Type:            model.RegistryTypeHarbor,
-		Name:            "Local",
-		URL:             config.Config.CoreURL,
-		TokenServiceURL: config.Config.TokenServiceURL,
-		Status:          "healthy",
-		Credential: &model.Credential{
-			Type: model.CredentialTypeSecret,
-			// use secret to do the auth for the local Harbor
-			AccessSecret: config.Config.JobserviceSecret,
-		},
-		Insecure: !commonthttp.InternalTLSEnabled(),
-	}
 }

@@ -17,6 +17,7 @@ package flow
 import (
 	"context"
 	"encoding/json"
+	"github.com/goharbor/harbor/src/pkg/replication"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -27,7 +28,7 @@ import (
 type copyFlow struct {
 	executionID  int64
 	resources    []*model.Resource
-	policy       *model.Policy
+	policy       *replication.Policy
 	executionMgr task.ExecutionManager
 	taskMgr      task.Manager
 }
@@ -35,7 +36,7 @@ type copyFlow struct {
 // NewCopyFlow returns an instance of the copy flow which replicates the resources from
 // the source registry to the destination registry. If the parameter "resources" isn't provided,
 // will fetch the resources first
-func NewCopyFlow(executionID int64, policy *model.Policy, resources ...*model.Resource) Flow {
+func NewCopyFlow(executionID int64, policy *replication.Policy, resources ...*model.Resource) Flow {
 	return &copyFlow{
 		executionMgr: task.ExecMgr,
 		taskMgr:      task.Mgr,
