@@ -95,7 +95,6 @@ func init() {
 	beego.TestBeegoInit(apppath)
 
 	beego.Router("/api/health", &HealthAPI{}, "get:CheckHealth")
-	beego.Router("/api/search/", &SearchAPI{})
 	beego.Router("/api/users/:id", &UserAPI{}, "get:Get")
 	beego.Router("/api/users", &UserAPI{}, "get:List;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/users/search", &UserAPI{}, "get:Search")

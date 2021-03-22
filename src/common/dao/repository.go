@@ -86,38 +86,6 @@ func GetTotalOfRepositories(query ...*models.RepositoryQuery) (int64, error) {
 	return total, nil
 }
 
-// GetRepositories ...
-func GetRepositories(query ...*models.RepositoryQuery) ([]*models.RepoRecord, error) {
-	repositories := []*models.RepoRecord{}
-	order := "name asc"
-	if len(query) > 0 && query[0] != nil {
-		if s, ok := orderMap[query[0].Sort]; ok {
-			order = s
-		}
-	}
-
-	condition, params := repositoryQueryConditions(query...)
-	sql := fmt.Sprintf(`select r.repository_id, r.name, r.project_id, r.description, r.pull_count, 
-	r.star_count, r.creation_time, r.update_time %s order by r.%s `, condition, order)
-	if len(query) > 0 && query[0] != nil {
-		page, size := query[0].Page, query[0].Size
-		if size > 0 {
-			sql += `limit ? `
-			params = append(params, size)
-			if page > 0 {
-				sql += `offset ? `
-				params = append(params, size*(page-1))
-			}
-		}
-	}
-
-	if _, err := GetOrmer().Raw(sql, params).QueryRows(&repositories); err != nil {
-		return nil, err
-	}
-
-	return repositories, nil
-}
-
 func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []interface{}) {
 	params := []interface{}{}
 	sql := `from repository r `
@@ -127,7 +95,7 @@ func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []inte
 	q := query[0]
 
 	if q.LabelID > 0 {
-		sql += `join harbor_resource_label rl on r.repository_id = rl.resource_id 
+		sql += `join harbor_resource_label rl on r.repository_id = rl.resource_id
 		and rl.resource_type = 'r' `
 	}
 	sql += `where 1=1 `

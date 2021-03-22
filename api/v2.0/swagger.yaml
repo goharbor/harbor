@@ -19,6 +19,27 @@ security:
   - basic: []
   - {}
 paths:
+  /search:
+    get:
+      summary: 'Search for projects, repositories and helm charts'
+      description: |-
+        The Search endpoint returns information about the projects, repositories and helm charts offered at public status or related to the current logged in user. The response includes the project, repository list and charts in a proper display order.
+      parameters:
+        - name: q
+          in: query
+          description: Search parameter for project and repository name.
+          required: true
+          type: string
+      tags:
+        - search
+      operationId: search
+      responses:
+        '200':
+          description: An array of search results
+          schema:
+            $ref: '#/definitions/Search'
+        '500':
+          $ref: '#/responses/500'
   /ldap/ping:
     post:
       operationId: pingLdap
@@ -3656,6 +3677,134 @@ definitions:
       message:
         type: string
         description: The error message
+  Search:
+    type: object
+    properties:
+      project:
+        description: Search results of the projects that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/Project'
+      repository:
+        description: Search results of the repositories that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/SearchRepository'
+      chart:
+        description: Search results of the charts that macthed the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/SearchResult'
+        x-omitempty: true
+        x-isnullable: true
+  SearchRepository:
+    type: object
+    properties:
+      project_id:
+        type: integer
+        description: The ID of the project that the repository belongs to
+      project_name:
+        type: string
+        description: The name of the project that the repository belongs to
+      project_public:
+        type: boolean
+        description: 'The flag to indicate the publicity of the project that the repository belongs to (1 is public, 0 is not)'
+      repository_name:
+        type: string
+        description: The name of the repository
+      pull_count:
+        type: integer
+        description: The count how many times the repository is pulled
+      artifact_count:
+        type: integer
+        description: The count of artifacts in the repository
+  SearchResult:
+    type: object
+    description: The chart search result item
+    properties:
+      Name:
+        type: string
+        description: The chart name with repo name
+      Score:
+        type: integer
+        description: The matched level
+      Chart:
+        $ref: '#/definitions/ChartVersion'
+  ChartVersion:
+    type: object
+    description: A specified chart entry
+    allOf:
+      - $ref: '#/definitions/ChartMetadata'
+      - type: object
+        properties:
+          created:
+            type: string
+            description: The created time of the chart entry
+          removed:
+            type: boolean
+            description: A flag to indicate if the chart entry is removed
+          digest:
+            type: string
+            description: The digest value of the chart entry
+          urls:
+            type: array
+            description: The urls of the chart entry
+            items:
+              type: string
+    properties:
+      labels:
+        type: array
+        description: A list of label
+        items:
+          $ref: '#/definitions/Label'
+  ChartMetadata:
+    type: object
+    description: The metadata of chart version
+    required:
+      - name
+      - version
+      - engine
+      - icon
+      - apiVersion
+      - appVersion
+    properties:
+      name:
+        type: string
+        description: The name of the chart
+      home:
+        type: string
+        description: The URL to the relevant project page
+      sources:
+        type: array
+        description: The URL to the source code of chart
+        items:
+          type: string
+      version:
+        type: string
+        description: A SemVer 2 version of chart
+      description:
+        type: string
+        description: A one-sentence description of chart
+      keywords:
+        type: array
+        description: A list of string keywords
+        items:
+          type: string
+      engine:
+        type: string
+        description: The name of template engine
+      icon:
+        type: string
+        description: The URL to an icon file
+      apiVersion:
+        type: string
+        description: The API version of this chart
+      appVersion:
+        type: string
+        description: The version of the application enclosed in the chart
+      deprecated:
+        type: boolean
+        description: Whether or not this chart is deprecated
   Repository:
     type: object
     properties:
