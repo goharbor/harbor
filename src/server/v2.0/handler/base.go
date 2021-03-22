@@ -56,14 +56,22 @@ func (*BaseAPI) SendError(ctx context.Context, err error) middleware.Responder {
 	return NewErrResponder(err)
 }
 
-// HasPermission returns true when the request has action permission on resource
-func (*BaseAPI) HasPermission(ctx context.Context, action rbac.Action, resource rbac.Resource) bool {
-	s, ok := security.FromContext(ctx)
+// GetSecurityContext from the provided context
+func (*BaseAPI) GetSecurityContext(ctx context.Context) (security.Context, error) {
+	sc, ok := security.FromContext(ctx)
 	if !ok {
-		log.Warningf("security not found in the context")
+		return nil, errors.UnauthorizedError(errors.New("security context not found"))
+	}
+	return sc, nil
+}
+
+// HasPermission returns true when the request has action permission on resource
+func (b *BaseAPI) HasPermission(ctx context.Context, action rbac.Action, resource rbac.Resource) bool {
+	s, err := b.GetSecurityContext(ctx)
+	if err != nil {
+		log.Warningf("security context not found")
 		return false
 	}
-
 	return s.Can(ctx, action, resource)
 }
 
@@ -98,9 +106,9 @@ func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName inte
 	if b.HasProjectPermission(ctx, projectIDOrName, action, subresource...) {
 		return nil
 	}
-	secCtx, ok := security.FromContext(ctx)
-	if !ok {
-		return errors.UnauthorizedError(errors.New("security context not found"))
+	secCtx, err := b.GetSecurityContext(ctx)
+	if err != nil {
+		return err
 	}
 	if !secCtx.IsAuthenticated() {
 		return errors.UnauthorizedError(nil)
@@ -110,9 +118,9 @@ func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName inte
 
 // RequireSystemAccess checks the system admin permission according to the security context
 func (b *BaseAPI) RequireSystemAccess(ctx context.Context, action rbac.Action, subresource ...rbac.Resource) error {
-	secCtx, ok := security.FromContext(ctx)
-	if !ok {
-		return errors.UnauthorizedError(errors.New("security context not found"))
+	secCtx, err := b.GetSecurityContext(ctx)
+	if err != nil {
+		return err
 	}
 	if !secCtx.IsAuthenticated() {
 		return errors.UnauthorizedError(nil)
@@ -126,9 +134,9 @@ func (b *BaseAPI) RequireSystemAccess(ctx context.Context, action rbac.Action, s
 
 // RequireAuthenticated checks it's authenticated according to the security context
 func (b *BaseAPI) RequireAuthenticated(ctx context.Context) error {
-	secCtx, ok := security.FromContext(ctx)
-	if !ok {
-		return errors.UnauthorizedError(errors.New("security context not found"))
+	secCtx, err := b.GetSecurityContext(ctx)
+	if err != nil {
+		return err
 	}
 	if !secCtx.IsAuthenticated() {
 		return errors.UnauthorizedError(nil)

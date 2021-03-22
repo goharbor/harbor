@@ -16,6 +16,7 @@ package flow
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/replication"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
@@ -24,7 +25,7 @@ import (
 )
 
 // get/create the source registry, destination registry, source adapter and destination adapter
-func initialize(policy *model.Policy) (adp.Adapter, adp.Adapter, error) {
+func initialize(policy *replication.Policy) (adp.Adapter, adp.Adapter, error) {
 	var srcAdapter, dstAdapter adp.Adapter
 	var err error
 
@@ -52,7 +53,7 @@ func initialize(policy *model.Policy) (adp.Adapter, adp.Adapter, error) {
 }
 
 // fetch resources from the source registry
-func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resource, error) {
+func fetchResources(adapter adp.Adapter, policy *replication.Policy) ([]*model.Resource, error) {
 	var resTypes []model.ResourceType
 	for _, filter := range policy.Filters {
 		if filter.Type == model.FilterTypeResource {
@@ -111,7 +112,7 @@ func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resourc
 
 // assemble the source resources by filling the registry information
 func assembleSourceResources(resources []*model.Resource,
-	policy *model.Policy) []*model.Resource {
+	policy *replication.Policy) []*model.Resource {
 	for _, resource := range resources {
 		resource.Registry = policy.SrcRegistry
 	}
@@ -121,7 +122,7 @@ func assembleSourceResources(resources []*model.Resource,
 
 // assemble the destination resources by filling the metadata, registry and override properties
 func assembleDestinationResources(resources []*model.Resource,
-	policy *model.Policy) []*model.Resource {
+	policy *replication.Policy) []*model.Resource {
 	var result []*model.Resource
 	for _, resource := range resources {
 		res := &model.Resource{

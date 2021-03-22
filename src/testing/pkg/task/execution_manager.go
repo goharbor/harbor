@@ -81,6 +81,20 @@ func (_m *ExecutionManager) Delete(ctx context.Context, id int64) error {
 	return r0
 }
 
+// DeleteByVendor provides a mock function with given fields: ctx, vendorType, vendorID
+func (_m *ExecutionManager) DeleteByVendor(ctx context.Context, vendorType string, vendorID int64) error {
+	ret := _m.Called(ctx, vendorType, vendorID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64) error); ok {
+		r0 = rf(ctx, vendorType, vendorID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Get provides a mock function with given fields: ctx, id
 func (_m *ExecutionManager) Get(ctx context.Context, id int64) (*task.Execution, error) {
 	ret := _m.Called(ctx, id)

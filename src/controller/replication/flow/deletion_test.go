@@ -16,6 +16,7 @@ package flow
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/pkg/replication"
 	"testing"
 
 	"github.com/goharbor/harbor/src/replication/model"
@@ -32,7 +33,7 @@ func (d *deletionFlowTestSuite) TestRun() {
 	taskMgr := &task.Manager{}
 	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 
-	policy := &model.Policy{
+	policy := &replication.Policy{
 		SrcRegistry: &model.Registry{
 			Type: model.RegistryTypeHarbor,
 		},
