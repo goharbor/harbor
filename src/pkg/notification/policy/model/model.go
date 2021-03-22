@@ -21,7 +21,7 @@ type Policy struct {
 	EventTypesDB string        `orm:"column(event_types)" json:"-"`
 	EventTypes   []string      `orm:"-" json:"event_types"`
 	Creator      string        `orm:"column(creator)" json:"creator"`
-	CreationTime time.Time     `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	CreationTime time.Time     `orm:"column(creation_time);auto_now_add" json:"creation_time" sort:"default:desc"`
 	UpdateTime   time.Time     `orm:"column(update_time);auto_now_add" json:"update_time"`
 	Enabled      bool          `orm:"column(enabled)" json:"enabled"`
 }

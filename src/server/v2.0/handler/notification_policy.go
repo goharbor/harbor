@@ -39,7 +39,7 @@ func (n *notificationPolicyAPI) Prepare(ctx context.Context, operation string, p
 	return nil
 }
 
-func (n *notificationPolicyAPI) ListWebhookPolicy(ctx context.Context, params webhook.ListWebhookPolicyParams) middleware.Responder {
+func (n *notificationPolicyAPI) ListWebhookPoliciesOfProject(ctx context.Context, params webhook.ListWebhookPoliciesOfProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionList, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
@@ -50,13 +50,11 @@ func (n *notificationPolicyAPI) ListWebhookPolicy(ctx context.Context, params we
 		return n.SendError(ctx, err)
 	}
 
-	query := &q.Query{
-		Keywords: q.KeyWords{
-			"ProjectID": projectID,
-		},
-		PageNumber: *params.Page,
-		PageSize:   *params.PageSize,
+	query, err := n.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
+	if err != nil {
+		return n.SendError(ctx, err)
 	}
+	query.Keywords["ProjectID"] = projectID
 
 	total, err := n.webhookPolicyMgr.Count(ctx, query)
 	if err != nil {
@@ -72,13 +70,13 @@ func (n *notificationPolicyAPI) ListWebhookPolicy(ctx context.Context, params we
 		results = append(results, model.NewNotifiactionPolicy(p).ToSwagger())
 	}
 
-	return operation.NewListWebhookPolicyOK().
+	return operation.NewListWebhookPoliciesOfProjectOK().
 		WithXTotalCount(total).
 		WithLink(n.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(results)
 }
 
-func (n *notificationPolicyAPI) CreateWebhookPolicy(ctx context.Context, params webhook.CreateWebhookPolicyParams) middleware.Responder {
+func (n *notificationPolicyAPI) CreateWebhookPolicyOfProject(ctx context.Context, params webhook.CreateWebhookPolicyOfProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionCreate, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
@@ -105,10 +103,10 @@ func (n *notificationPolicyAPI) CreateWebhookPolicy(ctx context.Context, params 
 	}
 
 	location := fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), id)
-	return operation.NewCreateWebhookPolicyCreated().WithLocation(location)
+	return operation.NewCreateWebhookPolicyOfProjectCreated().WithLocation(location)
 }
 
-func (n *notificationPolicyAPI) UpdateWebhookPolicy(ctx context.Context, params webhook.UpdateWebhookPolicyParams) middleware.Responder {
+func (n *notificationPolicyAPI) UpdateWebhookPolicyOfProject(ctx context.Context, params webhook.UpdateWebhookPolicyOfProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionUpdate, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
@@ -133,10 +131,10 @@ func (n *notificationPolicyAPI) UpdateWebhookPolicy(ctx context.Context, params 
 		return n.SendError(ctx, err)
 	}
 
-	return operation.NewUpdateWebhookPolicyOK()
+	return operation.NewUpdateWebhookPolicyOfProjectOK()
 }
 
-func (n *notificationPolicyAPI) DeleteWebhookPolicy(ctx context.Context, params webhook.DeleteWebhookPolicyParams) middleware.Responder {
+func (n *notificationPolicyAPI) DeleteWebhookPolicyOfProject(ctx context.Context, params webhook.DeleteWebhookPolicyOfProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionDelete, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
@@ -145,10 +143,10 @@ func (n *notificationPolicyAPI) DeleteWebhookPolicy(ctx context.Context, params 
 	if err := n.webhookPolicyMgr.Delete(ctx, params.WebhookPolicyID); err != nil {
 		return n.SendError(ctx, err)
 	}
-	return operation.NewDeleteWebhookPolicyOK()
+	return operation.NewDeleteWebhookPolicyOfProjectOK()
 }
 
-func (n *notificationPolicyAPI) GetWebhookPolicy(ctx context.Context, params webhook.GetWebhookPolicyParams) middleware.Responder {
+func (n *notificationPolicyAPI) GetWebhookPolicyOfProject(ctx context.Context, params webhook.GetWebhookPolicyOfProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
@@ -159,7 +157,7 @@ func (n *notificationPolicyAPI) GetWebhookPolicy(ctx context.Context, params web
 		return n.SendError(ctx, err)
 	}
 
-	return operation.NewGetWebhookPolicyOK().WithPayload(model.NewNotifiactionPolicy(policy).ToSwagger())
+	return operation.NewGetWebhookPolicyOfProjectOK().WithPayload(model.NewNotifiactionPolicy(policy).ToSwagger())
 }
 
 func (n *notificationPolicyAPI) LastTrigger(ctx context.Context, params webhook.LastTriggerParams) middleware.Responder {

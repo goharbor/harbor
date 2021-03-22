@@ -1959,11 +1959,13 @@ paths:
         This endpoint returns webhook policies of a project.
       tags:
         - webhook
-      operationId: ListWebhookPolicy
+      operationId: ListWebhookPoliciesOfProject
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
         - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
       responses:
@@ -1994,7 +1996,7 @@ paths:
         This endpoint create a webhook policy if the project does not have one.
       tags:
         - webhook
-      operationId: CreateWebhookPolicy
+      operationId: CreateWebhookPolicyOfProject
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
@@ -2030,7 +2032,7 @@ paths:
         This endpoint returns specified webhook policy of a project.
       tags:
         - webhook
-      operationId: GetWebhookPolicy
+      operationId: GetWebhookPolicyOfProject
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
@@ -2057,7 +2059,7 @@ paths:
         This endpoint is aimed to update the webhook policy of a project.
       tags:
         - webhook
-      operationId: UpdateWebhookPolicy
+      operationId: UpdateWebhookPolicyOfProject
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
@@ -2088,7 +2090,7 @@ paths:
         This endpoint is aimed to delete webhookpolicy of a project.
       tags:
         - webhook
-      operationId: DeleteWebhookPolicy
+      operationId: DeleteWebhookPolicyOfProject
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
@@ -2146,6 +2148,8 @@ paths:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
         - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
         - name: policy_id

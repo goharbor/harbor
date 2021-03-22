@@ -104,12 +104,7 @@ func (d *dao) Get(ctx context.Context, id int64) (*model.Job, error) {
 
 // Count ...
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
-	query = q.MustClone(query)
-	query.Sorting = ""
-	query.PageNumber = 0
-	query.PageSize = 0
-
-	qs, err := orm.QuerySetter(ctx, &model.Job{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &model.Job{}, query)
 	if err != nil {
 		return 0, err
 	}
@@ -123,11 +118,6 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*model.Job, error) {
 	qs, err := orm.QuerySetter(ctx, &model.Job{}, query)
 	if err != nil {
 		return nil, err
-	}
-	if query.Sorting != "" {
-		qs = qs.OrderBy(query.Sorting)
-	} else {
-		qs.OrderBy("-UpdateTime")
 	}
 	if _, err = qs.All(&jobs); err != nil {
 		return nil, err

@@ -1,13 +1,11 @@
 package notification
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/orm"
-
-	"bytes"
-	"encoding/json"
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notification"
@@ -82,7 +80,7 @@ func (s *SlackHandler) Handle(ctx context.Context, value interface{}) error {
 		return errors.New("invalid notification slack event")
 	}
 
-	return s.process(event)
+	return s.process(ctx, event)
 }
 
 // IsStateful ...
@@ -90,7 +88,7 @@ func (s *SlackHandler) IsStateful() bool {
 	return false
 }
 
-func (s *SlackHandler) process(event *model.HookEvent) error {
+func (s *SlackHandler) process(ctx context.Context, event *model.HookEvent) error {
 	j := &models.JobData{
 		Metadata: &models.JobMetadata{
 			JobKind: job.KindGeneric,
@@ -110,7 +108,7 @@ func (s *SlackHandler) process(event *model.HookEvent) error {
 		"address":          event.Target.Address,
 		"skip_cert_verify": event.Target.SkipCertVerify,
 	}
-	return notification.HookManager.StartHook(orm.Context(), event, j)
+	return notification.HookManager.StartHook(ctx, event, j)
 }
 
 func (s *SlackHandler) convert(payLoad *model.Payload) (string, error) {

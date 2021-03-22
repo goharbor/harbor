@@ -19,7 +19,7 @@ type Job struct {
 	JobDetail    string    `orm:"column(job_detail)" json:"job_detail"`
 	UUID         string    `orm:"column(job_uuid)" json:"-"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time" sort:"default:desc"`
 }
 
 // TableName set table name for ORM.
