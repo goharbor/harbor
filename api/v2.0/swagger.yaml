@@ -6164,6 +6164,7 @@ definitions:
       enabled:
         type: boolean
         description: Whether the webhook policy is enabled or not.
+        x-omitempty: false
   WebhookLastTrigger:
     type: object
     description: The webhook policy and last trigger time group by event type.
