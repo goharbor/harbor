@@ -91,6 +91,9 @@ DOCKERFILEPATH_STANDALONE_DB_MIGRATOR=$(DOCKERFILEPATH)/standalone-db-migrator
 DOCKERFILENAME_STANDALONE_DB_MIGRATOR=Dockerfile
 DOCKERIMAGENAME_STANDALONE_DB_MIGRATOR=goharbor/standalone-db-migrator
 
+DOCKERFILEPATH_EXPORTER=$(DOCKERFILEPATH)/exporter
+DOCKERFILENAME_EXPORTER=Dockerfile
+DOCKERIMAGENAME_EXPORTER=goharbor/harbor-exporter
 
 # for chart server (chartmuseum)
 DOCKERFILEPATH_CHART_SERVER=$(DOCKERFILEPATH)/chartserver
@@ -213,6 +216,11 @@ _build_standalone_db_migrator:
 	@$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_STANDALONE_DB_MIGRATOR)/$(DOCKERFILENAME_STANDALONE_DB_MIGRATOR) -t $(DOCKERIMAGENAME_STANDALONE_DB_MIGRATOR):$(VERSIONTAG) .
 	@echo "Done."
 
+_compile_and_build_exporter:
+	@echo "compiling and building image for exporter..."
+	@$(DOCKERCMD) build --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --build-arg build_image=$(GOBUILDIMAGE) -f ${DOCKERFILEPATH_EXPORTER}/${DOCKERFILENAME_EXPORTER} -t $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) .
+	@echo "Done."
+
 define _extract_archive
 	echo "download $1";\
 	$(CURL) --connect-timeout 30 -f -k -L $1 | tar xvz -C $2 || exit 1
@@ -223,7 +231,9 @@ define _get_binary
 	$(CURL) --connect-timeout 30 -f -k -L $1 -o $2 || exit 1
 endef
 
-build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_trivy_adapter _build_redis _build_chart_server
+
+
+build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_trivy_adapter _build_redis _build_chart_server _compile_and_build_exporter
 
 cleanimage:
 	@echo "cleaning image for photon..."
