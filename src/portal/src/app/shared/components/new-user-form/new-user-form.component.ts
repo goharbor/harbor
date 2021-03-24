@@ -34,6 +34,8 @@ import { SessionService } from '../../services/session.service';
 })
 
 export class NewUserFormComponent implements AfterViewChecked, OnInit {
+    showNewPwd: boolean = false;
+    showConfirmPwd: boolean = false;
 
     @Input() isSelfRegistration = false;
     // Notify the form value changes
@@ -58,6 +60,8 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
         this.resetState();
     }
     resetState(): void {
+        this.showConfirmPwd = false;
+        this.showNewPwd = false;
         this.mailAlreadyChecked = {};
         this.userNameAlreadyChecked = {};
         this.emailTooltip = 'TOOLTIP.EMAIL';

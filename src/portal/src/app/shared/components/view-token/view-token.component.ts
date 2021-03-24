@@ -18,6 +18,8 @@ import { errorHandler } from "../../units/shared.utils";
   styleUrls: ['./view-token.component.scss']
 })
 export class ViewTokenComponent implements OnInit {
+  showNewPwd: boolean = false;
+  showConfirmPwd: boolean = false;
   tokenModalOpened: boolean = false;
   robot: Robot;
   newSecret: string;
@@ -46,6 +48,8 @@ export class ViewTokenComponent implements OnInit {
     this.tokenModalOpened = false;
   }
   open() {
+    this.showNewPwd = false;
+    this.showConfirmPwd = false;
     this.tokenModalOpened = true;
     this.inlineAlertComponent.close();
     this.copyToken = false;

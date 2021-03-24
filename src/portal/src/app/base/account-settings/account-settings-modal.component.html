@@ -42,7 +42,7 @@
             <clr-input-container>
                 <label [class.required]="!account.oidc_user_meta">{{'PROFILE.FULL_NAME' | translate}}</label>
                 <input clrInput type="text" name="account_settings_full_name" #fullNameInput="ngModel"
-                    [(ngModel)]="account.realname" [required]="!account.oidc_user_meta" maxLengthExt="20"
+                    [(ngModel)]="account.realname" [required]="!account.oidc_user_meta" maxLengthExt="30"
                     id="account_settings_full_name" size="30"
                     (input)='handleValidation("account_settings_full_name", false)'
                     (blur)='handleValidation("account_settings_full_name", true)'>

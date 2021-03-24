@@ -43,6 +43,7 @@ const expireDays = 10;
 })
 
 export class SignInComponent implements AfterViewChecked, OnInit {
+    showPwd: boolean = false;
     redirectUrl: string = "";
     appConfig: AppConfig = new AppConfig();
     // Remeber me indicator
