@@ -34,4 +34,5 @@ Test Case - List Helm Charts
     Body Of List Helm Charts
 
 Test Case - Admin Push Signed Image
-    Body Of Admin Push Signed Image
+    [tags]  sign_image
+    Body Of Push Signed Image
