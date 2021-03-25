@@ -17,16 +17,16 @@ package flow
 import (
 	"context"
 	"encoding/json"
-	"github.com/goharbor/harbor/src/pkg/replication"
 
+	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/goharbor/harbor/src/replication/model"
 )
 
 type deletionFlow struct {
 	executionID  int64
-	policy       *replication.Policy
+	policy       *repctlmodel.Policy
 	executionMgr task.ExecutionManager
 	taskMgr      task.Manager
 	resources    []*model.Resource
@@ -34,7 +34,7 @@ type deletionFlow struct {
 
 // NewDeletionFlow returns an instance of the delete flow which deletes the resources
 // on the destination registry
-func NewDeletionFlow(executionID int64, policy *replication.Policy, resources ...*model.Resource) Flow {
+func NewDeletionFlow(executionID int64, policy *repctlmodel.Policy, resources ...*model.Resource) Flow {
 	return &deletionFlow{
 		executionMgr: task.ExecMgr,
 		taskMgr:      task.Mgr,

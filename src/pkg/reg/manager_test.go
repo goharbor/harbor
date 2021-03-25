@@ -17,21 +17,21 @@ package reg
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/replication/dao/models"
-	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/pkg/reg/dao"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/goharbor/harbor/src/testing/pkg/reg/dao"
+	testingdao "github.com/goharbor/harbor/src/testing/pkg/reg/dao"
 	"github.com/stretchr/testify/suite"
 )
 
 type managerTestSuite struct {
 	suite.Suite
 	mgr *manager
-	dao *dao.DAO
+	dao *testingdao.DAO
 }
 
 func (m *managerTestSuite) SetupTest() {
-	m.dao = &dao.DAO{}
+	m.dao = &testingdao.DAO{}
 	m.mgr = &manager{
 		dao: m.dao,
 	}
@@ -46,7 +46,7 @@ func (m *managerTestSuite) TestCount() {
 }
 
 func (m *managerTestSuite) TestList() {
-	mock.OnAnything(m.dao, "List").Return([]*models.Registry{
+	mock.OnAnything(m.dao, "List").Return([]*dao.Registry{
 		{
 			ID: 1,
 		},
@@ -59,7 +59,7 @@ func (m *managerTestSuite) TestList() {
 }
 
 func (m *managerTestSuite) TestGet() {
-	mock.OnAnything(m.dao, "Get").Return(&models.Registry{
+	mock.OnAnything(m.dao, "Get").Return(&dao.Registry{
 		ID: 1,
 	}, nil)
 	registry, err := m.mgr.Get(nil, 1)

@@ -16,9 +16,9 @@ package flow
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/pkg/replication"
 
-	"github.com/goharbor/harbor/src/replication/model"
+	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 // Flow defines a specific replication flow
@@ -28,7 +28,7 @@ type Flow interface {
 
 // Controller controls the replication flow
 type Controller interface {
-	Start(ctx context.Context, executionID int64, policy *replication.Policy, resource *model.Resource) (err error)
+	Start(ctx context.Context, executionID int64, policy *repctlmodel.Policy, resource *model.Resource) (err error)
 }
 
 // NewController returns an instance of the default flow controller
@@ -38,7 +38,7 @@ func NewController() Controller {
 
 type controller struct{}
 
-func (c *controller) Start(ctx context.Context, executionID int64, policy *replication.Policy, resource *model.Resource) error {
+func (c *controller) Start(ctx context.Context, executionID int64, policy *repctlmodel.Policy, resource *model.Resource) error {
 	// deletion flow
 	if resource != nil && resource.Deleted {
 		return NewDeletionFlow(executionID, policy, resource).Run(ctx)

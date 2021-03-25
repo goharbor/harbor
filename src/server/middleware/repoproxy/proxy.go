@@ -22,20 +22,18 @@ import (
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/proxy"
+	"github.com/goharbor/harbor/src/controller/registry"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/registry"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"io"
 	"net/http"
 	"time"
 )
-
-var registryMgr = registry.NewDefaultManager()
 
 const (
 	contentLength       = "Content-Length"
@@ -174,7 +172,7 @@ func canProxy(p *models.Project) bool {
 	if p.RegistryID < 1 {
 		return false
 	}
-	reg, err := registryMgr.Get(p.RegistryID)
+	reg, err := registry.Ctl.Get(orm.Context(), p.RegistryID)
 	if err != nil {
 		log.Errorf("failed to get registry, error:%v", err)
 		return false

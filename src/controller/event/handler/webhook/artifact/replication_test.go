@@ -24,13 +24,10 @@ import (
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/project"
 	repctl "github.com/goharbor/harbor/src/controller/replication"
+	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
-	reppkg "github.com/goharbor/harbor/src/pkg/replication"
-	"github.com/goharbor/harbor/src/replication"
-	"github.com/goharbor/harbor/src/replication/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	replicationtesting "github.com/goharbor/harbor/src/testing/controller/replication"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -39,73 +36,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type fakedReplicationRegistryMgr struct {
-}
-
-// Add new registry
-func (f *fakedReplicationRegistryMgr) Add(*model.Registry) (int64, error) {
-	return 0, nil
-}
-
-// List registries, returns total count, registry list and error
-func (f *fakedReplicationRegistryMgr) List(query *q.Query) (int64, []*model.Registry, error) {
-	return 0, nil, nil
-}
-
-// Get the specified registry
-func (f *fakedReplicationRegistryMgr) Get(int64) (*model.Registry, error) {
-	return &model.Registry{
-		Type: "harbor",
-		Credential: &model.Credential{
-			Type: "local",
-		},
-	}, nil
-}
-
-// GetByName gets registry by name
-func (f *fakedReplicationRegistryMgr) GetByName(name string) (*model.Registry, error) {
-	return nil, nil
-}
-
-// Update the registry, the "props" are the properties of registry
-// that need to be updated
-func (f *fakedReplicationRegistryMgr) Update(registry *model.Registry, props ...string) error {
-	return nil
-}
-
-// Remove the registry with the specified ID
-func (f *fakedReplicationRegistryMgr) Remove(int64) error {
-	return nil
-}
-
-// HealthCheck checks health status of all registries and update result in database
-func (f *fakedReplicationRegistryMgr) HealthCheck() error {
-	return nil
-}
-
 func TestReplicationHandler_Handle(t *testing.T) {
 	common_dao.PrepareTestForPostgresSQL()
 	config.Init()
 
 	PolicyMgr := notification.PolicyMgr
-	rpRegistry := replication.RegistryMgr
 	prj := project.Ctl
 	repCtl := repctl.Ctl
 
 	defer func() {
 		notification.PolicyMgr = PolicyMgr
-		replication.RegistryMgr = rpRegistry
 		project.Ctl = prj
 		repctl.Ctl = repCtl
 	}()
 	policyMgrMock := &testingnotification.Manager{}
 	notification.PolicyMgr = policyMgrMock
-	replication.RegistryMgr = &fakedReplicationRegistryMgr{}
 	projectCtl := &projecttesting.Controller{}
 	project.Ctl = projectCtl
 	mockRepCtl := &replicationtesting.Controller{}
 	repctl.Ctl = mockRepCtl
-	mockRepCtl.On("GetPolicy", mock.Anything, mock.Anything).Return(&reppkg.Policy{ID: 1}, nil)
+	mockRepCtl.On("GetPolicy", mock.Anything, mock.Anything).Return(&repctlmodel.Policy{ID: 1}, nil)
 	mockRepCtl.On("GetTask", mock.Anything, mock.Anything).Return(&repctl.Task{}, nil)
 	mockRepCtl.On("GetExecution", mock.Anything, mock.Anything).Return(&repctl.Execution{}, nil)
 	policyMgrMock.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything).Return([]*policy_model.Policy{

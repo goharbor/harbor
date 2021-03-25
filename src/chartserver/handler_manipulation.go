@@ -10,11 +10,11 @@ import (
 
 	"github.com/ghodss/yaml"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	rep_event "github.com/goharbor/harbor/src/controller/event/handler/replication/event"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/replication"
-	rep_event "github.com/goharbor/harbor/src/replication/event"
-	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	helm_repo "helm.sh/helm/v3/pkg/repo"
 )
 
@@ -107,7 +107,7 @@ func (c *Controller) DeleteChartVersion(namespace, chartName, version string) er
 					},
 				},
 			}
-			if err := replication.EventHandler.Handle(e); err != nil {
+			if err := rep_event.Handle(orm.Context(), e); err != nil {
 				log.Errorf("failed to handle event: %v", err)
 			}
 		}()

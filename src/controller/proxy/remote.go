@@ -17,9 +17,10 @@ package proxy
 import (
 	"fmt"
 	"github.com/docker/distribution"
-	"github.com/goharbor/harbor/src/replication/adapter"
-	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/registry"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/reg"
+	"github.com/goharbor/harbor/src/pkg/reg/adapter"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"io"
 )
 
@@ -37,14 +38,14 @@ type RemoteInterface interface {
 type remoteHelper struct {
 	regID       int64
 	registry    adapter.ArtifactRegistry
-	registryMgr registry.Manager
+	registryMgr reg.Manager
 }
 
 // NewRemoteHelper create a remote interface
 func NewRemoteHelper(regID int64) (RemoteInterface, error) {
 	r := &remoteHelper{
 		regID:       regID,
-		registryMgr: registry.NewDefaultManager()}
+		registryMgr: reg.Mgr}
 	if err := r.init(); err != nil {
 		return nil, err
 	}
@@ -56,7 +57,7 @@ func (r *remoteHelper) init() error {
 	if r.registry != nil {
 		return nil
 	}
-	reg, err := r.registryMgr.Get(r.regID)
+	reg, err := r.registryMgr.Get(orm.Context(), r.regID)
 	if err != nil {
 		return err
 	}

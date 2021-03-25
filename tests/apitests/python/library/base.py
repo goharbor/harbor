@@ -28,7 +28,7 @@ def get_endpoint():
 
 def _create_client(server, credential, debug, api_type="products"):
     cfg = None
-    if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota', 'replication', 'robot', 'gc', 'retention', "immutable", "system_cve_allowlist"):
+    if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota', 'replication', 'registry', 'robot', 'gc', 'retention', "immutable", "system_cve_allowlist"):
         cfg = v2_swagger_client.Configuration()
     else:
         cfg = swagger_client.Configuration()
@@ -62,6 +62,7 @@ def _create_client(server, credential, debug, api_type="products"):
         "scanall": v2_swagger_client.ScanAllApi(v2_swagger_client.ApiClient(cfg)),
         "scanner": v2_swagger_client.ScannerApi(v2_swagger_client.ApiClient(cfg)),
         "replication": v2_swagger_client.ReplicationApi(v2_swagger_client.ApiClient(cfg)),
+        "registry": v2_swagger_client.RegistryApi(v2_swagger_client.ApiClient(cfg)),
         "robot": v2_swagger_client.RobotApi(v2_swagger_client.ApiClient(cfg)),
         "gc":   v2_swagger_client.GcApi(v2_swagger_client.ApiClient(cfg)),
         "retention":   v2_swagger_client.RetentionApi(v2_swagger_client.ApiClient(cfg)),

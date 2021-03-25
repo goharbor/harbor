@@ -16,16 +16,16 @@ package flow
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/replication"
 
+	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/lib/log"
-	adp "github.com/goharbor/harbor/src/replication/adapter"
-	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/util"
+	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/pkg/reg/util"
 )
 
 // get/create the source registry, destination registry, source adapter and destination adapter
-func initialize(policy *replication.Policy) (adp.Adapter, adp.Adapter, error) {
+func initialize(policy *repctlmodel.Policy) (adp.Adapter, adp.Adapter, error) {
 	var srcAdapter, dstAdapter adp.Adapter
 	var err error
 
@@ -53,11 +53,11 @@ func initialize(policy *replication.Policy) (adp.Adapter, adp.Adapter, error) {
 }
 
 // fetch resources from the source registry
-func fetchResources(adapter adp.Adapter, policy *replication.Policy) ([]*model.Resource, error) {
-	var resTypes []model.ResourceType
+func fetchResources(adapter adp.Adapter, policy *repctlmodel.Policy) ([]*model.Resource, error) {
+	var resTypes []string
 	for _, filter := range policy.Filters {
 		if filter.Type == model.FilterTypeResource {
-			resTypes = append(resTypes, filter.Value.(model.ResourceType))
+			resTypes = append(resTypes, filter.Value.(string))
 		}
 	}
 	if len(resTypes) == 0 {
@@ -112,7 +112,7 @@ func fetchResources(adapter adp.Adapter, policy *replication.Policy) ([]*model.R
 
 // assemble the source resources by filling the registry information
 func assembleSourceResources(resources []*model.Resource,
-	policy *replication.Policy) []*model.Resource {
+	policy *repctlmodel.Policy) []*model.Resource {
 	for _, resource := range resources {
 		resource.Registry = policy.SrcRegistry
 	}
@@ -122,7 +122,7 @@ func assembleSourceResources(resources []*model.Resource,
 
 // assemble the destination resources by filling the metadata, registry and override properties
 func assembleDestinationResources(resources []*model.Resource,
-	policy *replication.Policy) []*model.Resource {
+	policy *repctlmodel.Policy) []*model.Resource {
 	var result []*model.Resource
 	for _, resource := range resources {
 		res := &model.Resource{

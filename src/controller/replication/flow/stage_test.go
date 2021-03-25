@@ -15,11 +15,11 @@
 package flow
 
 import (
-	"github.com/goharbor/harbor/src/pkg/replication"
 	"testing"
 
-	"github.com/goharbor/harbor/src/replication/adapter"
-	"github.com/goharbor/harbor/src/replication/model"
+	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/pkg/reg/adapter"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -36,7 +36,7 @@ func (s *stageTestSuite) TestInitialize() {
 	factory.On("AdapterPattern").Return(nil)
 	adapter.RegisterFactory(model.RegistryTypeHarbor, factory)
 
-	policy := &replication.Policy{
+	policy := &repctlmodel.Policy{
 		SrcRegistry: &model.Registry{
 			Type: model.RegistryTypeHarbor,
 		},
@@ -53,7 +53,7 @@ func (s *stageTestSuite) TestInitialize() {
 func (s *stageTestSuite) TestFetchResources() {
 	adapter := &mockAdapter{}
 	adapter.On("Info").Return(&model.RegistryInfo{
-		SupportedResourceTypes: []model.ResourceType{
+		SupportedResourceTypes: []string{
 			model.ResourceTypeArtifact,
 		},
 	}, nil)
@@ -61,7 +61,7 @@ func (s *stageTestSuite) TestFetchResources() {
 		{},
 		{},
 	}, nil)
-	policy := &replication.Policy{}
+	policy := &repctlmodel.Policy{}
 	resources, err := fetchResources(adapter, policy)
 	s.Require().Nil(err)
 	s.Len(resources, 2)
@@ -81,7 +81,7 @@ func (s *stageTestSuite) TestAssembleSourceResources() {
 			Override: false,
 		},
 	}
-	policy := &replication.Policy{
+	policy := &repctlmodel.Policy{
 		SrcRegistry: &model.Registry{
 			ID: 1,
 		},
@@ -104,7 +104,7 @@ func (s *stageTestSuite) TestAssembleDestinationResources() {
 			Override: false,
 		},
 	}
-	policy := &replication.Policy{
+	policy := &repctlmodel.Policy{
 		DestRegistry:  &model.Registry{},
 		DestNamespace: "test",
 		Override:      true,

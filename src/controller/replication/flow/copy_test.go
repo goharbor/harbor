@@ -12,15 +12,15 @@ package flow
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/replication"
-	"github.com/goharbor/harbor/src/replication/adapter"
-	"github.com/stretchr/testify/mock"
 	"testing"
 
+	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/reg/adapter"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/goharbor/harbor/src/replication/model"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -36,7 +36,7 @@ func (c *copyFlowTestSuite) TestRun() {
 	adapter.RegisterFactory("TEST_FOR_COPY_FLOW", factory)
 
 	adp.On("Info").Return(&model.RegistryInfo{
-		SupportedResourceTypes: []model.ResourceType{
+		SupportedResourceTypes: []string{
 			model.ResourceTypeArtifact,
 		},
 	}, nil)
@@ -61,7 +61,7 @@ func (c *copyFlowTestSuite) TestRun() {
 
 	taskMgr := &testingTask.Manager{}
 	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
-	policy := &replication.Policy{
+	policy := &repctlmodel.Policy{
 		SrcRegistry: &model.Registry{
 			Type: "TEST_FOR_COPY_FLOW",
 		},

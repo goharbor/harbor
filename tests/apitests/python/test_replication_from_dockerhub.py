@@ -9,7 +9,6 @@ from library.replication import Replication
 from library.registry import Registry
 from library.artifact import Artifact
 from library.repository import Repository
-import swagger_client
 import v2_swagger_client
 from testutils import DOCKER_USER, DOCKER_PWD
 
@@ -80,7 +79,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.registry_id, _ = self.registry.create_registry("https://hub.docker.com", registry_type="docker-hub", access_key = DOCKER_USER, access_secret = DOCKER_PWD, insecure=False, **ADMIN_CLIENT)
 
         #4. Create a pull-based rule for this registry;
-        TestProjects.rule_id, rule_name = self.replication.create_replication_policy(src_registry=swagger_client.Registry(id=int(TestProjects.registry_id)),
+        TestProjects.rule_id, rule_name = self.replication.create_replication_policy(src_registry=v2_swagger_client.Registry(id=int(TestProjects.registry_id)),
                                             dest_namespace=TestProjects.project_name,
                                             filters=[v2_swagger_client.ReplicationFilter(type="name",value="library/"+self.image),v2_swagger_client.ReplicationFilter(type="tag",value=self.tag)],
                                             **ADMIN_CLIENT)

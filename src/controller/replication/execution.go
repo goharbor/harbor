@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/controller/replication/flow"
+	replicationmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -27,10 +28,10 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/reg"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/replication"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/goharbor/harbor/src/replication/model"
 )
 
 func init() {
@@ -46,17 +47,17 @@ type Controller interface {
 	// PolicyCount returns the total count of policies according to the query
 	PolicyCount(ctx context.Context, query *q.Query) (count int64, err error)
 	// ListPolicies lists the policies according to the query
-	ListPolicies(ctx context.Context, query *q.Query) (policies []*replication.Policy, err error)
+	ListPolicies(ctx context.Context, query *q.Query) (policies []*replicationmodel.Policy, err error)
 	// GetPolicy gets the specific policy
-	GetPolicy(ctx context.Context, id int64) (policy *replication.Policy, err error)
+	GetPolicy(ctx context.Context, id int64) (policy *replicationmodel.Policy, err error)
 	// CreatePolicy creates a policy
-	CreatePolicy(ctx context.Context, policy *replication.Policy) (id int64, err error)
+	CreatePolicy(ctx context.Context, policy *replicationmodel.Policy) (id int64, err error)
 	// UpdatePolicy updates the specific policy
-	UpdatePolicy(ctx context.Context, policy *replication.Policy, props ...string) (err error)
+	UpdatePolicy(ctx context.Context, policy *replicationmodel.Policy, props ...string) (err error)
 	// DeletePolicy deletes the specific policy
 	DeletePolicy(ctx context.Context, id int64) (err error)
 	// Start the replication according to the policy
-	Start(ctx context.Context, policy *replication.Policy, resource *model.Resource, trigger string) (executionID int64, err error)
+	Start(ctx context.Context, policy *replicationmodel.Policy, resource *model.Resource, trigger string) (executionID int64, err error)
 	// Stop the replication specified by the execution ID
 	Stop(ctx context.Context, executionID int64) (err error)
 	// ExecutionCount returns the total count of executions according to the query
@@ -100,7 +101,7 @@ type controller struct {
 	wp         *lib.WorkerPool
 }
 
-func (c *controller) Start(ctx context.Context, policy *replication.Policy, resource *model.Resource, trigger string) (int64, error) {
+func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy, resource *model.Resource, trigger string) (int64, error) {
 	logger := log.GetLogger(ctx)
 	if !policy.Enabled {
 		return 0, errors.New(nil).WithCode(errors.PreconditionCode).

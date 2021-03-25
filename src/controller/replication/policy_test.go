@@ -15,9 +15,9 @@
 package replication
 
 import (
-	"github.com/goharbor/harbor/src/pkg/replication"
-	"github.com/goharbor/harbor/src/replication/config"
-	"github.com/goharbor/harbor/src/replication/model"
+	repmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
+	replicationmodel "github.com/goharbor/harbor/src/pkg/replication/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 )
 
@@ -30,18 +30,15 @@ func (r *replicationTestSuite) TestPolicyCount() {
 }
 
 func (r *replicationTestSuite) TestListPolicies() {
-	mock.OnAnything(r.repMgr, "List").Return([]*replication.Policy{
+	mock.OnAnything(r.repMgr, "List").Return([]*replicationmodel.Policy{
 		{
-			ID: 1,
-			SrcRegistry: &model.Registry{
-				ID: 1,
-			},
+			ID:            1,
+			SrcRegistryID: 1,
 		},
 	}, nil)
 	mock.OnAnything(r.regMgr, "Get").Return(&model.Registry{
 		ID: 1,
 	}, nil)
-	config.Config = &config.Configuration{}
 	policies, err := r.ctl.ListPolicies(nil, nil)
 	r.Require().Nil(err)
 	r.Require().Len(policies, 1)
@@ -51,16 +48,13 @@ func (r *replicationTestSuite) TestListPolicies() {
 }
 
 func (r *replicationTestSuite) TestGetPolicy() {
-	mock.OnAnything(r.repMgr, "Get").Return(&replication.Policy{
-		ID: 1,
-		SrcRegistry: &model.Registry{
-			ID: 1,
-		},
+	mock.OnAnything(r.repMgr, "Get").Return(&replicationmodel.Policy{
+		ID:            1,
+		SrcRegistryID: 1,
 	}, nil)
 	mock.OnAnything(r.regMgr, "Get").Return(&model.Registry{
 		ID: 1,
 	}, nil)
-	config.Config = &config.Configuration{}
 	policy, err := r.ctl.GetPolicy(nil, 1)
 	r.Require().Nil(err)
 	r.Equal(int64(1), policy.ID)
@@ -74,7 +68,7 @@ func (r *replicationTestSuite) TestCreatePolicy() {
 		ID: 1,
 	}, nil)
 	mock.OnAnything(r.scheduler, "Schedule").Return(int64(1), nil)
-	id, err := r.ctl.CreatePolicy(nil, &replication.Policy{
+	id, err := r.ctl.CreatePolicy(nil, &repmodel.Policy{
 		Name: "rule",
 		SrcRegistry: &model.Registry{
 			ID: 1,
@@ -101,7 +95,7 @@ func (r *replicationTestSuite) TestUpdatePolicy() {
 	mock.OnAnything(r.scheduler, "UnScheduleByVendor").Return(nil)
 	mock.OnAnything(r.scheduler, "Schedule").Return(int64(1), nil)
 	mock.OnAnything(r.repMgr, "Update").Return(nil)
-	err := r.ctl.UpdatePolicy(nil, &replication.Policy{
+	err := r.ctl.UpdatePolicy(nil, &repmodel.Policy{
 		ID:   1,
 		Name: "rule",
 		SrcRegistry: &model.Registry{
