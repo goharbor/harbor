@@ -14,7 +14,7 @@
 import { debounceTime, finalize, switchMap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { Project } from '../../project';
 import { clone, CustomComparator, DEFAULT_PAGE_SIZE } from '../../../../shared/units/utils';
@@ -24,7 +24,7 @@ import {
   UserPermissionService,
   USERSTATICPERMISSION
 } from '../../../../shared/services';
-import {ClrDatagridStateInterface, ClrLoadingState} from '@clr/angular';
+import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
 import {
   EXECUTION_STATUS,
   FILTER_TYPE,
@@ -43,7 +43,9 @@ import { ProviderUnderProject } from '../../../../../../ng-swagger-gen/models/pr
 import { ConfirmationDialogComponent } from "../../../../shared/components/confirmation-dialog";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../shared/entities/shared.const";
 import { ConfirmationMessage } from "../../../global-confirmation-dialog/confirmation-message";
-
+import { EventService, HarborEvent } from "../../../../services/event-service/event.service";
+// The route path which will display this component
+const URL_TO_DISPLAY: RegExp = /\/harbor\/projects\/(\d+)\/p2p-provider\/policies/;
 @Component({
   templateUrl: './policy.component.html',
   styleUrls: ['./policy.component.scss']
@@ -82,6 +84,9 @@ export class PolicyComponent implements OnInit, OnDestroy {
   severity_map: any = PROJECT_SEVERITY_LEVEL_TO_TEXT_MAP;
   timeout: any;
   hasAddModalInit: boolean = false;
+  routerSub: Subscription;
+  scrollSub: Subscription;
+  scrollTop: number;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -89,9 +94,29 @@ export class PolicyComponent implements OnInit, OnDestroy {
     private p2pProviderService: P2pProviderService,
     private messageHandlerService: MessageHandlerService,
     private userPermissionService: UserPermissionService,
-    private preheatService: PreheatService) { }
+    private preheatService: PreheatService,
+    private event: EventService) {
+  }
 
   ngOnInit() {
+    if (!this.scrollSub) {
+      this.scrollSub = this.event.subscribe(HarborEvent.SCROLL, v => {
+        if (v && URL_TO_DISPLAY.test(v.url)) {
+          this.scrollTop = v.scrollTop;
+        }
+      });
+    }
+    if (!this.routerSub) {
+      this.routerSub = this.router.events.subscribe(e => {
+        if (e instanceof NavigationEnd) {
+          if (e && URL_TO_DISPLAY.test(e.url)) { // Into view
+            this.event.publish(HarborEvent.SCROLL_TO_POSITION, this.scrollTop);
+          } else {
+            this.event.publish(HarborEvent.SCROLL_TO_POSITION, 0);
+          }
+        }
+      });
+    }
     this.subscribeSearch();
     this.projectId = +this.route.snapshot.parent.parent.params['id'];
     const resolverData = this.route.snapshot.parent.parent.data;
@@ -102,16 +127,26 @@ export class PolicyComponent implements OnInit, OnDestroy {
     this.getPermissions();
     this.refresh();
   }
+
   ngOnDestroy(): void {
-     if (this._searchSubscription) {
-       this._searchSubscription.unsubscribe();
-       this._searchSubscription = null;
-     }
-     this.clearLoop();
+    if (this.routerSub) {
+      this.routerSub.unsubscribe();
+      this.routerSub = null;
+    }
+    if (this.scrollSub) {
+      this.scrollSub.unsubscribe();
+      this.scrollSub = null;
+    }
+    if (this._searchSubscription) {
+      this._searchSubscription.unsubscribe();
+      this._searchSubscription = null;
+    }
+    this.clearLoop();
   }
   addModalInit() {
-     this.hasAddModalInit = true;
+    this.hasAddModalInit = true;
   }
+
   getPermissions() {
     const permissionsList: Observable<boolean>[] = [];
     permissionsList.push(this.userPermissionService.getPermission(this.projectId,
@@ -132,6 +167,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
       this.addBtnState = ClrLoadingState.ERROR;
     });
   }
+
   getProviders() {
     this.preheatService.ListProvidersUnderProject({projectName: this.projectName})
       .subscribe(res => {
@@ -142,10 +178,12 @@ export class PolicyComponent implements OnInit, OnDestroy {
         }
       });
   }
+
   refresh() {
     this.selectedRow = null;
     this.getPolicies();
   }
+
   getPolicies() {
     this.loading = true;
     this.preheatService.ListPolicies({projectName: this.projectName})
@@ -159,7 +197,8 @@ export class PolicyComponent implements OnInit, OnDestroy {
         }
       );
   }
- switchStatus() {
+
+  switchStatus() {
     let content = '';
     this.translate.get(
       !this.selectedRow.enabled
@@ -178,8 +217,9 @@ export class PolicyComponent implements OnInit, OnDestroy {
       this.confirmationDialogComponent.open(message);
     });
   }
+
   confirmSwitch(message) {
-    if (message &&  message.source === ConfirmationTargets.P2P_PROVIDER_STOP &&
+    if (message && message.source === ConfirmationTargets.P2P_PROVIDER_STOP &&
       message.state === ConfirmationState.CONFIRMED) {
       this.stopLoading = true;
       const execution: Execution = clone(this.selectedExecutionRow);
@@ -196,7 +236,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
           this.messageHandlerService.error(error);
         });
     }
-    if (message &&  message.source === ConfirmationTargets.P2P_PROVIDER_EXECUTE &&
+    if (message && message.source === ConfirmationTargets.P2P_PROVIDER_EXECUTE &&
       message.state === ConfirmationState.CONFIRMED) {
       this.executing = true;
       this.preheatService.ManualPreheat({
@@ -220,16 +260,16 @@ export class PolicyComponent implements OnInit, OnDestroy {
         this.preheatService.UpdatePolicy({
           projectName: this.projectName,
           preheatPolicyName: this.selectedRow.name,
-          policy:  Object.assign({}, this.selectedRow, { enabled: !this.selectedRow.enabled })
+          policy: Object.assign({}, this.selectedRow, {enabled: !this.selectedRow.enabled})
         }).subscribe(
-            response => {
-              this.messageHandlerService.showSuccess('P2P_PROVIDER.UPDATED_SUCCESSFULLY');
-              this.refresh();
-            },
-            error => {
-              this.messageHandlerService.handleError(error);
-            }
-          );
+          response => {
+            this.messageHandlerService.showSuccess('P2P_PROVIDER.UPDATED_SUCCESSFULLY');
+            this.refresh();
+          },
+          error => {
+            this.messageHandlerService.handleError(error);
+          }
+        );
       }
     }
     if (message &&
@@ -251,11 +291,13 @@ export class PolicyComponent implements OnInit, OnDestroy {
       );
     }
   }
+
   newPolicy() {
     this.addP2pPolicyComponent.isOpen = true;
     this.addP2pPolicyComponent.isEdit = false;
     this.addP2pPolicyComponent.resetForAdd();
   }
+
   editPolicy() {
     if (this.selectedRow) {
       this.addP2pPolicyComponent.repos = null;
@@ -269,25 +311,25 @@ export class PolicyComponent implements OnInit, OnDestroy {
       if (filter && filter.length) {
         filter.forEach(item => {
           if (item.type === FILTER_TYPE.REPOS && item.value) {
-              let str: string = item.value;
-              if (/^{\S+}$/.test(str)) {
-                  return str.slice(1, str.length - 1);
-              }
-              this.addP2pPolicyComponent.repos = str;
+            let str: string = item.value;
+            if (/^{\S+}$/.test(str)) {
+              return str.slice(1, str.length - 1);
+            }
+            this.addP2pPolicyComponent.repos = str;
           }
           if (item.type === FILTER_TYPE.TAG && item.value) {
-              let str: string = item.value;
-              if (/^{\S+}$/.test(str)) {
-                  return str.slice(1, str.length - 1);
-              }
-              this.addP2pPolicyComponent.tags = str;
+            let str: string = item.value;
+            if (/^{\S+}$/.test(str)) {
+              return str.slice(1, str.length - 1);
+            }
+            this.addP2pPolicyComponent.tags = str;
           }
           if (item.type === FILTER_TYPE.LABEL && item.value) {
-              let str: string = item.value;
-              if (/^{\S+}$/.test(str)) {
-                  return str.slice(1, str.length - 1);
-              }
-              this.addP2pPolicyComponent.labels = str;
+            let str: string = item.value;
+            if (/^{\S+}$/.test(str)) {
+              return str.slice(1, str.length - 1);
+            }
+            this.addP2pPolicyComponent.labels = str;
           }
         });
       }
@@ -317,13 +359,14 @@ export class PolicyComponent implements OnInit, OnDestroy {
       this.addP2pPolicyComponent.originCronForEdit = this.addP2pPolicyComponent.cron;
     }
   }
+
   deletePolicy() {
     const names: string[] = [];
     names.push(this.selectedRow.name);
     let content = '';
     this.translate.get(
-         'P2P_PROVIDER.DELETE_POLICY_SUMMARY'
-      , {names:  names.join(',')}).subscribe((res) => content = res);
+      'P2P_PROVIDER.DELETE_POLICY_SUMMARY'
+      , {names: names.join(',')}).subscribe((res) => content = res);
     const msg: ConfirmationMessage = new ConfirmationMessage(
       "SCANNER.CONFIRM_DELETION",
       content,
@@ -334,8 +377,9 @@ export class PolicyComponent implements OnInit, OnDestroy {
     );
     this.confirmationDialogComponent.open(msg);
   }
+
   executePolicy() {
-    if (this.selectedRow  && this.selectedRow.enabled) {
+    if (this.selectedRow && this.selectedRow.enabled) {
       const message = new ConfirmationMessage(
         "P2P_PROVIDER.EXECUTE_TITLE",
         "P2P_PROVIDER.EXECUTE_SUMMARY",
@@ -347,6 +391,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
       this.confirmationDialogComponent.open(message);
     }
   }
+
   success(isAdd: boolean) {
     let message: string;
     if (isAdd) {
@@ -357,10 +402,11 @@ export class PolicyComponent implements OnInit, OnDestroy {
     this.messageHandlerService.showSuccess(message);
     this.refresh();
   }
+
   clrLoadJobs(chosenPolicy: PreheatPolicy, withLoading: boolean, state?: ClrDatagridStateInterface) {
     if (this.selectedRow) {
       if (state && state.page) {
-          this.pageSize = state.page.size;
+        this.pageSize = state.page.size;
       }
       if (withLoading) {
         // if datagrid is under control of *ngIf, should add timeout in case of ng changes checking error
@@ -370,7 +416,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
       }
       let params: string;
       if (this.searchString) {
-         params =  encodeURIComponent(`${this.filterKey}=~${this.searchString}`);
+        params = encodeURIComponent(`${this.filterKey}=~${this.searchString}`);
       }
       this.preheatService.ListExecutionsResponse({
         projectName: this.projectName,
@@ -393,7 +439,8 @@ export class PolicyComponent implements OnInit, OnDestroy {
         });
     }
   }
-  refreshJobs (chosenPolicy?: PreheatPolicy) {
+
+  refreshJobs(chosenPolicy?: PreheatPolicy) {
     this.executionList = [];
     this.currentExecutionPage = 1;
     this.totalExecutionCount = 0;
@@ -401,6 +448,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
     this.searchString = null;
     this.clrLoadJobs(chosenPolicy, true);
   }
+
   openStopExecutionsDialog() {
     if (this.selectedExecutionRow) {
       const stopExecutionsMessage = new ConfirmationMessage(
@@ -414,59 +462,70 @@ export class PolicyComponent implements OnInit, OnDestroy {
       this.confirmationDialogComponent.open(stopExecutionsMessage);
     }
   }
+
   goToLink(executionId: number) {
     const linkUrl = ["harbor",
       "projects", `${this.projectId}`, "p2p-provider", `${this.selectedRow.name}`, "executions", `${executionId}`, "tasks"];
     this.router.navigate(linkUrl);
   }
+
   getTriggerTypeI18n(trigger: string): string {
     if (JSON.parse(trigger).type) {
       return TRIGGER_I18N_MAP[JSON.parse(trigger).type];
     }
     return TRIGGER_I18N_MAP[TRIGGER.MANUAL];
   }
+
   getTriggerTypeI18nForExecution(trigger: string) {
     if (trigger && TRIGGER_I18N_MAP[trigger]) {
       return TRIGGER_I18N_MAP[trigger];
     }
     return trigger;
   }
+
   isScheduled(trigger: string): boolean {
     return JSON.parse(trigger).type === TRIGGER.SCHEDULED;
   }
+
   isEventBased(trigger: string): boolean {
     return JSON.parse(trigger).type === TRIGGER.EVENT_BASED;
   }
+
   getScheduledCron(trigger: string): string {
     return JSON.parse(trigger).trigger_setting.cron;
   }
+
   getDuration(e: Execution): string {
     return this.p2pProviderService.getDuration(e.start_time, e.end_time);
   }
+
   getValue(filter: string, type: string): string {
     const arr: any[] = JSON.parse(filter);
     if (arr && arr.length) {
       for (let i = 0; i < arr.length; i++) {
         if (arr[i].type === type && arr[i].value) {
-            let str: string = arr[i].value;
-            if (/^{\S+}$/.test(str)) {
-                return str.slice(1, str.length - 1);
-            }
-            return str;
+          let str: string = arr[i].value;
+          if (/^{\S+}$/.test(str)) {
+            return str.slice(1, str.length - 1);
+          }
+          return str;
         }
       }
     }
     return "";
   }
+
   getSuccessRate(m: Metrics): number {
     if (m && m.task_count && m.success_task_count) {
       return m.success_task_count / m.task_count;
     }
     return 0;
   }
+
   selectFilterKey($event: any): void {
     this.filterKey = $event['target'].value;
   }
+
   openFilter(isOpen: boolean): void {
     this.isOpenFilterTag = isOpen;
   }
@@ -479,6 +538,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
       this.clrLoadJobs(null, true);
     }
   }
+
   subscribeSearch() {
     if (!this._searchSubscription) {
       this._searchSubscription = this._searchSubject.pipe(
@@ -497,26 +557,29 @@ export class PolicyComponent implements OnInit, OnDestroy {
             q: params
           }).pipe(finalize(() => this.jobsLoading = false));
         })).subscribe(response => {
-           if (response.headers) {
-            let xHeader: string = response.headers.get('x-total-count');
-            if (xHeader) {
-              this.totalExecutionCount = parseInt(xHeader, 0);
-            }
-           }
-           this.executionList = response.body;
-           this.setLoop();
+        if (response.headers) {
+          let xHeader: string = response.headers.get('x-total-count');
+          if (xHeader) {
+            this.totalExecutionCount = parseInt(xHeader, 0);
+          }
+        }
+        this.executionList = response.body;
+        this.setLoop();
       });
     }
   }
+
   canStop(): boolean {
     return this.selectedExecutionRow && this.p2pProviderService.willChangStatus(this.selectedExecutionRow.status);
   }
+
   clearLoop() {
     if (this.timeout) {
       clearTimeout(this.timeout);
       this.timeout = null;
     }
   }
+
   setLoop() {
     this.clearLoop();
     if (this.executionList && this.executionList.length) {

@@ -22,10 +22,15 @@ import { ReplicationTasksRoutingResolverService } from "../../../services/routin
 import { RouterModule, Routes } from "@angular/router";
 import { ListReplicationRuleComponent } from "./replication/list-replication-rule/list-replication-rule.component";
 import { CreateEditRuleComponent } from "./replication/create-edit-rule/create-edit-rule.component";
+import { RouteConfigId } from "../../../route-reuse-strategy/harbor-route-reuse-strategy";
 const routes: Routes = [
   {
     path: '',
-    component: TotalReplicationPageComponent
+    component: TotalReplicationPageComponent,
+    data : {
+      reuse: true,
+      routeConfigId: RouteConfigId.REPLICATION_PAGE
+    }
   },
   {
     path: ':id/tasks',
@@ -33,6 +38,9 @@ const routes: Routes = [
     resolve: {
       replicationTasksRoutingResolver: ReplicationTasksRoutingResolverService
     },
+    data : {
+      routeConfigId: RouteConfigId.REPLICATION_TASKS_PAGE
+    }
   }
 ];
 @NgModule({
