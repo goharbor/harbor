@@ -122,6 +122,8 @@ Prepare Docker Cert
     [Arguments]  ${ip}
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
     Wait Unitl Command Success  cp harbor_ca.crt /etc/docker/certs.d/${ip}
+    Wait Unitl Command Success  cp harbor_ca.crt /usr/local/share/ca-certificates/
+    Wait Unitl Command Success  update-ca-certificates
 
 Kill Local Docker Daemon
     [Arguments]  ${handle}  ${dockerd-pid}

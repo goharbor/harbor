@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 NAME=ldap_server
 docker rm -f $NAME 2>/dev/null
 
@@ -13,6 +14,7 @@ docker run --env LDAP_ORGANISATION="Harbor." \
 sleep 5
 docker cp ldap_test.ldif ldap_server:/
 docker exec ldap_server ldapadd -x -D "cn=admin,dc=example,dc=com" -w admin -f /ldap_test.ldif -ZZ
+docker ps
 
 # failed and retry
 for number in {1..10}
