@@ -611,6 +611,7 @@ Test Case - Tag Immutability
     Close Browser
 
 Test Case - Robot Account
+    [tags]  robot_account
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
@@ -620,6 +621,7 @@ Test Case - Robot Account
     Log    ${token}
     Push image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
     Pull image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
+    Close Browser
 
 Test Case - Push Docker Manifest Index and Display
     Init Chrome Driver

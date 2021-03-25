@@ -44,12 +44,12 @@ class TestProjects(unittest.TestCase):
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
-        # TODO delete_repository will fail when no tags left anymore
-        #     resp=self.repo.list_repositories(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
-        #     for repo in resp:
-        #         self.repo.delete_repository(repo.name, **TestProjects.USER_RA_CLIENT)
-        #     self.project.delete_project(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
-        #     self.user.delete_user(TestProjects.user_ra_id, **ADMIN_CLIENT)
+        #TODO delete_repository will fail when no tags left anymore
+        resp=self.repo.list_repositories(TestProjects.project_src_repo_name, **TestProjects.USER_RA_CLIENT)
+        for repo in resp:
+            self.repo.delete_repository(TestProjects.project_src_repo_name, repo.name.split('/')[1], **TestProjects.USER_RA_CLIENT)
+        self.project.delete_project(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
+        self.user.delete_user(TestProjects.user_ra_id, **ADMIN_CLIENT)
         print("Case completed")
 
     def testTagRetention(self):

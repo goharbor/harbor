@@ -47,7 +47,6 @@ Test Case - Manage Project Member
 
 Test Case - Project Level Policy Content Trust
     [Tags]  content_trust
-    Restart Docker Daemon Locally
     Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
 
 Test Case - User View Logs

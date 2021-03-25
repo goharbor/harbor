@@ -18,6 +18,12 @@ cat /proc/version
 sudo -H pip install --ignore-installed urllib3 chardet requests --upgrade
 python --version
 
+#---------------Set DNS for docker v20----------------------#
+# In docker v20, it fixed an issue named  "Wrong resolv.conf
+# used on Ubuntu 19", this fix caused DNS solve problem
+# in container. So the current work round is read DNS server
+# from system and set the value in /etc/docker/daemon.json.
+
 ip addr
 dns_ip=$(netplan ip leases eth0 | grep -i dns | awk -F = '{print $2}')
 dns_ip_list=$(echo $dns_ip | tr " " "\n")
@@ -39,6 +45,7 @@ sudo systemctl restart docker
 sudo systemctl status docker
 
 
+#--------------------------------------------------------#
 
 sudo ./tests/hostcfg.sh
 

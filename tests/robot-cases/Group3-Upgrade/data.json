@@ -176,8 +176,6 @@
          "p2p_preheat_policy":null,
          "count_limit":1234,
          "storage_limit":53687091200,
-         "storage_limit_for_verify":50,
-         "storage_unit_for_verify":"GB",
          "replications":{
             "rulename":"ruleproject1",
             "endpointname":"endpoint_for_proxy_cache",
@@ -298,8 +296,6 @@
          ],
          "count_limit":-1,
          "storage_limit":32985348833280,
-         "storage_limit_for_verify":30,
-         "storage_unit_for_verify":"TB",
          "replications":{
             "rulename":"rulename1",
             "endpointname":"endpoint_for_proxy_cache",
@@ -429,9 +425,7 @@
             }
          ],
          "count_limit":-1,
-         "storage_limit":32985348833280,
-         "storage_limit_for_verify":30,
-         "storage_unit_for_verify":"TB",
+         "storage_limit":57671680,
          "labels":[
             {
                "name":"proj2label1"
@@ -519,6 +513,20 @@
                "expires_at":"2572969600"
             }
          }
+      }
+   ],
+   "quotas":[
+      {
+          "name":"pro_quota_1",
+          "size":25,
+          "count_limit":1234,
+          "storage_limit":57671680
+      },
+      {
+         "name":"pro_quota_2",
+         "size":1024,
+         "count_limit":1234,
+         "storage_limit":53687091200
       }
    ]
 }
