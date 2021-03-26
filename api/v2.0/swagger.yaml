@@ -6072,22 +6072,40 @@ definitions:
           type: string
   LdapFailedImportUser:
     type: object
-    x-go-type:
-      type: FailedImportUser
-      import:
-        package: "github.com/goharbor/harbor/src/pkg/ldap/model"
+    properties:
+      uid:
+        type: string
+        description: the uid can't add to system.
+      error:
+        type: string
+        description: fail reason.
   LdapUser:
     type: object
-    x-go-type:
-      type: User
-      import:
-        package: "github.com/goharbor/harbor/src/pkg/ldap/model"
+    properties:
+      username:
+        type: string
+        description: ldap username.
+      realname:
+        type: string
+        description: The user realname from "uid" or "cn" attribute.
+      email:
+        type: string
+        description: The user email address from "mail" or "email" attribute.
   UserGroup:
     type: object
-    x-go-type:
-      type: Group
-      import:
-        package: "github.com/goharbor/harbor/src/pkg/ldap/model"
+    properties:
+      id:
+        type: integer
+        description: The ID of the user group
+      group_name:
+        type: string
+        description: The name of the user group
+      group_type:
+        type: integer
+        description: 'The group type, 1 for LDAP group, 2 for HTTP group.'
+      ldap_group_dn:
+        type: string
+        description: The DN of the LDAP group if group type is 1 (LDAP group).
   SupportedWebhookEventTypes:
     type: object
     description: Supportted webhook event types and notify types.
