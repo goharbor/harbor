@@ -56,7 +56,20 @@ func (l *ldapAPI) SearchLdapUser(ctx context.Context, params operation.SearchLda
 	if err != nil {
 		return l.SendError(ctx, err)
 	}
-	return operation.NewSearchLdapUserOK().WithPayload(ldapUsers)
+	return operation.NewSearchLdapUserOK().WithPayload(toLdapUsersResp(ldapUsers))
+}
+
+func toLdapUsersResp(users []ldapModel.User) []*models.LdapUser {
+	result := make([]*models.LdapUser, 0)
+	for _, u := range users {
+		user := &models.LdapUser{
+			Email:    u.Email,
+			Realname: u.Realname,
+			Username: u.Username,
+		}
+		result = append(result, user)
+	}
+	return result
 }
 
 func (l *ldapAPI) ImportLdapUser(ctx context.Context, params operation.ImportLdapUserParams) middleware.Responder {
@@ -70,7 +83,19 @@ func (l *ldapAPI) ImportLdapUser(ctx context.Context, params operation.ImportLda
 	if len(failedList) == 0 {
 		return operation.NewImportLdapUserOK()
 	}
-	return operation.NewImportLdapUserNotFound().WithPayload(failedList)
+	return operation.NewImportLdapUserNotFound().WithPayload(toFailedListResp(failedList))
+}
+
+func toFailedListResp(users []ldapModel.FailedImportUser) []*models.LdapFailedImportUser {
+	result := make([]*models.LdapFailedImportUser, 0)
+	for _, u := range users {
+		failed := &models.LdapFailedImportUser{
+			UID:   u.UID,
+			Error: u.Error,
+		}
+		result = append(result, failed)
+	}
+	return result
 }
 
 func (l *ldapAPI) SearchLdapGroup(ctx context.Context, params operation.SearchLdapGroupParams) middleware.Responder {
@@ -92,5 +117,17 @@ func (l *ldapAPI) SearchLdapGroup(ctx context.Context, params operation.SearchLd
 	if len(ug) == 0 {
 		return l.SendError(ctx, errors.NotFoundError(fmt.Errorf("group name:%v, group DN:%v", groupName, groupDN)))
 	}
-	return operation.NewSearchLdapGroupOK().WithPayload(ug)
+	return operation.NewSearchLdapGroupOK().WithPayload(toUserGroupResp(ug))
+}
+
+func toUserGroupResp(ugs []ldapModel.Group) []*models.UserGroup {
+	result := make([]*models.UserGroup, 0)
+	for _, g := range ugs {
+		ug := &models.UserGroup{
+			GroupName:   g.Name,
+			LdapGroupDn: g.Dn,
+		}
+		result = append(result, ug)
+	}
+	return result
 }
