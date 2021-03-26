@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-chmod -R 0700 /var/lib/postgresql/data/pgdata
+find /var/lib/postgresql/data -type d -print0 | xargs -0 chmod 700
 
 # usage: file_env VAR [DEFAULT]
 #    ie: file_env 'XYZ_DB_PASSWORD' 'example'
