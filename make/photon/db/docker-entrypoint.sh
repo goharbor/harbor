@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+chmod -R 0700 /var/lib/postgresql/data/pgdata
+
 # usage: file_env VAR [DEFAULT]
 #    ie: file_env 'XYZ_DB_PASSWORD' 'example'
 # (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
