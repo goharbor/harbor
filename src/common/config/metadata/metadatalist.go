@@ -157,6 +157,16 @@ var (
 		{Name: common.MetricPort, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_PORT", DefaultValue: "9090", ItemType: &IntType{}, Editable: true},
 		{Name: common.MetricPath, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_PATH", DefaultValue: "/metrics", ItemType: &StringType{}, Editable: true},
 
+		// the global webhook
+		{Name: common.GlobalWebHookEnable, Scope: SystemScope, Group: BasicGroup, EnvKey: "WEBHOOK_GLOBAL_ENABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
+		{Name: common.GlobalWebHookName, Scope: SystemScope, Group: BasicGroup, EnvKey: "WEBHOOK_GLOBAL_NAME", DefaultValue: "", ItemType: &StringType{}, Editable: true},
+		{Name: common.GlobalWebHookDescription, Scope: SystemScope, Group: BasicGroup, EnvKey: "WEBHOOK_GLOBAL_DESCRIPTION", DefaultValue: "", ItemType: &StringType{}, Editable: true},
+		{Name: common.GlobalWebHookTargetType, Scope: SystemScope, Group: BasicGroup, EnvKey: "WEBHOOK_GLOBAL_TARGET_TYPE", DefaultValue: "", ItemType: &StringType{}, Editable: true},
+		{Name: common.GlobalWebHookTargetAddress, Scope: SystemScope, Group: BasicGroup, EnvKey: "WEBHOOK_GLOBAL_TARGET_ADDRESS", DefaultValue: "", ItemType: &StringType{}, Editable: true},
+		{Name: common.GlobalWebHookTargetAuthHeader, Scope: SystemScope, Group: BasicGroup, EnvKey: "WEBHOOK_GLOBAL_TARGET_AUTH_HEADER", DefaultValue: "", ItemType: &StringType{}, Editable: true},
+		{Name: common.GlobalWebHookTargetSkipCertVerify, Scope: SystemScope, Group: BasicGroup, EnvKey: "WEBHOOK_GLOBAL_TARGET_SKIP_CERT_VERIFY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
+		{Name: common.GlobalWebHookEventTypes, Scope: SystemScope, Group: BasicGroup, EnvKey: "WEBHOOK_GLOBAL_EVENT_TYPES", DefaultValue: "", ItemType: &StringType{}, Editable: true},
+
 		{Name: common.QuotaPerProjectEnable, Scope: UserScope, Group: QuotaGroup, EnvKey: "QUOTA_PER_PROJECT_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true},
 		{Name: common.StoragePerProject, Scope: UserScope, Group: QuotaGroup, EnvKey: "STORAGE_PER_PROJECT", DefaultValue: "-1", ItemType: &QuotaType{}, Editable: true},
 	}

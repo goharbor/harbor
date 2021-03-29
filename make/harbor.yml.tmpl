@@ -199,3 +199,13 @@ proxy:
 #   enabled: false
 #   port: 9090
 #   path: /metrics
+
+# globalwebhook:
+#   enabled: false
+#   name: "global"
+#   description: "global webhook"
+#   type: "http"
+#   address: "http://localhost:9999/api/harbor/notify"
+#   auth_header: ""
+#   skip_cert_verify: true
+#   event_type: "DELETE_ARTIFACT,PULL_ARTIFACT,PUSH_ARTIFACT,DELETE_CHART,DOWNLOAD_CHART,UPLOAD_CHART,QUOTA_EXCEED,QUOTA_WARNING,REPLICATION,SCANNING_FAILED,SCANNING_COMPLETED,TAG_RETENTION"

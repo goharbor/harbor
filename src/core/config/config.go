@@ -488,3 +488,16 @@ func splitAndTrim(s, sep string) []string {
 	}
 	return res
 }
+
+func GlobalWebHook() *models.GlobalWebHook {
+	return &models.GlobalWebHook{
+		Enable:               cfgMgr.Get(common.GlobalWebHookEnable).GetBool(),
+		Name:                 cfgMgr.Get(common.GlobalWebHookName).GetString(),
+		Description:          cfgMgr.Get(common.GlobalWebHookDescription).GetString(),
+		TargetType:           cfgMgr.Get(common.GlobalWebHookTargetType).GetString(),
+		TargetAddress:        cfgMgr.Get(common.GlobalWebHookTargetAddress).GetString(),
+		TargetAuthHeader:     cfgMgr.Get(common.GlobalWebHookTargetAuthHeader).GetString(),
+		TargetSkipCertVerify: cfgMgr.Get(common.GlobalWebHookTargetSkipCertVerify).GetBool(),
+		EventTypes:           cfgMgr.Get(common.GlobalWebHookEventTypes).GetString(),
+	}
+}

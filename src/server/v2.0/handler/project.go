@@ -200,6 +200,10 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		}
 	}
 
+	if err := a.createDefaultNotifyPolicy(projectID); err != nil {
+		return a.SendError(ctx, err)
+	}
+
 	var location string
 	if lib.BoolValue(params.XResourceNameInLocation) {
 		location = fmt.Sprintf("%s/%s", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), req.ProjectName)

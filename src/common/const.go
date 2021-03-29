@@ -165,4 +165,14 @@ const (
 	MetricEnable = "metric_enable"
 	MetricPort   = "metric_port"
 	MetricPath   = "metric_path"
+
+	//global webhook
+	GlobalWebHookEnable               = "webhook_global_enable"
+	GlobalWebHookName                 = "webhook_global_name"
+	GlobalWebHookDescription          = "webhook_global_description"
+	GlobalWebHookTargetType           = "webhook_global_target_type"
+	GlobalWebHookTargetAddress        = "webhook_global_target_address"
+	GlobalWebHookTargetAuthHeader     = "webhook_global_target_auth_header"
+	GlobalWebHookTargetSkipCertVerify = "webhook_global_target_skip_cert_verify"
+	GlobalWebHookEventTypes           = "webhook_global_event_type"
 )

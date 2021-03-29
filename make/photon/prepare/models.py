@@ -150,3 +150,22 @@ class Metric:
     def validate(self):
         if not port_number_valid(self.port):
             raise Exception('Port number in metrics is not valid')
+
+class GlobalWebhook:
+    def __init__(self, enabled: bool = False, name: str = "habor global notify", description: str = "", type: str = "", address: str = "", auth_header: str = "", skip_cert_verify: bool = True, event_type: str = ""):
+        self.enabled = enabled
+        self.name = name
+        self.description = description
+        self.type = type
+        self.address = address
+        self.auth_header = auth_header
+        self.skip_cert_verify = skip_cert_verify
+        self.event_type = event_type
+
+    def validate(self):
+        if self.type == "":
+            raise Exception("webhook type is not valid")
+        if self.address == "":
+            raise Exception("webhook address is not valid")
+        if self.event_type == "":
+            raise Exception("webhook event_type is not valid")
