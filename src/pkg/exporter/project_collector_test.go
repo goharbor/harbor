@@ -41,7 +41,13 @@ func setupTest(t *testing.T) {
 
 	// register projAdmin and assign project admin role
 	aliceID, err := dao.Register(alice)
+	if err != nil {
+		t.Errorf("register user error %v", err)
+	}
 	bobID, err := dao.Register(bob)
+	if err != nil {
+		t.Errorf("register user error %v", err)
+	}
 	eveID, err := dao.Register(eve)
 	if err != nil {
 		t.Errorf("register user error %v", err)
@@ -50,6 +56,9 @@ func setupTest(t *testing.T) {
 	// Create Project
 	ctx := orm.NewContext(context.Background(), dao.GetOrmer())
 	proID1, err := proctl.Ctl.Create(ctx, &testPro1)
+	if err != nil {
+		t.Errorf("project creating %v", err)
+	}
 	proID2, err := proctl.Ctl.Create(ctx, &testPro2)
 	if err != nil {
 		t.Errorf("project creating %v", err)
@@ -67,6 +76,9 @@ func setupTest(t *testing.T) {
 	// Add repo to project
 	repo1.ProjectID = testPro1.ProjectID
 	repo1ID, err := repository.Mgr.Create(ctx, &repo1)
+	if err != nil {
+		t.Errorf("add repo error %v", err)
+	}
 	repo1.RepositoryID = repo1ID
 	repo2.ProjectID = testPro2.ProjectID
 	repo2ID, err := repository.Mgr.Create(ctx, &repo2)
@@ -79,6 +91,9 @@ func setupTest(t *testing.T) {
 	art1.RepositoryID = repo1ID
 	art1.PushTime = time.Now()
 	_, err = artifact.Mgr.Create(ctx, &art1)
+	if err != nil {
+		t.Errorf("add repo error %v", err)
+	}
 
 	art2.ProjectID = testPro2.ProjectID
 	art2.RepositoryID = repo2ID
@@ -91,7 +106,13 @@ func setupTest(t *testing.T) {
 	pmIDs = make([]int, 0)
 	alice.UserID, bob.UserID, eve.UserID = int(aliceID), int(bobID), int(eveID)
 	p1m1ID, err := project.AddProjectMember(models.Member{ProjectID: proID1, Role: common.RoleDeveloper, EntityID: int(aliceID), EntityType: common.UserMember})
+	if err != nil {
+		t.Errorf("add project member error %v", err)
+	}
 	p2m1ID, err := project.AddProjectMember(models.Member{ProjectID: proID2, Role: common.RoleMaintainer, EntityID: int(bobID), EntityType: common.UserMember})
+	if err != nil {
+		t.Errorf("add project member error %v", err)
+	}
 	p2m2ID, err := project.AddProjectMember(models.Member{ProjectID: proID2, Role: common.RoleMaintainer, EntityID: int(eveID), EntityType: common.UserMember})
 	if err != nil {
 		t.Errorf("add project member error %v", err)

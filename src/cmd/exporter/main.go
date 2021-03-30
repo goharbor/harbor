@@ -47,6 +47,12 @@ func main() {
 		},
 	})
 
+	exporter.InitBackendWorker(&exporter.RedisPoolConfig{
+		URL:               viper.GetString("redis.url"),
+		Namespace:         viper.GetString("redis.namespace"),
+		IdleTimeoutSecond: viper.GetInt("redis.timeout"),
+	})
+
 	exporterOpt := &exporter.Opt{
 		Port:                   viper.GetInt("exporter.port"),
 		MetricsPath:            viper.GetString("exporter.metrics_path"),

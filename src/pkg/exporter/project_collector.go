@@ -227,11 +227,3 @@ func updateProjectArtifactInfo(projectMap map[int64]*projectInfo) {
 		}
 	}
 }
-
-func checkErr(err error, arg string) {
-	if err == nil {
-		return
-	}
-
-	log.Errorf("%s: %v", arg, err)
-}
