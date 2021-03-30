@@ -110,6 +110,7 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 		ID:                params.ID,
 		Name:              params.Policy.Name,
 		Description:       params.Policy.Description,
+		DestNamespace:     params.Policy.DestNamespace,
 		ReplicateDeletion: params.Policy.Deletion,
 		Override:          params.Policy.Override,
 		Enabled:           params.Policy.Enabled,

@@ -119,7 +119,7 @@ func (c *controller) CreatePolicy(ctx context.Context, policy *model.Policy) (in
 	// create schedule if needed
 	if policy.IsScheduledTrigger() {
 		if _, err = c.scheduler.Schedule(ctx, job.Replication, id, "", policy.Trigger.Settings.Cron,
-			callbackFuncName, policy.ID, map[string]interface{}{}); err != nil {
+			callbackFuncName, id, map[string]interface{}{}); err != nil {
 			return 0, err
 		}
 	}
