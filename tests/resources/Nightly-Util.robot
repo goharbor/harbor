@@ -55,8 +55,7 @@ Nightly Test Setup For Nightly
     Run Keyword  Start Containerd Daemon Locally
 
 CA Setup For Nightly
-    [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt
-    Run  cp ${cert} harbor_ca.crt
+    [Arguments]  ${ip}  ${HARBOR_PASSWORD}
     Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}
     Prepare Docker Cert For Nightly  ${ip}
     Prepare Helm Cert
