@@ -29,21 +29,6 @@ type RedisPoolConfig struct {
 	IdleTimeoutSecond int
 }
 
-// InitRedisCli ...
-func InitRedisCli(rdsCfg *RedisPoolConfig) {
-	pool, err := redislib.GetRedisPool("JobService", rdsCfg.URL, &redislib.PoolParam{
-		PoolMaxIdle:           6,
-		PoolIdleTimeout:       time.Duration(rdsCfg.IdleTimeoutSecond) * time.Second,
-		DialConnectionTimeout: dialConnectionTimeout,
-		DialReadTimeout:       dialReadTimeout,
-		DialWriteTimeout:      dialWriteTimeout,
-	})
-	if err != nil {
-		panic(err)
-	}
-	redisPool = pool
-}
-
 // InitBackendWorker initiate backend worker
 func InitBackendWorker(redisPoolConfig *RedisPoolConfig) {
 	pool, err := redislib.GetRedisPool("JobService", redisPoolConfig.URL, &redislib.PoolParam{

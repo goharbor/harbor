@@ -14,11 +14,11 @@ var (
 		valueType: prometheus.GaugeValue,
 	}
 	jobServiceTaskQueueLatency = typedDesc{
-		desc:      newDescWithLables("", "task_queue_latency", "the time last taks processed", "type"),
+		desc:      newDescWithLables("", "task_queue_latency", "how long ago the next job to be processed was enqueued", "type"),
 		valueType: prometheus.GaugeValue,
 	}
 	jobServiceConcurrency = typedDesc{
-		desc:      newDescWithLables("", "task_concurrecy", "Total number of concurrency on a pool", "type", "pool"),
+		desc:      newDescWithLables("", "task_concurrency", "Total number of concurrency on a pool", "type", "pool"),
 		valueType: prometheus.GaugeValue,
 	}
 	jobServiceScheduledJobTotal = typedDesc{
@@ -43,16 +43,25 @@ type JobServiceCollector struct {
 
 // Describe implements prometheus.Collector
 func (hc *JobServiceCollector) Describe(c chan<- *prometheus.Desc) {
-	c <- jobServiceTaskQueueSize.Desc()
-	c <- jobServiceTaskQueueLatency.Desc()
-	c <- jobServiceConcurrency.Desc()
-	c <- jobServiceScheduledJobFails.Desc()
+	for _, jd := range hc.getDescribeInfo() {
+		c <- jd
+	}
 }
 
 // Collect implements prometheus.Collector
 func (hc *JobServiceCollector) Collect(c chan<- prometheus.Metric) {
 	for _, m := range hc.getJobserviceInfo() {
 		c <- m
+	}
+}
+
+func (hc *JobServiceCollector) getDescribeInfo() []*prometheus.Desc {
+	return []*prometheus.Desc{
+		jobServiceTaskQueueSize.Desc(),
+		jobServiceTaskQueueLatency.Desc(),
+		jobServiceConcurrency.Desc(),
+		jobServiceScheduledJobTotal.Desc(),
+		jobServiceScheduledJobFails.Desc(),
 	}
 }
 
@@ -63,26 +72,9 @@ func (hc *JobServiceCollector) getJobserviceInfo() []prometheus.Metric {
 			return value.([]prometheus.Metric)
 		}
 	}
-	result := []prometheus.Metric{}
 
 	// Get concurrency info via raw redis client
-	rdsConn := GetRedisPool().Get()
-	values, err := redis.Values(rdsConn.Do("SMEMBERS", redisKeyKnownJobs(jsNamespace)))
-	checkErr(err, "err when get known jobs")
-	var jobs []string
-	for _, v := range values {
-		jobs = append(jobs, string(v.([]byte)))
-	}
-	for _, job := range jobs {
-		values, err := redis.Values(rdsConn.Do("HGETALL", redisKeyJobsLockInfo(jsNamespace, job)))
-		checkErr(err, "err when get job lock info")
-		for i := 0; i < len(values); i += 2 {
-			key, _ := redis.String(values[i], nil)
-			value, _ := redis.Float64(values[i+1], nil)
-			result = append(result, jobServiceConcurrency.MustNewConstMetric(value, job, key))
-		}
-	}
-	rdsConn.Close()
+	result := getConccurrentInfo()
 
 	// get info via jobservice client
 	cli := GetBackendWorker()
@@ -101,6 +93,25 @@ func (hc *JobServiceCollector) getJobserviceInfo() []prometheus.Metric {
 
 	if CacheEnabled() {
 		CachePut(JobServiceCollectorName, result)
+	}
+	return result
+}
+
+func getConccurrentInfo() []prometheus.Metric {
+	rdsConn := GetRedisPool().Get()
+	defer rdsConn.Close()
+	result := []prometheus.Metric{}
+	knownJobvalues, err := redis.Values(rdsConn.Do("SMEMBERS", redisKeyKnownJobs(jsNamespace)))
+	checkErr(err, "err when get known jobs")
+	for _, v := range knownJobvalues {
+		job := string(v.([]byte))
+		lockInfovalues, err := redis.Values(rdsConn.Do("HGETALL", redisKeyJobsLockInfo(jsNamespace, job)))
+		checkErr(err, "err when get job lock info")
+		for i := 0; i < len(lockInfovalues); i += 2 {
+			key, _ := redis.String(lockInfovalues[i], nil)
+			value, _ := redis.Float64(lockInfovalues[i+1], nil)
+			result = append(result, jobServiceConcurrency.MustNewConstMetric(value, job, key))
+		}
 	}
 	return result
 }
