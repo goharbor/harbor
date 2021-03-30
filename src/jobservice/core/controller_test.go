@@ -14,6 +14,8 @@
 package core
 
 import (
+	"testing"
+
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -23,7 +25,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 // ControllerTestSuite tests functions of core controller
@@ -229,6 +230,10 @@ func (suite *ControllerTestSuite) Start() error {
 	return suite.worker.Start()
 }
 
+func (suite *ControllerTestSuite) GetPoolID() string {
+	return suite.worker.GetPoolID()
+}
+
 func (suite *ControllerTestSuite) RegisterJobs(jobs map[string]interface{}) error {
 	return suite.worker.RegisterJobs(jobs)
 }
@@ -293,6 +298,10 @@ type fakeWorker struct {
 
 func (f *fakeWorker) Start() error {
 	return f.Called().Error(0)
+}
+
+func (f *fakeWorker) GetPoolID() string {
+	return f.Called().String()
 }
 
 func (f *fakeWorker) RegisterJobs(jobs map[string]interface{}) error {

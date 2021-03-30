@@ -78,6 +78,9 @@ type Configuration struct {
 
 	// Logger configurations
 	LoggerConfigs []*LoggerConfig `yaml:"loggers,omitempty"`
+
+	// Metric configurations
+	Metric *MetricConfig `yaml:"metric,omitempty"`
 }
 
 // HTTPSConfig keeps additional configurations when using https protocol
@@ -102,6 +105,13 @@ type PoolConfig struct {
 	WorkerCount  uint             `yaml:"workers"`
 	Backend      string           `yaml:"backend"`
 	RedisPoolCfg *RedisPoolConfig `yaml:"redis_pool,omitempty"`
+}
+
+// MetricConfig used for configure metrics
+type MetricConfig struct {
+	Enabled bool   `yaml:"enabled"`
+	Path    string `yaml:"path"`
+	Port    int    `yaml:"port"`
 }
 
 // CustomizedSettings keeps the customized settings of logger

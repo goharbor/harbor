@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/metric"
 )
 
 const (
@@ -56,10 +57,11 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		execContext job.Context
 		tracker     job.Tracker
 	)
-
 	// Track the running job now
 	jID := j.ID
 
+	// used to instrument process time
+	now := time.Now()
 	// Check if the job is a periodic one as periodic job has its own ID format
 	if eID, yes := isPeriodicJobExecution(j); yes {
 		jID = eID
@@ -109,7 +111,8 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		if err != nil {
 			// log error
 			logger.Errorf("Job '%s:%s' exit with error: %s", j.Name, j.ID, err)
-
+			metric.JobserviceTotalTask.WithLabelValues(j.Name, "fail").Inc()
+			metric.JobservieTaskProcessTimeSummary.WithLabelValues(j.Name, "fail").Observe(time.Since(now).Seconds())
 			if er := tracker.Fail(); er != nil {
 				logger.Errorf("Error occurred when marking the status of job %s:%s to failure: %s", j.Name, j.ID, er)
 			}
@@ -124,11 +127,14 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		} else {
 			if latest == job.StoppedStatus {
 				// Logged
+				metric.JobserviceTotalTask.WithLabelValues(j.Name, "stop").Inc()
+				metric.JobservieTaskProcessTimeSummary.WithLabelValues(j.Name, "stop").Observe(time.Since(now).Seconds())
 				logger.Infof("Job %s:%s is stopped", j.Name, j.ID)
 				return
 			}
 		}
-
+		metric.JobserviceTotalTask.WithLabelValues(j.Name, "success").Inc()
+		metric.JobservieTaskProcessTimeSummary.WithLabelValues(j.Name, "success").Observe(time.Since(now).Seconds())
 		// Mark job status to success.
 		logger.Infof("Job '%s:%s' exit with success", j.Name, j.ID)
 		if er := tracker.Succeed(); er != nil {

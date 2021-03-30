@@ -33,4 +33,5 @@ def prepare_job_service(config_dict):
         internal_tls=config_dict['internal_tls'],
         max_job_workers=config_dict['max_job_workers'],
         redis_url=config_dict['redis_url_js'],
-        level=log_level)
+        level=log_level,
+        metric=config_dict['metric'])
