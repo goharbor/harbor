@@ -17,20 +17,22 @@ package ldap
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
-	"regexp"
-	"strings"
+	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
 
 	goldap "github.com/go-ldap/ldap/v3"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/utils"
 
 	"github.com/goharbor/harbor/src/common/models"
 	ldapCtl "github.com/goharbor/harbor/src/controller/ldap"
+	ugCtl "github.com/goharbor/harbor/src/controller/usergroup"
 	"github.com/goharbor/harbor/src/pkg/ldap"
 
 	"github.com/goharbor/harbor/src/core/auth"
@@ -113,7 +115,7 @@ func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *m
 		}
 
 	}
-	userGroups := make([]models.UserGroup, 0)
+	userGroups := make([]ugModel.UserGroup, 0)
 	for _, dn := range ldapUsers[0].GroupDNList {
 		lGroups, err := sess.SearchGroupByDN(dn)
 		if err != nil {
@@ -124,9 +126,9 @@ func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *m
 			log.Warningf("Can not get the ldap group name with DN %v", dn)
 			continue
 		}
-		userGroups = append(userGroups, models.UserGroup{GroupName: lGroups[0].Name, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
+		userGroups = append(userGroups, ugModel.UserGroup{GroupName: lGroups[0].Name, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
 	}
-	u.GroupIDs, err = group.PopulateGroup(userGroups)
+	u.GroupIDs, err = ugCtl.Ctl.Populate(orm.Context(), userGroups)
 	if err != nil {
 		log.Warningf("Failed to fetch ldap group configuration:%v", err)
 	}
@@ -167,12 +169,12 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 		return nil, err
 	}
 	if err = s.Open(); err != nil {
-		return nil, fmt.Errorf("Failed to load system ldap config, %v", err)
+		return nil, fmt.Errorf("failed to load system ldap config, %v", err)
 	}
 	defer s.Close()
 	lUsers, err := s.SearchUser(username)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to search user in ldap")
+		return nil, fmt.Errorf("failed to search user in ldap")
 	}
 
 	if len(lUsers) > 1 {
@@ -186,14 +188,14 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 
 		log.Debugf("Found ldap user %v", user)
 	} else {
-		return nil, fmt.Errorf("No user found, %v", username)
+		return nil, fmt.Errorf("no user found, %v", username)
 	}
 
 	return &user, nil
 }
 
 // SearchGroup -- Search group in ldap authenticator, groupKey is LDAP group DN.
-func (l *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
+func (l *Auth) SearchGroup(groupKey string) (*ugModel.UserGroup, error) {
 	if _, err := goldap.ParseDN(groupKey); err != nil {
 		return nil, auth.ErrInvalidLDAPGroupDN
 	}
@@ -216,9 +218,9 @@ func (l *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
 	}
 
 	if len(userGroupList) == 0 {
-		return nil, fmt.Errorf("Failed to searh ldap group with groupDN:%v", groupKey)
+		return nil, fmt.Errorf("failed to searh ldap group with groupDN:%v", groupKey)
 	}
-	userGroup := models.UserGroup{
+	userGroup := ugModel.UserGroup{
 		GroupName:   userGroupList[0].Name,
 		LdapGroupDN: userGroupList[0].Dn,
 	}
@@ -226,7 +228,8 @@ func (l *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
 }
 
 // OnBoardGroup -- Create Group in harbor DB, if altGroupName is not empty, take the altGroupName as groupName in harbor DB.
-func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
+func (l *Auth) OnBoardGroup(u *ugModel.UserGroup, altGroupName string) error {
+	ctx := orm.Context()
 	if _, err := goldap.ParseDN(u.LdapGroupDN); err != nil {
 		return auth.ErrInvalidLDAPGroupDN
 	}
@@ -235,14 +238,14 @@ func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 	}
 	u.GroupType = common.LDAPGroupType
 	// Check duplicate LDAP DN in usergroup, if usergroup exist, return error
-	userGroupList, err := group.QueryUserGroup(models.UserGroup{LdapGroupDN: u.LdapGroupDN})
+	userGroupList, err := ugCtl.Ctl.List(ctx, ugModel.UserGroup{LdapGroupDN: u.LdapGroupDN})
 	if err != nil {
 		return err
 	}
 	if len(userGroupList) > 0 {
 		return auth.ErrDuplicateLDAPGroup
 	}
-	return group.OnBoardUserGroup(u)
+	return ugCtl.Ctl.Ensure(ctx, u)
 }
 
 // PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser
@@ -287,7 +290,7 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 		return err
 	}
 	if u.UserID <= 0 {
-		return fmt.Errorf("Can not OnBoardUser %v", u)
+		return fmt.Errorf("cannot OnBoardUser %v", u)
 	}
 	return nil
 }

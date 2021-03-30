@@ -20,21 +20,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
-	"github.com/goharbor/harbor/src/jobservice/logger"
-	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/dao/group"
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/controller/usergroup"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/authproxy"
@@ -168,14 +169,14 @@ func (a *Auth) SearchUser(username string) (*models.User, error) {
 }
 
 // SearchGroup search group exist in the authentication provider, for HTTP auth, if SkipSearch is true, it assume this group exist in authentication provider.
-func (a *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
+func (a *Auth) SearchGroup(groupKey string) (*model.UserGroup, error) {
 	err := a.ensure()
 	if err != nil {
 		log.Warningf("Failed to refresh configuration for HTTP Auth Proxy Authenticator, error: %v, the default settings will be used", err)
 	}
-	var ug *models.UserGroup
+	var ug *model.UserGroup
 	if a.SkipSearch {
-		ug = &models.UserGroup{
+		ug = &model.UserGroup{
 			GroupName: groupKey,
 			GroupType: common.HTTPGroupType,
 		}
@@ -185,13 +186,13 @@ func (a *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
 }
 
 // OnBoardGroup create user group entity in Harbor DB, altGroupName is not used.
-func (a *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
+func (a *Auth) OnBoardGroup(u *model.UserGroup, altGroupName string) error {
 	// if group name provided, on board the user group
 	if len(u.GroupName) == 0 {
 		return errors.New("Should provide a group name")
 	}
 	u.GroupType = common.HTTPGroupType
-	err := group.OnBoardUserGroup(u)
+	err := usergroup.Ctl.Ensure(orm.Context(), u)
 	if err != nil {
 		return err
 	}

@@ -35,6 +35,7 @@ from pprint import pprint
 class TestUserGroup(unittest.TestCase):
     """UserGroup unit test stubs"""
     product_api = testutils.GetProductApi("admin", "Harbor12345")
+    usergroup_api = testutils.GetUserGroupApi("admin", "Harbor12345")
     groupId = 0
     def setUp(self):
         self.conf= Configurations()
@@ -44,16 +45,16 @@ class TestUserGroup(unittest.TestCase):
 
     def tearDown(self):
         if self.groupId > 0 :
-            self.product_api.usergroups_group_id_delete(group_id=self.groupId)
+            self.usergroup_api.delete_user_group(group_id=self.groupId)
         pass
 
     def testAddUpdateUserGroup(self):
         """Test UserGroup"""
         user_group = UserGroup(group_name="harbor_group123", group_type=1, ldap_group_dn="cn=harbor_group,ou=groups,dc=example,dc=com")
-        result = self.product_api.usergroups_post(usergroup=user_group)
+        result = self.usergroup_api.create_user_group(usergroup=user_group)
         pprint(result)
 
-        user_groups = self.product_api.usergroups_get()
+        user_groups = self.usergroup_api.list_user_groups()
         found = False
 
         for ug in user_groups :
@@ -64,9 +65,9 @@ class TestUserGroup(unittest.TestCase):
                 self.groupId = ug.id
         self.assertTrue(found)
 
-        result = self.product_api.usergroups_group_id_put(self.groupId, usergroup = UserGroup(group_name = "newharbor_group"))
+        result = self.usergroup_api.update_user_group(self.groupId, usergroup = UserGroup(group_name = "newharbor_group"))
 
-        new_user_group = self.product_api.usergroups_group_id_get(group_id=self.groupId)
+        new_user_group = self.usergroup_api.get_user_group(group_id=self.groupId)
         self.assertEqual("newharbor_group", new_user_group.group_name)
 
         pass

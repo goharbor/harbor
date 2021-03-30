@@ -16,15 +16,17 @@ package api
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/usergroup"
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -252,7 +254,7 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 		}
 		member.EntityID = groupID
 	} else if len(request.MemberGroup.GroupName) > 0 && request.MemberGroup.GroupType == common.HTTPGroupType || request.MemberGroup.GroupType == common.OIDCGroupType {
-		ugs, err := group.QueryUserGroup(models.UserGroup{GroupName: request.MemberGroup.GroupName, GroupType: request.MemberGroup.GroupType})
+		ugs, err := usergroup.Mgr.List(orm.Context(), model.UserGroup{GroupName: request.MemberGroup.GroupName, GroupType: request.MemberGroup.GroupType})
 		if err != nil {
 			return 0, err
 		}

@@ -57,8 +57,7 @@ def GetRepositoryApi(username, password, harbor_server= os.environ.get("HARBOR_H
     api_instance = v2_swagger_client.RepositoryApi(api_client)
     return api_instance
 
-def GetConfigureApi(username, password, harbor_server= os.environ.get("HARBOR_HOST", '')):
-
+def GetUserGroupApi(username, password, harbor_server= os.environ.get("HARBOR_HOST", '')):
     cfg = v2_swagger_client.Configuration()
     cfg.host = "https://"+harbor_server+"/api/v2.0"
     cfg.username = username
@@ -66,9 +65,8 @@ def GetConfigureApi(username, password, harbor_server= os.environ.get("HARBOR_HO
     cfg.verify_ssl = False
     cfg.debug = True
     api_client = v2_swagger_client.ApiClient(cfg)
-    api_instance = v2_swagger_client.Configuration(api_client)
+    api_instance = v2_swagger_client.UsergroupApi(api_client)
     return api_instance
-
 
 class TestResult(object):
     def __init__(self):

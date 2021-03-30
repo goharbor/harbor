@@ -31,7 +31,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/users/:id/permissions", &api.UserAPI{}, "get:ListUserPermissions")
 	beego.Router("/api/"+version+"/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/"+version+"/users/:id/cli_secret", &api.UserAPI{}, "put:SetCLISecret")
-	beego.Router("/api/"+version+"/usergroups/?:ugid([0-9]+)", &api.UserGroupAPI{})
 	beego.Router("/api/"+version+"/email/ping", &api.EmailAPI{}, "post:Ping")
 	beego.Router("/api/"+version+"/health", &api.HealthAPI{}, "get:CheckHealth")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")

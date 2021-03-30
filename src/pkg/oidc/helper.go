@@ -19,18 +19,20 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
-	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/goharbor/harbor/src/controller/config"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/usergroup"
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
+
 	gooidc "github.com/coreos/go-oidc"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	"golang.org/x/oauth2"
@@ -387,7 +389,7 @@ func groupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 type populate func(groupNames []string) ([]int, error)
 
 func populateGroupsDB(groupNames []string) ([]int, error) {
-	return group.PopulateGroup(models.UserGroupsFromName(groupNames, common.OIDCGroupType))
+	return usergroup.Mgr.Populate(orm.Context(), model.UserGroupsFromName(groupNames, common.OIDCGroupType))
 }
 
 // InjectGroupsToUser populates the group to DB and inject the group IDs to user model.
