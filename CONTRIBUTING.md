@@ -178,17 +178,13 @@ Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and
 |   1.6    |      4.3.0         |       0.10.27      |
 |   1.7    |      6.0.3         |       0.12.10      |
 |   1.8    |      7.1.3         |       1.0.0        |
+|   1.9    |      7.1.3         |       1.0.0        |
+|   1.10   |      8.2.0         |       2.2.0        |
+|   2.0    |      8.2.0         |       2.3.8        |
+|   2.1    |      8.2.0         |       2.3.8        |
+|   2.2    |      10.1.2        |       4.0.2        |
 
-**npm Package Dependency:** Run the following commands to restore the package dependencies.
-```
-#For the web UI
-cd $REPO_DIR/src/portal
-npm install
-
-#For the UI library
-cd $REPO_DIR/src/portal/lib
-npm install
-```
+To run the Web UI code, please refer to the UI [start](https://github.com/goharbor/harbor/blob/master/src/portal/README.md) guideline.
 
 To run the code, please refer to the [build](https://goharbor.io/docs/2.0.0/build-customize-contribute/compile-guide/) guideline.
 
