@@ -5,9 +5,8 @@ package dao
 import (
 	context "context"
 
+	dao "github.com/goharbor/harbor/src/pkg/reg/dao"
 	mock "github.com/stretchr/testify/mock"
-
-	models "github.com/goharbor/harbor/src/replication/dao/models"
 
 	q "github.com/goharbor/harbor/src/lib/q"
 )
@@ -39,18 +38,18 @@ func (_m *DAO) Count(ctx context.Context, query *q.Query) (int64, error) {
 }
 
 // Create provides a mock function with given fields: ctx, registry
-func (_m *DAO) Create(ctx context.Context, registry *models.Registry) (int64, error) {
+func (_m *DAO) Create(ctx context.Context, registry *dao.Registry) (int64, error) {
 	ret := _m.Called(ctx, registry)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Registry) int64); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *dao.Registry) int64); ok {
 		r0 = rf(ctx, registry)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *models.Registry) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *dao.Registry) error); ok {
 		r1 = rf(ctx, registry)
 	} else {
 		r1 = ret.Error(1)
@@ -74,15 +73,15 @@ func (_m *DAO) Delete(ctx context.Context, id int64) error {
 }
 
 // Get provides a mock function with given fields: ctx, id
-func (_m *DAO) Get(ctx context.Context, id int64) (*models.Registry, error) {
+func (_m *DAO) Get(ctx context.Context, id int64) (*dao.Registry, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 *models.Registry
-	if rf, ok := ret.Get(0).(func(context.Context, int64) *models.Registry); ok {
+	var r0 *dao.Registry
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *dao.Registry); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Registry)
+			r0 = ret.Get(0).(*dao.Registry)
 		}
 	}
 
@@ -97,15 +96,15 @@ func (_m *DAO) Get(ctx context.Context, id int64) (*models.Registry, error) {
 }
 
 // List provides a mock function with given fields: ctx, query
-func (_m *DAO) List(ctx context.Context, query *q.Query) ([]*models.Registry, error) {
+func (_m *DAO) List(ctx context.Context, query *q.Query) ([]*dao.Registry, error) {
 	ret := _m.Called(ctx, query)
 
-	var r0 []*models.Registry
-	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) []*models.Registry); ok {
+	var r0 []*dao.Registry
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) []*dao.Registry); ok {
 		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Registry)
+			r0 = ret.Get(0).([]*dao.Registry)
 		}
 	}
 
@@ -120,7 +119,7 @@ func (_m *DAO) List(ctx context.Context, query *q.Query) ([]*models.Registry, er
 }
 
 // Update provides a mock function with given fields: ctx, registry, props
-func (_m *DAO) Update(ctx context.Context, registry *models.Registry, props ...string) error {
+func (_m *DAO) Update(ctx context.Context, registry *dao.Registry, props ...string) error {
 	_va := make([]interface{}, len(props))
 	for _i := range props {
 		_va[_i] = props[_i]
@@ -131,7 +130,7 @@ func (_m *DAO) Update(ctx context.Context, registry *models.Registry, props ...s
 	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Registry, ...string) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *dao.Registry, ...string) error); ok {
 		r0 = rf(ctx, registry, props...)
 	} else {
 		r0 = ret.Error(0)

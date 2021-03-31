@@ -5,8 +5,11 @@ package manager
 import (
 	context "context"
 
-	model "github.com/goharbor/harbor/src/replication/model"
+	adapter "github.com/goharbor/harbor/src/pkg/reg/adapter"
+
 	mock "github.com/stretchr/testify/mock"
+
+	model "github.com/goharbor/harbor/src/pkg/reg/model"
 
 	q "github.com/goharbor/harbor/src/lib/q"
 )
@@ -46,6 +49,29 @@ func (_m *Manager) Create(ctx context.Context, registry *model.Registry) (int64,
 		r0 = rf(ctx, registry)
 	} else {
 		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *model.Registry) error); ok {
+		r1 = rf(ctx, registry)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateAdapter provides a mock function with given fields: ctx, registry
+func (_m *Manager) CreateAdapter(ctx context.Context, registry *model.Registry) (adapter.Adapter, error) {
+	ret := _m.Called(ctx, registry)
+
+	var r0 adapter.Adapter
+	if rf, ok := ret.Get(0).(func(context.Context, *model.Registry) adapter.Adapter); ok {
+		r0 = rf(ctx, registry)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(adapter.Adapter)
+		}
 	}
 
 	var r1 error
@@ -111,6 +137,52 @@ func (_m *Manager) List(ctx context.Context, query *q.Query) ([]*model.Registry,
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, *q.Query) error); ok {
 		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ListRegistryProviderInfos provides a mock function with given fields: ctx
+func (_m *Manager) ListRegistryProviderInfos(ctx context.Context) (map[string]*model.AdapterPattern, error) {
+	ret := _m.Called(ctx)
+
+	var r0 map[string]*model.AdapterPattern
+	if rf, ok := ret.Get(0).(func(context.Context) map[string]*model.AdapterPattern); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]*model.AdapterPattern)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ListRegistryProviderTypes provides a mock function with given fields: ctx
+func (_m *Manager) ListRegistryProviderTypes(ctx context.Context) ([]string, error) {
+	ret := _m.Called(ctx)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(context.Context) []string); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}

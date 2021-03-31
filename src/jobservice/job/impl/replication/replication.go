@@ -18,46 +18,14 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/transfer"
-
 	// import chart transfer
-	_ "github.com/goharbor/harbor/src/replication/transfer/chart"
+	_ "github.com/goharbor/harbor/src/controller/replication/transfer/chart"
 	// import image transfer
-	_ "github.com/goharbor/harbor/src/replication/transfer/image"
-	// register the Harbor adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/harbor"
-	// register the DockerHub adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/dockerhub"
-	// register the Native adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/native"
-	// register the Huawei adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/huawei"
-	// register the Google Gcr adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/googlegcr"
-	// register the AwsEcr adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/awsecr"
-	// register the AzureAcr adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/azurecr"
-	// register the AliACR adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/aliacr"
-	// register the Jfrog Artifactory adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/jfrog"
-	// register the Quay.io adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/quay"
-	// register the Helm Hub adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/helmhub"
-	// register the GitLab adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/gitlab"
-	// register the DTR adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/dtr"
-	// register the Artifact Hub adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/artifacthub"
-	// register the TencentCloud TCR adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/tencentcr"
-	// register the Github Container Registry adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/githubcr"
+	_ "github.com/goharbor/harbor/src/controller/replication/transfer/image"
+
+	"github.com/goharbor/harbor/src/controller/replication/transfer"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 // Replication implements the job interface

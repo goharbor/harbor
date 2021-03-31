@@ -19,12 +19,11 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/controller/event"
+	repevent "github.com/goharbor/harbor/src/controller/event/handler/replication/event"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/replication"
-	repevent "github.com/goharbor/harbor/src/replication/event"
-	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 // Handler ...
@@ -40,19 +39,19 @@ func (r *Handler) Name() string {
 func (r *Handler) Handle(ctx context.Context, value interface{}) error {
 	pushArtEvent, ok := value.(*event.PushArtifactEvent)
 	if ok {
-		return r.handlePushArtifact(pushArtEvent)
+		return r.handlePushArtifact(ctx, pushArtEvent)
 	}
 	deleteArtEvent, ok := value.(*event.DeleteArtifactEvent)
 	if ok {
-		return r.handleDeleteArtifact(deleteArtEvent)
+		return r.handleDeleteArtifact(ctx, deleteArtEvent)
 	}
 	createTagEvent, ok := value.(*event.CreateTagEvent)
 	if ok {
-		return r.handleCreateTag(createTagEvent)
+		return r.handleCreateTag(ctx, createTagEvent)
 	}
 	deleteTagEvent, ok := value.(*event.DeleteTagEvent)
 	if ok {
-		return r.handleDeleteTag(deleteTagEvent)
+		return r.handleDeleteTag(ctx, deleteTagEvent)
 	}
 	return nil
 }
@@ -62,7 +61,7 @@ func (r *Handler) IsStateful() bool {
 	return false
 }
 
-func (r *Handler) handlePushArtifact(event *event.PushArtifactEvent) error {
+func (r *Handler) handlePushArtifact(ctx context.Context, event *event.PushArtifactEvent) error {
 	art := event.Artifact
 	public := false
 	prj, err := project.Ctl.Get(orm.Context(), art.ProjectID, project.Metadata(true))
@@ -92,10 +91,10 @@ func (r *Handler) handlePushArtifact(event *event.PushArtifactEvent) error {
 			},
 		},
 	}
-	return replication.EventHandler.Handle(e)
+	return repevent.Handle(ctx, e)
 }
 
-func (r *Handler) handleDeleteArtifact(event *event.DeleteArtifactEvent) error {
+func (r *Handler) handleDeleteArtifact(ctx context.Context, event *event.DeleteArtifactEvent) error {
 	art := event.Artifact
 	e := &repevent.Event{
 		Type: repevent.EventTypeArtifactDelete,
@@ -115,10 +114,10 @@ func (r *Handler) handleDeleteArtifact(event *event.DeleteArtifactEvent) error {
 			Deleted: true,
 		},
 	}
-	return replication.EventHandler.Handle(e)
+	return repevent.Handle(ctx, e)
 }
 
-func (r *Handler) handleCreateTag(event *event.CreateTagEvent) error {
+func (r *Handler) handleCreateTag(ctx context.Context, event *event.CreateTagEvent) error {
 	art := event.AttachedArtifact
 	public := false
 	prj, err := project.Ctl.Get(orm.Context(), art.ProjectID, project.Metadata(true))
@@ -148,10 +147,10 @@ func (r *Handler) handleCreateTag(event *event.CreateTagEvent) error {
 			},
 		},
 	}
-	return replication.EventHandler.Handle(e)
+	return repevent.Handle(ctx, e)
 }
 
-func (r *Handler) handleDeleteTag(event *event.DeleteTagEvent) error {
+func (r *Handler) handleDeleteTag(ctx context.Context, event *event.DeleteTagEvent) error {
 	art := event.AttachedArtifact
 	e := &repevent.Event{
 		Type: repevent.EventTypeTagDelete,
@@ -172,5 +171,5 @@ func (r *Handler) handleDeleteTag(event *event.DeleteTagEvent) error {
 			IsDeleteTag: true,
 		},
 	}
-	return replication.EventHandler.Handle(e)
+	return repevent.Handle(ctx, e)
 }

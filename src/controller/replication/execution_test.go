@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
+	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/pkg/replication"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
 	"github.com/goharbor/harbor/src/testing/lib/orm"
@@ -68,7 +68,7 @@ func (r *replicationTestSuite) SetupTest() {
 
 func (r *replicationTestSuite) TestStart() {
 	// policy is disabled
-	id, err := r.ctl.Start(context.Background(), &replication.Policy{Enabled: false}, nil, task.ExecutionTriggerManual)
+	id, err := r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: false}, nil, task.ExecutionTriggerManual)
 	r.Require().NotNil(err)
 
 	// got error when running the replication flow
@@ -78,7 +78,7 @@ func (r *replicationTestSuite) TestStart() {
 	r.execMgr.On("MarkError", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("error"))
 	r.ormCreator.On("Create").Return(nil)
-	id, err = r.ctl.Start(context.Background(), &replication.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
+	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
 	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
@@ -94,7 +94,7 @@ func (r *replicationTestSuite) TestStart() {
 	r.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{}, nil)
 	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	r.ormCreator.On("Create").Return(nil)
-	id, err = r.ctl.Start(context.Background(), &replication.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
+	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
 	time.Sleep(1 * time.Second) // wait the functions called in the goroutine

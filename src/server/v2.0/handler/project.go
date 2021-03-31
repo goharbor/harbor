@@ -31,6 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/p2p/preheat"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/quota"
+	"github.com/goharbor/harbor/src/controller/registry"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/retention"
 	"github.com/goharbor/harbor/src/controller/scanner"
@@ -47,7 +48,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	"github.com/goharbor/harbor/src/pkg/user"
-	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/project"
@@ -611,12 +611,9 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 			return errors.BadRequestError(fmt.Errorf("%d is invalid value of registry_id, it should be geater than 0", *req.RegistryID))
 		}
 
-		registry, err := replication.RegistryMgr.Get(*req.RegistryID)
+		registry, err := registry.Ctl.Get(ctx, *req.RegistryID)
 		if err != nil {
 			return fmt.Errorf("failed to get the registry %d: %v", *req.RegistryID, err)
-		}
-		if registry == nil {
-			return errors.NotFoundError(fmt.Errorf("registry %d not found", *req.RegistryID))
 		}
 		permitted := false
 		for _, t := range config.GetPermittedRegistryTypesForProxyCache() {
@@ -734,7 +731,7 @@ func getProjectRegistrySummary(ctx context.Context, p *project.Project, summary 
 		return
 	}
 
-	registry, err := replication.RegistryMgr.Get(p.RegistryID)
+	registry, err := registry.Ctl.Get(ctx, p.RegistryID)
 	if err != nil {
 		log.Warningf("failed to get registry %d: %v", p.RegistryID, err)
 	} else if registry != nil {

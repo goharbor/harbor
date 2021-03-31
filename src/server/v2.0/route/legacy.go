@@ -37,20 +37,10 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
 
-	beego.Router("/api/"+version+"/replication/adapters", &api.ReplicationAdapterAPI{}, "get:List")
-	beego.Router("/api/"+version+"/replication/adapterinfos", &api.ReplicationAdapterAPI{}, "get:ListAdapterInfos")
-
 	beego.Router("/api/"+version+"/configurations", &api.ConfigAPI{}, "get:Get;put:Put")
 	beego.Router("/api/"+version+"/statistics", &api.StatisticAPI{})
 	beego.Router("/api/"+version+"/labels", &api.LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/"+version+"/labels/:id([0-9]+)", &api.LabelAPI{}, "get:Get;put:Put;delete:Delete")
-
-	beego.Router("/api/"+version+"/registries", &api.RegistryAPI{}, "get:List;post:Post")
-	beego.Router("/api/"+version+"/registries/:id([0-9]+)", &api.RegistryAPI{}, "get:Get;put:Put;delete:Delete")
-	beego.Router("/api/"+version+"/registries/ping", &api.RegistryAPI{}, "post:Ping")
-	// we use "0" as the ID of the local Harbor registry, so don't add "([0-9]+)" in the path
-	beego.Router("/api/"+version+"/registries/:id/info", &api.RegistryAPI{}, "get:GetInfo")
-	beego.Router("/api/"+version+"/registries/:id/namespace", &api.RegistryAPI{}, "get:GetNamespace")
 
 	// APIs for chart repository
 	if config.WithChartMuseum() {

@@ -16,11 +16,11 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	rep_event "github.com/goharbor/harbor/src/controller/event/handler/replication/event"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	hlog "github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
-	"github.com/goharbor/harbor/src/replication"
-	rep_event "github.com/goharbor/harbor/src/replication/event"
 )
 
 const (
@@ -112,7 +112,7 @@ func modifyResponse(res *http.Response) error {
 		} else {
 			// Todo: it used as the replacement of webhook, will be removed when webhook to be introduced.
 			go func() {
-				if err := replication.EventHandler.Handle(e); err != nil {
+				if err := rep_event.Handle(orm.Context(), e); err != nil {
 					hlog.Errorf("failed to handle event: %v", err)
 				}
 			}()

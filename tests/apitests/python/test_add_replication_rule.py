@@ -8,7 +8,7 @@ from library.project import Project
 from library.user import User
 from library.replication import Replication
 from library.registry import Registry
-import swagger_client
+import v2_swagger_client
 
 class TestProjects(unittest.TestCase):
     @suppress_urllib3_warning
@@ -67,7 +67,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.registry_id, _ = self.registry.create_registry("https://" + harbor_server,**ADMIN_CLIENT)
 
         #4. Create a new rule for this registry;
-        TestProjects.rule_id, rule_name = self.replication.create_replication_policy(dest_registry=swagger_client.Registry(id=int(TestProjects.registry_id)), **ADMIN_CLIENT)
+        TestProjects.rule_id, rule_name = self.replication.create_replication_policy(dest_registry=v2_swagger_client.Registry(id=int(TestProjects.registry_id)), **ADMIN_CLIENT)
 
         #5. Check rule should be exist
         self.replication.check_replication_rule_should_exist(TestProjects.rule_id, rule_name, **ADMIN_CLIENT)

@@ -24,12 +24,12 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/replication"
+	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
-	rep "github.com/goharbor/harbor/src/pkg/replication"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/replication"
 )
@@ -57,7 +57,7 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
-	policy := &rep.Policy{
+	policy := &repctlmodel.Policy{
 		Name:              params.Policy.Name,
 		Description:       params.Policy.Description,
 		Creator:           sc.GetUsername(),
@@ -79,14 +79,14 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 	if len(params.Policy.Filters) > 0 {
 		for _, filter := range params.Policy.Filters {
 			policy.Filters = append(policy.Filters, &model.Filter{
-				Type:  model.FilterType(filter.Type),
+				Type:  filter.Type,
 				Value: filter.Value,
 			})
 		}
 	}
 	if params.Policy.Trigger != nil {
 		policy.Trigger = &model.Trigger{
-			Type: model.TriggerType(params.Policy.Trigger.Type),
+			Type: params.Policy.Trigger.Type,
 		}
 		if params.Policy.Trigger.TriggerSettings != nil {
 			policy.Trigger.Settings = &model.TriggerSettings{
@@ -106,10 +106,11 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 	if err := r.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceReplicationPolicy); err != nil {
 		return r.SendError(ctx, err)
 	}
-	policy := &rep.Policy{
+	policy := &repctlmodel.Policy{
 		ID:                params.ID,
 		Name:              params.Policy.Name,
 		Description:       params.Policy.Description,
+		DestNamespace:     params.Policy.DestNamespace,
 		ReplicateDeletion: params.Policy.Deletion,
 		Override:          params.Policy.Override,
 		Enabled:           params.Policy.Enabled,
@@ -127,14 +128,14 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 	if len(params.Policy.Filters) > 0 {
 		for _, filter := range params.Policy.Filters {
 			policy.Filters = append(policy.Filters, &model.Filter{
-				Type:  model.FilterType(filter.Type),
+				Type:  filter.Type,
 				Value: filter.Value,
 			})
 		}
 	}
 	if params.Policy.Trigger != nil {
 		policy.Trigger = &model.Trigger{
-			Type: model.TriggerType(params.Policy.Trigger.Type),
+			Type: params.Policy.Trigger.Type,
 		}
 		if params.Policy.Trigger.TriggerSettings != nil {
 			policy.Trigger.Settings = &model.TriggerSettings{
@@ -385,7 +386,7 @@ func (r *replicationAPI) GetReplicationLog(ctx context.Context, params operation
 	return operation.NewGetReplicationLogOK().WithContentType("text/plain").WithPayload(string(log))
 }
 
-func convertReplicationPolicy(policy *rep.Policy) *models.ReplicationPolicy {
+func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPolicy {
 	p := &models.ReplicationPolicy{
 		CreationTime:      strfmt.DateTime(policy.CreationTime),
 		Deletion:          policy.ReplicateDeletion,

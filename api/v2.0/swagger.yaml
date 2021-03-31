@@ -2886,6 +2886,259 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /replication/adapters:
+    get:
+      summary: List registry adapters
+      description: List registry adapters
+      tags:
+        - registry
+      operationId: listRegistryProviderTypes
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: array
+            items:
+              type: string
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /replication/adapterinfos:
+    get:
+      summary: List all registered registry provider information
+      description: List all registered registry provider information
+      tags:
+        - registry
+      operationId: listRegistryProviderInfos
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            additionalProperties:
+              $ref: '#/definitions/RegistryProviderInfo'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /registries:
+    post:
+      summary: Create a registry
+      description: Create a registry
+      tags:
+        - registry
+      operationId: createRegistry
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registry
+          in: body
+          description: The registry
+          required: true
+          schema:
+            $ref: '#/definitions/Registry'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    get:
+      summary: List the registries
+      description: List the registries
+      tags:
+        - registry
+      operationId: listRegistries
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: name
+          in: query
+          type: string
+          required: false
+          description: Deprecated, use `q` instead.
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of the resources
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Registry'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /registries/ping:
+    post:
+      summary: Check status of a registry
+      description: Check status of a registry
+      tags:
+        - registry
+      operationId: pingRegistry
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registry
+          in: body
+          description: The registry
+          required: true
+          schema:
+            $ref: '#/definitions/RegistryPing'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /registries/{id}:
+    get:
+      summary: Get the specific registry
+      description: Get the specific registry
+      tags:
+        - registry
+      operationId: getRegistry
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Registry ID
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Registry'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete the specific registry
+      description: Delete the specific registry
+      tags:
+        - registry
+      operationId: deleteRegistry
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Registry ID
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '412':
+          $ref: '#/responses/412'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update the registry
+      description: Update the registry
+      tags:
+        - registry
+      operationId: updateRegistry
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The registry ID
+        - name: registry
+          in: body
+          description: The registry
+          required: true
+          schema:
+            $ref: '#/definitions/RegistryUpdate'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /registries/{id}/info:
+    get:
+      summary: Get the registry info
+      description: Get the registry info
+      tags:
+        - registry
+      operationId: getRegistryInfo
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Registry ID
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/RegistryInfo'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /scans/all/metrics:
     get:
       summary: Get the metrics of the latest scan all process
@@ -5086,6 +5339,152 @@ definitions:
         type: string
         format: date-time
         description: The update time of the policy.
+  RegistryUpdate:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The registry name.
+        x-nullable: true
+      description:
+        type: string
+        description: Description of the registry.
+        x-nullable: true
+      url:
+        type: string
+        description: The registry URL.
+        x-nullable: true
+      credential_type:
+        type: string
+        description: Credential type of the registry, e.g. 'basic'.
+        x-nullable: true
+      access_key:
+        type: string
+        description: The registry access key.
+        x-nullable: true
+      access_secret:
+        type: string
+        description: The registry access secret.
+        x-nullable: true
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        x-nullable: true
+  RegistryPing:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The registry ID.
+        x-nullable: true
+      type:
+        type: string
+        description: Type of the registry, e.g. 'harbor'.
+        x-nullable: true
+      url:
+        type: string
+        description: The registry URL.
+        x-nullable: true
+      credential_type:
+        type: string
+        description: Credential type of the registry, e.g. 'basic'.
+        x-nullable: true
+      access_key:
+        type: string
+        description: The registry access key.
+        x-nullable: true
+      access_secret:
+        type: string
+        description: The registry access secret.
+        x-nullable: true
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        x-nullable: true
+  RegistryInfo:
+    type: object
+    description: The registry info contains the base info and capability declarations of the registry
+    properties:
+      type:
+        type: string
+        description: The registry type
+      description:
+        type: string
+        description: The description
+      supported_resource_filters:
+        type: array
+        description: The filters that the registry supports
+        items:
+          $ref: '#/definitions/FilterStyle'
+      supported_triggers:
+        type: array
+        description: The triggers that the registry supports
+        items:
+          type: string
+  RegistryProviderInfo:
+    type: object
+    description: The registry provider info contains the base info and capability declarations of the registry provider
+    properties:
+      endpoint_pattern:
+        description: The endpoint pattern
+        $ref: '#/definitions/RegistryProviderEndpointPattern'
+      credential_pattern:
+        description: The credential pattern
+        $ref: '#/definitions/RegistryProviderCredentialPattern'
+  RegistryProviderEndpointPattern:
+    type: object
+    description: The registry endpoint pattern
+    properties:
+      endpoint_type:
+        type: string
+        description: The endpoint type
+      endpoints:
+        type: array
+        description: The endpoint list
+        items:
+          $ref: '#/definitions/RegistryEndpoint'
+  RegistryProviderCredentialPattern:
+    type: object
+    description: The registry credential pattern
+    properties:
+      access_key_type:
+        type: string
+        description: The access key type
+      access_key_data:
+        type: string
+        description: The access key data
+      access_secret_type:
+        type: string
+        description: The access secret type
+      access_secret_data:
+        type: string
+        description: The access secret data
+  RegistryEndpoint:
+    type: object
+    description: The style of the resource filter
+    properties:
+      key:
+        type: string
+        description: The endpoint key
+      value:
+        type: string
+        description: The endpoint value
+  FilterStyle:
+    type: object
+    description: The style of the resource filter
+    properties:
+      type:
+        type: string
+        description: The filter type
+      style:
+        type: string
+        description: The filter style
+      values:
+        type: array
+        description: The filter values
+        items:
+          type: string
   ResourceList:
     type: object
     additionalProperties:

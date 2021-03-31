@@ -19,6 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/replication/dao"
+	"github.com/goharbor/harbor/src/pkg/replication/model"
 )
 
 var (
@@ -31,13 +32,13 @@ type Manager interface {
 	// Count returns the count of replication policies according to the query
 	Count(ctx context.Context, query *q.Query) (count int64, err error)
 	// List replication policies according to the query
-	List(ctx context.Context, query *q.Query) (policies []*Policy, err error)
+	List(ctx context.Context, query *q.Query) (policies []*model.Policy, err error)
 	// Get the replication policy specified by ID
-	Get(ctx context.Context, id int64) (policy *Policy, err error)
+	Get(ctx context.Context, id int64) (policy *model.Policy, err error)
 	// Create the replication policy
-	Create(ctx context.Context, policy *Policy) (id int64, err error)
+	Create(ctx context.Context, policy *model.Policy) (id int64, err error)
 	// Update the specified replication policy
-	Update(ctx context.Context, policy *Policy, props ...string) (err error)
+	Update(ctx context.Context, policy *model.Policy, props ...string) (err error)
 	// Delete the replication policy specified by ID
 	Delete(ctx context.Context, id int64) (err error)
 }
@@ -57,48 +58,20 @@ func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 	return m.dao.Count(ctx, query)
 }
 
-func (m *manager) List(ctx context.Context, query *q.Query) ([]*Policy, error) {
-	policies, err := m.dao.List(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	var result []*Policy
-	for _, policy := range policies {
-		p := &Policy{}
-		if err = p.From(policy); err != nil {
-			return nil, err
-		}
-		result = append(result, p)
-	}
-	return result, nil
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*model.Policy, error) {
+	return m.dao.List(ctx, query)
 }
 
-func (m *manager) Get(ctx context.Context, id int64) (*Policy, error) {
-	policy, err := m.dao.Get(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	p := &Policy{}
-	if err = p.From(policy); err != nil {
-		return nil, err
-	}
-	return p, nil
+func (m *manager) Get(ctx context.Context, id int64) (*model.Policy, error) {
+	return m.dao.Get(ctx, id)
 }
 
-func (m *manager) Create(ctx context.Context, policy *Policy) (int64, error) {
-	p, err := policy.To()
-	if err != nil {
-		return 0, err
-	}
-	return m.dao.Create(ctx, p)
+func (m *manager) Create(ctx context.Context, policy *model.Policy) (int64, error) {
+	return m.dao.Create(ctx, policy)
 }
 
-func (m *manager) Update(ctx context.Context, policy *Policy, props ...string) error {
-	p, err := policy.To()
-	if err != nil {
-		return err
-	}
-	return m.dao.Update(ctx, p, props...)
+func (m *manager) Update(ctx context.Context, policy *model.Policy, props ...string) error {
+	return m.dao.Update(ctx, policy, props...)
 }
 
 func (m *manager) Delete(ctx context.Context, id int64) error {

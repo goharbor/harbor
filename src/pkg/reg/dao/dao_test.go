@@ -23,7 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -41,7 +40,7 @@ func (d *daoTestSuite) SetupSuite() {
 }
 
 func (d *daoTestSuite) SetupTest() {
-	registry := &models.Registry{
+	registry := &Registry{
 		URL:      "http://harbor.local",
 		Name:     "harbor",
 		Type:     "harbor",
@@ -115,7 +114,7 @@ func (d *daoTestSuite) TestCreate() {
 	// the happy pass case is covered in Setup
 
 	// conflict
-	registry := &models.Registry{
+	registry := &Registry{
 		Name: "harbor",
 	}
 	_, err := d.dao.Create(d.ctx, registry)
@@ -136,7 +135,7 @@ func (d *daoTestSuite) TestDelete() {
 
 func (d *daoTestSuite) TestUpdate() {
 	// pass
-	err := d.dao.Update(d.ctx, &models.Registry{
+	err := d.dao.Update(d.ctx, &Registry{
 		ID:          d.id,
 		Description: "description",
 	}, "Description")
@@ -148,7 +147,7 @@ func (d *daoTestSuite) TestUpdate() {
 	d.Equal("description", registry.Description)
 
 	// not exist
-	err = d.dao.Update(d.ctx, &models.Registry{
+	err = d.dao.Update(d.ctx, &Registry{
 		ID: 10000,
 	})
 	d.Require().NotNil(err)

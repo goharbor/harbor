@@ -17,7 +17,7 @@ package replication
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/replication/dao"
+	"github.com/goharbor/harbor/src/pkg/replication/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testingdao "github.com/goharbor/harbor/src/testing/pkg/replication/dao"
 	"github.com/stretchr/testify/suite"
@@ -45,7 +45,7 @@ func (m *managerTestSuite) TestCount() {
 }
 
 func (m *managerTestSuite) TestList() {
-	mock.OnAnything(m.dao, "List").Return([]*dao.Policy{
+	mock.OnAnything(m.dao, "List").Return([]*model.Policy{
 		{
 			ID: 1,
 		},
@@ -58,7 +58,7 @@ func (m *managerTestSuite) TestList() {
 }
 
 func (m *managerTestSuite) TestGet() {
-	mock.OnAnything(m.dao, "Get").Return(&dao.Policy{
+	mock.OnAnything(m.dao, "Get").Return(&model.Policy{
 		ID: 1,
 	}, nil)
 	policy, err := m.mgr.Get(nil, 1)
@@ -69,7 +69,7 @@ func (m *managerTestSuite) TestGet() {
 
 func (m *managerTestSuite) TestCreate() {
 	mock.OnAnything(m.dao, "Create").Return(int64(1), nil)
-	_, err := m.mgr.Create(nil, &Policy{})
+	_, err := m.mgr.Create(nil, &model.Policy{})
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }
@@ -83,7 +83,7 @@ func (m *managerTestSuite) TestDelete() {
 
 func (m *managerTestSuite) TestUpdate() {
 	mock.OnAnything(m.dao, "Update").Return(nil)
-	err := m.mgr.Update(nil, &Policy{})
+	err := m.mgr.Update(nil, &model.Policy{})
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }

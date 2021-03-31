@@ -17,9 +17,9 @@ package replication
 import (
 	"testing"
 
+	"github.com/goharbor/harbor/src/controller/replication/transfer"
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
-	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/transfer"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

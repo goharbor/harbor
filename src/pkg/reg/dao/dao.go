@@ -13,25 +13,25 @@ package dao
 
 import (
 	"context"
+	"time"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/replication/dao/models"
 )
 
 // DAO defines the DAO operations of registry
 type DAO interface {
 	// Create the registry
-	Create(ctx context.Context, registry *models.Registry) (id int64, err error)
+	Create(ctx context.Context, registry *Registry) (id int64, err error)
 	// Count returns the count of registries according to the query
 	Count(ctx context.Context, query *q.Query) (count int64, err error)
 	// List the registries according to the query
-	List(ctx context.Context, query *q.Query) (registries []*models.Registry, err error)
+	List(ctx context.Context, query *q.Query) (registries []*Registry, err error)
 	// Get the registry specified by ID
-	Get(ctx context.Context, id int64) (registry *models.Registry, err error)
+	Get(ctx context.Context, id int64) (registry *Registry, err error)
 	// Update the specified registry
-	Update(ctx context.Context, registry *models.Registry, props ...string) (err error)
+	Update(ctx context.Context, registry *Registry, props ...string) (err error)
 	// Delete the registry specified by ID
 	Delete(ctx context.Context, id int64) (err error)
 }
@@ -43,7 +43,7 @@ func NewDAO() DAO {
 
 type dao struct{}
 
-func (d *dao) Create(ctx context.Context, registry *models.Registry) (int64, error) {
+func (d *dao) Create(ctx context.Context, registry *Registry) (int64, error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return 0, err
@@ -56,16 +56,16 @@ func (d *dao) Create(ctx context.Context, registry *models.Registry) (int64, err
 }
 
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
-	qs, err := orm.QuerySetterForCount(ctx, &models.Registry{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &Registry{}, query)
 	if err != nil {
 		return 0, err
 	}
 	return qs.Count()
 }
 
-func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.Registry, error) {
-	registries := []*models.Registry{}
-	qs, err := orm.QuerySetter(ctx, &models.Registry{}, query)
+func (d *dao) List(ctx context.Context, query *q.Query) ([]*Registry, error) {
+	registries := []*Registry{}
+	qs, err := orm.QuerySetter(ctx, &Registry{}, query)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +75,8 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.Registry, err
 	return registries, nil
 }
 
-func (d *dao) Get(ctx context.Context, id int64) (*models.Registry, error) {
-	registry := &models.Registry{
+func (d *dao) Get(ctx context.Context, id int64) (*Registry, error) {
+	registry := &Registry{
 		ID: id,
 	}
 	ormer, err := orm.FromContext(ctx)
@@ -92,11 +92,12 @@ func (d *dao) Get(ctx context.Context, id int64) (*models.Registry, error) {
 	return registry, nil
 }
 
-func (d *dao) Update(ctx context.Context, registry *models.Registry, props ...string) error {
+func (d *dao) Update(ctx context.Context, registry *Registry, props ...string) error {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
+	registry.UpdateTime = time.Now()
 	n, err := ormer.Update(registry, props...)
 	if err != nil {
 		if e := orm.AsConflictError(err, "registry %s already exists", registry.Name); e != nil {
@@ -115,7 +116,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	n, err := ormer.Delete(&models.Registry{
+	n, err := ormer.Delete(&Registry{
 		ID: id,
 	})
 	if err != nil {

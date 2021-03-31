@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/replication/model"
 )
 
 // DAO defines the DAO operations of replication policy
@@ -27,13 +28,13 @@ type DAO interface {
 	// Count returns the count of replication policies according to the query
 	Count(ctx context.Context, query *q.Query) (count int64, err error)
 	// List the replication policies according to the query
-	List(ctx context.Context, query *q.Query) (policies []*Policy, err error)
+	List(ctx context.Context, query *q.Query) (policies []*model.Policy, err error)
 	// Get the replication policy specified by ID
-	Get(ctx context.Context, id int64) (policy *Policy, err error)
+	Get(ctx context.Context, id int64) (policy *model.Policy, err error)
 	// Create the replication policy
-	Create(ctx context.Context, policy *Policy) (id int64, err error)
+	Create(ctx context.Context, policy *model.Policy) (id int64, err error)
 	// Update the specified replication policy
-	Update(ctx context.Context, policy *Policy, props ...string) (err error)
+	Update(ctx context.Context, policy *model.Policy, props ...string) (err error)
 	// Delete the replication policy specified by ID
 	Delete(ctx context.Context, id int64) (err error)
 }
@@ -46,16 +47,16 @@ func NewDAO() DAO {
 type dao struct{}
 
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
-	qs, err := orm.QuerySetterForCount(ctx, &Policy{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &model.Policy{}, query)
 	if err != nil {
 		return 0, err
 	}
 	return qs.Count()
 }
 
-func (d *dao) List(ctx context.Context, query *q.Query) ([]*Policy, error) {
-	policies := []*Policy{}
-	qs, err := orm.QuerySetter(ctx, &Policy{}, query)
+func (d *dao) List(ctx context.Context, query *q.Query) ([]*model.Policy, error) {
+	policies := []*model.Policy{}
+	qs, err := orm.QuerySetter(ctx, &model.Policy{}, query)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +66,8 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*Policy, error) {
 	return policies, nil
 }
 
-func (d *dao) Get(ctx context.Context, id int64) (*Policy, error) {
-	policy := &Policy{
+func (d *dao) Get(ctx context.Context, id int64) (*model.Policy, error) {
+	policy := &model.Policy{
 		ID: id,
 	}
 	ormer, err := orm.FromContext(ctx)
@@ -82,7 +83,7 @@ func (d *dao) Get(ctx context.Context, id int64) (*Policy, error) {
 	return policy, nil
 }
 
-func (d *dao) Create(ctx context.Context, policy *Policy) (int64, error) {
+func (d *dao) Create(ctx context.Context, policy *model.Policy) (int64, error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return 0, err
@@ -94,7 +95,7 @@ func (d *dao) Create(ctx context.Context, policy *Policy) (int64, error) {
 	return id, err
 }
 
-func (d *dao) Update(ctx context.Context, policy *Policy, props ...string) error {
+func (d *dao) Update(ctx context.Context, policy *model.Policy, props ...string) error {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
@@ -114,7 +115,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	n, err := ormer.Delete(&Policy{
+	n, err := ormer.Delete(&model.Policy{
 		ID: id,
 	})
 	if err != nil {
