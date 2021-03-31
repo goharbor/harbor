@@ -23,6 +23,8 @@ import { AppConfigService } from './services/app-config.service';
 import { AppComponent } from './app.component';
 import { ClarityModule } from "@clr/angular";
 import { APP_BASE_HREF } from "@angular/common";
+import { SharedTestingModule } from "./shared/shared.module";
+import { SkinableConfig } from "./services/skinable-config.service";
 
 describe('AppComponent', () => {
     let fixture: ComponentFixture<any>;
@@ -42,6 +44,25 @@ describe('AppComponent', () => {
         setTitle: function () {
         }
     };
+    const fakeSkinableConfig = {
+        getSkinConfig() {
+            return {
+                "headerBgColor": {
+                    "darkMode": "",
+                    "lightMode": ""
+                },
+                "loginBgImg": "",
+                "loginTitle": "",
+                "product": {
+                    "name": "test",
+                    "logo": "",
+                    "introduction": ""
+                }
+            };
+        },
+        setTitleIcon() {
+        }
+    };
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -49,16 +70,15 @@ describe('AppComponent', () => {
                 AppComponent
             ],
             imports: [
-                ClarityModule,
-                TranslateModule.forRoot()
+                SharedTestingModule,
             ],
             providers: [
-                TranslateService,
                 { provide: APP_BASE_HREF, useValue: '/' },
                 { provide: CookieService, useValue: fakeCookieService },
                 { provide: SessionService, useValue: fakeSessionService },
                 { provide: AppConfigService, useValue: fakeAppConfigService },
                 { provide: Title, useValue: fakeTitle },
+                { provide: SkinableConfig, useValue: fakeSkinableConfig },
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA]
         });
