@@ -10,7 +10,8 @@
                 display: flex;
                 align-items: center;
                 >div:first-child {
-                    width: 250px;
+                    min-width: 250px;
+                    margin-right: 5px;
                 }
                 >div:nth-child(2) {
                     width: 140px;
@@ -109,8 +110,8 @@
         }
     }
 }
-.margin-top-075 {
-    margin-top: 0.75rem;
+.margin-top-16px {
+    margin-top: 16px;
 }
 .flex-end {
     align-items: center;
@@ -124,4 +125,8 @@
 }
 .filter-tag {
     margin-top: 7px;
+}
+.button-stop {
+    margin-top: 16px;
+    margin-left: -5px;
 }
