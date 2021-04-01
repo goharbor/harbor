@@ -16,9 +16,19 @@ describe('AboutDialogComponent', () => {
         }
     };
     let fakeSkinableConfig = {
-        getProject: function () {
+        getSkinConfig: function () {
             return {
-                introduction: {}
+                "headerBgColor": {
+                    "darkMode": "",
+                    "lightMode": ""
+                },
+                "loginBgImg": "",
+                "loginTitle": "",
+                "product": {
+                    "name": "",
+                    "logo": "",
+                    "introduction": ""
+                }
             };
         }
     };

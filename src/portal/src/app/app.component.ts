@@ -16,12 +16,13 @@ import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { AppConfigService } from './services/app-config.service';
 import { ThemeService } from './services/theme.service';
-import { THEME_ARRAY, ThemeInterface } from './services/theme';
+import { CustomStyle, HAS_STYLE_MODE, THEME_ARRAY, ThemeInterface } from './services/theme';
 import { clone } from './shared/units/utils';
 import { DEFAULT_LANG_LOCALSTORAGE_KEY, DeFaultLang, supportedLangs } from "./shared/entities/shared.const";
 import { forkJoin, Observable } from "rxjs";
+import { SkinableConfig } from "./services/skinable-config.service";
 
-const HAS_STYLE_MODE: string = 'styleModeLocal';
+
 
 @Component({
     selector: 'harbor-app',
@@ -34,7 +35,8 @@ export class AppComponent {
         private translate: TranslateService,
         private appConfigService: AppConfigService,
         private titleService: Title,
-        public theme: ThemeService
+        public theme: ThemeService,
+        private skinableConfig: SkinableConfig
 
         ) {
          // init language
@@ -46,7 +48,13 @@ export class AppComponent {
         }
 
         translate.get(key).subscribe((res: string) => {
-            this.titleService.setTitle(res);
+            const customSkinData: CustomStyle = this.skinableConfig.getSkinConfig();
+            if (customSkinData && customSkinData.product && customSkinData.product.name) {
+                this.titleService.setTitle(customSkinData.product.name);
+                this.skinableConfig.setTitleIcon();
+            } else {
+                this.titleService.setTitle(res);
+            }
         });
         this.setTheme();
     }

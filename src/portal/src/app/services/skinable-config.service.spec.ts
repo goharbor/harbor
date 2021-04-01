@@ -8,17 +8,16 @@ describe('SkinableConfig', () => {
   let httpMock: HttpTestingController;
   let product = {
     "name": "",
-    "introduction": {
-      "zh-cn": "",
-      "es-es": "",
-      "en-us": ""
-    }
+    "logo": "",
+    "introduction": ""
   };
   let mockCustomSkinData = {
-    "headerBgColor": "",
-    "headerLogo": "",
+    "headerBgColor": {
+      "darkMode": "",
+      "lightMode": ""
+    },
     "loginBgImg": "",
-    "appTitle": "",
+    "loginTitle": "",
     "product": product
   };
 
@@ -46,9 +45,6 @@ describe('SkinableConfig', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockCustomSkinData);
     expect(service.getSkinConfig()).toEqual(mockCustomSkinData);
-    expect(service.getProject()).toEqual(product);
-    service.customSkinData = null;
-    expect(service.getProject()).toBeNull();
-
+    expect(service.getSkinConfig().product).toEqual(product);
   });
 });

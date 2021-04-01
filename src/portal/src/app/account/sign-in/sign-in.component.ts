@@ -83,8 +83,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
             if (customSkinObj.loginBgImg) {
                 this.customLoginBgImg = customSkinObj.loginBgImg;
             }
-            if (customSkinObj.appTitle) {
-                this.customAppTitle = customSkinObj.appTitle;
+            if (customSkinObj.loginTitle) {
+                this.customAppTitle = customSkinObj.loginTitle;
             }
         }
 

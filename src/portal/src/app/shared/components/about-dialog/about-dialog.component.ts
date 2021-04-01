@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
-import { TranslateService } from "@ngx-translate/core";
-
 import { AppConfigService } from '../../../services/app-config.service';
 import { SkinableConfig } from "../../../services/skinable-config.service";
 
@@ -26,21 +24,21 @@ export class AboutDialogComponent implements OnInit {
     opened: boolean = false;
     build: string = "4276418";
     customIntroduction: string;
-    customName: { [key: string]: any };
+    customName: string;
+    customLogo: string;
 
     constructor(private appConfigService: AppConfigService,
-        private translate: TranslateService,
         private skinableConfig: SkinableConfig) {
     }
 
     ngOnInit(): void {
         // custom skin
-        let customSkinObj = this.skinableConfig.getProject();
+        let customSkinObj = this.skinableConfig.getSkinConfig();
         if (customSkinObj) {
-            let selectedLang = this.translate.currentLang;
-            this.customName = customSkinObj;
-            if (customSkinObj.introduction && customSkinObj.introduction[selectedLang]) {
-                this.customIntroduction = customSkinObj.introduction[selectedLang];
+            if (customSkinObj.product) {
+                this.customLogo = customSkinObj.product.logo;
+                this.customName = customSkinObj.product.name;
+                this.customIntroduction = customSkinObj.product.introduction;
             }
         }
     }

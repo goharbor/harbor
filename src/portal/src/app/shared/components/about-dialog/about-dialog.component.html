@@ -1,10 +1,10 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalClosable]="false" [clrModalStaticBackdrop]="false">
     <div class="modal-body dialog-body">
         <div class="harbor-logo-black">
-            <img [src]="'images/harbor-logo.svg'" class="harbor-icon">
+            <img [src]="customLogo ? ('images/' + customLogo) : 'images/harbor-logo.svg'" class="harbor-icon">
         </div>
         <div class="content" tabindex="1">
-            <div>{{customName?.name? customName?.name : ('APP_TITLE.HARBOR' | translate)}}</div>
+            <div>{{customName? customName : ('APP_TITLE.HARBOR' | translate)}}</div>
             <div>
                 <span class="p5 about-version">{{'ABOUT.VERSION' | translate}} {{version}}</span>
             </div>

@@ -28,6 +28,7 @@ import {
     DeFaultLang,
     languageNames,
 } from "../../entities/shared.const";
+import { CustomStyle, HAS_STYLE_MODE, StyleMode } from "../../../services/theme";
 
 
 @Component({
@@ -42,8 +43,7 @@ export class NavigatorComponent implements OnInit {
 
     selectedLang: string = DeFaultLang;
     appTitle: string = 'APP_TITLE.HARBOR';
-    customStyle: { [key: string]: any };
-    customProjectName: { [key: string]: any };
+    customStyle: CustomStyle;
     constructor(
         private session: SessionService,
         private router: Router,
@@ -57,13 +57,7 @@ export class NavigatorComponent implements OnInit {
 
     ngOnInit(): void {
         // custom skin
-        let customSkinObj = this.skinableConfig.getSkinConfig();
-        if (customSkinObj) {
-            if (customSkinObj.product) {
-                this.customProjectName = customSkinObj.product;
-            }
-            this.customStyle = customSkinObj;
-        }
+        this.customStyle = this.skinableConfig.getSkinConfig();
         this.selectedLang = this.translate.currentLang;
         if (this.appConfigService.isIntegrationMode()) {
             this.appTitle = 'APP_TITLE.VIC';
@@ -174,5 +168,17 @@ export class NavigatorComponent implements OnInit {
 
     registryAction(): void {
         this.searchTrigger.closeSearch(true);
+    }
+
+    getBgColor(): string {
+        if (this.customStyle && this.customStyle.headerBgColor && localStorage) {
+            if (localStorage.getItem(HAS_STYLE_MODE) === StyleMode.LIGHT) {
+                return `background-color:${this.customStyle.headerBgColor.lightMode} !important`;
+            }
+            if (localStorage.getItem(HAS_STYLE_MODE) === StyleMode.DARK) {
+                return `background-color:${this.customStyle.headerBgColor.darkMode} !important`;
+            }
+        }
+        return null;
     }
 }

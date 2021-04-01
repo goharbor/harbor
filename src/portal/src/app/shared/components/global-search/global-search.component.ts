@@ -57,9 +57,9 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         // custom skin
-        let customSkinObj = this.skinableConfig.getProject();
-        if (customSkinObj && customSkinObj.name) {
-            this.translate.get('GLOBAL_SEARCH.PLACEHOLDER', {'param': customSkinObj.name}).subscribe(res => {
+        let customSkinObj = this.skinableConfig.getSkinConfig();
+        if (customSkinObj && customSkinObj.product && customSkinObj.product.name) {
+            this.translate.get('GLOBAL_SEARCH.PLACEHOLDER', {'param': customSkinObj.product.name}).subscribe(res => {
                 // Placeholder text
                 this.placeholderText = res;
             });

@@ -39,9 +39,19 @@ describe('HarborShellComponent', () => {
     let mockAccountSettingsModalService = null;
     let mockPasswordSettingService = null;
     let mockSkinableConfig = {
-        getProject: function () {
+        getSkinConfig: function () {
             return {
-                introduction: {}
+                "headerBgColor": {
+                    "darkMode": "",
+                    "lightMode": ""
+                },
+                "loginBgImg": "",
+                "loginTitle": "",
+                "product": {
+                    "name": "",
+                    "logo": "",
+                    "introduction": ""
+                }
             };
         }
     };

@@ -1,14 +1,13 @@
 {
-  "headerBgColor": "",
-  "headerLogo": "",
+  "headerBgColor": {
+    "darkMode": "",
+    "lightMode": ""
+  },
   "loginBgImg": "",
-  "appTitle": "",
+  "loginTitle": "",
   "product": {
     "name": "",
-    "introduction": {
-      "zh-cn": "",
-      "es-es": "",
-      "en-us": ""
-    }
+    "logo": "",
+    "introduction": ""
   }
 }
