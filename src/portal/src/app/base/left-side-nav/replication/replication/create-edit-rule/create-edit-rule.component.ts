@@ -21,10 +21,10 @@ import {
   Output
 } from "@angular/core";
 import { Filter, ReplicationRule, Endpoint } from "../../../../../shared/services/interface";
-import { Subject, Subscription, Observable, zip } from "rxjs";
+import { Subject, Subscription } from "rxjs";
 import { debounceTime, distinctUntilChanged, finalize } from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators, FormControl } from "@angular/forms";
-import { clone, compareValue, isEmptyObject } from "../../../../../shared/units/utils";
+import { clone, isEmptyObject, isSameObject } from "../../../../../shared/units/utils";
 import { InlineAlertComponent } from "../../../../../shared/components/inline-alert/inline-alert.component";
 import { ReplicationService } from "../../../../../shared/services";
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
@@ -235,11 +235,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
 
   updateRuleFormAndCopyUpdateForm(rule: ReplicationRule): void {
-    if (rule.dest_registry.id === 0) {
-      this.isPushMode = false;
-    } else {
-      this.isPushMode = true;
-    }
+    this.isPushMode = rule.dest_registry.id !== 0;
     setTimeout(() => {
       // There is no trigger_setting type when the harbor is upgraded from the old version.
       rule.trigger.trigger_settings = rule.trigger.trigger_settings ? rule.trigger.trigger_settings : {cron: ''};
@@ -507,17 +503,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   hasChanges(): boolean {
-    let formValue = clone(this.ruleForm.value);
-    let initValue = clone(this.copyUpdateForm);
-    let initValueCopy: any = {};
-    for (let key of Object.keys(formValue)) {
-      initValueCopy[key] = initValue[key];
-    }
-
-    if (!compareValue(formValue, initValueCopy)) {
-      return true;
-    }
-    return false;
+    const formValue = clone(this.ruleForm.value);
+    const initValue = clone(this.copyUpdateForm);
+    return !isSameObject(formValue, initValue);
   }
 
 

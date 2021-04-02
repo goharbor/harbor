@@ -646,3 +646,80 @@ export function getSortingString(state: ClrDatagridStateInterface): string {
     }
     return null;
 }
+
+/**
+ * if two object are the same
+ * @param a
+ * @param b
+ */
+export function isSameObject(a: any, b: any): boolean {
+    if (a && !b) {
+        return false;
+    }
+    if (b && !a) {
+        return false;
+    }
+    if (a && b) {
+        if (Array.isArray(a) || Array.isArray(b)) {
+            return false;
+        }
+        const c: any = Object.keys(a).length > Object.keys(b).length ? a : b;
+        for (const key in c) {
+            if (c.hasOwnProperty(key)) {
+                if (!c[key]) {
+                    // should not use triple-equals here
+                    // tslint:disable-next-line:triple-equals
+                    if (a[key] != b[key]) {
+                        return false;
+                    }
+                } else {
+                    if (Array.isArray(c[key])) {
+                        if (!isSameArrayValue(a[key], b[key])) {
+                            return false;
+                        }
+                    } else if (isObject(c[key])) {
+                        if (!isSameObject(a[key], b[key])) {
+                            return false;
+                        }
+                    } else {
+                        // should not use triple-equals here
+                        // tslint:disable-next-line:triple-equals
+                        if (a[key] != b[key]) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+
+/**
+ * if two arrays have the same length and contain the same items, they are regarded as the same
+ * @param a
+ * @param b
+ */
+export function isSameArrayValue(a: any, b: any): boolean {
+    if (a && b && Array.isArray(a) && Array.isArray(a)) {
+        if (a.length !== b.length) {
+            return false;
+        }
+        let isSame: boolean = true;
+        a.forEach(itemOfA => {
+            let hasItem: boolean = false;
+            b.forEach(itemOfB => {
+                if (isSameObject(itemOfA, itemOfB)) {
+                    hasItem = true;
+                }
+            });
+            if (!hasItem) {
+                isSame = false;
+            }
+        });
+        if (isSame) {
+            return true;
+        }
+    }
+    return false;
+}
