@@ -30,8 +30,8 @@ def get_endpoint():
 def _create_client(server, credential, debug, api_type="products"):
     cfg = None
     if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota',
-                    'replication', 'registry', 'robot', 'gc', 'retention', "immutable", "system_cve_allowlist",
-                    "configure", "users"):
+                    'replication', 'registry', 'robot', 'gc', 'retention', 'immutable', 'system_cve_allowlist',
+                    'configure', 'users', 'member'):
         cfg = v2_swagger_client.Configuration()
     else:
         cfg = swagger_client.Configuration()
@@ -73,6 +73,7 @@ def _create_client(server, credential, debug, api_type="products"):
         "system_cve_allowlist":  v2_swagger_client.SystemCVEAllowlistApi(v2_swagger_client.ApiClient(cfg)),
         "configure":   v2_swagger_client.ConfigureApi(v2_swagger_client.ApiClient(cfg)),
         "users": v2_swagger_client.UsersApi(v2_swagger_client.ApiClient(cfg)),
+        "member": v2_swagger_client.MemberApi(v2_swagger_client.ApiClient(cfg)),
     }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code, err_msg = r"HTTPS status code s not as we expected. Expected {}, while actual HTTPS status code is {}."):

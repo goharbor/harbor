@@ -16,6 +16,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -30,9 +31,10 @@ import (
 
 	"github.com/dghubble/sling"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/project"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/pkg/member"
+	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -249,8 +251,8 @@ func prepare() error {
 	if err != nil {
 		return err
 	}
-
-	if projAdminPMID, err = project.AddProjectMember(models.Member{
+	ctx := orm.Context()
+	if projAdminPMID, err = member.Mgr.AddProjectMember(ctx, memberModels.Member{
 		ProjectID:  1,
 		Role:       common.RoleProjectAdmin,
 		EntityID:   int(projAdminID),
@@ -268,8 +270,7 @@ func prepare() error {
 	if err != nil {
 		return err
 	}
-
-	if projAdminRobotPMID, err = project.AddProjectMember(models.Member{
+	if projAdminRobotPMID, err = member.Mgr.AddProjectMember(ctx, memberModels.Member{
 		ProjectID:  1,
 		Role:       common.RoleProjectAdmin,
 		EntityID:   int(projAdminRobotID),
@@ -288,7 +289,7 @@ func prepare() error {
 		return err
 	}
 
-	if projDeveloperPMID, err = project.AddProjectMember(models.Member{
+	if projDeveloperPMID, err = member.Mgr.AddProjectMember(ctx, memberModels.Member{
 		ProjectID:  1,
 		Role:       common.RoleDeveloper,
 		EntityID:   int(projDeveloperID),
@@ -307,7 +308,7 @@ func prepare() error {
 		return err
 	}
 
-	if projGuestPMID, err = project.AddProjectMember(models.Member{
+	if projGuestPMID, err = member.Mgr.AddProjectMember(ctx, memberModels.Member{
 		ProjectID:  1,
 		Role:       common.RoleGuest,
 		EntityID:   int(projGuestID),
@@ -325,7 +326,7 @@ func prepare() error {
 	if err != nil {
 		return err
 	}
-	if projLimitedGuestPMID, err = project.AddProjectMember(models.Member{
+	if projLimitedGuestPMID, err = member.Mgr.AddProjectMember(ctx, memberModels.Member{
 		ProjectID:  1,
 		Role:       common.RoleLimitedGuest,
 		EntityID:   int(projLimitedGuestID),
@@ -340,7 +341,7 @@ func clean() {
 	pmids := []int{projAdminPMID, projDeveloperPMID, projGuestPMID}
 
 	for _, id := range pmids {
-		if err := project.DeleteProjectMemberByID(id); err != nil {
+		if err := member.Mgr.Delete(orm.Context(), 1, id); err != nil {
 			fmt.Printf("failed to clean up member %d from project library: %v", id, err)
 		}
 	}
