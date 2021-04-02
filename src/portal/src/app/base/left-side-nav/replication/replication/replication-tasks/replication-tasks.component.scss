@@ -10,7 +10,8 @@
                 display: flex;
                 align-items: center;
                 >div:first-child {
-                    width: 250px;
+                    min-width: 250px;
+                    margin-right: 5px;
                 }
                 >div:nth-child(2) {
                     width: 150px;
@@ -112,4 +113,8 @@
 }
 .margin-top-16px {
     margin-top: 16px;
+}
+.button-stop {
+    margin-top: 16px;
+    margin-left: -5px;
 }

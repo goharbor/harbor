@@ -13,7 +13,7 @@
             <span class="id-divider"></span>
             <h2 class="custom-h2 h2-style">{{executionId}}</h2>
           </div>
-          <div class="margin-top-075">
+          <div class="margin-top-16px">
             <div class="status-progress" *ngIf="execution && isInProgress()">
               <span class="spinner spinner-inline"></span>
               <span>{{'REPLICATION.IN_PROGRESS'| translate}}</span>
@@ -27,7 +27,7 @@
               <span>{{'REPLICATION.FAILURE'| translate}}</span>
             </div>
           </div>
-          <div class="margin-top-075">
+          <div class="button-stop">
             <button class="btn btn-primary " (click)="stopJob()"
               [disabled]="!hasUpdatePermission ||stopOnGoing || !canStop()">{{'REPLICATION.STOPJOB' | translate}}</button>
             <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
