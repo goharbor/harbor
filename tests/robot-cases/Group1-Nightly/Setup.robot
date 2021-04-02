@@ -20,7 +20,7 @@ Default Tags  Nightly
 *** Test Cases ***
 Test Suites Setup
     [Tags]  setup
-    Nightly Test Setup  ${ip}  ${HARBOR_PASSWORD}  ${ip1}
+    Nightly Test Setup In Photon  ${ip}  ${HARBOR_PASSWORD}  ${ip1}
     Setup API Test
 
 Test Case - Get Harbor Version

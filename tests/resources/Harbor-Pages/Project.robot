@@ -254,15 +254,17 @@ Click Index Achieve
     Retry Element Click  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256') and contains(.,'${tag_name}')]//clr-dg-cell[1]//clr-tooltip//a
 
 Go Into Index And Contain Artifacts
-    [Arguments]  ${tag_name}  ${limit}=3
+    [Arguments]  ${tag_name}  ${total_artifact_count}=3  ${archive_count}=0
     Retry Double Keywords When Error  Click Index Achieve  ${tag_name}  Page Should Contain Element  ${tag_table_column_os_arch}
     FOR  ${n}  IN RANGE  1  10
-        ${out}  Run Keyword And Ignore Error  Page Should Contain Element  ${artifact_rows}  limit=${limit}
-        Exit For Loop If  '${out[0]}'=='PASS'
+        ${out1}  Run Keyword And Ignore Error  Page Should Contain Element  ${artifact_rows}  limit=${total_artifact_count}
+        ${out2}  Run Keyword And Ignore Error  Page Should Contain Element  ${archive_rows}  limit=${archive_count}
+        Exit For Loop If  '${out1[0]}'=='PASS' and '${out2[0]}'=='PASS'
         Sleep  3
     END
-    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
-    Should Be Equal As Strings  '${out[0]}'  'PASS'
+    Run Keyword If  '${out1[0]}'=='FAIL' or '${out2[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out1[0]}'  'PASS'
+    Should Be Equal As Strings  '${out2[0]}'  'PASS'
 
 Switch To CardView
     Retry Element Click  xpath=//hbr-repository-gridview//span[@class='card-btn']/clr-icon

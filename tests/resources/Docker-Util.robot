@@ -194,21 +194,23 @@ Restart Process Locally
     Log All  result : ${result}
     [Return]  ${handle}
 
-Prepare Docker Cert
-    [Arguments]  ${ip}
+Prepare Docker Cert In Ubuntu
+    [Arguments]  ${ip}  ${cert}
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
-    Wait Unitl Command Success  cp harbor_ca.crt /etc/docker/certs.d/${ip}
-    Wait Unitl Command Success  cp harbor_ca.crt /usr/local/share/ca-certificates/
-    Wait Unitl Command Success  update-ca-certificates
-
-Prepare Docker Cert For Nightly
-    [Arguments]  ${ip}
-    Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
-    Wait Unitl Command Success  cp harbor_ca.crt /etc/docker/certs.d/${ip}
-    Wait Unitl Command Success  cp harbor_ca.crt /usr/local/share/ca-certificates/
+    Wait Unitl Command Success  cp ${cert} /etc/docker/certs.d/${ip}
+    Wait Unitl Command Success  cp ${cert} /usr/local/share/ca-certificates/
     #Add pivotal ecs cert for docker manifest push test.
     Wait Unitl Command Success  cp /ecs_ca/vmwarecert.crt /usr/local/share/ca-certificates/
     Wait Unitl Command Success  update-ca-certificates
+
+Prepare Docker Cert In Photon
+    [Arguments]  ${ip}  ${cert}
+    Log All  Prepare Docker Cert In Photon ${cert}
+    ${rc}  ${output}=  Run And Return Rc and Output  cat ${cert}
+    Log All  CA output: ${output}
+    Wait Unitl Command Success  cat ${cert} >> /etc/pki/tls/certs/ca-bundle.crt
+    Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
+    Wait Unitl Command Success  cp ${cert} /etc/docker/certs.d/${ip}
 
 Kill Local Docker Daemon
     [Arguments]  ${handle}  ${dockerd-pid}
