@@ -85,8 +85,8 @@ func (r *reaper) start() {
 // This process only needs to be executed once when worker pool is starting.
 func (r *reaper) reEnqueueInProgressJobs() error {
 	// Debug
-	logger.Debugf("Start: Reap in-progress jobs from the dead pools")
-	defer logger.Debugf("End: Reap in-progress jobs")
+	logger.Info("Start: Reap in-progress jobs from the dead pools")
+	defer logger.Info("End: Reap in-progress jobs")
 
 	currentPools, err := r.getCurrentWorkerPools()
 	if err != nil {
@@ -130,8 +130,8 @@ func (r *reaper) reEnqueueInProgressJobs() error {
 // the related status change hook events are successfully fired.
 func (r *reaper) syncOutdatedStats() error {
 	// Debug
-	logger.Debugf("Start: reap outdated job stats")
-	defer logger.Debugf("End: reap outdated job stats")
+	logger.Info("Start: reap outdated job stats")
+	defer logger.Info("End: reap outdated job stats")
 
 	// Loop all the in progress jobs to check if they're really in progress or
 	// status is hung.
@@ -139,13 +139,15 @@ func (r *reaper) syncOutdatedStats() error {
 		defer func() {
 			if errs.IsObjectNotFoundError(err) {
 				// As the job stats is lost and we don't have chance to restore it, then directly discard it.
-				logger.Errorf("Sync outdated stats error: %s", err.Error())
 				// Un-track the in-progress record
-				err = r.unTrackInProgress(k)
+				if e := r.unTrackInProgress(k); e != nil {
+					// Wrap error
+					err = errors.Wrap(e, err.Error())
+				}
 			}
 
 			if err != nil {
-				err = errors.Wrap(err, "sync outdated stats handler")
+				err = errors.Wrap(err, "sync outdated stats handler error")
 			}
 		}()
 
@@ -174,8 +176,11 @@ func (r *reaper) syncOutdatedStats() error {
 					if err = t.Fail(); err != nil {
 						return
 					}
-					// Exit
+
+					// Log and exit
+					logger.Infof("Reaper: mark job %s failed as job is still not finished in 1 day", t.Job().Info.JobID)
 				}
+
 				// Exit as it is still a valid ongoing job
 			}
 		} else if diff > 0 {
@@ -184,20 +189,34 @@ func (r *reaper) syncOutdatedStats() error {
 			if err = t.FireHook(); err != nil {
 				return
 			}
+
 			// Success and exit
+			logger.Infof(
+				"Reaper: fire hook again for job %s as job status change is not ACKed: %s(rev=%d)",
+				t.Job().Info.JobID,
+				t.Job().Info.Status,
+				t.Job().Info.Revision,
+			)
 		} else {
 			// Current status is outdated, update it with ACKed status.
 			if err = t.UpdateStatusWithRetry(job.Status(t.Job().Info.HookAck.Status)); err != nil {
 				return
 			}
+
 			// Success and exit
+			logger.Infof(
+				"Reaper: update the status of job %s to the ACKed status: %s(%d)",
+				t.Job().Info.JobID,
+				t.Job().Info.HookAck.Status,
+				t.Job().Info.Revision,
+			)
 		}
 
 		return nil
 	}
 
 	if err := r.scanLocks(rds.KeyJobTrackInProgress(r.namespace), h); err != nil {
-		return errors.Wrap(err, "reaper")
+		return errors.Wrap(err, "reaper error")
 	}
 
 	return nil

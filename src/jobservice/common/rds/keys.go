@@ -57,11 +57,6 @@ func KeyPeriodicPolicy(namespace string) string {
 	return fmt.Sprintf("%s:%s", KeyPeriod(namespace), "policies")
 }
 
-// KeyPeriodicNotification returns the key of periodic pub/sub channel.
-func KeyPeriodicNotification(namespace string) string {
-	return fmt.Sprintf("%s:%s", KeyPeriodicPolicy(namespace), "notifications")
-}
-
 // KeyPeriodicLock returns the key of locker under period
 func KeyPeriodicLock(namespace string) string {
 	return fmt.Sprintf("%s:%s", KeyPeriod(namespace), "lock")
@@ -75,11 +70,6 @@ func KeyJobStats(namespace string, jobID string) string {
 // KeyUpstreamJobAndExecutions returns the key for persisting executions.
 func KeyUpstreamJobAndExecutions(namespace, upstreamJobID string) string {
 	return fmt.Sprintf("%s%s:%s", KeyNamespacePrefix(namespace), "executions", upstreamJobID)
-}
-
-// KeyHookEventRetryQueue returns the key of hook event retrying queue
-func KeyHookEventRetryQueue(namespace string) string {
-	return fmt.Sprintf("%s%s", KeyNamespacePrefix(namespace), "hook_events")
 }
 
 // KeyStatusUpdateRetryQueue returns the key of status change retrying queue

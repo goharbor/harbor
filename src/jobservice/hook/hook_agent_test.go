@@ -20,14 +20,10 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/common/list"
-
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
-
-	"github.com/goharbor/harbor/src/lib/errors"
-
-	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/tests"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -61,6 +57,8 @@ func (suite *HookAgentTestSuite) SetupSuite() {
 		namespace: suite.namespace,
 		redisPool: suite.pool,
 	}
+
+	suite.prepareData()
 }
 
 // TearDownSuite prepares test suites
@@ -73,7 +71,7 @@ func (suite *HookAgentTestSuite) TearDownSuite() {
 	_ = tests.ClearAll(suite.namespace, conn)
 }
 
-func (suite *HookAgentTestSuite) SetupTest() {
+func (suite *HookAgentTestSuite) prepareData() {
 	suite.jid = utils.MakeIdentifier()
 	rev := time.Now().Unix()
 	stats := &job.Stats{
@@ -107,18 +105,6 @@ func (suite *HookAgentTestSuite) SetupTest() {
 	}
 }
 
-func (suite *HookAgentTestSuite) TearDownTest() {
-	conn := suite.pool.Get()
-	defer func() {
-		err := conn.Close()
-		suite.NoError(err, "close redis connection")
-	}()
-
-	k := rds.KeyHookEventRetryQueue(suite.namespace)
-	_, err := conn.Do("DEL", k)
-	suite.NoError(err, "tear down test cases")
-}
-
 // TestEventSending ...
 func (suite *HookAgentTestSuite) TestEventSending() {
 	mc := &mockClient{}
@@ -140,27 +126,7 @@ func (suite *HookAgentTestSuite) TestEventSendingError() {
 
 	err := suite.agent.Trigger(suite.event)
 
-	// Failed to send by client, it should be put into retry queue, check it
-	// The return should still be nil
-	suite.NoError(err, "agent trigger: nil error expected but got %s", err)
-	suite.checkRetryQueue(1)
-}
-
-// TestRetryAndPopMin ...
-func (suite *HookAgentTestSuite) TestRetryAndPopMin() {
-	mc := &mockClient{}
-	mc.On("SendEvent", suite.event).Return(nil)
-	suite.agent.client = mc
-
-	err := suite.agent.pushForRetry(suite.event)
-	suite.NoError(err, "push event for retry")
-
-	err = suite.agent.reSend()
-	require.NoError(suite.T(), err, "resend error: %v", err)
-
-	// Check
-	suite.checkRetryQueue(0)
-	suite.checkStatus()
+	suite.Error(err)
 }
 
 func (suite *HookAgentTestSuite) checkStatus() {
@@ -169,19 +135,6 @@ func (suite *HookAgentTestSuite) checkStatus() {
 	require.NoError(suite.T(), err, "load updated job stats")
 	require.NotNil(suite.T(), t.Job(), "latest job stats")
 	suite.Equal(job.SuccessStatus.String(), t.Job().Info.HookAck.Status, "ack status")
-}
-
-func (suite *HookAgentTestSuite) checkRetryQueue(size int) {
-	conn := suite.pool.Get()
-	defer func() {
-		err := conn.Close()
-		suite.NoError(err, "close redis connection")
-	}()
-
-	k := rds.KeyHookEventRetryQueue(suite.namespace)
-	c, err := redis.Int(conn.Do("ZCARD", k))
-	suite.NoError(err, "check retry queue")
-	suite.Equal(size, c, "retry queue count")
 }
 
 type mockClient struct {
