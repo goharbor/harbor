@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from "rxjs";
 import { AppConfigService } from '../../services/app-config.service';
@@ -28,6 +28,7 @@ import { THEME_ARRAY, ThemeInterface } from "../../services/theme";
 import { clone } from "../../shared/units/utils";
 import { ThemeService } from "../../services/theme.service";
 import { AccountSettingsModalComponent } from "../account-settings/account-settings-modal.component";
+import { EventService, HarborEvent } from "../../services/event-service/event.service";
 
 const HAS_SHOWED_SCANNER_INFO: string = 'hasShowScannerInfo';
 const YES: string = 'yes';
@@ -67,6 +68,8 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     themeArray: ThemeInterface[] = clone(THEME_ARRAY);
 
     styleMode = this.themeArray[0].showStyle;
+    @ViewChild('scrollDiv') scrollDiv: ElementRef;
+    scrollToPositionSub: Subscription;
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -75,9 +78,19 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         private appConfigService: AppConfigService,
         private scannerService: ConfigScannerService,
         public theme: ThemeService,
+        private event: EventService,
+        private cd: ChangeDetectorRef
     ) { }
 
     ngOnInit() {
+        if (!this.scrollToPositionSub) {
+            this.scrollToPositionSub = this.event.subscribe( HarborEvent.SCROLL_TO_POSITION, scrollTop => {
+                if (this.scrollDiv && this.scrollDiv.nativeElement) {
+                    this.cd.detectChanges();
+                    this.scrollDiv.nativeElement.scrollTop = scrollTop;
+                }
+            });
+        }
         if (this.appConfigService.isLdapMode()) {
             this.isLdapMode = true;
         } else if (this.appConfigService.isHttpAuthMode()) {
@@ -102,6 +115,14 @@ export class HarborShellComponent implements OnInit, OnDestroy {
             this.styleMode = localStorage.getItem(HAS_STYLE_MODE);
         }
     }
+    publishScrollEvent() {
+        if (this.scrollDiv && this.scrollDiv.nativeElement) {
+            this.event.publish(HarborEvent.SCROLL, {
+                url: this.router.url,
+                scrollTop: this.scrollDiv.nativeElement.scrollTop
+            });
+        }
+    }
     closeInfo() {
         if (localStorage) {
             localStorage.setItem(HAS_SHOWED_SCANNER_INFO, YES);
@@ -124,6 +145,10 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
         if (this.searchCloseSub) {
             this.searchCloseSub.unsubscribe();
+        }
+        if (this.scrollToPositionSub) {
+            this.scrollToPositionSub.unsubscribe();
+            this.scrollToPositionSub = null;
         }
     }
 

@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { NgModule } from '@angular/core';
-import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import {PreloadAllModules, RouteReuseStrategy, RouterModule, Routes} from '@angular/router';
 import { AuthCheckGuard } from './shared/router-guard/auth-user-activate.service';
 import { SignInGuard } from './shared/router-guard/sign-in-guard-activate.service';
 import { OidcGuard } from './shared/router-guard/oidc-guard-active.service';
+import {HarborRouteReuseStrategy} from "./route-reuse-strategy/harbor-route-reuse-strategy";
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -48,6 +49,9 @@ const harborRoutes: Routes = [
 ];
 
 @NgModule({
+  providers: [
+    { provide: RouteReuseStrategy, useClass: HarborRouteReuseStrategy }
+  ],
   imports: [
     RouterModule.forRoot(harborRoutes, {
       onSameUrlNavigation: 'reload',
