@@ -15,20 +15,14 @@
 package rds
 
 import (
-	"encoding/json"
+	"testing"
+
 	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
-
-// For testing
-type simpleStatusChange struct {
-	JobID string
-}
 
 // RdsUtilsTestSuite tests functions located in rds package
 type RdsUtilsTestSuite struct {
@@ -64,34 +58,6 @@ func (suite *RdsUtilsTestSuite) TearDownSuite() {
 
 	err := tests.ClearAll(suite.namespace, conn)
 	assert.NoError(suite.T(), err, "clear all: nil error expected but got %s", err)
-}
-
-// TestZPopMin ...
-func (suite *RdsUtilsTestSuite) TestZPopMin() {
-	s1 := &simpleStatusChange{"a"}
-	s2 := &simpleStatusChange{"b"}
-
-	raw1, _ := json.Marshal(s1)
-	raw2, _ := json.Marshal(s2)
-
-	key := KeyStatusUpdateRetryQueue(suite.namespace)
-	_, err := suite.conn.Do("ZADD", key, time.Now().Unix(), raw1)
-	_, err = suite.conn.Do("ZADD", key, time.Now().Unix()+5, raw2)
-	require.Nil(suite.T(), err, "zadd objects error should be nil")
-
-	v, err := ZPopMin(suite.conn, key)
-	require.Nil(suite.T(), err, "nil error should be returned by calling ZPopMin")
-
-	change1 := &simpleStatusChange{}
-	_ = json.Unmarshal(v.([]byte), change1)
-	assert.Equal(suite.T(), "a", change1.JobID, "job ID not equal")
-
-	v, err = ZPopMin(suite.conn, key)
-	require.Nil(suite.T(), err, "nil error should be returned by calling ZPopMin")
-
-	change2 := &simpleStatusChange{}
-	_ = json.Unmarshal(v.([]byte), change2)
-	assert.Equal(suite.T(), "b", change2.JobID, "job ID not equal")
 }
 
 // TestHmGetAndSet ...

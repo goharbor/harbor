@@ -18,9 +18,9 @@ import (
 	"context"
 	"encoding/json"
 	"net/url"
-	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -30,22 +30,16 @@ import (
 )
 
 const (
-	// The max time for expiring the retrying events
-	// 1 day
-	maxEventExpireTime = 3600 * 24
-	// Waiting a short while if any errors occurred
-	shortLoopInterval = 5 * time.Second
-	// Waiting for long while if no retrying elements found
-	longLoopInterval = 5 * time.Minute
+	// Backoff duration of direct retrying.
+	errRetryBackoff = 5 * time.Minute
+	// Max concurrency of retrying goroutines.
+	maxConcurrency = 512
 )
 
-// Agent is designed to handle the hook events with reasonable numbers of concurrent threads
+// Agent is designed to handle the hook events with reasonable numbers of concurrent threads.
 type Agent interface {
 	// Trigger hooks
 	Trigger(evt *Event) error
-
-	// Serves retry loop now
-	Serve() error
 }
 
 // Event contains the hook URL and the data
@@ -70,23 +64,13 @@ func (e *Event) Validate() error {
 	return nil
 }
 
-// Serialize event to bytes
-func (e *Event) Serialize() ([]byte, error) {
-	return json.Marshal(e)
-}
-
-// Deserialize the bytes to event
-func (e *Event) Deserialize(bytes []byte) error {
-	return json.Unmarshal(bytes, e)
-}
-
 // Basic agent for usage
 type basicAgent struct {
 	context   context.Context
 	namespace string
 	client    Client
 	redisPool *redis.Pool
-	wg        *sync.WaitGroup
+	tokens    chan struct{}
 }
 
 // NewAgent is constructor of basic agent
@@ -96,31 +80,28 @@ func NewAgent(ctx *env.Context, ns string, redisPool *redis.Pool) Agent {
 		namespace: ns,
 		client:    NewClient(ctx.SystemContext),
 		redisPool: redisPool,
-		wg:        ctx.WG,
+		tokens:    make(chan struct{}, maxConcurrency),
 	}
 }
 
 // Trigger implements the same method of interface @Agent
 func (ba *basicAgent) Trigger(evt *Event) error {
 	if evt == nil {
-		return errors.New("nil web hook event")
+		return errors.New("nil hook event")
 	}
 
 	if err := evt.Validate(); err != nil {
 		return errors.Wrap(err, "trigger error")
 	}
 
-	// Treat hook event is success if it is successfully sent or cached in the retry queue.
+	// Send hook event with retry supported.
+	// Exponential backoff is used and the max elapsed time is 5m.
+	// If it is still failed to send hook event after all tries, the reaper may help to fix the inconsistent status.
 	if err := ba.client.SendEvent(evt); err != nil {
-		// Push event to the retry queue
-		if er := ba.pushForRetry(evt); er != nil {
-			// Failed to push to the hook event retry queue, return error with all context
-			return errors.Wrap(er, err.Error())
-		}
+		// Start retry at background.
+		go ba.retry(evt)
 
-		logger.Warningf("Send hook event '%s' to '%s' failed with error: %s; push hook event to the queue for retrying later", evt.Message, evt.URL, err)
-		// Treat as successful hook event as the event has been put into the retry queue for future resending.
-		return nil
+		return errors.Wrap(err, "trigger hook event error")
 	}
 
 	// Mark event hook ACK including "revision", "status" and "check_in_at" in the job stats to indicate
@@ -130,146 +111,53 @@ func (ba *basicAgent) Trigger(evt *Event) error {
 	// can be ignored.
 	if err := ba.ack(evt); err != nil {
 		// Just log error
-		logger.Error(errors.Wrap(err, "trigger"))
+		logger.Error(errors.Wrap(err, "hook event ack error"))
 	}
+
+	// For debugging
+	logger.Debugf("Hook event is successfully sent: %s->%s", evt.Message, evt.URL)
 
 	return nil
 }
 
-// Start the basic agent
-// Termination depends on the system context
-// Blocking call
-func (ba *basicAgent) Serve() error {
-	ba.wg.Add(1)
-
-	go ba.loopRetry()
-	logger.Info("Hook event retrying loop is started")
-
-	return nil
-}
-
-func (ba *basicAgent) pushForRetry(evt *Event) error {
-	if evt == nil {
-		// do nothing
-		return nil
-	}
-
-	// Anyway we'll need the raw JSON, let's try to serialize it here
-	rawJSON, err := evt.Serialize()
-	if err != nil {
-		return err
-	}
-
-	now := time.Now().Unix()
-	if evt.Timestamp > 0 && now-evt.Timestamp >= maxEventExpireTime {
-		// Expired, do not need to push back to the retry queue
-		logger.Warningf("Event is expired: %s", rawJSON)
-
-		return nil
-	}
-
-	conn := ba.redisPool.Get()
+// retry event with exponential backoff.
+// Limit the max concurrency (defined by maxConcurrency) of retrying goroutines.
+func (ba *basicAgent) retry(evt *Event) {
+	// Apply for a running token.
+	// If no token is available, then hold until token is released.
+	ba.tokens <- struct{}{}
+	// Release token
 	defer func() {
-		_ = conn.Close()
+		<-ba.tokens
 	}()
 
-	key := rds.KeyHookEventRetryQueue(ba.namespace)
-	args := make([]interface{}, 0)
+	// Resend hook event
+	bf := newBackoff(errRetryBackoff)
+	bf.Reset()
 
-	// Use nano time to get more accurate timestamp
-	score := time.Now().UnixNano()
-	args = append(args, key, "NX", score, rawJSON)
+	err := backoff.RetryNotify(func() error {
+		logger.Debugf("Retry: sending hook event: %s->%s", evt.Message, evt.URL)
 
-	_, err = conn.Do("ZADD", args...)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (ba *basicAgent) loopRetry() {
-	defer func() {
-		logger.Info("Hook event retrying loop exit")
-		ba.wg.Done()
-	}()
-
-	for {
-		if err := ba.reSend(); err != nil {
-			waitInterval := shortLoopInterval
-			if err == rds.ErrNoElements {
-				// No elements
-				waitInterval = longLoopInterval
-			} else {
-				logger.Errorf("Resend hook event error: %s", err.Error())
-			}
-
-			select {
-			case <-time.After(waitInterval):
-				// Just wait, do nothing
-			case <-ba.context.Done():
-				// Terminated
-				return
+		// Try to avoid sending outdated events, just a try-best operation.
+		ot, err := ba.isOutdated(evt)
+		if err != nil {
+			// Log error and continue.
+			logger.Error(err)
+		} else {
+			if ot {
+				logger.Infof("Hook event is abandoned as it's outdated: %s->%s", evt.Message, evt.URL)
+				return nil
 			}
 		}
-	}
-}
 
-func (ba *basicAgent) reSend() error {
-	conn := ba.redisPool.Get()
-	defer func() {
-		if err := conn.Close(); err != nil {
-			logger.Error(errors.Wrap(err, "resend"))
-		}
-	}()
+		return ba.client.SendEvent(evt)
+	}, bf, func(e error, d time.Duration) {
+		logger.Errorf("Retry: sending hook event error: %s, evt=%s->%s, duration=%v", e.Error(), evt.Message, evt.URL, d)
+	})
 
-	// Pick up one queued event for resending
-	evt, err := ba.popMinOne(conn)
 	if err != nil {
-		return err
+		logger.Errorf("Retry: still failed after all retries: %s, evt=%s->%s", err.Error(), evt.Message, evt.URL)
 	}
-
-	// Args for executing script
-	args := []interface{}{
-		rds.KeyJobStats(ba.namespace, evt.Data.JobID),
-		evt.Data.Status,
-		evt.Data.Metadata.Revision,
-		evt.Data.Metadata.CheckInAt,
-	}
-
-	// If failed to check the status matching, just ignore it, continue the resending
-	reply, err := redis.String(rds.CheckStatusMatchScript.Do(conn, args...))
-	if err != nil {
-		// Log error
-		logger.Error(errors.Wrap(err, "resend"))
-	} else {
-		if reply != "ok" {
-			return errors.Errorf("outdated hook event: %s", evt.Message)
-		}
-	}
-
-	return ba.Trigger(evt)
-}
-
-// popMinOne picks up one event for retrying
-func (ba *basicAgent) popMinOne(conn redis.Conn) (*Event, error) {
-	key := rds.KeyHookEventRetryQueue(ba.namespace)
-	minOne, err := rds.ZPopMin(conn, key)
-	if err != nil {
-		return nil, err
-	}
-
-	rawEvent, ok := minOne.([]byte)
-	if !ok {
-		return nil, errors.New("bad request: non bytes slice for raw event")
-	}
-
-	evt := &Event{}
-	if err := evt.Deserialize(rawEvent); err != nil {
-		return nil, err
-	}
-
-	return evt, nil
 }
 
 // ack hook event
@@ -301,4 +189,79 @@ func (ba *basicAgent) ack(evt *Event) error {
 	}
 
 	return nil
+}
+
+// Check if the event has been outdated.
+func (ba *basicAgent) isOutdated(evt *Event) (bool, error) {
+	if evt == nil || evt.Data == nil {
+		return false, nil
+	}
+
+	conn := ba.redisPool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	key := rds.KeyJobStats(ba.namespace, evt.Data.JobID)
+	values, err := rds.HmGet(conn, key, "ack")
+	if err != nil {
+		return false, errors.Wrap(err, "check outdated event error")
+	}
+
+	// Parse ack
+	if ab, ok := values[0].([]byte); ok && len(ab) > 0 {
+		ack := &job.ACK{}
+		if err := json.Unmarshal(ab, ack); err != nil {
+			return false, errors.Wrap(err, "parse ack error")
+		}
+
+		// Revision
+		diff := ack.Revision - evt.Data.Metadata.Revision
+		switch {
+		// Revision of the hook event has left behind the current acked revision.
+		case diff > 0:
+			return true, nil
+		case diff < 0:
+			return false, nil
+		case diff == 0:
+			// Continue to compare the status.
+		}
+
+		// Status
+		st := job.Status(ack.Status)
+		if err := st.Validate(); err != nil {
+			return false, errors.Wrap(err, "validate acked job status error")
+		}
+
+		est := job.Status(evt.Data.Status)
+		if err := est.Validate(); err != nil {
+			return false, errors.Wrap(err, "validate job status error")
+		}
+
+		switch {
+		case st.Before(est):
+			return false, nil
+		case st.After(est):
+			return true, nil
+		case st.Equal(est):
+			// Continue to compare check in at timestamp
+		}
+
+		// Check in timestamp
+		if ack.CheckInAt >= evt.Data.Metadata.CheckInAt {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func newBackoff(maxElapsedTime time.Duration) backoff.BackOff {
+	bf := backoff.NewExponentialBackOff()
+	bf.InitialInterval = 2 * time.Second
+	bf.RandomizationFactor = 0.5
+	bf.Multiplier = 2
+	bf.MaxElapsedTime = maxElapsedTime
+
+	return bf
 }

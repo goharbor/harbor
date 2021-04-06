@@ -107,53 +107,6 @@ return st
 // SetStatusScript is lua script for setting job status atomically
 var SetStatusScript = redis.NewScript(2, setStatusScriptText)
 
-// Used to check if the status info provided is still validate
-//
-// KEY[1]: key of job stats
-// ARGV[1]: job status
-// ARGV[2]: revision of job stats
-// ARGV[3]: check in timestamp
-var isStatusMatchScriptText = fmt.Sprintf(`
-%s
-
-%s
-
-local res, st, rev, checkInAt, ack
-
-res = redis.call('hmget', KEYS[1], 'status', 'revision', 'check_in_at', 'ack')
-if res then
-  st = res[1]
-  rev = tonumber(res[2]) or 0
-  checkInAt = tonumber(res[3]) or 0
-  ack = res[4]
-
-  local reply = compare(st, rev)
-
-  if reply == 'ok' then
-    if not ack then
-      return 'ok'
-    end
-    -- ack exists, compare with ack
-    local a = cjson.decode(ack)
-
-    st = a['status']
-    rev = a['revision']
-    checkInAt = a['check_in_at']
-
-    local reply2 = compare(st, rev)
-    if reply2 == 'ok' then
-      return 'ok'
-    end
-  end
-end
-
-return 'no'
-`, luaFuncStCodeText, luaFuncCompareText)
-
-// CheckStatusMatchScript is lua script for checking if the provided status is still matching
-// the backend status.
-var CheckStatusMatchScript = redis.NewScript(1, isStatusMatchScriptText)
-
 // Used to set the hook ACK
 //
 // KEY[1]: key of job stats
