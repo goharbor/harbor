@@ -19,8 +19,10 @@ import { State } from '../../../lib/services/interface';
 import { Repository } from '../../../../ng-swagger-gen/models/repository';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-import {Subscription} from "rxjs";
+import { Subscription } from "rxjs";
 import { SessionService } from "../session.service";
+import { UN_LOGGED_PARAM } from "../../sign-in/sign-in.service";
+
 const YES: string = 'yes';
 @Component({
   selector: 'list-repository-ro',
@@ -76,7 +78,7 @@ export class ListRepositoryROComponent implements OnInit, OnDestroy {
     if (this.sessionService.getCurrentUser()) {
       this.router.navigate(linkUrl);
     } else {// if not logged in and it's a public project, add param 'publicAndNotLogged'
-      this.router.navigate(linkUrl, {queryParams: {publicAndNotLogged: YES}});
+      this.router.navigate(linkUrl, {queryParams: {[UN_LOGGED_PARAM]: YES}});
     }
   }
 

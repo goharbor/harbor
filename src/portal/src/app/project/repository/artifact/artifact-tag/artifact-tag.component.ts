@@ -329,7 +329,10 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     return this.appConfigService.getConfig().with_notary;
   }
   public get registryUrl(): string {
-    return this.systemInfo ? this.systemInfo.registry_url : '';
+    if (this.systemInfo && this.systemInfo.registry_url) {
+      return this.systemInfo.registry_url;
+    }
+    return location.hostname;
   }
   hasPullCommand(): boolean {
     return this.artifactDetails
