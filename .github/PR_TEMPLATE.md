@@ -10,4 +10,5 @@ Fixes #(issue)
 ### Please indicate you've done the following:
 
 - [ ] [Accepted the DCO](https://github.com/goharbor/harbor/blob/master/CONTRIBUTING.md#commit). Commits without the DCO will delay acceptance.
-- [ ] Updated the corresponding documentation in this repo or https://github.com/goharbor/website.
+- [ ] Made sure tests are passing and test coverage is added if needed.
+- [ ] Considered the docs impact and opened a new docs issue or PR with docs changes if needed.
