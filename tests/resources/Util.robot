@@ -81,6 +81,7 @@ Resource  SeleniumUtil.robot
 Resource  Nightly-Util.robot
 Resource  APITest-Util.robot
 Resource  TestCaseBody.robot
+Resource  Appcheck-Util.robot
 
 *** Keywords ***
 Wait Until Element Is Visible And Enabled
