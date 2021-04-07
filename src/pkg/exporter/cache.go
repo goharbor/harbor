@@ -86,11 +86,8 @@ func CacheInit(opt *Opt) {
 			cacheCleanInterval = defaultCacheCleanInterval
 		}
 		ticker := time.NewTicker(time.Duration(cacheCleanInterval) * time.Second)
-		for {
-			select {
-			case <-ticker.C:
-				StartCacheCleaner()
-			}
+		for range ticker.C {
+			StartCacheCleaner()
 		}
 	}()
 }

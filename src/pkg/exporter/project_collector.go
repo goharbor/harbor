@@ -106,6 +106,11 @@ func (hc *ProjectCollector) Collect(c chan<- prometheus.Metric) {
 	}
 }
 
+// GetName returns the name of the project info collector
+func (hc *ProjectCollector) GetName() string {
+	return ProjectCollectorName
+}
+
 type projectOverviewInfo struct {
 	projectTotals []projectCount
 	ProjectMap    map[int64]*projectInfo
@@ -226,12 +231,4 @@ func updateProjectArtifactInfo(projectMap map[int64]*projectInfo) {
 			log.Errorf("%v, ID %d", errProjectNotFound, a.ProjectID)
 		}
 	}
-}
-
-func checkErr(err error, arg string) {
-	if err == nil {
-		return
-	}
-
-	log.Errorf("%s: %v", arg, err)
 }
