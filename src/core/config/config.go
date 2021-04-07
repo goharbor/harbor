@@ -393,6 +393,7 @@ func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
 		Endpoint:            cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
 		TokenReviewEndpoint: cfgMgr.Get(common.HTTPAuthProxyTokenReviewEndpoint).GetString(),
 		AdminGroups:         splitAndTrim(cfgMgr.Get(common.HTTPAuthProxyAdminGroups).GetString(), ","),
+		AdminUsernames:      splitAndTrim(cfgMgr.Get(common.HTTPAuthProxyAdminUsernames).GetString(), ","),
 		VerifyCert:          cfgMgr.Get(common.HTTPAuthProxyVerifyCert).GetBool(),
 		SkipSearch:          cfgMgr.Get(common.HTTPAuthProxySkipSearch).GetBool(),
 		ServerCertificate:   cfgMgr.Get(common.HTTPAuthProxyServerCertificate).GetString(),

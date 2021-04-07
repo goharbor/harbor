@@ -97,6 +97,7 @@ const (
 	HTTPAuthProxyEndpoint            = "http_authproxy_endpoint"
 	HTTPAuthProxyTokenReviewEndpoint = "http_authproxy_tokenreview_endpoint"
 	HTTPAuthProxyAdminGroups         = "http_authproxy_admin_groups"
+	HTTPAuthProxyAdminUsernames      = "http_authproxy_admin_usernames"
 	HTTPAuthProxyVerifyCert          = "http_authproxy_verify_cert"
 	HTTPAuthProxySkipSearch          = "http_authproxy_skip_search"
 	HTTPAuthProxyServerCertificate   = "http_authproxy_server_certificate"

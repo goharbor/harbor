@@ -78,14 +78,21 @@ func getTLSConfig(config *models.HTTPAuthProxy) rest.TLSClientConfig {
 
 // UserFromReviewStatus transform a review status to a user model.
 // Group entries will be populated if needed.
-func UserFromReviewStatus(status k8s_api_v1beta1.TokenReviewStatus, adminGroups []string) (*models.User, error) {
-
+func UserFromReviewStatus(status k8s_api_v1beta1.TokenReviewStatus, adminGroups []string, adminUsernames []string) (*models.User, error) {
 	if !status.Authenticated {
 		return nil, fmt.Errorf("failed to authenticate the token, error in status: %s", status.Error)
 	}
 	user := &models.User{
 		Username: status.User.Username,
 	}
+	for _, au := range adminUsernames {
+		if status.User.Username == au {
+			log.Debugf("Username: %s in the adminusers list, assigning user admin permission", au)
+			user.AdminRoleInAuth = true
+			break
+		}
+	}
+
 	if len(status.User.Groups) > 0 {
 		userGroups := models.UserGroupsFromName(status.User.Groups, common.HTTPGroupType)
 		groupIDList, err := group.PopulateGroup(userGroups)
@@ -94,7 +101,7 @@ func UserFromReviewStatus(status k8s_api_v1beta1.TokenReviewStatus, adminGroups 
 		}
 		log.Debugf("current user's group ID list is %+v", groupIDList)
 		user.GroupIDs = groupIDList
-		if len(adminGroups) > 0 {
+		if len(adminGroups) > 0 && !user.AdminRoleInAuth { // skip checking admin group if user already has admin role
 			agm := make(map[string]struct{})
 			for _, ag := range adminGroups {
 				agm[ag] = struct{}{}
@@ -108,5 +115,4 @@ func UserFromReviewStatus(status k8s_api_v1beta1.TokenReviewStatus, adminGroups 
 		}
 	}
 	return user, nil
-
 }
