@@ -18,6 +18,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { Message } from './message';
 import { MessageService } from './message.service';
 import { CommonRoutes, dismissInterval, httpStatusCode } from "../../entities/shared.const";
+import { delUrlParam } from "../../units/utils";
+import { UN_LOGGED_PARAM } from "../../../account/sign-in/sign-in.service";
 
 const YES: string = 'yes';
 @Component({
@@ -127,7 +129,9 @@ export class MessageComponent implements OnInit, OnDestroy {
   }
 
   signIn(): void {
-    this.router.navigate([ CommonRoutes.EMBEDDED_SIGN_IN ], {queryParams: {redirect_url: this.router.url}});
+    // remove queryParam UN_LOGGED_PARAM of redirect url
+    const url = delUrlParam(this.router.url, UN_LOGGED_PARAM);
+    this.router.navigate([ CommonRoutes.EMBEDDED_SIGN_IN ], {queryParams: {redirect_url: url}});
   }
 
   onClose() {
@@ -138,6 +142,6 @@ export class MessageComponent implements OnInit, OnDestroy {
   }
   // if navigate from global search(un-logged users visit public project)
   isFromGlobalSearch(): boolean {
-    return this.route.snapshot.queryParams['publicAndNotLogged'] === YES;
+    return this.route.snapshot.queryParams[UN_LOGGED_PARAM] === YES;
   }
 }
