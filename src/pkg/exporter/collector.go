@@ -6,18 +6,6 @@ import (
 
 var (
 	namespace = "harbor"
-	subsystem = "exporter"
-)
-
-var (
-	scrapeDuration = typedDesc{
-		desc:      newDescWithLables(subsystem, "collector_duration_seconds", "Duration of a collector scrape", "collector"),
-		valueType: prometheus.GaugeValue,
-	}
-	scrapeSuccess = typedDesc{
-		desc:      newDescWithLables(subsystem, "collector_success", " Whether a collector succeeded.", "collector"),
-		valueType: prometheus.GaugeValue,
-	}
 )
 
 func newDesc(subsystem, name, help string) *prometheus.Desc {
@@ -47,9 +35,8 @@ func (d *typedDesc) Desc() *prometheus.Desc {
 	return d.desc
 }
 
-// // ErrNoData indicates the collector found no data to collect, but had no other error.
-// var ErrNoData = errors.New("collector returned no data")
-
-// func IsNoDataError(err error) bool {
-// 	return err == ErrNoData
-// }
+type collector interface {
+	prometheus.Collector
+	// Return the name of the collector
+	GetName() string
+}

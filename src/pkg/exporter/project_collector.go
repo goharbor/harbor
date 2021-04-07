@@ -106,6 +106,11 @@ func (hc *ProjectCollector) Collect(c chan<- prometheus.Metric) {
 	}
 }
 
+// GetName returns the name of the project info collector
+func (hc *ProjectCollector) GetName() string {
+	return ProjectCollectorName
+}
+
 type projectOverviewInfo struct {
 	projectTotals []projectCount
 	ProjectMap    map[int64]*projectInfo

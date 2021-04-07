@@ -24,7 +24,7 @@ var (
 			Name:      "info",
 			Help:      "the information of jobservice",
 		},
-		[]string{"node", "pool_id", "workers"},
+		[]string{"node", "pool", "workers"},
 	)
 	// JobserviceTotalTask used for collect data
 	JobserviceTotalTask = prometheus.NewCounterVec(
@@ -32,7 +32,7 @@ var (
 			Namespace: os.Getenv(NamespaceEnvKey),
 			Subsystem: os.Getenv(SubsystemEnvKey),
 			Name:      "task_total",
-			Help:      "The total number of requests",
+			Help:      "The number of processed tasks",
 		},
 		[]string{"type", "status"},
 	)
@@ -42,7 +42,7 @@ var (
 			Namespace:  os.Getenv(NamespaceEnvKey),
 			Subsystem:  os.Getenv(SubsystemEnvKey),
 			Name:       "task_process_time_seconds",
-			Help:       "The time duration of the task process time",
+			Help:       "The time duration of the task processing time",
 			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		},
 		[]string{"type", "status"})

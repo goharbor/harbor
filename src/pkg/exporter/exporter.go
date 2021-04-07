@@ -33,10 +33,11 @@ func NewExporter(opt *Opt) *Exporter {
 	if opt.CacheDuration > 0 {
 		CacheInit(opt)
 	}
-	exporter.RegisterCollector(healthCollectorName, NewHealthCollect(hbrCli))
-	exporter.RegisterCollector(systemInfoCollectorName, NewSystemInfoCollector(hbrCli))
-	exporter.RegisterCollector(ProjectCollectorName, NewProjectCollector())
-	exporter.RegisterCollector(JobServiceCollectorName, NewJobServiceCollector())
+	exporter.RegisterCollector(NewHealthCollect(hbrCli),
+		NewSystemInfoCollector(hbrCli),
+		NewProjectCollector(),
+		NewJobServiceCollector())
+
 	r := prometheus.NewRegistry()
 	r.MustRegister(exporter)
 	exporter.Server = newServer(opt, r)
@@ -52,12 +53,15 @@ type Exporter struct {
 }
 
 // RegisterCollector register a collector to expoter
-func (e *Exporter) RegisterCollector(name string, c prometheus.Collector) error {
-	if _, ok := e.collectors[name]; ok {
-		return errors.New("collector name is already registered")
+func (e *Exporter) RegisterCollector(collectors ...collector) error {
+	for _, c := range collectors {
+		name := c.GetName()
+		if _, ok := e.collectors[name]; ok {
+			return errors.New("collector name is already registered")
+		}
+		e.collectors[name] = c
+		log.Infof("collector %s registered ...", name)
 	}
-	e.collectors[name] = c
-	log.Infof("collector %s registered ...", name)
 	return nil
 }
 

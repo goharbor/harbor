@@ -25,10 +25,6 @@ var (
 		desc:      newDesc("", "task_scheduled_total", "total number of scheduled job"),
 		valueType: prometheus.GaugeValue,
 	}
-	jobServiceScheduledJobFails = typedDesc{
-		desc:      newDescWithLables("", "task_scheduled_fails", "fail number of a scheduled job", "type"),
-		valueType: prometheus.GaugeValue,
-	}
 )
 
 // NewJobServiceCollector ...
@@ -55,13 +51,17 @@ func (hc *JobServiceCollector) Collect(c chan<- prometheus.Metric) {
 	}
 }
 
+// GetName returns the name of the job service collector
+func (hc *JobServiceCollector) GetName() string {
+	return JobServiceCollectorName
+}
+
 func (hc *JobServiceCollector) getDescribeInfo() []*prometheus.Desc {
 	return []*prometheus.Desc{
 		jobServiceTaskQueueSize.Desc(),
 		jobServiceTaskQueueLatency.Desc(),
 		jobServiceConcurrency.Desc(),
 		jobServiceScheduledJobTotal.Desc(),
-		jobServiceScheduledJobFails.Desc(),
 	}
 }
 

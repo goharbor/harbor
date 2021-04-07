@@ -48,6 +48,12 @@ func (hc *HealthCollector) Collect(c chan<- prometheus.Metric) {
 		c <- m
 	}
 }
+
+// GetName returns the name of the health collector
+func (hc *HealthCollector) GetName() string {
+	return healthCollectorName
+}
+
 func (hc *HealthCollector) getHealthStatus() []prometheus.Metric {
 	if CacheEnabled() {
 		value, ok := CacheGet(healthCollectorName)
