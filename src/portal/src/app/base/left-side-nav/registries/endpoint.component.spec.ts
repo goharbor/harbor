@@ -3,15 +3,16 @@ import { NO_ERRORS_SCHEMA } from "@angular/core";
 import { EndpointComponent } from "./endpoint.component";
 import { CreateEditEndpointComponent } from "./create-edit-endpoint/create-edit-endpoint.component";
 import { ErrorHandler } from "../../../shared/units/error-handler";
-import { Endpoint } from "../../../shared/services";
 import { OperationService } from "../../../shared/components/operation/operation.service";
 import { click } from "../../../shared/units/utils";
 import { of } from "rxjs";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { AppConfigService } from '../../../services/app-config.service';
 import { SharedTestingModule } from "../../../shared/shared.module";
 import { ADAPTERS_MAP, EndpointService } from "../../../shared/services/endpoint.service";
 import { delay } from "rxjs/operators";
+import { RegistryService } from "../../../../../ng-swagger-gen/services/registry.service";
+import { Registry } from "../../../../../ng-swagger-gen/models/registry";
 
 describe("EndpointComponent (inline template)", () => {
   let adapterInfoMockData = {
@@ -235,7 +236,7 @@ describe("EndpointComponent (inline template)", () => {
       return of(adapterInfoMockData).pipe(delay(0));
     }
   };
-  let mockData: Endpoint[] = [
+  let mockData: Registry[] = [
     {
       id: 1,
       credential: {
@@ -303,7 +304,7 @@ describe("EndpointComponent (inline template)", () => {
   const mockedEndpointService = {
     getEndpoints(targetName: string) {
       if (targetName) {
-        const endpoints: Endpoint[] = [];
+        const endpoints: Registry[] = [];
         mockData.forEach( item => {
           if (item.name.indexOf(targetName) !== -1) {
             endpoints.push(item);
@@ -321,7 +322,7 @@ describe("EndpointComponent (inline template)", () => {
     },
     getEndpoint(endPointId: number | string) {
       if (endPointId) {
-        let endpoint: Endpoint;
+        let endpoint: Registry;
         mockData.forEach( item => {
           if (item.id === endPointId) {
             endpoint = item;
@@ -338,6 +339,28 @@ describe("EndpointComponent (inline template)", () => {
       return adapter;
     }
   };
+  const mockRegistryService = {
+    listRegistriesResponse(param?: RegistryService.ListRegistriesParams) {
+      if (param && param.q) {
+        const endpoints: Registry[] = [];
+        mockData.forEach( item => {
+          if (param.q.indexOf(item.name) !== -1) {
+            endpoints.push(item);
+          }
+        });
+        const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
+          headers: new HttpHeaders({'x-total-count': endpoints.length.toString()}),
+          body: endpoints
+        });
+        return of(response).pipe(delay(0));
+      }
+      const res: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
+        headers: new HttpHeaders({'x-total-count': '3'}),
+        body: mockData
+      });
+      return of(res).pipe(delay(0));
+    }
+  };
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [SharedTestingModule],
@@ -351,6 +374,7 @@ describe("EndpointComponent (inline template)", () => {
         { provide: OperationService },
         { provide: HttpClient, useValue: fakedHttp },
         { provide: AppConfigService, useValue: mockAppConfigService },
+        { provide: RegistryService, useValue: mockRegistryService },
       ],
       schemas: [
           NO_ERRORS_SCHEMA
