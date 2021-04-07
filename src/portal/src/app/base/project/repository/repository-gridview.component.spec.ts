@@ -13,6 +13,7 @@ import { ErrorHandler } from "../../../shared/units/error-handler";
 import { ActivatedRoute } from "@angular/router";
 import { Repository as NewRepository } from "../../../../../ng-swagger-gen/models/repository";
 import { SharedTestingModule } from "../../../shared/shared.module";
+import {GridViewComponent} from "./gridview/grid-view.component";
 
 describe('RepositoryComponentGridview (inline template)', () => {
 
@@ -95,12 +96,23 @@ describe('RepositoryComponentGridview (inline template)', () => {
     }
   };
   beforeEach(waitForAsync(() => {
+    let store = {};
+    spyOn(localStorage, 'getItem').and.callFake( key => {
+      return store[key];
+    });
+    spyOn(localStorage, 'setItem').and.callFake((key, value) => {
+      return store[key] = value + '';
+    });
+    spyOn(localStorage, 'clear').and.callFake( () => {
+      store = {};
+    });
     TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
       ],
       declarations: [
-        RepositoryGridviewComponent
+        RepositoryGridviewComponent,
+        GridViewComponent
       ],
       providers: [
         { provide: ActivatedRoute, useValue: fakedActivatedRoute },
@@ -134,4 +146,22 @@ describe('RepositoryComponentGridview (inline template)', () => {
   it('should create', waitForAsync(() => {
     expect(compRepo).toBeTruthy();
   }));
+  it('should be card view', async () => {
+    const cardViewButton = fixtureRepo.nativeElement.querySelector('.card-btn');
+    cardViewButton.click();
+    cardViewButton.dispatchEvent(new Event('click'));
+    fixtureRepo.detectChanges();
+    await fixtureRepo.whenStable();
+    const cordView = fixtureRepo.nativeElement.querySelector('hbr-gridview');
+    expect(cordView).toBeTruthy();
+  });
+  it('should be list view', async () => {
+    const listViewButton = fixtureRepo.nativeElement.querySelector('.list-btn');
+    listViewButton.click();
+    listViewButton.dispatchEvent(new Event('click'));
+    fixtureRepo.detectChanges();
+    await fixtureRepo.whenStable();
+    const listView = fixtureRepo.nativeElement.querySelector('clr-datagrid');
+    expect(listView).toBeTruthy();
+  });
 });

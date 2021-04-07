@@ -107,5 +107,9 @@
             </a>
         </ng-template>
     </hbr-gridview>
+    <div *ngIf="isFirstLoadingGridView && isCardView" class="first-loading">
+        <div class="spinner"></div>
+    </div>
+
   <confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
 </div>

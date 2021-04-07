@@ -240,3 +240,5 @@ export enum ResourceType {
   CHART_VERSION = 2,
   REPOSITORY_TAG = 3,
 }
+
+export const CARD_VIEW_LOCALSTORAGE_KEY = 'card-view';
