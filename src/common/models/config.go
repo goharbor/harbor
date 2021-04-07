@@ -72,6 +72,7 @@ type HTTPAuthProxy struct {
 	Endpoint            string   `json:"endpoint"`
 	TokenReviewEndpoint string   `json:"tokenreivew_endpoint"`
 	AdminGroups         []string `json:"admin_groups"`
+	AdminUsernames      []string `json:"admin_usernames"`
 	VerifyCert          bool     `json:"verify_cert"`
 	SkipSearch          bool     `json:"skip_search"`
 	ServerCertificate   string   `json:"server_certificate"`
