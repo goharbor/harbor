@@ -68,6 +68,7 @@ import { errorHandler } from "../../../../../../../shared/units/shared.utils";
 import { ConfirmationDialogComponent } from "../../../../../../../shared/components/confirmation-dialog";
 import { ConfirmationMessage } from "../../../../../../global-confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../../../../../../global-confirmation-dialog/confirmation-state-message";
+import { UN_LOGGED_PARAM } from "../../../../../../../account/sign-in/sign-in.service";
 
 export interface LabelState {
   iconsShow: boolean;
@@ -438,7 +439,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       artifactPullCommands.forEach(artifactPullCommand => {
         if (artifactPullCommand.type === artifact.type) {
           artifact.pullCommand =
-          `${artifactPullCommand.pullCommand} ${this.registryUrl}/${this.projectName}/${this.repoName}@${artifact.digest}`;
+          `${artifactPullCommand.pullCommand} ${this.registryUrl ?
+            this.registryUrl : location.hostname}/${this.projectName}/${this.repoName}@${artifact.digest}`;
         }
       });
     });
@@ -834,8 +836,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
   goIntoArtifactSummaryPage(artifact: Artifact): void {
     const relativeRouterLink: string[] = ['artifacts', artifact.digest];
-    if (this.activatedRoute.snapshot.queryParams['publicAndNotLogged'] === YES) {
-      this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute, queryParams: {publicAndNotLogged: YES} });
+    if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
+      this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute, queryParams: {[UN_LOGGED_PARAM]: YES} });
     } else {
       this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute });
     }
@@ -957,8 +959,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       depth = artifact.digest;
     }
     const linkUrl = ['harbor', 'projects', this.projectId, 'repositories', this.repoName, 'depth', depth];
-    if (this.activatedRoute.snapshot.queryParams['publicAndNotLogged'] === YES) {
-      this.router.navigate(linkUrl, {queryParams: {publicAndNotLogged: YES}});
+    if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
+      this.router.navigate(linkUrl, {queryParams: {[UN_LOGGED_PARAM]: YES}});
     } else {
       this.router.navigate(linkUrl);
     }

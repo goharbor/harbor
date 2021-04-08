@@ -723,3 +723,33 @@ export function isSameArrayValue(a: any, b: any): boolean {
     }
     return false;
 }
+
+/**
+ * delete specified param from target url
+ * @param url
+ * @param key
+ */
+export function delUrlParam(url: string, key: string): string {
+    if (url && url.indexOf('?') !== -1) {
+        const baseUrl: string = url.split('?')[0];
+        const query: string = url.split('?')[1];
+        if (query.indexOf(key) > -1) {
+            let obj = {};
+            let arr: any[] = query.split('&');
+            for (let i = 0; i < arr.length; i++) {
+                arr[i] = arr[i].split('=');
+                obj[arr[i][0]] = arr[i][1];
+            }
+            delete obj[key];
+            if (!Object.keys(obj) || !Object.keys(obj).length) {
+                return baseUrl;
+            }
+            return baseUrl + '?' +
+              JSON.stringify(obj)
+                .replace(/[\"\{\}]/g, '')
+                .replace(/\:/g, '=')
+                .replace(/\,/g, '&');
+        }
+    }
+    return url;
+}
