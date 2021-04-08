@@ -19,6 +19,7 @@ Default Tags  Nightly
 
 *** Test Cases ***
 Test Suites Setup For UI Test
+    [Tags]  setup
     Nightly Test Setup For Nightly  ${ip}  ${HARBOR_PASSWORD}  ${ip1}
     Setup API Test
 
