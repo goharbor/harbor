@@ -39,6 +39,19 @@ jobs:
       - uses: actions/checkout@v2
         with:
           path: src/github.com/goharbor/harbor
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v2.1
+      - name: Build Dev Base Image
+        if: contains(steps.changed-files.outputs.modified_files, 'VERSION')
+        run:
+            base_image_tag=dev
+            sudo make build_base_docker -e NPM_REGISTRY=http://build-artifactory.eng.vmware.com/artifactory/api/npm/npm -e BASEIMAGETAG=$base_image_tag -e REGISTRYUSER="${{ secrets.DOCKER_HUB_USERNAME }}" -e REGISTRYPASSWORD="${{ secrets.DOCKER_HUB_PASSWORD }}" -e PUSHBASEIMAGE=yes
+      - name: Build Release Base Image
+        if: contains(steps.changed-files.outputs.modified_files, 'VERSION')
+        run:
+            base_image_tag=$(cat ./VERSION)
+            sudo make build_base_docker -e NPM_REGISTRY=http://build-artifactory.eng.vmware.com/artifactory/api/npm/npm -e BASEIMAGETAG=$base_image_tag -e REGISTRYUSER="${{ secrets.DOCKER_HUB_USERNAME }}" -e REGISTRYPASSWORD="${{ secrets.DOCKER_HUB_PASSWORD }}" -e PUSHBASEIMAGE=yes
       - name: Build Package
         run: |
           set -x
@@ -58,20 +71,16 @@ jobs:
 
           if [[ $target_branch == "master" ]]; then
             Harbor_Assets_Version=$Harbor_Package_Version
+            harbor_target_bucket=$harbor_builds_bucket
           else
             Harbor_Assets_Version=$target_release_version
+            harbor_target_bucket=$harbor_releases_bucket/$target_branch
           fi
 
           if [[ $target_branch == "release-"* ]]; then
             Harbor_Build_Base_Tag=$target_release_version
           else
             Harbor_Build_Base_Tag=dev
-          fi
-
-          if [[ $target_branch == "master" ]]; then
-            harbor_target_bucket=$harbor_builds_bucket
-          else
-            harbor_target_bucket=$harbor_releases_bucket/$target_branch
           fi
 
           cd src/github.com/goharbor/harbor
