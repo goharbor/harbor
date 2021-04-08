@@ -112,3 +112,16 @@ if [ $? -ne 0 ];then
 else
   success "Pushing image $IMAGE succeeded";
 fi
+
+h2 "Remove local goharbor images"
+DOCKER_RMI="docker rmi -f $(docker images | grep "goharbor" | awk '{print $3}')"
+info "$DOCKER_RMI"
+DOCKER_RMI_OUTPUT=$($DOCKER_RMI)
+
+if [ $? -ne 0 ];then
+  warn $DOCKER_RMI_OUTPUT
+  error "Clean local goharbor images failed";
+else
+  success "Clean local goharbor images succeeded";
+fi
+

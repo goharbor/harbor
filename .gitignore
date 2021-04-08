@@ -48,3 +48,5 @@ src/core/conf/app.conf
 
 src/server/v2.0/models/
 src/server/v2.0/restapi/
+.editorconfig
+
