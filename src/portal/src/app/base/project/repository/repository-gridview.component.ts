@@ -176,10 +176,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
           params.q = encodeURIComponent(`name=~${this.lastFilteredRepoName}`);
         }
           this.loading = true;
-          return this.newRepoService.listRepositoriesResponse(params);
+          return this.newRepoService.listRepositoriesResponse(params)
+            .pipe(finalize(() => this.loading = false));
         })
-      ).pipe(finalize(() => this.loading = false))
-          .subscribe((repo: __StrictHttpResponse<Array<NewRepository>>) => {
+      ).subscribe((repo: __StrictHttpResponse<Array<NewRepository>>) => {
         this.totalCount = +repo.headers.get('x-total-count');
         this.repositories = repo.body;
       }, error => {
