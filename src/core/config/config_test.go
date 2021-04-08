@@ -248,6 +248,7 @@ y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 	assert.Equal(t, *v, models.HTTPAuthProxy{
 		Endpoint:          "https://auth.proxy/suffix",
 		AdminGroups:       []string{"group1", "group2"},
+		AdminUsernames:    []string{},
 		SkipSearch:        true,
 		VerifyCert:        true,
 		ServerCertificate: certificate,

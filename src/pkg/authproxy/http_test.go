@@ -27,16 +27,18 @@ func TestUserFromReviewStatus(t *testing.T) {
 		adminInAuth bool
 	}
 	cases := []struct {
-		input       v1beta1.TokenReviewStatus
-		adminGroups []string
-		expect      result
+		input          v1beta1.TokenReviewStatus
+		adminGroups    []string
+		adminUsernames []string
+		expect         result
 	}{
 		{
 			input: v1beta1.TokenReviewStatus{
 				Authenticated: false,
 				Error:         "connection error",
 			},
-			adminGroups: []string{"admin"},
+			adminGroups:    []string{"admin"},
+			adminUsernames: []string{},
 			expect: result{
 				hasErr: true,
 			},
@@ -49,7 +51,8 @@ func TestUserFromReviewStatus(t *testing.T) {
 					UID:      "u-1",
 				},
 			},
-			adminGroups: []string{"admin"},
+			adminGroups:    []string{"admin"},
+			adminUsernames: []string{},
 			expect: result{
 				hasErr:      false,
 				username:    "jack",
@@ -66,7 +69,8 @@ func TestUserFromReviewStatus(t *testing.T) {
 				},
 				Error: "",
 			},
-			adminGroups: []string{"group2", "admin"},
+			adminGroups:    []string{"group2", "admin"},
+			adminUsernames: []string{},
 			expect: result{
 				hasErr:      false,
 				username:    "daniel",
@@ -83,17 +87,18 @@ func TestUserFromReviewStatus(t *testing.T) {
 				},
 				Error: "",
 			},
-			adminGroups: []string{},
+			adminGroups:    []string{},
+			adminUsernames: []string{"daniel", "admin"},
 			expect: result{
 				hasErr:      false,
 				username:    "daniel",
 				groupLen:    2,
-				adminInAuth: false,
+				adminInAuth: true,
 			},
 		},
 	}
 	for _, c := range cases {
-		u, err := UserFromReviewStatus(c.input, c.adminGroups)
+		u, err := UserFromReviewStatus(c.input, c.adminGroups, c.adminUsernames)
 		if c.expect.hasErr == true {
 			assert.NotNil(t, err)
 		} else {
