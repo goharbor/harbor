@@ -6,12 +6,12 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/core/config"
-	core_cfg "github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	rbac_model "github.com/goharbor/harbor/src/pkg/rbac/model"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
+	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/rbac"
@@ -22,7 +22,7 @@ import (
 )
 
 type ControllerTestSuite struct {
-	suite.Suite
+	htesting.Suite
 }
 
 func (suite *ControllerTestSuite) TestGet() {
@@ -92,7 +92,7 @@ func (suite *ControllerTestSuite) TestCreate() {
 	conf := map[string]interface{}{
 		common.RobotTokenDuration: "30",
 	}
-	core_cfg.InitWithSettings(conf)
+	config.InitWithSettings(conf)
 
 	projectMgr := &project.Manager{}
 	rbacMgr := &rbac.Manager{}

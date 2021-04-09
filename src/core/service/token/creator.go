@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/controller/config"
 	"net/http"
 	"net/url"
 	"strings"
@@ -27,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 )
@@ -245,7 +245,7 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return MakeToken(ctx.GetUsername(), g.service, access)
+	return MakeToken(r.Context(), ctx.GetUsername(), g.service, access)
 }
 
 func parseScopes(u *url.URL) []string {

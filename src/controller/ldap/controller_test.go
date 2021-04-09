@@ -16,7 +16,7 @@ package ldap
 
 import (
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/goharbor/harbor/src/testing/mock"

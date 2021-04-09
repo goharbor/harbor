@@ -12,18 +12,19 @@
 
 
 from __future__ import absolute_import
+
 import os
 import sys
+
 sys.path.append(os.environ["SWAGGER_CLIENT_PATH"])
 
 
 import unittest
 import testutils
+from testutils import ADMIN_CLIENT
 
-import swagger_client
-from swagger_client.rest import ApiException
 from swagger_client.models.user_group import UserGroup
-from swagger_client.models.configurations import Configurations
+from library.configurations import Configurations
 from pprint import pprint
 
 #Testcase
@@ -36,8 +37,9 @@ class TestUserGroup(unittest.TestCase):
     product_api = testutils.GetProductApi("admin", "Harbor12345")
     groupId = 0
     def setUp(self):
-        result = self.product_api.configurations_put(configurations=Configurations(ldap_group_attribute_name="cn", ldap_group_base_dn="ou=groups,dc=example,dc=com", ldap_group_search_filter="objectclass=groupOfNames", ldap_group_search_scope=2))
-        pprint(result)
+        self.conf= Configurations()
+        self.conf.set_configurations_of_ldap(ldap_filter="", ldap_group_attribute_name="cn", ldap_group_base_dn="ou=groups,dc=example,dc=com",
+                                             ldap_group_search_filter="objectclass=groupOfNames", ldap_group_search_scope=2, **ADMIN_CLIENT)
         pass
 
     def tearDown(self):

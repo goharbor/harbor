@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
 
 	"github.com/goharbor/harbor/src/controller/quota"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -39,7 +39,7 @@ func gcCallback(ctx context.Context, p string) error {
 }
 
 func gcTaskStatusChange(ctx context.Context, taskID int64, status string) error {
-	if status == job.SuccessStatus.String() && config.QuotaPerProjectEnable() {
+	if status == job.SuccessStatus.String() && config.QuotaPerProjectEnable(ctx) {
 		go func() {
 			quota.RefreshForProjects(orm.Context())
 		}()

@@ -14,6 +14,7 @@
 package db
 
 import (
+	"github.com/goharbor/harbor/src/controller/config"
 	"log"
 	"os"
 	"testing"
@@ -24,8 +25,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
-	coreConfig "github.com/goharbor/harbor/src/core/config"
 )
 
 var testConfig = map[string]interface{}{
@@ -62,7 +61,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
 
-	coreConfig.Init()
+	config.Init()
 
 	config.Upload(testConfig)
 	retCode := m.Run()

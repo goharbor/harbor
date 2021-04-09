@@ -17,6 +17,8 @@ package controllers
 import (
 	"bytes"
 	"context"
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"html/template"
 	"net"
 	"net/http"
@@ -35,7 +37,6 @@ import (
 	email_util "github.com/goharbor/harbor/src/common/utils/email"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 )
@@ -123,7 +124,7 @@ func (cc *CommonController) LogOut() {
 
 // UserExists checks if user exists when user input value in sign in form.
 func (cc *CommonController) UserExists() {
-	flag, err := config.SelfRegistration()
+	flag, err := config.SelfRegistration(orm.Context())
 	if err != nil {
 		log.Errorf("Failed to get the status of self registration flag, error: %v, disabling user existence check", err)
 	}
@@ -216,7 +217,7 @@ func (cc *CommonController) SendResetEmail() {
 		cc.CustomAbort(http.StatusInternalServerError, "internal_error")
 	}
 
-	settings, err := config.Email()
+	settings, err := config.Email(orm.Context())
 	if err != nil {
 		log.Errorf("failed to get email configurations: %v", err)
 		cc.CustomAbort(http.StatusInternalServerError, "internal_error")
@@ -281,7 +282,7 @@ func isUserResetable(u *models.User) bool {
 	if u == nil {
 		return false
 	}
-	mode, err := config.AuthMode()
+	mode, err := config.AuthMode(orm.Context())
 	if err != nil {
 		log.Errorf("Failed to get the auth mode, error: %v", err)
 		return false

@@ -17,6 +17,8 @@ package ldap
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
 	"regexp"
 	"strings"
@@ -32,7 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/ldap"
 
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -45,13 +46,13 @@ type Auth struct {
 // if the check is successful a dummy record will be inserted into DB, such that this user can
 // be associated to other entities in the system.
 func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
-
+	ctx := orm.Context()
 	p := m.Principal
 	if len(strings.TrimSpace(p)) == 0 {
 		log.Debugf("LDAP authentication failed for empty user id.")
 		return nil, auth.NewErrAuth("Empty user id")
 	}
-	ldapSession, err := ldapCtl.Ctl.Session(context.Background())
+	ldapSession, err := ldapCtl.Ctl.Session(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("can not load system ldap config: %v", err)
 	}
@@ -88,15 +89,15 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	u.Email = strings.TrimSpace(ldapUsers[0].Email)
 
 	l.syncUserInfoFromDB(&u)
-	l.attachLDAPGroup(ldapUsers, &u, ldapSession)
+	l.attachLDAPGroup(ctx, ldapUsers, &u, ldapSession)
 
 	return &u, nil
 }
 
-func (l *Auth) attachLDAPGroup(ldapUsers []model.User, u *models.User, sess *ldap.Session) {
+func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *models.User, sess *ldap.Session) {
 	// Retrieve ldap related info in login to avoid too many traffic with LDAP server.
 	// Get group admin dn
-	groupCfg, err := config.LDAPGroupConf()
+	groupCfg, err := config.LDAPGroupConf(ctx)
 	if err != nil {
 		log.Warningf("Failed to fetch ldap group configuration:%v", err)
 		// most likely user doesn't configure user group info, it should not block user login
@@ -161,7 +162,7 @@ func (l *Auth) OnBoardUser(u *models.User) error {
 // SearchUser -- Search user in ldap
 func (l *Auth) SearchUser(username string) (*models.User, error) {
 	var user models.User
-	s, err := ldapCtl.Ctl.Session(context.Background())
+	s, err := ldapCtl.Ctl.Session(orm.Context())
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +197,7 @@ func (l *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
 	if _, err := goldap.ParseDN(groupKey); err != nil {
 		return nil, auth.ErrInvalidLDAPGroupDN
 	}
-	s, err := ldapCtl.Ctl.Session(context.Background())
+	s, err := ldapCtl.Ctl.Session(orm.Context())
 
 	if err != nil {
 		return nil, fmt.Errorf("can not load system ldap config: %v", err)

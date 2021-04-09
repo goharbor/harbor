@@ -1008,46 +1008,6 @@ paths:
           description: Only admin has this authority.
         '500':
           description: Unexpected internal errors.
-  /configurations:
-    get:
-      summary: Get system configurations.
-      description: |
-        This endpoint is for retrieving system configurations that only provides for admin user.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get system configurations successfully. The response body is a map.
-          schema:
-            $ref: '#/definitions/ConfigurationsResponse'
-        '401':
-          description: User need to log in first.ß
-        '403':
-          description: User does not have permission of admin role.
-        '500':
-          description: Unexpected internal errors.
-    put:
-      summary: Modify system configurations.
-      description: |
-        This endpoint is for modifying system configurations that only provides for admin user.
-      tags:
-        - Products
-      parameters:
-        - name: configurations
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/Configurations'
-          description: 'The configuration map can contain a subset of the attributes of the schema, which are to be updated.'
-      responses:
-        '200':
-          description: Modify system configurations successfully.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission of admin role.
-        '500':
-          description: Unexpected internal errors.
   /email/ping:
     post:
       summary: Test connection and authentication with email server.

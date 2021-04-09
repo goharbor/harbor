@@ -27,11 +27,11 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/config"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
@@ -455,7 +455,7 @@ func getInternalTokenServiceEndpoint(ctx job.Context) (string, error) {
 		return "", errors.Errorf("failed to get config manager")
 	}
 
-	return cfgMgr.Get(common.CoreURL).GetString() + "/service/token", nil
+	return cfgMgr.Get(ctx.SystemContext(), common.CoreURL).GetString() + "/service/token", nil
 }
 
 // makeBasicAuthorization creates authorization from a robot account based on the arguments for scanning.

@@ -17,6 +17,7 @@ package reg
 import (
 	"context"
 	commonthttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/controller/config"
 
 	// register the Harbor adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/harbor"
@@ -52,7 +53,6 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/githubcr"
 
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/dao"

@@ -15,6 +15,8 @@
 package security
 
 import (
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"strings"
 
@@ -24,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/authproxy"
@@ -50,7 +51,7 @@ func (a *authProxy) Generate(req *http.Request) security.Context {
 		log.Errorf("user name %s doesn't meet the auth proxy name pattern", proxyUserName)
 		return nil
 	}
-	httpAuthProxyConf, err := config.HTTPAuthProxySetting()
+	httpAuthProxyConf, err := config.HTTPAuthProxySetting(orm.Context())
 	if err != nil {
 		log.Errorf("failed to get auth proxy settings: %v", err)
 		return nil

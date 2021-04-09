@@ -17,6 +17,7 @@ package quota
 import (
 	"context"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/controller/event"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -25,7 +26,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	"github.com/goharbor/harbor/src/pkg/notifier"

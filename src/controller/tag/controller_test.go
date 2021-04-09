@@ -16,7 +16,7 @@ package tag
 
 import (
 	"github.com/goharbor/harbor/src/common"
-	coreConfig "github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	pkg_artifact "github.com/goharbor/harbor/src/pkg/artifact"
@@ -54,7 +54,7 @@ func (c *controllerTestSuite) SetupTest() {
 	var tagCtlTestConfig = map[string]interface{}{
 		common.WithNotary: false,
 	}
-	coreConfig.InitWithSettings(tagCtlTestConfig)
+	config.InitWithSettings(tagCtlTestConfig)
 }
 
 func (c *controllerTestSuite) TestEnsureTag() {

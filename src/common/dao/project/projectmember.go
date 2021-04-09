@@ -18,7 +18,9 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 // GetProjectMember gets all members of the project.
@@ -160,9 +162,9 @@ func SearchMemberByName(projectID int64, entityName string) ([]*models.Member, e
 			 order by entity_name  `
 	queryParam := make([]interface{}, 4)
 	queryParam = append(queryParam, projectID)
-	queryParam = append(queryParam, "%"+dao.Escape(entityName)+"%")
+	queryParam = append(queryParam, "%"+orm.Escape(entityName)+"%")
 	queryParam = append(queryParam, projectID)
-	queryParam = append(queryParam, "%"+dao.Escape(entityName)+"%")
+	queryParam = append(queryParam, "%"+orm.Escape(entityName)+"%")
 	members := []*models.Member{}
 	log.Debugf("Query sql: %v", sql)
 	_, err := o.Raw(sql, queryParam).QueryRows(&members)
@@ -184,7 +186,7 @@ func ListRoles(user *models.User, projectID int64) ([]int, error) {
 		sql += fmt.Sprintf(`union
 			select role
 			from project_member
-			where entity_type = 'g' and entity_id in ( %s ) and project_id = ? `, dao.ParamPlaceholderForIn(len(user.GroupIDs)))
+			where entity_type = 'g' and entity_id in ( %s ) and project_id = ? `, utils.ParamPlaceholderForIn(len(user.GroupIDs)))
 		params = append(params, user.GroupIDs)
 		params = append(params, projectID)
 	}

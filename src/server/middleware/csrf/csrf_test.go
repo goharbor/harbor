@@ -2,7 +2,8 @@ package csrf
 
 import (
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +12,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	test.InitDatabaseFromEnv()
 	conf := map[string]interface{}{}
 	config.InitWithSettings(conf)
 	result := m.Run()

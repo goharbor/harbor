@@ -18,12 +18,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"

@@ -16,12 +16,12 @@ package dao
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common/models"
 	"net/url"
 	"os"
 	"strconv"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	migrate "github.com/golang-migrate/migrate/v4"

@@ -146,14 +146,6 @@ func PaginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter 
 	return qs
 }
 
-// Escape ..
-func Escape(str string) string {
-	str = strings.Replace(str, `\`, `\\`, -1)
-	str = strings.Replace(str, `%`, `\%`, -1)
-	str = strings.Replace(str, `_`, `\_`, -1)
-	return str
-}
-
 // implements github.com/golang-migrate/migrate/v4.Logger
 type mLogger struct {
 	logger *log.Logger

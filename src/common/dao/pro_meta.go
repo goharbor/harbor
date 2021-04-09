@@ -16,7 +16,7 @@ package dao
 
 import (
 	"fmt"
-	"strings"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
@@ -43,7 +43,7 @@ func DeleteProjectMetadata(projectID int64, name ...string) error {
 	params = append(params, projectID)
 
 	if len(name) > 0 {
-		sql += fmt.Sprintf(` and name in ( %s )`, ParamPlaceholderForIn(len(name)))
+		sql += fmt.Sprintf(` and name in ( %s )`, orm.ParamPlaceholderForIn(len(name)))
 		params = append(params, name)
 	}
 
@@ -73,22 +73,12 @@ func GetProjectMetadata(projectID int64, name ...string) ([]*models.ProjectMetad
 	params = append(params, projectID)
 
 	if len(name) > 0 {
-		sql += fmt.Sprintf(` and name in ( %s )`, ParamPlaceholderForIn(len(name)))
+		sql += fmt.Sprintf(` and name in ( %s )`, orm.ParamPlaceholderForIn(len(name)))
 		params = append(params, name)
 	}
 
 	_, err := GetOrmer().Raw(sql, params).QueryRows(&proMetas)
 	return proMetas, err
-}
-
-// ParamPlaceholderForIn returns a string that contains placeholders for sql keyword "in"
-// e.g. n=3, returns "?,?,?"
-func ParamPlaceholderForIn(n int) string {
-	placeholders := []string{}
-	for i := 0; i < n; i++ {
-		placeholders = append(placeholders, "?")
-	}
-	return strings.Join(placeholders, ",")
 }
 
 // ListProjectMetadata ...

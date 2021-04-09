@@ -1,11 +1,19 @@
 package util
 
 import (
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/controller/config"
+	"os"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/config"
 )
+
+func TestMain(m *testing.M) {
+	// do some initialization
+	test.InitDatabaseFromEnv()
+	os.Exit(m.Run())
+}
 
 func TestBuildImageResourceURL(t *testing.T) {
 	cfg := map[string]interface{}{

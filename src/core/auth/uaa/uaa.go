@@ -16,6 +16,8 @@ package uaa
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"os"
 	"strings"
 	"sync"
@@ -25,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/uaa"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -129,7 +130,7 @@ func (u *Auth) SearchUser(username string) (*models.User, error) {
 
 func (u *Auth) ensureClient() error {
 	var cfg *uaa.ClientConfig
-	UAASettings, err := config.UAASettings()
+	UAASettings, err := config.UAASettings(orm.Context())
 	//	log.Debugf("Uaa settings: %+v", UAASettings)
 	if err != nil {
 		log.Warningf("Failed to get UAA setting from Admin Server, error: %v", err)

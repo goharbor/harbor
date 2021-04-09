@@ -19,6 +19,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/rbac/system"
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -29,7 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -63,7 +64,7 @@ type secretReq struct {
 // Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
 	ua.BaseController.Prepare()
-	mode, err := config.AuthMode()
+	mode, err := config.AuthMode(orm.Context())
 	if err != nil {
 		log.Errorf("failed to get auth mode: %v", err)
 		ua.SendInternalServerError(errors.New(""))
@@ -81,7 +82,7 @@ func (ua *UserAPI) Prepare() {
 		ua.secretKey = key
 	}
 
-	self, err := config.SelfRegistration()
+	self, err := config.SelfRegistration(orm.Context())
 	if err != nil {
 		log.Errorf("failed to get self registration: %v", err)
 		ua.SendInternalServerError(errors.New(""))

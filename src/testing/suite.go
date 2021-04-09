@@ -16,6 +16,7 @@ package testing
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/controller/config"
 	"io"
 	"math/rand"
 	"net/http"
@@ -26,7 +27,6 @@ import (
 	o "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/opencontainers/go-digest"

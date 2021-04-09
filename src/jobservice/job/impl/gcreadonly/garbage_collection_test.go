@@ -15,10 +15,11 @@
 package gcreadonly
 
 import (
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib/config"
 	"os"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
 	commom_regctl "github.com/goharbor/harbor/src/common/registryctl"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -26,6 +27,10 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	pkg_blob "github.com/goharbor/harbor/src/pkg/blob/models"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	_ "github.com/goharbor/harbor/src/pkg/config/rest"
+
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
@@ -47,8 +52,8 @@ type gcTestSuite struct {
 	originalProjectCtl project.Controller
 
 	regCtlInit  func()
-	setReadOnly func(cfgMgr *config.CfgManager, switcher bool) error
-	getReadOnly func(cfgMgr *config.CfgManager) (bool, error)
+	setReadOnly func(cfgMgr config.Manager, switcher bool) error
+	getReadOnly func(cfgMgr config.Manager) (bool, error)
 }
 
 func (suite *gcTestSuite) SetupTest() {
@@ -62,8 +67,8 @@ func (suite *gcTestSuite) SetupTest() {
 	project.Ctl = suite.projectCtl
 
 	regCtlInit = func() { commom_regctl.RegistryCtlClient = suite.registryCtlClient }
-	setReadOnly = func(cfgMgr *config.CfgManager, switcher bool) error { return nil }
-	getReadOnly = func(cfgMgr *config.CfgManager) (bool, error) { return true, nil }
+	setReadOnly = func(cfgMgr config.Manager, switcher bool) error { return nil }
+	getReadOnly = func(cfgMgr config.Manager) (bool, error) { return true, nil }
 }
 
 func (suite *gcTestSuite) TearDownTest() {
@@ -237,11 +242,12 @@ func (suite *gcTestSuite) TestRun() {
 	}, nil)
 
 	mock.OnAnything(suite.blobMgr, "CleanupAssociationsForProject").Return(nil)
-
+	mgr, err := config.GetManager(common.InMemoryCfgManager)
+	suite.Nil(err)
 	gc := &GarbageCollector{
 		artCtl:            suite.artifactCtl,
 		artrashMgr:        suite.artrashMgr,
-		cfgMgr:            config.NewInMemoryManager(),
+		cfgMgr:            mgr,
 		blobMgr:           suite.blobMgr,
 		registryCtlClient: suite.registryCtlClient,
 	}

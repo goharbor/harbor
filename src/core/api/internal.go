@@ -16,13 +16,13 @@ package api
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/controller/config"
 
 	o "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/quota"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -78,46 +78,47 @@ func (ia *InternalAPI) SwitchQuota() {
 		ia.SendBadRequestError(err)
 		return
 	}
-	cur := config.ReadOnly()
+	ctx := orm.NewContext(ia.Ctx.Request.Context(), o.NewOrm())
+	cur := config.ReadOnly(ctx)
 	// quota per project from disable to enable, it needs to update the quota usage bases on the DB records.
-	if !config.QuotaPerProjectEnable() && req.Enabled {
+	if !config.QuotaPerProjectEnable(ctx) && req.Enabled {
 		if !cur {
-			config.GetCfgManager().Set(common.ReadOnly, true)
-			config.GetCfgManager().Save()
+			config.GetCfgManager(ctx).Set(ctx, common.ReadOnly, true)
+			config.GetCfgManager(ctx).Save(ctx)
 		}
-
-		ctx := orm.NewContext(ia.Ctx.Request.Context(), o.NewOrm())
 		if err := quota.RefreshForProjects(ctx); err != nil {
 			ia.SendInternalServerError(err)
 			return
 		}
 	}
 	defer func() {
-		config.GetCfgManager().Set(common.ReadOnly, cur)
-		config.GetCfgManager().Set(common.QuotaPerProjectEnable, req.Enabled)
-		config.GetCfgManager().Save()
+		ctx := orm.Context()
+		config.GetCfgManager(ctx).Set(ctx, common.ReadOnly, cur)
+		config.GetCfgManager(ctx).Set(ctx, common.QuotaPerProjectEnable, req.Enabled)
+		config.GetCfgManager(ctx).Save(ctx)
 	}()
 	return
 }
 
 // SyncQuota ...
 func (ia *InternalAPI) SyncQuota() {
-	if !config.QuotaPerProjectEnable() {
+	if !config.QuotaPerProjectEnable(orm.Context()) {
 		ia.SendError(errors.ForbiddenError(nil).WithMessage("quota per project is disabled"))
 		return
 	}
-
-	cur := config.ReadOnly()
-	cfgMgr := config.GetCfgManager()
+	ctx := orm.Context()
+	cur := config.ReadOnly(ctx)
+	cfgMgr := config.GetCfgManager(ctx)
 	if !cur {
-		cfgMgr.Set(common.ReadOnly, true)
-		cfgMgr.Save()
+		cfgMgr.Set(ctx, common.ReadOnly, true)
+		cfgMgr.Save(ctx)
 	}
 	// For api call, to avoid the timeout, it should be asynchronous
 	go func() {
 		defer func() {
-			cfgMgr.Set(common.ReadOnly, cur)
-			cfgMgr.Save()
+			ctx := orm.Context()
+			cfgMgr.Set(ctx, common.ReadOnly, cur)
+			cfgMgr.Save(ctx)
 		}()
 		log.Info("start to sync quota(API), the system will be set to ReadOnly and back it normal once it done.")
 		ctx := orm.NewContext(context.TODO(), o.NewOrm())

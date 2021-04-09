@@ -15,19 +15,22 @@
 package dao
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
+	libOrm "github.com/goharbor/harbor/src/lib/orm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var testCtx context.Context
 
 func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
 	p, err := o.Raw(sql).Prepare()
@@ -120,6 +123,7 @@ func TestMain(m *testing.M) {
 		default:
 			log.Fatalf("invalid database: %s", database)
 		}
+		testCtx = libOrm.Context()
 		result = testForAll(m)
 
 		if result != 0 {
@@ -564,104 +568,6 @@ func TestIsSuperUser(t *testing.T) {
 	assert := assert.New(t)
 	assert.True(IsSuperUser("admin"))
 	assert.False(IsSuperUser("none"))
-}
-
-func TestSaveConfigEntries(t *testing.T) {
-	configEntries := []models.ConfigEntry{
-		{
-			Key:   "teststringkey",
-			Value: "192.168.111.211",
-		},
-		{
-			Key:   "testboolkey",
-			Value: "true",
-		},
-		{
-			Key:   "testnumberkey",
-			Value: "5",
-		},
-		{
-			Key:   common.CfgDriverDB,
-			Value: "db",
-		},
-	}
-	err := SaveConfigEntries(configEntries)
-	if err != nil {
-		t.Fatalf("failed to save configuration to database %v", err)
-	}
-	readEntries, err := GetConfigEntries()
-	if err != nil {
-		t.Fatalf("Failed to get configuration from database %v", err)
-	}
-	findItem := 0
-	for _, entry := range readEntries {
-		switch entry.Key {
-		case "teststringkey":
-			if "192.168.111.211" == entry.Value {
-				findItem++
-			}
-		case "testnumberkey":
-			if "5" == entry.Value {
-				findItem++
-			}
-		case "testboolkey":
-			if "true" == entry.Value {
-				findItem++
-			}
-		default:
-		}
-	}
-	if findItem != 3 {
-		t.Fatalf("Should update 3 configuration but only update %d", findItem)
-	}
-
-	configEntries = []models.ConfigEntry{
-		{
-			Key:   "teststringkey",
-			Value: "192.168.111.215",
-		},
-		{
-			Key:   "testboolkey",
-			Value: "false",
-		},
-		{
-			Key:   "testnumberkey",
-			Value: "7",
-		},
-		{
-			Key:   common.CfgDriverDB,
-			Value: "db",
-		},
-	}
-	err = SaveConfigEntries(configEntries)
-	if err != nil {
-		t.Fatalf("failed to save configuration to database %v", err)
-	}
-	readEntries, err = GetConfigEntries()
-	if err != nil {
-		t.Fatalf("Failed to get configuration from database %v", err)
-	}
-	findItem = 0
-	for _, entry := range readEntries {
-		switch entry.Key {
-		case "teststringkey":
-			if "192.168.111.215" == entry.Value {
-				findItem++
-			}
-		case "testnumberkey":
-			if "7" == entry.Value {
-				findItem++
-			}
-		case "testboolkey":
-			if "false" == entry.Value {
-				findItem++
-			}
-		default:
-		}
-	}
-	if findItem != 3 {
-		t.Fatalf("Should update 3 configuration but only update %d", findItem)
-	}
 }
 
 func TestIsDupRecError(t *testing.T) {
