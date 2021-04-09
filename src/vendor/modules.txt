@@ -150,8 +150,11 @@ github.com/casbin/casbin/persist/file-adapter
 github.com/casbin/casbin/rbac
 github.com/casbin/casbin/rbac/default-role-manager
 github.com/casbin/casbin/util
-# github.com/cenkalti/backoff v2.1.1+incompatible
+# github.com/cenkalti/backoff v2.2.1+incompatible
 ## explicit
+# github.com/cenkalti/backoff/v4 v4.1.0
+## explicit
+github.com/cenkalti/backoff/v4
 # github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e
 ## explicit
 # github.com/coreos/go-oidc v2.1.0+incompatible
