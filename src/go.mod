@@ -19,6 +19,7 @@ require (
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/casbin/casbin v1.7.0
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/cenkalti/backoff/v4 v4.1.0
 	github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e // indirect
 	github.com/coreos/go-oidc v2.1.0+incompatible
 	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
