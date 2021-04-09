@@ -24,7 +24,6 @@ import (
 func registerLegacyRoutes() {
 	version := APIVersion
 	beego.Router("/api/"+version+"/email/ping", &api.EmailAPI{}, "post:Ping")
-	beego.Router("/api/"+version+"/health", &api.HealthAPI{}, "get:CheckHealth")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
 	beego.Router("/api/"+version+"/statistics", &api.StatisticAPI{})

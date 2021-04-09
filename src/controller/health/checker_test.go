@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package health
 
 import (
 	"errors"
@@ -23,7 +23,6 @@ import (
 	"github.com/docker/distribution/health"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestStringOfHealthy(t *testing.T) {
@@ -82,53 +81,7 @@ func TestPeriodicHealthChecker(t *testing.T) {
 	assert.Equal(t, "unhealthy", checker.Check().Error())
 }
 
-func fakeHealthChecker(healthy bool) health.Checker {
-	return health.CheckFunc(func() error {
-		if healthy {
-			return nil
-		}
-		return errors.New("unhealthy")
-	})
-}
-func TestCheckHealth(t *testing.T) {
-	// component01: healthy, component02: healthy => status: healthy
-	HealthCheckerRegistry = map[string]health.Checker{}
-	HealthCheckerRegistry["component01"] = fakeHealthChecker(true)
-	HealthCheckerRegistry["component02"] = fakeHealthChecker(true)
-	status := map[string]interface{}{}
-	err := handleAndParse(&testingRequest{
-		method: http.MethodGet,
-		url:    "/api/health",
-	}, &status)
-	require.Nil(t, err)
-	assert.Equal(t, "healthy", status["status"].(string))
-
-	// component01: healthy, component02: unhealthy => status: unhealthy
-	HealthCheckerRegistry = map[string]health.Checker{}
-	HealthCheckerRegistry["component01"] = fakeHealthChecker(true)
-	HealthCheckerRegistry["component02"] = fakeHealthChecker(false)
-	status = map[string]interface{}{}
-	err = handleAndParse(&testingRequest{
-		method: http.MethodGet,
-		url:    "/api/health",
-	}, &status)
-	require.Nil(t, err)
-	assert.Equal(t, "unhealthy", status["status"].(string))
-}
-
 func TestCoreHealthChecker(t *testing.T) {
 	checker := coreHealthChecker()
 	assert.Equal(t, nil, checker.Check())
-}
-
-func TestDatabaseHealthChecker(t *testing.T) {
-	checker := databaseHealthChecker()
-	time.Sleep(1 * time.Second)
-	assert.Equal(t, nil, checker.Check())
-}
-
-func TestRegisterHealthCheckers(t *testing.T) {
-	HealthCheckerRegistry = map[string]health.Checker{}
-	registerHealthCheckers()
-	assert.NotNil(t, HealthCheckerRegistry["core"])
 }
