@@ -16,16 +16,15 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/user/dao"
 	"github.com/goharbor/harbor/src/pkg/user/models"
 )
-
-// User alias to models.User
-type User = models.User
 
 var (
 	// Mgr is the global project manager
@@ -40,6 +39,20 @@ type Manager interface {
 	GetByName(ctx context.Context, username string) (*models.User, error)
 	// List users according to the query
 	List(ctx context.Context, query *q.Query) (models.Users, error)
+	// Count counts the number of users according to the query
+	Count(ctx context.Context, query *q.Query) (int64, error)
+	// Create creates the user, the password of input should be plaintext
+	Create(ctx context.Context, user *models.User) (int, error)
+	// Delete deletes the user by updating user's delete flag and update the name and Email
+	Delete(ctx context.Context, id int) error
+	// SetSysAdminFlag sets the system admin flag of the user in local DB
+	SetSysAdminFlag(ctx context.Context, id int, admin bool) error
+	// UpdateProfile updates the user's profile
+	UpdateProfile(ctx context.Context, user *models.User) error
+	// UpdatePassword updates user's password
+	UpdatePassword(ctx context.Context, id int, newPassword string) error
+	// VerifyLocalPassword verifies the password against the record in DB based on the input
+	VerifyLocalPassword(ctx context.Context, username, password string) (bool, error)
 }
 
 // New returns a default implementation of Manager
@@ -49,6 +62,54 @@ func New() Manager {
 
 type manager struct {
 	dao dao.DAO
+}
+
+func (m *manager) Delete(ctx context.Context, id int) error {
+	u, err := m.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	u.Username = fmt.Sprintf("%s#%d", u.Username, u.UserID)
+	u.Email = fmt.Sprintf("%s#%d", u.Email, u.UserID)
+	u.Deleted = true
+	return m.dao.Update(ctx, u, "username", "email", "deleted")
+}
+
+func (m *manager) VerifyLocalPassword(ctx context.Context, username, password string) (bool, error) {
+	u, err := m.GetByName(ctx, username)
+	if err != nil {
+		return false, err
+	}
+	return utils.Encrypt(password, u.Salt, u.PasswordVersion) == u.Password, nil
+}
+
+func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return m.dao.Count(ctx, query)
+}
+
+func (m *manager) UpdateProfile(ctx context.Context, user *models.User) error {
+	return m.dao.Update(ctx, user, "email", "realname", "comment")
+}
+
+func (m *manager) UpdatePassword(ctx context.Context, id int, newPassword string) error {
+	user := &models.User{
+		UserID: id,
+	}
+	injectPasswd(user, newPassword)
+	return m.dao.Update(ctx, user, "salt", "password", "password_version")
+}
+
+func (m *manager) SetSysAdminFlag(ctx context.Context, id int, admin bool) error {
+	u := &models.User{
+		UserID:       id,
+		SysAdminFlag: admin,
+	}
+	return m.dao.Update(ctx, u, "sysadmin_flag")
+}
+
+func (m *manager) Create(ctx context.Context, user *models.User) (int, error) {
+	injectPasswd(user, user.Password)
+	return m.dao.Create(ctx, user)
 }
 
 // Get get user by user id
@@ -93,11 +154,16 @@ func (m *manager) List(ctx context.Context, query *q.Query) (models.Users, error
 			break
 		}
 	}
-
 	if excludeAdmin {
 		// Exclude admin account when not filter by UserIDs, see https://github.com/goharbor/harbor/issues/2527
 		query.Keywords["user_id__gt"] = 1
 	}
-
 	return m.dao.List(ctx, query)
+}
+
+func injectPasswd(u *models.User, password string) {
+	salt := utils.GenerateRandomString()
+	u.Password = utils.Encrypt(password, salt, utils.SHA256)
+	u.Salt = salt
+	u.PasswordVersion = utils.SHA256
 }

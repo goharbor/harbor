@@ -4286,7 +4286,326 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
-
+  /users:
+    get:
+      summary: List users
+      tags:
+        - users
+      operationId: listUsers
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: return the list of users.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserResp'
+          headers:
+            X-Total-Count:
+              description: The total count of users
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a local user.
+      description: This API can be used only when the authentication mode is for local DB.  When self registration is disabled.
+      tags:
+        - users
+      operationId: createUser
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: userReq
+          in: body
+          description: The new user
+          required: true
+          schema:
+            $ref: '#/definitions/UserCreationReq'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          description: When the  self registration is disabled, non-admin does not have permission to create user.  When self registration is enabled, this API can only be called from UI portal, calling it via script will get a 403 error.
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /users/current:
+    get:
+      summary: Get current user info.
+      tags:
+        - users
+      operationId: getCurrentUserInfo
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Get current user information successfully.
+          schema:
+            $ref: '#/definitions/UserResp'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+  /users/search:
+    get:
+      summary: Search users by username
+      description: |
+        This endpoint is to search the users by username.  It's open for all authenticated requests.
+      tags:
+        - users
+      operationId: searchUsers
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: username
+          in: query
+          type: string
+          required: true
+          description: Username for filtering results.
+      responses:
+        '200':
+          description: Search users by username successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserSearchRespItem'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+  '/users/{user_id}':
+    get:
+      summary: Get a user's profile.
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+      tags:
+        - users
+      operationId: getUser
+      responses:
+        '200':
+          description: Get user's info successfully.
+          schema:
+            $ref: '#/definitions/UserResp'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update user's profile.
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+          description: Registered user ID
+        - name: profile
+          in: body
+          description: 'Only email, realname and comment can be modified.'
+          required: true
+          schema:
+            $ref: '#/definitions/UserProfile'
+      tags:
+        - users
+      operationId: updateUserProfile
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Mark a registered user as be removed.
+      description: |
+        This endpoint let administrator of Harbor mark a registered user as removed.It actually won't be deleted from DB.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+          description: User ID for marking as to be removed.
+      tags:
+        - users
+      operationId: deleteUser
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /users/{user_id}/sysadmin:
+    put:
+      summary: Update a registered user to change to be an administrator of Harbor.
+      tags:
+       - users
+      operationId: setUserSysAdmin
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+        - name: sysadmin_flag
+          in: body
+          description: Toggle a user to admin or not.
+          required: true
+          schema:
+            $ref: '#/definitions/UserSysAdminFlag'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          description: Unexpected internal errors.
+  '/users/{user_id}/password':
+    put:
+      summary: Change the password on a user that already exists.
+      description: |
+        This endpoint is for user to update password. Users with the admin role can change any user's password. Regular users can change only their own password.
+      tags:
+        - users
+      operationId: updateUserPassword
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+        - name: password
+          in: body
+          description: Password to be updated, the attribute 'old_password' is optional when the API is called by the system administrator.
+          required: true
+          schema:
+            $ref: '#/definitions/PasswordReq'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          description: Invalid user ID; Password does not meet requirement
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          description: The caller does not have permission to update the password of the user with given ID, or the old password in request body is not correct.
+        '500':
+          $ref: '#/responses/500'
+  /users/current/permissions:
+    get:
+      summary: Get current user permissions.
+      tags:
+        - users
+      operationId: getCurrentUserPermissions
+      parameters:
+        - name: scope
+          in: query
+          type: string
+          required: false
+          description: The scope for the permission
+        - name: relative
+          in: query
+          type: boolean
+          required: false
+          description: |
+            If true, the resources in the response are relative to the scope,
+            eg for resource '/project/1/repository' if relative is 'true' then the resource in response will be 'repository'.
+      responses:
+        '200':
+          description: Get current user permission successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Permission'
+        '401':
+          description: User need to log in first.
+        '500':
+          description: Internal errors.
+  '/users/{user_id}/cli_secret':
+    put:
+      summary: Set CLI secret for a user.
+      description: >-
+        This endpoint let user generate a new CLI secret for himself.  This API only works when auth mode is set to 'OIDC'.
+        Once this API returns with successful status, the old secret will be invalid, as there will be only one CLI secret
+        for a user.
+      tags:
+        - users
+      operationId: setCliSecret
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+          description: User ID
+        - name: secret
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/OIDCCliSecretReq'
+      responses:
+        '200':
+          description: The secret is successfully updated
+        '400':
+          description: Invalid user ID.  Or user is not onboarded via OIDC authentication. Or the secret does not meet the standard.
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '412':
+          description: The auth mode of the system is not "oidc_auth", or the user is not onboarded via OIDC AuthN.
+        '500':
+          $ref: '#/responses/500'
 parameters:
   query:
     name: q
@@ -4433,7 +4752,6 @@ parameters:
     required: true
     type: integer
     format: int64
-
 responses:
   '200':
     description: Success
@@ -7043,3 +7361,131 @@ definitions:
       editable:
         type: boolean
         description: The configure item can be updated or not
+  UserProfile:
+    type: object
+    properties:
+      email:
+        type: string
+      realname:
+        type: string
+      comment:
+        type: string
+  UserCreationReq:
+    type: object
+    properties:
+      email:
+        type: string
+      realname:
+        type: string
+      comment:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+  OIDCUserInfo:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int
+        description: the ID of the OIDC info record
+      user_id:
+        type: integer
+        format: int
+        description: the ID of the user
+      subiss:
+        type: string
+        description: the concatenation of sub and issuer in the ID token
+      secret:
+        type: string
+        description: the secret of the OIDC user that can be used for CLI to push/pull artifacts
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the OIDC user info record.
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the OIDC user info record.
+  UserResp:
+    type: object
+    properties:
+      email:
+        type: string
+      realname:
+        type: string
+      comment:
+        type: string
+      user_id:
+        type: integer
+        format: int
+      username:
+        type: string
+      sysadmin_flag:
+        type: boolean
+        x-omitempty: false
+      admin_role_in_auth:
+        type: boolean
+        x-omitempty: false
+        description: indicate the admin privilege is grant by authenticator (LDAP), is always false unless it is the current login user
+      oidc_user_meta:
+        $ref: '#/definitions/OIDCUserInfo'
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the user.
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the user.
+  UserSysAdminFlag:
+    type: object
+    properties:
+      sysadmin_flag:
+        type: boolean
+        description: 'true-admin, false-not admin.'
+  UserSearch:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        format: int
+        description: The ID of the user.
+      username:
+        type: string
+  PasswordReq:
+    type: object
+    properties:
+      old_password:
+        type: string
+        description: The user's existing password.
+      new_password:
+        type: string
+        description: New password for marking as to be updated.
+  UserSearchRespItem:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        format: int
+        description: The ID of the user.
+      username:
+        type: string
+  Permission:
+    type: object
+    properties:
+      resource:
+        type: string
+        description: The permission resoruce
+      action:
+        type: string
+        description: The permission action
+  OIDCCliSecretReq:
+    type: object
+    properties:
+      secret:
+        type: string
+        description: The new secret
+
+

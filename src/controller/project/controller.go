@@ -17,6 +17,7 @@ package project
 import (
 	"context"
 
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	event "github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -61,7 +62,7 @@ type Controller interface {
 	// Update update the project
 	Update(ctx context.Context, project *models.Project) error
 	// ListRoles lists the roles of user for the specific project
-	ListRoles(ctx context.Context, projectID int64, u *user.User) ([]int, error)
+	ListRoles(ctx context.Context, projectID int64, u *commonmodels.User) ([]int, error)
 }
 
 // NewController creates an instance of the default project controller
@@ -241,7 +242,7 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 	return nil
 }
 
-func (c *controller) ListRoles(ctx context.Context, projectID int64, u *user.User) ([]int, error) {
+func (c *controller) ListRoles(ctx context.Context, projectID int64, u *commonmodels.User) ([]int, error) {
 	if u == nil {
 		return nil, nil
 	}

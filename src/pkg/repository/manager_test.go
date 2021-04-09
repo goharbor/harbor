@@ -16,11 +16,12 @@ package repository
 
 import (
 	"context"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/testing/pkg/repository/dao"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type managerTestSuite struct {

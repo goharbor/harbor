@@ -28,6 +28,8 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/task --name Manager --output ./task --outpkg task
 //go:generate mockery --case snake --dir ../../pkg/task --name ExecutionManager --output ./task --outpkg task
 //go:generate mockery --case snake --dir ../../pkg/user --name Manager --output ./user --outpkg user
+//go:generate mockery --case snake --dir ../../pkg/user/dao --name DAO --output ./user/dao --outpkg dao
+//go:generate mockery --case snake --dir ../../pkg/oidc/dao --name MetaDAO --output ./oidc/dao --outpkg oidc
 //go:generate mockery --case snake --dir ../../pkg/rbac --name Manager --output ./rbac --outpkg rbac
 //go:generate mockery --case snake --dir ../../pkg/rbac/dao --name DAO --output ./rbac/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/robot --name Manager --output ./robot --outpkg robot

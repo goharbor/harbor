@@ -58,6 +58,7 @@ func New() http.Handler {
 		SystemCVEAllowlistAPI: newSystemCVEAllowListAPI(),
 		ConfigureAPI:          newConfigAPI(),
 		UsergroupAPI:          newUserGroupAPI(),
+		UsersAPI:              newUsersAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)
