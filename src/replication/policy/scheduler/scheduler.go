@@ -16,11 +16,8 @@ package scheduler
 
 import (
 	"fmt"
-	"net/http"
-	"strings"
 	"time"
 
-	commonHttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/job"
 	jobModels "github.com/goharbor/harbor/src/common/job/models"
 	jsJob "github.com/goharbor/harbor/src/jobservice/job"
@@ -103,13 +100,12 @@ func (s *scheduler) Unschedule(policyID int64) error {
 	}
 	for _, sj := range sjs {
 		if err = s.jobservice.PostAction(sj.JobID, job.JobActionStop); err != nil {
-			// if the job specified by jobID is not found in jobservice, just delete
-			// the record from database
-			if e, ok := err.(*commonHttp.Error); !ok || (e.Code != http.StatusNotFound &&
-				!strings.Contains(e.Message, "no valid periodic job policy found")) {
+			if err != job.ErrJobNotFound {
 				return err
 			}
-			log.Debugf("the stop action for schedule job %s submitted to the jobservice", sj.JobID)
+			// if the job specified by jobID is not found in jobservice, just delete
+			// the record from database
+			log.Warningf("the job %s not found on jobservice, skip directly", sj.JobID)
 		}
 		if err = dao.ScheduleJob.Delete(sj.ID); err != nil {
 			return err
