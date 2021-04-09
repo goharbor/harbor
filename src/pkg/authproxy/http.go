@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/usergroup"
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	k8s_api_v1beta1 "k8s.io/api/authentication/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -95,8 +97,8 @@ func UserFromReviewStatus(status k8s_api_v1beta1.TokenReviewStatus, adminGroups 
 	}
 
 	if len(status.User.Groups) > 0 {
-		userGroups := models.UserGroupsFromName(status.User.Groups, common.HTTPGroupType)
-		groupIDList, err := group.PopulateGroup(userGroups)
+		userGroups := model.UserGroupsFromName(status.User.Groups, common.HTTPGroupType)
+		groupIDList, err := usergroup.Mgr.Populate(orm.Context(), userGroups)
 		if err != nil {
 			return nil, err
 		}

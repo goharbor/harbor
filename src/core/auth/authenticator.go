@@ -17,9 +17,11 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/lib/orm"
-	"time"
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -70,12 +72,12 @@ type AuthenticateHelper interface {
 	// on the data record of the user
 	OnBoardUser(u *models.User) error
 	// Create a group in harbor DB, if altGroupName is not empty, take the altGroupName as groupName in harbor DB.
-	OnBoardGroup(g *models.UserGroup, altGroupName string) error
+	OnBoardGroup(g *model.UserGroup, altGroupName string) error
 	// Get user information from account repository
 	SearchUser(username string) (*models.User, error)
 	// Search a group based on specific authentication
-	SearchGroup(groupDN string) (*models.UserGroup, error)
-	// Update user information after authenticate, such as OnBoard or sync info etc
+	SearchGroup(groupDN string) (*model.UserGroup, error)
+	// Update user information after authenticate, such as Onboard or sync info etc
 	PostAuthenticate(u *models.User) error
 }
 
@@ -106,12 +108,12 @@ func (d *DefaultAuthenticateHelper) PostAuthenticate(u *models.User) error {
 }
 
 // OnBoardGroup - OnBoardGroup, it will set the ID of the user group, if altGroupName is not empty, take the altGroupName as groupName in harbor DB.
-func (d *DefaultAuthenticateHelper) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
+func (d *DefaultAuthenticateHelper) OnBoardGroup(u *model.UserGroup, altGroupName string) error {
 	return errors.New("Not supported")
 }
 
 // SearchGroup - Search ldap group by group key, groupKey is the unique attribute of group in authenticator, for LDAP, the key is group DN
-func (d *DefaultAuthenticateHelper) SearchGroup(groupKey string) (*models.UserGroup, error) {
+func (d *DefaultAuthenticateHelper) SearchGroup(groupKey string) (*model.UserGroup, error) {
 	return nil, errors.New("Not supported")
 }
 
@@ -193,7 +195,7 @@ func SearchUser(username string) (*models.User, error) {
 }
 
 // OnBoardGroup - Create a user group in harbor db, if altGroupName is not empty, take the altGroupName as groupName in harbor DB
-func OnBoardGroup(userGroup *models.UserGroup, altGroupName string) error {
+func OnBoardGroup(userGroup *model.UserGroup, altGroupName string) error {
 	helper, err := getHelper()
 	if err != nil {
 		return err
@@ -202,7 +204,7 @@ func OnBoardGroup(userGroup *models.UserGroup, altGroupName string) error {
 }
 
 // SearchGroup -- Search group in authenticator, groupKey is the unique attribute of group in authenticator, for LDAP, the key is group DN
-func SearchGroup(groupKey string) (*models.UserGroup, error) {
+func SearchGroup(groupKey string) (*model.UserGroup, error) {
 	helper, err := getHelper()
 	if err != nil {
 		return nil, err

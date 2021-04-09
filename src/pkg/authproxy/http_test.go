@@ -1,14 +1,16 @@
 package authproxy
 
 import (
+	"os"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/usergroup"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/api/authentication/v1beta1"
 	"k8s.io/client-go/rest"
-	"os"
-	"testing"
 )
 
 func TestMain(m *testing.M) {
@@ -110,7 +112,7 @@ func TestUserFromReviewStatus(t *testing.T) {
 		if u != nil {
 			for _, gid := range u.GroupIDs {
 				t.Logf("Deleting group %d", gid)
-				if err := group.DeleteUserGroup(gid); err != nil {
+				if err := usergroup.Mgr.Delete(orm.Context(), gid); err != nil {
 					panic(err)
 				}
 			}

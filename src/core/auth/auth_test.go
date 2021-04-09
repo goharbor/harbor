@@ -14,6 +14,7 @@
 package auth
 
 import (
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	"testing"
 	"time"
 
@@ -71,7 +72,7 @@ func TestDefaultMethods(t *testing.T) {
 		t.Fatal("Default implementation should return error")
 	}
 
-	err = authHelper.OnBoardGroup(&models.UserGroup{}, "sample")
+	err = authHelper.OnBoardGroup(&model.UserGroup{}, "sample")
 	if err == nil {
 		t.Fatal("Default implementation should return error")
 	}

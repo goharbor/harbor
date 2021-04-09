@@ -14,6 +14,10 @@
 
 package models
 
+import (
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
+)
+
 // Member holds the details of a member.
 type Member struct {
 	ID         int    `orm:"pk;column(id)" json:"id"`
@@ -27,8 +31,8 @@ type Member struct {
 
 // MemberReq -  Create Project Member Request
 type MemberReq struct {
-	ProjectID   int64     `json:"project_id"`
-	Role        int       `json:"role_id,omitempty"`
-	MemberUser  User      `json:"member_user,omitempty"`
-	MemberGroup UserGroup `json:"member_group,omitempty"`
+	ProjectID   int64           `json:"project_id"`
+	Role        int             `json:"role_id,omitempty"`
+	MemberUser  User            `json:"member_user,omitempty"`
+	MemberGroup model.UserGroup `json:"member_group,omitempty"`
 }

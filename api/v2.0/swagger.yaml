@@ -2293,6 +2293,142 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  /usergroups:
+    get:
+      summary: Get all user groups information
+      description: Get all user groups information
+      operationId: listUserGroups
+      tags:
+        - usergroup
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Get user group successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserGroup'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create user group
+      description: Create user group information
+      operationId: createUserGroup
+      tags:
+        - usergroup
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: usergroup
+          in: body
+          schema:
+            $ref: '#/definitions/UserGroup'
+      responses:
+        '201':
+          description: User group created successfully.
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  '/usergroups/{group_id}':
+    get:
+      summary: Get user group information
+      description: Get user group information
+      operationId: getUserGroup
+      tags:
+        - usergroup
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: group_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Group ID
+      responses:
+        '200':
+          description: User group get successfully.
+          schema:
+            $ref: '#/definitions/UserGroup'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update group information
+      description: Update user group information
+      operationId: updateUserGroup
+      tags:
+        - usergroup
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: group_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Group ID
+        - name: usergroup
+          in: body
+          required: false
+          schema:
+            $ref: '#/definitions/UserGroup'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete user group
+      description: Delete user group
+      operationId: deleteUserGroup
+      tags:
+        - usergroup
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: group_id
+          type: integer
+          in: path
+          required: true
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /icons/{digest}:
     get:
       summary: Get artifact icon

@@ -27,7 +27,6 @@ func init() {
 		new(ProjectMetadata),
 		new(Label),
 		new(ResourceLabel),
-		new(UserGroup),
 		new(JobLog),
 		new(OIDCUser),
 		new(ProjectBlob),

@@ -14,12 +14,14 @@
 package ldap
 
 import (
-	"github.com/goharbor/harbor/src/controller/config"
-	"github.com/stretchr/testify/assert"
-	// "fmt"
-	// "strings"
 	"os"
 	"testing"
+
+	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/usergroup"
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -29,7 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/lib/log"
 
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/core/auth"
 )
 
@@ -266,7 +267,7 @@ func TestAuthenticateHelperOnBoardUser(t *testing.T) {
 }
 
 func TestOnBoardGroup(t *testing.T) {
-	group := models.UserGroup{
+	group := model.UserGroup{
 		GroupName:   "harbor_group2",
 		LdapGroupDN: "cn=harbor_group2,ou=groups,dc=example,dc=com",
 	}
@@ -402,11 +403,11 @@ func TestAddProjectMemberWithLdapGroup(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}
-	userGroups := []models.UserGroup{{GroupName: "cn=harbor_users,ou=groups,dc=example,dc=com", LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com", GroupType: common.LDAPGroupType}}
-	groupIds, err := group.PopulateGroup(userGroups)
+	userGroups := []model.UserGroup{{GroupName: "cn=harbor_users,ou=groups,dc=example,dc=com", LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com", GroupType: common.LDAPGroupType}}
+	groupIds, err := usergroup.Mgr.Populate(orm.Context(), userGroups)
 	member := models.MemberReq{
 		ProjectID: currentProject.ProjectID,
-		MemberGroup: models.UserGroup{
+		MemberGroup: model.UserGroup{
 			ID: groupIds[0],
 		},
 		Role: common.RoleProjectAdmin,
