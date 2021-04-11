@@ -1490,13 +1490,13 @@ definitions:
         $ref: '#/definitions/StringConfigItem'
         description: The filter for LDAP binding.
       ldap_scope:
-        type: integer
+        $ref: "#/definitions/IntegerConfigItem"
         description: '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
       ldap_uid:
         $ref: '#/definitions/StringConfigItem'
         description: 'The attribute which is used as identity for the LDAP binding, such as "CN" or "SAMAccountname"'
       ldap_search_dn:
-        type: string
+        $ref: "#/definitions/StringConfigItem"
         description: The DN of the user to do the search.
       ldap_timeout:
         $ref: '#/definitions/IntegerConfigItem'
