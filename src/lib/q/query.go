@@ -114,14 +114,14 @@ func NewRange(min, max interface{}) *Range {
 }
 
 // NewAndList creates a new and list
-func NewAndList(values ...interface{}) *AndList {
+func NewAndList(values []interface{}) *AndList {
 	return &AndList{
 		Values: values,
 	}
 }
 
 // NewOrList creates a new or list
-func NewOrList(values ...interface{}) *OrList {
+func NewOrList(values []interface{}) *OrList {
 	return &OrList{
 		Values: values,
 	}

@@ -15,9 +15,13 @@
 package models
 
 import (
+	"context"
+	"fmt"
 	"time"
 
+	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/pkg/signature/notary/model"
+	"github.com/lib/pq"
 	"github.com/theupdateframework/notary/tuf/data"
 )
 
@@ -36,6 +40,21 @@ type RepoRecord struct {
 	StarCount    int64     `orm:"column(star_count)" json:"star_count"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time" sort:"default:desc"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+}
+
+// FilterByBlobDigest filters the repositories by the blob digest
+func (r *RepoRecord) FilterByBlobDigest(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	digest, ok := value.(string)
+	if !ok || len(digest) == 0 {
+		return qs
+	}
+
+	sql := fmt.Sprintf(`select distinct(a.repository_id)
+				from artifact as a
+				join artifact_blob as ab
+				on a.digest = ab.digest_af
+				where ab.digest_blob = %s`, pq.QuoteLiteral(digest))
+	return qs.FilterRaw("repository_id", fmt.Sprintf("in (%s)", sql))
 }
 
 // TableName is required by by beego orm to map RepoRecord to table repository

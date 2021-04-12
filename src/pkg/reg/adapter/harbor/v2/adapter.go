@@ -17,6 +17,7 @@ package v2
 import (
 	"fmt"
 
+	"github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/harbor/base"
@@ -128,4 +129,19 @@ func (a *adapter) listArtifacts(repository string, filters []*model.Filter) ([]*
 		return nil, err
 	}
 	return filter.DoFilterArtifacts(artifacts, filters)
+}
+
+func (a *adapter) CanBeMount(digest string) (bool, string, error) {
+	repository, err := a.client.getRepositoryByBlobDigest(digest)
+	if err != nil {
+		// return false directly for the previous version of harbor which doesn't support list repositories API
+		if e, ok := err.(*http.Error); ok && e.Code == 404 {
+			return false, "", nil
+		}
+		return false, "", err
+	}
+	if len(repository) == 0 {
+		return false, "", nil
+	}
+	return true, repository, nil
 }
