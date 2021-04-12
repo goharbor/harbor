@@ -37,8 +37,6 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
     originalCopy: Statistics = new Statistics();
     volumesInfo: Volumes = new Volumes();
     refreshSub: Subscription;
-    small: number;
-
     constructor(
         private statistics: StatisticsService,
         private msgHandler: MessageHandlerService,
@@ -72,7 +70,7 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
         let count: number = 0;
         if (this.volumesInfo && this.volumesInfo.storage && this.volumesInfo.storage.length) {
             this.volumesInfo.storage.forEach(item => {
-                count += item.total;
+                count += item.total ? item.total : 0;
             });
         }
         return this.getGBFromBytes(count);
@@ -82,7 +80,7 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
         let count: number = 0;
         if (this.volumesInfo && this.volumesInfo.storage && this.volumesInfo.storage.length) {
             this.volumesInfo.storage.forEach(item => {
-                count += item.free;
+                count += item.free ? item.free : 0;
             });
         }
         return this.getGBFromBytes(count);
@@ -113,7 +111,7 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
         let count: number = 0;
         if (this.volumesInfo && this.volumesInfo.storage && this.volumesInfo.storage.length) {
             this.volumesInfo.storage.forEach(item => {
-                count += item.total;
+                count += item.total ? item.total : 0;
             });
         }
         return count !== 0 &&

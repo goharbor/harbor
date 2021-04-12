@@ -65,6 +65,7 @@ import { ArtifactService as NewArtifactService } from "../../../../../../../ng-s
 import { ADDITIONS } from "../../../artifact/artifact-additions/models";
 import { Platform } from "../../../../../../../ng-swagger-gen/models/platform";
 import { SafeUrl } from '@angular/platform-browser';
+import { UN_LOGGED_PARAM } from "../../../../../sign-in/sign-in.service";
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
@@ -166,7 +167,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   // could Pagination filter
   filters: string[];
 
-  scanFiinishArtifactLength: number = 0;
+  scanFinishedArtifactLength: number = 0;
   onScanArtifactsLength: number = 0;
   constructor(
     private errorHandlerService: ErrorHandler,
@@ -432,7 +433,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       artifactPullCommands.forEach(artifactPullCommand => {
         if (artifactPullCommand.type === artifact.type) {
           artifact.pullCommand =
-          `${artifactPullCommand.pullCommand} ${this.registryUrl}/${this.projectName}/${this.repoName}@${artifact.digest}`;
+          `${artifactPullCommand.pullCommand} ${this.registryUrl ?
+            this.registryUrl : location.hostname}/${this.projectName}/${this.repoName}@${artifact.digest}`;
         }
       });
     });
@@ -813,8 +815,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
   goIntoArtifactSummaryPage(artifact: Artifact): void {
     const relativeRouterLink: string[] = ['artifacts', artifact.digest];
-    if (this.activatedRoute.snapshot.queryParams['publicAndNotLogged'] === YES) {
-      this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute, queryParams: {publicAndNotLogged: YES} });
+    if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
+      this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute, queryParams: {[UN_LOGGED_PARAM]: YES} });
     } else {
       this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute });
     }
@@ -877,7 +879,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     if (!this.selectedRow.length) {
       return;
     }
-    this.scanFiinishArtifactLength = 0;
+    this.scanFinishedArtifactLength = 0;
     this.onScanArtifactsLength = this.selectedRow.length;
     this.onSendingScanCommand = true;
     this.selectedRow.forEach((data: any) => {
@@ -895,9 +897,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     return !!(artifact && artifact.addition_links && artifact.addition_links[ADDITIONS.VULNERABILITIES]);
   }
   submitFinish(e: boolean) {
-    this.scanFiinishArtifactLength += 1;
+    this.scanFinishedArtifactLength += 1;
     // all selected scan action has start
-    if (this.scanFiinishArtifactLength === this.onScanArtifactsLength) {
+    if (this.scanFinishedArtifactLength === this.onScanArtifactsLength) {
       this.onSendingScanCommand = e;
     }
   }
@@ -936,8 +938,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       depth = artifact.digest;
     }
     const linkUrl = ['harbor', 'projects', this.projectId, 'repositories', this.repoName, 'depth', depth];
-    if (this.activatedRoute.snapshot.queryParams['publicAndNotLogged'] === YES) {
-      this.router.navigate(linkUrl, {queryParams: {publicAndNotLogged: YES}});
+    if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
+      this.router.navigate(linkUrl, {queryParams: {[UN_LOGGED_PARAM]: YES}});
     } else {
       this.router.navigate(linkUrl);
     }
