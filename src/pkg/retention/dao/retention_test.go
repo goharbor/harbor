@@ -2,6 +2,7 @@ package dao
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"os"
 	"strings"
 	"testing"
@@ -69,26 +70,27 @@ func TestPolicy(t *testing.T) {
 	data, _ := json.Marshal(p)
 	p1.Data = string(data)
 
-	id, err := CreatePolicy(p1)
+	ctx := orm.Context()
+	id, err := CreatePolicy(ctx, p1)
 	assert.Nil(t, err)
 	assert.True(t, id > 0)
 
-	p1, err = GetPolicy(id)
+	p1, err = GetPolicy(ctx, id)
 	assert.Nil(t, err)
 	assert.EqualValues(t, "project", p1.ScopeLevel)
 	assert.True(t, p1.ID > 0)
 
 	p1.ScopeLevel = "test"
-	err = UpdatePolicy(p1)
+	err = UpdatePolicy(ctx, p1)
 	assert.Nil(t, err)
-	p1, err = GetPolicy(id)
+	p1, err = GetPolicy(ctx, id)
 	assert.Nil(t, err)
 	assert.EqualValues(t, "test", p1.ScopeLevel)
 
-	err = DeletePolicy(id)
+	err = DeletePolicy(ctx, id)
 	assert.Nil(t, err)
 
-	p1, err = GetPolicy(id)
+	p1, err = GetPolicy(ctx, id)
 	assert.NotNil(t, err)
 	assert.True(t, strings.Contains(err.Error(), "no row found"))
 }

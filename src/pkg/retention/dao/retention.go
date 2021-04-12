@@ -1,36 +1,49 @@
 package dao
 
 import (
-	"github.com/goharbor/harbor/src/common/dao"
+	"context"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 )
 
 // CreatePolicy Create Policy
-func CreatePolicy(p *models.RetentionPolicy) (int64, error) {
-	o := dao.GetOrmer()
+func CreatePolicy(ctx context.Context, p *models.RetentionPolicy) (int64, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
 	return o.Insert(p)
 }
 
 // UpdatePolicy Update Policy
-func UpdatePolicy(p *models.RetentionPolicy, cols ...string) error {
-	o := dao.GetOrmer()
-	_, err := o.Update(p, cols...)
+func UpdatePolicy(ctx context.Context, p *models.RetentionPolicy, cols ...string) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = o.Update(p, cols...)
 	return err
 }
 
 // DeletePolicy Update Policy
-func DeletePolicy(id int64) error {
-	o := dao.GetOrmer()
+func DeletePolicy(ctx context.Context, id int64) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
 	p := &models.RetentionPolicy{
 		ID: id,
 	}
-	_, err := o.Delete(p)
+	_, err = o.Delete(p)
 	return err
 }
 
 // GetPolicy Get Policy
-func GetPolicy(id int64) (*models.RetentionPolicy, error) {
-	o := dao.GetOrmer()
+func GetPolicy(ctx context.Context, id int64) (*models.RetentionPolicy, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 	p := &models.RetentionPolicy{
 		ID: id,
 	}

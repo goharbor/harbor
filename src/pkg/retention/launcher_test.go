@@ -15,6 +15,7 @@
 package retention
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"testing"
 
@@ -45,16 +46,16 @@ func (f *fakeRetentionManager) GetTotalOfTasks(executionID int64) (int64, error)
 	return 0, nil
 }
 
-func (f *fakeRetentionManager) CreatePolicy(p *policy.Metadata) (int64, error) {
+func (f *fakeRetentionManager) CreatePolicy(ctx context.Context, p *policy.Metadata) (int64, error) {
 	return 0, nil
 }
-func (f *fakeRetentionManager) UpdatePolicy(p *policy.Metadata) error {
+func (f *fakeRetentionManager) UpdatePolicy(ctx context.Context, p *policy.Metadata) error {
 	return nil
 }
-func (f *fakeRetentionManager) DeletePolicy(ID int64) error {
+func (f *fakeRetentionManager) DeletePolicy(ctx context.Context, ID int64) error {
 	return nil
 }
-func (f *fakeRetentionManager) GetPolicy(ID int64) (*policy.Metadata, error) {
+func (f *fakeRetentionManager) GetPolicy(ctx context.Context, ID int64) (*policy.Metadata, error) {
 	return nil, nil
 }
 func (f *fakeRetentionManager) CreateExecution(execution *Execution) (int64, error) {
