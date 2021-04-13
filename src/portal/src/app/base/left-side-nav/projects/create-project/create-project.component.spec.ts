@@ -1,19 +1,12 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CreateProjectComponent } from './create-project.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { ProjectService } from '../../../../shared/services';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { ErrorHandler } from '../../../../shared/units/error-handler';
-import { CURRENT_BASE_HREF } from '../../../../shared/units/utils';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
-import { EndpointDefaultService, EndpointService } from "../../../../shared/services/endpoint.service";
+import { SharedTestingModule } from "../../../../shared/shared.module";
 
 describe('CreateProjectComponent', () => {
     let component: CreateProjectComponent;
@@ -37,22 +30,15 @@ describe('CreateProjectComponent', () => {
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
-                HttpClientTestingModule,
-                BrowserAnimationsModule,
-                FormsModule,
-                ClarityModule,
-                TranslateModule.forRoot()
+                SharedTestingModule
             ],
             declarations: [CreateProjectComponent, InlineAlertComponent],
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
             ],
             providers: [
-                TranslateService,
                 {provide: ProjectService, useValue: mockProjectService},
                 {provide: MessageHandlerService, useValue: mockMessageHandlerService},
-                { provide: EndpointService, useClass: EndpointDefaultService },
-                ErrorHandler
             ]
         }).compileComponents();
     }));
