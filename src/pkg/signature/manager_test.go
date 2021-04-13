@@ -3,7 +3,9 @@ package signature
 import (
 	"github.com/goharbor/harbor/src/common"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/signature/notary/test"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"

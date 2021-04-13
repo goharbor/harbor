@@ -12,6 +12,20 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+//  Copyright Project Harbor Authors
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package config
 
 import (
@@ -20,14 +34,25 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/encrypt"
 	"os"
 	"strconv"
 	"strings"
 )
 
+const (
+	defaultKeyPath                     = "/etc/core/key"
+	defaultRegistryTokenPrivateKeyPath = "/etc/core/private_key.pem"
+
+	// SessionCookieName is the name of the cookie for session ID
+	SessionCookieName = "sid"
+)
+
 var (
+	// SecretStore manages secrets
+	SecretStore *secret.Store
+	keyProvider encrypt.KeyProvider
 	// Use backgroundCtx to access system scope config
 	backgroundCtx context.Context = context.Background()
 )
@@ -129,23 +154,32 @@ func GetGCTimeWindow() int64 {
 
 // WithNotary returns a bool value to indicate if Harbor's deployed with Notary
 func WithNotary() bool {
-	return Ctl.GetBool(backgroundCtx, common.WithNotary)
+	return getManager().Get(backgroundCtx, common.WithNotary).GetBool()
+}
+
+// getManager ...
+func getManager() Manager {
+	manager, err := GetManager(DefaultCfgManager)
+	if err != nil {
+		log.Error("failed to get config manager")
+	}
+	return manager
 }
 
 // WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.
 func WithTrivy() bool {
-	return Ctl.GetBool(backgroundCtx, common.WithTrivy)
+	return getManager().Get(backgroundCtx, common.WithTrivy).GetBool()
 }
 
 // WithChartMuseum returns a bool to indicate if chartmuseum is deployed with Harbor.
 func WithChartMuseum() bool {
-	return Ctl.GetBool(backgroundCtx, common.WithChartMuseum)
+	return getManager().Get(backgroundCtx, common.WithChartMuseum).GetBool()
 }
 
 // GetChartMuseumEndpoint returns the endpoint of the chartmuseum service
 // otherwise an non nil error is returned
 func GetChartMuseumEndpoint() (string, error) {
-	chartEndpoint := strings.TrimSpace(Ctl.GetString(backgroundCtx, common.ChartRepoURL))
+	chartEndpoint := strings.TrimSpace(getManager().Get(backgroundCtx, common.ChartRepoURL).GetString())
 	if len(chartEndpoint) == 0 {
 		return "", errors.New("empty chartmuseum endpoint")
 	}
@@ -154,7 +188,7 @@ func GetChartMuseumEndpoint() (string, error) {
 
 // ExtEndpoint returns the external URL of Harbor: protocol://host:port
 func ExtEndpoint() (string, error) {
-	return Ctl.GetString(backgroundCtx, common.ExtEndpoint), nil
+	return getManager().Get(backgroundCtx, common.ExtEndpoint).GetString(), nil
 }
 
 // ExtURL returns the external URL: host:port
@@ -192,12 +226,12 @@ func initSecretStore() {
 
 // InternalCoreURL returns the local harbor core url
 func InternalCoreURL() string {
-	return strings.TrimSuffix(Ctl.GetString(backgroundCtx, common.CoreURL), "/")
+	return strings.TrimSuffix(getManager().Get(backgroundCtx, common.CoreURL).GetString(), "/")
 }
 
 // LocalCoreURL returns the local harbor core url
 func LocalCoreURL() string {
-	return Ctl.GetString(backgroundCtx, common.CoreLocalURL)
+	return getManager().Get(backgroundCtx, common.CoreLocalURL).GetString()
 }
 
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
@@ -208,41 +242,41 @@ func InternalTokenServiceEndpoint() string {
 // InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers
 // This is currently a conventional value and can be unaccessible when Harbor is not deployed with Notary.
 func InternalNotaryEndpoint() string {
-	return Ctl.GetString(backgroundCtx, common.NotaryURL)
+	return getManager().Get(backgroundCtx, common.NotaryURL).GetString()
 }
 
 // TrivyAdapterURL returns the endpoint URL of a Trivy adapter instance, by default it's the one deployed within Harbor.
 func TrivyAdapterURL() string {
-	return Ctl.GetString(backgroundCtx, common.TrivyAdapterURL)
+	return getManager().Get(backgroundCtx, common.TrivyAdapterURL).GetString()
 }
 
 // Metric returns the overall metric settings
 func Metric() *models.Metric {
 	return &models.Metric{
-		Enabled: Ctl.GetBool(backgroundCtx, common.MetricEnable),
-		Port:    Ctl.GetInt(backgroundCtx, common.MetricPort),
-		Path:    Ctl.GetString(backgroundCtx, common.MetricPath),
+		Enabled: getManager().Get(backgroundCtx, common.MetricEnable).GetBool(),
+		Port:    getManager().Get(backgroundCtx, common.MetricPort).GetInt(),
+		Path:    getManager().Get(backgroundCtx, common.MetricPath).GetString(),
 	}
 }
 
 // InitialAdminPassword returns the initial password for administrator
 func InitialAdminPassword() (string, error) {
-	return Ctl.GetString(backgroundCtx, common.AdminInitialPassword), nil
+	return getManager().Get(backgroundCtx, common.AdminInitialPassword).GetString(), nil
 }
 
 // Database returns database settings
 func Database() (*models.Database, error) {
 	database := &models.Database{}
-	database.Type = Ctl.GetString(backgroundCtx, common.DatabaseType)
+	database.Type = getManager().Get(backgroundCtx, common.DatabaseType).GetString()
 	postgresql := &models.PostGreSQL{
-		Host:         Ctl.GetString(backgroundCtx, common.PostGreSQLHOST),
-		Port:         Ctl.GetInt(backgroundCtx, common.PostGreSQLPort),
-		Username:     Ctl.GetString(backgroundCtx, common.PostGreSQLUsername),
-		Password:     Ctl.GetString(backgroundCtx, common.PostGreSQLPassword),
-		Database:     Ctl.GetString(backgroundCtx, common.PostGreSQLDatabase),
-		SSLMode:      Ctl.GetString(backgroundCtx, common.PostGreSQLSSLMode),
-		MaxIdleConns: Ctl.GetInt(backgroundCtx, common.PostGreSQLMaxIdleConns),
-		MaxOpenConns: Ctl.GetInt(backgroundCtx, common.PostGreSQLMaxOpenConns),
+		Host:         getManager().Get(backgroundCtx, common.PostGreSQLHOST).GetString(),
+		Port:         getManager().Get(backgroundCtx, common.PostGreSQLPort).GetInt(),
+		Username:     getManager().Get(backgroundCtx, common.PostGreSQLUsername).GetString(),
+		Password:     getManager().Get(backgroundCtx, common.PostGreSQLPassword).GetPassword(),
+		Database:     getManager().Get(backgroundCtx, common.PostGreSQLDatabase).GetString(),
+		SSLMode:      getManager().Get(backgroundCtx, common.PostGreSQLSSLMode).GetString(),
+		MaxIdleConns: getManager().Get(backgroundCtx, common.PostGreSQLMaxIdleConns).GetInt(),
+		MaxOpenConns: getManager().Get(backgroundCtx, common.PostGreSQLMaxOpenConns).GetInt(),
 	}
 	database.PostGreSQL = postgresql
 

@@ -11,6 +11,7 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
+
 package config
 
 import (
@@ -24,11 +25,17 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/utils/test"
+	. "github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/stretchr/testify/assert"
 )
 
-// test functions under package core/config
+var (
+	// defined as a var for testing.
+	defaultCACertPath = "/etc/core/ca/ca.crt"
+)
+
 func TestConfig(t *testing.T) {
 	test.InitDatabaseFromEnv()
 	dao.PrepareTestData([]string{"delete from properties where k='scan_all_policy'"}, []string{})
@@ -312,6 +319,6 @@ func TestSplitAndTrim(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		assert.Equal(t, c.expect, splitAndTrim(c.s, c.sep))
+		assert.Equal(t, c.expect, SplitAndTrim(c.s, c.sep))
 	}
 }

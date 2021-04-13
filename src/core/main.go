@@ -18,7 +18,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"net/url"
 	"os"
 	"os/signal"

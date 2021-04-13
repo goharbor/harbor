@@ -16,6 +16,7 @@ package config
 
 import (
 	"errors"
+	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	"sync"
 )
@@ -46,3 +47,6 @@ func GetManager(name string) (Manager, error) {
 	}
 	return mgr, nil
 }
+
+// InternalCfg internal configure response model
+type InternalCfg map[string]*models.Value

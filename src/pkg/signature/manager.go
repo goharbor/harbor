@@ -16,7 +16,7 @@ package signature
 
 import (
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/signature/notary"
 	"github.com/goharbor/harbor/src/pkg/signature/notary/model"

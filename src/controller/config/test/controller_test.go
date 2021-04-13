@@ -19,6 +19,9 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	. "github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
 	"testing"

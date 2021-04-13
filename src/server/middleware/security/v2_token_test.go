@@ -2,7 +2,7 @@ package security
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"testing"

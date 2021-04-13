@@ -16,7 +16,7 @@ package api
 
 import (
 	"errors"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"net"
 	"strconv"
