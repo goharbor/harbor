@@ -133,12 +133,7 @@ func (bc *basicController) GetJobLogData(jobID string) ([]byte, error) {
 		return nil, errs.BadRequestError(errors.New("empty job ID"))
 	}
 
-	logData, err := logger.Retrieve(jobID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error for getting log of job %s", jobID)
-	}
-
-	return logData, nil
+	return logger.Retrieve(jobID)
 }
 
 // CheckStatus is implementation of same method in core interface.
