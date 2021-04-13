@@ -29,7 +29,9 @@ def get_endpoint():
 
 def _create_client(server, credential, debug, api_type="products"):
     cfg = None
-    if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota', 'replication', 'registry', 'robot', 'gc', 'retention', "immutable", "system_cve_allowlist", "configure"):
+    if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota',
+                    'replication', 'registry', 'robot', 'gc', 'retention', "immutable", "system_cve_allowlist",
+                    "configure", "users"):
         cfg = v2_swagger_client.Configuration()
     else:
         cfg = swagger_client.Configuration()
@@ -70,6 +72,7 @@ def _create_client(server, credential, debug, api_type="products"):
         "immutable":   v2_swagger_client.ImmutableApi(v2_swagger_client.ApiClient(cfg)),
         "system_cve_allowlist":  v2_swagger_client.SystemCVEAllowlistApi(v2_swagger_client.ApiClient(cfg)),
         "configure":   v2_swagger_client.ConfigureApi(v2_swagger_client.ApiClient(cfg)),
+        "users": v2_swagger_client.UsersApi(v2_swagger_client.ApiClient(cfg)),
     }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code, err_msg = r"HTTPS status code s not as we expected. Expected {}, while actual HTTPS status code is {}."):
@@ -120,8 +123,6 @@ def restart_process(process):
     if pid in [None, ""]:
         raise Exception("Failed to start process {}.".format(full_process_name))
     run_command_with_popen("ps aux |grep " + full_process_name)
-
-
 
 def run_command_with_popen(command):
     print("Command: ", command)

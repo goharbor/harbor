@@ -34,27 +34,36 @@ type SecretManager interface {
 	VerifySecret(ctx context.Context, username string, secret string) (*models.User, error)
 }
 
-type defaultManager struct {
-	sync.Mutex
+type keyGetter struct {
+	sync.RWMutex
 	key string
 }
 
-var m SecretManager = &defaultManager{}
-
-func (dm *defaultManager) getEncryptKey() (string, error) {
-	if dm.key == "" {
-		dm.Lock()
-		defer dm.Unlock()
-		if dm.key == "" {
-			key, err := config.SecretKey()
+func (kg *keyGetter) encryptKey() (string, error) {
+	kg.RLock()
+	if kg.key == "" {
+		kg.RUnlock()
+		kg.Lock()
+		defer kg.Unlock()
+		if kg.key == "" {
+			k, err := config.SecretKey()
 			if err != nil {
 				return "", err
 			}
-			dm.key = key
+			kg.key = k
 		}
+	} else {
+		defer kg.RUnlock()
 	}
-	return dm.key, nil
+	return kg.key, nil
 }
+
+var keyLoader = &keyGetter{}
+
+type defaultManager struct {
+}
+
+var m SecretManager = &defaultManager{}
 
 // VerifySecret verifies the secret and the token associated with it, it refreshes the token in the DB if it's
 // refreshed during the verification.  It returns a populated user model based on the ID token associated with the secret.
@@ -74,7 +83,7 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 	if oidcUser == nil {
 		return nil, fmt.Errorf("user is not onboarded as OIDC user, username: %s", username)
 	}
-	key, err := dm.getEncryptKey()
+	key, err := keyLoader.encryptKey()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load the key for encryption/decryption： %v", err)
 	}

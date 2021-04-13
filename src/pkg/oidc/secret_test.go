@@ -15,13 +15,13 @@ func TestSecretVerifyError(t *testing.T) {
 	assert.Equal(t, sve, err)
 }
 
-func TestDefaultManagerGetEncryptKey(t *testing.T) {
-	d := &defaultManager{}
-	k, err := d.getEncryptKey()
+func TestGetEncryptKey(t *testing.T) {
+	kl := &keyGetter{}
+	k, err := kl.encryptKey()
 	assert.Nil(t, err)
 	assert.Equal(t, "naa4JtarA1Zsc3uY", k)
-	d2 := &defaultManager{key: "oldkey"}
-	k2, err := d2.getEncryptKey()
+	kl2 := &keyGetter{key: "oldkey"}
+	k2, err := kl2.encryptKey()
 	assert.Nil(t, err)
 	assert.Equal(t, "oldkey", k2)
 }

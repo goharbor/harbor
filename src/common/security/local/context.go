@@ -26,6 +26,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
+// ContextName the name of the security context.
+const ContextName = "local"
+
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
 	user      *models.User
@@ -44,7 +47,7 @@ func NewSecurityContext(user *models.User) *SecurityContext {
 
 // Name returns the name of the security context
 func (s *SecurityContext) Name() string {
-	return "local"
+	return ContextName
 }
 
 // IsAuthenticated returns true if the user has been authenticated

@@ -17,6 +17,7 @@ package dao
 import (
 	"context"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/user/models"
@@ -24,8 +25,14 @@ import (
 
 // DAO is the data access object interface for user
 type DAO interface {
+	// Create create a user record in the table, it will return the ID of the user
+	Create(ctx context.Context, user *models.User) (int, error)
 	// List list users
 	List(ctx context.Context, query *q.Query) ([]*models.User, error)
+	// Count counts the number of users
+	Count(ctx context.Context, query *q.Query) (int64, error)
+	// Update updates the user record based on the model the parm props are the columns will be updated
+	Update(ctx context.Context, user *models.User, props ...string) error
 }
 
 // New returns an instance of the default DAO
@@ -33,7 +40,51 @@ func New() DAO {
 	return &dao{}
 }
 
+func init() {
+	// TODO	beegoorm.RegisterModel(new(models.User))
+}
+
 type dao struct{}
+
+func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
+	query = q.MustClone(query)
+	query.Keywords["deleted"] = false
+	qs, err := orm.QuerySetterForCount(ctx, &models.User{}, query)
+	if err != nil {
+		return 0, err
+	}
+	return qs.Count()
+}
+
+func (d *dao) Create(ctx context.Context, user *models.User) (int, error) {
+	if user.UserID > 0 {
+		return 0, errors.BadRequestError(nil).WithMessage("user ID is set when creating user: %d", user.UserID)
+	}
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+	id, err := ormer.Insert(user)
+	if err != nil {
+		return 0, orm.WrapConflictError(err, "user %s or email %s already exists", user.Username, user.Email)
+	}
+	return int(id), nil
+}
+
+func (d *dao) Update(ctx context.Context, user *models.User, props ...string) error {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	n, err := ormer.Update(user, props...)
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return errors.NotFoundError(nil).WithMessage("user with id %d not found", user.UserID)
+	}
+	return nil
+}
 
 // List list users
 func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.User, error) {
