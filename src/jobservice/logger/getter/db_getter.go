@@ -2,7 +2,10 @@ package getter
 
 import (
 	"errors"
+	"fmt"
+
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/jobservice/errs"
 )
 
 // DBGetter is responsible for retrieving DB log data
@@ -22,7 +25,8 @@ func (dbg *DBGetter) Retrieve(logID string) ([]byte, error) {
 
 	jobLog, err := dao.GetJobLog(logID)
 	if err != nil {
-		return nil, err
+		// Other errors have been ignored by GetJobLog()
+		return nil, errs.NoObjectFoundError(fmt.Sprintf("log entity: %s", logID))
 	}
 
 	return []byte(jobLog.Content), nil
