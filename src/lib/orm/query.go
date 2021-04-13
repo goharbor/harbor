@@ -70,6 +70,25 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query) (orm.Qu
 	return qs, nil
 }
 
+// PaginationOnRawSQL append page information to the raw sql
+// It should be called after the order by
+// e.g.
+// select a, b, c from mytable order by a limit ? offset ?
+// it appends the " limit ? offset ? " to sql,
+// and appends the limit value and offset value to the params of this query
+func PaginationOnRawSQL(query *q.Query, sql string, params []interface{}) (string, []interface{}) {
+	if query != nil && query.PageSize > 0 {
+		sql += ` limit ?`
+		params = append(params, query.PageSize)
+
+		if query.PageNumber > 0 {
+			sql += ` offset ?`
+			params = append(params, (query.PageNumber-1)*query.PageSize)
+		}
+	}
+	return sql, params
+}
+
 // QuerySetterForCount creates the query setter used for count with the sort and pagination information ignored
 func QuerySetterForCount(ctx context.Context, model interface{}, query *q.Query, ignoredCols ...string) (orm.QuerySeter, error) {
 	query = q.MustClone(query)

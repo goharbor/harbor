@@ -97,7 +97,6 @@ func init() {
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &MetadataAPI{}, "get:Get")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &MetadataAPI{}, "post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &MetadataAPI{}, "put:Put;delete:Delete")
-	beego.Router("/api/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &ProjectMemberAPI{})
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
 	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")

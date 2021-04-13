@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	. "github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"sync"
 	"testing"
 
@@ -408,6 +409,19 @@ func (suite *OrmSuite) TestReadOrCreateParallel() {
 	}
 
 	suite.Equal(1, sum)
+}
+
+func (suite *OrmSuite) TestPaginationOnRawSQL() {
+	query := &q.Query{
+		PageNumber: 1,
+		PageSize:   10,
+	}
+	sql := "select * from harbor_user where user_id > ? order by user_name "
+	params := []interface{}{2}
+	sql, params = PaginationOnRawSQL(query, sql, params)
+	suite.Equal("select * from harbor_user where user_id > ? order by user_name  limit ? offset ?", sql)
+	suite.Equal(int64(10), params[1])
+	suite.Equal(int64(0), params[2])
 }
 
 func TestRunOrmSuite(t *testing.T) {
