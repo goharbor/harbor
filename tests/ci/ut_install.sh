@@ -21,6 +21,7 @@ sudo rm -rf /data/*
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
+sudo make build_base_docker -e BUILDBASETARGET="db registry prepare"
 sudo make build -e BUILDTARGET="_build_db _build_registry _build_prepare"
 docker run --rm -v /:/hostfs:z goharbor/prepare:dev gencert -p /etc/harbor/tls/internal
 sudo MAKEPATH=$(pwd)/make ./make/prepare
