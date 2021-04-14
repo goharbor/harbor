@@ -16,6 +16,8 @@ package flow
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"strings"
 
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -122,9 +124,13 @@ func assembleSourceResources(resources []*model.Resource,
 
 // assemble the destination resources by filling the metadata, registry and override properties
 func assembleDestinationResources(resources []*model.Resource,
-	policy *repctlmodel.Policy) []*model.Resource {
+	policy *repctlmodel.Policy) ([]*model.Resource, error) {
 	var result []*model.Resource
 	for _, resource := range resources {
+		name, err := replaceNamespace(resource.Metadata.Repository.Name, policy.DestNamespace, policy.DestNamespaceReplaceCount)
+		if err != nil {
+			return nil, err
+		}
 		res := &model.Resource{
 			Type:         resource.Type,
 			Registry:     policy.DestRegistry,
@@ -135,7 +141,7 @@ func assembleDestinationResources(resources []*model.Resource,
 		}
 		res.Metadata = &model.ResourceMetadata{
 			Repository: &model.Repository{
-				Name:     replaceNamespace(resource.Metadata.Repository.Name, policy.DestNamespace),
+				Name:     name,
 				Metadata: resource.Metadata.Repository.Metadata,
 			},
 			Vtags:     resource.Metadata.Vtags,
@@ -144,7 +150,7 @@ func assembleDestinationResources(resources []*model.Resource,
 		result = append(result, res)
 	}
 	log.Debug("assemble the destination resources completed")
-	return result
+	return result, nil
 }
 
 // do the prepare work for pushing/uploading the resources: create the namespace or repository
@@ -186,13 +192,34 @@ func getResourceName(res *model.Resource) string {
 	return fmt.Sprintf("%s [%d item(s) in total]", meta.Repository.Name, n)
 }
 
-// repository:c namespace:n -> n/c
-// repository:b/c namespace:n -> n/c
-// repository:a/b/c namespace:n -> n/c
-func replaceNamespace(repository string, namespace string) string {
+// repository:a/b/c namespace:n replaceCount: -1 -> n/c
+// repository:a/b/c namespace:n replaceCount: 0 -> n/a/b/c
+// repository:a/b/c namespace:n replaceCount: 1 -> n/b/c
+// repository:a/b/c namespace:n replaceCount: 2 -> n/c
+// repository:a/b/c namespace:n replaceCount: 3 -> n
+func replaceNamespace(repository string, namespace string, replaceCount int8) (string, error) {
 	if len(namespace) == 0 {
-		return repository
+		return repository, nil
 	}
-	_, rest := util.ParseRepository(repository)
-	return fmt.Sprintf("%s/%s", namespace, rest)
+
+	// legacy logic to keep backward compatibility
+	if replaceCount < 0 {
+		_, rest := util.ParseRepository(repository)
+		return fmt.Sprintf("%s/%s", namespace, rest), nil
+	}
+
+	subs := strings.Split(repository, "/")
+	len := len(subs)
+	switch {
+	case replaceCount == 0:
+		return fmt.Sprintf("%s/%s", namespace, repository), nil
+	case int(replaceCount) == len:
+		return namespace, nil
+	case int(replaceCount) > len:
+		return "", errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessage("the repository %s contains only %d substrings, but the destination namespace replace count is %d",
+				repository, len, replaceCount)
+	default:
+		return fmt.Sprintf("%s/%s", namespace, strings.Join(subs[replaceCount:], "/")), nil
+	}
 }

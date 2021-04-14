@@ -5954,6 +5954,13 @@ definitions:
       dest_namespace:
         type: string
         description: The destination namespace.
+      dest_namespace_replace_count:
+        type: integer
+        format: int8
+        description: |-
+          Specify how many path components will be replaced by the provided destination namespace.
+          The default value is -1 in which case the legacy mode will be applied.
+        x-isnullable: true # make this field optional to keep backward compatibility
       trigger:
         $ref: '#/definitions/ReplicationTrigger'
       filters:

@@ -225,6 +225,9 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 			}
 			registry.URL = url
 		}
+		if params.Registry.Insecure != nil {
+			registry.Insecure = *params.Registry.Insecure
+		}
 		if params.Registry.CredentialType != nil {
 			if registry.Credential == nil {
 				registry.Credential = &model.Credential{}
