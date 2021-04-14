@@ -48,7 +48,7 @@ func (rm *Matcher) Match(pid int64, c iselector.Candidate) (bool, error) {
 		// match tag according to the tag selectors
 		var tagCandidates []*iselector.Candidate
 		tagSelectors := r.TagSelectors
-		if len(tagSelectors) < 0 {
+		if len(tagSelectors) < 1 {
 			continue
 		}
 		tagSelector := r.TagSelectors[0]
