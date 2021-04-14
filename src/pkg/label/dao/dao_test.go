@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package label
+package dao
 
 import (
 	"context"
 	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	artdao "github.com/goharbor/harbor/src/pkg/artifact/dao"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -46,7 +46,7 @@ func (l *labelDaoTestSuite) SetupSuite() {
 }
 
 func (l *labelDaoTestSuite) SetupTest() {
-	id, err := l.dao.Create(l.ctx, &models.Label{
+	id, err := l.dao.Create(l.ctx, &model.Label{
 		Name:  "label_for_label_dao_test_suite",
 		Scope: "g",
 	})
@@ -64,7 +64,7 @@ func (l *labelDaoTestSuite) SetupTest() {
 	l.Require().Nil(err)
 	l.artID = id
 
-	id, err = l.dao.CreateReference(l.ctx, &Reference{
+	id, err = l.dao.CreateReference(l.ctx, &model.Reference{
 		LabelID:    l.id,
 		ArtifactID: l.artID,
 	})
@@ -99,7 +99,7 @@ func (l *labelDaoTestSuite) TestCreate() {
 	// happy pass is covered by SetupTest
 
 	// conflict
-	_, err := l.dao.Create(l.ctx, &models.Label{
+	_, err := l.dao.Create(l.ctx, &model.Label{
 		Name:  "label_for_label_dao_test_suite",
 		Scope: "g",
 	})
@@ -127,7 +127,7 @@ func (l *labelDaoTestSuite) TestCreateReference() {
 	// happy pass is covered by SetupTest
 
 	// conflict
-	_, err := l.dao.CreateReference(l.ctx, &Reference{
+	_, err := l.dao.CreateReference(l.ctx, &model.Reference{
 		LabelID:    l.id,
 		ArtifactID: l.artID,
 	})
@@ -135,7 +135,7 @@ func (l *labelDaoTestSuite) TestCreateReference() {
 	l.True(errors.IsErr(err, errors.ConflictCode))
 
 	// violating foreign key constraint: the label that the ref tries to refer doesn't exist
-	_, err = l.dao.CreateReference(l.ctx, &Reference{
+	_, err = l.dao.CreateReference(l.ctx, &model.Reference{
 		LabelID:    1000,
 		ArtifactID: l.artID,
 	})
@@ -143,7 +143,7 @@ func (l *labelDaoTestSuite) TestCreateReference() {
 	l.True(errors.IsErr(err, errors.NotFoundCode))
 
 	// violating foreign key constraint: the artifact that the ref tries to refer doesn't exist
-	_, err = l.dao.CreateReference(l.ctx, &Reference{
+	_, err = l.dao.CreateReference(l.ctx, &model.Reference{
 		LabelID:    l.id,
 		ArtifactID: 1000,
 	})

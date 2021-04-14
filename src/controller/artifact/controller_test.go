@@ -31,6 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
@@ -64,7 +65,7 @@ type controllerTestSuite struct {
 	artrashMgr   *artrashtesting.FakeManager
 	blobMgr      *blob.Manager
 	tagCtl       *tagtesting.FakeController
-	labelMgr     *label.FakeManager
+	labelMgr     *label.Manager
 	abstractor   *fakeAbstractor
 	immutableMtr *immutable.FakeMatcher
 	regCli       *registry.FakeClient
@@ -76,7 +77,7 @@ func (c *controllerTestSuite) SetupTest() {
 	c.artrashMgr = &artrashtesting.FakeManager{}
 	c.blobMgr = &blob.Manager{}
 	c.tagCtl = &tagtesting.FakeController{}
-	c.labelMgr = &label.FakeManager{}
+	c.labelMgr = &label.Manager{}
 	c.abstractor = &fakeAbstractor{}
 	c.immutableMtr = &immutable.FakeMatcher{}
 	c.regCli = &registry.FakeClient{}
@@ -118,11 +119,11 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 	}
 	c.tagCtl.On("List").Return([]*tag.Tag{tg}, nil)
 	ctx := lib.WithAPIVersion(nil, "2.0")
-	lb := &models.Label{
+	lb := &model.Label{
 		ID:   1,
 		Name: "label",
 	}
-	c.labelMgr.On("ListByArtifact").Return([]*models.Label{
+	c.labelMgr.On("ListByArtifact", mock.Anything, mock.Anything).Return([]*model.Label{
 		lb,
 	}, nil)
 	artifact := c.ctl.assembleArtifact(ctx, art, option)
@@ -537,13 +538,13 @@ func (c *controllerTestSuite) TestGetAddition() {
 }
 
 func (c *controllerTestSuite) TestAddTo() {
-	c.labelMgr.On("AddTo").Return(nil)
+	c.labelMgr.On("AddTo", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	err := c.ctl.AddLabel(context.Background(), 1, 1)
 	c.Require().Nil(err)
 }
 
 func (c *controllerTestSuite) TestRemoveFrom() {
-	c.labelMgr.On("RemoveFrom").Return(nil)
+	c.labelMgr.On("RemoveFrom", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	err := c.ctl.RemoveLabel(nil, 1, 1)
 	c.Require().Nil(err)
 }

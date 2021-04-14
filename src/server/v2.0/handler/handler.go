@@ -49,6 +49,7 @@ func New() http.Handler {
 		SysteminfoAPI:         newSystemInfoAPI(),
 		PingAPI:               newPingAPI(),
 		LdapAPI:               newLdapAPI(),
+		LabelAPI:              newLabelAPI(),
 		GCAPI:                 newGCAPI(),
 		QuotaAPI:              newQuotaAPI(),
 		RetentionAPI:          newRetentionAPI(),

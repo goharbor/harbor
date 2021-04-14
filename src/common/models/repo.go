@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/pkg/signature/notary/model"
 	"github.com/lib/pq"
 	"github.com/theupdateframework/notary/tuf/data"
 )
@@ -70,16 +69,6 @@ type RepositoryQuery struct {
 	LabelID     int64
 	Pagination
 	Sorting
-}
-
-// TagResp holds the information of one image tag
-type TagResp struct {
-	TagDetail
-	Signature    *model.Target          `json:"signature"`
-	ScanOverview map[string]interface{} `json:"scan_overview,omitempty"`
-	Labels       []*Label               `json:"labels"`
-	PushTime     time.Time              `json:"push_time"`
-	PullTime     time.Time              `json:"pull_time"`
 }
 
 // TagDetail ...
