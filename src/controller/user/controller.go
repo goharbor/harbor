@@ -20,6 +20,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/oidc"
 	"github.com/goharbor/harbor/src/pkg/user"
@@ -102,7 +103,7 @@ func (c *controller) Get(ctx context.Context, id int, opt *Option) (*models.User
 	if opt != nil && opt.WithOIDCInfo {
 		oidcMeta, err := c.oidcMetaMgr.GetByUserID(ctx, id)
 		if err != nil {
-			return nil, err
+			return nil, errors.UnknownError(err)
 		}
 		u.OIDCUserMeta = oidcMeta
 	}
