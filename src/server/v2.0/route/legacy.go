@@ -23,7 +23,6 @@ import (
 // RegisterRoutes for Harbor legacy APIs
 func registerLegacyRoutes() {
 	version := APIVersion
-	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &api.ProjectMemberAPI{})
 	beego.Router("/api/"+version+"/email/ping", &api.EmailAPI{}, "post:Ping")
 	beego.Router("/api/"+version+"/health", &api.HealthAPI{}, "get:CheckHealth")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")

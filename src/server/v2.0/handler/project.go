@@ -22,10 +22,11 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/goharbor/harbor/src/pkg/member"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/common"
-	pro "github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
@@ -63,6 +64,7 @@ func newProjectAPI() *projectAPI {
 		userMgr:       user.Mgr,
 		repositoryCtl: repository.Ctl,
 		projectCtl:    project.Ctl,
+		memberMgr:     member.Mgr,
 		quotaCtl:      quota.Ctl,
 		robotMgr:      robot.Mgr,
 		preheatCtl:    preheat.Ctl,
@@ -78,6 +80,7 @@ type projectAPI struct {
 	userMgr       user.Manager
 	repositoryCtl repository.Controller
 	projectCtl    project.Controller
+	memberMgr     member.Manager
 	quotaCtl      quota.Controller
 	robotMgr      robot.Manager
 	preheatCtl    preheat.Controller
@@ -343,7 +346,7 @@ func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.Get
 	}
 
 	if hasPerm := a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionList, rbac.ResourceMember); hasPerm {
-		fetchSummaries = append(fetchSummaries, getProjectMemberSummary)
+		fetchSummaries = append(fetchSummaries, a.getProjectMemberSummary)
 	}
 
 	if p.IsProxy() {
@@ -696,7 +699,7 @@ func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *mo
 	}
 }
 
-func getProjectMemberSummary(ctx context.Context, p *project.Project, summary *models.ProjectSummary) {
+func (a *projectAPI) getProjectMemberSummary(ctx context.Context, p *project.Project, summary *models.ProjectSummary) {
 	var wg sync.WaitGroup
 
 	for _, e := range []struct {
@@ -712,14 +715,13 @@ func getProjectMemberSummary(ctx context.Context, p *project.Project, summary *m
 		wg.Add(1)
 		go func(role int, count *int64) {
 			defer wg.Done()
-
-			total, err := pro.GetTotalOfProjectMembers(p.ProjectID, role)
+			total, err := a.memberMgr.GetTotalOfProjectMembers(orm.Clone(ctx), p.ProjectID, nil, role)
 			if err != nil {
 				log.Warningf("failed to get total of project members of role %d", role)
 				return
 			}
 
-			*count = total
+			*count = int64(total)
 		}(e.role, e.count)
 	}
 

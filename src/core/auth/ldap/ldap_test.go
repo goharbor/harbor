@@ -22,16 +22,16 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
-	"github.com/goharbor/harbor/src/pkg/usergroup/model"
+	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/member"
+	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
 
 	"github.com/goharbor/harbor/src/core/auth"
 )
@@ -269,7 +269,7 @@ func TestAuthenticateHelperOnBoardUser(t *testing.T) {
 }
 
 func TestOnBoardGroup(t *testing.T) {
-	group := model.UserGroup{
+	group := ugModel.UserGroup{
 		GroupName:   "harbor_group2",
 		LdapGroupDN: "cn=harbor_group2,ou=groups,dc=example,dc=com",
 	}
@@ -362,18 +362,21 @@ func TestSearchAndOnBoardUser(t *testing.T) {
 	}
 }
 func TestAddProjectMemberWithLdapUser(t *testing.T) {
+	memberMgr := member.Mgr
+	ctx := orm.Context()
 	currentProject, err := dao.GetProjectByName("member_test_01")
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}
-	member := models.MemberReq{
-		ProjectID: currentProject.ProjectID,
-		MemberUser: models.User{
-			Username: "mike",
-		},
-		Role: common.RoleProjectAdmin,
+	userID, err := auth.SearchAndOnBoardUser("mike")
+	member := memberModels.Member{
+		ProjectID:  currentProject.ProjectID,
+		EntityType: common.UserMember,
+		Entityname: "mike",
+		EntityID:   userID,
+		Role:       common.RoleProjectAdmin,
 	}
-	pmid, err := api.AddProjectMember(currentProject.ProjectID, member)
+	pmid, err := memberMgr.AddProjectMember(ctx, member)
 	if err != nil {
 		t.Errorf("Error occurred in AddOrUpdateProjectMember: %v", err)
 	}
@@ -385,14 +388,14 @@ func TestAddProjectMemberWithLdapUser(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}
-	member2 := models.MemberReq{
-		ProjectID: currentProject.ProjectID,
-		MemberUser: models.User{
-			Username: "mike",
-		},
-		Role: common.RoleProjectAdmin,
+	member2 := memberModels.Member{
+		ProjectID:  currentProject.ProjectID,
+		EntityType: common.UserMember,
+		Entityname: "mike",
+		EntityID:   userID,
+		Role:       common.RoleProjectAdmin,
 	}
-	pmid, err = api.AddProjectMember(currentProject.ProjectID, member2)
+	pmid, err = memberMgr.AddProjectMember(ctx, member2)
 	if err != nil {
 		t.Errorf("Error occurred in AddOrUpdateProjectMember: %v", err)
 	}
@@ -401,30 +404,31 @@ func TestAddProjectMemberWithLdapUser(t *testing.T) {
 	}
 }
 func TestAddProjectMemberWithLdapGroup(t *testing.T) {
+	memberMgr := member.Mgr
+	ctx := orm.Context()
 	currentProject, err := dao.GetProjectByName("member_test_01")
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}
-	userGroups := []model.UserGroup{{GroupName: "cn=harbor_users,ou=groups,dc=example,dc=com", LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com", GroupType: common.LDAPGroupType}}
-	groupIds, err := usergroup.Mgr.Populate(orm.Context(), userGroups)
-	member := models.MemberReq{
-		ProjectID: currentProject.ProjectID,
-		MemberGroup: model.UserGroup{
-			ID: groupIds[0],
-		},
-		Role: common.RoleProjectAdmin,
+	userGroups := []ugModel.UserGroup{{GroupName: "cn=harbor_users,ou=groups,dc=example,dc=com", LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com", GroupType: common.LDAPGroupType}}
+	groupIds, err := usergroup.Mgr.Populate(ctx, userGroups)
+	m := memberModels.Member{
+		ProjectID:  currentProject.ProjectID,
+		EntityType: common.GroupMember,
+		EntityID:   groupIds[0],
+		Role:       common.RoleProjectAdmin,
 	}
-	pmid, err := api.AddProjectMember(currentProject.ProjectID, member)
+	pmid, err := memberMgr.AddProjectMember(ctx, m)
 	if err != nil {
 		t.Errorf("Error occurred in AddOrUpdateProjectMember: %v", err)
 	}
 	if pmid == 0 {
 		t.Errorf("Error occurred in AddOrUpdateProjectMember: pmid: %v", pmid)
 	}
-	queryMember := models.Member{
+	queryMember := memberModels.Member{
 		ProjectID: currentProject.ProjectID,
 	}
-	memberList, err := project.GetProjectMember(queryMember)
+	memberList, err := member.Mgr.List(ctx, queryMember, nil)
 	if err != nil {
 		t.Errorf("Failed to query project member, %v, error: %v", queryMember, err)
 	}

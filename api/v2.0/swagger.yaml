@@ -447,6 +447,170 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/members':
+    get:
+      summary: Get all project member information
+      description: Get all project member information
+      operationId: listProjectMembers
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'        
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: entityname
+          in: query
+          type: string
+          description: The entity name to search.
+      tags:
+        - member
+      responses:
+        '200':
+          description: Get project members successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of members
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string          
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProjectMemberEntity'
+               
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create project member
+      operationId: createProjectMember
+      description: 'Create project member relationship, the member can be one of the user_member and group_member,  The user_member need to specify user_id or username. If the user already exist in harbor DB, specify the user_id,  If does not exist in harbor DB, it will SearchAndOnBoard the user. The group_member need to specify id or ldap_group_dn. If the group already exist in harbor DB. specify the user group''s id,  If does not exist, it will SearchAndOnBoard the group. '
+      tags:
+        - member
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'        
+        - name: project_member
+          in: body
+          schema:
+            $ref: '#/definitions/ProjectMember'
+      responses:
+        '201':
+          description: Project member created successfully.
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/members/{mid}':
+    get:
+      summary: Get the project member information
+      description: Get the project member information
+      operationId: getProjectMember
+      tags:
+        - member
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'        
+        - name: mid
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The member ID
+      responses:
+        '200':
+          description: Project member retrieved successfully.
+          schema:
+            $ref: '#/definitions/ProjectMemberEntity'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update project member
+      description: Update project member relationship
+      operationId: updateProjectMember
+      tags:
+        - member
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'        
+        - name: mid
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Member ID.
+        - name: role
+          in: body
+          schema:
+            $ref: '#/definitions/RoleRequest'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete project member
+      operationId: deleteProjectMember
+      tags:
+        - member
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'    
+        - name: mid
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Member ID.
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'     
   /repositories:
     get:
       summary: List all authorized repositories
@@ -4783,6 +4947,7 @@ parameters:
     required: true
     type: integer
     format: int64
+
 responses:
   '200':
     description: Success
@@ -7392,6 +7557,55 @@ definitions:
       editable:
         type: boolean
         description: The configure item can be updated or not
+  ProjectMemberEntity:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: the project member id
+      project_id:
+        type: integer
+        description: the project id
+      entity_name:
+        type: string
+        description: the name of the group member.
+      role_name:
+        type: string
+        description: the name of the role
+      role_id:
+        type: integer
+        description: the role id
+      entity_id:
+        type: integer
+        description: 'the id of entity, if the member is a user, it is user_id in user table. if the member is a user group, it is the user group''s ID in user_group table.'
+      entity_type:
+        type: string
+        description: 'the entity''s type, u for user entity, g for group entity.'
+  ProjectMember:
+    type: object
+    properties:
+      role_id:
+        type: integer
+        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for maintainer'
+      member_user:
+        $ref: '#/definitions/UserEntity'
+      member_group:
+        $ref: '#/definitions/UserGroup'
+  RoleRequest:
+    type: object
+    properties:
+      role_id:
+        type: integer
+        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for maintainer'
+  UserEntity:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        description: The ID of the user.
+      username:
+        type: string
+        description: The name of the user.
   UserProfile:
     type: object
     properties:

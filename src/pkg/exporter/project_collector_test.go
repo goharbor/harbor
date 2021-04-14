@@ -10,13 +10,14 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	proctl "github.com/goharbor/harbor/src/controller/project"
 	quotactl "github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/member"
+	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
 	qtypes "github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/repository"
 )
@@ -105,15 +106,17 @@ func setupTest(t *testing.T) {
 	// Add member to project
 	pmIDs = make([]int, 0)
 	alice.UserID, bob.UserID, eve.UserID = int(aliceID), int(bobID), int(eveID)
-	p1m1ID, err := project.AddProjectMember(models.Member{ProjectID: proID1, Role: common.RoleDeveloper, EntityID: int(aliceID), EntityType: common.UserMember})
+
+	p1m1ID, err := member.Mgr.AddProjectMember(ctx, memberModels.Member{ProjectID: proID1, Role: common.RoleDeveloper, EntityID: int(aliceID), EntityType: common.UserMember})
 	if err != nil {
 		t.Errorf("add project member error %v", err)
 	}
-	p2m1ID, err := project.AddProjectMember(models.Member{ProjectID: proID2, Role: common.RoleMaintainer, EntityID: int(bobID), EntityType: common.UserMember})
+	p2m1ID, err := member.Mgr.AddProjectMember(ctx, memberModels.Member{ProjectID: proID2, Role: common.RoleMaintainer, EntityID: int(bobID), EntityType: common.UserMember})
 	if err != nil {
 		t.Errorf("add project member error %v", err)
 	}
-	p2m2ID, err := project.AddProjectMember(models.Member{ProjectID: proID2, Role: common.RoleMaintainer, EntityID: int(eveID), EntityType: common.UserMember})
+	p2m2ID, err := member.Mgr.AddProjectMember(ctx, memberModels.Member{ProjectID: proID2, Role: common.RoleMaintainer, EntityID: int(eveID), EntityType: common.UserMember})
+
 	if err != nil {
 		t.Errorf("add project member error %v", err)
 	}

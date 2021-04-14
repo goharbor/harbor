@@ -1,36 +1,71 @@
-// Copyright Project Harbor Authors
+//  Copyright Project Harbor Authors
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
-package project
+package dao
 
 import (
+	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/q"
+
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/member/models"
 )
 
-// GetProjectMember gets all members of the project.
-func GetProjectMember(queryMember models.Member) ([]*models.Member, error) {
+func init() {
+	orm.RegisterModel(
+		new(models.Member),
+	)
+}
+
+// DAO the dao for project member
+type DAO interface {
+	// GetProjectMember gets all members of the project.
+	GetProjectMember(ctx context.Context, queryMember models.Member, query *q.Query) ([]*models.Member, error)
+	// GetTotalOfProjectMembers returns total of project members
+	GetTotalOfProjectMembers(ctx context.Context, projectID int64, query *q.Query, roles ...int) (int, error)
+	// AddProjectMember inserts a record to table project_member
+	AddProjectMember(ctx context.Context, member models.Member) (int, error)
+	// UpdateProjectMemberRole updates the record in table project_member, only role can be changed
+	UpdateProjectMemberRole(ctx context.Context, projectID int64, pmID int, role int) error
+	// DeleteProjectMemberByID - Delete Project Member by ID
+	DeleteProjectMemberByID(ctx context.Context, projectID int64, pmid int) error
+	// SearchMemberByName search members of the project by entity_name
+	SearchMemberByName(ctx context.Context, projectID int64, entityName string) ([]*models.Member, error)
+	// ListRoles lists the roles of user for the specific project
+	ListRoles(ctx context.Context, user *models.User, projectID int64) ([]int, error)
+}
+
+type dao struct {
+}
+
+// New ...
+func New() DAO {
+	return &dao{}
+}
+
+func (d *dao) GetProjectMember(ctx context.Context, queryMember models.Member, query *q.Query) ([]*models.Member, error) {
 	log.Debugf("Query condition %+v", queryMember)
 	if queryMember.ProjectID == 0 {
 		return nil, fmt.Errorf("Failed to query project member, query condition %v", queryMember)
 	}
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	o := dao.GetOrmer()
 	sql := ` select a.* from (select pm.id as id, pm.project_id as project_id, ug.id as entity_id, ug.group_name as entity_name, ug.creation_time, ug.update_time, r.name as rolename,
 		r.role_id as role, pm.entity_type as entity_type from user_group ug join project_member pm
 		on pm.project_id = ? and ug.id = pm.entity_id join role r on pm.role = r.role_id where  pm.entity_type = 'g'
@@ -65,14 +100,14 @@ func GetProjectMember(queryMember models.Member) ([]*models.Member, error) {
 		queryParam = append(queryParam, queryMember.ID)
 	}
 	sql += ` order by entity_name `
+	sql, queryParam = orm.PaginationOnRawSQL(query, sql, queryParam)
 	members := []*models.Member{}
-	_, err := o.Raw(sql, queryParam).QueryRows(&members)
+	_, err = o.Raw(sql, queryParam).QueryRows(&members)
 
 	return members, err
 }
 
-// GetTotalOfProjectMembers returns total of project members
-func GetTotalOfProjectMembers(projectID int64, roles ...int) (int64, error) {
+func (d *dao) GetTotalOfProjectMembers(ctx context.Context, projectID int64, query *q.Query, roles ...int) (int, error) {
 	log.Debugf("Query condition %+v", projectID)
 	if projectID == 0 {
 		return 0, fmt.Errorf("failed to get total of project members, project id required %v", projectID)
@@ -87,16 +122,21 @@ func GetTotalOfProjectMembers(projectID int64, roles ...int) (int64, error) {
 		queryParam = append(queryParam, roles[0])
 	}
 
-	var count int64
-	err := dao.GetOrmer().Raw(sql, queryParam).QueryRow(&count)
+	var count int
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+	o.Raw(sql, queryParam).QueryRow(&count)
 	return count, err
 }
 
-// AddProjectMember inserts a record to table project_member
-func AddProjectMember(member models.Member) (int, error) {
-
+func (d *dao) AddProjectMember(ctx context.Context, member models.Member) (int, error) {
 	log.Debugf("Adding project member %+v", member)
-	o := dao.GetOrmer()
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
 
 	if member.EntityID <= 0 {
 		return 0, fmt.Errorf("Invalid entity_id, member: %+v", member)
@@ -107,7 +147,7 @@ func AddProjectMember(member models.Member) (int, error) {
 	}
 
 	delSQL := "delete from project_member where project_id = ? and entity_id = ? and entity_type = ? "
-	_, err := o.Raw(delSQL, member.ProjectID, member.EntityID, member.EntityType).Exec()
+	_, err = o.Raw(delSQL, member.ProjectID, member.EntityID, member.EntityType).Exec()
 	if err != nil {
 		return 0, err
 	}
@@ -121,27 +161,33 @@ func AddProjectMember(member models.Member) (int, error) {
 	return pmid, err
 }
 
-// UpdateProjectMemberRole updates the record in table project_member, only role can be changed
-func UpdateProjectMemberRole(pmID int, role int) error {
-	o := dao.GetOrmer()
-	sql := "update project_member set role = ? where id = ? "
-	_, err := o.Raw(sql, role, pmID).Exec()
+func (d *dao) UpdateProjectMemberRole(ctx context.Context, projectID int64, pmID int, role int) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	sql := "update project_member set role = ? where project_id = ? and id = ?  "
+	_, err = o.Raw(sql, role, projectID, pmID).Exec()
 	return err
 }
 
-// DeleteProjectMemberByID - Delete Project Member by ID
-func DeleteProjectMemberByID(pmid int) error {
-	o := dao.GetOrmer()
-	sql := "delete from project_member where id = ?"
-	if _, err := o.Raw(sql, pmid).Exec(); err != nil {
+func (d *dao) DeleteProjectMemberByID(ctx context.Context, projectID int64, pmid int) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	sql := "delete from project_member where project_id = ? and id = ?"
+	if _, err := o.Raw(sql, projectID, pmid).Exec(); err != nil {
 		return err
 	}
 	return nil
 }
 
-// SearchMemberByName search members of the project by entity_name
-func SearchMemberByName(projectID int64, entityName string) ([]*models.Member, error) {
-	o := dao.GetOrmer()
+func (d *dao) SearchMemberByName(ctx context.Context, projectID int64, entityName string) ([]*models.Member, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 	sql := `select pm.id, pm.project_id,
 	               u.username as entity_name,
 	               r.name as rolename,
@@ -167,12 +213,11 @@ func SearchMemberByName(projectID int64, entityName string) ([]*models.Member, e
 	queryParam = append(queryParam, "%"+orm.Escape(entityName)+"%")
 	members := []*models.Member{}
 	log.Debugf("Query sql: %v", sql)
-	_, err := o.Raw(sql, queryParam).QueryRows(&members)
+	_, err = o.Raw(sql, queryParam).QueryRows(&members)
 	return members, err
 }
 
-// ListRoles lists the roles of user for the specific project
-func ListRoles(user *models.User, projectID int64) ([]int, error) {
+func (d *dao) ListRoles(ctx context.Context, user *models.User, projectID int64) ([]int, error) {
 	if user == nil {
 		return nil, nil
 	}
@@ -186,12 +231,16 @@ func ListRoles(user *models.User, projectID int64) ([]int, error) {
 		sql += fmt.Sprintf(`union
 			select role
 			from project_member
-			where entity_type = 'g' and entity_id in ( %s ) and project_id = ? `, utils.ParamPlaceholderForIn(len(user.GroupIDs)))
+			where entity_type = 'g' and entity_id in ( %s ) and project_id = ? `, orm.ParamPlaceholderForIn(len(user.GroupIDs)))
 		params = append(params, user.GroupIDs)
 		params = append(params, projectID)
 	}
 	roles := []int{}
-	_, err := dao.GetOrmer().Raw(sql, params).QueryRows(&roles)
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	_, err = o.Raw(sql, params).QueryRows(&roles)
 	if err != nil {
 		return nil, err
 	}
