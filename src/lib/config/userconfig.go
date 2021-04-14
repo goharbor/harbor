@@ -19,54 +19,16 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
-	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"strings"
 )
 
-// DefaultCfgManager the default change manager, default is DBCfgManager. If InMemoryConfigManager is used, need to set to InMemoryCfgManager in test code
-var DefaultCfgManager = common.DBCfgManager
+// It contains all user related configurations, each of user related settings requires a context provided
 
-// Init configurations
-func Init() {
-	// init key provider
-	initKeyProvider()
-	log.Info("init secret store")
-	// init secret store
-	initSecretStore()
-}
-
-// InitWithSettings init config with predefined configs, and optionally overwrite the keyprovider
-func InitWithSettings(cfgs map[string]interface{}, kp ...encrypt.KeyProvider) {
-	Init()
-	DefaultCfgManager = common.InMemoryCfgManager
-	mgr := getManager()
-	mgr.UpdateConfig(backgroundCtx, cfgs)
-	if len(kp) > 0 {
-		keyProvider = kp[0]
-	}
-}
-
-// GetCfgManager return the current config manager
-func GetCfgManager(ctx context.Context) Manager {
-	return getManager()
-}
-
-// Load configurations
-func Load(ctx context.Context) error {
-	return getManager().Load(ctx)
-}
-
-// Upload save all configurations, used by testing
-func Upload(cfg map[string]interface{}) error {
-	return getManager().UpdateConfig(orm.Context(), cfg)
-}
-
-// GetSystemCfg returns the system configurations
+// GetSystemCfg returns the all configurations
 func GetSystemCfg(ctx context.Context) (map[string]interface{}, error) {
-	sysCfg := getManager().GetAll(ctx)
+	sysCfg := defaultMgr().GetAll(ctx)
 	if len(sysCfg) == 0 {
 		return nil, errors.New("can not load system config, the database might be down")
 	}
@@ -75,7 +37,7 @@ func GetSystemCfg(ctx context.Context) (map[string]interface{}, error) {
 
 // AuthMode ...
 func AuthMode(ctx context.Context) (string, error) {
-	mgr := getManager()
+	mgr := defaultMgr()
 	err := mgr.Load(ctx)
 	if err != nil {
 		log.Errorf("failed to load config, error %v", err)
@@ -86,7 +48,7 @@ func AuthMode(ctx context.Context) (string, error) {
 
 // LDAPConf returns the setting of ldap server
 func LDAPConf(ctx context.Context) (*cfgModels.LdapConf, error) {
-	mgr := getManager()
+	mgr := defaultMgr()
 	err := mgr.Load(ctx)
 	if err != nil {
 		return nil, err
@@ -106,7 +68,7 @@ func LDAPConf(ctx context.Context) (*cfgModels.LdapConf, error) {
 
 // LDAPGroupConf returns the setting of ldap group search
 func LDAPGroupConf(ctx context.Context) (*cfgModels.GroupConf, error) {
-	mgr := getManager()
+	mgr := defaultMgr()
 	err := mgr.Load(ctx)
 	if err != nil {
 		return nil, err
@@ -123,31 +85,31 @@ func LDAPGroupConf(ctx context.Context) (*cfgModels.GroupConf, error) {
 
 // TokenExpiration returns the token expiration time (in minute)
 func TokenExpiration(ctx context.Context) (int, error) {
-	return getManager().Get(ctx, common.TokenExpiration).GetInt(), nil
+	return defaultMgr().Get(ctx, common.TokenExpiration).GetInt(), nil
 }
 
 // RobotTokenDuration returns the token expiration time of robot account (in minute)
 func RobotTokenDuration(ctx context.Context) int {
-	return getManager().Get(ctx, common.RobotTokenDuration).GetInt()
+	return defaultMgr().Get(ctx, common.RobotTokenDuration).GetInt()
 }
 
 // SelfRegistration returns the enablement of self registration
 func SelfRegistration(ctx context.Context) (bool, error) {
-	return getManager().Get(ctx, common.SelfRegistration).GetBool(), nil
+	return defaultMgr().Get(ctx, common.SelfRegistration).GetBool(), nil
 }
 
 // OnlyAdminCreateProject returns the flag to restrict that only sys admin can create project
 func OnlyAdminCreateProject(ctx context.Context) (bool, error) {
-	err := getManager().Load(ctx)
+	err := defaultMgr().Load(ctx)
 	if err != nil {
 		return true, err
 	}
-	return getManager().Get(ctx, common.ProjectCreationRestriction).GetString() == common.ProCrtRestrAdmOnly, nil
+	return defaultMgr().Get(ctx, common.ProjectCreationRestriction).GetString() == common.ProCrtRestrAdmOnly, nil
 }
 
 // Email returns email server settings
 func Email(ctx context.Context) (*cfgModels.Email, error) {
-	mgr := getManager()
+	mgr := defaultMgr()
 	err := mgr.Load(ctx)
 	if err != nil {
 		return nil, err
@@ -166,7 +128,7 @@ func Email(ctx context.Context) (*cfgModels.Email, error) {
 
 // UAASettings returns the UAASettings to access UAA service.
 func UAASettings(ctx context.Context) (*models.UAASettings, error) {
-	mgr := getManager()
+	mgr := defaultMgr()
 	err := mgr.Load(ctx)
 	if err != nil {
 		return nil, err
@@ -182,13 +144,13 @@ func UAASettings(ctx context.Context) (*models.UAASettings, error) {
 
 // ReadOnly returns a bool to indicates if Harbor is in read only mode.
 func ReadOnly(ctx context.Context) bool {
-	return getManager().Get(ctx, common.ReadOnly).GetBool()
+	return defaultMgr().Get(ctx, common.ReadOnly).GetBool()
 }
 
 // HTTPAuthProxySetting returns the setting of HTTP Auth proxy.  the settings are only meaningful when the auth_mode is
 // set to http_auth
 func HTTPAuthProxySetting(ctx context.Context) (*cfgModels.HTTPAuthProxy, error) {
-	mgr := getManager()
+	mgr := defaultMgr()
 	if err := mgr.Load(ctx); err != nil {
 		return nil, err
 	}
@@ -206,7 +168,7 @@ func HTTPAuthProxySetting(ctx context.Context) (*cfgModels.HTTPAuthProxy, error)
 // OIDCSetting returns the setting of OIDC provider, currently there's only one OIDC provider allowed for Harbor and it's
 // only effective when auth_mode is set to oidc_auth
 func OIDCSetting(ctx context.Context) (*cfgModels.OIDCSetting, error) {
-	mgr := getManager()
+	mgr := defaultMgr()
 	if err := mgr.Load(ctx); err != nil {
 		return nil, err
 	}
@@ -231,27 +193,27 @@ func OIDCSetting(ctx context.Context) (*cfgModels.OIDCSetting, error) {
 
 // NotificationEnable returns a bool to indicates if notification enabled in harbor
 func NotificationEnable(ctx context.Context) bool {
-	return getManager().Get(ctx, common.NotificationEnable).GetBool()
+	return defaultMgr().Get(ctx, common.NotificationEnable).GetBool()
 }
 
 // QuotaPerProjectEnable returns a bool to indicates if quota per project enabled in harbor
 func QuotaPerProjectEnable(ctx context.Context) bool {
-	return getManager().Get(ctx, common.QuotaPerProjectEnable).GetBool()
+	return defaultMgr().Get(ctx, common.QuotaPerProjectEnable).GetBool()
 }
 
 // QuotaSetting returns the setting of quota.
 func QuotaSetting(ctx context.Context) (*cfgModels.QuotaSetting, error) {
-	if err := getManager().Load(ctx); err != nil {
+	if err := defaultMgr().Load(ctx); err != nil {
 		return nil, err
 	}
 	return &cfgModels.QuotaSetting{
-		StoragePerProject: getManager().Get(ctx, common.StoragePerProject).GetInt64(),
+		StoragePerProject: defaultMgr().Get(ctx, common.StoragePerProject).GetInt64(),
 	}, nil
 }
 
 // RobotPrefix user defined robot name prefix.
 func RobotPrefix(ctx context.Context) string {
-	return getManager().Get(ctx, common.RobotNamePrefix).GetString()
+	return defaultMgr().Get(ctx, common.RobotNamePrefix).GetString()
 }
 
 // SplitAndTrim ...

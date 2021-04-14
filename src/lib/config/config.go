@@ -15,16 +15,33 @@
 package config
 
 import (
+	"context"
 	"errors"
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"sync"
 )
 
-var (
-	managersMU sync.RWMutex
-	managers   = make(map[string]Manager)
+const (
+	// SessionCookieName is the name of the cookie for session ID
+	SessionCookieName = "sid"
+
+	defaultKeyPath                     = "/etc/core/key"
+	defaultRegistryTokenPrivateKeyPath = "/etc/core/private_key.pem"
 )
+
+var (
+	// DefaultCfgManager the default change manager, default is DBCfgManager. If InMemoryConfigManager is used, need to set to InMemoryCfgManager in test code
+	DefaultCfgManager = common.DBCfgManager
+	managersMU        sync.RWMutex
+	managers          = make(map[string]Manager)
+)
+
+// InternalCfg internal configure response model
+type InternalCfg map[string]*models.Value
 
 // Register  register the config manager
 func Register(name string, mgr Manager) {
@@ -48,5 +65,49 @@ func GetManager(name string) (Manager, error) {
 	return mgr, nil
 }
 
-// InternalCfg internal configure response model
-type InternalCfg map[string]*models.Value
+func defaultMgr() Manager {
+	manager, err := GetManager(DefaultCfgManager)
+	if err != nil {
+		log.Error("failed to get config manager")
+	}
+	return manager
+}
+
+// Init configurations
+// need to import following package before calling it
+// _ "github.com/goharbor/harbor/src/pkg/config/db"
+func Init() {
+	// init key provider
+	initKeyProvider()
+	log.Info("init secret store")
+	// init secret store
+	initSecretStore()
+}
+
+// InitWithSettings init config with predefined configs, and optionally overwrite the keyprovider
+// need to import following package before calling it
+// _ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+func InitWithSettings(cfgs map[string]interface{}, kp ...encrypt.KeyProvider) {
+	Init()
+	DefaultCfgManager = common.InMemoryCfgManager
+	mgr := defaultMgr()
+	mgr.UpdateConfig(backgroundCtx, cfgs)
+	if len(kp) > 0 {
+		keyProvider = kp[0]
+	}
+}
+
+// GetCfgManager return the current config manager
+func GetCfgManager(ctx context.Context) Manager {
+	return defaultMgr()
+}
+
+// Load configurations
+func Load(ctx context.Context) error {
+	return defaultMgr().Load(ctx)
+}
+
+// Upload save all configurations, used by testing
+func Upload(cfg map[string]interface{}) error {
+	return defaultMgr().UpdateConfig(orm.Context(), cfg)
+}
