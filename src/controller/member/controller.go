@@ -137,7 +137,7 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 		var userID int
 		member.EntityType = common.UserMember
 		u, err := c.userManager.GetByName(ctx, req.MemberUser.Username)
-		if err != nil {
+		if err != nil && !errors.IsNotFoundErr(err) {
 			return 0, err
 		}
 		if u != nil {
