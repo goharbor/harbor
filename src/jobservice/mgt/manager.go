@@ -143,7 +143,7 @@ func (bm *basicManager) GetJobs(q *query.Parameter) ([]*job.Stats, int64, error)
 		return nil, 0, errors.New("malform scan results")
 	}
 
-	nextCur, err := strconv.ParseUint(string(values[0].([]byte)), 10, 8)
+	nextCur, err := strconv.ParseInt(string(values[0].([]byte)), 10, 64)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -166,7 +166,7 @@ func (bm *basicManager) GetJobs(q *query.Parameter) ([]*job.Stats, int64, error)
 		}
 	}
 
-	return results, int64(nextCur), nil
+	return results, nextCur, nil
 }
 
 // GetPeriodicExecution is implementation of Manager.GetPeriodicExecution
