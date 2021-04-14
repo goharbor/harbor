@@ -55,11 +55,11 @@ func New() http.Handler {
 		WebhookAPI:            newNotificationPolicyAPI(),
 		WebhookjobAPI:         newNotificationJobAPI(),
 		ImmutableAPI:          newImmutableAPI(),
-		OidcAPI:               newOIDCAPI(),
+		OIDCAPI:               newOIDCAPI(),
 		SystemCVEAllowlistAPI: newSystemCVEAllowListAPI(),
 		ConfigureAPI:          newConfigAPI(),
 		UsergroupAPI:          newUserGroupAPI(),
-		UsersAPI:              newUsersAPI(),
+		UserAPI:               newUsersAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)
