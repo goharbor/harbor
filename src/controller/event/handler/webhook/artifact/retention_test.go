@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/retention"

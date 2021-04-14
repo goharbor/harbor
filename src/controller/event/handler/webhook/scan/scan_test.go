@@ -17,8 +17,9 @@ package scan
 import (
 	"context"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"testing"
 	"time"

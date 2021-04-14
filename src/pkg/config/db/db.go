@@ -17,8 +17,8 @@ package db
 import (
 	"context"
 	"github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/pkg/config/db/dao"
-	"github.com/goharbor/harbor/src/pkg/encrypt"
 	"os"
 
 	"github.com/goharbor/harbor/src/common/utils"

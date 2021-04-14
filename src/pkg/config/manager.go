@@ -20,15 +20,11 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	libCfg "github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/config/store"
 	"os"
 )
-
-// Manager ...
-type Manager libCfg.Manager
 
 // CfgManager ... Configure Manager
 type CfgManager struct {

@@ -17,7 +17,9 @@ package chart
 import (
 	"context"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"os"
 	"testing"
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/dao"

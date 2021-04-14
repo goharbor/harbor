@@ -16,7 +16,7 @@ package testing
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"io"
 	"math/rand"
 	"net/http"

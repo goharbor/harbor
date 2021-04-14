@@ -16,9 +16,10 @@ package test
 
 import (
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/controller/usergroup"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"

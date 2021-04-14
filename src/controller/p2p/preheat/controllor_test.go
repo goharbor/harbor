@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"

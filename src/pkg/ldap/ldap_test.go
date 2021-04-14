@@ -17,6 +17,7 @@ package ldap
 import (
 	"context"
 	goldap "github.com/go-ldap/ldap/v3"
+	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
 	"github.com/stretchr/testify/assert"
 	"reflect"
@@ -25,7 +26,7 @@ import (
 	"testing"
 )
 
-var ldapCfg = model.LdapConf{
+var ldapCfg = models.LdapConf{
 	URL:               "ldap://127.0.0.1",
 	SearchDn:          "cn=admin,dc=example,dc=com",
 	SearchPassword:    "admin",
@@ -35,7 +36,7 @@ var ldapCfg = model.LdapConf{
 	ConnectionTimeout: 30,
 }
 
-var groupCfg = model.GroupConf{
+var groupCfg = models.GroupConf{
 	BaseDN:              "dc=example,dc=com",
 	NameAttribute:       "cn",
 	SearchScope:         2,
@@ -149,7 +150,7 @@ func Test_createGroupSearchFilter(t *testing.T) {
 
 func TestSession_SearchGroup(t *testing.T) {
 	type fields struct {
-		ldapConfig model.LdapConf
+		ldapConfig models.LdapConf
 		ldapConn   *goldap.Conn
 	}
 	type args struct {
@@ -159,7 +160,7 @@ func TestSession_SearchGroup(t *testing.T) {
 		groupNameAttribute string
 	}
 
-	ldapConfig := model.LdapConf{
+	ldapConfig := models.LdapConf{
 		URL:            "ldap://127.0.0.1:389",
 		SearchDn:       "cn=admin,dc=example,dc=com",
 		Scope:          2,
@@ -200,31 +201,31 @@ func TestSession_SearchGroup(t *testing.T) {
 }
 
 func TestSession_SearchGroupByDN(t *testing.T) {
-	ldapGroupConfig := model.GroupConf{
+	ldapGroupConfig := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "objectclass=groupOfNames",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}
-	ldapGroupConfig2 := model.GroupConf{
+	ldapGroupConfig2 := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "objectclass=groupOfNames",
 		NameAttribute: "o",
 		SearchScope:   2,
 	}
-	groupConfigWithEmptyBaseDN := model.GroupConf{
+	groupConfigWithEmptyBaseDN := models.GroupConf{
 		BaseDN:        "",
 		Filter:        "(objectclass=groupOfNames)",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}
-	groupConfigWithFilter := model.GroupConf{
+	groupConfigWithFilter := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "(cn=*admin*)",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}
-	groupConfigWithDifferentGroupDN := model.GroupConf{
+	groupConfigWithDifferentGroupDN := models.GroupConf{
 		BaseDN:        "dc=harbor,dc=example,dc=com",
 		Filter:        "(objectclass=groupOfNames)",
 		NameAttribute: "cn",
@@ -232,8 +233,8 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 	}
 
 	type fields struct {
-		ldapConfig      model.LdapConf
-		ldapGroupConfig model.GroupConf
+		ldapConfig      models.LdapConf
+		ldapGroupConfig models.GroupConf
 		ldapConn        *goldap.Conn
 	}
 	type args struct {
@@ -309,25 +310,25 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 }
 
 func TestSession_SearchGroupByName(t *testing.T) {
-	ldapGroupConfig := model.GroupConf{
+	ldapGroupConfig := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "objectclass=groupOfNames",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}
-	ldapGroupConfig2 := model.GroupConf{
+	ldapGroupConfig2 := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "objectclass=groupOfNames",
 		NameAttribute: "o",
 		SearchScope:   2,
 	}
-	groupConfigWithFilter := model.GroupConf{
+	groupConfigWithFilter := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "(cn=*admin*)",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}
-	groupConfigWithDifferentGroupDN := model.GroupConf{
+	groupConfigWithDifferentGroupDN := models.GroupConf{
 		BaseDN:        "dc=harbor,dc=example,dc=com",
 		Filter:        "(objectclass=groupOfNames)",
 		NameAttribute: "cn",
@@ -335,8 +336,8 @@ func TestSession_SearchGroupByName(t *testing.T) {
 	}
 
 	type fields struct {
-		ldapConfig      model.LdapConf
-		ldapGroupConfig model.GroupConf
+		ldapConfig      models.LdapConf
+		ldapGroupConfig models.GroupConf
 		ldapConn        *goldap.Conn
 	}
 	type args struct {

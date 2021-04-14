@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"io"
 	"io/ioutil"
 	"net/http"

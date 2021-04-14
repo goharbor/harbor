@@ -21,7 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/config"
-	libCfg "github.com/goharbor/harbor/src/lib/config"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/configure"
@@ -97,7 +97,7 @@ func (c *configAPI) GetInternalconfig(ctx context.Context, params configure.GetI
 	return configure.NewGetInternalconfigOK().WithPayload(resultCfg)
 }
 
-func toResponseModel(cfg map[string]*libCfg.Value) (*models.ConfigurationsResponse, error) {
+func toResponseModel(cfg map[string]*cfgModels.Value) (*models.ConfigurationsResponse, error) {
 	var result []byte
 	result, err := json.Marshal(cfg)
 	if err != nil {
