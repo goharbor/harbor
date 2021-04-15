@@ -91,8 +91,7 @@ jobs:
           else
             Harbor_Build_Base_Tag=dev
           fi
-          sudo docker rmi -f $(docker images -a -q)
-          sudo docker system prune -a -f
+
           cd src/github.com/goharbor/harbor
           sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} BUILDBIN=true NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
           sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} BUILDBIN=true NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
