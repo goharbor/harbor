@@ -1,5 +1,5 @@
-import {of as observableOf,  forkJoin, throwError} from "rxjs";
-import {mergeMap, catchError} from 'rxjs/operators';
+import { of as observableOf,  forkJoin } from "rxjs";
+import { mergeMap, catchError } from 'rxjs/operators';
 import { ChangeDetectorRef, ChangeDetectionStrategy, ViewChild } from "@angular/core";
 import { Component, OnInit, Input, Output, EventEmitter } from "@angular/core";
 import { NgForm } from '@angular/forms';
@@ -8,12 +8,12 @@ import { UserGroup } from "../../../left-side-nav/group/group";
 import { MemberService } from "../member.service";
 import { GroupService } from "../../../left-side-nav/group/group.service";
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { Member } from "../member";
 import { throwError as observableThrowError } from "rxjs";
 import { OperationService } from "../../../../shared/components/operation/operation.service";
 import { operateChanges, OperateInfo, OperationState } from "../../../../shared/components/operation/operate";
 import { ProjectRoles } from "../../../../shared/entities/shared.const";
 import { errorHandler } from "../../../../shared/units/shared.utils";
+import { ProjectMemberEntity } from "../../../../../../ng-swagger-gen/models/project-member-entity";
 @Component({
   selector: "add-group",
   templateUrl: "./add-group.component.html",
@@ -36,7 +36,7 @@ export class AddGroupComponent implements OnInit {
   dnTooltip = 'TOOLTIP.ITEM_REQUIRED';
 
   @Input() projectId: number;
-  @Input() memberList: Member[] = [];
+  @Input() memberList: ProjectMemberEntity[] = [];
   @Output() added = new EventEmitter<boolean>();
 
   @ViewChild('groupForm')

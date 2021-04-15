@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {finalize, debounceTime, distinctUntilChanged} from 'rxjs/operators';
+import { finalize, debounceTime } from 'rxjs/operators';
 import {
   Component,
   Input,
@@ -34,6 +34,7 @@ import { Member } from '../member';
 import { MemberService } from '../member.service';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
+import { ProjectMemberEntity } from "../../../../../../ng-swagger-gen/models/project-member-entity";
 
 
 @Component({
@@ -44,8 +45,8 @@ import { InlineAlertComponent } from "../../../../shared/components/inline-alert
 })
 export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
 
-  @Input() memberList: Member[] = [];
-  member: Member = new Member();
+  @Input() memberList: ProjectMemberEntity[] = [];
+  member: ProjectMemberEntity = new Member();
 
   addMemberOpened: boolean;
 
@@ -87,16 +88,15 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     }
     if (hasProjectAdminRole) {
       this.nameChecker.pipe(
-        debounceTime(500),
-        distinctUntilChanged(), )
+        debounceTime(500))
         .subscribe((name: string) => {
           let cont = this.currentForm.controls['member_name'];
           if (cont) {
             this.isMemberNameValid = cont.valid;
             if (cont.valid) {
               this.checkOnGoing = true;
-              forkJoin(this.userService.getUsersNameList(cont.value, 20), this.memberService
-              .listMembers(this.projectId, cont.value)).subscribe((res: Array<any>) => {
+              forkJoin([this.userService.getUsersNameList(cont.value, 20), this.memberService
+              .listMembers(this.projectId, cont.value)]).subscribe((res: Array<any>) => {
                 this.userLists = res[0];
                 if (res[1].filter(m => { return m.entity_name === cont.value; }).length > 0) {
                   this.isMemberNameValid = false;

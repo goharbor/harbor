@@ -12,6 +12,8 @@ import { UserPermissionService } from "../../../shared/services";
 import { ErrorHandler } from "../../../shared/units/error-handler";
 import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
 import { SharedTestingModule } from "../../../shared/shared.module";
+import { HttpHeaders, HttpResponse } from "@angular/common/http";
+import { Registry } from "../../../../../ng-swagger-gen/models/registry";
 
 describe('MemberComponent', () => {
     let component: MemberComponent;
@@ -20,13 +22,17 @@ describe('MemberComponent', () => {
         getUsersNameList: () => {
             return of([]);
         },
-        listMembers: () => {
-            return of([]);
+        listProjectMembersResponse: () => {
+            const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
+                headers: new HttpHeaders({'x-total-count': '0'}),
+                body: []
+            });
+            return of(response);
         },
-        changeMemberRole: () => {
+        updateProjectMember: () => {
             return of(null);
         },
-        deleteMember: () => {
+        deleteProjectMember: () => {
             return of(null);
         },
     };
@@ -112,6 +118,7 @@ describe('MemberComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(MemberComponent);
         component = fixture.componentInstance;
+        component.loading = true;
         fixture.detectChanges();
     });
 

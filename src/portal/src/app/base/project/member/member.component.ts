@@ -18,11 +18,9 @@ import { Subscription, forkJoin, Observable } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
 import { SessionService } from "../../../shared/services/session.service";
-import { Member } from "./member";
 import { SessionUser } from "../../../shared/entities/session-user";
 import { AddGroupComponent } from './add-group/add-group.component';
 import { AddHttpAuthGroupComponent } from './add-http-auth-group/add-http-auth-group.component';
-import { MemberService } from "./member.service";
 import { AddMemberComponent } from "./add-member/add-member.component";
 import { AppConfigService } from "../../../services/app-config.service";
 import { map, catchError } from "rxjs/operators";
@@ -40,13 +38,17 @@ import {
 import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
 import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
+import { DEFAULT_PAGE_SIZE } from "../../../shared/units/utils";
+import { MemberService } from "../../../../../ng-swagger-gen/services/member.service";
+import { ClrDatagridStateInterface } from "@clr/angular";
+import { ProjectMemberEntity } from "../../../../../ng-swagger-gen/models/project-member-entity";
 @Component({
   templateUrl: "member.component.html",
   styleUrls: ["./member.component.scss"],
 })
 export class MemberComponent implements OnInit, OnDestroy {
 
-  members: Member[];
+  members: ProjectMemberEntity[];
   projectId: number;
   roleInfo = RoleInfo;
   delSub: Subscription;
@@ -55,7 +57,7 @@ export class MemberComponent implements OnInit, OnDestroy {
 
   batchOps = 'delete';
   searchMember: string;
-  selectedRow: Member[] = [];
+  selectedRow: ProjectMemberEntity[] = [];
   roleNum: number;
   isDelete = false;
   isChangeRole = false;
@@ -76,6 +78,9 @@ export class MemberComponent implements OnInit, OnDestroy {
   hasCreateMemberPermission: boolean;
   hasUpdateMemberPermission: boolean;
   hasDeleteMemberPermission: boolean;
+  page: number = 1;
+  pageSize: number = DEFAULT_PAGE_SIZE;
+  total: number = 0;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -110,7 +115,6 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.projectId = +this.route.snapshot.parent.parent.params["id"];
     // Get current user from registered resolver.
     this.currentUser = this.session.getCurrentUser();
-    this.retrieve(this.projectId, "");
     // get member permission rule
     this.getMemberPermissionRule(this.projectId);
     if (this.appConfigService.isLdapMode()) {
@@ -125,24 +129,45 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
   doSearch(searchMember: string) {
     this.searchMember = searchMember;
-    this.retrieve(this.projectId, this.searchMember);
+    this.retrieve(this.searchMember);
   }
 
   refresh() {
-    this.retrieve(this.projectId, "");
+    this.page = 1;
+    this.total = 0;
+    this.selectedRow = [];
+    this.searchMember = null;
+    this.retrieve( "");
   }
-
-  retrieve(projectId: number, username: string) {
+  clrDgRefresh(state: ClrDatagridStateInterface) {
+    this.retrieve('', state);
+  }
+  retrieve(username: string, state?: ClrDatagridStateInterface) {
+    if (state && state.page) {
+      this.pageSize = state.page.size;
+    }
     this.loading = true;
     this.selectedRow = [];
     this.memberService
-      .listMembers(projectId, username).pipe(
+      .listProjectMembersResponse({
+        entityname: username,
+        page:  this.page,
+        pageSize: this.pageSize,
+        projectNameOrId: this.projectId.toString()
+      }).pipe(
         finalize(() => {
           this.loading = false;
         }))
       .subscribe(
         response => {
-          this.members = response;
+          // Get total count
+          if (response.headers) {
+            let xHeader: string = response.headers.get("X-Total-Count");
+            if (xHeader) {
+              this.total = parseInt(xHeader, 0);
+            }
+          }
+          this.members = response.body || [];
         },
         error => {
           this.messageHandlerService.handleError(error);
@@ -150,12 +175,9 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   get onlySelf(): boolean {
-    if (this.selectedRow.length === 1 &&
+    return this.selectedRow.length === 1 &&
       this.selectedRow[0].entity_type === 'u' &&
-      this.selectedRow[0].entity_id === this.currentUser.user_id) {
-      return true;
-    }
-    return false;
+      this.selectedRow[0].entity_id === this.currentUser.user_id;
   }
 
   member_type_toString(user_type: string) {
@@ -172,8 +194,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   addedMember(result: boolean) {
-    this.searchMember = "";
-    this.retrieve(this.projectId, "");
+    this.refresh();
   }
 
   // Add group
@@ -186,17 +207,23 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
   addedGroup(result: boolean) {
     this.searchMember = "";
-    this.retrieve(this.projectId, "");
+    this.retrieve("");
   }
 
-  changeMembersRole(members: Member[], roleId: number) {
+  changeMembersRole(members: ProjectMemberEntity[], roleId: number) {
     if (!members) {
       return;
     }
 
-    let changeOperate = (projectId: number, member: Member, ) => {
+    let changeOperate = (projectId: number, member: ProjectMemberEntity, ) => {
       return this.memberService
-        .changeMemberRole(projectId, member.id, roleId)
+        .updateProjectMember({
+          projectNameOrId: this.projectId.toString(),
+          mid: member.id,
+          role: {
+            role_id: roleId
+          }
+        })
         .pipe(map(() => this.batchChangeRoleInfos[member.id] = 'done')
           , catchError(error => {
             this.messageHandlerService.handleError(error);
@@ -216,7 +243,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     });
 
     forkJoin(...RoleChangeObservables).subscribe(() => {
-      this.retrieve(this.projectId, "");
+      this.refresh();
     });
   }
 
@@ -225,7 +252,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   // Delete members
-  openDeleteMembersDialog(members: Member[]) {
+  openDeleteMembersDialog(members: ProjectMemberEntity[]) {
     this.batchOps = 'delete';
     let nameArr: string[] = [];
     if (members && members.length) {
@@ -244,12 +271,12 @@ export class MemberComponent implements OnInit, OnDestroy {
     }
   }
 
-  deleteMembers(members: Member[]) {
+  deleteMembers(members: ProjectMemberEntity[]) {
     if (!members) { return; }
     let memberDeletingObservables: Observable<any>[] = [];
 
     // Function to delete specific member
-    let deleteMember = (projectId: number, member: Member) => {
+    let deleteMember = (member: ProjectMemberEntity) => {
       let operMessage = new OperateInfo();
       operMessage.name = member.entity_type === 'u' ? 'OPERATION.DELETE_MEMBER' : 'OPERATION.DELETE_GROUP';
       operMessage.data.id = member.id;
@@ -265,7 +292,10 @@ export class MemberComponent implements OnInit, OnDestroy {
       }
 
       return this.memberService
-        .deleteMember(projectId, member.id)
+        .deleteProjectMember({
+          projectNameOrId: this.projectId.toString(),
+          mid: member.id
+        })
         .pipe(map(response => {
           this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
             operateChanges(operMessage, OperationState.success);
@@ -280,12 +310,11 @@ export class MemberComponent implements OnInit, OnDestroy {
     };
 
     // Deleting member then wating for results
-    members.forEach(member => memberDeletingObservables.push(deleteMember(this.projectId, member)));
+    members.forEach(member => memberDeletingObservables.push(deleteMember(member)));
 
     forkJoin(...memberDeletingObservables).subscribe(() => {
-      this.selectedRow = [];
       this.batchOps = 'idle';
-      this.retrieve(this.projectId, "");
+      this.refresh();
     }, error => {
       this.errorHandlerEntity.error(error);
     });
