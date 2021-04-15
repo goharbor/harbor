@@ -1,10 +1,14 @@
-import {Component, OnInit, OnDestroy, HostListener} from '@angular/core';
-import {OperationService} from "./operation.service";
-import {Subscription} from "rxjs";
-import {OperateInfo, OperationState} from "./operate";
-import {SlideInOutAnimation} from "../../_animations/slide-in-out.animation";
-import {TranslateService} from "@ngx-translate/core";
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { OperationService } from "./operation.service";
+import { Subscription } from "rxjs";
+import { OperateInfo, OperationState } from "./operate";
+import { SlideInOutAnimation } from "../../_animations/slide-in-out.animation";
+import { TranslateService } from "@ngx-translate/core";
+import { SessionService } from "../../services/session.service";
 
+const OPERATION_KEY: string = 'operation';
+const MAX_NUMBER: number = 500;
+const MAX_SAVING_TIME: number = 1000 * 60 * 60 * 24 * 30; // 30 days
 
 @Component({
   selector: 'hbr-operation-model',
@@ -21,13 +25,21 @@ export class OperationComponent implements OnInit, OnDestroy {
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnloadHander(event) {
-    // storage to localStorage
-    let timp = new Date().getTime();
-    localStorage.setItem('operaion', JSON.stringify({timp: timp,  data: this.resultLists}));
-    localStorage.setItem('newMessageCount', this._newMessageCount.toString());
+    if (this.session.getCurrentUser()) {
+      // storage to localStorage
+      const timp = new Date().getTime();
+      // group by user id
+      localStorage.setItem(`${OPERATION_KEY}-${this.session.getCurrentUser().user_id}`,
+        JSON.stringify({
+          timp: timp,
+          data: this.resultLists,
+          newMessageCount: this._newMessageCount
+        }));
+    }
   }
 
   constructor(
+    private session: SessionService,
     private operationService: OperationService,
     private translate: TranslateService) {
 
@@ -36,8 +48,8 @@ export class OperationComponent implements OnInit, OnDestroy {
         this._newMessageCount += 1;
       }
       if (data) {
-        if (this.resultLists.length >= 50) {
-          this.resultLists.splice(49, this.resultLists.length - 49);
+        if (this.resultLists.length >= MAX_NUMBER) {
+          this.resultLists.splice(MAX_NUMBER - 1, this.resultLists.length + 1 - MAX_NUMBER);
         }
         this.resultLists.unshift(data);
       }
@@ -46,29 +58,33 @@ export class OperationComponent implements OnInit, OnDestroy {
 
   getNewMessageCountStr(): string {
     if (this._newMessageCount) {
-      if (this._newMessageCount > 50) {
-        return 50 + '+';
+      if (this._newMessageCount > MAX_NUMBER) {
+        return MAX_NUMBER + '+';
       }
       return this._newMessageCount.toString();
     }
     return '';
   }
+
   resetNewMessageCount() {
     this._newMessageCount = 0;
   }
+
   mouseover() {
     if (this._timeoutInterval) {
       clearInterval(this._timeoutInterval);
       this._timeoutInterval = null;
     }
   }
+
   mouseleave() {
     if (!this._timeoutInterval) {
       this._timeoutInterval = setTimeout(() => {
-          this.animationState = 'out';
+        this.animationState = 'out';
       }, 5000);
     }
   }
+
   public get runningLists(): OperateInfo[] {
     let runningList: OperateInfo[] = [];
     this.resultLists.forEach(data => {
@@ -89,29 +105,38 @@ export class OperationComponent implements OnInit, OnDestroy {
     return failedList;
   }
 
-  ngOnInit() {
-    this._newMessageCount = +localStorage.getItem('newMessageCount');
-    let requestCookie = localStorage.getItem('operaion');
-    if (requestCookie) {
-      let operInfors: any = JSON.parse(requestCookie);
-      if (operInfors) {
-        if ((new Date().getTime() - operInfors.timp) > 1000 * 60 * 60 * 24) {
-          localStorage.removeItem('operaion');
-        } else {
-          if (operInfors.data) {
-            operInfors.data.forEach(operInfo => {
-              if (operInfo.state === OperationState.progressing) {
-                operInfo.state = OperationState.interrupt;
-                operInfo.data.errorInf = 'operation been interrupted';
-              }
-            });
-            this.resultLists = operInfors.data;
+  init() {
+    if (this.session.getCurrentUser()) {
+      let requestCookie = localStorage.getItem(`${OPERATION_KEY}-${this.session.getCurrentUser().user_id}`);
+      if (requestCookie) {
+        let operInfors: any = JSON.parse(requestCookie);
+        if (operInfors) {
+          if (operInfors.newMessageCount) {
+            this._newMessageCount = operInfors.newMessageCount;
+          }
+          if ((new Date().getTime() - operInfors.timp) > MAX_SAVING_TIME) {
+            localStorage.removeItem(`${OPERATION_KEY}-${this.session.getCurrentUser().user_id}`);
+          } else {
+            if (operInfors.data) {
+              operInfors.data.forEach(operInfo => {
+                if (operInfo.state === OperationState.progressing) {
+                  operInfo.state = OperationState.interrupt;
+                  operInfo.data.errorInf = 'operation been interrupted';
+                }
+              });
+              this.resultLists = operInfors.data;
+            }
           }
         }
-      }
 
+      }
     }
   }
+
+  ngOnInit() {
+    this.init();
+  }
+
   ngOnDestroy(): void {
     if (this.batchInfoSubscription) {
       this.batchInfoSubscription.unsubscribe();
@@ -144,8 +169,8 @@ export class OperationComponent implements OnInit, OnDestroy {
   TabEvent(): void {
     let timp: any;
     this.resultLists.forEach(data => {
-       timp = new Date().getTime() - +data.timeStamp;
-       data.timeDiff = this.calculateTime(timp);
+      timp = new Date().getTime() - +data.timeStamp;
+      data.timeDiff = this.calculateTime(timp);
     });
   }
 
@@ -155,29 +180,15 @@ export class OperationComponent implements OnInit, OnDestroy {
       return Math.floor(dist) + ' minute(s) ago';
     } else if (dist >= 60 && Math.floor(dist / 60) < 24) {
       return Math.floor(dist / 60) + ' hour(s) ago';
-    } else if (Math.floor(dist / 60) >= 24)  {
+    } else if (Math.floor(dist / 60) >= 24) {
       return Math.floor(dist / 60 / 24) + ' day(s) ago';
     } else {
       return 'less than 1 minute';
     }
-
   }
 
-  /*calculateTime(timp: number) {
-    let dist = Math.floor(timp / 1000 / 60);  // change to minute;
-    if (dist > 0 && dist < 60) {
-       return this.translateTime('OPERATION.MINUTE_AGO', Math.floor(dist));
-    }else if (dist > 60 && Math.floor(dist / 60) < 24) {
-      return this.translateTime('OPERATION.HOUR_AGO', Math.floor(dist / 60));
-    } else if (Math.floor(dist / 60) >= 24 && Math.floor(dist / 60) <= 48)  {
-      return this.translateTime('OPERATION.DAY_AGO', Math.floor(dist / 60 / 24));
-    } else {
-      return this.translateTime('OPERATION.SECOND_AGO');
-    }
-  }*/
-
   translateTime(tim: string, param?: number) {
-    this.translate.get(tim, { 'param': param }).subscribe((res: string) => {
+    this.translate.get(tim, {'param': param}).subscribe((res: string) => {
       return res;
     });
   }

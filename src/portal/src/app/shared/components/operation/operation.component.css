@@ -42,9 +42,23 @@
     text-decoration: none;
 }
 .freshIcon{float: right;     margin-right: 20px;  margin-top: -10px;cursor: pointer;}
-#contentFailed, #contentAll, #contentRun{
+:host::ng-deep#contentAll{
     position: absolute;
-    top: 95px;
+    top: 115px;
+    bottom: 0;
+    width: 100%;
+    overflow-y: auto;
+}
+:host::ng-deep#contentFailed{
+    position: absolute;
+    top: 115px;
+    bottom: 0;
+    width: 100%;
+    overflow-y: auto;
+}
+:host::ng-deep#contentRun{
+    position: absolute;
+    top: 115px;
     bottom: 0;
     width: 100%;
     overflow-y: auto;
