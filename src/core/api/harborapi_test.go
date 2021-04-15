@@ -93,7 +93,6 @@ func init() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 
-	beego.Router("/api/health", &HealthAPI{}, "get:CheckHealth")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &MetadataAPI{}, "get:Get")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &MetadataAPI{}, "post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &MetadataAPI{}, "put:Put;delete:Delete")

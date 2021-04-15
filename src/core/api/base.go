@@ -161,8 +161,6 @@ func (b *BaseController) PopulateUserSession(u models.User) {
 
 // Init related objects/configurations for the API controllers
 func Init() error {
-	registerHealthCheckers()
-
 	// init chart controller
 	if err := initChartController(); err != nil {
 		return err

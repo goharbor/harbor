@@ -12,113 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package health
 
 import (
-	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
 	"io/ioutil"
 	"net/http"
-	"sort"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/astaxie/beego/orm"
 	"github.com/docker/distribution/health"
-	"github.com/goharbor/harbor/src/common/dao"
 	httputil "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/redis"
 )
-
-var (
-	timeout = 60 * time.Second
-	// HealthCheckerRegistry ...
-	HealthCheckerRegistry = map[string]health.Checker{}
-)
-
-type overallHealthStatus struct {
-	Status     string                   `json:"status"`
-	Components []*componentHealthStatus `json:"components"`
-}
-
-type componentHealthStatus struct {
-	Name   string `json:"name"`
-	Status string `json:"status"`
-	Error  string `json:"error,omitempty"`
-}
-
-type healthy bool
-
-func (h healthy) String() string {
-	if h {
-		return "healthy"
-	}
-	return "unhealthy"
-}
-
-// HealthAPI handles the request for "/api/health"
-type HealthAPI struct {
-	BaseController
-}
-
-// CheckHealth checks the health of system
-func (h *HealthAPI) CheckHealth() {
-	var isHealthy healthy = true
-	components := []*componentHealthStatus{}
-	c := make(chan *componentHealthStatus, len(HealthCheckerRegistry))
-	for name, checker := range HealthCheckerRegistry {
-		go check(name, checker, timeout, c)
-	}
-	for i := 0; i < len(HealthCheckerRegistry); i++ {
-		componentStatus := <-c
-		if len(componentStatus.Error) != 0 {
-			isHealthy = false
-		}
-		components = append(components, componentStatus)
-	}
-
-	sort.Slice(components, func(i, j int) bool { return components[i].Name < components[j].Name })
-
-	status := &overallHealthStatus{}
-	status.Status = isHealthy.String()
-	status.Components = components
-	if !isHealthy {
-		log.Debugf("unhealthy system status: %v", status)
-	}
-	h.WriteJSONData(status)
-}
-
-func check(name string, checker health.Checker,
-	timeout time.Duration, c chan *componentHealthStatus) {
-	statusChan := make(chan *componentHealthStatus)
-	go func() {
-		err := checker.Check()
-		var healthy healthy = err == nil
-		status := &componentHealthStatus{
-			Name:   name,
-			Status: healthy.String(),
-		}
-		if !healthy {
-			status.Error = err.Error()
-		}
-		statusChan <- status
-	}()
-
-	select {
-	case status := <-statusChan:
-		c <- status
-	case <-time.After(timeout):
-		var healthy healthy = false
-		c <- &componentHealthStatus{
-			Name:   name,
-			Status: healthy.String(),
-			Error:  "failed to check the health status: timeout",
-		}
-	}
-}
 
 // HTTPStatusCodeHealthChecker implements a Checker to check that the HTTP status code
 // returned matches the expected one
@@ -255,7 +167,7 @@ func notaryHealthChecker() health.Checker {
 func databaseHealthChecker() health.Checker {
 	period := 10 * time.Second
 	checker := health.CheckFunc(func() error {
-		_, err := dao.GetOrmer().Raw("SELECT 1").Exec()
+		_, err := orm.NewOrm().Raw("SELECT 1").Exec()
 		if err != nil {
 			return fmt.Errorf("failed to run SQL \"SELECT 1\": %v", err)
 		}
@@ -282,22 +194,23 @@ func trivyHealthChecker() health.Checker {
 	return PeriodicHealthChecker(checker, period)
 }
 
-func registerHealthCheckers() {
-	HealthCheckerRegistry["core"] = coreHealthChecker()
-	HealthCheckerRegistry["portal"] = portalHealthChecker()
-	HealthCheckerRegistry["jobservice"] = jobserviceHealthChecker()
-	HealthCheckerRegistry["registry"] = registryHealthChecker()
-	HealthCheckerRegistry["registryctl"] = registryCtlHealthChecker()
-	HealthCheckerRegistry["database"] = databaseHealthChecker()
-	HealthCheckerRegistry["redis"] = redisHealthChecker()
+// RegisterHealthCheckers ...
+func RegisterHealthCheckers() {
+	registry["core"] = coreHealthChecker()
+	registry["portal"] = portalHealthChecker()
+	registry["jobservice"] = jobserviceHealthChecker()
+	registry["registry"] = registryHealthChecker()
+	registry["registryctl"] = registryCtlHealthChecker()
+	registry["database"] = databaseHealthChecker()
+	registry["redis"] = redisHealthChecker()
 	if config.WithChartMuseum() {
-		HealthCheckerRegistry["chartmuseum"] = chartmuseumHealthChecker()
+		registry["chartmuseum"] = chartmuseumHealthChecker()
 	}
 	if config.WithNotary() {
-		HealthCheckerRegistry["notary"] = notaryHealthChecker()
+		registry["notary"] = notaryHealthChecker()
 	}
 	if config.WithTrivy() {
-		HealthCheckerRegistry["trivy"] = trivyHealthChecker()
+		registry["trivy"] = trivyHealthChecker()
 	}
 }
 

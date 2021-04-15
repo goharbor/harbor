@@ -61,6 +61,7 @@ func New() http.Handler {
 		ConfigureAPI:          newConfigAPI(),
 		UsergroupAPI:          newUserGroupAPI(),
 		UserAPI:               newUsersAPI(),
+		HealthAPI:             newHealthAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)
