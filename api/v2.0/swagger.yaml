@@ -19,6 +19,20 @@ security:
   - basic: []
   - {}
 paths:
+  /health:
+    get:
+      summary: Check the status of Harbor components
+      description: Check the status of Harbor components
+      tags:
+        - health
+      operationId: getHealth
+      responses:
+        '200':
+          description: The health status of Harbor components
+          schema:
+            $ref: '#/definitions/OverallHealthStatus'
+        '500':
+          $ref: '#/responses/500'
   /search:
     get:
       summary: 'Search for projects, repositories and helm charts'
@@ -7732,5 +7746,27 @@ definitions:
       secret:
         type: string
         description: The new secret
-
-
+  OverallHealthStatus:
+    type: object
+    description: The system health status
+    properties:
+      status:
+        type: string
+        description: The overall health status. It is "healthy" only when all the components' status are "healthy"
+      components:
+        type: array
+        items:
+          $ref: '#/definitions/ComponentHealthStatus'
+  ComponentHealthStatus:
+    type: object
+    description: The health status of component
+    properties:
+      name:
+        type: string
+        description: The component name
+      status:
+        type: string
+        description: The health status of component
+      error:
+        type: string
+        description: (optional) The error message when the status is "unhealthy"

@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
 	"net/url"
 	"os"
 	"os/signal"
@@ -35,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	_ "github.com/goharbor/harbor/src/controller/event/handler"
+	"github.com/goharbor/harbor/src/controller/health"
 	"github.com/goharbor/harbor/src/controller/registry"
 	"github.com/goharbor/harbor/src/core/api"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
@@ -47,6 +47,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/cache"
 	_ "github.com/goharbor/harbor/src/lib/cache/memory" // memory cache
 	_ "github.com/goharbor/harbor/src/lib/cache/redis"  // redis cache
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -206,6 +207,7 @@ func main() {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
 	}
 
+	health.RegisterHealthCheckers()
 	registerScanners(orm.Context())
 
 	closing := make(chan struct{})
