@@ -98,8 +98,6 @@ func init() {
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &MetadataAPI{}, "put:Put;delete:Delete")
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
-	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
-	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
 
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}

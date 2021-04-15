@@ -27,8 +27,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/"+version+"/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
 	beego.Router("/api/"+version+"/statistics", &api.StatisticAPI{})
-	beego.Router("/api/"+version+"/labels", &api.LabelAPI{}, "post:Post;get:List")
-	beego.Router("/api/"+version+"/labels/:id([0-9]+)", &api.LabelAPI{}, "get:Get;put:Put;delete:Delete")
 
 	// APIs for chart repository
 	if config.WithChartMuseum() {

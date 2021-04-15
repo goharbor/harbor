@@ -12,52 +12,55 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package label
+package dao
 
 import (
 	"context"
-	beego_orm "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/label/model"
+	"time"
 )
-
-func init() {
-	beego_orm.RegisterModel(&Reference{})
-}
 
 // DAO is the data access object interface for label
 type DAO interface {
 	// Get the specified label
-	Get(ctx context.Context, id int64) (label *models.Label, err error)
+	Get(ctx context.Context, id int64) (label *model.Label, err error)
 	// Create the label
-	Create(ctx context.Context, label *models.Label) (id int64, err error)
+	Create(ctx context.Context, label *model.Label) (id int64, err error)
+	// Count returns the total count of Labels according to the query
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
+	// Update the label
+	Update(ctx context.Context, label *model.Label) error
 	// Delete the label
 	Delete(ctx context.Context, id int64) (err error)
+	// List ...
+	List(ctx context.Context, query *q.Query) ([]*model.Label, error)
+
 	// List labels that added to the artifact specified by the ID
-	ListByArtifact(ctx context.Context, artifactID int64) (labels []*models.Label, err error)
+	ListByArtifact(ctx context.Context, artifactID int64) (labels []*model.Label, err error)
 	// Create label reference
-	CreateReference(ctx context.Context, reference *Reference) (id int64, err error)
+	CreateReference(ctx context.Context, reference *model.Reference) (id int64, err error)
 	// Delete the label reference specified by ID
 	DeleteReference(ctx context.Context, id int64) (err error)
 	// Delete label references specified by query
 	DeleteReferences(ctx context.Context, query *q.Query) (n int64, err error)
 }
 
-// NewDAO creates an instance of the default DAO
-func NewDAO() DAO {
+// New creates an instance of the default DAO
+func New() DAO {
 	return &defaultDAO{}
 }
 
 type defaultDAO struct{}
 
-func (d *defaultDAO) Get(ctx context.Context, id int64) (*models.Label, error) {
+func (d *defaultDAO) Get(ctx context.Context, id int64) (*model.Label, error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
-	label := &models.Label{
+	label := &model.Label{
 		ID: id,
 	}
 	if err = ormer.Read(label); err != nil {
@@ -69,7 +72,7 @@ func (d *defaultDAO) Get(ctx context.Context, id int64) (*models.Label, error) {
 	return label, nil
 }
 
-func (d *defaultDAO) Create(ctx context.Context, label *models.Label) (int64, error) {
+func (d *defaultDAO) Create(ctx context.Context, label *model.Label) (int64, error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return 0, err
@@ -83,12 +86,36 @@ func (d *defaultDAO) Create(ctx context.Context, label *models.Label) (int64, er
 	return id, err
 }
 
+func (d *defaultDAO) Count(ctx context.Context, query *q.Query) (int64, error) {
+	qs, err := orm.QuerySetterForCount(ctx, &model.Label{}, query)
+	if err != nil {
+		return 0, err
+	}
+	return qs.Count()
+}
+
+func (d *defaultDAO) Update(ctx context.Context, label *model.Label) error {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	label.UpdateTime = time.Now()
+	n, err := ormer.Update(label)
+	if n == 0 {
+		if e := orm.AsConflictError(err, "label %s already exists", label.Name); e != nil {
+			err = e
+		}
+		return err
+	}
+	return err
+}
+
 func (d *defaultDAO) Delete(ctx context.Context, id int64) error {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
-	n, err := ormer.Delete(&models.Label{
+	n, err := ormer.Delete(&model.Label{
 		ID: id,
 	})
 	if err != nil {
@@ -100,7 +127,19 @@ func (d *defaultDAO) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (d *defaultDAO) ListByArtifact(ctx context.Context, artifactID int64) ([]*models.Label, error) {
+func (d *defaultDAO) List(ctx context.Context, query *q.Query) ([]*model.Label, error) {
+	robots := []*model.Label{}
+	qs, err := orm.QuerySetter(ctx, &model.Label{}, query)
+	if err != nil {
+		return nil, err
+	}
+	if _, err = qs.All(&robots); err != nil {
+		return nil, err
+	}
+	return robots, nil
+}
+
+func (d *defaultDAO) ListByArtifact(ctx context.Context, artifactID int64) ([]*model.Label, error) {
 	sql := `select label.* from harbor_label label 
 				join label_reference ref on label.id = ref.label_id 
 				where ref.artifact_id = ?`
@@ -108,13 +147,13 @@ func (d *defaultDAO) ListByArtifact(ctx context.Context, artifactID int64) ([]*m
 	if err != nil {
 		return nil, err
 	}
-	labels := []*models.Label{}
+	labels := []*model.Label{}
 	if _, err = ormer.Raw(sql, artifactID).QueryRows(&labels); err != nil {
 		return nil, err
 	}
 	return labels, nil
 }
-func (d *defaultDAO) CreateReference(ctx context.Context, ref *Reference) (int64, error) {
+func (d *defaultDAO) CreateReference(ctx context.Context, ref *model.Reference) (int64, error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return 0, err
@@ -137,7 +176,7 @@ func (d *defaultDAO) DeleteReference(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	n, err := ormer.Delete(&Reference{
+	n, err := ormer.Delete(&model.Reference{
 		ID: id,
 	})
 	if err != nil {
@@ -150,7 +189,7 @@ func (d *defaultDAO) DeleteReference(ctx context.Context, id int64) error {
 }
 
 func (d *defaultDAO) DeleteReferences(ctx context.Context, query *q.Query) (int64, error) {
-	qs, err := orm.QuerySetter(ctx, &Reference{}, query)
+	qs, err := orm.QuerySetter(ctx, &model.Reference{}, query)
 	if err != nil {
 		return 0, err
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 )
 
 const (
@@ -63,7 +64,7 @@ func (cla *ChartLabelAPI) MarkLabel() {
 		return
 	}
 
-	l := &models.Label{}
+	l := &model.Label{}
 	if err := cla.DecodeJSONReq(l); err != nil {
 		cla.SendBadRequestError(err)
 		return

@@ -1,12 +1,15 @@
 package label
 
 import (
-	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/label"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 )
 
 // Manager defines the related operations for label management
@@ -28,24 +31,26 @@ type Manager interface {
 	//
 	// If succeed, a label list is returned.
 	// Otherwise, a non-nil error will be returned.
-	GetLabelsOfResource(resourceType string, resourceIDOrName interface{}) ([]*models.Label, error)
+	GetLabelsOfResource(resourceType string, resourceIDOrName interface{}) ([]*model.Label, error)
 
 	// Check the existence of the specified label.
 	//
 	// If label existing, a non-nil label object is returned and nil error is set.
 	// A non-nil error will be set if any issues met while checking or label is not found.
-	Exists(labelID int64) (*models.Label, error)
+	Exists(labelID int64) (*model.Label, error)
 
 	// Validate if the scope of the input label is correct.
 	// If the scope is project level, the projectID is required then.
 	//
 	// If everything is ok, an validated label reference will be returned.
 	// Otherwise, a non-nil error is returned.
-	Validate(labelID int64, projectID int64) (*models.Label, error)
+	Validate(labelID int64, projectID int64) (*model.Label, error)
 }
 
 // BaseManager is the default implementation of the Manager interface.
-type BaseManager struct{}
+type BaseManager struct {
+	LabelMgr label.Manager
+}
 
 // MarkLabelToResource is the implementation of same method in Manager interface.
 func (bm *BaseManager) MarkLabelToResource(label *models.ResourceLabel) (int64, error) {
@@ -97,7 +102,7 @@ func (bm *BaseManager) RemoveLabelFromResource(resourceType string, resourceIDOr
 }
 
 // GetLabelsOfResource is the implementation of same method in Manager interface.
-func (bm *BaseManager) GetLabelsOfResource(resourceType string, resourceIDOrName interface{}) ([]*models.Label, error) {
+func (bm *BaseManager) GetLabelsOfResource(resourceType string, resourceIDOrName interface{}) ([]*model.Label, error) {
 	labels, err := dao.GetLabelsOfResource(resourceType, resourceIDOrName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get labels of resource %s %v: %v", resourceType, resourceIDOrName, err)
@@ -107,28 +112,26 @@ func (bm *BaseManager) GetLabelsOfResource(resourceType string, resourceIDOrName
 }
 
 // Exists is the implementation of same method in Manager interface.
-func (bm *BaseManager) Exists(labelID int64) (*models.Label, error) {
-	label, err := dao.GetLabel(labelID)
+func (bm *BaseManager) Exists(labelID int64) (*model.Label, error) {
+	label, err := bm.LabelMgr.Get(orm.Context(), labelID)
 	if err != nil {
+		if errors.IsErr(err, errors.NotFoundCode) {
+			return nil, NewErrLabelNotFound(labelID, "", nil)
+		}
 		return nil, fmt.Errorf("failed to get label %d: %v", labelID, err)
-	}
-
-	if label == nil {
-		return nil, NewErrLabelNotFound(labelID, "", nil)
 	}
 
 	return label, nil
 }
 
 // Validate is the implementation of same method in Manager interface.
-func (bm *BaseManager) Validate(labelID int64, projectID int64) (*models.Label, error) {
-	label, err := dao.GetLabel(labelID)
+func (bm *BaseManager) Validate(labelID int64, projectID int64) (*model.Label, error) {
+	label, err := bm.LabelMgr.Get(orm.Context(), labelID)
 	if err != nil {
+		if errors.IsErr(err, errors.NotFoundCode) {
+			return nil, NewErrLabelNotFound(labelID, "", nil)
+		}
 		return nil, fmt.Errorf("failed to get label %d: %v", labelID, err)
-	}
-
-	if label == nil {
-		return nil, NewErrLabelNotFound(labelID, "", nil)
 	}
 
 	if label.Level != common.LabelLevelUser {

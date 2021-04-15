@@ -16,6 +16,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -23,8 +24,8 @@ import (
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/api"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
+	pkg_dao "github.com/goharbor/harbor/src/pkg/label/dao"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -36,6 +37,7 @@ var (
 	cProLibraryLabelID                  int64
 	mockChartServer                     *httptest.Server
 	oldChartController                  *chartserver.Controller
+	labelDao                            pkg_dao.DAO
 )
 
 func TestToStartMockChartService(t *testing.T) {
@@ -44,26 +46,28 @@ func TestToStartMockChartService(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to start the mock chart service: %v", err)
 	}
+
 }
 
 func TestAddToChart(t *testing.T) {
-	cSysLevelLabelID, err := dao.AddLabel(&models.Label{
+	labelDao = pkg_dao.New()
+	cSysLevelLabelID, err := labelDao.Create(orm.Context(), &model.Label{
 		Name:  "c_sys_level_label",
 		Level: common.LabelLevelSystem,
 	})
 	require.Nil(t, err)
-	defer dao.DeleteLabel(cSysLevelLabelID)
+	defer labelDao.Delete(orm.Context(), cSysLevelLabelID)
 
-	cProTestLabelID, err := dao.AddLabel(&models.Label{
+	cProTestLabelID, err := labelDao.Create(orm.Context(), &model.Label{
 		Name:      "c_pro_test_label",
 		Level:     common.LabelLevelUser,
 		Scope:     common.LabelScopeProject,
 		ProjectID: 100,
 	})
 	require.Nil(t, err)
-	defer dao.DeleteLabel(cProTestLabelID)
+	defer labelDao.Delete(orm.Context(), cProTestLabelID)
 
-	cProLibraryLabelID, err = dao.AddLabel(&models.Label{
+	cProLibraryLabelID, err = labelDao.Create(orm.Context(), &model.Label{
 		Name:      "c_pro_library_label",
 		Level:     common.LabelLevelUser,
 		Scope:     common.LabelScopeProject,
@@ -177,7 +181,7 @@ func TestAddToChart(t *testing.T) {
 }
 
 func TestGetOfChart(t *testing.T) {
-	labels := []*models.Label{}
+	labels := []*model.Label{}
 	err := handleAndParse(&testingRequest{
 		url:        resourceLabelAPIPath,
 		method:     http.MethodGet,
@@ -198,7 +202,7 @@ func TestRemoveFromChart(t *testing.T) {
 		code: http.StatusOK,
 	})
 
-	labels := []*models.Label{}
+	labels := []*model.Label{}
 	err := handleAndParse(&testingRequest{
 		url:        resourceLabelAPIPath,
 		method:     http.MethodGet,
@@ -216,6 +220,6 @@ func TestToStopMockChartService(t *testing.T) {
 	if oldChartController != nil {
 		chartController = oldChartController
 	}
-
-	dao.DeleteLabel(cProLibraryLabelID)
+	labelDao = pkg_dao.New()
+	labelDao.Delete(orm.Context(), cProLibraryLabelID)
 }

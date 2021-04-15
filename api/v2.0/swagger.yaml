@@ -4815,6 +4815,158 @@ paths:
           description: The auth mode of the system is not "oidc_auth", or the user is not onboarded via OIDC AuthN.
         '500':
           $ref: '#/responses/500'
+
+  /labels:
+    get:
+      summary: List labels according to the query strings.
+      description: |
+        This endpoint let user list labels by name, scope and project_id
+      tags:
+        - label
+      operationId: ListLabels
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: name
+          in: query
+          type: string
+          required: false
+          description: The label name.
+        - name: scope
+          in: query
+          type: string
+          required: false
+          description: The label scope. Valid values are g and p. g for global labels and p for project labels.
+        - name: project_id
+          in: query
+          type: integer
+          format: int64
+          required: false
+          description: Relevant project ID, required when scope is p.
+      responses:
+        '200':
+          description: Get successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Label'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Post creates a label
+      description: |
+        This endpoint let user creates a label.
+      tags:
+        - label
+      operationId: CreateLabel
+      parameters:
+        - name: label
+          in: body
+          description: The json object of label.
+          required: true
+          schema:
+            $ref: '#/definitions/Label'
+      responses:
+        '201':
+          description: Create successfully.
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '409':
+          $ref: '#/responses/409'
+        '415':
+          $ref: '#/responses/415'
+        '500':
+          $ref: '#/responses/500'
+  '/labels/{label_id}':
+    get:
+      summary: Get the label specified by ID.
+      description: |
+        This endpoint let user get the label by specific ID.
+      tags:
+        - label
+      operationId: GetLabelByID
+      parameters:
+        - $ref: '#/parameters/labelId'
+      responses:
+        '200':
+          description: Get successfully.
+          schema:
+            $ref: '#/definitions/Label'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update the label properties.
+      description: |
+        This endpoint let user update label properties.
+      tags:
+        - label
+      operationId: UpdateLabel
+      parameters:
+        - $ref: '#/parameters/labelId'
+        - name: label
+          in: body
+          description: The updated label json object.
+          required: true
+          schema:
+            $ref: '#/definitions/Label'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete the label specified by ID.
+      description: |
+        Delete the label specified by ID.
+      tags:
+        - label
+      operationId: DeleteLabel
+      parameters:
+        - $ref: '#/parameters/labelId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
 parameters:
   query:
     name: q
@@ -4947,6 +5099,13 @@ parameters:
     required: true
     type: integer
     format: int64
+  labelId:
+    name: label_id
+    in: path
+    description: Label ID
+    required: true
+    type: integer
+    format: int64
   webhookPolicyId:
     name: webhook_policy_id
     in: path
@@ -5034,6 +5193,14 @@ responses:
       $ref: '#/definitions/Errors'
   '412':
     description: Precondition failed
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '415':
+    description: Unsupported MediaType
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response

@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/label"
 	hlog "github.com/goharbor/harbor/src/lib/log"
+	pkg_label "github.com/goharbor/harbor/src/pkg/label"
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/server/middleware/orm"
@@ -99,7 +100,9 @@ func (cra *ChartRepositoryAPI) Prepare() {
 	}
 
 	// Init label manager
-	cra.labelManager = &label.BaseManager{}
+	cra.labelManager = &label.BaseManager{
+		LabelMgr: pkg_label.Mgr,
+	}
 }
 
 func (cra *ChartRepositoryAPI) requireAccess(action rbac.Action, subresource ...rbac.Resource) bool {

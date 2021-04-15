@@ -33,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
 	pol "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
@@ -570,7 +571,7 @@ func pureRepository(ns, r string) string {
 }
 
 // getLabels gets label texts from the label objects
-func getLabels(labels []*models.Label) []string {
+func getLabels(labels []*model.Label) []string {
 	lt := make([]string, 0)
 	for _, l := range labels {
 		lt = append(lt, l.Name)

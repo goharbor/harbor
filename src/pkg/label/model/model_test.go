@@ -12,56 +12,55 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package model
 
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/label/model"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestValidOfLabel(t *testing.T) {
 	cases := []struct {
-		label    *model.Label
+		label    *Label
 		hasError bool
 	}{
 		{
-			label: &model.Label{
+			label: &Label{
 				Name: "",
 			},
 			hasError: true,
 		},
 		{
-			label: &model.Label{
+			label: &Label{
 				Name:  "test",
 				Scope: "",
 			},
 			hasError: true,
 		},
 		{
-			label: &model.Label{
+			label: &Label{
 				Name:  "test",
 				Scope: "invalid_scope",
 			},
 			hasError: true,
 		},
 		{
-			label: &model.Label{
+			label: &Label{
 				Name:  "test",
 				Scope: "g",
 			},
 			hasError: false,
 		},
 		{
-			label: &model.Label{
+			label: &Label{
 				Name:  "test",
 				Scope: "p",
 			},
 			hasError: true,
 		},
 		{
-			label: &model.Label{
+			label: &Label{
 				Name:      "test",
 				Scope:     "p",
 				ProjectID: -1,
@@ -69,7 +68,7 @@ func TestValidOfLabel(t *testing.T) {
 			hasError: true,
 		},
 		{
-			label: &model.Label{
+			label: &Label{
 				Name:      "test",
 				Scope:     "p",
 				ProjectID: 1,
@@ -79,11 +78,10 @@ func TestValidOfLabel(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		err := c.label.Valid()
 		if c.hasError {
-			assert.NotNil(t, err)
+			assert.NotNil(t, c.label.Valid())
 		} else {
-			assert.Nil(t, err)
+			assert.Nil(t, c.label.Valid())
 		}
 	}
 }

@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/selector"
 	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	ar "github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 	po "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	pr "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
@@ -265,7 +266,7 @@ func mockArtifacts() []*car.Artifact {
 					Signed: false,
 				},
 			},
-			Labels: []*models.Label{
+			Labels: []*model.Label{
 				{
 					Name: "approved",
 				}, {
@@ -293,7 +294,7 @@ func mockArtifacts() []*car.Artifact {
 					Signed: true,
 				},
 			},
-			Labels: []*models.Label{
+			Labels: []*model.Label{
 				{
 					Name: "approved",
 				}, {

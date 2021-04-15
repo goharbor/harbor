@@ -31,7 +31,7 @@ def _create_client(server, credential, debug, api_type="products"):
     cfg = None
     if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota',
                     'replication', 'registry', 'robot', 'gc', 'retention', 'immutable', 'system_cve_allowlist',
-                    'configure', 'user', 'member', 'health'):
+                    'configure', 'user', 'member', 'health', 'label'):
         cfg = v2_swagger_client.Configuration()
     else:
         cfg = swagger_client.Configuration()
@@ -72,6 +72,7 @@ def _create_client(server, credential, debug, api_type="products"):
         "immutable":   v2_swagger_client.ImmutableApi(v2_swagger_client.ApiClient(cfg)),
         "system_cve_allowlist":  v2_swagger_client.SystemCVEAllowlistApi(v2_swagger_client.ApiClient(cfg)),
         "configure":   v2_swagger_client.ConfigureApi(v2_swagger_client.ApiClient(cfg)),
+        "label":   v2_swagger_client.LabelApi(v2_swagger_client.ApiClient(cfg)),
         "user": v2_swagger_client.UserApi(v2_swagger_client.ApiClient(cfg)),
         "member": v2_swagger_client.MemberApi(v2_swagger_client.ApiClient(cfg)),
         "health":   v2_swagger_client.HealthApi(v2_swagger_client.ApiClient(cfg)),
