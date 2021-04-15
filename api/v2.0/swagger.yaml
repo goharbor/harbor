@@ -182,7 +182,7 @@ paths:
         '403':
           description: User does not have permission of admin role.
         '500':
-          description: Unexpected internal errors.        
+          description: Unexpected internal errors.
   /configurations:
     get:
       summary: Get system configurations.
@@ -191,7 +191,7 @@ paths:
       tags:
         - configure
       parameters:
-        - $ref: '#/parameters/requestId'  
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: Get system configurations successfully. The response body is a map.
@@ -455,7 +455,7 @@ paths:
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'        
+        - $ref: '#/parameters/projectNameOrId'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
         - name: entityname
@@ -473,12 +473,12 @@ paths:
               type: integer
             Link:
               description: Link refers to the previous page and next page
-              type: string          
+              type: string
           schema:
             type: array
             items:
               $ref: '#/definitions/ProjectMemberEntity'
-               
+
         '400':
           $ref: '#/responses/400'
         '401':
@@ -498,7 +498,7 @@ paths:
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'        
+        - $ref: '#/parameters/projectNameOrId'
         - name: project_member
           in: body
           schema:
@@ -530,7 +530,7 @@ paths:
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'        
+        - $ref: '#/parameters/projectNameOrId'
         - name: mid
           in: path
           type: integer
@@ -561,7 +561,7 @@ paths:
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'        
+        - $ref: '#/parameters/projectNameOrId'
         - name: mid
           in: path
           type: integer
@@ -593,7 +593,7 @@ paths:
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'    
+        - $ref: '#/parameters/projectNameOrId'
         - name: mid
           in: path
           type: integer
@@ -610,7 +610,7 @@ paths:
         '403':
           $ref: '#/responses/403'
         '500':
-          $ref: '#/responses/500'     
+          $ref: '#/responses/500'
   /repositories:
     get:
       summary: List all authorized repositories
@@ -4485,7 +4485,7 @@ paths:
     get:
       summary: List users
       tags:
-        - users
+        - user
       operationId: listUsers
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4517,7 +4517,7 @@ paths:
       summary: Create a local user.
       description: This API can be used only when the authentication mode is for local DB.  When self registration is disabled.
       tags:
-        - users
+        - user
       operationId: createUser
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4544,7 +4544,7 @@ paths:
     get:
       summary: Get current user info.
       tags:
-        - users
+        - user
       operationId: getCurrentUserInfo
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4563,7 +4563,7 @@ paths:
       description: |
         This endpoint is to search the users by username.  It's open for all authenticated requests.
       tags:
-        - users
+        - user
       operationId: searchUsers
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4603,7 +4603,7 @@ paths:
           format: int
           required: true
       tags:
-        - users
+        - user
       operationId: getUser
       responses:
         '200':
@@ -4635,7 +4635,7 @@ paths:
           schema:
             $ref: '#/definitions/UserProfile'
       tags:
-        - users
+        - user
       operationId: updateUserProfile
       responses:
         '200':
@@ -4660,7 +4660,7 @@ paths:
           required: true
           description: User ID for marking as to be removed.
       tags:
-        - users
+        - user
       operationId: deleteUser
       responses:
         '200':
@@ -4677,7 +4677,7 @@ paths:
     put:
       summary: Update a registered user to change to be an administrator of Harbor.
       tags:
-       - users
+       - user
       operationId: setUserSysAdmin
       parameters:
         - name: user_id
@@ -4708,7 +4708,7 @@ paths:
       description: |
         This endpoint is for user to update password. Users with the admin role can change any user's password. Regular users can change only their own password.
       tags:
-        - users
+        - user
       operationId: updateUserPassword
       parameters:
         - name: user_id
@@ -4737,7 +4737,7 @@ paths:
     get:
       summary: Get current user permissions.
       tags:
-        - users
+        - user
       operationId: getCurrentUserPermissions
       parameters:
         - name: scope
@@ -4771,7 +4771,7 @@ paths:
         Once this API returns with successful status, the old secret will be invalid, as there will be only one CLI secret
         for a user.
       tags:
-        - users
+        - user
       operationId: setCliSecret
       parameters:
         - $ref: '#/parameters/requestId'
@@ -7528,7 +7528,7 @@ definitions:
             description: 'The parameters of the policy, the values are dependant on the type of the policy.'
   Configurations:
     type: object
-    additionalProperties:               
+    additionalProperties:
       type: object
   StringConfigItem:
     type: object

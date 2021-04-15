@@ -37,8 +37,7 @@ import (
 	usermodels "github.com/goharbor/harbor/src/pkg/user/models"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
-	"github.com/goharbor/harbor/src/server/v2.0/restapi"
-	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/users"
+	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/user"
 )
 
 var userResource = system.NewNamespace().Resource(rbac.ResourceUser)
@@ -49,14 +48,14 @@ type usersAPI struct {
 	getAuth func(ctx context.Context) (string, error) // For testing
 }
 
-func newUsersAPI() restapi.UsersAPI {
+func newUsersAPI() *usersAPI {
 	return &usersAPI{
 		ctl:     user.Ctl,
 		getAuth: config.AuthMode,
 	}
 }
 
-func (u *usersAPI) SetCliSecret(ctx context.Context, params users.SetCliSecretParams) middleware.Responder {
+func (u *usersAPI) SetCliSecret(ctx context.Context, params operation.SetCliSecretParams) middleware.Responder {
 	uid := int(params.UserID)
 	if err := u.requireForCLISecret(ctx, uid); err != nil {
 		return u.SendError(ctx, err)
@@ -68,10 +67,10 @@ func (u *usersAPI) SetCliSecret(ctx context.Context, params users.SetCliSecretPa
 		log.G(ctx).Errorf("Failed to set CLI secret, error: %v", err)
 		return u.SendError(ctx, err)
 	}
-	return users.NewSetCliSecretOK()
+	return operation.NewSetCliSecretOK()
 }
 
-func (u *usersAPI) CreateUser(ctx context.Context, params users.CreateUserParams) middleware.Responder {
+func (u *usersAPI) CreateUser(ctx context.Context, params operation.CreateUserParams) middleware.Responder {
 	if err := u.requireCreatable(ctx); err != nil {
 		return u.SendError(ctx, err)
 	}
@@ -94,11 +93,11 @@ func (u *usersAPI) CreateUser(ctx context.Context, params users.CreateUserParams
 		return u.SendError(ctx, err)
 	}
 	location := fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), uid)
-	return users.NewCreateUserCreated().WithLocation(location)
+	return operation.NewCreateUserCreated().WithLocation(location)
 
 }
 
-func (u *usersAPI) ListUsers(ctx context.Context, params users.ListUsersParams) middleware.Responder {
+func (u *usersAPI) ListUsers(ctx context.Context, params operation.ListUsersParams) middleware.Responder {
 	if err := u.RequireSystemAccess(ctx, rbac.ActionList, userResource); err != nil {
 		return u.SendError(ctx, err)
 	}
@@ -118,25 +117,25 @@ func (u *usersAPI) ListUsers(ctx context.Context, params users.ListUsersParams) 
 	}
 	payload := make([]*models.UserResp, 0)
 	if total > 0 {
-		ul, err := u.ctl.List(ctx, query)
+		users, err := u.ctl.List(ctx, query)
 		if err != nil {
 			return u.SendError(ctx, err)
 		}
-		payload = make([]*models.UserResp, len(ul))
-		for i, u := range ul {
+		payload = make([]*models.UserResp, len(users))
+		for i, u := range users {
 			m := &model.User{
 				User: u,
 			}
 			payload[i] = m.ToUserResp()
 		}
 	}
-	return users.NewListUsersOK().
+	return operation.NewListUsersOK().
 		WithPayload(payload).
 		WithLink(u.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithXTotalCount(total)
 }
 
-func (u *usersAPI) GetCurrentUserPermissions(ctx context.Context, params users.GetCurrentUserPermissionsParams) middleware.Responder {
+func (u *usersAPI) GetCurrentUserPermissions(ctx context.Context, params operation.GetCurrentUserPermissionsParams) middleware.Responder {
 	if err := u.RequireAuthenticated(ctx); err != nil {
 		u.SendError(ctx, err)
 	}
@@ -172,10 +171,10 @@ func (u *usersAPI) GetCurrentUserPermissions(ctx context.Context, params users.G
 			Action:   policy.Action.String(),
 		})
 	}
-	return users.NewGetCurrentUserPermissionsOK().WithPayload(res)
+	return operation.NewGetCurrentUserPermissionsOK().WithPayload(res)
 }
 
-func (u *usersAPI) DeleteUser(ctx context.Context, params users.DeleteUserParams) middleware.Responder {
+func (u *usersAPI) DeleteUser(ctx context.Context, params operation.DeleteUserParams) middleware.Responder {
 	uid := int(params.UserID)
 	if err := u.requireDeletable(ctx, uid); err != nil {
 		return u.SendError(ctx, err)
@@ -184,10 +183,10 @@ func (u *usersAPI) DeleteUser(ctx context.Context, params users.DeleteUserParams
 		log.G(ctx).Errorf("Failed to delete user %d, error: %v", uid, err)
 		return u.SendError(ctx, err)
 	}
-	return users.NewDeleteUserOK()
+	return operation.NewDeleteUserOK()
 }
 
-func (u *usersAPI) GetCurrentUserInfo(ctx context.Context, params users.GetCurrentUserInfoParams) middleware.Responder {
+func (u *usersAPI) GetCurrentUserInfo(ctx context.Context, params operation.GetCurrentUserInfoParams) middleware.Responder {
 	if err := u.RequireAuthenticated(ctx); err != nil {
 		return u.SendError(ctx, err)
 	}
@@ -201,10 +200,10 @@ func (u *usersAPI) GetCurrentUserInfo(ctx context.Context, params users.GetCurre
 
 		return u.SendError(ctx, err)
 	}
-	return users.NewGetCurrentUserInfoOK().WithPayload(resp)
+	return operation.NewGetCurrentUserInfoOK().WithPayload(resp)
 }
 
-func (u *usersAPI) GetUser(ctx context.Context, params users.GetUserParams) middleware.Responder {
+func (u *usersAPI) GetUser(ctx context.Context, params operation.GetUserParams) middleware.Responder {
 	uid := int(params.UserID)
 	if err := u.requireReadable(ctx, uid); err != nil {
 		return u.SendError(ctx, err)
@@ -214,7 +213,7 @@ func (u *usersAPI) GetUser(ctx context.Context, params users.GetUserParams) midd
 		log.G(ctx).Errorf("Failed to get user info for ID %d, error: %v", uid, err)
 		return u.SendError(ctx, err)
 	}
-	return users.NewGetUserOK().WithPayload(resp)
+	return operation.NewGetUserOK().WithPayload(resp)
 }
 
 func (u *usersAPI) getUserByID(ctx context.Context, id int) (*models.UserResp, error) {
@@ -237,7 +236,7 @@ func (u *usersAPI) getUserByID(ctx context.Context, id int) (*models.UserResp, e
 	return m.ToUserResp(), nil
 }
 
-func (u *usersAPI) UpdateUserProfile(ctx context.Context, params users.UpdateUserProfileParams) middleware.Responder {
+func (u *usersAPI) UpdateUserProfile(ctx context.Context, params operation.UpdateUserProfileParams) middleware.Responder {
 	uid := int(params.UserID)
 	if err := u.requireModifiable(ctx, uid); err != nil {
 		return u.SendError(ctx, err)
@@ -255,10 +254,10 @@ func (u *usersAPI) UpdateUserProfile(ctx context.Context, params users.UpdateUse
 		log.G(ctx).Errorf("Failed to update user profile, error: %v", err)
 		return u.SendError(ctx, err)
 	}
-	return users.NewUpdateUserProfileOK()
+	return operation.NewUpdateUserProfileOK()
 }
 
-func (u *usersAPI) SearchUsers(ctx context.Context, params users.SearchUsersParams) middleware.Responder {
+func (u *usersAPI) SearchUsers(ctx context.Context, params operation.SearchUsersParams) middleware.Responder {
 	if err := u.RequireAuthenticated(ctx); err != nil {
 		return u.SendError(ctx, err)
 	}
@@ -272,7 +271,7 @@ func (u *usersAPI) SearchUsers(ctx context.Context, params users.SearchUsersPara
 		return u.SendError(ctx, err)
 	}
 	if total == 0 {
-		return users.NewSearchUsersOK().WithXTotalCount(0).WithPayload([]*models.UserSearchRespItem{})
+		return operation.NewSearchUsersOK().WithXTotalCount(0).WithPayload([]*models.UserSearchRespItem{})
 	}
 	l, err := u.ctl.List(ctx, query)
 	if err != nil {
@@ -283,13 +282,13 @@ func (u *usersAPI) SearchUsers(ctx context.Context, params users.SearchUsersPara
 		m := &model.User{User: us}
 		result = append(result, m.ToSearchRespItem())
 	}
-	return users.NewSearchUsersOK().
+	return operation.NewSearchUsersOK().
 		WithXTotalCount(total).
 		WithPayload(result).
 		WithLink(u.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
 }
 
-func (u *usersAPI) UpdateUserPassword(ctx context.Context, params users.UpdateUserPasswordParams) middleware.Responder {
+func (u *usersAPI) UpdateUserPassword(ctx context.Context, params operation.UpdateUserPasswordParams) middleware.Responder {
 	uid := int(params.UserID)
 	if err := u.requireModifiable(ctx, uid); err != nil {
 		return u.SendError(ctx, err)
@@ -322,10 +321,10 @@ func (u *usersAPI) UpdateUserPassword(ctx context.Context, params users.UpdateUs
 		log.G(ctx).Errorf("Failed to update password, error: %v", err)
 		return u.SendError(ctx, err)
 	}
-	return users.NewUpdateUserPasswordOK()
+	return operation.NewUpdateUserPasswordOK()
 }
 
-func (u *usersAPI) SetUserSysAdmin(ctx context.Context, params users.SetUserSysAdminParams) middleware.Responder {
+func (u *usersAPI) SetUserSysAdmin(ctx context.Context, params operation.SetUserSysAdminParams) middleware.Responder {
 	id := int(params.UserID)
 	if err := u.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceUser); err != nil {
 		return u.SendError(ctx, err)
@@ -333,7 +332,7 @@ func (u *usersAPI) SetUserSysAdmin(ctx context.Context, params users.SetUserSysA
 	if err := u.ctl.SetSysAdmin(ctx, id, params.SysadminFlag.SysadminFlag); err != nil {
 		return u.SendError(ctx, err)
 	}
-	return users.NewSetUserSysAdminOK()
+	return operation.NewSetUserSysAdminOK()
 }
 
 func (u *usersAPI) requireForCLISecret(ctx context.Context, id int) error {
@@ -471,9 +470,10 @@ func validateUserProfile(user *usermodels.User) error {
 	if utils.IsContainIllegalChar(user.Realname, []string{",", "~", "#", "$", "%"}) {
 		return errors.BadRequestError(nil).WithMessage("realname contains illegal characters")
 	}
+
 	if utils.IsIllegalLength(user.Comment, -1, 30) {
 		return errors.BadRequestError(nil).WithMessage("comment with illegal length")
 	}
-	return nil
 
+	return nil
 }

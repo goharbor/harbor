@@ -42,7 +42,7 @@ func (u *User) ToUserResp() *svrmodels.UserResp {
 		UpdateTime:      strfmt.DateTime(u.UpdateTime),
 	}
 	if u.OIDCUserMeta != nil {
-		res.OidcUserMeta = &svrmodels.OIDCUserInfo{
+		res.OIDCUserMeta = &svrmodels.OIDCUserInfo{
 			ID:           u.OIDCUserMeta.ID,
 			UserID:       int64(u.OIDCUserMeta.UserID),
 			Subiss:       u.OIDCUserMeta.SubIss,
