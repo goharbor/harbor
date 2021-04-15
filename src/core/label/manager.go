@@ -115,11 +115,10 @@ func (bm *BaseManager) GetLabelsOfResource(resourceType string, resourceIDOrName
 func (bm *BaseManager) Exists(labelID int64) (*model.Label, error) {
 	label, err := bm.LabelMgr.Get(orm.Context(), labelID)
 	if err != nil {
+		if errors.IsErr(err, errors.NotFoundCode) {
+			return nil, NewErrLabelNotFound(labelID, "", nil)
+		}
 		return nil, fmt.Errorf("failed to get label %d: %v", labelID, err)
-	}
-
-	if label == nil {
-		return nil, NewErrLabelNotFound(labelID, "", nil)
 	}
 
 	return label, nil

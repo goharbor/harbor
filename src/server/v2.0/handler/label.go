@@ -185,5 +185,5 @@ func (lAPI *labelAPI) requireAccess(ctx context.Context, label *pkg_model.Label,
 		}
 		return lAPI.RequireProjectAccess(ctx, label.ProjectID, action, subresources...)
 	}
-	return errors.New("unsupported label scope").WithCode(errors.ForbiddenCode)
+	return errors.New("unsupported label scope").WithCode(errors.BadRequestCode)
 }

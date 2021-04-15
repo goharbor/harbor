@@ -72,12 +72,8 @@ def _create_client(server, credential, debug, api_type="products"):
         "immutable":   v2_swagger_client.ImmutableApi(v2_swagger_client.ApiClient(cfg)),
         "system_cve_allowlist":  v2_swagger_client.SystemCVEAllowlistApi(v2_swagger_client.ApiClient(cfg)),
         "configure":   v2_swagger_client.ConfigureApi(v2_swagger_client.ApiClient(cfg)),
-<<<<<<< HEAD
         "label":   v2_swagger_client.LabelApi(v2_swagger_client.ApiClient(cfg)),
-        "users": v2_swagger_client.UsersApi(v2_swagger_client.ApiClient(cfg)),
-=======
         "user": v2_swagger_client.UserApi(v2_swagger_client.ApiClient(cfg)),
->>>>>>> dc37c83e11d3f9dc98b83a2e7832ab8df044f1d4
         "member": v2_swagger_client.MemberApi(v2_swagger_client.ApiClient(cfg)),
     }.get(api_type,'Error: Wrong API type')
 
