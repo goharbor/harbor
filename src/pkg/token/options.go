@@ -3,7 +3,7 @@ package token
 import (
 	"crypto/rsa"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"io/ioutil"
 
 	"github.com/dgrijalva/jwt-go"

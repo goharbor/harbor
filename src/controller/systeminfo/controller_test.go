@@ -2,7 +2,8 @@ package systeminfo
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"testing"
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 
 	commonModels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"

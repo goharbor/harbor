@@ -100,7 +100,13 @@ func (d *defaultDAO) Update(ctx context.Context, label *model.Label) error {
 		return err
 	}
 	label.UpdateTime = time.Now()
-	_, err = ormer.Update(label)
+	n, err := ormer.Update(label)
+	if n == 0 {
+		if e := orm.AsConflictError(err, "label %s already exists", label.Name); e != nil {
+			err = e
+		}
+		return err
+	}
 	return err
 }
 

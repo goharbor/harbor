@@ -17,7 +17,7 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"io/ioutil"
 	"net/http"
 	"sort"

@@ -16,8 +16,10 @@ package notary
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	model2 "github.com/goharbor/harbor/src/pkg/signature/notary/model"
 	test2 "github.com/goharbor/harbor/src/pkg/signature/notary/test"
 

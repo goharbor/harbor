@@ -18,7 +18,7 @@ import (
 	"context"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
-	dao2 "github.com/goharbor/harbor/src/pkg/label/dao"
+	"github.com/goharbor/harbor/src/pkg/label/dao"
 	"github.com/goharbor/harbor/src/pkg/label/model"
 	"time"
 )
@@ -56,12 +56,12 @@ type Manager interface {
 // New creates an instance of the default label manager
 func New() Manager {
 	return &manager{
-		dao: dao2.New(),
+		dao: dao.New(),
 	}
 }
 
 type manager struct {
-	dao dao2.DAO
+	dao dao.DAO
 }
 
 func (m *manager) Create(ctx context.Context, label *model.Label) (id int64, err error) {

@@ -5,9 +5,7 @@ package config
 import (
 	context "context"
 
-	libconfig "github.com/goharbor/harbor/src/lib/config"
-	metadata "github.com/goharbor/harbor/src/lib/config/metadata"
-
+	models "github.com/goharbor/harbor/src/lib/config/models"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -39,94 +37,6 @@ func (_m *Controller) AllConfigs(ctx context.Context) (map[string]interface{}, e
 	return r0, r1
 }
 
-// Get provides a mock function with given fields: ctx, item
-func (_m *Controller) Get(ctx context.Context, item string) *metadata.ConfigureValue {
-	ret := _m.Called(ctx, item)
-
-	var r0 *metadata.ConfigureValue
-	if rf, ok := ret.Get(0).(func(context.Context, string) *metadata.ConfigureValue); ok {
-		r0 = rf(ctx, item)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*metadata.ConfigureValue)
-		}
-	}
-
-	return r0
-}
-
-// GetBool provides a mock function with given fields: ctx, item
-func (_m *Controller) GetBool(ctx context.Context, item string) bool {
-	ret := _m.Called(ctx, item)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(context.Context, string) bool); ok {
-		r0 = rf(ctx, item)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
-// GetInt provides a mock function with given fields: ctx, item
-func (_m *Controller) GetInt(ctx context.Context, item string) int {
-	ret := _m.Called(ctx, item)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, string) int); ok {
-		r0 = rf(ctx, item)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	return r0
-}
-
-// GetManager provides a mock function with given fields:
-func (_m *Controller) GetManager() libconfig.Manager {
-	ret := _m.Called()
-
-	var r0 libconfig.Manager
-	if rf, ok := ret.Get(0).(func() libconfig.Manager); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(libconfig.Manager)
-		}
-	}
-
-	return r0
-}
-
-// GetString provides a mock function with given fields: ctx, item
-func (_m *Controller) GetString(ctx context.Context, item string) string {
-	ret := _m.Called(ctx, item)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
-		r0 = rf(ctx, item)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	return r0
-}
-
-// Load provides a mock function with given fields: ctx
-func (_m *Controller) Load(ctx context.Context) error {
-	ret := _m.Called(ctx)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context) error); ok {
-		r0 = rf(ctx)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // UpdateUserConfigs provides a mock function with given fields: ctx, conf
 func (_m *Controller) UpdateUserConfigs(ctx context.Context, conf map[string]interface{}) error {
 	ret := _m.Called(ctx, conf)
@@ -142,15 +52,15 @@ func (_m *Controller) UpdateUserConfigs(ctx context.Context, conf map[string]int
 }
 
 // UserConfigs provides a mock function with given fields: ctx
-func (_m *Controller) UserConfigs(ctx context.Context) (map[string]*libconfig.Value, error) {
+func (_m *Controller) UserConfigs(ctx context.Context) (map[string]*models.Value, error) {
 	ret := _m.Called(ctx)
 
-	var r0 map[string]*libconfig.Value
-	if rf, ok := ret.Get(0).(func(context.Context) map[string]*libconfig.Value); ok {
+	var r0 map[string]*models.Value
+	if rf, ok := ret.Get(0).(func(context.Context) map[string]*models.Value); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(map[string]*libconfig.Value)
+			r0 = ret.Get(0).(map[string]*models.Value)
 		}
 	}
 

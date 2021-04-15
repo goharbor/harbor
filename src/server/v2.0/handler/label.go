@@ -38,31 +38,12 @@ func (lAPI *labelAPI) CreateLabel(ctx context.Context, params operation.CreateLa
 	lib.JSONCopy(label, params.Label)
 
 	label.Level = common.LabelLevelUser
-	switch label.Scope {
-	case common.LabelScopeGlobal:
+	if label.Scope == common.LabelScopeGlobal {
 		label.ProjectID = 0
-	case common.LabelScopeProject:
-		exist, err := lAPI.projectCtl.Exists(ctx, label.ProjectID)
-		if err != nil {
-			return lAPI.SendError(ctx, errors.Wrapf(err, "failed to check the existence of project %d", label.ProjectID))
-		}
-		if !exist {
-			return lAPI.SendError(ctx, errors.New(nil).WithMessage("project %d not found", label.ProjectID).WithCode(errors.BadRequestCode))
-		}
 	}
 
 	if err := lAPI.requireAccess(ctx, label, rbac.ActionCreate); err != nil {
 		return lAPI.SendError(ctx, err)
-	}
-
-	query := q.New(q.KeyWords{"Name": label.Name, "Level": label.Level, "Scope": label.Scope, "ProjectID": label.ProjectID})
-
-	labels, err := lAPI.labelMgr.List(ctx, query)
-	if err != nil {
-		return lAPI.SendError(ctx, err)
-	}
-	if len(labels) > 0 {
-		return lAPI.SendError(ctx, errors.New("conflict label").WithCode(errors.ConflictCode))
 	}
 
 	id, err := lAPI.labelMgr.Create(ctx, label)
@@ -117,18 +98,20 @@ func (lAPI *labelAPI) ListLabels(ctx context.Context, params operation.ListLabel
 		query.Keywords["ProjectID"] = pid
 	}
 
+	results := make([]*models.Label, 0)
 	total, err := lAPI.labelMgr.Count(ctx, query)
 	if err != nil {
 		return lAPI.SendError(ctx, err)
 	}
-	labels, err := lAPI.labelMgr.List(ctx, query)
-	if err != nil {
-		return lAPI.SendError(ctx, err)
-	}
+	if total > 0 {
+		labels, err := lAPI.labelMgr.List(ctx, query)
+		if err != nil {
+			return lAPI.SendError(ctx, err)
+		}
 
-	var results []*models.Label
-	for _, l := range labels {
-		results = append(results, model.NewLabel(l).ToSwagger())
+		for _, l := range labels {
+			results = append(results, model.NewLabel(l).ToSwagger())
+		}
 	}
 
 	return operation.NewListLabelsOK().
@@ -153,24 +136,12 @@ func (lAPI *labelAPI) UpdateLabel(ctx context.Context, params operation.UpdateLa
 		return lAPI.SendError(ctx, err)
 	}
 
-	oldName := label.Name
 	label.Name = labelData.Name
 	label.Description = labelData.Description
 	label.Color = labelData.Color
 
 	if err := label.Valid(); err != nil {
 		return lAPI.SendError(ctx, err)
-	}
-
-	query := q.New(q.KeyWords{"Name": label.Name, "Level": label.Level, "Scope": label.Scope, "ProjectID": label.ProjectID})
-	if label.Name != oldName {
-		labels, err := lAPI.labelMgr.List(ctx, query)
-		if err != nil {
-			return lAPI.SendError(ctx, err)
-		}
-		if len(labels) > 0 {
-			return lAPI.SendError(ctx, errors.New("conflict label").WithCode(errors.ConflictCode))
-		}
 	}
 
 	if err := lAPI.labelMgr.Update(ctx, label); err != nil {

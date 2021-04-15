@@ -41,7 +41,7 @@ type UserTestSuite struct {
 func (uts *UserTestSuite) SetupSuite() {
 	uts.uCtl = &usertesting.Controller{}
 	uts.Config = &restapi.Config{
-		UsersAPI: &usersAPI{
+		UserAPI: &usersAPI{
 			ctl: uts.uCtl,
 			getAuth: func(ctx context.Context) (string, error) {
 				return common.DBAuth, nil

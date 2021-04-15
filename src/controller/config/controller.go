@@ -22,10 +22,9 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
+	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/config/db"
-	"github.com/goharbor/harbor/src/pkg/config/inmemory"
 )
 
 var (
@@ -36,75 +35,36 @@ var (
 // Controller define operations related to configures
 type Controller interface {
 	// UserConfigs get the user scope configurations
-	UserConfigs(ctx context.Context) (map[string]*config.Value, error)
+	UserConfigs(ctx context.Context) (map[string]*models.Value, error)
 	// UpdateUserConfigs update the user scope configurations
 	UpdateUserConfigs(ctx context.Context, conf map[string]interface{}) error
 	// GetAll get all configurations, used by internal, should include the system config items
 	AllConfigs(ctx context.Context) (map[string]interface{}, error)
-	// Load ...
-	Load(ctx context.Context) error
-	// GetString ...
-	GetString(ctx context.Context, item string) string
-	// GetBool ...
-	GetBool(ctx context.Context, item string) bool
-	// GetInt ...
-	GetInt(ctx context.Context, item string) int
-	// Get ...
-	Get(ctx context.Context, item string) *metadata.ConfigureValue
-	// GetCfgManager ...
-	GetManager() config.Manager
 }
 
 type controller struct {
-	mgr config.Manager
 }
 
 // NewController ...
 func NewController() Controller {
-	return &controller{mgr: db.NewDBCfgManager()}
+	return &controller{}
 }
 
-// NewInMemoryController ...
-func NewInMemoryController() Controller {
-	return &controller{mgr: inmemory.NewInMemoryManager()}
-}
-
-func (c *controller) GetManager() config.Manager {
-	return c.mgr
-}
-
-func (c *controller) Get(ctx context.Context, item string) *metadata.ConfigureValue {
-	return c.mgr.Get(ctx, item)
-}
-
-func (c *controller) Load(ctx context.Context) error {
-	return c.mgr.Load(ctx)
-}
-
-func (c *controller) GetString(ctx context.Context, item string) string {
-	return c.mgr.Get(ctx, item).GetString()
-}
-
-func (c *controller) GetBool(ctx context.Context, item string) bool {
-	return c.mgr.Get(ctx, item).GetBool()
-}
-
-func (c *controller) GetInt(ctx context.Context, item string) int {
-	return c.mgr.Get(ctx, item).GetInt()
-}
-
-func (c *controller) UserConfigs(ctx context.Context) (map[string]*config.Value, error) {
-	configs := c.mgr.GetUserCfgs(ctx)
+func (c *controller) UserConfigs(ctx context.Context) (map[string]*models.Value, error) {
+	mgr := config.GetCfgManager(ctx)
+	configs := mgr.GetUserCfgs(ctx)
 	return ConvertForGet(ctx, configs, false)
 }
 
 func (c *controller) AllConfigs(ctx context.Context) (map[string]interface{}, error) {
-	configs := c.mgr.GetAll(ctx)
+	mgr := config.GetCfgManager(ctx)
+	configs := mgr.GetAll(ctx)
 	return configs, nil
 }
 
 func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]interface{}) error {
-	err := c.mgr.Load(ctx)
+	mgr := config.GetCfgManager(ctx)
+	err := mgr.Load(ctx)
 	if err != nil {
 		return err
 	}
@@ -116,7 +76,7 @@ func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]inte
 		}
 		return err
 	}
-	if err := c.mgr.UpdateConfig(ctx, conf); err != nil {
+	if err := mgr.UpdateConfig(ctx, conf); err != nil {
 		log.Errorf("failed to upload configurations: %v", err)
 		return fmt.Errorf("failed to validate configuration")
 	}
@@ -124,6 +84,7 @@ func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]inte
 }
 
 func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{}) (bool, error) {
+	mgr := config.GetCfgManager(ctx)
 	flag, err := authModeCanBeModified(ctx)
 	if err != nil {
 		return true, err
@@ -134,7 +95,7 @@ func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{
 				WithMessage(fmt.Sprintf("the keys %v can not be modified as new users have been inserted into database", failedKeys))
 		}
 	}
-	err = c.mgr.ValidateCfg(ctx, cfgs)
+	err = mgr.ValidateCfg(ctx, cfgs)
 	if err != nil {
 		return false, errors.BadRequestError(err)
 	}
@@ -142,11 +103,12 @@ func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{
 }
 
 func (c *controller) checkUnmodifiable(ctx context.Context, cfgs map[string]interface{}, keys ...string) (failed []string) {
-	if c.mgr == nil || cfgs == nil || keys == nil {
+	mgr := config.GetCfgManager(ctx)
+	if mgr == nil || cfgs == nil || keys == nil {
 		return
 	}
 	for _, k := range keys {
-		v := c.mgr.Get(ctx, k).GetString()
+		v := mgr.Get(ctx, k).GetString()
 		if nv, ok := cfgs[k]; ok {
 			if v != fmt.Sprintf("%v", nv) {
 				failed = append(failed, k)
@@ -164,8 +126,8 @@ type ScanAllPolicy struct {
 }
 
 // ConvertForGet - delete sensitive attrs and add editable field to every attr
-func ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal bool) (map[string]*config.Value, error) {
-	result := map[string]*config.Value{}
+func ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal bool) (map[string]*models.Value, error) {
+	result := map[string]*models.Value{}
 
 	mList := metadata.Instance().GetAll()
 
@@ -191,7 +153,7 @@ func ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal boo
 			}
 			val = string(valByte)
 		}
-		result[item.Name] = &config.Value{
+		result[item.Name] = &models.Value{
 			Val:      val,
 			Editable: true,
 		}

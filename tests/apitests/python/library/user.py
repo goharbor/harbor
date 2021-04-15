@@ -8,7 +8,7 @@ from v2_swagger_client.rest import ApiException
 class User(base.Base, object):
 
     def __init__(self):
-        super(User, self).__init__(api_type = "users")
+        super(User, self).__init__(api_type = "user")
 
     def create_user(self, name=None,
                     email=None, user_password=None, realname=None, expect_status_code=201, **kwargs):

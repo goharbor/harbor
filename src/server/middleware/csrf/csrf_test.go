@@ -3,7 +3,8 @@ package csrf
 import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

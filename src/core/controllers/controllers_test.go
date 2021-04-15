@@ -15,9 +15,9 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"net/http/httptest"
@@ -31,6 +31,8 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/stretchr/testify/assert"
 )
 

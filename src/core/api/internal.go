@@ -16,7 +16,7 @@ package api
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 
 	o "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common"

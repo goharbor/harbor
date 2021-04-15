@@ -16,8 +16,8 @@ package route
 
 import (
 	"github.com/astaxie/beego"
-	"github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/lib/config"
 )
 
 // RegisterRoutes for Harbor legacy APIs

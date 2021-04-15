@@ -1,7 +1,7 @@
 package csrf
 
 import (
-	"github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"os"
