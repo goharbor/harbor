@@ -224,7 +224,7 @@ func (u *usersAPI) getUserByID(ctx context.Context, id int) (*models.UserResp, e
 	}
 
 	opt := &user.Option{
-		WithOIDCInfo: auth == common.OIDCAuth,
+		WithOIDCInfo: auth == common.OIDCAuth && id > 1, // Super user is authenticated via DB
 	}
 
 	us, err := u.ctl.Get(ctx, id, opt)
