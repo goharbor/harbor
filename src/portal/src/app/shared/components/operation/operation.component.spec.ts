@@ -1,10 +1,7 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { TranslateService } from "@ngx-translate/core";
 import { OperationComponent } from './operation.component';
 import { OperationService } from './operation.service';
 import { OperateInfo } from './operate';
-import { CURRENT_BASE_HREF } from "../../units/utils";
 import { SharedTestingModule } from "../../shared.module";
 
 describe('OperationComponent', () => {
@@ -15,11 +12,6 @@ describe('OperationComponent', () => {
         TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule,
-                BrowserAnimationsModule,
-            ],
-            providers: [
-                OperationService,
-                TranslateService,
             ]
         });
     });
@@ -47,9 +39,9 @@ describe('OperationComponent', () => {
         const right: string = getComputedStyle(fixture.nativeElement.querySelector(".operDiv")).right;
         expect(right).toEqual("-325px");
     }));
-    it("should show '50+' after pushing 60 new operateInfos", fakeAsync(() => {
-        const operationService: OperationService = TestBed.get(OperationService);
-        for (let i = 0; i < 60; i++) {
+    it("should show '500+' after pushing 60 new operateInfos", fakeAsync(() => {
+        const operationService: OperationService = TestBed.inject(OperationService);
+        for (let i = 0; i < 520; i++) {
             let operateInfo = new OperateInfo();
             if (i > 19) {
                 operateInfo.state = "progressing";
@@ -62,7 +54,7 @@ describe('OperationComponent', () => {
         }
         fixture.detectChanges();
         const toolBar: HTMLAnchorElement = fixture.nativeElement.querySelector(".toolBar");
-        expect(toolBar.textContent).toContain('50+');
+        expect(toolBar.textContent).toContain('500+');
     }));
     it('check toggleTitle function', () => {
         const errorSpan: HTMLSpanElement = document.createElement('span');
