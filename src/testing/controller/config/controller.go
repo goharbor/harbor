@@ -37,6 +37,29 @@ func (_m *Controller) AllConfigs(ctx context.Context) (map[string]interface{}, e
 	return r0, r1
 }
 
+// ConvertForGet provides a mock function with given fields: ctx, cfg, internal
+func (_m *Controller) ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal bool) (map[string]*models.Value, error) {
+	ret := _m.Called(ctx, cfg, internal)
+
+	var r0 map[string]*models.Value
+	if rf, ok := ret.Get(0).(func(context.Context, map[string]interface{}, bool) map[string]*models.Value); ok {
+		r0 = rf(ctx, cfg, internal)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]*models.Value)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, map[string]interface{}, bool) error); ok {
+		r1 = rf(ctx, cfg, internal)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // UpdateUserConfigs provides a mock function with given fields: ctx, conf
 func (_m *Controller) UpdateUserConfigs(ctx context.Context, conf map[string]interface{}) error {
 	ret := _m.Called(ctx, conf)

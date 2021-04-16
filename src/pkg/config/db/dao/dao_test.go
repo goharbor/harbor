@@ -56,7 +56,7 @@ func TestSaveConfigEntries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to save configuration to database %v", err)
 	}
-	readEntries, err := GetConfigEntries(testCtx)
+	readEntries, err := dao.GetConfigEntries(testCtx)
 	if err != nil {
 		t.Fatalf("Failed to get configuration from database %v", err)
 	}
@@ -104,7 +104,7 @@ func TestSaveConfigEntries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to save configuration to database %v", err)
 	}
-	readEntries, err = GetConfigEntries(testCtx)
+	readEntries, err = dao.GetConfigEntries(testCtx)
 	if err != nil {
 		t.Fatalf("Failed to get configuration from database %v", err)
 	}

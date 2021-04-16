@@ -77,7 +77,7 @@ func (c *controllerTestSuite) TestConvertForGet() {
 	}
 
 	// password type should not sent to external api call
-	resp, err := ConvertForGet(ctx, conf, false)
+	resp, err := c.controller.ConvertForGet(ctx, conf, false)
 	c.Nil(err)
 	c.Equal("ldaps.myexample,com", resp["ldap_url"].Val)
 	c.Equal("ldap_auth", resp["auth_mode"].Val)
@@ -91,7 +91,7 @@ func (c *controllerTestSuite) TestConvertForGet() {
 		"auth_mode":            "ldap_auth",
 		"ldap_search_password": "admin",
 	}
-	resp2, err2 := ConvertForGet(ctx, conf2, true)
+	resp2, err2 := c.controller.ConvertForGet(ctx, conf2, true)
 	c.Nil(err2)
 	c.Equal("ldaps.myexample,com", resp2["ldap_url"].Val)
 	c.Equal("ldap_auth", resp2["auth_mode"].Val)

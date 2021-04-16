@@ -19,12 +19,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
 	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/user"
 )
 
 var (
@@ -40,20 +41,23 @@ type Controller interface {
 	UpdateUserConfigs(ctx context.Context, conf map[string]interface{}) error
 	// GetAll get all configurations, used by internal, should include the system config items
 	AllConfigs(ctx context.Context) (map[string]interface{}, error)
+	// ConvertForGet - delete sensitive attrs and add editable field to every attr
+	ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal bool) (map[string]*models.Value, error)
 }
 
 type controller struct {
+	userManager user.Manager
 }
 
 // NewController ...
 func NewController() Controller {
-	return &controller{}
+	return &controller{userManager: user.Mgr}
 }
 
 func (c *controller) UserConfigs(ctx context.Context) (map[string]*models.Value, error) {
 	mgr := config.GetCfgManager(ctx)
 	configs := mgr.GetUserCfgs(ctx)
-	return ConvertForGet(ctx, configs, false)
+	return c.ConvertForGet(ctx, configs, false)
 }
 
 func (c *controller) AllConfigs(ctx context.Context) (map[string]interface{}, error) {
@@ -85,7 +89,7 @@ func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]inte
 
 func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{}) (bool, error) {
 	mgr := config.GetCfgManager(ctx)
-	flag, err := authModeCanBeModified(ctx)
+	flag, err := c.authModeCanBeModified(ctx)
 	if err != nil {
 		return true, err
 	}
@@ -126,7 +130,7 @@ type ScanAllPolicy struct {
 }
 
 // ConvertForGet - delete sensitive attrs and add editable field to every attr
-func ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal bool) (map[string]*models.Value, error) {
+func (c *controller) ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal bool) (map[string]*models.Value, error) {
 	result := map[string]*models.Value{}
 
 	mList := metadata.Instance().GetAll()
@@ -165,7 +169,7 @@ func ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal boo
 	}
 
 	// set value for auth_mode
-	flag, err := authModeCanBeModified(ctx)
+	flag, err := c.authModeCanBeModified(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -174,6 +178,10 @@ func ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal boo
 	return result, nil
 }
 
-func authModeCanBeModified(ctx context.Context) (bool, error) {
-	return dao.AuthModeCanBeModified(ctx)
+func (c *controller) authModeCanBeModified(ctx context.Context) (bool, error) {
+	users, err := c.userManager.List(ctx, &q.Query{})
+	if err != nil {
+		return false, err
+	}
+	return len(users) == 0, nil
 }

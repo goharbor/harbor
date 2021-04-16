@@ -16,24 +16,9 @@ package config
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/lib/config/metadata"
 )
 
 type cfgMgrKey struct{}
-
-// Manager defines the operation for config
-type Manager interface {
-	Load(ctx context.Context) error
-	Set(ctx context.Context, key string, value interface{})
-	Save(ctx context.Context) error
-	Get(ctx context.Context, key string) *metadata.ConfigureValue
-	UpdateConfig(ctx context.Context, cfgs map[string]interface{}) error
-	GetUserCfgs(ctx context.Context) map[string]interface{}
-	ValidateCfg(ctx context.Context, cfgs map[string]interface{}) error
-	GetAll(ctx context.Context) map[string]interface{}
-	GetDatabaseCfg() *models.Database
-}
 
 // FromContext returns CfgManager from context
 func FromContext(ctx context.Context) (Manager, bool) {
