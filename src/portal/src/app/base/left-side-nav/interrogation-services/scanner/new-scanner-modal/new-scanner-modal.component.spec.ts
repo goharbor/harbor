@@ -1,6 +1,5 @@
 import { ComponentFixture, ComponentFixtureAutoDetect, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ClrLoadingState } from "@clr/angular";
-import { ConfigScannerService } from "../config-scanner.service";
 import { NewScannerModalComponent } from "./new-scanner-modal.component";
 import { MessageHandlerService } from "../../../../../shared/services/message-handler.service";
 import { NewScannerFormComponent } from "../new-scanner-form/new-scanner-form.component";
@@ -9,6 +8,7 @@ import { of, Subscription } from "rxjs";
 import { delay } from "rxjs/operators";
 import { SharedTestingModule } from "../../../../../shared/shared.module";
 import { Scanner } from "../scanner";
+import { ScannerService } from "../../../../../../../ng-swagger-gen/services/scanner.service";
 
 describe('NewScannerModalComponent', () => {
   let component: NewScannerModalComponent;
@@ -21,13 +21,13 @@ describe('NewScannerModalComponent', () => {
     auth: "",
   };
   let fakedConfigScannerService = {
-    getScannersByName() {
+    listScanners() {
       return of([mockScanner1]);
     },
-    testEndpointUrl() {
+    pingScanner() {
       return of(true).pipe(delay(200));
     },
-    addScanner() {
+    createScanner() {
       return of(true).pipe(delay(200));
     },
     updateScanner() {
@@ -45,7 +45,7 @@ describe('NewScannerModalComponent', () => {
       ],
       providers: [
         MessageHandlerService,
-        { provide: ConfigScannerService, useValue: fakedConfigScannerService },
+        { provide: ScannerService, useValue: fakedConfigScannerService },
         FormBuilder,
         // open auto detect
         { provide: ComponentFixtureAutoDetect, useValue: true }

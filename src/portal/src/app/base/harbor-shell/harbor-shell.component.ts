@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subscription } from "rxjs";
+import { forkJoin, Observable, Subscription } from "rxjs";
 import { AppConfigService } from '../../services/app-config.service';
 import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
@@ -23,12 +23,14 @@ import { SessionService } from '../../shared/services/session.service';
 import { AboutDialogComponent } from '../../shared/components/about-dialog/about-dialog.component';
 import { SearchTriggerService } from '../../shared/components/global-search/search-trigger.service';
 import { CommonRoutes } from "../../shared/entities/shared.const";
-import { ConfigScannerService, SCANNERS_DOC } from "../left-side-nav/interrogation-services/scanner/config-scanner.service";
 import { THEME_ARRAY, ThemeInterface } from "../../services/theme";
-import { clone } from "../../shared/units/utils";
+import { clone, DEFAULT_PAGE_SIZE } from "../../shared/units/utils";
 import { ThemeService } from "../../services/theme.service";
 import { AccountSettingsModalComponent } from "../account-settings/account-settings-modal.component";
 import { EventService, HarborEvent } from "../../services/event-service/event.service";
+import { SCANNERS_DOC } from "../left-side-nav/interrogation-services/scanner/scanner";
+import { ScannerService } from "../../../../ng-swagger-gen/services/scanner.service";
+import { Project } from "../../../../ng-swagger-gen/models/project";
 
 const HAS_SHOWED_SCANNER_INFO: string = 'hasShowScannerInfo';
 const YES: string = 'yes';
@@ -76,7 +78,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         private session: SessionService,
         private searchTrigger: SearchTriggerService,
         private appConfigService: AppConfigService,
-        private scannerService: ConfigScannerService,
+        private scannerService: ScannerService,
         public theme: ThemeService,
         private event: EventService,
         private cd: ChangeDetectorRef
@@ -108,7 +110,9 @@ export class HarborShellComponent implements OnInit, OnDestroy {
             this.isSearchResultsOpened = false;
         });
         if (!(localStorage && localStorage.getItem(HAS_SHOWED_SCANNER_INFO) === YES)) {
-            this.getDefaultScanner();
+            if (this.isSystemAdmin) {
+                this.getDefaultScanner();
+            }
         }
         // set local in app
         if (localStorage) {
@@ -131,11 +135,37 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     }
 
     getDefaultScanner() {
-        this.scannerService.getScanners()
-            .subscribe(scanners => {
-                if (scanners && scanners.length) {
-                    this.showScannerInfo = scanners.some(scanner => scanner.is_default);
-                }
+        this.scannerService.listScannersResponse({
+            pageSize: DEFAULT_PAGE_SIZE,
+            page: 1
+        }).subscribe(res => {
+                if (res.headers) {
+                    const xHeader: string = res.headers.get("X-Total-Count");
+                    const totalCount = parseInt(xHeader, 0);
+                    let arr = res.body || [];
+                    if (totalCount <= DEFAULT_PAGE_SIZE) { // already gotten all scanners
+                        if (arr && arr.length) {
+                            this.showScannerInfo = arr.some(scanner => scanner.is_default);
+                        }
+                    } else { // get all the scanners in specified times
+                        const times: number = Math.ceil(totalCount / DEFAULT_PAGE_SIZE);
+                        const observableList: Observable<Project[]>[] = [];
+                        for (let i = 2; i <= times; i++) {
+                            observableList.push(this.scannerService.listScanners({
+                                page: i,
+                                pageSize: DEFAULT_PAGE_SIZE
+                            }));
+                        }
+                        forkJoin(observableList).subscribe(response => {
+                            if (response && response.length) {
+                                response.forEach(item => {
+                                    arr = arr.concat(item);
+                                });
+                                this.showScannerInfo = arr.some(scanner => scanner.is_default);
+                            }
+                        });
+                    }
+                 }
             });
     }
     ngOnDestroy(): void {

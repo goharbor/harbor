@@ -1,12 +1,14 @@
 import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
 import { Scanner } from "../scanner";
 import { NewScannerFormComponent } from "../new-scanner-form/new-scanner-form.component";
-import { ConfigScannerService } from "../config-scanner.service";
 import { ClrLoadingState } from "@clr/angular";
 import { finalize } from "rxjs/operators";
 import { MessageHandlerService } from "../../../../../shared/services/message-handler.service";
 import { TranslateService } from "@ngx-translate/core";
 import { InlineAlertComponent } from "../../../../../shared/components/inline-alert/inline-alert.component";
+import { ScannerService } from "../../../../../../../ng-swagger-gen/services/scanner.service";
+import { ScannerRegistrationReq } from "../../../../../../../ng-swagger-gen/models/scanner-registration-req";
+import { clone } from "../../../../../shared/units/utils";
 
 @Component({
     selector: "new-scanner-modal",
@@ -29,7 +31,7 @@ export class NewScannerModalComponent {
     editScanner: Scanner;
     @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
     constructor(
-        private configScannerService: ConfigScannerService,
+        private configScannerService: ScannerService,
         private msgHandler: MessageHandlerService,
         private translate: TranslateService,
     ) {}
@@ -47,8 +49,8 @@ export class NewScannerModalComponent {
     create(): void {
         this.onSaving = true;
         this.saveBtnState = ClrLoadingState.LOADING;
-        let scanner: Scanner = new Scanner();
-        let value = this.newScannerFormComponent.newScannerForm.value;
+        const scanner: ScannerRegistrationReq = {name: "", url: ""};
+        const value = this.newScannerFormComponent.newScannerForm.value;
         scanner.name = value.name;
         scanner.description = value.description;
         scanner.url = value.url;
@@ -66,7 +68,9 @@ export class NewScannerModalComponent {
         }
         scanner.skip_certVerify = !!value.skipCertVerify;
         scanner.use_internal_addr = !!value.useInner;
-        this.configScannerService.addScanner(scanner)
+        this.configScannerService.createScanner({
+            registration: scanner
+        })
             .pipe(finalize(() => this.onSaving = false))
             .subscribe(response => {
                 this.close();
@@ -176,8 +180,8 @@ export class NewScannerModalComponent {
     onTestEndpoint() {
         this.onTesting = true;
         this.checkBtnState = ClrLoadingState.LOADING;
-        let scanner: Scanner = new Scanner();
-        let value = this.newScannerFormComponent.newScannerForm.value;
+        const scanner: ScannerRegistrationReq = {name: "", url: ""};
+        const value = this.newScannerFormComponent.newScannerForm.value;
         scanner.name = value.name;
         scanner.description = value.description;
         scanner.url = value.url;
@@ -195,7 +199,9 @@ export class NewScannerModalComponent {
         }
         scanner.skip_certVerify = !!value.skipCertVerify;
         scanner.use_internal_addr = !!value.useInner;
-        this.configScannerService.testEndpointUrl(scanner)
+        this.configScannerService.pingScanner({
+            settings: scanner
+        })
             .pipe(finalize(() => this.onTesting = false))
             .subscribe(response => {
                 this.inlineAlert.showInlineSuccess({
@@ -236,7 +242,11 @@ export class NewScannerModalComponent {
         this.editScanner.skip_certVerify = !!value.skipCertVerify;
         this.editScanner.use_internal_addr = !!value.useInner;
         this.editScanner.uuid = this.uid;
-        this.configScannerService.updateScanner(this.editScanner)
+        const scanner: ScannerRegistrationReq = clone(this.editScanner);
+        this.configScannerService.updateScanner({
+            registrationId: this.editScanner.uuid,
+            registration: scanner
+        })
             .pipe(finalize(() => this.onSaving = false))
             .subscribe(response => {
                 this.close();

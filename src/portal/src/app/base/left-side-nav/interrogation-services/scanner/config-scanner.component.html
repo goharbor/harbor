@@ -8,7 +8,7 @@
                 </clr-signpost-content>
             </clr-signpost>
         </h4>
-        <clr-datagrid [clrDgLoading]="onGoing" [(clrDgSingleSelected)]="selectedRow">
+        <clr-datagrid (clrDgRefresh)="getScanners($event)" [clrDgLoading]="onGoing" [(clrDgSingleSelected)]="selectedRow">
             <clr-dg-action-bar>
                 <div class="clr-row">
                     <div class="clr-col-7">
@@ -52,7 +52,7 @@
                     </div>
                     <div class="clr-col-5">
                         <div class="action-head-pos">
-                            <span (click)="getScanners()" class="refresh-btn">
+                            <span (click)="refresh()" class="refresh-btn">
                                  <clr-icon shape="refresh" [hidden]="onGoing"></clr-icon>
                             </span>
                         </div>
@@ -67,7 +67,7 @@
             <clr-dg-placeholder>
                 {{'SCANNER.NO_SCANNER' | translate}}
             </clr-dg-placeholder>
-            <clr-dg-row *clrDgItems="let scanner of scanners" [clrDgItem]="scanner">
+            <clr-dg-row *ngFor="let scanner of scanners" [clrDgItem]="scanner">
                 <clr-dg-cell class="position-relative">
                     <span>{{scanner.name}}</span>
                     <span *ngIf="scanner.is_default" class="label label-info ml-1">{{'SCANNER.DEFAULT' | translate}}</span>
@@ -96,9 +96,10 @@
                 <scanner-metadata *clrIfExpanded [uid]="scanner.uuid"  ngProjectAs="clr-dg-row-detail"></scanner-metadata>
             </clr-dg-row>
             <clr-dg-footer>
-                <clr-dg-pagination [clrDgPageSize]="15">
+                <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="page" [clrDgTotalItems]="total">
                     <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
-                    <span *ngIf="scanners?.length > 0">1 - {{scanners?.length}} {{'WEBHOOK.OF' | translate}} </span> {{scanners?.length}} {{'WEBHOOK.ITEMS' | translate}}
+                    <span *ngIf="total">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'DESTINATION.OF' | translate}}</span>
+                    {{total}} {{'DESTINATION.ITEMS' | translate}}
                 </clr-dg-pagination>
             </clr-dg-footer>
         </clr-datagrid>

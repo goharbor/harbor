@@ -2,12 +2,12 @@ import {
     Component, Input,
     OnInit
 } from "@angular/core";
-import { ConfigScannerService } from "../config-scanner.service";
 import { finalize } from "rxjs/operators";
-import { ScannerMetadata } from "../scanner-metadata";
 import { DatePipe } from "@angular/common";
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
-import {DATABASE_NEXT_UPDATE_PROPERTY, DATABASE_UPDATED_PROPERTY} from "../../../../../shared/units/utils";
+import { DATABASE_NEXT_UPDATE_PROPERTY, DATABASE_UPDATED_PROPERTY } from "../../../../../shared/units/utils";
+import { ScannerService } from "../../../../../../../ng-swagger-gen/services/scanner.service";
+import { ScannerAdapterMetadata } from "../../../../../../../ng-swagger-gen/models/scanner-adapter-metadata";
 
 @Component({
     selector: 'scanner-metadata',
@@ -17,13 +17,15 @@ import {DATABASE_NEXT_UPDATE_PROPERTY, DATABASE_UPDATED_PROPERTY} from "../../..
 export class ScannerMetadataComponent implements  OnInit {
     @Input() uid: string;
     loading: boolean = false;
-    scannerMetadata: ScannerMetadata;
-    constructor(private configScannerService: ConfigScannerService,
+    scannerMetadata: ScannerAdapterMetadata;
+    constructor(private configScannerService: ScannerService,
                 private errorHandler: ErrorHandler) {
     }
     ngOnInit(): void {
         this.loading = true;
-        this.configScannerService.getScannerMetadata(this.uid)
+        this.configScannerService.getScannerMetadata({
+            registrationId: this.uid
+        })
             .pipe(finalize(() => this.loading = false))
             .subscribe(response => {
                 this.scannerMetadata = response;

@@ -2,10 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { ClarityModule } from "@clr/angular";
 import { SharedTestingModule } from "../../../../../shared/shared.module";
-import { ConfigScannerService } from "../config-scanner.service";
 import { of } from "rxjs";
 import { ScannerMetadataComponent } from "./scanner-metadata.component";
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
+import { ScannerService } from "../../../../../../../ng-swagger-gen/services/scanner.service";
 
 describe('ScannerMetadataComponent', () => {
   let mockScannerMetadata = {
@@ -38,7 +38,7 @@ describe('ScannerMetadataComponent', () => {
       ],
       providers: [
         ErrorHandler,
-        { provide: ConfigScannerService, useValue: fakedConfigScannerService },
+        { provide: ScannerService, useValue: fakedConfigScannerService },
       ]
     });
   });

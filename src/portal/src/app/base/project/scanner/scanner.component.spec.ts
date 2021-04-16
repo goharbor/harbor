@@ -3,11 +3,13 @@ import { of } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
 import { ScannerComponent } from "./scanner.component";
-import { ConfigScannerService } from "../../left-side-nav/interrogation-services/scanner/config-scanner.service";
 import { SharedTestingModule } from "../../../shared/shared.module";
 import { ActivatedRoute } from "@angular/router";
 import { Scanner } from "../../left-side-nav/interrogation-services/scanner/scanner";
 import { ErrorHandler } from "../../../shared/units/error-handler";
+import { ProjectService } from "../../../../../ng-swagger-gen/services/project.service";
+import { HttpHeaders, HttpResponse } from "@angular/common/http";
+import { Registry } from "../../../../../ng-swagger-gen/models/registry";
 
 describe('ScannerComponent', () => {
   const mockScanner1: Scanner = {
@@ -28,17 +30,21 @@ describe('ScannerComponent', () => {
   };
   let component: ScannerComponent;
   let fixture: ComponentFixture<ScannerComponent>;
-  let fakedConfigScannerService = {
-    getProjectScanner() {
+  let fakedProjectService = {
+    getScannerOfProject() {
       return of(mockScanner1);
     },
-    getScanners() {
+    listScannerCandidatesOfProject() {
       return of([mockScanner1, mockScanner2]);
     },
-    getProjectScanners() {
-      return of([mockScanner1, mockScanner2]);
+    listScannerCandidatesOfProjectResponse() {
+      const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
+        headers: new HttpHeaders({'x-total-count': [mockScanner1, mockScanner2].length.toString()}),
+        body: [mockScanner1, mockScanner2]
+      });
+      return of(response);
     },
-    updateProjectScanner() {
+    setScannerOfProject() {
       return of(true);
     }
   };
@@ -63,8 +69,8 @@ describe('ScannerComponent', () => {
         TranslateService,
         MessageHandlerService,
         ErrorHandler,
-        {provide: ActivatedRoute, useValue: fakedRoute},
-        { provide: ConfigScannerService, useValue: fakedConfigScannerService },
+        { provide: ActivatedRoute, useValue: fakedRoute },
+        { provide: ProjectService, useValue: fakedProjectService },
       ]
     })
     .compileComponents();

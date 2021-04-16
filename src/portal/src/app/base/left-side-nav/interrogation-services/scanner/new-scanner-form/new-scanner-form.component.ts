@@ -9,7 +9,7 @@ import {
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { fromEvent } from "rxjs";
 import { debounceTime, distinctUntilChanged, filter, finalize, map, switchMap } from "rxjs/operators";
-import { ConfigScannerService } from "../config-scanner.service";
+import { ScannerService } from "../../../../../../../ng-swagger-gen/services/scanner.service";
 
 
 @Component({
@@ -48,7 +48,7 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
     isEdit: boolean;
     @ViewChild('name') scannerName: ElementRef;
     @ViewChild('endpointUrl') scannerEndpointUrl: ElementRef;
-    constructor(private fb: FormBuilder, private scannerService: ConfigScannerService) {
+    constructor(private fb: FormBuilder, private scannerService: ScannerService) {
     }
     ngAfterViewInit(): void {
         if (!this.checkNameSubscribe) {
@@ -65,7 +65,9 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
                 switchMap((name) => {
                     this.isNameExisting = false;
                     this.checkOnGoing = true;
-                    return  this.scannerService.getScannersByName(name)
+                    return  this.scannerService.listScanners({
+                        q: encodeURIComponent(`name=${name}`)
+                    })
                         .pipe(finalize(() => this.checkOnGoing = false));
                 })).subscribe(response => {
                 if (response && response.length > 0) {
@@ -94,7 +96,9 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
                 switchMap((endpointUrl) => {
                     this.isEndpointUrlExisting = false;
                     this.checkEndpointOnGoing = true;
-                    return  this.scannerService.getScannersByEndpointUrl(endpointUrl)
+                    return  this.scannerService.listScanners({
+                        q: encodeURIComponent(`url=${endpointUrl}`)
+                    })
                         .pipe(finalize(() => this.checkEndpointOnGoing = false));
                 })).subscribe(response => {
                 if (response && response.length > 0) {
