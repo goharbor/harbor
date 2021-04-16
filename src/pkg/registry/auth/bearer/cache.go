@@ -15,10 +15,11 @@
 package bearer
 
 import (
-	"github.com/goharbor/harbor/src/lib/log"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 func newCache(capacity int) *cache {
@@ -93,6 +94,12 @@ func (c *cache) key(scopes []*scope) string {
 
 // return whether the token is expired or not and the expired time
 func (c *cache) expired(token *token) (bool, time.Time) {
+	// check time whether empty
+	if len(token.IssuedAt) == 0 {
+		log.Warning("token issued time is empty, return expired to refresh token")
+		return true, time.Time{}
+	}
+
 	issueAt, err := time.Parse(time.RFC3339, token.IssuedAt)
 	if err != nil {
 		log.Errorf("failed to parse the issued at time of token %s: %v", token.IssuedAt, err)
