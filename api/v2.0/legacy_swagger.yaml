@@ -164,22 +164,6 @@ paths:
           description: Project or metadata does not exist.
         '500':
           description: Internal server errors.
-  /statistics:
-    get:
-      summary: Get projects number and repositories number relevant to the user
-      description: |
-        This endpoint is aimed to statistic all of the projects number and repositories number relevant to the logined user, also the public projects number and repositories number. If the user is admin, he can also get total projects number and total repositories number.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get the projects number and repositories number relevant to the user successfully.
-          schema:
-            $ref: '#/definitions/StatisticMap'
-        '401':
-          description: User need to log in first.
-        '500':
-          description: Unexpected internal errors.
   /email/ping:
     post:
       summary: Test connection and authentication with email server.
@@ -441,33 +425,6 @@ definitions:
       username:
         type: string
         description: Username relevant to a project role member.
-  StatisticMap:
-    type: object
-    properties:
-      private_project_count:
-        type: integer
-        format: int32
-        description: The count of the private projects which the user is a member of.
-      private_repo_count:
-        type: integer
-        format: int32
-        description: The count of the private repositories belonging to the projects which the user is a member of.
-      public_project_count:
-        type: integer
-        format: int32
-        description: The count of the public projects.
-      public_repo_count:
-        type: integer
-        format: int32
-        description: The count of the public repositories belonging to the public projects which the user is a member of.
-      total_project_count:
-        type: integer
-        format: int32
-        description: 'The count of the total projects, only be seen when the is admin.'
-      total_repo_count:
-        type: integer
-        format: int32
-        description: 'The count of the total repositories, only be seen when the user is admin.'
   LdapConf:
     type: object
     properties:

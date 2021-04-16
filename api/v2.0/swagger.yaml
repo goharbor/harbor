@@ -54,6 +54,22 @@ paths:
             $ref: '#/definitions/Search'
         '500':
           $ref: '#/responses/500'
+  /statistics:
+    get:
+      summary: Get the statistic information about the projects and repositories
+      description: Get the statistic information about the projects and repositories
+      tags:
+        - statistic
+      operationId: getStatistic
+      responses:
+        '200':
+          description: The statistic information
+          schema:
+            $ref: '#/definitions/Statistic'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
   /ldap/ping:
     post:
       operationId: pingLdap
@@ -7937,3 +7953,36 @@ definitions:
       error:
         type: string
         description: (optional) The error message when the status is "unhealthy"
+  Statistic:
+    type: object
+    properties:
+      private_project_count:
+        type: integer
+        format: int64
+        description: The count of the private projects
+        x-omitempty: false
+      private_repo_count:
+        type: integer
+        format: int64
+        description: The count of the private repositories
+        x-omitempty: false
+      public_project_count:
+        type: integer
+        format: int64
+        description: The count of the public projects
+        x-omitempty: false
+      public_repo_count:
+        type: integer
+        format: int64
+        description: The count of the public repositories
+        x-omitempty: false
+      total_project_count:
+        type: integer
+        format: int64
+        description: The count of the total projects, only be seen by the system admin
+        x-omitempty: false
+      total_repo_count:
+        type: integer
+        format: int64
+        description: The count of the total repositories, only be seen by the system admin
+        x-omitempty: false
