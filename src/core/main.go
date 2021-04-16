@@ -26,6 +26,8 @@ import (
 	"syscall"
 	"time"
 
+	configCtl "github.com/goharbor/harbor/src/controller/config"
+
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	_ "github.com/astaxie/beego/session/redis_sentinel"
@@ -190,10 +192,13 @@ func main() {
 	if err = migration.Migrate(database); err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}
-	if err := config.Load(orm.Context()); err != nil {
+	ctx := orm.Context()
+	if err := config.Load(ctx); err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
-
+	if err := configCtl.Ctl.OverwriteConfig(ctx); err != nil {
+		log.Fatalf("failed to init config from CONFIG_OVERWRITE_JSON, error %v", err)
+	}
 	password, err := config.InitialAdminPassword()
 	if err != nil {
 		log.Fatalf("failed to get admin's initial password: %v", err)
