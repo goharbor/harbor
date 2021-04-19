@@ -39,7 +39,7 @@ func New() DAO {
 	return &dao{}
 }
 
-func (d dao) GetConfigEntries(ctx context.Context) ([]*models.ConfigEntry, error) {
+func (d *dao) GetConfigEntries(ctx context.Context) ([]*models.ConfigEntry, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (d dao) GetConfigEntries(ctx context.Context) ([]*models.ConfigEntry, error
 	return p, nil
 }
 
-func (d dao) SaveConfigEntries(ctx context.Context, entries []models.ConfigEntry) error {
+func (d *dao) SaveConfigEntries(ctx context.Context, entries []models.ConfigEntry) error {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
@@ -83,24 +83,4 @@ func (d dao) SaveConfigEntries(ctx context.Context, entries []models.ConfigEntry
 		}
 	}
 	return nil
-}
-
-// GetConfigEntries Get configuration from database
-func GetConfigEntries(ctx context.Context) ([]*models.ConfigEntry, error) {
-	o, err := orm.FromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	var p []*models.ConfigEntry
-	sql := "select * from properties"
-	n, err := o.Raw(sql, []interface{}{}).QueryRows(&p)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if n == 0 {
-		return nil, nil
-	}
-	return p, nil
 }

@@ -85,6 +85,7 @@ var responseMap = map[string]string{
 	"integer": "IntegerConfigItem",
 }
 
+// Used to generate swagger file for config response and configurations
 func main() {
 	l := []yamlFile{
 		{"configurations.yml", false, cfgTemplate},
