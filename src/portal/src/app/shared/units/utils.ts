@@ -631,6 +631,10 @@ export function deleteEmptyKey(obj: Object): void {
     }
 }
 
+/**
+ * Get sorting string from  current state
+ * @param state
+ */
 export function getSortingString(state: ClrDatagridStateInterface): string {
     if (state && state.sort && state.sort.by) {
         let sortString: string;
@@ -643,6 +647,32 @@ export function getSortingString(state: ClrDatagridStateInterface): string {
             sortString = `-${sortString}`;
         }
         return sortString;
+    }
+    return null;
+}
+
+
+/**
+ * Get query string from current state, rules as below:
+ * query string format: q=k=v,k=~v,k=[min~max],k={v1 v2 v3},k=(v1 v2 v3)
+ * exact match: k=v
+ * fuzzy match: k=~v
+ * range: k=[min~max]
+ * or list: k={v1 v2 v3}
+ * and list: k=(v1 v2 v3)
+ * @param state
+ */
+export function getQueryString(state: ClrDatagridStateInterface): string {
+    let str: string = '';
+    if (state && state.filters && state.filters.length) {
+        state.filters.forEach(item => {
+            if (str) {
+                str += `,${item.property}=~${item.value}`;
+            } else {
+                str += `${item.property}=~${item.value}`;
+            }
+        });
+        return encodeURIComponent(str);
     }
     return null;
 }
