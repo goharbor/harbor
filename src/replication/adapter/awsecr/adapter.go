@@ -248,12 +248,14 @@ func (a *adapter) checkRepository(repository string) (exists bool, err error) {
 		RepositoryNames: []*string{&repository},
 	})
 	if err != nil {
+		if e, ok := err.(awserr.Error); ok {
+			if e.Code() == awsecrapi.ErrCodeRepositoryNotFoundException {
+				return false, nil
+			}
+		}
 		return false, err
 	}
-	if len(out.Repositories) > 0 {
-		return true, nil
-	}
-	return false, nil
+	return len(out.Repositories) > 0, nil
 }
 
 func (a *adapter) createRepository(repository string) error {
