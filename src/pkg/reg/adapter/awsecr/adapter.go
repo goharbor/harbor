@@ -16,6 +16,7 @@ package awsecr
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -116,87 +117,42 @@ func (*adapter) Info() (info *model.RegistryInfo, err error) {
 }
 
 func getAdapterInfo() *model.AdapterPattern {
+	var endpoints []*model.Endpoint
+	// https://docs.aws.amazon.com/general/latest/gr/rande.html#regional-endpoints
+	for _, e := range []string{
+		"us-east-2",
+		"us-east-1",
+		"us-west-1",
+		"us-west-2",
+		"af-south-1",
+		"ap-east-1",
+		"ap-south-1",
+		"ap-northeast-3",
+		"ap-northeast-2",
+		"ap-southeast-1",
+		"ap-southeast-2",
+		"ap-northeast-1",
+		"ca-central-1",
+		"cn-north-1",
+		"cn-northwest-1",
+		"eu-central-1",
+		"eu-west-1",
+		"eu-west-2",
+		"eu-south-1",
+		"eu-west-3",
+		"eu-north-1",
+		"me-south-1",
+		"sa-east-1",
+	} {
+		endpoints = append(endpoints, &model.Endpoint{
+			Key:   e,
+			Value: fmt.Sprintf("https://%s.amazonaws.com", e),
+		})
+	}
 	info := &model.AdapterPattern{
 		EndpointPattern: &model.EndpointPattern{
 			EndpointType: model.EndpointPatternTypeList,
-			Endpoints: []*model.Endpoint{
-				{
-					Key:   "ap-northeast-1",
-					Value: "https://api.ecr.ap-northeast-1.amazonaws.com",
-				},
-				{
-					Key:   "us-east-1",
-					Value: "https://api.ecr.us-east-1.amazonaws.com",
-				},
-				{
-					Key:   "us-east-2",
-					Value: "https://api.ecr.us-east-2.amazonaws.com",
-				},
-				{
-					Key:   "us-west-1",
-					Value: "https://api.ecr.us-west-1.amazonaws.com",
-				},
-				{
-					Key:   "us-west-2",
-					Value: "https://api.ecr.us-west-2.amazonaws.com",
-				},
-				{
-					Key:   "ap-east-1",
-					Value: "https://api.ecr.ap-east-1.amazonaws.com",
-				},
-				{
-					Key:   "ap-south-1",
-					Value: "https://api.ecr.ap-south-1.amazonaws.com",
-				},
-				{
-					Key:   "ap-northeast-2",
-					Value: "https://api.ecr.ap-northeast-2.amazonaws.com",
-				},
-				{
-					Key:   "ap-southeast-1",
-					Value: "https://api.ecr.ap-southeast-1.amazonaws.com",
-				},
-				{
-					Key:   "ap-southeast-2",
-					Value: "https://api.ecr.ap-southeast-2.amazonaws.com",
-				},
-				{
-					Key:   "ca-central-1",
-					Value: "https://api.ecr.ca-central-1.amazonaws.com",
-				},
-				{
-					Key:   "eu-central-1",
-					Value: "https://api.ecr.eu-central-1.amazonaws.com",
-				},
-				{
-					Key:   "eu-west-1",
-					Value: "https://api.ecr.eu-west-1.amazonaws.com",
-				},
-				{
-					Key:   "eu-west-2",
-					Value: "https://api.ecr.eu-west-2.amazonaws.com",
-				},
-				{
-					Key:   "eu-west-3",
-					Value: "https://api.ecr.eu-west-3.amazonaws.com",
-				},
-				{
-					Key:   "eu-north-1",
-					Value: "https://api.ecr.eu-north-1.amazonaws.com",
-				},
-				{
-					Key:   "sa-east-1",
-					Value: "https://api.ecr.sa-east-1.amazonaws.com",
-				},
-				{
-					Key:   "cn-north-1",
-					Value: "https://api.ecr.cn-north-1.amazonaws.com.cn",
-				},
-				{
-					Key:   "cn-northwest-1",
-					Value: "https://api.ecr.cn-northwest-1.amazonaws.com.cn",
-				},
-			},
+			Endpoints:    endpoints,
 		},
 	}
 	return info
