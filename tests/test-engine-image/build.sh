@@ -5,7 +5,7 @@ set -e
 IMAGE_FOR=$1
 VERSION=$2
 
-CMD_BASE="cat Dockerfile.base"
+CMD_BASE="cat Dockerfile.common"
 SRC_FILE=""
 DST_FILE=Dockerfile
 

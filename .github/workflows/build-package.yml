@@ -36,9 +36,31 @@ jobs:
         with:
           docker_version: 18.09
           docker_channel: stable
+      - uses: actions/checkout@v2.1.0
+      - uses: jitterbit/get-changed-files@v1
+        id: changed-files
+        with:
+          format: space-delimited
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v2
         with:
           path: src/github.com/goharbor/harbor
+      - name: Build Dev Base Image
+        if: contains(steps.changed-files.outputs.modified, 'Dockerfile.base') && contains(github.ref, 'master')
+        run: |
+          set -x
+          base_image_tag=$(cat ./VERSION)
+          echo "Start to build base image for dev ......"
+          cd src/github.com/goharbor/harbor
+          sudo make build_base_docker -e BASEIMAGETAG=$base_image_tag -e REGISTRYUSER="${{ secrets.DOCKER_HUB_USERNAME }}" -e REGISTRYPASSWORD="${{ secrets.DOCKER_HUB_PASSWORD }}" -e PUSHBASEIMAGE=yes
+      - name: Build Release Base Image
+        if: contains(steps.changed-files.outputs.modified, 'VERSION')
+        run: |
+          set -x
+          base_image_tag=$(cat ./VERSION)
+          echo "Start to build base image for release $(base_image_tag) ......"
+          cd src/github.com/goharbor/harbor
+          sudo make build_base_docker -e BASEIMAGETAG=$base_image_tag -e REGISTRYUSER="${{ secrets.DOCKER_HUB_USERNAME }}" -e REGISTRYPASSWORD="${{ secrets.DOCKER_HUB_PASSWORD }}" -e PUSHBASEIMAGE=yes
       - name: Build Package
         run: |
           set -x
@@ -58,20 +80,16 @@ jobs:
 
           if [[ $target_branch == "master" ]]; then
             Harbor_Assets_Version=$Harbor_Package_Version
+            harbor_target_bucket=$harbor_builds_bucket
           else
             Harbor_Assets_Version=$target_release_version
+            harbor_target_bucket=$harbor_releases_bucket/$target_branch
           fi
 
           if [[ $target_branch == "release-"* ]]; then
             Harbor_Build_Base_Tag=$target_release_version
           else
             Harbor_Build_Base_Tag=dev
-          fi
-
-          if [[ $target_branch == "master" ]]; then
-            harbor_target_bucket=$harbor_builds_bucket
-          else
-            harbor_target_bucket=$harbor_releases_bucket/$target_branch
           fi
 
           cd src/github.com/goharbor/harbor
@@ -108,4 +126,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: always()
-
