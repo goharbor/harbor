@@ -142,6 +142,9 @@ func (c *controller) assembleQuota(ctx context.Context, q *quota.Quota, opts *Op
 }
 
 func (c *controller) IsEnabled(ctx context.Context, reference, referenceID string) (bool, error) {
+	if os.Getenv("DISABLE_QUOTA") == "true" {
+		return false, nil
+	}
 	d, err := Driver(ctx, reference)
 	if err != nil {
 		return false, err
