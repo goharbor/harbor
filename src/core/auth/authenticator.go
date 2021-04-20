@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
+	libErrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -42,6 +43,9 @@ var ErrDuplicateLDAPGroup = errors.New("An LDAP user group with same DN already 
 
 // ErrInvalidLDAPGroupDN ...
 var ErrInvalidLDAPGroupDN = errors.New("The LDAP group DN is invalid")
+
+// ErrNotSupported ...
+var ErrNotSupported = errors.New("not supported")
 
 // ErrAuth is the type of error to indicate a failed authentication due to user's error.
 type ErrAuth struct {
@@ -68,13 +72,13 @@ type AuthenticateHelper interface {
 	// put the id in the pointer of user model, if it does exist, fill in the user model based
 	// on the data record of the user
 	OnBoardUser(u *models.User) error
-	// Create a group in harbor DB, if altGroupName is not empty, take the altGroupName as groupName in harbor DB.
+	// OnBoardGroup Create a group in harbor DB, if altGroupName is not empty, take the altGroupName as groupName in harbor DB.
 	OnBoardGroup(g *models.UserGroup, altGroupName string) error
-	// Get user information from account repository
+	// SearchUser Get user information from account repository
 	SearchUser(username string) (*models.User, error)
-	// Search a group based on specific authentication
+	// SearchGroup Search a group based on specific authentication
 	SearchGroup(groupDN string) (*models.UserGroup, error)
-	// Update user information after authenticate, such as OnBoard or sync info etc
+	// PostAuthenticate Update user information after authenticate, such as OnBoard or sync info etc
 	PostAuthenticate(u *models.User) error
 }
 
@@ -84,19 +88,20 @@ type DefaultAuthenticateHelper struct {
 
 // Authenticate ...
 func (d *DefaultAuthenticateHelper) Authenticate(m models.AuthModel) (*models.User, error) {
-	return nil, errors.New("Not supported")
+	return nil, ErrNotSupported
 }
 
 // OnBoardUser will check if a user exists in user table, if not insert the user and
 // put the id in the pointer of user model, if it does exist, fill in the user model based
 // on the data record of the user
 func (d *DefaultAuthenticateHelper) OnBoardUser(u *models.User) error {
-	return errors.New("Not supported")
+	return ErrNotSupported
 }
 
 // SearchUser - Get user information from account repository
 func (d *DefaultAuthenticateHelper) SearchUser(username string) (*models.User, error) {
-	return nil, errors.New("Not supported")
+	log.Errorf("Not support searching user, username: %s", username)
+	return nil, libErrors.NotFoundError(ErrNotSupported).WithMessage("%s not found", username)
 }
 
 // PostAuthenticate - Update user information after authenticate, such as OnBoard or sync info etc
@@ -106,12 +111,13 @@ func (d *DefaultAuthenticateHelper) PostAuthenticate(u *models.User) error {
 
 // OnBoardGroup - OnBoardGroup, it will set the ID of the user group, if altGroupName is not empty, take the altGroupName as groupName in harbor DB.
 func (d *DefaultAuthenticateHelper) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
-	return errors.New("Not supported")
+	return ErrNotSupported
 }
 
 // SearchGroup - Search ldap group by group key, groupKey is the unique attribute of group in authenticator, for LDAP, the key is group DN
 func (d *DefaultAuthenticateHelper) SearchGroup(groupKey string) (*models.UserGroup, error) {
-	return nil, errors.New("Not supported")
+	log.Errorf("Not support searching group, group key: %s", groupKey)
+	return nil, libErrors.NotFoundError(ErrNotSupported).WithMessage("%s not found", groupKey)
 }
 
 var registry = make(map[string]AuthenticateHelper)

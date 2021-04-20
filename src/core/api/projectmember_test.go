@@ -196,7 +196,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 					},
 				},
 			},
-			code: http.StatusInternalServerError,
+			code: http.StatusNotFound,
 		},
 		{
 			request: &testingRequest{
@@ -241,7 +241,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 					},
 				},
 			},
-			code: http.StatusInternalServerError,
+			code: http.StatusNotFound,
 		},
 	}
 	runCodeCheckingCases(t, cases...)
