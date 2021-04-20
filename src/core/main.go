@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/orm"
 	_ "github.com/astaxie/beego/session/redis"
 	_ "github.com/astaxie/beego/session/redis_sentinel"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -103,6 +104,11 @@ func gracefulShutdown(closing, done chan struct{}) {
 }
 
 func main() {
+
+	if os.Getenv("ORM_DEBUG") == "true" {
+		orm.Debug = true
+	}
+
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
 
