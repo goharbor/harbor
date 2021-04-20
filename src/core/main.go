@@ -18,6 +18,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net/http"
+	_ "net/http/pprof"
 	"net/url"
 	"os"
 	"os/signal"
@@ -104,6 +105,14 @@ func gracefulShutdown(closing, done chan struct{}) {
 }
 
 func main() {
+	if os.Getenv("PPROF_ENABLE") == "true" {
+		go func() {
+			log.Infof("Started pprof on 0.0.0.0:6060")
+			if err := http.ListenAndServe("0.0.0.0:6060", nil); err != nil {
+				log.Errorf("Failed to start pprof %v", err)
+			}
+		}()
+	}
 
 	if os.Getenv("ORM_DEBUG") == "true" {
 		orm.Debug = true
