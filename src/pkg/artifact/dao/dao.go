@@ -18,9 +18,13 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	beegoorm "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/lib/cache"
+	_ "github.com/goharbor/harbor/src/lib/cache/memory"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 )
@@ -53,6 +57,7 @@ type DAO interface {
 }
 
 const (
+	artifactCacheTTL = 10 * time.Minute
 	// both tagged and untagged artifacts
 	both = `IN (
 		SELECT DISTINCT art.id FROM artifact art
@@ -73,10 +78,25 @@ const (
 
 // New returns an instance of the default DAO
 func New() DAO {
-	return &dao{}
+	return &dao{
+		cache: cache.Default(),
+	}
 }
 
-type dao struct{}
+type dao struct {
+	cache cache.Cache
+}
+
+func GetKey(query *q.Query) string {
+	if query == nil {
+		return ""
+	}
+	key := ""
+	for k, v := range query.Keywords {
+		key += fmt.Sprintf("%s=%v", k, v)
+	}
+	return key
+}
 
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 	if query != nil {
@@ -85,11 +105,36 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 			Keywords: query.Keywords,
 		}
 	}
+	var count int64
+	key := GetKey(query)
+	if d.cache == nil {
+		d.cache = cache.Default()
+		if d.cache == nil {
+			cache, err := cache.New("memory")
+			if err != nil {
+				return 0, err
+			}
+
+			d.cache = cache
+		}
+	}
+	if d.cache.Contains(key) {
+		if err := d.cache.Fetch(key, &count); err == nil {
+			return count, nil
+		}
+	}
 	qs, err := querySetter(ctx, query)
 	if err != nil {
 		return 0, err
 	}
-	return qs.Count()
+	count, err = qs.Count()
+	if err != nil {
+		return 0, err
+	}
+	if err := d.cache.Save(key, count, artifactCacheTTL); err != nil {
+		log.Errorf("Failed to save count %v", err)
+	}
+	return count, nil
 }
 func (d *dao) List(ctx context.Context, query *q.Query) ([]*Artifact, error) {
 	artifacts := []*Artifact{}
