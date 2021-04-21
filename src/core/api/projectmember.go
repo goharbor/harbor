@@ -172,7 +172,7 @@ func (pma *ProjectMemberAPI) Post() {
 		pma.SendBadRequestError(fmt.Errorf("Invalid LDAP DN: %v", request.MemberGroup.LdapGroupDN))
 		return
 	} else if err != nil {
-		pma.SendInternalServerError(fmt.Errorf("Failed to add project member, error: %v", err))
+		pma.SendError(err)
 		return
 	}
 	pma.Redirect(http.StatusCreated, strconv.FormatInt(int64(pmid), 10))
