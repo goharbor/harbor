@@ -12,8 +12,7 @@ import { TranslateService } from "@ngx-translate/core";
 import { HelmChartVersion, HelmChartMaintainer } from "../../helm-chart.interface.service";
 import { HelmChartService } from "../../helm-chart.service";
 import {
-  Label,
-  LabelService,
+  LabelService as OldLabelService,
   State,
   SystemInfo,
   SystemInfoService,
@@ -33,7 +32,9 @@ import { errorHandler } from "../../../../../../shared/units/shared.utils";
 import { ConfirmationDialogComponent } from "../../../../../../shared/components/confirmation-dialog";
 import { ConfirmationMessage } from "../../../../../global-confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../../../../../global-confirmation-dialog/confirmation-state-message";
-
+import { Label } from "../../../../../../../../ng-swagger-gen/models/label";
+import { LabelService } from "../../../../../../../../ng-swagger-gen/services/label.service";
+const PAGE_SIZE: number = 100;
 @Component({
   selector: "hbr-helm-chart-version",
   templateUrl: "./helm-chart-version.component.html",
@@ -82,7 +83,8 @@ export class ChartVersionComponent implements OnInit {
     private errorHandlerEntity: ErrorHandler,
     private systemInfoService: SystemInfoService,
     private helmChartService: HelmChartService,
-    private resrouceLabelService: LabelService,
+    private labelService: LabelService,
+    private resrouceLabelService: OldLabelService,
     public userPermissionService: UserPermissionService,
     private operationService: OperationService,
     private translateService: TranslateService,
@@ -109,11 +111,78 @@ export class ChartVersionComponent implements OnInit {
   }
 
   getLabels() {
-    forkJoin(this.resrouceLabelService.getLabels("g"), this.resrouceLabelService.getProjectLabels(this.projectId))
-      .subscribe(
-        (labels) => {
-          this.labels = [].concat(...labels);
-        });
+    // get all project labels
+    this.labelService.ListLabelsResponse({
+      pageSize: PAGE_SIZE,
+      page: 1,
+      scope: 'p',
+      projectId: this.projectId
+    }).subscribe(res => {
+      if (res.headers) {
+        const xHeader: string = res.headers.get("X-Total-Count");
+        const totalCount = parseInt(xHeader, 0);
+        let arr = res.body || [];
+        if (totalCount <= PAGE_SIZE) { // already gotten all project labels
+          if (arr && arr.length) {
+            this.labels = this.labels.concat(arr);
+          }
+        } else { // get all the project labels in specified times
+          const times: number = Math.ceil(totalCount / PAGE_SIZE);
+          const observableList: Observable<Label[]>[] = [];
+          for (let i = 2; i <= times; i++) {
+            observableList.push(this.labelService.ListLabels({
+              page: i,
+              pageSize: PAGE_SIZE,
+              scope: 'p',
+              projectId: this.projectId
+            }));
+          }
+          forkJoin(observableList).subscribe(response => {
+            if (response && response.length) {
+              response.forEach(item => {
+                arr = arr.concat(item);
+              });
+              this.labels = this.labels.concat(arr);
+            }
+          });
+        }
+      }
+    });
+    // get all global labels
+    this.labelService.ListLabelsResponse({
+      pageSize: PAGE_SIZE,
+      page: 1,
+      scope: 'g',
+    }).subscribe(res => {
+      if (res.headers) {
+        const xHeader: string = res.headers.get("X-Total-Count");
+        const totalCount = parseInt(xHeader, 0);
+        let arr = res.body || [];
+        if (totalCount <= PAGE_SIZE) { // already gotten all global labels
+          if (arr && arr.length) {
+            this.labels = this.labels.concat(arr);
+          }
+        } else { // get all the global labels in specified times
+          const times: number = Math.ceil(totalCount / PAGE_SIZE);
+          const observableList: Observable<Label[]>[] = [];
+          for (let i = 2; i <= times; i++) {
+            observableList.push(this.labelService.ListLabels({
+              page: i,
+              pageSize: PAGE_SIZE,
+              scope: 'g',
+            }));
+          }
+          forkJoin(observableList).subscribe(response => {
+            if (response && response.length) {
+              response.forEach(item => {
+                arr = arr.concat(item);
+              });
+              this.labels = this.labels.concat(arr);
+            }
+          });
+        }
+      }
+    });
   }
 
   refresh() {
