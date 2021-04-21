@@ -117,7 +117,7 @@ func (s *scannerAPI) GetScannerMetadata(ctx context.Context, params operation.Ge
 		return s.SendError(ctx, err)
 	}
 
-	return operation.NewGetScannerMetadataOK().WithPayload(meta)
+	return operation.NewGetScannerMetadataOK().WithPayload(model.NewScannerMetadata(meta).ToSwagger(ctx))
 }
 
 func (s *scannerAPI) ListScanners(ctx context.Context, params operation.ListScannersParams) middleware.Responder {

@@ -7284,11 +7284,6 @@ definitions:
           type: string
         example:
           'harbor.scanner-adapter/registry-authorization-type': 'Bearer'
-    x-go-type:
-      type: ScannerAdapterMetadata
-      import:
-        package: "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-        alias: v1
 
   ImmutableRule:
     type: object
