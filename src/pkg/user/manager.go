@@ -35,7 +35,7 @@ var (
 type Manager interface {
 	// Get get user by user id
 	Get(ctx context.Context, id int) (*models.User, error)
-	// Get get user by username
+	// GetByName get user by username
 	GetByName(ctx context.Context, username string) (*models.User, error)
 	// List users according to the query
 	List(ctx context.Context, query *q.Query) (models.Users, error)

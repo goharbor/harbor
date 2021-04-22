@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
+	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/oidc"
@@ -38,15 +39,17 @@ var (
 	reposAPIRe     = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories$`, regexp.QuoteMeta(base)))
 	artifactsAPIRe = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts$`, regexp.QuoteMeta(base)))
 	tagsAPIRe      = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts/.*/tags/.*$`, regexp.QuoteMeta(base)))
+	uctl           = user.Ctl
 )
 
 type oidcCli struct{}
 
 func (o *oidcCli) Generate(req *http.Request) security.Context {
-	if lib.GetAuthMode(req.Context()) != common.OIDCAuth {
+	ctx := req.Context()
+	if lib.GetAuthMode(ctx) != common.OIDCAuth {
 		return nil
 	}
-	logger := log.G(req.Context())
+	logger := log.G(ctx)
 	username, secret, ok := req.BasicAuth()
 	if !ok {
 		return nil
@@ -54,13 +57,19 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 	if !o.valid(req) {
 		return nil
 	}
-	user, err := oidc.VerifySecret(req.Context(), username, secret)
+	info, err := oidc.VerifySecret(ctx, username, secret)
 	if err != nil {
-		logger.Errorf("failed to verify secret: %v", err)
+		logger.Errorf("failed to verify secret, username: %s, error: %v", username, err)
 		return nil
 	}
+	u, err := uctl.GetByName(ctx, username)
+	if err != nil {
+		logger.Errorf("failed to get user model, username: %s, error: %v", username, err)
+		return nil
+	}
+	oidc.InjectGroupsToUser(info, u)
 	logger.Debugf("an OIDC CLI security context generated for request %s %s", req.Method, req.URL.Path)
-	return local.NewSecurityContext(user)
+	return local.NewSecurityContext(u)
 }
 
 func (o *oidcCli) valid(req *http.Request) bool {

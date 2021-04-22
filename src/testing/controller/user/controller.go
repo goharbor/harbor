@@ -97,6 +97,29 @@ func (_m *Controller) Get(ctx context.Context, id int, opt *user.Option) (*model
 	return r0, r1
 }
 
+// GetByName provides a mock function with given fields: ctx, username
+func (_m *Controller) GetByName(ctx context.Context, username string) (*models.User, error) {
+	ret := _m.Called(ctx, username)
+
+	var r0 *models.User
+	if rf, ok := ret.Get(0).(func(context.Context, string) *models.User); ok {
+		r0 = rf(ctx, username)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.User)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, username)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // List provides a mock function with given fields: ctx, query
 func (_m *Controller) List(ctx context.Context, query *q.Query) ([]*models.User, error) {
 	ret := _m.Called(ctx, query)

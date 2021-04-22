@@ -48,6 +48,8 @@ type Controller interface {
 	Count(ctx context.Context, query *q.Query) (int64, error)
 	// Get ...
 	Get(ctx context.Context, id int, opt *Option) (*models.User, error)
+	// GetByName gets the user model by username, it only supports getting the basic and does not support opt
+	GetByName(ctx context.Context, username string) (*models.User, error)
 	// Delete ...
 	Delete(ctx context.Context, id int) error
 	// UpdateProfile update the profile based on the ID and data in the model in parm, only a subset of attributes in the model
@@ -73,6 +75,10 @@ type Option struct {
 type controller struct {
 	mgr         user.Manager
 	oidcMetaMgr oidc.MetaManager
+}
+
+func (c *controller) GetByName(ctx context.Context, username string) (*models.User, error) {
+	return c.mgr.GetByName(ctx, username)
 }
 
 func (c *controller) SetCliSecret(ctx context.Context, id int, secret string) error {

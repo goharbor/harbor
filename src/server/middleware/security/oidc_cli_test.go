@@ -20,9 +20,12 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/oidc"
+	testingUser "github.com/goharbor/harbor/src/testing/controller/user"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -43,6 +46,13 @@ func TestOIDCCli(t *testing.T) {
 	// pass
 	username := "oidcModiferTester"
 	password := "oidcSecret"
+	testCtl := &testingUser.Controller{}
+	testCtl.On("GetByName", mock.Anything, username).Return(
+		&models.User{
+			Username: username,
+			Email:    fmt.Sprintf("%s@test.domain", username),
+		}, nil)
+	uctl = testCtl
 	oidc.SetHardcodeVerifierForTest(password)
 	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
 	req.SetBasicAuth(username, password)

@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-
-	"github.com/goharbor/harbor/src/common/models"
 )
 import "errors"
 
@@ -14,11 +12,17 @@ type fakeVerifier struct {
 	secret string
 }
 
-func (fv *fakeVerifier) VerifySecret(ctx context.Context, name string, secret string) (*models.User, error) {
+func (fv *fakeVerifier) VerifySecret(ctx context.Context, name string, secret string) (*UserInfo, error) {
 	if secret != fv.secret {
 		return nil, verifyError(errors.New("mismatch"))
 	}
-	return &models.User{UserID: 1, Username: name, Email: fmt.Sprintf("%s@test.local", name)}, nil
+	return &UserInfo{
+		Username: name,
+		Email:    fmt.Sprintf("%s@test.local", name),
+		Subject:  "subject",
+		Issuer:   "issuer",
+	}, nil
+
 }
 
 // SetHardcodeVerifierForTest overwrite the default secret manager for testing.
