@@ -56,7 +56,7 @@ func New() DAO {
 }
 
 // ErrGroupNameDup ...
-var ErrGroupNameDup = errors.New("duplicated user group name")
+var ErrGroupNameDup = errors.ConflictError(nil).WithMessage("duplicated user group name")
 
 // Add - Add User Group
 func (d *dao) Add(ctx context.Context, userGroup model.UserGroup) (int, error) {
