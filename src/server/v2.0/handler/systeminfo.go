@@ -22,7 +22,7 @@ func newSystemInfoAPI() *sysInfoAPI {
 	}
 }
 
-func (s *sysInfoAPI) GetSysteminfo(ctx context.Context, params systeminfo.GetSysteminfoParams) middleware.Responder {
+func (s *sysInfoAPI) GetSystemInfo(ctx context.Context, params systeminfo.GetSystemInfoParams) middleware.Responder {
 	opt := si.Options{}
 	sc, ok := security.FromContext(ctx)
 	if ok && sc.IsAuthenticated() {
@@ -32,18 +32,18 @@ func (s *sysInfoAPI) GetSysteminfo(ctx context.Context, params systeminfo.GetSys
 	if err != nil {
 		return s.SendError(ctx, err)
 	}
-	return systeminfo.NewGetSysteminfoOK().WithPayload(s.convertInfo(data))
+	return systeminfo.NewGetSystemInfoOK().WithPayload(s.convertInfo(data))
 }
 
-func (s *sysInfoAPI) GetSysteminfoGetcert(ctx context.Context, params systeminfo.GetSysteminfoGetcertParams) middleware.Responder {
+func (s *sysInfoAPI) GetCert(ctx context.Context, params systeminfo.GetCertParams) middleware.Responder {
 	f, err := s.ctl.GetCA(ctx)
 	if err != nil {
 		return s.SendError(ctx, err)
 	}
-	return systeminfo.NewGetSysteminfoGetcertOK().WithContentDisposition("attachment; filename=ca.crt").WithPayload(f)
+	return systeminfo.NewGetCertOK().WithContentDisposition("attachment; filename=ca.crt").WithPayload(f)
 }
 
-func (s *sysInfoAPI) GetSysteminfoVolumes(ctx context.Context, params systeminfo.GetSysteminfoVolumesParams) middleware.Responder {
+func (s *sysInfoAPI) GetVolumes(ctx context.Context, params systeminfo.GetVolumesParams) middleware.Responder {
 	if err := s.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceSystemVolumes); err != nil {
 		return s.SendError(ctx, err)
 	}
@@ -51,7 +51,7 @@ func (s *sysInfoAPI) GetSysteminfoVolumes(ctx context.Context, params systeminfo
 	if err != nil {
 		return s.SendError(ctx, err)
 	}
-	return systeminfo.NewGetSysteminfoVolumesOK().WithPayload(&models.SystemInfo{
+	return systeminfo.NewGetVolumesOK().WithPayload(&models.SystemInfo{
 		Storage: []*models.Storage{
 			{
 				Free:  c.Free,

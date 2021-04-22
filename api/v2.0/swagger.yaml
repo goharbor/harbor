@@ -196,6 +196,7 @@ paths:
   /internalconfig:
     get:
       summary: Get internal configurations.
+      operationId: getInternalconfig
       description: |
         This endpoint is for retrieving system configurations that only provides for internal api call.
       tags:
@@ -216,6 +217,7 @@ paths:
   /configurations:
     get:
       summary: Get system configurations.
+      operationId: getConfigurations
       description: |
         This endpoint is for retrieving system configurations that only provides for admin user.
       tags:
@@ -235,6 +237,7 @@ paths:
           description: Unexpected internal errors.
     put:
       summary: Modify system configurations.
+      operationId: updateConfigurations
       description: |
         This endpoint is for modifying system configurations that only provides for admin user.
       tags:
@@ -3607,6 +3610,7 @@ paths:
   /systeminfo:
     get:
       summary: Get general system info
+      operationId: getSystemInfo
       description: |
         This API is for retrieving general system info, this can be called by anonymous request.  Some attributes will be omitted in the response when this API is called by anonymous request.
       tags:
@@ -3621,6 +3625,7 @@ paths:
   /systeminfo/volumes:
     get:
       summary: Get system volume info (total/free size).
+      operationId: getVolumes
       description: |
         This endpoint is for retrieving system volume info that only provides for admin user.  Note that the response only reflects the storage status of local disk.
       tags:
@@ -3641,6 +3646,7 @@ paths:
   /systeminfo/getcert:
     get:
       summary: Get default root certificate.
+      operationId: getCert
       description: |
         This endpoint is for downloading a default root certificate.
       tags:

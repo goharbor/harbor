@@ -27,7 +27,7 @@ def set_configurations(client, expect_status_code = 200, expect_response_body = 
         conf["ldap_group_admin_dn"] = config.get("ldap_group_admin_dn")
 
     try:
-        _, status_code, _ = client.configurations_put_with_http_info(conf)
+        _, status_code, _ = client.update_configurations_with_http_info(conf)
     except ApiException as e:
         base._assert_status_code(expect_status_code, e.status)
         if expect_response_body is not None:
@@ -44,7 +44,7 @@ class Configurations(base.Base, object):
         client = self._get_client(**kwargs)
 
         try:
-            data, status_code, _ = client.configurations_get_with_http_info()
+            data, status_code, _ = client.get_configurations_with_http_info()
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:

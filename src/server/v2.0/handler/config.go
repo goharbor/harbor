@@ -70,7 +70,7 @@ func (c *configAPI) GetConfigurations(ctx context.Context, params configure.GetC
 	return configure.NewGetConfigurationsOK().WithPayload(payload)
 }
 
-func (c *configAPI) PutConfigurations(ctx context.Context, params configure.PutConfigurationsParams) middleware.Responder {
+func (c *configAPI) UpdateConfigurations(ctx context.Context, params configure.UpdateConfigurationsParams) middleware.Responder {
 	if err := c.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceConfiguration); err != nil {
 		return c.SendError(ctx, err)
 	}
@@ -82,7 +82,7 @@ func (c *configAPI) PutConfigurations(ctx context.Context, params configure.PutC
 	if err != nil {
 		return c.SendError(ctx, err)
 	}
-	return configure.NewPutConfigurationsOK()
+	return configure.NewUpdateConfigurationsOK()
 }
 
 func (c *configAPI) GetInternalconfig(ctx context.Context, params configure.GetInternalconfigParams) middleware.Responder {
