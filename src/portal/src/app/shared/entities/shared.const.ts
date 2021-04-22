@@ -242,3 +242,12 @@ export enum ResourceType {
 }
 
 export const CARD_VIEW_LOCALSTORAGE_KEY = 'card-view';
+
+export enum ScheduleType {
+  NONE = "None",
+  DAILY = "Daily",
+  WEEKLY = "Weekly",
+  HOURLY = "Hourly",
+  CUSTOM = "Custom",
+  MANUAL = 'Manual'
+}
