@@ -90,8 +90,10 @@ GEN_TLS=
 # for docker image tag
 VERSIONTAG=dev
 # for base docker image tag
+PUSHBASEIMAGE=
 BASEIMAGETAG=dev
 BASEIMAGENAMESPACE=goharbor
+BUILDBASETARGET=chartserver clair clair-adapter trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl
 # for harbor package name
 PKGVERSIONTAG=dev
 
@@ -255,8 +257,8 @@ HARBORPKG=harbor
 # pushimage
 PUSHSCRIPTPATH=$(MAKEPATH)
 PUSHSCRIPTNAME=pushimage.sh
-REGISTRYUSER=user
-REGISTRYPASSWORD=default
+REGISTRYUSER=
+REGISTRYPASSWORD=
 
 # cmds
 DOCKERSAVE_PARA=$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
@@ -381,15 +383,21 @@ build:
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL)
 
 build_base_docker:
-	docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD)
-	@for name in chartserver clair clair-adapter trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
-		echo Start to building $$name ...... ; \
+	if [ -n "$(REGISTRYUSER)" ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
+		docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
+	else \
+		echo "No docker credentials provided, please make sure enough priviledges to access docker hub!" ; \
+	fi
+	@for name in $(BUILDBASETARGET); do \
+		echo $$name ; \
 		$(DOCKERBUILD) --pull -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) . && \
-		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
+		if [ -n "$(PUSHBASEIMAGE)" ] ; then \
+			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
+		fi ; \
 	done
 
 pull_base_docker:
-	@for name in chartserver clair clair-adapter trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		$(DOCKERPULL) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) ; \
 	done
