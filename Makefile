@@ -94,6 +94,7 @@ VERSIONTAG=dev
 PUSHBASEIMAGE=
 BASEIMAGETAG=dev
 BASEIMAGENAMESPACE=goharbor
+BUILDBASETARGET=chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl exporter
 # for harbor package name
 PKGVERSIONTAG=dev
 
@@ -411,7 +412,7 @@ build_base_docker:
 	else \
 		echo "No docker credentials provided, please make sure enough priviledges to access docker hub!" ; \
 	fi
-	@for name in chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl exporter; do \
+	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		sleep 30 ; \
 		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . && \
@@ -421,7 +422,7 @@ build_base_docker:
 	done
 
 pull_base_docker:
-	@for name in chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		$(DOCKERPULL) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) ; \
 	done
