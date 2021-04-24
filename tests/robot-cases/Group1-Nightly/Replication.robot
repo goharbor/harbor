@@ -14,6 +14,7 @@
 
 *** Settings ***
 Documentation  Harbor BATs
+Library  ../../apitests/python/testutils.py
 Library  ../../apitests/python/library/repository.py
 Resource  ../../resources/Util.robot
 Default Tags  Replication

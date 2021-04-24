@@ -199,7 +199,7 @@ class DockerAPI(object):
             baseimage = BASE_IMAGE['name'] + ":" + BASE_IMAGE['tag']
             if not self.DCLIENT.images(name=baseimage):
                 print( "Docker load is triggered when building {}".format(harbor_registry))
-                docker_load_image(BASE_IMAGE_ABS_PATH_NAME)
+                self.DCLIENT.pull(baseimage)
             c = self.DCLIENT.create_container(image=baseimage,
                 command='dd if=/dev/urandom of=test bs=1M count={}'.format(size))
             self.DCLIENT.start(c)

@@ -2,13 +2,15 @@ import time
 import os
 import sys
 
-sys.path.insert(0, os.environ["SWAGGER_CLIENT_PATH"])
+sys.path.insert(0, os.environ.get("SWAGGER_CLIENT_PATH", ''))
 path=os.getcwd() + "/library"
 sys.path.insert(0, path)
 
 path=os.getcwd() + "/tests/apitests/python/library"
 sys.path.insert(0, path)
-
+path=os.getcwd() + "/tests/apitests/python/"
+sys.path.insert(0, path)
+print(sys.path)
 from swagger_client.rest import ApiException
 import swagger_client.models
 from pprint import pprint
@@ -16,7 +18,7 @@ from pprint import pprint
 admin_user = "admin"
 admin_pwd = "Harbor12345"
 
-harbor_server = os.environ["HARBOR_HOST"]
+harbor_server = os.environ.get("HARBOR_HOST", '')
 #CLIENT=dict(endpoint="https://"+harbor_server+"/api")
 ADMIN_CLIENT=dict(endpoint = os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api", username = admin_user, password =  admin_pwd)
 USER_ROLE=dict(admin=0,normal=1)
@@ -28,7 +30,7 @@ METRIC_URL = os.environ.get('METRIC_URL', 'http://'+harbor_server+':9090')
 BASE_IMAGE = dict(name='busybox', tag='latest')
 BASE_IMAGE_ABS_PATH_NAME = '/' + BASE_IMAGE['name'] + '.tar'
 
-def GetProductApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
+def GetProductApi(username, password, harbor_server= os.environ.get("HARBOR_HOST", '')):
 
     cfg = swagger_client.Configuration()
     cfg.host = "https://"+harbor_server+"/api"
