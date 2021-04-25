@@ -8,7 +8,7 @@
             </clr-tooltip-content>
         </clr-tooltip>
     </h4>
-    <clr-datagrid (clrDgSingleSelectedChange)="refreshJobs($event)" [clrDgLoading]="loading" [(clrDgSingleSelected)]="selectedRow">
+    <clr-datagrid (clrDgRefresh)="getPolicies($event)" (clrDgSingleSelectedChange)="refreshJobs($event)" [clrDgLoading]="loading" [(clrDgSingleSelected)]="selectedRow">
         <clr-dg-action-bar>
             <div class="clr-row">
                 <div class="clr-col-7">
@@ -77,15 +77,15 @@
         </clr-dg-action-bar>
         <clr-dg-column [clrDgField]="'name'">{{'P2P_PROVIDER.NAME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'P2P_PROVIDER.ENABLED' | translate}}</clr-dg-column>
-        <clr-dg-column [clrDgField]="'provider_name'">{{'P2P_PROVIDER.PROVIDER' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'P2P_PROVIDER.PROVIDER' | translate}}</clr-dg-column>
         <clr-dg-column>{{'P2P_PROVIDER.FILTERS' | translate}}</clr-dg-column>
         <clr-dg-column>{{'P2P_PROVIDER.TRIGGER' | translate}}</clr-dg-column>
-        <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'P2P_PROVIDER.CREATED' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="'creation_time'">{{'P2P_PROVIDER.CREATED' | translate}}</clr-dg-column>
         <clr-dg-column>{{'P2P_PROVIDER.DESCRIPTION' | translate}}</clr-dg-column>
         <clr-dg-placeholder>
             {{'P2P_PROVIDER.NO_POLICY' | translate}}
         </clr-dg-placeholder>
-        <clr-dg-row *clrDgItems="let p of policyList" [clrDgItem]="p">
+        <clr-dg-row *ngFor="let p of policyList" [clrDgItem]="p">
             <clr-dg-cell>{{p.name}}</clr-dg-cell>
             <clr-dg-cell>
                 <div *ngIf="p.enabled" class="icon-wrap">
@@ -144,9 +144,10 @@
             <clr-dg-cell>{{p.description}}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
-            <clr-dg-pagination [clrDgPageSize]="10">
+            <clr-dg-pagination #pagination [clrDgPageSize]="policyPageSize" [(clrDgPage)]="policyPage" [clrDgTotalItems]="totalPolicy">
                 <clr-dg-page-size [clrPageSizeOptions]="[10,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
-                <span *ngIf="policyList?.length > 0">1 - {{policyList?.length}} {{'WEBHOOK.OF' | translate}} </span> {{policyList?.length}} {{'WEBHOOK.ITEMS' | translate}}
+                <span *ngIf="totalPolicy">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'DESTINATION.OF' | translate}}</span>
+                {{totalPolicy}} {{'DESTINATION.ITEMS' | translate}}
             </clr-dg-pagination>
         </clr-dg-footer>
     </clr-datagrid>
