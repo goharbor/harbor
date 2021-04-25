@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -46,6 +47,12 @@ func RegisterModel(models ...interface{}) {
 }
 
 type ormKey struct{}
+
+func init() {
+	if os.Getenv("ORM_DEBUG") == "true" {
+		orm.Debug = true
+	}
+}
 
 // FromContext returns orm from context
 func FromContext(ctx context.Context) (orm.Ormer, error) {
