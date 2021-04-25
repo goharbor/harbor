@@ -204,6 +204,9 @@ func resourceScopes(sCtx security.Context, rc rbac.Resource) map[string]struct{}
 	if ok1 && ok2 && ok3 {
 		res["*"] = struct{}{}
 	}
+	if ok1 && !ok2 {
+		res["pull"] = struct{}{}
+	}
 	return res
 }
 
