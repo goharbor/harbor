@@ -4137,6 +4137,8 @@ paths:
       operationId: getRentenitionMetadata
       tags:
         - Retention
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: Get Retention Metadatas successfully.
@@ -4154,6 +4156,7 @@ paths:
       tags:
         - Retention
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: policy
           in: body
           description: Create Retention Policy successfully.
@@ -4180,6 +4183,7 @@ paths:
       tags:
         - Retention
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -4207,6 +4211,7 @@ paths:
       tags:
         - Retention
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -4227,6 +4232,32 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+    delete:
+      summary: Delete Retention Policy
+      operationId: deleteRetention
+      description: >-
+        Delete Retention Policy, you can reference metadatas API for the policy model.
+        You can check project metadatas to find whether a retention policy is already binded.
+        This method should only be called when retention policy has already binded to project.
+      tags:
+        - Retention
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Retention ID.
+      responses:
+        '200':
+          description: Update Retention Policy successfully.
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
 
   /retentions/{id}/executions:
     post:
@@ -4238,6 +4269,7 @@ paths:
       produces:
         - text/plain
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -4270,6 +4302,7 @@ paths:
       tags:
         - Retention
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -4318,6 +4351,7 @@ paths:
       tags:
         - Retention
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -4357,6 +4391,7 @@ paths:
       tags:
         - Retention
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -4413,6 +4448,7 @@ paths:
       produces:
         - text/plain
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
