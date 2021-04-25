@@ -22,6 +22,8 @@ Go Into Artifact
     Retry Wait Until Page Not Contains Element  ${artifact_list_spinner}
     Retry Element Click   xpath=//clr-dg-row[contains(.,'${tag}')]//a[contains(.,'sha256')]
     Retry Wait Until Page Contains Element   ${artifact_tag_component}
+    Retry Wait Until Page Not Contains Element  ${artifact_list_spinner}
+
 Should Contain Tag
     [Arguments]  ${tag}
     Retry Wait Until Page Contains Element   xpath=//artifact-tag//clr-dg-row//clr-dg-cell[contains(.,'${tag}')]

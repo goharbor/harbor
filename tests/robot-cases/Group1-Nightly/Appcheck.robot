@@ -1,4 +1,5 @@
-// Copyright Project Harbor Authors
+
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,15 +15,18 @@
 
 *** Settings ***
 Documentation  Harbor BATs
+Resource  ../../resources/Harbor-Pages/Appcheck_Keywords.robot
 Resource  ../../resources/Util.robot
 Default Tags  Nightly
 
-*** Test Cases ***
-Test Suites Setup For UI Test
-    [Tags]  setup
-    Nightly Test Setup In Ubuntu  ${ip}  ${HARBOR_PASSWORD}  ${ip1}
-    Setup API Test
+*** Variables ***
+${HARBOR_URL}  https://${ip}
+${SSH_USER}  root
+${HARBOR_ADMIN}  admin
 
-Test Case - Get Harbor Version
-#Just get harbor version and log it
-    Get Harbor Version
+*** Test Cases ***
+Test Case - Appcheck
+    Init Chrome Driver
+    Sign In Appcheck  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+
+    Close Browser

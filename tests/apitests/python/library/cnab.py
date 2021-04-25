@@ -20,7 +20,7 @@ def load_bundle(service_image, invocation_image):
 
 def cnab_fixup_bundle(bundle_file, target, auto_update_bundle = True):
     fixed_bundle_file = "./tests/apitests/python/bundle_data/fixed-bundle.json"
-    command = ["sudo", "cnab-to-oci", "--log-level", "debug", "fixup", bundle_file, "--target", target, "--bundle", fixed_bundle_file]
+    command = ["cnab-to-oci", "--log-level", "debug", "fixup", bundle_file, "--target", target, "--bundle", fixed_bundle_file]
     if auto_update_bundle == True:
          command.append("--auto-update-bundle")
          #fixed_bundle_file = bundle_file

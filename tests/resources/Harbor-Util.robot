@@ -90,11 +90,24 @@ Switch To LDAP
     Should Be Equal As Integers  ${rc}  0
     Generate Certificate Authority For Chrome
 
+Get Harbor CA
+    [Arguments]  ${ip}  ${cert}
+    Log All  Start to get harbor ca: ${ip} ${cert}
+    #In API E2E engine, store cert in path "/ca"
+    Run Keyword If  '${http_get_ca}' == 'false'  Run Keywords
+    ...  Wait Unitl Command Success  cp /ca/harbor_ca.crt ${cert}
+    ...  AND  Return From Keyword
+    ${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
+    Log All  ${rc}
+    ${rc}  ${output}=  Run And Return Rc and Output  curl -o ${cert} -s -k -X GET -u 'admin:Harbor12345' 'https://${ip}/api/v2.0/systeminfo/getcert'
+    Log All  ${output}
+    Should Be Equal As Integers  ${rc}  0
+
 Enable Notary Client
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
     Log  ${rc}
-    ${rc}  ${output}=  Run And Return Rc and Output  curl -o /notary_ca.crt -s -k -X GET -u 'admin:Harbor12345' 'https://${ip}/api/v2.0/systeminfo/getcert'
-    Log  ${output}
+    #${rc}  ${output}=  Run And Return Rc and Output  curl -o /notary_ca.crt -s -k -X GET -u 'admin:Harbor12345' 'https://${ip}/api/v2.0/systeminfo/getcert'
+    #Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
 Notary Remove Signature
