@@ -68,10 +68,10 @@ type UserGroup struct {
 }
 
 // ErrDuplicateProjectMember ...
-var ErrDuplicateProjectMember = errors.New("The project member specified already exist")
+var ErrDuplicateProjectMember = errors.ConflictError(nil).WithMessage("The project member specified already exist")
 
 // ErrInvalidRole ...
-var ErrInvalidRole = errors.New("Failed to update project member, role is not in 1,2,3")
+var ErrInvalidRole = errors.BadRequestError(nil).WithMessage("Failed to update project member, role is not in 1,2,3")
 
 type controller struct {
 	userManager user.Manager
