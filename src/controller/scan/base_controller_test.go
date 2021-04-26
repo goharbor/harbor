@@ -480,7 +480,7 @@ func (suite *ControllerTestSuite) TestScanAll() {
 		executionID := int64(1)
 
 		suite.execMgr.On(
-			"Create", ctx, "SCAN_ALL", int64(0), "SCHEDULE",
+			"Create", ctx, "SCAN_ALL", int64(0), "SCHEDULE", mock.Anything,
 		).Return(executionID, nil).Once()
 
 		mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{}, nil).Once()
@@ -502,7 +502,7 @@ func (suite *ControllerTestSuite) TestScanAll() {
 		executionID := int64(1)
 
 		suite.execMgr.On(
-			"Create", ctx, "SCAN_ALL", int64(0), "SCHEDULE",
+			"Create", ctx, "SCAN_ALL", int64(0), "SCHEDULE", mock.Anything,
 		).Return(executionID, nil).Once()
 
 		mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{suite.artifact}, nil).Once()

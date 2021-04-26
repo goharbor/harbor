@@ -27,7 +27,7 @@ type callbackTestSuite struct {
 
 func (c *callbackTestSuite) SetupTest() {
 	registry = map[string]CallbackFunc{}
-	err := RegisterCallbackFunc("callback", func(context.Context, string) error { return nil })
+	err := RegisterCallbackFunc("callback", func(context.Context, int64, string) error { return nil })
 	c.Require().Nil(err)
 }
 
@@ -41,11 +41,11 @@ func (c *callbackTestSuite) TestRegisterCallbackFunc() {
 	c.NotNil(err)
 
 	// pass
-	err = RegisterCallbackFunc("test", func(context.Context, string) error { return nil })
+	err = RegisterCallbackFunc("test", func(context.Context, int64, string) error { return nil })
 	c.Nil(err)
 
 	// duplicate name
-	err = RegisterCallbackFunc("test", func(context.Context, string) error { return nil })
+	err = RegisterCallbackFunc("test", func(context.Context, int64, string) error { return nil })
 	c.NotNil(err)
 }
 

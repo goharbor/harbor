@@ -32,7 +32,7 @@ func (g *gcCtrTestSuite) SetupTest() {
 }
 
 func (g *gcCtrTestSuite) TestStart() {
-	g.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	g.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	g.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	g.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 

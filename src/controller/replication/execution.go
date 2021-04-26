@@ -57,7 +57,8 @@ type Controller interface {
 	// DeletePolicy deletes the specific policy
 	DeletePolicy(ctx context.Context, id int64) (err error)
 	// Start the replication according to the policy
-	Start(ctx context.Context, policy *replicationmodel.Policy, resource *model.Resource, trigger string) (executionID int64, err error)
+	// The parameter "triggerRevision" is for identifying the duplicated trigger from the same schedule, refer to https://github.com/goharbor/harbor/issues/14683 for more detail
+	Start(ctx context.Context, policy *replicationmodel.Policy, resource *model.Resource, trigger string, triggerRevision ...int64) (executionID int64, err error)
 	// Stop the replication specified by the execution ID
 	Stop(ctx context.Context, executionID int64) (err error)
 	// ExecutionCount returns the total count of executions according to the query
@@ -101,14 +102,18 @@ type controller struct {
 	wp         *lib.WorkerPool
 }
 
-func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy, resource *model.Resource, trigger string) (int64, error) {
+func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy, resource *model.Resource, trigger string, triggerRevision ...int64) (int64, error) {
 	logger := log.GetLogger(ctx)
 	if !policy.Enabled {
 		return 0, errors.New(nil).WithCode(errors.PreconditionCode).
 			WithMessage("the policy %d is disabled", policy.ID)
 	}
 	// create an execution record
-	id, err := c.execMgr.Create(ctx, job.Replication, policy.ID, trigger)
+	var triggerRev int64
+	if len(triggerRevision) > 0 {
+		triggerRev = triggerRevision[0]
+	}
+	id, err := c.execMgr.Create(ctx, job.Replication, policy.ID, trigger, triggerRev)
 	if err != nil {
 		return 0, err
 	}

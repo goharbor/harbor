@@ -39,27 +39,27 @@ func (_m *ExecutionManager) Count(ctx context.Context, query *q.Query) (int64, e
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: ctx, vendorType, vendorID, trigger, extraAttrs
-func (_m *ExecutionManager) Create(ctx context.Context, vendorType string, vendorID int64, trigger string, extraAttrs ...map[string]interface{}) (int64, error) {
+// Create provides a mock function with given fields: ctx, vendorType, vendorID, trigger, triggerRevision, extraAttrs
+func (_m *ExecutionManager) Create(ctx context.Context, vendorType string, vendorID int64, trigger string, triggerRevision int64, extraAttrs ...map[string]interface{}) (int64, error) {
 	_va := make([]interface{}, len(extraAttrs))
 	for _i := range extraAttrs {
 		_va[_i] = extraAttrs[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, ctx, vendorType, vendorID, trigger)
+	_ca = append(_ca, ctx, vendorType, vendorID, trigger, triggerRevision)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, string, int64, string, ...map[string]interface{}) int64); ok {
-		r0 = rf(ctx, vendorType, vendorID, trigger, extraAttrs...)
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, string, int64, ...map[string]interface{}) int64); ok {
+		r0 = rf(ctx, vendorType, vendorID, trigger, triggerRevision, extraAttrs...)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, int64, string, ...map[string]interface{}) error); ok {
-		r1 = rf(ctx, vendorType, vendorID, trigger, extraAttrs...)
+	if rf, ok := ret.Get(1).(func(context.Context, string, int64, string, int64, ...map[string]interface{}) error); ok {
+		r1 = rf(ctx, vendorType, vendorID, trigger, triggerRevision, extraAttrs...)
 	} else {
 		r1 = ret.Error(1)
 	}

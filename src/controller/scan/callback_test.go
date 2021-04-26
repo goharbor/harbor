@@ -135,7 +135,7 @@ func (suite *CallbackTestSuite) TestScanTaskStatusChange() {
 
 func (suite *CallbackTestSuite) TestScanTaskCheckInProcessor() {
 	{
-		suite.Error(scanTaskCheckInProcessor(context.TODO(), &task.Task{}, "report"))
+		suite.Error(scanTaskCheckInProcessor(context.TODO(), &task.Task{}, "report", 0))
 	}
 
 	{
@@ -156,7 +156,7 @@ func (suite *CallbackTestSuite) TestScanTaskCheckInProcessor() {
 		}
 
 		r, _ := json.Marshal(report)
-		suite.NoError(scanTaskCheckInProcessor(context.TODO(), &task.Task{}, string(r)))
+		suite.NoError(scanTaskCheckInProcessor(context.TODO(), &task.Task{}, string(r), 0))
 	}
 }
 
@@ -164,17 +164,17 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 	{
 		// create execution failed
 		suite.execMgr.On(
-			"Create", context.TODO(), "SCAN_ALL", int64(0), "SCHEDULE",
+			"Create", context.TODO(), "SCAN_ALL", int64(0), "SCHEDULE", mock.Anything,
 		).Return(int64(0), fmt.Errorf("failed")).Once()
 
-		suite.Error(scanAllCallback(context.TODO(), ""))
+		suite.Error(scanAllCallback(context.TODO(), 0, ""))
 	}
 
 	{
 		executionID := int64(1)
 
 		suite.execMgr.On(
-			"Create", context.TODO(), "SCAN_ALL", int64(0), "SCHEDULE",
+			"Create", context.TODO(), "SCAN_ALL", int64(0), "SCHEDULE", mock.Anything,
 		).Return(executionID, nil).Once()
 
 		suite.execMgr.On(
@@ -187,7 +187,7 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 
 		suite.execMgr.On("MarkDone", context.TODO(), executionID, mock.Anything).Return(nil).Once()
 
-		suite.NoError(scanAllCallback(context.TODO(), ""))
+		suite.NoError(scanAllCallback(context.TODO(), 0, ""))
 	}
 }
 

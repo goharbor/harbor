@@ -258,20 +258,27 @@ func (_m *Controller) PolicyCount(ctx context.Context, query *q.Query) (int64, e
 	return r0, r1
 }
 
-// Start provides a mock function with given fields: ctx, policy, resource, trigger
-func (_m *Controller) Start(ctx context.Context, policy *model.Policy, resource *regmodel.Resource, trigger string) (int64, error) {
-	ret := _m.Called(ctx, policy, resource, trigger)
+// Start provides a mock function with given fields: ctx, policy, resource, trigger, triggerRevision
+func (_m *Controller) Start(ctx context.Context, policy *model.Policy, resource *regmodel.Resource, trigger string, triggerRevision ...int64) (int64, error) {
+	_va := make([]interface{}, len(triggerRevision))
+	for _i := range triggerRevision {
+		_va[_i] = triggerRevision[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, policy, resource, trigger)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, *model.Policy, *regmodel.Resource, string) int64); ok {
-		r0 = rf(ctx, policy, resource, trigger)
+	if rf, ok := ret.Get(0).(func(context.Context, *model.Policy, *regmodel.Resource, string, ...int64) int64); ok {
+		r0 = rf(ctx, policy, resource, trigger, triggerRevision...)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *model.Policy, *regmodel.Resource, string) error); ok {
-		r1 = rf(ctx, policy, resource, trigger)
+	if rf, ok := ret.Get(1).(func(context.Context, *model.Policy, *regmodel.Resource, string, ...int64) error); ok {
+		r1 = rf(ctx, policy, resource, trigger, triggerRevision...)
 	} else {
 		r1 = ret.Error(1)
 	}

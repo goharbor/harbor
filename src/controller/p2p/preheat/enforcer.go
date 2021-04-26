@@ -76,11 +76,13 @@ type Enforcer interface {
 	// Arguments:
 	//   ctx context.Context : system context
 	//   policyID int64 : ID of the being enforced policy
+	//   triggerRevision int64 : for identifying the duplicated trigger from the same schedule, refer to https://github.com/goharbor/harbor/issues/14683 for more detail
+	//
 	//
 	// Returns:
 	//   - ID of the execution
 	//   - non-nil error if any error occurred during the enforcement
-	EnforcePolicy(ctx context.Context, policyID int64) (int64, error)
+	EnforcePolicy(ctx context.Context, policyID int64, triggerRevision ...int64) (int64, error)
 
 	// Enforce preheating action by the given artifact.
 	// For event-based cases.
@@ -183,7 +185,7 @@ func NewEnforcer() Enforcer {
 }
 
 // EnforcePolicy enforces preheating action by the given policy
-func (de *defaultEnforcer) EnforcePolicy(ctx context.Context, policyID int64) (int64, error) {
+func (de *defaultEnforcer) EnforcePolicy(ctx context.Context, policyID int64, triggerRevision ...int64) (int64, error) {
 	// Get the the given policy data
 	pl, err := de.policyMgr.Get(ctx, policyID)
 	if err != nil {
@@ -232,7 +234,7 @@ func (de *defaultEnforcer) EnforcePolicy(ctx context.Context, policyID int64) (i
 	}
 
 	// Launch execution
-	eid, err := de.launchExecutions(ctx, filtered, pl, inst)
+	eid, err := de.launchExecutions(ctx, filtered, pl, inst, triggerRevision...)
 	if err != nil {
 		// NOTES: Please pay attention here, even the non-nil error returned, it does not mean
 		// the relevant execution is not available. The execution ID should also be checked(>0)
@@ -372,7 +374,7 @@ func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p 
 }
 
 // launchExecutions create execution record and launch tasks to preheat the filtered artifacts.
-func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*selector.Candidate, pl *pol.Schema, inst *provider.Instance) (int64, error) {
+func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*selector.Candidate, pl *pol.Schema, inst *provider.Instance, triggerRevision ...int64) (int64, error) {
 	// Create execution first anyway
 	attrs := map[string]interface{}{
 		extraAttrTotal:          len(candidates),
@@ -383,7 +385,11 @@ func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*s
 		attrs[extraAttrTriggerSetting] = "-"
 	}
 
-	eid, err := de.executionMgr.Create(ctx, job.P2PPreheat, pl.ID, pl.Trigger.Type, attrs)
+	var triggerRev int64
+	if len(triggerRevision) > 0 {
+		triggerRev = triggerRevision[0]
+	}
+	eid, err := de.executionMgr.Create(ctx, job.P2PPreheat, pl.ID, pl.Trigger.Type, triggerRev, attrs)
 	if err != nil {
 		return -1, err
 	}

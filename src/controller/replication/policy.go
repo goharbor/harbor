@@ -30,7 +30,7 @@ import (
 const callbackFuncName = "REPLICATION_CALLBACK"
 
 func init() {
-	callbackFunc := func(ctx context.Context, param string) error {
+	callbackFunc := func(ctx context.Context, triggerRevision int64, param string) error {
 		policyID, err := strconv.ParseInt(param, 10, 64)
 		if err != nil {
 			return err
@@ -39,7 +39,7 @@ func init() {
 		if err != nil {
 			return err
 		}
-		_, err = Ctl.Start(ctx, policy, nil, task.ExecutionTriggerSchedule)
+		_, err = Ctl.Start(ctx, policy, nil, task.ExecutionTriggerSchedule, triggerRevision)
 		return err
 	}
 	err := scheduler.RegisterCallbackFunc(callbackFuncName, callbackFunc)

@@ -29,12 +29,12 @@ func init() {
 	}
 }
 
-func gcCallback(ctx context.Context, p string) error {
+func gcCallback(ctx context.Context, triggerRevision int64, p string) error {
 	param := &Policy{}
 	if err := json.Unmarshal([]byte(p), param); err != nil {
 		return fmt.Errorf("failed to unmarshal the param: %v", err)
 	}
-	_, err := Ctl.Start(orm.Context(), *param, task.ExecutionTriggerSchedule)
+	_, err := Ctl.Start(orm.Context(), *param, task.ExecutionTriggerSchedule, triggerRevision)
 	return err
 }
 

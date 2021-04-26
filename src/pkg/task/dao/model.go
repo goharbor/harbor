@@ -33,14 +33,15 @@ type Execution struct {
 	// In most of cases, the status should be calculated from the referenced tasks.
 	// When the execution contains no task or failed to create tasks, the status should
 	// be set manually
-	Status        string    `orm:"column(status)"`
-	StatusMessage string    `orm:"column(status_message)"`
-	Trigger       string    `orm:"column(trigger)"`
-	ExtraAttrs    string    `orm:"column(extra_attrs)"` // json string
-	StartTime     time.Time `orm:"column(start_time)" sort:"default:desc"`
-	UpdateTime    time.Time `orm:"column(update_time)"`
-	EndTime       time.Time `orm:"column(end_time)"`
-	Revision      int64     `orm:"column(revision)"`
+	Status          string    `orm:"column(status)"`
+	StatusMessage   string    `orm:"column(status_message)"`
+	Trigger         string    `orm:"column(trigger)"`
+	TriggerRevision int64     `orm:"column(trigger_revision)"` // for identifying the duplicated trigger from the same schedule, refer to https://github.com/goharbor/harbor/issues/14683 for more detail
+	ExtraAttrs      string    `orm:"column(extra_attrs)"`      // json string
+	StartTime       time.Time `orm:"column(start_time)" sort:"default:desc"`
+	UpdateTime      time.Time `orm:"column(update_time)"`
+	EndTime         time.Time `orm:"column(end_time)"`
+	Revision        int64     `orm:"column(revision)"`
 }
 
 // Metrics is the task metrics for one execution

@@ -27,3 +27,4 @@ package controller
 //go:generate mockery --case snake --dir ../../controller/retention --name Controller --output ./retention --outpkg retention
 //go:generate mockery --case snake --dir ../../controller/config --name Controller --output ./config --outpkg config
 //go:generate mockery --case snake --dir ../../controller/user --name Controller --output ./user --outpkg user
+//go:generate mockery --case snake --dir ../../controller/p2p/preheat --name Enforcer --output ./p2p/preheat --outpkg preheat --structname FakeEnforcer

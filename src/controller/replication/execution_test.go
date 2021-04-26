@@ -72,7 +72,7 @@ func (r *replicationTestSuite) TestStart() {
 	r.Require().NotNil(err)
 
 	// got error when running the replication flow
-	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	r.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{}, nil)
 	r.execMgr.On("StopAndWait", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	r.execMgr.On("MarkError", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -90,7 +90,7 @@ func (r *replicationTestSuite) TestStart() {
 	r.SetupTest()
 
 	// got no error when running the replication flow
-	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	r.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{}, nil)
 	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	r.ormCreator.On("Create").Return(nil)

@@ -96,11 +96,12 @@ type Controller interface {
 	// Scan all the artifacts
 	//
 	//   Arguments:
-	//     ctx context.Context : the context for this method
-	//     trigger string      : the trigger mode to start the scan all job
-	//     async bool          : scan all the artifacts in background
+	//     ctx context.Context  : the context for this method
+	//     trigger string       : the trigger mode to start the scan all job
+	//     async bool           : scan all the artifacts in background
+	//     triggerRevision int64: for identifying the duplicated trigger from the same schedule, refer to https://github.com/goharbor/harbor/issues/14683 for more detail
 	//
 	//   Returns:
 	//     error  : non nil error if any errors occurred
-	ScanAll(ctx context.Context, trigger string, async bool) (int64, error)
+	ScanAll(ctx context.Context, trigger string, async bool, triggerRevision ...int64) (int64, error)
 }
