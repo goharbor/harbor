@@ -141,20 +141,27 @@ func (_m *Controller) Scan(ctx context.Context, _a1 *artifact.Artifact, options 
 	return r0
 }
 
-// ScanAll provides a mock function with given fields: ctx, trigger, async
-func (_m *Controller) ScanAll(ctx context.Context, trigger string, async bool) (int64, error) {
-	ret := _m.Called(ctx, trigger, async)
+// ScanAll provides a mock function with given fields: ctx, trigger, async, triggerRevision
+func (_m *Controller) ScanAll(ctx context.Context, trigger string, async bool, triggerRevision ...int64) (int64, error) {
+	_va := make([]interface{}, len(triggerRevision))
+	for _i := range triggerRevision {
+		_va[_i] = triggerRevision[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, trigger, async)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, string, bool) int64); ok {
-		r0 = rf(ctx, trigger, async)
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool, ...int64) int64); ok {
+		r0 = rf(ctx, trigger, async, triggerRevision...)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, bool) error); ok {
-		r1 = rf(ctx, trigger, async)
+	if rf, ok := ret.Get(1).(func(context.Context, string, bool, ...int64) error); ok {
+		r1 = rf(ctx, trigger, async, triggerRevision...)
 	} else {
 		r1 = ret.Error(1)
 	}

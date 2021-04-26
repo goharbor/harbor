@@ -168,12 +168,12 @@ func Init() error {
 		return err
 	}
 
-	p2pPreheatCallbackFun := func(ctx context.Context, p string) error {
+	p2pPreheatCallbackFun := func(ctx context.Context, triggerRevision int64, p string) error {
 		param := &preheat.TriggerParam{}
 		if err := json.Unmarshal([]byte(p), param); err != nil {
 			return fmt.Errorf("failed to unmarshal the param: %v", err)
 		}
-		_, err := preheat.Enf.EnforcePolicy(ctx, param.PolicyID)
+		_, err := preheat.Enf.EnforcePolicy(ctx, param.PolicyID, triggerRevision)
 		return err
 	}
 	err := scheduler.RegisterCallbackFunc(preheat.SchedulerCallback, p2pPreheatCallbackFun)

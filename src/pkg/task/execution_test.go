@@ -63,7 +63,7 @@ func (e *executionManagerTestSuite) TestCreate() {
 	e.execDAO.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	e.ormCreator.On("Create").Return(&orm.FakeOrmer{})
 	e.execDAO.On("List", mock.Anything, mock.Anything).Return(nil, nil)
-	id, err := e.execMgr.Create(nil, "vendor", 0, ExecutionTriggerManual,
+	id, err := e.execMgr.Create(nil, "vendor", 0, ExecutionTriggerManual, 0,
 		map[string]interface{}{"k": "v"})
 	e.Require().Nil(err)
 	e.Equal(int64(1), id)

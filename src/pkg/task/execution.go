@@ -41,8 +41,9 @@ var (
 type ExecutionManager interface {
 	// Create an execution. The "vendorType" specifies the type of vendor (e.g. replication, scan, gc, retention, etc.),
 	// and the "vendorID" specifies the ID of vendor if needed(e.g. policy ID for replication and retention).
+	// The "triggerRevision" is for identifying the duplicated trigger from the same schedule, refer to https://github.com/goharbor/harbor/issues/14683 for more detail
 	// The "extraAttrs" can be used to set the customized attributes
-	Create(ctx context.Context, vendorType string, vendorID int64, trigger string,
+	Create(ctx context.Context, vendorType string, vendorID int64, trigger string, triggerRevision int64,
 		extraAttrs ...map[string]interface{}) (id int64, err error)
 	// Update the extra attributes of the specified execution
 	UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) (err error)
@@ -94,8 +95,11 @@ func (e *executionManager) Count(ctx context.Context, query *q.Query) (int64, er
 	return e.executionDAO.Count(ctx, query)
 }
 
-func (e *executionManager) Create(ctx context.Context, vendorType string, vendorID int64, trigger string,
+func (e *executionManager) Create(ctx context.Context, vendorType string, vendorID int64, trigger string, triggerRevision int64,
 	extraAttrs ...map[string]interface{}) (int64, error) {
+	if triggerRevision == 0 {
+		triggerRevision = time.Now().UnixNano()
+	}
 	extras := map[string]interface{}{}
 	if len(extraAttrs) > 0 && extraAttrs[0] != nil {
 		extras = extraAttrs[0]
@@ -107,13 +111,14 @@ func (e *executionManager) Create(ctx context.Context, vendorType string, vendor
 
 	now := time.Now()
 	execution := &dao.Execution{
-		VendorType: vendorType,
-		VendorID:   vendorID,
-		Status:     job.RunningStatus.String(),
-		Trigger:    trigger,
-		ExtraAttrs: string(data),
-		StartTime:  now,
-		UpdateTime: now,
+		VendorType:      vendorType,
+		VendorID:        vendorID,
+		Status:          job.RunningStatus.String(),
+		Trigger:         trigger,
+		TriggerRevision: triggerRevision,
+		ExtraAttrs:      string(data),
+		StartTime:       now,
+		UpdateTime:      now,
 	}
 	id, err := e.executionDAO.Create(ctx, execution)
 	if err != nil {

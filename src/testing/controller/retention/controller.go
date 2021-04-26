@@ -247,20 +247,27 @@ func (_m *Controller) OperateRetentionExec(ctx context.Context, eid int64, actio
 	return r0
 }
 
-// TriggerRetentionExec provides a mock function with given fields: ctx, policyID, trigger, dryRun
-func (_m *Controller) TriggerRetentionExec(ctx context.Context, policyID int64, trigger string, dryRun bool) (int64, error) {
-	ret := _m.Called(ctx, policyID, trigger, dryRun)
+// TriggerRetentionExec provides a mock function with given fields: ctx, policyID, trigger, dryRun, triggerRevision
+func (_m *Controller) TriggerRetentionExec(ctx context.Context, policyID int64, trigger string, dryRun bool, triggerRevision ...int64) (int64, error) {
+	_va := make([]interface{}, len(triggerRevision))
+	for _i := range triggerRevision {
+		_va[_i] = triggerRevision[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, policyID, trigger, dryRun)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, int64, string, bool) int64); ok {
-		r0 = rf(ctx, policyID, trigger, dryRun)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string, bool, ...int64) int64); ok {
+		r0 = rf(ctx, policyID, trigger, dryRun, triggerRevision...)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int64, string, bool) error); ok {
-		r1 = rf(ctx, policyID, trigger, dryRun)
+	if rf, ok := ret.Get(1).(func(context.Context, int64, string, bool, ...int64) error); ok {
+		r1 = rf(ctx, policyID, trigger, dryRun, triggerRevision...)
 	} else {
 		r1 = ret.Error(1)
 	}

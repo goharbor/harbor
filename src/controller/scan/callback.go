@@ -64,8 +64,8 @@ func init() {
 	}
 }
 
-func scanAllCallback(ctx context.Context, param string) error {
-	_, err := scanCtl.ScanAll(ctx, task.ExecutionTriggerSchedule, true)
+func scanAllCallback(ctx context.Context, triggerRevision int64, param string) error {
+	_, err := scanCtl.ScanAll(ctx, task.ExecutionTriggerSchedule, true, triggerRevision)
 	return err
 }
 
@@ -116,7 +116,7 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 }
 
 // scanTaskCheckInProcessor checkin processor handles the webhook of scan job
-func scanTaskCheckInProcessor(ctx context.Context, t *task.Task, data string) (err error) {
+func scanTaskCheckInProcessor(ctx context.Context, t *task.Task, data string, revision int64) (err error) {
 	checkInReport := &scan.CheckInReport{}
 	if err := checkInReport.FromJSON(data); err != nil {
 		log.G(ctx).WithField("error", err).Errorf("failed to convert data to report")

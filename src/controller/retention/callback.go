@@ -16,11 +16,11 @@ func init() {
 	}
 }
 
-func retentionCallback(ctx context.Context, p string) error {
+func retentionCallback(ctx context.Context, triggerRevision int64, p string) error {
 	param := &TriggerParam{}
 	if err := json.Unmarshal([]byte(p), param); err != nil {
 		return fmt.Errorf("failed to unmarshal the param: %v", err)
 	}
-	_, err := Ctl.TriggerRetentionExec(ctx, param.PolicyID, param.Trigger, false)
+	_, err := Ctl.TriggerRetentionExec(ctx, param.PolicyID, param.Trigger, false, triggerRevision)
 	return err
 }

@@ -19,7 +19,7 @@ func init() {
 
 }
 
-func retentionTaskCheckInProcessor(ctx context.Context, t *task.Task, data string) (err error) {
+func retentionTaskCheckInProcessor(ctx context.Context, t *task.Task, data string, revision int64) (err error) {
 	taskID := t.ID
 	status := t.Status
 	log.Debugf("received retention task status update event: task-%d, status-%s", taskID, status)

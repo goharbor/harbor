@@ -2,7 +2,6 @@ package gc
 
 import (
 	"context"
-
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -30,7 +29,8 @@ const (
 // Controller manages the tags
 type Controller interface {
 	// Start start a manual gc job
-	Start(ctx context.Context, policy Policy, trigger string) (int64, error)
+	// The parameter "triggerRevision" is for identifying the duplicated trigger from the same schedule, refer to https://github.com/goharbor/harbor/issues/14683 for more detail
+	Start(ctx context.Context, policy Policy, trigger string, triggerRevision ...int64) (int64, error)
 	// Stop stop a gc job
 	Stop(ctx context.Context, id int64) error
 
@@ -72,14 +72,18 @@ type controller struct {
 }
 
 // Start starts the manual GC
-func (c *controller) Start(ctx context.Context, policy Policy, trigger string) (int64, error) {
+func (c *controller) Start(ctx context.Context, policy Policy, trigger string, triggerRevision ...int64) (int64, error) {
 	para := make(map[string]interface{})
 	para["delete_untagged"] = policy.DeleteUntagged
 	para["dry_run"] = policy.DryRun
 	para["redis_url_reg"] = policy.ExtraAttrs["redis_url_reg"]
 	para["time_window"] = policy.ExtraAttrs["time_window"]
 
-	execID, err := c.exeMgr.Create(ctx, GCVendorType, -1, trigger, para)
+	var triggerRev int64
+	if len(triggerRevision) > 0 {
+		triggerRev = triggerRevision[0]
+	}
+	execID, err := c.exeMgr.Create(ctx, GCVendorType, -1, trigger, triggerRev, para)
 	if err != nil {
 		return -1, err
 	}

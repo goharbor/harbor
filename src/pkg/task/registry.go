@@ -26,7 +26,8 @@ var (
 )
 
 // CheckInProcessor is the processor to process the check in data which is sent by jobservice via webhook
-type CheckInProcessor func(ctx context.Context, task *Task, data string) (err error)
+// The parameter "revision" is for identifying the revision of checkin data to avoid the duplicated processing
+type CheckInProcessor func(ctx context.Context, task *Task, data string, revision int64) (err error)
 
 // StatusChangePostFunc is the function called after the task status changed
 type StatusChangePostFunc func(ctx context.Context, taskID int64, status string) (err error)

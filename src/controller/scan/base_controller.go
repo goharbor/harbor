@@ -255,7 +255,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 				"name": r.Name,
 			},
 		}
-		executionID, err := bc.execMgr.Create(ctx, job.ImageScanJob, r.ID, task.ExecutionTriggerManual, extraAttrs)
+		executionID, err := bc.execMgr.Create(ctx, job.ImageScanJob, r.ID, task.ExecutionTriggerManual, 0, extraAttrs)
 		if err != nil {
 			return err
 		}
@@ -279,8 +279,12 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 	return nil
 }
 
-func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bool) (int64, error) {
-	executionID, err := bc.execMgr.Create(ctx, VendorTypeScanAll, 0, trigger)
+func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bool, triggerRevision ...int64) (int64, error) {
+	var triggerRev int64
+	if len(triggerRevision) > 0 {
+		triggerRev = triggerRevision[0]
+	}
+	executionID, err := bc.execMgr.Create(ctx, VendorTypeScanAll, 0, trigger, triggerRev)
 	if err != nil {
 		return 0, err
 	}

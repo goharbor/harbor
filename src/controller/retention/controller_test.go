@@ -66,7 +66,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 	execMgr := &testingTask.ExecutionManager{}
 	taskMgr := &testingTask.Manager{}
 	retentionMgr := retention.NewManager()
-	execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	execMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
 		ID:     1,
@@ -202,7 +202,7 @@ func (s *ControllerTestSuite) TestExecution() {
 	execMgr := &testingTask.ExecutionManager{}
 	taskMgr := &testingTask.Manager{}
 	retentionMgr := retention.NewManager()
-	execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
 		ID:     1,
 		Status: job.RunningStatus.String(),

@@ -47,7 +47,8 @@ type Controller interface {
 
 	DeleteRetention(ctx context.Context, id int64) error
 
-	TriggerRetentionExec(ctx context.Context, policyID int64, trigger string, dryRun bool) (int64, error)
+	// The parameter "triggerRevision" is for identifying the duplicated trigger from the same schedule, refer to https://github.com/goharbor/harbor/issues/14683 for more detail
+	TriggerRetentionExec(ctx context.Context, policyID int64, trigger string, dryRun bool, triggerRevision ...int64) (int64, error)
 
 	OperateRetentionExec(ctx context.Context, eid int64, action string) error
 
@@ -225,13 +226,17 @@ func (r *defaultController) deleteExecs(ctx context.Context, vendorID int64) err
 }
 
 // TriggerRetentionExec Trigger Retention Execution
-func (r *defaultController) TriggerRetentionExec(ctx context.Context, policyID int64, trigger string, dryRun bool) (int64, error) {
+func (r *defaultController) TriggerRetentionExec(ctx context.Context, policyID int64, trigger string, dryRun bool, triggerRevision ...int64) (int64, error) {
 	p, err := r.manager.GetPolicy(policyID)
 	if err != nil {
 		return 0, err
 	}
 
-	id, err := r.execMgr.Create(ctx, job.Retention, policyID, trigger,
+	var triggerRev int64
+	if len(triggerRevision) > 0 {
+		triggerRev = triggerRevision[0]
+	}
+	id, err := r.execMgr.Create(ctx, job.Retention, policyID, trigger, triggerRev,
 		map[string]interface{}{
 			"dry_run": dryRun,
 		},

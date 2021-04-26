@@ -129,7 +129,7 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 		return 0, err
 	}
 
-	execID, err := s.execMgr.Create(ctx, JobNameScheduler, id, task.ExecutionTriggerManual)
+	execID, err := s.execMgr.Create(ctx, JobNameScheduler, id, task.ExecutionTriggerManual, 0)
 	if err != nil {
 		return 0, err
 	}

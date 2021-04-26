@@ -112,7 +112,11 @@ func (e *executionDAO) Create(ctx context.Context, execution *Execution) (int64,
 	if err != nil {
 		return 0, err
 	}
-	return ormer.Insert(execution)
+	id, err := ormer.Insert(execution)
+	if e := orm.AsConflictError(err, "execution with trigger revision %d already exists", execution.TriggerRevision); e != nil {
+		err = e
+	}
+	return id, err
 }
 
 func (e *executionDAO) Update(ctx context.Context, execution *Execution, props ...string) error {

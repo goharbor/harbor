@@ -84,6 +84,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("int64"),
 		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int64"),
 		mock.AnythingOfType("map[string]interface {}"),
 	).Return(time.Now().Unix(), nil)
 

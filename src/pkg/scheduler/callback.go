@@ -17,6 +17,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/orm"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -28,7 +29,8 @@ var (
 )
 
 // CallbackFunc defines the function that the scheduler calls when triggered
-type CallbackFunc func(ctx context.Context, param string) error
+// The parameter "triggerRevision" is for identifying the duplicated trigger from the same schedule, refer to https://github.com/goharbor/harbor/issues/14683 for more detail
+type CallbackFunc func(ctx context.Context, triggerRevision int64, param string) error
 
 func init() {
 	if err := task.RegisterCheckInProcessor(JobNameScheduler, triggerCallback); err != nil {
@@ -67,7 +69,7 @@ func callbackFuncExist(name string) bool {
 	return exist
 }
 
-func triggerCallback(ctx context.Context, task *task.Task, data string) (err error) {
+func triggerCallback(ctx context.Context, task *task.Task, data string, triggerRevision int64) (err error) {
 	execution, err := Sched.(*scheduler).execMgr.Get(ctx, task.ExecutionID)
 	if err != nil {
 		return err
@@ -84,5 +86,17 @@ func triggerCallback(ctx context.Context, task *task.Task, data string) (err err
 	if err != nil {
 		return err
 	}
-	return callbackFunc(ctx, schedule.CallbackFuncParam)
+
+	// use orm.WithTransaction here to avoid the issue:
+	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
+	if err = orm.WithTransaction(func(ctx2 context.Context) error {
+		return callbackFunc(ctx, triggerRevision, schedule.CallbackFuncParam)
+	})(ctx); err != nil {
+		if errors.IsConflictErr(err) {
+			log.Warningf("got conflict error when calling callback function %q with trigger revision %d, skip it",
+				schedule.CallbackFuncName, triggerRevision)
+			err = nil
+		}
+	}
+	return err
 }
