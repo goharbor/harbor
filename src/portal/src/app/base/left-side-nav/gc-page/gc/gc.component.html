@@ -1,6 +1,6 @@
 <div class="cron-selection">
     <cron-selection [labelCurrent]="getLabelCurrent" #CronScheduleComponent [labelEdit]='getLabelCurrent'
-                    [originCron]='originCron' (inputvalue)="scheduleGc($event)"></cron-selection>
+                    [originCron]='originCron' (inputvalue)="saveGcSchedule($event)"></cron-selection>
 </div>
 <div class="clr-row">
     <div class="clr-col-2 flex-200"></div>
@@ -22,11 +22,11 @@
 </div>
 <div class="clr-row">
     <div class="clr-col-2 flex-200">
-        <button class="btn btn-primary  gc-start-btn" (click)="gcNow()"
+        <button id="gc-now" class="btn btn-primary  gc-start-btn" (click)="gcNow()"
                 [disabled]="disableGC">{{'GC.GC_NOW' | translate}}</button>
     </div>
     <div class="clr-col">
-        <button class="btn btn-outline  gc-start-btn" (click)="dryRun()"
+        <button id="gc-dry-run" class="btn btn-outline  gc-start-btn" (click)="dryRun()"
         [disabled]="dryRunOnGoing">{{'TAG_RETENTION.WHAT_IF_RUN' | translate}}</button>
     </div>
 </div>

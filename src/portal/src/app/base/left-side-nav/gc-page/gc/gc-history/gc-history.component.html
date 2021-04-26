@@ -1,30 +1,35 @@
 <h5 class="history-header" id="history-header">{{'GC.JOB_HISTORY' | translate}}</h5>
-<span class="refresh-btn" (click)="getJobs()">
+<span class="refresh-btn" (click)="refresh()">
   <clr-icon shape="refresh"></clr-icon>
 </span>
-<clr-datagrid  [clrDgLoading]="loading">
-  <clr-dg-column>{{'GC.JOB_ID' | translate}}</clr-dg-column>
-  <clr-dg-column>{{'GC.TRIGGER_TYPE' | translate}}</clr-dg-column>
-  <clr-dg-column>{{'TAG_RETENTION.DRY_RUN' | translate}}</clr-dg-column>
-  <clr-dg-column>{{'STATUS' | translate}}</clr-dg-column>
-  <clr-dg-column>{{'CREATION_TIME' | translate}}</clr-dg-column>
-  <clr-dg-column>{{'UPDATE_TIME' | translate}}</clr-dg-column>
-  <clr-dg-column>{{'LOGS' | translate}}</clr-dg-column>
-  <clr-dg-row *clrDgItems="let job of jobs" [clrDgItem]='job'>
-    <clr-dg-cell>{{job.id }}</clr-dg-cell>
-    <clr-dg-cell>{{(job.type ? 'SCHEDULE.'+ job.type.toUpperCase() : '') | translate }}</clr-dg-cell>
-    <clr-dg-cell>{{isDryRun(job?.parameters) | translate}}</clr-dg-cell>
-    <clr-dg-cell>{{job.status.toUpperCase() | translate}}</clr-dg-cell>
-    <clr-dg-cell>{{job.createTime | harborDatetime:'medium'}}</clr-dg-cell>
-    <clr-dg-cell>{{job.updateTime | harborDatetime:'medium'}}</clr-dg-cell>
-    <clr-dg-cell>
-      <a *ngIf="job.status.toLowerCase() === 'success' || job.status.toLowerCase() === 'error'" target="_blank" [href]="getLogLink(job.id)"><clr-icon shape="list"></clr-icon></a>
-    </clr-dg-cell>
-  </clr-dg-row>
-  <clr-dg-footer>
-    <clr-dg-pagination [clrDgPageSize]="15">
-                    <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
-                    {{'GC.LATEST_JOBS' | translate :{param: jobs.length} }}
-                </clr-dg-pagination>
-  </clr-dg-footer>
+<clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="getJobs($event)">
+    <clr-dg-column [clrDgField]="'id'">{{'GC.JOB_ID' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'GC.TRIGGER_TYPE' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'TAG_RETENTION.DRY_RUN' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'STATUS' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'CREATION_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="'update_time'">{{'UPDATE_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'LOGS' | translate}}</clr-dg-column>
+    <clr-dg-row *ngFor="let job of jobs" [clrDgItem]='job'>
+        <clr-dg-cell>{{job.id }}</clr-dg-cell>
+        <clr-dg-cell>{{(job.schedule?.type ? 'SCHEDULE.' + job.schedule?.type.toUpperCase() : '') | translate }}</clr-dg-cell>
+        <clr-dg-cell>{{isDryRun(job?.job_parameters) | translate}}</clr-dg-cell>
+        <clr-dg-cell>{{job.job_status.toUpperCase() | translate}}</clr-dg-cell>
+        <clr-dg-cell>{{job.creation_time | harborDatetime:'medium'}}</clr-dg-cell>
+        <clr-dg-cell>{{job.update_time | harborDatetime:'medium'}}</clr-dg-cell>
+        <clr-dg-cell>
+            <a *ngIf="job.job_status.toLowerCase() === 'success' || job.job_status.toLowerCase() === 'error'" target="_blank"
+               [href]="getLogLink(job.id)">
+                <clr-icon shape="list"></clr-icon>
+            </a>
+        </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+        <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="page" [clrDgTotalItems]="total">
+            <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+            <span *ngIf="total">{{pagination.firstItem + 1}}
+                - {{pagination.lastItem + 1}} {{'DESTINATION.OF' | translate}}</span>
+            {{total}} {{'DESTINATION.ITEMS' | translate}}
+        </clr-dg-pagination>
+    </clr-dg-footer>
 </clr-datagrid>
