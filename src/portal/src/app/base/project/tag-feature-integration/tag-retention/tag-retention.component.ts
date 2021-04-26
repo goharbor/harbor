@@ -11,17 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AddRuleComponent } from "./add-rule/add-rule.component";
-import {ClrDatagridStateInterface, ClrDatagridStringFilterInterface} from "@clr/angular";
+import { ClrDatagridStateInterface, ClrDatagridStringFilterInterface } from "@clr/angular";
 import { TagRetentionService } from "./tag-retention.service";
-import { Retention, Rule } from "./retention";
+import { PENDING, Retention, Rule, RUNNING, TIMEOUT } from "./retention";
 import { finalize } from "rxjs/operators";
 import { CronScheduleComponent } from "../../../../shared/components/cron-schedule";
 import { ErrorHandler } from "../../../../shared/units/error-handler";
 import { OriginCron } from "../../../../shared/services";
-import {clone, DEFAULT_PAGE_SIZE} from "../../../../shared/units/utils";
+import { clone, DEFAULT_PAGE_SIZE} from "../../../../shared/units/utils";
 
 const MIN = 60000;
 const SEC = 1000;
@@ -38,15 +38,12 @@ const DECORATION = {
     MATCHES: "matches",
     EXCLUDES: "excludes",
 };
-const RUNNING: string = "Running";
-const PENDING: string = "pending";
-const TIMEOUT: number = 5000;
 @Component({
     selector: 'tag-retention',
     templateUrl: './tag-retention.component.html',
     styleUrls: ['./tag-retention.component.scss']
 })
-export class TagRetentionComponent implements OnInit {
+export class TagRetentionComponent implements OnInit, OnDestroy {
     serialFilter: ClrDatagridStringFilterInterface<any> = {
         accepts(item: any, search: string): boolean {
             return item.id.toString().indexOf(search) !== -1;
@@ -70,27 +67,21 @@ export class TagRetentionComponent implements OnInit {
     cron: string;
     selectedItem: any = null;
     ruleIndex: number = -1;
-    index: number = -1;
     retentionId: number;
     retention: Retention = new Retention();
     editIndex: number;
     executionList = [];
     executionId: number;
-    historyList = [];
     loadingExecutions: boolean = true;
-    loadingHistories: boolean = true;
     label: string = 'TAG_RETENTION.TRIGGER';
     loadingRule: boolean = false;
     currentPage: number = 1;
     pageSize: number = DEFAULT_PAGE_SIZE;
     totalCount: number = 0;
-    currentLogPage: number = 1;
-    totalLogCount: number = 0;
-    logPageSize: number = 5;
-    isDetailOpened: boolean = false;
     @ViewChild('cronScheduleComponent')
     cronScheduleComponent: CronScheduleComponent;
     @ViewChild('addRule') addRuleComponent: AddRuleComponent;
+    executionTimeout;
     constructor(
         private route: ActivatedRoute,
         private tagRetentionService: TagRetentionService,
@@ -126,6 +117,13 @@ export class TagRetentionComponent implements OnInit {
         this.refreshAfterCreatRetention();
         this.getMetadata();
     }
+    ngOnDestroy() {
+        if (this.executionTimeout) {
+            clearTimeout(this.executionTimeout);
+            this.executionTimeout = null;
+        }
+    }
+
     openConfirm(cron: string) {
       if (cron) {
         this.isConfirmOpened = true;
@@ -274,15 +272,36 @@ export class TagRetentionComponent implements OnInit {
                 this.errorHandler.error(error);
             });
     }
-
+    loopGettingExecutions() {
+        if (this.executionList && this.executionList.length && this.executionList.some(item => {
+            return item.status === RUNNING || item.status === PENDING;
+        })) {
+            this.executionTimeout = setTimeout(() => {
+                this.loadingExecutions = true;
+                this.tagRetentionService.getRunNowList(this.retentionId, this.currentPage, this.pageSize)
+                  .pipe(finalize(() => this.loadingExecutions = false))
+                  .subscribe(res => {
+                      // Get total count
+                      if (res.headers) {
+                          let xHeader: string = res.headers.get("x-total-count");
+                          if (xHeader) {
+                              this.totalCount = parseInt(xHeader, 0);
+                          }
+                      }
+                      this.executionList = res.body as Array<any>;
+                      TagRetentionComponent.calculateDuration(this.executionList);
+                      this.loopGettingExecutions();
+                  });
+            }, TIMEOUT);
+        }
+    }
     refreshList(state?: ClrDatagridStateInterface) {
-        this.index = -1 ;
         this.selectedItem = null;
-        this.loadingExecutions = true;
         if (this.retentionId) {
             if (state && state.page) {
                 this.pageSize = state.page.size;
             }
+            this.loadingExecutions = true;
             this.tagRetentionService.getRunNowList(this.retentionId, this.currentPage, this.pageSize)
               .pipe(finalize(() => this.loadingExecutions = false))
               .subscribe(
@@ -296,13 +315,14 @@ export class TagRetentionComponent implements OnInit {
                     }
                     this.executionList = response.body as Array<any>;
                     TagRetentionComponent.calculateDuration(this.executionList);
+                    this.loopGettingExecutions();
                 }, error => {
                     this.errorHandler.error(error);
                 });
         } else {
-          setTimeout(() => {
-            this.loadingExecutions = false;
-          });
+           setTimeout(() => {
+               this.loadingExecutions = false;
+           }, 0);
         }
     }
 
@@ -352,50 +372,6 @@ export class TagRetentionComponent implements OnInit {
             this.ruleIndex = -1;
         }
     }
-
-    loadLog() {
-        if (this.isDetailOpened) {
-            setTimeout(() => {// when this.isDetailOpened is true, need to wait ngCheck finished
-                this.loadingHistories = true;
-                this.tagRetentionService.getExecutionHistory(this.retentionId, this.executionId, this.currentLogPage, this.logPageSize)
-                    .pipe(finalize(() => this.loadingHistories = false))
-                    .subscribe(
-                        (response: any) => {
-                            // Get total count
-                            if (response.headers) {
-                                let xHeader: string = response.headers.get("x-total-count");
-                                if (xHeader) {
-                                    this.totalLogCount = parseInt(xHeader, 0);
-                                }
-                            }
-                            this.historyList = response.body as Array<any>;
-                            TagRetentionComponent.calculateDuration(this.historyList);
-                            if (this.historyList && this.historyList.length
-                                && this.historyList.some(item => {
-                                    return item.status === RUNNING || item.status === PENDING;
-                                })) {
-                                setTimeout(() => {
-                                    this.loadLog();
-                                }, TIMEOUT);
-                            }
-                        }, error => {
-                            this.errorHandler.error(error);
-                        });
-            }, 0);
-        }
-    }
-    openDetail(index, executionId) {
-        if (this.index !== index) {
-            this.index = index;
-            this.historyList = [];
-            this.executionId = executionId;
-            this.isDetailOpened = true;
-        } else {
-            this.index = -1;
-            this.isDetailOpened = false;
-        }
-    }
-
     refreshAfterCreatRetention() {
         this.tagRetentionService.getProjectInfo(this.projectId).subscribe(
             response => {
