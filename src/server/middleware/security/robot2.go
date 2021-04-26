@@ -62,17 +62,17 @@ func (r *robot2) Generate(req *http.Request) security.Context {
 	for _, p := range robot.Permissions {
 		for _, a := range p.Access {
 			var resource string
-                        if a.Resource == rbac.ResourceProject && p.Kind == "project" {
-                                resource = p.Scope
-                        } else {
-                                resource = fmt.Sprintf("%s/%s", p.Scope, a.Resource)
-                        }
+			if a.Resource == rbac.ResourceProject && p.Kind == "project" {
+				resource = p.Scope
+			} else {
+				resource = fmt.Sprintf("%s/%s", p.Scope, a.Resource)
+			}
 
-                        accesses = append(accesses, &types.Policy{
-                                Action:   a.Action,
-                                Effect:   a.Effect,
-                                Resource: types.Resource(resource),
-                        })
+			accesses = append(accesses, &types.Policy{
+				Action:   a.Action,
+				Effect:   a.Effect,
+				Resource: types.Resource(resource),
+			})
 		}
 	}
 
