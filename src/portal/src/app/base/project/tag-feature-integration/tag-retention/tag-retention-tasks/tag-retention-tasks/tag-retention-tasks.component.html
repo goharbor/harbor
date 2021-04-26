@@ -1,0 +1,29 @@
+<clr-datagrid (clrDgRefresh)="loadLog()" [clrDgLoading]="loading" class="w-100">
+    <clr-dg-column>{{'TAG_RETENTION.REPOSITORY' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'TAG_RETENTION.STATUS' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'TAG_RETENTION.RETAINED' | translate}}/{{'TAG_RETENTION.TOTAL' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'TAG_RETENTION.START_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'TAG_RETENTION.DURATION' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'TAG_RETENTION.LOG' | translate}}</clr-dg-column>
+    <clr-dg-placeholder>
+        {{'TAG_RETENTION.NO_HISTORY' | translate}}
+    </clr-dg-placeholder>
+    <clr-dg-row *ngFor="let task of tasks" [clrDgItem]="task">
+        <clr-dg-cell>{{task.repository}}</clr-dg-cell>
+        <clr-dg-cell>{{task.status}}</clr-dg-cell>
+        <clr-dg-cell>{{task?.retained?task?.retained:0}}/{{task?.total?task?.total:0}}</clr-dg-cell>
+        <clr-dg-cell>{{task.start_time| harborDatetime:'medium'}}</clr-dg-cell>
+        <clr-dg-cell>{{task.duration}}</clr-dg-cell>
+        <clr-dg-cell><span (click)="seeLog(task.execution_id,task.id)"
+                           class="hand color-79b"><clr-icon shape="list"></clr-icon></span>
+        </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+        <span *ngIf="innerPagination">{{innerPagination.firstItem + 1}}
+            -
+            {{innerPagination.lastItem + 1 }} {{'ROBOT_ACCOUNT.OF' |
+                translate}} </span>
+        {{ total }} {{'ROBOT_ACCOUNT.ITEMS' | translate}}
+        <clr-dg-pagination [clrDgTotalItems]="tasksTimeout" [(clrDgPage)]="page" #innerPagination [clrDgPageSize]="pageSize"></clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>

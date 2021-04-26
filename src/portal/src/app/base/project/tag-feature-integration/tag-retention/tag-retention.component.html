@@ -110,50 +110,16 @@
                 <clr-dg-placeholder>
                     {{'TAG_RETENTION.NO_EXECUTION' | translate}}
                 </clr-dg-placeholder>
-                <clr-dg-row *ngFor="let execution of executionList;let i = index;" [clrDgItem]="execution">
-                    <clr-dg-cell class="hand" (click)="openDetail(i,execution.id)">
-                        <clr-icon shape="angle" [dir]="index===i?'down':'right'"></clr-icon>
-                        <span class="ml-1">{{execution.id}}</span>
+                <clr-dg-row *ngFor="let execution of executionList;" [clrDgItem]="execution">
+                    <clr-dg-cell>
+                        <span>{{execution.id}}</span>
                     </clr-dg-cell>
-                    <clr-dg-cell class="hand" (click)="openDetail(i,execution.id)">{{execution.status}}</clr-dg-cell>
-                    <clr-dg-cell class="hand"
-                                 (click)="openDetail(i,execution.id)">{{(execution.dry_run ? 'TAG_RETENTION.YES' : 'TAG_RETENTION.NO') | translate}}</clr-dg-cell>
-                    <clr-dg-cell class="hand"
-                                 (click)="openDetail(i,execution.id)">{{execution.trigger}}</clr-dg-cell>
-                    <clr-dg-cell class="hand"
-                                 (click)="openDetail(i,execution.id)">{{execution.start_time| harborDatetime:'medium'}}</clr-dg-cell>
-                    <clr-dg-cell class="hand" (click)="openDetail(i,execution.id)">{{execution.duration}}</clr-dg-cell>
-                    <clr-dg-row-detail *ngIf="index===i">
-                        <clr-datagrid (clrDgRefresh)="loadLog()" [clrDgLoading]="loadingHistories" class="w-100">
-                            <clr-dg-column>{{'TAG_RETENTION.REPOSITORY' | translate}}</clr-dg-column>
-                            <clr-dg-column>{{'TAG_RETENTION.STATUS' | translate}}</clr-dg-column>
-                            <clr-dg-column>{{'TAG_RETENTION.RETAINED' | translate}}/{{'TAG_RETENTION.TOTAL' | translate}}</clr-dg-column>
-                            <clr-dg-column>{{'TAG_RETENTION.START_TIME' | translate}}</clr-dg-column>
-                            <clr-dg-column>{{'TAG_RETENTION.DURATION' | translate}}</clr-dg-column>
-                            <clr-dg-column>{{'TAG_RETENTION.LOG' | translate}}</clr-dg-column>
-                            <clr-dg-placeholder>
-                                {{'TAG_RETENTION.NO_HISTORY' | translate}}
-                            </clr-dg-placeholder>
-                            <clr-dg-row *ngFor="let task of historyList" [clrDgItem]="task">
-                                <clr-dg-cell>{{task.repository}}</clr-dg-cell>
-                                <clr-dg-cell>{{task.status}}</clr-dg-cell>
-                                <clr-dg-cell>{{task?.retained?task?.retained:0}}/{{task?.total?task?.total:0}}</clr-dg-cell>
-                                <clr-dg-cell>{{task.start_time| harborDatetime:'medium'}}</clr-dg-cell>
-                                <clr-dg-cell>{{task.duration}}</clr-dg-cell>
-                                <clr-dg-cell><span (click)="seeLog(task.execution_id,task.id)"
-                                                   class="hand color-79b">{{'TAG_RETENTION.LOG' | translate}}</span>
-                                </clr-dg-cell>
-                            </clr-dg-row>
-                            <clr-dg-footer>
-        <span *ngIf="logPageSize">{{innerPagination.firstItem + 1}}
-            -
-            {{innerPagination.lastItem + 1 }} {{'ROBOT_ACCOUNT.OF' |
-                translate}} </span>
-                                {{ totalLogCount }} {{'ROBOT_ACCOUNT.ITEMS' | translate}}
-                                <clr-dg-pagination [clrDgTotalItems]="totalLogCount" [(clrDgPage)]="currentLogPage" #innerPagination [clrDgPageSize]="logPageSize"></clr-dg-pagination>
-                            </clr-dg-footer>
-                        </clr-datagrid>
-                    </clr-dg-row-detail>
+                    <clr-dg-cell>{{execution.status}}</clr-dg-cell>
+                    <clr-dg-cell>{{(execution.dry_run ? 'TAG_RETENTION.YES' : 'TAG_RETENTION.NO') | translate}}</clr-dg-cell>
+                    <clr-dg-cell>{{(execution?.trigger ? 'SCHEDULE.' + execution?.trigger.toUpperCase() : '') | translate }}</clr-dg-cell>
+                    <clr-dg-cell>{{execution.start_time| harborDatetime:'medium'}}</clr-dg-cell>
+                    <clr-dg-cell>{{execution.duration}}</clr-dg-cell>
+                    <app-tag-retention-tasks *clrIfExpanded [executionId]="execution.id" [retentionId]="retentionId"  ngProjectAs="clr-dg-row-detail"></app-tag-retention-tasks>
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination [clrDgTotalItems]="totalCount" #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize">
