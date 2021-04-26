@@ -17,10 +17,9 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { Project } from '../../project';
-import { clone, CustomComparator, DEFAULT_PAGE_SIZE } from '../../../../shared/units/utils';
+import { clone, DEFAULT_PAGE_SIZE, getSortingString } from '../../../../shared/units/utils';
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import {
-  ClrDatagridComparatorInterface,
   UserPermissionService,
   USERSTATICPERMISSION
 } from '../../../../shared/services';
@@ -61,7 +60,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
   policyList: PreheatPolicy[] = [];
   providers: ProviderUnderProject[] = [];
   metadata: any;
-  loading: boolean = false;
+  loading: boolean = true;
   hasCreatPermission: boolean = false;
   hasUpdatePermission: boolean = false;
   hasDeletePermission: boolean = false;
@@ -71,7 +70,6 @@ export class PolicyComponent implements OnInit, OnDestroy {
   selectedExecutionRow: Execution;
   jobsLoading: boolean = false;
   stopLoading: boolean = false;
-  creationTimeComparator: ClrDatagridComparatorInterface<Execution> = new CustomComparator<Execution>("creation_time", "date");
   executionList: Execution[] = [];
   currentExecutionPage: number = 1;
   pageSize: number = DEFAULT_PAGE_SIZE;
@@ -87,6 +85,10 @@ export class PolicyComponent implements OnInit, OnDestroy {
   routerSub: Subscription;
   scrollSub: Subscription;
   scrollTop: number;
+  policyPageSize: number = 10;
+  policyPage: number = 1;
+  totalPolicy: number = 0;
+  state: ClrDatagridStateInterface;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -125,7 +127,6 @@ export class PolicyComponent implements OnInit, OnDestroy {
       this.projectName = project.name;
     }
     this.getPermissions();
-    this.refresh();
   }
 
   ngOnDestroy(): void {
@@ -181,16 +182,47 @@ export class PolicyComponent implements OnInit, OnDestroy {
 
   refresh() {
     this.selectedRow = null;
-    this.getPolicies();
+    this.policyPage = 1;
+    this.totalPolicy = 0;
+    this.getPolicies(this.state);
   }
 
-  getPolicies() {
+  getPolicies(state?: ClrDatagridStateInterface) {
+    if (state) {
+      this.state = state;
+    }
+    if (state && state.page) {
+      this.pageSize = state.page.size;
+    }
+    let q: string;
+    if (state && state.filters && state.filters.length) {
+      q = encodeURIComponent(`${state.filters[0].property}=~${state.filters[0].value}`);
+    }
+    let sort: string;
+    if (state && state.sort && state.sort.by) {
+      sort =  getSortingString(state);
+    } else { // sort by creation_time desc by default
+      sort = `-creation_time`;
+    }
     this.loading = true;
-    this.preheatService.ListPolicies({projectName: this.projectName})
+    this.preheatService.ListPoliciesResponse({
+      projectName: this.projectName,
+      sort: sort,
+      q: q,
+      page: this.policyPage,
+      pageSize: this.policyPageSize
+    })
       .pipe(finalize(() => (this.loading = false)))
       .subscribe(
         response => {
-          this.policyList = response;
+          // Get total count
+          if (response.headers) {
+            let xHeader: string = response.headers.get("X-Total-Count");
+            if (xHeader) {
+              this.totalPolicy = parseInt(xHeader, 0);
+            }
+          }
+          this.policyList = response.body || [];
         },
         error => {
           this.messageHandlerService.handleError(error);

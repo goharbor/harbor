@@ -18,6 +18,8 @@ import { AppConfigService } from '../../../../services/app-config.service';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
 import { SharedTestingModule } from "../../../../shared/shared.module";
+import { HttpHeaders, HttpResponse } from "@angular/common/http";
+import { Registry } from "../../../../../../ng-swagger-gen/models/registry";
 
 describe('PolicyComponent', () => {
     let component: PolicyComponent;
@@ -98,8 +100,12 @@ describe('PolicyComponent', () => {
     };
 
     const mockPreheatService = {
-        ListPolicies: () => {
-            return of([policy1, policy2]).pipe(delay(0));
+        ListPoliciesResponse: () => {
+            const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
+                headers: new HttpHeaders({'x-total-count': [policy1, policy2].length.toString()}),
+                body: [policy1, policy2]
+            });
+            return of(response).pipe(delay(0));
         },
         ListProvidersUnderProject() {
             return of(providers).pipe(delay(0));
