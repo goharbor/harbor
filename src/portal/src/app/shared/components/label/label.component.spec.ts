@@ -1,18 +1,18 @@
 import { Label } from "../../services";
 import { LabelComponent } from "./label.component";
 import { waitForAsync, ComponentFixture, TestBed } from "@angular/core/testing";
-import { LabelDefaultService, LabelService } from "../../services";
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { FilterComponent } from "../filter/filter.component";
 import { ConfirmationDialogComponent } from "../confirmation-dialog";
 import { CreateEditLabelComponent } from "./create-edit-label/create-edit-label.component";
 import { LabelPieceComponent } from "./label-piece/label-piece.component";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
-import { ErrorHandler } from "../../units/error-handler";
 import { OperationService } from "../operation/operation.service";
 import { of } from "rxjs";
-import { CURRENT_BASE_HREF } from "../../units/utils";
+import { delay } from "rxjs/operators";
 import { SharedTestingModule } from "../../shared.module";
+import { LabelService } from "../../../../../ng-swagger-gen/services/label.service";
+import { HttpHeaders, HttpResponse } from "@angular/common/http";
+import { Registry } from "../../../../../ng-swagger-gen/models/registry";
 
 describe('LabelComponent (inline template)', () => {
 
@@ -56,12 +56,10 @@ describe('LabelComponent (inline template)', () => {
 
     let labelService: LabelService;
     let spy: jasmine.Spy;
-    let spyOneLabel: jasmine.Spy;
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule,
-                NoopAnimationsModule
             ],
             declarations: [
                 FilterComponent,
@@ -72,8 +70,6 @@ describe('LabelComponent (inline template)', () => {
                 InlineAlertComponent
             ],
             providers: [
-                ErrorHandler,
-                {provide: LabelService, useClass: LabelDefaultService},
                 {provide: OperationService}
             ]
         });
@@ -84,9 +80,11 @@ describe('LabelComponent (inline template)', () => {
         comp = fixture.componentInstance;
 
         labelService = fixture.debugElement.injector.get(LabelService);
-
-        spy = spyOn(labelService, 'getLabels').and.returnValues(of(mockData));
-        spyOneLabel = spyOn(labelService, 'getLabel').and.returnValues(of(mockOneData));
+        const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
+            headers: new HttpHeaders({'x-total-count': [].length.toString()}),
+            body: mockData
+        });
+        spy = spyOn(labelService, 'ListLabelsResponse').and.returnValues(of(response).pipe(delay(0)));
         fixture.detectChanges();
     });
 

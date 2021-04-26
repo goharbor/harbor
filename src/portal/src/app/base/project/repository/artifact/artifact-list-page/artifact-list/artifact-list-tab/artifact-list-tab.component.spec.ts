@@ -3,15 +3,12 @@ import { CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
 import { ArtifactListTabComponent } from "./artifact-list-tab.component";
 import { of } from "rxjs";
 import { delay } from "rxjs/operators";
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ArtifactDefaultService, ArtifactService } from "../../../artifact.service";
 import {
   Label,
   LabelDefaultService,
-  LabelService,
   ProjectDefaultService,
   ProjectService,
   ScanningResultDefaultService,
@@ -31,6 +28,8 @@ import { OperationService } from "../../../../../../../shared/components/operati
 import { ArtifactService as NewArtifactService } from "../../../../../../../../../ng-swagger-gen/services/artifact.service";
 import { Tag } from "../../../../../../../../../ng-swagger-gen/models/tag";
 import { SharedTestingModule } from "../../../../../../../shared/shared.module";
+import { LabelService } from "../../../../../../../../../ng-swagger-gen/services/label.service";
+import { Registry } from "../../../../../../../../../ng-swagger-gen/models/registry";
 
 describe("ArtifactListTabComponent (inline template)", () => {
 
@@ -297,8 +296,6 @@ describe("ArtifactListTabComponent (inline template)", () => {
     TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
-        BrowserAnimationsModule,
-        HttpClientTestingModule,
       ],
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
@@ -318,7 +315,6 @@ describe("ArtifactListTabComponent (inline template)", () => {
         { provide: ArtifactService, useValue: mockNewArtifactService },
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: ScanningResultService, useClass: ScanningResultDefaultService },
-        { provide: LabelService, useClass: LabelDefaultService },
         { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         { provide: ErrorHandler, useValue: mockErrorHandler },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
@@ -350,8 +346,14 @@ describe("ArtifactListTabComponent (inline template)", () => {
         mockHasDeleteImagePermission, mockHasScanImagePermission]));
 
     labelService = fixture.debugElement.injector.get(LabelService);
-    spyLabels = spyOn(labelService, "getGLabels").and.returnValues(of(mockLabels).pipe(delay(0)));
-    spyLabels1 = spyOn(labelService, "getPLabels").withArgs(comp.projectId).and.returnValues(of(mockLabels1).pipe(delay(0)));
+    const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
+      headers: new HttpHeaders({'x-total-count': [].length.toString()}),
+      body: mockLabels
+    });
+    spyLabels = spyOn(labelService, "ListLabelsResponse").and.returnValues(
+     of(response).pipe(delay(0))
+    );
+    spyLabels1 = spyOn(labelService, "ListLabels").withArgs(comp.projectId).and.returnValues(of(mockLabels1).pipe(delay(0)));
     fixture.detectChanges();
   });
 

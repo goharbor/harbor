@@ -11,6 +11,7 @@ import { LabelService, SystemInfoService, UserPermissionService } from "../../..
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
 import { OperationService } from "../../../../../../shared/components/operation/operation.service";
 import { delay } from "rxjs/operators";
+import { SharedTestingModule } from "../../../../../../shared/shared.module";
 
 describe('ChartVersionComponent', () => {
     let component: ChartVersionComponent;
@@ -85,13 +86,10 @@ describe('ChartVersionComponent', () => {
                 CUSTOM_ELEMENTS_SCHEMA
             ],
             imports: [
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule
+                SharedTestingModule
             ],
             declarations: [ChartVersionComponent, LabelFilterComponent],
             providers: [
-                TranslateService,
                 { provide: SystemInfoService, useValue: mockSystemInfoService },
                 { provide: LabelService, useValue: mockLabelService },
                 { provide: UserPermissionService, useValue: mockUserPermissionService },
