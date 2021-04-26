@@ -60,11 +60,6 @@ func TestOIDCUserMetaDaoMethods(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Equal(t, "unable to onboard as empty oidc user", err.Error())
 
-	// test get by ID
-	oidcUser1, err := GetOIDCUserByID(ou111.ID)
-	require.Nil(t, err)
-	assert.Equal(t, ou111.UserID, oidcUser1.UserID)
-
 	// test get by userID
 	oidcUser2, err := GetOIDCUserByUserID(user111.UserID)
 	require.Nil(t, err)
@@ -83,11 +78,6 @@ func TestOIDCUserMetaDaoMethods(t *testing.T) {
 		Secret: "newSecret",
 	}
 	require.Nil(t, UpdateOIDCUser(meta3))
-	oidcUser1Update, err := GetOIDCUserByID(ou111.ID)
-	require.Nil(t, err)
-	assert.Equal(t, "QWE123123RT1", oidcUser1Update.SubIss)
-	assert.Equal(t, "newSecret", oidcUser1Update.Secret)
-
 	// clear data
 	defer func() {
 		_, err := GetOrmer().Raw(`delete from oidc_user`).Exec()

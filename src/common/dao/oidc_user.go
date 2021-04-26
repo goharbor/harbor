@@ -39,21 +39,6 @@ var (
 	ErrRollBackOIDCUser = errors.New("sql: transaction roll back error in oicd_user")
 )
 
-// GetOIDCUserByID ...
-func GetOIDCUserByID(id int64) (*models.OIDCUser, error) {
-	oidcUser := &models.OIDCUser{
-		ID: id,
-	}
-	if err := GetOrmer().Read(oidcUser); err != nil {
-		if err == orm.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return oidcUser, nil
-}
-
 // GetUserBySubIss ...
 func GetUserBySubIss(sub, issuer string) (*models.User, error) {
 	var oidcUsers []models.OIDCUser
@@ -96,19 +81,6 @@ func GetOIDCUserByUserID(userID int) (*models.OIDCUser, error) {
 func UpdateOIDCUser(oidcUser *models.OIDCUser) error {
 	cols := []string{"secret", "token"}
 	_, err := GetOrmer().Update(oidcUser, cols...)
-	return err
-}
-
-// UpdateOIDCUserSecret updates the secret of the OIDC User.  The secret in the input parm should be encrypted before
-// calling this func
-func UpdateOIDCUserSecret(oidcUser *models.OIDCUser) error {
-	_, err := GetOrmer().Update(oidcUser, "secret")
-	return err
-}
-
-// DeleteOIDCUser ...
-func DeleteOIDCUser(id int64) error {
-	_, err := GetOrmer().QueryTable(&models.OIDCUser{}).Filter("ID", id).Delete()
 	return err
 }
 
