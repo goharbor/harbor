@@ -64,7 +64,7 @@ func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
 	}
 
 	var contentURL string
-	if len(src.ExtendedInfo) > 0 {
+	if len(src.ExtendedInfo) > 0 && src.ExtendedInfo["contentURL"] != nil {
 		contentURL = src.ExtendedInfo["contentURL"].(string)
 	}
 
