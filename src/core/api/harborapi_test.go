@@ -93,9 +93,6 @@ func init() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 
-	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &MetadataAPI{}, "get:Get")
-	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &MetadataAPI{}, "post:Post")
-	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &MetadataAPI{}, "put:Put;delete:Delete")
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
 
 	// Charts are controlled under projects

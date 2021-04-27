@@ -644,6 +644,164 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/metadatas/':
+    get:
+      summary: Get the metadata of the specific project
+      description: Get the metadata of the specific project
+      operationId: listProjectMetadatas
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+      tags:
+        - projectMetadata
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Add metadata for the specific project
+      operationId: addProjectMetadatas
+      description: Add metadata for the specific project
+      tags:
+        - projectMetadata
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - name: metadata
+          in: body
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/metadatas/{meta_name}':
+    get:
+      summary: Get the specific metadata of the specific project
+      description: Get the specific metadata of the specific project
+      operationId: getProjectMetadata
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - name: meta_name
+          in: path
+          description: The name of metadata.
+          required: true
+          type: string
+      tags:
+        - projectMetadata
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update the specific metadata for the specific project
+      description: Update the specific metadata for the specific project
+      operationId: updateProjectMetadata
+      tags:
+        - projectMetadata
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - name: meta_name
+          in: path
+          description: The name of metadata.
+          required: true
+          type: string
+        - name: metadata
+          in: body
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete the specific metadata for the specific project
+      description: Delete the specific metadata for the specific project
+      operationId: deleteProjectMetadata
+      tags:
+        - projectMetadata
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - name: meta_name
+          in: path
+          description: The name of metadata.
+          required: true
+          type: string
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
   /repositories:
     get:
       summary: List all authorized repositories
