@@ -112,7 +112,7 @@ func TestAuthenticateHelperSearchUser(t *testing.T) {
 
 	user, err := auth.SearchUser("admin")
 	if err != nil {
-		t.Error("Failed to search user, admin")
+		t.Error("Failed to search user admin")
 	}
 
 	if user == nil {

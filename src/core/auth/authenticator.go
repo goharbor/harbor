@@ -48,7 +48,7 @@ var ErrDuplicateLDAPGroup = errors.New("An LDAP user group with same DN already 
 var ErrInvalidLDAPGroupDN = errors.New("The LDAP group DN is invalid")
 
 // ErrNotSupported ...
-var ErrNotSupported = errors.New("not supported")
+var ErrNotSupported = errors.New("Not supported")
 
 // ErrAuth is the type of error to indicate a failed authentication due to user's error.
 type ErrAuth struct {
