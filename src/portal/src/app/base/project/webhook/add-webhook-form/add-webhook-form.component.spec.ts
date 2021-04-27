@@ -1,42 +1,52 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AddWebhookFormComponent } from './add-webhook-form.component';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
-import { WebhookService } from "../webhook.service";
+import { ProjectWebhookService } from "../webhook.service";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { of } from 'rxjs';
-import { Webhook } from "../webhook";
-import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
+import { WebhookPolicy } from "../../../../../../ng-swagger-gen/models/webhook-policy";
+import { delay } from "rxjs/operators";
+import { HttpHeaders, HttpResponse } from "@angular/common/http";
+import { Registry } from "../../../../../../ng-swagger-gen/models/registry";
+import { SharedTestingModule } from "../../../../shared/shared.module";
+import { WebhookService } from "../../../../../../ng-swagger-gen/services/webhook.service";
 
 describe('AddWebhookFormComponent', () => {
     let component: AddWebhookFormComponent;
     let fixture: ComponentFixture<AddWebhookFormComponent>;
-    const mockWebhookService = {
-        getCurrentUser: () => {
-            return of(null);
-        },
-        createWebhook() {
-            return of(null);
-        },
-        editWebhook() {
-            return of(null);
-        },
-        testEndpoint() {
-            return of(null);
-        },
+    const mockProjectWebhookService = {
         eventTypeToText(eventType: string) {
             return eventType;
+        }
+    };
+    const mockedWebhookService = {
+        GetSupportedEventTypes() {
+            return of(mockedMetadata).pipe(delay(0));
+        },
+        LastTrigger() {
+            return of([]).pipe(delay(0));
+        },
+        ListWebhookPoliciesOfProjectResponse() {
+            const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
+                headers: new HttpHeaders({'x-total-count': [mockedWehook].length.toString()}),
+                body: [mockedWehook]
+            });
+            return of(response).pipe(delay(0));
+        },
+        ListWebhookPoliciesOfProject: () => {
+            return of(null);
+        },
+        UpdateWebhookPolicyOfProject() {
+            return of(true);
+        },
+        CreateWebhookPolicyOfProject() {
+            return of(true);
         }
     };
     const mockMessageHandlerService = {
         handleError: () => { }
     };
-    const mockedWehook: Webhook = {
+    const mockedWehook: WebhookPolicy = {
         id: 1,
         project_id: 1,
         name: 'test',
@@ -44,7 +54,6 @@ describe('AddWebhookFormComponent', () => {
         targets: [{
             address: 'https://test.com',
             type: 'http',
-            attachment:  null,
            auth_header: null,
            skip_cert_verify: true,
         }],
@@ -77,24 +86,15 @@ describe('AddWebhookFormComponent', () => {
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
-                BrowserAnimationsModule,
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule,
-                RouterTestingModule,
-                NoopAnimationsModule,
-                HttpClientTestingModule
+                SharedTestingModule
             ],
             declarations: [AddWebhookFormComponent,
                 InlineAlertComponent,
             ],
             providers: [
-                TranslateService,
-                { provide: WebhookService, useValue: mockWebhookService },
+                { provide: ProjectWebhookService, useValue: mockProjectWebhookService },
+                { provide: WebhookService, useValue: mockedWebhookService },
                 { provide: MessageHandlerService, useValue: mockMessageHandlerService },
-                ErrorHandler
-
-
             ]
         })
             .compileComponents();

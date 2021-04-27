@@ -1,12 +1,7 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AddWebhookComponent } from './add-webhook.component';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { SharedTestingModule } from "../../../../shared/shared.module";
 describe('AddWebhookComponent', () => {
     let component: AddWebhookComponent;
     let fixture: ComponentFixture<AddWebhookComponent>;
@@ -18,18 +13,9 @@ describe('AddWebhookComponent', () => {
                 NO_ERRORS_SCHEMA
             ],
             imports: [
-                BrowserAnimationsModule,
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule,
-                RouterTestingModule,
-                NoopAnimationsModule,
-                HttpClientTestingModule
+                SharedTestingModule
             ],
             declarations: [AddWebhookComponent],
-            providers: [
-                TranslateService
-            ]
         })
             .compileComponents();
     }));

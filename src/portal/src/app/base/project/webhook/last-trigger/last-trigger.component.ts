@@ -2,8 +2,8 @@ import {
     Component, Input, OnChanges,
     OnInit, SimpleChanges
 } from "@angular/core";
-import { LastTrigger } from "../webhook";
-import { WebhookService } from "../webhook.service";
+import { ProjectWebhookService } from "../webhook.service";
+import { WebhookLastTrigger } from "../../../../../../ng-swagger-gen/models/webhook-last-trigger";
 
 
 @Component({
@@ -12,10 +12,10 @@ import { WebhookService } from "../webhook.service";
     styleUrls: ['./last-trigger.component.scss']
 })
 export class LastTriggerComponent implements  OnInit , OnChanges {
-    @Input()  inputLastTriggers: LastTrigger[];
+    @Input()  inputLastTriggers: WebhookLastTrigger[];
     @Input()  webhookName: string;
-    lastTriggers: LastTrigger[] = [];
-    constructor(private webhookService: WebhookService) {
+    lastTriggers: WebhookLastTrigger[] = [];
+    constructor(private webhookService: ProjectWebhookService) {
     }
     ngOnChanges(changes: SimpleChanges): void {
        if (changes && changes['inputLastTriggers']) {

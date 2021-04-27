@@ -5,14 +5,16 @@
       <!-- name -->
       <div class="clr-form-control">
         <label for="edit_endpoint_url" class="clr-control-label required">{{'WEBHOOK.NAME' | translate}}</label>
-        <div class="clr-control-container" [class.clr-error]="name.errors && name.errors.required && (name.dirty || name.touched)">
+        <div class="clr-control-container" [class.clr-error]="(name.errors && name.errors.required && (name.dirty || name.touched)) || isNameExisting">
           <div class="clr-input-wrapper">
-            <input autocomplete="off"  class="clr-input" type="text" id="name" [disabled]="checking" [(ngModel)]="webhook.name"
+            <input (input)="inputName()" autocomplete="off"  class="clr-input" type="text" id="name" [disabled]="checking" [(ngModel)]="webhook.name"
                    size="30" name="notify-type" #name="ngModel" required>
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+            <span class="spinner spinner-inline" [hidden]="!checkNameOnGoing"></span>
           </div>
-          <clr-control-error *ngIf="name.errors && name.errors.required && (name.dirty || name.touched)" class="tooltip-content">
-            {{'WEBHOOK.NAME_REQUIRED' | translate}}
+          <clr-control-error *ngIf="(name.errors && name.errors.required && (name.dirty || name.touched)) || isNameExisting" class="tooltip-content">
+            <span *ngIf="!(name.errors && name.errors.required && (name.dirty || name.touched)) && isNameExisting">{{'SCANNER.NAME_EXISTS' | translate}}</span>
+            <span *ngIf="name.errors && name.errors.required && (name.dirty || name.touched)">{{'WEBHOOK.NAME_REQUIRED' | translate}}</span>
           </clr-control-error>
         </div>
       </div>
@@ -92,10 +94,10 @@
   </form>
   <div class="mt-1 bottom-btn" *ngIf="!isModify">
       <button type="button" class="btn btn-outline" id="add-webhook-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-      <button type="button" id="new-webhook-continue" class="btn btn-primary" [disabled]="!isValid" (click)="add()">{{'BUTTON.ADD' | translate}}</button>
+      <button type="button" id="new-webhook-continue" class="btn btn-primary" [disabled]="!isValid || checkNameOnGoing || isNameExisting" (click)="add()">{{'BUTTON.ADD' | translate}}</button>
   </div>
   <div class="mt-1 bottom-btn" *ngIf="isModify">
       <button type="button" class="btn btn-outline" id="edit-webhook-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-      <button type="button" class="btn btn-primary" id="edit-webhook-save" [disabled]="!isValid || !hasChange()" (click)="save()">{{'BUTTON.SAVE' | translate}}</button>
+      <button type="button" class="btn btn-primary" id="edit-webhook-save" [disabled]="!isValid || !hasChange() || checkNameOnGoing || isNameExisting" (click)="save()">{{'BUTTON.SAVE' | translate}}</button>
   </div>
 </div>

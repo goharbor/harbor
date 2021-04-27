@@ -1,18 +1,21 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { WebhookComponent } from './webhook.component';
 import { ActivatedRoute } from '@angular/router';
-import { WebhookService } from './webhook.service';
+import { ProjectWebhookService } from './webhook.service';
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
 import { of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { delay } from "rxjs/operators";
-import { Webhook } from "./webhook";
 import { AddWebhookFormComponent } from "./add-webhook-form/add-webhook-form.component";
 import { AddWebhookComponent } from "./add-webhook/add-webhook.component";
 import { ConfirmationDialogComponent } from "../../../shared/components/confirmation-dialog";
 import { UserPermissionService } from '../../../shared/services';
 import { InlineAlertComponent } from "../../../shared/components/inline-alert/inline-alert.component";
 import { SharedTestingModule } from "../../../shared/shared.module";
+import { WebhookPolicy } from "../../../../../ng-swagger-gen/models/webhook-policy";
+import { WebhookService } from "../../../../../ng-swagger-gen/services/webhook.service";
+import { HttpHeaders, HttpResponse } from "@angular/common/http";
+import { Registry } from "../../../../../ng-swagger-gen/models/registry";
 
 describe('WebhookComponent', () => {
     let component: WebhookComponent;
@@ -37,7 +40,7 @@ describe('WebhookComponent', () => {
             "slack"
         ]
     };
-    const mockedWehook: Webhook = {
+    const mockedWehook: WebhookPolicy = {
         id: 1,
         project_id: 1,
         name: 'test',
@@ -45,7 +48,6 @@ describe('WebhookComponent', () => {
         targets: [{
             address: 'https://test.com',
             type: 'http',
-            attachment:  null,
             auth_header: null,
             skip_cert_verify: true,
         }],
@@ -57,22 +59,27 @@ describe('WebhookComponent', () => {
         update_time: null,
         enabled: true,
     };
-    const mockWebhookService = {
-        listLastTrigger: () => {
-            return of([]).pipe(delay(0));
-        },
-        listWebhook: () => {
-            return of([mockedWehook
-            ]).pipe(delay(0));
-        },
-        getWebhookMetadata() {
-            return of(mockedMetadata).pipe(delay(0));
-        },
-        editWebhook() {
-            return of(true);
-        },
+    const mockProjectWebhookService = {
         eventTypeToText(eventType: string) {
             return eventType;
+        }
+    };
+    const mockedWebhookService = {
+        GetSupportedEventTypes() {
+            return of(mockedMetadata).pipe(delay(0));
+        },
+        LastTrigger() {
+            return of([]).pipe(delay(0));
+        },
+        ListWebhookPoliciesOfProjectResponse() {
+            const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
+                headers: new HttpHeaders({'x-total-count': [mockedWehook].length.toString()}),
+                body: [mockedWehook]
+            });
+            return of(response).pipe(delay(0));
+        },
+        UpdateWebhookPolicyOfProject() {
+            return of(true);
         }
     };
     const mockActivatedRoute = {
@@ -113,7 +120,8 @@ describe('WebhookComponent', () => {
                 ConfirmationDialogComponent
             ],
             providers: [
-                { provide: WebhookService, useValue: mockWebhookService },
+                { provide: ProjectWebhookService, useValue: mockProjectWebhookService },
+                { provide: WebhookService, useValue: mockedWebhookService },
                 { provide: MessageHandlerService, useValue: mockMessageHandlerService },
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
                 { provide: UserPermissionService, useValue: mockUserPermissionService },
