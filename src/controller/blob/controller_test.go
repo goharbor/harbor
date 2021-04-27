@@ -112,6 +112,16 @@ func (suite *ControllerTestSuite) TestCalculateTotalSizeByProject() {
 	})
 }
 
+func (suite *ControllerTestSuite) TestCalculateTotalSize() {
+	ctx := suite.Context()
+	size1, err := Ctl.CalculateTotalSize(ctx, true)
+	Ctl.Ensure(ctx, suite.DigestString(), schema2.MediaTypeForeignLayer, 100)
+	Ctl.Ensure(ctx, suite.DigestString(), schema2.MediaTypeLayer, 100)
+	size2, err := Ctl.CalculateTotalSize(ctx, false)
+	suite.Nil(err)
+	suite.Equal(int64(200), size2-size1)
+}
+
 func (suite *ControllerTestSuite) TestEnsure() {
 	ctx := suite.Context()
 

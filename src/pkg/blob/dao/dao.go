@@ -62,6 +62,9 @@ type DAO interface {
 	// SumBlobsSizeByProject returns sum size of blobs by project, skip foreign blobs when `excludeForeignLayer` is true
 	SumBlobsSizeByProject(ctx context.Context, projectID int64, excludeForeignLayer bool) (int64, error)
 
+	// SumBlobsSize returns sum size of all blobs skip foreign blobs when `excludeForeignLayer` is true
+	SumBlobsSize(ctx context.Context, excludeForeignLayer bool) (int64, error)
+
 	// CreateProjectBlob create ProjectBlob and ignore conflict on project id and blob id
 	CreateProjectBlob(ctx context.Context, projectID, blobID int64) (int64, error)
 
@@ -280,6 +283,31 @@ func (d *dao) SumBlobsSizeByProject(ctx context.Context, projectID int64, exclud
 		}
 
 		sql = fmt.Sprintf(`%s AND content_type NOT IN (%s)`, sql, orm.ParamPlaceholderForIn(len(foreignLayerTypes)))
+		params = append(params, foreignLayerTypes...)
+	}
+
+	var totalSize int64
+	if err := o.Raw(sql, params...).QueryRow(&totalSize); err != nil {
+		return 0, err
+	}
+
+	return totalSize, nil
+}
+
+// SumBlobsSize returns sum size of all blobs skip foreign blobs when `excludeForeignLayer` is true
+func (d *dao) SumBlobsSize(ctx context.Context, excludeForeignLayer bool) (int64, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	params := []interface{}{}
+	sql := `SELECT SUM(size) FROM blob`
+	if excludeForeignLayer {
+		foreignLayerTypes := []interface{}{
+			schema2.MediaTypeForeignLayer,
+		}
+		sql = fmt.Sprintf(`%s Where content_type NOT IN (%s)`, sql, orm.ParamPlaceholderForIn(len(foreignLayerTypes)))
 		params = append(params, foreignLayerTypes...)
 	}
 

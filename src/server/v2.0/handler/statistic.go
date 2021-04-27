@@ -16,6 +16,7 @@ package handler
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/controller/blob"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/security/local"
@@ -30,6 +31,7 @@ func newStatisticAPI() *statisticAPI {
 	return &statisticAPI{
 		proCtl:  project.Ctl,
 		repoCtl: repository.Ctl,
+		blobCtl: blob.Ctl,
 	}
 }
 
@@ -37,6 +39,7 @@ type statisticAPI struct {
 	BaseAPI
 	proCtl  project.Controller
 	repoCtl repository.Controller
+	blobCtl blob.Controller
 }
 
 func (s *statisticAPI) GetStatistic(ctx context.Context, params operation.GetStatisticParams) middleware.Responder {
@@ -88,6 +91,13 @@ func (s *statisticAPI) GetStatistic(ctx context.Context, params operation.GetSta
 		}
 		statistic.TotalRepoCount = n
 		statistic.PrivateRepoCount = n - statistic.PublicRepoCount
+
+		sum, err := s.blobCtl.CalculateTotalSize(ctx, true)
+		if err != nil {
+			return s.SendError(ctx, err)
+		}
+		statistic.TotalStorageConsumption = sum
+
 	} else {
 		var privProjectIDs []interface{}
 		if sc, ok := securityCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {

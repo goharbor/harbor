@@ -63,6 +63,27 @@ func (_m *Controller) AssociateWithProjectByID(ctx context.Context, blobID int64
 	return r0
 }
 
+// CalculateTotalSize provides a mock function with given fields: ctx, excludeForeign
+func (_m *Controller) CalculateTotalSize(ctx context.Context, excludeForeign bool) (int64, error) {
+	ret := _m.Called(ctx, excludeForeign)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, bool) int64); ok {
+		r0 = rf(ctx, excludeForeign)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, bool) error); ok {
+		r1 = rf(ctx, excludeForeign)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CalculateTotalSizeByProject provides a mock function with given fields: ctx, projectID, excludeForeign
 func (_m *Controller) CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeign bool) (int64, error) {
 	ret := _m.Called(ctx, projectID, excludeForeign)
