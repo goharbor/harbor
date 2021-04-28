@@ -22,7 +22,7 @@ import { Project } from '../project';
 import { clone, DEFAULT_PAGE_SIZE, getSortingString } from '../../../shared/units/utils';
 import { forkJoin, Observable } from 'rxjs';
 import { UserPermissionService, USERSTATICPERMISSION } from '../../../shared/services';
-import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
+import { ClrDatagridStateInterface } from '@clr/angular';
 import { ConfirmationDialogComponent } from "../../../shared/components/confirmation-dialog";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../shared/entities/shared.const";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
@@ -53,7 +53,6 @@ export class WebhookComponent implements OnInit {
   loadingTriggers: boolean = false;
   hasCreatPermission: boolean = false;
   hasUpdatePermission: boolean = false;
-  addBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   page: number = 1;
   pageSize: number = DEFAULT_PAGE_SIZE;
   total: number = 0;
@@ -82,13 +81,10 @@ export class WebhookComponent implements OnInit {
       USERSTATICPERMISSION.WEBHOOK.KEY, USERSTATICPERMISSION.WEBHOOK.VALUE.CREATE));
     permissionsList.push(this.userPermissionService.getPermission(this.projectId,
       USERSTATICPERMISSION.WEBHOOK.KEY, USERSTATICPERMISSION.WEBHOOK.VALUE.UPDATE));
-    this.addBtnState = ClrLoadingState.LOADING;
     forkJoin(...permissionsList).subscribe(Rules => {
       [this.hasCreatPermission, this.hasUpdatePermission] = Rules;
-      this.addBtnState = ClrLoadingState.SUCCESS;
     }, error => {
       this.messageHandlerService.error(error);
-      this.addBtnState = ClrLoadingState.ERROR;
     });
   }
   refresh() {
