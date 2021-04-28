@@ -5,7 +5,7 @@ import { WebhookComponent } from "./webhook.component";
 import { LastTriggerComponent } from "./last-trigger/last-trigger.component";
 import { AddWebhookFormComponent } from "./add-webhook-form/add-webhook-form.component";
 import { AddWebhookComponent } from "./add-webhook/add-webhook.component";
-import { WebhookService } from "./webhook.service";
+import { ProjectWebhookService } from "./webhook.service";
 
 
 const routes: Routes = [
@@ -26,7 +26,7 @@ const routes: Routes = [
     SharedModule
   ],
   providers: [
-    WebhookService
+    ProjectWebhookService
   ]
 })
 export class WebhookModule { }

@@ -1,14 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { ClarityModule } from "@clr/angular";
 import { SharedTestingModule } from "../../../../shared/shared.module";
 import { LastTriggerComponent } from "./last-trigger.component";
-import { LastTrigger } from "../webhook";
 import { SimpleChange } from "@angular/core";
-import { WebhookService } from "../webhook.service";
+import { ProjectWebhookService } from "../webhook.service";
+import { WebhookLastTrigger } from "../../../../../../ng-swagger-gen/models/webhook-last-trigger";
 
 describe('LastTriggerComponent', () => {
-  const mokedTriggers: LastTrigger[] = [
+  const mokedTriggers: WebhookLastTrigger[] = [
     {
       policy_name: 'http',
       enabled: true,
@@ -35,13 +33,11 @@ describe('LastTriggerComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
-        BrowserAnimationsModule,
-        ClarityModule,
       ],
       declarations: [
         LastTriggerComponent
       ],
-      providers: [{ provide: WebhookService, useValue: mockWebhookService }]
+      providers: [{ provide: ProjectWebhookService, useValue: mockWebhookService }]
     });
   });
   beforeEach(() => {

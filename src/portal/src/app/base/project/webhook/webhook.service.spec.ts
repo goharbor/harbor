@@ -1,21 +1,17 @@
 import { TestBed, inject } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { WebhookService } from './webhook.service';
+import { ProjectWebhookService } from './webhook.service';
 
 describe('WebhookService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule
-      ],
-      providers: [WebhookService]
+      providers: [ProjectWebhookService]
     });
   });
 
-  it('should be created', inject([WebhookService], (service: WebhookService) => {
+  it('should be created', inject([ProjectWebhookService], (service: ProjectWebhookService) => {
     expect(service).toBeTruthy();
   }));
-  it('function eventTypeToText should work', inject([WebhookService], (service: WebhookService) => {
+  it('function eventTypeToText should work', inject([ProjectWebhookService], (service: ProjectWebhookService) => {
     expect(service).toBeTruthy();
     const eventType: string = 'REPLICATION';
     expect(service.eventTypeToText(eventType)).toEqual('Replication finished');

@@ -11,12 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { throwError as observableThrowError, Observable, of } from "rxjs";
-import { map, catchError, delay } from "rxjs/operators";
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { Webhook, LastTrigger } from "./webhook";
-import { CURRENT_BASE_HREF } from "../../../shared/units/utils";
 
 const EVENT_TYPES_TEXT_MAP = {
   'REPLICATION': 'Replication finished',
@@ -34,54 +29,8 @@ const EVENT_TYPES_TEXT_MAP = {
 };
 
 @Injectable()
-export class WebhookService {
-  constructor(private http: HttpClient) { }
-
-  public listWebhook(projectId: number): Observable<Webhook[]> {
-    return this.http
-      .get(`${ CURRENT_BASE_HREF }/projects/${projectId}/webhook/policies`)
-      .pipe(map(response => response as Webhook[]))
-      .pipe(catchError(error => observableThrowError(error)));
-  }
-
-  public listLastTrigger(projectId: number): Observable<LastTrigger[]> {
-    return this.http
-      .get(`${ CURRENT_BASE_HREF }/projects/${projectId}/webhook/lasttrigger`)
-      .pipe(map(response => response as LastTrigger[]))
-      .pipe(catchError(error => observableThrowError(error)));
-  }
-
-  public editWebhook(projectId: number, policyId: number, data: any): Observable<any> {
-    return this.http
-      .put(`${ CURRENT_BASE_HREF }/projects/${projectId}/webhook/policies/${policyId}`, data)
-      .pipe(catchError(error => observableThrowError(error)));
-  }
-
-  public deleteWebhook(projectId: number, policyId: number): Observable<any> {
-    return this.http
-      .delete(`${ CURRENT_BASE_HREF }/projects/${projectId}/webhook/policies/${policyId}`)
-      .pipe(catchError(error => observableThrowError(error)));
-  }
-
-  public createWebhook(projectId: number, data: any): Observable<any> {
-    return this.http
-      .post(`${ CURRENT_BASE_HREF }/projects/${projectId}/webhook/policies`, data)
-      .pipe(catchError(error => observableThrowError(error)));
-  }
-
-
-  public testEndpoint(projectId: number, param): Observable<any> {
-    return this.http
-      .post(`${ CURRENT_BASE_HREF }/projects/${projectId}/webhook/policies/test`, param)
-      .pipe(catchError(error => observableThrowError(error)));
-  }
-
-  public getWebhookMetadata(projectId: number): Observable<any> {
-    return this.http
-      .get(`${CURRENT_BASE_HREF}/projects/${projectId}/webhook/events`)
-      .pipe(catchError(error => observableThrowError(error)));
-  }
-
+export class ProjectWebhookService {
+  constructor() { }
   public eventTypeToText(eventType: string): string {
     if (EVENT_TYPES_TEXT_MAP[eventType]) {
       return EVENT_TYPES_TEXT_MAP[eventType];

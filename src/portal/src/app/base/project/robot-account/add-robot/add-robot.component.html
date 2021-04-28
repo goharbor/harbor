@@ -111,7 +111,7 @@
         <span>
             <button (click)="cancel()" id="system-robot-cancel" type="button" class="btn btn-outline">{{'BUTTON.CANCEL'
                 | translate}}</button>
-        <button [disabled]="disabled()|| checkNameOnGoing"  [clrLoading]="saveBtnState" (click)="save()" id="system-robot-save" type="button"
+        <button [disabled]="disabled()|| checkNameOnGoing || isNameExisting"  [clrLoading]="saveBtnState" (click)="save()" id="system-robot-save" type="button"
                 class="btn btn-primary">
             <span *ngIf="isEditMode">{{'BUTTON.SAVE'| translate}}</span>
             <span *ngIf="!isEditMode">{{'BUTTON.ADD'| translate}}</span>
