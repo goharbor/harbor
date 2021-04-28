@@ -115,6 +115,10 @@ func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *m
 		}
 
 	}
+	// skip to attach group when ldap_group_search_filter is empty
+	if len(groupCfg.Filter) == 0 {
+		return
+	}
 	userGroups := make([]ugModel.UserGroup, 0)
 	for _, dn := range ldapUsers[0].GroupDNList {
 		lGroups, err := sess.SearchGroupByDN(dn)
