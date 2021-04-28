@@ -4,7 +4,7 @@
         <clr-dg-action-bar>
             <div class="clr-row">
                 <div class="clr-col-7">
-                    <button [disabled]="loadingMetadata||!hasCreatPermission" [clrLoading]="loadingMetadata||addBtnState" id="new-webhook" type="button" class="btn  btn-secondary" (click)="newWebhook()">
+                    <button [disabled]="loadingMetadata||!hasCreatPermission" [clrLoading]="loadingMetadata" id="new-webhook" type="button" class="btn  btn-secondary" (click)="newWebhook()">
                         <clr-icon shape="plus" size="16"></clr-icon>
                         {{'WEBHOOK.NEW_WEBHOOK' | translate}}
                     </button>
