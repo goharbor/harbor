@@ -23,10 +23,6 @@ func init() {
 	if err := task.RegisterTaskStatusChangePostFunc(GCVendorType, gcTaskStatusChange); err != nil {
 		log.Fatalf("failed to register the task status change post for the gc job, error %v", err)
 	}
-
-	if err := task.RegisterTaskStatusChangePostFunc(job.ImageGCReadOnly, gcTaskStatusChange); err != nil {
-		log.Fatalf("failed to register the task status change post for the gc readonly job, error %v", err)
-	}
 }
 
 func gcCallback(ctx context.Context, p string) error {
