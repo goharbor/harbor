@@ -28,7 +28,5 @@ func init() {
 		new(ResourceLabel),
 		new(JobLog),
 		new(OIDCUser),
-		new(ProjectBlob),
-		new(ArtifactAndBlob),
 	)
 }

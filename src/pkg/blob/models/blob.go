@@ -21,7 +21,6 @@ import (
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/goharbor/harbor/src/common/models"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"strings"
 	"time"
@@ -29,12 +28,9 @@ import (
 
 func init() {
 	orm.RegisterModel(&Blob{})
+	orm.RegisterModel(&ArtifactAndBlob{})
+	orm.RegisterModel(&ProjectBlob{})
 }
-
-// TODO: move ArtifactAndBlob, ProjectBlob to here
-
-// ArtifactAndBlob alias ArtifactAndBlob model
-type ArtifactAndBlob = models.ArtifactAndBlob
 
 /*
 the status are used for Garbage Collection
@@ -69,6 +65,32 @@ var StatusMap = map[string][]string{
 	StatusDeleteFailed: {StatusDeleting},
 }
 
+// ArtifactAndBlob holds the relationship between manifest and blob.
+type ArtifactAndBlob struct {
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	DigestAF     string    `orm:"column(digest_af)" json:"digest_af"`
+	DigestBlob   string    `orm:"column(digest_blob)" json:"digest_blob"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+}
+
+// TableName ...
+func (afb *ArtifactAndBlob) TableName() string {
+	return "artifact_blob"
+}
+
+// ProjectBlob holds the relationship between manifest and blob.
+type ProjectBlob struct {
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
+	BlobID       int64     `orm:"column(blob_id)" json:"blob_id"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+}
+
+// TableName ...
+func (*ProjectBlob) TableName() string {
+	return "project_blob"
+}
+
 // Blob holds the details of a blob.
 type Blob struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
@@ -98,9 +120,6 @@ func (b *Blob) IsManifest() bool {
 		b.ContentType == v1.MediaTypeImageManifest || b.ContentType == v1.MediaTypeImageIndex ||
 		b.ContentType == manifestlist.MediaTypeManifestList
 }
-
-// ProjectBlob alias ProjectBlob model
-type ProjectBlob = models.ProjectBlob
 
 // FilterByArtifactDigest returns orm.QuerySeter with artifact digest filter
 func (b *Blob) FilterByArtifactDigest(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
