@@ -22,6 +22,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 )
 
@@ -78,6 +79,21 @@ func (suite *ManagerTestSuite) TestAssociateWithProject() {
 	associated, err := suite.isAssociatedWithProject(ctx, digest, projectID)
 	suite.Nil(err)
 	suite.True(associated)
+}
+
+func (suite *ManagerTestSuite) TestCalculateTotalSize() {
+	ctx := suite.Context()
+
+	size1, err := Mgr.CalculateTotalSize(ctx, true)
+	suite.Nil(err)
+
+	digest := suite.DigestString()
+	Mgr.Create(ctx, digest, schema2.MediaTypeLayer, 100)
+
+	size2, err := Mgr.CalculateTotalSize(ctx, true)
+	suite.Nil(err)
+
+	suite.Equal(int64(100), size2-size1)
 }
 
 func (suite *ManagerTestSuite) TestCleanupAssociationsForArtifact() {

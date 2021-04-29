@@ -8152,3 +8152,8 @@ definitions:
         format: int64
         description: The count of the total repositories, only be seen by the system admin
         x-omitempty: false
+      total_storage_consumption:
+        type: integer
+        format: int64
+        description: The total storage consumption of blobs, only be seen by the system admin
+        x-omitempty: false

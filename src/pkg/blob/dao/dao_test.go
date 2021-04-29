@@ -245,6 +245,21 @@ func (suite *DaoTestSuite) TestListBlobsAssociatedWithArtifact() {
 
 }
 
+func (suite *DaoTestSuite) TestSumBlobsSize() {
+	ctx := suite.Context()
+
+	size1, err := suite.dao.SumBlobsSize(ctx, true)
+	suite.Nil(err)
+
+	digest1 := suite.DigestString()
+	suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest1, Size: 999})
+
+	size2, err := suite.dao.SumBlobsSize(ctx, true)
+	suite.Nil(err)
+
+	suite.Equal(int64(999), size2-size1)
+}
+
 func (suite *DaoTestSuite) TestFindBlobsShouldUnassociatedWithProject() {
 	ctx := suite.Context()
 

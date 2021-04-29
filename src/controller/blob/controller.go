@@ -49,6 +49,9 @@ type Controller interface {
 	// CalculateTotalSizeByProject returns the sum of the blob size for the project
 	CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeign bool) (int64, error)
 
+	// CalculateTotalSize returns the sum of all the blobs size
+	CalculateTotalSize(ctx context.Context, excludeForeign bool) (int64, error)
+
 	// Ensure create blob when it not exist.
 	Ensure(ctx context.Context, digest string, contentType string, size int64) (int64, error)
 
@@ -142,6 +145,10 @@ func (c *controller) AssociateWithProjectByDigest(ctx context.Context, blobDiges
 
 func (c *controller) CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeign bool) (int64, error) {
 	return c.blobMgr.CalculateTotalSizeByProject(ctx, projectID, excludeForeign)
+}
+
+func (c *controller) CalculateTotalSize(ctx context.Context, excludeForeign bool) (int64, error) {
+	return c.blobMgr.CalculateTotalSize(ctx, excludeForeign)
 }
 
 func (c *controller) Ensure(ctx context.Context, digest string, contentType string, size int64) (blobID int64, err error) {
