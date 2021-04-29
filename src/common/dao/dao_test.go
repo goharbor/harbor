@@ -27,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	libOrm "github.com/goharbor/harbor/src/lib/orm"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var testCtx context.Context
@@ -101,15 +100,6 @@ const username string = "Tester01"
 const password string = "Abc12345"
 const projectName string = "test_project"
 const repositoryName string = "test_repository"
-const repoTag string = "test1.1"
-const repoTag2 string = "test1.2"
-const SysAdmin int = 1
-const projectAdmin int = 2
-const developer int = 3
-const guest int = 4
-
-const publicityOn = 1
-const publicityOff = 0
 
 func TestMain(m *testing.M) {
 	databases := []string{"postgresql"}
@@ -281,22 +271,6 @@ func TestGetUser(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestListUsers(t *testing.T) {
-	users, err := ListUsers(nil)
-	require.Nil(t, err)
-	assert.Greater(t, len(users), 0)
-	users2, err := ListUsers(&models.UserQuery{Username: username})
-	require.Nil(t, err)
-	assert.Equal(t, 1, len(users2))
-	assert.Equal(t, username, users2[0].Username)
-	users3, err := ListUsers(&models.UserQuery{Username: username, Pagination: &models.Pagination{Page: 2, Size: 1}})
-	require.Nil(t, err)
-	assert.Equal(t, 0, len(users3))
-	users4, err := ListUsers(&models.UserQuery{Username: "__"})
-	require.Nil(t, err)
-	assert.Equal(t, 0, len(users4))
-}
-
 func TestResetUserPassword(t *testing.T) {
 	uuid := utils.GenerateRandomString()
 
@@ -422,60 +396,6 @@ func TestGetProjects(t *testing.T) {
 	}
 	if projects[1].Name != projectName {
 		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
-	}
-}
-
-// isAdminRole returns whether the user is admin.
-func isAdminRole(userIDOrUsername interface{}) (bool, error) {
-	u := models.User{}
-
-	switch v := userIDOrUsername.(type) {
-	case int:
-		u.UserID = v
-	case string:
-		u.Username = v
-	default:
-		return false, fmt.Errorf("invalid parameter, only int and string are supported: %v", userIDOrUsername)
-	}
-
-	if u.UserID == NonExistUserID && len(u.Username) == 0 {
-		return false, nil
-	}
-
-	user, err := GetUser(u)
-	if err != nil {
-		return false, err
-	}
-
-	if user == nil {
-		return false, nil
-	}
-
-	return user.SysAdminFlag, nil
-}
-
-func TestToggleAdminRole(t *testing.T) {
-	err := ToggleUserAdminRole(currentUser.UserID, true)
-	if err != nil {
-		t.Errorf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
-	}
-	isAdmin, err := isAdminRole(currentUser.UserID)
-	if err != nil {
-		t.Errorf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserID)
-	}
-	if !isAdmin {
-		t.Errorf("User is not admin after toggled, user id: %d", currentUser.UserID)
-	}
-	err = ToggleUserAdminRole(currentUser.UserID, false)
-	if err != nil {
-		t.Errorf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
-	}
-	isAdmin, err = isAdminRole(currentUser.UserID)
-	if err != nil {
-		t.Errorf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserID)
-	}
-	if isAdmin {
-		t.Errorf("User is still admin after toggled, user id: %d", currentUser.UserID)
 	}
 }
 

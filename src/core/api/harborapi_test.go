@@ -47,6 +47,8 @@ import (
 )
 
 const (
+	TestUserName     = "testUser0001"
+	TestUserPwd      = "testUser0001"
 	jsonAcceptHeader = "application/json"
 	testAcceptHeader = "text/plain"
 	adminName        = "admin"

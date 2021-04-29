@@ -46,14 +46,6 @@ type User struct {
 	OIDCUserMeta    *OIDCUser `orm:"-" json:"oidc_user_meta,omitempty"`
 }
 
-// UserQuery ...
-type UserQuery struct {
-	UserIDs    []int
-	Username   string
-	Email      string
-	Pagination *Pagination
-}
-
 // TableName ...
 func (u *User) TableName() string {
 	return UserTable
