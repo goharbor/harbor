@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import swagger_client
 import v2_swagger_client
 from library.base import _assert_status_code
+from v2_swagger_client.models.role_request import RoleRequest
 from v2_swagger_client.rest import ApiException
 
 import base
@@ -171,7 +171,7 @@ class Project(base.Base):
 
     def update_project_member_role(self, project_id, member_id, member_role_id, expect_status_code = 200, **kwargs):
         kwargs['api_type'] = 'member'
-        role = swagger_client.Role(role_id = member_role_id)
+        role = RoleRequest(role_id = member_role_id)
         data, status_code, _ = self._get_client(**kwargs).update_project_member_with_http_info(project_id, member_id, role = role)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
