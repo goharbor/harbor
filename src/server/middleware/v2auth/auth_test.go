@@ -153,6 +153,10 @@ func TestMiddleware(t *testing.T) {
 	req1a, _ := http.NewRequest(http.MethodGet, "/v2/project_1/hello-world/manifest/v1", nil)
 	req1b, _ := http.NewRequest(http.MethodDelete, "/v2/project_1/hello-world/manifest/v1", nil)
 	req1c, _ := http.NewRequest(http.MethodHead, "/v2/project_1/hello-world/manifest/v1", nil)
+	req1d, _ := http.NewRequest(http.MethodGet, "/v2/project_1/hello-world/manifest/v1", nil)
+	req1d.Header.Set("Authorization", "Bearer xxx")
+	req1e, _ := http.NewRequest(http.MethodHead, "/v2/project_1/hello-world/manifest/v1", nil)
+	req1e.Header.Set("Authorization", "Bearer xxx")
 	req2, _ := http.NewRequest(http.MethodGet, "/v2/library/ubuntu/manifest/14.04", nil)
 	req3, _ := http.NewRequest(http.MethodGet, "/v2/_catalog", nil)
 	req4, _ := http.NewRequest(http.MethodPost, "/v2/project_1/ubuntu/blobs/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_2/ubuntu", nil)
@@ -165,7 +169,7 @@ func TestMiddleware(t *testing.T) {
 	}{
 		{
 			input:  req1a.WithContext(ctx1),
-			status: http.StatusOK,
+			status: http.StatusUnauthorized,
 		},
 		{
 			input:  req1b.WithContext(ctx1),
@@ -174,6 +178,14 @@ func TestMiddleware(t *testing.T) {
 		{
 			input:  req1c.WithContext(ctx1),
 			status: http.StatusUnauthorized,
+		},
+		{
+			input:  req1d.WithContext(ctx1),
+			status: http.StatusOK,
+		},
+		{
+			input:  req1e.WithContext(ctx1),
+			status: http.StatusOK,
 		},
 		{
 			input:  req2.WithContext(ctx2),

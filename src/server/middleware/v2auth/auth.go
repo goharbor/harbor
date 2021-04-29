@@ -60,7 +60,8 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 				return getChallenge(req, al), fmt.Errorf("unauthorized to list catalog")
 			}
 		}
-		if a.target == repository && req.Header.Get(authHeader) == "" && req.Method == http.MethodHead { // make sure 401 is returned for CLI HEAD, see #11271
+		if a.target == repository && req.Header.Get(authHeader) == "" &&
+			(req.Method == http.MethodHead || req.Method == http.MethodGet) { // make sure 401 is returned for CLI HEAD, see #11271
 			return getChallenge(req, al), fmt.Errorf("authorize header needed to send HEAD to repository")
 		} else if a.target == repository {
 			pn := strings.Split(a.name, "/")[0]
