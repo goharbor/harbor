@@ -2,21 +2,21 @@ import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { CreateProjectComponent } from './create-project.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { ProjectService } from '../../../../shared/services';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
 import { SharedTestingModule } from "../../../../shared/shared.module";
+import { ProjectService } from "../../../../../../ng-swagger-gen/services/project.service";
 
 describe('CreateProjectComponent', () => {
     let component: CreateProjectComponent;
     let fixture: ComponentFixture<CreateProjectComponent>;
     const mockProjectService = {
-        checkProjectExists: function(name: string) {
-            if (name === 'test') {
-                return  of({status: 200}).pipe(delay(10));
+        listProjects: function(params: ProjectService.ListProjectsParams) {
+            if (params && params.q === encodeURIComponent('name=test')) {
+                return  of([true]).pipe(delay(10));
             } else {
-                return  of({status: 404}).pipe(delay(10));
+                return  of([]).pipe(delay(10));
             }
         },
         createProject: function () {
