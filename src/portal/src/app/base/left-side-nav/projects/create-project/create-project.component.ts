@@ -29,11 +29,12 @@ import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { Project } from "../../../project/project";
 import { QuotaUnits, QuotaUnlimited } from "../../../../shared/entities/shared.const";
-import { ProjectService, QuotaHardInterface } from '../../../../shared/services';
+import { QuotaHardInterface } from '../../../../shared/services';
 import { clone, getByte, GetIntegerAndUnit, validateLimit } from "../../../../shared/units/utils";
 import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
 import { Registry } from "../../../../../../ng-swagger-gen/models/registry";
 import { RegistryService } from "../../../../../../ng-swagger-gen/services/registry.service";
+import { ProjectService } from "../../../../../../ng-swagger-gen/services/project.service";
 
 const PAGE_SIZE: number = 100;
 @Component({
@@ -141,11 +142,13 @@ export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges
                     // Check exiting from backend
                     this.checkOnGoing = true;
                     this.isNameExisted = false;
-                    return this.projectService.checkProjectExists(name);
+                    return this.projectService.listProjects({
+                      q: encodeURIComponent(`name=${name}`)
+                    });
                 })).subscribe(response => {
                 // Project existing
-                if (!(response && response.status === 404)) {
-                    this.isNameExisted = true;
+                if (response && response.length) {
+                  this.isNameExisted = true;
                 }
                 this.checkOnGoing = false;
             }, error => {
@@ -215,7 +218,16 @@ export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges
     this.isSubmitOnGoing = true;
     const storageByte = +this.storageLimit === QuotaUnlimited ? this.storageLimit : getByte(+this.storageLimit, this.storageLimitUnit);
     this.projectService
-      .createProject(this.project.name, this.project.metadata, +storageByte, this.project.registry_id)
+      .createProject({
+        project: {
+          project_name: this.project.name,
+          metadata: {
+            public: this.project.metadata.public ? 'true' : 'false'
+          },
+          storage_limit: +storageByte,
+          registry_id: +this.project.registry_id
+        }
+      })
       .subscribe(
       status => {
         this.isSubmitOnGoing = false;
