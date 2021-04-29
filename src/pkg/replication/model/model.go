@@ -26,20 +26,21 @@ func init() {
 
 // Policy is the model for replication policy
 type Policy struct {
-	ID                int64     `orm:"pk;auto;column(id)"`
-	Name              string    `orm:"column(name)"`
-	Description       string    `orm:"column(description)"`
-	Creator           string    `orm:"column(creator)"`
-	SrcRegistryID     int64     `orm:"column(src_registry_id)"`
-	DestRegistryID    int64     `orm:"column(dest_registry_id)"`
-	DestNamespace     string    `orm:"column(dest_namespace)"`
-	Override          bool      `orm:"column(override)"`
-	Enabled           bool      `orm:"column(enabled)"`
-	Trigger           string    `orm:"column(trigger)"`
-	Filters           string    `orm:"column(filters)"`
-	ReplicateDeletion bool      `orm:"column(replicate_deletion)"`
-	CreationTime      time.Time `orm:"column(creation_time);auto_now_add" sort:"default:desc"`
-	UpdateTime        time.Time `orm:"column(update_time);auto_now"`
+	ID                        int64     `orm:"pk;auto;column(id)"`
+	Name                      string    `orm:"column(name)"`
+	Description               string    `orm:"column(description)"`
+	Creator                   string    `orm:"column(creator)"`
+	SrcRegistryID             int64     `orm:"column(src_registry_id)"`
+	DestRegistryID            int64     `orm:"column(dest_registry_id)"`
+	DestNamespace             string    `orm:"column(dest_namespace)"`
+	DestNamespaceReplaceCount int8      `orm:"column(dest_namespace_replace_count)"`
+	Override                  bool      `orm:"column(override)"`
+	Enabled                   bool      `orm:"column(enabled)"`
+	Trigger                   string    `orm:"column(trigger)"`
+	Filters                   string    `orm:"column(filters)"`
+	ReplicateDeletion         bool      `orm:"column(replicate_deletion)"`
+	CreationTime              time.Time `orm:"column(creation_time);auto_now_add" sort:"default:desc"`
+	UpdateTime                time.Time `orm:"column(update_time);auto_now"`
 }
 
 // TableName set table name for ORM

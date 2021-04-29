@@ -29,20 +29,21 @@ import (
 
 // Policy defines the structure of a replication policy
 type Policy struct {
-	ID                int64           `json:"id"`
-	Name              string          `json:"name"`
-	Description       string          `json:"description"`
-	Creator           string          `json:"creator"`
-	SrcRegistry       *model.Registry `json:"src_registry"`
-	DestRegistry      *model.Registry `json:"dest_registry"`
-	DestNamespace     string          `json:"dest_namespace"`
-	Filters           []*model.Filter `json:"filters"`
-	Trigger           *model.Trigger  `json:"trigger"`
-	ReplicateDeletion bool            `json:"deletion"`
-	Override          bool            `json:"override"`
-	Enabled           bool            `json:"enabled"`
-	CreationTime      time.Time       `json:"creation_time"`
-	UpdateTime        time.Time       `json:"update_time"`
+	ID                        int64           `json:"id"`
+	Name                      string          `json:"name"`
+	Description               string          `json:"description"`
+	Creator                   string          `json:"creator"`
+	SrcRegistry               *model.Registry `json:"src_registry"`
+	DestRegistry              *model.Registry `json:"dest_registry"`
+	DestNamespace             string          `json:"dest_namespace"`
+	DestNamespaceReplaceCount int8            `json:"dest_namespace_replace_count"`
+	Filters                   []*model.Filter `json:"filters"`
+	Trigger                   *model.Trigger  `json:"trigger"`
+	ReplicateDeletion         bool            `json:"deletion"`
+	Override                  bool            `json:"override"`
+	Enabled                   bool            `json:"enabled"`
+	CreationTime              time.Time       `json:"creation_time"`
+	UpdateTime                time.Time       `json:"update_time"`
 }
 
 // IsScheduledTrigger returns true when the policy is scheduled trigger and enabled
@@ -142,6 +143,7 @@ func (p *Policy) From(policy *replicationmodel.Policy) error {
 	p.Description = policy.Description
 	p.Creator = policy.Creator
 	p.DestNamespace = policy.DestNamespace
+	p.DestNamespaceReplaceCount = policy.DestNamespaceReplaceCount
 	p.ReplicateDeletion = policy.ReplicateDeletion
 	p.Override = policy.Override
 	p.Enabled = policy.Enabled
@@ -179,16 +181,17 @@ func (p *Policy) From(policy *replicationmodel.Policy) error {
 // To converts to pkg model
 func (p *Policy) To() (*replicationmodel.Policy, error) {
 	policy := &replicationmodel.Policy{
-		ID:                p.ID,
-		Name:              p.Name,
-		Description:       p.Description,
-		Creator:           p.Creator,
-		DestNamespace:     p.DestNamespace,
-		Override:          p.Override,
-		Enabled:           p.Enabled,
-		ReplicateDeletion: p.ReplicateDeletion,
-		CreationTime:      p.CreationTime,
-		UpdateTime:        p.UpdateTime,
+		ID:                        p.ID,
+		Name:                      p.Name,
+		Description:               p.Description,
+		Creator:                   p.Creator,
+		DestNamespace:             p.DestNamespace,
+		DestNamespaceReplaceCount: p.DestNamespaceReplaceCount,
+		Override:                  p.Override,
+		Enabled:                   p.Enabled,
+		ReplicateDeletion:         p.ReplicateDeletion,
+		CreationTime:              p.CreationTime,
+		UpdateTime:                p.UpdateTime,
 	}
 	if p.SrcRegistry != nil {
 		policy.SrcRegistryID = p.SrcRegistry.ID

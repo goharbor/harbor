@@ -105,11 +105,13 @@ func (s *stageTestSuite) TestAssembleDestinationResources() {
 		},
 	}
 	policy := &repctlmodel.Policy{
-		DestRegistry:  &model.Registry{},
-		DestNamespace: "test",
-		Override:      true,
+		DestRegistry:              &model.Registry{},
+		DestNamespace:             "test",
+		DestNamespaceReplaceCount: -1,
+		Override:                  true,
 	}
-	res := assembleDestinationResources(resources, policy)
+	res, err := assembleDestinationResources(resources, policy)
+	s.Require().Nil(err)
 	s.Len(res, 1)
 	s.Equal(model.ResourceTypeChart, res[0].Type)
 	s.Equal("test/hello-world", res[0].Metadata.Repository.Name)
@@ -119,25 +121,78 @@ func (s *stageTestSuite) TestAssembleDestinationResources() {
 
 func (s *stageTestSuite) TestReplaceNamespace() {
 	// empty namespace
-	repository := "c"
-	namespace := ""
-	result := replaceNamespace(repository, namespace)
+	var (
+		repository   string = "c"
+		namespace    string = ""
+		replaceCount int8   = 0
+	)
+	result, err := replaceNamespace(repository, namespace, replaceCount)
+	s.Require().Nil(err)
 	s.Equal("c", result)
-	// repository contains no "/"
+
+	// replace count <0, repository contains no "/"
 	repository = "c"
 	namespace = "n"
-	result = replaceNamespace(repository, namespace)
+	replaceCount = -1
+	result, err = replaceNamespace(repository, namespace, replaceCount)
+	s.Require().Nil(err)
 	s.Equal("n/c", result)
-	// repository contains only one "/"
+
+	// replace count <0, repository contains only one "/"
 	repository = "b/c"
 	namespace = "n"
-	result = replaceNamespace(repository, namespace)
+	replaceCount = -1
+	result, err = replaceNamespace(repository, namespace, replaceCount)
+	s.Require().Nil(err)
 	s.Equal("n/c", result)
-	// repository contains more than one "/"
+
+	// replace count <0, repository contains more than one "/"
 	repository = "a/b/c"
 	namespace = "n"
-	result = replaceNamespace(repository, namespace)
+	replaceCount = -1
+	result, err = replaceNamespace(repository, namespace, replaceCount)
+	s.Require().Nil(err)
 	s.Equal("n/c", result)
+
+	// replace count > actual sub strings
+	repository = "a/b"
+	namespace = "n"
+	replaceCount = 3
+	result, err = replaceNamespace(repository, namespace, replaceCount)
+	s.Require().NotNil(err)
+
+	// replace count = 0
+	repository = "a/b/c"
+	namespace = "n"
+	replaceCount = 0
+	result, err = replaceNamespace(repository, namespace, replaceCount)
+	s.Require().Nil(err)
+	s.Equal("n/a/b/c", result)
+
+	// replace count = 1
+	repository = "a/b/c"
+	namespace = "n"
+	replaceCount = 1
+	result, err = replaceNamespace(repository, namespace, replaceCount)
+	s.Require().Nil(err)
+	s.Equal("n/b/c", result)
+
+	// replace count = 2
+	repository = "a/b/c"
+	namespace = "n"
+	replaceCount = 2
+	result, err = replaceNamespace(repository, namespace, replaceCount)
+	s.Require().Nil(err)
+	s.Equal("n/c", result)
+
+	// replace count = 3
+	repository = "a/b/c"
+	namespace = "n"
+	replaceCount = 3
+	result, err = replaceNamespace(repository, namespace, replaceCount)
+	s.Require().Nil(err)
+	s.Equal("n", result)
+
 }
 
 func TestStage(t *testing.T) {
