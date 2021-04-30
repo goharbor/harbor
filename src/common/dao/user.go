@@ -15,13 +15,9 @@
 package dao
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	libOrm "github.com/goharbor/harbor/src/lib/orm"
 	"time"
-
-	"github.com/astaxie/beego/orm"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -98,68 +94,6 @@ func LoginByDb(auth models.AuthModel) (*models.User, error) {
 	return &user, nil
 }
 
-// GetTotalOfUsers ...
-func GetTotalOfUsers(query *models.UserQuery) (int64, error) {
-	return userQueryConditions(query).Count()
-}
-
-// ListUsers lists all users according to different conditions.
-func ListUsers(query *models.UserQuery) ([]models.User, error) {
-	qs := userQueryConditions(query)
-	if query != nil && query.Pagination != nil {
-		offset := (query.Pagination.Page - 1) * query.Pagination.Size
-		qs = qs.Offset(offset).Limit(query.Pagination.Size)
-	}
-	users := []models.User{}
-	_, err := qs.OrderBy("username").All(&users)
-	return users, err
-}
-
-func userQueryConditions(query *models.UserQuery) orm.QuerySeter {
-	qs := GetOrmer().QueryTable(&models.User{}).Filter("deleted", 0)
-
-	if query == nil {
-		// Exclude admin account, see https://github.com/goharbor/harbor/issues/2527
-		return qs.Filter("user_id__gt", 1)
-	}
-
-	if len(query.UserIDs) > 0 {
-		qs = qs.Filter("user_id__in", query.UserIDs)
-	} else {
-		// Exclude admin account when not filter by UserIDs, see https://github.com/goharbor/harbor/issues/2527
-		qs = qs.Filter("user_id__gt", 1)
-	}
-
-	if len(query.Username) > 0 {
-		qs = qs.Filter("username__contains", libOrm.Escape(query.Username))
-	}
-
-	if len(query.Email) > 0 {
-		qs = qs.Filter("email__contains", libOrm.Escape(query.Email))
-	}
-
-	return qs
-}
-
-// ToggleUserAdminRole gives a user admin role.
-func ToggleUserAdminRole(userID int, hasAdmin bool) error {
-	o := GetOrmer()
-	queryParams := make([]interface{}, 1)
-	sql := `update harbor_user set sysadmin_flag = ? where user_id = ?`
-	queryParams = append(queryParams, hasAdmin)
-	queryParams = append(queryParams, userID)
-	r, err := o.Raw(sql, queryParams).Exec()
-	if err != nil {
-		return err
-	}
-
-	if _, err := r.RowsAffected(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // ChangeUserPassword ...
 func ChangeUserPassword(u models.User) error {
 	u.UpdateTime = time.Now()
@@ -201,26 +135,6 @@ func ResetUserPassword(u models.User, rawPassword string) error {
 func UpdateUserResetUUID(u models.User) error {
 	o := GetOrmer()
 	_, err := o.Raw(`update harbor_user set reset_uuid=? where email=?`, u.ResetUUID, u.Email).Exec()
-	return err
-}
-
-// DeleteUser ...
-func DeleteUser(userID int) error {
-	o := GetOrmer()
-
-	user, err := GetUser(models.User{
-		UserID: userID,
-	})
-	if err != nil {
-		return err
-	}
-
-	name := fmt.Sprintf("%s#%d", user.Username, user.UserID)
-	email := fmt.Sprintf("%s#%d", user.Email, user.UserID)
-
-	_, err = o.Raw(`update harbor_user
-		set deleted = true, username = ?, email = ?
-		where user_id = ?`, name, email, userID).Exec()
 	return err
 }
 
@@ -293,20 +207,4 @@ func CleanUser(id int64) error {
 // MatchPassword returns true is password matched
 func matchPassword(u *models.User, password string) bool {
 	return utils.Encrypt(password, u.Salt, u.PasswordVersion) == u.Password
-}
-
-// AuthModeCanBeModified determines whether auth mode can be
-// modified or not. Auth mode can modified when there is only admin
-// user in database.
-func AuthModeCanBeModified(ctx context.Context) (bool, error) {
-	o, err := libOrm.FromContext(ctx)
-	if err != nil {
-		return false, err
-	}
-	c, err := o.QueryTable(&models.User{}).Count()
-	if err != nil {
-		return false, err
-	}
-	// admin and anonymous
-	return c == 2, nil
 }

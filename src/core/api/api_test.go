@@ -16,7 +16,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -28,6 +27,8 @@ import (
 
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/user"
 
 	"github.com/dghubble/sling"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -338,16 +339,17 @@ func prepare() error {
 }
 
 func clean() {
+	ctx := orm.Context()
 	pmids := []int{projAdminPMID, projDeveloperPMID, projGuestPMID}
 
 	for _, id := range pmids {
-		if err := member.Mgr.Delete(orm.Context(), 1, id); err != nil {
+		if err := member.Mgr.Delete(ctx, 1, id); err != nil {
 			fmt.Printf("failed to clean up member %d from project library: %v", id, err)
 		}
 	}
 	userids := []int64{nonSysAdminID, projAdminID, projDeveloperID, projGuestID}
 	for _, id := range userids {
-		if err := dao.DeleteUser(int(id)); err != nil {
+		if err := user.Mgr.Delete(ctx, int(id)); err != nil {
 			fmt.Printf("failed to clean up user %d: %v \n", id, err)
 		}
 	}
