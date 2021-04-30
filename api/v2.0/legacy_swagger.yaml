@@ -167,44 +167,6 @@ paths:
           $ref: '#/definitions/NotFoundChartAPIError'
         '500':
           $ref: '#/definitions/InternalChartAPIError'
-  '/system/CVEAllowlist':
-    get:
-      summary: Get the system level allowlist of CVE.
-      description: Get the system level allowlist of CVE.  This API can be called by all authenticated users.
-      tags:
-        - Products
-        - System
-      responses:
-        '200':
-          description: Successfully retrieved the CVE allowlist.
-          schema:
-            $ref: "#/definitions/CVEAllowlist"
-        '401':
-          description: User is not authenticated.
-        '500':
-          description: Unexpected internal errors.
-    put:
-      summary: Update the system level allowlist of CVE.
-      description: This API overwrites the system level allowlist of CVE with the list in request body.  Only system Admin
-        has permission to call this API.
-      tags:
-        - Products
-        - System
-      parameters:
-        - in: body
-          name: allowlist
-          description: The allowlist with new content
-          schema:
-            $ref: "#/definitions/CVEAllowlist"
-      responses:
-        '200':
-          description: Successfully updated the CVE allowlist.
-        '401':
-          description: User is not authenticated.
-        '403':
-          description: User does not have permission to call this API.
-        '500':
-          description: Unexpected internal errors.
 responses:
   OK:
     description: 'Success'
@@ -841,37 +803,6 @@ definitions:
       metadata:
         type: object
         description: The metadata of namespace
-  CVEAllowlist:
-    type: object
-    description: The CVE Allowlist for system or project
-    properties:
-      id:
-        type: integer
-        description: ID of the allowlist
-      project_id:
-        type: integer
-        description: ID of the project which the allowlist belongs to.  For system level allowlist this attribute is zero.
-      expires_at:
-        type: integer
-        description: the time for expiration of the allowlist, in the form of seconds since epoch.  This is an optional attribute, if it's not set the CVE allowlist does not expire.
-      items:
-        type: array
-        items:
-          $ref: "#/definitions/CVEAllowlistItem"
-  CVEAllowlistItem:
-    type: object
-    description: The item in CVE allowlist
-    properties:
-      cve_id:
-        type: string
-        description: The ID of the CVE, such as "CVE-2019-10164"
-
-  QuotaSwitcher:
-    type: object
-    properties:
-      enabled:
-        type: boolean
-        description: The quota is enable or disable
 
 parameters:
   query:
