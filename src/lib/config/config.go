@@ -97,6 +97,7 @@ func Init() {
 	log.Info("init secret store")
 	// init secret store
 	initSecretStore()
+	DefaultCfgManager = common.DBCfgManager
 }
 
 // InitWithSettings init config with predefined configs, and optionally overwrite the keyprovider

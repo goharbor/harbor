@@ -23,12 +23,17 @@ import (
 	"github.com/goharbor/harbor/src/lib/config/metadata"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/config/store"
+	"github.com/goharbor/harbor/src/pkg/config/validate"
 	"os"
 )
 
 // CfgManager ... Configure Manager
 type CfgManager struct {
 	Store *store.ConfigStore
+}
+
+var validateRules = []validate.Rule{
+	&validate.LdapGroupValidateRule{},
 }
 
 // LoadDefault ...
@@ -176,6 +181,12 @@ func (c *CfgManager) ValidateCfg(ctx context.Context, cfgs map[string]interface{
 		_, err := metadata.NewCfgValue(key, strVal)
 		if err != nil {
 			return fmt.Errorf("%v, item name: %v", err, key)
+		}
+	}
+
+	for _, r := range validateRules {
+		if err := r.Validate(ctx, c, cfgs); err != nil {
+			return err
 		}
 	}
 	return nil
