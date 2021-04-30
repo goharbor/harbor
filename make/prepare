@@ -55,7 +55,7 @@ docker run --rm -v $input_dir:/input \
                     -v $data_path:/data \
                     -v $harbor_prepare_path:/compose_location \
                     -v $config_dir:/config \
-                    -v /:/hostfs \
+                    -v $HOME:/hostfs \
                     --privileged \
                     goharbor/prepare:dev prepare $@
 

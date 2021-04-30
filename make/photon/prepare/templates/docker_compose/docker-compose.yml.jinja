@@ -1,29 +1,5 @@
 version: '2.3'
-services:
-  log:
-    image: goharbor/harbor-log:{{version}}
-    container_name: harbor-log
-    restart: always
-    dns_search: .
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - DAC_OVERRIDE
-      - SETGID
-      - SETUID
-    volumes:
-      - {{log_location}}/:/var/log/docker/:z
-      - type: bind
-        source: ./common/config/log/logrotate.conf
-        target: /etc/logrotate.d/logrotate.conf
-      - type: bind
-        source: ./common/config/log/rsyslog_docker.conf
-        target: /etc/rsyslog.d/rsyslog_docker.conf
-    ports:
-      - 127.0.0.1:1514:10514
-    networks:
-      - harbor
+services:  
   registry:
     image: goharbor/registry-photon:{{reg_version}}
     container_name: registry
@@ -63,12 +39,8 @@ services:
       - harbor
     dns_search: .
     depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "registry"
+
+
   registryctl:
     image: goharbor/harbor-registryctl:{{version}}
     container_name: registryctl
@@ -106,13 +78,6 @@ services:
     networks:
       - harbor
     dns_search: .
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "registryctl"
 {% if external_database == False %}
   postgresql:
     image: goharbor/harbor-db:{{version}}
@@ -137,13 +102,7 @@ services:
     dns_search: .
     env_file:
       - ./common/config/db/env
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "postgresql"
+
 {% endif %}
   core:
     image: goharbor/harbor-core:{{version}}
@@ -197,7 +156,7 @@ services:
 {% endif %}
     dns_search: .
     depends_on:
-      - log
+
       - registry
 {% if external_redis == False %}
       - redis
@@ -205,11 +164,6 @@ services:
 {% if external_database == False %}
       - postgresql
 {% endif %}
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "core"
   portal:
     image: goharbor/harbor-portal:{{version}}
     container_name: harbor-portal
@@ -236,14 +190,6 @@ services:
     networks:
       - harbor
     dns_search: .
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "portal"
-
   jobservice:
     image: goharbor/harbor-jobservice:{{version}}
     container_name: harbor-jobservice
@@ -277,11 +223,6 @@ services:
     dns_search: .
     depends_on:
       - core
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "jobservice"
 {% if external_redis == False %}
   redis:
     image: goharbor/redis-photon:{{redis_version}}
@@ -303,13 +244,6 @@ services:
           - redis
   {% endif %}
     dns_search: .
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "redis"
 {% endif %}
   proxy:
     image: goharbor/nginx-photon:{{version}}
@@ -359,12 +293,7 @@ services:
       - registry
       - core
       - portal
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "proxy"
+
 {% if with_notary %}
   notary-server:
     image: goharbor/notary-server-photon:{{notary_version}}
@@ -400,11 +329,6 @@ services:
       - postgresql
   {% endif %}
       - notary-signer
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "notary-server"
   notary-signer:
     image: goharbor/notary-signer-photon:{{notary_version}}
     container_name: notary-signer
@@ -437,15 +361,10 @@ services:
     env_file:
       - ./common/config/notary/signer_env
     depends_on:
-      - log
+
   {% if external_database == False %}
       - postgresql
   {% endif %}
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "notary-signer"
 {% endif %}
 {% if with_trivy %}
   trivy-adapter:
@@ -456,7 +375,7 @@ services:
       - ALL
     dns_search: .
     depends_on:
-      - log
+
 {% if external_redis == False %}
       - redis
 {% endif %}
@@ -480,11 +399,6 @@ services:
         source: {{internal_tls.trivy_adapter_key_path}}
         target: /etc/harbor/ssl/trivy_adapter.key
 {% endif %}
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "trivy-adapter"
     env_file:
       ./common/config/trivy-adapter/env
 {% endif %}
@@ -504,7 +418,7 @@ services:
       - harbor-chartmuseum
     dns_search: .
     depends_on:
-      - log
+
     volumes:
       - {{data_volume}}/chart_storage:/chart_storage:z
       - ./common/config/chartserver:/etc/chartserver:z
@@ -524,11 +438,6 @@ services:
         source: {{gcs_keyfile}}
         target: /etc/chartserver/gcs.key
 {% endif %}
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "chartmuseum"
     env_file:
       ./common/config/chartserver/env
 {% endif %}
@@ -551,11 +460,6 @@ services:
       - type: bind
         source: ./common/config/shared/trust-certificates
         target: /harbor_cust_cert
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "exporter"
 {% endif %}
 networks:
   harbor:

@@ -1,0 +1,23 @@
+GET {{base_url}}/projects/r1
+Authorization: Basic admin {{admin_password}}
+Accept: application/json
+
+### get project as robot_r1
+GET {{base_url}}/projects/r1
+Authorization: Basic robot_r1 {{r1_password}}
+Accept: application/json
+
+
+### Start replication
+POST {{base_url}}/replication/executions
+Authorization: Basic admin {{admin_password}}
+Accept: application/json
+
+{
+  "policy_id": 1
+}
+
+### Get Status of replication
+GET {{base_url}}/replication/executions/
+Authorization: Basic admin {{admin_password}}
+Accept: application/json
