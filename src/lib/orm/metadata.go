@@ -38,8 +38,8 @@ type key struct {
 }
 
 type metadata struct {
-	Keys        map[string]*key
-	DefaultSort *q.Sort
+	Keys         map[string]*key
+	DefaultSorts []*q.Sort
 }
 
 func (m *metadata) Filterable(key string) (*key, bool) {
@@ -98,11 +98,11 @@ func parseModel(model interface{}) *metadata {
 			Sortable:   sortable,
 		}
 		if defaultSort != nil {
-			metadata.DefaultSort = defaultSort
+			metadata.DefaultSorts = []*q.Sort{defaultSort}
 		}
 	}
 
-	// parse methods of the provided model
+	// parse filter methods of the provided model
 	for i := 0; i < ptr.NumMethod(); i++ {
 		methodName := ptr.Method(i).Name
 		if !strings.HasPrefix(methodName, "FilterBy") {
@@ -129,6 +129,18 @@ func parseModel(model interface{}) *metadata {
 			FilterFunc: filterFunc,
 		}
 	}
+
+	// parse default sorts method
+	methodValue := v.MethodByName("GetDefaultSorts")
+	if methodValue.IsValid() {
+		values := methodValue.Call(nil)
+		if len(values) == 1 {
+			if sorts, ok := values[0].Interface().([]*q.Sort); ok && len(sorts) > 0 {
+				metadata.DefaultSorts = sorts
+			}
+		}
+	}
+
 	cache.Store(fullName, metadata)
 	return metadata
 }

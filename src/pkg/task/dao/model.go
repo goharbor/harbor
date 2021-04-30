@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 )
 
 func init() {
@@ -67,9 +68,24 @@ type Task struct {
 	RunCount       int32     `orm:"column(run_count)"`
 	ExtraAttrs     string    `orm:"column(extra_attrs)"` // json string
 	CreationTime   time.Time `orm:"column(creation_time)"`
-	StartTime      time.Time `orm:"column(start_time)" sort:"default:desc"`
+	StartTime      time.Time `orm:"column(start_time)"`
 	UpdateTime     time.Time `orm:"column(update_time)"`
 	EndTime        time.Time `orm:"column(end_time)"`
+}
+
+// GetDefaultSorts specifies the default sorts
+func (t *Task) GetDefaultSorts() []*q.Sort {
+	// sort by ID to fix https://github.com/goharbor/harbor/issues/14433
+	return []*q.Sort{
+		{
+			Key:  "StartTime",
+			DESC: true,
+		},
+		{
+			Key:  "ID",
+			DESC: true,
+		},
+	}
 }
 
 // StatusCount model
