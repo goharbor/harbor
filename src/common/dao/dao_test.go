@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	libOrm "github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/user"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -109,7 +110,6 @@ func TestMain(m *testing.M) {
 		switch database {
 		case "postgresql":
 			PrepareTestForPostgresSQL()
-			PrepareTestData([]string{"delete from admin_job"}, []string{})
 		default:
 			log.Fatalf("invalid database: %s", database)
 		}
@@ -124,6 +124,19 @@ func TestMain(m *testing.M) {
 
 func testForAll(m *testing.M) int {
 	cleanByUser(username)
+	// TODO: remove the code for populating data after the record is not needed.
+	ctx := libOrm.Context()
+	_, err := user.Mgr.Create(ctx, &models.User{
+		Username: username,
+		Email:    "tester01@vmware.com",
+		Password: password,
+		Realname: "tester01",
+		Comment:  "register",
+	})
+	if err != nil {
+		log.Errorf("Error occurred when creating user: %v", err)
+		return 1
+	}
 
 	rc := m.Run()
 	clearAll()
@@ -133,8 +146,7 @@ func testForAll(m *testing.M) int {
 func clearAll() {
 	tables := []string{"project_member",
 		"project_metadata", "repository", "replication_policy",
-		"registry", "replication_execution", "replication_task",
-		"replication_schedule_job", "project", "harbor_user"}
+		"registry", "project", "harbor_user"}
 	for _, t := range tables {
 		if err := ClearTable(t); err != nil {
 			log.Errorf("Failed to clear table: %s,error: %v", t, err)
@@ -142,82 +154,16 @@ func clearAll() {
 	}
 }
 
-func TestRegister(t *testing.T) {
-
-	user := models.User{
-		Username: username,
-		Email:    "tester01@vmware.com",
-		Password: password,
-		Realname: "tester01",
-		Comment:  "register",
-	}
-
-	_, err := Register(user)
-	if err != nil {
-		t.Errorf("Error occurred in Register: %v", err)
-	}
-
-	// Check if user registered successfully.
-	queryUser := models.User{
-		Username: username,
-	}
-	newUser, err := GetUser(queryUser)
-	if err != nil {
-		t.Errorf("Error occurred in GetUser: %v", err)
-	}
-
-	if newUser.Username != username {
-		t.Errorf("Username does not match, expected: %s, actual: %s", username, newUser.Username)
-	}
-	if newUser.Email != "tester01@vmware.com" {
-		t.Errorf("Email does not match, expected: %s, actual: %s", "tester01@vmware.com", newUser.Email)
-	}
-}
-
-func TestUserExists(t *testing.T) {
-	var exists bool
-	var err error
-
-	exists, err = UserExists(models.User{Username: username}, "username")
-	if err != nil {
-		t.Errorf("Error occurred in UserExists: %v", err)
-	}
-	if !exists {
-		t.Errorf("User %s was inserted but does not exist", username)
-	}
-	exists, err = UserExists(models.User{Email: "tester01@vmware.com"}, "email")
-
-	if err != nil {
-		t.Errorf("Error occurred in UserExists: %v", err)
-	}
-	if !exists {
-		t.Errorf("User with email %s inserted but does not exist", "tester01@vmware.com")
-	}
-	exists, err = UserExists(models.User{Username: "NOTHERE"}, "username")
-	if err != nil {
-		t.Errorf("Error occurred in UserExists: %v", err)
-	}
-	if exists {
-		t.Errorf("User %s was not inserted but does exist", "NOTHERE")
-	}
-}
-
 func TestLoginByUserName(t *testing.T) {
-
-	userQuery := models.User{
-		Username: username,
-		Password: "Abc12345",
-	}
-
 	loginUser, err := LoginByDb(models.AuthModel{
-		Principal: userQuery.Username,
-		Password:  userQuery.Password,
+		Principal: username,
+		Password:  password,
 	})
 	if err != nil {
 		t.Errorf("Error occurred in LoginByDb: %v", err)
 	}
 	if loginUser == nil {
-		t.Errorf("No found for user logined by username and password: %v", userQuery)
+		t.Errorf("No found for user logined by username and password: %s, %s", username, password)
 	}
 
 	if loginUser.Username != username {

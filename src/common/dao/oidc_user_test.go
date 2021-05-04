@@ -127,9 +127,6 @@ func TestOIDCOnboard(t *testing.T) {
 	err = OnBoardOIDCUser(&userDup)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), ErrDupUser.Error())
-	exist, err := UserExists(userDup, "email")
-	require.Nil(t, err)
-	require.False(t, exist)
 
 	// duplicate OIDC user -- ErrDupRows
 	// ouDup is duplicate with ou333
@@ -137,17 +134,11 @@ func TestOIDCOnboard(t *testing.T) {
 	err = OnBoardOIDCUser(&user555)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), ErrDupOIDCUser.Error())
-	exist, err = UserExists(user555, "username")
-	require.Nil(t, err)
-	require.False(t, exist)
 
 	// success
 	user555.OIDCUserMeta = ou555
 	err = OnBoardOIDCUser(&user555)
 	require.Nil(t, err)
-	exist, err = UserExists(user555, "username")
-	require.Nil(t, err)
-	require.True(t, exist)
 	defer CleanUser(int64(user555.UserID))
 
 	// duplicate OIDC user's sub -- ErrDupRows
@@ -156,9 +147,6 @@ func TestOIDCOnboard(t *testing.T) {
 	err = OnBoardOIDCUser(&user666)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), ErrDupOIDCUser.Error())
-	exist, err = UserExists(user666, "username")
-	require.Nil(t, err)
-	require.False(t, exist)
 
 	// clear data
 	defer func() {

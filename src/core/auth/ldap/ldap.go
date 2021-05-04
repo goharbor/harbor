@@ -22,7 +22,9 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
+	"github.com/goharbor/harbor/src/pkg/user"
 	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
 
 	goldap "github.com/go-ldap/ldap/v3"
@@ -255,12 +257,14 @@ func (l *Auth) OnBoardGroup(u *ugModel.UserGroup, altGroupName string) error {
 // PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser
 func (l *Auth) PostAuthenticate(u *models.User) error {
 
-	exist, err := dao.UserExists(*u, "username")
+	ctx := orm.Context()
+	query := q.New(q.KeyWords{"Username": u.Username})
+	n, err := user.Mgr.Count(ctx, query)
 	if err != nil {
 		return err
 	}
 
-	if exist {
+	if n > 0 {
 		queryCondition := models.User{
 			Username: u.Username,
 		}
