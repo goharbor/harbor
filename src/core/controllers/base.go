@@ -17,8 +17,6 @@ package controllers
 import (
 	"bytes"
 	"context"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"html/template"
 	"net"
 	"net/http"
@@ -28,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego"
+	o "github.com/astaxie/beego/orm"
 	"github.com/beego/i18n"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -38,7 +37,11 @@ import (
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/user"
 )
 
 // CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
@@ -124,11 +127,12 @@ func (cc *CommonController) LogOut() {
 
 // UserExists checks if user exists when user input value in sign in form.
 func (cc *CommonController) UserExists() {
-	flag, err := config.SelfRegistration(orm.Context())
+	ctx := orm.NewContext(cc.Ctx.Request.Context(), o.NewOrm())
+	flag, err := config.SelfRegistration(ctx)
 	if err != nil {
 		log.Errorf("Failed to get the status of self registration flag, error: %v, disabling user existence check", err)
 	}
-	securityCtx, ok := security.FromContext(cc.Ctx.Request.Context())
+	securityCtx, ok := security.FromContext(ctx)
 	isAdmin := ok && securityCtx.IsSysAdmin()
 	if !flag && !isAdmin {
 		cc.CustomAbort(http.StatusPreconditionFailed, "self registration disabled, only sysadmin can check user existence")
@@ -137,20 +141,20 @@ func (cc *CommonController) UserExists() {
 	target := cc.GetString("target")
 	value := cc.GetString("value")
 
-	user := models.User{}
+	var query *q.Query
 	switch target {
 	case "username":
-		user.Username = value
+		query = q.New(q.KeyWords{"Username": value})
 	case "email":
-		user.Email = value
+		query = q.New(q.KeyWords{"Email": value})
 	}
 
-	exist, err := dao.UserExists(user, target)
+	n, err := user.Mgr.Count(ctx, query)
 	if err != nil {
 		log.Errorf("Error occurred in UserExists: %v", err)
 		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
-	cc.Data["json"] = exist
+	cc.Data["json"] = n > 0
 	cc.ServeJSON()
 }
 

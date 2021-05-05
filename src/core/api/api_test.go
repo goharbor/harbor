@@ -69,14 +69,6 @@ var (
 		Name:   "proj_guest",
 		Passwd: "Harbor12345",
 	}
-	projLimitedGuest = &usrInfo{
-		Name:   "proj_limited_guest",
-		Passwd: "Harbor12345",
-	}
-	projAdmin4Robot = &usrInfo{
-		Name:   "proj_admin_robot",
-		Passwd: "Harbor12345",
-	}
 )
 
 type testingRequest struct {
@@ -232,9 +224,10 @@ func TestMain(m *testing.M) {
 }
 
 func prepare() error {
+	ctx := orm.Context()
 	// register nonSysAdmin
 	var err error
-	nonSysAdminID, err = dao.Register(models.User{
+	nsID, err := user.Mgr.Create(ctx, &models.User{
 		Username: nonSysAdmin.Name,
 		Password: nonSysAdmin.Passwd,
 		Email:    nonSysAdmin.Name + "@test.com",
@@ -242,9 +235,11 @@ func prepare() error {
 	if err != nil {
 		return err
 	}
+	nonSysAdminID = int64(nsID)
 
 	// register projAdmin and assign project admin role
-	projAdminID, err = dao.Register(models.User{
+
+	paID, err := user.Mgr.Create(ctx, &models.User{
 		Username: projAdmin.Name,
 		Password: projAdmin.Passwd,
 		Email:    projAdmin.Name + "@test.com",
@@ -252,7 +247,7 @@ func prepare() error {
 	if err != nil {
 		return err
 	}
-	ctx := orm.Context()
+	projAdminID = int64(paID)
 	if projAdminPMID, err = member.Mgr.AddProjectMember(ctx, memberModels.Member{
 		ProjectID:  1,
 		Role:       common.RoleProjectAdmin,
@@ -262,26 +257,8 @@ func prepare() error {
 		return err
 	}
 
-	// register projAdminRobots and assign project admin role
-	projAdminRobotID, err = dao.Register(models.User{
-		Username: projAdmin4Robot.Name,
-		Password: projAdmin4Robot.Passwd,
-		Email:    projAdmin4Robot.Name + "@test.com",
-	})
-	if err != nil {
-		return err
-	}
-	if projAdminRobotPMID, err = member.Mgr.AddProjectMember(ctx, memberModels.Member{
-		ProjectID:  1,
-		Role:       common.RoleProjectAdmin,
-		EntityID:   int(projAdminRobotID),
-		EntityType: common.UserMember,
-	}); err != nil {
-		return err
-	}
-
 	// register projDeveloper and assign project developer role
-	projDeveloperID, err = dao.Register(models.User{
+	pdID, err := user.Mgr.Create(ctx, &models.User{
 		Username: projDeveloper.Name,
 		Password: projDeveloper.Passwd,
 		Email:    projDeveloper.Name + "@test.com",
@@ -289,6 +266,7 @@ func prepare() error {
 	if err != nil {
 		return err
 	}
+	projDeveloperID = int64(pdID)
 
 	if projDeveloperPMID, err = member.Mgr.AddProjectMember(ctx, memberModels.Member{
 		ProjectID:  1,
@@ -300,7 +278,7 @@ func prepare() error {
 	}
 
 	// register projGuest and assign project guest role
-	projGuestID, err = dao.Register(models.User{
+	pgID, err := user.Mgr.Create(ctx, &models.User{
 		Username: projGuest.Name,
 		Password: projGuest.Passwd,
 		Email:    projGuest.Name + "@test.com",
@@ -308,29 +286,12 @@ func prepare() error {
 	if err != nil {
 		return err
 	}
+	projGuestID = int64(pgID)
 
 	if projGuestPMID, err = member.Mgr.AddProjectMember(ctx, memberModels.Member{
 		ProjectID:  1,
 		Role:       common.RoleGuest,
 		EntityID:   int(projGuestID),
-		EntityType: common.UserMember,
-	}); err != nil {
-		return err
-	}
-
-	// register projLimitedGuest and assign project limit guest role
-	projLimitedGuestID, err = dao.Register(models.User{
-		Username: projLimitedGuest.Name,
-		Password: projLimitedGuest.Passwd,
-		Email:    projLimitedGuest.Name + "@test.com",
-	})
-	if err != nil {
-		return err
-	}
-	if projLimitedGuestPMID, err = member.Mgr.AddProjectMember(ctx, memberModels.Member{
-		ProjectID:  1,
-		Role:       common.RoleLimitedGuest,
-		EntityID:   int(projLimitedGuestID),
 		EntityType: common.UserMember,
 	}); err != nil {
 		return err

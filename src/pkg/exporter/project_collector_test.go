@@ -1,7 +1,6 @@
 package exporter
 
 import (
-	"context"
 	"strconv"
 	"testing"
 	"time"
@@ -20,6 +19,7 @@ import (
 	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
 	qtypes "github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/pkg/user"
 )
 
 var (
@@ -39,23 +39,23 @@ var (
 
 func setupTest(t *testing.T) {
 	test.InitDatabaseFromEnv()
+	ctx := orm.Context()
 
 	// register projAdmin and assign project admin role
-	aliceID, err := dao.Register(alice)
+	aliceID, err := user.Mgr.Create(ctx, &alice)
 	if err != nil {
 		t.Errorf("register user error %v", err)
 	}
-	bobID, err := dao.Register(bob)
+	bobID, err := user.Mgr.Create(ctx, &bob)
 	if err != nil {
 		t.Errorf("register user error %v", err)
 	}
-	eveID, err := dao.Register(eve)
+	eveID, err := user.Mgr.Create(ctx, &eve)
 	if err != nil {
 		t.Errorf("register user error %v", err)
 	}
 
 	// Create Project
-	ctx := orm.NewContext(context.Background(), dao.GetOrmer())
 	proID1, err := proctl.Ctl.Create(ctx, &testPro1)
 	if err != nil {
 		t.Errorf("project creating %v", err)
