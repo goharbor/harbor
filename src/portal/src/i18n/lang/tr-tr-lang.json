@@ -991,16 +991,14 @@
     },
     "TOP_REPO": "Popüler Depolar",
     "STATISTICS": {
-        "TITLE": "İSTATİSTİK",
         "PRO_ITEM": "PROJELER",
         "REPO_ITEM": "DEPOLAR",
         "INDEX_PRIVATE": "ÖZEL",
-        "INDEX_MY_PROJECTS": "BENİM PROJELERİM",
-        "INDEX_MY_REPOSITORIES": "BENİM DEPOLARIM",
         "INDEX_PUB": "GENEL",
         "INDEX_TOTAL": "TOPLAM",
         "STORAGE": "DEPOLAMA",
-        "LIMIT": "Limit"
+        "LIMIT": "Limit",
+        "STORAGE_USED": "Storage used"
     },
     "SEARCH": {
         "IN_PROGRESS": "Ara...",

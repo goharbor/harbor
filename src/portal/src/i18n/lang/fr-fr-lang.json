@@ -964,16 +964,14 @@
     },
     "TOP_REPO": "Dépôts Populaires",
     "STATISTICS": {
-        "TITLE": "STATISTIQUES",
         "PRO_ITEM": "PROJETS",
         "REPO_ITEM": "DÉPÔTS",
         "INDEX_PRIVATE": "PRIVÉ",
-        "INDEX_MY_PROJECTS": "MES PROJETS",
-        "INDEX_MY_REPOSITORIES": "MES DÉPÔTS",
         "INDEX_PUB": "PUBLIC",
         "INDEX_TOTAL": "TOTAL",
         "STORAGE": "STOCKAGE",
-        "LIMIT": "Limite"
+        "LIMIT": "Limite",
+        "STORAGE_USED": "Storage used"
     },
     "SEARCH": {
         "IN_PROGRESS": "Rechercher...",

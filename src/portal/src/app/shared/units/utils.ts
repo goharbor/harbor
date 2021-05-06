@@ -580,6 +580,38 @@ export function formatSize(tagSize: string): string {
 }
 
 /**
+ * get size number of target size (in byte)
+ * @param size
+ */
+export function getSizeNumber(size: number): string | number {
+    if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
+        return (size / Math.pow(1024, 1)).toFixed(2);
+    } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
+        return (size / Math.pow(1024, 2)).toFixed(2);
+    } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
+        return (size / Math.pow(1024, 3)).toFixed(2);
+    } else {
+        return size;
+    }
+}
+
+/**
+ * get size unit of target size (in byte)
+ * @param size
+ */
+export function getSizeUnit(size: number): string  {
+    if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
+        return "KB";
+    } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
+        return "MB";
+    } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
+        return "GB";
+    } else {
+        return "B";
+    }
+}
+
+/**
  * Simple object check.
  * @param item
  * @returns {boolean}
