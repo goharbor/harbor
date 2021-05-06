@@ -21,7 +21,7 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cenkalti/backoff/v4 v4.1.0
 	github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e // indirect
-	github.com/coreos/go-oidc v2.1.0+incompatible
+	github.com/coreos/go-oidc/v3 v3.0.0
 	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
 	github.com/dghubble/sling v1.1.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -61,7 +61,6 @@ require (
 	github.com/opencontainers/image-spec v1.0.1
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/prometheus/client_golang v1.7.1
 	github.com/robfig/cron v1.0.0
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
@@ -76,7 +75,6 @@ require (
 	gopkg.in/dancannon/gorethink.v3 v3.0.5 // indirect
 	gopkg.in/fatih/pool.v2 v2.0.0 // indirect
 	gopkg.in/gorethink/gorethink.v3 v3.0.5 // indirect
-	gopkg.in/square/go-jose.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	helm.sh/helm/v3 v3.1.1
 	k8s.io/api v0.17.3
