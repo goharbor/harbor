@@ -23,7 +23,7 @@ import unittest
 import testutils
 from testutils import ADMIN_CLIENT
 
-from swagger_client.models.user_group import UserGroup
+from v2_swagger_client.models.user_group import UserGroup
 from library.configurations import Configurations
 from pprint import pprint
 
