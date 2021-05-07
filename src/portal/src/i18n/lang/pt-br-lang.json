@@ -987,16 +987,14 @@
     },
     "TOP_REPO": "Repositórios Populares",
     "STATISTICS": {
-        "TITLE": "ESTATÍSTICAS",
         "PRO_ITEM": "PROJETOS",
         "REPO_ITEM": "REPOSITÓRIOS",
         "INDEX_PRIVATE": "PRIVADO",
-        "INDEX_MY_PROJECTS": "MEUS PROJETOS",
-        "INDEX_MY_REPOSITORIES": "MEUS REPOSITÓRIOS",
         "INDEX_PUB": "PUBLICO",
         "INDEX_TOTAL": "TOTAL",
         "STORAGE": "ARMAZENAMENTO",
-        "LIMIT": "Limite"
+        "LIMIT": "Limite",
+        "STORAGE_USED": "Storage used"
     },
     "SEARCH": {
         "IN_PROGRESS": "Buscando...",

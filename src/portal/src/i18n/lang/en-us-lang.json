@@ -991,16 +991,14 @@
     },
     "TOP_REPO": "Popular Repositories",
     "STATISTICS": {
-        "TITLE": "STATISTICS",
-        "PRO_ITEM": "PROJECTS",
-        "REPO_ITEM": "REPOSITORIES",
-        "INDEX_PRIVATE": "PRIVATE",
-        "INDEX_MY_PROJECTS": "MY PROJECTS",
-        "INDEX_MY_REPOSITORIES": "MY REPOSITORIES",
-        "INDEX_PUB": "PUBLIC",
-        "INDEX_TOTAL": "TOTAL",
+        "PRO_ITEM": "Projects",
+        "REPO_ITEM": "Repositories",
+        "INDEX_PRIVATE": "Private",
+        "INDEX_PUB": "Public",
+        "INDEX_TOTAL": "Total",
         "STORAGE": "STORAGE",
-        "LIMIT": "Limit"
+        "LIMIT": "Limit",
+        "STORAGE_USED": "Storage used"
     },
     "SEARCH": {
         "IN_PROGRESS": "Search...",

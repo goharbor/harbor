@@ -991,16 +991,14 @@
     },
     "TOP_REPO": "受欢迎的镜像仓库",
     "STATISTICS": {
-        "TITLE": "统计",
         "PRO_ITEM": "项目",
         "REPO_ITEM": "镜像仓库",
         "INDEX_PRIVATE": "私有",
-        "INDEX_MY_PROJECTS": "我的项目",
-        "INDEX_MY_REPOSITORIES": "我的镜像仓库",
         "INDEX_PUB": "公开",
         "INDEX_TOTAL": "总计",
         "STORAGE": "存储",
-        "LIMIT": "容量"
+        "LIMIT": "容量",
+        "STORAGE_USED": "已使用的存储空间"
     },
     "SEARCH": {
         "IN_PROGRESS": "搜索中...",

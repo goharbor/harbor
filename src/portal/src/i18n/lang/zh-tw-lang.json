@@ -987,16 +987,14 @@
   },
   "TOP_REPO": "受歡迎的鏡像倉庫",
   "STATISTICS":{
-    "TITLE": "統計",
     "PRO_ITEM": "項目",
     "REPO_ITEM": "鏡像倉庫",
     "INDEX_PRIVATE": "私有",
-    "INDEX_MY_PROJECTS": "我的項目",
-    "INDEX_MY_REPOSITORIES": "我的鏡像倉庫",
     "INDEX_PUB": "公開",
     "INDEX_TOTAL": "總計",
     "STORAGE": "存儲",
-    "LIMIT": "容量"
+    "LIMIT": "容量",
+    "STORAGE_USED": "Storage used"
   },
   "SEARCH":{
     "IN_PROGRESS": "搜索中...",
