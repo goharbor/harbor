@@ -16,8 +16,6 @@ package uaa
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"os"
 	"strings"
 	"sync"
@@ -27,7 +25,10 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/uaa"
 	"github.com/goharbor/harbor/src/core/auth"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	userpkg "github.com/goharbor/harbor/src/pkg/user"
 )
 
 // Auth is the implementation of AuthenticateHelper to access uaa for authentication.
@@ -95,10 +96,9 @@ func (u *Auth) PostAuthenticate(user *models.User) error {
 	user.UserID = dbUser.UserID
 	user.SysAdminFlag = dbUser.SysAdminFlag
 	fillEmailRealName(user)
-	if err2 := dao.ChangeUserProfile(*user, "Email", "Realname"); err2 != nil {
+	if err2 := userpkg.Mgr.UpdateProfile(orm.Context(), user, "Email", "Realname"); err2 != nil {
 		log.Warningf("Failed to update user profile, user: %s, error: %v", user.Username, err2)
 	}
-
 	return nil
 }
 

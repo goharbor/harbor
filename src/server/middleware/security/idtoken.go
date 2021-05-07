@@ -15,15 +15,15 @@
 package security
 
 import (
-	"github.com/goharbor/harbor/src/lib/config"
 	"net/http"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
+	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/oidc"
 )
@@ -48,13 +48,9 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 		log.Warningf("failed to verify token: %v", err)
 		return nil
 	}
-	u, err := dao.GetUserBySubIss(claims.Subject, claims.Issuer)
+	u, err := user.Ctl.GetBySubIss(ctx, claims.Subject, claims.Issuer)
 	if err != nil {
 		log.Warningf("failed to get user based on token claims: %v", err)
-		return nil
-	}
-	if u == nil {
-		log.Warning("user matches token's claims is not onboarded.")
 		return nil
 	}
 	setting, err := config.OIDCSetting(ctx)

@@ -21,8 +21,9 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	pkguser "github.com/goharbor/harbor/src/pkg/user"
 )
 
 // InitDatabaseFromEnv is used to initialize database for testing
@@ -86,9 +87,7 @@ func updateUserInitialPassword(userID int, password string) error {
 		return fmt.Errorf("user id: %d does not exist", userID)
 	}
 	if user.Salt == "" {
-		user.Salt = utils.GenerateRandomString()
-		user.Password = password
-		err = dao.ChangeUserPassword(*user)
+		err = pkguser.Mgr.UpdatePassword(orm.Context(), userID, password)
 		if err != nil {
 			return fmt.Errorf("Failed to update user encrypted password, userID: %d, err: %v", userID, err)
 		}

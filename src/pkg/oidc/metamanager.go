@@ -31,12 +31,29 @@ type MetaManager interface {
 	Create(ctx context.Context, oidcUser *models.OIDCUser) (int, error)
 	// GetByUserID gets the oidc meta record by user's ID
 	GetByUserID(ctx context.Context, uid int) (*models.OIDCUser, error)
+	// GetBySubIss gets the oidc meta record by the subject and issuer
+	GetBySubIss(ctx context.Context, sub, iss string) (*models.OIDCUser, error)
 	// SetCliSecretByUserID updates the cli secret of a user based on the user ID
 	SetCliSecretByUserID(ctx context.Context, uid int, secret string) error
 }
 
 type metaManager struct {
 	dao dao.MetaDAO
+}
+
+func (m *metaManager) GetBySubIss(ctx context.Context, sub, iss string) (*models.OIDCUser, error) {
+	logger := log.GetLogger(ctx)
+	l, err := m.dao.List(ctx, q.New(q.KeyWords{"subiss": sub + iss}))
+	if err != nil {
+		return nil, err
+	}
+	if len(l) == 0 {
+		return nil, errors.NotFoundError(nil).WithMessage("oidc info for user with issuer %s, subject %s not found", iss, sub)
+	}
+	if len(l) > 1 {
+		logger.Warningf("Multiple oidc info records found for issuer %s, subject %s", iss, sub)
+	}
+	return l[0], nil
 }
 
 func (m *metaManager) Create(ctx context.Context, oidcUser *models.OIDCUser) (int, error) {

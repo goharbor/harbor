@@ -21,9 +21,10 @@ import (
 
 	o "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/quota"
+	"github.com/goharbor/harbor/src/controller/user"
+	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -49,13 +50,14 @@ func (ia *InternalAPI) Prepare() {
 
 // RenameAdmin we don't provide flexibility in this API, as this is a workaround.
 func (ia *InternalAPI) RenameAdmin() {
-	if !dao.IsSuperUser(ia.SecurityCtx.GetUsername()) {
+	ctx := ia.Ctx.Request.Context()
+	if !auth.IsSuperUser(ctx, ia.SecurityCtx.GetUsername()) {
 		log.Errorf("User %s is not super user, not allow to rename admin.", ia.SecurityCtx.GetUsername())
 		ia.SendForbiddenError(errors.New(ia.SecurityCtx.GetUsername()))
 		return
 	}
 	newName := common.NewHarborAdminName
-	if err := dao.ChangeUserProfile(models.User{
+	if err := user.Ctl.UpdateProfile(ctx, &models.User{
 		UserID:   1,
 		Username: newName,
 	}, "username"); err != nil {

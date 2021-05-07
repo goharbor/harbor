@@ -32,10 +32,10 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils"
 	_ "github.com/goharbor/harbor/src/controller/event/handler"
 	"github.com/goharbor/harbor/src/controller/health"
 	"github.com/goharbor/harbor/src/controller/registry"
+	ctluser "github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/core/api"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
@@ -64,7 +64,7 @@ const (
 	adminUserID = 1
 )
 
-func updateInitPassword(userID int, password string) error {
+func updateInitPassword(ctx context.Context, userID int, password string) error {
 	queryUser := models.User{UserID: userID}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
@@ -74,11 +74,7 @@ func updateInitPassword(userID int, password string) error {
 		return fmt.Errorf("user id: %d does not exist", userID)
 	}
 	if user.Salt == "" {
-		salt := utils.GenerateRandomString()
-
-		user.Salt = salt
-		user.Password = password
-		err = dao.ChangeUserPassword(*user)
+		err = ctluser.Ctl.UpdatePassword(ctx, userID, password)
 		if err != nil {
 			return fmt.Errorf("Failed to update user encrypted password, userID: %d, err: %v", userID, err)
 		}
@@ -190,7 +186,8 @@ func main() {
 	if err = migration.Migrate(database); err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}
-	if err := config.Load(orm.Context()); err != nil {
+	ctx := orm.Context()
+	if err := config.Load(ctx); err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
@@ -198,7 +195,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get admin's initial password: %v", err)
 	}
-	if err := updateInitPassword(adminUserID, password); err != nil {
+	if err := updateInitPassword(ctx, adminUserID, password); err != nil {
 		log.Error(err)
 	}
 

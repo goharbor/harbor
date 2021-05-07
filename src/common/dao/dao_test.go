@@ -23,7 +23,6 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	libOrm "github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/user"
@@ -154,45 +153,6 @@ func clearAll() {
 	}
 }
 
-func TestLoginByUserName(t *testing.T) {
-	loginUser, err := LoginByDb(models.AuthModel{
-		Principal: username,
-		Password:  password,
-	})
-	if err != nil {
-		t.Errorf("Error occurred in LoginByDb: %v", err)
-	}
-	if loginUser == nil {
-		t.Errorf("No found for user logined by username and password: %s, %s", username, password)
-	}
-
-	if loginUser.Username != username {
-		t.Errorf("User's username does not match after login, expected: %s, actual: %s", username, loginUser.Username)
-	}
-}
-
-func TestLoginByEmail(t *testing.T) {
-
-	userQuery := models.User{
-		Email:    "tester01@vmware.com",
-		Password: "Abc12345",
-	}
-
-	loginUser, err := LoginByDb(models.AuthModel{
-		Principal: userQuery.Email,
-		Password:  userQuery.Password,
-	})
-	if err != nil {
-		t.Errorf("Error occurred in LoginByDb: %v", err)
-	}
-	if loginUser == nil {
-		t.Errorf("No found for user logined by email and password : %v", userQuery)
-	}
-	if loginUser.Username != username {
-		t.Errorf("User's username does not match after login, expected: %s, actual: %s", username, loginUser.Username)
-	}
-}
-
 var currentUser *models.User
 
 func TestGetUser(t *testing.T) {
@@ -217,60 +177,6 @@ func TestGetUser(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestResetUserPassword(t *testing.T) {
-	uuid := utils.GenerateRandomString()
-
-	err := UpdateUserResetUUID(models.User{ResetUUID: uuid, Email: currentUser.Email})
-	if err != nil {
-		t.Errorf("Error occurred in UpdateUserResetUuid: %v", err)
-	}
-
-	err = ResetUserPassword(
-		models.User{
-			UserID:          currentUser.UserID,
-			PasswordVersion: utils.SHA256,
-			ResetUUID:       uuid,
-			Salt:            currentUser.Salt}, "HarborTester12345")
-	if err != nil {
-		t.Errorf("Error occurred in ResetUserPassword: %v", err)
-	}
-
-	loginedUser, err := LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "HarborTester12345"})
-	if err != nil {
-		t.Errorf("Error occurred in LoginByDb: %v", err)
-	}
-
-	if loginedUser.Username != username {
-		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", username, loginedUser.Username)
-	}
-}
-
-func TestChangeUserPassword(t *testing.T) {
-	user := models.User{UserID: currentUser.UserID}
-	query, err := GetUser(user)
-	if err != nil {
-		t.Errorf("Error occurred when get user salt")
-	}
-	currentUser.Salt = query.Salt
-	err = ChangeUserPassword(
-		models.User{
-			UserID:          currentUser.UserID,
-			Password:        "NewHarborTester12345",
-			PasswordVersion: utils.SHA256,
-			Salt:            currentUser.Salt})
-	if err != nil {
-		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
-	}
-
-	loginedUser, err := LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "NewHarborTester12345"})
-	if err != nil {
-		t.Errorf("Error occurred in LoginByDb: %v", err)
-	}
-
-	if loginedUser.Username != username {
-		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", username, loginedUser.Username)
-	}
-}
 func TestAddProject(t *testing.T) {
 
 	project := models.Project{
@@ -345,29 +251,6 @@ func TestGetProjects(t *testing.T) {
 	}
 }
 
-func TestChangeUserProfile(t *testing.T) {
-	user := models.User{UserID: currentUser.UserID, Email: username + "@163.com", Realname: "test", Comment: "Unit Test"}
-	err := ChangeUserProfile(user)
-	if err != nil {
-		t.Errorf("Error occurred in ChangeUserProfile: %v", err)
-	}
-	loginedUser, err := GetUser(models.User{UserID: currentUser.UserID})
-	if err != nil {
-		t.Errorf("Error occurred in GetUser: %v", err)
-	}
-	if loginedUser != nil {
-		if loginedUser.Email != username+"@163.com" {
-			t.Errorf("user email does not update, expected: %s, acutal: %s", username+"@163.com", loginedUser.Email)
-		}
-		if loginedUser.Realname != "test" {
-			t.Errorf("user realname does not update, expected: %s, acutal: %s", "test", loginedUser.Realname)
-		}
-		if loginedUser.Comment != "Unit Test" {
-			t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Comment)
-		}
-	}
-}
-
 var targetID, policyID, policyID2, policyID3, jobID, jobID2, jobID3 int64
 
 func TestGetOrmer(t *testing.T) {
@@ -428,12 +311,6 @@ func TestDeleteRepository(t *testing.T) {
 	if repository != nil {
 		t.Errorf("repository is not nil after deletion, repository: %+v", repository)
 	}
-}
-
-func TestIsSuperUser(t *testing.T) {
-	assert := assert.New(t)
-	assert.True(IsSuperUser("admin"))
-	assert.False(IsSuperUser("none"))
 }
 
 func TestIsDupRecError(t *testing.T) {

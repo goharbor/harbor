@@ -37,7 +37,7 @@ type Controller interface {
 	// SetSysAdmin ...
 	SetSysAdmin(ctx context.Context, id int, adminFlag bool) error
 	// VerifyPassword ...
-	VerifyPassword(ctx context.Context, username string, password string) (bool, error)
+	VerifyPassword(ctx context.Context, usernameOrEmail string, password string) (bool, error)
 	// UpdatePassword ...
 	UpdatePassword(ctx context.Context, id int, password string) error
 	// List ...
@@ -50,11 +50,13 @@ type Controller interface {
 	Get(ctx context.Context, id int, opt *Option) (*models.User, error)
 	// GetByName gets the user model by username, it only supports getting the basic and does not support opt
 	GetByName(ctx context.Context, username string) (*models.User, error)
+	// GetBySubIss gets the user model by subject and issuer, the result will contain the basic user model and does not support opt
+	GetBySubIss(ctx context.Context, sub, iss string) (*models.User, error)
 	// Delete ...
 	Delete(ctx context.Context, id int) error
 	// UpdateProfile update the profile based on the ID and data in the model in parm, only a subset of attributes in the model
 	// will be update, see the implementation of manager.
-	UpdateProfile(ctx context.Context, u *models.User) error
+	UpdateProfile(ctx context.Context, u *models.User, cols ...string) error
 	// SetCliSecret sets the OIDC CLI secret for a user
 	SetCliSecret(ctx context.Context, id int, secret string) error
 }
@@ -77,6 +79,14 @@ type controller struct {
 	oidcMetaMgr oidc.MetaManager
 }
 
+func (c *controller) GetBySubIss(ctx context.Context, sub, iss string) (*models.User, error) {
+	oidcMeta, err := c.oidcMetaMgr.GetBySubIss(ctx, sub, iss)
+	if err != nil {
+		return nil, err
+	}
+	return c.Get(ctx, oidcMeta.UserID, nil)
+}
+
 func (c *controller) GetByName(ctx context.Context, username string) (*models.User, error) {
 	return c.mgr.GetByName(ctx, username)
 }
@@ -89,8 +99,8 @@ func (c *controller) Create(ctx context.Context, u *models.User) (int, error) {
 	return c.mgr.Create(ctx, u)
 }
 
-func (c *controller) UpdateProfile(ctx context.Context, u *models.User) error {
-	return c.mgr.UpdateProfile(ctx, u)
+func (c *controller) UpdateProfile(ctx context.Context, u *models.User, cols ...string) error {
+	return c.mgr.UpdateProfile(ctx, u, cols...)
 }
 
 func (c *controller) Get(ctx context.Context, id int, opt *Option) (*models.User, error) {
@@ -132,8 +142,12 @@ func (c *controller) UpdatePassword(ctx context.Context, id int, password string
 	return c.mgr.UpdatePassword(ctx, id, password)
 }
 
-func (c *controller) VerifyPassword(ctx context.Context, username, password string) (bool, error) {
-	return c.mgr.VerifyLocalPassword(ctx, username, password)
+func (c *controller) VerifyPassword(ctx context.Context, usernameOrEmail, password string) (bool, error) {
+	rec, err := c.mgr.MatchLocalPassword(ctx, usernameOrEmail, password)
+	if err != nil {
+		return false, err
+	}
+	return rec != nil, nil
 }
 
 func (c *controller) SetSysAdmin(ctx context.Context, id int, adminFlag bool) error {

@@ -39,44 +39,6 @@ var (
 	ErrRollBackOIDCUser = errors.New("sql: transaction roll back error in oicd_user")
 )
 
-// GetUserBySubIss ...
-func GetUserBySubIss(sub, issuer string) (*models.User, error) {
-	var oidcUsers []models.OIDCUser
-	n, err := GetOrmer().Raw(`select * from oidc_user where subiss = ? `, sub+issuer).QueryRows(&oidcUsers)
-	if err != nil {
-		return nil, err
-	}
-	if n == 0 {
-		return nil, nil
-	}
-
-	user, err := GetUser(models.User{
-		UserID: oidcUsers[0].UserID,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if user == nil {
-		return nil, fmt.Errorf("can not get user %d", oidcUsers[0].UserID)
-	}
-
-	return user, nil
-}
-
-// GetOIDCUserByUserID ...
-func GetOIDCUserByUserID(userID int) (*models.OIDCUser, error) {
-	var oidcUsers []models.OIDCUser
-	n, err := GetOrmer().Raw(`select * from oidc_user where user_id = ? `, userID).QueryRows(&oidcUsers)
-	if err != nil {
-		return nil, err
-	}
-	if n == 0 {
-		return nil, nil
-	}
-
-	return &oidcUsers[0], nil
-}
-
 // UpdateOIDCUser updates the OIDCUser based on the input parm, only the column "secret" and "token" can be updated
 func UpdateOIDCUser(oidcUser *models.OIDCUser) error {
 	cols := []string{"secret", "token"}

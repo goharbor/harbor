@@ -143,6 +143,29 @@ func (_m *Manager) List(ctx context.Context, query *q.Query) (usermodels.Users, 
 	return r0, r1
 }
 
+// MatchLocalPassword provides a mock function with given fields: ctx, username, password
+func (_m *Manager) MatchLocalPassword(ctx context.Context, username string, password string) (*models.User, error) {
+	ret := _m.Called(ctx, username, password)
+
+	var r0 *models.User
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *models.User); ok {
+		r0 = rf(ctx, username, password)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.User)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, username, password)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // SetSysAdminFlag provides a mock function with given fields: ctx, id, admin
 func (_m *Manager) SetSysAdminFlag(ctx context.Context, id int, admin bool) error {
 	ret := _m.Called(ctx, id, admin)
@@ -171,37 +194,23 @@ func (_m *Manager) UpdatePassword(ctx context.Context, id int, newPassword strin
 	return r0
 }
 
-// UpdateProfile provides a mock function with given fields: ctx, _a1
-func (_m *Manager) UpdateProfile(ctx context.Context, _a1 *models.User) error {
-	ret := _m.Called(ctx, _a1)
+// UpdateProfile provides a mock function with given fields: ctx, _a1, col
+func (_m *Manager) UpdateProfile(ctx context.Context, _a1 *models.User, col ...string) error {
+	_va := make([]interface{}, len(col))
+	for _i := range col {
+		_va[_i] = col[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, _a1)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.User) error); ok {
-		r0 = rf(ctx, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, *models.User, ...string) error); ok {
+		r0 = rf(ctx, _a1, col...)
 	} else {
 		r0 = ret.Error(0)
 	}
 
 	return r0
-}
-
-// VerifyLocalPassword provides a mock function with given fields: ctx, username, password
-func (_m *Manager) VerifyLocalPassword(ctx context.Context, username string, password string) (bool, error) {
-	ret := _m.Called(ctx, username, password)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) bool); ok {
-		r0 = rf(ctx, username, password)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = rf(ctx, username, password)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }

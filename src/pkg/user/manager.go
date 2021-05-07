@@ -35,7 +35,7 @@ var (
 type Manager interface {
 	// Get get user by user id
 	Get(ctx context.Context, id int) (*models.User, error)
-	// GetByName get user by username
+	// GetByName get user by username, it will return an error if the user does not exist
 	GetByName(ctx context.Context, username string) (*models.User, error)
 	// List users according to the query
 	List(ctx context.Context, query *q.Query) (models.Users, error)
@@ -48,11 +48,12 @@ type Manager interface {
 	// SetSysAdminFlag sets the system admin flag of the user in local DB
 	SetSysAdminFlag(ctx context.Context, id int, admin bool) error
 	// UpdateProfile updates the user's profile
-	UpdateProfile(ctx context.Context, user *models.User) error
+	UpdateProfile(ctx context.Context, user *models.User, col ...string) error
 	// UpdatePassword updates user's password
 	UpdatePassword(ctx context.Context, id int, newPassword string) error
-	// VerifyLocalPassword verifies the password against the record in DB based on the input
-	VerifyLocalPassword(ctx context.Context, username, password string) (bool, error)
+	// MatchLocalPassword tries to match the record in DB based on the input, the first return value is
+	// the user model corresponding to the entry in DB
+	MatchLocalPassword(ctx context.Context, username, password string) (*models.User, error)
 }
 
 // New returns a default implementation of Manager
@@ -75,20 +76,29 @@ func (m *manager) Delete(ctx context.Context, id int) error {
 	return m.dao.Update(ctx, u, "username", "email", "deleted")
 }
 
-func (m *manager) VerifyLocalPassword(ctx context.Context, username, password string) (bool, error) {
-	u, err := m.GetByName(ctx, username)
+func (m *manager) MatchLocalPassword(ctx context.Context, usernameOrEmail, password string) (*models.User, error) {
+	l, err := m.dao.List(ctx, q.New(q.KeyWords{"username_or_email": usernameOrEmail}))
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	return utils.Encrypt(password, u.Salt, u.PasswordVersion) == u.Password, nil
+	for _, entry := range l {
+		if utils.Encrypt(password, entry.Salt, entry.PasswordVersion) == entry.Password {
+			entry.Password = ""
+			return entry, nil
+		}
+	}
+	return nil, nil
 }
 
 func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 	return m.dao.Count(ctx, query)
 }
 
-func (m *manager) UpdateProfile(ctx context.Context, user *models.User) error {
-	return m.dao.Update(ctx, user, "email", "realname", "comment")
+func (m *manager) UpdateProfile(ctx context.Context, user *models.User, cols ...string) error {
+	if cols == nil || len(cols) == 0 {
+		cols = []string{"Email", "Realname", "Comment"}
+	}
+	return m.dao.Update(ctx, user, cols...)
 }
 
 func (m *manager) UpdatePassword(ctx context.Context, id int, newPassword string) error {
@@ -126,7 +136,7 @@ func (m *manager) Get(ctx context.Context, id int) (*models.User, error) {
 	return users[0], nil
 }
 
-// Get get user by username
+// GetByName get user by username
 func (m *manager) GetByName(ctx context.Context, username string) (*models.User, error) {
 	users, err := m.dao.List(ctx, q.New(q.KeyWords{"username": username}))
 	if err != nil {
