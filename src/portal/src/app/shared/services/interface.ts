@@ -72,6 +72,7 @@ export interface ReplicationRule extends Base {
   dest_registry?: any;
   src_namespaces: string[];
   dest_namespace?: string;
+  dest_namespace_replace_count?: number;
   enabled: boolean;
   override: boolean;
 }

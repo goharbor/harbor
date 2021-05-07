@@ -545,7 +545,7 @@
         "DISABLE": "Disable",
         "REPLICATION_MODE": "Replication Mode",
         "SRC_REGISTRY": "Source registry",
-        "DESTINATION_NAMESPACE": "Destination registry:Namespace",
+        "DESTINATION_NAMESPACE": "Destination Registry:Namespace",
         "DESTINATION_NAME_IS_REQUIRED": "Endpoint name is required.",
         "NEW_DESTINATION": "New Endpoint",
         "DESTINATION_URL": "Endpoint URL",
@@ -628,7 +628,16 @@
         "ENABLE_SUCCESS": "Enabled rule successfully",
         "ENABLE_FAILED": "Enabling rule failed",
         "DISABLE_SUCCESS": "Disabled rule successfully",
-        "DISABLE_FAILED": "Disabling rule failed"
+        "DISABLE_FAILED": "Disabling rule failed",
+        "DES_REPO_FLATTENING": "Destination Repository Flattening",
+        "NAMESPACE": "Namespace",
+        "REPO_FLATTENING": "Flattening",
+        "NO_FLATTING": "No Flatting",
+        "FLATTEN_LEVEL_1": "Flatten 1 Level",
+        "FLATTEN_LEVEL_2": "Flatten 2 Levels",
+        "FLATTEN_LEVEL_3": "Flatten 3 Levels",
+        "FLATTEN_ALL": "Flatten All Levels",
+        "FLATTEN_LEVEL_TIP": "Reduce the nested repository structure when copying images. Default 'Flatten 1 Level' will replace the left most repository component with the destination namespace a/b/c/img -> ns/b/c/img. 'Flatten all Levels' is the legacy option used prior v2.3 resulting in a/b/c/img -> ns/img."
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",

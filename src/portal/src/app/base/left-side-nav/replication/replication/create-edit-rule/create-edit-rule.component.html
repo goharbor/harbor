@@ -151,19 +151,48 @@
         </div>
       </div>
       <!--destination namespaces -->
-      <clr-input-container>
-        <label>{{'REPLICATION.DEST_NAMESPACE' | translate}}
-          <clr-tooltip>
-            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-            <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
-              <span>{{'TOOLTIP.DESTINATION_NAMESPACE' | translate}}</span>
-            </clr-tooltip-content>
-          </clr-tooltip>
-        </label>
-        <input clrInput formControlName="dest_namespace" type="text" id="dest_namespace" pattern="^[a-z0-9]+(?:[/._-][a-z0-9]+)*$"
-          class="inputWidth" maxlength="255">
-        <clr-control-error *ngIf='ruleForm.controls.dest_namespace.touched && ruleForm.controls.dest_namespace.invalid'>{{'REPLICATION.DESTINATION_NAME_TOOLTIP' | translate}}</clr-control-error>
-      </clr-input-container>
+      <div class="clr-form-control">
+        <label for="dest_namespace" class="clr-control-label">{{'REPLICATION.DESTINATION' | translate}}</label>
+        <div class="clr-control-container" [class.clr-error]="ruleForm.controls.dest_namespace.touched && ruleForm.controls.dest_namespace.invalid">
+          <div class="clr-input-wrapper">
+            <label class="sub-label">{{'REPLICATION.NAMESPACE' | translate}}:</label>
+            <input autocomplete="off"  class="clr-input" formControlName="dest_namespace" type="text" id="dest_namespace" pattern="^[a-z0-9]+(?:[/._-][a-z0-9]+)*$"
+                   maxlength="255">
+            <clr-tooltip class="des-tooltip">
+              <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+              <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+                <span>{{'TOOLTIP.DESTINATION_NAMESPACE' | translate}}</span>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </div>
+          <clr-control-error class="margin-left-90px" *ngIf="ruleForm.controls.dest_namespace.touched && ruleForm.controls.dest_namespace.invalid">
+            {{'REPLICATION.DESTINATION_NAME_TOOLTIP' | translate}}
+          </clr-control-error>
+        </div>
+      </div>
+      <!--destination namespaces -->
+      <div class="clr-form-control">
+        <label for="dest_namespace_replace_count" class="clr-control-label"></label>
+        <div class="clr-control-container" [class.clr-error]="ruleForm.controls.dest_namespace_replace_count.touched && ruleForm.controls.dest_namespace_replace_count.invalid">
+          <div class="input-width flex">
+            <div class="clr-select-wrapper">
+              <label class="sub-label">{{'REPLICATION.REPO_FLATTENING' | translate}}:</label>
+              <select id="dest_namespace_replace_count" formControlName="dest_namespace_replace_count" class="clr-select count-type">
+                <option *ngFor="let item of flattenLevelMap | keyvalue"
+                        [value]="item.key">{{item.value | translate}}</option>
+              </select>
+            </div>
+            <div class="clr-input-wrapper">
+              <clr-tooltip class="des-tooltip">
+                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+                  {{'REPLICATION.FLATTEN_LEVEL_TIP' | translate}}
+                </clr-tooltip-content>
+              </clr-tooltip>
+            </div>
+          </div>
+        </div>
+      </div>
       <!--Trigger-->
       <div class="clr-form-control">
         <label class="clr-control-label required">{{'REPLICATION.TRIGGER_MODE' | translate}}</label>
@@ -216,13 +245,10 @@
           </div>
         </div>
       </div>
-      <div class="loading-center">
-        <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
-      </div>
       </form>
   </div>
   <div class="modal-footer">
-    <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="this.inProgress" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
-    <button type="submit" id="ruleBtnOk" class="btn btn-primary" (click)="onSubmit()" [disabled]="!isValid || !hasFormChange()">{{ 'BUTTON.SAVE' | translate }}</button>
+    <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="inProgress" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
+    <button type="submit" id="ruleBtnOk" class="btn btn-primary" [clrLoading]="inProgress" (click)="onSubmit()" [disabled]="!isValid || !hasFormChange()">{{ 'BUTTON.SAVE' | translate }}</button>
   </div>
 </clr-modal>
