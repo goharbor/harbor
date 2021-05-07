@@ -19,7 +19,6 @@ import (
 	"testing"
 	"time"
 
-	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -101,23 +100,6 @@ func (suite *SummaryTestSuite) TestSummaryGenerateSummaryNoOptions() {
 	suite.Equal("Trivy", nativeSummary.Scanner.Name)
 	suite.Equal("Harbor", nativeSummary.Scanner.Vendor)
 	suite.Equal("0.1.0", nativeSummary.Scanner.Version)
-}
-
-// TestSummaryGenerateSummaryWithOptions ...
-func (suite *SummaryTestSuite) TestSummaryGenerateSummaryWithOptions() {
-	cveSet := make(models2.CVESet)
-	cveSet["2019-0980-0909"] = struct{}{}
-
-	summaries, err := GenerateSummary(suite.r, WithCVEAllowlist(&cveSet))
-	require.NoError(suite.T(), err)
-	require.NotNil(suite.T(), summaries)
-
-	nativeSummary, ok := summaries.(*vuln.NativeReportSummary)
-	require.Equal(suite.T(), true, ok)
-
-	suite.Equal(vuln.Medium, nativeSummary.Severity)
-	suite.Equal(1, len(nativeSummary.CVEBypassed))
-	suite.Equal(1, nativeSummary.Summary.Total)
 }
 
 // TestSummaryGenerateSummaryWrongMime ...

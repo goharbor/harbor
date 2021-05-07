@@ -25,6 +25,7 @@ func TestMergeNativeReportSummary(t *testing.T) {
 	assert := assert.New(t)
 	errorStatus := job.ErrorStatus.String()
 	runningStatus := job.RunningStatus.String()
+	successStatus := job.SuccessStatus.String()
 
 	v1 := VulnerabilitySummary{
 		Total:   1,
@@ -42,82 +43,135 @@ func TestMergeNativeReportSummary(t *testing.T) {
 	})
 
 	{
-		n1 := NativeReportSummary{
-			ScanStatus:            runningStatus,
-			Severity:              Low,
-			TotalCount:            1,
-			Summary:               &v1,
-			VulnerabilityItemList: l,
-		}
-
-		r := n1.Merge(&NativeReportSummary{
-			ScanStatus: errorStatus,
-			Severity:   Severity(""),
-			TotalCount: 1,
-		})
-
-		assert.Equal(runningStatus, r.ScanStatus)
-		assert.Equal(Low, r.Severity)
-		assert.Equal(v1, *r.Summary)
-	}
-
-	{
-		n1 := NativeReportSummary{
+		// running && running
+		n1 := &NativeReportSummary{
 			ScanStatus: runningStatus,
-			Severity:   Severity(""),
 			TotalCount: 1,
 		}
 
 		r := n1.Merge(&NativeReportSummary{
-			ScanStatus: errorStatus,
-			Severity:   Severity(""),
+			ScanStatus: runningStatus,
 			TotalCount: 1,
 		})
 
 		assert.Equal(runningStatus, r.ScanStatus)
-		assert.Equal(Severity(""), r.Severity)
 		assert.Nil(r.Summary)
 	}
 
 	{
-		n1 := &NativeReportSummary{
-			ScanStatus: errorStatus,
-			Severity:   Severity(""),
+		// running && success
+		n1 := NativeReportSummary{
+			ScanStatus: runningStatus,
 			TotalCount: 1,
 		}
 
 		r := n1.Merge(&NativeReportSummary{
-			ScanStatus:            runningStatus,
+			ScanStatus:            successStatus,
 			Severity:              Low,
 			TotalCount:            1,
+			CompleteCount:         1,
 			Summary:               &v1,
 			VulnerabilityItemList: l,
 		})
 
 		assert.Equal(runningStatus, r.ScanStatus)
-		assert.Equal(Low, r.Severity)
-		assert.Equal(v1, *r.Summary)
+		assert.Nil(r.Summary)
 	}
 
 	{
-		n1 := &NativeReportSummary{
-			ScanStatus:            runningStatus,
+		// running && error
+		n1 := NativeReportSummary{
+			ScanStatus: runningStatus,
+			TotalCount: 1,
+		}
+
+		r := n1.Merge(&NativeReportSummary{
+			ScanStatus: errorStatus,
+			TotalCount: 1,
+		})
+
+		assert.Equal(runningStatus, r.ScanStatus)
+		assert.Nil(r.Summary)
+	}
+
+	{
+		// success && success
+		n1 := NativeReportSummary{
+			ScanStatus:            successStatus,
 			Severity:              Low,
 			TotalCount:            1,
+			CompleteCount:         1,
+			Summary:               &v1,
+			VulnerabilityItemList: l,
+		}
+
+		l2 := &VulnerabilityItemList{}
+		l2.Add(&VulnerabilityItem{
+			ID:         "cve-id-high",
+			Package:    "openssl-libs-high",
+			Version:    "1:1.1.1g-11.el8",
+			Severity:   High,
+			FixVersion: "1:1.1.1g-12.el8_3",
+		})
+
+		r := n1.Merge(&NativeReportSummary{
+			ScanStatus:    successStatus,
+			Severity:      High,
+			TotalCount:    1,
+			CompleteCount: 1,
+			Summary: &VulnerabilitySummary{
+				Total:   1,
+				Fixable: 1,
+				Summary: map[Severity]int{High: 1},
+			},
+			VulnerabilityItemList: l2,
+		})
+
+		assert.Equal(successStatus, r.ScanStatus)
+		assert.Equal(High, r.Severity)
+		assert.Equal(VulnerabilitySummary{
+			Total:   2,
+			Fixable: 2,
+			Summary: map[Severity]int{Low: 1, High: 1},
+		}, *r.Summary)
+		assert.Equal(100, r.CompletePercent)
+	}
+
+	{
+		// success && error
+		n1 := NativeReportSummary{
+			ScanStatus:            successStatus,
+			Severity:              Low,
+			TotalCount:            1,
+			CompleteCount:         1,
 			Summary:               &v1,
 			VulnerabilityItemList: l,
 		}
 
 		r := n1.Merge(&NativeReportSummary{
-			ScanStatus:            runningStatus,
-			Severity:              Low,
-			TotalCount:            1,
-			Summary:               &v1,
-			VulnerabilityItemList: l,
+			ScanStatus: errorStatus,
+			TotalCount: 1,
 		})
 
-		assert.Equal(runningStatus, r.ScanStatus)
+		assert.Equal(successStatus, r.ScanStatus)
 		assert.Equal(Low, r.Severity)
 		assert.Equal(v1, *r.Summary)
+		assert.Equal(50, r.CompletePercent)
+	}
+
+	{
+		// error && error
+		n1 := NativeReportSummary{
+			ScanStatus: errorStatus,
+			TotalCount: 1,
+		}
+
+		r := n1.Merge(&NativeReportSummary{
+			ScanStatus: errorStatus,
+			TotalCount: 1,
+		})
+
+		assert.Equal(errorStatus, r.ScanStatus)
+		assert.Nil(r.Summary)
 	}
 }

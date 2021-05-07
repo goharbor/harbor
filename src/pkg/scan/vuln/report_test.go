@@ -19,7 +19,6 @@ import (
 	"reflect"
 	"testing"
 
-	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/stretchr/testify/assert"
 )
@@ -80,7 +79,7 @@ func TestReportMarshalJSON(t *testing.T) {
 	assert.Contains(string(b), "vulnerabilities")
 }
 
-func TestGetSummarySeverityAndByPassed(t *testing.T) {
+func TestGetSummarySeverity(t *testing.T) {
 	assert := assert.New(t)
 
 	vul1 := &VulnerabilityItem{
@@ -102,34 +101,14 @@ func TestGetSummarySeverityAndByPassed(t *testing.T) {
 	l := VulnerabilityItemList{}
 	l.Add(vul1, vul2, vul3)
 
-	{
-		s := SeveritySummary{
-			Low:    2,
-			Medium: 1,
-		}
-
-		severity, sum, byPassed := l.GetSeveritySummaryAndByPassed(models2.CVESet{})
-		assert.Equal(3, sum.Total)
-		assert.Equal(1, sum.Fixable)
-		assert.Equal(s, sum.Summary)
-		assert.Equal(Medium, severity)
-		assert.Empty(byPassed)
+	s := SeveritySummary{
+		Low:    2,
+		Medium: 1,
 	}
 
-	{
-		s := SeveritySummary{
-			Low: 2,
-		}
-
-		cveSet := models2.CVESet{}
-		cveSet.Add("cve3")
-
-		severity, sum, byPassed := l.GetSeveritySummaryAndByPassed(cveSet)
-		assert.Equal(2, sum.Total)
-		assert.Equal(1, sum.Fixable)
-		assert.Equal(s, sum.Summary)
-		assert.Equal(Low, severity)
-		assert.NotEmpty(byPassed)
-		assert.Equal([]string{"cve3"}, byPassed)
-	}
+	severity, sum := l.GetSeveritySummary()
+	assert.Equal(Medium, severity)
+	assert.Equal(3, sum.Total)
+	assert.Equal(1, sum.Fixable)
+	assert.Equal(s, sum.Summary)
 }

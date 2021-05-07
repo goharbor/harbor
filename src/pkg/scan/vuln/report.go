@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -149,27 +148,19 @@ func (l *VulnerabilityItemList) Add(items ...*VulnerabilityItem) {
 	}
 }
 
-// GetSeveritySummaryAndByPassed returns the Severity Summary and ByPassed by allowlist for the l
-func (l *VulnerabilityItemList) GetSeveritySummaryAndByPassed(allowlist models2.CVESet) (Severity, *VulnerabilitySummary, []string) {
+// GetSeveritySummary returns the severity and summary of l
+func (l *VulnerabilityItemList) GetSeveritySummary() (Severity, *VulnerabilitySummary) {
+	if l == nil {
+		return Severity(""), nil
+	}
+
 	sum := &VulnerabilitySummary{
 		Total:   len(l.Items()),
 		Summary: make(SeveritySummary),
 	}
 
-	var bypassed []string
-
 	severity := None
 	for _, v := range l.Items() {
-		if len(allowlist) > 0 && allowlist.Contains(v.ID) {
-			// If allowlist is set, then check if we need to bypass it
-			// Reduce the total
-			sum.Total--
-			// Append the by passed CVEs specified in the allowlist
-			bypassed = append(bypassed, v.ID)
-
-			continue
-		}
-
 		if num, ok := sum.Summary[v.Severity]; ok {
 			sum.Summary[v.Severity] = num + 1
 		} else {
@@ -180,14 +171,13 @@ func (l *VulnerabilityItemList) GetSeveritySummaryAndByPassed(allowlist models2.
 		if v.Severity.Code() > severity.Code() {
 			severity = v.Severity
 		}
-
 		// If the CVE item has a fixable version
 		if len(v.FixVersion) > 0 {
 			sum.Fixable++
 		}
 	}
 
-	return severity, sum, bypassed
+	return severity, sum
 }
 
 // VulnerabilityItem represents one found vulnerability

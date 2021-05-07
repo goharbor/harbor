@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -39,30 +38,12 @@ type NativeReportSummary struct {
 	TotalCount            int                    `json:"-"`
 	CompleteCount         int                    `json:"-"`
 	VulnerabilityItemList *VulnerabilityItemList `json:"-"`
-	CVESet                models2.CVESet         `json:"-"`
 }
 
-// UpdateSeveritySummaryAndByPassed update the Severity, Summary and CVEBypassed of the sum from l and s
-func (sum *NativeReportSummary) UpdateSeveritySummaryAndByPassed(l *VulnerabilityItemList, s models2.CVESet) {
+// UpdateSeveritySummary update the Severity, Summary of the sum from l
+func (sum *NativeReportSummary) UpdateSeveritySummary(l *VulnerabilityItemList) {
 	sum.VulnerabilityItemList = l
-	sum.CVESet = s
-
-	if l == nil {
-		return
-	}
-
-	var severity Severity
-	severity, sum.Summary, sum.CVEBypassed = l.GetSeveritySummaryAndByPassed(s)
-
-	if len(s) > 0 {
-		// Override the overall severity of the filtered list if needed.
-		sum.Severity = severity
-	}
-}
-
-// IsSuccessStatus returns true when the scan status is success
-func (sum *NativeReportSummary) IsSuccessStatus() bool {
-	return sum.ScanStatus == job.SuccessStatus.String()
+	sum.Severity, sum.Summary = l.GetSeveritySummary()
 }
 
 // Merge ...
@@ -79,17 +60,17 @@ func (sum *NativeReportSummary) Merge(another *NativeReportSummary) *NativeRepor
 	} else {
 		r.Scanner = another.Scanner
 	}
+
 	r.TotalCount = sum.TotalCount + another.TotalCount
 	r.CompleteCount = sum.CompleteCount + another.CompleteCount
 	r.CompletePercent = r.CompleteCount * 100 / r.TotalCount
 	r.ReportID = mergeReportID(sum.ReportID, another.ReportID)
-	r.Severity = mergeSeverity(sum.Severity, another.Severity)
-	r.ScanStatus = mergeScanStatus(sum.ScanStatus, another.ScanStatus)
+	r.ScanStatus = MergeScanStatus(sum.ScanStatus, another.ScanStatus)
 
-	r.UpdateSeveritySummaryAndByPassed(
-		NewVulnerabilityItemList(sum.VulnerabilityItemList, another.VulnerabilityItemList),
-		models2.NewCVESet(sum.CVESet, another.CVESet),
-	)
+	if r.ScanStatus != job.RunningStatus.String() {
+		l := NewVulnerabilityItemList(sum.VulnerabilityItemList, another.VulnerabilityItemList)
+		r.UpdateSeveritySummary(l)
+	}
 
 	return r
 }

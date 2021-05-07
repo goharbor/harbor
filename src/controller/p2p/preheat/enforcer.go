@@ -17,8 +17,6 @@ package preheat
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"strings"
 
 	tk "github.com/docker/distribution/registry/auth/token"
@@ -29,8 +27,10 @@ import (
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/label/model"
@@ -40,8 +40,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/policy"
 	pr "github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
-	"github.com/goharbor/harbor/src/pkg/scan/report"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
@@ -483,8 +481,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 
 // getVulnerabilitySev gets the severity code value for the given artifact with allowlist option set
 func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *models.Project, art *artifact.Artifact) (uint, error) {
-	al := p.CVEAllowlist.CVESet()
-	r, err := de.scanCtl.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport}, report.WithCVEAllowlist(&al))
+	vulnerable, err := de.scanCtl.GetVulnerable(ctx, art, p.CVEAllowlist.CVESet())
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
 			// no vulnerability report
@@ -494,25 +491,17 @@ func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *models.Pr
 		return defaultSeverityCode, errors.Wrap(err, "get vulnerability severity")
 	}
 
-	// Severity is based on the native report format or the generic vulnerability report format.
-	// In case no supported report format, treat as same to the no report scenario
-	sum, ok := r[v1.MimeTypeNativeReport]
-	if !ok {
-		// check if a report with MimeTypeGenericVulnerabilityReport is present.
-		// return the default severity code only if it does not exist
-		sum, ok = r[v1.MimeTypeGenericVulnerabilityReport]
-		if !ok {
-			return defaultSeverityCode, nil
-		}
-
+	if !vulnerable.IsScanSuccess() {
+		// scan status may running or error
+		return defaultSeverityCode, nil
 	}
 
-	sm, ok := sum.(*vuln.NativeReportSummary)
-	if !ok {
-		return defaultSeverityCode, errors.New("malformed native summary report")
+	// no vulnerability found
+	if vulnerable.Severity == nil {
+		return (uint)(vuln.None.Code()), nil
 	}
 
-	return (uint)(sm.Severity.Code()), nil
+	return (uint)(vulnerable.Severity.Code()), nil
 }
 
 // toCandidates converts the artifacts to filtering candidates
