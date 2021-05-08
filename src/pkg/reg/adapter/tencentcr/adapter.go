@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/docker/distribution/registry/client/auth/challenge"
@@ -28,6 +30,11 @@ var (
 )
 
 func init() {
+	var envTcrQPSLimit, _ = strconv.Atoi(os.Getenv("TCR_QPS_LIMIT"))
+	if envTcrQPSLimit > 1 && envTcrQPSLimit < tcrQPSLimit {
+		tcrQPSLimit = envTcrQPSLimit
+	}
+
 	if err := adp.RegisterFactory(model.RegistryTypeTencentTcr, new(factory)); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeTencentTcr, err)
 		return
@@ -53,7 +60,7 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 }
 
 func getAdapterInfo() *model.AdapterPattern {
-	return nil
+	return &model.AdapterPattern{}
 }
 
 type adapter struct {
@@ -127,7 +134,11 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 		registry.URL, registryURL.Host, *instanceInfo.PublicDomain, *instanceInfo.RegionName, *instanceInfo.RegistryId)
 
 	// rebuild TCR SDK client
-	client, err = tcr.NewClient(tcrCredential, *instanceInfo.RegionName, cfp)
+	client = &tcr.Client{}
+	client.Init(*instanceInfo.RegionName).
+		WithCredential(tcrCredential).
+		WithProfile(cfp).
+		WithHttpTransport(newRateLimitedTransport(tcrQPSLimit, http.DefaultTransport))
 	if err != nil {
 		return
 	}

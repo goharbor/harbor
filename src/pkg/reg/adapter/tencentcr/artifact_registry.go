@@ -7,13 +7,13 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
+	"github.com/goharbor/harbor/src/pkg/reg/filter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
-	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
 )
 
-const (
-	tcrQPSLimit = 15
+var (
+	tcrQPSLimit = 10
 )
 
 /**
@@ -48,50 +48,42 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 	log.Debugf("[tencent-tcr.FetchArtifacts] namespaces=%v", namespaces)
 
 	// 2. list repos
-	var filteredRepos []tcr.TcrRepositoryInfo
+	// var filteredRepos []tcr.TcrRepositoryInfo
+	var repos []*model.Repository
+	var repositories []*model.Repository
 	for _, ns := range namespaces {
-		var repos []tcr.TcrRepositoryInfo
-		repos, err = a.listReposByNamespace(ns)
+		tcrRepos, err := a.listReposByNamespace(ns)
 		if err != nil {
-			return
+			return nil, err
 		}
-		log.Debugf("[tencent-tcr.FetchArtifacts] namespace=%s, repositories=%d", ns, len(repos))
 
-		if _, ok := util.IsSpecificPathComponent(repoPattern); ok {
-			log.Debugf("[tencent-tcr.FetchArtifacts] specific_repos=%s", repoPattern)
-			// TODO: Check repo is exist.
-			filteredRepos = append(filteredRepos, repos...)
-		} else {
-			// 3. filter repos
-			for _, repo := range repos {
-				var ok bool
-				ok, err = util.Match(repoPattern, *repo.Name)
-				log.Debugf("[tencent-tcr.FetchArtifacts] namespace=%s, repository=%s, repoPattern=%s, Match=%v", *repo.Namespace, *repo.Name, repoPattern, ok)
-				if err != nil {
-					return
-				}
-				if ok {
-					filteredRepos = append(filteredRepos, repo)
-				}
-			}
+		if len(tcrRepos) == 0 {
+			continue
+		}
+		for _, tcrRepo := range tcrRepos {
+			repositories = append(repositories, &model.Repository{
+				Name: *tcrRepo.Name,
+			})
 		}
 	}
-	log.Debugf("[tencent-tcr.FetchArtifacts] filteredRepos=%d", len(filteredRepos))
+	repos, _ = filter.DoFilterRepositories(repositories, filters)
+	log.Debugf("[tencent-tcr.FetchArtifacts] filteredRepos=%d", len(repos))
 
 	// 4. list images
-	var rawResources = make([]*model.Resource, len(filteredRepos))
+	var rawResources = make([]*model.Resource, len(repos))
 	runner := utils.NewLimitedConcurrentRunner(tcrQPSLimit)
 
-	for i, r := range filteredRepos {
+	for i, r := range repos {
 		// !copy
 		index := i
 		repo := r
 
 		runner.AddTask(func() error {
 			var images []string
-			_, images, err = a.getImages(*repo.Namespace, *repo.Name, "")
+			repoArr := strings.Split(repo.Name, "/")
+			_, images, err = a.getImages(repoArr[0], strings.Join(repoArr[1:], "/"), "")
 			if err != nil {
-				return fmt.Errorf("[tencent-tcr.FetchArtifacts.listImages] repo=%s, error=%v", *repo.Name, err)
+				return fmt.Errorf("[tencent-tcr.FetchArtifacts.listImages] runner=%d repo=%s, error=%v", index, repo.Name, err)
 			}
 
 			var filteredImages []string
@@ -110,7 +102,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 				filteredImages = images
 			}
 
-			log.Debugf("[tencent-tcr.FetchArtifacts] repo=%s, images=%v, filteredImages=%v", *repo.Name, images, filteredImages)
+			log.Debugf("[tencent-tcr.FetchArtifacts] repo=%s, images=%v, filteredImages=%v", repo.Name, images, filteredImages)
 
 			if len(filteredImages) > 0 {
 				rawResources[index] = &model.Resource{
@@ -118,7 +110,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 					Registry: a.registry,
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{
-							Name: *repo.Name,
+							Name: repo.Name,
 						},
 						Vtags: filteredImages,
 					},
