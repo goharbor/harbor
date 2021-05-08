@@ -150,7 +150,8 @@ func (a *adapter) listReposByNamespace(namespace string) (repos []tcr.TcrReposit
 	req.Limit = a.pageSize
 	var resp = tcr.NewDescribeRepositoriesResponse()
 
-	var page int64
+	var page int64 = 1
+	var repositories []string
 	for {
 		req.Offset = common.Int64Ptr(page)
 		resp, err = a.tcrClient.DescribeRepositories(req)
@@ -161,10 +162,12 @@ func (a *adapter) listReposByNamespace(namespace string) (repos []tcr.TcrReposit
 
 		size := len(resp.Response.RepositoryList)
 		for i, repo := range resp.Response.RepositoryList {
-			log.Debugf("[tencent-tcr.listReposByNamespace.DescribeRepositories] Retrives page=%d repo(%d/%d)=%s", page, i, size, *repo.Name)
+			log.Debugf("[tencent-tcr.listReposByNamespace.DescribeRepositories] Retrives total=%d page=%d repo(%d/%d)=%s", *resp.Response.TotalCount, page, i, size, *repo.Name)
 			repos = append(repos, *repo)
+			repositories = append(repositories, *repo.Name)
 		}
 
+		log.Debugf("[tencent-tcr.listReposByNamespace.DescribeRepositories] total=%d now=%d page=%d,repositories=%v", *resp.Response.TotalCount, len(repos), page, repositories)
 		if len(repos) == int(*resp.Response.TotalCount) {
 			log.Debugf("[tencent-tcr.listReposByNamespace.DescribeRepositories] Retrives all repos.")
 			break
@@ -198,10 +201,10 @@ func (a *adapter) getImages(namespace, repo, tag string) (images []*tcr.TcrImage
 	}
 	var resp = tcr.NewDescribeImagesResponse()
 
-	var page int64
+	var page int64 = 1
 	for {
-		log.Debugf("[tencent-tcr.getImages] registryID=%s, namespace=%s, repo=%s, tag=%s, page=%d",
-			*a.registryID, namespace, repo, tag, page)
+		log.Debugf("[tencent-tcr.getImages] registryID=%s, namespace=%s, repo=%s, tag(s)=%d, page=%d",
+			*a.registryID, namespace, repo, len(imageNames), page)
 		req.Offset = &page
 		resp, err = a.tcrClient.DescribeImages(req)
 		if err != nil {
@@ -214,7 +217,7 @@ func (a *adapter) getImages(namespace, repo, tag string) (images []*tcr.TcrImage
 			imageNames = append(imageNames, *image.ImageVersion)
 		}
 
-		if len(images) == int(*resp.Response.TotalCount) {
+		if len(imageNames) == int(*resp.Response.TotalCount) {
 			break
 		}
 		page++
