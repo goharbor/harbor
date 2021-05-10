@@ -23,6 +23,7 @@ import (
 	beego_orm "github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/robfig/cron"
 )
 
@@ -73,12 +74,25 @@ type Schema struct {
 	TriggerStr  string    `orm:"column(trigger)" json:"-"`
 	Enabled     bool      `orm:"column(enabled)" json:"enabled"`
 	CreatedAt   time.Time `orm:"column(creation_time)" json:"creation_time"`
-	UpdatedTime time.Time `orm:"column(update_time)" json:"update_time" sort:"default"`
+	UpdatedTime time.Time `orm:"column(update_time)" json:"update_time"`
 }
 
 // TableName specifies the policy schema table name.
 func (s *Schema) TableName() string {
 	return "p2p_preheat_policy"
+}
+
+// GetDefaultSorts specifies the default sorts
+func (s *Schema) GetDefaultSorts() []*q.Sort {
+	return []*q.Sort{
+		{
+			Key: "UpdatedTime",
+		},
+		{
+			Key:  "ID",
+			DESC: true,
+		},
+	}
 }
 
 // FilterType represents the type info of the filter.

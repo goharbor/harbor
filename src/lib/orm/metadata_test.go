@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -35,6 +36,24 @@ func (f *foo) FilterByField5(context.Context, orm.QuerySeter, string, interface{
 }
 
 func (f *foo) OtherFunc() {}
+
+type bar struct {
+	Field1 string
+	Field2 string
+}
+
+func (b *bar) GetDefaultSorts() []*q.Sort {
+	return []*q.Sort{
+		{
+			Key:  "Field1",
+			DESC: true,
+		},
+		{
+			Key:  "Field2",
+			DESC: false,
+		},
+	}
+}
 
 func TestParseQueryObject(t *testing.T) {
 	require := require.New(t)
@@ -91,9 +110,18 @@ func TestParseQueryObject(t *testing.T) {
 	assert.True(key.Filterable)
 	assert.False(key.Sortable)
 
-	require.NotNil(metadata.DefaultSort)
-	assert.Equal("Field4", metadata.DefaultSort.Key)
-	assert.True(metadata.DefaultSort.DESC)
+	require.Len(metadata.DefaultSorts, 1)
+	assert.Equal("Field4", metadata.DefaultSorts[0].Key)
+	assert.True(metadata.DefaultSorts[0].DESC)
+
+	metadata = parseModel(&bar{})
+	require.NotNil(metadata)
+	require.Len(metadata.Keys, 4)
+	require.Len(metadata.DefaultSorts, 2)
+	assert.Equal("Field1", metadata.DefaultSorts[0].Key)
+	assert.True(metadata.DefaultSorts[0].DESC)
+	assert.Equal("Field2", metadata.DefaultSorts[1].Key)
+	assert.False(metadata.DefaultSorts[1].DESC)
 }
 
 func Test_snakeCase(t *testing.T) {

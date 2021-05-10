@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/lib/pq"
 	"github.com/theupdateframework/notary/tuf/data"
 )
@@ -37,7 +38,7 @@ type RepoRecord struct {
 	Description  string    `orm:"column(description)" json:"description"`
 	PullCount    int64     `orm:"column(pull_count)" json:"pull_count"`
 	StarCount    int64     `orm:"column(star_count)" json:"star_count"`
-	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time" sort:"default:desc"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
@@ -59,6 +60,20 @@ func (r *RepoRecord) FilterByBlobDigest(ctx context.Context, qs orm.QuerySeter, 
 // TableName is required by by beego orm to map RepoRecord to table repository
 func (r *RepoRecord) TableName() string {
 	return RepoTable
+}
+
+// GetDefaultSorts specifies the default sorts
+func (r *RepoRecord) GetDefaultSorts() []*q.Sort {
+	return []*q.Sort{
+		{
+			Key:  "CreationTime",
+			DESC: true,
+		},
+		{
+			Key:  "RepositoryID",
+			DESC: true,
+		},
+	}
 }
 
 // RepositoryQuery : query parameters for repository
