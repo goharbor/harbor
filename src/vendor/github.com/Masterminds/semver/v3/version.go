@@ -2,6 +2,7 @@ package semver
 
 import (
 	"bytes"
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -433,6 +434,28 @@ func (v *Version) UnmarshalJSON(b []byte) error {
 // MarshalJSON implements JSON.Marshaler interface.
 func (v Version) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.String())
+}
+
+// Scan implements the SQL.Scanner interface.
+func (v *Version) Scan(value interface{}) error {
+	var s string
+	s, _ = value.(string)
+	temp, err := NewVersion(s)
+	if err != nil {
+		return err
+	}
+	v.major = temp.major
+	v.minor = temp.minor
+	v.patch = temp.patch
+	v.pre = temp.pre
+	v.metadata = temp.metadata
+	v.original = temp.original
+	return nil
+}
+
+// Value implements the Driver.Valuer interface.
+func (v Version) Value() (driver.Value, error) {
+	return v.String(), nil
 }
 
 func compareSegment(v, o uint64) int {

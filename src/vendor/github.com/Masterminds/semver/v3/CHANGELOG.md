@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.0 (2020-04-15)
+
+### Added
+
+- #131: Add support for serializing/deserializing SQL (thanks @ryancurrah)
+
+### Changed
+
+- #148: More accurate validation messages on constraints
+
 ## 3.0.3 (2019-12-13)
 
 ### Fixed
