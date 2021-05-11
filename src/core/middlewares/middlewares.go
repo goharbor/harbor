@@ -15,7 +15,6 @@
 package middlewares
 
 import (
-	"github.com/goharbor/harbor/src/lib"
 	"net/http"
 	"regexp"
 
@@ -43,17 +42,18 @@ var (
 	// which will make ping request timeout, so skip the middlewares which will require DB conn.
 	pingSkipper = middleware.MethodAndPathSkipper(http.MethodGet, match("^/api/v2.0/ping"))
 
-	// dbTxSkippers skip the transaction middleware for GET Blob, PATCH Blob Upload and PUT Blob Upload APIs
+	// dbTxSkippers skip the transaction middleware for PATCH Blob Upload, PUT Blob Upload and `Read` APIs
 	// because the APIs may take a long time to run, enable the transaction middleware in them will hold the database connections
 	// until the API finished, this behavior may eat all the database connections.
-	// There are no database writing operations in the GET Blob and PATCH Blob APIs, so skip the transaction middleware is all ok.
+	// There are no database writing operations in the PATCH Blob APIs, so skip the transaction middleware is all ok.
 	// For the PUT Blob Upload API, we will make a transaction manually to write blob info to the database when put blob upload successfully.
 	dbTxSkippers = []middleware.Skipper{
-		middleware.MethodAndPathSkipper(http.MethodGet, distribution.BlobURLRegexp),
 		middleware.MethodAndPathSkipper(http.MethodPatch, distribution.BlobUploadURLRegexp),
 		middleware.MethodAndPathSkipper(http.MethodPut, distribution.BlobUploadURLRegexp),
-		middleware.MethodAndPathSkipper(http.MethodGet, lib.V2CatalogURLRe),
-		pingSkipper,
+		func(r *http.Request) bool { // skip tx for GET, HEAD and Options requests
+			m := r.Method
+			return m == http.MethodGet || m == http.MethodHead || m == http.MethodOptions
+		},
 	}
 
 	// readonlySkippers skip the post request when harbor sets to readonly.
