@@ -31,7 +31,7 @@ ALTER TABLE execution ADD COLUMN IF NOT EXISTS update_time timestamp;
 DO $$
 DECLARE
     art RECORD;
-    art_size integer;
+    art_size bigint;
 BEGIN
     FOR art IN SELECT * FROM artifact WHERE size = 0
     LOOP
