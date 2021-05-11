@@ -135,7 +135,7 @@ func (suite *CallbackTestSuite) TestScanTaskStatusChange() {
 
 func (suite *CallbackTestSuite) TestScanTaskCheckInProcessor() {
 	{
-		suite.Error(scanTaskCheckInProcessor(context.TODO(), &task.Task{}, "report"))
+		suite.Error(scanTaskCheckInProcessor(context.TODO(), &task.Task{}, &job.StatusChange{CheckIn: "report"}))
 	}
 
 	{
@@ -156,7 +156,7 @@ func (suite *CallbackTestSuite) TestScanTaskCheckInProcessor() {
 		}
 
 		r, _ := json.Marshal(report)
-		suite.NoError(scanTaskCheckInProcessor(context.TODO(), &task.Task{}, string(r)))
+		suite.NoError(scanTaskCheckInProcessor(context.TODO(), &task.Task{}, &job.StatusChange{CheckIn: string(r)}))
 	}
 }
 
