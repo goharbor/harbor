@@ -337,27 +337,27 @@ Retry Get Statics
     [Return]  ${ret}
 
 Get Statics Private Repo
-    ${privaterepo}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+    ${privaterepo}=  Retry Get Statics  ${project_statistics_private_repository_icon}
     [Return]  ${privaterepo}
 
 Get Statics Private Project
-    ${privateproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[1]/statistics/div/span[1]
+    ${privateproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[1]/div/div[1]/div[2]
     [Return]  ${privateproj}
 
 Get Statics Public Repo
-    ${publicrepo}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[2]/statistics/div/span[1]
+    ${publicrepo}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[1]/div/div[2]/div[2]
     [Return]  ${publicrepo}
 
 Get Statics Public Project
-    ${publicproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[1]/statistics/div/span[1]
+    ${publicproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[1]/div/div[2]/div[2]
     [Return]  ${publicproj}
 
 Get Statics Total Repo
-    ${totalrepo}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[2]/statistics/div/span[1]
+    ${totalrepo}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div/div[3]/div[2]
     [Return]  ${totalrepo}
 
 Get Statics Total Project
-    ${totalproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[1]/statistics/div/span[1]
+    ${totalproj}=  Retry Get Statics  //projects/div/div/div[1]/div/statistics-panel/div/div[1]/div/div[3]/div[2]
     [Return]  ${totalproj}
 
 Input Count Quota
