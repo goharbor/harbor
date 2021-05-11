@@ -80,7 +80,7 @@ func updateUserInitialPassword(userID int, password string) error {
 	queryUser := models.User{UserID: userID}
 	user, err := dao.GetUser(queryUser)
 	if err != nil {
-		return fmt.Errorf("Failed to get user, userID: %d %v", userID, err)
+		return fmt.Errorf("failed to get user, userID: %d %v", userID, err)
 	}
 	if user == nil {
 		return fmt.Errorf("user id: %d does not exist", userID)
@@ -90,7 +90,7 @@ func updateUserInitialPassword(userID int, password string) error {
 		user.Password = password
 		err = dao.ChangeUserPassword(*user)
 		if err != nil {
-			return fmt.Errorf("Failed to update user encrypted password, userID: %d, err: %v", userID, err)
+			return fmt.Errorf("failed to update user encrypted password, userID: %d, err: %v", userID, err)
 		}
 	}
 	return nil

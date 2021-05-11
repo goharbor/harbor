@@ -174,7 +174,7 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 
 	}
 	if member.EntityID <= 0 {
-		return 0, fmt.Errorf("Can not get valid member entity, request: %+v", req)
+		return 0, fmt.Errorf("can not get valid member entity, request: %+v", req)
 	}
 
 	// Check if member already exist in current project

@@ -64,7 +64,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 func parseRegion(url string) (string, error) {
 	rs := regionRegexp.FindStringSubmatch(url)
 	if rs == nil {
-		return "", errors.New("Bad aws url")
+		return "", errors.New("bad aws url")
 	}
 	return rs[1], nil
 }

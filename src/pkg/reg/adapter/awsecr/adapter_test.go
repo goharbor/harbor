@@ -291,7 +291,7 @@ var urlForBenchmark = []string{
 func compileRegexpEveryTime(url string) (string, error) {
 	rs := regexp.MustCompile(regionPattern).FindStringSubmatch(url)
 	if rs == nil {
-		return "", errors.New("Bad aws url")
+		return "", errors.New("bad aws url")
 	}
 	return rs[1], nil
 }

@@ -100,7 +100,7 @@ func (bc *basicClient) GetCandidates(repository *selector.Repository) ([]*select
 		}
 		for _, art := range artifacts {
 			if art.Digest == "" {
-				return nil, fmt.Errorf("Lack Digest of Candidate for %s/%s", repository.Namespace, repository.Name)
+				return nil, fmt.Errorf("lack digest of candidate for %s/%s", repository.Namespace, repository.Name)
 			}
 			labels := make([]string, 0)
 			for _, label := range art.Labels {

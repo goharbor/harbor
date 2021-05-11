@@ -117,7 +117,7 @@ func (cra *ChartRepositoryAPI) requireAccess(action rbac.Action, subresource ...
 func (cra *ChartRepositoryAPI) GetHealthStatus() {
 	// Check access
 	if !cra.SecurityCtx.IsAuthenticated() {
-		cra.SendUnAuthorizedError(errors.New("Unauthorized"))
+		cra.SendUnAuthorizedError(errors.New("unauthorized"))
 		return
 	}
 
@@ -145,7 +145,7 @@ func (cra *ChartRepositoryAPI) GetIndexByRepo() {
 func (cra *ChartRepositoryAPI) GetIndex() {
 	// Check access
 	if !cra.SecurityCtx.IsAuthenticated() {
-		cra.SendUnAuthorizedError(errors.New("Unauthorized"))
+		cra.SendUnAuthorizedError(errors.New("unauthorized"))
 		return
 	}
 
@@ -570,7 +570,7 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 
 		// Handle error case by case
 		if err != nil {
-			formatedErr := fmt.Errorf("Get file content with multipart header from key '%s' failed with error: %s", f.formField, err.Error())
+			formatedErr := fmt.Errorf("get file content with multipart header from key '%s' failed with error: %s", f.formField, err.Error())
 			if f.mustHave || err != http.ErrMissingFile {
 				return formatedErr
 			}
@@ -582,12 +582,12 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 
 		fw, err := w.CreateFormFile(f.formField, mHeader.Filename)
 		if err != nil {
-			return fmt.Errorf("Create form file with multipart header failed with error: %s", err.Error())
+			return fmt.Errorf("create form file with multipart header failed with error: %s", err.Error())
 		}
 
 		_, err = io.Copy(fw, mFile)
 		if err != nil {
-			return fmt.Errorf("Copy file stream in multipart form data failed with error: %s", err.Error())
+			return fmt.Errorf("copy file stream in multipart form data failed with error: %s", err.Error())
 		}
 
 	}
@@ -603,18 +603,18 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 func initializeChartController() (*chartserver.Controller, error) {
 	addr, err := config.GetChartMuseumEndpoint()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get the endpoint URL of chart storage server: %s", err.Error())
+		return nil, fmt.Errorf("failed to get the endpoint URL of chart storage server: %s", err.Error())
 	}
 
 	addr = strings.TrimSuffix(addr, "/")
 	url, err := url.Parse(addr)
 	if err != nil {
-		return nil, errors.New("Endpoint URL of chart storage server is malformed")
+		return nil, errors.New("endpoint URL of chart storage server is malformed")
 	}
 
 	controller, err := chartserver.NewController(url, orm.Middleware())
 	if err != nil {
-		return nil, errors.New("Failed to initialize chart API controller")
+		return nil, errors.New("failed to initialize chart API controller")
 	}
 
 	hlog.Debugf("Chart storage server is set to %s", url.String())

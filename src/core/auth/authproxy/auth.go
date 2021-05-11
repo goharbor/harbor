@@ -189,7 +189,7 @@ func (a *Auth) SearchGroup(groupKey string) (*model.UserGroup, error) {
 func (a *Auth) OnBoardGroup(u *model.UserGroup, altGroupName string) error {
 	// if group name provided, on board the user group
 	if len(u.GroupName) == 0 {
-		return errors.New("Should provide a group name")
+		return errors.New("should provide a group name")
 	}
 	u.GroupType = common.HTTPGroupType
 	err := usergroup.Ctl.Ensure(orm.Context(), u)

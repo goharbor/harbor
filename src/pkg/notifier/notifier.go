@@ -68,11 +68,11 @@ func NewNotificationWatcher() *NotificationWatcher {
 // Handle the related topic with the specified handler.
 func (nw *NotificationWatcher) Handle(topic string, handler NotificationHandler) error {
 	if strings.TrimSpace(topic) == "" {
-		return errors.New("Empty topic is not supported")
+		return errors.New("empty topic is not supported")
 	}
 
 	if handler == nil {
-		return errors.New("Nil handler can not be registered")
+		return errors.New("nil handler can not be registered")
 	}
 
 	defer nw.Unlock()
@@ -81,7 +81,7 @@ func (nw *NotificationWatcher) Handle(topic string, handler NotificationHandler)
 	t := reflect.TypeOf(handler).String()
 	if indexer, ok := nw.handlers[topic]; ok {
 		if _, existing := indexer[t]; existing {
-			return fmt.Errorf("Topic %s has already register the handler with type %s", topic, t)
+			return fmt.Errorf("topic %s has already register the handler with type %s", topic, t)
 		}
 
 		indexer[t] = handler
@@ -109,7 +109,7 @@ func (nw *NotificationWatcher) Handle(topic string, handler NotificationHandler)
 // then revoke the whole topic, otherwise only revoke the specified handler.
 func (nw *NotificationWatcher) UnHandle(topic string, handler string) error {
 	if strings.TrimSpace(topic) == "" {
-		return errors.New("Empty topic is not supported")
+		return errors.New("empty topic is not supported")
 	}
 
 	defer nw.Unlock()
@@ -156,13 +156,13 @@ func (nw *NotificationWatcher) UnHandle(topic string, handler string) error {
 		}
 	}
 
-	return fmt.Errorf("Failed to revoke handler %s with topic %s", handler, topic)
+	return fmt.Errorf("failed to revoke handler %s with topic %s", handler, topic)
 }
 
 // Notify that notification is coming.
 func (nw *NotificationWatcher) Notify(notification Notification) error {
 	if strings.TrimSpace(notification.Topic) == "" {
-		return errors.New("Empty topic can not be notified")
+		return errors.New("empty topic can not be notified")
 	}
 
 	defer nw.RUnlock()
@@ -174,7 +174,7 @@ func (nw *NotificationWatcher) Notify(notification Notification) error {
 		handlers = []NotificationHandler{}
 	)
 	if indexer, ok = nw.handlers[notification.Topic]; !ok {
-		return fmt.Errorf("No handlers registered for handling topic %s", notification.Topic)
+		return fmt.Errorf("no handlers registered for handling topic %s", notification.Topic)
 	}
 
 	for _, h := range indexer {

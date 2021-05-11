@@ -115,7 +115,7 @@ func (chc *ChartCache) PutChart(chart *ChartVersionDetails) {
 			}
 		default:
 			// Should not reach here, but still put guard code here
-			err = errors.New("Meet invalid cache driver")
+			err = errors.New("meet invalid cache driver")
 		}
 
 		if err != nil {

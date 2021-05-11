@@ -36,16 +36,16 @@ const frozenTime time.Duration = 1500 * time.Millisecond
 var lock = NewUserLock(frozenTime)
 
 // ErrorUserNotExist ...
-var ErrorUserNotExist = errors.New("User does not exist")
+var ErrorUserNotExist = errors.New("user does not exist")
 
 // ErrorGroupNotExist ...
-var ErrorGroupNotExist = errors.New("Group does not exist")
+var ErrorGroupNotExist = errors.New("group does not exist")
 
 // ErrDuplicateLDAPGroup ...
-var ErrDuplicateLDAPGroup = errors.New("An LDAP user group with same DN already exist")
+var ErrDuplicateLDAPGroup = errors.New("a LDAP user group with same DN already exist")
 
 // ErrInvalidLDAPGroupDN ...
-var ErrInvalidLDAPGroupDN = errors.New("The LDAP group DN is invalid")
+var ErrInvalidLDAPGroupDN = errors.New("the LDAP group DN is invalid")
 
 // ErrNotSupported ...
 var ErrNotSupported = errors.New("not supported")
@@ -149,7 +149,7 @@ func Login(m models.AuthModel) (*models.User, error) {
 
 	authenticator, ok := registry[authMode]
 	if !ok {
-		return nil, fmt.Errorf("Unrecognized auth_mode: %s", authMode)
+		return nil, fmt.Errorf("unrecognized auth_mode: %s", authMode)
 	}
 	if lock.IsLocked(m.Principal) {
 		log.Debugf("%s is locked due to login failure, login failed", m.Principal)
@@ -175,7 +175,7 @@ func getHelper() (AuthenticateHelper, error) {
 	}
 	AuthenticateHelper, ok := registry[authMode]
 	if !ok {
-		return nil, fmt.Errorf("Can not get authenticator, authmode: %s", authMode)
+		return nil, fmt.Errorf("can not get authenticator, authmode: %s", authMode)
 	}
 	return AuthenticateHelper, nil
 }

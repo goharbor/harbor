@@ -60,11 +60,11 @@ func addProjectMember(member models.Member) (int, error) {
 	o := GetOrmer()
 
 	if member.EntityID <= 0 {
-		return 0, fmt.Errorf("Invalid entity_id, member: %+v", member)
+		return 0, fmt.Errorf("invalid entity_id, member: %+v", member)
 	}
 
 	if member.ProjectID <= 0 {
-		return 0, fmt.Errorf("Invalid project_id, member: %+v", member)
+		return 0, fmt.Errorf("invalid project_id, member: %+v", member)
 	}
 
 	var pmID int

@@ -82,7 +82,7 @@ func (b *BaseAPI) DecodeJSONReq(v interface{}) error {
 	if err != nil {
 		log.Errorf("Error while decoding the json request, error: %v, %v",
 			err, string(b.Ctx.Input.CopyBody(1 << 32)[:]))
-		return errors.New("Invalid json request")
+		return errors.New("invalid json request")
 	}
 	return nil
 }

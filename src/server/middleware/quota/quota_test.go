@@ -208,7 +208,7 @@ func (suite *RequestMiddlewareTestSuite) TestResourcesRequestDenied() {
 
 	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
 	var errs pquota.Errors
-	errs = errs.Add(fmt.Errorf("Exceed"))
+	errs = errs.Add(fmt.Errorf("exceed"))
 	mock.OnAnything(suite.quotaController, "Request").Return(errs)
 
 	RequestMiddleware(config)(next).ServeHTTP(rr, req)
