@@ -43,7 +43,7 @@ func (h *hookHandlerTestSuite) SetupTest() {
 
 func (h *hookHandlerTestSuite) TestHandle() {
 	// handle check in data
-	checkInProcessorRegistry["test"] = func(ctx context.Context, task *Task, data string) (err error) { return nil }
+	checkInProcessorRegistry["test"] = func(ctx context.Context, task *Task, sc *job.StatusChange) (err error) { return nil }
 	defer delete(checkInProcessorRegistry, "test")
 	h.taskDAO.On("List", mock.Anything, mock.Anything).Return([]*dao.Task{
 		{

@@ -17,7 +17,6 @@ package task
 import (
 	"context"
 	"fmt"
-
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -80,7 +79,7 @@ func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
 		}
 		t := &Task{}
 		t.From(task)
-		return processor(ctx, t, sc.CheckIn)
+		return processor(ctx, t, sc)
 	}
 
 	// update task status
