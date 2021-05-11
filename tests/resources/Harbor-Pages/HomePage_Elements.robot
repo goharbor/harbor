@@ -30,4 +30,9 @@ ${login_btn}  //*[@id='log_in']
 ${harbor_span_title}  //span[contains(., 'Harbor')]
 ${login_name}  //*[@id='login_username']
 ${login_pwd}  //*[@id='login_password']
+${header_user}  //harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown[2]//button/span
+${about_btn}  //clr-dropdown-menu/a[contains(.,'About')]
+${header}  xpath=//clr-header[contains(@class,'header-5')]
+${color_theme_light}  //span[contains(.,'LIGHT')]
+${close_btn}  //button[contains(.,'CLOSE')]
 

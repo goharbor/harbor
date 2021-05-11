@@ -17,7 +17,7 @@ class User(base.Base, object):
         if realname is None:
             realname = base._random_name("realname")
         if email is None:
-            email = '%s@%s.com' % (realname, "vmware")
+            email = '%s@%s.com' % (realname, "harbortest")
         if user_password is None:
             user_password = "Harbor12345678"
         user_req = v2_swagger_client.UserCreationReq(username=name, email=email, password=user_password, realname=realname)
