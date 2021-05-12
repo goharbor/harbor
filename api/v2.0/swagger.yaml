@@ -7888,7 +7888,7 @@ definitions:
               daily_time:
                 type: integer
                 description: 'The offset in seconds of UTC 0 o''clock, only valid when the policy type is "daily"'
-            description: 'The parameters of the policy, the values are dependant on the type of the policy.'
+            description: 'The parameters of the policy, the values are dependent on the type of the policy.'
   Configurations:
     type: object
     additionalProperties:
