@@ -22,11 +22,6 @@ Library  SSHLibrary  1 minute
 Library  DateTime
 Library  SeleniumLibrary  60  10
 Library  JSONLibrary
-Resource  Nimbus-Util.robot
-Resource  Vsphere-Util.robot
-Resource  VCH-Util.robot
-Resource  Drone-Util.robot
-Resource  Github-Util.robot
 Resource  Harbor-Util.robot
 Resource  Harbor-Pages/Public_Elements.robot
 Resource  Harbor-Pages/HomePage.robot
