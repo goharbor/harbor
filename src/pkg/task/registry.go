@@ -17,6 +17,8 @@ package task
 import (
 	"context"
 	"fmt"
+
+	"github.com/goharbor/harbor/src/jobservice/job"
 )
 
 var (
@@ -26,7 +28,7 @@ var (
 )
 
 // CheckInProcessor is the processor to process the check in data which is sent by jobservice via webhook
-type CheckInProcessor func(ctx context.Context, task *Task, data string) (err error)
+type CheckInProcessor func(ctx context.Context, task *Task, sc *job.StatusChange) (err error)
 
 // StatusChangePostFunc is the function called after the task status changed
 type StatusChangePostFunc func(ctx context.Context, taskID int64, status string) (err error)
