@@ -126,11 +126,11 @@ func getIndexYaml(path string) (*helm_repo.IndexFile, error) {
 
 	indexFile := &helm_repo.IndexFile{}
 	if err := yaml.Unmarshal(content, indexFile); err != nil {
-		return nil, fmt.Errorf("Unmarshal error: %s", err)
+		return nil, fmt.Errorf("unmarshal error: %s", err)
 	}
 
 	if indexFile == nil {
-		return nil, fmt.Errorf("Got nil index yaml file")
+		return nil, fmt.Errorf("got nil index yaml file")
 	}
 
 	return indexFile, nil

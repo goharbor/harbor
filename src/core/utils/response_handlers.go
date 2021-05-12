@@ -42,7 +42,7 @@ func (s StatusRespHandler) Handle(resp *http.Response) error {
 		if err != nil {
 			return err
 		}
-		return fmt.Errorf("Unexpected status code: %d, text: %s", resp.StatusCode, string(b))
+		return fmt.Errorf("unexpected status code: %d, text: %s", resp.StatusCode, string(b))
 	}
 	return nil
 }

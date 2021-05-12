@@ -59,7 +59,7 @@ func New() DAO {
 func (d *dao) GetProjectMember(ctx context.Context, queryMember models.Member, query *q.Query) ([]*models.Member, error) {
 	log.Debugf("Query condition %+v", queryMember)
 	if queryMember.ProjectID == 0 {
-		return nil, fmt.Errorf("Failed to query project member, query condition %v", queryMember)
+		return nil, fmt.Errorf("failed to query project member, query condition %v", queryMember)
 	}
 	o, err := orm.FromContext(ctx)
 	if err != nil {
@@ -139,11 +139,11 @@ func (d *dao) AddProjectMember(ctx context.Context, member models.Member) (int, 
 	}
 
 	if member.EntityID <= 0 {
-		return 0, fmt.Errorf("Invalid entity_id, member: %+v", member)
+		return 0, fmt.Errorf("invalid entity_id, member: %+v", member)
 	}
 
 	if member.ProjectID <= 0 {
-		return 0, fmt.Errorf("Invalid project_id, member: %+v", member)
+		return 0, fmt.Errorf("invalid project_id, member: %+v", member)
 	}
 
 	delSQL := "delete from project_member where project_id = ? and entity_id = ? and entity_type = ? "

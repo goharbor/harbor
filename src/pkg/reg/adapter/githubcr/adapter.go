@@ -130,7 +130,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 	if paths, ok := util.IsSpecificPath(pattern); ok {
 		repositories = paths
 	} else {
-		err = errors.New("Only support specific repository name")
+		err = errors.New("only support specific repository name")
 		return
 	}
 

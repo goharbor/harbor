@@ -233,7 +233,7 @@ func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Con
 		return err
 	}
 	if !exist || desc == nil {
-		return errors.NotFoundError(fmt.Errorf("The tag %v:%v is not found", art.Repository, art.Tag))
+		return errors.NotFoundError(fmt.Errorf("the tag %v:%v is not found", art.Repository, art.Tag))
 	}
 	go func(art lib.ArtifactInfo) {
 		// After docker 20.10 or containerd, the client heads the tag first,

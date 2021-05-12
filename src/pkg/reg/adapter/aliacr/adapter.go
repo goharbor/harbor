@@ -42,7 +42,7 @@ func getRegion(url string) (region string, err error) {
 	}
 	rs := regRegion.FindStringSubmatch(url)
 	if rs == nil {
-		return "", errors.New("Invalid Rgistry|CR service url")
+		return "", errors.New("invalid Rgistry|CR service url")
 	}
 	// fmt.Println(rs)
 	return rs[2], nil
@@ -292,7 +292,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 			var tags []string
 			tags, err = a.getTags(repo, client)
 			if err != nil {
-				return fmt.Errorf("List tags for repo '%s' error: %v", repo.RepoName, err)
+				return fmt.Errorf("list tags for repo '%s' error: %v", repo.RepoName, err)
 			}
 
 			var filterTags []string
@@ -301,7 +301,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 					var ok bool
 					ok, err = util.Match(tagsPattern, tag)
 					if err != nil {
-						return fmt.Errorf("Match tag '%s' error: %v", tag, err)
+						return fmt.Errorf("match tag '%s' error: %v", tag, err)
 					}
 					if ok {
 						filterTags = append(filterTags, tag)

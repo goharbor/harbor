@@ -211,7 +211,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 func (a *adapter) listArtifacts(repository string, filters []*model.Filter) ([]*model.Artifact, error) {
 	tags, err := a.clientDTRAPI.getTags(repository)
 	if err != nil {
-		return nil, fmt.Errorf("List tags for repo '%s' error: %v", repository, err)
+		return nil, fmt.Errorf("list tags for repo '%s' error: %v", repository, err)
 	}
 	var artifacts []*model.Artifact
 	for _, tag := range tags {

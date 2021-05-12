@@ -104,7 +104,7 @@ func (c *client) StartGC() (*gc.Result, error) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		log.Errorf("Failed to start gc: %d", resp.StatusCode)
-		return nil, fmt.Errorf("Failed to start GC: %d", resp.StatusCode)
+		return nil, fmt.Errorf("failed to start GC: %d", resp.StatusCode)
 	}
 	if err := json.Unmarshal(data, gcr); err != nil {
 		return nil, err

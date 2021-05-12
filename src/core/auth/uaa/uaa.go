@@ -115,7 +115,7 @@ func (u *Auth) SearchUser(username string) (*models.User, error) {
 		return nil, nil
 	}
 	if len(l) > 1 {
-		return nil, fmt.Errorf("Multiple entries found for username: %s", username)
+		return nil, fmt.Errorf("multiple entries found for username: %s", username)
 	}
 	e := l[0]
 	email := ""

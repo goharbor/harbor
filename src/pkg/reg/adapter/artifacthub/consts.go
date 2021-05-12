@@ -22,7 +22,7 @@ const (
 )
 
 // ErrHTTPNotFound defines the return error when receiving 404 response code
-var ErrHTTPNotFound = errors.New("Not Found")
+var ErrHTTPNotFound = errors.New("not found")
 
 func searchPackages(kind, offset, limit int, queryString string) string {
 	if len(queryString) == 0 {
