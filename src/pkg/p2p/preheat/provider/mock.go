@@ -16,13 +16,12 @@ package provider
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/notification"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"time"
-
-	cm "github.com/goharbor/harbor/src/common/models"
 )
 
 // This is a package to provide mock utilities.
@@ -111,8 +110,8 @@ func MockKrakenProvider() *httptest.Server {
 				return
 			}
 
-			var payload = &cm.Notification{
-				Events: []cm.Event{},
+			var payload = &notification.Notification{
+				Events: []notification.Event{},
 			}
 
 			if err := json.Unmarshal(data, payload); err != nil {

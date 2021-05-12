@@ -3,11 +3,11 @@ package provider
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/notification"
 	"strings"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema2"
-	cm "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
@@ -67,13 +67,13 @@ func (kd *KrakenDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingStatu
 	}
 
 	url := fmt.Sprintf("%s%s", strings.TrimSuffix(kd.instance.Endpoint, "/"), krakenPreheatPath)
-	var events = make([]cm.Event, 0)
+	var events = make([]notification.Event, 0)
 	eventID := utils.GenerateRandomString()
-	event := cm.Event{
+	event := notification.Event{
 		ID:        eventID,
 		TimeStamp: time.Now().UTC(),
 		Action:    "push",
-		Target: &cm.Target{
+		Target: &notification.Target{
 			MediaType:  schema2.MediaTypeManifest,
 			Digest:     preheatingImage.Digest,
 			Repository: preheatingImage.ImageName,
@@ -82,7 +82,7 @@ func (kd *KrakenDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingStatu
 		},
 	}
 	events = append(events, event)
-	var payload = cm.Notification{
+	var payload = notification.Notification{
 		Events: events,
 	}
 	_, err := client.GetHTTPClient(kd.instance.Insecure).Post(url, kd.getCred(), payload, nil)
