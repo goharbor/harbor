@@ -17,6 +17,8 @@ package config
 import (
 	"context"
 	"errors"
+	"sync"
+
 	"github.com/goharbor/harbor/src/common"
 	comModels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
@@ -24,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
-	"sync"
 )
 
 const (

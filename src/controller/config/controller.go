@@ -18,6 +18,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
@@ -28,9 +30,14 @@ import (
 	"github.com/goharbor/harbor/src/pkg/user"
 )
 
+const (
+	configOverwriteJSON = "CONFIG_OVERWRITE_JSON"
+)
+
 var (
 	// Ctl Global instance of the config controller
-	Ctl = NewController()
+	Ctl            = NewController()
+	readOnlyForAll = false
 )
 
 // Controller define operations related to configures
@@ -39,10 +46,12 @@ type Controller interface {
 	UserConfigs(ctx context.Context) (map[string]*models.Value, error)
 	// UpdateUserConfigs update the user scope configurations
 	UpdateUserConfigs(ctx context.Context, conf map[string]interface{}) error
-	// GetAll get all configurations, used by internal, should include the system config items
+	// AllConfigs get all configurations, used by internal, should include the system config items
 	AllConfigs(ctx context.Context) (map[string]interface{}, error)
 	// ConvertForGet - delete sensitive attrs and add editable field to every attr
 	ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal bool) (map[string]*models.Value, error)
+	// OverwriteConfig overwrite config in the database and set all configure read only when CONFIG_OVERWRITE_JSON is provided
+	OverwriteConfig(ctx context.Context) error
 }
 
 type controller struct {
@@ -67,17 +76,16 @@ func (c *controller) AllConfigs(ctx context.Context) (map[string]interface{}, er
 }
 
 func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]interface{}) error {
+	if readOnlyForAll {
+		return errors.ForbiddenError(nil).WithMessage("current config is init by env variable: CONFIG_OVERWRITE_JSON, it cannot be updated")
+	}
 	mgr := config.GetCfgManager(ctx)
 	err := mgr.Load(ctx)
 	if err != nil {
 		return err
 	}
-	isSysErr, err := c.validateCfg(ctx, conf)
+	err = c.validateCfg(ctx, conf)
 	if err != nil {
-		if isSysErr {
-			log.Errorf("failed to validate configurations: %v", err)
-			return fmt.Errorf("failed to validate configuration")
-		}
 		return err
 	}
 	if err := mgr.UpdateConfig(ctx, conf); err != nil {
@@ -87,39 +95,28 @@ func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]inte
 	return nil
 }
 
-func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{}) (bool, error) {
+func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{}) error {
 	mgr := config.GetCfgManager(ctx)
-	flag, err := c.authModeCanBeModified(ctx)
-	if err != nil {
-		return true, err
-	}
-	if !flag {
-		if failedKeys := c.checkUnmodifiable(ctx, cfgs, common.AUTHMode); len(failedKeys) > 0 {
-			return false, errors.BadRequestError(nil).
-				WithMessage(fmt.Sprintf("the keys %v can not be modified as new users have been inserted into database", failedKeys))
-		}
-	}
-	err = mgr.ValidateCfg(ctx, cfgs)
-	if err != nil {
-		return false, errors.BadRequestError(err)
-	}
-	return false, nil
-}
 
-func (c *controller) checkUnmodifiable(ctx context.Context, cfgs map[string]interface{}, keys ...string) (failed []string) {
-	mgr := config.GetCfgManager(ctx)
-	if mgr == nil || cfgs == nil || keys == nil {
-		return
-	}
-	for _, k := range keys {
-		v := mgr.Get(ctx, k).GetString()
-		if nv, ok := cfgs[k]; ok {
-			if v != fmt.Sprintf("%v", nv) {
-				failed = append(failed, k)
+	// check if auth can be modified
+	if nv, ok := cfgs[common.AUTHMode]; ok {
+		if nv.(string) != mgr.Get(ctx, common.AUTHMode).GetString() {
+			canBeModified, err := c.authModeCanBeModified(ctx)
+			if err != nil {
+				return err
+			}
+			if !canBeModified {
+				return errors.BadRequestError(nil).
+					WithMessage(fmt.Sprintf("the auth mode cannot be modified as new users have been inserted into database"))
 			}
 		}
 	}
-	return
+
+	err := mgr.ValidateCfg(ctx, cfgs)
+	if err != nil {
+		return errors.BadRequestError(err)
+	}
+	return nil
 }
 
 // ScanAllPolicy is represent the json request and object for scan all policy
@@ -129,7 +126,6 @@ type ScanAllPolicy struct {
 	Param map[string]interface{} `json:"parameter,omitempty"`
 }
 
-// ConvertForGet - delete sensitive attrs and add editable field to every attr
 func (c *controller) ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal bool) (map[string]*models.Value, error) {
 	result := map[string]*models.Value{}
 
@@ -159,7 +155,7 @@ func (c *controller) ConvertForGet(ctx context.Context, cfg map[string]interface
 		}
 		result[item.Name] = &models.Value{
 			Val:      val,
-			Editable: true,
+			Editable: !readOnlyForAll,
 		}
 	}
 
@@ -169,19 +165,35 @@ func (c *controller) ConvertForGet(ctx context.Context, cfg map[string]interface
 	}
 
 	// set value for auth_mode
-	flag, err := c.authModeCanBeModified(ctx)
+	canBeModified, err := c.authModeCanBeModified(ctx)
 	if err != nil {
 		return nil, err
 	}
-	result[common.AUTHMode].Editable = flag
+	result[common.AUTHMode].Editable = canBeModified && !readOnlyForAll
 
 	return result, nil
 }
 
+func (c *controller) OverwriteConfig(ctx context.Context) error {
+	cfgMap := map[string]interface{}{}
+	if v, ok := os.LookupEnv(configOverwriteJSON); ok {
+		err := json.Unmarshal([]byte(v), &cfgMap)
+		if err != nil {
+			return err
+		}
+		err = c.UpdateUserConfigs(ctx, cfgMap)
+		if err != nil {
+			return err
+		}
+		readOnlyForAll = true
+	}
+	return nil
+}
+
 func (c *controller) authModeCanBeModified(ctx context.Context) (bool, error) {
-	users, err := c.userManager.List(ctx, &q.Query{})
+	cnt, err := c.userManager.Count(ctx, &q.Query{})
 	if err != nil {
 		return false, err
 	}
-	return len(users) == 0, nil
+	return cnt == 1, nil // admin user only
 }
