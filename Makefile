@@ -107,11 +107,11 @@ NOTARYMIGRATEVERSION=v4.11.0
 TRIVYVERSION=v0.16.0
 TRIVYADAPTERVERSION=v0.18.0
 
-# version of chartmuseum
-CHARTMUSEUMVERSION=v0.12.0-redis
-
 # version of chartmuseum for pulling the source code
-CHARTMUSEUM_SRC_TAG=v0.12.0
+CHARTMUSEUM_SRC_TAG=v0.13.1
+
+# version of chartmuseum
+CHARTMUSEUMVERSION=$(CHARTMUSEUM_SRC_TAG)-redis
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.7.1

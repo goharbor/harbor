@@ -1,8 +1,10 @@
 package authproxy
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
@@ -46,7 +48,7 @@ func TokenReview(rawToken string, authProxyConfig *cfgModels.HTTPAuthProxy) (k8s
 			Token: rawToken,
 		},
 	}
-	res := authClient.Post().Body(tokenReviewRequest).Do()
+	res := authClient.Post().Body(tokenReviewRequest).Do(context.Background())
 	err = res.Error()
 	if err != nil {
 		log.Errorf("fail to POST auth request, %v", err)

@@ -1,8 +1,8 @@
 diff --git a/cmd/chartmuseum/main.go b/cmd/chartmuseum/main.go
-index e2d8ec0..116b1d4 100644
+index 8fd7349..eb67ddf 100644
 --- a/cmd/chartmuseum/main.go
 +++ b/cmd/chartmuseum/main.go
-@@ -264,6 +264,8 @@ func storeFromConfig(conf *config.Config) cache.Store {
+@@ -282,12 +282,23 @@ func storeFromConfig(conf *config.Config) cache.Store {
  	switch cacheFlag {
  	case "redis":
  		store = redisCacheFromConfig(conf)
@@ -11,10 +11,9 @@ index e2d8ec0..116b1d4 100644
  	default:
  		crash("Unsupported cache store: ", cacheFlag)
  	}
-@@ -280,6 +282,16 @@ func redisCacheFromConfig(conf *config.Config) cache.Store {
- 	))
- }
  
+ 	return store
+ }
 +func redisSentinelCacheFromConfig(conf *config.Config) cache.Store {
 +	crashIfConfigMissingVars(conf, []string{"cache.redis.addr", "cache.redis.mastername"})
 +	return cache.Store(cache.NewRedisSentinelStore(
@@ -24,10 +23,9 @@ index e2d8ec0..116b1d4 100644
 +		conf.GetInt("cache.redis.db"),
 +	))
 +}
-+
- func crashIfConfigMissingVars(conf *config.Config, vars []string) {
- 	missing := []string{}
- 	for _, v := range vars {
+ 
+ func redisCacheFromConfig(conf *config.Config) cache.Store {
+ 	crashIfConfigMissingVars(conf, []string{"cache.redis.addr"})
 diff --git a/pkg/cache/redis_sentinel.go b/pkg/cache/redis_sentinel.go
 new file mode 100644
 index 0000000..0c73427
@@ -53,10 +51,10 @@ index 0000000..0c73427
 +	return store
 +}
 diff --git a/pkg/config/vars.go b/pkg/config/vars.go
-index 2b30ec4..603eebc 100644
+index 638eb49..4f036c9 100644
 --- a/pkg/config/vars.go
 +++ b/pkg/config/vars.go
-@@ -237,10 +237,19 @@ var configVars = map[string]configVar{
+@@ -246,10 +246,19 @@ var configVars = map[string]configVar{
  		Default: "",
  		CLIFlag: cli.StringFlag{
  			Name:   "cache-redis-addr",

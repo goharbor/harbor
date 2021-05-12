@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	"github.com/google/gofuzz"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // IntOrString is a type that can hold an int32 or a string.  When used in
@@ -97,7 +97,8 @@ func (intstr *IntOrString) String() string {
 }
 
 // IntValue returns the IntVal if type Int, or if
-// it is a String, will attempt a conversion to int.
+// it is a String, will attempt a conversion to int,
+// returning 0 if a parsing error occurs.
 func (intstr *IntOrString) IntValue() int {
 	if intstr.Type == String {
 		i, _ := strconv.Atoi(intstr.StrVal)
