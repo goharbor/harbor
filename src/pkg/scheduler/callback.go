@@ -17,6 +17,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/job"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -67,7 +68,7 @@ func callbackFuncExist(name string) bool {
 	return exist
 }
 
-func triggerCallback(ctx context.Context, task *task.Task, data string) (err error) {
+func triggerCallback(ctx context.Context, task *task.Task, sc *job.StatusChange) (err error) {
 	execution, err := Sched.(*scheduler).execMgr.Get(ctx, task.ExecutionID)
 	if err != nil {
 		return err
@@ -79,6 +80,16 @@ func triggerCallback(ctx context.Context, task *task.Task, data string) (err err
 	schedule, err := Sched.(*scheduler).dao.Get(ctx, execution.VendorID)
 	if err != nil {
 		return err
+	}
+	// Try to update the schedule record with the checkin revision to avoid duplicated trigger
+	// refer to https://github.com/goharbor/harbor/issues/14683 for more details
+	n, err := Sched.(*scheduler).dao.UpdateRevision(ctx, schedule.ID, sc.Metadata.CheckInAt)
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		log.Warningf("got no schedule record with ID %d and revision < %d, ignore", schedule.ID, sc.Metadata.CheckInAt)
+		return nil
 	}
 	callbackFunc, err := getCallbackFunc(schedule.CallbackFuncName)
 	if err != nil {

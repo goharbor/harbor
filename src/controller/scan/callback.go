@@ -116,9 +116,9 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 }
 
 // scanTaskCheckInProcessor checkin processor handles the webhook of scan job
-func scanTaskCheckInProcessor(ctx context.Context, t *task.Task, data string) (err error) {
+func scanTaskCheckInProcessor(ctx context.Context, t *task.Task, sc *job.StatusChange) (err error) {
 	checkInReport := &scan.CheckInReport{}
-	if err := checkInReport.FromJSON(data); err != nil {
+	if err := checkInReport.FromJSON(sc.CheckIn); err != nil {
 		log.G(ctx).WithField("error", err).Errorf("failed to convert data to report")
 		return err
 	}

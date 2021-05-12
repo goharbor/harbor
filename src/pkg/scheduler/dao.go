@@ -34,6 +34,7 @@ type schedule struct {
 	VendorID          int64     `orm:"column(vendor_id)"`
 	CRONType          string    `orm:"column(cron_type)"`
 	CRON              string    `orm:"column(cron)"`
+	Revision          int64     `orm:"column(revision)"` // to identity the duplicated checkin hook from jobservice
 	ExtraAttrs        string    `orm:"column(extra_attrs)"`
 	CallbackFuncName  string    `orm:"column(callback_func_name)"`
 	CallbackFuncParam string    `orm:"column(callback_func_param)"`
@@ -48,6 +49,7 @@ type DAO interface {
 	Get(ctx context.Context, id int64) (s *schedule, err error)
 	Delete(ctx context.Context, id int64) (err error)
 	Update(ctx context.Context, s *schedule, props ...string) (err error)
+	UpdateRevision(ctx context.Context, id, revision int64) (n int64, err error)
 }
 
 type dao struct{}
@@ -131,4 +133,14 @@ func (d *dao) Update(ctx context.Context, schedule *schedule, props ...string) e
 		return errors.NotFoundError(nil).WithMessage("schedule %d not found", schedule.ID)
 	}
 	return nil
+}
+
+func (d *dao) UpdateRevision(ctx context.Context, id, revision int64) (int64, error) {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return ormer.QueryTable(&schedule{}).Filter("ID", id).Filter("Revision__lt", revision).Update(beegoorm.Params{
+		"Revision": revision,
+	})
 }
