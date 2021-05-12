@@ -209,7 +209,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   // edit replication rule
   openEditRule(rule: ReplicationRule) {
     if (rule) {
-      this.createEditPolicyComponent.openCreateEditRule(rule.id);
+      this.createEditPolicyComponent.openCreateEditRule(rule);
     }
   }
 

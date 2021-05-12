@@ -267,7 +267,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
 
   it("Should open modal to edit replication rule", fakeAsync( () => {
     fixture.detectChanges();
-    comp.openCreateEditRule(mockRule.id);
+    comp.openCreateEditRule(mockRule);
     fixture.detectChanges();
     tick(5000);
     const ruleNameInput: HTMLInputElement = fixture.nativeElement.querySelector("#ruleName");
