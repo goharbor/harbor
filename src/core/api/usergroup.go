@@ -104,6 +104,11 @@ func (uga *UserGroupAPI) Get() {
 
 // Post ... Create User Group
 func (uga *UserGroupAPI) Post() {
+	resource := system.NewNamespace().Resource(rbac.ResourceUserGroup)
+	if !uga.SecurityCtx.Can(uga.Context(), rbac.ActionCreate, resource) {
+		uga.SendForbiddenError(errors.New(uga.SecurityCtx.GetUsername()))
+		return
+	}
 	userGroup := models.UserGroup{}
 	if err := uga.DecodeJSONReq(&userGroup); err != nil {
 		uga.SendBadRequestError(err)
@@ -162,6 +167,11 @@ func (uga *UserGroupAPI) Post() {
 
 // Put ... Only support update name
 func (uga *UserGroupAPI) Put() {
+	resource := system.NewNamespace().Resource(rbac.ResourceUserGroup)
+	if !uga.SecurityCtx.Can(uga.Context(), rbac.ActionUpdate, resource) {
+		uga.SendForbiddenError(errors.New(uga.SecurityCtx.GetUsername()))
+		return
+	}
 	userGroup := models.UserGroup{}
 	if err := uga.DecodeJSONReq(&userGroup); err != nil {
 		uga.SendBadRequestError(err)
