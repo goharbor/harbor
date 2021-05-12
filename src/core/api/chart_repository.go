@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -23,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/label"
+	"github.com/goharbor/harbor/src/lib/config"
 	hlog "github.com/goharbor/harbor/src/lib/log"
 	pkg_label "github.com/goharbor/harbor/src/pkg/label"
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
@@ -640,17 +640,18 @@ func chartFullName(namespace, chartName, version string) string {
 func parseChartVersionFromFilename(filename string) (string, string) {
 	noExt := strings.TrimSuffix(path.Base(filename), fmt.Sprintf(".%s", chartPackageFileExtension))
 	parts := strings.Split(noExt, "-")
+	lastIndex := len(parts) - 1
 	name := parts[0]
 	version := ""
-	for idx, part := range parts[1:] {
-		if _, err := strconv.Atoi(string(part[0])); err == nil { // see if this part looks like a version (starts w int)
-			version = strings.Join(parts[idx+1:], "-")
+
+	for idx := lastIndex; idx >= 1; idx-- {
+		if _, err := strconv.Atoi(string(parts[idx][0])); err == nil { // see if this part looks like a version (starts w int)
+			version = strings.Join(parts[idx:], "-")
+			name = strings.Join(parts[:idx], "-")
 			break
 		}
-		name = fmt.Sprintf("%s-%s", name, part)
 	}
 	if version == "" { // no parts looked like a real version, just take everything after last hyphen
-		lastIndex := len(parts) - 1
 		name = strings.Join(parts[:lastIndex], "-")
 		version = parts[lastIndex]
 	}
