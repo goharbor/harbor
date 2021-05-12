@@ -60,11 +60,6 @@ func TestOIDCUserMetaDaoMethods(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Equal(t, "unable to onboard as empty oidc user", err.Error())
 
-	// test get by sub and iss
-	userGetBySubIss, err := GetUserBySubIss("QWE123", "123RT1")
-	require.Nil(t, err)
-	assert.Equal(t, "user111@email.com", userGetBySubIss.Email)
-
 	// test update
 	meta3 := &models.OIDCUser{
 		ID:     ou111.ID,

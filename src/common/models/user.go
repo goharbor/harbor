@@ -15,7 +15,10 @@
 package models
 
 import (
+	"context"
 	"time"
+
+	"github.com/astaxie/beego/orm"
 )
 
 // UserTable is the name of table in DB that holds the user object
@@ -49,4 +52,21 @@ type User struct {
 // TableName ...
 func (u *User) TableName() string {
 	return UserTable
+}
+
+// FilterByUsernameOrEmail generates the query setter to match username or email column to the same value
+func (u *User) FilterByUsernameOrEmail(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	usernameOrEmail, ok := value.(string)
+	if !ok {
+		return qs
+	}
+	subCond := orm.NewCondition()
+	subCond = subCond.Or("Username", usernameOrEmail).Or("Email", usernameOrEmail)
+
+	conds := qs.GetCond()
+	if conds == nil {
+		conds = orm.NewCondition()
+	}
+	qs = qs.SetCond(conds.AndCond(subCond))
+	return qs
 }

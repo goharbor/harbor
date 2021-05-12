@@ -19,6 +19,8 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/auth"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/user"
 )
 
 // Auth implements Authenticator interface to authenticate user against DB.
@@ -28,7 +30,7 @@ type Auth struct {
 
 // Authenticate calls dao to authenticate user.
 func (d *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
-	u, err := dao.LoginByDb(m)
+	u, err := user.Mgr.MatchLocalPassword(orm.Context(), m.Principal, m.Password)
 	if err != nil {
 		return nil, err
 	}

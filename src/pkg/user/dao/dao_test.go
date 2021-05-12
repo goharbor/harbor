@@ -74,17 +74,43 @@ func (suite *DaoTestSuite) TestCount() {
 }
 
 func (suite *DaoTestSuite) TestList() {
+	ctx := orm.Context()
 	{
-		users, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"user_id": 1}))
+		users, err := suite.dao.List(ctx, q.New(q.KeyWords{"user_id": 1}))
 		suite.Nil(err)
 		suite.Len(users, 1)
 	}
 
 	{
-		users, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"username": "admin"}))
+		users, err := suite.dao.List(ctx, q.New(q.KeyWords{"username": "admin"}))
 		suite.Nil(err)
 		suite.Len(users, 1)
 	}
+	id, err := suite.dao.Create(ctx, &models.User{
+		Username:        "list_test",
+		Realname:        "list test",
+		Email:           "list_test@test.com",
+		Password:        "somepassword",
+		PasswordVersion: "sha256",
+	})
+	suite.appendClearSQL(id)
+	suite.Nil(err)
+	{
+		users, err := suite.dao.List(ctx, q.New(q.KeyWords{"username_or_email": "list_test"}))
+		suite.Nil(err)
+		suite.Len(users, 1)
+	}
+	{
+		users, err := suite.dao.List(ctx, q.New(q.KeyWords{"username_or_email": "list_test@test.com"}))
+		suite.Nil(err)
+		suite.Len(users, 1)
+	}
+	{
+		users, err := suite.dao.List(ctx, q.New(q.KeyWords{"username_or_email": "noremail_norusername"}))
+		suite.Nil(err)
+		suite.Len(users, 0)
+	}
+
 }
 
 func (suite *DaoTestSuite) TestCreate() {

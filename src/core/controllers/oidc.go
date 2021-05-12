@@ -17,8 +17,6 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"strings"
 
@@ -26,9 +24,12 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/oidc"
 )
 
@@ -110,31 +111,23 @@ func (oc *OIDCController) Callback() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	u, err := dao.GetUserBySubIss(info.Subject, info.Issuer)
-	if err != nil {
-		oc.SendInternalServerError(err)
-		return
-	}
 	tokenBytes, err := json.Marshal(token)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return
 	}
 	oc.SetSession(tokenKey, tokenBytes)
-
-	oidcSettings, err := config.OIDCSetting(ctx)
-	if err != nil {
-		oc.SendInternalServerError(err)
-		return
-	}
-
-	if u == nil {
+	u, err := user.Ctl.GetBySubIss(ctx, info.Subject, info.Issuer)
+	if errors.IsNotFoundErr(err) { // User is not onboarded, kickoff the onboard flow
 		// Recover the username from d.Username by default
 		username := info.Username
-
 		// Fix blanks in username
 		username = strings.Replace(username, " ", "_", -1)
-
+		oidcSettings, err := config.OIDCSetting(ctx)
+		if err != nil {
+			oc.SendInternalServerError(err)
+			return
+		}
 		// If automatic onboard is enabled, skip the onboard page
 		if oidcSettings.AutoOnboard {
 			log.Debug("Doing automatic onboarding\n")
@@ -143,27 +136,31 @@ func (oc *OIDCController) Callback() {
 					oidcSettings.UserClaim))
 				return
 			}
-			user, onboarded := userOnboard(oc, info, username, tokenBytes)
+			userRec, onboarded := userOnboard(oc, info, username, tokenBytes)
 			if onboarded == false {
 				log.Error("User not onboarded\n")
 				return
 			}
 			log.Debug("User automatically onboarded\n")
-			u = user
+			u = userRec
 		} else {
 			oc.SetSession(userInfoKey, string(ouDataStr))
 			oc.Controller.Redirect(fmt.Sprintf("/oidc-onboard?username=%s", username), http.StatusFound)
 			// Once redirected, no further actions are done
 			return
 		}
+	} else if err != nil {
+		oc.SendInternalServerError(err)
+		return
 	}
 	oidc.InjectGroupsToUser(info, u)
-	oidcUser, err := dao.GetOIDCUserByUserID(u.UserID)
+	um, err := user.Ctl.Get(ctx, u.UserID, &user.Option{WithOIDCInfo: true})
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return
 	}
 	_, t, err := secretAndToken(tokenBytes)
+	oidcUser := um.OIDCUserMeta
 	oidcUser.Token = t
 	if err := dao.UpdateOIDCUser(oidcUser); err != nil {
 		oc.SendInternalServerError(err)
@@ -171,7 +168,6 @@ func (oc *OIDCController) Callback() {
 	}
 	oc.PopulateUserSession(*u)
 	oc.Controller.Redirect("/", http.StatusFound)
-
 }
 
 func userOnboard(oc *OIDCController, info *oidc.UserInfo, username string, tokenBytes []byte) (*models.User, bool) {

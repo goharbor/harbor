@@ -120,6 +120,29 @@ func (_m *Controller) GetByName(ctx context.Context, username string) (*models.U
 	return r0, r1
 }
 
+// GetBySubIss provides a mock function with given fields: ctx, sub, iss
+func (_m *Controller) GetBySubIss(ctx context.Context, sub string, iss string) (*models.User, error) {
+	ret := _m.Called(ctx, sub, iss)
+
+	var r0 *models.User
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *models.User); ok {
+		r0 = rf(ctx, sub, iss)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.User)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, sub, iss)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // List provides a mock function with given fields: ctx, query
 func (_m *Controller) List(ctx context.Context, query *q.Query) ([]*models.User, error) {
 	ret := _m.Called(ctx, query)
@@ -185,13 +208,20 @@ func (_m *Controller) UpdatePassword(ctx context.Context, id int, password strin
 	return r0
 }
 
-// UpdateProfile provides a mock function with given fields: ctx, u
-func (_m *Controller) UpdateProfile(ctx context.Context, u *models.User) error {
-	ret := _m.Called(ctx, u)
+// UpdateProfile provides a mock function with given fields: ctx, u, cols
+func (_m *Controller) UpdateProfile(ctx context.Context, u *models.User, cols ...string) error {
+	_va := make([]interface{}, len(cols))
+	for _i := range cols {
+		_va[_i] = cols[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, u)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.User) error); ok {
-		r0 = rf(ctx, u)
+	if rf, ok := ret.Get(0).(func(context.Context, *models.User, ...string) error); ok {
+		r0 = rf(ctx, u, cols...)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -199,20 +229,20 @@ func (_m *Controller) UpdateProfile(ctx context.Context, u *models.User) error {
 	return r0
 }
 
-// VerifyPassword provides a mock function with given fields: ctx, username, password
-func (_m *Controller) VerifyPassword(ctx context.Context, username string, password string) (bool, error) {
-	ret := _m.Called(ctx, username, password)
+// VerifyPassword provides a mock function with given fields: ctx, usernameOrEmail, password
+func (_m *Controller) VerifyPassword(ctx context.Context, usernameOrEmail string, password string) (bool, error) {
+	ret := _m.Called(ctx, usernameOrEmail, password)
 
 	var r0 bool
 	if rf, ok := ret.Get(0).(func(context.Context, string, string) bool); ok {
-		r0 = rf(ctx, username, password)
+		r0 = rf(ctx, usernameOrEmail, password)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = rf(ctx, username, password)
+		r1 = rf(ctx, usernameOrEmail, password)
 	} else {
 		r1 = ret.Error(1)
 	}
