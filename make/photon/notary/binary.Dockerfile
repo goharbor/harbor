@@ -1,4 +1,4 @@
-FROM golang:1.15.6
+FROM golang:1.16.4
 
 ARG NOTARY_VERSION
 ARG MIGRATE_VERSION
@@ -6,6 +6,7 @@ RUN test -n "$NOTARY_VERSION"
 RUN test -n "$MIGRATE_VERSION"
 ENV NOTARYPKG github.com/theupdateframework/notary
 ENV MIGRATEPKG github.com/golang-migrate/migrate
+ENV GO111MODULE auto
 
 RUN git clone -b $NOTARY_VERSION https://github.com/theupdateframework/notary.git /go/src/${NOTARYPKG}
 WORKDIR /go/src/${NOTARYPKG}
@@ -23,5 +24,5 @@ WORKDIR /go/src/${MIGRATEPKG}
 ENV DATABASES="postgres mysql redshift cassandra spanner cockroachdb"
 ENV SOURCES="file go_bindata github aws_s3 google_cloud_storage"
 
-RUN go install -tags "$DATABASES $SOURCES" -ldflags="-X main.Version=${MIGRATE_VERSION}" ${MIGRATEPKG}/cli && mv /go/bin/cli /go/bin/migrate
+RUN go install -tags "$DATABASES $SOURCES" -ldflags="-X main.Version=${MIGRATE_VERSION}" /go/src/${MIGRATEPKG}/cli && mv /go/bin/cli /go/bin/migrate
 
