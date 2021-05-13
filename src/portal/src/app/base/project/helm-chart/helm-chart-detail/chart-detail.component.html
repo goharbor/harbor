@@ -1,9 +1,10 @@
 <div>
   <div class="breadcrumb">
-    <a (click)="gotoProjectList()"> {{ 'SIDE_NAV.PROJECTS'| translate}} </a>
-    &lt;
+    <span class="back-icon"><</span>
+    <a (click)="gotoProjectList()">{{ 'SIDE_NAV.PROJECTS'| translate}}</a>
+    <span class="back-icon"><</span>
     <a (click)="gotoChartList()">{{ projectName }}</a>
-    &lt;
+    <span class="back-icon"><</span>
     <a (click)="gotoChartVersion()">{{ 'HELM_CHART.CHARTVERSIONS'| translate}}</a>
   </div>
   <hbr-chart-detail [projectId]="projectId" [project]="project" [chartName]="chartName" [chartVersion]="chartVersion"

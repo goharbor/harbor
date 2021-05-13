@@ -80,13 +80,21 @@ describe('SummaryComponent', () => {
         {
           provide: ActivatedRoute, useValue: {
             paramMap: of({ get: (key) => 'value' }),
+            snapshot: {
+              parent: {
+                parent: {
+                  snapshot: {
+                    data: {
+                      projectResolver: {registry_id: 3}
+                    },
+                  }
+                }
+              },
+            },
             parent: {
               parent: {
                 snapshot: {
                   params: { id: 1 },
-                  data: {
-                    projectResolver: {registry_id: 3}
-                  },
                 }
               }},
           }
@@ -107,10 +115,30 @@ describe('SummaryComponent', () => {
 
   it('should show proxy cache endpoint', async () => {
     component.summaryInformation = mockedSummaryInformation;
+    component.isCardView = false;
     fixture.detectChanges();
     await fixture.whenStable();
     const endpoint: HTMLElement = fixture.nativeElement.querySelector("#endpoint");
     expect(endpoint).toBeTruthy();
     expect(endpoint.innerText).toEqual("test-https://test.com");
+  });
+
+  it('should show card view', async () => {
+    component.summaryInformation = mockedSummaryInformation;
+    component.isCardView = true;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const container: HTMLElement = fixture.nativeElement.querySelector(".container");
+    expect(container).toBeTruthy();
+  });
+
+  it('should show three cards', async () => {
+    component.summaryInformation = mockedSummaryInformation;
+    component.isCardView = true;
+    component.hasReadChartPermission = true;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const cards = fixture.nativeElement.querySelectorAll(".card");
+    expect(cards.length).toEqual(3);
   });
 });

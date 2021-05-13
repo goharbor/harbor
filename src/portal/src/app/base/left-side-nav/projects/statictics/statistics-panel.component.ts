@@ -69,7 +69,7 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
         if (this.originalCopy) {
             return getSizeNumber(this.originalCopy.total_storage_consumption);
         }
-        return null;
+        return 0;
     }
     getSizeUnit(): number | string {
         if (this.originalCopy) {

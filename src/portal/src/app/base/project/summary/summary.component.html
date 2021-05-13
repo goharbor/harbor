@@ -1,64 +1,138 @@
-<div class="summary summary-dark display-flex" *ngIf="summaryInformation">
-  <div class="summary-left">
-    <div class="display-flex project-detail pt-05" *ngIf="summaryInformation?.registry">
-      <h5 class="mt-0 width-7-5">{{'PROJECT.PROXY_CACHE_ENDPOINT' | translate}}</h5>
-      <ul class="list-unstyled">
-        <li id="endpoint">{{summaryInformation?.registry?.name}}-{{summaryInformation?.registry?.url}}</li>
-      </ul>
-    </div>
-    <div class="display-flex project-detail pt-05">
-      <h5 class="mt-0 width-7-5">{{'SUMMARY.PROJECT_REPOSITORY' | translate}}</h5>
-      <ul class="list-unstyled">
-        <li>{{summaryInformation?.repo_count}}</li>
-      </ul>
-    </div>
-    <div class="display-flex project-detail pt-05" *ngIf="withHelmChart">
-      <h5 class="mt-0 width-7-5">{{'SUMMARY.PROJECT_HELM_CHART' | translate}}</h5>
-      <ul class="list-unstyled">
-        <li>{{summaryInformation?.chart_count}}</li>
-      </ul>
-    </div>
-    <div *ngIf="showProjectMemberInfo" class="display-flex project-detail pt-05">
-      <h5 class="mt-0 width-7-5">{{'SUMMARY.PROJECT_MEMBER' | translate}}</h5>
-      <ul class="list-unstyled">
-        <li>{{ summaryInformation?.project_admin_count?summaryInformation?.project_admin_count:0 }} {{'SUMMARY.ADMIN' | translate}}</li>
-        <li>{{ summaryInformation?.maintainer_count?summaryInformation?.maintainer_count:0 }} {{'SUMMARY.MAINTAINER' | translate}}</li>
-        <li>{{ summaryInformation?.developer_count?summaryInformation?.developer_count:0 }} {{'SUMMARY.DEVELOPER' | translate}}</li>
-        <li>{{ summaryInformation?.guest_count?summaryInformation?.guest_count:0 }} {{'SUMMARY.GUEST' | translate}}</li>
-        <li>{{ summaryInformation?.limited_guest_count?summaryInformation?.limited_guest_count:0 }} {{'SUMMARY.LIMITED_GUEST' | translate}}</li>
-      </ul>
-    </div>
-  </div>
-  <div *ngIf="showQuotaInfo && summaryInformation?.quota" class="summary-right pt-05">
-    <div class="display-flex  project-detail">
-      <h5 class="mt-0">{{'SUMMARY.PROJECT_QUOTAS' | translate}}</h5>
-      <div class="ml-1">
-        <div class="display-flex quotas-progress">
-          <label class="mr-1">{{'SUMMARY.STORAGE_CONSUMPTION' | translate}}</label>
-          <label class="progress-label">
-              {{ summaryInformation?.quota?.hard?.storage !== -1 ?(getIntegerAndUnit(summaryInformation?.quota?.hard?.storage, summaryInformation?.quota?.used?.storage).partNumberUsed
-                + getIntegerAndUnit(summaryInformation?.quota?.hard?.storage, summaryInformation?.quota?.used?.storage).partCharacterUsed) : getSuitableUnit(summaryInformation?.quota?.used?.storage)}}
-
-            <!-- {{ getSuitableUnit(summaryInformation?.quota?.used?.storage) }}  -->
-            {{ 'QUOTA.OF' | translate }}
-            {{ summaryInformation?.quota?.hard?.storage ===-1? ('QUOTA.UNLIMITED' | translate) : getIntegerAndUnit(summaryInformation?.quota?.hard?.storage, summaryInformation?.quota?.used?.storage).partNumberHard }}
-             {{ summaryInformation?.quota?.hard?.storage ===-1? '':  getIntegerAndUnit(summaryInformation?.quota?.hard?.storage, summaryInformation?.quota?.used?.storage).partCharacterHard }}
-          </label>
-        </div>
-
-        <div>
-          <div class="progress-block progress-min-width progress-div">
-            <div class="progress success"
-            [class.danger]="summaryInformation?.quota?.hard?.storage!==-1?summaryInformation?.quota?.used?.storage/summaryInformation?.quota?.hard?.storage>quotaDangerCoefficient:false"
-            [class.warning]="summaryInformation?.quota?.hard?.storage!==-1?summaryInformation?.quota?.used?.storage/summaryInformation?.quota?.hard?.storage<=quotaDangerCoefficient&&summaryInformation?.quota?.used?.storage/summaryInformation?.quota?.hard?.storage>=quotaWarningCoefficient:false">
-              <progress
-                value="{{summaryInformation?.quota?.hard?.storage===-1? 0 : summaryInformation?.quota?.used?.storage}}"
-                max="{{summaryInformation?.quota?.hard?.storage}}" data-displayval="100%"></progress>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
+<div class="clr-row card-row mt-1">
+  <span class="card-btn mr-5px" (click)="showCard(true)" (mouseenter)="mouseEnter('card') "
+        (mouseleave)="mouseLeave('card')">
+                        <clr-icon size="24" [ngClass]="{'is-highlight': isCardView || isHovering('card') }"
+                                  shape="view-cards"></clr-icon>
+                    </span>
+    <span class="list-btn" (click)="showCard(false)" (mouseenter)="mouseEnter('list') "
+          (mouseleave)="mouseLeave('list')">
+                        <clr-icon size="24" [ngClass]="{'is-highlight': !isCardView || isHovering('list') }"
+                                  shape="view-list"></clr-icon>
+                    </span>
 </div>
+
+
+
+<div *ngIf="!summaryInformation" class="clr-row mt-2 center">
+    <span class="spinner spinner-md"></span>
+</div>
+
+<ng-container *ngIf="!isCardView">
+    <div *ngIf="summaryInformation">
+        <div class="pt-05 flex" *ngIf="summaryInformation?.registry">
+            <h4 class="mt-0 title-width">{{'PROJECT.PROXY_CACHE_ENDPOINT' | translate}}</h4>
+            <ul class="list-unstyled">
+                <li id="endpoint">{{summaryInformation?.registry?.name}}-{{summaryInformation?.registry?.url}}</li>
+            </ul>
+        </div>
+        <div class="pt-05 flex">
+            <h4 class="mt-0 title-width">{{'SUMMARY.PROJECT_REPOSITORY' | translate}}</h4>
+            <ul class="list-unstyled">
+                <li>{{summaryInformation?.repo_count ? summaryInformation?.repo_count : 0}}</li>
+            </ul>
+        </div>
+        <div class="pt-05 flex" *ngIf="withHelmChart">
+            <h4 class="mt-0 title-width">{{'SUMMARY.PROJECT_HELM_CHART' | translate}}</h4>
+            <ul class="list-unstyled">
+                <li>{{summaryInformation?.chart_count ? summaryInformation?.chart_count : 0}}</li>
+            </ul>
+        </div>
+        <div *ngIf="showProjectMemberInfo" class="pt-05 flex">
+            <h4 class="mt-0 title-width">{{'SUMMARY.PROJECT_MEMBER' | translate}}</h4>
+            <ul class="list-unstyled">
+                <li>{{ summaryInformation?.project_admin_count ? summaryInformation?.project_admin_count : 0 }} {{'SUMMARY.ADMIN' | translate}}</li>
+                <li>{{ summaryInformation?.maintainer_count ? summaryInformation?.maintainer_count : 0 }} {{'SUMMARY.MAINTAINER' | translate}}</li>
+                <li>{{ summaryInformation?.developer_count ? summaryInformation?.developer_count : 0 }} {{'SUMMARY.DEVELOPER' | translate}}</li>
+                <li>{{ summaryInformation?.guest_count ? summaryInformation?.guest_count : 0 }} {{'SUMMARY.GUEST' | translate}}</li>
+                <li>{{ summaryInformation?.limited_guest_count ? summaryInformation?.limited_guest_count : 0 }} {{'SUMMARY.LIMITED_GUEST' | translate}}</li>
+            </ul>
+        </div>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="isCardView && summaryInformation">
+   <div class="container">
+     <div class="card clickable" *ngIf="hasReadRepoPermission">
+       <div class="card-header">
+         <div>{{"PROJECT_DETAIL.REPOSITORIES" | translate}}</div>
+         <div class="clr-row number">{{summaryInformation?.repo_count ? summaryInformation?.repo_count : 0}}</div>
+         <div class="clr-row">
+           <div class="clr-col-4 column">{{'REPOSITORY.NAME' | translate}}</div>
+           <div class="clr-col-2 column">{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}</div>
+           <div class="clr-col-2 column">{{'REPOSITORY.PULL_COUNT' | translate}}</div>
+           <div class="clr-col-4 column">{{'REPOSITORY.LAST_MODIFIED' | translate}}</div>
+         </div>
+       </div>
+       <div class="card-block">
+         <div class="clr-row" *ngFor="let item of  repos">
+           <div class="clr-col-4 ellipsis">
+             <a href="javascript:void(0)" (click)="goIntoRepo(item)">{{item.name}}</a>
+           </div>
+           <div class="clr-col-2">{{item.artifact_count?item.artifact_count:0}}</div>
+           <div class="clr-col-2">{{item.pull_count?item.pull_count:0}}</div>
+           <div class="clr-col-4 ellipsis">{{item.update_time | harborDatetime: 'short'}}</div>
+         </div>
+       </div>
+       <div class="card-footer">
+          <button class="btn btn-link" (click)="goToRepos()">{{'SUMMARY.SEE_ALL' | translate}}</button>
+       </div>
+     </div>
+     <div class="card clickable" *ngIf="hasReadChartPermission">
+       <div class="card-header">
+         <div>{{"PROJECT_DETAIL.HELMCHART" | translate}}</div>
+         <div class="clr-row number">{{summaryInformation?.chart_count ? summaryInformation?.chart_count : 0}}</div>
+         <div class="clr-row">
+           <div class="clr-col-4 column">{{'HELM_CHART.NAME' | translate}}</div>
+           <div class="clr-col-2 column">{{'HELM_CHART.STATUS' | translate}}</div>
+           <div class="clr-col-2 column">{{'HELM_CHART.CHARTVERSIONS' | translate}}</div>
+           <div class="clr-col-4 column">{{'HELM_CHART.CREATED' | translate}}</div>
+         </div>
+       </div>
+       <div class="card-block">
+         <div class="clr-row" *ngFor="let chart of charts">
+           <div class="clr-col-4 ellipsis chart-name">
+               <img class="size-24 mr-5px" [src]="chart.icon ?chart.icon:chartDefaultIcon" (error)="getDefaultIcon(chart);" />
+               <a href="javascript:void(0)" (click)="onChartClick(chart.name)">{{ chart.name }}</a>
+           </div>
+           <div class="clr-col-2">{{ getStatusString(chart) | translate }}</div>
+           <div class="clr-col-2">{{ chart.total_versions }}</div>
+           <div class="clr-col-4 ellipsis">{{ chart.created | harborDatetime: 'short' }}</div>
+         </div>
+       </div>
+       <div class="card-footer">
+         <button class="btn btn-link" (click)="goToCharts()">{{'SUMMARY.SEE_ALL' | translate}}</button>
+       </div>
+     </div>
+     <div class="card clickable" *ngIf="showProjectMemberInfo">
+       <div class="card-header no-underline">
+         <div>{{"PROJECT_DETAIL.USERS" | translate}}</div>
+         <div class="clr-row number">{{getTotalMembers()}}</div>
+       </div>
+       <div class="card-block">
+           <div class="clr-row">
+               <div class="clr-col-4 column">{{'SUMMARY.ADMIN' | translate}}</div>
+               <div class="clr-col-8">{{ summaryInformation?.project_admin_count ? summaryInformation?.project_admin_count : 0 }}</div>
+           </div>
+           <div class="clr-row">
+               <div class="clr-col-4 column">{{'SUMMARY.MAINTAINER' | translate}}</div>
+               <div class="clr-col-8">{{ summaryInformation?.maintainer_count ? summaryInformation?.maintainer_count : 0 }}</div>
+           </div>
+           <div class="clr-row">
+               <div class="clr-col-4 column">{{'SUMMARY.DEVELOPER' | translate}}</div>
+               <div class="clr-col-8">{{ summaryInformation?.developer_count ? summaryInformation?.developer_count : 0 }}</div>
+           </div>
+           <div class="clr-row">
+               <div class="clr-col-4 column">{{'SUMMARY.GUEST' | translate}}</div>
+               <div class="clr-col-8">{{ summaryInformation?.guest_count ? summaryInformation?.guest_count : 0 }}</div>
+           </div>
+           <div class="clr-row">
+               <div class="clr-col-4 column">{{'SUMMARY.LIMITED_GUEST' | translate}}</div>
+               <div class="clr-col-8">{{ summaryInformation?.limited_guest_count ? summaryInformation?.limited_guest_count : 0 }}</div>
+           </div>
+       </div>
+       <div class="card-footer">
+           <button class="btn btn-link" (click)="goToMembers()">{{'SUMMARY.SEE_ALL' | translate}}</button>
+       </div>
+     </div>
+   </div>
+</ng-container>
