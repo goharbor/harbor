@@ -278,7 +278,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		},
 
 		cloneCtx: func(ctx context.Context) context.Context { return ctx },
-		makeCtx:  func() context.Context { return context.TODO() },
+		makeCtx:  func() context.Context { return orm.NewContext(nil, &ormtesting.FakeOrmer{}) },
 
 		execMgr:         suite.execMgr,
 		taskMgr:         suite.taskMgr,
