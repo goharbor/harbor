@@ -127,6 +127,6 @@ func New(opts cache.Options) (cache.Cache, error) {
 }
 
 func init() {
-	cache.Register("redis", New)
-	cache.Register("redis+sentinel", New)
+	cache.Register(cache.Redis, New)
+	cache.Register(cache.RedisSentinel, New)
 }

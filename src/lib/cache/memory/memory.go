@@ -116,5 +116,5 @@ func New(opts cache.Options) (cache.Cache, error) {
 }
 
 func init() {
-	cache.Register("memory", New)
+	cache.Register(cache.Memory, New)
 }
