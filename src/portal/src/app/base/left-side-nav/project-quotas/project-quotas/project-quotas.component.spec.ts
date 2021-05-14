@@ -11,6 +11,7 @@ import { APP_BASE_HREF } from '@angular/common';
 import { SharedTestingModule } from "../../../../shared/shared.module";
 import { EditProjectQuotasComponent } from "./edit-project-quotas/edit-project-quotas.component";
 import { QuotaService } from "../../../../../../ng-swagger-gen/services/quota.service";
+import { ProjectService } from "../../../../../../ng-swagger-gen/services/project.service";
 
 
 describe('ProjectQuotasComponent', () => {
@@ -53,6 +54,11 @@ describe('ProjectQuotasComponent', () => {
   const timeout = (ms: number) => {
      return new Promise(resolve => setTimeout(resolve, ms));
   };
+  const fakedProjectService = {
+    listProjects() {
+      return of([]);
+    }
+  }
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -63,6 +69,7 @@ describe('ProjectQuotasComponent', () => {
         EditProjectQuotasComponent
       ],
       providers: [
+        { provide: ProjectService, useValue: fakedProjectService },
         { provide: ErrorHandler, useValue: fakedErrorHandler },
         { provide: APP_BASE_HREF, useValue : '/' },
         { provide: Router, useValue: fakedRouter }
@@ -120,4 +127,22 @@ describe('ProjectQuotasComponent', () => {
     a.dispatchEvent(new Event("click"));
     expect(spyRoute.calls.count()).toEqual(1);
   });
+  it('should refresh', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    component.doSearch(null);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(spy.calls.count()).toEqual(2);
+  });
+  it('should get no quota', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    component.doSearch('test');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.quotaList.length).toEqual(0);
+  });
 });
+
+

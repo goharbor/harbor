@@ -1158,7 +1158,8 @@
         "SAVE_SUCCESS": "Kota düzenleme başarısı",
         "UNLIMITED": "sınırsız",
         "INVALID_INPUT": "geçersiz giriş",
-        "PLACEHOLDER": "We couldn't find any project quotas"
+        "PLACEHOLDER": "We couldn't find any project quotas",
+        "FILTER_PLACEHOLDER": "Search by name(exact match)"
     },
     "WEEKLY": {
         "MONDAY": "Pazartesi",

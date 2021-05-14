@@ -1,27 +1,27 @@
 import { Component, Input, Output, EventEmitter, ViewChild, SimpleChanges, OnChanges } from '@angular/core';
 import { Configuration } from '../../config/config';
 import {
-  Quota, State, QuotaHardLimitInterface,
+  State, QuotaHardLimitInterface,
 } from '../../../../shared/services';
 import {
-  clone, isEmpty, getChanges, getSuitableUnit, calculatePage, CustomComparator
+  clone, isEmpty, getChanges, getSuitableUnit, calculatePage
   , getByte, GetIntegerAndUnit
 } from '../../../../shared/units/utils';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { QuotaUnits, QuotaUnlimited, QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COEFFICIENT } from '../../../../shared/entities/shared.const';
 import { EditProjectQuotasComponent } from './edit-project-quotas/edit-project-quotas.component';
 import { TranslateService } from '@ngx-translate/core';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
 import { Router } from '@angular/router';
-import { finalize } from 'rxjs/operators';
+import { finalize, mergeMap } from 'rxjs/operators';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { ConfigurationService } from "../../../../services/config.service";
 import { QuotaService } from "../../../../../../ng-swagger-gen/services/quota.service";
 import { QuotaUpdateReq } from "../../../../../../ng-swagger-gen/models/quota-update-req";
-const quotaSort = {
-  storage: "used.storage",
-  sortType: 'string'
-};
+import { ProjectService } from "../../../../../../ng-swagger-gen/services/project.service";
+import { Quota } from "../../../../../../ng-swagger-gen/models/quota";
+import { FilterComponent } from "../../../../shared/components/filter/filter.component";
+
 const QuotaType = 'project';
 
 @Component({
@@ -56,13 +56,15 @@ export class ProjectQuotasComponent implements OnChanges {
     this.configChange.emit(this.config);
   }
   selectedRow: Quota[] = [];
-
+  @ViewChild(FilterComponent)
+  filterComponent: FilterComponent;
   constructor(
     private configService: ConfigurationService,
     private quotaService: QuotaService,
     private translate: TranslateService,
     private router: Router,
-    private errorHandler: ErrorHandler) { }
+    private errorHandler: ErrorHandler,
+    private projectService: ProjectService) { }
 
   editQuota() {
     if (this.selectedRow && this.selectedRow.length === 1) {
@@ -221,14 +223,31 @@ export class ProjectQuotasComponent implements OnChanges {
     this.router.navigate(linkUrl);
   }
   refresh() {
-    const state: State = {
-      page: {
-        from: 0,
-        to: 14,
-        size: 15
-      },
-    };
-    this.getQuotaList(state);
+    if (this.filterComponent) {
+      this.filterComponent.currentValue = null;
+    }
+    this.currentPage = 1;
     this.selectedRow = [];
+    this.getQuotaList(this.currentState);
+  }
+  doSearch(name: string) {
+    if (name) {
+      // should query project by name first, then query quota by referenceId(project_id)
+      this.projectService.listProjects({
+        withDetail: false,
+        q: encodeURIComponent(`name=${name}`)
+      }).pipe(mergeMap(projects => {
+        if (projects && projects.length) {
+          return this.quotaService.listQuotas({
+            referenceId: projects[0].project_id.toString()
+          });
+        }
+        return of([]);
+      })).subscribe(res => {
+        this.quotaList = res;
+      });
+    } else {
+      this.refresh();
+    }
   }
 }
