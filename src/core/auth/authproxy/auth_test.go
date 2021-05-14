@@ -15,6 +15,10 @@
 package authproxy
 
 import (
+	"net/http/httptest"
+	"os"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -25,12 +29,10 @@ import (
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/orm"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	"github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	"github.com/stretchr/testify/assert"
-	"net/http/httptest"
-	"os"
-	"testing"
 )
 
 var mockSvr *httptest.Server
@@ -48,6 +50,7 @@ func TestMain(m *testing.M) {
 	a = &Auth{
 		Endpoint:            mockSvr.URL + "/test/login",
 		TokenReviewEndpoint: mockSvr.URL + "/test/tokenreview",
+		userMgr:             user.New(),
 	}
 	cfgMap := cut.GetUnitTestConfig()
 	conf := map[string]interface{}{

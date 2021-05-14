@@ -78,16 +78,13 @@ func InitDatabaseFromEnv() {
 }
 
 func updateUserInitialPassword(userID int, password string) error {
-	queryUser := models.User{UserID: userID}
-	user, err := dao.GetUser(queryUser)
+	ctx := orm.Context()
+	user, err := pkguser.Mgr.Get(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("failed to get user, userID: %d %v", userID, err)
 	}
-	if user == nil {
-		return fmt.Errorf("user id: %d does not exist", userID)
-	}
 	if user.Salt == "" {
-		err = pkguser.Mgr.UpdatePassword(orm.Context(), userID, password)
+		err = pkguser.Mgr.UpdatePassword(ctx, userID, password)
 		if err != nil {
 			return fmt.Errorf("failed to update user encrypted password, userID: %d, err: %v", userID, err)
 		}
