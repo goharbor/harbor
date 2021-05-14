@@ -67,13 +67,10 @@ const (
 )
 
 func updateInitPassword(ctx context.Context, userID int, password string) error {
-	queryUser := models.User{UserID: userID}
-	user, err := dao.GetUser(queryUser)
+	userCtl := ctluser.Ctl
+	user, err := userCtl.Get(ctx, userID, nil)
 	if err != nil {
 		return fmt.Errorf("failed to get user, userID: %d %v", userID, err)
-	}
-	if user == nil {
-		return fmt.Errorf("user id: %d does not exist", userID)
 	}
 	if user.Salt == "" {
 		err = ctluser.Ctl.UpdatePassword(ctx, userID, password)

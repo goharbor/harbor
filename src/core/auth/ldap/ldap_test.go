@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	userpkg "github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
 	"github.com/stretchr/testify/assert"
@@ -304,10 +305,7 @@ func TestPostAuthentication(t *testing.T) {
 		Realname: "test003",
 	}
 
-	queryCondition := models.User{
-		Username: "test003",
-		Realname: "test003",
-	}
+	queryUsername := "test003"
 
 	err := auth.OnBoardUser(user1)
 	assert.Nil(err)
@@ -318,8 +316,8 @@ func TestPostAuthentication(t *testing.T) {
 	}
 
 	auth.PostAuthenticate(user2)
-
-	dbUser, err := dao.GetUser(queryCondition)
+	ctx := orm.Context()
+	dbUser, err := userpkg.Mgr.GetByName(ctx, queryUsername)
 	if err != nil {
 		t.Fatalf("Failed to get user, error %v", err)
 	}
@@ -330,7 +328,7 @@ func TestPostAuthentication(t *testing.T) {
 	}
 
 	auth.PostAuthenticate(user3)
-	dbUser, err = dao.GetUser(queryCondition)
+	dbUser, err = userpkg.Mgr.GetByName(ctx, queryUsername)
 	if err != nil {
 		t.Fatalf("Failed to get user, error %v", err)
 	}
@@ -342,8 +340,7 @@ func TestPostAuthentication(t *testing.T) {
 	}
 
 	auth.PostAuthenticate(user4)
-
-	dbUser, err = dao.GetUser(queryCondition)
+	dbUser, err = userpkg.Mgr.GetByName(ctx, queryUsername)
 	if err != nil {
 		t.Fatalf("Failed to get user, error %v", err)
 	}
