@@ -290,7 +290,7 @@ func (bc *basicController) Ping(registration *scanner.Registration) (*v1.Scanner
 	}
 
 	if err != nil {
-		log.G(ctx).WithField("error", err).Error("failed to ping scanner")
+		log.Errorf("failed to ping scanner, error: %v", err)
 
 		return nil, errors.Wrap(err, "scanner controller: ping")
 	}
