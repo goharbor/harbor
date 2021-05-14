@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -82,15 +81,8 @@ type basicClient struct {
 // NewClient news a basic client
 func NewClient(url, authType, accessCredential string, skipCertVerify bool) (Client, error) {
 	transport := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
+		Proxy:        http.ProxyFromEnvironment,
+		MaxIdleConns: 100,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: skipCertVerify,
 		},
@@ -103,6 +95,7 @@ func NewClient(url, authType, accessCredential string, skipCertVerify bool) (Cli
 
 	return &basicClient{
 		httpClient: &http.Client{
+			Timeout:   time.Second * 5,
 			Transport: transport,
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
