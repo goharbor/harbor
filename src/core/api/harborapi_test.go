@@ -35,7 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
-	apimodels "github.com/goharbor/harbor/src/core/api/models"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -736,16 +735,6 @@ func (a testapi) RegistryDelete(authInfo usrInfo, registryID int64) (int, error)
 	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	if err != nil || code != http.StatusOK {
 		return code, fmt.Errorf("delete registry error: %v", err)
-	}
-
-	return code, nil
-}
-
-func (a testapi) RegistryUpdate(authInfo usrInfo, registryID int64, req *apimodels.RegistryUpdateRequest) (int, error) {
-	_sling := sling.New().Base(a.basePath).Put(fmt.Sprintf("/api/registries/%d", registryID)).BodyJSON(req)
-	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err != nil || code != http.StatusOK {
-		return code, fmt.Errorf("update registry error: %v", err)
 	}
 
 	return code, nil
