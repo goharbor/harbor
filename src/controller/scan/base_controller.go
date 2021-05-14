@@ -327,7 +327,7 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 			return bc.Scan(ctx, artifact, WithExecutionID(executionID))
 		}
 
-		if err := orm.WithTransaction(scan)(ctx); err != nil {
+		if err := orm.WithTransaction(scan)(bc.makeCtx()); err != nil {
 			// Just logged
 			log.Errorf("failed to scan artifact %s, error %v", artifact, err)
 
