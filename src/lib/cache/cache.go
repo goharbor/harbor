@@ -25,6 +25,15 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
+const (
+	// Memory the cache name of memory
+	Memory = "memory"
+	// Redis the cache name of redis
+	Redis = "redis"
+	// RedisSentinel the cache name of redis sentinel
+	RedisSentinel = "redis+sentinel"
+)
+
 var (
 	// ErrNotFound error returns when the key value not found in the cache
 	ErrNotFound = errors.New("key not found")

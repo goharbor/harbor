@@ -65,6 +65,50 @@ type ScannerAdapterMetadata struct {
 	Properties   ScannerProperties    `json:"properties"`
 }
 
+// Validate validate the metadata
+func (md *ScannerAdapterMetadata) Validate() error {
+	// Validate the required properties
+	if md.Scanner == nil ||
+		len(md.Scanner.Name) == 0 ||
+		len(md.Scanner.Version) == 0 ||
+		len(md.Scanner.Vendor) == 0 {
+		return errors.New("invalid scanner in metadata")
+	}
+
+	if len(md.Capabilities) == 0 {
+		return errors.New("invalid capabilities in metadata")
+	}
+
+	for _, ca := range md.Capabilities {
+		// v1.MimeTypeDockerArtifact is required now
+		found := false
+		for _, cm := range ca.ConsumesMimeTypes {
+			if cm == MimeTypeDockerArtifact {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return errors.Errorf("missing %s in consumes_mime_types", MimeTypeDockerArtifact)
+		}
+
+		// either of v1.MimeTypeNativeReport OR v1.MimeTypeGenericVulnerabilityReport is required
+		found = false
+		for _, pm := range ca.ProducesMimeTypes {
+			if pm == MimeTypeNativeReport || pm == MimeTypeGenericVulnerabilityReport {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return errors.Errorf("missing %s or %s in produces_mime_types", MimeTypeNativeReport, MimeTypeGenericVulnerabilityReport)
+		}
+	}
+
+	return nil
+}
+
 // HasCapability returns true when mine type of the artifact support by the scanner
 func (md *ScannerAdapterMetadata) HasCapability(mimeType string) bool {
 	for _, capability := range md.Capabilities {
