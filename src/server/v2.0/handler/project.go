@@ -17,12 +17,9 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
 	"strconv"
 	"strings"
 	"sync"
-
-	"github.com/goharbor/harbor/src/pkg/member"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
@@ -39,11 +36,13 @@ import (
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit"
+	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -509,6 +508,10 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 }
 
 func (a *projectAPI) GetScannerOfProject(ctx context.Context, params operation.GetScannerOfProjectParams) middleware.Responder {
+	if err := a.RequireAuthenticated(ctx); err != nil {
+		return a.SendError(ctx, err)
+	}
+
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead, rbac.ResourceScanner); err != nil {
 		return a.SendError(ctx, err)
@@ -528,6 +531,10 @@ func (a *projectAPI) GetScannerOfProject(ctx context.Context, params operation.G
 }
 
 func (a *projectAPI) ListScannerCandidatesOfProject(ctx context.Context, params operation.ListScannerCandidatesOfProjectParams) middleware.Responder {
+	if err := a.RequireAuthenticated(ctx); err != nil {
+		return a.SendError(ctx, err)
+	}
+
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionCreate, rbac.ResourceScanner); err != nil {
 		return a.SendError(ctx, err)
@@ -560,6 +567,10 @@ func (a *projectAPI) ListScannerCandidatesOfProject(ctx context.Context, params 
 }
 
 func (a *projectAPI) SetScannerOfProject(ctx context.Context, params operation.SetScannerOfProjectParams) middleware.Responder {
+	if err := a.RequireAuthenticated(ctx); err != nil {
+		return a.SendError(ctx, err)
+	}
+
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionCreate, rbac.ResourceScanner); err != nil {
 		return a.SendError(ctx, err)
