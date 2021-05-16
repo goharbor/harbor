@@ -540,13 +540,13 @@ func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Arti
 		}
 
 		if len(artifact.References) > 0 {
-			var ids []int64
+			var ids []interface{}
 			for _, ref := range artifact.References {
 				ids = append(ids, ref.ChildID)
 			}
 
 			// HACK: base=* in KeyWords to filter all artifacts
-			children, err := c.List(ctx, q.New(q.KeyWords{"id__in": ids, "base": "*"}), option)
+			children, err := c.List(ctx, q.New(q.KeyWords{"id": q.NewOrList(ids), "base": "*"}), option)
 			if err != nil {
 				return err
 			}

@@ -71,7 +71,7 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query) (orm.Qu
 		return qs, nil
 	}
 
-	metadata := parseModel(model)
+	metadata := ParseModel(model)
 	// set filters
 	qs = setFilters(ctx, qs, query, metadata)
 
@@ -118,67 +118,30 @@ func QuerySetterForCount(ctx context.Context, model interface{}, query *q.Query,
 }
 
 // set filters according to the query
-func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *metadata) orm.QuerySeter {
+func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *Metadata) orm.QuerySeter {
 	for key, value := range query.Keywords {
 		// The "strings.SplitN()" here is a workaround for the incorrect usage of query which should be avoided
 		// e.g. use the query with the knowledge of underlying ORM implementation, the "OrList" should be used instead:
 		// https://github.com/goharbor/harbor/blob/v2.2.0/src/controller/project/controller.go#L348
 		k := strings.SplitN(key, orm.ExprSep, 2)[0]
-		mk, filterable := meta.Filterable(k)
-		if !filterable {
-			// This is a workaround for the unsuitable usage of query, the keyword format for field and method should be consistent
-			// e.g. "ArtifactDigest" or the snake case format "artifact_digest" should be used instead:
-			// https://github.com/goharbor/harbor/blob/v2.2.0/src/controller/blob/controller.go#L233
-			mk, filterable = meta.Filterable(snakeCase(k))
-			if !filterable {
-				continue
-			}
+
+		filterFunc, _ := meta.GetFilterFunc(k)
+		if filterFunc != nil {
+			qs = filterFunc(ctx, qs, key, value)
 		}
-		// filter function defined, use it directly
-		if mk.FilterFunc != nil {
-			qs = mk.FilterFunc(ctx, qs, key, value)
-			continue
-		}
-		// fuzzy match
-		if f, ok := value.(*q.FuzzyMatchValue); ok {
-			qs = qs.Filter(key+"__icontains", Escape(f.Value))
-			continue
-		}
-		// range
-		if r, ok := value.(*q.Range); ok {
-			if r.Min != nil {
-				qs = qs.Filter(key+"__gte", r.Min)
-			}
-			if r.Max != nil {
-				qs = qs.Filter(key+"__lte", r.Max)
-			}
-			continue
-		}
-		// or list
-		if ol, ok := value.(*q.OrList); ok {
-			if len(ol.Values) > 0 {
-				qs = qs.Filter(key+"__in", ol.Values...)
-			}
-			continue
-		}
-		// and list
-		if _, ok := value.(*q.AndList); ok {
-			// do nothing as and list needs to be handled by the logic of DAO
-			continue
-		}
-		// exact match
-		qs = qs.Filter(key, value)
 	}
 	return qs
 }
 
 // set sorts according to the query
-func setSorts(qs orm.QuerySeter, query *q.Query, meta *metadata) orm.QuerySeter {
+func setSorts(qs orm.QuerySeter, query *q.Query, meta *Metadata) orm.QuerySeter {
 	var sortings []string
 	for _, sort := range query.Sorts {
-		if !meta.Sortable(sort.Key) {
+		col := meta.GetColumn(sort.Key)
+		if !col.IsSortable() {
 			continue
 		}
+
 		sorting := sort.Key
 		if sort.DESC {
 			sorting = fmt.Sprintf("-%s", sorting)

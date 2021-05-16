@@ -16,6 +16,7 @@ package orm
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 	"sync"
@@ -30,33 +31,75 @@ var (
 	cache = sync.Map{}
 )
 
-type key struct {
-	Name       string
-	Filterable bool
-	FilterFunc func(context.Context, orm.QuerySeter, string, interface{}) orm.QuerySeter
-	Sortable   bool
+// Column the columns of the model
+type Column struct {
+	Name       string // the column name in db
+	filterable bool   // True when the column is searchable
+	sortable   bool   // True when the column is orderable
 }
 
-type metadata struct {
-	Keys         map[string]*key
+// IsFilterable returns true when column is filterable
+func (col *Column) IsFilterable() bool {
+	return col != nil && col.filterable
+}
+
+// IsSortable returns true when column is sortable
+func (col *Column) IsSortable() bool {
+	return col != nil && col.sortable
+}
+
+// FilterFunc type alias to filter funcs for orm.QuerySeter
+type FilterFunc = func(context.Context, orm.QuerySeter, string, interface{}) orm.QuerySeter
+
+// Metadata metadata of model
+type Metadata struct {
+	TableName    string
 	DefaultSorts []*q.Sort
+	Columns      []*Column // ordered columns
+
+	columnIndexes map[string]*Column // help to find column by column name or field name
+	filterFuncs   map[string]FilterFunc
 }
 
-func (m *metadata) Filterable(key string) (*key, bool) {
-	k, exist := m.Keys[key]
-	return k, exist
-}
-
-func (m *metadata) Sortable(key string) bool {
-	k, exist := m.Keys[key]
-	if !exist {
-		return false
+// AddColumn add column to the metadata
+func (m *Metadata) AddColumn(name string, filterable bool, sortable bool, alias ...string) {
+	col := &Column{
+		Name:       name,
+		filterable: filterable,
+		sortable:   sortable,
 	}
-	return k.Sortable
+	m.Columns = append(m.Columns, col)
+
+	m.columnIndexes[name] = col
+	for _, a := range alias {
+		m.columnIndexes[a] = col
+	}
 }
 
-// parse the definition of the provided model(fields/methods/annotations) and return the parsed metadata
-func parseModel(model interface{}) *metadata {
+// GetColumn get column of the model by db column name or filed name in model
+func (m *Metadata) GetColumn(columnOrField string) *Column {
+	for _, key := range []string{columnOrField, snakeCase(columnOrField)} {
+		if col, ok := m.columnIndexes[key]; ok {
+			return col
+		}
+	}
+
+	return nil
+}
+
+// GetFilterFunc get the filter func for the key
+func (m *Metadata) GetFilterFunc(key string) (FilterFunc, bool) {
+	for _, key := range []string{key, snakeCase(key)} {
+		if f, ok := m.filterFuncs[key]; ok {
+			return f, true
+		}
+	}
+
+	return nil, false
+}
+
+// ParseModel parse the definition of the provided model(fields/methods/annotations) and return the parsed metadata
+func ParseModel(model interface{}) *Metadata {
 	// pointer type
 	ptr := reflect.TypeOf(model)
 	// struct type
@@ -66,13 +109,15 @@ func parseModel(model interface{}) *metadata {
 	fullName := getFullName(t)
 	cacheMetadata, exist := cache.Load(fullName)
 	if exist {
-		return cacheMetadata.(*metadata)
+		return cacheMetadata.(*Metadata)
 	}
 
 	// pointer value
 	v := reflect.ValueOf(model)
-	metadata := &metadata{
-		Keys: map[string]*key{},
+	metadata := &Metadata{
+		TableName:     getTableName(v),
+		columnIndexes: map[string]*Column{},
+		filterFuncs:   map[string]FilterFunc{},
 	}
 	// parse fields of the provided model
 	for i := 0; i < t.NumField(); i++ {
@@ -87,16 +132,11 @@ func parseModel(model interface{}) *metadata {
 		defaultSort, sortable := parseSortable(field)
 		column := parseColumn(field)
 
-		metadata.Keys[field.Name] = &key{
-			Name:       field.Name,
-			Filterable: filterable,
-			Sortable:   sortable,
-		}
-		metadata.Keys[column] = &key{
-			Name:       column,
-			Filterable: filterable,
-			Sortable:   sortable,
-		}
+		metadata.AddColumn(column, filterable, sortable, field.Name)
+
+		metadata.filterFuncs[column] = columnFilterFunc
+		metadata.filterFuncs[field.Name] = columnFilterFunc
+
 		if defaultSort != nil {
 			metadata.DefaultSorts = []*q.Sort{defaultSort}
 		}
@@ -112,22 +152,16 @@ func parseModel(model interface{}) *metadata {
 		if !methodValue.IsValid() {
 			continue
 		}
-		filterFunc, ok := methodValue.Interface().(func(context.Context, orm.QuerySeter, string, interface{}) orm.QuerySeter)
+
+		filterFunc, ok := methodValue.Interface().(FilterFunc)
 		if !ok {
+			fmt.Printf("%s method is not filter func", methodName)
 			continue
 		}
 		field := strings.TrimPrefix(methodName, "FilterBy")
-		metadata.Keys[field] = &key{
-			Name:       field,
-			Filterable: true,
-			FilterFunc: filterFunc,
-		}
-		snakeCaseField := snakeCase(field)
-		metadata.Keys[snakeCaseField] = &key{
-			Name:       snakeCaseField,
-			Filterable: true,
-			FilterFunc: filterFunc,
-		}
+
+		metadata.filterFuncs[field] = filterFunc
+		metadata.filterFuncs[snakeCase(field)] = filterFunc
 	}
 
 	// parse default sorts method
@@ -226,4 +260,68 @@ func snakeCase(str string) string {
 	}
 
 	return string(out)
+}
+
+// snakeString and getTableName copy from the beego orm
+// snake string, XxYy to xx_yy , XxYY to xx_y_y
+func snakeString(s string) string {
+	data := make([]byte, 0, len(s)*2)
+	j := false
+	num := len(s)
+	for i := 0; i < num; i++ {
+		d := s[i]
+		if i > 0 && d >= 'A' && d <= 'Z' && j {
+			data = append(data, '_')
+		}
+		if d != '_' {
+			j = true
+		}
+		data = append(data, d)
+	}
+	return strings.ToLower(string(data[:]))
+}
+
+func getTableName(val reflect.Value) string {
+	if fun := val.MethodByName("TableName"); fun.IsValid() {
+		vals := fun.Call([]reflect.Value{})
+		// has return and the first val is string
+		if len(vals) > 0 && vals[0].Kind() == reflect.String {
+			return vals[0].String()
+		}
+	}
+	return snakeString(reflect.Indirect(val).Type().Name())
+}
+
+func columnFilterFunc(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	// fuzzy match
+	if f, ok := value.(*q.FuzzyMatchValue); ok {
+		return qs.Filter(key+"__icontains", Escape(f.Value))
+	}
+	// range
+	if r, ok := value.(*q.Range); ok {
+		if r.Min != nil {
+			qs = qs.Filter(key+"__gte", r.Min)
+		}
+		if r.Max != nil {
+			qs = qs.Filter(key+"__lte", r.Max)
+		}
+
+		return qs
+	}
+	// or list
+	if ol, ok := value.(*q.OrList); ok {
+		if len(ol.Values) > 0 {
+			qs = qs.Filter(key+"__in", ol.Values...)
+		}
+
+		return qs
+	}
+	// and list
+	if _, ok := value.(*q.AndList); ok {
+		// do nothing as and list needs to be handled by the logic of DAO
+		return qs
+	}
+
+	// exact match
+	return qs.Filter(key, value)
 }

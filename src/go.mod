@@ -48,6 +48,7 @@ require (
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
+	github.com/huandu/go-sqlbuilder v1.12.1
 	github.com/jinzhu/gorm v1.9.8 // indirect
 	github.com/lib/pq v1.8.0
 	github.com/miekg/pkcs11 v0.0.0-20170220202408-7283ca79f35e // indirect

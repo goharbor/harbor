@@ -58,65 +58,53 @@ func (b *bar) GetDefaultSorts() []*q.Sort {
 func TestParseQueryObject(t *testing.T) {
 	require := require.New(t)
 	assert := assert.New(t)
-	metadata := parseModel(&foo{})
+	metadata := ParseModel(&foo{})
 	require.NotNil(metadata)
-	require.Len(metadata.Keys, 8)
+	require.Len(metadata.Columns, 3)
 
-	key, exist := metadata.Keys["Field2"]
-	require.True(exist)
-	assert.Equal("Field2", key.Name)
-	assert.False(key.Filterable)
-	assert.True(key.Sortable)
+	for _, key := range []string{"Field2", "customized_field2"} {
+		col := metadata.GetColumn(key)
+		require.NotNil(col)
+		assert.Equal("customized_field2", col.Name)
+		assert.False(col.IsFilterable())
+		assert.True(col.IsSortable())
+	}
 
-	key, exist = metadata.Keys["customized_field2"]
-	require.True(exist)
-	assert.Equal("customized_field2", key.Name)
-	assert.False(key.Filterable)
-	assert.True(key.Sortable)
+	for _, key := range []string{"Field3", "field3"} {
+		col := metadata.GetColumn(key)
+		require.NotNil(col)
+		assert.Equal("field3", col.Name)
+		assert.True(col.IsFilterable())
+		assert.False(col.IsSortable())
+	}
 
-	key, exist = metadata.Keys["Field3"]
-	require.True(exist)
-	assert.Equal("Field3", key.Name)
-	assert.True(key.Filterable)
-	assert.False(key.Sortable)
+	for _, key := range []string{"Field4", "field4"} {
+		col := metadata.GetColumn(key)
+		require.NotNil(col)
+		assert.Equal("field4", col.Name)
+		assert.True(col.IsFilterable())
+		assert.True(col.IsSortable())
+	}
 
-	key, exist = metadata.Keys["field3"]
-	require.True(exist)
-	assert.Equal("field3", key.Name)
-	assert.True(key.Filterable)
-	assert.False(key.Sortable)
+	for _, key := range []string{"Field5", "field5"} {
+		col := metadata.GetColumn(key)
+		require.Nil(col)
+		assert.False(col.IsFilterable())
+		assert.False(col.IsSortable())
+	}
 
-	key, exist = metadata.Keys["Field4"]
-	require.True(exist)
-	assert.Equal("Field4", key.Name)
-	assert.True(key.Filterable)
-	assert.True(key.Sortable)
-
-	key, exist = metadata.Keys["field4"]
-	require.True(exist)
-	assert.Equal("field4", key.Name)
-	assert.True(key.Filterable)
-	assert.True(key.Sortable)
-
-	key, exist = metadata.Keys["Field5"]
-	require.True(exist)
-	assert.Equal("Field5", key.Name)
-	assert.True(key.Filterable)
-	assert.False(key.Sortable)
-
-	key, exist = metadata.Keys["field5"]
-	require.True(exist)
-	assert.Equal("field5", key.Name)
-	assert.True(key.Filterable)
-	assert.False(key.Sortable)
+	for _, key := range []string{"Field3", "field3", "Field4", "field4", "Field5", "field5"} {
+		_, exist := metadata.GetFilterFunc(key)
+		assert.True(exist, "filter funcs for %s should exist", key)
+	}
 
 	require.Len(metadata.DefaultSorts, 1)
 	assert.Equal("Field4", metadata.DefaultSorts[0].Key)
 	assert.True(metadata.DefaultSorts[0].DESC)
 
-	metadata = parseModel(&bar{})
+	metadata = ParseModel(&bar{})
 	require.NotNil(metadata)
-	require.Len(metadata.Keys, 4)
+	require.Len(metadata.Columns, 2)
 	require.Len(metadata.DefaultSorts, 2)
 	assert.Equal("Field1", metadata.DefaultSorts[0].Key)
 	assert.True(metadata.DefaultSorts[0].DESC)

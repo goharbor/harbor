@@ -31,6 +31,54 @@ type Query struct {
 	Sorting string
 }
 
+// GetKeyWords returns Keywords
+func (q *Query) GetKeyWords() KeyWords {
+	var kw KeyWords
+
+	if q != nil {
+		kw = q.Keywords
+	}
+
+	if kw == nil {
+		kw = KeyWords{}
+	}
+
+	return kw
+}
+
+// GetPagination returns page number and page size
+func (q *Query) GetPagination() (int64, int64) {
+	if q != nil {
+		return q.PageNumber, q.PageSize
+	}
+
+	return 0, 0
+}
+
+// GetSorts returns sorts
+func (q *Query) GetSorts() []*Sort {
+	var sorts []*Sort
+
+	if q != nil {
+		sorts = q.Sorts
+	}
+
+	return sorts
+}
+
+// GetValue returns the first value of keys find in the Keywords
+func (q *Query) GetValue(keys ...string) (interface{}, bool) {
+	kw := q.GetKeyWords()
+
+	for _, key := range keys {
+		if v, ok := kw[key]; ok {
+			return v, true
+		}
+	}
+
+	return nil, false
+}
+
 // First make the query only fetch the first one record in the sorting order
 func (q *Query) First(sorting ...*Sort) *Query {
 	q.PageNumber = 1
