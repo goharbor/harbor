@@ -36,7 +36,7 @@ import {
   CARD_VIEW_LOCALSTORAGE_KEY,
   ConfirmationButtons,
   ConfirmationState,
-  ConfirmationTargets
+  ConfirmationTargets, FALSE_STR, TRUE_STR
 } from "../../../shared/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../shared/components/operation/operate";
 import {
@@ -54,8 +54,6 @@ import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationAcknowledgement } from "../../global-confirmation-dialog/confirmation-state-message";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
 
-const TRUE_STR: string = 'true';
-const FALSE_STR: string = 'false';
 @Component({
   selector: "hbr-repository-gridview",
   templateUrl: "./repository-gridview.component.html",

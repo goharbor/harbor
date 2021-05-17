@@ -12,10 +12,10 @@
 }
 
 .role-label {
-  color: #cccccc;
   font-size: 14px;
   font-style: italic;
   letter-spacing: 0.01em;
+  margin-top: 8px;
 }
 .backStyle {
   color: #007cbb;
@@ -53,4 +53,84 @@ button {
 }
 .line-height-10 {
   line-height: 10px;
+}
+.back-icon {
+  margin-right: 5px;
+  color: #007cbb;
+  font-size: 16px;
+}
+.flex-end {
+  display: flex;
+  justify-content: flex-end;
+}
+.card{
+  width: auto;
+  min-width: 10rem;
+  margin-right: 0.5rem;
+  margin-top: 0;
+  height: 6rem;
+}
+.head {
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+  font-size: 18px;
+}
+.font-weight-700 {
+  font-weight: 700;
+}
+.storage-used {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 8rem;
+}
+.size-number {
+  font-size: 1.5rem;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.margin-right-5px {
+  margin-right: 5px;
+}
+.center {
+  display: flex;
+  align-items: center;
+}
+.divider {
+  height: 24px;
+  width: 1px;
+  margin-right: 24px;
+  margin-left: 24px;
+}
+
+
+.progress,
+.progress-static {
+  progress {
+    max-height: 0.48rem;
+  }
+}
+:host::ng-deep {
+  .progress {
+    &.warning>progress {
+      color: orange;
+
+      &::-webkit-progress-value {
+        background-color: orange;
+      }
+
+      &::-moz-progress-bar {
+        background-color: orange;
+      }
+    }
+  }
+}
+
+.of {
+  margin-right: 5px;
+  margin-left: 5px;
 }

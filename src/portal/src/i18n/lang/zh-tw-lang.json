@@ -808,7 +808,8 @@
     "MAINTAINER": "維護人員",
     "DEVELOPER": "開發者",
     "GUEST": "訪客",
-    "LIMITED_GUEST": "受限訪客"
+    "LIMITED_GUEST": "受限訪客",
+    "SEE_ALL": "SEE ALL"
   },
   "ALERT":{
     "FORM_CHANGE_CONFIRMATION": "表單內容改變,確認是否取消?"

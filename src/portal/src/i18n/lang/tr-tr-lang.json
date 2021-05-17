@@ -810,7 +810,8 @@
         "MAINTAINER": "Uzman(lar)",
         "DEVELOPER": "Geliştirici(ler)",
         "GUEST": "Misafir(ler)",
-        "LIMITED_GUEST": "Limited guest(s)"
+        "LIMITED_GUEST": "Limited guest(s)",
+        "SEE_ALL": "SEE ALL"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Bazı değişiklikler henüz kaydedilmedi. İptal etmek istiyor musun?"

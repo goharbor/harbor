@@ -810,7 +810,8 @@
         "MAINTAINER": "Maintainer(s)",
         "DEVELOPER": "Developer(s)",
         "GUEST": "Guest(s)",
-        "LIMITED_GUEST": "Limited guest(s)"
+        "LIMITED_GUEST": "Limited guest(s)",
+        "SEE_ALL": "SEE ALL"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Einige Änderungen wurden noch nicht gespeichert. Sollen diese verworfen werden?"

@@ -16,7 +16,7 @@ import { Injectable } from '@angular/core';
 import { Observable, forkJoin} from "rxjs";
 import { map, share } from "rxjs/operators";
 import { HttpClient } from '@angular/common/http';
-import { CacheObservable } from "../units/cache-util";
+import { CacheObservable, FlushAll } from "../units/cache-util";
 import { CURRENT_BASE_HREF } from "../units/utils";
 
 
@@ -90,5 +90,7 @@ export class UserPermissionDefaultService extends UserPermissionService {
     }
 
     public clearPermissionCache() {
+        this._sharedPermissionObservableMap = {};
+        FlushAll();
     }
 }

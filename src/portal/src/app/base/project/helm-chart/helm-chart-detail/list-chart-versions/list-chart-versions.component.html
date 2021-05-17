@@ -1,7 +1,8 @@
 <div>
   <div class="breadcrumb">
-    <a href="javascript:void(0)" (click)="gotoProjectList()"> {{ 'SIDE_NAV.PROJECTS'| translate}} </a>
-    &lt;
+    <span class="back-icon"><</span>
+    <a href="javascript:void(0)" (click)="gotoProjectList()">{{ 'SIDE_NAV.PROJECTS'| translate}}</a>
+    <span class="back-icon"><</span>
     <a href="javascript:void(0)" (click)="gotoChartList()">{{ projectName }}</a>
   </div>
   <hbr-helm-chart-version

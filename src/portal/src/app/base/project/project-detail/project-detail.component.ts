@@ -21,6 +21,10 @@ import { UserPermissionService, USERSTATICPERMISSION } from "../../../shared/ser
 import { ErrorHandler } from "../../../shared/units/error-handler";
 import { debounceTime } from 'rxjs/operators';
 import { DOWN, SHOW_ELLIPSIS_WIDTH, UP } from './project-detail.const';
+import { ProjectService } from "../../../../../ng-swagger-gen/services/project.service";
+import { ProjectSummaryQuota } from "../../../../../ng-swagger-gen/models/project-summary-quota";
+import { QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COEFFICIENT, QuotaUnits } from "../../../shared/entities/shared.const";
+import { clone, GetIntegerAndUnit, getSizeNumber, getSizeUnit } from "../../../shared/units/utils";
 
 
 @Component({
@@ -48,6 +52,7 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
   hasWebhookListPermission: boolean;
   hasScannerReadPermission: boolean;
   hasP2pProviderReadPermission: boolean;
+  hasQuotaReadPermission: boolean = false;
   tabLinkNavList = [
     {
       linkName: "summary",
@@ -126,7 +131,11 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
   private _subject = new Subject<string>();
   private _subscription: Subscription;
   isProxyCacheProject: boolean = false;
+  projectQuota: ProjectSummaryQuota;
+  quotaDangerCoefficient: number = QUOTA_DANGER_COEFFICIENT;
+  quotaWarningCoefficient: number = QUOTA_WARNING_COEFFICIENT;
   constructor(
+    private projectService: ProjectService,
     private route: ActivatedRoute,
     private router: Router,
     private sessionService: SessionService,
@@ -202,13 +211,29 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
       USERSTATICPERMISSION.SCANNER.KEY, USERSTATICPERMISSION.SCANNER.VALUE.READ));
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.P2P_PROVIDER.KEY, USERSTATICPERMISSION.P2P_PROVIDER.VALUE.READ));
+    permissionsList.push(this.userPermissionService.getPermission(projectId,
+       USERSTATICPERMISSION.QUOTA.KEY, USERSTATICPERMISSION.QUOTA.VALUE.READ));
 
     forkJoin(...permissionsList).subscribe(Rules => {
       [this.hasProjectReadPermission, this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission
         , this.hasLabelListPermission, this.hasRepositoryListPermission, this.hasHelmChartsListPermission, this.hasRobotListPermission
         , this.hasLabelCreatePermission, this.hasTagRetentionPermission, this.hasWebhookListPermission,
-      this.hasScannerReadPermission, this.hasP2pProviderReadPermission] = Rules;
+      this.hasScannerReadPermission, this.hasP2pProviderReadPermission, this.hasQuotaReadPermission] = Rules;
+      if (this.hasQuotaReadPermission) {
+        this.getQuotaInfo();
+      }
     }, error => this.errorHandler.error(error));
+  }
+  getQuotaInfo() {
+    this.projectService.getProjectSummary({
+      projectNameOrId: this.projectId.toString()
+    }).subscribe(res => {
+      if (res && res.quota) {
+        this.projectQuota = res.quota;
+      }
+    }, error => {
+      this.errorHandler.error(error);
+    });
   }
 
   public get isSessionValid(): boolean {
@@ -273,5 +298,21 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
     this.cdf.detectChanges();
     // 3. Hide overflowed tabs
     this.resetTabsForDownSize();
+  }
+  getIntegerAndUnit(hardValue, usedValue) {
+    return GetIntegerAndUnit(hardValue, clone(QuotaUnits), usedValue, clone(QuotaUnits));
+  }
+
+  getSizeNumber(): number | string {
+    if (this.projectQuota && this.projectQuota.used && this.projectQuota.used.storage) {
+      return getSizeNumber(this.projectQuota.used.storage);
+    }
+    return 0;
+  }
+  getSizeUnit(): number | string {
+    if (this.projectQuota) {
+      return getSizeUnit(this.projectQuota.used.storage);
+    }
+    return null;
   }
 }

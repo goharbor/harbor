@@ -28,6 +28,7 @@ import {modalEvents} from "../../base/modal-events.const";
 import {AboutDialogComponent} from "../../shared/components/about-dialog/about-dialog.component";
 import { CommonRoutes, CONFIG_AUTH_MODE } from "../../shared/entities/shared.const";
 import { SignInCredential } from "./sign-in-credential";
+import { UserPermissionService } from "../../shared/services";
 
 // Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -74,7 +75,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         private route: ActivatedRoute,
         private appConfigService: AppConfigService,
         private cookie: CookieService,
-        private skinableConfig: SkinableConfig) { }
+        private skinableConfig: SkinableConfig,
+        private userPermissionService: UserPermissionService) { }
 
     ngOnInit(): void {
         // custom skin
@@ -244,7 +246,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 // Set status
                 // Keep it ongoing to keep the button 'disabled'
                 // this.signInStatus = signInStatusNormal;
-
+                // clear permissions cache
+                this.userPermissionService.clearPermissionCache();
                 // Remeber me
                 this.remeberMe();
 
