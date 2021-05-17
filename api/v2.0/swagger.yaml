@@ -6202,9 +6202,11 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
+        x-omitempty: false
       chart_count:
         type: integer
         description: The total number of charts under this project.
+        x-omitempty: false
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'
@@ -6257,9 +6259,11 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
+        x-omitempty: false
       chart_count:
         type: integer
         description: The total number of charts under this project.
+        x-omitempty: false
       project_admin_count:
         type: integer
         description: The total number of project admin members.
