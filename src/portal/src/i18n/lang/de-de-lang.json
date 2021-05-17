@@ -1158,7 +1158,8 @@
         "SAVE_SUCCESS": "Ändern der Begrenzung erfolgreich",
         "UNLIMITED": "unlimitiert",
         "INVALID_INPUT": "ungültige Eingabe",
-        "PLACEHOLDER": "Es konnten keine Begrenzungen gefunden werden"
+        "PLACEHOLDER": "Es konnten keine Begrenzungen gefunden werden",
+        "FILTER_PLACEHOLDER": "Search by name(exact match)"
     },
     "WEEKLY": {
         "MONDAY": "Montag",

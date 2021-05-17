@@ -1148,7 +1148,8 @@
     "SAVE_SUCCESS": "項目容量修改成功",
     "UNLIMITED": "不設限",
     "INVALID_INPUT": "輸入錯誤",
-    "PLACEHOLDER": "我們找不到任何可以配置定額的項目"
+    "PLACEHOLDER": "我們找不到任何可以配置定額的項目",
+    "FILTER_PLACEHOLDER": "Search by name(exact match)"
   },
   "WEEKLY":{
     "MONDAY": "週一",
