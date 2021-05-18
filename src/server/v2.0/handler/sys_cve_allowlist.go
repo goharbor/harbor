@@ -38,7 +38,7 @@ func newSystemCVEAllowListAPI() *systemCVEAllowListAPI {
 }
 
 func (s systemCVEAllowListAPI) PutSystemCVEAllowlist(ctx context.Context, params system_cve_allowlist.PutSystemCVEAllowlistParams) middleware.Responder {
-	if err := s.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceSystemCVEAllowList); err != nil {
+	if err := s.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceConfiguration); err != nil {
 		return s.SendError(ctx, err)
 	}
 	l := models.CVEAllowlist{}

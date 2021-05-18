@@ -20,7 +20,7 @@ func newOIDCAPI() *oidcAPI {
 }
 
 func (o oidcAPI) PingOIDC(ctx context.Context, params oidc.PingOIDCParams) middleware.Responder {
-	if err := o.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceOIDCEndpoint); err != nil {
+	if err := o.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceConfiguration); err != nil {
 		return o.SendError(ctx, err)
 	}
 	err := oidcpkg.TestEndpoint(oidcpkg.Conn{
