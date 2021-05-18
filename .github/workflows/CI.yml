@@ -37,7 +37,7 @@ jobs:
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
         with:
-          docker_version: 18.09
+          docker_version: 20.04
           docker_channel: stable
       - uses: actions/checkout@v2
         with:
