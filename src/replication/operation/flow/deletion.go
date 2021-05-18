@@ -15,7 +15,6 @@
 package flow
 
 import (
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/operation/execution"
 	"github.com/goharbor/harbor/src/replication/operation/scheduler"
@@ -43,17 +42,7 @@ func NewDeletionFlow(executionMgr execution.Manager, scheduler scheduler.Schedul
 }
 
 func (d *deletionFlow) Run(interface{}) (int, error) {
-	srcResources, err := filterResources(d.resources, d.policy.Filters)
-	if err != nil {
-		return 0, err
-	}
-	if len(srcResources) == 0 {
-		markExecutionSuccess(d.executionMgr, d.executionID, "no resources need to be replicated")
-		log.Infof("no resources need to be replicated for the execution %d, skip", d.executionID)
-		return 0, nil
-	}
-
-	srcResources = assembleSourceResources(srcResources, d.policy)
+	srcResources := assembleSourceResources(d.resources, d.policy)
 	dstResources := assembleDestinationResources(srcResources, d.policy)
 
 	items, err := preprocess(d.scheduler, srcResources, dstResources)
