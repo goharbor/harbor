@@ -34,7 +34,7 @@ type Registry struct {
 	Type           string    `orm:"column(type)"`
 	Insecure       bool      `orm:"column(insecure)"`
 	Description    string    `orm:"column(description)"`
-	Health         string    `orm:"column(health)"`
+	Status         string    `orm:"column(health)"`
 	CreationTime   time.Time `orm:"column(creation_time);auto_now_add"`
 	UpdateTime     time.Time `orm:"column(update_time);auto_now"`
 }

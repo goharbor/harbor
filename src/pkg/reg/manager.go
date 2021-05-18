@@ -226,7 +226,7 @@ func fromDaoModel(registry *dao.Registry) (*model.Registry, error) {
 		Credential:   &model.Credential{},
 		URL:          registry.URL,
 		Insecure:     registry.Insecure,
-		Status:       registry.Health,
+		Status:       registry.Status,
 		CreationTime: registry.CreationTime,
 		UpdateTime:   registry.UpdateTime,
 	}
@@ -260,7 +260,7 @@ func toDaoModel(registry *model.Registry) (*dao.Registry, error) {
 		Type:         string(registry.Type),
 		Insecure:     registry.Insecure,
 		Description:  registry.Description,
-		Health:       registry.Status,
+		Status:       registry.Status,
 		CreationTime: registry.CreationTime,
 		UpdateTime:   registry.UpdateTime,
 	}

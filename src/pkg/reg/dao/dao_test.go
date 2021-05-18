@@ -45,7 +45,7 @@ func (d *daoTestSuite) SetupTest() {
 		Name:     "harbor",
 		Type:     "harbor",
 		Insecure: false,
-		Health:   "health",
+		Status:   "health",
 	}
 	id, err := d.dao.Create(d.ctx, registry)
 	d.Require().Nil(err)
