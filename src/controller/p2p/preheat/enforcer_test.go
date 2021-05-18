@@ -24,6 +24,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	car "github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/selector"
 	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
@@ -33,12 +34,11 @@ import (
 	pr "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	ta "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"github.com/goharbor/harbor/src/testing/controller/artifact"
 	"github.com/goharbor/harbor/src/testing/controller/project"
-	"github.com/goharbor/harbor/src/testing/controller/scan"
+	scantesting "github.com/goharbor/harbor/src/testing/controller/scan"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/instance"
 	"github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/policy"
@@ -104,13 +104,13 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		mock.AnythingOfType("*artifact.Option"),
 	).Return(mockArtifacts(), nil)
 
-	fakeScanCtl := &scan.Controller{}
-	fakeScanCtl.On("GetSummary",
+	low := vuln.Low
+	fakeScanCtl := &scantesting.Controller{}
+	fakeScanCtl.On("GetVulnerable",
 		context.TODO(),
 		mock.AnythingOfType("*artifact.Artifact"),
-		[]string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport},
-		mock.AnythingOfType("report.Option"),
-	).Return(mockVulnerabilitySummary(), nil)
+		mock.AnythingOfType("models.CVESet"),
+	).Return(&scan.Vulnerable{Severity: &low, ScanStatus: "Success"}, nil)
 
 	fakeProCtl := &project.Controller{}
 	fakeProCtl.On("Get",
@@ -301,19 +301,6 @@ func mockArtifacts() []*car.Artifact {
 					Name: "staged",
 				},
 			},
-		},
-	}
-}
-
-// mock vulnerability summary
-func mockVulnerabilitySummary() map[string]interface{} {
-	// skip all unused properties
-	return map[string]interface{}{
-		v1.MimeTypeNativeReport: &vuln.NativeReportSummary{
-			Severity: vuln.Low,
-		},
-		v1.MimeTypeGenericVulnerabilityReport: &vuln.NativeReportSummary{
-			Severity: vuln.Low,
 		},
 	}
 }

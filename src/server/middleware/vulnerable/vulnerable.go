@@ -25,8 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/scan/report"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/util"
@@ -92,28 +90,20 @@ func Middleware() func(http.Handler) http.Handler {
 		}
 
 		allowlist := proj.CVEAllowlist.CVESet()
-		summaries, err := scanController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport}, report.WithCVEAllowlist(&allowlist))
-		if err != nil {
-			logger.Errorf("get vulnerability summary of the artifact %s@%s failed, error: %v", art.RepositoryName, art.Digest, err)
-			return err
-		}
 
 		projectSeverity := vuln.ParseSeverityVersion3(proj.Severity())
 
-		rawSummary, ok := summaries[v1.MimeTypeNativeReport]
-		if !ok {
-			rawSummary, ok = summaries[v1.MimeTypeGenericVulnerabilityReport]
-			if !ok {
+		vulnerable, err := scanController.GetVulnerable(ctx, art, allowlist)
+		if err != nil {
+			if errors.IsNotFoundErr(err) {
 				// No report yet?
 				msg := fmt.Sprintf(`current image without vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
 					`To continue with pull, please contact your project administrator for help.`, projectSeverity)
 				return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
 			}
-		}
 
-		summary, ok := rawSummary.(*vuln.NativeReportSummary)
-		if !ok {
-			return fmt.Errorf("report summary is invalid")
+			logger.Errorf("get vulnerability summary of the artifact %s@%s failed, error: %v", art.RepositoryName, art.Digest, err)
+			return err
 		}
 
 		if art.IsImageIndex() {
@@ -128,36 +118,27 @@ func Middleware() func(http.Handler) http.Handler {
 			}
 		}
 
-		if !summary.IsSuccessStatus() {
+		if !vulnerable.IsScanSuccess() {
 			msg := fmt.Sprintf(`current image with "%s" status of vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
-				`To continue with pull, please contact your project administrator for help.`, summary.ScanStatus, projectSeverity)
+				`To continue with pull, please contact your project administrator for help.`, vulnerable.ScanStatus, projectSeverity)
 			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
 		}
 
-		if summary.Summary == nil || summary.Summary.Total == 0 {
-			// No vulnerabilities found in the artifact, skip the checking
-			// See https://github.com/goharbor/harbor/issues/11210 to get more details
-			logger.Debugf("no vulnerabilities found in artifact %s@%s, skip the vulnerability prevention checking", art.RepositoryName, art.Digest)
-			return nil
-		}
-
 		// Do judgement
-		if summary.Severity.Code() >= projectSeverity.Code() {
+		if vulnerable.Severity != nil && vulnerable.Severity.Code() >= projectSeverity.Code() {
 			thing := "vulnerability"
-			if summary.Summary.Total > 1 {
+			if vulnerable.VulnerabilitiesCount > 1 {
 				thing = "vulnerabilities"
 			}
 			msg := fmt.Sprintf(`current image with %d %s cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
 				`To continue with pull, please contact your project administrator to exempt matched vulnerabilities through configuring the CVE allowlist.`,
-				summary.Summary.Total, thing, projectSeverity)
+				vulnerable.VulnerabilitiesCount, thing, projectSeverity)
 			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
 		}
 
 		// Print scannerPull CVE list
-		if len(summary.CVEBypassed) > 0 {
-			for _, cve := range summary.CVEBypassed {
-				logger.Infof("Vulnerable policy check: bypassed CVE %s", cve)
-			}
+		for _, cve := range vulnerable.CVEBypassed {
+			logger.Infof("Vulnerable policy check: bypassed CVE %s", cve)
 		}
 
 		return nil

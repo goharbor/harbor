@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
+	"reflect"
 	"strings"
 	"sync"
 
@@ -28,10 +28,12 @@ import (
 	sc "github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
@@ -533,7 +535,7 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 }
 
 // GetSummary ...
-func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact, mimeTypes []string, options ...report.Option) (map[string]interface{}, error) {
+func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact, mimeTypes []string) (map[string]interface{}, error) {
 	if artifact == nil {
 		return nil, errors.New("no way to get report summaries for nil artifact")
 	}
@@ -546,7 +548,7 @@ func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact
 
 	summaries := make(map[string]interface{}, len(rps))
 	for _, rp := range rps {
-		sum, err := report.GenerateSummary(rp, options...)
+		sum, err := report.GenerateSummary(rp)
 		if err != nil {
 			return nil, err
 		}
@@ -697,6 +699,85 @@ func (bc *basicController) DeleteReports(ctx context.Context, digests ...string)
 		return errors.Wrap(err, "scan controller: delete reports")
 	}
 	return nil
+}
+
+func (bc *basicController) GetVulnerable(ctx context.Context, artifact *ar.Artifact, allowlist allowlist.CVESet) (*Vulnerable, error) {
+	if artifact == nil {
+		return nil, errors.New("no way to get vulnerable for nil artifact")
+	}
+
+	var (
+		mimeType string
+		reports  []*scan.Report
+	)
+	for _, m := range []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport} {
+		rps, err := bc.GetReport(ctx, artifact, []string{m})
+		if err != nil {
+			return nil, err
+		}
+
+		if len(rps) == 0 {
+			continue
+		}
+
+		mimeType = m
+		reports = rps
+		break
+	}
+
+	if len(reports) == 0 {
+		return nil, errors.NotFoundError(nil).WithMessage("report not found")
+	}
+
+	scanStatus := reports[0].Status
+	for _, report := range reports {
+		scanStatus = vuln.MergeScanStatus(scanStatus, report.Status)
+	}
+
+	vulnerable := &Vulnerable{
+		ScanStatus: scanStatus,
+	}
+
+	if !vulnerable.IsScanSuccess() {
+		return vulnerable, nil
+	}
+
+	raw, err := report.Reports(reports).ResolveData(mimeType)
+	if err != nil {
+		return nil, err
+	}
+
+	rp, ok := raw.(*vuln.Report)
+	if !ok {
+		return nil, errors.Errorf("type mismatch: expect *vuln.Report but got %s", reflect.TypeOf(raw).String())
+	}
+
+	if vuls := rp.GetVulnerabilityItemList().Items(); len(vuls) > 0 {
+		vulnerable.VulnerabilitiesCount = len(vuls)
+
+		var severity vuln.Severity
+
+		for _, v := range vuls {
+			if allowlist.Contains(v.ID) {
+				// Append the by passed CVEs specified in the allowlist
+				vulnerable.CVEBypassed = append(vulnerable.CVEBypassed, v.ID)
+
+				vulnerable.VulnerabilitiesCount--
+
+				continue
+			}
+
+			if severity == "" || v.Severity.Code() > severity.Code() {
+				severity = v.Severity
+			}
+		}
+
+		if severity != "" {
+			vulnerable.Severity = &severity
+		}
+	}
+
+	return vulnerable, nil
 }
 
 // makeRobotAccount creates a robot account based on the arguments for scanning.

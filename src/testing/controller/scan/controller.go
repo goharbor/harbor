@@ -11,9 +11,9 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
-	pkgscan "github.com/goharbor/harbor/src/pkg/scan"
+	models "github.com/goharbor/harbor/src/pkg/allowlist/models"
 
-	report "github.com/goharbor/harbor/src/pkg/scan/report"
+	pkgscan "github.com/goharbor/harbor/src/pkg/scan"
 
 	scan "github.com/goharbor/harbor/src/controller/scan"
 )
@@ -90,20 +90,13 @@ func (_m *Controller) GetScanLog(ctx context.Context, uuid string) ([]byte, erro
 	return r0, r1
 }
 
-// GetSummary provides a mock function with given fields: ctx, _a1, mimeTypes, options
-func (_m *Controller) GetSummary(ctx context.Context, _a1 *artifact.Artifact, mimeTypes []string, options ...report.Option) (map[string]interface{}, error) {
-	_va := make([]interface{}, len(options))
-	for _i := range options {
-		_va[_i] = options[_i]
-	}
-	var _ca []interface{}
-	_ca = append(_ca, ctx, _a1, mimeTypes)
-	_ca = append(_ca, _va...)
-	ret := _m.Called(_ca...)
+// GetSummary provides a mock function with given fields: ctx, _a1, mimeTypes
+func (_m *Controller) GetSummary(ctx context.Context, _a1 *artifact.Artifact, mimeTypes []string) (map[string]interface{}, error) {
+	ret := _m.Called(ctx, _a1, mimeTypes)
 
 	var r0 map[string]interface{}
-	if rf, ok := ret.Get(0).(func(context.Context, *artifact.Artifact, []string, ...report.Option) map[string]interface{}); ok {
-		r0 = rf(ctx, _a1, mimeTypes, options...)
+	if rf, ok := ret.Get(0).(func(context.Context, *artifact.Artifact, []string) map[string]interface{}); ok {
+		r0 = rf(ctx, _a1, mimeTypes)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(map[string]interface{})
@@ -111,8 +104,31 @@ func (_m *Controller) GetSummary(ctx context.Context, _a1 *artifact.Artifact, mi
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *artifact.Artifact, []string, ...report.Option) error); ok {
-		r1 = rf(ctx, _a1, mimeTypes, options...)
+	if rf, ok := ret.Get(1).(func(context.Context, *artifact.Artifact, []string) error); ok {
+		r1 = rf(ctx, _a1, mimeTypes)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetVulnerable provides a mock function with given fields: ctx, _a1, allowlist
+func (_m *Controller) GetVulnerable(ctx context.Context, _a1 *artifact.Artifact, allowlist models.CVESet) (*scan.Vulnerable, error) {
+	ret := _m.Called(ctx, _a1, allowlist)
+
+	var r0 *scan.Vulnerable
+	if rf, ok := ret.Get(0).(func(context.Context, *artifact.Artifact, models.CVESet) *scan.Vulnerable); ok {
+		r0 = rf(ctx, _a1, allowlist)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*scan.Vulnerable)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *artifact.Artifact, models.CVESet) error); ok {
+		r1 = rf(ctx, _a1, allowlist)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -162,13 +178,13 @@ func (_m *Controller) ScanAll(ctx context.Context, trigger string, async bool) (
 	return r0, r1
 }
 
-// UpdateReport provides a mock function with given fields: ctx, _a1
-func (_m *Controller) UpdateReport(ctx context.Context, _a1 *pkgscan.CheckInReport) error {
-	ret := _m.Called(ctx, _a1)
+// UpdateReport provides a mock function with given fields: ctx, report
+func (_m *Controller) UpdateReport(ctx context.Context, report *pkgscan.CheckInReport) error {
+	ret := _m.Called(ctx, report)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, *pkgscan.CheckInReport) error); ok {
-		r0 = rf(ctx, _a1)
+		r0 = rf(ctx, report)
 	} else {
 		r0 = ret.Error(0)
 	}

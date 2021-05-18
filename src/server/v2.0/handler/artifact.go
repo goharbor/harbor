@@ -351,27 +351,16 @@ func (a *artifactAPI) GetVulnerabilitiesAddition(ctx context.Context, params ope
 			return a.SendError(ctx, err)
 		}
 
-		for _, rp := range reports {
-			// Resolve scan report data only when it is ready
-			if len(rp.Report) == 0 {
-				continue
-			}
-
-			vrp, err := report.ResolveData(rp.MimeType, []byte(rp.Report), report.WithArtifactDigest(rp.Digest))
-			if err != nil {
-				return a.SendError(ctx, err)
-			}
-
-			if v, ok := vulnerabilities[rp.MimeType]; ok {
-				r, err := report.Merge(rp.MimeType, v, vrp)
-				if err != nil {
-					return a.SendError(ctx, err)
-				}
-				vulnerabilities[rp.MimeType] = r
-			} else {
-				vulnerabilities[rp.MimeType] = vrp
-			}
+		vrp, err := report.Reports(reports).ResolveData(mimeType)
+		if err != nil {
+			return a.SendError(ctx, err)
 		}
+
+		if vrp == nil {
+			continue
+		}
+
+		vulnerabilities[mimeType] = vrp
 
 		if len(vulnerabilities) != 0 {
 			break

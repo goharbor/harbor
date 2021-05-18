@@ -91,7 +91,7 @@ func Test_mergeScanStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := mergeScanStatus(tt.args.s1, tt.args.s2); got != tt.want {
+			if got := MergeScanStatus(tt.args.s1, tt.args.s2); got != tt.want {
 				t.Errorf("mergeScanStatus() = %v, want %v", got, tt.want)
 			}
 		})

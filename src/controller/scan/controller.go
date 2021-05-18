@@ -18,14 +18,27 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/report"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 )
 
+// Vulnerable ...
+type Vulnerable struct {
+	VulnerabilitiesCount int
+	ScanStatus           string
+	Severity             *vuln.Severity
+	CVEBypassed          []string
+}
+
+// IsScanSuccess returns true when the artifact scanned success
+func (v *Vulnerable) IsScanSuccess() bool {
+	return v.ScanStatus == job.SuccessStatus.String()
+}
+
 // Controller provides the related operations for triggering scan.
-// TODO: Here the artifact object is reused the v1 one which is sent to the adapter,
-//  it should be pointed to the general artifact object in future once it's ready.
 type Controller interface {
 	// Scan the given artifact
 	//
@@ -56,12 +69,11 @@ type Controller interface {
 	//     ctx context.Context : the context for this method
 	//     artifact *artifact.Artifact    : the scanned artifact
 	//     mimeTypes []string       : the mime types of the reports
-	//     options ...report.Option : optional report options, specify if needed
 	//
 	//   Returns:
 	//     map[string]interface{} : report summaries indexed by mime types
 	//     error                  : non nil error if any errors occurred
-	GetSummary(ctx context.Context, artifact *artifact.Artifact, mimeTypes []string, options ...report.Option) (map[string]interface{}, error)
+	GetSummary(ctx context.Context, artifact *artifact.Artifact, mimeTypes []string) (map[string]interface{}, error)
 
 	// Get the scan log for the specified artifact with the given digest
 	//
@@ -103,4 +115,15 @@ type Controller interface {
 	//   Returns:
 	//     error  : non nil error if any errors occurred
 	ScanAll(ctx context.Context, trigger string, async bool) (int64, error)
+
+	// GetVulnerable returns the vulnerable of the artifact for the allowlist
+	//
+	//   Arguments:
+	//     ctx context.Context : the context for this method
+	//     artifact *artifact.Artifact : artifact to be scanned
+	//
+	//   Returns
+	//      *Vulnerable : the vulnerable
+	//     error        : non nil error if any errors occurred
+	GetVulnerable(ctx context.Context, artifact *artifact.Artifact, allowlist allowlist.CVESet) (*Vulnerable, error)
 }
