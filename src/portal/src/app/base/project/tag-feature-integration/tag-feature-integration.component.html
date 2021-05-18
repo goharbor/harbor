@@ -1,11 +1,11 @@
 <div class="btn-group btn-tag-integration">
-    <div class="radio btn">
+    <div class="radio btn" routerLink="tag-retention" routerLinkActive="checked">
         <input type="radio" name="btn-group-demo-radios" id="btn-retention">
-        <label class="p-0" for="btn-retention"><a class="strategy-nav-link" routerLink="tag-retention" routerLinkActive="active" >{{'TAG_RETENTION.TAG_RETENTION' | translate}}</a></label>
+        <label class="strategy-nav-link" for="btn-retention">{{'TAG_RETENTION.TAG_RETENTION' | translate}}</label>
     </div>
-    <div class="radio btn">
+    <div class="radio btn" routerLink="immutable-tag" routerLinkActive="checked">
         <input type="radio" name="btn-group-demo-radios" id="btn-immutable">
-        <label class="p-0" for="btn-immutable"><a class="strategy-nav-link" routerLink="immutable-tag" routerLinkActive="active" >{{'PROJECT_DETAIL.IMMUTABLE_TAG' | translate}}</a></label>
+        <label class="strategy-nav-link" for="btn-immutable">{{'PROJECT_DETAIL.IMMUTABLE_TAG' | translate}}</label>
     </div>
 </div>
 <router-outlet></router-outlet>

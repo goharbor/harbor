@@ -65,7 +65,7 @@ describe('functions in utils.ts should work', () => {
   it('function getSizeUnit() should work', () => {
     expect(getSizeUnit).toBeTruthy();
     expect(getSizeUnit(4564)).toEqual('KB');
-    expect(getSizeUnit(10)).toEqual('B');
+    expect(getSizeUnit(10)).toEqual('Byte');
     expect(getSizeUnit(4564000)).toEqual('MB');
     expect(getSizeUnit(4564000000)).toEqual('GB');
   });

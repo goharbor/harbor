@@ -607,7 +607,7 @@ export function getSizeUnit(size: number): string  {
     } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
         return "GB";
     } else {
-        return "B";
+        return "Byte";
     }
 }
 
