@@ -137,8 +137,9 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
     if (this.labelId <= 0) {
       this.labelModel.scope = this.scope;
       this.labelModel.project_id = this.projectId;
-      this.labelService.CreateLabel(this.labelModel)
-        .subscribe(res => {
+      this.labelService.CreateLabel({
+        label: this.labelModel
+      }).subscribe(res => {
           this.inProgress = false;
           this.reload.emit();
           this.labelModel = this.initLabel();
