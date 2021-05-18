@@ -113,7 +113,7 @@ func (c *controller) Get(ctx context.Context, id int, opt *Option) (*models.User
 		return nil, fmt.Errorf("can't find security context")
 	}
 	lsc, ok := sctx.(*local.SecurityContext)
-	if ok && lsc.User().UserID == id {
+	if ok && lsc.User() != nil && lsc.User().UserID == id {
 		u.AdminRoleInAuth = lsc.User().AdminRoleInAuth
 	}
 	if opt != nil && opt.WithOIDCInfo {
