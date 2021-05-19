@@ -137,7 +137,7 @@ func (u *usersAPI) ListUsers(ctx context.Context, params operation.ListUsersPara
 
 func (u *usersAPI) GetCurrentUserPermissions(ctx context.Context, params operation.GetCurrentUserPermissionsParams) middleware.Responder {
 	if err := u.RequireAuthenticated(ctx); err != nil {
-		u.SendError(ctx, err)
+		return u.SendError(ctx, err)
 	}
 	scope := ""
 	if params.Scope != nil {
