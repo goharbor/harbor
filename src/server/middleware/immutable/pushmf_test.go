@@ -18,6 +18,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	immu_model "github.com/goharbor/harbor/src/pkg/immutable/model"
 	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	tag_model "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"github.com/opencontainers/go-digest"
@@ -96,7 +97,7 @@ func (suite *HandlerSuite) addArt(ctx context.Context, pid, repositoryID int64, 
 }
 
 func (suite *HandlerSuite) addRepo(ctx context.Context, pid int64, repo string) int64 {
-	repoRec := &models.RepoRecord{
+	repoRec := &model.RepoRecord{
 		Name:      repo,
 		ProjectID: pid,
 	}

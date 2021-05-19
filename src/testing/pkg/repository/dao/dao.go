@@ -7,7 +7,7 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
-	models "github.com/goharbor/harbor/src/common/models"
+	model "github.com/goharbor/harbor/src/pkg/repository/model"
 
 	q "github.com/goharbor/harbor/src/lib/q"
 )
@@ -53,18 +53,18 @@ func (_m *DAO) Count(ctx context.Context, query *q.Query) (int64, error) {
 }
 
 // Create provides a mock function with given fields: ctx, repository
-func (_m *DAO) Create(ctx context.Context, repository *models.RepoRecord) (int64, error) {
+func (_m *DAO) Create(ctx context.Context, repository *model.RepoRecord) (int64, error) {
 	ret := _m.Called(ctx, repository)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, *models.RepoRecord) int64); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *model.RepoRecord) int64); ok {
 		r0 = rf(ctx, repository)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *models.RepoRecord) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *model.RepoRecord) error); ok {
 		r1 = rf(ctx, repository)
 	} else {
 		r1 = ret.Error(1)
@@ -88,15 +88,15 @@ func (_m *DAO) Delete(ctx context.Context, id int64) error {
 }
 
 // Get provides a mock function with given fields: ctx, id
-func (_m *DAO) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
+func (_m *DAO) Get(ctx context.Context, id int64) (*model.RepoRecord, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 *models.RepoRecord
-	if rf, ok := ret.Get(0).(func(context.Context, int64) *models.RepoRecord); ok {
+	var r0 *model.RepoRecord
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.RepoRecord); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.RepoRecord)
+			r0 = ret.Get(0).(*model.RepoRecord)
 		}
 	}
 
@@ -111,15 +111,15 @@ func (_m *DAO) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
 }
 
 // List provides a mock function with given fields: ctx, query
-func (_m *DAO) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, error) {
+func (_m *DAO) List(ctx context.Context, query *q.Query) ([]*model.RepoRecord, error) {
 	ret := _m.Called(ctx, query)
 
-	var r0 []*models.RepoRecord
-	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) []*models.RepoRecord); ok {
+	var r0 []*model.RepoRecord
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) []*model.RepoRecord); ok {
 		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.RepoRecord)
+			r0 = ret.Get(0).([]*model.RepoRecord)
 		}
 	}
 
@@ -134,15 +134,15 @@ func (_m *DAO) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, 
 }
 
 // NonEmptyRepos provides a mock function with given fields: ctx
-func (_m *DAO) NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error) {
+func (_m *DAO) NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error) {
 	ret := _m.Called(ctx)
 
-	var r0 []*models.RepoRecord
-	if rf, ok := ret.Get(0).(func(context.Context) []*models.RepoRecord); ok {
+	var r0 []*model.RepoRecord
+	if rf, ok := ret.Get(0).(func(context.Context) []*model.RepoRecord); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.RepoRecord)
+			r0 = ret.Get(0).([]*model.RepoRecord)
 		}
 	}
 
@@ -157,7 +157,7 @@ func (_m *DAO) NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error) 
 }
 
 // Update provides a mock function with given fields: ctx, repository, props
-func (_m *DAO) Update(ctx context.Context, repository *models.RepoRecord, props ...string) error {
+func (_m *DAO) Update(ctx context.Context, repository *model.RepoRecord, props ...string) error {
 	_va := make([]interface{}, len(props))
 	for _i := range props {
 		_va[_i] = props[_i]
@@ -168,7 +168,7 @@ func (_m *DAO) Update(ctx context.Context, repository *models.RepoRecord, props 
 	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.RepoRecord, ...string) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *model.RepoRecord, ...string) error); ok {
 		r0 = rf(ctx, repository, props...)
 	} else {
 		r0 = ret.Error(0)

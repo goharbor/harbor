@@ -19,7 +19,6 @@ import (
 	"fmt"
 
 	"github.com/go-openapi/runtime/middleware"
-	cmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
@@ -31,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/repository"
@@ -209,7 +209,7 @@ func (r *repositoryAPI) UpdateRepository(ctx context.Context, params operation.U
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
-	if err := r.repoCtl.Update(ctx, &cmodels.RepoRecord{
+	if err := r.repoCtl.Update(ctx, &repomodel.RepoRecord{
 		RepositoryID: repository.RepositoryID,
 		Description:  params.Repository.Description,
 	}, "Description"); err != nil {

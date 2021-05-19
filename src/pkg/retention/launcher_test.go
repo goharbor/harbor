@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	_ "github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
@@ -109,7 +110,7 @@ type launchTestSuite struct {
 	projectMgr       project.Manager
 	execMgr          *tasktesting.ExecutionManager
 	taskMgr          *tasktesting.Manager
-	repositoryMgr    *repository.FakeManager
+	repositoryMgr    *repository.Manager
 	retentionMgr     Manager
 	jobserviceClient job.Client
 }
@@ -128,7 +129,7 @@ func (l *launchTestSuite) SetupTest() {
 		pro1, pro2,
 	}, nil)
 	l.projectMgr = projectMgr
-	l.repositoryMgr = &repository.FakeManager{}
+	l.repositoryMgr = &repository.Manager{}
 	l.retentionMgr = &fakeRetentionManager{}
 	l.execMgr = &tasktesting.ExecutionManager{}
 	l.taskMgr = &tasktesting.Manager{}
@@ -147,7 +148,7 @@ func (l *launchTestSuite) TestGetProjects() {
 }
 
 func (l *launchTestSuite) TestGetRepositories() {
-	l.repositoryMgr.On("List").Return([]*models.RepoRecord{
+	l.repositoryMgr.On("List", mock.Anything, mock.Anything).Return([]*model.RepoRecord{
 		{
 			RepositoryID: 1,
 			ProjectID:    1,
@@ -200,7 +201,7 @@ func (l *launchTestSuite) TestLaunch() {
 	require.NotNil(l.T(), err)
 
 	// system scope
-	l.repositoryMgr.On("List").Return([]*models.RepoRecord{
+	l.repositoryMgr.On("List", mock.Anything, mock.Anything).Return([]*model.RepoRecord{
 		{
 			RepositoryID: 1,
 			ProjectID:    1,

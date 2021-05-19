@@ -14,10 +14,6 @@
 
 package models
 
-import (
-	"time"
-)
-
 // keys of project metadata and severity values
 const (
 	ProMetaPublic               = "public"
@@ -27,13 +23,3 @@ const (
 	ProMetaAutoScan             = "auto_scan"
 	ProMetaReuseSysCVEAllowlist = "reuse_sys_cve_allowlist"
 )
-
-// ProjectMetadata holds the metadata of a project.
-type ProjectMetadata struct {
-	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
-	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
-	Name         string    `orm:"column(name)" json:"name"`
-	Value        string    `orm:"column(value)" json:"value"`
-	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
-}

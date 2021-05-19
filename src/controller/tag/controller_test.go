@@ -35,14 +35,14 @@ import (
 type controllerTestSuite struct {
 	suite.Suite
 	ctl          *controller
-	repoMgr      *repository.FakeManager
+	repoMgr      *repository.Manager
 	artMgr       *artifact.FakeManager
 	tagMgr       *tagtesting.FakeManager
 	immutableMtr *immutable.FakeMatcher
 }
 
 func (c *controllerTestSuite) SetupTest() {
-	c.repoMgr = &repository.FakeManager{}
+	c.repoMgr = &repository.Manager{}
 	c.artMgr = &artifact.FakeManager{}
 	c.tagMgr = &tagtesting.FakeManager{}
 	c.immutableMtr = &immutable.FakeMatcher{}

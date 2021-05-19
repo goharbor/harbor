@@ -36,7 +36,7 @@ type manifestTestSuite struct {
 	originalRepoCtl repository.Controller
 	originalArtCtl  artifact.Controller
 	originalProxy   http.Handler
-	repoCtl         *repotesting.FakeController
+	repoCtl         *repotesting.Controller
 	artCtl          *arttesting.Controller
 }
 
@@ -47,7 +47,7 @@ func (m *manifestTestSuite) SetupSuite() {
 }
 
 func (m *manifestTestSuite) SetupTest() {
-	m.repoCtl = &repotesting.FakeController{}
+	m.repoCtl = &repotesting.Controller{}
 	m.artCtl = &arttesting.Controller{}
 	repository.Ctl = m.repoCtl
 	artifact.Ctl = m.artCtl
@@ -141,7 +141,7 @@ func (m *manifestTestSuite) TestPutManifest() {
 	})
 	req := httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", nil)
 	w := &httptest.ResponseRecorder{}
-	m.repoCtl.On("Ensure").Return(false, 1, nil)
+	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
 	putManifest(w, req)
 	m.Equal(http.StatusInternalServerError, w.Code)
 
@@ -159,7 +159,7 @@ func (m *manifestTestSuite) TestPutManifest() {
 	})
 	req = httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", nil)
 	w = &httptest.ResponseRecorder{}
-	m.repoCtl.On("Ensure").Return(false, 1, nil)
+	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
 	mock.OnAnything(m.artCtl, "Ensure").Return(true, int64(1), nil)
 	putManifest(w, req)
 	m.Equal(http.StatusCreated, w.Code)

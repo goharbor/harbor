@@ -60,7 +60,7 @@ func TestController(t *testing.T) {
 
 func (s *ControllerTestSuite) TestPolicy() {
 	projectMgr := &project.Manager{}
-	repositoryMgr := &repository.FakeManager{}
+	repositoryMgr := &repository.Manager{}
 	retentionScheduler := &fakeRetentionScheduler{}
 	retentionLauncher := &fakeLauncher{}
 	execMgr := &testingTask.ExecutionManager{}
@@ -196,7 +196,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 
 func (s *ControllerTestSuite) TestExecution() {
 	projectMgr := &project.Manager{}
-	repositoryMgr := &repository.FakeManager{}
+	repositoryMgr := &repository.Manager{}
 	retentionScheduler := &fakeRetentionScheduler{}
 	retentionLauncher := &fakeLauncher{}
 	execMgr := &testingTask.ExecutionManager{}
