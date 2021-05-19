@@ -155,30 +155,13 @@ func clearAll() {
 
 var currentUser *models.User
 
-func TestGetUser(t *testing.T) {
-	queryUser := models.User{
-		Username: username,
-		Email:    "tester01@vmware.com",
-	}
-	var err error
-	currentUser, err = GetUser(queryUser)
-	if err != nil {
-		t.Errorf("Error occurred in GetUser: %v", err)
-	}
-	if currentUser == nil {
-		t.Errorf("No user found queried by user query: %+v", queryUser)
-	}
-	if currentUser.Email != "tester01@vmware.com" {
-		t.Errorf("the user's email does not match, expected: tester01@vmware.com, actual: %s", currentUser.Email)
-	}
-
-	queryUser = models.User{}
-	_, err = GetUser(queryUser)
-	assert.NotNil(t, err)
-}
-
 func TestAddProject(t *testing.T) {
-
+	ctx := libOrm.Context()
+	var err error
+	currentUser, err = user.Mgr.GetByName(ctx, username)
+	if err != nil {
+		t.Errorf("Failed to get user by username: %s, error: %v", username, err)
+	}
 	project := models.Project{
 		OwnerID:      currentUser.UserID,
 		Name:         projectName,
@@ -186,7 +169,7 @@ func TestAddProject(t *testing.T) {
 		OwnerName:    currentUser.Username,
 	}
 
-	_, err := AddProject(project)
+	_, err = AddProject(project)
 	if err != nil {
 		t.Errorf("Error occurred in AddProject: %v", err)
 	}

@@ -29,16 +29,17 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	harborErrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/usergroup"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/authproxy"
+	"github.com/goharbor/harbor/src/pkg/user"
 )
 
 const refreshDuration = 2 * time.Second
@@ -58,6 +59,7 @@ type Auth struct {
 	SkipSearch          bool
 	settingTimeStamp    time.Time
 	client              *http.Client
+	userMgr             user.Manager
 }
 
 type session struct {
@@ -136,18 +138,22 @@ func (a *Auth) VerifyToken(token string) (*models.User, error) {
 
 // OnBoardUser delegates to dao pkg to insert/update data in DB.
 func (a *Auth) OnBoardUser(u *models.User) error {
-	return dao.OnBoardUser(u)
+	return a.userMgr.Onboard(orm.Context(), u)
 }
 
 // PostAuthenticate generates the user model and on board the user.
 func (a *Auth) PostAuthenticate(u *models.User) error {
-	if res, _ := dao.GetUser(*u); res != nil {
-		return nil
-	}
-	if err := a.fillInModel(u); err != nil {
+	_, err := a.userMgr.GetByName(orm.Context(), u.Username)
+	if harborErrors.IsNotFoundErr(err) {
+		if err2 := a.fillInModel(u); err2 != nil {
+			return err2
+		}
+		return a.OnBoardUser(u)
+	} else if err != nil {
 		return err
 	}
-	return a.OnBoardUser(u)
+	// do nothing if user exists in DB
+	return nil
 }
 
 // SearchUser returns nil as authproxy does not have such capability.
@@ -250,5 +256,7 @@ func getTLSConfig(setting *cfgModels.HTTPAuthProxy) (*tls.Config, error) {
 }
 
 func init() {
-	auth.Register(common.HTTPAuth, &Auth{})
+	auth.Register(common.HTTPAuth, &Auth{
+		userMgr: user.New(),
+	})
 }

@@ -67,7 +67,6 @@ func NewErrAuth(msg string) ErrAuth {
 
 // AuthenticateHelper provides interface for user management in different auth modes.
 type AuthenticateHelper interface {
-
 	// Authenticate authenticate the user based on data in m.  Only when the error returned is an instance
 	// of ErrAuth, it will be considered a bad credentials, other errors will be treated as server side error.
 	Authenticate(m models.AuthModel) (*models.User, error)

@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
@@ -29,7 +30,6 @@ import (
 
 	goldap "github.com/go-ldap/ldap/v3"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/utils"
 
 	"github.com/goharbor/harbor/src/common/models"
@@ -44,6 +44,7 @@ import (
 // Auth implements AuthenticateHelper interface to authenticate against LDAP
 type Auth struct {
 	auth.DefaultAuthenticateHelper
+	userMgr user.Manager
 }
 
 // Authenticate checks user's credential against LDAP based on basedn template and LDAP URL,
@@ -92,7 +93,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	u.Realname = ldapUsers[0].Realname
 	u.Email = strings.TrimSpace(ldapUsers[0].Email)
 
-	l.syncUserInfoFromDB(&u)
+	l.syncUserInfoFromDB(ctx, &u)
 	l.attachLDAPGroup(ctx, ldapUsers, &u, ldapSession)
 
 	return &u, nil
@@ -140,14 +141,13 @@ func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *m
 	}
 }
 
-func (l *Auth) syncUserInfoFromDB(u *models.User) {
+func (l *Auth) syncUserInfoFromDB(ctx context.Context, u *models.User) {
 	// Retrieve SysAdminFlag from DB so that it transfer to session
-	dbUser, err := dao.GetUser(models.User{Username: u.Username})
-	if err != nil {
-		log.Errorf("failed to sync user info from DB error %v", err)
+	dbUser, err := l.userMgr.GetByName(ctx, u.Username)
+	if errors.IsNotFoundErr(err) {
 		return
-	}
-	if dbUser == nil {
+	} else if err != nil {
+		log.Errorf("failed to sync user info from DB error %v", err)
 		return
 	}
 	u.SysAdminFlag = dbUser.SysAdminFlag
@@ -164,7 +164,7 @@ func (l *Auth) OnBoardUser(u *models.User) error {
 	u.Password = "12345678AbC" // Password is not kept in local db
 	u.Comment = "from LDAP."   // Source is from LDAP
 
-	return dao.OnBoardUser(u)
+	return l.userMgr.Onboard(orm.Context(), u)
 }
 
 // SearchUser -- Search user in ldap
@@ -259,31 +259,26 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 
 	ctx := orm.Context()
 	query := q.New(q.KeyWords{"Username": u.Username})
-	n, err := user.Mgr.Count(ctx, query)
+	n, err := l.userMgr.Count(ctx, query)
 	if err != nil {
 		return err
 	}
 
 	if n > 0 {
-		queryCondition := models.User{
-			Username: u.Username,
-		}
-		dbUser, err := dao.GetUser(queryCondition)
-		if err != nil {
-			return err
-		}
-		if dbUser == nil {
+		dbUser, err := l.userMgr.GetByName(ctx, u.Username)
+		if errors.IsNotFoundErr(err) {
 			fmt.Printf("User not found in DB %+v", u)
 			return nil
+		} else if err != nil {
+			return err
 		}
 		u.UserID = dbUser.UserID
-
 		if dbUser.Email != u.Email {
 			Re := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
 			if !Re.MatchString(u.Email) {
 				log.Debugf("Not a valid email address: %v, skip to sync", u.Email)
 			} else {
-				if err = user.Mgr.UpdateProfile(ctx, u, "Email"); err != nil {
+				if err = l.userMgr.UpdateProfile(ctx, u, "Email"); err != nil {
 					u.Email = dbUser.Email
 					log.Errorf("failed to sync user email: %v", err)
 				}
@@ -304,5 +299,7 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 }
 
 func init() {
-	auth.Register(common.LDAPAuth, &Auth{})
+	auth.Register(common.LDAPAuth, &Auth{
+		userMgr: user.New(),
+	})
 }

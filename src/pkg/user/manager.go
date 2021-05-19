@@ -54,6 +54,10 @@ type Manager interface {
 	// MatchLocalPassword tries to match the record in DB based on the input, the first return value is
 	// the user model corresponding to the entry in DB
 	MatchLocalPassword(ctx context.Context, username, password string) (*models.User, error)
+	// Onboard will check if a user exists in user table, if not insert the user and
+	// put the id in the pointer of user model, if it does exist, return the user's profile.
+	// This is used for ldap and uaa authentication, such the user can have an ID in Harbor.
+	Onboard(ctx context.Context, user *models.User) error
 }
 
 // New returns a default implementation of Manager
@@ -63,6 +67,27 @@ func New() Manager {
 
 type manager struct {
 	dao dao.DAO
+}
+
+func (m *manager) Onboard(ctx context.Context, user *models.User) error {
+	u, err := m.GetByName(ctx, user.Username)
+	if err == nil {
+		user.Email = u.Email
+		user.SysAdminFlag = u.SysAdminFlag
+		user.Realname = u.Realname
+		user.UserID = u.UserID
+		return nil
+	} else if !errors.IsNotFoundErr(err) {
+		return err
+	}
+	// User does not exists, insert the user record.
+	// Given this func is ALWAYS called in a tx, the conflict error can rollback the tx to ensure the consistency
+	id, err2 := m.Create(ctx, user)
+	if err2 != nil {
+		return err2
+	}
+	user.UserID = id
+	return nil
 }
 
 func (m *manager) Delete(ctx context.Context, id int) error {

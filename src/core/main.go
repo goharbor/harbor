@@ -37,7 +37,6 @@ import (
 	_ "github.com/goharbor/harbor/src/controller/event/handler"
 	"github.com/goharbor/harbor/src/controller/health"
 	"github.com/goharbor/harbor/src/controller/registry"
-	ctluser "github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/core/api"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
@@ -58,6 +57,7 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	pkguser "github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/server"
 )
@@ -67,16 +67,13 @@ const (
 )
 
 func updateInitPassword(ctx context.Context, userID int, password string) error {
-	queryUser := models.User{UserID: userID}
-	user, err := dao.GetUser(queryUser)
+	userMgr := pkguser.Mgr
+	user, err := userMgr.Get(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("failed to get user, userID: %d %v", userID, err)
 	}
-	if user == nil {
-		return fmt.Errorf("user id: %d does not exist", userID)
-	}
 	if user.Salt == "" {
-		err = ctluser.Ctl.UpdatePassword(ctx, userID, password)
+		err = userMgr.UpdatePassword(ctx, userID, password)
 		if err != nil {
 			return fmt.Errorf("failed to update user encrypted password, userID: %d, err: %v", userID, err)
 		}
