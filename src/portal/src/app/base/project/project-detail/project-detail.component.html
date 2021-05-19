@@ -1,6 +1,6 @@
 <span class="back-icon"><</span>
 <a *ngIf="hasSignedIn" (click)="backToProject()" class="backStyle">{{'PROJECT_DETAIL.PROJECTS' | translate}}</a>
-<a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']"> {{'SEARCH.BACK' | translate}}</a>
+<a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']" class="backStyle"> {{'SEARCH.BACK' | translate}}</a>
 <div class="clr-row">
     <div  class="clr-col-4">
         <h1 class="custom-h2 center" sub-header-title>
@@ -32,7 +32,7 @@
                     <div *ngIf="projectQuota">
                         <h3 class="mt-0 clr-display-inline-block">
                             <span class="size-number">{{getSizeNumber()}}</span>
-                            <span *ngIf="getSizeNumber()">{{getSizeUnit()}}</span>
+                            <span>{{getSizeUnit()}}</span>
                         </h3>
                         <span class="of">{{ 'QUOTA.OF' | translate }}</span>
                         <span>{{ projectQuota?.hard?.storage ===-1? ('QUOTA.UNLIMITED' | translate) : getIntegerAndUnit(projectQuota?.hard?.storage, projectQuota?.used?.storage).partNumberHard }}</span>
