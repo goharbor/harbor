@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -59,6 +60,11 @@ type Controller interface {
 	UpdateProfile(ctx context.Context, u *models.User, cols ...string) error
 	// SetCliSecret sets the OIDC CLI secret for a user
 	SetCliSecret(ctx context.Context, id int, secret string) error
+	// UpdateOIDCMeta updates the OIDC metadata of a user, if the cols are not provided, by default the field of token and secret will be updated
+	UpdateOIDCMeta(ctx context.Context, ou *commonmodels.OIDCUser, cols ...string) error
+	// OnboardOIDCUser inserts the record for basic user info and the oidc metadata
+	// if the onboard process is successful the input parm of user model will be populated with user id
+	OnboardOIDCUser(ctx context.Context, u *models.User) error
 }
 
 // NewController ...
@@ -77,6 +83,36 @@ type Option struct {
 type controller struct {
 	mgr         user.Manager
 	oidcMetaMgr oidc.MetaManager
+}
+
+func (c *controller) UpdateOIDCMeta(ctx context.Context, ou *commonmodels.OIDCUser, cols ...string) error {
+	defaultCols := []string{"secret", "token"}
+	if cols == nil || len(cols) == 0 {
+		cols = defaultCols
+	}
+	return c.oidcMetaMgr.Update(ctx, ou, cols...)
+}
+
+func (c *controller) OnboardOIDCUser(ctx context.Context, u *models.User) error {
+	if u == nil {
+		return errors.BadRequestError(nil).WithMessage("user model is nil")
+	}
+	if u.OIDCUserMeta == nil {
+		return errors.BadRequestError(nil).WithMessage("OIDC meta of the user model is empty")
+	}
+	uid, err := c.mgr.Create(ctx, u)
+	if err != nil {
+		return errors.Wrap(err, "failed to create user record")
+	}
+	u.UserID = uid
+	u.OIDCUserMeta.UserID = uid
+
+	mid, err2 := c.oidcMetaMgr.Create(ctx, u.OIDCUserMeta)
+	if err2 != nil {
+		return errors.Wrap(err2, "failed to create OIDC metadata record")
+	}
+	u.OIDCUserMeta.ID = int64(mid)
+	return nil
 }
 
 func (c *controller) GetBySubIss(ctx context.Context, sub, iss string) (*models.User, error) {
