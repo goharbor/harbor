@@ -186,7 +186,7 @@ export class LabelComponent implements OnInit {
         this.operationService.publishInfo(operMessage);
 
         return this.labelService
-            .DeleteLabel(target.id)
+            .DeleteLabel({labelId: target.id})
             .pipe(map(
                 response => {
                     this.translateService.get('BATCH.DELETED_SUCCESS')

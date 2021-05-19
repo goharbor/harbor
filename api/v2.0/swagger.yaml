@@ -26,6 +26,8 @@ paths:
       tags:
         - health
       operationId: getHealth
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: The health status of Harbor components
@@ -39,6 +41,7 @@ paths:
       description: |-
         The Search endpoint returns information about the projects, repositories and helm charts offered at public status or related to the current logged in user. The response includes the project, repository list and charts in a proper display order.
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: q
           in: query
           description: Search parameter for project and repository name.
@@ -61,6 +64,8 @@ paths:
       tags:
         - statistic
       operationId: getStatistic
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: The statistic information
@@ -77,6 +82,7 @@ paths:
       description: |
         This endpoint ping the available ldap service for test related configuration parameters.
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: ldapconf
           in: body
           description: 'ldap configuration. support input ldap service configuration. If it is a empty request, will load current configuration from the system.'
@@ -105,6 +111,7 @@ paths:
       description: |
         This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ladp configuration, load configuration from the system and specific filter.
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: username
           in: query
           type: string
@@ -134,6 +141,7 @@ paths:
       description: |
         This endpoint adds the selected available ldap users to harbor based on related configuration parameters from the system. System will try to guess the user email address and realname, add to harbor user information. If have errors when import user, will return the list of importing failed uid and the failed reason.
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: uid_list
           in: body
           description: The uid listed for importing. This list will check users validity of ldap service based on configuration from the system.
@@ -166,6 +174,7 @@ paths:
       description: |
         This endpoint searches the available ldap groups based on related configuration parameters. support to search by groupname or groupdn.
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: groupname
           in: query
           type: string
@@ -3126,6 +3135,7 @@ paths:
         - replication
       operationId: listReplicationPolicies
       parameters:
+        - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/query'
         - $ref: '#/parameters/sort'
         - $ref: '#/parameters/page'
@@ -3162,6 +3172,7 @@ paths:
         - replication
       operationId: createReplicationPolicy
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: policy
           in: body
           description: The replication policy
@@ -3189,6 +3200,7 @@ paths:
         - replication
       operationId: getReplicationPolicy
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -3213,6 +3225,7 @@ paths:
         - replication
       operationId: deleteReplicationPolicy
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -3239,6 +3252,7 @@ paths:
         - replication
       operationId: updateReplicationPolicy
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -3272,6 +3286,7 @@ paths:
         - replication
       operationId: listReplicationExecutions
       parameters:
+        - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/sort'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
@@ -3317,6 +3332,7 @@ paths:
         - replication
       operationId: startReplication
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: execution
           in: body
           description: The ID of policy that the execution belongs to
@@ -3342,6 +3358,7 @@ paths:
         - replication
       operationId: getReplicationExecution
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -3368,6 +3385,7 @@ paths:
         - replication
       operationId: stopReplication
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -3393,6 +3411,7 @@ paths:
         - replication
       operationId: listReplicationTasks
       parameters:
+        - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/sort'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
@@ -3442,6 +3461,7 @@ paths:
       produces:
         - text/plain
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: id
           in: path
           type: integer
@@ -3731,6 +3751,8 @@ paths:
       tags:
         - scanAll
       operationId: getLatestScanAllMetrics
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: OK
@@ -3752,6 +3774,8 @@ paths:
         - scanAll
       operationId: getLatestScheduledScanAllMetrics
       deprecated: true
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: OK
@@ -3773,6 +3797,8 @@ paths:
         This API is for retrieving general system info, this can be called by anonymous request.  Some attributes will be omitted in the response when this API is called by anonymous request.
       tags:
         - systeminfo
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: Get general info successfully.
@@ -3788,6 +3814,8 @@ paths:
         This endpoint is for retrieving system volume info that only provides for admin user.  Note that the response only reflects the storage status of local disk.
       tags:
         - systeminfo
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: Get system volumes successfully.
@@ -3811,6 +3839,8 @@ paths:
         - systeminfo
       produces:
         - application/octet-stream
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: Get default root certificate successfully.
@@ -3833,6 +3863,7 @@ paths:
         - oidc
       operationId: pingOIDC
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: endpoint
           in: body
           description: Request body for OIDC endpoint to be tested.
@@ -3863,6 +3894,7 @@ paths:
         - gc
       operationId: getGCHistory
       parameters:
+        - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/query'
         - $ref: '#/parameters/sort'
         - $ref: '#/parameters/page'
@@ -3893,6 +3925,7 @@ paths:
       description: This endpoint let user get gc status filtered by specific ID.
       operationId: getGC
       parameters:
+        - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/gcId'
       tags:
         - gc
@@ -3915,6 +3948,7 @@ paths:
       description: This endpoint let user get gc job logs filtered by specific ID.
       operationId: getGCLog
       parameters:
+        - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/gcId'
       tags:
         - gc
@@ -3942,6 +3976,8 @@ paths:
       operationId: getGCSchedule
       tags:
         - gc
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: Get gc's schedule.
@@ -3959,6 +3995,7 @@ paths:
         This endpoint is for update gc schedule.
       operationId: createGCSchedule
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: schedule
           in: body
           required: true
@@ -3986,6 +4023,7 @@ paths:
         This endpoint is for update gc schedule.
       operationId: updateGCSchedule
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: schedule
           in: body
           required: true
@@ -4012,6 +4050,8 @@ paths:
       operationId: getSystemCVEAllowlist
       tags:
         - SystemCVEAllowlist
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: Successfully retrieved the CVE allowlist.
@@ -4029,6 +4069,7 @@ paths:
       tags:
         - SystemCVEAllowlist
       parameters:
+        - $ref: '#/parameters/requestId'
         - in: body
           name: allowlist
           description: The allowlist with new content
@@ -4050,6 +4091,8 @@ paths:
       tags:
         - scanAll
       operationId: getScanAllSchedule
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: Get a schedule for the scan all job, which scans all of images in Harbor.
@@ -4067,6 +4110,7 @@ paths:
       summary: Update scan all's schedule.
       description: This endpoint is for updating the schedule of scan all job, which scans all of images in Harbor.
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: schedule
           in: body
           required: true
@@ -4093,6 +4137,7 @@ paths:
       summary: Create a schedule or a manual trigger for the scan all job.
       description: This endpoint is for creating a schedule or a manual trigger for the scan all job, which scans all of images in Harbor.
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: schedule
           in: body
           required: true
@@ -4119,12 +4164,15 @@ paths:
           $ref: '#/responses/500'
   /ping:
     get:
+      operationId: getPing
       summary: Ping Harbor to check if it's alive.
       description: This API simply replies a pong to indicate the process to handle API is up, disregarding the health status of dependent components.
       tags:
         - ping
       produces:
         - text/plain
+      parameters:
+        - $ref: '#/parameters/requestId'
       responses:
         '200':
           description: The API server is alive
@@ -4666,6 +4714,7 @@ paths:
         - scanner
       operationId: setScannerAsDefault
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: registration_id
           in: path
           description: The scanner registration identifier.
@@ -4883,6 +4932,7 @@ paths:
       description: |
         This endpoint let administrator of Harbor mark a registered user as removed.It actually won't be deleted from DB.
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: user_id
           in: path
           type: integer
@@ -4910,6 +4960,7 @@ paths:
        - user
       operationId: setUserSysAdmin
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: user_id
           in: path
           type: integer
@@ -4941,6 +4992,7 @@ paths:
         - user
       operationId: updateUserPassword
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: user_id
           in: path
           type: integer
@@ -4970,6 +5022,7 @@ paths:
         - user
       operationId: getCurrentUserPermissions
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: scope
           in: query
           type: string
@@ -5090,6 +5143,7 @@ paths:
         - label
       operationId: CreateLabel
       parameters:
+        - $ref: '#/parameters/requestId'
         - name: label
           in: body
           description: The json object of label.
@@ -5122,6 +5176,7 @@ paths:
         - label
       operationId: GetLabelByID
       parameters:
+        - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/labelId'
       responses:
         '200':
@@ -5142,6 +5197,7 @@ paths:
         - label
       operationId: UpdateLabel
       parameters:
+        - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/labelId'
         - name: label
           in: body
@@ -5170,6 +5226,7 @@ paths:
         - label
       operationId: DeleteLabel
       parameters:
+        - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/labelId'
       responses:
         '200':
@@ -5851,12 +5908,12 @@ definitions:
         type: string
         format: date-time
         description: 'The start time of the scan process that generating report'
-        example: '2006-01-02T14:04:05'
+        example: '2006-01-02T14:04:05Z'
       end_time:
         type: string
         format: date-time
         description: 'The end time of the scan process that generating report'
-        example: '2006-01-02T15:04:05'
+        example: '2006-01-02T15:04:05Z'
       complete_percent:
         type: integer
         description: 'The complete percent of the scanning which value is between 0 and 100'
@@ -5912,7 +5969,7 @@ definitions:
       op_time:
         type: string
         format: date-time
-        example: '2006-01-02T15:04:05'
+        example: '2006-01-02T15:04:05Z'
         description: The time when this operation is triggered.
   Metadata:
     type: object
@@ -7372,7 +7429,7 @@ definitions:
       adapter:
         type: string
         description: Optional property to describe the name of the scanner registration
-        example: "Clair"
+        example: "Trivy"
       vendor:
         type: string
         description: Optional property to describe the vendor of the scanner registration

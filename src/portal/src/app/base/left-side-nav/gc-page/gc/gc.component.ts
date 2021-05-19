@@ -79,12 +79,14 @@ export class GcComponent implements OnInit {
     }, ONE_MINUTE);
 
     this.gcService.createGCSchedule({
-      parameters: {
-        delete_untagged: this.shouldDeleteUntagged,
-        dry_run: false
-      },
       schedule: {
-        type: ScheduleType.MANUAL
+        parameters: {
+          delete_untagged: this.shouldDeleteUntagged,
+          dry_run: false
+        },
+        schedule: {
+          type: ScheduleType.MANUAL
+        }
       }
     }).subscribe(
       response => {
@@ -99,12 +101,14 @@ export class GcComponent implements OnInit {
   dryRun() {
     this.dryRunOnGoing = true;
     this.gcService.createGCSchedule({
-      parameters: {
-        delete_untagged: this.shouldDeleteUntagged,
-        dry_run: true
-      },
       schedule: {
-        type: ScheduleType.MANUAL
+        parameters: {
+          delete_untagged: this.shouldDeleteUntagged,
+          dry_run: true
+        },
+        schedule: {
+          type: ScheduleType.MANUAL
+        }
       }
     })
       .pipe(finalize(() => this.dryRunOnGoing = false))
@@ -125,13 +129,15 @@ export class GcComponent implements OnInit {
   saveGcSchedule(cron: string) {
     if (this.originCron && this.originCron.type !== ScheduleType.NONE) {// no schedule, then create
       this.gcService.createGCSchedule({
-        parameters: {
-          delete_untagged: this.shouldDeleteUntagged,
-          dry_run: false
-        },
         schedule: {
-          type: GcComponent.getScheduleType(cron),
-          cron: cron
+          parameters: {
+            delete_untagged: this.shouldDeleteUntagged,
+            dry_run: false
+          },
+          schedule: {
+            type: GcComponent.getScheduleType(cron),
+            cron: cron
+          }
         }
       }).subscribe(
         response => {
@@ -145,13 +151,15 @@ export class GcComponent implements OnInit {
       );
     } else {
       this.gcService.updateGCSchedule({
-        parameters: {
-          delete_untagged: this.shouldDeleteUntagged,
-          dry_run: false
-        },
         schedule: {
-          type: GcComponent.getScheduleType(cron),
-          cron: cron
+          parameters: {
+            delete_untagged: this.shouldDeleteUntagged,
+            dry_run: false
+          },
+          schedule: {
+            type: GcComponent.getScheduleType(cron),
+            cron: cron
+          }
         }
       }).subscribe(
         response => {

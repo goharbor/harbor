@@ -73,7 +73,9 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   getExecutionDetail(): void {
     this.inProgress = true;
     if (this.executionId) {
-      this.replicationService.getReplicationExecution(+this.executionId)
+      this.replicationService.getReplicationExecution({
+        id: +this.executionId
+      })
         .pipe(finalize(() => (this.inProgress = false)))
         .subscribe(res => {
           this.execution = res;
@@ -136,8 +138,9 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
 
   stopJob() {
     this.stopOnGoing = true;
-    this.replicationService.stopReplication(+this.executionId)
-    .subscribe(response => {
+    this.replicationService.stopReplication({
+      id: +this.executionId
+    }).subscribe(response => {
       this.stopOnGoing = false;
        this.getExecutionDetail();
        this.translate.get("REPLICATION.STOP_SUCCESS", { param: this.executionId }).subscribe((res: string) => {
