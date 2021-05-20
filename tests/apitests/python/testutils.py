@@ -7,12 +7,12 @@ sys.path.insert(0, os.environ.get("SWAGGER_CLIENT_PATH", ''))
 path=os.getcwd() + "/library"
 sys.path.insert(0, path)
 
-
 path=os.getcwd() + "/tests/apitests/python/library"
 sys.path.insert(0, path)
 path=os.getcwd() + "/tests/apitests/python/"
 sys.path.insert(0, path)
 print(sys.path)
+
 import v2_swagger_client
 import swagger_client.models
 

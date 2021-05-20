@@ -1,7 +1,11 @@
 *** Keywords ***
 Make Swagger Client
+    ${rc}  ${output}=  Run And Return Rc And Output  pip uninstall setuptools -y
+    LogAll  ${output}
+    ${rc}  ${output}=  Run And Return Rc And Output  pip install -U pip setuptools
+    LogAll  ${output}
     ${rc}  ${output}=  Run And Return Rc And Output  make swagger_client
-    Log  ${output}
+    LogAll  ${output}
     [Return]  ${rc}
 
 Setup API Test

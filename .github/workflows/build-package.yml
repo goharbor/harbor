@@ -52,6 +52,7 @@ jobs:
           base_image_tag=$(cat ./VERSION)
           cd src/github.com/goharbor/harbor
           sudo make build_base_docker -e BASEIMAGETAG=$base_image_tag -e REGISTRYUSER="${{ secrets.DOCKER_HUB_USERNAME }}" -e REGISTRYPASSWORD="${{ secrets.DOCKER_HUB_PASSWORD }}" -e PUSHBASEIMAGE=yes
+        continue-on-error: true
       - name: Build Package
         run: |
           set -x
