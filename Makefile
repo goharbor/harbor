@@ -429,9 +429,12 @@ build_base_docker:
 	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		sleep 30 ; \
+		if [ $$name == "db" ] ; then \
+			cd $(MAKEFILEPATH_PHOTON)/$$name && $(MAKEFILEPATH_PHOTON)/$$name/rpm_builder.sh && cd - ; \
+		fi; \
 		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . && \
 		if [ -n "$(PUSHBASEIMAGE)" ] ; then \
-			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
+		  	$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
 		fi ; \
 	done
 
