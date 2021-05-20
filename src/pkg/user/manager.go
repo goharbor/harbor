@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/user/dao"
@@ -95,8 +96,8 @@ func (m *manager) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	u.Username = fmt.Sprintf("%s#%d", u.Username, u.UserID)
-	u.Email = fmt.Sprintf("%s#%d", u.Email, u.UserID)
+	u.Username = lib.Truncate(u.Username, fmt.Sprintf("#%d", u.UserID), 255)
+	u.Email = lib.Truncate(u.Email, fmt.Sprintf("#%d", u.UserID), 255)
 	u.Deleted = true
 	return m.dao.Update(ctx, u, "username", "email", "deleted")
 }

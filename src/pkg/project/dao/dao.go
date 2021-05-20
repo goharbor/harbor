@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project/models"
@@ -112,7 +113,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 	}
 
 	project.Deleted = true
-	project.Name = fmt.Sprintf("%s#%d", project.Name, project.ProjectID)
+	project.Name = lib.Truncate(project.Name, fmt.Sprintf("#%d", project.ProjectID), 255)
 
 	o, err := orm.FromContext(ctx)
 	if err != nil {

@@ -6192,6 +6192,7 @@ definitions:
       project_name:
         type: string
         description: The name of the project.
+        maxLength: 255
       public:
         type: boolean
         description: deprecated, reserved for project creation in replication
@@ -8080,6 +8081,7 @@ definitions:
     properties:
       email:
         type: string
+        maxLength: 255
       realname:
         type: string
       comment:
@@ -8088,6 +8090,7 @@ definitions:
         type: string
       username:
         type: string
+        maxLength: 255
   OIDCUserInfo:
     type: object
     properties:
