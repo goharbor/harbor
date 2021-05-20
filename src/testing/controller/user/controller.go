@@ -166,6 +166,20 @@ func (_m *Controller) List(ctx context.Context, query *q.Query) ([]*models.User,
 	return r0, r1
 }
 
+// OnboardOIDCUser provides a mock function with given fields: ctx, u
+func (_m *Controller) OnboardOIDCUser(ctx context.Context, u *models.User) error {
+	ret := _m.Called(ctx, u)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.User) error); ok {
+		r0 = rf(ctx, u)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // SetCliSecret provides a mock function with given fields: ctx, id, secret
 func (_m *Controller) SetCliSecret(ctx context.Context, id int, secret string) error {
 	ret := _m.Called(ctx, id, secret)
@@ -187,6 +201,27 @@ func (_m *Controller) SetSysAdmin(ctx context.Context, id int, adminFlag bool) e
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int, bool) error); ok {
 		r0 = rf(ctx, id, adminFlag)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateOIDCMeta provides a mock function with given fields: ctx, ou, cols
+func (_m *Controller) UpdateOIDCMeta(ctx context.Context, ou *models.OIDCUser, cols ...string) error {
+	_va := make([]interface{}, len(cols))
+	for _i := range cols {
+		_va[_i] = cols[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, ou)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.OIDCUser, ...string) error); ok {
+		r0 = rf(ctx, ou, cols...)
 	} else {
 		r0 = ret.Error(0)
 	}

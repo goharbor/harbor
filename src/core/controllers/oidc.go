@@ -15,16 +15,16 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/controller/user"
+	ctluser "github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -117,7 +117,7 @@ func (oc *OIDCController) Callback() {
 		return
 	}
 	oc.SetSession(tokenKey, tokenBytes)
-	u, err := user.Ctl.GetBySubIss(ctx, info.Subject, info.Issuer)
+	u, err := ctluser.Ctl.GetBySubIss(ctx, info.Subject, info.Issuer)
 	if errors.IsNotFoundErr(err) { // User is not onboarded, kickoff the onboard flow
 		// Recover the username from d.Username by default
 		username := info.Username
@@ -136,7 +136,7 @@ func (oc *OIDCController) Callback() {
 					oidcSettings.UserClaim))
 				return
 			}
-			userRec, onboarded := userOnboard(oc, info, username, tokenBytes)
+			userRec, onboarded := userOnboard(ctx, oc, info, username, tokenBytes)
 			if onboarded == false {
 				log.Error("User not onboarded\n")
 				return
@@ -150,27 +150,27 @@ func (oc *OIDCController) Callback() {
 			return
 		}
 	} else if err != nil {
-		oc.SendInternalServerError(err)
+		oc.SendError(err)
 		return
 	}
 	oidc.InjectGroupsToUser(info, u)
-	um, err := user.Ctl.Get(ctx, u.UserID, &user.Option{WithOIDCInfo: true})
+	um, err := ctluser.Ctl.Get(ctx, u.UserID, &ctluser.Option{WithOIDCInfo: true})
 	if err != nil {
-		oc.SendInternalServerError(err)
+		oc.SendError(err)
 		return
 	}
 	_, t, err := secretAndToken(tokenBytes)
 	oidcUser := um.OIDCUserMeta
 	oidcUser.Token = t
-	if err := dao.UpdateOIDCUser(oidcUser); err != nil {
-		oc.SendInternalServerError(err)
+	if err := ctluser.Ctl.UpdateOIDCMeta(ctx, oidcUser); err != nil {
+		oc.SendError(err)
 		return
 	}
 	oc.PopulateUserSession(*u)
 	oc.Controller.Redirect("/", http.StatusFound)
 }
 
-func userOnboard(oc *OIDCController, info *oidc.UserInfo, username string, tokenBytes []byte) (*models.User, bool) {
+func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, username string, tokenBytes []byte) (*models.User, bool) {
 	s, t, err := secretAndToken(tokenBytes)
 	if err != nil {
 		oc.SendInternalServerError(err)
@@ -193,17 +193,11 @@ func userOnboard(oc *OIDCController, info *oidc.UserInfo, username string, token
 
 	log.Debugf("User created: %+v\n", *user)
 
-	err = dao.OnBoardOIDCUser(user)
+	err = ctluser.Ctl.OnboardOIDCUser(ctx, user)
 	if err != nil {
-		if strings.Contains(err.Error(), dao.ErrDupUser.Error()) {
-			oc.RenderError(http.StatusConflict, "Conflict, the user with same username or email has been onboarded.")
-			return nil, false
-		}
-
-		oc.SendInternalServerError(err)
+		oc.SendError(err)
 		return nil, false
 	}
-
 	return user, true
 }
 
@@ -242,8 +236,8 @@ func (oc *OIDCController) Onboard() {
 		oc.SendInternalServerError(err)
 		return
 	}
-
-	if user, onboarded := userOnboard(oc, d, username, tb); onboarded {
+	ctx := oc.Ctx.Request.Context()
+	if user, onboarded := userOnboard(ctx, oc, d, username, tb); onboarded {
 		user.OIDCUserMeta = nil
 		oc.DelSession(userInfoKey)
 		oc.PopulateUserSession(*user)

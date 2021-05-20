@@ -35,10 +35,16 @@ type MetaManager interface {
 	GetBySubIss(ctx context.Context, sub, iss string) (*models.OIDCUser, error)
 	// SetCliSecretByUserID updates the cli secret of a user based on the user ID
 	SetCliSecretByUserID(ctx context.Context, uid int, secret string) error
+	// Update provides a general method for updating the data record for OIDC metadata
+	Update(ctx context.Context, oidcUser *models.OIDCUser, cols ...string) error
 }
 
 type metaManager struct {
 	dao dao.MetaDAO
+}
+
+func (m *metaManager) Update(ctx context.Context, oidcUser *models.OIDCUser, cols ...string) error {
+	return m.dao.Update(ctx, oidcUser, cols...)
 }
 
 func (m *metaManager) GetBySubIss(ctx context.Context, sub, iss string) (*models.OIDCUser, error) {
