@@ -2,13 +2,13 @@ package model
 
 import (
 	"github.com/go-openapi/strfmt"
-	common_models "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
 
 // RepoRecord model
 type RepoRecord struct {
-	*common_models.RepoRecord
+	*model.RepoRecord
 }
 
 // ToSwagger converts the repository into the swagger model
@@ -25,6 +25,6 @@ func (r *RepoRecord) ToSwagger() *models.Repository {
 }
 
 // NewRepoRecord ...
-func NewRepoRecord(r *common_models.RepoRecord) *RepoRecord {
+func NewRepoRecord(r *model.RepoRecord) *RepoRecord {
 	return &RepoRecord{RepoRecord: r}
 }

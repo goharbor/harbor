@@ -17,9 +17,9 @@ package v1
 import (
 	"fmt"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/harbor/base"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
 )
 
 type client struct {
@@ -27,7 +27,7 @@ type client struct {
 }
 
 func (c *client) listRepositories(project *base.Project) ([]*model.Repository, error) {
-	repositories := []*models.RepoRecord{}
+	repositories := []*repomodel.RepoRecord{}
 	url := fmt.Sprintf("%s/repositories?project_id=%d", c.BasePath(), project.ID)
 	if err := c.C.GetAndIteratePagination(url, &repositories); err != nil {
 		return nil, err

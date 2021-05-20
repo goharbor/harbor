@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package model
 
 import (
 	"context"
@@ -22,13 +22,13 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/lib/pq"
-	"github.com/theupdateframework/notary/tuf/data"
 )
 
-// RepoTable is the table name for repository
-const RepoTable = "repository"
-
-// TODO move the model into pkg/repository
+func init() {
+	orm.RegisterModel(
+		new(RepoRecord),
+	)
+}
 
 // RepoRecord holds the record of an repository in DB, all the infors are from the registry notification event.
 type RepoRecord struct {
@@ -59,7 +59,7 @@ func (r *RepoRecord) FilterByBlobDigest(ctx context.Context, qs orm.QuerySeter, 
 
 // TableName is required by by beego orm to map RepoRecord to table repository
 func (r *RepoRecord) TableName() string {
-	return RepoTable
+	return "repository"
 }
 
 // GetDefaultSorts specifies the default sorts
@@ -74,40 +74,4 @@ func (r *RepoRecord) GetDefaultSorts() []*q.Sort {
 			DESC: true,
 		},
 	}
-}
-
-// RepositoryQuery : query parameters for repository
-type RepositoryQuery struct {
-	Name        string
-	ProjectIDs  []int64
-	ProjectName string
-	LabelID     int64
-	Pagination
-	Sorting
-}
-
-// TagDetail ...
-type TagDetail struct {
-	Digest        string    `json:"digest"`
-	Name          string    `json:"name"`
-	Size          int64     `json:"size"`
-	Architecture  string    `json:"architecture"`
-	OS            string    `json:"os"`
-	OSVersion     string    `json:"os.version"`
-	DockerVersion string    `json:"docker_version"`
-	Author        string    `json:"author"`
-	Created       time.Time `json:"created"`
-	Config        *TagCfg   `json:"config"`
-	Immutable     bool      `json:"immutable"`
-}
-
-// TagCfg ...
-type TagCfg struct {
-	Labels map[string]string `json:"labels"`
-}
-
-// Signature ...
-type Signature struct {
-	Tag    string      `json:"tag"`
-	Hashes data.Hashes `json:"hashes"`
 }

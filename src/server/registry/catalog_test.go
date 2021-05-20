@@ -16,8 +16,8 @@ package registry
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
@@ -29,7 +29,7 @@ import (
 type catalogTestSuite struct {
 	suite.Suite
 	originalRepoMgr repository.Manager
-	repoMgr         *repotesting.FakeManager
+	repoMgr         *repotesting.Manager
 }
 
 func (c *catalogTestSuite) SetupSuite() {
@@ -37,7 +37,7 @@ func (c *catalogTestSuite) SetupSuite() {
 }
 
 func (c *catalogTestSuite) SetupTest() {
-	c.repoMgr = &repotesting.FakeManager{}
+	c.repoMgr = &repotesting.Manager{}
 	repository.Mgr = c.repoMgr
 }
 
@@ -52,7 +52,7 @@ func (c *catalogTestSuite) TestCatalog() {
 	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog", nil)
 	var w *httptest.ResponseRecorder
-	mock.OnAnything(c.repoMgr, "NonEmptyRepos").Return([]*models.RepoRecord{
+	mock.OnAnything(c.repoMgr, "NonEmptyRepos").Return([]*model.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",
@@ -78,7 +78,7 @@ func (c *catalogTestSuite) TestCatalog() {
 func (c *catalogTestSuite) TestCatalogPaginationN1() {
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog?n=1", nil)
 	var w *httptest.ResponseRecorder
-	c.repoMgr.On("NonEmptyRepos").Return([]*models.RepoRecord{
+	mock.OnAnything(c.repoMgr, "NonEmptyRepos").Return([]*model.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",
@@ -104,7 +104,7 @@ func (c *catalogTestSuite) TestCatalogPaginationN1() {
 func (c *catalogTestSuite) TestCatalogPaginationN2() {
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog?n=3", nil)
 	var w *httptest.ResponseRecorder
-	c.repoMgr.On("NonEmptyRepos").Return([]*models.RepoRecord{
+	mock.OnAnything(c.repoMgr, "NonEmptyRepos").Return([]*model.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",
@@ -130,7 +130,7 @@ func (c *catalogTestSuite) TestCatalogPaginationN2() {
 func (c *catalogTestSuite) TestCatalogPaginationN3() {
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog?last=busybox&n=1", nil)
 	var w *httptest.ResponseRecorder
-	c.repoMgr.On("NonEmptyRepos").Return([]*models.RepoRecord{
+	mock.OnAnything(c.repoMgr, "NonEmptyRepos").Return([]*model.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",
@@ -156,7 +156,7 @@ func (c *catalogTestSuite) TestCatalogPaginationN3() {
 func (c *catalogTestSuite) TestCatalogEmptyRepo() {
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog", nil)
 	var w *httptest.ResponseRecorder
-	c.repoMgr.On("NonEmptyRepos").Return([]*models.RepoRecord{}, nil)
+	mock.OnAnything(c.repoMgr, "NonEmptyRepos").Return([]*model.RepoRecord{}, nil)
 	w = httptest.NewRecorder()
 	newRepositoryHandler().ServeHTTP(w, req)
 	c.Equal(http.StatusOK, w.Code)

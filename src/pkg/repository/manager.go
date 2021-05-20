@@ -16,10 +16,11 @@ package repository
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/models"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/repository/dao"
+	"github.com/goharbor/harbor/src/pkg/repository/model"
 )
 
 // Mgr is the global repository manager instance
@@ -30,21 +31,21 @@ type Manager interface {
 	// Count returns the total count of repositories according to the query
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List repositories according to the query
-	List(ctx context.Context, query *q.Query) (repositories []*models.RepoRecord, err error)
+	List(ctx context.Context, query *q.Query) (repositories []*model.RepoRecord, err error)
 	// Get the repository specified by ID
-	Get(ctx context.Context, id int64) (repository *models.RepoRecord, err error)
+	Get(ctx context.Context, id int64) (repository *model.RepoRecord, err error)
 	// GetByName gets the repository specified by name
-	GetByName(ctx context.Context, name string) (repository *models.RepoRecord, err error)
+	GetByName(ctx context.Context, name string) (repository *model.RepoRecord, err error)
 	// Create a repository
-	Create(ctx context.Context, repository *models.RepoRecord) (id int64, err error)
+	Create(ctx context.Context, repository *model.RepoRecord) (id int64, err error)
 	// Delete the repository specified by ID
 	Delete(ctx context.Context, id int64) (err error)
 	// Update updates the repository. Only the properties specified by "props" will be updated if it is set
-	Update(ctx context.Context, repository *models.RepoRecord, props ...string) (err error)
+	Update(ctx context.Context, repository *model.RepoRecord, props ...string) (err error)
 	// AddPullCount increase one pull count for the specified repository
 	AddPullCount(ctx context.Context, id int64) error
 	// NonEmptyRepos returns the repositories without any artifact or all the artifacts are untagged.
-	NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error)
+	NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error)
 }
 
 // New returns a default implementation of Manager
@@ -62,7 +63,7 @@ func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 	return m.dao.Count(ctx, query)
 }
 
-func (m *manager) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, error) {
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*model.RepoRecord, error) {
 	repositories, err := m.dao.List(ctx, query)
 	if err != nil {
 		return nil, err
@@ -70,11 +71,11 @@ func (m *manager) List(ctx context.Context, query *q.Query) ([]*models.RepoRecor
 	return repositories, nil
 }
 
-func (m *manager) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
+func (m *manager) Get(ctx context.Context, id int64) (*model.RepoRecord, error) {
 	return m.dao.Get(ctx, id)
 }
 
-func (m *manager) GetByName(ctx context.Context, name string) (repository *models.RepoRecord, err error) {
+func (m *manager) GetByName(ctx context.Context, name string) (repository *model.RepoRecord, err error) {
 	repositories, err := m.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"Name": name,
@@ -90,14 +91,14 @@ func (m *manager) GetByName(ctx context.Context, name string) (repository *model
 	return repositories[0], nil
 }
 
-func (m *manager) Create(ctx context.Context, repository *models.RepoRecord) (int64, error) {
+func (m *manager) Create(ctx context.Context, repository *model.RepoRecord) (int64, error) {
 	return m.dao.Create(ctx, repository)
 }
 
 func (m *manager) Delete(ctx context.Context, id int64) error {
 	return m.dao.Delete(ctx, id)
 }
-func (m *manager) Update(ctx context.Context, repository *models.RepoRecord, props ...string) error {
+func (m *manager) Update(ctx context.Context, repository *model.RepoRecord, props ...string) error {
 	return m.dao.Update(ctx, repository, props...)
 }
 
@@ -105,6 +106,6 @@ func (m *manager) AddPullCount(ctx context.Context, id int64) error {
 	return m.dao.AddPullCount(ctx, id)
 }
 
-func (m *manager) NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error) {
+func (m *manager) NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error) {
 	return m.dao.NonEmptyRepos(ctx)
 }

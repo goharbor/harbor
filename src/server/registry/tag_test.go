@@ -16,12 +16,13 @@ package registry
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/tag"
+	"github.com/goharbor/harbor/src/pkg/repository/model"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	repotesting "github.com/goharbor/harbor/src/testing/controller/repository"
 	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
@@ -31,7 +32,7 @@ import (
 type tagTestSuite struct {
 	suite.Suite
 	originalRepoCtl repository.Controller
-	repoCtl         *repotesting.FakeController
+	repoCtl         *repotesting.Controller
 	originalTagCtl  tag.Controller
 	tagCtl          *tagtesting.FakeController
 }
@@ -42,7 +43,7 @@ func (c *tagTestSuite) SetupSuite() {
 }
 
 func (c *tagTestSuite) SetupTest() {
-	c.repoCtl = &repotesting.FakeController{}
+	c.repoCtl = &repotesting.Controller{}
 	repository.Ctl = c.repoCtl
 	c.tagCtl = &tagtesting.FakeController{}
 	tag.Ctl = c.tagCtl
@@ -60,7 +61,7 @@ func (c *tagTestSuite) TestListTag() {
 	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/library/hello-world/tags/list", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("GetByName").Return(&models.RepoRecord{
+	mock.OnAnything(c.repoCtl, "GetByName").Return(&model.RepoRecord{
 		RepositoryID: 1,
 		Name:         "library/hello-world",
 	}, nil)
@@ -95,7 +96,7 @@ func (c *tagTestSuite) TestListTagPagination1() {
 	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/hello-world/tags/list?n=1", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("GetByName").Return(&models.RepoRecord{
+	mock.OnAnything(c.repoCtl, "GetByName").Return(&model.RepoRecord{
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
@@ -131,7 +132,7 @@ func (c *tagTestSuite) TestListTagPagination2() {
 	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/hello-world/tags/list?n=3", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("GetByName").Return(&models.RepoRecord{
+	mock.OnAnything(c.repoCtl, "GetByName").Return(&model.RepoRecord{
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
@@ -167,7 +168,7 @@ func (c *tagTestSuite) TestListTagPagination3() {
 	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/hello-world/tags/list?last=v1&n=1", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("GetByName").Return(&models.RepoRecord{
+	mock.OnAnything(c.repoCtl, "GetByName").Return(&model.RepoRecord{
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)

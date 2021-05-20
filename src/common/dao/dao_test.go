@@ -243,59 +243,6 @@ func TestGetOrmer(t *testing.T) {
 	}
 }
 
-func TestAddRepository(t *testing.T) {
-	repoRecord := models.RepoRecord{
-		Name:        currentProject.Name + "/" + repositoryName,
-		ProjectID:   currentProject.ProjectID,
-		Description: "testing repo",
-		PullCount:   0,
-		StarCount:   0,
-	}
-
-	err := AddRepository(repoRecord)
-	if err != nil {
-		t.Errorf("Error occurred in AddRepository: %v", err)
-	}
-
-	newRepoRecord, err := GetRepositoryByName(currentProject.Name + "/" + repositoryName)
-	if err != nil {
-		t.Errorf("Error occurred in GetRepositoryByName: %v", err)
-	}
-	if newRepoRecord == nil {
-		t.Errorf("No repository found queried by repository name: %v", currentProject.Name+"/"+repositoryName)
-	}
-}
-
-var currentRepository *models.RepoRecord
-
-func TestGetRepositoryByName(t *testing.T) {
-	var err error
-	currentRepository, err = GetRepositoryByName(currentProject.Name + "/" + repositoryName)
-	if err != nil {
-		t.Errorf("Error occurred in GetRepositoryByName: %v", err)
-	}
-	if currentRepository == nil {
-		t.Errorf("No repository found queried by repository name: %v", currentProject.Name+"/"+repositoryName)
-	}
-	if currentRepository.Name != currentProject.Name+"/"+repositoryName {
-		t.Errorf("Repository name does not match, expected: %s, actual: %s", currentProject.Name+"/"+repositoryName, currentProject.Name)
-	}
-}
-
-func TestDeleteRepository(t *testing.T) {
-	err := DeleteRepository(currentRepository.Name)
-	if err != nil {
-		t.Errorf("Error occurred in DeleteRepository: %v", err)
-	}
-	repository, err := GetRepositoryByName(currentRepository.Name)
-	if err != nil {
-		t.Errorf("Error occurred in GetRepositoryByName: %v", err)
-	}
-	if repository != nil {
-		t.Errorf("repository is not nil after deletion, repository: %+v", repository)
-	}
-}
-
 func TestIsDupRecError(t *testing.T) {
 	assert.True(t, IsDupRecErr(fmt.Errorf("pq: duplicate key value violates unique constraint \"properties_k_key\"")))
 	assert.False(t, IsDupRecErr(fmt.Errorf("other error")))

@@ -17,7 +17,6 @@ package repository
 import (
 	"context"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -27,6 +26,7 @@ import (
 	art "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/pkg/repository/model"
 )
 
 var (
@@ -43,15 +43,15 @@ type Controller interface {
 	// Count returns the total count of repositories according to the query
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List repositories according to the query
-	List(ctx context.Context, query *q.Query) (repositories []*models.RepoRecord, err error)
+	List(ctx context.Context, query *q.Query) (repositories []*model.RepoRecord, err error)
 	// Get the repository specified by ID
-	Get(ctx context.Context, id int64) (repository *models.RepoRecord, err error)
+	Get(ctx context.Context, id int64) (repository *model.RepoRecord, err error)
 	// GetByName gets the repository specified by name
-	GetByName(ctx context.Context, name string) (repository *models.RepoRecord, err error)
+	GetByName(ctx context.Context, name string) (repository *model.RepoRecord, err error)
 	// Delete the repository specified by ID
 	Delete(ctx context.Context, id int64) (err error)
 	// Update the repository. Specify the properties or all properties will be updated
-	Update(ctx context.Context, repository *models.RepoRecord, properties ...string) (err error)
+	Update(ctx context.Context, repository *model.RepoRecord, properties ...string) (err error)
 	// AddPullCount increase one pull count for the specified repository
 	AddPullCount(ctx context.Context, id int64) error
 }
@@ -99,7 +99,7 @@ func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, erro
 	// use orm.WithTransaction here to avoid the issue:
 	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
 	if err = orm.WithTransaction(func(ctx context.Context) error {
-		id, err = c.repoMgr.Create(ctx, &models.RepoRecord{
+		id, err = c.repoMgr.Create(ctx, &model.RepoRecord{
 			ProjectID: project.ProjectID,
 			Name:      name,
 		})
@@ -129,15 +129,15 @@ func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
 	return c.repoMgr.Count(ctx, query)
 }
 
-func (c *controller) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, error) {
+func (c *controller) List(ctx context.Context, query *q.Query) ([]*model.RepoRecord, error) {
 	return c.repoMgr.List(ctx, query)
 }
 
-func (c *controller) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
+func (c *controller) Get(ctx context.Context, id int64) (*model.RepoRecord, error) {
 	return c.repoMgr.Get(ctx, id)
 }
 
-func (c *controller) GetByName(ctx context.Context, name string) (*models.RepoRecord, error) {
+func (c *controller) GetByName(ctx context.Context, name string) (*model.RepoRecord, error) {
 	return c.repoMgr.GetByName(ctx, name)
 }
 
@@ -179,7 +179,7 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	return c.repoMgr.Delete(ctx, id)
 }
 
-func (c *controller) Update(ctx context.Context, repository *models.RepoRecord, properties ...string) error {
+func (c *controller) Update(ctx context.Context, repository *model.RepoRecord, properties ...string) error {
 	return c.repoMgr.Update(ctx, repository, properties...)
 }
 
