@@ -16,7 +16,6 @@ package dao
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	o "github.com/astaxie/beego/orm"
@@ -160,7 +159,7 @@ func (d *dao) NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error) {
 		return nil, err
 	}
 
-	sql := fmt.Sprintf(`select distinct r.* from repository as r LEFT JOIN tag as t on r.repository_id = t.repository_id where t.repository_id is not null;`)
+	sql := `select * from repository where repository_id in (select distinct repository_id from tag)`
 	_, err = ormer.Raw(sql).QueryRows(&repos)
 	if err != nil {
 		return repos, err
