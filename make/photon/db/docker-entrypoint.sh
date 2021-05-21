@@ -27,8 +27,15 @@ if [ "$(ls -A $PGDATA)" ]; then
                         exit 1
                 fi
                 initPG $PGDATANEW false
-                # because of the 'set -e', the upgrade failure will break execution.
+                # it needs to clean the $PGDATANEW on upgrade failure
+                set +e
                 ./$CUR/upgrade.sh --old-bindir $PGBINOLD --old-datadir $PGDATAOLD --new-datadir $PGDATANEW
+                if [ $? -ne 0 ]; then
+                        echo "remove the $PGDATANEW after fail to upgrade"
+                        rm -rf $PGDATANEW
+                        exit 1
+                fi
+                set -e
                 echo "remove the $PGDATAOLD after upgrade success."
                 if [ "$PGDATAOLD" = "$PGDATA" ]; then
                         find $PGDATA/* -prune ! -name pg${PG_VERSION_NEW} -exec rm -rf {} \;
