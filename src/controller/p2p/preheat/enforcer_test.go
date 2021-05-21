@@ -17,12 +17,12 @@ package preheat
 import (
 	"context"
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/models"
 	car "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/tag"
@@ -118,7 +118,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		(int64)(1),
 		mock.Anything,
 		mock.Anything,
-	).Return(&models.Project{
+	).Return(&proModels.Project{
 		ProjectID:    1,
 		Name:         "library",
 		CVEAllowlist: models2.CVEAllowlist{},

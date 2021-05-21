@@ -19,7 +19,6 @@ import (
 	"fmt"
 
 	beegorm "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -28,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
@@ -90,15 +90,15 @@ func (a *Handler) handle(ctx context.Context, event *event.ArtifactEvent) error 
 	return nil
 }
 
-func (a *Handler) constructArtifactPayload(event *event.ArtifactEvent, project *models.Project) (*model.Payload, error) {
+func (a *Handler) constructArtifactPayload(event *event.ArtifactEvent, project *proModels.Project) (*model.Payload, error) {
 	repoName := event.Repository
 	if repoName == "" {
 		return nil, fmt.Errorf("invalid %s event with empty repo name", event.EventType)
 	}
 
-	repoType := models.ProjectPrivate
+	repoType := proModels.ProjectPrivate
 	if project.IsPublic() {
-		repoType = models.ProjectPublic
+		repoType = proModels.ProjectPublic
 	}
 
 	imageName := util.GetNameFromImgRepoFullName(repoName)

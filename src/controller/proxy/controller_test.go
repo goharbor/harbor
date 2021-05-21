@@ -17,12 +17,12 @@ package proxy
 import (
 	"context"
 	"github.com/docker/distribution"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib"
 	_ "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	testproxy "github.com/goharbor/harbor/src/testing/controller/proxy"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/mock"
@@ -83,13 +83,13 @@ type proxyControllerTestSuite struct {
 	local  *localInterfaceMock
 	remote *testproxy.RemoteInterface
 	ctr    Controller
-	proj   *models.Project
+	proj   *proModels.Project
 }
 
 func (p *proxyControllerTestSuite) SetupTest() {
 	p.local = &localInterfaceMock{}
 	p.remote = &testproxy.RemoteInterface{}
-	p.proj = &models.Project{RegistryID: 1}
+	p.proj = &proModels.Project{RegistryID: 1}
 	p.ctr = &controller{
 		blobCtl:     blob.Ctl,
 		artifactCtl: artifact.Ctl,

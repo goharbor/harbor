@@ -16,20 +16,19 @@ package local
 
 import (
 	"context"
-	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
-	"testing"
-
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/controller/project"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 var (
-	public = &project.Project{
+	public = &proModels.Project{
 		ProjectID: 1,
 		Name:      "public_project",
 		OwnerID:   1,
@@ -38,7 +37,7 @@ var (
 		},
 	}
 
-	private = &models.Project{
+	private = &proModels.Project{
 		ProjectID: 2,
 		Name:      "private_project",
 		OwnerID:   1,

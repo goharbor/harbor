@@ -3,13 +3,13 @@ package api
 import (
 	"context"
 	"errors"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	bcontext "github.com/astaxie/beego/context"
 	"github.com/goharbor/harbor/src/chartserver"
-	"github.com/goharbor/harbor/src/common/models"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
 )
@@ -42,7 +42,7 @@ func TestRequireNamespace(t *testing.T) {
 	projectCtl := &projecttesting.Controller{}
 	chartAPI.ProjectCtl = projectCtl
 
-	mock.OnAnything(projectCtl, "List").Return([]*models.Project{
+	mock.OnAnything(projectCtl, "List").Return([]*proModels.Project{
 		{ProjectID: 0, Name: "library"},
 		{ProjectID: 1, Name: "repo2"},
 	}, nil)

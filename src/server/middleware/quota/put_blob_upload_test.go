@@ -16,12 +16,12 @@ package quota
 
 import (
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
 
-	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/quota"
@@ -118,7 +118,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobExistFailed() {
 func (suite *PutBlobUploadMiddlewareTestSuite) TestResourcesExceeded() {
 	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
 	mock.OnAnything(suite.blobController, "Exist").Return(false, nil)
-	mock.OnAnything(suite.projectController, "Get").Return(&commonmodels.Project{}, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(&proModels.Project{}, nil)
 
 	{
 		var errs quota.Errors

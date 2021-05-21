@@ -23,13 +23,13 @@
 package apilib
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 type Search struct {
 
 	// Search results of the projects that matched the filter keywords.
-	Projects []models.Project `json:"project,omitempty"`
+	Projects []proModels.Project `json:"project,omitempty"`
 
 	// Search results of the repositories that matched the filter keywords.
 	Repositories []SearchRepository `json:"repository,omitempty"`

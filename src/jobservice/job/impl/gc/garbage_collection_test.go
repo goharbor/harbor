@@ -15,11 +15,11 @@
 package gc
 
 import (
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"os"
 	"testing"
 
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/goharbor/harbor/src/common/models"
 	commom_regctl "github.com/goharbor/harbor/src/common/registryctl"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -117,7 +117,7 @@ func (suite *gcTestSuite) TestRemoveUntaggedBlobs() {
 	logger := &mockjobservice.MockJobLogger{}
 	ctx.On("GetLogger").Return(logger)
 
-	mock.OnAnything(suite.projectCtl, "List").Return([]*models.Project{
+	mock.OnAnything(suite.projectCtl, "List").Return([]*proModels.Project{
 		{
 			ProjectID: 1234,
 			Name:      "test GC",
@@ -226,7 +226,7 @@ func (suite *gcTestSuite) TestRun() {
 	suite.artifactCtl.On("Delete").Return(nil)
 	suite.artrashMgr.On("Filter").Return([]model.ArtifactTrash{}, nil)
 
-	mock.OnAnything(suite.projectCtl, "List").Return([]*models.Project{
+	mock.OnAnything(suite.projectCtl, "List").Return([]*proModels.Project{
 		{
 			ProjectID: 12345,
 			Name:      "test GC",
@@ -301,7 +301,7 @@ func (suite *gcTestSuite) TestMark() {
 		},
 	}, nil)
 
-	mock.OnAnything(suite.projectCtl, "List").Return([]*models.Project{
+	mock.OnAnything(suite.projectCtl, "List").Return([]*proModels.Project{
 		{
 			ProjectID: 1234,
 			Name:      "test GC",

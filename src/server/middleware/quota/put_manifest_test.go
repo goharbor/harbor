@@ -17,13 +17,13 @@ package quota
 import (
 	"context"
 	std_err "errors"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/docker/distribution/manifest/schema2"
-	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/distribution"
@@ -187,7 +187,7 @@ func (suite *PutManifestMiddlewareTestSuite) TestResourcesExceeded() {
 	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
 	mock.OnAnything(suite.blobController, "Exist").Return(false, nil)
 	mock.OnAnything(suite.blobController, "FindMissingAssociationsForProject").Return(nil, nil)
-	mock.OnAnything(suite.projectController, "Get").Return(&commonmodels.Project{}, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(&proModels.Project{}, nil)
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -235,7 +235,7 @@ func (suite *PutManifestMiddlewareTestSuite) TestResourcesWarning() {
 		f := args.Get(4).(func() error)
 		f()
 	})
-	mock.OnAnything(suite.projectController, "Get").Return(&commonmodels.Project{}, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(&proModels.Project{}, nil)
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

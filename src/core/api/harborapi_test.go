@@ -19,6 +19,21 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/astaxie/beego"
+	"github.com/dghubble/sling"
+	"github.com/goharbor/harbor/src/common/api"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/job/test"
+	testutils "github.com/goharbor/harbor/src/common/utils/test"
+	_ "github.com/goharbor/harbor/src/core/auth/db"
+	_ "github.com/goharbor/harbor/src/core/auth/ldap"
+	"github.com/goharbor/harbor/src/lib/config"
+	libOrm "github.com/goharbor/harbor/src/lib/orm"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/orm"
+	"github.com/goharbor/harbor/src/server/middleware/security"
+	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -26,23 +41,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
-
-	"github.com/astaxie/beego"
-	"github.com/dghubble/sling"
-	"github.com/goharbor/harbor/src/common/api"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/job/test"
-	"github.com/goharbor/harbor/src/common/models"
-	testutils "github.com/goharbor/harbor/src/common/utils/test"
-	_ "github.com/goharbor/harbor/src/core/auth/db"
-	_ "github.com/goharbor/harbor/src/core/auth/ldap"
-	"github.com/goharbor/harbor/src/lib/config"
-	libOrm "github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/goharbor/harbor/src/server/middleware/orm"
-	"github.com/goharbor/harbor/src/server/middleware/security"
-	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 )
 
 const (
@@ -298,7 +296,7 @@ func (a testapi) ProjectsGet(query *apilib.ProjectQuery, authInfo ...usrInfo) (i
 
 // Update properties for a selected project.
 func (a testapi) ProjectsPut(prjUsr usrInfo, projectID string,
-	project *models.Project) (int, error) {
+	project *proModels.Project) (int, error) {
 	path := "/api/projects/" + projectID
 	_sling := sling.New().Put(a.basePath).Path(path).BodyJSON(project)
 
@@ -365,31 +363,6 @@ func (a testapi) GetProjectMembersByProID(prjUsr usrInfo, projectID string) (int
 		err = json.Unmarshal(body, &successPayload)
 	}
 	return httpStatusCode, successPayload, err
-}
-
-// Add project role member accompany with  projectID
-// func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, int, error) {
-func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, member *models.MemberReq) (int, int, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := "/api/projects/" + projectID + "/members/"
-	_sling = _sling.Path(path)
-	_sling = _sling.BodyJSON(member)
-	httpStatusCode, header, _, err := request0(_sling, jsonAcceptHeader, prjUsr)
-
-	var memberID int
-	location := header.Get("Location")
-	if location != "" {
-		parts := strings.Split(location, "/")
-		if len(parts) > 0 {
-			i, err := strconv.Atoi(parts[len(parts)-1])
-			if err == nil {
-				memberID = i
-			}
-		}
-	}
-
-	return httpStatusCode, memberID, err
 }
 
 // Delete project role member accompany with  projectID

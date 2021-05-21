@@ -15,8 +15,8 @@
 package project
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
+	"github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 type rbacUser struct {

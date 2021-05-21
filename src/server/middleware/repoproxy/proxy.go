@@ -17,7 +17,6 @@ package repoproxy
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -28,6 +27,7 @@ import (
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"io"
@@ -80,7 +80,7 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	return nil
 }
 
-func preCheck(ctx context.Context) (art lib.ArtifactInfo, p *models.Project, ctl proxy.Controller, err error) {
+func preCheck(ctx context.Context) (art lib.ArtifactInfo, p *proModels.Project, ctl proxy.Controller, err error) {
 	none := lib.ArtifactInfo{}
 	art = lib.GetArtifactInfo(ctx)
 	if art == none {
@@ -152,7 +152,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	return nil
 }
 
-func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
 	man, err := ctl.ProxyManifest(ctx, art, remote)
 	if err != nil {
 		return err
@@ -168,7 +168,7 @@ func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Cont
 	return nil
 }
 
-func canProxy(p *models.Project) bool {
+func canProxy(p *proModels.Project) bool {
 	if p.RegistryID < 1 {
 		return false
 	}
@@ -227,7 +227,7 @@ func DisableBlobAndManifestUploadMiddleware() func(http.Handler) http.Handler {
 	})
 }
 
-func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *models.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
 	exist, desc, err := ctl.HeadManifest(ctx, art, remote)
 	if err != nil {
 		return err

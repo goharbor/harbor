@@ -19,7 +19,6 @@ import (
 	"time"
 
 	o "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
@@ -30,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -88,10 +88,10 @@ func (si *Handler) IsStateful() bool {
 	return false
 }
 
-func constructScanImagePayload(event *event.ScanImageEvent, project *models.Project) (*model.Payload, error) {
-	repoType := models.ProjectPrivate
+func constructScanImagePayload(event *event.ScanImageEvent, project *proModels.Project) (*model.Payload, error) {
+	repoType := proModels.ProjectPrivate
 	if project.IsPublic() {
-		repoType = models.ProjectPublic
+		repoType = proModels.ProjectPublic
 	}
 
 	repoName := util.GetNameFromImgRepoFullName(event.Artifact.Repository)
