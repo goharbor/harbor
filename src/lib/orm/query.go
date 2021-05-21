@@ -156,7 +156,9 @@ func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *me
 		}
 		// or list
 		if ol, ok := value.(*q.OrList); ok {
-			if len(ol.Values) > 0 {
+			if ol == nil || len(ol.Values) == 0 {
+				qs = qs.Filter(key+"__in", nil)
+			} else {
 				qs = qs.Filter(key+"__in", ol.Values...)
 			}
 			continue
