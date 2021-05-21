@@ -7989,8 +7989,146 @@ definitions:
             description: 'The parameters of the policy, the values are dependant on the type of the policy.'
   Configurations:
     type: object
-    additionalProperties:
-      type: object
+    properties:
+      auth_mode:
+        type: string
+        description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'
+      count_per_project:
+        type: string
+        description: The default count quota for the new created projects.
+      email_from:
+        type: string
+        description: The sender name for Email notification.
+      email_host:
+        type: string
+        description: The hostname of SMTP server that sends Email notification.
+      email_port:
+        type: integer
+        description: The port of SMTP server.
+      email_identity:
+        type: string
+        description: By default it's empty so the email_username is picked.
+      email_username:
+        type: string
+        description: The username for authenticate against SMTP server.
+      email_password:
+        type: string
+        description: The password of the email user.
+      email_ssl:
+        type: boolean
+        description: 'When it''s set to true the system will access Email server via TLS by default.  If it''s set to false, it still will handle "STARTTLS" from server side.'
+      email_insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the email server.
+      ldap_url:
+        type: string
+        description: The URL of LDAP server.
+      ldap_base_dn:
+        type: string
+        description: The Base DN for LDAP binding.
+      ldap_filter:
+        type: string
+        description: The filter for LDAP binding.
+      ldap_scope:
+        type: integer
+        description: '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
+      ldap_uid:
+        type: string
+        description: 'The attribute which is used as identity for the LDAP binding, such as "CN" or "SAMAccountname"'
+      ldap_search_dn:
+        type: string
+        description: The DN of the user to do the search.
+      ldap_timeout:
+        type: integer
+        description: timeout in seconds for connection to LDAP server.
+      ldap_group_attribute_name:
+        type: string
+        description: 'The attribute which is used as identity of the LDAP group, default is cn.'
+      ldap_group_base_dn:
+        type: string
+        description: The base DN to search LDAP group.
+      ldap_group_search_filter:
+        type: string
+        description: The filter to search the ldap group.
+      ldap_group_search_scope:
+        type: integer
+        description: 'The scope to search ldap. ''0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'''
+      ldap_group_admin_dn:
+        type: string
+        description: Specify the ldap group which have the same privilege with Harbor admin.
+      ldap_verify_cert:
+        type: boolean
+        description: Whether verify ldap server cert.
+      uaa_endpoint:
+        type: string
+        description: The endpoint of uaa server.
+      uaa_client_id:
+        type: string
+        description: The client id of uaa.
+      uaa_client_secret:
+        type: string
+        description: The client secret of uaa.
+      uaa_verify_cert:
+        type: boolean
+        description: Whether verify the uaa server cert.
+      oidc_client_id:
+        type: string
+        description: The client id of the OIDC.
+      oidc_client_secret:
+        type: string
+        description: The client secret of the OIDC.
+      oidc_endpoint:
+        type: string
+        description: The URL of an OIDC-complaint server, must start with 'https://'.
+      oidc_name:
+        type: string
+        description: The name of the OIDC provider.
+      oidc_scope:
+        type: string
+        description: The scope sent to OIDC server during authentication, should be separated by comma. It has to contain “openid”, and “offline_access”. If you are using google, please remove “offline_access” from this field.
+      oidc_verify_cert:
+        type: boolean
+        description: Whether verify your OIDC server certificate, disable it if your OIDC server is hosted via self-hosted certificate.
+      project_creation_restriction:
+        type: string
+        description: This attribute restricts what users have the permission to create project.  It can be "everyone" or "adminonly".
+      quota_per_project_enable:
+        type: boolean
+        description: This attribute indicates whether quota per project enabled in harbor
+      read_only:
+        type: boolean
+        description: '''docker push'' is prohibited by Harbor if you set it to true.   '
+      self_registration:
+        type: boolean
+        description: 'Whether the Harbor instance supports self-registration.  If it''s set to false, admin need to add user to the instance.'
+      storage_per_project:
+        type: string
+        description: The default storage quota for the new created projects.
+      token_expiration:
+        type: integer
+        description: 'The expiration time of the token for internal Registry, in minutes.'
+      robot_token_duration:
+        type: integer
+        description: 'The expiration time of the robot account, in days.'
+      verify_remote_cert:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access a remote Harbor instance for replication.
+      scan_all_policy:
+        type: object
+        properties:
+          type:
+            type: string
+            description: 'The type of scan all policy, currently the valid values are "none" and "daily"'
+          parameter:
+            type: object
+            properties:
+              daily_time:
+                type: integer
+                description: 'The offset in seconds of UTC 0 o''clock, only valid when the policy type is "daily"'
+            description: 'The parameters of the policy, the values are dependant on the type of the policy.'
+      notification_enable:
+        type: boolean
+        description: 'The flag to indicate whether notification mechanism is enabled on Harbor instance.'
   StringConfigItem:
     type: object
     properties:

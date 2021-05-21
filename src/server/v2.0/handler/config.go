@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
@@ -77,8 +78,18 @@ func (c *configAPI) UpdateConfigurations(ctx context.Context, params configure.U
 	if params.Configurations == nil {
 		return c.SendError(ctx, errors.BadRequestError(nil).WithMessage("Missing configure item"))
 	}
-	conf := params.Configurations
-	err := c.controller.UpdateUserConfigs(ctx, conf)
+
+	payload, err := json.Marshal(params.Configurations)
+	if err != nil {
+		return c.SendError(ctx, errors.BadRequestError(err).WithMessage("Marshal configuration error"))
+	}
+
+	conf := map[string]interface{}{}
+	if err = json.Unmarshal(payload, &conf); err != nil {
+		return c.SendError(ctx, errors.BadRequestError(err).WithMessage("Unmarshal configuration error"))
+	}
+
+	err = c.controller.UpdateUserConfigs(ctx, conf)
 	if err != nil {
 		return c.SendError(ctx, err)
 	}
