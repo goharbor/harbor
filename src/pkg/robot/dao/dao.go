@@ -2,11 +2,12 @@ package dao
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
-	"time"
 )
 
 // DAO defines the interface to access the robot data model
@@ -121,14 +122,12 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*model.Robot, error) 
 }
 
 func (d *dao) DeleteByProjectID(ctx context.Context, projectID int64) error {
-	qs, err := orm.QuerySetter(ctx, &model.Robot{}, &q.Query{
-		Keywords: map[string]interface{}{
-			"project_id": projectID,
-		},
-	})
+	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
-	_, err = qs.Delete()
+
+	_, err = ormer.Raw("DELETE FROM robot WHERE project_id = ?", projectID).Exec()
+
 	return err
 }
