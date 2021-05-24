@@ -20,20 +20,22 @@ import (
 	"text/template"
 )
 
-const cfgTemplate = `    Configuration:
-      type: object
-      properties: {{ range .Items }}
-        {{ .Name }}:
-          type: {{ .Type }}
-          description: {{ .Description }} {{ end }}
+const cfgTemplate = `  Configurations:
+    type: object
+    properties: {{ range .Items }}
+      {{ .Name }}:
+        type: {{ .Type }}
+        description: {{ .Description }} 
+        x-omitempty: true
+        x-isnullable: true{{ end }}
 `
 
-const responseTemplate = `    ConfigurationResponse:
-      type: object
-      properties: {{ range .Items }}
-        {{ .Name }}:
-          $ref: '#/definitions/{{ .Type }}'
-          description: {{ .Description }} {{ end }}
+const responseTemplate = `  ConfigurationResponse:
+    type: object
+    properties: {{ range .Items }}
+      {{ .Name }}:
+        $ref: '#/definitions/{{ .Type }}'
+        description: {{ .Description }} {{ end }}
 `
 
 type document struct {
