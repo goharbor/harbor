@@ -561,6 +561,14 @@ services:
 networks:
   harbor:
     external: false
+    {% if ipv6.enabled %}
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: {{ ipv6.subnet }}
+          gateway: {{ ipv6.gateway }}
+    {% endif %}
 {% if with_notary %}
   harbor-notary:
     external: false
