@@ -21,13 +21,14 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	public = &models.Project{
+	public = &proModels.Project{
 		ProjectID: 1,
 		Name:      "public_project",
 		OwnerID:   1,
@@ -36,7 +37,7 @@ var (
 		},
 	}
 
-	private = &models.Project{
+	private = &proModels.Project{
 		ProjectID: 2,
 		Name:      "private_project",
 		OwnerID:   1,

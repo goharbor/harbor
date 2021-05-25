@@ -5,8 +5,11 @@ package project
 import (
 	context "context"
 
-	models "github.com/goharbor/harbor/src/common/models"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
+
 	mock "github.com/stretchr/testify/mock"
+
+	models "github.com/goharbor/harbor/src/pkg/project/models"
 
 	project "github.com/goharbor/harbor/src/controller/project"
 
@@ -186,11 +189,11 @@ func (_m *Controller) List(ctx context.Context, query *q.Query, options ...proje
 }
 
 // ListRoles provides a mock function with given fields: ctx, projectID, u
-func (_m *Controller) ListRoles(ctx context.Context, projectID int64, u *models.User) ([]int, error) {
+func (_m *Controller) ListRoles(ctx context.Context, projectID int64, u *commonmodels.User) ([]int, error) {
 	ret := _m.Called(ctx, projectID, u)
 
 	var r0 []int
-	if rf, ok := ret.Get(0).(func(context.Context, int64, *models.User) []int); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64, *commonmodels.User) []int); ok {
 		r0 = rf(ctx, projectID, u)
 	} else {
 		if ret.Get(0) != nil {
@@ -199,7 +202,7 @@ func (_m *Controller) ListRoles(ctx context.Context, projectID int64, u *models.
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int64, *models.User) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int64, *commonmodels.User) error); ok {
 		r1 = rf(ctx, projectID, u)
 	} else {
 		r1 = ret.Error(1)

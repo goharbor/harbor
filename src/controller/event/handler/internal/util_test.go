@@ -17,12 +17,12 @@ package internal
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	scantesting "github.com/goharbor/harbor/src/testing/controller/scan"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
@@ -65,9 +65,9 @@ func (suite *AutoScanTestSuite) TestGetProjectFailed() {
 }
 
 func (suite *AutoScanTestSuite) TestAutoScanDisabled() {
-	mock.OnAnything(suite.projectController, "Get").Return(&models.Project{
+	mock.OnAnything(suite.projectController, "Get").Return(&proModels.Project{
 		Metadata: map[string]string{
-			models.ProMetaAutoScan: "false",
+			proModels.ProMetaAutoScan: "false",
 		},
 	}, nil)
 
@@ -78,9 +78,9 @@ func (suite *AutoScanTestSuite) TestAutoScanDisabled() {
 }
 
 func (suite *AutoScanTestSuite) TestAutoScan() {
-	mock.OnAnything(suite.projectController, "Get").Return(&models.Project{
+	mock.OnAnything(suite.projectController, "Get").Return(&proModels.Project{
 		Metadata: map[string]string{
-			models.ProMetaAutoScan: "true",
+			proModels.ProMetaAutoScan: "true",
 		},
 	}, nil)
 
@@ -93,9 +93,9 @@ func (suite *AutoScanTestSuite) TestAutoScan() {
 }
 
 func (suite *AutoScanTestSuite) TestAutoScanFailed() {
-	mock.OnAnything(suite.projectController, "Get").Return(&models.Project{
+	mock.OnAnything(suite.projectController, "Get").Return(&proModels.Project{
 		Metadata: map[string]string{
-			models.ProMetaAutoScan: "true",
+			proModels.ProMetaAutoScan: "true",
 		},
 	}, nil)
 

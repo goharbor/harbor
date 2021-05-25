@@ -1,6 +1,7 @@
 package exporter
 
 import (
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strconv"
 	"testing"
 	"time"
@@ -27,8 +28,8 @@ var (
 	alice    = models.User{Username: "alice", Password: "password", Email: "alice@test.com"}
 	bob      = models.User{Username: "bob", Password: "password", Email: "bob@test.com"}
 	eve      = models.User{Username: "eve", Password: "password", Email: "eve@test.com"}
-	testPro1 = models.Project{OwnerID: 1, Name: "test1", Metadata: map[string]string{"public": "true"}}
-	testPro2 = models.Project{OwnerID: 1, Name: "test2", Metadata: map[string]string{"public": "false"}}
+	testPro1 = proModels.Project{OwnerID: 1, Name: "test1", Metadata: map[string]string{"public": "true"}}
+	testPro2 = proModels.Project{OwnerID: 1, Name: "test2", Metadata: map[string]string{"public": "false"}}
 	rs1      = qtypes.ResourceList{qtypes.ResourceStorage: 100}
 	rs2      = qtypes.ResourceList{qtypes.ResourceStorage: 200}
 	repo1    = model.RepoRecord{Name: "repo1"}

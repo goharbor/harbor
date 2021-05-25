@@ -14,6 +14,7 @@
 package ldap
 
 import (
+	"github.com/goharbor/harbor/src/pkg/project"
 	"os"
 	"testing"
 
@@ -358,7 +359,7 @@ func TestSearchAndOnBoardUser(t *testing.T) {
 func TestAddProjectMemberWithLdapUser(t *testing.T) {
 	memberMgr := member.Mgr
 	ctx := orm.Context()
-	currentProject, err := dao.GetProjectByName("member_test_01")
+	currentProject, err := project.Mgr.Get(ctx, "member_test_01")
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}
@@ -378,7 +379,7 @@ func TestAddProjectMemberWithLdapUser(t *testing.T) {
 		t.Errorf("Error occurred in AddOrUpdateProjectMember: pmid:%v", pmid)
 	}
 
-	currentProject, err = dao.GetProjectByName("member_test_02")
+	currentProject, err = project.Mgr.Get(ctx, "member_test_02")
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}
@@ -400,7 +401,7 @@ func TestAddProjectMemberWithLdapUser(t *testing.T) {
 func TestAddProjectMemberWithLdapGroup(t *testing.T) {
 	memberMgr := member.Mgr
 	ctx := orm.Context()
-	currentProject, err := dao.GetProjectByName("member_test_01")
+	currentProject, err := project.Mgr.Get(ctx, "member_test_01")
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}

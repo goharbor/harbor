@@ -17,10 +17,10 @@ package retention
 import (
 	"context"
 	"github.com/goharbor/harbor/src/lib/orm"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/job"
-	"github.com/goharbor/harbor/src/common/models"
 	_ "github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
@@ -116,16 +116,16 @@ type launchTestSuite struct {
 }
 
 func (l *launchTestSuite) SetupTest() {
-	pro1 := &models.Project{
+	pro1 := &proModels.Project{
 		ProjectID: 1,
 		Name:      "library",
 	}
-	pro2 := &models.Project{
+	pro2 := &proModels.Project{
 		ProjectID: 2,
 		Name:      "test",
 	}
 	projectMgr := &projecttesting.Manager{}
-	mock.OnAnything(projectMgr, "List").Return([]*models.Project{
+	mock.OnAnything(projectMgr, "List").Return([]*proModels.Project{
 		pro1, pro2,
 	}, nil)
 	l.projectMgr = projectMgr

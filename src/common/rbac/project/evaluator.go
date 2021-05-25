@@ -24,14 +24,15 @@ import (
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator/namespace"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator/rbac"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 // RBACUserBuilder builder to make types.RBACUser for the project
-type RBACUserBuilder func(context.Context, *models.Project) types.RBACUser
+type RBACUserBuilder func(context.Context, *proModels.Project) types.RBACUser
 
 // NewBuilderForUser create a builder for the local user
 func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilder {
-	return func(ctx context.Context, p *models.Project) types.RBACUser {
+	return func(ctx context.Context, p *proModels.Project) types.RBACUser {
 		if user == nil {
 			// anonymous access
 			return &rbacUser{
@@ -56,9 +57,9 @@ func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilde
 
 // NewBuilderForPolicies create a builder for the policies
 func NewBuilderForPolicies(username string, policies []*types.Policy,
-	filters ...func(*models.Project, []*types.Policy) []*types.Policy) RBACUserBuilder {
+	filters ...func(*proModels.Project, []*types.Policy) []*types.Policy) RBACUserBuilder {
 
-	return func(ctx context.Context, p *models.Project) types.RBACUser {
+	return func(ctx context.Context, p *proModels.Project) types.RBACUser {
 		for _, filter := range filters {
 			policies = filter(p, policies)
 		}

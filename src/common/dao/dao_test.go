@@ -16,17 +16,13 @@ package dao
 
 import (
 	"context"
-	"fmt"
-	"os"
-	"testing"
-	"time"
-
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	libOrm "github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/user"
-	"github.com/stretchr/testify/assert"
+	"os"
+	"testing"
 )
 
 var testCtx context.Context
@@ -99,7 +95,6 @@ func cleanByUser(username string) {
 const username string = "Tester01"
 const password string = "Abc12345"
 const projectName string = "test_project"
-const repositoryName string = "test_repository"
 
 func TestMain(m *testing.M) {
 	databases := []string{"postgresql"}
@@ -153,87 +148,6 @@ func clearAll() {
 	}
 }
 
-var currentUser *models.User
-
-func TestAddProject(t *testing.T) {
-	ctx := libOrm.Context()
-	var err error
-	currentUser, err = user.Mgr.GetByName(ctx, username)
-	if err != nil {
-		t.Errorf("Failed to get user by username: %s, error: %v", username, err)
-	}
-	project := models.Project{
-		OwnerID:      currentUser.UserID,
-		Name:         projectName,
-		CreationTime: time.Now(),
-		OwnerName:    currentUser.Username,
-	}
-
-	_, err = AddProject(project)
-	if err != nil {
-		t.Errorf("Error occurred in AddProject: %v", err)
-	}
-
-	newProject, err := GetProjectByName(projectName)
-	if err != nil {
-		t.Errorf("Error occurred in GetProjectByName: %v", err)
-	}
-	if newProject == nil {
-		t.Errorf("No project found queried by project name: %v", projectName)
-	}
-}
-
-var currentProject *models.Project
-
-func TestGetProject(t *testing.T) {
-	var err error
-	currentProject, err = GetProjectByName(projectName)
-	if err != nil {
-		t.Errorf("Error occurred in GetProjectByName: %v", err)
-	}
-	if currentProject == nil {
-		t.Errorf("No project found queried by project name: %v", projectName)
-	}
-	if currentProject.Name != projectName {
-		t.Errorf("Project name does not match, expected: %s, actual: %s", projectName, currentProject.Name)
-	}
-}
-
-func TestGetProjectById(t *testing.T) {
-	id := currentProject.ProjectID
-	p, err := GetProjectByID(id)
-	if err != nil {
-		t.Errorf("Error in GetProjectById: %v, id: %d", err, id)
-	}
-	if p.Name != currentProject.Name {
-		t.Errorf("project name does not match, expected: %s, actual: %s", currentProject.Name, p.Name)
-	}
-}
-
-func TestGetTotalOfProjects(t *testing.T) {
-	total, err := GetTotalOfProjects(nil)
-	if err != nil {
-		t.Fatalf("failed to get total of projects: %v", err)
-	}
-
-	if total != 2 {
-		t.Errorf("unexpected total: %d != 2", total)
-	}
-}
-
-func TestGetProjects(t *testing.T) {
-	projects, err := GetProjects(nil)
-	if err != nil {
-		t.Errorf("Error occurred in GetProjects: %v", err)
-	}
-	if len(projects) != 2 {
-		t.Errorf("Expected length of projects is 2, but actual: %d, the projects: %+v", len(projects), projects)
-	}
-	if projects[1].Name != projectName {
-		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
-	}
-}
-
 var targetID, policyID, policyID2, policyID3, jobID, jobID2, jobID3 int64
 
 func TestGetOrmer(t *testing.T) {
@@ -241,9 +155,4 @@ func TestGetOrmer(t *testing.T) {
 	if o == nil {
 		t.Errorf("Error get ormer.")
 	}
-}
-
-func TestIsDupRecError(t *testing.T) {
-	assert.True(t, IsDupRecErr(fmt.Errorf("pq: duplicate key value violates unique constraint \"properties_k_key\"")))
-	assert.False(t, IsDupRecErr(fmt.Errorf("other error")))
 }

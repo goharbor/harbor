@@ -17,11 +17,11 @@ package handler
 import (
 	"context"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/project/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/project_metadata"
 	"strconv"
@@ -140,19 +140,19 @@ func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]strin
 	}
 
 	switch key {
-	case models.ProMetaPublic, models.ProMetaEnableContentTrust,
-		models.ProMetaPreventVul, models.ProMetaAutoScan:
+	case proModels.ProMetaPublic, proModels.ProMetaEnableContentTrust,
+		proModels.ProMetaPreventVul, proModels.ProMetaAutoScan:
 		v, err := strconv.ParseBool(value)
 		if err != nil {
 			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid value: %s", value)
 		}
 		metas[key] = strconv.FormatBool(v)
-	case models.ProMetaSeverity:
+	case proModels.ProMetaSeverity:
 		severity := vuln.ParseSeverityVersion3(strings.ToLower(value))
 		if severity == vuln.Unknown {
 			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid value: %s", value)
 		}
-		metas[models.ProMetaSeverity] = strings.ToLower(severity.String())
+		metas[proModels.ProMetaSeverity] = strings.ToLower(severity.String())
 	default:
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid key: %s", key)
 	}

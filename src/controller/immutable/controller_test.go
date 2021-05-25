@@ -3,10 +3,10 @@ package immutable
 import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/project"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
 	htesting "github.com/goharbor/harbor/src/testing"
@@ -37,13 +37,14 @@ func (s *ControllerTestSuite) SetupSuite() {
 func (s *ControllerTestSuite) TestImmutableRule() {
 
 	var err error
+	ctx := s.Context()
 
-	projectID, err := dao.AddProject(models.Project{
-		Name:    "TestImmutableRule",
+	projectID, err := project.Mgr.Create(ctx, &proModels.Project{
+		Name:    "testimmutablerule",
 		OwnerID: 1,
 	})
 	if s.Nil(err) {
-		defer dao.DeleteProject(projectID)
+		defer project.Mgr.Delete(ctx, projectID)
 	}
 
 	rule := &model.Metadata{

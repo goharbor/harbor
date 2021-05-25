@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
@@ -18,7 +19,7 @@ const (
 // ChartLabelAPI handles the requests of marking/removing labels to/from charts.
 type ChartLabelAPI struct {
 	LabelResourceAPI
-	project       *models.Project
+	project       *proModels.Project
 	chartFullName string
 }
 
