@@ -6,13 +6,13 @@
             (click)="deleteProjects(selectedRow)">
             <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'PROJECT.DELETE' | translate}}</button>
     </clr-dg-action-bar>
-    <clr-dg-column [clrDgField]="'name'">{{'PROJECT.NAME' | translate}}</clr-dg-column>
-    <clr-dg-column [clrDgSortBy]="accessLevelComparator">{{'PROJECT.ACCESS_LEVEL' | translate}}</clr-dg-column>
-    <clr-dg-column [clrDgSortBy]="roleComparator">{{'PROJECT.ROLE' | translate}}</clr-dg-column>
-    <clr-dg-column [clrDgSortBy]="typeComparator">{{'PROJECT.TYPE' | translate}}</clr-dg-column>
-    <clr-dg-column [clrDgSortBy]="repoCountComparator">{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
-    <clr-dg-column *ngIf="withChartMuseum" [clrDgSortBy]="chartCountComparator">{{'PROJECT.CHART_COUNT'| translate}}</clr-dg-column>
-    <clr-dg-column [clrDgSortBy]="timeComparator">{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="'name'">{{'PROJECT.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.ACCESS_LEVEL' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.ROLE' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.TYPE' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
+    <clr-dg-column *ngIf="withChartMuseum">{{'PROJECT.CHART_COUNT'| translate}}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="'creation_time'">{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
     <clr-dg-row *ngFor="let p of projects" [clrDgItem]="p">
         <clr-dg-cell>
             <a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a>

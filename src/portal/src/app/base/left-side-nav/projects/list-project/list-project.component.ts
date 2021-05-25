@@ -18,7 +18,7 @@ import {
     OnDestroy, EventEmitter
 } from "@angular/core";
 import { Router } from "@angular/router";
-import { Comparator, ProjectService, State } from "../../../../shared/services";
+import { ProjectService, State } from "../../../../shared/services";
 import {TranslateService} from "@ngx-translate/core";
 import { SessionService } from "../../../../shared/services/session.service";
 import { StatisticHandler } from "../statictics/statistic-handler.service";
@@ -29,9 +29,6 @@ import { Project } from "../../../project/project";
 import { map, catchError, finalize } from "rxjs/operators";
 import {
     calculatePage,
-    CustomComparator,
-    doFiltering,
-    doSorting,
     getSortingString
 } from "../../../../shared/units/utils";
 import { OperationService } from "../../../../shared/components/operation/operation.service";
@@ -62,12 +59,6 @@ export class ListProjectComponent implements OnDestroy {
     @Output() addProject = new EventEmitter<void>();
 
     roleInfo = RoleInfo;
-    repoCountComparator: Comparator<Project> = new CustomComparator<Project>("repo_count", "number");
-    chartCountComparator: Comparator<Project> = new CustomComparator<Project>("chart_count", "number");
-    timeComparator: Comparator<Project> = new CustomComparator<Project>("creation_time", "date");
-    accessLevelComparator: Comparator<Project> = new CustomComparator<Project>("public", "string");
-    roleComparator: Comparator<Project> = new CustomComparator<Project>("current_user_role_id", "number");
-    typeComparator: Comparator<Project> = new CustomComparator<Project>("registry_id", "number");
     currentPage = 1;
     totalCount = 0;
     pageSize = 15;
@@ -77,7 +68,7 @@ export class ListProjectComponent implements OnDestroy {
         0: "PROJECT.PROJECT",
         1: "PROJECT.PROXY_CACHE"
     };
-
+    state: ClrDatagridStateInterface;
     constructor(
         private session: SessionService,
         private appConfigService: AppConfigService,
@@ -150,6 +141,7 @@ export class ListProjectComponent implements OnDestroy {
         if (!state || !state.page) {
             return;
         }
+        this.state = state;
         this.pageSize = state.page.size;
         this.selectedRow = [];
 
@@ -179,10 +171,6 @@ export class ListProjectComponent implements OnDestroy {
                 }
 
                 this.projects = response.body as Project[];
-                // Do customising filtering and sorting
-                this.projects = doFiltering<Project>(this.projects, state);
-                this.projects = doSorting<Project>(this.projects, state);
-
             }, error => {
                 this.msgHandler.handleError(error);
             });
