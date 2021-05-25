@@ -78,11 +78,28 @@ func (c *configAPI) UpdateConfigurations(ctx context.Context, params configure.U
 		return c.SendError(ctx, errors.BadRequestError(nil).WithMessage("Missing configure item"))
 	}
 	conf := params.Configurations
-	err := c.controller.UpdateUserConfigs(ctx, conf)
+	cfgMap, err := toCfgMap(conf)
+	if err != nil {
+		return c.SendError(ctx, err)
+	}
+	err = c.controller.UpdateUserConfigs(ctx, cfgMap)
 	if err != nil {
 		return c.SendError(ctx, err)
 	}
 	return configure.NewUpdateConfigurationsOK()
+}
+
+func toCfgMap(conf *models.Configurations) (map[string]interface{}, error) {
+	var cfgMap map[string]interface{}
+	buf, err := json.Marshal(conf)
+	if err != nil {
+		return cfgMap, err
+	}
+	err = json.Unmarshal(buf, &cfgMap)
+	if err != nil {
+		return cfgMap, err
+	}
+	return cfgMap, nil
 }
 
 func (c *configAPI) GetInternalconfig(ctx context.Context, params configure.GetInternalconfigParams) middleware.Responder {
