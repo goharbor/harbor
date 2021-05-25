@@ -14,15 +14,28 @@
 
 package models
 
+import (
+	"github.com/goharbor/harbor/src/lib/orm"
+	"time"
+)
+
+func init() {
+	orm.RegisterModel(
+		new(Member),
+	)
+}
+
 // Member holds the details of a member.
 type Member struct {
-	ID         int    `orm:"pk;column(id)" json:"id"`
-	ProjectID  int64  `orm:"column(project_id)" json:"project_id"`
-	Entityname string `orm:"column(entity_name)" json:"entity_name"`
-	Rolename   string `json:"role_name"`
-	Role       int    `json:"role_id"`
-	EntityID   int    `orm:"column(entity_id)" json:"entity_id"`
-	EntityType string `orm:"column(entity_type)" json:"entity_type"`
+	ID           int       `orm:"pk;auto;column(id)" json:"id"`
+	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
+	RoleName     string    `orm:"-" json:"role_name"`
+	Role         int       `orm:"column(role)" json:"role_id"`
+	EntityName   string    `orm:"column(entity_name)" json:"entity_name"`
+	EntityID     int       `orm:"column(entity_id)" json:"entity_id"`
+	EntityType   string    `orm:"column(entity_type)" json:"entity_type"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
 // User ...
@@ -30,4 +43,9 @@ type User struct {
 	UserID   int
 	Username string
 	GroupIDs []int
+}
+
+// TableName ...
+func (*Member) TableName() string {
+	return "project_member"
 }

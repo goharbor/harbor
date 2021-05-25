@@ -143,11 +143,11 @@ func toProjectMemberResp(member *memberModels.Member) *models.ProjectMemberEntit
 	return &models.ProjectMemberEntity{
 		ProjectID:  member.ProjectID,
 		ID:         int64(member.ID),
-		EntityName: member.Entityname,
+		EntityName: member.EntityName,
 		EntityID:   int64(member.EntityID),
 		EntityType: member.EntityType,
 		RoleID:     int64(member.Role),
-		RoleName:   member.Rolename,
+		RoleName:   member.RoleName,
 	}
 }
 

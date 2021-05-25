@@ -157,7 +157,7 @@ func (s *DaoTestSuite) TestUpdateProjectMemberRole() {
 	s.True(len(memberList) == 1, "project member should exist")
 	memberItem := memberList[0]
 	s.Equal(common.RoleDeveloper, memberItem.Role, "should be developer role")
-	s.Equal(user.Username, memberItem.Entityname)
+	s.Equal(user.Username, memberItem.EntityName)
 
 	memberList2, err := s.dao.SearchMemberByName(ctx, proj.ProjectID, "pm_sample")
 	s.Nil(err)
@@ -171,17 +171,17 @@ func (s *DaoTestSuite) TestUpdateProjectMemberRole() {
 func (s *DaoTestSuite) TestGetProjectMembers() {
 	ctx := s.Context()
 
-	query1 := models.Member{ProjectID: s.projectID, Entityname: "member_test_01", EntityType: common.UserMember}
+	query1 := models.Member{ProjectID: s.projectID, EntityName: "member_test_01", EntityType: common.UserMember}
 	member1, err := s.dao.GetProjectMember(ctx, query1, nil)
 	s.Nil(err)
 	s.True(len(member1) > 0)
-	s.Equal(member1[0].Entityname, "member_test_01")
+	s.Equal(member1[0].EntityName, "member_test_01")
 
-	query2 := models.Member{ProjectID: s.projectID, Entityname: "test_group_01", EntityType: common.GroupMember}
+	query2 := models.Member{ProjectID: s.projectID, EntityName: "test_group_01", EntityType: common.GroupMember}
 	member2, err := s.dao.GetProjectMember(ctx, query2, nil)
 	s.Nil(err)
 	s.True(len(member2) > 0)
-	s.Equal(member2[0].Entityname, "test_group_01")
+	s.Equal(member2[0].EntityName, "test_group_01")
 }
 
 func (s *DaoTestSuite) TestGetTotalOfProjectMembers() {

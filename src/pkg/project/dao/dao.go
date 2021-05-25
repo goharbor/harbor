@@ -23,23 +23,24 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/pkg/member/models"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 // DAO is the data access object interface for project
 type DAO interface {
 	// Create create a project instance
-	Create(ctx context.Context, project *models.Project) (int64, error)
+	Create(ctx context.Context, project *proModels.Project) (int64, error)
 	// Count returns the total count of projects according to the query
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// Delete delete the project instance by id
 	Delete(ctx context.Context, id int64) error
 	// Get get project instance by id
-	Get(ctx context.Context, id int64) (*models.Project, error)
+	Get(ctx context.Context, id int64) (*proModels.Project, error)
 	// GetByName get project instance by name
-	GetByName(ctx context.Context, name string) (*models.Project, error)
+	GetByName(ctx context.Context, name string) (*proModels.Project, error)
 	// List list projects
-	List(ctx context.Context, query *q.Query) ([]*models.Project, error)
+	List(ctx context.Context, query *q.Query) ([]*proModels.Project, error)
 	// Lists the roles of user for the specific project
 	ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error)
 }
@@ -52,7 +53,7 @@ func New() DAO {
 type dao struct{}
 
 // Create create a project instance
-func (d *dao) Create(ctx context.Context, project *models.Project) (int64, error) {
+func (d *dao) Create(ctx context.Context, project *proModels.Project) (int64, error) {
 	var projectID int64
 
 	h := func(ctx context.Context) error {
@@ -97,7 +98,7 @@ func (d *dao) Create(ctx context.Context, project *models.Project) (int64, error
 func (d *dao) Count(ctx context.Context, query *q.Query) (total int64, err error) {
 	query = q.MustClone(query)
 	query.Keywords["deleted"] = false
-	qs, err := orm.QuerySetterForCount(ctx, &models.Project{}, query)
+	qs, err := orm.QuerySetterForCount(ctx, &proModels.Project{}, query)
 	if err != nil {
 		return 0, err
 	}
@@ -125,13 +126,13 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 }
 
 // Get get project instance by id
-func (d *dao) Get(ctx context.Context, id int64) (*models.Project, error) {
+func (d *dao) Get(ctx context.Context, id int64) (*proModels.Project, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	project := &models.Project{ProjectID: id, Deleted: false}
+	project := &proModels.Project{ProjectID: id, Deleted: false}
 	if err = o.Read(project, "project_id", "deleted"); err != nil {
 		return nil, orm.WrapNotFoundError(err, "project %d not found", id)
 	}
@@ -139,29 +140,29 @@ func (d *dao) Get(ctx context.Context, id int64) (*models.Project, error) {
 }
 
 // GetByName get project instance by name
-func (d *dao) GetByName(ctx context.Context, name string) (*models.Project, error) {
+func (d *dao) GetByName(ctx context.Context, name string) (*proModels.Project, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	project := &models.Project{Name: name, Deleted: false}
+	project := &proModels.Project{Name: name, Deleted: false}
 	if err := o.Read(project, "name", "deleted"); err != nil {
 		return nil, orm.WrapNotFoundError(err, "project %s not found", name)
 	}
 	return project, nil
 }
 
-func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.Project, error) {
+func (d *dao) List(ctx context.Context, query *q.Query) ([]*proModels.Project, error) {
 	query = q.MustClone(query)
 	query.Keywords["deleted"] = false
 
-	qs, err := orm.QuerySetter(ctx, &models.Project{}, query)
+	qs, err := orm.QuerySetter(ctx, &proModels.Project{}, query)
 	if err != nil {
 		return nil, err
 	}
 
-	projects := []*models.Project{}
+	projects := []*proModels.Project{}
 	if _, err := qs.All(&projects); err != nil {
 		return nil, err
 	}

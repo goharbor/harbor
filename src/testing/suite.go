@@ -31,6 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/member/models"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/suite"
 )
@@ -183,7 +184,7 @@ func (suite *Suite) AddProject(ctx context.Context, project *proModels.Project) 
 			return orm.WrapConflictError(err, "The project named %s already exists", project.Name)
 		}
 
-		member := &proModels.Member{
+		member := &models.Member{
 			ProjectID:    projectID,
 			EntityID:     project.OwnerID,
 			Role:         common.RoleProjectAdmin,

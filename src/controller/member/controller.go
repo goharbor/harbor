@@ -220,7 +220,7 @@ func (c *controller) List(ctx context.Context, projectNameOrID interface{}, enti
 	}
 	pm := models.Member{
 		ProjectID:  p.ProjectID,
-		Entityname: entityName,
+		EntityName: entityName,
 	}
 	return c.mgr.List(ctx, pm, query)
 }

@@ -24,12 +24,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/member/models"
 )
 
-func init() {
-	orm.RegisterModel(
-		new(models.Member),
-	)
-}
-
 // DAO the dao for project member
 type DAO interface {
 	// GetProjectMember gets all members of the project.
@@ -81,9 +75,9 @@ func (d *dao) GetProjectMember(ctx context.Context, queryMember models.Member, q
 	queryParam = append(queryParam, queryMember.ProjectID)
 	queryParam = append(queryParam, queryMember.ProjectID)
 
-	if len(queryMember.Entityname) > 0 {
+	if len(queryMember.EntityName) > 0 {
 		sql += " and a.entity_name = ? "
-		queryParam = append(queryParam, queryMember.Entityname)
+		queryParam = append(queryParam, queryMember.EntityName)
 	}
 
 	if len(queryMember.EntityType) == 1 {

@@ -367,7 +367,7 @@ func TestAddProjectMemberWithLdapUser(t *testing.T) {
 	member := memberModels.Member{
 		ProjectID:  currentProject.ProjectID,
 		EntityType: common.UserMember,
-		Entityname: "mike",
+		EntityName: "mike",
 		EntityID:   userID,
 		Role:       common.RoleProjectAdmin,
 	}
@@ -386,7 +386,7 @@ func TestAddProjectMemberWithLdapUser(t *testing.T) {
 	member2 := memberModels.Member{
 		ProjectID:  currentProject.ProjectID,
 		EntityType: common.UserMember,
-		Entityname: "mike",
+		EntityName: "mike",
 		EntityID:   userID,
 		Role:       common.RoleProjectAdmin,
 	}
