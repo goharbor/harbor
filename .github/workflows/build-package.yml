@@ -49,7 +49,12 @@ jobs:
         if: contains(steps.changed-files.outputs.modified, 'Dockerfile.base') || contains(steps.changed-files.outputs.modified, 'VERSION')
         run: |
           set -x
-          base_image_tag=$(cat ./VERSION)
+          target_branch="$(echo ${GITHUB_REF#refs/heads/})"
+          if [[ $target_branch == "release-"* ]]; then
+            base_image_tag=$(cat ./VERSION)
+          else
+            base_image_tag=dev
+          fi
           cd src/github.com/goharbor/harbor
           sudo make build_base_docker -e BASEIMAGETAG=$base_image_tag -e REGISTRYUSER="${{ secrets.DOCKER_HUB_USERNAME }}" -e REGISTRYPASSWORD="${{ secrets.DOCKER_HUB_PASSWORD }}" -e PUSHBASEIMAGE=yes
         continue-on-error: true
