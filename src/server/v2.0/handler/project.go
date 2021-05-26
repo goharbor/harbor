@@ -101,15 +101,14 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	}
 
 	secCtx, _ := security.FromContext(ctx)
-	if onlyAdmin && secCtx.Name() != "robot" && !(a.isSysAdmin(ctx, rbac.ActionCreate) || secCtx.IsSolutionUser()) {
+	if onlyAdmin && !(a.isSysAdmin(ctx, rbac.ActionCreate) || secCtx.IsSolutionUser()) {
 		log.Errorf("Only sys admin can create project")
 		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create project"))
 	}
 
-	// always check if robots have permissions to create projects
-	if secCtx.Name() == "robot" && !a.isSysAdmin(ctx, rbac.ActionCreate) {
-		log.Errorf("Only sys admin can create project")
-		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin or users can create project"))
+	if !onlyAdmin && secCtx.Name() == "robot" && !secCtx.(*robotSec.SecurityContext).IsSystemLevel() {
+		log.Errorf("Only sys admin or real users can create project")
+		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin or real user can create project"))
 	}
 
 	req := params.Project
