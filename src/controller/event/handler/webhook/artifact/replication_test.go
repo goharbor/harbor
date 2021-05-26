@@ -16,13 +16,13 @@ package artifact
 
 import (
 	"context"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"testing"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/config"
 
 	common_dao "github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/project"
 	repctl "github.com/goharbor/harbor/src/controller/replication"
@@ -67,7 +67,7 @@ func TestReplicationHandler_Handle(t *testing.T) {
 		},
 	}, nil)
 
-	mock.OnAnything(projectCtl, "GetByName").Return(&models.Project{ProjectID: 1}, nil)
+	mock.OnAnything(projectCtl, "GetByName").Return(&proModels.Project{ProjectID: 1}, nil)
 
 	handler := &ReplicationHandler{}
 

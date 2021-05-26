@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strings"
 
 	"github.com/goharbor/harbor/src/lib/config"
 
-	commonModels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	ctlModel "github.com/goharbor/harbor/src/controller/event/model"
@@ -73,7 +73,7 @@ func (r *ReplicationHandler) IsStateful() bool {
 	return false
 }
 
-func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload, *commonModels.Project, error) {
+func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload, *proModels.Project, error) {
 	ctx := orm.Context()
 	task, err := replication.Ctl.GetTask(ctx, event.ReplicationTaskID)
 	if err != nil {

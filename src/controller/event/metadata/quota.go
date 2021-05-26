@@ -1,9 +1,9 @@
 package metadata
 
 import (
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/models"
 	event2 "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
@@ -11,7 +11,7 @@ import (
 
 // QuotaMetaData defines quota related event data
 type QuotaMetaData struct {
-	Project  *models.Project
+	Project  *proModels.Project
 	RepoName string
 	Tag      string
 	Digest   string

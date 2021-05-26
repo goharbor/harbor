@@ -25,7 +25,6 @@ Sign In Harbor
     Retry Wait Element  ${harbor_span_title}
     Retry Wait Element  ${login_name}
     Retry Wait Element  ${login_pwd}
-    Retry Wait Element  //label[contains(@class,'title') and contains(., 'Harbor title')]
     Input Text  ${login_name}  ${user}
     Input Text  ${login_pwd}  ${pw}
     Retry Wait Element  ${login_btn}

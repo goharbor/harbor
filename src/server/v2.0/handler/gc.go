@@ -63,6 +63,9 @@ func (g *gcAPI) UpdateGCSchedule(ctx context.Context, params operation.UpdateGCS
 }
 
 func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, parameters map[string]interface{}) (int64, error) {
+	if parameters == nil {
+		parameters = make(map[string]interface{})
+	}
 	// set the required parameters for GC
 	parameters["redis_url_reg"] = os.Getenv("_REDIS_URL_REG")
 	parameters["time_window"] = config.GetGCTimeWindow()

@@ -70,7 +70,7 @@ func (d *dao) Create(ctx context.Context, project *models.Project) (int64, error
 			return orm.WrapConflictError(err, "The project named %s already exists", project.Name)
 		}
 
-		member := &Member{
+		member := &models.Member{
 			ProjectID:    projectID,
 			EntityID:     project.OwnerID,
 			Role:         common.RoleProjectAdmin,
@@ -170,7 +170,7 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.Project, erro
 }
 
 func (d *dao) ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error) {
-	qs, err := orm.QuerySetter(ctx, &Member{}, nil)
+	qs, err := orm.QuerySetter(ctx, &models.Member{}, nil)
 	if err != nil {
 		return nil, err
 	}

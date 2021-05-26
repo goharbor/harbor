@@ -16,6 +16,7 @@ package project
 
 import (
 	"context"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/models"
@@ -50,7 +51,7 @@ func getProjectsBatchFn(ctx context.Context, keys dataloader.Keys) []*dataloader
 	}
 
 	var ownerIDs []interface{}
-	var projectsMap = make(map[int64]*models.Project, len(projectIDs))
+	var projectsMap = make(map[int64]*proModels.Project, len(projectIDs))
 	for _, project := range projects {
 		ownerIDs = append(ownerIDs, project.OwnerID)
 		projectsMap[project.ProjectID] = project

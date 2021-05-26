@@ -19,6 +19,7 @@ import (
 	"fmt"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib/config"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 
 	"net/http"
 	"net/http/httptest"
@@ -28,7 +29,6 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -46,20 +46,20 @@ func TestMain(m *testing.M) {
 	ctl := &projecttesting.Controller{}
 
 	mockGet := func(ctx context.Context,
-		projectIDOrName interface{}, options ...project.Option) (*models.Project, error) {
+		projectIDOrName interface{}, options ...project.Option) (*proModels.Project, error) {
 		name := projectIDOrName.(string)
 		id, _ := strconv.Atoi(strings.TrimPrefix(name, "project_"))
 		if id == 0 {
 			return nil, fmt.Errorf("%s not found", name)
 		}
-		return &models.Project{
+		return &proModels.Project{
 			ProjectID: int64(id),
 			Name:      name,
 		}, nil
 	}
 	mock.OnAnything(ctl, "Get").Return(
 		func(ctx context.Context,
-			projectIDOrName interface{}, options ...project.Option) *models.Project {
+			projectIDOrName interface{}, options ...project.Option) *proModels.Project {
 			p, _ := mockGet(ctx, projectIDOrName, options...)
 			return p
 		},

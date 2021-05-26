@@ -15,6 +15,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
 )
 
@@ -110,41 +111,41 @@ func TestAdapter_NewAdapter_InvalidAKSK(t *testing.T) {
 	assert.Nil(t, adapter)
 }
 
-// func TestAdapter_NewAdapter_Ok(t *testing.T) {
-// 	adapter, err := newAdapter(&model.Registry{
-// 		Type: model.RegistryTypeTencentTcr,
-// 		Credential: &model.Credential{
-// 			AccessKey:    mockAccessKey,
-// 			AccessSecret: mockAccessSecret,
-// 		},
-// 		URL: "https://harbor-community.tencentcloudcr.com",
-// 	})
-// 	if sdkerr, ok := err.(*errors.TencentCloudSDKError); ok {
-// 		log.Infof("sdk error, error=%v", sdkerr)
-// 		return
-// 	}
-// 	assert.NotNil(t, adapter)
-// 	assert.Nil(t, err)
+func TestAdapter_NewAdapter_Ok(t *testing.T) {
+	adapter, err := newAdapter(&model.Registry{
+		Type: model.RegistryTypeTencentTcr,
+		Credential: &model.Credential{
+			AccessKey:    mockAccessKey,
+			AccessSecret: mockAccessSecret,
+		},
+		URL: "https://harbor-community.tencentcloudcr.com",
+	})
+	if sdkerr, ok := err.(*errors.TencentCloudSDKError); ok {
+		log.Infof("sdk error, error=%v", sdkerr)
+		return
+	}
+	assert.NotNil(t, adapter)
+	assert.Nil(t, err)
 
-// }
+}
 
-// func TestAdapter_NewAdapter_InsecureOk(t *testing.T) {
-// 	adapter, err := newAdapter(&model.Registry{
-// 		Type: model.RegistryTypeTencentTcr,
-// 		Credential: &model.Credential{
-// 			AccessKey:    mockAccessKey,
-// 			AccessSecret: mockAccessSecret,
-// 		},
-// 		Insecure: true,
-// 		URL:      "https://harbor-community.tencentcloudcr.com",
-// 	})
-// 	if sdkerr, ok := err.(*errors.TencentCloudSDKError); ok {
-// 		log.Infof("sdk error, error=%v", sdkerr)
-// 		return
-// 	}
-// 	assert.NotNil(t, adapter)
-// 	assert.Nil(t, err)
-// }
+func TestAdapter_NewAdapter_InsecureOk(t *testing.T) {
+	adapter, err := newAdapter(&model.Registry{
+		Type: model.RegistryTypeTencentTcr,
+		Credential: &model.Credential{
+			AccessKey:    mockAccessKey,
+			AccessSecret: mockAccessSecret,
+		},
+		Insecure: true,
+		URL:      "https://harbor-community.tencentcloudcr.com",
+	})
+	if sdkerr, ok := err.(*errors.TencentCloudSDKError); ok {
+		log.Infof("sdk error, error=%v", sdkerr)
+		return
+	}
+	assert.NotNil(t, adapter)
+	assert.Nil(t, err)
+}
 
 func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Server) {
 	server := test.NewServer(

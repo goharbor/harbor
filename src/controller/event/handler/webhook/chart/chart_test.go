@@ -20,10 +20,10 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"os"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/pkg/notification"
@@ -57,15 +57,15 @@ func TestChartPreprocessHandler_Handle(t *testing.T) {
 	project.Ctl = projectCtl
 
 	name := "project_for_test_chart_event_preprocess"
-	mock.OnAnything(projectCtl, "Get").Return(func(ctx context.Context, projectIDOrName interface{}, options ...project.Option) *models.Project {
-		return &models.Project{
+	mock.OnAnything(projectCtl, "Get").Return(func(ctx context.Context, projectIDOrName interface{}, options ...project.Option) *proModels.Project {
+		return &proModels.Project{
 			Name:    name,
 			OwnerID: 1,
 			Metadata: map[string]string{
-				models.ProMetaEnableContentTrust:   "true",
-				models.ProMetaPreventVul:           "true",
-				models.ProMetaSeverity:             "Low",
-				models.ProMetaReuseSysCVEAllowlist: "false",
+				proModels.ProMetaEnableContentTrust:   "true",
+				proModels.ProMetaPreventVul:           "true",
+				proModels.ProMetaSeverity:             "Low",
+				proModels.ProMetaReuseSysCVEAllowlist: "false",
 			},
 		}
 	}, nil)

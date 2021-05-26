@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/config/db"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib/log"
 	dr "github.com/goharbor/harbor/src/pkg/quota/driver"
@@ -68,7 +68,7 @@ func (d *driver) Load(ctx context.Context, key string) (dr.RefObject, error) {
 		return nil, err
 	}
 
-	project, ok := result.(*models.Project)
+	project, ok := result.(*proModels.Project)
 	if !ok {
 		return nil, fmt.Errorf("bad result for project: %s", key)
 	}

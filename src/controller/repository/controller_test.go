@@ -15,9 +15,9 @@
 package repository
 
 import (
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -71,7 +71,7 @@ func (c *controllerTestSuite) TestEnsure() {
 
 	// doesn't exist
 	c.repoMgr.On("GetByName", mock.Anything, mock.Anything).Return(nil, errors.NotFoundError(nil))
-	c.proMgr.On("Get", mock.AnythingOfType("*context.valueCtx"), "library").Return(&models.Project{
+	c.proMgr.On("Get", mock.AnythingOfType("*context.valueCtx"), "library").Return(&proModels.Project{
 		ProjectID: 1,
 	}, nil)
 	c.repoMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)

@@ -21,9 +21,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -31,7 +31,7 @@ import (
 )
 
 var (
-	private = &models.Project{
+	private = &proModels.Project{
 		Name:    "testrobot",
 		OwnerID: 1,
 	}
@@ -150,7 +150,7 @@ func TestHasPushPullPerm(t *testing.T) {
 
 func Test_filterRobotPolicies(t *testing.T) {
 	type args struct {
-		p        *models.Project
+		p        *proModels.Project
 		policies []*types.Policy
 	}
 	tests := []struct {
@@ -161,7 +161,7 @@ func Test_filterRobotPolicies(t *testing.T) {
 		{
 			"policies of one project",
 			args{
-				&models.Project{ProjectID: 1},
+				&proModels.Project{ProjectID: 1},
 				[]*types.Policy{
 					{Resource: "/project/1/repository", Action: "pull", Effect: "allow"},
 				},
@@ -173,7 +173,7 @@ func Test_filterRobotPolicies(t *testing.T) {
 		{
 			"policies of multi projects",
 			args{
-				&models.Project{ProjectID: 1},
+				&proModels.Project{ProjectID: 1},
 				[]*types.Policy{
 					{Resource: "/project/1/repository", Action: "pull", Effect: "allow"},
 					{Resource: "/project/2/repository", Action: "pull", Effect: "allow"},

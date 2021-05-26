@@ -17,10 +17,10 @@ package preheat
 import (
 	"context"
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strings"
 
 	tk "github.com/docker/distribution/registry/auth/token"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
@@ -344,7 +344,7 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 }
 
 // getCandidates get the initial candidates by evaluating the policy
-func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p *models.Project) ([]*selector.Candidate, error) {
+func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p *proModels.Project) ([]*selector.Candidate, error) {
 	// Get the initial candidates
 	// Here we have a hidden filter, the artifact type filter.
 	// Only get the image type at this moment.
@@ -480,7 +480,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 }
 
 // getVulnerabilitySev gets the severity code value for the given artifact with allowlist option set
-func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *models.Project, art *artifact.Artifact) (uint, error) {
+func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *proModels.Project, art *artifact.Artifact) (uint, error) {
 	vulnerable, err := de.scanCtl.GetVulnerable(ctx, art, p.CVEAllowlist.CVESet())
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
@@ -505,7 +505,7 @@ func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *models.Pr
 }
 
 // toCandidates converts the artifacts to filtering candidates
-func (de *defaultEnforcer) toCandidates(ctx context.Context, p *models.Project, arts []*artifact.Artifact) ([]*selector.Candidate, error) {
+func (de *defaultEnforcer) toCandidates(ctx context.Context, p *proModels.Project, arts []*artifact.Artifact) ([]*selector.Candidate, error) {
 	// Convert to filtering candidates first
 	candidates := make([]*selector.Candidate, 0)
 
@@ -539,7 +539,7 @@ func (de *defaultEnforcer) toCandidates(ctx context.Context, p *models.Project, 
 }
 
 // getProject gets the full metadata of the specified project
-func (de *defaultEnforcer) getProject(ctx context.Context, id int64) (*models.Project, error) {
+func (de *defaultEnforcer) getProject(ctx context.Context, id int64) (*proModels.Project, error) {
 	// Get project info with CVE allow list and metadata
 	return de.proCtl.Get(ctx, id, project.WithEffectCVEAllowlist())
 }
@@ -599,7 +599,7 @@ func checkProviderHealthy(inst *provider.Instance) error {
 // Check the project security settings and override the related settings in the policy if necessary.
 // NOTES: if the security settings (relevant with signature and vulnerability) are set at the project configuration,
 // the corresponding filters of P2P preheat policy will be set using the relevant settings of project configurations.
-func overrideSecuritySettings(p *pol.Schema, pro *models.Project) [][]interface{} {
+func overrideSecuritySettings(p *pol.Schema, pro *proModels.Project) [][]interface{} {
 	if p == nil || pro == nil {
 		return nil
 	}

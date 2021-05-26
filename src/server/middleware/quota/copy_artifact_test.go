@@ -29,11 +29,11 @@
 package quota
 
 import (
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/quota"
@@ -84,7 +84,7 @@ func (suite *CopyArtifactMiddlewareTestSuite) SetupTest() {
 		walkFn(suite.artifact)
 	})
 
-	mock.OnAnything(suite.projectController, "Get").Return(&commonmodels.Project{}, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(&proModels.Project{}, nil)
 }
 
 func (suite *CopyArtifactMiddlewareTestSuite) TestResourcesWarning() {

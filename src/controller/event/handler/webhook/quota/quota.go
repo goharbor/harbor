@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -28,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 // Handler preprocess image event data
@@ -88,9 +88,9 @@ func constructQuotaPayload(event *event.QuotaEvent) (*model.Payload, error) {
 		return nil, fmt.Errorf("invalid %s event with empty repo name", event.EventType)
 	}
 
-	repoType := models.ProjectPrivate
+	repoType := proModels.ProjectPrivate
 	if event.Project.IsPublic() {
-		repoType = models.ProjectPublic
+		repoType = proModels.ProjectPublic
 	}
 
 	imageName := util.GetNameFromImgRepoFullName(repoName)

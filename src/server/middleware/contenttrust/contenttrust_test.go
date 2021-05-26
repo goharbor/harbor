@@ -16,11 +16,11 @@ package contenttrust
 
 import (
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
@@ -43,7 +43,7 @@ type MiddlewareTestSuite struct {
 	projectController         *projecttesting.Controller
 
 	artifact *artifact.Artifact
-	project  *models.Project
+	project  *proModels.Project
 
 	isArtifactSigned func(req *http.Request, art lib.ArtifactInfo) (bool, error)
 	next             http.Handler
@@ -65,11 +65,11 @@ func (suite *MiddlewareTestSuite) SetupTest() {
 	suite.artifact.RepositoryName = "library/photon"
 	suite.artifact.Digest = "digest"
 
-	suite.project = &models.Project{
+	suite.project = &proModels.Project{
 		ProjectID: suite.artifact.ProjectID,
 		Name:      "library",
 		Metadata: map[string]string{
-			models.ProMetaEnableContentTrust: "true",
+			proModels.ProMetaEnableContentTrust: "true",
 		},
 	}
 
@@ -121,7 +121,7 @@ func (suite *MiddlewareTestSuite) TestGetProjectFailed() {
 
 func (suite *MiddlewareTestSuite) TestContentTrustDisabled() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
-	suite.project.Metadata[models.ProMetaEnableContentTrust] = "false"
+	suite.project.Metadata[proModels.ProMetaEnableContentTrust] = "false"
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 
 	req := suite.makeRequest()

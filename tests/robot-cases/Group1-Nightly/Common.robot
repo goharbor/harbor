@@ -26,25 +26,6 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
-Test Case - Customize Look
-    [tags]  look
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Retry Wait Element  //span[contains(., 'Harbor product name')]
-    Retry Element Click  ${header_user}
-    Retry Element Click  ${about_btn}
-    Retry Wait Element  //p[contains(., 'test customize look for harbor')]
-    Retry Element Click  ${close_btn}
-    ${style}=   Get Element Attribute  ${header}  style
-    Log All  ${style}
-    Should Contain  ${style}  background-color: red
-    Retry Element Click  ${color_theme_light}
-    Sleep  2
-    ${style}=   Get Element Attribute  ${header}  style
-    Log All  ${style}
-    Should Contain  ${style}  background-color: yellow
-    Close Browser
-
 Test Case - Sign With Admin
     [tags]  admin
     Init Chrome Driver
