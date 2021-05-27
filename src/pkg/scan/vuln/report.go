@@ -148,6 +148,13 @@ func (l *VulnerabilityItemList) Add(items ...*VulnerabilityItem) {
 	}
 }
 
+// GetItem returns VulnerabilityItem by key
+func (l *VulnerabilityItemList) GetItem(key string) (*VulnerabilityItem, bool) {
+	item, ok := l.indexed[key]
+
+	return item, ok
+}
+
 // GetSeveritySummary returns the severity and summary of l
 func (l *VulnerabilityItemList) GetSeveritySummary() (Severity, *VulnerabilitySummary) {
 	if l == nil {
