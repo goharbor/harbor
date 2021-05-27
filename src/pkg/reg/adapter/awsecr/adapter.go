@@ -146,7 +146,7 @@ func getAdapterInfo() *model.AdapterPattern {
 	} {
 		endpoints = append(endpoints, &model.Endpoint{
 			Key:   e,
-			Value: fmt.Sprintf("https://%s.amazonaws.com", e),
+			Value: fmt.Sprintf("https://api.ecr.%s.amazonaws.com", e),
 		})
 	}
 	info := &model.AdapterPattern{
