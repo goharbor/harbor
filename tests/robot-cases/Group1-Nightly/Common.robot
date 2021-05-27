@@ -285,7 +285,7 @@ Test Case - User View Logs
     Create An New Project And Go Into Project  project${d}
     Logout Harbor
 
-    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/${replication_image}  project${d}  N  @{target_images}
+    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/${replication_image}  project${d}  N  Flatten 1 Level  @{target_images}
 
     Push image  ${ip}  ${user}  ${pwd}  project${d}  ${img}:${tag}
     Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${replication_image}:${replication_tag}
