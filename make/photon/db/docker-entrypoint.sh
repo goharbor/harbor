@@ -26,10 +26,18 @@ if [ "$(ls -A $PGDATA)" ]; then
                         echo "incorrect data: $PGDATAOLD, make sure $PGDATAOLD is not empty and with PG_VERSION inside."
                         exit 1
                 fi
+
                 initPG $PGDATANEW false
-                # it needs to clean the $PGDATANEW on upgrade failure
                 set +e
+                # In some cases, like helm upgrade, the postgresql may not quit cleanly.
+                # Use start & stop to clean the unexpected status. Error:
+                #   There seems to be a postmaster servicing the new cluster.
+                #   Please shutdown that postmaster and try again.
+                #   Failure, exiting
+                $PGBINOLD/pg_ctl -D "$PGDATAOLD" -w start
+                $PGBINOLD/pg_ctl -D "$PGDATAOLD" -m fast -w stop
                 ./$CUR/upgrade.sh --old-bindir $PGBINOLD --old-datadir $PGDATAOLD --new-datadir $PGDATANEW
+                # it needs to clean the $PGDATANEW on upgrade failure
                 if [ $? -ne 0 ]; then
                         echo "remove the $PGDATANEW after fail to upgrade"
                         rm -rf $PGDATANEW
