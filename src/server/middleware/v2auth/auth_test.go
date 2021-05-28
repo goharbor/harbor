@@ -162,6 +162,7 @@ func TestMiddleware(t *testing.T) {
 	req4, _ := http.NewRequest(http.MethodPost, "/v2/project_1/ubuntu/blobs/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_2/ubuntu", nil)
 	req5, _ := http.NewRequest(http.MethodPost, "/v2/project_1/ubuntu/blobs/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_3/ubuntu", nil)
 	req6, _ := http.NewRequest(http.MethodPost, "/v2/project_1/ubuntu/blobs/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_0/ubuntu", nil)
+	req7, _ := http.NewRequest(http.MethodPost, "/v2/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_0/ubuntu", nil)
 
 	cases := []struct {
 		input  *http.Request
@@ -205,6 +206,10 @@ func TestMiddleware(t *testing.T) {
 		},
 		{
 			input:  req6.WithContext(ctx5),
+			status: http.StatusUnauthorized,
+		},
+		{
+			input:  req7.WithContext(ctx5),
 			status: http.StatusUnauthorized,
 		},
 	}
