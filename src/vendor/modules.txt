@@ -342,6 +342,8 @@ github.com/graph-gophers/dataloader
 # github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
 github.com/gregjones/httpcache
 github.com/gregjones/httpcache/diskcache
+# github.com/h2non/parth v0.0.0-20190131123155-b4df798d6542
+github.com/h2non/parth
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.0
@@ -673,6 +675,9 @@ google.golang.org/protobuf/types/known/timestamppb
 ## explicit
 # gopkg.in/gorethink/gorethink.v3 v3.0.5
 ## explicit
+# gopkg.in/h2non/gock.v1 v1.0.16
+## explicit
+gopkg.in/h2non/gock.v1
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
 # gopkg.in/ini.v1 v1.51.0

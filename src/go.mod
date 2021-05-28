@@ -73,6 +73,7 @@ require (
 	gopkg.in/dancannon/gorethink.v3 v3.0.5 // indirect
 	gopkg.in/fatih/pool.v2 v2.0.0 // indirect
 	gopkg.in/gorethink/gorethink.v3 v3.0.5 // indirect
+	gopkg.in/h2non/gock.v1 v1.0.16
 	gopkg.in/yaml.v2 v2.3.0
 	helm.sh/helm/v3 v3.4.2
 	k8s.io/api v0.19.4
