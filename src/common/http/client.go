@@ -82,6 +82,11 @@ type Client struct {
 	client    *http.Client
 }
 
+// GetClient returns the http.Client
+func (c *Client) GetClient() *http.Client {
+	return c.client
+}
+
 // GetHTTPTransport returns HttpTransport based on insecure configuration
 func GetHTTPTransport(clientType uint) *http.Transport {
 	switch clientType {
