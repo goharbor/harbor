@@ -217,7 +217,7 @@ func replaceNamespace(repository string, namespace string, replaceCount int8) (s
 		return namespace, nil
 	case int(replaceCount) > len:
 		return "", errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("the repository %s contains only %d substrings, but the destination namespace replace count is %d",
+			WithMessage("the repository %s contains only %d substrings, but the destination namespace flattening level is %d",
 				repository, len, replaceCount)
 	default:
 		return fmt.Sprintf("%s/%s", namespace, strings.Join(subs[replaceCount:], "/")), nil
