@@ -74,7 +74,8 @@ PORTAL_PATH=$(BUILDPATH)/src/portal
 CHECKENVCMD=checkenv.sh
 
 # parameters
-BUILDARCH=x86_64 # default is x86_64
+# default is true
+BUILD_PG96=true
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=goharbor
 DEVFLAG=true
@@ -433,7 +434,7 @@ build_base_docker:
 		if [ $$name == "db" ]; then \
 		    make _build_base_db ; \
 		else \
-			$(DOCKERBUILD) --build-arg BUILDARCH=$(BUILDARCH) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
+			$(DOCKERBUILD) --build-arg BUILD_PG96=$(BUILD_PG96) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
 		fi ; \
 		if [ -n "$(PUSHBASEIMAGE)" ] ; then \
 		  	$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
@@ -441,7 +442,7 @@ build_base_docker:
 	done
 
 _build_base_db:
-	@if [ $(BUILDARCH) == "x86_64" ]; then \
+	@if [ "$(BUILD_PG96)" = "true" ] ; then \
 		echo "build pg96 rpm package." ; \
 		cd $(MAKEFILEPATH_PHOTON)/db && $(MAKEFILEPATH_PHOTON)/db/rpm_builder.sh && cd - ; \
 		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/db/Dockerfile.pg96 -t $(BASEIMAGENAMESPACE)/harbor-db-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
