@@ -53,6 +53,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationAcknowledgement } from "../../global-confirmation-dialog/confirmation-state-message";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
+import { EventService, HarborEvent } from "../../../services/event-service/event.service";
 
 @Component({
   selector: "hbr-repository-gridview",
@@ -109,6 +110,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
               private route: ActivatedRoute,
               private session: SessionService,
               private router: Router,
+              private event: EventService
   ) {
     if (localStorage) {
       this.isCardView =  localStorage.getItem(CARD_VIEW_LOCALSTORAGE_KEY) === TRUE_STR;
@@ -329,6 +331,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
 
   refresh() {
     this.doSearchRepoNames("");
+    // notify project detail component to refresh project info
+    this.event.publish(HarborEvent.REFRESH_PROJECT_INFO);
   }
 
   loadNextPage() {

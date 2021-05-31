@@ -304,3 +304,6 @@ clr-modal {
 .count-type {
     width: 158px;
 }
+:host::ng-deep.flatten {
+    width: 23rem!important;
+}

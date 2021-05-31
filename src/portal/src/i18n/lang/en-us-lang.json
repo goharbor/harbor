@@ -637,7 +637,12 @@
         "FLATTEN_LEVEL_2": "Flatten 2 Levels",
         "FLATTEN_LEVEL_3": "Flatten 3 Levels",
         "FLATTEN_ALL": "Flatten All Levels",
-        "FLATTEN_LEVEL_TIP": "Reduce the nested repository structure when copying images. Default 'Flatten 1 Level' will replace the left most repository component with the destination namespace a/b/c/img -> ns/b/c/img. 'Flatten all Levels' is the legacy option used prior v2.3 resulting in a/b/c/img -> ns/img."
+        "FLATTEN_LEVEL_TIP": "Reduce the nested repository structure when copying images. Assuming that the nested repository structure is 'a/b/c/d/img' and the destination namespace is 'ns', the corresponding results of each item are as below:",
+        "FLATTEN_LEVEL_TIP_ALL": "'Flatten All Levels'(Used prior v2.3): 'a/b/c/d/img' -> 'ns/img'",
+        "FLATTEN_LEVEL_TIP_NO": "'No Flatting': 'a/b/c/d/img' -> 'ns/a/b/c/d/img",
+        "FLATTEN_LEVEL_TIP_1": "'Flatten 1 Level'(Default): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
+        "FLATTEN_LEVEL_TIP_2": "'Flatten 2 Levels': 'a/b/c/d/img' -> 'ns/c/d/img'",
+        "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",

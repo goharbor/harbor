@@ -12,6 +12,7 @@ import {Project} from './project';
 import {SystemInfo, SystemInfoService} from '../../../../shared/services';
 import {UserPermissionService} from '../../../../shared/services';
 import {USERSTATICPERMISSION} from '../../../../shared/services';
+import { EventService, HarborEvent } from "../../../../services/event-service/event.service";
 
 
 const ONE_THOUSAND: number = 1000;
@@ -92,6 +93,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
         private projectService: ProjectService,
         private systemInfoService: SystemInfoService,
         private userPermission: UserPermissionService,
+        private event: EventService
     ) {
     }
 
@@ -176,6 +178,8 @@ export class ProjectPolicyConfigComponent implements OnInit {
 
     refresh() {
         this.retrieve();
+        // notify project detail component to refresh project info
+        this.event.publish(HarborEvent.REFRESH_PROJECT_INFO);
     }
 
     isValid() {
