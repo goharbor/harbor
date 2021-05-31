@@ -139,7 +139,7 @@ func NewController() Controller {
 		execMgr: task.ExecMgr,
 		taskMgr: task.Mgr,
 		// Get the scan V1 to V2 report converters
-		reportConverter: postprocessors.NewNativeToRelationalSchemaConverter(),
+		reportConverter: postprocessors.Converter,
 	}
 }
 
@@ -655,44 +655,6 @@ func (bc *basicController) GetScanLog(ctx context.Context, uuid string) ([]byte,
 	return b.Bytes(), nil
 }
 
-func (bc *basicController) UpdateReport(ctx context.Context, report *sca.CheckInReport) error {
-	rpl, err := bc.manager.GetBy(ctx, report.Digest, report.RegistrationUUID, []string{report.MimeType})
-	if err != nil {
-		return errors.Wrap(err, "scan controller: handle job hook")
-	}
-
-	logger := log.G(ctx)
-
-	if len(rpl) == 0 {
-		fields := log.Fields{
-			"report_digest":     report.Digest,
-			"registration_uuid": report.RegistrationUUID,
-			"mime_type":         report.MimeType,
-		}
-		logger.WithFields(fields).Warningf("no report found to update data")
-
-		return errors.NotFoundError(nil).WithMessage("no report found to update data")
-	}
-
-	logger.Debugf("Converting report ID %s to  the new V2 schema", rpl[0].UUID)
-
-	_, reportData, err := bc.reportConverter.ToRelationalSchema(ctx, rpl[0].UUID, rpl[0].RegistrationUUID, rpl[0].Digest, report.RawReport)
-	if err != nil {
-		return errors.Wrapf(err, "Failed to convert vulnerability data to new schema for report UUID : %s", rpl[0].UUID)
-	}
-	// update the original report with the new summarized report with all vulnerability data removed.
-	// this is required since the top level layers relay on the vuln.Report struct that
-	// contains additional metadata within the report which if stored in the new columns within the scan_report table
-	// would be redundant
-	if err := bc.manager.UpdateReportData(ctx, rpl[0].UUID, reportData); err != nil {
-		return errors.Wrap(err, "scan controller: handle job hook")
-	}
-
-	logger.Debugf("Converted report ID %s to the new V2 schema", rpl[0].UUID)
-
-	return nil
-}
-
 // DeleteReports ...
 func (bc *basicController) DeleteReports(ctx context.Context, digests ...string) error {
 	if err := bc.manager.DeleteByDigests(ctx, digests...); err != nil {
@@ -745,6 +707,10 @@ func (bc *basicController) GetVulnerable(ctx context.Context, artifact *ar.Artif
 	raw, err := report.Reports(reports).ResolveData(mimeType)
 	if err != nil {
 		return nil, err
+	}
+
+	if raw == nil {
+		return vulnerable, nil
 	}
 
 	rp, ok := raw.(*vuln.Report)
@@ -1006,6 +972,7 @@ func (bc *basicController) assembleReports(ctx context.Context, reports ...*scan
 		} else {
 			report.Status = job.ErrorStatus.String()
 		}
+
 		completeReport, err := bc.reportConverter.FromRelationalSchema(ctx, report.UUID, report.Digest, report.Report)
 		if err != nil {
 			return err

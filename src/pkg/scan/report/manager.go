@@ -24,6 +24,11 @@ import (
 	"github.com/google/uuid"
 )
 
+var (
+	// Mgr is the global report manager
+	Mgr = NewManager()
+)
+
 // Manager is used to manage the scan reports.
 type Manager interface {
 	// Create a new report record.

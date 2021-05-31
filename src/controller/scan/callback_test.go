@@ -22,8 +22,6 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/scan"
-	dscan "github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/task"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
@@ -130,33 +128,6 @@ func (suite *CallbackTestSuite) TestScanTaskStatusChange() {
 		).Once()
 		suite.artifactCtl.On("Get", context.TODO(), int64(1), (*artifact.Option)(nil)).Return(&artifact.Artifact{}, nil).Once()
 		suite.NoError(scanTaskStatusChange(context.TODO(), 1, job.SuccessStatus.String()))
-	}
-}
-
-func (suite *CallbackTestSuite) TestScanTaskCheckInProcessor() {
-	{
-		suite.Error(scanTaskCheckInProcessor(context.TODO(), &task.Task{}, &job.StatusChange{CheckIn: "report"}))
-	}
-
-	{
-		suite.reportMgr.On("GetBy", context.TODO(), "digest", "ruuid", []string{"mime_type"}).Return(
-			[]*dscan.Report{
-				{UUID: "uuid"},
-			},
-			nil,
-		).Once()
-
-		suite.reportMgr.On("UpdateReportData", context.TODO(), "uuid", "raw_report").Return(nil)
-
-		report := scan.CheckInReport{
-			Digest:           "digest",
-			RegistrationUUID: "ruuid",
-			MimeType:         "mime_type",
-			RawReport:        "raw_report",
-		}
-
-		r, _ := json.Marshal(report)
-		suite.NoError(scanTaskCheckInProcessor(context.TODO(), &task.Task{}, &job.StatusChange{CheckIn: string(r)}))
 	}
 }
 

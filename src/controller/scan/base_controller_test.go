@@ -19,6 +19,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -47,8 +50,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 // ControllerTestSuite is the test suite for scan controller.
@@ -453,22 +454,6 @@ func (suite *ControllerTestSuite) TestScanControllerGetMultiScanLog() {
 		bytes, err := suite.c.GetScanLog(context.TODO(), base64.StdEncoding.EncodeToString([]byte("rp-uuid-001|rp-uuid-002")))
 		suite.Nil(err)
 		suite.Empty(bytes)
-	}
-}
-
-func (suite *ControllerTestSuite) TestUpdateReport() {
-	{
-		// get report failed
-		suite.reportMgr.On("GetBy", context.TODO(), "digest", "ruuid", []string{"mime"}).Return(nil, fmt.Errorf("failed")).Once()
-		report := &sca.CheckInReport{Digest: "digest", RegistrationUUID: "ruuid", MimeType: "mime"}
-		suite.Error(suite.c.UpdateReport(context.TODO(), report))
-	}
-
-	{
-		// report not found
-		suite.reportMgr.On("GetBy", context.TODO(), "digest", "ruuid", []string{"mime"}).Return(nil, nil).Once()
-		report := &sca.CheckInReport{Digest: "digest", RegistrationUUID: "ruuid", MimeType: "mime"}
-		suite.Error(suite.c.UpdateReport(context.TODO(), report))
 	}
 }
 

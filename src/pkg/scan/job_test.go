@@ -16,12 +16,12 @@ package scan
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/controller/robot"
-	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -145,17 +145,6 @@ func (suite *JobTestSuite) TestJob() {
 	mc.On("GetScanReport", "scan_id", v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport).Return(string(jRep), nil)
 	mocktesting.OnAnything(suite.mcp, "Get").Return(mc, nil)
 
-	crp := &CheckInReport{
-		Digest:           sr.Artifact.Digest,
-		RegistrationUUID: r.UUID,
-		MimeType:         v1.MimeTypeNativeReport,
-		RawReport:        string(jRep),
-	}
-
-	jsonData, err := crp.ToJSON()
-	require.NoError(suite.T(), err)
-
-	ctx.On("Checkin", string(jsonData)).Return(nil)
 	j := &Job{}
 	err = j.Run(ctx, jp)
 	require.NoError(suite.T(), err)

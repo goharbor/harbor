@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/postprocessors"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
@@ -148,12 +149,12 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	// Ignore errors as they have been validated already
 	r, _ := extractRegistration(params)
 	req, _ := ExtractScanReq(params)
-	mimes, _ := extractMimeTypes(params)
+	mimeTypes, _ := extractMimeTypes(params)
 
 	// Print related infos to log
 	printJSONParameter(JobParamRegistration, params[JobParamRegistration].(string), myLogger)
 	printJSONParameter(JobParameterRequest, removeAuthInfo(req), myLogger)
-	myLogger.Infof("Report mime types: %v\n", mimes)
+	myLogger.Infof("Report mime types: %v\n", mimeTypes)
 
 	// Submit scan request to the scanner adapter
 	client, err := r.Client(v1.DefaultClientPool)
@@ -188,13 +189,14 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	}
 
 	// For collecting errors
-	errs := make([]error, len(mimes))
+	errs := make([]error, len(mimeTypes))
+	rawReports := make([]string, len(mimeTypes))
 
 	// Concurrently retrieving report by different mime types
 	wg := &sync.WaitGroup{}
-	wg.Add(len(mimes))
+	wg.Add(len(mimeTypes))
 
-	for i, mt := range mimes {
+	for i, mimeType := range mimeTypes {
 		go func(i int, m string) {
 			defer wg.Done()
 
@@ -231,28 +233,8 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 						return
 					}
 
-					// Check in
-					cir := &CheckInReport{
-						Digest:           req.Artifact.Digest,
-						RegistrationUUID: r.UUID,
-						MimeType:         m,
-						RawReport:        rawReport,
-					}
+					rawReports[i] = rawReport
 
-					var (
-						jsonData string
-						er       error
-					)
-					if jsonData, er = cir.ToJSON(); er == nil {
-						if er = ctx.Checkin(jsonData); er == nil {
-							// Done!
-							myLogger.Infof("Report with mime type %s is checked in", m)
-							return
-						}
-					}
-
-					// Send error and exit
-					errs[i] = errors.Wrap(er, fmt.Sprintf("check in scan report for mime type %s", m))
 					return
 				case <-ctx.SystemContext().Done():
 					// Terminated by system
@@ -262,7 +244,7 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 					return
 				}
 			}
-		}(i, mt)
+		}(i, mimeType)
 	}
 
 	// Wait for all the retrieving routines are completed
@@ -282,9 +264,50 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	// Log error to the job log
 	if err != nil {
 		myLogger.Error(err)
+
+		return err
 	}
 
-	return err
+	for i, mimeType := range mimeTypes {
+		reports, err := report.Mgr.GetBy(ctx.SystemContext(), req.Artifact.Digest, r.UUID, []string{mimeType})
+		if err != nil {
+			myLogger.Error("Failed to get report for artifact %s of mimetype %s, error %v", req.Artifact.Digest, mimeType, err)
+
+			return err
+		}
+
+		if len(reports) == 0 {
+			myLogger.Error("No report found for artifact %s of mimetype %s, error %v", req.Artifact.Digest, mimeType, err)
+
+			return errors.NotFoundError(nil).WithMessage("no report found to update data")
+		}
+
+		rp := reports[0]
+
+		logger.Debugf("Converting report ID %s to the new V2 schema", rp.UUID)
+
+		// use a new ormer here to use the short db connection
+		_, reportData, err := postprocessors.Converter.ToRelationalSchema(ctx.SystemContext(), rp.UUID, rp.RegistrationUUID, rp.Digest, rawReports[i])
+		if err != nil {
+			myLogger.Errorf("Failed to convert vulnerability data to new schema for report %s, error %v", rp.UUID, err)
+
+			return err
+		}
+
+		// update the original report with the new summarized report with all vulnerability data removed.
+		// this is required since the top level layers relay on the vuln.Report struct that
+		// contains additional metadata within the report which if stored in the new columns within the scan_report table
+		// would be redundant
+		if err := report.Mgr.UpdateReportData(ctx.SystemContext(), rp.UUID, reportData); err != nil {
+			myLogger.Errorf("Failed to update report data for report %s, error %v", rp.UUID, err)
+
+			return err
+		}
+
+		myLogger.Debugf("Converted report ID %s to the new V2 schema", rp.UUID)
+	}
+
+	return nil
 }
 
 // ExtractScanReq extracts the scan request from the job parameters.

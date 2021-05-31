@@ -20,7 +20,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
-	sca "github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 )
@@ -94,16 +93,6 @@ type Controller interface {
 	//  Returns:
 	//    error        : non nil error if any errors occurred
 	DeleteReports(ctx context.Context, digests ...string) error
-
-	// UpdateReport update the report
-	//
-	//   Arguments:
-	//     ctx context.Context : the context for this method
-	//     report *sca.CheckInReport : the scan report
-	//
-	//   Returns:
-	//     error  : non nil error if any errors occurred
-	UpdateReport(ctx context.Context, report *sca.CheckInReport) error
 
 	// Scan all the artifacts
 	//

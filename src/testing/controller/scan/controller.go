@@ -13,8 +13,6 @@ import (
 
 	models "github.com/goharbor/harbor/src/pkg/allowlist/models"
 
-	pkgscan "github.com/goharbor/harbor/src/pkg/scan"
-
 	scan "github.com/goharbor/harbor/src/controller/scan"
 )
 
@@ -176,18 +174,4 @@ func (_m *Controller) ScanAll(ctx context.Context, trigger string, async bool) (
 	}
 
 	return r0, r1
-}
-
-// UpdateReport provides a mock function with given fields: ctx, report
-func (_m *Controller) UpdateReport(ctx context.Context, report *pkgscan.CheckInReport) error {
-	ret := _m.Called(ctx, report)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *pkgscan.CheckInReport) error); ok {
-		r0 = rf(ctx, report)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
 }
