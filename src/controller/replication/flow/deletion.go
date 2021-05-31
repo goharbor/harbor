@@ -45,8 +45,16 @@ func NewDeletionFlow(executionID int64, policy *repctlmodel.Policy, resources ..
 }
 
 func (d *deletionFlow) Run(ctx context.Context) error {
+	_, dstAdapter, err := initialize(d.policy)
+	if err != nil {
+		return err
+	}
 	srcResources := assembleSourceResources(d.resources, d.policy)
-	dstResources, err := assembleDestinationResources(srcResources, d.policy)
+	info, err := dstAdapter.Info()
+	if err != nil {
+		return err
+	}
+	dstResources, err := assembleDestinationResources(srcResources, d.policy, info.SupportedRepositoryPathComponentType)
 	if err != nil {
 		return err
 	}

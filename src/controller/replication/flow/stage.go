@@ -124,10 +124,10 @@ func assembleSourceResources(resources []*model.Resource,
 
 // assemble the destination resources by filling the metadata, registry and override properties
 func assembleDestinationResources(resources []*model.Resource,
-	policy *repctlmodel.Policy) ([]*model.Resource, error) {
+	policy *repctlmodel.Policy, dstRepoComponentPathType string) ([]*model.Resource, error) {
 	var result []*model.Resource
 	for _, resource := range resources {
-		name, err := replaceNamespace(resource.Metadata.Repository.Name, policy.DestNamespace, policy.DestNamespaceReplaceCount)
+		name, err := replaceNamespace(resource.Metadata.Repository.Name, policy.DestNamespace, policy.DestNamespaceReplaceCount, dstRepoComponentPathType)
 		if err != nil {
 			return nil, err
 		}
@@ -197,7 +197,7 @@ func getResourceName(res *model.Resource) string {
 // repository:a/b/c namespace:n replaceCount: 1 -> n/b/c
 // repository:a/b/c namespace:n replaceCount: 2 -> n/c
 // repository:a/b/c namespace:n replaceCount: 3 -> n
-func replaceNamespace(repository string, namespace string, replaceCount int8) (string, error) {
+func replaceNamespace(repository string, namespace string, replaceCount int8, dstRepoComponentPathType string) (string, error) {
 	if len(namespace) == 0 {
 		return repository, nil
 	}
@@ -208,18 +208,36 @@ func replaceNamespace(repository string, namespace string, replaceCount int8) (s
 		return fmt.Sprintf("%s/%s", namespace, rest), nil
 	}
 
-	subs := strings.Split(repository, "/")
-	len := len(subs)
+	var dstRepo string
+	srcRepoPathComponents := strings.Split(repository, "/")
+	srcLength := len(srcRepoPathComponents)
 	switch {
 	case replaceCount == 0:
-		return fmt.Sprintf("%s/%s", namespace, repository), nil
-	case int(replaceCount) == len:
-		return namespace, nil
-	case int(replaceCount) > len:
+		dstRepo = fmt.Sprintf("%s/%s", namespace, repository)
+	case int(replaceCount) == srcLength:
+		dstRepo = namespace
+	case int(replaceCount) > srcLength:
 		return "", errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("the repository %s contains only %d substrings, but the destination namespace replace count is %d",
-				repository, len, replaceCount)
+			WithMessage("the source repository %q contains only %d path components %v, but the destination namespace flattening level is %d",
+				repository, srcLength, srcRepoPathComponents, replaceCount)
 	default:
-		return fmt.Sprintf("%s/%s", namespace, strings.Join(subs[replaceCount:], "/")), nil
+		dstRepo = fmt.Sprintf("%s/%s", namespace, strings.Join(srcRepoPathComponents[replaceCount:], "/"))
 	}
+
+	dstRepoPathComponents := strings.Split(dstRepo, "/")
+	dstLength := len(dstRepoPathComponents)
+	switch dstRepoComponentPathType {
+	case model.RepositoryPathComponentTypeOnlyTwo:
+		if dstLength != 2 {
+			return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("the destination repository %q contains %d path components %v, but the destination registry only supports 2",
+				dstRepo, dstLength, dstRepoPathComponents)
+		}
+	case model.RepositoryPathComponentTypeAtLeastTwo:
+		if dstLength < 2 {
+			return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("the destination repository %q contains only %d path components %v, but the destination registry requires at least 2",
+				dstRepo, dstLength, dstRepoPathComponents)
+		}
+	}
+
+	return dstRepo, nil
 }

@@ -55,6 +55,7 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, 2, len(info.SupportedResourceTypes))
 	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
 	assert.Equal(t, model.ResourceTypeChart, info.SupportedResourceTypes[1])
+	assert.Equal(t, model.RepositoryPathComponentTypeAtLeastTwo, info.SupportedRepositoryPathComponentType)
 	server.Close()
 
 	// chart museum disabled
