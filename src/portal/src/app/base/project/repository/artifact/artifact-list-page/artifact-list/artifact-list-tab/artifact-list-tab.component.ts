@@ -412,8 +412,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               }
             }
             this.artifactList = res.body;
-            this.artifactList = doSorting<Artifact>(this.artifactList, state);
-
             this.getPullCommand(this.artifactList);
             this.getArtifactTagsAsync(this.artifactList);
             this.getIconsFromBackEnd();

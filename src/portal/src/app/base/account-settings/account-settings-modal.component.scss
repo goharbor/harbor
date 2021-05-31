@@ -46,3 +46,6 @@ clr-modal {
 .set-btns {
     display: flex;
 }
+:host::ng-deep.upload-secret {
+    width: 23rem;
+}

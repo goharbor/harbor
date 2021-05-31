@@ -160,7 +160,7 @@
                    maxlength="255">
             <clr-tooltip class="des-tooltip">
               <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-              <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+              <clr-tooltip-content clrPosition="top-left" clrSize="lg" *clrIfOpen>
                 <span>{{'TOOLTIP.DESTINATION_NAMESPACE' | translate}}</span>
               </clr-tooltip-content>
             </clr-tooltip>
@@ -173,11 +173,11 @@
       <!--destination namespaces -->
       <div class="clr-form-control">
         <label for="dest_namespace_replace_count" class="clr-control-label"></label>
-        <div class="clr-control-container" [class.clr-error]="ruleForm.controls.dest_namespace_replace_count.touched && ruleForm.controls.dest_namespace_replace_count.invalid">
+        <div class="clr-control-container">
           <div class="input-width flex">
             <div class="clr-select-wrapper">
               <label class="sub-label">{{'REPLICATION.REPO_FLATTENING' | translate}}:</label>
-              <select id="dest_namespace_replace_count" formControlName="dest_namespace_replace_count" class="clr-select count-type">
+              <select [attr.disabled]="(ruleForm.controls.dest_namespace.invalid || !ruleForm.controls.dest_namespace.value) ? 'disabled' : null" id="dest_namespace_replace_count" formControlName="dest_namespace_replace_count" class="clr-select count-type">
                 <option *ngFor="let item of flattenLevelMap | keyvalue"
                         [value]="item.key">{{item.value | translate}}</option>
               </select>
@@ -185,8 +185,13 @@
             <div class="clr-input-wrapper">
               <clr-tooltip class="des-tooltip">
                 <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
-                  {{'REPLICATION.FLATTEN_LEVEL_TIP' | translate}}
+                <clr-tooltip-content class="flatten" clrPosition="top-left" clrSize="lg" *clrIfOpen>
+                  <div>{{'REPLICATION.FLATTEN_LEVEL_TIP' | translate}}</div>
+                  <div>{{'REPLICATION.FLATTEN_LEVEL_TIP_ALL' | translate}}</div>
+                  <div>{{'REPLICATION.FLATTEN_LEVEL_TIP_NO' | translate}}</div>
+                  <div>{{'REPLICATION.FLATTEN_LEVEL_TIP_1' | translate}}</div>
+                  <div>{{'REPLICATION.FLATTEN_LEVEL_TIP_2' | translate}}</div>
+                  <div>{{'REPLICATION.FLATTEN_LEVEL_TIP_3' | translate}}</div>
                 </clr-tooltip-content>
               </clr-tooltip>
             </div>

@@ -56,5 +56,6 @@ export class EventService {
 
 export enum HarborEvent {
   SCROLL = 'scroll',
-  SCROLL_TO_POSITION = 'scrollToPosition'
+  SCROLL_TO_POSITION = 'scrollToPosition',
+  REFRESH_PROJECT_INFO = 'refreshProjectInfo'
 }

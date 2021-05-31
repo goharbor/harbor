@@ -639,7 +639,12 @@
         "FLATTEN_LEVEL_2": "替换2级",
         "FLATTEN_LEVEL_3": "替换3级",
         "FLATTEN_ALL": "替换所有级",
-        "FLATTEN_LEVEL_TIP": "此项用以在复制镜像时减少仓库的层级结构。默认值'替换1级'表示将用目标名称空间替换仓库的最左侧一级，例如：a/b/c/img -> namespace/b/c/img，其他替换层级以此类推。'替换所有级'是v2.3之前版本所使用的行为，它表示 a/b/c/img -> namespace/img。"
+        "FLATTEN_LEVEL_TIP": "此项用以在复制镜像时减少仓库的层级结构。假设仓库的层级结构为 'a/b/c/d/img' 且目标名称空间为 'ns'，则每一项对应的结果如下：",
+        "FLATTEN_LEVEL_TIP_ALL": "'替换所有级'(v2.3之前版本所使用的行为): 'a/b/c/d/img' -> 'ns/img'",
+        "FLATTEN_LEVEL_TIP_NO": "'无替换': 'a/b/c/d/img' -> 'ns/a/b/c/d/img",
+        "FLATTEN_LEVEL_TIP_1": "'替换1级'(默认项): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
+        "FLATTEN_LEVEL_TIP_2": "'替换2级': 'a/b/c/d/img' -> 'ns/c/d/img'",
+        "FLATTEN_LEVEL_TIP_3": "'替换3级': 'a/b/c/d/img' -> 'ns/d/img'"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
