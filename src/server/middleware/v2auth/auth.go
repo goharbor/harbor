@@ -17,13 +17,14 @@ package v2auth
 import (
 	"context"
 	"fmt"
-	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
-	"github.com/goharbor/harbor/src/common/rbac/system"
-	"github.com/goharbor/harbor/src/lib/config"
 	"net/http"
 	"net/url"
 	"strings"
 	"sync"
+
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/rbac/system"
+	"github.com/goharbor/harbor/src/lib/config"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
@@ -49,7 +50,9 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 		return "", fmt.Errorf("the security context got from request is nil")
 	}
 	al := accessList(req)
-
+	if len(al) == 0 {
+		return "", fmt.Errorf("un-recognized request: %s %s", req.Method, req.URL.Path)
+	}
 	for _, a := range al {
 		if a.target == login && !securityCtx.IsAuthenticated() {
 			return getChallenge(req, al), errors.New("unauthorized")
