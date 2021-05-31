@@ -95,7 +95,12 @@ func preCheck(ctx context.Context) (art lib.ArtifactInfo, p *proModels.Project, 
 func ManifestMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		if err := handleManifest(w, r, next); err != nil {
-			httpLib.SendError(w, err)
+			if errors.IsNotFoundErr(err) {
+				httpLib.SendError(w, err)
+				return
+			}
+			log.Errorf("failed to proxy manifest, fallback to local, request uri: %v, error: %v", r.RequestURI, err)
+			next.ServeHTTP(w, r)
 		}
 	})
 }
