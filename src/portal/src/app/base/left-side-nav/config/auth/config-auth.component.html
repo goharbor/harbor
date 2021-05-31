@@ -73,14 +73,13 @@
                 [(ngModel)]="currentConfig.ldap_search_dn.value" id="ldapSearchDN" size="40"
                 [disabled]="disabled(currentConfig.ldap_search_dn)" />
         </clr-input-container>
-
         <clr-input-container>
             <label for="ldapSearchPwd">{{'CONFIG.LDAP.SEARCH_PWD' | translate}}</label>
+            <!--disable property should be consistent with 'ldap_search_dn', as the back end API won't return this fielder, -->
             <input clrInput name="ldapSearchPwd" type="password" #ldapSearchPwdInput="ngModel"
                 [(ngModel)]="currentConfig.ldap_search_password.value" id="ldapSearchPwd" size="40"
-                [disabled]="disabled(currentConfig.ldap_search_password)" />
+                [disabled]="disabled(currentConfig.ldap_search_dn)" />
         </clr-input-container>
-
         <clr-input-container>
             <label for="ldapBaseDN" class="required">{{'CONFIG.LDAP.BASE_DN' | translate}}
                 <clr-tooltip>

@@ -25,6 +25,7 @@ import { ProjectService } from "../../../../../ng-swagger-gen/services/project.s
 import { ProjectSummaryQuota } from "../../../../../ng-swagger-gen/models/project-summary-quota";
 import { QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COEFFICIENT, QuotaUnits } from "../../../shared/entities/shared.const";
 import { clone, GetIntegerAndUnit, getSizeNumber, getSizeUnit } from "../../../shared/units/utils";
+import { EventService, HarborEvent } from "../../../services/event-service/event.service";
 
 
 @Component({
@@ -134,6 +135,7 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
   projectQuota: ProjectSummaryQuota;
   quotaDangerCoefficient: number = QUOTA_DANGER_COEFFICIENT;
   quotaWarningCoefficient: number = QUOTA_WARNING_COEFFICIENT;
+  eventSub: Subscription;
   constructor(
     private projectService: ProjectService,
     private route: ActivatedRoute,
@@ -142,7 +144,8 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
     private appConfigService: AppConfigService,
     private userPermissionService: UserPermissionService,
     private errorHandler: ErrorHandler,
-    private cdf: ChangeDetectorRef) {
+    private cdf: ChangeDetectorRef,
+    private event: EventService) {
     this.hasSignedIn = this.sessionService.getCurrentUser() !== null;
     this.route.data.subscribe(data => {
       this.currentProject = <Project>data['projectResolver'];
@@ -169,6 +172,11 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
           }
       );
     }
+    if (!this.eventSub) {
+      this.eventSub = this.event.subscribe(HarborEvent.REFRESH_PROJECT_INFO, () => {
+        this.refreshProjectInfo();
+      });
+    }
   }
 
   ngAfterViewInit() {
@@ -181,6 +189,10 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this._subscription) {
       this._subscription.unsubscribe();
       this._subscription = null;
+    }
+    if (this.eventSub) {
+      this.eventSub.unsubscribe();
+      this.eventSub = null;
     }
   }
   getPermissionsList(projectId: number): void {
@@ -314,5 +326,18 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
       return getSizeUnit(this.projectQuota.used.storage);
     }
     return null;
+  }
+  refreshProjectInfo() {
+    this.getQuotaInfo();
+    this.getProject();
+  }
+  getProject() {
+    this.projectService.getProject({
+      projectNameOrId: this.projectId.toString()
+    }).subscribe(res => {
+      if (res) {
+        this.currentProject = <any>res as Project;
+      }
+    });
   }
 }
