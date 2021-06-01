@@ -50,7 +50,7 @@
     "intl": "^1.2.5",
     "jasmine-core": "^3.3.0",
     "mutationobserver-shim": "^0.3.2",
-    "ng-packagr": "^10.1.0",
+    "ng-packagr": "^10.1.2",
     "ngx-clipboard": "^12.0.0",
     "ngx-cookie": "^1.0.0",
     "ngx-markdown": "^10.1.1",
