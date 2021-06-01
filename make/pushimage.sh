@@ -89,7 +89,7 @@ IMAGE="$1"
 USERNAME="$2"
 PASSWORD="$3"
 REGISTRY="$4"
-
+PULL_BASE_FROM_DOCKERHUB="$5"
 set -e
 
 # ----- Pushing image(s) -----
@@ -99,13 +99,11 @@ set -e
 #  - https://docs.docker.com/reference/commandline/cli/#logout
 # ---------------------------
 
-# Login to the registry
+# Login docker
 h2 "Login to the Docker registry"
-
 DOCKER_LOGIN="docker login --username $USERNAME --password $PASSWORD $REGISTRY"
 info "docker login --username $USERNAME --password *******"
 DOCKER_LOGIN_OUTPUT=$($DOCKER_LOGIN)
-
 if [ $? -ne 0 ]; then
   warn "$DOCKER_LOGIN_OUTPUT"
   error "Login to Docker registry $REGISTRY failed"
@@ -141,16 +139,15 @@ else
   success "Logout from Docker registry $REGISTRY succeeded"
 fi
 
-# Remove local goharbor images
-h2 "Remove local goharbor images"
-DOCKER_RMI="docker rmi $(docker images | grep "goharbor" | awk '{print $3}') -f"
-info "$DOCKER_RMI"
-DOCKER_RMI_OUTPUT=$($DOCKER_RMI)
-
-if [ $? -ne 0 ];then
-  warn $DOCKER_RMI_OUTPUT
-  error "Clean local goharbor images failed";
-else
-  success "Clean local goharbor images succeeded";
+if [ "$PULL_BASE_FROM_DOCKERHUB" == "true" ];then
+  h2 "Remove local goharbor images"
+  DOCKER_RMI="docker rmi $(docker images | grep "goharbor" | awk '{print $3}') -f"
+  info "$DOCKER_RMI"
+  DOCKER_RMI_OUTPUT=$($DOCKER_RMI)
+  if [ $? -ne 0 ];then
+    warn $DOCKER_RMI_OUTPUT
+    error "Clean local goharbor images failed";
+  else
+    success "Clean local goharbor images succeeded";
+  fi
 fi
-
