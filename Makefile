@@ -74,6 +74,8 @@ PORTAL_PATH=$(BUILDPATH)/src/portal
 CHECKENVCMD=checkenv.sh
 
 # parameters
+# default is true
+BUILD_PG96=true
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=goharbor
 DEVFLAG=true
@@ -426,18 +428,27 @@ build_base_docker:
 	else \
 		echo "No docker credentials provided, please make sure enough priviledges to access docker hub!" ; \
 	fi
-
 	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		sleep 30 ; \
-		if [ $$name == "db" ] ; then \
-			cd $(MAKEFILEPATH_PHOTON)/$$name && $(MAKEFILEPATH_PHOTON)/$$name/rpm_builder.sh && cd - ; \
-		fi; \
-		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . && \
+		if [ $$name == "db" ]; then \
+		    make _build_base_db ; \
+		else \
+			$(DOCKERBUILD) --build-arg BUILD_PG96=$(BUILD_PG96) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
+		fi ; \
 		if [ -n "$(PUSHBASEIMAGE)" ] ; then \
 		  	$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
 		fi ; \
 	done
+
+_build_base_db:
+	@if [ "$(BUILD_PG96)" = "true" ] ; then \
+		echo "build pg96 rpm package." ; \
+		cd $(MAKEFILEPATH_PHOTON)/db && $(MAKEFILEPATH_PHOTON)/db/rpm_builder.sh && cd - ; \
+		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/db/Dockerfile.pg96 -t $(BASEIMAGENAMESPACE)/harbor-db-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
+  	else \
+ 		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/db/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-db-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
+  	fi
 
 pull_base_docker:
 	@for name in $(BUILDBASETARGET); do \
