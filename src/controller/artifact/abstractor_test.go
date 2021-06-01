@@ -206,7 +206,7 @@ var (
 
 type abstractorTestSuite struct {
 	suite.Suite
-	argMgr     *tart.FakeManager
+	argMgr     *tart.Manager
 	blobMgr    *tblob.Manager
 	regCli     *registry.FakeClient
 	abstractor *abstractor
@@ -215,7 +215,7 @@ type abstractorTestSuite struct {
 
 func (a *abstractorTestSuite) SetupTest() {
 	a.regCli = &registry.FakeClient{}
-	a.argMgr = &tart.FakeManager{}
+	a.argMgr = &tart.Manager{}
 	a.blobMgr = &tblob.Manager{}
 	a.abstractor = &abstractor{
 		artMgr:  a.argMgr,
@@ -272,7 +272,7 @@ func (a *abstractorTestSuite) TestAbstractMetadataOfIndex() {
 	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageIndex, []byte(index))
 	a.Require().Nil(err)
 	a.regCli.On("PullManifest").Return(manifest, "", nil)
-	a.argMgr.On("GetByDigest").Return(&artifact.Artifact{
+	a.argMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).Return(&artifact.Artifact{
 		ID:   2,
 		Size: 10,
 	}, nil)

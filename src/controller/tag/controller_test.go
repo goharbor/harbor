@@ -15,6 +15,9 @@
 package tag
 
 import (
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -27,23 +30,22 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/immutable"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	tagtesting "github.com/goharbor/harbor/src/testing/pkg/tag"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type controllerTestSuite struct {
 	suite.Suite
 	ctl          *controller
 	repoMgr      *repository.Manager
-	artMgr       *artifact.FakeManager
+	artMgr       *artifact.Manager
 	tagMgr       *tagtesting.FakeManager
 	immutableMtr *immutable.FakeMatcher
 }
 
 func (c *controllerTestSuite) SetupTest() {
 	c.repoMgr = &repository.Manager{}
-	c.artMgr = &artifact.FakeManager{}
+	c.artMgr = &artifact.Manager{}
 	c.tagMgr = &tagtesting.FakeManager{}
 	c.immutableMtr = &immutable.FakeMatcher{}
 	c.ctl = &controller{
@@ -68,7 +70,7 @@ func (c *controllerTestSuite) TestEnsureTag() {
 			Name:         "latest",
 		},
 	}, nil)
-	c.artMgr.On("Get").Return(&pkg_artifact.Artifact{
+	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&pkg_artifact.Artifact{
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
@@ -89,7 +91,7 @@ func (c *controllerTestSuite) TestEnsureTag() {
 		},
 	}, nil)
 	c.tagMgr.On("Update").Return(nil)
-	c.artMgr.On("Get").Return(&pkg_artifact.Artifact{
+	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&pkg_artifact.Artifact{
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
@@ -103,7 +105,7 @@ func (c *controllerTestSuite) TestEnsureTag() {
 	// the tag doesn't exist under the repository, create it
 	c.tagMgr.On("List").Return([]*tag.Tag{}, nil)
 	c.tagMgr.On("Create").Return(1, nil)
-	c.artMgr.On("Get").Return(&pkg_artifact.Artifact{
+	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&pkg_artifact.Artifact{
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
@@ -151,7 +153,7 @@ func (c *controllerTestSuite) TestDelete() {
 		RepositoryID: 1,
 		Name:         "test",
 	}, nil)
-	c.artMgr.On("Get").Return(&pkg_artifact.Artifact{
+	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&pkg_artifact.Artifact{
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
@@ -165,7 +167,7 @@ func (c *controllerTestSuite) TestDeleteImmutable() {
 		RepositoryID: 1,
 		Name:         "test",
 	}, nil)
-	c.artMgr.On("Get").Return(&pkg_artifact.Artifact{
+	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&pkg_artifact.Artifact{
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(true, nil)
@@ -191,7 +193,7 @@ func (c *controllerTestSuite) TestDeleteTags() {
 	c.tagMgr.On("Get").Return(&tag.Tag{
 		RepositoryID: 1,
 	}, nil)
-	c.artMgr.On("Get").Return(&pkg_artifact.Artifact{
+	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&pkg_artifact.Artifact{
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
@@ -221,7 +223,7 @@ func (c *controllerTestSuite) TestAssembleTag() {
 		WithImmutableStatus: true,
 	}
 
-	c.artMgr.On("Get").Return(art, nil)
+	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(art, nil)
 	c.immutableMtr.On("Match").Return(true, nil)
 	tag := c.ctl.assembleTag(nil, tg, option)
 	c.Require().NotNil(tag)
