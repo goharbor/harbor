@@ -16,13 +16,13 @@ package dao
 
 import (
 	"context"
-	"fmt"
+	"time"
+
 	o "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"time"
 )
 
 // DAO is the data access object interface for repository
@@ -166,7 +166,7 @@ func (d *dao) NonEmptyRepos(ctx context.Context) ([]*models.RepoRecord, error) {
 		return nil, err
 	}
 
-	sql := fmt.Sprintf(`select distinct r.* from repository as r LEFT JOIN tag as t on r.repository_id = t.repository_id where t.repository_id is not null;`)
+	sql := `select * from repository where repository_id in (select distinct repository_id from tag)`
 	_, err = ormer.Raw(sql).QueryRows(&repos)
 	if err != nil {
 		return repos, err
