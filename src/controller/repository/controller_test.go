@@ -15,12 +15,12 @@
 package repository
 
 import (
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"testing"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
@@ -36,14 +36,14 @@ type controllerTestSuite struct {
 	ctl     *controller
 	proMgr  *project.Manager
 	repoMgr *repository.Manager
-	argMgr  *arttesting.FakeManager
+	argMgr  *arttesting.Manager
 	artCtl  *artifacttesting.Controller
 }
 
 func (c *controllerTestSuite) SetupTest() {
 	c.proMgr = &project.Manager{}
 	c.repoMgr = &repository.Manager{}
-	c.argMgr = &arttesting.FakeManager{}
+	c.argMgr = &arttesting.Manager{}
 	c.artCtl = &artifacttesting.Controller{}
 	c.ctl = &controller{
 		proMgr:  c.proMgr,
@@ -125,7 +125,7 @@ func (c *controllerTestSuite) TestGetByName() {
 func (c *controllerTestSuite) TestDelete() {
 	art := &artifact.Artifact{}
 	art.ID = 1
-	c.argMgr.On("ListReferences").Return(nil, nil)
+	mock.OnAnything(c.argMgr, "ListReferences").Return(nil, nil)
 	mock.OnAnything(c.artCtl, "List").Return([]*artifact.Artifact{art}, nil)
 	mock.OnAnything(c.artCtl, "Delete").Return(nil)
 	c.repoMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
