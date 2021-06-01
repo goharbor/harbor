@@ -107,6 +107,10 @@ func (uga *UserGroupAPI) Get() {
 
 // Post ... Create User Group
 func (uga *UserGroupAPI) Post() {
+	if !uga.SecurityCtx.IsSysAdmin() {
+		uga.SendForbiddenError(errors.New(uga.SecurityCtx.GetUsername()))
+		return
+	}
 	userGroup := models.UserGroup{}
 	if err := uga.DecodeJSONReq(&userGroup); err != nil {
 		uga.SendBadRequestError(err)
@@ -165,6 +169,10 @@ func (uga *UserGroupAPI) Post() {
 
 // Put ... Only support update name
 func (uga *UserGroupAPI) Put() {
+	if !uga.SecurityCtx.IsSysAdmin() {
+		uga.SendForbiddenError(errors.New(uga.SecurityCtx.GetUsername()))
+		return
+	}
 	userGroup := models.UserGroup{}
 	if err := uga.DecodeJSONReq(&userGroup); err != nil {
 		uga.SendBadRequestError(err)
@@ -192,6 +200,10 @@ func (uga *UserGroupAPI) Put() {
 
 // Delete ...
 func (uga *UserGroupAPI) Delete() {
+	if !uga.SecurityCtx.IsSysAdmin() {
+		uga.SendForbiddenError(errors.New(uga.SecurityCtx.GetUsername()))
+		return
+	}
 	err := group.DeleteUserGroup(uga.id)
 	if err != nil {
 		uga.SendInternalServerError(fmt.Errorf("Error occurred in update user group, error: %v", err))
