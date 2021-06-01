@@ -67,9 +67,9 @@ func MockDragonflyProvider() *httptest.Server {
 				w.WriteHeader(http.StatusAlreadyReported)
 				_, _ = w.Write([]byte(`{"ID":""}`))
 				return
-			} else {
-				preheatMap[image.Digest] = struct{}{}
 			}
+
+			preheatMap[image.Digest] = struct{}{}
 
 			if image.Type == "image" &&
 				image.URL == "https://harbor.com" &&
