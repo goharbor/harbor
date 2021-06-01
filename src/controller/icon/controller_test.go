@@ -36,12 +36,12 @@ var (
 type controllerTestSuite struct {
 	suite.Suite
 	controller Controller
-	argMgr     *artifact_testing.FakeManager
+	argMgr     *artifact_testing.Manager
 	regCli     *registry.FakeClient
 }
 
 func (c *controllerTestSuite) SetupTest() {
-	c.argMgr = &artifact_testing.FakeManager{}
+	c.argMgr = &artifact_testing.Manager{}
 	c.regCli = &registry.FakeClient{}
 	c.controller = &controller{
 		artMgr: c.argMgr,
