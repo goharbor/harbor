@@ -46,7 +46,7 @@ func (r *robot) Generate(req *http.Request) security.Context {
 	}
 	rtk, err := pkg_token.Parse(defaultOpt, robotTk, rClaims)
 	if err != nil {
-		log.Errorf("failed to decrypt robot token: %v", err)
+		log.Debugf("failed to decrypt robot token of v1 robot: %s, as: %v", robotName, err)
 		return nil
 	}
 	// Do authn for robot account, as Harbor only stores the token ID, just validate the ID and disable.
