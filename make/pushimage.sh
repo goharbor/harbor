@@ -4,9 +4,9 @@ set +e
 set -o noglob
 
 if [ "$1" == "" ];then
-echo "This shell will push specific image to registry server."
-echo "Usage: #./pushimage [image tag] [registry username] [registry password]  [registry server]"
-exit 1
+  echo "This shell will push specific image to registry server."
+  echo "Usage: #./pushimage [image tag] [registry username] [registry password]  [registry server]"
+  exit 1
 fi
 
 #
@@ -88,7 +88,8 @@ fi
 IMAGE="$1"
 USERNAME="$2"
 PASSWORD="$3"
-REGISTRY="$4"
+PULL_BASE_FROM_DOCKERHUB="$4"
+REGISTRY="$5"
 
 set -e
 
@@ -128,27 +129,15 @@ else
   success "Pushing image $IMAGE succeeded";
 fi
 
-# Logout from the registry
-h2 "Logout from the docker registry"
-DOCKER_LOGOUT="docker logout $REGISTRY"
-DOCKER_LOGOUT_OUTPUT=$($DOCKER_LOGOUT)
-
-if [ $? -ne 0 ]; then
-  warn "$DOCKER_LOGOUT_OUTPUT"
-  error "Logout from Docker registry $REGISTRY failed"
-  exit 1
-else
-  success "Logout from Docker registry $REGISTRY succeeded"
-fi
-
-h2 "Remove local goharbor images"
-DOCKER_RMI="docker rmi -f $(docker images | grep "goharbor" | awk '{print $3}')"
-info "$DOCKER_RMI"
-DOCKER_RMI_OUTPUT=$($DOCKER_RMI)
-
-if [ $? -ne 0 ];then
-  warn $DOCKER_RMI_OUTPUT
-  error "Clean local goharbor images failed";
-else
-  success "Clean local goharbor images succeeded";
+if [ "$PULL_BASE_FROM_DOCKERHUB" == "true" ];then
+  h2 "Remove local goharbor images"
+  DOCKER_RMI="docker rmi $(docker images | grep "goharbor" | awk '{print $3}') -f"
+  info "$DOCKER_RMI"
+  DOCKER_RMI_OUTPUT=$($DOCKER_RMI)
+  if [ $? -ne 0 ];then
+    warn $DOCKER_RMI_OUTPUT
+    error "Clean local goharbor images failed";
+  else
+    success "Clean local goharbor images succeeded";
+  fi
 fi
