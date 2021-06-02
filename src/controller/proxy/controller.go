@@ -17,11 +17,12 @@ package proxy
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/tag"
 	"io"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/goharbor/harbor/src/controller/tag"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
@@ -146,8 +147,8 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	if a != nil && len(art.Digest) > 0 {
 		return true, nil, nil
 	}
-
-	remoteRepo := getRemoteRepo(art)
+	// Pull by tag
+	remoteRepo := getRemoteRepo(ctx, art)
 	exist, desc, err := remote.ManifestExist(remoteRepo, getReference(art)) // HEAD
 	if err != nil {
 		return false, nil, err
@@ -181,7 +182,7 @@ func getManifestListKey(repo, dig string) string {
 }
 func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
 	var man distribution.Manifest
-	remoteRepo := getRemoteRepo(art)
+	remoteRepo := getRemoteRepo(ctx, art)
 	ref := getReference(art)
 	man, dig, err := remote.Manifest(remoteRepo, ref)
 	if err != nil {
@@ -228,12 +229,12 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 	return man, nil
 }
 func (c *controller) HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error) {
-	remoteRepo := getRemoteRepo(art)
+	remoteRepo := getRemoteRepo(ctx, art)
 	ref := getReference(art)
 	return remote.ManifestExist(remoteRepo, ref)
 }
 func (c *controller) ProxyBlob(ctx context.Context, p *models.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error) {
-	remoteRepo := getRemoteRepo(art)
+	remoteRepo := getRemoteRepo(ctx, art)
 	log.Debugf("The blob doesn't exist, proxy the request to the target server, url:%v", remoteRepo)
 	rHelper, err := NewRemoteHelper(p.RegistryID)
 	if err != nil {
@@ -279,7 +280,12 @@ func (c *controller) waitAndPushManifest(ctx context.Context, remoteRepo string,
 }
 
 // getRemoteRepo get the remote repository name, used in proxy cache
-func getRemoteRepo(art lib.ArtifactInfo) string {
+func getRemoteRepo(ctx context.Context, art lib.ArtifactInfo) string {
+	if lib.IsProxyPullMode(ctx) {
+		// for proxy pull mode, local repository name is the same as remote repository name
+		return art.Repository
+	}
+	// for proxy cache, we should trim proxy project name prefix
 	return strings.TrimPrefix(art.Repository, art.ProjectName+"/")
 }
 

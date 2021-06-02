@@ -38,7 +38,7 @@ func Handle(ctx context.Context, event *Event) error {
 	var err error
 	switch event.Type {
 	case EventTypeArtifactPush, EventTypeChartUpload, EventTypeTagDelete,
-		EventTypeArtifactDelete, EventTypeChartDelete:
+		EventTypeArtifactDelete, EventTypeChartDelete, EventTypeArtifactPull:
 		policies, err = getRelatedPolicies(ctx, event.Resource)
 	default:
 		return fmt.Errorf("unsupported event type %s", event.Type)
@@ -67,6 +67,14 @@ func getRelatedPolicies(ctx context.Context, resource *model.Resource) ([]*repct
 	if err != nil {
 		return nil, err
 	}
+
+	var autoSynced bool
+	if resource.Metadata.Repository != nil {
+		if synced, ok := resource.Metadata.Repository.Metadata["auto_synced"].(bool); ok {
+			autoSynced = synced
+		}
+	}
+
 	result := []*repctlmodel.Policy{}
 	for _, policy := range policies {
 		// disabled
@@ -75,7 +83,9 @@ func getRelatedPolicies(ctx context.Context, resource *model.Resource) ([]*repct
 		}
 		// currently, the events are produced only by local Harbor,
 		// so they should only apply to the policies whose source registry is local Harbor
-		if !(policy.SrcRegistry == nil || policy.SrcRegistry.ID == 0) {
+		// But with one exception, if the replication mode is pull-based with event-based trigger mode,
+		// related policies should also be included.
+		if !autoSynced && !(policy.SrcRegistry == nil || policy.SrcRegistry.ID == 0) {
 			continue
 		}
 		// has no trigger

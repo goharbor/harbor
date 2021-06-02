@@ -37,6 +37,7 @@ func init() {
 
 	// replication
 	notifier.Subscribe(event.TopicPushArtifact, &replication.Handler{})
+	notifier.Subscribe(event.TopicPullArtifact, &replication.Handler{})
 	notifier.Subscribe(event.TopicDeleteArtifact, &replication.Handler{})
 	notifier.Subscribe(event.TopicCreateTag, &replication.Handler{})
 	notifier.Subscribe(event.TopicDeleteTag, &replication.Handler{})

@@ -51,6 +51,7 @@ type Project struct {
 	Metadata     map[string]string   `orm:"-" json:"metadata"`
 	CVEAllowlist models.CVEAllowlist `orm:"-" json:"cve_allowlist"`
 	RegistryID   int64               `orm:"column(registry_id)" json:"registry_id"`
+	AutoSynced   bool                `orm:"column(auto_synced)" json:"auto_synced"`
 }
 
 // GetMetadata ...
@@ -81,8 +82,15 @@ func (p *Project) IsPublic() bool {
 }
 
 // IsProxy returns true when the project type is proxy cache
+// Because if project enabled auto sync, registry id is greater than zero,
+// so we should make sure that the project didn't enable auto sync.
 func (p *Project) IsProxy() bool {
-	return p.RegistryID > 0
+	return p.RegistryID > 0 && !p.AutoSynced
+}
+
+// IsAutoSynced returns true when the project type enabled auto sync
+func (p *Project) IsAutoSynced() bool {
+	return p.RegistryID > 0 && p.AutoSynced
 }
 
 // ContentTrustEnabled ...

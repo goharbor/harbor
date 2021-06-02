@@ -18,6 +18,7 @@ import "github.com/goharbor/harbor/src/pkg/reg/model"
 
 // const definitions
 const (
+	EventTypeArtifactPull   = "artifact_pull"
 	EventTypeArtifactPush   = "artifact_push"
 	EventTypeArtifactDelete = "artifact_delete"
 	EventTypeTagDelete      = "tag_delete"

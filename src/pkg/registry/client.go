@@ -261,8 +261,17 @@ func (c *client) ManifestExist(repository, reference string) (bool, *distributio
 	dig := resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
 	contentType := resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
 	contentLen := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
-	len, _ := strconv.Atoi(contentLen)
-	return true, &distribution.Descriptor{Digest: digest.Digest(dig), MediaType: contentType, Size: int64(len)}, nil
+	length, _ := strconv.Atoi(contentLen)
+
+	// if the manifest was pulled from proxy, and the target registry may don't contain the manifest, so set exist to false.
+	var exist bool
+	if len(resp.Header.Get(http.CanonicalHeaderKey("Repo-Proxy"))) > 0 {
+		exist = false
+	} else {
+		exist = true
+	}
+
+	return exist, &distribution.Descriptor{Digest: digest.Digest(dig), MediaType: contentType, Size: int64(length)}, nil
 }
 
 func (c *client) PullManifest(repository, reference string, acceptedMediaTypes ...string) (

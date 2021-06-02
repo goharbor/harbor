@@ -17,6 +17,10 @@ package repoproxy
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"time"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
@@ -30,9 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/server/middleware"
-	"io"
-	"net/http"
-	"time"
 )
 
 const (
@@ -40,6 +41,7 @@ const (
 	contentType         = "Content-Type"
 	dockerContentDigest = "Docker-Content-Digest"
 	etag                = "Etag"
+	repoProxy           = "Repo-Proxy"
 	ensureTagInterval   = 10 * time.Second
 	ensureTagMaxRetry   = 60
 )
@@ -106,7 +108,8 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	if err != nil {
 		return err
 	}
-	if !canProxy(p) {
+	// if project was not a proxy cache project or project enabled auto-synced, just skip.
+	if !canProxy(p) || p.AutoSynced {
 		next.ServeHTTP(w, r)
 		return nil
 	}
@@ -191,6 +194,7 @@ func setHeaders(w http.ResponseWriter, size int64, mediaType string, dig string)
 	}
 	h.Set(dockerContentDigest, dig)
 	h.Set(etag, dig)
+	h.Set(repoProxy, dig)
 }
 
 // isProxySession check if current security context is proxy session
@@ -255,5 +259,6 @@ func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Con
 	w.Header().Set(contentLength, fmt.Sprintf("%v", desc.Size))
 	w.Header().Set(dockerContentDigest, string(desc.Digest))
 	w.Header().Set(etag, string(desc.Digest))
+	w.Header().Set(repoProxy, string(desc.Digest))
 	return nil
 }

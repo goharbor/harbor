@@ -6213,6 +6213,9 @@ definitions:
       cve_allowlist:
         description: The CVE allowlist of this project.
         $ref: '#/definitions/CVEAllowlist'
+      auto_synced:
+        type: boolean
+        description: Whether the project can be auto-synced with pull-based replication mode.
   ProjectDeletable:
     type: object
     properties:

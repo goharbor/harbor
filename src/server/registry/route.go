@@ -50,6 +50,7 @@ func RegisterRoutes() {
 		Method(http.MethodGet).
 		Path("/*/manifests/:reference").
 		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
+		Middleware(repoproxy.PullEventMiddleware()).
 		Middleware(repoproxy.ManifestMiddleware()).
 		Middleware(contenttrust.Middleware()).
 		Middleware(vulnerable.Middleware()).
@@ -58,6 +59,7 @@ func RegisterRoutes() {
 		Method(http.MethodHead).
 		Path("/*/manifests/:reference").
 		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
+		Middleware(repoproxy.PullEventMiddleware()).
 		Middleware(repoproxy.ManifestMiddleware()).
 		HandlerFunc(getManifest)
 	root.NewRoute().
@@ -87,6 +89,7 @@ func RegisterRoutes() {
 		Method(http.MethodGet).
 		Path("/*/blobs/:digest").
 		Middleware(metric.InjectOpIDMiddleware(metric.BlobsOperationID)).
+		Middleware(repoproxy.PullEventBlobGetMiddleware()).
 		Middleware(repoproxy.BlobGetMiddleware()).
 		Handler(proxy)
 	// initiate blob upload

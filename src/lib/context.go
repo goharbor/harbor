@@ -22,10 +22,11 @@ type contextKey string
 
 // define all context key here to avoid conflict
 const (
-	contextKeyAPIVersion   contextKey = "apiVersion"
-	contextKeyArtifactInfo contextKey = "artifactInfo"
-	contextKeyAuthMode     contextKey = "authMode"
-	contextKeyCarrySession contextKey = "carrySession"
+	contextKeyAPIVersion    contextKey = "apiVersion"
+	contextKeyArtifactInfo  contextKey = "artifactInfo"
+	contextKeyAuthMode      contextKey = "authMode"
+	contextKeyCarrySession  contextKey = "carrySession"
+	contextKeyProxyPullMode contextKey = "proxyPullMode"
 )
 
 // ArtifactInfo wraps the artifact info extracted from the request to "/v2/"
@@ -111,4 +112,20 @@ func GetCarrySession(ctx context.Context) bool {
 		carrySession, _ = value.(bool)
 	}
 	return carrySession
+}
+
+// WithProxyPullMode returns a context with proxy pull mode
+// Proxy pull mode is similar to proxy cache except that there is no proxy project name prefix
+func WithProxyPullMode(ctx context.Context, enabled bool) context.Context {
+	return setToContext(ctx, contextKeyProxyPullMode, enabled)
+}
+
+// IsProxyPullMode return true if the proxy pull mode was enabled
+func IsProxyPullMode(ctx context.Context) bool {
+	enabled := false
+	value := getFromContext(ctx, contextKeyProxyPullMode)
+	if value != nil {
+		enabled, _ = value.(bool)
+	}
+	return enabled
 }

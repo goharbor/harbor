@@ -196,8 +196,8 @@ func (c *controller) GetInfo(ctx context.Context, id int64) (*model.RegistryInfo
 		return nil, err
 	}
 
-	// currently, only the local Harbor registry supports the event based trigger, append it here
-	if id == 0 {
+	// currently, only the Harbor registry supports the event based trigger, append it here
+	if info.Type == model.RegistryTypeHarbor {
 		info.SupportedTriggers = append(info.SupportedTriggers, model.TriggerTypeEventBased)
 	}
 	info = process(info)

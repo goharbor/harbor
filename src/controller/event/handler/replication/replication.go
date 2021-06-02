@@ -41,6 +41,10 @@ func (r *Handler) Handle(ctx context.Context, value interface{}) error {
 	if ok {
 		return r.handlePushArtifact(ctx, pushArtEvent)
 	}
+	pullArtEvent, ok := value.(*event.PullArtifactEvent)
+	if ok {
+		return r.handlePullArtifact(ctx, pullArtEvent)
+	}
 	deleteArtEvent, ok := value.(*event.DeleteArtifactEvent)
 	if ok {
 		return r.handleDeleteArtifact(ctx, deleteArtEvent)
@@ -91,6 +95,47 @@ func (r *Handler) handlePushArtifact(ctx context.Context, event *event.PushArtif
 			},
 		},
 	}
+	return repevent.Handle(ctx, e)
+}
+
+func (r *Handler) handlePullArtifact(ctx context.Context, event *event.PullArtifactEvent) error {
+	art := event.Artifact
+	public := false
+	prj, err := project.Ctl.Get(orm.Context(), art.ProjectID, project.Metadata(true))
+	if err != nil {
+		log.Errorf("failed to get project: %d, error: %v", art.ProjectID, err)
+		return err
+	}
+	// If the project didn't enable auto sync, skip...
+	if !prj.AutoSynced {
+		log.Info("the project auto-synced was disabled, skip...")
+		return nil
+	}
+
+	public = prj.IsPublic()
+
+	e := &repevent.Event{
+		Type: repevent.EventTypeArtifactPull,
+		Resource: &model.Resource{
+			Type: model.ResourceTypeArtifact,
+			Metadata: &model.ResourceMetadata{
+				Repository: &model.Repository{
+					Name: event.Repository,
+					Metadata: map[string]interface{}{
+						"public":      strconv.FormatBool(public),
+						"auto_synced": true,
+					},
+				},
+				Artifacts: []*model.Artifact{
+					{
+						Type:   art.Type,
+						Digest: art.Digest,
+						Tags:   event.Tags,
+					}},
+			},
+		},
+	}
+
 	return repevent.Handle(ctx, e)
 }
 
