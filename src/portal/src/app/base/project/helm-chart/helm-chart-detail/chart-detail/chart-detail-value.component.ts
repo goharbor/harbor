@@ -1,9 +1,4 @@
-import {
-  Component,
-  Input,
-  OnInit,
-  ChangeDetectionStrategy
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, OnInit } from "@angular/core";
 
 @Component({
   selector: "hbr-chart-detail-value",

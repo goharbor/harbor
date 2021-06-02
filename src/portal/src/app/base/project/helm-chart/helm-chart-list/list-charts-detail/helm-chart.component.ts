@@ -1,30 +1,18 @@
-import {
-  Component,
-  Input,
-  OnInit,
-  Output,
-  EventEmitter,
-  ViewChild,
-} from "@angular/core";
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, } from "@angular/core";
 import { NgForm } from '@angular/forms';
 import { TranslateService } from "@ngx-translate/core";
-import { forkJoin, throwError as observableThrowError, Observable } from "rxjs";
-import { finalize, map, catchError } from "rxjs/operators";
+import { forkJoin, Observable, throwError as observableThrowError } from "rxjs";
+import { catchError, finalize, map } from "rxjs/operators";
 import { HelmChartItem } from "../../helm-chart-detail/helm-chart.interface.service";
 import { HelmChartService } from "../../helm-chart-detail/helm-chart.service";
-import {
-  State,
-  SystemInfo,
-  SystemInfoService,
-  UserPermissionService,
-  USERSTATICPERMISSION
-} from "../../../../../shared/services";
+import { State, SystemInfo, SystemInfoService, UserPermissionService, USERSTATICPERMISSION } from "../../../../../shared/services";
 import { DEFAULT_PAGE_SIZE, downloadFile } from "../../../../../shared/units/utils";
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
 import { OperationService } from "../../../../../shared/components/operation/operation.service";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../shared/components/operation/operate";
 import {
-  ConfirmationButtons, ConfirmationState,
+  ConfirmationButtons,
+  ConfirmationState,
   ConfirmationTargets,
   DefaultHelmIcon,
   Roles

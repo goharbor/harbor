@@ -17,7 +17,6 @@ import { ArtifactListComponent } from "./artifact-list/artifact-list.component";
 import { ArtifactDefaultService } from "../artifact.service";
 import { AppConfigService } from "../../../../../services/app-config.service";
 import { SessionService } from "../../../../../shared/services/session.service";
-import { ArtifactClickEvent } from "../../../../../shared/services";
 import { Project } from "../../../project";
 
 @Component({

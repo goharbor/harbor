@@ -4,16 +4,11 @@ import { ArtifactListComponent } from './artifact-list.component';
 import { of } from "rxjs";
 import { delay } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
-import {
-  SystemInfo, SystemInfoDefaultService,
-  SystemInfoService,
-} from "../../../../../../shared/services";
+import { SystemInfo, SystemInfoDefaultService, SystemInfoService, } from "../../../../../../shared/services";
 import { ArtifactDefaultService, ArtifactService } from "../../artifact.service";
 import { ChannelService } from "../../../../../../shared/services/channel.service";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
-import {
-  RepositoryService as NewRepositoryService
-} from "../../../../../../../../ng-swagger-gen/services/repository.service";
+import { RepositoryService as NewRepositoryService } from "../../../../../../../../ng-swagger-gen/services/repository.service";
 import { SharedTestingModule } from "../../../../../../shared/shared.module";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 

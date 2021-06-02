@@ -1,29 +1,24 @@
-import {
-  Component,
-  Input,
-  OnInit,
-  ViewChild,
-  Output,
-  EventEmitter
-} from "@angular/core";
-import { Observable, forkJoin, throwError as observableThrowError } from "rxjs";
-import { finalize, map, catchError } from "rxjs/operators";
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core";
+import { forkJoin, Observable, throwError as observableThrowError } from "rxjs";
+import { catchError, finalize, map } from "rxjs/operators";
 import { TranslateService } from "@ngx-translate/core";
-import { HelmChartVersion, HelmChartMaintainer } from "../../helm-chart.interface.service";
+import { HelmChartMaintainer, HelmChartVersion } from "../../helm-chart.interface.service";
 import { HelmChartService } from "../../helm-chart.service";
 import {
   LabelService as OldLabelService,
   State,
   SystemInfo,
   SystemInfoService,
-  UserPermissionService, USERSTATICPERMISSION
+  UserPermissionService,
+  USERSTATICPERMISSION
 } from "../../../../../../shared/services";
 import { DEFAULT_PAGE_SIZE, downloadFile } from "../../../../../../shared/units/utils";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
 import { OperationService } from "../../../../../../shared/components/operation/operation.service";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../../shared/components/operation/operate";
 import {
-  ConfirmationButtons, ConfirmationState,
+  ConfirmationButtons,
+  ConfirmationState,
   ConfirmationTargets,
   DefaultHelmIcon,
   ResourceType
@@ -34,6 +29,7 @@ import { ConfirmationMessage } from "../../../../../global-confirmation-dialog/c
 import { ConfirmationAcknowledgement } from "../../../../../global-confirmation-dialog/confirmation-state-message";
 import { Label } from "../../../../../../../../ng-swagger-gen/models/label";
 import { LabelService } from "../../../../../../../../ng-swagger-gen/services/label.service";
+
 const PAGE_SIZE: number = 100;
 @Component({
   selector: "hbr-helm-chart-version",

@@ -12,14 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { finalize } from 'rxjs/operators';
-import {
-  Component,
-  Input,
-  EventEmitter,
-  Output,
-  ViewChild,
-  OnInit
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { UserService } from '../../../left-side-nav/user/user.service';

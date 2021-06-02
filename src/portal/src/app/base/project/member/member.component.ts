@@ -11,10 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { finalize } from 'rxjs/operators';
-import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
+import { catchError, finalize, map } from 'rxjs/operators';
+import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { Subscription, forkJoin, Observable } from "rxjs";
+import { forkJoin, Observable, Subscription, throwError as observableThrowError } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
 import { SessionService } from "../../../shared/services/session.service";
@@ -23,18 +23,11 @@ import { AddGroupComponent } from './add-group/add-group.component';
 import { AddHttpAuthGroupComponent } from './add-http-auth-group/add-http-auth-group.component';
 import { AddMemberComponent } from "./add-member/add-member.component";
 import { AppConfigService } from "../../../services/app-config.service";
-import { map, catchError } from "rxjs/operators";
-import { throwError as observableThrowError } from "rxjs";
 import { OperationService } from "../../../shared/components/operation/operation.service";
 import { UserPermissionService, USERSTATICPERMISSION } from "../../../shared/services";
 import { ErrorHandler } from "../../../shared/units/error-handler";
 import { operateChanges, OperateInfo, OperationState } from "../../../shared/components/operation/operate";
-import {
-  ConfirmationButtons,
-  ConfirmationState,
-  ConfirmationTargets,
-  RoleInfo
-} from "../../../shared/entities/shared.const";
+import { ConfirmationButtons, ConfirmationState, ConfirmationTargets, RoleInfo } from "../../../shared/entities/shared.const";
 import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
 import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
@@ -42,6 +35,7 @@ import { DEFAULT_PAGE_SIZE } from "../../../shared/units/utils";
 import { MemberService } from "../../../../../ng-swagger-gen/services/member.service";
 import { ClrDatagridStateInterface } from "@clr/angular";
 import { ProjectMemberEntity } from "../../../../../ng-swagger-gen/models/project-member-entity";
+
 @Component({
   templateUrl: "member.component.html",
   styleUrls: ["./member.component.scss"],

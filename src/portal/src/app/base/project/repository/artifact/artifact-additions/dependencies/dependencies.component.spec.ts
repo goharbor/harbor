@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DependenciesComponent } from "./dependencies.component";
 import { AdditionsService } from '../additions.service';
@@ -7,7 +7,6 @@ import { ArtifactDependency } from "../models";
 import { AdditionLink } from "../../../../../../../../ng-swagger-gen/models/addition-link";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
 import { ClarityModule } from "@clr/angular";
-import { CURRENT_BASE_HREF } from "../../../../../../shared/units/utils";
 
 
 describe('DependenciesComponent', () => {

@@ -1,4 +1,4 @@
-import { TestBed, inject } from '@angular/core/testing';
+import { inject, TestBed } from '@angular/core/testing';
 import { ArtifactDefaultService, ArtifactService } from "./artifact.service";
 import { IconService } from '../../../../../../ng-swagger-gen/services/icon.service';
 import { DomSanitizer } from '@angular/platform-browser';

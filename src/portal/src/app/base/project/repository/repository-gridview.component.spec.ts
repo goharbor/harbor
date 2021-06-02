@@ -2,18 +2,13 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { of } from "rxjs";
 import { RepositoryService as NewRepositoryService } from "../../../../../ng-swagger-gen/services/repository.service";
 import { RepositoryGridviewComponent } from "./repository-gridview.component";
-import {
-  ProjectDefaultService,
-  ProjectService,
-  SystemInfo, SystemInfoService,
-  UserPermissionService
-} from "../../../shared/services";
+import { ProjectDefaultService, ProjectService, SystemInfo, SystemInfoService, UserPermissionService } from "../../../shared/services";
 import { delay } from 'rxjs/operators';
 import { ErrorHandler } from "../../../shared/units/error-handler";
 import { ActivatedRoute } from "@angular/router";
 import { Repository as NewRepository } from "../../../../../ng-swagger-gen/models/repository";
 import { SharedTestingModule } from "../../../shared/shared.module";
-import {GridViewComponent} from "./gridview/grid-view.component";
+import { GridViewComponent } from "./gridview/grid-view.component";
 
 describe('RepositoryComponentGridview (inline template)', () => {
 

@@ -11,9 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { Input, ViewChild, AfterViewChecked } from '@angular/core';
+import { AfterViewChecked, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
 import { SessionService } from '../../shared/services/session.service';
 import { SignUpComponent } from '../sign-up/sign-up.component';
@@ -21,11 +20,11 @@ import { ForgotPasswordComponent } from '../../base/password-setting/forgot-pass
 import { AppConfigService } from '../../services/app-config.service';
 import { AppConfig } from '../../services/app-config';
 import { User } from '../../base/left-side-nav/user/user';
-import { CookieService, CookieOptions } from 'ngx-cookie';
+import { CookieOptions, CookieService } from 'ngx-cookie';
 import { SkinableConfig } from "../../services/skinable-config.service";
-import {ModalEvent} from "../../base/modal-event";
-import {modalEvents} from "../../base/modal-events.const";
-import {AboutDialogComponent} from "../../shared/components/about-dialog/about-dialog.component";
+import { ModalEvent } from "../../base/modal-event";
+import { modalEvents } from "../../base/modal-events.const";
+import { AboutDialogComponent } from "../../shared/components/about-dialog/about-dialog.component";
 import { CommonRoutes, CONFIG_AUTH_MODE } from "../../shared/entities/shared.const";
 import { SignInCredential } from "./sign-in-credential";
 import { UserPermissionService } from "../../shared/services";

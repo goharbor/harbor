@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { WebhookComponent } from './webhook.component';
 import { ActivatedRoute } from '@angular/router';
 import { ProjectWebhookService } from './webhook.service';

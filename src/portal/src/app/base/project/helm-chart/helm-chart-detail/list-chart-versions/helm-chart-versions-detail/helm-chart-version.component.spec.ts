@@ -1,9 +1,6 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ChartVersionComponent } from './helm-chart-version.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
 import { HelmChartService } from "../../helm-chart.service";
 import { LabelFilterComponent } from "../../label-filter/label-filter.component";
 import { of } from 'rxjs';

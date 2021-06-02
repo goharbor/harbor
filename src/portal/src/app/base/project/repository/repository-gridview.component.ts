@@ -1,47 +1,31 @@
-import {
-  Component,
-  Input,
-  Output,
-  OnInit,
-  ViewChild,
-  EventEmitter,
-  OnChanges,
-  SimpleChanges,
-  OnDestroy
-} from "@angular/core";
-import {forkJoin, of, Subscription} from "rxjs";
-import {debounceTime, distinctUntilChanged, finalize, switchMap} from "rxjs/operators";
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { forkJoin, Observable, of, Subscription } from "rxjs";
+import { catchError, debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
 import { TranslateService } from "@ngx-translate/core";
-import { map, catchError } from "rxjs/operators";
-import { Observable } from "rxjs";
 import { ClrDatagridStateInterface } from "@clr/angular";
-import {
-  RepositoryService as NewRepositoryService
-} from "../../../../../ng-swagger-gen/services/repository.service";
-import {
-  SystemInfo,
-  SystemInfoService,
-  UserPermissionService, USERSTATICPERMISSION
-} from "../../../shared/services";
+import { RepositoryService as NewRepositoryService } from "../../../../../ng-swagger-gen/services/repository.service";
+import { SystemInfo, SystemInfoService, UserPermissionService, USERSTATICPERMISSION } from "../../../shared/services";
 import { FilterComponent } from "../../../shared/components/filter/filter.component";
 import {
   calculatePage,
   clone,
-  DEFAULT_PAGE_SIZE,
+  CURRENT_BASE_HREF,
   dbEncodeURIComponent,
-  doFiltering, CURRENT_BASE_HREF, getSortingString
+  DEFAULT_PAGE_SIZE,
+  doFiltering,
+  getSortingString
 } from "../../../shared/units/utils";
 import { ErrorHandler } from "../../../shared/units/error-handler";
 import {
   CARD_VIEW_LOCALSTORAGE_KEY,
   ConfirmationButtons,
   ConfirmationState,
-  ConfirmationTargets, FALSE_STR, TRUE_STR
+  ConfirmationTargets,
+  FALSE_STR,
+  TRUE_STR
 } from "../../../shared/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../shared/components/operation/operate";
-import {
-  ConfirmationDialogComponent,
-} from "../../../shared/components/confirmation-dialog";
+import { ConfirmationDialogComponent, } from "../../../shared/components/confirmation-dialog";
 import { OperationService } from "../../../shared/components/operation/operation.service";
 import { Project } from "../project";
 import { ActivatedRoute, Router } from "@angular/router";

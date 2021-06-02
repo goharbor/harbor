@@ -1,19 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppConfigService } from "../../../services/app-config.service";
-import {
-  Endpoint,
-  ProjectService,
-  UserPermissionService,
-  USERSTATICPERMISSION
-} from '../../../shared/services';
+import { Endpoint, ProjectService, UserPermissionService, USERSTATICPERMISSION } from '../../../shared/services';
 import { ErrorHandler } from "../../../shared/units/error-handler";
-import {
-  DefaultHelmIcon,
-  FALSE_STR,
-  PROJECT_SUMMARY_CARD_VIEW_LOCALSTORAGE_KEY,
-  TRUE_STR
-} from "../../../shared/entities/shared.const";
+import { DefaultHelmIcon, FALSE_STR, PROJECT_SUMMARY_CARD_VIEW_LOCALSTORAGE_KEY, TRUE_STR } from "../../../shared/entities/shared.const";
 import { RepositoryService } from "../../../../../ng-swagger-gen/services/repository.service";
 import { Project } from "../../../../../ng-swagger-gen/models/project";
 import { Repository } from "../../../../../ng-swagger-gen/models/repository";

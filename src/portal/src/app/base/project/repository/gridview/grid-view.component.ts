@@ -10,17 +10,17 @@
  */
 
 import {
+  AfterViewInit,
   Component,
+  ContentChild,
+  EventEmitter,
+  HostListener,
   Input,
   Output,
-  ContentChild,
+  TemplateRef,
   ViewChild,
   ViewChildren,
-  TemplateRef,
-  HostListener,
-  ViewEncapsulation,
-  EventEmitter,
-  AfterViewInit
+  ViewEncapsulation
 } from "@angular/core";
 import { Subscription } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";

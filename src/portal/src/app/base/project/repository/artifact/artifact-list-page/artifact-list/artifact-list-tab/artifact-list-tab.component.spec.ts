@@ -8,7 +8,6 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { ArtifactDefaultService, ArtifactService } from "../../../artifact.service";
 import {
   Label,
-  LabelDefaultService,
   ProjectDefaultService,
   ProjectService,
   ScanningResultDefaultService,
