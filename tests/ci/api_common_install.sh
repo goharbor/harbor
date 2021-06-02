@@ -60,7 +60,7 @@ sed "s|#   enabled: false|  enabled: true|" -i make/harbor.yml
 sed "s|#   port: 9090|  port: 9090|" -i make/harbor.yml
 sed "s|#   path: /metrics|  path: /metrics|" -i make/harbor.yml
 
-sudo make build_base_docker compile build prepare COMPILETAG=compile_golangimage GOBUILDTAGS="include_oss include_gcs" BUILDBIN=true NOTARYFLAG=true TRIVYFLAG=true CHARTFLAG=true GEN_TLS=true
+sudo make compile build prepare COMPILETAG=compile_golangimage GOBUILDTAGS="include_oss include_gcs" BUILDBIN=true NOTARYFLAG=true TRIVYFLAG=true CHARTFLAG=true GEN_TLS=true PULL_BASE_FROM_DOCKERHUB=false
 
 # set the debugging env
 echo "GC_TIME_WINDOW_HOURS=0" | sudo tee -a ./make/common/config/core/env

@@ -49,15 +49,7 @@ jobs:
         if: contains(steps.changed-files.outputs.modified, 'Dockerfile.base') || contains(steps.changed-files.outputs.modified, 'VERSION')
         run: |
           set -x
-          target_branch="$(echo ${GITHUB_REF#refs/heads/})"
-          if [[ $target_branch == "release-"* ]]; then
-            base_image_tag=$(cat ./VERSION)
-          else
-            base_image_tag=dev
-          fi
-          cd src/github.com/goharbor/harbor
-          sudo make build_base_docker -e BASEIMAGETAG=$base_image_tag -e REGISTRYUSER="${{ secrets.DOCKER_HUB_USERNAME }}" -e REGISTRYPASSWORD="${{ secrets.DOCKER_HUB_PASSWORD }}" -e PUSHBASEIMAGE=yes
-        continue-on-error: true
+          echo "BUILD_BASE=true" >> $GITHUB_ENV
       - name: Build Package
         run: |
           set -x
@@ -89,9 +81,15 @@ jobs:
             Harbor_Build_Base_Tag=dev
           fi
 
+          build_base_params=" BUILD_BASE=false"
           cd src/github.com/goharbor/harbor
-          sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} BUILDBIN=true NOTARYFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
-          sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} BUILDBIN=true NOTARYFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
+          if [ -z "$BUILD_BASE"  ] || [ "$BUILD_BASE" != "true"  ]; then
+            echo "Do not need to build base images!"
+          else
+            build_base_params=" BUILD_BASE=true PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
+          fi
+          sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} BUILDBIN=true NOTARYFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY= ${build_base_params}
+          sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} BUILDBIN=true NOTARYFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY= ${build_base_params}
           harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
           harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
           echo "Package name is: $harbor_offline_build_bundle"
