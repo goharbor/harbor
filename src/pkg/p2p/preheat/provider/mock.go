@@ -25,6 +25,7 @@ import (
 )
 
 // This is a package to provide mock utilities.
+var preheatMap = make(map[string]struct{})
 
 // MockDragonflyProvider mocks a Dragonfly server.
 func MockDragonflyProvider() *httptest.Server {
@@ -56,6 +57,19 @@ func MockDragonflyProvider() *httptest.Server {
 				_, _ = w.Write([]byte(err.Error()))
 				return
 			}
+
+			if image.ImageName == "" {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			if _, ok := preheatMap[image.Digest]; ok {
+				w.WriteHeader(http.StatusAlreadyReported)
+				_, _ = w.Write([]byte(`{"ID":""}`))
+				return
+			}
+
+			preheatMap[image.Digest] = struct{}{}
 
 			if image.Type == "image" &&
 				image.URL == "https://harbor.com" &&

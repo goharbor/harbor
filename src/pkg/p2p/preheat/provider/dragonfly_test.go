@@ -78,14 +78,33 @@ func (suite *DragonflyTestSuite) TestGetHealth() {
 
 // TestPreheat tests Preheat method.
 func (suite *DragonflyTestSuite) TestPreheat() {
+	// preheat first time
 	st, err := suite.driver.Preheat(&PreheatImage{
 		Type:      "image",
 		ImageName: "busybox",
 		Tag:       "latest",
 		URL:       "https://harbor.com",
+		Digest:    "sha256:f3c97e3bd1e27393eb853a5c90b1132f2cda84336d5ba5d100c720dc98524c82",
 	})
 	require.NoError(suite.T(), err, "preheat image")
 	suite.Equal("dragonfly-id", st.TaskID, "preheat image result")
+
+	// preheat the same image second time
+	st, err = suite.driver.Preheat(&PreheatImage{
+		Type:      "image",
+		ImageName: "busybox",
+		Tag:       "latest",
+		URL:       "https://harbor.com",
+		Digest:    "sha256:f3c97e3bd1e27393eb853a5c90b1132f2cda84336d5ba5d100c720dc98524c82",
+	})
+	require.NoError(suite.T(), err, "preheat image")
+	suite.Equal("", st.TaskID, "preheat image result")
+
+	// preheat image digest is empty
+	st, err = suite.driver.Preheat(&PreheatImage{
+		ImageName: "",
+	})
+	require.Error(suite.T(), err, "preheat image")
 }
 
 // TestCheckProgress tests CheckProgress method.

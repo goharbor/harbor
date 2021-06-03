@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
+	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/client"
@@ -76,10 +78,17 @@ func (dd *DragonflyDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingSt
 		return nil, errors.New("no image specified")
 	}
 
+	taskStatus := provider.PreheatingStatusPending // default
 	url := fmt.Sprintf("%s%s", strings.TrimSuffix(dd.instance.Endpoint, "/"), preheatEndpoint)
 	bytes, err := client.GetHTTPClient(dd.instance.Insecure).Post(url, dd.getCred(), preheatingImage, nil)
 	if err != nil {
-		return nil, err
+		if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusAlreadyReported {
+			// If the resource was preheated already with empty task ID, we should set preheat status to success.
+			// Otherwise later querying for the task
+			taskStatus = provider.PreheatingStatusSuccess
+		} else {
+			return nil, err
+		}
 	}
 
 	result := &dragonflyPreheatCreateResp{}
@@ -89,7 +98,7 @@ func (dd *DragonflyDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingSt
 
 	return &PreheatingStatus{
 		TaskID: result.ID,
-		Status: provider.PreheatingStatusPending, // default
+		Status: taskStatus,
 	}, nil
 }
 
