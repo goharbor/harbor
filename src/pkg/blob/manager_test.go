@@ -192,6 +192,67 @@ func (suite *ManagerTestSuite) TestCleanupAssociationsForProject() {
 	})
 }
 
+func (suite *ManagerTestSuite) TestFindBlobsShouldUnassociatedWithProject() {
+	ctx := suite.Context()
+
+	suite.WithProject(func(projectID int64, projectName string) {
+		artifact1 := suite.DigestString()
+		artifact2 := suite.DigestString()
+
+		sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, 'library/hello-world')`
+		suite.ExecSQL(sql, artifact1, projectID, 11)
+		suite.ExecSQL(sql, artifact2, projectID, 11)
+
+		defer suite.ExecSQL(`DELETE FROM artifact WHERE project_id = ?`, projectID)
+
+		digest1 := suite.DigestString()
+		digest2 := suite.DigestString()
+		digest3 := suite.DigestString()
+		digest4 := suite.DigestString()
+		digest5 := suite.DigestString()
+
+		var ol q.OrList
+		blobDigests := []string{digest1, digest2, digest3, digest4, digest5}
+		for _, digest := range blobDigests {
+			blobID, err := Mgr.Create(ctx, digest, "", 100)
+			if suite.Nil(err) {
+				Mgr.AssociateWithProject(ctx, blobID, projectID)
+			}
+			ol.Values = append(ol.Values, digest)
+		}
+
+		blobs, err := Mgr.List(ctx, q.New(q.KeyWords{"digest": &ol}))
+		suite.Nil(err)
+		suite.Len(blobs, 5)
+
+		for _, digest := range []string{digest1, digest2, digest3} {
+			Mgr.AssociateWithArtifact(ctx, digest, artifact1)
+		}
+
+		for _, digest := range blobDigests {
+			Mgr.AssociateWithArtifact(ctx, digest, artifact2)
+		}
+
+		{
+			results, err := Mgr.FindBlobsShouldUnassociatedWithProject(ctx, projectID, blobs)
+			suite.Nil(err)
+			suite.Len(results, 0)
+		}
+
+		suite.ExecSQL(`DELETE FROM artifact WHERE digest = ?`, artifact2)
+
+		{
+			results, err := Mgr.FindBlobsShouldUnassociatedWithProject(ctx, projectID, blobs)
+			suite.Nil(err)
+			if suite.Len(results, 2) {
+				suite.Contains([]string{results[0].Digest, results[1].Digest}, digest4)
+				suite.Contains([]string{results[0].Digest, results[1].Digest}, digest5)
+			}
+
+		}
+	})
+}
+
 func (suite *ManagerTestSuite) TestGet() {
 	ctx := suite.Context()
 
