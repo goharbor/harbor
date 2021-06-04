@@ -139,7 +139,7 @@ func (suite *gcTestSuite) TestRemoveUntaggedBlobs() {
 	}
 
 	suite.NotPanics(func() {
-		gc.removeUntaggedBlobs(ctx)
+		gc.markOrSweepUntaggedBlobs(ctx)
 	})
 }
 
