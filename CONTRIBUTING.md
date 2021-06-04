@@ -220,7 +220,7 @@ Changes should be made on your own fork in a new branch. The branch should be na
 ```
 #goharbor is the origin upstream
 
-cd $working_dir/kubernetes
+cd $working_dir/harbor
 git fetch goharbor
 git checkout master
 git rebase goharbor/master
