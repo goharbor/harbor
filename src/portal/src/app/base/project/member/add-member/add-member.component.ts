@@ -11,20 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { finalize, debounceTime } from 'rxjs/operators';
-import {
-  Component,
-  Input,
-  EventEmitter,
-  Output,
-  ViewChild,
-  AfterViewChecked,
-  OnInit,
-  OnDestroy,
-} from '@angular/core';
+import { debounceTime, finalize } from 'rxjs/operators';
+import { AfterViewChecked, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { ActivatedRoute } from "@angular/router";
-import { Subject, forkJoin } from "rxjs";
+import { forkJoin, Subject } from "rxjs";
 import { TranslateService } from '@ngx-translate/core';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { UserService } from '../../../left-side-nav/user/user.service';

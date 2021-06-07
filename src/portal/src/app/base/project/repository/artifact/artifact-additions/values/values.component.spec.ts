@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
 import { ClarityModule } from '@clr/angular';

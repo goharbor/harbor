@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ADDITIONS } from "./models";
 import { AdditionLinks } from "../../../../../../../ng-swagger-gen/models/addition-links";
 import { AdditionLink } from "../../../../../../../ng-swagger-gen/models/addition-link";

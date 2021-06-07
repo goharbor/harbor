@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TopRepoComponent } from './top-repo.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -10,6 +10,7 @@ import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { TopRepoService } from './top-repository.service';
+
 describe('TopRepoComponent', () => {
     let component: TopRepoComponent;
     let fixture: ComponentFixture<TopRepoComponent>;

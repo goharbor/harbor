@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit } from "@angular/core";
+import { Component, EventEmitter, OnInit, Output } from "@angular/core";
 import { Artifact } from "../../../../../../ng-swagger-gen/models/artifact";
 import { ErrorHandler } from "../../../../shared/units/error-handler";
 import { Label } from "../../../../../../ng-swagger-gen/models/label";

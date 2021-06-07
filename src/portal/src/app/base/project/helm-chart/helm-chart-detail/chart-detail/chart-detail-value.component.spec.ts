@@ -1,10 +1,10 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ChartDetailValueComponent } from './chart-detail-value.component';
 import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
-import { MarkdownModule, MarkedOptions  } from 'ngx-markdown';
+import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { BrowserModule } from '@angular/platform-browser';
 
 describe('ChartDetailValueComponent', () => {

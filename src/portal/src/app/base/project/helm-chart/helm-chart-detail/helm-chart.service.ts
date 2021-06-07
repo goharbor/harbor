@@ -1,9 +1,8 @@
-import {throwError as observableThrowError,  Observable } from "rxjs";
-import { Injectable, Inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { map, catchError } from "rxjs/operators";
-import {HttpErrorResponse} from "@angular/common/http";
-import { HelmChartItem, HelmChartVersion, HelmChartDetail } from "./helm-chart.interface.service";
+import { Observable, throwError as observableThrowError } from "rxjs";
+import { Injectable } from "@angular/core";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { catchError, map } from "rxjs/operators";
+import { HelmChartDetail, HelmChartItem, HelmChartVersion } from "./helm-chart.interface.service";
 import { RequestQueryParams } from "../../../../shared/services";
 import { HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS, V1_BASE_HREF } from "../../../../shared/units/utils";
 

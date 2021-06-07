@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ChartDetailComponent } from './chart-detail.component';
 import { ClarityModule } from '@clr/angular';
@@ -8,6 +8,7 @@ import { HelmChartService } from "../helm-chart.service";
 import { of } from 'rxjs';
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
 import { SystemInfoService } from "../../../../../shared/services";
+
 describe('ChartDetailComponent', () => {
     let component: ChartDetailComponent;
     let fixture: ComponentFixture<ChartDetailComponent>;

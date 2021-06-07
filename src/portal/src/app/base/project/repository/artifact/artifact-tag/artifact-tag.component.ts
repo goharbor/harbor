@@ -1,6 +1,6 @@
-import { Component, OnInit, Input, ViewChild, OnDestroy } from '@angular/core';
-import { Observable, of, forkJoin, Subject, Subscription } from 'rxjs';
-import { map, catchError, finalize, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { forkJoin, Observable, of, Subject, Subscription } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, map, switchMap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { NgForm } from '@angular/forms';
 import { AVAILABLE_TIME } from "../artifact-list-page/artifact-list/artifact-list-tab/artifact-list-tab.component";
@@ -11,16 +11,15 @@ import { operateChanges, OperateInfo, OperationState } from "../../../../../shar
 import { ArtifactFront as Artifact, artifactImages, artifactPullCommands } from '../artifact';
 import { ArtifactService } from '../../../../../../../ng-swagger-gen/services/artifact.service';
 import { Tag } from '../../../../../../../ng-swagger-gen/models/tag';
-import {
-  UserPermissionService, USERSTATICPERMISSION, SystemInfoService, SystemInfo
-} from "../../../../../shared/services";
+import { SystemInfo, SystemInfoService, UserPermissionService, USERSTATICPERMISSION } from "../../../../../shared/services";
 import { ClrDatagridStateInterface } from '@clr/angular';
 import {
-  DEFAULT_PAGE_SIZE,
   calculatePage,
   dbEncodeURIComponent,
+  DEFAULT_PAGE_SIZE,
   doFiltering,
-  doSorting, getSortingString
+  doSorting,
+  getSortingString
 } from '../../../../../shared/units/utils';
 import { AppConfigService } from "../../../../../services/app-config.service";
 import { errorHandler } from "../../../../../shared/units/shared.utils";

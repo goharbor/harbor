@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { of } from "rxjs";
 import { MemberService } from '../member.service';
 import { AppConfigService } from "../../../../services/app-config.service";

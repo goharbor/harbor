@@ -15,8 +15,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { User } from '../../left-side-nav/user/user';
 import { Member } from './member';
-import {throwError as observableThrowError,  Observable } from "rxjs";
-import {map, catchError} from 'rxjs/operators';
+import { Observable, throwError as observableThrowError } from "rxjs";
+import { catchError, map } from 'rxjs/operators';
 import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../../shared/units/utils";
 
 @Injectable()

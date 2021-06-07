@@ -1,4 +1,4 @@
-import { Component, Input, Output, OnInit, EventEmitter, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { fromEvent, Subject } from 'rxjs';
 import { debounceTime, finalize } from 'rxjs/operators';
 import { HelmChartVersion } from '../helm-chart.interface.service';

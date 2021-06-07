@@ -11,35 +11,25 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {
-  Component,
-  ElementRef,
-  Input, OnDestroy,
-  OnInit,
-  ViewChild,
-
-} from "@angular/core";
-import { forkJoin, Observable, Subject, of, Subscription } from "rxjs";
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, } from "@angular/core";
+import { forkJoin, Observable, of, Subject, Subscription } from "rxjs";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
-import { ClrLoadingState, ClrDatagridStateInterface, ClrDatagridComparatorInterface } from "@clr/angular";
+import { ClrDatagridComparatorInterface, ClrDatagridStateInterface, ClrLoadingState } from "@clr/angular";
 
 import { ActivatedRoute, Router } from "@angular/router";
-import {
-  Comparator, ScanningResultService,
-  UserPermissionService, USERSTATICPERMISSION,
-} from "../../../../../../../shared/services";
+import { Comparator, ScanningResultService, UserPermissionService, USERSTATICPERMISSION, } from "../../../../../../../shared/services";
 import {
   calculatePage,
   clone,
   CustomComparator,
-  DEFAULT_PAGE_SIZE,
-  formatSize,
-  VULNERABILITY_SCAN_STATUS,
   dbEncodeURIComponent,
-  doSorting,
+  DEFAULT_PAGE_SIZE,
   DEFAULT_SUPPORTED_MIME_TYPES,
-  getSortingString
+  doSorting,
+  formatSize,
+  getSortingString,
+  VULNERABILITY_SCAN_STATUS
 } from "../../../../../../../shared/units/utils";
 import { ImageNameInputComponent } from "../../../../../../../shared/components/image-name-input/image-name-input.component";
 import { CopyInputComponent } from "../../../../../../../shared/components/push-image/copy-input.component";
@@ -47,18 +37,9 @@ import { ErrorHandler } from "../../../../../../../shared/units/error-handler";
 import { ArtifactService } from "../../../artifact.service";
 import { OperationService } from "../../../../../../../shared/components/operation/operation.service";
 import { ChannelService } from "../../../../../../../shared/services/channel.service";
-import {
-  ConfirmationButtons,
-  ConfirmationState,
-  ConfirmationTargets
-} from "../../../../../../../shared/entities/shared.const";
+import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../../../../shared/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../../../shared/components/operation/operate";
-import {
-  ArtifactFront as Artifact,
-  mutipleFilter,
-  artifactPullCommands,
-  artifactDefault, ArtifactFront
-} from '../../../artifact';
+import { artifactDefault, ArtifactFront as Artifact, ArtifactFront, artifactPullCommands, mutipleFilter } from '../../../artifact';
 import { Project } from "../../../../../project";
 import { ArtifactService as NewArtifactService } from "../../../../../../../../../ng-swagger-gen/services/artifact.service";
 import { ADDITIONS } from "../../../artifact-additions/models";

@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LabelMarkerComponent } from './label-marker.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';

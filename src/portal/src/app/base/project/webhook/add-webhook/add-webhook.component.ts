@@ -1,11 +1,4 @@
-import {
-  Component,
-  OnInit,
-  Input,
-  ViewChild,
-  Output,
-  EventEmitter,
-} from "@angular/core";
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, } from "@angular/core";
 import { AddWebhookFormComponent } from "../add-webhook-form/add-webhook-form.component";
 import { WebhookPolicy } from "../../../../../../ng-swagger-gen/models/webhook-policy";
 

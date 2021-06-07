@@ -1,7 +1,4 @@
-import {
-    Component, Input, OnChanges,
-    OnInit, SimpleChanges
-} from "@angular/core";
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from "@angular/core";
 import { ProjectWebhookService } from "../webhook.service";
 import { WebhookLastTrigger } from "../../../../../../ng-swagger-gen/models/webhook-last-trigger";
 
