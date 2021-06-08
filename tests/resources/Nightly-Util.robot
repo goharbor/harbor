@@ -52,8 +52,8 @@ Nightly Test Setup In Ubuntu
     Prepare Test Tools
     Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
-    Log To Console  Start Containerd Daemon Locally ...
-    Run Keyword  Start Containerd Daemon Locally
+    #Log To Console  Start Containerd Daemon Locally ...
+    #Run Keyword  Start Containerd Daemon Locally
     Prepare Helm Plugin
     Run Keyword If  '${DOCKER_USER}' != '${EMPTY}'  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
 

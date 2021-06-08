@@ -34,8 +34,6 @@ Pull image
     Should Contain  ${output}  Digest:
     Should Contain  ${output}  Status:
     Should Not Contain  ${output}  No such image:
-    #Remove image for docker 20
-    Clean All Local Images
 
 Push image
     # If no tag provided in $(image_with_or_without_tag}, latest will be the tag pulled from docker-hub or read from local
@@ -53,8 +51,6 @@ Push image
     ...  ELSE  Wait Unitl Command Success  docker tag ${image_in_use} ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image_in_use_with_tag}
     Wait Unitl Command Success  docker logout ${ip}
-    #Remove image for docker 20
-    Clean All Local Images
     Sleep  1
 
 Push Image With Tag
@@ -66,14 +62,6 @@ Push Image With Tag
     Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1} ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker logout ${ip}
-    #Remove image for docker 20
-    Clean All Local Images
-
-Clean All Local Images
-    ${rc}  ${out}=  Run Keyword And Ignore Error  Run  docker rmi -f $(docker images -a -q)
-    Log All  ${out}
-    ${rc}  ${out}=  Run Keyword And Ignore Error  Run  docker system prune -a -f
-    Log All  ${out}
 
 Cannot Docker Login Harbor
     [Arguments]  ${ip}  ${user}  ${pwd}
@@ -81,8 +69,6 @@ Cannot Docker Login Harbor
 
 Cannot Pull Image
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}=${null}  ${err_msg}=${null}
-    Restart Process Locally  containerd
-    Restart Process Locally  dockerd
     ${image_with_tag}=  Set Variable If  '${tag}'=='${null}'  ${image}  ${image}:${tag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     FOR  ${idx}  IN RANGE  0  30
@@ -90,7 +76,6 @@ Cannot Pull Image
         Exit For Loop If  '${out[0]}'=='PASS'
         Sleep  3
     END
-    Clean All Local Images
     Log To Console  Cannot Pull Image - Pull Log: ${out[1]}
     Should Be Equal As Strings  '${out[0]}'  'PASS'
     Run Keyword If  '${err_msg}' != '${null}'  Should Contain  ${out[1]}  ${err_msg}
@@ -106,7 +91,6 @@ Cannot Push image
     Run Keyword If  '${err_msg}' != '${null}'  Should Contain  ${output}  ${err_msg}
     Run Keyword If  '${err_msg_2}' != '${null}'  Should Contain  ${output}  ${err_msg_2}
     Wait Unitl Command Success  docker logout ${ip}
-    Clean All Local Images
 
 Wait Until Container Stops
     [Arguments]  ${container}
@@ -219,6 +203,12 @@ Kill Local Docker Daemon
     Process Should Be Stopped  ${handle}
     Wait Unitl Command Success  kill -9 ${dockerd-pid}
 
+Clean All Local Images
+    ${rc}  ${out}=  Run Keyword And Ignore Error  Run  docker rmi -f $(docker images -a -q)
+    Log All  ${out}
+    ${rc}  ${out}=  Run Keyword And Ignore Error  Run  docker system prune -a -f
+    Log All  ${out}
+
 Docker Login Fail
     [Arguments]  ${ip}  ${user}  ${pwd}
     Log To Console  \nRunning docker login ${ip} ...
@@ -260,7 +250,6 @@ Docker Image Can Not Be Pulled
         Log To Console  Docker pull return value is ${out}
         Sleep  3
     END
-    Clean All Local Images
     Log To Console  Cannot Pull Image From Docker - Pull Log: ${out[1]}
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
@@ -275,6 +264,5 @@ Docker Image Can Be Pulled
         Exit For Loop If  '${out[0]}'=='PASS'
         Sleep  5
     END
-    Clean All Local Images
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
