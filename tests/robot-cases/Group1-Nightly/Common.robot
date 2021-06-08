@@ -51,6 +51,7 @@ Test Case - Push ORAS and Display
     Wait Until Page Contains  ${tag}
     Close Browser
 
+## TODO: uncomment it once #14470 fixed
 # Test Case - Push SIF and Display
 #     [Tags]  push_sif
 #     Init Chrome Driver
@@ -60,8 +61,6 @@ Test Case - Push ORAS and Display
 
 #     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
 #     Create An New Project And Go Into Project  test${d}
-
-#     Clean All Local Images
 
 #     ${repo_name}=  Set Variable  busybox
 #     ${tag}=  Set Variable  1.28

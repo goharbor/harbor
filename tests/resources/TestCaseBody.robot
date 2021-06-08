@@ -171,7 +171,7 @@ Body Of Admin Push Signed Image
     Wait Unitl Command Success  rm -rf ~/.docker/
     Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${project} ${image} ${tag} ${notaryServerEndpoint} ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag} ${user} ${pwd}
-    Clean All Local Images
+
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
