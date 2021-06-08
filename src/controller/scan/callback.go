@@ -92,6 +92,7 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 						NamespaceID: art.ProjectID,
 						Repository:  art.RepositoryName,
 						Digest:      art.Digest,
+						Tag:         getArtifactTag(t.ExtraAttrs),
 						MimeType:    art.ManifestMediaType,
 					},
 					Status: status,
