@@ -34,7 +34,7 @@ if [ "$(ls -A $PGDATA)" ]; then
                 #   There seems to be a postmaster servicing the new cluster.
                 #   Please shutdown that postmaster and try again.
                 #   Failure, exiting
-                $PGBINOLD/pg_ctl -D "$PGDATAOLD" -w start
+                $PGBINOLD/pg_ctl -D "$PGDATAOLD" -w -o "-p 5433" start
                 $PGBINOLD/pg_ctl -D "$PGDATAOLD" -m fast -w stop
                 ./$CUR/upgrade.sh --old-bindir $PGBINOLD --old-datadir $PGDATAOLD --new-datadir $PGDATANEW
                 # it needs to clean the $PGDATANEW on upgrade failure
