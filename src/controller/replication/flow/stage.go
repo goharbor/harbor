@@ -17,13 +17,13 @@ package flow
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"path"
 	"strings"
 
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/goharbor/harbor/src/pkg/reg/util"
 )
 
 // get/create the source registry, destination registry, source adapter and destination adapter
@@ -192,38 +192,34 @@ func getResourceName(res *model.Resource) string {
 	return fmt.Sprintf("%s [%d item(s) in total]", meta.Repository.Name, n)
 }
 
-// repository:a/b/c namespace:n replaceCount: -1 -> n/c
-// repository:a/b/c namespace:n replaceCount: 0 -> n/a/b/c
-// repository:a/b/c namespace:n replaceCount: 1 -> n/b/c
-// repository:a/b/c namespace:n replaceCount: 2 -> n/c
-// repository:a/b/c namespace:n replaceCount: 3 -> n
+// repository:a/b/c/image namespace:n replaceCount: -1 -> n/image
+// repository:a/b/c/image namespace:n replaceCount: 0 -> n/a/b/c/image
+// repository:a/b/c/image namespace:n replaceCount: 1 -> n/b/c/image
+// repository:a/b/c/image namespace:n replaceCount: 2 -> n/c/image
+// repository:a/b/c/image namespace:n replaceCount: 3 -> n/image
+// repository:a/b/c/image namespace:n replaceCount: 4 -> error
 func replaceNamespace(repository string, namespace string, replaceCount int8, dstRepoComponentPathType string) (string, error) {
 	if len(namespace) == 0 {
 		return repository, nil
 	}
 
-	// legacy logic to keep backward compatibility
-	if replaceCount < 0 {
-		_, rest := util.ParseRepository(repository)
-		return fmt.Sprintf("%s/%s", namespace, rest), nil
-	}
-
-	var dstRepo string
 	srcRepoPathComponents := strings.Split(repository, "/")
 	srcLength := len(srcRepoPathComponents)
+
+	var dstRepoPrefix string
 	switch {
-	case replaceCount == 0:
-		dstRepo = fmt.Sprintf("%s/%s", namespace, repository)
-	case int(replaceCount) == srcLength:
-		dstRepo = namespace
-	case int(replaceCount) > srcLength:
+	case replaceCount < 0: // legacy logic to keep backward compatibility
+		dstRepoPrefix = namespace
+	case int(replaceCount) > srcLength-1: // invalid replace count
 		return "", errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("the source repository %q contains only %d path components %v, but the destination namespace flattening level is %d",
-				repository, srcLength, srcRepoPathComponents, replaceCount)
+			WithMessage("the source repository %q contains only %d path components %v excepting the last one, but the destination namespace flattening level is %d",
+				repository, srcLength-1, srcRepoPathComponents[:srcLength-1], replaceCount)
 	default:
-		dstRepo = fmt.Sprintf("%s/%s", namespace, strings.Join(srcRepoPathComponents[replaceCount:], "/"))
+		dstRepoPrefix = namespace + "/" + strings.Join(srcRepoPathComponents[replaceCount:srcLength-1], "/")
 	}
 
+	name := srcRepoPathComponents[srcLength-1] // the last part of the repository path components, we'll keep it as the same with the source
+	dstRepo := path.Join(dstRepoPrefix, name)
 	dstRepoPathComponents := strings.Split(dstRepo, "/")
 	dstLength := len(dstRepoPathComponents)
 	switch dstRepoComponentPathType {
