@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/distribution"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/scan"
 )
 
@@ -58,7 +59,12 @@ func (s *scanAPI) ScanArtifact(ctx context.Context, params operation.ScanArtifac
 		return s.SendError(ctx, err)
 	}
 
-	if err := s.scanCtl.Scan(ctx, artifact); err != nil {
+	options := []scan.Option{}
+	if !distribution.IsDigest(params.Reference) {
+		options = append(options, scan.WithTag(params.Reference))
+	}
+
+	if err := s.scanCtl.Scan(ctx, artifact, options...); err != nil {
 		return s.SendError(ctx, err)
 	}
 

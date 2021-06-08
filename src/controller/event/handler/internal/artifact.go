@@ -91,7 +91,7 @@ func (a *Handler) addPullCount(ctx context.Context, event *event.ArtifactEvent) 
 
 func (a *Handler) onPush(ctx context.Context, event *event.ArtifactEvent) error {
 	go func() {
-		if err := autoScan(ctx, &artifact.Artifact{Artifact: *event.Artifact}); err != nil {
+		if err := autoScan(ctx, &artifact.Artifact{Artifact: *event.Artifact}, event.Tags...); err != nil {
 			log.Errorf("scan artifact %s@%s failed, error: %v", event.Artifact.RepositoryName, event.Artifact.Digest, err)
 		}
 	}()

@@ -42,6 +42,7 @@ import (
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
+	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
 	postprocessorstesting "github.com/goharbor/harbor/src/testing/pkg/scan/postprocessors"
@@ -58,6 +59,8 @@ type ControllerTestSuite struct {
 
 	artifactCtl         *artifacttesting.Controller
 	originalArtifactCtl artifact.Controller
+
+	tagCtl *tagtesting.FakeController
 
 	registration *scanner.Registration
 	artifact     *artifact.Artifact
@@ -255,6 +258,9 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 	suite.ar = &artifacttesting.Controller{}
 
+	suite.tagCtl = &tagtesting.FakeController{}
+	suite.tagCtl.On("List", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil)
+
 	suite.execMgr = &tasktesting.ExecutionManager{}
 
 	suite.taskMgr = &tasktesting.Manager{}
@@ -264,6 +270,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		ar:      suite.ar,
 		sc:      sc,
 		rc:      rc,
+		tagCtl:  suite.tagCtl,
 		uuid: func() (string, error) {
 			return "the-uuid-123", nil
 		},
