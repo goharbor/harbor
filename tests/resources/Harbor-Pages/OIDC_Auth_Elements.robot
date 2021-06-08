@@ -28,3 +28,4 @@ ${save_btn}       //*[@id='saveButton']
 ${OIDC_USERNAME}  test1
 ${generate_secret_btn}       //*[@id='generate-cli-btn']
 ${more_btn}       //*[@id='hidden-generate-cli']
+${reset_secret_btn}       //*[@id='reset-cli-btn']
