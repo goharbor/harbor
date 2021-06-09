@@ -104,22 +104,21 @@ func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, erro
 			Name:      name,
 		})
 		if err != nil {
-			// if got conflict error, try to get again
-			if errors.IsConflictErr(err) {
-				var e error
-				repository, e = c.repoMgr.GetByName(ctx, name)
-				if e != nil {
-					err = e
-				} else {
-					id = repository.RepositoryID
-				}
-			}
 			return err
 		}
 		created = true
 		return nil
-	})(ctx); err != nil && !errors.IsConflictErr(err) {
-		return false, 0, err
+	})(ctx); err != nil {
+		// isn't conflict error, return directly
+		if !errors.IsConflictErr(err) {
+			return false, 0, err
+		}
+		// if got conflict error, try to get again
+		repository, err = c.repoMgr.GetByName(ctx, name)
+		if err != nil {
+			return false, 0, err
+		}
+		id = repository.RepositoryID
 	}
 
 	return created, id, nil
