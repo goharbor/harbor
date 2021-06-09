@@ -644,7 +644,8 @@
         "FLATTEN_LEVEL_TIP_NO": "'无替换': 'a/b/c/d/img' -> 'ns/a/b/c/d/img",
         "FLATTEN_LEVEL_TIP_1": "'替换1级'(默认项): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
         "FLATTEN_LEVEL_TIP_2": "'替换2级': 'a/b/c/d/img' -> 'ns/c/d/img'",
-        "FLATTEN_LEVEL_TIP_3": "'替换3级': 'a/b/c/d/img' -> 'ns/d/img'"
+        "FLATTEN_LEVEL_TIP_3": "'替换3级': 'a/b/c/d/img' -> 'ns/d/img'",
+        "NOTE": "注意: Chartmuseum Charts 仅支持2层的仓库结构：如 `a/chart`"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
