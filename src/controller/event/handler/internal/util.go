@@ -24,7 +24,7 @@ import (
 )
 
 // autoScan scan artifact when the project of the artifact enable auto scan
-func autoScan(ctx context.Context, a *artifact.Artifact) error {
+func autoScan(ctx context.Context, a *artifact.Artifact, tags ...string) error {
 	proj, err := project.Ctl.Get(ctx, a.ProjectID)
 	if err != nil {
 		return err
@@ -35,6 +35,11 @@ func autoScan(ctx context.Context, a *artifact.Artifact) error {
 
 	// transaction here to work with the image index
 	return orm.WithTransaction(func(ctx context.Context) error {
-		return scan.DefaultController.Scan(ctx, a)
+		options := []scan.Option{}
+		if len(tags) > 0 {
+			options = append(options, scan.WithTag(tags[0]))
+		}
+
+		return scan.DefaultController.Scan(ctx, a, options...)
 	})(ctx)
 }
