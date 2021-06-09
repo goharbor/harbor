@@ -83,7 +83,7 @@
                 </clr-tooltip>
             </label>
             <clr-checkbox-wrapper>
-                <input type="checkbox" clrCheckbox name="repoReadOnly" id="repoReadOnly"
+                <input type="checkbox" [disabled]="!systemSettings.read_only.editable"  clrCheckbox name="repoReadOnly" id="repoReadOnly"
                     [ngModel]="systemSettings.read_only.value" (ngModelChange)="setRepoReadOnlyValue($event)" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
@@ -175,7 +175,7 @@
                 <input type="checkbox" clrCheckbox name="webhookNotificationEnabled" id="webhookNotificationEnabled"
                     [ngModel]="systemSettings.notification_enable.value"
                     (ngModelChange)="setWebhookNotificationEnabledValue($event)"
-                    [ngModel]="systemSettings.notification_enable.value" />
+                    [disabled]="!systemSettings.notification_enable.editable" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
     </section>

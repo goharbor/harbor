@@ -7,7 +7,7 @@
             <clr-icon *ngIf="isProxyCacheProject" shape="cloud-traffic" size="30"></clr-icon>
             <clr-icon *ngIf="!isProxyCacheProject" shape="organization" size="30"></clr-icon>
             <span class="ml-05">{{currentProject.name}}</span>
-            <div class="divider filter-divider"></div>
+            <div class="divider filter-divider" *ngIf="isMember"></div>
             <span class="role-label" *ngIf="isMember">{{roleName | translate}}</span>
         </h1>
         <div class="clr-row mt-0 line-height-10" *ngIf="isProxyCacheProject">
