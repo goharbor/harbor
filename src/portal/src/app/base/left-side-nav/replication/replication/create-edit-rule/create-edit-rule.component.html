@@ -128,14 +128,7 @@
       </div>
       <!--destination registry-->
       <div *ngIf="isPushMode" class="clr-form-control">
-        <label class="clr-control-label  required">{{'REPLICATION.DEST_REGISTRY' | translate}}
-          <clr-tooltip>
-            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-            <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
-              <span>{{'TOOLTIP.DESTINATION_NAMESPACE' | translate}}</span>
-            </clr-tooltip-content>
-          </clr-tooltip>
-        </label>
+        <label class="clr-control-label  required">{{'REPLICATION.DEST_REGISTRY' | translate}}</label>
         <div class="form-select clr-control-container">
           <div class="clr-select-wrapper">
             <select class="clr-select select-width" id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"
@@ -192,6 +185,7 @@
                   <div>{{'REPLICATION.FLATTEN_LEVEL_TIP_1' | translate}}</div>
                   <div>{{'REPLICATION.FLATTEN_LEVEL_TIP_2' | translate}}</div>
                   <div>{{'REPLICATION.FLATTEN_LEVEL_TIP_3' | translate}}</div>
+                  <div>{{'REPLICATION.NOTE' | translate}}</div>
                 </clr-tooltip-content>
               </clr-tooltip>
             </div>

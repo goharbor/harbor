@@ -58,9 +58,11 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
   accountFormRef: NgForm;
   @ViewChild("accountSettingsFrom", {static: true}) accountForm: NgForm;
   @ViewChild("resetSecretFrom", {static: true}) resetSecretFrom: NgForm;
-  @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
+  @ViewChild("accountSettingInlineAlert") inlineAlert: InlineAlertComponent;
+  @ViewChild("resetSecretInlineAlert") resetSecretInlineAlert: InlineAlertComponent;
   @ViewChild("copyInput") copyInput: CopyInputComponent;
-
+  showInputSecret: boolean = false;
+  showConfirmSecret: boolean = false;
   constructor(
     private session: SessionService,
     private msgHandler: MessageHandlerService,
@@ -364,7 +366,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
       this.closeReset();
       this.inlineAlert.showInlineSuccess({message: 'PROFILE.GENERATE_SUCCESS'});
     }, error => {
-      this.inlineAlert.showInlineError({message: 'PROFILE.GENERATE_ERROR'});
+      this.resetSecretInlineAlert.showInlineError({message: 'PROFILE.GENERATE_ERROR'});
     });
   }
   disableChangeCliSecret() {
@@ -374,5 +376,9 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     this.showSecretDetail = false;
     this.showGenerateCliFn();
     this.resetSecretFrom.resetForm(new ResetSecret());
+  }
+  openSecretDetail() {
+    this.showSecretDetail = true;
+    this.resetSecretInlineAlert.close();
   }
 }
