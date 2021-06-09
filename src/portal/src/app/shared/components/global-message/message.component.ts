@@ -70,6 +70,10 @@ export class MessageComponent implements OnInit, OnDestroy {
 
           // Make the message alert bar dismiss after several intervals.
           // Only for this case
+          if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = null;
+          }
           this.timer = setTimeout(() => this.onClose(), dismissInterval);
 
           // Hack the Clarity Alert style with native dom

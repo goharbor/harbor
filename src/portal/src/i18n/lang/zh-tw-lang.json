@@ -639,7 +639,8 @@
     "FLATTEN_LEVEL_TIP_NO": "'No Flatting': 'a/b/c/d/img' -> 'ns/a/b/c/d/img",
     "FLATTEN_LEVEL_TIP_1": "'Flatten 1 Level'(Default): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
     "FLATTEN_LEVEL_TIP_2": "'Flatten 2 Levels': 'a/b/c/d/img' -> 'ns/c/d/img'",
-    "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'"
+    "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'",
+    "NOTE": "Notes: The Chartmuseum Charts only support the repository structure with 2 path components: `a/chart`"
   },
   "DESTINATION":{
     "NEW_ENDPOINT": "新建目標",
