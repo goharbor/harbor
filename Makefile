@@ -93,10 +93,14 @@ GEN_TLS=
 # for docker image tag
 VERSIONTAG=dev
 # for base docker image tag
-PUSHBASEIMAGE=
+BUILD_BASE=true
+PUSHBASEIMAGE=false
 BASEIMAGETAG=dev
-BASEIMAGENAMESPACE=goharbor
 BUILDBASETARGET=chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl exporter
+BASEIMAGENAMESPACE=goharbor
+# #input true/false only
+PULL_BASE_FROM_DOCKERHUB=true
+
 # for harbor package name
 PKGVERSIONTAG=dev
 
@@ -251,9 +255,7 @@ ZIPCMD=$(shell which gzip)
 DOCKERIMGFILE=harbor
 HARBORPKG=harbor
 
-# pushimage
-PUSHSCRIPTPATH=$(MAKEPATH)
-PUSHSCRIPTNAME=pushimage.sh
+# pull/push image
 REGISTRYUSER=
 REGISTRYPASSWORD=
 
@@ -408,6 +410,19 @@ prepare: update_prepare_version
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
 build:
+# PUSHBASEIMAGE should not be true if BUILD_BASE is not true
+	@if [ "$(PULL_BASE_FROM_DOCKERHUB)" != "true" ] && [ "$(PULL_BASE_FROM_DOCKERHUB)" != "false" ] ; then \
+		echo set PULL_BASE_FROM_DOCKERHUB to true or false.; exit 1; \
+	fi
+	@if [ "$(BUILD_BASE)" != "true" ]  && [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
+		echo Do not push base images since no base images built. ; \
+		exit 1; \
+	fi
+# PULL_BASE_FROM_DOCKERHUB should be true if BUILD_BASE is not true
+	@if [ "$(BUILD_BASE)" != "true" ]  && [ "$(PULL_BASE_FROM_DOCKERHUB)" = "false" ] ; then \
+		echo Should pull base images from registry in docker configuration since no base images built. ; \
+		exit 1; \
+	fi
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile $(BUILDTARGET) -e DEVFLAG=$(DEVFLAG) -e GOBUILDIMAGE=$(GOBUILDIMAGE) \
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG) \
 	 -e NOTARYVERSION=$(NOTARYVERSION) -e NOTARYMIGRATEVERSION=$(NOTARYMIGRATEVERSION) \
@@ -417,30 +432,13 @@ build:
 	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e CHARTMUSEUM_SRC_TAG=$(CHARTMUSEUM_SRC_TAG) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
 	 -e CHARTURL=$(CHARTURL) -e NOTARYURL=$(NOTARYURL) -e REGISTRYURL=$(REGISTRYURL) \
-	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL)
+	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
+	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
+	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
+	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)
-
-build_base_docker:
-	if [ -n "$(REGISTRYUSER)" ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
-		docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
-	else \
-		echo "No docker credentials provided, please make sure enough priviledges to access docker hub!" ; \
-	fi
-	@for name in $(BUILDBASETARGET); do \
-		echo $$name ; \
-		sleep 30 ; \
-		if [ $$name == "db" ]; then \
-		    make _build_base_db ; \
-		else \
-			$(DOCKERBUILD) --build-arg BUILD_PG96=$(BUILD_PG96) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
-		fi ; \
-		if [ -n "$(PUSHBASEIMAGE)" ] ; then \
-		  	$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
-		fi ; \
-	done
-
 _build_base_db:
 	@if [ "$(BUILD_PG96)" = "true" ] ; then \
 		echo "build pg96 rpm package." ; \
@@ -602,7 +600,7 @@ cleanbinary:
 
 cleanbaseimage:
 	@echo "cleaning base image for photon..."
-	@for name in chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+	@for name in $(BUILDBASETARGET); do \
 		$(DOCKERRMIMAGE) -f $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) ; \
 	done
 
