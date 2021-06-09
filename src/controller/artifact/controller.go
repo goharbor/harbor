@@ -199,21 +199,21 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 	if err = orm.WithTransaction(func(ctx context.Context) error {
 		id, err := c.artMgr.Create(ctx, artifact)
 		if err != nil {
-			// if got conflict error, try to get the artifact again
-			if errors.IsConflictErr(err) {
-				var e error
-				artifact, e = c.artMgr.GetByDigest(ctx, repository, digest)
-				if e != nil {
-					err = e
-				}
-			}
 			return err
 		}
 		created = true
 		artifact.ID = id
 		return nil
-	})(ctx); err != nil && !errors.IsConflictErr(err) {
-		return false, nil, err
+	})(ctx); err != nil {
+		// got error that isn't conflict error, return directly
+		if !errors.IsConflictErr(err) {
+			return false, nil, err
+		}
+		// if got conflict error, try to get the artifact again
+		artifact, err = c.artMgr.GetByDigest(ctx, repository, digest)
+		if err != nil {
+			return false, nil, err
+		}
 	}
 
 	return created, artifact, nil
