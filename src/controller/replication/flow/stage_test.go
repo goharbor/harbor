@@ -157,7 +157,7 @@ func (s *stageTestSuite) TestReplaceNamespace() {
 	// replace count > actual sub strings
 	repository = "a/b"
 	namespace = "n"
-	replaceCount = 3
+	replaceCount = 2
 	result, err = replaceNamespace(repository, namespace, replaceCount, "")
 	s.Require().NotNil(err)
 
@@ -185,20 +185,20 @@ func (s *stageTestSuite) TestReplaceNamespace() {
 	s.Require().Nil(err)
 	s.Equal("n/c", result)
 
-	// replace count = 3
+	// the generated destination namespace contains 3 path component, but the destination registry requires only 2
 	repository = "a/b/c"
 	namespace = "n"
-	replaceCount = 3
+	replaceCount = 1
+	result, err = replaceNamespace(repository, namespace, replaceCount, model.RepositoryPathComponentTypeOnlyTwo)
+	s.Require().NotNil(err)
+
+	// replace count =0, repository contains no "/"
+	repository = "a"
+	namespace = "n"
+	replaceCount = 0
 	result, err = replaceNamespace(repository, namespace, replaceCount, "")
 	s.Require().Nil(err)
-	s.Equal("n", result)
-
-	// the generated destination namespace contains 1 path component, but the destination registry requires at least 2
-	repository = "a/b/c"
-	namespace = "n"
-	replaceCount = 3
-	result, err = replaceNamespace(repository, namespace, replaceCount, model.RepositoryPathComponentTypeAtLeastTwo)
-	s.Require().NotNil(err)
+	s.Equal("n/a", result)
 }
 
 func TestStage(t *testing.T) {
