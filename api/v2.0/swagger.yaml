@@ -5656,10 +5656,12 @@ definitions:
         type: integer
         format: int64
         description: The count of the artifacts inside the repository
+        x-omitempty: false
       pull_count:
         type: integer
         format: int64
         description: The count that the artifact inside the repository pulled
+        x-omitempty: false
       creation_time:
         type: string
         format: date-time
