@@ -110,9 +110,9 @@ func constructScanImagePayload(event *event.ScanImageEvent, project *proModels.P
 		Operator: event.Operator,
 	}
 
-	reference := event.Artifact.Digest
+	reference := event.Artifact.Tag
 	if reference == "" {
-		reference = event.Artifact.Tag
+		reference = event.Artifact.Digest
 	}
 
 	resURL, err := util.BuildImageResourceURL(event.Artifact.Repository, reference)

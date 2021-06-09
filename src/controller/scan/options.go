@@ -16,7 +16,8 @@ package scan
 
 // Options keep the settings/configurations for scanning.
 type Options struct {
-	ExecutionID int64 // The execution id to scan artifact
+	ExecutionID int64  // The execution id to scan artifact
+	Tag         string // The tag of the artifact to scan
 }
 
 // Option represents an option item by func template.
@@ -30,6 +31,15 @@ type Option func(options *Options) error
 func WithExecutionID(executionID int64) Option {
 	return func(options *Options) error {
 		options.ExecutionID = executionID
+
+		return nil
+	}
+}
+
+// WithTag sets the tag option.
+func WithTag(tag string) Option {
+	return func(options *Options) error {
+		options.Tag = tag
 
 		return nil
 	}
