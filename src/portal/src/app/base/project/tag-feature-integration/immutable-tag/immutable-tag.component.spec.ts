@@ -9,6 +9,7 @@ import { clone } from "../../../../shared/units/utils";
 import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
 import { AddImmutableRuleComponent } from "./add-rule/add-immutable-rule.component";
 import { SharedTestingModule } from "../../../../shared/shared.module";
+import { RuleMetadate } from "../tag-retention/retention";
 
 describe('ImmutableTagComponent', () => {
   let component: ImmutableTagComponent;
@@ -17,7 +18,7 @@ describe('ImmutableTagComponent', () => {
   let errorHandler: ErrorHandler;
   let fixture: ComponentFixture<ImmutableTagComponent>;
   let fixtureAddrule: ComponentFixture<AddImmutableRuleComponent>;
-  let mockMetadata = {
+  let mockMetadata: RuleMetadate = {
     "templates": [
       {
         "rule_template": "latestPushedK",
@@ -250,7 +251,7 @@ describe('ImmutableTagComponent', () => {
     immutableTagService = fixture.debugElement.injector.get(ImmutableTagService);
     errorHandler = fixture.debugElement.injector.get(ErrorHandler);
     spyOn(immutableTagService, "getRetentionMetadata")
-      .and.returnValue(of(mockMetadata, throwError('error')));
+      .and.returnValue(of(mockMetadata));
     spyOn(immutableTagService, "getRules")
       .withArgs(component.projectId)
       .and.returnValue(of(mockRules))

@@ -3,12 +3,12 @@ body {
 }
 
 .app-loading {
-  position: absolute;
+  position: absolute !important;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  margin: auto;
+  margin: auto !important;
   width: 108px !important;
   height: 108px !important;
 }
