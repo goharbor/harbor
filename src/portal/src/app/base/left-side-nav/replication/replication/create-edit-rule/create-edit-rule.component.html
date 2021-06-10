@@ -146,7 +146,7 @@
       <!--destination namespaces -->
       <div class="clr-form-control">
         <label for="dest_namespace" class="clr-control-label">{{'REPLICATION.DESTINATION' | translate}}</label>
-        <div class="clr-control-container" [class.clr-error]="ruleForm.controls.dest_namespace.touched && ruleForm.controls.dest_namespace.invalid">
+        <div class="clr-control-container" [class.clr-error]="(ruleForm.controls.dest_namespace.dirty || ruleForm.controls.dest_namespace.touched) && ruleForm.controls.dest_namespace.invalid">
           <div class="clr-input-wrapper">
             <label class="sub-label">{{'REPLICATION.NAMESPACE' | translate}}:</label>
             <input autocomplete="off"  class="clr-input" formControlName="dest_namespace" type="text" id="dest_namespace" pattern="^[a-z0-9]+(?:[/._-][a-z0-9]+)*$"
@@ -158,8 +158,8 @@
               </clr-tooltip-content>
             </clr-tooltip>
           </div>
-          <clr-control-error class="margin-left-90px" *ngIf="ruleForm.controls.dest_namespace.touched && ruleForm.controls.dest_namespace.invalid">
-            {{'REPLICATION.DESTINATION_NAME_TOOLTIP' | translate}}
+          <clr-control-error class="margin-left-90px" *ngIf="(ruleForm.controls.dest_namespace.dirty || ruleForm.controls.dest_namespace.touched) && ruleForm.controls.dest_namespace.invalid">
+            {{'REPLICATION.NAMESPACE_TOOLTIP' | translate}}
           </clr-control-error>
         </div>
       </div>
