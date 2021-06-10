@@ -17,14 +17,15 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/robfig/cron"
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	replicationmodel "github.com/goharbor/harbor/src/pkg/replication/model"
+	"github.com/robfig/cron"
 )
 
 // Policy defines the structure of a replication policy
@@ -109,6 +110,14 @@ func (p *Policy) Validate() error {
 		default:
 			return errors.New(nil).WithCode(errors.BadRequestCode).
 				WithMessage("invalid filter type")
+		}
+	}
+
+	// valid the destination namespace
+	if len(p.DestNamespace) > 0 {
+		if !lib.RepositoryNameRe.MatchString(p.DestNamespace) {
+			return errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessage("invalid destination namespace: %s", p.DestNamespace)
 		}
 	}
 
