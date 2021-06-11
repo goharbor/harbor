@@ -614,7 +614,7 @@
     "SOURCE_NAMESPACES":"源命名空間",
     "DEST_REGISTRY":"目的註冊表",
     "DEST_NAMESPACE":"目的名稱空間",
-    "NAMESPACE_TOOLTIP": "Namespace名稱由小寫字符、數字和._-組成且至少2個字符並以字符或者數字開頭。",
+    "NAMESPACE_TOOLTIP": "Namespace名稱由小寫字符、數字和._-/組成且至少2個字符並以字符或者數字開頭。",
     "TAG":"標籤",
     "LABEL": "標籤",
     "RESOURCE": "資源",
