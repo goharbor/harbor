@@ -211,6 +211,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   get isValid() {
+    if (this.ruleForm.controls["dest_namespace"].value) {
+      if (this.ruleForm.controls["dest_namespace"].invalid) {
+        return false;
+      }
+    }
     let controlName = !!this.ruleForm.controls["name"].value;
     let sourceRegistry = !!this.ruleForm.controls["src_registry"].value;
     let destRegistry = !!this.ruleForm.controls["dest_registry"].value;

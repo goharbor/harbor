@@ -617,7 +617,7 @@
         "SOURCE_NAMESPACES": "Quell-Namespaces",
         "DEST_REGISTRY": "Ziel-Registry",
         "DEST_NAMESPACE": "Ziel-Namespace",
-        "NAMESPACE_TOOLTIP": "Der Name des Namespaces sollte mindestens 2 Zeichen lang sein mit Kleinschreibung, Ziffern und ._- . Er muss mit Zeichen oder Ziffern beginnen.",
+        "NAMESPACE_TOOLTIP": "Der Name des Namespaces sollte mindestens 2 Zeichen lang sein mit Kleinschreibung, Ziffern und ._-/ . Er muss mit Zeichen oder Ziffern beginnen.",
         "TAG": "Tag",
         "LABEL": "Label",
         "RESOURCE": "Ressource",
