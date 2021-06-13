@@ -100,6 +100,18 @@ set -e
 #  - https://docs.docker.com/reference/commandline/cli/#logout
 # ---------------------------
 
+# Logout from the registry
+h2 "Logout from the docker registry"
+DOCKER_LOGOUT="docker logout $REGISTRY"
+DOCKER_LOGOUT_OUTPUT=$($DOCKER_LOGOUT)
+if [ $? -ne 0 ]; then
+  warn "$DOCKER_LOGOUT_OUTPUT"
+  error "Logout from Docker registry $REGISTRY failed"
+  exit 1
+else
+  success "Logout from Docker registry $REGISTRY succeeded"
+fi
+
 # Login to the registry
 h2 "Login to the Docker registry"
 
@@ -131,7 +143,7 @@ fi
 
 if [ "$PULL_BASE_FROM_DOCKERHUB" == "true" ];then
   h2 "Remove local goharbor images"
-  DOCKER_RMI="docker rmi $(docker images | grep "goharbor" | awk '{print $3}') -f"
+  DOCKER_RMI="docker rmi -f $(docker images | grep "${IMAGE%:*}" | awk '{print $3}') -f"
   info "$DOCKER_RMI"
   DOCKER_RMI_OUTPUT=$($DOCKER_RMI)
   if [ $? -ne 0 ];then
@@ -141,3 +153,4 @@ if [ "$PULL_BASE_FROM_DOCKERHUB" == "true" ];then
     success "Clean local goharbor images succeeded";
   fi
 fi
+
