@@ -101,35 +101,6 @@ set -x
 #  - https://docs.docker.com/reference/commandline/cli/#logout
 # ---------------------------
 
-# Logout from the registry
-h2 "Logout from the docker registry"
-DOCKER_LOGOUT="docker logout"
-DOCKER_LOGOUT_OUTPUT=$($DOCKER_LOGOUT)
-if [ $? -ne 0 ]; then
-  warn "$DOCKER_LOGOUT_OUTPUT"
-  error "Logout from Docker registry $REGISTRY failed"
-  exit 1
-else
-  success "Logout from Docker registry $REGISTRY succeeded"
-fi
-
-# Login to the registry
-h2 "Login to the Docker registry"
-
-DOCKER_LOGIN="docker login --username $USERNAME --password $PASSWORD $REGISTRY"
-info "docker login --username $USERNAME --password *******"
-DOCKER_LOGIN_OUTPUT=$($DOCKER_LOGIN)
-
-if [ $? -ne 0 ]; then
-  warn "$DOCKER_LOGIN_OUTPUT"
-  error "Login to Docker registry $REGISTRY failed"
-  exit 1
-else
-  success "Login to Docker registry $REGISTRY succeeded";
-fi
-
-sleep 3
-
 # Push the docker image
 h2 "Pushing image to Docker registry"
 
@@ -142,18 +113,6 @@ if [ $? -ne 0 ];then
   error "Pushing image $IMAGE failed";
 else
   success "Pushing image $IMAGE succeeded";
-fi
-
-# Logout from the registry
-h2 "Logout from the docker registry"
-DOCKER_LOGOUT="docker logout"
-DOCKER_LOGOUT_OUTPUT=$($DOCKER_LOGOUT)
-if [ $? -ne 0 ]; then
-  warn "$DOCKER_LOGOUT_OUTPUT"
-  error "Logout from Docker registry $REGISTRY failed"
-  exit 1
-else
-  success "Logout from Docker registry $REGISTRY succeeded"
 fi
 
 if [ "$PULL_BASE_FROM_DOCKERHUB" == "true" ];then
