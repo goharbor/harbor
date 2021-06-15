@@ -2,7 +2,7 @@ worker_processes auto;
 pid /tmp/nginx.pid;
 
 events {
-  worker_connections 1024;
+  worker_connections 3096;
   use epoll;
   multi_accept on;
 }
@@ -76,7 +76,7 @@ http {
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
-      
+
       proxy_buffering off;
       proxy_request_buffering off;
     }
@@ -98,7 +98,7 @@ http {
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
-      
+
       proxy_buffering off;
       proxy_request_buffering off;
     }
@@ -120,7 +120,7 @@ http {
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
-      
+
       proxy_buffering off;
       proxy_request_buffering off;
     }
@@ -142,7 +142,7 @@ http {
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
-      
+
       proxy_buffering off;
       proxy_request_buffering off;
     }
