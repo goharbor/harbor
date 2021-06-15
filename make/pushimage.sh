@@ -88,10 +88,11 @@ fi
 IMAGE="$1"
 USERNAME="$2"
 PASSWORD="$3"
-PULL_BASE_FROM_DOCKERHUB="$4"
-REGISTRY="$5"
+REGISTRY="$4"
+PULL_BASE_FROM_DOCKERHUB="$5"
 
 set -e
+set -x
 
 # ----- Pushing image(s) -----
 # see documentation :
@@ -102,7 +103,7 @@ set -e
 
 # Logout from the registry
 h2 "Logout from the docker registry"
-DOCKER_LOGOUT="docker logout $REGISTRY"
+DOCKER_LOGOUT="docker logout"
 DOCKER_LOGOUT_OUTPUT=$($DOCKER_LOGOUT)
 if [ $? -ne 0 ]; then
   warn "$DOCKER_LOGOUT_OUTPUT"
@@ -127,6 +128,8 @@ else
   success "Login to Docker registry $REGISTRY succeeded";
 fi
 
+sleep 3
+
 # Push the docker image
 h2 "Pushing image to Docker registry"
 
@@ -139,6 +142,18 @@ if [ $? -ne 0 ];then
   error "Pushing image $IMAGE failed";
 else
   success "Pushing image $IMAGE succeeded";
+fi
+
+# Logout from the registry
+h2 "Logout from the docker registry"
+DOCKER_LOGOUT="docker logout"
+DOCKER_LOGOUT_OUTPUT=$($DOCKER_LOGOUT)
+if [ $? -ne 0 ]; then
+  warn "$DOCKER_LOGOUT_OUTPUT"
+  error "Logout from Docker registry $REGISTRY failed"
+  exit 1
+else
+  success "Logout from Docker registry $REGISTRY succeeded"
 fi
 
 if [ "$PULL_BASE_FROM_DOCKERHUB" == "true" ];then
