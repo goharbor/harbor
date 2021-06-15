@@ -29,6 +29,10 @@ redis:
   dialtimeout: 10s
   password: {{redis_password}}
   db: {{redis_db_index_reg}}
+  pool:
+    maxidle: 100
+    maxactive: 500
+    idletimeout: 60s
 http:
 {% if internal_tls.enabled %}
   addr: :5443
