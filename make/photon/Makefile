@@ -286,9 +286,6 @@ define _build_base
 		if [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) docker.io $(PULL_BASE_FROM_DOCKERHUB) || exit 1; \
 		fi ; \
-		if [ -n "$(REGISTRYUSER)"  ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
-			docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
-		fi ; \
 	fi
 endef
 
