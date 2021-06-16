@@ -332,7 +332,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v1
         with:
-          node-version: '10.16.2'
+          node-version: '15.14.0'
       - uses: actions/checkout@v2
         with:
           path: src/github.com/goharbor/harbor

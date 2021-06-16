@@ -54,9 +54,10 @@ const harborRoutes: Routes = [
   ],
   imports: [
     RouterModule.forRoot(harborRoutes, {
-      onSameUrlNavigation: 'reload',
-      preloadingStrategy: PreloadAllModules
-    })
+    onSameUrlNavigation: 'reload',
+    preloadingStrategy: PreloadAllModules,
+    relativeLinkResolution: 'legacy'
+})
   ],
   exports: [RouterModule]
 })

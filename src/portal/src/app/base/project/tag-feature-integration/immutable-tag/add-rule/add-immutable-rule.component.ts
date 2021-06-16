@@ -23,13 +23,13 @@ export class AddImmutableRuleComponent implements OnInit, OnDestroy {
     @Input() rules: ImmutableRetentionRule[];
     @Input() projectId: number;
     metadata: RuleMetadate = new RuleMetadate();
-    rule: ImmutableRetentionRule = new ImmutableRetentionRule(this.projectId);
+    rule: ImmutableRetentionRule;
     isAdd: boolean = true;
     editRuleOrigin: ImmutableRetentionRule;
     onGoing: boolean = false;
     @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
     constructor(private immutableTagService: ImmutableTagService) {
-
+        this.rule = new ImmutableRetentionRule(this.projectId);
     }
 
     ngOnInit(): void {
