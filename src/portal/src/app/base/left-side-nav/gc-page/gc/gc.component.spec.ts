@@ -41,8 +41,8 @@ describe('GcComponent', () => {
     component = fixture.componentInstance;
 
     gcRepoService = fixture.debugElement.injector.get(GcService);
-    spySchedule = spyOn(gcRepoService, "getGCSchedule").and.returnValues(of(mockSchedule));
-    spyGcNow = spyOn(gcRepoService, "createGCSchedule").and.returnValues(of(true));
+    spySchedule = spyOn(gcRepoService, "getGCSchedule").and.returnValues(of(mockSchedule as any));
+    spyGcNow = spyOn(gcRepoService, "createGCSchedule").and.returnValues(of(null));
     fixture.detectChanges();
   });
   it('should create', () => {

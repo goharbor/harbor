@@ -17,7 +17,7 @@
             <button class="nav-icon nav-icon-width" clrDropdownToggle>
                 <clr-icon shape="world" class="icon-left"></clr-icon>
                 <span class="currentLang">{{currentLang}}</span>
-                <clr-icon shape="caret down"></clr-icon>
+                <clr-icon size="10" shape="caret down"></clr-icon>
             </button>
             <clr-dropdown-menu *clrIfOpen>
                 <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("en-us")' [class.lang-selected]='matchLang("en-us")'>English</a>
@@ -35,7 +35,7 @@
             <button class="nav-text" clrDropdownToggle>
                 <clr-icon shape="user" class="is-inverse user-icon" size="24"></clr-icon>
                 <span>{{accountName}}</span>
-                <clr-icon shape="caret down"></clr-icon>
+                <clr-icon class="user-down" size="10" shape="caret down"></clr-icon>
             </button>
             <clr-dropdown-menu [clrPosition]="'bottom-right'" *clrIfOpen>
                 <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">{{'ACCOUNT_SETTINGS.PROFILE' | translate}}</a>

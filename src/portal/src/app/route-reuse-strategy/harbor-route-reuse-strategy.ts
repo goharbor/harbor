@@ -32,13 +32,13 @@ export class HarborRouteReuseStrategy implements RouteReuseStrategy {
   private shouldKeepCache(future: ActivatedRouteSnapshot, curr: ActivatedRouteSnapshot) {
     if (future.routeConfig && curr.routeConfig && future.routeConfig.data && curr.routeConfig.data) {
       // action 1: from replication tasks list page to TotalReplicationPageComponent page
-      if (future.routeConfig.data.routeConfigId === RouteConfigId.REPLICATION_TASKS_PAGE
-        && curr.routeConfig.data.routeConfigId === RouteConfigId.REPLICATION_PAGE) {
+      if (curr.routeConfig.data.routeConfigId === RouteConfigId.REPLICATION_TASKS_PAGE
+        && future.routeConfig.data.routeConfigId === RouteConfigId.REPLICATION_PAGE) {
         this.shouldDeleteCache = false;
       }
       // action 2: from preheat tasks list page to PolicyComponent page
-      if (future.routeConfig.data.routeConfigId === RouteConfigId.P2P_TASKS_PAGE
-        && curr.routeConfig.data.routeConfigId === RouteConfigId.P2P_POLICIES_PAGE) {
+      if (curr.routeConfig.data.routeConfigId === RouteConfigId.P2P_TASKS_PAGE
+        && future.routeConfig.data.routeConfigId === RouteConfigId.P2P_POLICIES_PAGE) {
         this.shouldDeleteCache = false;
       }
     }
@@ -59,10 +59,12 @@ export class HarborRouteReuseStrategy implements RouteReuseStrategy {
   shouldAttach(route: ActivatedRouteSnapshot): boolean {
     if (this.isReuseRoute(route)) {
       if (this.shouldDeleteCache) {
-        this.clearAllCache();
+         this.clearAllCache();
       }
     }
-    this.shouldDeleteCache = true;
+    setTimeout(() => {
+      this.shouldDeleteCache = true;
+    }, 0);
     return this._cache[this.getFullUrl(route)] && this.isReuseRoute(route);
   }
 
