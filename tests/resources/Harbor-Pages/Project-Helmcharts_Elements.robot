@@ -31,7 +31,7 @@ ${detail_value}  //*[@id='value-link']
 ${value_content}  //*[@id='value-content']/hbr-chart-detail-value
 
 ${version_bread_crumbs}  //project-chart-detail//a[contains(.,'Versions')]
-${version_checkbox}  //clr-dg-row//clr-checkbox-wrapper/label
+${version_checkbox}  //clr-dg-row//div[contains(@class,'clr-checkbox-wrapper')]/label
 ${version_delete}  //clr-dg-action-bar/button[contains(.,'DELETE')]
 ${version_confirm_delete}  //clr-modal//button[contains(.,'DELETE')]
 

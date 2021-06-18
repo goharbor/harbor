@@ -25,8 +25,8 @@ ${sys_robot_account_coverall_chb_input}  xpath=//input[@id='coverAll']
 ${sys_robot_account_coverall_chb}            //clr-checkbox-wrapper[contains(@class, 'clr-checkbox-wrapper')]/label[contains(@for, 'coverAll')]
 ${sys_robot_account_permission_list_btn}     //form/section//clr-dropdown/button
 ${save_sys_robot_account_btn}                //*[@id='system-robot-save']
-${save_sys_robot_project_filter_chb}         //clr-dg-string-filter/clr-dg-filter//clr-icon
+${save_sys_robot_project_filter_chb}         //clr-dg-string-filter/clr-dg-filter//cds-icon
 ${save_sys_robot_project_filter_input}       //input[contains(@name, 'search')]
-${save_sys_robot_project_filter_close_btn}   //button/clr-icon[contains(@title, 'Close')]
+${save_sys_robot_project_filter_close_btn}   //button/cds-icon[contains(@title, 'Close')]
 ${save_sys_robot_project_paste_icon}         //hbr-copy-input//clr-icon
 

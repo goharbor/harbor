@@ -147,7 +147,7 @@ Filter Repo
 
 Delete Repo
     [Arguments]  ${pro_name}  ${repo_name}
-    ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${pro_name}/${repo_name}')]//clr-checkbox-wrapper//label
+    ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${pro_name}/${repo_name}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
     Filter Repo  ${pro_name}  ${repo_name}
     Retry Double Keywords When Error  Retry Element Click  ${element_repo_checkbox}  Wait Until Element Is Visible And Enabled  ${repo_delete_btn}
     Retry Double Keywords When Error  Retry Element Click  ${repo_delete_btn}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
@@ -165,7 +165,7 @@ Delete Repo on CardView
 Delete Project
     [Arguments]  ${projectname}
     Navigate To Projects
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${projectname}')]//clr-checkbox-wrapper//label
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${projectname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
     Retry Element Click  xpath=//*[@id='delete-project']
     Retry Element Click  //clr-modal//button[contains(.,'DELETE')]
     Sleep  1
