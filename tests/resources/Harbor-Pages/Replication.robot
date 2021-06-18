@@ -224,7 +224,7 @@ Delete Endpoint
     Retry Element Click  ${endpoint_filter_search}
     Retry Text Input   ${endpoint_filter_input}  ${name}
     #click checkbox before target endpoint
-    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${name}')]//clr-checkbox-wrapper  Retry Wait Element  ${registry_del_btn}
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${name}')]//div[contains(@class,'clr-checkbox-wrapper')]  Retry Wait Element  ${registry_del_btn}
     Retry Element Click  ${registry_del_btn}
     Wait Until Page Contains Element  ${dialog_delete}
     Retry Element Click  ${dialog_delete}

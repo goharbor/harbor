@@ -69,7 +69,7 @@ Change Project Member Role
 Change Member Role
     [Arguments]  ${user}  ${role}
     Retry Element Click  xpath=${project_member_tag_xpath}
-    Retry Element Click  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//clr-checkbox-wrapper
+    Retry Element Click  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//div[contains(@class,'clr-checkbox-wrapper')]
     #change role
     Retry Element Click  ${project_member_action_xpath}
     Retry Element Click  //button[contains(.,'${role}')]

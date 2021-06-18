@@ -33,7 +33,7 @@ ${project_tag_retention_span_daily_xpath}  //cron-selection//div//span[contains(
 ${project_tag_retention_dry_run_xpath}  //*[@id='dry-run']
 ${project_tag_retention_refresh_xpath}  //clr-dg-action-bar/button[4]
 ${project_tag_retention_record_yes_xpath}  //clr-datagrid[contains(.,'Yes')]
-${project_tag_retention_list_expand_icon_xpath}  //project-detail/app-tag-feature-integration/tag-retention//clr-datagrid//clr-dg-row//clr-expandable-animation//clr-icon[@class='datagrid-expandable-caret-icon']
+${project_tag_retention_list_expand_icon_xpath}  //project-detail/app-tag-feature-integration/tag-retention//clr-datagrid//clr-dg-row//clr-expandable-animation//cds-icon[@class='datagrid-expandable-caret-icon']
 ${project_tag_retention_run_now_xpath}  //*[@id='run-now']
 ${project_tag_retention_execute_run_xpath}  //*[@id='execute-run']
 ${project_tag_retention_record_no_xpath}  //clr-datagrid[contains(.,'No')]
