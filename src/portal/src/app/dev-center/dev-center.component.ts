@@ -7,7 +7,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from "ngx-cookie";
 import * as SwaggerUI from 'swagger-ui';
 import { mergeDeep } from "../shared/units/utils";
-import { DevCenterBase } from "./dev-center-base";
+import { DevCenterBaseDirective } from "./dev-center-base";
+import { SAFE_METHODS } from "../services/intercept-http.service";
 // @ts-ignore
 window.Buffer = window.Buffer || require('buffer').Buffer; // this is for swagger UI
 
@@ -16,13 +17,16 @@ enum SwaggerJsonUrls {
   SWAGGER2 = '/swagger2.json'
 }
 
+const helpInfo: string = " If you want to enable basic authorization," +
+  " please logout Harbor first or manually delete the cookies under the current domain.";
+
 @Component({
   selector: 'dev-center',
   templateUrl: 'dev-center.component.html',
   viewProviders: [Title],
   styleUrls: ['dev-center.component.scss']
 })
-export class DevCenterComponent extends DevCenterBase implements AfterViewInit, OnInit {
+export class DevCenterComponent extends DevCenterBaseDirective implements AfterViewInit, OnInit {
   private ui: any;
   constructor(
     private el: ElementRef,
@@ -37,15 +41,15 @@ export class DevCenterComponent extends DevCenterBase implements AfterViewInit, 
     this.getSwaggerUI();
   }
   getSwaggerUI() {
-    const _this = this;
     forkJoin([this.http.get(SwaggerJsonUrls.SWAGGER1), this.http.get(SwaggerJsonUrls.SWAGGER2)])
       .pipe(catchError(error => observableThrowError(error)))
       .subscribe(jsonArr => {
-        const json: object = {};
+        const json: any = {};
         mergeDeep(json, jsonArr[0], jsonArr[1]);
         json['host'] = window.location.host;
         const protocal = window.location.protocol;
         json['schemes'] = [protocal.replace(":", "")];
+        json.info.description = json.info.description + helpInfo;
         this.ui = SwaggerUI({
           spec: json,
           domNode: this.el.nativeElement.querySelector('.swagger-container'),
@@ -53,13 +57,26 @@ export class DevCenterComponent extends DevCenterBase implements AfterViewInit, 
           presets: [
             SwaggerUI.presets.apis
           ],
-          requestInterceptor: this.getCsrfInterceptor().requestInterceptor,
-          authorizations: {
-            csrf: function () {
-              this.headers['X-Harbor-CSRF-Token'] = _this.cookieService.get('__csrf');
-              return true;
+          requestInterceptor: (request) => {
+            // Get the csrf token from localstorage
+            const token = localStorage.getItem("__csrf");
+            const headers = request.headers || {};
+            if (token ) {
+              if (request.method && SAFE_METHODS.indexOf(request.method.toUpperCase()) === -1) {
+                headers["X-Harbor-CSRF-Token"] = token;
+              }
             }
-          }
+            return request;
+          },
+          responseInterceptor: (response) => {
+            const headers = response.headers || {};
+            const responseToken: string = headers["X-Harbor-CSRF-Token"];
+            if (responseToken) {
+              // Set the csrf token to localstorage
+              localStorage.setItem("__csrf", responseToken);
+            }
+            return response;
+          },
         });
       });
   }

@@ -3,7 +3,7 @@ import { HttpInterceptor, HttpRequest, HttpHandler, HttpResponse, HttpErrorRespo
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
-const SAFE_METHODS: string[] = ["GET", "HEAD", "OPTIONS", "TRACE"];
+export const SAFE_METHODS: string[] = ["GET", "HEAD", "OPTIONS", "TRACE"];
 
 @Injectable({
   providedIn: 'root'
