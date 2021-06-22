@@ -89,11 +89,15 @@ GEN_TLS=
 # version prepare
 # for docker image tag
 VERSIONTAG=dev
+
 # for base docker image tag
-PUSHBASEIMAGE=
+BUILD_BASE=true
+PUSHBASEIMAGE=false
 BASEIMAGETAG=dev
-BASEIMAGENAMESPACE=goharbor
 BUILDBASETARGET=chartserver clair clair-adapter trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl
+BASEIMAGENAMESPACE=goharbor
+PULL_BASE_FROM_DOCKERHUB=true
+
 # for harbor package name
 PKGVERSIONTAG=dev
 
@@ -261,9 +265,7 @@ ZIPCMD=$(shell which gzip)
 DOCKERIMGFILE=harbor
 HARBORPKG=harbor
 
-# pushimage
-PUSHSCRIPTPATH=$(MAKEPATH)
-PUSHSCRIPTNAME=pushimage.sh
+# pull/push image
 REGISTRYUSER=
 REGISTRYPASSWORD=
 
@@ -406,6 +408,19 @@ prepare: update_prepare_version
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
 build:
+# PUSHBASEIMAGE should not be true if BUILD_BASE is not true
+	@if [ "$(PULL_BASE_FROM_DOCKERHUB)" != "true" ] && [ "$(PULL_BASE_FROM_DOCKERHUB)" != "false" ] ; then \
+		echo set PULL_BASE_FROM_DOCKERHUB to true or false.; exit 1; \
+	fi
+	@if [ "$(BUILD_BASE)" != "true" ]  && [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
+		echo Do not push base images since no base images built. ; \
+		exit 1; \
+	fi
+# PULL_BASE_FROM_DOCKERHUB should be true if BUILD_BASE is not true
+	@if [ "$(BUILD_BASE)" != "true" ]  && [ "$(PULL_BASE_FROM_DOCKERHUB)" = "false" ] ; then \
+		echo Should pull base images from registry in docker configuration since no base images built. ; \
+		exit 1; \
+	fi
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile $(BUILDTARGET) -e DEVFLAG=$(DEVFLAG) -e GOBUILDIMAGE=$(GOBUILDIMAGE) \
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG) \
 	 -e NOTARYVERSION=$(NOTARYVERSION) -e NOTARYMIGRATEVERSION=$(NOTARYMIGRATEVERSION) \
@@ -415,7 +430,10 @@ build:
 	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e CHARTMUSEUM_SRC_TAG=$(CHARTMUSEUM_SRC_TAG) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
 	 -e CLAIRURL=$(CLAIRURL) -e CHARTURL=$(CHARTURL) -e NORARYURL=$(NORARYURL) -e REGISTRYURL=$(REGISTRYURL) -e CLAIR_ADAPTER_DOWNLOAD_URL=$(CLAIR_ADAPTER_DOWNLOAD_URL) \
-	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL)
+	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
+	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
+	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
+	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)
@@ -581,7 +599,6 @@ cleanbinary:
 	if [ -f $(REGISTRYCTLBINARYPATH)/$(REGISTRYCTLBINARYNAME) ] ; then rm $(REGISTRYCTLBINARYPATH)/$(REGISTRYCTLBINARYNAME) ; fi
 	if [ -f $(MIGRATEPATCHBINARYPATH)/$(MIGRATEPATCHBINARYNAME) ] ; then rm $(MIGRATEPATCHBINARYPATH)/$(MIGRATEPATCHBINARYNAME) ; fi
 	rm -rf make/photon/*/binary/
-
 
 cleanimage:
 	@echo "cleaning image for photon..."
