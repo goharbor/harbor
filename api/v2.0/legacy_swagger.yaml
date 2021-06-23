@@ -14,10 +14,11 @@ produces:
 consumes:
   - application/json
 securityDefinitions:
-  basicAuth:
+  basic:
     type: basic
 security:
-  - basicAuth: []
+  - basic: []
+  - {}
 paths:
   /email/ping:
     post:
