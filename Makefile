@@ -480,11 +480,11 @@ package_offline: update_prepare_version compile build
 	@cp LICENSE $(HARBORPKG)/LICENSE
 
 	@echo "saving harbor docker image"
-	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
-	@gzip $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
+	$(DOCKERSAVE) $(DOCKERSAVE_PARA) > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
+	gzip $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
 
-	@$(TARCMD) $(PACKAGE_OFFLINE_PARA)
-	@rm -rf $(HARBORPKG)
+	$(TARCMD) $(PACKAGE_OFFLINE_PARA)
+	rm -rf $(HARBORPKG)
 	@echo "Done."
 
 gosec:
